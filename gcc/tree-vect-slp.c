@@ -1457,14 +1457,16 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
   if (visited.add (node))
     return;
 
-  dump_printf_loc (dump_kind, loc, "node%s %p\n",
+  dump_metadata_t metadata (dump_kind, loc.get_impl_location ());
+  dump_user_location_t user_loc = loc.get_user_location ();
+  dump_printf_loc (metadata, user_loc, "node%s %p\n",
 		   SLP_TREE_DEF_TYPE (node) != vect_internal_def
 		   ? " (external)" : "", node);
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
-    dump_printf_loc (dump_kind, loc, "\tstmt %d %G", i, stmt_info->stmt);
+    dump_printf_loc (metadata, user_loc, "\tstmt %d %G", i, stmt_info->stmt);
   if (SLP_TREE_CHILDREN (node).is_empty ())
     return;
-  dump_printf_loc (dump_kind, loc, "\tchildren");
+  dump_printf_loc (metadata, user_loc, "\tchildren");
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
     dump_printf (dump_kind, " %p", (void *)child);
   dump_printf (dump_kind, "\n");
@@ -1952,6 +1954,8 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	 transform the node.  In the reduction analysis phase only the last
 	 element of the chain is marked as reduction.  */
       STMT_VINFO_DEF_TYPE (stmt_info) = vect_reduction_def;
+      STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info))
+	= STMT_VINFO_REDUC_DEF (vect_orig_stmt (scalar_stmts.last ()));
     }
   else
     {
@@ -2557,22 +2561,46 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
 					   visited, lvisited, cost_vec))
       return false;
 
+  /* ???  We have to catch the case late where two first scalar stmts appear
+     in multiple SLP children with different def type and fail.  Remember
+     original def types first since SLP_TREE_DEF_TYPE doesn't necessarily
+     match it when that is vect_internal_def.  */
+  auto_vec<vect_def_type, 4> dt;
+  dt.safe_grow (SLP_TREE_CHILDREN (node).length ());
+  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
+    dt[j] = STMT_VINFO_DEF_TYPE (SLP_TREE_SCALAR_STMTS (child)[0]);
+
   /* Push SLP node def-type to stmt operands.  */
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
     if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
       STMT_VINFO_DEF_TYPE (SLP_TREE_SCALAR_STMTS (child)[0])
 	= SLP_TREE_DEF_TYPE (child);
-  bool res = vect_slp_analyze_node_operations_1 (vinfo, node, node_instance,
-						 cost_vec);
-  /* Restore def-types.  */
+
+  /* Check everything worked out.  */
+  bool res = true;
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
     if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
-      STMT_VINFO_DEF_TYPE (SLP_TREE_SCALAR_STMTS (child)[0])
-	= vect_internal_def;
-  if (! res)
-    return false;
+      {
+	if (STMT_VINFO_DEF_TYPE (SLP_TREE_SCALAR_STMTS (child)[0])
+	    != SLP_TREE_DEF_TYPE (child))
+	  res = false;
+      }
+    else if (STMT_VINFO_DEF_TYPE (SLP_TREE_SCALAR_STMTS (child)[0]) != dt[j])
+      res = false;
+  if (!res && dump_enabled_p ())
+    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+		     "not vectorized: same operand with different "
+		     "def type in stmt.\n");
 
-  return true;
+  if (res)
+    res = vect_slp_analyze_node_operations_1 (vinfo, node, node_instance,
+					      cost_vec);
+
+  /* Restore def-types.  */
+  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
+    STMT_VINFO_DEF_TYPE (SLP_TREE_SCALAR_STMTS (child)[0]) = dt[j];
+
+  return res;
 }
 
 

@@ -1919,10 +1919,14 @@ number_of_iterations_cond (struct loop *loop,
   return ret;
 }
 
-/* Substitute NEW for OLD in EXPR and fold the result.  */
+/* Substitute NEW_TREE for OLD in EXPR and fold the result.
+   If VALUEIZE is non-NULL then OLD and NEW_TREE are ignored and instead
+   all SSA names are replaced with the result of calling the VALUEIZE
+   function with the SSA name as argument.  */
 
-static tree
-simplify_replace_tree (tree expr, tree old, tree new_tree)
+tree
+simplify_replace_tree (tree expr, tree old, tree new_tree,
+		       tree (*valueize) (tree))
 {
   unsigned i, n;
   tree ret = NULL_TREE, e, se;
@@ -1931,11 +1935,20 @@ simplify_replace_tree (tree expr, tree old, tree new_tree)
     return NULL_TREE;
 
   /* Do not bother to replace constants.  */
-  if (CONSTANT_CLASS_P (old))
+  if (CONSTANT_CLASS_P (expr))
     return expr;
 
-  if (expr == old
-      || operand_equal_p (expr, old, 0))
+  if (valueize)
+    {
+      if (TREE_CODE (expr) == SSA_NAME)
+	{
+	  new_tree = valueize (expr);
+	  if (new_tree != expr)
+	    return new_tree;
+	}
+    }
+  else if (expr == old
+	   || operand_equal_p (expr, old, 0))
     return unshare_expr (new_tree);
 
   if (!EXPR_P (expr))
@@ -1945,7 +1958,7 @@ simplify_replace_tree (tree expr, tree old, tree new_tree)
   for (i = 0; i < n; i++)
     {
       e = TREE_OPERAND (expr, i);
-      se = simplify_replace_tree (e, old, new_tree);
+      se = simplify_replace_tree (e, old, new_tree, valueize);
       if (e == se)
 	continue;
 

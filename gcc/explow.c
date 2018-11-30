@@ -1176,9 +1176,10 @@ record_new_stack_level (void)
   if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
     update_sjlj_context ();
 }
-
+
 /* Return an rtx doing runtime alignment to REQUIRED_ALIGN on TARGET.  */
-static rtx
+
+rtx
 align_dynamic_address (rtx target, unsigned required_align)
 {
   /* CEIL_DIV_EXPR needs to worry about the addition overflowing,

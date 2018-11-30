@@ -62,7 +62,9 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
     specific_type_functions_are_written_(false),
     named_types_are_converted_(false),
     analysis_sets_(),
-    gc_roots_()
+    gc_roots_(),
+    imported_inlinable_functions_(),
+    imported_inline_functions_()
 {
   const Location loc = Linemap::predeclared_location();
 
@@ -525,9 +527,9 @@ Gogo::import_package(const std::string& filename,
       return;
     }
 
-  Import imp(stream, location);
-  imp.register_builtin_types(this);
-  Package* package = imp.import(this, local_name, is_local_name_exported);
+  Import* imp = new Import(stream, location);
+  imp->register_builtin_types(this);
+  Package* package = imp->import(this, local_name, is_local_name_exported);
   if (package != NULL)
     {
       if (package->pkgpath() == this->pkgpath())
@@ -538,7 +540,10 @@ Gogo::import_package(const std::string& filename,
       this->imports_.insert(std::make_pair(filename, package));
     }
 
+  imp->clear_stream();
   delete stream;
+
+  // FIXME: we never delete imp; we may need it for inlinable functions.
 }
 
 Import_init *
@@ -1557,6 +1562,13 @@ Gogo::write_globals()
 	}
     }
 
+  // Output inline functions, which are in different packages.
+  for (std::vector<Named_object*>::const_iterator p =
+	 this->imported_inline_functions_.begin();
+       p != this->imported_inline_functions_.end();
+       ++p)
+    (*p)->get_backend(this, const_decls, type_decls, func_decls);
+
   // Register global variables with the garbage collector.
   this->register_gc_vars(var_gc, init_stmts, init_bfn);
 
@@ -2234,6 +2246,20 @@ Gogo::declare_package_function(const std::string& name, Function_type* type,
 							      location);
 }
 
+// Add a function declaration to the list of functions we may want to
+// inline.
+
+void
+Gogo::add_imported_inlinable_function(Named_object* no)
+{
+  go_assert(no->is_function_declaration());
+  Function_declaration* fd = no->func_declaration_value();
+  if (fd->is_on_inlinable_list())
+    return;
+  this->imported_inlinable_functions_.push_back(no);
+  fd->set_is_on_inlinable_list();
+}
+
 // Define a type which was already declared.
 
 void
@@ -2881,6 +2907,17 @@ Gogo::lower_parse_tree()
   Lower_parse_tree lower_parse_tree(this, NULL);
   this->traverse(&lower_parse_tree);
 
+  // If we found any functions defined in other packages that are
+  // inlinables, import their bodies and turn them into functions.
+  //
+  // Note that as we import inlinable functions we may find more
+  // inlinable functions, so don't use an iterator.
+  for (size_t i = 0; i < this->imported_inlinable_functions_.size(); i++)
+    {
+      Named_object* no = this->imported_inlinable_functions_[i];
+      no->func_declaration_value()->import_function_body(this, no);
+    }
+
   // There might be type definitions that involve expressions such as the
   // array length.  Make sure to lower these expressions as well.  Otherwise,
   // errors hidden within a type can introduce unexpected errors into later
@@ -3204,6 +3241,17 @@ Gogo::finalize_methods()
 {
   Finalize_methods finalize(this);
   this->traverse(&finalize);
+}
+
+// Finalize the method list for a type.  This is called when a type is
+// parsed for an inlined function body, which happens after the
+// finalize_methods pass.
+
+void
+Gogo::finalize_methods_for_type(Type* type)
+{
+  Finalize_methods finalize(this);
+  Type::traverse(type, &finalize);
 }
 
 // Set types for unspecified variables and constants.
@@ -4691,11 +4739,130 @@ Gogo::check_return_statements()
   this->traverse(&traverse);
 }
 
+// Traversal class to decide whether a function body is less than the
+// inlining budget.  This adjusts *available as it goes, and stops the
+// traversal if it goes negative.
+
+class Inline_within_budget : public Traverse
+{
+ public:
+  Inline_within_budget(int* available)
+    : Traverse(traverse_statements
+	       | traverse_expressions),
+      available_(available)
+  { }
+
+  int
+  statement(Block*, size_t*, Statement*);
+
+  int
+  expression(Expression**);
+
+ private:
+  // Pointer to remaining budget.
+  int* available_;
+};
+
+// Adjust the budget for the inlining cost of a statement.
+
+int
+Inline_within_budget::statement(Block*, size_t*, Statement* s)
+{
+  if (*this->available_ < 0)
+    return TRAVERSE_EXIT;
+  *this->available_ -= s->inlining_cost();
+  return TRAVERSE_CONTINUE;
+}
+
+// Adjust the budget for the inlining cost of an expression.
+
+int
+Inline_within_budget::expression(Expression** pexpr)
+{
+  if (*this->available_ < 0)
+    return TRAVERSE_EXIT;
+  *this->available_ -= (*pexpr)->inlining_cost();
+  return TRAVERSE_CONTINUE;
+}
+
+// Traversal class to find functions whose body should be exported for
+// inlining by other packages.
+
+class Mark_inline_candidates : public Traverse
+{
+ public:
+  Mark_inline_candidates()
+    : Traverse(traverse_functions
+	       | traverse_types)
+  { }
+
+  int
+  function(Named_object*);
+
+  int
+  type(Type*);
+
+ private:
+  // We traverse the function body trying to determine how expensive
+  // it is for inlining.  We start with a budget, and decrease that
+  // budget for each statement and expression.  If the budget goes
+  // negative, we do not export the function body.  The value of this
+  // budget is a heuristic.  In the usual GCC spirit, we could
+  // consider setting this via a command line option.
+  const int budget_heuristic = 80;
+};
+
+// Mark a function if it is an inline candidate.
+
+int
+Mark_inline_candidates::function(Named_object* no)
+{
+  Function* func = no->func_value();
+  int budget = budget_heuristic;
+  Inline_within_budget iwb(&budget);
+  func->block()->traverse(&iwb);
+  if (budget >= 0)
+    func->set_export_for_inlining();
+  return TRAVERSE_CONTINUE;
+}
+
+// Mark methods if they are inline candidates.
+
+int
+Mark_inline_candidates::type(Type* t)
+{
+  Named_type* nt = t->named_type();
+  if (nt == NULL || nt->is_alias())
+    return TRAVERSE_CONTINUE;
+  const Bindings* methods = nt->local_methods();
+  if (methods == NULL)
+    return TRAVERSE_CONTINUE;
+  for (Bindings::const_definitions_iterator p = methods->begin_definitions();
+       p != methods->end_definitions();
+       ++p)
+    {
+      Named_object* no = *p;
+      go_assert(no->is_function());
+      Function *func = no->func_value();
+      int budget = budget_heuristic;
+      Inline_within_budget iwb(&budget);
+      func->block()->traverse(&iwb);
+      if (budget >= 0)
+	func->set_export_for_inlining();
+    }
+  return TRAVERSE_CONTINUE;
+}
+
 // Export identifiers as requested.
 
 void
 Gogo::do_exports()
 {
+  // Mark any functions whose body should be exported for inlining by
+  // other packages.
+  Mark_inline_candidates mic;
+  this->traverse(&mic);
+
   // For now we always stream to a section.  Later we may want to
   // support streaming to a separate file.
   Stream_to_section stream(this->backend());
@@ -4962,7 +5129,8 @@ Function::Function(Function_type* type, Named_object* enclosing, Block* block,
     results_are_named_(false), is_unnamed_type_stub_method_(false),
     calls_recover_(false), is_recover_thunk_(false), has_recover_thunk_(false),
     calls_defer_retaddr_(false), is_type_specific_function_(false),
-    in_unique_section_(false)
+    in_unique_section_(false), export_for_inlining_(false),
+    is_inline_only_(false)
 {
 }
 
@@ -5316,15 +5484,21 @@ Function::defer_stack(Location location)
 void
 Function::export_func(Export* exp, const std::string& name) const
 {
-  Function::export_func_with_type(exp, name, this->type_,
-				  this->is_method() && this->nointerface());
+  Block* block = NULL;
+  if (this->export_for_inlining())
+    block = this->block_;
+  Function::export_func_with_type(exp, name, this->type_, this->results_,
+				  this->is_method() && this->nointerface(),
+				  block, this->location_);
 }
 
 // Export a function with a type.
 
 void
 Function::export_func_with_type(Export* exp, const std::string& name,
-				const Function_type* fntype, bool nointerface)
+				const Function_type* fntype,
+				Function::Results* result_vars,
+				bool nointerface, Block* block, Location loc)
 {
   exp->write_c_string("func ");
 
@@ -5376,35 +5550,77 @@ Function::export_func_with_type(Export* exp, const std::string& name,
     }
   exp->write_c_string(")");
 
-  const Typed_identifier_list* results = fntype->results();
-  if (results != NULL)
+  const Typed_identifier_list* result_decls = fntype->results();
+  if (result_decls != NULL)
     {
-      if (results->size() == 1 && results->begin()->name().empty())
+      if (result_decls->size() == 1
+	  && result_decls->begin()->name().empty()
+	  && block == NULL)
 	{
 	  exp->write_c_string(" ");
-	  exp->write_type(results->begin()->type());
+	  exp->write_type(result_decls->begin()->type());
 	}
       else
 	{
 	  exp->write_c_string(" (");
 	  bool first = true;
-	  for (Typed_identifier_list::const_iterator p = results->begin();
-	       p != results->end();
-	       ++p)
+	  Results::const_iterator pr;
+	  if (result_vars != NULL)
+	    pr = result_vars->begin();
+	  for (Typed_identifier_list::const_iterator pd = result_decls->begin();
+	       pd != result_decls->end();
+	       ++pd)
 	    {
 	      if (first)
 		first = false;
 	      else
 		exp->write_c_string(", ");
-	      exp->write_name(p->name());
-	      exp->write_escape(p->note());
+	      // We only use pr->name, which may be artificial, if
+	      // need it for inlining.
+	      if (block == NULL || result_vars == NULL)
+		exp->write_name(pd->name());
+	      else
+		exp->write_name((*pr)->name());
+	      exp->write_escape(pd->note());
 	      exp->write_c_string(" ");
-	      exp->write_type(p->type());
+	      exp->write_type(pd->type());
+	      if (result_vars != NULL)
+		++pr;
 	    }
+	  if (result_vars != NULL)
+	    go_assert(pr == result_vars->end());
 	  exp->write_c_string(")");
 	}
     }
-  exp->write_c_string("\n");
+
+  if (block == NULL)
+    exp->write_c_string("\n");
+  else
+    {
+      int indent = 1;
+      if (fntype->is_method())
+	indent++;
+
+      Export_function_body efb(exp, indent);
+
+      efb.indent();
+      efb.write_c_string("// ");
+      efb.write_string(Linemap::location_to_file(block->start_location()));
+      efb.write_char(':');
+      char buf[100];
+      snprintf(buf, sizeof buf, "%d", Linemap::location_to_line(loc));
+      efb.write_c_string(buf);
+      efb.write_char('\n');
+      block->export_block(&efb);
+
+      const std::string& body(efb.body());
+
+      snprintf(buf, sizeof buf, " <inl:%lu>\n",
+	       static_cast<unsigned long>(body.length()));
+      exp->write_c_string(buf);
+
+      exp->write_string(body);
+    }
 }
 
 // Import a function.
@@ -5415,7 +5631,8 @@ Function::import_func(Import* imp, std::string* pname,
 		      Typed_identifier_list** pparameters,
 		      Typed_identifier_list** presults,
 		      bool* is_varargs,
-		      bool* nointerface)
+		      bool* nointerface,
+		      std::string* body)
 {
   imp->require_c_string("func ");
 
@@ -5480,7 +5697,7 @@ Function::import_func(Import* imp, std::string* pname,
   *pparameters = parameters;
 
   Typed_identifier_list* results;
-  if (imp->peek_char() != ' ')
+  if (imp->peek_char() != ' ' || imp->match_c_string(" <inl"))
     results = NULL;
   else
     {
@@ -5511,9 +5728,43 @@ Function::import_func(Import* imp, std::string* pname,
 	  imp->require_c_string(")");
 	}
     }
-  imp->require_semicolon_if_old_version();
-  imp->require_c_string("\n");
   *presults = results;
+
+  if (!imp->match_c_string(" <inl:"))
+    {
+      imp->require_semicolon_if_old_version();
+      imp->require_c_string("\n");
+      body->clear();
+    }
+  else
+    {
+      imp->require_c_string(" <inl:");
+      std::string lenstr;
+      int c;
+      while (true)
+	{
+	  c = imp->peek_char();
+	  if (c < '0' || c > '9')
+	    break;
+	  lenstr += c;
+	  imp->get_char();
+	}
+      imp->require_c_string(">\n");
+
+      errno = 0;
+      char* end;
+      long llen = strtol(lenstr.c_str(), &end, 10);
+      if (*end != '\0'
+	  || llen < 0
+	  || (llen == LONG_MAX && errno == ERANGE))
+	{
+	  go_error_at(imp->location(), "invalid inline function length %s",
+		      lenstr.c_str());
+	  return;
+	}
+
+      *body = imp->read(static_cast<size_t>(llen));
+    }
 }
 
 // Get the backend representation.
@@ -5525,7 +5776,6 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
     {
       unsigned int flags = 0;
       bool is_init_fn = false;
-      Type* rtype = NULL;
       if (no->package() != NULL)
         ;
       else if (this->enclosing_ != NULL || Gogo::is_thunk(no))
@@ -5549,9 +5799,11 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
         {
 	  if (!this->is_unnamed_type_stub_method_)
 	    flags |= Backend::function_is_visible;
-	  if (this->type_->is_method())
-	    rtype = this->type_->receiver()->type();
         }
+
+      Type* rtype = NULL;
+      if (this->type_->is_method())
+	rtype = this->type_->receiver()->type();
 
       std::string asm_name;
       if (!this->asm_name_.empty())
@@ -5571,7 +5823,7 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
 	  asm_name = no->name();
 	}
       else
-	asm_name = gogo->function_asm_name(no->name(), NULL, rtype);
+	asm_name = gogo->function_asm_name(no->name(), no->package(), rtype);
 
       // If a function calls the predeclared recover function, we
       // can't inline it, because recover behaves differently in a
@@ -5616,6 +5868,9 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
       if (this->in_unique_section_
 	  || (this->is_method() && this->nointerface()))
 	flags |= Backend::function_in_unique_section;
+
+      if (this->is_inline_only_)
+	flags |= Backend::function_only_inline;
 
       Btype* functype = this->type_->get_backend_fntype(gogo);
       this->fndecl_ =
@@ -6234,6 +6489,137 @@ Block::may_fall_through() const
   return this->statements_.back()->may_fall_through();
 }
 
+// Write export data for a block.
+
+void
+Block::export_block(Export_function_body* efb)
+{
+  for (Block::iterator p = this->begin();
+       p != this->end();
+       ++p)
+    {
+      efb->indent();
+
+      efb->increment_indent();
+      (*p)->export_statement(efb);
+      efb->decrement_indent();
+
+      Location loc = (*p)->location();
+      if ((*p)->is_block_statement())
+	{
+	  // For a block we put the start location on the first brace
+	  // in Block_statement::do_export_statement.  Here we put the
+	  // end location on the final brace.
+	  loc = (*p)->block_statement()->block()->end_location();
+	}
+      char buf[50];
+      snprintf(buf, sizeof buf, " //%d\n", Linemap::location_to_line(loc));
+      efb->write_c_string(buf);
+    }
+}
+
+// Add exported block data to SET, reading from BODY starting at OFF.
+// Returns whether the import succeeded.
+
+bool
+Block::import_block(Block* set, Import_function_body *ifb, Location loc)
+{
+  Location eloc = ifb->location();
+  Location sloc = loc;
+  const std::string& body(ifb->body());
+  size_t off = ifb->off();
+  while (off < body.length())
+    {
+      int indent = ifb->indent();
+      if (off + indent >= body.length())
+	{
+	  go_error_at(eloc,
+		      "invalid export data for %qs: insufficient indentation",
+		      ifb->name().c_str());
+	  return false;
+	}
+      for (int i = 0; i < indent - 1; i++)
+	{
+	  if (body[off + i] != ' ')
+	    {
+	      go_error_at(eloc,
+			  "invalid export data for %qs: bad indentation",
+			  ifb->name().c_str());
+	      return false;
+	    }
+	}
+
+      bool at_end = false;
+      if (body[off + indent - 1] == '}')
+	at_end = true;
+      else if (body[off + indent - 1] != ' ')
+	{
+	  go_error_at(eloc,
+		      "invalid export data for %qs: bad indentation",
+		      ifb->name().c_str());
+	  return false;
+	}
+
+      off += indent;
+
+      size_t nl = body.find('\n', off);
+      if (nl == std::string::npos)
+	{
+	  go_error_at(eloc, "invalid export data for %qs: missing newline",
+		      ifb->name().c_str());
+	  return false;
+	}
+
+      size_t lineno_pos = body.find(" //", off);
+      if (lineno_pos == std::string::npos || lineno_pos >= nl)
+	{
+	  go_error_at(eloc, "invalid export data for %qs: missing line number",
+		      ifb->name().c_str());
+	  return false;
+	}
+
+      unsigned int lineno = 0;
+      for (size_t i = lineno_pos + 3; i < nl; ++i)
+	{
+	  char c = body[i];
+	  if (c < '0' || c > '9')
+	    {
+	      go_error_at(loc,
+			  "invalid export data for %qs: invalid line number",
+			  ifb->name().c_str());
+	      return false;
+	    }
+	  lineno = lineno * 10 + c - '0';
+	}
+
+      ifb->gogo()->linemap()->start_line(lineno, 1);
+      sloc = ifb->gogo()->linemap()->get_location(0);
+
+      if (at_end)
+	{
+	  off = nl + 1;
+	  break;
+	}
+
+      ifb->set_off(off);
+      Statement* s = Statement::import_statement(ifb, sloc);
+      if (s == NULL)
+	return false;
+
+      set->add_statement(s);
+
+      size_t at = ifb->off();
+      if (at < nl + 1)
+	off = nl + 1;
+      else
+	off = at;
+    }
+
+  ifb->set_off(off);
+  set->set_end_location(sloc);
+  return true;
+}
+
 // Convert a block to the backend representation.
 
 Bblock*
@@ -6390,6 +6776,142 @@ void
 Function_declaration::set_nointerface()
 {
   this->pragmas_ |= GOPRAGMA_NOINTERFACE;
+}
+
+// Import an inlinable function.  This is used for an inlinable
+// function whose body is recorded in the export data.  Parse the
+// export data into a Block and create a regular function using that
+// Block as its body.  Redeclare this function declaration as the
+// function.
+
+void
+Function_declaration::import_function_body(Gogo* gogo, Named_object* no)
+{
+  go_assert(no->func_declaration_value() == this);
+  go_assert(no->package() != NULL);
+  const std::string& body(this->imported_body_);
+  go_assert(!body.empty());
+
+  // Read the "//FILE:LINE" comment starts the export data.
+
+  size_t indent = 1;
+  if (this->is_method())
+    indent = 2;
+  size_t i = 0;
+  for (; i < indent; i++)
+    {
+      if (body.at(i) != ' ')
+	{
+	  go_error_at(this->location_,
+		      "invalid export body for %qs: bad initial indentation",
+		      no->message_name().c_str());
+	  return;
+	}
+    }
+
+  if (body.substr(i, 2) != "//")
+    {
+      go_error_at(this->location_,
+		  "invalid export body for %qs: missing file comment",
+		  no->message_name().c_str());
+      return;
+    }
+
+  size_t colon = body.find(':', i + 2);
+  size_t nl = body.find('\n', i + 2);
+  if (nl == std::string::npos)
+    {
+      go_error_at(this->location_,
+		  "invalid export body for %qs: missing file name",
+		  no->message_name().c_str());
+      return;
+    }
+  if (colon == std::string::npos || nl < colon)
+    {
+      go_error_at(this->location_,
+		  "invalid export body for %qs: missing initial line number",
+		  no->message_name().c_str());
+      return;
+    }
+
+  std::string file = body.substr(i + 2, colon - (i + 2));
+  std::string linestr = body.substr(colon + 1, nl - (colon + 1));
+  char* end;
+  long linenol = strtol(linestr.c_str(), &end, 10);
+  if (*end != '\0')
+    {
+      go_error_at(this->location_,
+		  "invalid export body for %qs: invalid initial line number",
+		  no->message_name().c_str());
+      return;
+    }
+  unsigned int lineno = static_cast<unsigned int>(linenol);
+
+  // Turn the file/line into a location.
+
+  char* alc = new char[file.length() + 1];
+  memcpy(alc, file.data(), file.length());
+  alc[file.length()] = '\0';
+  gogo->linemap()->start_file(alc, lineno);
+  gogo->linemap()->start_line(lineno, 1);
+  Location start_loc = gogo->linemap()->get_location(0);
+
+  // Define the function with an outer block that declares the
+  // parameters.
+
+  Function_type* fntype = this->fntype_;
+
+  Block* outer = new Block(NULL, start_loc);
+
+  Function* fn = new Function(fntype, NULL, outer, start_loc);
+  fn->set_is_inline_only();
+
+  if (fntype->is_method())
+    {
+      const Typed_identifier* receiver = fntype->receiver();
+      Variable* recv_param = new Variable(receiver->type(), NULL, false,
+					  true, true, start_loc);
+      outer->bindings()->add_variable(receiver->name(), NULL, recv_param);
+    }
+
+  const Typed_identifier_list* params = fntype->parameters();
+  bool is_varargs = fntype->is_varargs();
+  if (params != NULL)
+    {
+      for (Typed_identifier_list::const_iterator p = params->begin();
+	   p != params->end();
+	   ++p)
+	{
+	  Variable* param = new Variable(p->type(), NULL, false, true, false,
+					 start_loc);
+	  if (is_varargs && p + 1 == params->end())
+	    param->set_is_varargs_parameter();
+	  outer->bindings()->add_variable(p->name(), NULL, param);
+	}
+    }
+
+  fn->create_result_variables(gogo);
+
+  if (!fntype->is_method())
+    {
+      const Package* package = no->package();
+      no = package->bindings()->add_function(no->name(), package, fn);
+    }
+  else
+    {
+      Named_type* rtype = fntype->receiver()->type()->deref()->named_type();
+      go_assert(rtype != NULL);
+      no = rtype->add_method(no->name(), fn);
+    }
+
+  Import_function_body ifb(gogo, this->imp_, no, body, nl + 1, outer, indent);
+
+  if (!Block::import_block(outer, &ifb, start_loc))
+    return;
+
+  gogo->lower_block(no, outer);
+
+  gogo->add_imported_inline_function(no);
 }
 
 // Return the function descriptor.
@@ -7111,7 +7633,13 @@ Named_constant::export_const(Export* exp, const std::string& name) const
       exp->write_c_string(" ");
     }
   exp->write_c_string("= ");
-  this->expr()->export_expression(exp);
+
+  Export_function_body efb(exp, 0);
+  if (!this->type_->is_abstract())
+    efb.set_type_context(this->type_);
+  this->expr()->export_expression(&efb);
+  exp->write_string(efb.body());
+
   exp->write_c_string("\n");
 }
 
@@ -7132,7 +7660,7 @@ Named_constant::import_const(Import* imp, std::string* pname, Type** ptype,
       imp->require_c_string(" ");
     }
   imp->require_c_string("= ");
-  *pexpr = Expression::import_expression(imp);
+  *pexpr = Expression::import_expression(imp, imp->location());
   imp->require_semicolon_if_old_version();
   imp->require_c_string("\n");
 }
@@ -7906,14 +8434,21 @@ Bindings::new_definition(Named_object* old_object, Named_object* new_object)
       {
 	// We declare the hash and equality functions before defining
 	// them, because we sometimes see that we need the declaration
-	// while we are in the middle of a different function.  We
-	// declare the main function before the user defines it, to
+	// while we are in the middle of a different function.
+	//
+	// We declare the main function before the user defines it, to
 	// give better error messages.
+	//
+	// We declare inline functions before we define them, as we
+	// only define them if we need them.
 	if (new_object->is_function()
 	    && ((Linemap::is_predeclared_location(old_object->location())
 		 && Linemap::is_predeclared_location(new_object->location()))
 		|| (Gogo::unpack_hidden_name(old_object->name()) == "main"
-		    && Linemap::is_unknown_location(old_object->location()))))
+		    && Linemap::is_unknown_location(old_object->location()))
+		|| (new_object->package() != NULL
+		    && old_object->func_declaration_value()->has_imported_body()
+		    && new_object->func_value()->is_inline_only())))
 	  {
             Function_type* old_type =
                 old_object->func_declaration_value()->type();

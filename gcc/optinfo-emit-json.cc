@@ -47,38 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "dump-context.h"
 #include <zlib.h>
 
-/* A class for writing out optimization records in JSON format.  */
-
-class optrecord_json_writer
-{
-public:
-  optrecord_json_writer ();
-  ~optrecord_json_writer ();
-  void write () const;
-  void add_record (const optinfo *optinfo);
-  void pop_scope ();
-
-  void add_record (json::object *obj);
-  json::object *impl_location_to_json (dump_impl_location_t loc);
-  json::object *location_to_json (location_t loc);
-  json::object *profile_count_to_json (profile_count count);
-  json::string *get_id_value_for_pass (opt_pass *pass);
-  json::object *pass_to_json (opt_pass *pass);
-  json::value *inlining_chain_to_json (location_t loc);
-  json::object *optinfo_to_json (const optinfo *optinfo);
-  void add_pass_list (json::array *arr, opt_pass *pass);
-
-private:
-  /* The root value for the JSON file.
-     Currently the JSON values are stored in memory, and flushed when the
-     compiler exits.  It would probably be better to simply write out
-     the JSON as we go.  */
-  json::array *m_root_tuple;
-
-  /* The currently open scopes, for expressing nested optimization records.  */
-  auto_vec<json::array *> m_scopes;
-};
-
 /* optrecord_json_writer's ctor.  Populate the top-level parts of the
    in-memory JSON representation.  */
 
@@ -201,6 +169,9 @@ void
 optrecord_json_writer::pop_scope ()
 {
   m_scopes.pop ();
+
+  /* We should never pop the top-level records array.  */
+  gcc_assert (m_scopes.length () > 0);
 }
 
 /* Create a JSON object representing LOC.  */
@@ -471,75 +442,6 @@ optrecord_json_writer::add_pass_list (json::array *arr, opt_pass *pass)
   while (pass);
 }
 
-/* File-level interface to rest of compiler (to avoid exposing
-   class optrecord_json_writer outside of this file).  */
-
-static optrecord_json_writer *the_json_writer;
-
-/* Perform startup activity for -fsave-optimization-record.  */
-
-void
-optimization_records_start ()
-{
-  /* Bail if recording not enabled.  */
-  if (!flag_save_optimization_record)
-    return;
-
-  the_json_writer = new optrecord_json_writer ();
-}
-
-/* Perform cleanup activity for -fsave-optimization-record.
-
-   Currently, the file is written out here in one go, before cleaning
-   up.  */
-
-void
-optimization_records_finish ()
-{
-  /* Bail if recording not enabled.  */
-  if (!the_json_writer)
-    return;
-
-  the_json_writer->write ();
-
-  delete the_json_writer;
-  the_json_writer = NULL;
-}
-
-/* Did the user request optimization records to be written out?  */
-
-bool
-optimization_records_enabled_p ()
-{
-  return the_json_writer != NULL;
-}
-
-/* If optimization records were requested, then add a record for OPTINFO
-   to the queue of records to be written.  */
-
-void
-optimization_records_maybe_record_optinfo (const optinfo *optinfo)
-{
-  /* Bail if recording not enabled.  */
-  if (!the_json_writer)
-    return;
-
-  the_json_writer->add_record (optinfo);
-}
-
-/* Handling for the end of a dump scope for the
-   optimization records sink.  */
-
-void
-optimization_records_maybe_pop_dump_scope ()
-{
-  /* Bail if recording not enabled.  */
-  if (!the_json_writer)
-    return;
-
-  the_json_writer->pop_scope ();
-}
-
 #if CHECKING_P
 
 namespace selftest {
@@ -551,7 +453,7 @@ static void
 test_building_json_from_dump_calls ()
 {
   temp_dump_context tmp (true, true, MSG_NOTE);
-  dump_location_t loc;
+  dump_user_location_t loc;
   dump_printf_loc (MSG_NOTE, loc, "test of tree: ");
   dump_generic_expr (MSG_NOTE, TDF_SLIM, integer_zero_node);
   optinfo *info = tmp.get_pending_optinfo ();

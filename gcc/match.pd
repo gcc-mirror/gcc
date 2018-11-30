@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
    tree_expr_nonzero_p
    integer_valued_real_p
    integer_pow2p
+   uniform_integer_cst_p
    HONOR_NANS)
 
 /* Operator lists.  */
@@ -3107,16 +3108,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for cmp  (le gt)
      acmp (lt ge)
  (simplify
-  (cmp @0 INTEGER_CST@1)
-  (if (tree_int_cst_sgn (@1) == -1)
-   (acmp @0 { wide_int_to_tree (TREE_TYPE (@1), wi::to_wide (@1) + 1); }))))
+  (cmp @0 uniform_integer_cst_p@1)
+  (with { tree cst = uniform_integer_cst_p (@1); }
+   (if (tree_int_cst_sgn (cst) == -1)
+     (acmp @0 { build_uniform_cst (TREE_TYPE (@1),
+				   wide_int_to_tree (TREE_TYPE (cst),
+						     wi::to_wide (cst)
+						     + 1)); })))))
 (for cmp  (ge lt)
      acmp (gt le)
  (simplify
-  (cmp @0 INTEGER_CST@1)
-  (if (tree_int_cst_sgn (@1) == 1)
-   (acmp @0 { wide_int_to_tree (TREE_TYPE (@1), wi::to_wide (@1) - 1); }))))
-
+  (cmp @0 uniform_integer_cst_p@1)
+  (with { tree cst = uniform_integer_cst_p (@1); }
+   (if (tree_int_cst_sgn (cst) == 1)
+    (acmp @0 { build_uniform_cst (TREE_TYPE (@1),
+				  wide_int_to_tree (TREE_TYPE (cst),
+				  wi::to_wide (cst) - 1)); })))))
 
 /* We can simplify a logical negation of a comparison to the
    inverted comparison.  As we cannot compute an expression
@@ -3934,19 +3941,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* Comparisons with the highest or lowest possible integer of
     the specified precision will have known values.  */
  (simplify
-  (cmp (convert?@2 @0) INTEGER_CST@1)
-  (if ((INTEGRAL_TYPE_P (TREE_TYPE (@1)) || POINTER_TYPE_P (TREE_TYPE (@1)))
+  (cmp (convert?@2 @0) uniform_integer_cst_p@1)
+  (if ((INTEGRAL_TYPE_P (TREE_TYPE (@1))
+	|| POINTER_TYPE_P (TREE_TYPE (@1))
+	|| VECTOR_INTEGER_TYPE_P (TREE_TYPE (@1)))
        && tree_nop_conversion_p (TREE_TYPE (@2), TREE_TYPE (@0)))
    (with
     {
-      tree arg1_type = TREE_TYPE (@1);
+      tree cst = uniform_integer_cst_p (@1);
+      tree arg1_type = TREE_TYPE (cst);
       unsigned int prec = TYPE_PRECISION (arg1_type);
       wide_int max = wi::max_value (arg1_type);
       wide_int signed_max = wi::max_value (prec, SIGNED);
       wide_int min = wi::min_value (arg1_type);
     }
     (switch
-     (if (wi::to_wide (@1) == max)
+     (if (wi::to_wide (cst) == max)
       (switch
        (if (cmp == GT_EXPR)
 	{ constant_boolean_node (false, type); })
@@ -3956,7 +3966,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	{ constant_boolean_node (true, type); })
        (if (cmp == LT_EXPR)
 	(ne @2 @1))))
-     (if (wi::to_wide (@1) == min)
+     (if (wi::to_wide (cst) == min)
       (switch
        (if (cmp == LT_EXPR)
         { constant_boolean_node (false, type); })
@@ -3966,19 +3976,31 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
         { constant_boolean_node (true, type); })
        (if (cmp == GT_EXPR)
         (ne @2 @1))))
-     (if (wi::to_wide (@1) == max - 1)
+     (if (wi::to_wide (cst) == max - 1)
       (switch
        (if (cmp == GT_EXPR)
-	(eq @2 { wide_int_to_tree (TREE_TYPE (@1), wi::to_wide (@1) + 1); }))
+	(eq @2 { build_uniform_cst (TREE_TYPE (@1),
+				    wide_int_to_tree (TREE_TYPE (cst),
+						      wi::to_wide (cst)
+						      + 1)); }))
        (if (cmp == LE_EXPR)
-	(ne @2 { wide_int_to_tree (TREE_TYPE (@1), wi::to_wide (@1) + 1); }))))
-     (if (wi::to_wide (@1) == min + 1)
+	(ne @2 { build_uniform_cst (TREE_TYPE (@1),
+				    wide_int_to_tree (TREE_TYPE (cst),
+						      wi::to_wide (cst)
+						      + 1)); }))))
+     (if (wi::to_wide (cst) == min + 1)
       (switch
        (if (cmp == GE_EXPR)
-        (ne @2 { wide_int_to_tree (TREE_TYPE (@1), wi::to_wide (@1) - 1); }))
+        (ne @2 { build_uniform_cst (TREE_TYPE (@1),
+				    wide_int_to_tree (TREE_TYPE (cst),
+						      wi::to_wide (cst)
+						      - 1)); }))
        (if (cmp == LT_EXPR)
-        (eq @2 { wide_int_to_tree (TREE_TYPE (@1), wi::to_wide (@1) - 1); }))))
-     (if (wi::to_wide (@1) == signed_max
+        (eq @2 { build_uniform_cst (TREE_TYPE (@1),
+				    wide_int_to_tree (TREE_TYPE (cst),
+						      wi::to_wide (cst)
+						      - 1)); }))))
+     (if (wi::to_wide (cst) == signed_max
 	  && TYPE_UNSIGNED (arg1_type)
 	  /* We will flip the signedness of the comparison operator
 	     associated with the mode of @1, so the sign bit is
@@ -3990,10 +4012,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       /* The following case also applies to X < signed_max+1
 	 and X >= signed_max+1 because previous transformations.  */
       (if (cmp == LE_EXPR || cmp == GT_EXPR)
-       (with { tree st = signed_type_for (arg1_type); }
-        (if (cmp == LE_EXPR)
-	 (ge (convert:st @0) { build_zero_cst (st); })
-	 (lt (convert:st @0) { build_zero_cst (st); }))))))))))
+       (with { tree st = signed_type_for (TREE_TYPE (@1)); }
+       	(switch
+	 (if (cst == @1 && cmp == LE_EXPR)
+	  (ge (convert:st @0) { build_zero_cst (st); }))
+	 (if (cst == @1 && cmp == GT_EXPR)
+	  (lt (convert:st @0) { build_zero_cst (st); }))
+	 (if (cmp == LE_EXPR)
+	  (ge (view_convert:st @0) { build_zero_cst (st); }))
+	 (if (cmp == GT_EXPR)
+	  (lt (view_convert:st @0) { build_zero_cst (st); })))))))))))
 
 (for cmp (unordered ordered unlt unle ungt unge uneq ltgt)
  /* If the second operand is NaN, the result is constant.  */
@@ -4341,6 +4369,25 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (cond (le (abs @0) { t_cst; })
       (rdiv { t_one; } (sqrts (plus (mult @0 @0) { t_one; })))
       (copysigns { t_zero; } @0))))))
+
+ (if (!flag_errno_math)
+  /* Simplify sinh(atanh(x)) -> x / sqrt((1 - x)*(1 + x)). */
+  (for sinhs (SINH)
+       atanhs (ATANH)
+       sqrts (SQRT)
+   (simplify
+    (sinhs (atanhs:s @0))
+    (with { tree t_one = build_one_cst (type); }
+    (rdiv @0 (sqrts (mult (minus { t_one; } @0) (plus { t_one; } @0)))))))
+
+  /* Simplify cosh(atanh(x)) -> 1 / sqrt((1 - x)*(1 + x)) */
+  (for coshs (COSH)
+       atanhs (ATANH)
+       sqrts (SQRT)
+   (simplify
+    (coshs (atanhs:s @0))
+    (with { tree t_one = build_one_cst (type); }
+    (rdiv { t_one; } (sqrts (mult (minus { t_one; } @0) (plus { t_one; } @0))))))))
 
 /* cabs(x+0i) or cabs(0+xi) -> abs(x).  */
 (simplify

@@ -702,7 +702,13 @@ class StdBitsetPrinter:
         return '%s' % (self.typename)
 
     def children (self):
-        words = self.val['_M_w']
+        try:
+            # An empty bitset may not have any members which will
+            # result in an exception being thrown.
+            words = self.val['_M_w']
+        except:
+            return []
+
         wtype = words.type
 
         # The _M_w member can be either an unsigned long, or an
@@ -712,7 +718,7 @@ class StdBitsetPrinter:
             tsize = wtype.target ().sizeof
         else:
             words = [words]
-            tsize = wtype.sizeof 
+            tsize = wtype.sizeof
 
         nwords = wtype.sizeof / tsize
         result = []
@@ -848,7 +854,7 @@ class Tr1HashtableIterator(Iterator):
             self.node = self.buckets[self.bucket]
             if self.node:
                 break
-            self.bucket = self.bucket + 1        
+            self.bucket = self.bucket + 1
 
     def __iter__ (self):
         return self
@@ -951,7 +957,6 @@ class Tr1UnorderedMapPrinter:
         data = self.flatten (imap (self.format_one, StdHashtableIterator (self.hashtable())))
         # Zip the two iterators together.
         return izip (counter, data)
-        
 
     def display_hint (self):
         return 'map'
@@ -1051,7 +1056,7 @@ class StdExpAnyPrinter(SingleObjContainerPrinter):
             func = gdb.block_for_pc(int(mgr.cast(gdb.lookup_type('intptr_t'))))
             if not func:
                 raise ValueError("Invalid function pointer in %s" % self.typename)
-            rx = r"""({0}::_Manager_\w+<.*>)::_S_manage\({0}::_Op, {0} const\*, {0}::_Arg\*\)""".format(typename)
+            rx = r"""({0}::_Manager_\w+<.*>)::_S_manage\((enum )?{0}::_Op, (const {0}|{0} const) ?\*, (union )?{0}::_Arg ?\*\)""".format(typename)
             m = re.match(rx, func.function.name)
             if not m:
                 raise ValueError("Unknown manager function in %s" % self.typename)

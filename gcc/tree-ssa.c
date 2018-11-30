@@ -1446,6 +1446,7 @@ non_rewritable_mem_ref_base (tree ref)
 	return NULL_TREE;
       /* For integral typed extracts we can use a BIT_FIELD_REF.  */
       if (DECL_SIZE (decl)
+	  && TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST
 	  && (known_subrange_p
 	      (mem_ref_offset (base),
 	       wi::to_poly_offset (TYPE_SIZE_UNIT (TREE_TYPE (base))),

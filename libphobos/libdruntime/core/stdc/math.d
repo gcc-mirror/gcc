@@ -24,6 +24,19 @@ else version (TVOS)
 else version (WatchOS)
     version = Darwin;
 
+version (ARM)     version = ARM_Any;
+version (AArch64) version = ARM_Any;
+version (MIPS32)  version = MIPS_Any;
+version (MIPS64)  version = MIPS_Any;
+version (PPC)     version = PPC_Any;
+version (PPC64)   version = PPC_Any;
+version (S390)    version = IBMZ_Any;
+version (SPARC)   version = SPARC_Any;
+version (SPARC64) version = SPARC_Any;
+version (SystemZ) version = IBMZ_Any;
+version (X86)     version = X86_Any;
+version (X86_64)  version = X86_Any;
+
 extern (C):
 @trusted: // All functions here operate on floating point and integer values only.
 nothrow:
@@ -118,70 +131,42 @@ else version (CRuntime_UClibc)
 }
 else version (CRuntime_Glibc)
 {
-    version (X86)
+    version (X86_Any)
     {
         ///
         enum int FP_ILOGB0        = int.min;
         ///
         enum int FP_ILOGBNAN      = int.min;
     }
-    else version (X86_64)
-    {
-        ///
-        enum int FP_ILOGB0        = int.min;
-        ///
-        enum int FP_ILOGBNAN      = int.min;
-    }
-    else version (ARM)
+    else version (ARM_Any)
     {
         ///
         enum int FP_ILOGB0        = -int.max;
         ///
         enum int FP_ILOGBNAN      = int.max;
     }
-    else version (AArch64)
+    else version (MIPS_Any)
     {
         ///
         enum int FP_ILOGB0        = -int.max;
         ///
         enum int FP_ILOGBNAN      = int.max;
     }
-    else version (MIPS32)
+    else version (PPC_Any)
     {
         ///
         enum int FP_ILOGB0        = -int.max;
         ///
         enum int FP_ILOGBNAN      = int.max;
     }
-    else version (MIPS64)
+    else version (SPARC_Any)
     {
         ///
         enum int FP_ILOGB0        = -int.max;
         ///
         enum int FP_ILOGBNAN      = int.max;
     }
-    else version (PPC)
-    {
-        ///
-        enum int FP_ILOGB0        = -int.max;
-        ///
-        enum int FP_ILOGBNAN      = int.max;
-    }
-    else version (PPC64)
-    {
-        ///
-        enum int FP_ILOGB0        = -int.max;
-        ///
-        enum int FP_ILOGBNAN      = int.max;
-    }
-    else version (SPARC64)
-    {
-        ///
-        enum int FP_ILOGB0        = -int.max;
-        ///
-        enum int FP_ILOGBNAN      = int.max;
-    }
-    else version (SystemZ)
+    else version (IBMZ_Any)
     {
         ///
         enum int FP_ILOGB0        = -int.max;

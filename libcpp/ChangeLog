@@ -1,3 +1,16 @@
+2018-11-27  Mike Gulick  <mgulick@mathworks.com>
+
+	PR preprocessor/83173
+	* location-example.txt: Update example -fdump-internal-locations
+	output.
+
+2018-11-27  Mike Gulick  <mgulick@mathworks.com>
+
+	PR preprocessor/83173
+	* files.c (_cpp_stack_include): Check if
+	line_table->highest_location is past current line before
+	decrementing.
+
 2018-11-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* charset.c: Replace "source_location" with "location_t".

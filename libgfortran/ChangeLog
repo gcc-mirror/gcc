@@ -1,3 +1,30 @@
+2018-11-30  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/88137
+	* runtime/backtrace.c (show_backtrace): Make lbstate a static
+	variable, initialize once.
+
+2018-11-23  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* runtime/error.c (MAGIC): Remove.
+	(recursion_key): New variable.
+	(recursion_check): Use thread-specific variable for recursion
+	check if threads are active.
+	(constructor_recursion_check): New function.
+	(destructor_recursion_check): New funcion.
+
+2018-11-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* acinclude.m4 (LIBGFOR_CHECK_ATOMIC_FETCH_ADD): Rename and test
+	presence of atomic builtins instead of sync builtins.
+	* configure.ac (LIBGFOR_CHECK_ATOMIC_FETCH_ADD): Call new test.
+	* io/io.h (inc_waiting_locked): Use __atomic_fetch_add.
+	(predec_waiting_locked): Use __atomic_add_fetch.
+	(dec_waiting_unlocked): Use __atomic_fetch_add.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+
 2018-11-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/78351

@@ -1,3 +1,52 @@
+2018-11-27  Martin Liska  <mliska@suse.cz>
+
+	* decl.c (gfc_match_gcc_builtin): New function.
+	* gfortran.h (struct vect_builtin_tuple): New.
+	(gfc_adjust_builtins): Likewise.
+	* lang-specs.h (TARGET_F951_OPTIONS): New.
+	(F951_OPTIONS): Use it.
+	* lang.opt: Add new option -fpre-include.
+	* match.h (gfc_match_gcc_builtin): Declare new function.
+	* parse.c (decode_gcc_attribute): Handle builtin.
+	(parse_progunit): Call gfc_adjust_builtins.
+	* scanner.c (gfc_new_file): Load pre-included header file
+	when provided.
+	* trans-intrinsic.c (add_simd_flag_for_built_in): New.
+	(gfc_adjust_builtins): Likewise.
+
+2018-11-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/88143
+	* resolve.c (resolve_variable): Check for associate names with
+	NULL target.
+
+2018-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* lang.opt (fpad-source): New option.
+	* scanner.c (load_line): Don't pad fixed form lines if
+	!flag_pad_source.
+	* invoke.texi (-fno-pad-source): Document.
+
+2018-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* invoke.texi (-fdec-include): Document.
+
+2018-11-21  Jakub Jelinek  <jakub@redhat.com>
+	    Mark Eggleston  <mark.eggleston@codethink.com>
+
+	* lang.opt (fdec-include): New option.
+	* options.c (set_dec_flags): Set also flag_dec_include.
+	* scanner.c (include_line): Change return type from bool to int.
+	In fixed form allow spaces in between include keyword letters.
+	For -fdec-include, allow in fixed form 0 in column 6.  With
+	-fdec-include return -1 if the parsed line is not full include
+	statement and it could be successfully completed on continuation
+	lines.
+	(include_stmt): New function.
+	(load_file): Adjust include_line caller.  If it returns -1, keep
+	trying include_stmt until it stops returning -1 whenever adding
+	further line of input.
+
 2018-11-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/88073

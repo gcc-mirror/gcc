@@ -1712,36 +1712,6 @@ unify_scc (struct data_in *data_in, unsigned from,
 }
 
 
-/* Compare types based on source file location.  */
-
-static int
-cmp_type_location (const void *p1_, const void *p2_)
-{
-  tree *p1 = (tree*)(const_cast<void *>(p1_));
-  tree *p2 = (tree*)(const_cast<void *>(p2_));
-  if (*p1 == *p2)
-    return 0;
-
-  tree tname1 = TYPE_NAME (*p1);
-  tree tname2 = TYPE_NAME (*p2);
-  expanded_location xloc1 = expand_location (DECL_SOURCE_LOCATION (tname1));
-  expanded_location xloc2 = expand_location (DECL_SOURCE_LOCATION (tname2));
-
-  const char *f1 = lbasename (xloc1.file);
-  const char *f2 = lbasename (xloc2.file);
-  int r = strcmp (f1, f2);
-  if (r == 0)
-    {
-      int l1 = xloc1.line;
-      int l2 = xloc2.line;
-      if (l1 != l2)
-	return l1 - l2;
-      return xloc1.column - xloc2.column;
-    }
-  else
-    return r;
-}
-
 /* Read all the symbols from buffer DATA, using descriptors in DECL_DATA.
    RESOLUTIONS is the set of symbols picked by the linker (read from the
    resolution file when the linker plugin is being used).  */
@@ -1758,7 +1728,6 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
   unsigned int i;
   const uint32_t *data_ptr, *data_end;
   uint32_t num_decl_states;
-  auto_vec<tree> odr_types;
 
   lto_input_block ib_main ((const char *) data + main_offset,
 			   header->main_size, decl_data->mode_table);
@@ -1795,7 +1764,8 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 						     from);
 	  if (len == 1
 	      && (TREE_CODE (first) == IDENTIFIER_NODE
-		  || TREE_CODE (first) == INTEGER_CST))
+		  || (TREE_CODE (first) == INTEGER_CST
+		      && !TREE_OVERFLOW (first))))
 	    continue;
 
 	  /* Try to unify the SCC with already existing ones.  */
@@ -1828,7 +1798,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 		  if (!TYPE_CANONICAL (t))
 		    gimple_register_canonical_type (t);
 		  if (TYPE_MAIN_VARIANT (t) == t && odr_type_p (t))
-		    odr_types.safe_push (t);
+		    register_odr_type (t);
 		}
 	      /* Link shared INTEGER_CSTs into TYPE_CACHED_VALUEs of its
 		 type which is also member of this SCC.  */
@@ -1889,15 +1859,6 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
       gcc_assert (*slot == NULL);
       *slot = state;
     }
-
-  /* Sort types for the file before registering in ODR machinery.  */
-  if (lto_location_cache::current_cache)
-    lto_location_cache::current_cache->apply_location_cache ();
-  odr_types.qsort (cmp_type_location);
-
-  /* Register ODR types.  */
-  for (unsigned i = 0; i < odr_types.length (); i++)
-    register_odr_type (odr_types[i]);
 
   if (data_ptr != data_end)
     internal_error ("bytecode stream: garbage at the end of symbols section");

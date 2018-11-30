@@ -377,6 +377,7 @@ assign_stack_local_1 (machine_mode mode, poly_int64 size,
   poly_int64 bigend_correction = 0;
   poly_int64 slot_offset = 0, old_frame_offset;
   unsigned int alignment, alignment_in_bits;
+  bool dynamic_align_addr = false;
 
   if (align == 0)
     {
@@ -395,14 +396,20 @@ assign_stack_local_1 (machine_mode mode, poly_int64 size,
 
   alignment_in_bits = alignment * BITS_PER_UNIT;
 
-  /* Ignore alignment if it exceeds MAX_SUPPORTED_STACK_ALIGNMENT.  */
   if (alignment_in_bits > MAX_SUPPORTED_STACK_ALIGNMENT)
     {
-      alignment_in_bits = MAX_SUPPORTED_STACK_ALIGNMENT;
-      alignment = alignment_in_bits / BITS_PER_UNIT;
+      /* If the required alignment exceeds MAX_SUPPORTED_STACK_ALIGNMENT and
+	 it is not OK to reduce it.  Align the slot dynamically.  */
+      if (mode == BLKmode && (kind & ASLK_REDUCE_ALIGN) == 0)
+	dynamic_align_addr = true;
+      else
+	{
+	  alignment_in_bits = MAX_SUPPORTED_STACK_ALIGNMENT;
+	  alignment = MAX_SUPPORTED_STACK_ALIGNMENT / BITS_PER_UNIT;
+	}
     }
 
-  if (SUPPORTS_STACK_ALIGNMENT)
+  if (SUPPORTS_STACK_ALIGNMENT && !dynamic_align_addr)
     {
       if (crtl->stack_alignment_estimated < alignment_in_bits)
 	{
@@ -432,10 +439,42 @@ assign_stack_local_1 (machine_mode mode, poly_int64 size,
 	}
     }
 
-  if (crtl->stack_alignment_needed < alignment_in_bits)
-    crtl->stack_alignment_needed = alignment_in_bits;
-  if (crtl->max_used_stack_slot_alignment < alignment_in_bits)
-    crtl->max_used_stack_slot_alignment = alignment_in_bits;
+  /* Handle overalignment here for parameter copy on the stack.
+     Reserved enough space for it and dynamically align the address.
+     No free frame_space is added here.  */
+  if (dynamic_align_addr)
+    {
+      rtx allocsize = gen_int_mode (size, Pmode);
+      get_dynamic_stack_size (&allocsize, 0, alignment_in_bits, NULL);
+
+      /* This is the size of space needed to accommodate required size of data
+	 with given alignment.  */
+      poly_int64 len = rtx_to_poly_int64 (allocsize);
+      old_frame_offset = frame_offset;
+
+      if (FRAME_GROWS_DOWNWARD)
+	{
+	  frame_offset -= len;
+	  try_fit_stack_local (frame_offset, len, len,
+			       PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT,
+			       &slot_offset);
+	}
+      else
+	{
+	  frame_offset += len;
+	  try_fit_stack_local (old_frame_offset, len, len,
+			       PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT,
+			       &slot_offset);
+	}
+      goto found_space;
+    }
+  else
+    {
+      if (crtl->stack_alignment_needed < alignment_in_bits)
+	crtl->stack_alignment_needed = alignment_in_bits;
+      if (crtl->max_used_stack_slot_alignment < alignment_in_bits)
+	crtl->max_used_stack_slot_alignment = alignment_in_bits;
+    }
 
   if (mode != BLKmode || maybe_ne (size, 0))
     {
@@ -521,6 +560,12 @@ assign_stack_local_1 (machine_mode mode, poly_int64 size,
 			  trunc_int_for_mode
 			  (slot_offset + bigend_correction,
 			   Pmode));
+
+  if (dynamic_align_addr)
+    {
+      addr = align_dynamic_address (addr, alignment_in_bits);
+      mark_reg_pointer (addr, alignment_in_bits);
+    }
 
   x = gen_rtx_MEM (mode, addr);
   set_mem_align (x, alignment_in_bits);
@@ -4892,18 +4937,34 @@ stack_protect_epilogue (void)
   tree guard_decl = targetm.stack_protect_guard ();
   rtx_code_label *label = gen_label_rtx ();
   rtx x, y;
-  rtx_insn *seq;
+  rtx_insn *seq = NULL;
 
   x = expand_normal (crtl->stack_protect_guard);
-  if (guard_decl)
-    y = expand_normal (guard_decl);
-  else
-    y = const0_rtx;
 
-  /* Allow the target to compare Y with X without leaking either into
-     a register.  */
-  if (targetm.have_stack_protect_test ()
-      && ((seq = targetm.gen_stack_protect_test (x, y, label)) != NULL_RTX))
+  if (targetm.have_stack_protect_combined_test () && guard_decl)
+    {
+      gcc_assert (DECL_P (guard_decl));
+      y = DECL_RTL (guard_decl);
+      /* Allow the target to compute address of Y and compare it with X without
+	 leaking Y into a register.  This combined address + compare pattern
+	 allows the target to prevent spilling of any intermediate results by
+	 splitting it after register allocator.  */
+      seq = targetm.gen_stack_protect_combined_test (x, y, label);
+    }
+  else
+    {
+      if (guard_decl)
+	y = expand_normal (guard_decl);
+      else
+	y = const0_rtx;
+
+      /* Allow the target to compare Y with X without leaking either into
+	 a register.  */
+      if (targetm.have_stack_protect_test ())
+	seq = targetm.gen_stack_protect_test (x, y, label);
+    }
+
+  if (seq)
     emit_insn (seq);
   else
     emit_cmp_and_jump_insns (x, y, EQ, NULL_RTX, ptr_mode, 1, label);
@@ -5295,14 +5356,6 @@ expand_function_end (void)
 	 the function context for sjlj exceptions.  */
       if (flag_exceptions)
 	sjlj_emit_function_exit_after (get_last_insn ());
-    }
-  else
-    {
-      /* We want to ensure that instructions that may trap are not
-	 moved into the epilogue by scheduling, because we don't
-	 always emit unwind information for the epilogue.  */
-      if (cfun->can_throw_non_call_exceptions)
-	emit_insn (gen_blockage ());
     }
 
   /* If this is an implementation of throw, do what's necessary to

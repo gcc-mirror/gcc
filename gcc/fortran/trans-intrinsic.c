@@ -597,7 +597,77 @@ define_quad_builtin (const char *name, tree type, bool is_const)
   return fndecl;
 }
 
+/* Add SIMD attribute for FNDECL built-in if the built-in
+   name is in VECTORIZED_BUILTINS.  */
 
+static void
+add_simd_flag_for_built_in (tree fndecl)
+{
+  if (gfc_vectorized_builtins == NULL
+      || fndecl == NULL_TREE)
+    return;
+
+  const char *name = IDENTIFIER_POINTER (DECL_NAME (fndecl));
+  int *clauses = gfc_vectorized_builtins->get (name);
+  if (clauses)
+    {
+      for (unsigned i = 0; i < 3; i++)
+	if (*clauses & (1 << i))
+	  {
+	    gfc_simd_clause simd_type = (gfc_simd_clause)*clauses;
+	    tree omp_clause = NULL_TREE;
+	    if (simd_type == SIMD_NONE)
+	      ; /* No SIMD clause.  */
+	    else
+	      {
+		omp_clause_code code
+		  = (simd_type == SIMD_INBRANCH
+		     ? OMP_CLAUSE_INBRANCH : OMP_CLAUSE_NOTINBRANCH);
+		omp_clause = build_omp_clause (UNKNOWN_LOCATION, code);
+		omp_clause = build_tree_list (NULL_TREE, omp_clause);
+	      }
+
+	    DECL_ATTRIBUTES (fndecl)
+	      = tree_cons (get_identifier ("omp declare simd"), omp_clause,
+			   DECL_ATTRIBUTES (fndecl));
+	  }
+    }
+}
+
+  /* Set SIMD attribute to all built-in functions that are mentioned
+     in gfc_vectorized_builtins vector.  */
+
+void
+gfc_adjust_builtins (void)
+{
+  gfc_intrinsic_map_t *m;
+  for (m = gfc_intrinsic_map;
+       m->id != GFC_ISYM_NONE || m->double_built_in != END_BUILTINS; m++)
+    {
+      add_simd_flag_for_built_in (m->real4_decl);
+      add_simd_flag_for_built_in (m->complex4_decl);
+      add_simd_flag_for_built_in (m->real8_decl);
+      add_simd_flag_for_built_in (m->complex8_decl);
+      add_simd_flag_for_built_in (m->real10_decl);
+      add_simd_flag_for_built_in (m->complex10_decl);
+      add_simd_flag_for_built_in (m->real16_decl);
+      add_simd_flag_for_built_in (m->complex16_decl);
+      add_simd_flag_for_built_in (m->real16_decl);
+      add_simd_flag_for_built_in (m->complex16_decl);
+    }
+
+  /* Release all strings.  */
+  if (gfc_vectorized_builtins != NULL)
+    {
+      for (hash_map<nofree_string_hash, int>::iterator it
+	   = gfc_vectorized_builtins->begin ();
+	   it != gfc_vectorized_builtins->end (); ++it)
+	free (CONST_CAST (char *, (*it).first));
+
+      delete gfc_vectorized_builtins;
+      gfc_vectorized_builtins = NULL;
+    }
+}
 
 /* Initialize function decls for library functions.  The external functions
    are created as required.  Builtin functions are added here.  */

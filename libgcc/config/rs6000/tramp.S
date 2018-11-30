@@ -56,8 +56,10 @@ trampoline_size = .-trampoline_initial
 /* R6 = static chain */
 
 FUNC_START(__trampoline_setup)
+	.cfi_startproc
 	mflr	r0		/* save return address */
         bcl	20,31,.LCF0	/* load up __trampoline_initial into r7 */
+	.cfi_register lr,r0
 .LCF0:
         mflr	r11
         addi	r7,r11,trampoline_initial-4-.LCF0 /* trampoline address -4 */
@@ -112,6 +114,7 @@ FUNC_START(__trampoline_setup)
 	addi	r30,r30,_GLOBAL_OFFSET_TABLE_-1b@l
 #endif
 	bl	JUMP_TARGET(abort)
+	.cfi_endproc
 FUNC_END(__trampoline_setup)
 
 #endif
@@ -144,6 +147,7 @@ trampoline_size = .-trampoline_initial
 	.popsection
 
 FUNC_START(__trampoline_setup)
+	.cfi_startproc
 	addis 7,2,.LC0@toc@ha
 	ld 7,.LC0@toc@l(7)	/* trampoline address -8 */
 
@@ -180,6 +184,7 @@ FUNC_START(__trampoline_setup)
 .Labort:
 	bl	JUMP_TARGET(abort)
 	nop
+	.cfi_endproc
 FUNC_END(__trampoline_setup)
 
 #endif

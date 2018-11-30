@@ -1249,14 +1249,14 @@ ranges_from_anti_range (const value_range_base *ar,
       || !vrp_val_max (type))
     return false;
 
-  if (!vrp_val_is_min (ar->min ()))
-    *vr0 = value_range (VR_RANGE,
-			vrp_val_min (type),
-			wide_int_to_tree (type, wi::to_wide (ar->min ()) - 1));
-  if (!vrp_val_is_max (ar->max ()))
-    *vr1 = value_range (VR_RANGE,
-			wide_int_to_tree (type, wi::to_wide (ar->max ()) + 1),
-			vrp_val_max (type));
+  if (tree_int_cst_lt (vrp_val_min (type), ar->min ()))
+    vr0->set (VR_RANGE,
+	      vrp_val_min (type),
+	      wide_int_to_tree (type, wi::to_wide (ar->min ()) - 1));
+  if (tree_int_cst_lt (ar->max (), vrp_val_max (type)))
+    vr1->set (VR_RANGE,
+	      wide_int_to_tree (type, wi::to_wide (ar->max ()) + 1),
+	      vrp_val_max (type));
   if (vr0->undefined_p ())
     {
       *vr0 = *vr1;

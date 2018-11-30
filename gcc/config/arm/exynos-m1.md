@@ -417,7 +417,7 @@
 
 (define_insn_reservation "exynos_m1_mlal" 4
   (and (eq_attr "tune" "exynosm1")
-       (eq_attr "mul64" "yes"))
+       (eq_attr "widen_mul64" "yes"))
   "em1_alu, em1_c")
 
 ;; Integer divide

@@ -9652,14 +9652,17 @@ fold_sizeof_expr (tree t)
    an appropriate index type for the array.  If non-NULL, NAME is
    the name of the entity being declared.  */
 
-tree
-compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
+static tree
+compute_array_index_type_loc (location_t name_loc, tree name, tree size,
+			      tsubst_flags_t complain)
 {
   tree itype;
   tree osize = size;
 
   if (error_operand_p (size))
     return error_mark_node;
+
+  location_t loc = cp_expr_loc_or_loc (size, name ? name_loc : input_location);
 
   if (!type_dependent_expression_p (size))
     {
@@ -9689,9 +9692,10 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 	  if (!(complain & tf_error))
 	    return error_mark_node;
 	  if (name)
-	    error ("size of array %qD has non-integral type %qT", name, type);
+	    error_at (loc, "size of array %qD has non-integral type %qT",
+		      name, type);
 	  else
-	    error ("size of array has non-integral type %qT", type);
+	    error_at (loc, "size of array has non-integral type %qT", type);
 	  size = integer_one_node;
 	}
     }
@@ -9720,8 +9724,14 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
     {
       tree folded = cp_fully_fold (size);
       if (TREE_CODE (folded) == INTEGER_CST)
-	pedwarn (input_location, OPT_Wpedantic,
-		 "size of array is not an integral constant-expression");
+	{
+	  if (name)
+	    pedwarn (loc, OPT_Wpedantic, "size of array %qD is not an "
+		     "integral constant-expression", name);
+	  else
+	    pedwarn (loc, OPT_Wpedantic,
+		     "size of array is not an integral constant-expression");
+	}
       /* Use the folded result for VLAs, too; it will have resolved
 	 SIZEOF_EXPR.  */
       size = folded;
@@ -9737,9 +9747,9 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 	    return error_mark_node;
 
 	  if (name)
-	    error ("size of array %qD is negative", name);
+	    error_at (loc, "size of array %qD is negative", name);
 	  else
-	    error ("size of array is negative");
+	    error_at (loc, "size of array is negative");
 	  size = integer_one_node;
 	}
       /* As an extension we allow zero-sized arrays.  */
@@ -9753,9 +9763,11 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 	  else if (in_system_header_at (input_location))
 	    /* Allow them in system headers because glibc uses them.  */;
 	  else if (name)
-	    pedwarn (input_location, OPT_Wpedantic, "ISO C++ forbids zero-size array %qD", name);
+	    pedwarn (loc, OPT_Wpedantic,
+		     "ISO C++ forbids zero-size array %qD", name);
 	  else
-	    pedwarn (input_location, OPT_Wpedantic, "ISO C++ forbids zero-size array");
+	    pedwarn (loc, OPT_Wpedantic,
+		     "ISO C++ forbids zero-size array");
 	}
     }
   else if (TREE_CONSTANT (size)
@@ -9768,24 +9780,27 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 	return error_mark_node;
       /* `(int) &fn' is not a valid array bound.  */
       if (name)
-	error ("size of array %qD is not an integral constant-expression",
-	       name);
+	error_at (loc,
+		  "size of array %qD is not an integral constant-expression",
+		  name);
       else
-	error ("size of array is not an integral constant-expression");
+	error_at (loc, "size of array is not an integral constant-expression");
       size = integer_one_node;
     }
   else if (pedantic && warn_vla != 0)
     {
       if (name)
-	pedwarn (input_location, OPT_Wvla, "ISO C++ forbids variable length array %qD", name);
+	pedwarn (name_loc, OPT_Wvla,
+		 "ISO C++ forbids variable length array %qD", name);
       else
-	pedwarn (input_location, OPT_Wvla, "ISO C++ forbids variable length array");
+	pedwarn (input_location, OPT_Wvla,
+		 "ISO C++ forbids variable length array");
     }
   else if (warn_vla > 0)
     {
       if (name)
-	warning (OPT_Wvla, 
-                 "variable length array %qD is used", name);
+	warning_at (name_loc, OPT_Wvla, 
+		    "variable length array %qD is used", name);
       else
 	warning (OPT_Wvla, 
                  "variable length array is used");
@@ -9850,6 +9865,12 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
   TYPE_DEPENDENT_P (itype) = 0;
   TYPE_DEPENDENT_P_VALID (itype) = 1;
   return itype;
+}
+
+tree
+compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
+{
+  return compute_array_index_type_loc (input_location, name, size, complain);
 }
 
 /* Returns the scope (if any) in which the entity declared by
@@ -9953,7 +9974,8 @@ create_array_type_for_decl (tree name, tree type, tree size, location_t loc)
 
   /* Figure out the index type for the array.  */
   if (size)
-    itype = compute_array_index_type (name, size, tf_warning_or_error);
+    itype = compute_array_index_type_loc (loc, name, size,
+					  tf_warning_or_error);
 
   /* [dcl.array]
      T is called the array element type; this type shall not be [...] an
@@ -11307,7 +11329,7 @@ grokdeclarator (const cp_declarator *declarator,
 		    if (!tmpl)
 		      if (tree late_auto = type_uses_auto (late_return_type))
 			tmpl = CLASS_PLACEHOLDER_TEMPLATE (late_auto);
-		    if (tmpl)
+		    if (tmpl && funcdecl_p)
 		      {
 			if (!dguide_name_p (unqualified_id))
 			  {
@@ -12255,7 +12277,7 @@ grokdeclarator (const cp_declarator *declarator,
 		if (in_system_header_at (input_location))
 		  /* Do not warn on flexible array members in system
 		     headers because glibc uses them.  */;
-		else if (name)
+		else if (name && declarator)
 		  pedwarn (declarator->id_loc, OPT_Wpedantic,
 			   "ISO C++ forbids flexible array member %qs", name);
 		else

@@ -85,14 +85,15 @@ expand_block_clear (rtx operands[])
   if (! optimize_size && bytes > 8 * clear_step)
     return 0;
 
+  bool unaligned_vsx_ok = (bytes >= 32 && TARGET_EFFICIENT_UNALIGNED_VSX);
+
   for (offset = 0; bytes > 0; offset += clear_bytes, bytes -= clear_bytes)
     {
       machine_mode mode = BLKmode;
       rtx dest;
 
       if (TARGET_ALTIVEC
-	  && ((bytes >= 16 && align >= 128)
-	      || (bytes >= 32 && TARGET_EFFICIENT_UNALIGNED_VSX)))
+	  && (bytes >= 16 && (align >= 128 || unaligned_vsx_ok)))
 	{
 	  clear_bytes = 16;
 	  mode = V4SImode;
@@ -613,6 +614,274 @@ do_overlap_load_compare (machine_mode load_mode, bool isConst,
       else
 	emit_insn (gen_subfsi3_carry (diff, d2, d1));
     }
+}
+
+/* Generate the sequence of compares for strcmp/strncmp using vec/vsx
+   instructions.
+
+   BYTES_TO_COMPARE is the number of bytes to be compared.
+   ORIG_SRC1 is the unmodified rtx for the first string.
+   ORIG_SRC2 is the unmodified rtx for the second string.
+   S1ADDR is the register to use for the base address of the first string.
+   S2ADDR is the register to use for the base address of the second string.
+   OFF_REG is the register to use for the string offset for loads.
+   S1DATA is the register for loading the first string.
+   S2DATA is the register for loading the second string.
+   VEC_RESULT is the rtx for the vector result indicating the byte difference.
+   EQUALITY_COMPARE_REST is a flag to indicate we need to make a cleanup call
+   to strcmp/strncmp if we have equality at the end of the inline comparison.
+   P_CLEANUP_LABEL is a pointer to rtx for a label we generate if we need code
+   to clean up and generate the final comparison result.
+   FINAL_MOVE_LABEL is rtx for a label we can branch to when we can just
+   set the final result.
+   CHECKZERO indicates whether the sequence should check for zero bytes
+   for use doing strncmp, or not (for use doing memcmp).  */
+static void
+expand_cmp_vec_sequence (unsigned HOST_WIDE_INT bytes_to_compare,
+			 rtx orig_src1, rtx orig_src2,
+			 rtx s1addr, rtx s2addr, rtx off_reg,
+			 rtx s1data, rtx s2data, rtx vec_result,
+			 bool equality_compare_rest, rtx *p_cleanup_label,
+			 rtx final_move_label, bool checkzero)
+{
+  machine_mode load_mode;
+  unsigned int load_mode_size;
+  unsigned HOST_WIDE_INT cmp_bytes = 0;
+  unsigned HOST_WIDE_INT offset = 0;
+  rtx zero_reg = NULL;
+
+  gcc_assert (p_cleanup_label != NULL);
+  rtx cleanup_label = *p_cleanup_label;
+
+  emit_move_insn (s1addr, force_reg (Pmode, XEXP (orig_src1, 0)));
+  emit_move_insn (s2addr, force_reg (Pmode, XEXP (orig_src2, 0)));
+
+  if (checkzero && !TARGET_P9_VECTOR)
+    {
+      zero_reg = gen_reg_rtx (V16QImode);
+      emit_move_insn (zero_reg, CONST0_RTX (V16QImode));
+    }
+
+  while (bytes_to_compare > 0)
+    {
+      /* VEC/VSX compare sequence for P8:
+	 check each 16B with:
+	 lxvd2x 32,28,8
+	 lxvd2x 33,29,8
+	 vcmpequb 2,0,1  # compare strings
+	 vcmpequb 4,0,3  # compare w/ 0
+	 xxlorc 37,36,34       # first FF byte is either mismatch or end of string
+	 vcmpequb. 7,5,3  # reg 7 contains 0
+	 bnl 6,.Lmismatch
+
+	 For the P8 LE case, we use lxvd2x and compare full 16 bytes
+	 but then use use vgbbd and a shift to get two bytes with the
+	 information we need in the correct order.
+
+	 VEC/VSX compare sequence if TARGET_P9_VECTOR:
+	 lxvb16x/lxvb16x     # load 16B of each string
+	 vcmpnezb.           # produces difference location or zero byte location
+	 bne 6,.Lmismatch
+
+	 Use the overlapping compare trick for the last block if it is
+	 less than 16 bytes.
+      */
+
+      load_mode = V16QImode;
+      load_mode_size = GET_MODE_SIZE (load_mode);
+
+      if (bytes_to_compare >= load_mode_size)
+	cmp_bytes = load_mode_size;
+      else
+	{
+	  /* Move this load back so it doesn't go past the end.  P8/P9
+	     can do this efficiently.  This is never called with less
+	     than 16 bytes so we should always be able to do this.  */
+	  unsigned int extra_bytes = load_mode_size - bytes_to_compare;
+	  cmp_bytes = bytes_to_compare;
+	  gcc_assert (offset > extra_bytes);
+	  offset -= extra_bytes;
+	  cmp_bytes = load_mode_size;
+	  bytes_to_compare = cmp_bytes;
+	}
+
+      /* The offset currently used is always kept in off_reg so that the
+	 cleanup code on P8 can use it to extract the differing byte.  */
+      emit_move_insn (off_reg, GEN_INT (offset));
+
+      rtx addr1 = gen_rtx_PLUS (Pmode, s1addr, off_reg);
+      do_load_for_compare_from_addr (load_mode, s1data, addr1, orig_src1);
+      rtx addr2 = gen_rtx_PLUS (Pmode, s2addr, off_reg);
+      do_load_for_compare_from_addr (load_mode, s2data, addr2, orig_src2);
+
+      /* Cases to handle.  A and B are chunks of the two strings.
+	 1: Not end of comparison:
+	 A != B: branch to cleanup code to compute result.
+	 A == B: next block
+	 2: End of the inline comparison:
+	 A != B: branch to cleanup code to compute result.
+	 A == B: call strcmp/strncmp
+	 3: compared requested N bytes:
+	 A == B: branch to result 0.
+	 A != B: cleanup code to compute result.  */
+
+      unsigned HOST_WIDE_INT remain = bytes_to_compare - cmp_bytes;
+
+      if (checkzero)
+	{
+	  if (TARGET_P9_VECTOR)
+	    emit_insn (gen_vcmpnezb_p (vec_result, s1data, s2data));
+	  else
+	    {
+	      /* Emit instructions to do comparison and zero check.  */
+	      rtx cmp_res = gen_reg_rtx (load_mode);
+	      rtx cmp_zero = gen_reg_rtx (load_mode);
+	      rtx cmp_combined = gen_reg_rtx (load_mode);
+	      emit_insn (gen_altivec_eqv16qi (cmp_res, s1data, s2data));
+	      emit_insn (gen_altivec_eqv16qi (cmp_zero, s1data, zero_reg));
+	      emit_insn (gen_orcv16qi3 (vec_result, cmp_zero, cmp_res));
+	      emit_insn (gen_altivec_vcmpequb_p (cmp_combined, vec_result, zero_reg));
+	    }
+	}
+      else
+	emit_insn (gen_altivec_vcmpequb_p (vec_result, s1data, s2data));
+
+      bool branch_to_cleanup = (remain > 0 || equality_compare_rest);
+      rtx cr6 = gen_rtx_REG (CCmode, CR6_REGNO);
+      rtx dst_label;
+      rtx cmp_rtx;
+      if (branch_to_cleanup)
+	{
+	  /* Branch to cleanup code, otherwise fall through to do more
+	     compares.  P8 and P9 use different CR bits because on P8
+	     we are looking at the result of a comparsion vs a
+	     register of zeroes so the all-true condition means no
+	     difference or zero was found.  On P9, vcmpnezb sets a byte
+	     to 0xff if there is a mismatch or zero, so the all-false
+	     condition indicates we found no difference or zero.  */
+	  if (!cleanup_label)
+	    cleanup_label = gen_label_rtx ();
+	  dst_label = cleanup_label;
+	  if (TARGET_P9_VECTOR && checkzero)
+	    cmp_rtx = gen_rtx_NE (VOIDmode, cr6, const0_rtx);
+	  else
+	    cmp_rtx = gen_rtx_GE (VOIDmode, cr6, const0_rtx);
+	}
+      else
+	{
+	  /* Branch to final return or fall through to cleanup,
+	     result is already set to 0.  */
+	  dst_label = final_move_label;
+	  if (TARGET_P9_VECTOR && checkzero)
+	    cmp_rtx = gen_rtx_EQ (VOIDmode, cr6, const0_rtx);
+	  else
+	    cmp_rtx = gen_rtx_LT (VOIDmode, cr6, const0_rtx);
+	}
+
+      rtx lab_ref = gen_rtx_LABEL_REF (VOIDmode, dst_label);
+      rtx ifelse = gen_rtx_IF_THEN_ELSE (VOIDmode, cmp_rtx,
+					 lab_ref, pc_rtx);
+      rtx j2 = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
+      JUMP_LABEL (j2) = dst_label;
+      LABEL_NUSES (dst_label) += 1;
+
+      offset += cmp_bytes;
+      bytes_to_compare -= cmp_bytes;
+    }
+  *p_cleanup_label = cleanup_label;
+  return;
+}
+
+/* Generate the final sequence that identifies the differing
+   byte and generates the final result, taking into account
+   zero bytes:
+
+   P8:
+        vgbbd 0,0
+        vsldoi 0,0,0,9
+        mfvsrd 9,32
+        addi 10,9,-1    # count trailing zero bits
+        andc 9,10,9
+        popcntd 9,9
+        lbzx 10,28,9    # use that offset to load differing byte
+        lbzx 3,29,9
+        subf 3,3,10     # subtract for final result
+
+   P9:
+	 vclzlsbb            # counts trailing bytes with lsb=0
+	 vextublx            # extract differing byte
+
+   STR1 is the reg rtx for data from string 1.
+   STR2 is the reg rtx for data from string 2.
+   RESULT is the reg rtx for the comparison result.
+   S1ADDR is the register to use for the base address of the first string.
+   S2ADDR is the register to use for the base address of the second string.
+   ORIG_SRC1 is the unmodified rtx for the first string.
+   ORIG_SRC2 is the unmodified rtx for the second string.
+   OFF_REG is the register to use for the string offset for loads.
+   VEC_RESULT is the rtx for the vector result indicating the byte difference.  */
+
+static void
+emit_final_compare_vec (rtx str1, rtx str2, rtx result,
+			rtx s1addr, rtx s2addr,
+			rtx orig_src1, rtx orig_src2,
+			rtx off_reg, rtx vec_result)
+{
+
+  if (TARGET_P9_VECTOR)
+    {
+      rtx diffix = gen_reg_rtx (SImode);
+      rtx chr1 = gen_reg_rtx (SImode);
+      rtx chr2 = gen_reg_rtx (SImode);
+      rtx chr1_di = simplify_gen_subreg (DImode, chr1, SImode, 0);
+      rtx chr2_di = simplify_gen_subreg (DImode, chr2, SImode, 0);
+      emit_insn (gen_vclzlsbb_v16qi (diffix, vec_result));
+      emit_insn (gen_vextublx (chr1, diffix, str1));
+      emit_insn (gen_vextublx (chr2, diffix, str2));
+      do_sub3 (result, chr1_di, chr2_di);
+    }
+  else
+    {
+      gcc_assert (TARGET_P8_VECTOR);
+      rtx diffix = gen_reg_rtx (DImode);
+      rtx result_gbbd = gen_reg_rtx (V16QImode);
+      /* Since each byte of the input is either 00 or FF, the bytes in
+	 dw0 and dw1 after vgbbd are all identical to each other.  */
+      emit_insn (gen_p8v_vgbbd (result_gbbd, vec_result));
+      /* For LE, we shift by 9 and get BA in the low two bytes then CTZ.
+	 For BE, we shift by 7 and get AB in the high two bytes then CLZ.  */
+      rtx result_shifted = gen_reg_rtx (V16QImode);
+      int shift_amt = (BYTES_BIG_ENDIAN) ? 7 : 9;
+      emit_insn (gen_altivec_vsldoi_v16qi (result_shifted, result_gbbd,
+					   result_gbbd, GEN_INT (shift_amt)));
+
+      rtx diffix_df = simplify_gen_subreg (DFmode, diffix, DImode, 0);
+      emit_insn (gen_p8_mfvsrd_3_v16qi (diffix_df, result_shifted));
+      rtx count = gen_reg_rtx (DImode);
+
+      if (BYTES_BIG_ENDIAN)
+	emit_insn (gen_clzdi2 (count, diffix));
+      else
+	emit_insn (gen_ctzdi2 (count, diffix));
+
+      /* P8 doesn't have a good solution for extracting one byte from
+	 a vsx reg like vextublx on P9 so we just compute the offset
+	 of the differing byte and load it from each string.  */
+      do_add3 (off_reg, off_reg, count);
+
+      rtx chr1 = gen_reg_rtx (QImode);
+      rtx chr2 = gen_reg_rtx (QImode);
+      rtx addr1 = gen_rtx_PLUS (Pmode, s1addr, off_reg);
+      do_load_for_compare_from_addr (QImode, chr1, addr1, orig_src1);
+      rtx addr2 = gen_rtx_PLUS (Pmode, s2addr, off_reg);
+      do_load_for_compare_from_addr (QImode, chr2, addr2, orig_src2);
+      machine_mode rmode = GET_MODE (result);
+      rtx chr1_rm = simplify_gen_subreg (rmode, chr1, QImode, 0);
+      rtx chr2_rm = simplify_gen_subreg (rmode, chr2, QImode, 0);
+      do_sub3 (result, chr1_rm, chr2_rm);
+    }
+
+  return;
 }
 
 /* Expand a block compare operation using loop code, and return true
@@ -1343,106 +1612,80 @@ expand_compare_loop (rtx operands[])
   return true;
 }
 
-/* Expand a block compare operation, and return true if successful.
-   Return false if we should let the compiler generate normal code,
-   probably a memcmp call.
+/* Generate code to convert a DImode-plus-carry subtract result into
+   a SImode result that has the same <0 / ==0 / >0 properties to
+   produce the final result from memcmp.
 
-   OPERANDS[0] is the target (result).
-   OPERANDS[1] is the first source.
-   OPERANDS[2] is the second source.
-   OPERANDS[3] is the length.
-   OPERANDS[4] is the alignment.  */
-bool
-expand_block_compare (rtx operands[])
+   TARGET is the rtx for the register to receive the memcmp result.
+   SUB_RESULT is the rtx for the register contining the subtract result.  */
+
+void
+generate_6432_conversion(rtx target, rtx sub_result)
 {
-  rtx target = operands[0];
-  rtx orig_src1 = operands[1];
-  rtx orig_src2 = operands[2];
-  rtx bytes_rtx = operands[3];
-  rtx align_rtx = operands[4];
-  HOST_WIDE_INT cmp_bytes = 0;
-  rtx src1 = orig_src1;
-  rtx src2 = orig_src2;
+  /* We need to produce DI result from sub, then convert to target SI
+     while maintaining <0 / ==0 / >0 properties.  This sequence works:
+     subfc L,A,B
+     subfe H,H,H
+     popcntd L,L
+     rldimi L,H,6,0
 
-  /* This case is complicated to handle because the subtract
-     with carry instructions do not generate the 64-bit
-     carry and so we must emit code to calculate it ourselves.
-     We choose not to implement this yet.  */
-  if (TARGET_32BIT && TARGET_POWERPC64)
-    return false;
+     This is an alternate one Segher cooked up if somebody
+     wants to expand this for something that doesn't have popcntd:
+     subfc L,a,b
+     subfe H,x,x
+     addic t,L,-1
+     subfe v,t,L
+     or z,v,H
 
-  bool isP7 = (rs6000_tune == PROCESSOR_POWER7);
+     And finally, p9 can just do this:
+     cmpld A,B
+     setb r */
 
-  /* Allow this param to shut off all expansion.  */
-  if (rs6000_block_compare_inline_limit == 0)
-    return false;
-
-  /* targetm.slow_unaligned_access -- don't do unaligned stuff.
-     However slow_unaligned_access returns true on P7 even though the
-     performance of this code is good there.  */
-  if (!isP7
-      && (targetm.slow_unaligned_access (word_mode, MEM_ALIGN (orig_src1))
-	  || targetm.slow_unaligned_access (word_mode, MEM_ALIGN (orig_src2))))
-    return false;
-
-  /* Unaligned l*brx traps on P7 so don't do this.  However this should
-     not affect much because LE isn't really supported on P7 anyway.  */
-  if (isP7 && !BYTES_BIG_ENDIAN)
-    return false;
-
-  /* If this is not a fixed size compare, try generating loop code and
-     if that fails just call memcmp.  */
-  if (!CONST_INT_P (bytes_rtx))
-    return expand_compare_loop (operands);
-
-  /* This must be a fixed size alignment.  */
-  if (!CONST_INT_P (align_rtx))
-    return false;
-
-  unsigned int base_align = UINTVAL (align_rtx) / BITS_PER_UNIT;
-
-  gcc_assert (GET_MODE (target) == SImode);
-
-  /* Anything to move?  */
-  unsigned HOST_WIDE_INT bytes = UINTVAL (bytes_rtx);
-  if (bytes == 0)
-    return true;
-
-  rtx tmp_reg_src1 = gen_reg_rtx (word_mode);
-  rtx tmp_reg_src2 = gen_reg_rtx (word_mode);
-  /* P7/P8 code uses cond for subfc. but P9 uses
-     it for cmpld which needs CCUNSmode.  */
-  rtx cond;
-  if (TARGET_P9_MISC)
-    cond = gen_reg_rtx (CCUNSmode);
+  if (TARGET_64BIT)
+    {
+      rtx tmp_reg_ca = gen_reg_rtx (DImode);
+      emit_insn (gen_subfdi3_carry_in_xx (tmp_reg_ca));
+      rtx popcnt = gen_reg_rtx (DImode);
+      emit_insn (gen_popcntddi2 (popcnt, sub_result));
+      rtx tmp2 = gen_reg_rtx (DImode);
+      emit_insn (gen_iordi3 (tmp2, popcnt, tmp_reg_ca));
+      emit_insn (gen_movsi (target, gen_lowpart (SImode, tmp2)));
+    }
   else
-    cond = gen_reg_rtx (CCmode);
+    {
+      rtx tmp_reg_ca = gen_reg_rtx (SImode);
+      emit_insn (gen_subfsi3_carry_in_xx (tmp_reg_ca));
+      rtx popcnt = gen_reg_rtx (SImode);
+      emit_insn (gen_popcntdsi2 (popcnt, sub_result));
+      emit_insn (gen_iorsi3 (target, popcnt, tmp_reg_ca));
+    }
+}
 
-  /* Strategy phase.  How many ops will this take and should we expand it?  */
+/* Generate memcmp expansion using in-line non-loop GPR instructions.
+   The bool return indicates whether code for a 64->32 conversion
+   should be generated.
 
-  unsigned HOST_WIDE_INT offset = 0;
-  machine_mode load_mode =
-    select_block_compare_mode (offset, bytes, base_align);
-  unsigned int load_mode_size = GET_MODE_SIZE (load_mode);
+   BYTES is the number of bytes to be compared.
+   BASE_ALIGN is the minimum alignment for both blocks to compare.
+   ORIG_SRC1 is the original pointer to the first block to compare.
+   ORIG_SRC2 is the original pointer to the second block to compare.
+   SUB_RESULT is the reg rtx for the result from the final subtract.
+   COND is rtx for a condition register that will be used for the final
+   compare on power9 or better.
+   FINAL_RESULT is the reg rtx for the final memcmp result.
+   P_CONVERT_LABEL is a pointer to rtx that will be used to store the
+   label generated for a branch to the 64->32 code, if such a branch
+   is needed.
+   P_FINAL_LABEL is a pointer to rtx that will be used to store the label
+   for the end of the memcmp if a branch there is needed.
+*/
 
-  /* We don't want to generate too much code.  The loop code can take
-     over for lengths greater than 31 bytes.  */
-  unsigned HOST_WIDE_INT max_bytes = rs6000_block_compare_inline_limit;
-  if (!IN_RANGE (bytes, 1, max_bytes))
-    return expand_compare_loop (operands);
-
-  /* The code generated for p7 and older is not faster than glibc
-     memcmp if alignment is small and length is not short, so bail
-     out to avoid those conditions.  */
-  if (!TARGET_EFFICIENT_OVERLAPPING_UNALIGNED
-      && ((base_align == 1 && bytes > 16)
-	  || (base_align == 2 && bytes > 32)))
-    return false;
-
-  bool generate_6432_conversion = false;
-  rtx convert_label = NULL;
-  rtx final_label = NULL;
-
+bool
+expand_block_compare_gpr(unsigned HOST_WIDE_INT bytes, unsigned int base_align,
+			 rtx orig_src1, rtx orig_src2,
+			 rtx sub_result, rtx cond, rtx final_result,
+			 rtx *p_convert_label, rtx *p_final_label)
+{
   /* Example of generated code for 18 bytes aligned 1 byte.
      Compiled with -fno-reorder-blocks for clarity.
              ldbrx 10,31,8
@@ -1472,6 +1715,18 @@ expand_block_compare (rtx operands[])
      We start off with DImode for two blocks that jump to the DI->SI conversion
      if the difference is found there, then a final block of HImode that skips
      the DI->SI conversion.  */
+
+  unsigned HOST_WIDE_INT offset = 0;
+  unsigned int load_mode_size;
+  HOST_WIDE_INT cmp_bytes = 0;
+  rtx src1 = orig_src1;
+  rtx src2 = orig_src2;
+  rtx tmp_reg_src1 = gen_reg_rtx (word_mode);
+  rtx tmp_reg_src2 = gen_reg_rtx (word_mode);
+  bool need_6432_conv = false;
+  rtx convert_label = NULL;
+  rtx final_label = NULL;
+  machine_mode load_mode;
 
   while (bytes > 0)
     {
@@ -1536,15 +1791,15 @@ expand_block_compare (rtx operands[])
 	}
 
       int remain = bytes - cmp_bytes;
-      if (GET_MODE_SIZE (GET_MODE (target)) > GET_MODE_SIZE (load_mode))
+      if (GET_MODE_SIZE (GET_MODE (final_result)) > GET_MODE_SIZE (load_mode))
 	{
-	  /* Target is larger than load size so we don't need to
+	  /* Final_result is larger than load size so we don't need to
 	     reduce result size.  */
 
 	  /* We previously did a block that need 64->32 conversion but
 	     the current block does not, so a label is needed to jump
 	     to the end.  */
-	  if (generate_6432_conversion && !final_label)
+	  if (need_6432_conv && !final_label)
 	    final_label = gen_label_rtx ();
 
 	  if (remain > 0)
@@ -1557,7 +1812,7 @@ expand_block_compare (rtx operands[])
 	      rtx tmp = gen_rtx_MINUS (word_mode, tmp_reg_src1, tmp_reg_src2);
 	      rtx cr = gen_reg_rtx (CCmode);
 	      rs6000_emit_dot_insn (tmp_reg_src2, tmp, 2, cr);
-	      emit_insn (gen_movsi (target,
+	      emit_insn (gen_movsi (final_result,
 				    gen_lowpart (SImode, tmp_reg_src2)));
 	      rtx ne_rtx = gen_rtx_NE (VOIDmode, cr, const0_rtx);
 	      rtx ifelse = gen_rtx_IF_THEN_ELSE (VOIDmode, ne_rtx,
@@ -1572,11 +1827,11 @@ expand_block_compare (rtx operands[])
 		{
 		  emit_insn (gen_subdi3 (tmp_reg_src2, tmp_reg_src1,
 					 tmp_reg_src2));
-		  emit_insn (gen_movsi (target,
+		  emit_insn (gen_movsi (final_result,
 					gen_lowpart (SImode, tmp_reg_src2)));
 		}
 	      else
-		emit_insn (gen_subsi3 (target, tmp_reg_src1, tmp_reg_src2));
+		emit_insn (gen_subsi3 (final_result, tmp_reg_src1, tmp_reg_src2));
 
 	      if (final_label)
 		{
@@ -1591,9 +1846,9 @@ expand_block_compare (rtx operands[])
       else
 	{
 	  /* Do we need a 64->32 conversion block? We need the 64->32
-	     conversion even if target size == load_mode size because
+	     conversion even if final_result size == load_mode size because
 	     the subtract generates one extra bit.  */
-	  generate_6432_conversion = true;
+	  need_6432_conv = true;
 
 	  if (remain > 0)
 	    {
@@ -1604,20 +1859,27 @@ expand_block_compare (rtx operands[])
 	      rtx cvt_ref = gen_rtx_LABEL_REF (VOIDmode, convert_label);
 	      if (TARGET_P9_MISC)
 		{
-		/* Generate a compare, and convert with a setb later.  */
+		/* Generate a compare, and convert with a setb later.
+		   Use cond that is passed in because the caller needs
+		   to use it for the 64->32 conversion later.  */
 		  rtx cmp = gen_rtx_COMPARE (CCUNSmode, tmp_reg_src1,
 					     tmp_reg_src2);
 		  emit_insn (gen_rtx_SET (cond, cmp));
 		}
 	      else
-		/* Generate a subfc. and use the longer
-		   sequence for conversion.  */
-		if (TARGET_64BIT)
-		  emit_insn (gen_subfdi3_carry_dot2 (tmp_reg_src2, tmp_reg_src2,
-						     tmp_reg_src1, cond));
-		else
-		  emit_insn (gen_subfsi3_carry_dot2 (tmp_reg_src2, tmp_reg_src2,
-						     tmp_reg_src1, cond));
+		{
+		  /* Generate a subfc. and use the longer sequence for
+		     conversion.  Cond is not used outside this
+		     function in this case.  */
+		  cond = gen_reg_rtx (CCmode);
+		  if (TARGET_64BIT)
+		    emit_insn (gen_subfdi3_carry_dot2 (sub_result, tmp_reg_src2,
+						       tmp_reg_src1, cond));
+		  else
+		    emit_insn (gen_subfsi3_carry_dot2 (sub_result, tmp_reg_src2,
+						       tmp_reg_src1, cond));
+		}
+
 	      rtx ne_rtx = gen_rtx_NE (VOIDmode, cond, const0_rtx);
 	      rtx ifelse = gen_rtx_IF_THEN_ELSE (VOIDmode, ne_rtx,
 						 cvt_ref, pc_rtx);
@@ -1637,10 +1899,10 @@ expand_block_compare (rtx operands[])
 		}
 	      else
 		if (TARGET_64BIT)
-		  emit_insn (gen_subfdi3_carry (tmp_reg_src2, tmp_reg_src2,
+		  emit_insn (gen_subfdi3_carry (sub_result, tmp_reg_src2,
 						tmp_reg_src1));
 		else
-		  emit_insn (gen_subfsi3_carry (tmp_reg_src2, tmp_reg_src2,
+		  emit_insn (gen_subfsi3_carry (sub_result, tmp_reg_src2,
 						tmp_reg_src1));
 	    }
 	}
@@ -1649,58 +1911,168 @@ expand_block_compare (rtx operands[])
       bytes -= cmp_bytes;
     }
 
-  if (generate_6432_conversion)
+  if (convert_label)
+    *p_convert_label = convert_label;
+  if (final_label)
+    *p_final_label = final_label;
+  return need_6432_conv;
+}
+
+/* Expand a block compare operation, and return true if successful.
+   Return false if we should let the compiler generate normal code,
+   probably a memcmp call.
+
+   OPERANDS[0] is the target (result).
+   OPERANDS[1] is the first source.
+   OPERANDS[2] is the second source.
+   OPERANDS[3] is the length.
+   OPERANDS[4] is the alignment.  */
+bool
+expand_block_compare (rtx operands[])
+{
+  rtx target = operands[0];
+  rtx orig_src1 = operands[1];
+  rtx orig_src2 = operands[2];
+  rtx bytes_rtx = operands[3];
+  rtx align_rtx = operands[4];
+
+  /* This case is complicated to handle because the subtract
+     with carry instructions do not generate the 64-bit
+     carry and so we must emit code to calculate it ourselves.
+     We choose not to implement this yet.  */
+  if (TARGET_32BIT && TARGET_POWERPC64)
+    return false;
+
+  bool isP7 = (rs6000_tune == PROCESSOR_POWER7);
+
+  /* Allow this param to shut off all expansion.  */
+  if (rs6000_block_compare_inline_limit == 0)
+    return false;
+
+  /* targetm.slow_unaligned_access -- don't do unaligned stuff.
+     However slow_unaligned_access returns true on P7 even though the
+     performance of this code is good there.  */
+  if (!isP7
+      && (targetm.slow_unaligned_access (word_mode, MEM_ALIGN (orig_src1))
+	  || targetm.slow_unaligned_access (word_mode, MEM_ALIGN (orig_src2))))
+    return false;
+
+  /* Unaligned l*brx traps on P7 so don't do this.  However this should
+     not affect much because LE isn't really supported on P7 anyway.  */
+  if (isP7 && !BYTES_BIG_ENDIAN)
+    return false;
+
+  /* If this is not a fixed size compare, try generating loop code and
+     if that fails just call memcmp.  */
+  if (!CONST_INT_P (bytes_rtx))
+    return expand_compare_loop (operands);
+
+  /* This must be a fixed size alignment.  */
+  if (!CONST_INT_P (align_rtx))
+    return false;
+
+  unsigned int base_align = UINTVAL (align_rtx) / BITS_PER_UNIT;
+
+  gcc_assert (GET_MODE (target) == SImode);
+
+  /* Anything to move?  */
+  unsigned HOST_WIDE_INT bytes = UINTVAL (bytes_rtx);
+  if (bytes == 0)
+    return true;
+
+  /* P7/P8 code uses cond for subfc. but P9 uses
+     it for cmpld which needs CCUNSmode.  */
+  rtx cond = NULL;
+  if (TARGET_P9_MISC)
+    cond = gen_reg_rtx (CCUNSmode);
+
+  /* Is it OK to use vec/vsx for this.  TARGET_VSX means we have at
+     least POWER7 but we use TARGET_EFFICIENT_UNALIGNED_VSX which is
+     at least POWER8.  That way we can rely on overlapping compares to
+     do the final comparison of less than 16 bytes.  Also I do not
+     want to deal with making this work for 32 bits.  In addition, we
+     have to make sure that we have at least P8_VECTOR (we don't allow
+     P9_VECTOR without P8_VECTOR).  */
+  int use_vec = (bytes >= 33 && !TARGET_32BIT
+		 && TARGET_EFFICIENT_UNALIGNED_VSX && TARGET_P8_VECTOR);
+
+  /* We don't want to generate too much code.  The loop code can take
+     over for lengths greater than 31 bytes.  */
+  unsigned HOST_WIDE_INT max_bytes = rs6000_block_compare_inline_limit;
+
+  /* Don't generate too much code if vsx was disabled.  */
+  if (!use_vec && max_bytes > 1)
+    max_bytes = ((max_bytes + 1) / 2) - 1;
+
+  if (!IN_RANGE (bytes, 1, max_bytes))
+    return expand_compare_loop (operands);
+
+  /* The code generated for p7 and older is not faster than glibc
+     memcmp if alignment is small and length is not short, so bail
+     out to avoid those conditions.  */
+  if (!TARGET_EFFICIENT_OVERLAPPING_UNALIGNED
+      && ((base_align == 1 && bytes > 16)
+	  || (base_align == 2 && bytes > 32)))
+    return false;
+
+  rtx final_label = NULL;
+
+  if (use_vec)
     {
-      if (convert_label)
-	emit_label (convert_label);
+      rtx final_move_label = gen_label_rtx ();
+      rtx s1addr = gen_reg_rtx (Pmode);
+      rtx s2addr = gen_reg_rtx (Pmode);
+      rtx off_reg = gen_reg_rtx (Pmode);
+      rtx cleanup_label = NULL;
+      rtx vec_result = gen_reg_rtx (V16QImode);
+      rtx s1data = gen_reg_rtx (V16QImode);
+      rtx s2data = gen_reg_rtx (V16QImode);
+      rtx result_reg = gen_reg_rtx (word_mode);
+      emit_move_insn (result_reg, GEN_INT (0));
 
-      /* We need to produce DI result from sub, then convert to target SI
-	 while maintaining <0 / ==0 / >0 properties.  This sequence works:
-	 subfc L,A,B
-	 subfe H,H,H
-	 popcntd L,L
-	 rldimi L,H,6,0
+      expand_cmp_vec_sequence (bytes, orig_src1, orig_src2,
+			       s1addr, s2addr, off_reg, s1data, s2data,
+			       vec_result, false,
+			       &cleanup_label, final_move_label, false);
 
-	 This is an alternate one Segher cooked up if somebody
-	 wants to expand this for something that doesn't have popcntd:
-	 subfc L,a,b
-	 subfe H,x,x
-	 addic t,L,-1
-	 subfe v,t,L
-	 or z,v,H
+      if (cleanup_label)
+	emit_label (cleanup_label);
 
-	 And finally, p9 can just do this:
-	 cmpld A,B
-	 setb r */
+      emit_insn (gen_one_cmplv16qi2 (vec_result, vec_result));
 
-      if (TARGET_P9_MISC)
+      emit_final_compare_vec (s1data, s2data, result_reg,
+			      s1addr, s2addr, orig_src1, orig_src2,
+			      off_reg, vec_result);
+
+      emit_label (final_move_label);
+      emit_insn (gen_movsi (target,
+			    gen_lowpart (SImode, result_reg)));
+    }
+  else
+    { /* generate GPR code */
+
+      rtx convert_label = NULL;
+      rtx sub_result = gen_reg_rtx (word_mode);
+      bool need_6432_conversion =
+	expand_block_compare_gpr(bytes, base_align,
+				 orig_src1, orig_src2,
+				 sub_result, cond, target,
+				 &convert_label, &final_label);
+
+      if (need_6432_conversion)
 	{
-	  emit_insn (gen_setb_unsigned (target, cond));
-	}
-      else
-	{
-	  if (TARGET_64BIT)
-	    {
-	      rtx tmp_reg_ca = gen_reg_rtx (DImode);
-	      emit_insn (gen_subfdi3_carry_in_xx (tmp_reg_ca));
-	      emit_insn (gen_popcntddi2 (tmp_reg_src2, tmp_reg_src2));
-	      emit_insn (gen_iordi3 (tmp_reg_src2, tmp_reg_src2, tmp_reg_ca));
-	      emit_insn (gen_movsi (target, gen_lowpart (SImode, tmp_reg_src2)));
-	    }
+	  if (convert_label)
+	    emit_label (convert_label);
+	  if (TARGET_P9_MISC)
+	    emit_insn (gen_setb_unsigned (target, cond));
 	  else
-	    {
-	      rtx tmp_reg_ca = gen_reg_rtx (SImode);
-	      emit_insn (gen_subfsi3_carry_in_xx (tmp_reg_ca));
-	      emit_insn (gen_popcntdsi2 (tmp_reg_src2, tmp_reg_src2));
-	      emit_insn (gen_iorsi3 (target, tmp_reg_src2, tmp_reg_ca));
-	    }
+	    generate_6432_conversion(target, sub_result);
 	}
     }
 
   if (final_label)
     emit_label (final_label);
 
-  gcc_assert (bytes == 0);
   return true;
 }
 
@@ -1808,7 +2180,7 @@ expand_strncmp_gpr_sequence (unsigned HOST_WIDE_INT bytes_to_compare,
 	}
       rtx addr1 = gen_rtx_PLUS (Pmode, src1_addr, offset_rtx);
       rtx addr2 = gen_rtx_PLUS (Pmode, src2_addr, offset_rtx);
-	  
+
       do_load_for_compare_from_addr (load_mode, tmp_reg_src1, addr1, orig_src1);
       do_load_for_compare_from_addr (load_mode, tmp_reg_src2, addr2, orig_src2);
 
@@ -1966,176 +2338,6 @@ expand_strncmp_gpr_sequence (unsigned HOST_WIDE_INT bytes_to_compare,
   return;
 }
 
-/* Generate the sequence of compares for strcmp/strncmp using vec/vsx
-   instructions.
-
-   BYTES_TO_COMPARE is the number of bytes to be compared.
-   ORIG_SRC1 is the unmodified rtx for the first string.
-   ORIG_SRC2 is the unmodified rtx for the second string.
-   S1ADDR is the register to use for the base address of the first string.
-   S2ADDR is the register to use for the base address of the second string.
-   OFF_REG is the register to use for the string offset for loads.
-   S1DATA is the register for loading the first string.
-   S2DATA is the register for loading the second string.
-   VEC_RESULT is the rtx for the vector result indicating the byte difference.
-   EQUALITY_COMPARE_REST is a flag to indicate we need to make a cleanup call
-   to strcmp/strncmp if we have equality at the end of the inline comparison.
-   P_CLEANUP_LABEL is a pointer to rtx for a label we generate if we need code to clean up
-   and generate the final comparison result.
-   FINAL_MOVE_LABEL is rtx for a label we can branch to when we can just
-   set the final result.  */
-static void
-expand_strncmp_vec_sequence (unsigned HOST_WIDE_INT bytes_to_compare,
-			     rtx orig_src1, rtx orig_src2,
-			     rtx s1addr, rtx s2addr, rtx off_reg,
-			     rtx s1data, rtx s2data,
-			     rtx vec_result, bool equality_compare_rest,
-			     rtx *p_cleanup_label, rtx final_move_label)
-{
-  machine_mode load_mode;
-  unsigned int load_mode_size;
-  unsigned HOST_WIDE_INT cmp_bytes = 0;
-  unsigned HOST_WIDE_INT offset = 0;
-
-  gcc_assert (p_cleanup_label != NULL);
-  rtx cleanup_label = *p_cleanup_label;
-
-  emit_move_insn (s1addr, force_reg (Pmode, XEXP (orig_src1, 0)));
-  emit_move_insn (s2addr, force_reg (Pmode, XEXP (orig_src2, 0)));
-
-  unsigned int i;
-  rtx zr[16];
-  for (i = 0; i < 16; i++)
-    zr[i] = GEN_INT (0);
-  rtvec zv = gen_rtvec_v (16, zr);
-  rtx zero_reg = gen_reg_rtx (V16QImode);
-  rs6000_expand_vector_init (zero_reg, gen_rtx_PARALLEL (V16QImode, zv));
-
-  while (bytes_to_compare > 0)
-    {
-      /* VEC/VSX compare sequence for P8:
-	 check each 16B with:
-	 lxvd2x 32,28,8
-	 lxvd2x 33,29,8
-	 vcmpequb 2,0,1  # compare strings
-	 vcmpequb 4,0,3  # compare w/ 0
-	 xxlorc 37,36,34       # first FF byte is either mismatch or end of string
-	 vcmpequb. 7,5,3  # reg 7 contains 0
-	 bnl 6,.Lmismatch
-
-	 For the P8 LE case, we use lxvd2x and compare full 16 bytes
-	 but then use use vgbbd and a shift to get two bytes with the
-	 information we need in the correct order.
-
-	 VEC/VSX compare sequence if TARGET_P9_VECTOR:
-	 lxvb16x/lxvb16x     # load 16B of each string
-	 vcmpnezb.           # produces difference location or zero byte location
-	 bne 6,.Lmismatch
-
-	 Use the overlapping compare trick for the last block if it is
-	 less than 16 bytes.
-      */
-
-      load_mode = V16QImode;
-      load_mode_size = GET_MODE_SIZE (load_mode);
-
-      if (bytes_to_compare >= load_mode_size)
-	cmp_bytes = load_mode_size;
-      else
-	{
-	  /* Move this load back so it doesn't go past the end.  P8/P9
-	     can do this efficiently.  This is never called with less
-	     than 16 bytes so we should always be able to do this.  */
-	  unsigned int extra_bytes = load_mode_size - bytes_to_compare;
-	  cmp_bytes = bytes_to_compare;
-	  gcc_assert (offset > extra_bytes);
-	  offset -= extra_bytes;
-	  cmp_bytes = load_mode_size;
-	  bytes_to_compare = cmp_bytes;
-	}
-
-      /* The offset currently used is always kept in off_reg so that the
-	 cleanup code on P8 can use it to extract the differing byte.  */
-      emit_move_insn (off_reg, GEN_INT (offset));
-
-      rtx addr1 = gen_rtx_PLUS (Pmode, s1addr, off_reg);
-      do_load_for_compare_from_addr (load_mode, s1data, addr1, orig_src1);
-      rtx addr2 = gen_rtx_PLUS (Pmode, s2addr, off_reg);
-      do_load_for_compare_from_addr (load_mode, s2data, addr2, orig_src2);
-
-      /* Cases to handle.  A and B are chunks of the two strings.
-	 1: Not end of comparison:
-	 A != B: branch to cleanup code to compute result.
-	 A == B: next block
-	 2: End of the inline comparison:
-	 A != B: branch to cleanup code to compute result.
-	 A == B: call strcmp/strncmp
-	 3: compared requested N bytes:
-	 A == B: branch to result 0.
-	 A != B: cleanup code to compute result.  */
-
-      unsigned HOST_WIDE_INT remain = bytes_to_compare - cmp_bytes;
-
-      if (TARGET_P9_VECTOR)
-	emit_insn (gen_vcmpnezb_p (vec_result, s1data, s2data));
-      else
-	{
-	  /* Emit instructions to do comparison and zero check.  */
-	  rtx cmp_res = gen_reg_rtx (load_mode);
-	  rtx cmp_zero = gen_reg_rtx (load_mode);
-	  rtx cmp_combined = gen_reg_rtx (load_mode);
-	  emit_insn (gen_altivec_eqv16qi (cmp_res, s1data, s2data));
-	  emit_insn (gen_altivec_eqv16qi (cmp_zero, s1data, zero_reg));
-	  emit_insn (gen_orcv16qi3 (vec_result, cmp_zero, cmp_res));
-	  emit_insn (gen_altivec_vcmpequb_p (cmp_combined, vec_result, zero_reg));
-	}
-
-      bool branch_to_cleanup = (remain > 0 || equality_compare_rest);
-      rtx cr6 = gen_rtx_REG (CCmode, CR6_REGNO);
-      rtx dst_label;
-      rtx cmp_rtx;
-      if (branch_to_cleanup)
-	{
-	  /* Branch to cleanup code, otherwise fall through to do more
-	     compares.  P8 and P9 use different CR bits because on P8
-	     we are looking at the result of a comparsion vs a
-	     register of zeroes so the all-true condition means no
-	     difference or zero was found.  On P9, vcmpnezb sets a byte
-	     to 0xff if there is a mismatch or zero, so the all-false
-	     condition indicates we found no difference or zero.  */
-	  if (!cleanup_label)
-	    cleanup_label = gen_label_rtx ();
-	  dst_label = cleanup_label;
-	  if (TARGET_P9_VECTOR)
-	    cmp_rtx = gen_rtx_NE (VOIDmode, cr6, const0_rtx);
-	  else
-	    cmp_rtx = gen_rtx_GE (VOIDmode, cr6, const0_rtx);
-	}
-      else
-	{
-	  /* Branch to final return or fall through to cleanup,
-	     result is already set to 0.  */
-	  dst_label = final_move_label;
-	  if (TARGET_P9_VECTOR)
-	    cmp_rtx = gen_rtx_EQ (VOIDmode, cr6, const0_rtx);
-	  else
-	    cmp_rtx = gen_rtx_LT (VOIDmode, cr6, const0_rtx);
-	}
-
-      rtx lab_ref = gen_rtx_LABEL_REF (VOIDmode, dst_label);
-      rtx ifelse = gen_rtx_IF_THEN_ELSE (VOIDmode, cmp_rtx,
-					 lab_ref, pc_rtx);
-      rtx j2 = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
-      JUMP_LABEL (j2) = dst_label;
-      LABEL_NUSES (dst_label) += 1;
-
-      offset += cmp_bytes;
-      bytes_to_compare -= cmp_bytes;
-    }
-  *p_cleanup_label = cleanup_label;
-  return;
-}
-
 /* Generate the final sequence that identifies the differing
    byte and generates the final result, taking into account
    zero bytes:
@@ -2186,97 +2388,6 @@ emit_final_str_compare_gpr (rtx str1, rtx str2, rtx result)
     }
   else
     gcc_unreachable ();
-
-  return;
-}
-
-/* Generate the final sequence that identifies the differing
-   byte and generates the final result, taking into account
-   zero bytes:
-
-   P8:
-        vgbbd 0,0
-        vsldoi 0,0,0,9
-        mfvsrd 9,32
-        addi 10,9,-1    # count trailing zero bits
-        andc 9,10,9
-        popcntd 9,9
-        lbzx 10,28,9    # use that offset to load differing byte
-        lbzx 3,29,9
-        subf 3,3,10     # subtract for final result
-
-   P9:
-	 vclzlsbb            # counts trailing bytes with lsb=0
-	 vextublx            # extract differing byte
-
-   STR1 is the reg rtx for data from string 1.
-   STR2 is the reg rtx for data from string 2.
-   RESULT is the reg rtx for the comparison result.
-   S1ADDR is the register to use for the base address of the first string.
-   S2ADDR is the register to use for the base address of the second string.
-   ORIG_SRC1 is the unmodified rtx for the first string.
-   ORIG_SRC2 is the unmodified rtx for the second string.
-   OFF_REG is the register to use for the string offset for loads.
-   VEC_RESULT is the rtx for the vector result indicating the byte difference.
-  */
-
-static void
-emit_final_str_compare_vec (rtx str1, rtx str2, rtx result,
-			    rtx s1addr, rtx s2addr,
-			    rtx orig_src1, rtx orig_src2,
-			    rtx off_reg, rtx vec_result)
-{
-  if (TARGET_P9_VECTOR)
-    {
-      rtx diffix = gen_reg_rtx (SImode);
-      rtx chr1 = gen_reg_rtx (SImode);
-      rtx chr2 = gen_reg_rtx (SImode);
-      rtx chr1_di = simplify_gen_subreg (DImode, chr1, SImode, 0);
-      rtx chr2_di = simplify_gen_subreg (DImode, chr2, SImode, 0);
-      emit_insn (gen_vclzlsbb_v16qi (diffix, vec_result));
-      emit_insn (gen_vextublx (chr1, diffix, str1));
-      emit_insn (gen_vextublx (chr2, diffix, str2));
-      do_sub3 (result, chr1_di, chr2_di);
-    }
-  else
-    {
-      gcc_assert (TARGET_P8_VECTOR);
-      rtx diffix = gen_reg_rtx (DImode);
-      rtx result_gbbd = gen_reg_rtx (V16QImode);
-      /* Since each byte of the input is either 00 or FF, the bytes in
-	 dw0 and dw1 after vgbbd are all identical to each other.  */
-      emit_insn (gen_p8v_vgbbd (result_gbbd, vec_result));
-      /* For LE, we shift by 9 and get BA in the low two bytes then CTZ.
-	 For BE, we shift by 7 and get AB in the high two bytes then CLZ.  */
-      rtx result_shifted = gen_reg_rtx (V16QImode);
-      int shift_amt = (BYTES_BIG_ENDIAN) ? 7 : 9;
-      emit_insn (gen_altivec_vsldoi_v16qi (result_shifted,result_gbbd,result_gbbd, GEN_INT (shift_amt)));
-
-      rtx diffix_df = simplify_gen_subreg (DFmode, diffix, DImode, 0);
-      emit_insn (gen_p8_mfvsrd_3_v16qi (diffix_df, result_shifted));
-      rtx count = gen_reg_rtx (DImode);
-
-      if (BYTES_BIG_ENDIAN)
-	emit_insn (gen_clzdi2 (count, diffix));
-      else
-	emit_insn (gen_ctzdi2 (count, diffix));
-
-      /* P8 doesn't have a good solution for extracting one byte from
-	 a vsx reg like vextublx on P9 so we just compute the offset
-	 of the differing byte and load it from each string.  */
-      do_add3 (off_reg, off_reg, count);
-
-      rtx chr1 = gen_reg_rtx (QImode);
-      rtx chr2 = gen_reg_rtx (QImode);
-      rtx addr1 = gen_rtx_PLUS (Pmode, s1addr, off_reg);
-      do_load_for_compare_from_addr (QImode, chr1, addr1, orig_src1);
-      rtx addr2 = gen_rtx_PLUS (Pmode, s2addr, off_reg);
-      do_load_for_compare_from_addr (QImode, chr2, addr2, orig_src2);
-      machine_mode rmode = GET_MODE (result);
-      rtx chr1_rm = simplify_gen_subreg (rmode, chr1, QImode, 0);
-      rtx chr2_rm = simplify_gen_subreg (rmode, chr2, QImode, 0);
-      do_sub3 (result, chr1_rm, chr2_rm);
-    }
 
   return;
 }
@@ -2490,13 +2601,13 @@ expand_strn_compare (rtx operands[], int no_length)
       off_reg = gen_reg_rtx (Pmode);
       vec_result = gen_reg_rtx (load_mode);
       emit_move_insn (result_reg, GEN_INT (0));
-      expand_strncmp_vec_sequence (compare_length,
-				   orig_src1, orig_src2,
-				   s1addr, s2addr, off_reg,
-				   tmp_reg_src1, tmp_reg_src2,
-				   vec_result,
-				   equality_compare_rest,
-				   &cleanup_label, final_move_label);
+      expand_cmp_vec_sequence (compare_length,
+			       orig_src1, orig_src2,
+			       s1addr, s2addr, off_reg,
+			       tmp_reg_src1, tmp_reg_src2,
+			       vec_result,
+			       equality_compare_rest,
+			       &cleanup_label, final_move_label, true);
     }
   else
     expand_strncmp_gpr_sequence (compare_length, base_align,
@@ -2545,9 +2656,9 @@ expand_strn_compare (rtx operands[], int no_length)
     emit_label (cleanup_label);
 
   if (use_vec)
-    emit_final_str_compare_vec (tmp_reg_src1, tmp_reg_src2, result_reg,
-				s1addr, s2addr, orig_src1, orig_src2,
-				off_reg, vec_result);
+    emit_final_compare_vec (tmp_reg_src1, tmp_reg_src2, result_reg,
+			    s1addr, s2addr, orig_src1, orig_src2,
+			    off_reg, vec_result);
   else
     emit_final_str_compare_gpr (tmp_reg_src1, tmp_reg_src2, result_reg);
 

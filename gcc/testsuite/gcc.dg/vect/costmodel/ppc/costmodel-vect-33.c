@@ -11,7 +11,7 @@ struct test {
 
 extern struct test s;
  
-int main1 ()
+__attribute__((noipa)) int main1 ()
 {  
   int i;
 

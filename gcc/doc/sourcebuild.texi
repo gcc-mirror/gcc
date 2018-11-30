@@ -1360,6 +1360,12 @@ Target has @code{int} that is 16 bits or shorter.
 @item long_neq_int
 Target has @code{int} and @code{long} with different sizes.
 
+@item int_eq_float
+Target has @code{int} and @code{float} with the same size.
+
+@item ptr_eq_long
+Target has pointers (@code{void *}) and @code{long} with the same size.
+
 @item large_double
 Target supports @code{double} that is longer than @code{float}.
 
@@ -1369,8 +1375,13 @@ Target supports @code{long double} that is longer than @code{double}.
 @item ptr32plus
 Target has pointers that are 32 bits or longer.
 
+@item size20plus
+Target has a 20-bit or larger address space, so at least supports
+16-bit array and structure sizes.
+
 @item size32plus
-Target supports array and structure sizes that are 32 bits or longer.
+Target has a 32-bit or larger address space, so at least supports
+24-bit array and structure sizes.
 
 @item 4byte_wchar_t
 Target has @code{wchar_t} that is at least 4 bytes.
@@ -2106,6 +2117,9 @@ Target provides a full C99 runtime.
 Target @code{string.h} and @code{wchar.h} headers provide C++ required
 overloads for @code{strchr} etc. functions.
 
+@item d_runtime
+Target provides the D runtime.
+
 @item dummy_wcsftime
 Target uses a dummy @code{wcsftime} function that always returns zero.
 
@@ -2143,6 +2157,10 @@ Target supports @code{mmap}.
 
 @item newlib
 Target supports Newlib.
+
+@item newlib_nano_io
+GCC was configured with @code{--enable-newlib-nano-formatted-io}, which reduces
+the code size of Newlib formatted I/O functions.
 
 @item pow10
 Target provides @code{pow10} function.

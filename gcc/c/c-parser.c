@@ -1445,6 +1445,8 @@ static vec<tree, va_gc> *c_parser_expr_list (c_parser *, bool, bool,
 					     vec<tree, va_gc> **, location_t *,
 					     tree *, vec<location_t> *,
 					     unsigned int * = NULL);
+static struct c_expr c_parser_has_attribute_expression (c_parser *);
+
 static void c_parser_oacc_declare (c_parser *);
 static void c_parser_oacc_enter_exit_data (c_parser *, bool);
 static void c_parser_oacc_update (c_parser *);
@@ -4313,7 +4315,126 @@ c_parser_attribute_any_word (c_parser *parser)
    type), a reserved word storage class specifier, type specifier or
    type qualifier.  ??? This still leaves out most reserved keywords
    (following the old parser), shouldn't we include them, and why not
-   allow identifiers declared as types to start the arguments?  */
+   allow identifiers declared as types to start the arguments?
+   When EXPECT_COMMA is true, expect the attribute to be preceded
+   by a comma and fail if it isn't.
+   When EMPTY_OK is true, allow and consume any number of consecutive
+   commas with no attributes in between.  */
+
+static tree
+c_parser_attribute (c_parser *parser, tree attrs,
+		    bool expect_comma = false, bool empty_ok = true)
+{
+  bool comma_first = c_parser_next_token_is (parser, CPP_COMMA);
+  if (!comma_first
+      && !c_parser_next_token_is (parser, CPP_NAME)
+      && !c_parser_next_token_is (parser, CPP_KEYWORD))
+    return NULL_TREE;
+
+  while (c_parser_next_token_is (parser, CPP_COMMA))
+    {
+      c_parser_consume_token (parser);
+      if (!empty_ok)
+	return attrs;
+    }
+
+  tree attr_name = c_parser_attribute_any_word (parser);
+  if (attr_name == NULL_TREE)
+    return NULL_TREE;
+
+  attr_name = canonicalize_attr_name (attr_name);
+  c_parser_consume_token (parser);
+
+  tree attr;
+  if (c_parser_next_token_is_not (parser, CPP_OPEN_PAREN))
+    {
+      if (expect_comma && !comma_first)
+	{
+	  /* A comma is missing between the last attribute on the chain
+	     and this one.  */
+	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
+				     "expected %<)%>");
+	  return error_mark_node;
+	}
+      attr = build_tree_list (attr_name, NULL_TREE);
+      /* Add this attribute to the list.  */
+      attrs = chainon (attrs, attr);
+      return attrs;
+    }
+  c_parser_consume_token (parser);
+
+  vec<tree, va_gc> *expr_list;
+  tree attr_args;
+  /* Parse the attribute contents.  If they start with an
+     identifier which is followed by a comma or close
+     parenthesis, then the arguments start with that
+     identifier; otherwise they are an expression list.
+     In objective-c the identifier may be a classname.  */
+  if (c_parser_next_token_is (parser, CPP_NAME)
+      && (c_parser_peek_token (parser)->id_kind == C_ID_ID
+	  || (c_dialect_objc ()
+	      && c_parser_peek_token (parser)->id_kind
+	      == C_ID_CLASSNAME))
+      && ((c_parser_peek_2nd_token (parser)->type == CPP_COMMA)
+	  || (c_parser_peek_2nd_token (parser)->type
+	      == CPP_CLOSE_PAREN))
+      && (attribute_takes_identifier_p (attr_name)
+	  || (c_dialect_objc ()
+	      && c_parser_peek_token (parser)->id_kind
+	      == C_ID_CLASSNAME)))
+    {
+      tree arg1 = c_parser_peek_token (parser)->value;
+      c_parser_consume_token (parser);
+      if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+	attr_args = build_tree_list (NULL_TREE, arg1);
+      else
+	{
+	  tree tree_list;
+	  c_parser_consume_token (parser);
+	  expr_list = c_parser_expr_list (parser, false, true,
+					  NULL, NULL, NULL, NULL);
+	  tree_list = build_tree_list_vec (expr_list);
+	  attr_args = tree_cons (NULL_TREE, arg1, tree_list);
+	  release_tree_vector (expr_list);
+	}
+    }
+  else
+    {
+      if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+	attr_args = NULL_TREE;
+      else
+	{
+	  expr_list = c_parser_expr_list (parser, false, true,
+					  NULL, NULL, NULL, NULL);
+	  attr_args = build_tree_list_vec (expr_list);
+	  release_tree_vector (expr_list);
+	}
+    }
+
+  attr = build_tree_list (attr_name, attr_args);
+  if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+    c_parser_consume_token (parser);
+  else
+    {
+      parser->lex_untranslated_string = false;
+      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
+				 "expected %<)%>");
+      return error_mark_node;
+    }
+
+  if (expect_comma && !comma_first)
+    {
+      /* A comma is missing between the last attribute on the chain
+	 and this one.  */
+      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
+				 "expected %<)%>");
+      return error_mark_node;
+    }
+
+  /* Add this attribute to the list.  */
+  attrs = chainon (attrs, attr);
+  return attrs;
+}
 
 static tree
 c_parser_attributes (c_parser *parser)
@@ -4338,97 +4459,19 @@ c_parser_attributes (c_parser *parser)
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
 	  return attrs;
 	}
-      /* Parse the attribute list.  */
-      while (c_parser_next_token_is (parser, CPP_COMMA)
-	     || c_parser_next_token_is (parser, CPP_NAME)
-	     || c_parser_next_token_is (parser, CPP_KEYWORD))
+      /* Parse the attribute list.  Require a comma between successive
+	 (possibly empty) attributes.  */
+      for (bool expect_comma = false; ; expect_comma = true)
 	{
-	  tree attr, attr_name, attr_args;
-	  vec<tree, va_gc> *expr_list;
-	  if (c_parser_next_token_is (parser, CPP_COMMA))
-	    {
-	      c_parser_consume_token (parser);
-	      continue;
-	    }
-
-	  attr_name = c_parser_attribute_any_word (parser);
-	  if (attr_name == NULL)
+	  /* Parse a single attribute.  */
+	  tree attr = c_parser_attribute (parser, attrs, expect_comma);
+	  if (attr == error_mark_node)
+	    return attrs;
+	  if (!attr)
 	    break;
-	  attr_name = canonicalize_attr_name (attr_name);
-	  c_parser_consume_token (parser);
-	  if (c_parser_next_token_is_not (parser, CPP_OPEN_PAREN))
-	    {
-	      attr = build_tree_list (attr_name, NULL_TREE);
-	      /* Add this attribute to the list.  */
-	      attrs = chainon (attrs, attr);
-	      /* If the next token isn't a comma, we're done.  */
-	      if (!c_parser_next_token_is (parser, CPP_COMMA))
-		break;
-	      continue;
-	    }
-	  c_parser_consume_token (parser);
-	  /* Parse the attribute contents.  If they start with an
-	     identifier which is followed by a comma or close
-	     parenthesis, then the arguments start with that
-	     identifier; otherwise they are an expression list.  
-	     In objective-c the identifier may be a classname.  */
-	  if (c_parser_next_token_is (parser, CPP_NAME)
-	      && (c_parser_peek_token (parser)->id_kind == C_ID_ID
-		  || (c_dialect_objc ()
-		      && c_parser_peek_token (parser)->id_kind
-			 == C_ID_CLASSNAME))
-	      && ((c_parser_peek_2nd_token (parser)->type == CPP_COMMA)
-		  || (c_parser_peek_2nd_token (parser)->type
-		      == CPP_CLOSE_PAREN))
-	      && (attribute_takes_identifier_p (attr_name)
-		  || (c_dialect_objc ()
-		      && c_parser_peek_token (parser)->id_kind
-			 == C_ID_CLASSNAME)))
-	    {
-	      tree arg1 = c_parser_peek_token (parser)->value;
-	      c_parser_consume_token (parser);
-	      if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
-		attr_args = build_tree_list (NULL_TREE, arg1);
-	      else
-		{
-		  tree tree_list;
-		  c_parser_consume_token (parser);
-		  expr_list = c_parser_expr_list (parser, false, true,
-						  NULL, NULL, NULL, NULL);
-		  tree_list = build_tree_list_vec (expr_list);
-		  attr_args = tree_cons (NULL_TREE, arg1, tree_list);
-		  release_tree_vector (expr_list);
-		}
-	    }
-	  else
-	    {
-	      if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
-		attr_args = NULL_TREE;
-	      else
-		{
-		  expr_list = c_parser_expr_list (parser, false, true,
-						  NULL, NULL, NULL, NULL);
-		  attr_args = build_tree_list_vec (expr_list);
-		  release_tree_vector (expr_list);
-		}
-	    }
+	  attrs = attr;
+      }
 
-	  attr = build_tree_list (attr_name, attr_args);
-	  if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
-	    c_parser_consume_token (parser);
-	  else
-	    {
-	      parser->lex_untranslated_string = false;
-	      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
-					 "expected %<)%>");
-	      return attrs;
-	    }
-	  /* Add this attribute to the list.  */
-	  attrs = chainon (attrs, attr);
-	  /* If the next token isn't a comma, we're done.  */
-	  if (!c_parser_next_token_is (parser, CPP_COMMA))
-	    break;
-	}
       /* Look for the two `)' tokens.  */
       if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
 	c_parser_consume_token (parser);
@@ -7263,6 +7306,8 @@ c_parser_unary_expression (c_parser *parser)
 	  return c_parser_sizeof_expression (parser);
 	case RID_ALIGNOF:
 	  return c_parser_alignof_expression (parser);
+	case RID_BUILTIN_HAS_ATTRIBUTE:
+	  return c_parser_has_attribute_expression (parser);
 	case RID_EXTENSION:
 	  c_parser_consume_token (parser);
 	  ext = disable_extension_diagnostics ();
@@ -7460,6 +7505,123 @@ c_parser_alignof_expression (c_parser *parser)
       set_c_expr_source_range (&ret, start_loc, end_loc);
       return ret;
     }
+}
+
+/* Parse the __builtin_has_attribute ([expr|type], attribute-spec)
+   expression.  */
+
+static struct c_expr
+c_parser_has_attribute_expression (c_parser *parser)
+{
+  gcc_assert (c_parser_next_token_is_keyword (parser,
+					      RID_BUILTIN_HAS_ATTRIBUTE));
+  c_parser_consume_token (parser);
+
+  c_inhibit_evaluation_warnings++;
+
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    {
+      c_inhibit_evaluation_warnings--;
+      in_typeof--;
+
+      struct c_expr result;
+      result.set_error ();
+      result.original_code = ERROR_MARK;
+      result.original_type = NULL;
+      return result;
+    }
+
+  /* Treat the type argument the same way as in typeof for the purposes
+     of warnings.  FIXME: Generalize this so the warning refers to
+     __builtin_has_attribute rather than typeof.  */
+  in_typeof++;
+
+  /* The first operand: one of DECL, EXPR, or TYPE.  */
+  tree oper = NULL_TREE;
+  if (c_parser_next_tokens_start_typename (parser, cla_prefer_id))
+    {
+      struct c_type_name *tname = c_parser_type_name (parser);
+      in_typeof--;
+      if (tname)
+	{
+	  oper = groktypename (tname, NULL, NULL);
+	  pop_maybe_used (variably_modified_type_p (oper, NULL_TREE));
+	}
+    }
+  else
+    {
+      struct c_expr cexpr = c_parser_expr_no_commas (parser, NULL);
+      c_inhibit_evaluation_warnings--;
+      in_typeof--;
+      if (cexpr.value != error_mark_node)
+	{
+	  mark_exp_read (cexpr.value);
+	  oper = cexpr.value;
+	  tree etype = TREE_TYPE (oper);
+	  bool was_vm = variably_modified_type_p (etype, NULL_TREE);
+	  /* This is returned with the type so that when the type is
+	     evaluated, this can be evaluated.  */
+	  if (was_vm)
+	    oper = c_fully_fold (oper, false, NULL);
+	  pop_maybe_used (was_vm);
+	}
+    }
+
+  struct c_expr result;
+  result.original_code = ERROR_MARK;
+  result.original_type = NULL;
+
+  if (!c_parser_require (parser, CPP_COMMA, "expected %<,%>"))
+    {
+      /* Consume the closing parenthesis if that's the next token
+	 in the likely case the built-in was invoked with fewer
+	 than two arguments.  */
+      if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+	c_parser_consume_token (parser);
+      c_inhibit_evaluation_warnings--;
+      result.set_error ();
+      return result;
+    }
+
+  parser->lex_untranslated_string = true;
+
+  location_t atloc = c_parser_peek_token (parser)->location;
+  /* Parse a single attribute.  Require no leading comma and do not
+     allow empty attributes.  */
+  tree attr = c_parser_attribute (parser, NULL_TREE, false, false);
+
+  parser->lex_untranslated_string = false;
+
+  if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+    c_parser_consume_token (parser);
+  else
+    {
+      c_parser_error (parser, "expected identifier");
+      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
+
+      result.set_error ();
+      return result;
+    }
+
+  if (!attr)
+    {
+      error_at (atloc, "expected identifier");
+      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
+				 "expected %<)%>");
+      result.set_error ();
+      return result;
+    }
+
+  result.original_code = INTEGER_CST;
+  result.original_type = boolean_type_node;
+
+  if (has_attribute (atloc, oper, attr, default_conversion))
+    result.value = boolean_true_node;
+  else
+    result.value =  boolean_false_node;
+
+  return result;
 }
 
 /* Helper function to read arguments of builtins which are interfaces

@@ -320,7 +320,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wlogical-op  -Wlogical-not-parentheses  -Wlong-long @gol
 -Wmain  -Wmaybe-uninitialized  -Wmemset-elt-size  -Wmemset-transposed-args @gol
 -Wmisleading-indentation  -Wno-missing-attributes  -Wmissing-braces @gol
--Wmissing-field-initializers  -Wmissing-include-dirs  -Wmissing-profile @gol
+-Wmissing-field-initializers  -Wmissing-format-attribute @gol
+-Wmissing-include-dirs  -Wmissing-noreturn  -Wmissing-profile @gol
 -Wno-multichar  -Wmultistatement-macros  -Wnonnull  -Wnonnull-compare @gol
 -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]} @gol
 -Wnull-dereference  -Wodr  -Wno-overflow  -Wopenmp-simd  @gol
@@ -340,10 +341,9 @@ Objective-C and Objective-C++ Dialects}.
 -Wsizeof-pointer-memaccess  -Wsizeof-array-argument @gol
 -Wstack-protector  -Wstack-usage=@var{byte-size}  -Wstrict-aliasing @gol
 -Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n} @gol
--Wstringop-overflow=@var{n}  -Wstringop-truncation @gol
+-Wstringop-overflow=@var{n}  -Wstringop-truncation  -Wsubobject-linkage @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}malloc@r{]} @gol
 -Wsuggest-final-types @gol  -Wsuggest-final-methods  -Wsuggest-override @gol
--Wmissing-format-attribute  -Wsubobject-linkage @gol
 -Wswitch  -Wswitch-bool  -Wswitch-default  -Wswitch-enum @gol
 -Wswitch-unreachable  -Wsync-nand @gol
 -Wsystem-headers  -Wtautological-compare  -Wtrampolines  -Wtrigraphs @gol
@@ -418,6 +418,7 @@ Objective-C and Objective-C++ Dialects}.
 -fipa-bit-cp  -fipa-vrp  -fipa-pta  -fipa-profile  -fipa-pure-const @gol
 -fipa-reference  -fipa-reference-addressable @gol
 -fipa-stack-alignment  -fipa-icf  -fira-algorithm=@var{algorithm} @gol
+-flive-patching=@var{level} @gol
 -fira-region=@var{region}  -fira-hoist-pressure @gol
 -fira-loop-pressure  -fno-ira-share-save-slots @gol
 -fno-ira-share-spill-slots @gol
@@ -949,6 +950,7 @@ Objective-C and Objective-C++ Dialects}.
 -mmad  -mno-mad  -mimadd  -mno-imadd  -mfused-madd  -mno-fused-madd  -nocpp @gol
 -mfix-24k  -mno-fix-24k @gol
 -mfix-r4000  -mno-fix-r4000  -mfix-r4400  -mno-fix-r4400 @gol
+-mfix-r5900  -mno-fix-r5900 @gol
 -mfix-r10000  -mno-fix-r10000  -mfix-rm7000  -mno-fix-rm7000 @gol
 -mfix-vr4120  -mno-fix-vr4120 @gol
 -mfix-vr4130  -mno-fix-vr4130  -mfix-sb1  -mno-fix-sb1 @gol
@@ -1315,6 +1317,7 @@ See RS/6000 and PowerPC Options.
 -mcmodel=@var{code-model}  -mabi=@var{name}  -maddress-mode=@var{mode} @gol
 -m32  -m64  -mx32  -m16  -miamcu  -mlarge-data-threshold=@var{num} @gol
 -msse2avx  -mfentry  -mrecord-mcount  -mnop-mcount  -m8bit-idiv @gol
+-minstrument-return=@var{type} -mfentry-name=@var{name} -mfentry-section=@var{name} @gol
 -mavx256-split-unaligned-load  -mavx256-split-unaligned-store @gol
 -malign-data=@var{type}  -mstack-protector-guard=@var{guard} @gol
 -mstack-protector-guard-reg=@var{reg} @gol
@@ -5894,6 +5897,7 @@ attributes currently supported are listed below.
 @item -Wsuggest-attribute=pure
 @itemx -Wsuggest-attribute=const
 @itemx -Wsuggest-attribute=noreturn
+@itemx -Wmissing-noreturn
 @itemx -Wsuggest-attribute=malloc
 @opindex Wsuggest-attribute=pure
 @opindex Wno-suggest-attribute=pure
@@ -5901,6 +5905,8 @@ attributes currently supported are listed below.
 @opindex Wno-suggest-attribute=const
 @opindex Wsuggest-attribute=noreturn
 @opindex Wno-suggest-attribute=noreturn
+@opindex Wmissing-noreturn
+@opindex Wno-missing-noreturn
 @opindex Wsuggest-attribute=malloc
 @opindex Wno-suggest-attribute=malloc
 
@@ -9333,6 +9339,65 @@ equivalences that are found only by GCC and equivalences found only by Gold.
 
 This flag is enabled by default at @option{-O2} and @option{-Os}.
 
+@item -flive-patching=@var{level}
+@opindex flive-patching
+Control GCC's optimizations to provide a safe compilation for live-patching.
+
+If the compiler's optimization uses a function's body or information extracted
+from its body to optimize/change another function, the latter is called an
+impacted function of the former.  If a function is patched, its impacted
+functions should be patched too.
+
+The impacted functions are decided by the compiler's interprocedural
+optimizations.  For example, inlining a function into its caller, cloning
+a function and changing its caller to call this new clone, or extracting
+a function's pureness/constness information to optimize its direct or
+indirect callers, etc.
+
+Usually, the more IPA optimizations enabled, the larger the number of
+impacted functions for each function.  In order to control the number of
+impacted functions and computed the list of impacted function easily,
+we provide control to partially enable IPA optimizations on two different
+levels.
+
+The @var{level} argument should be one of the following:
+
+@table @samp
+
+@item inline-clone
+
+Only enable inlining and cloning optimizations, which includes inlining,
+cloning, interprocedural scalar replacement of aggregates and partial inlining.
+As a result, when patching a function, all its callers and its clones'
+callers need to be patched as well.
+
+@option{-flive-patching=inline-clone} disables the following optimization flags:
+@gccoptlist{-fwhole-program  -fipa-pta  -fipa-reference  -fipa-ra @gol
+-fipa-icf  -fipa-icf-functions  -fipa-icf-variables @gol
+-fipa-bit-cp  -fipa-vrp  -fipa-pure-const  -fipa-reference-addressable @gol
+-fipa-stack-alignment}
+
+@item inline-only-static
+
+Only enable inlining of static functions.
+As a result, when patching a static function, all its callers need to be
+patches as well.
+
+In addition to all the flags that -flive-patching=inline-clone disables,
+@option{-flive-patching=inline-only-static} disables the following additional
+optimization flags:
+@gccoptlist{-fipa-cp-clone  -fipa-sra  -fpartial-inlining  -fipa-cp}
+
+@end table
+
+When -flive-patching specified without any value, the default value
+is "inline-clone".
+
+This flag is disabled by default.
+
+Note that -flive-patching is not supported with link-time optimizer.
+(@option{-flto}).
+
 @item -fisolate-erroneous-paths-dereference
 @opindex fisolate-erroneous-paths-dereference
 Detect paths that trigger erroneous or undefined behavior due to
@@ -9839,8 +9904,9 @@ subsections @code{.text.hot} for most frequently executed functions and
 the linker so object file format must support named sections and linker must
 place them in a reasonable way.
 
-Also profile feedback must be available to make this option effective.  See
-@option{-fprofile-arcs} for details.
+This option isn't effective unless you either provide profile feedback
+(see @option{-fprofile-arcs} for details) or manually annotate functions with 
+@code{hot} or @code{cold} attributes (@pxref{Common Function Attributes}).
 
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
@@ -13034,27 +13100,26 @@ Search the library named @var{library} when linking.  (The second
 alternative with the library as a separate argument is only for
 POSIX compliance and is not recommended.)
 
+The @option{-l} option is passed directly to the linker by GCC.  Refer
+to your linker documentation for exact details.  The general
+description below applies to the GNU linker.  
+
+The linker searches a standard list of directories for the library.
+The directories searched include several standard system directories
+plus any that you specify with @option{-L}.
+
+Static libraries are archives of object files, and have file names
+like @file{lib@var{library}.a}.  Some targets also support shared
+libraries, which typically have names like @file{lib@var{library}.so}.
+If both static and shared libraries are found, the linker gives
+preference to linking with the shared library unless the
+@option{-static} option is used.
+
 It makes a difference where in the command you write this option; the
 linker searches and processes libraries and object files in the order they
 are specified.  Thus, @samp{foo.o -lz bar.o} searches library @samp{z}
 after file @file{foo.o} but before @file{bar.o}.  If @file{bar.o} refers
 to functions in @samp{z}, those functions may not be loaded.
-
-The linker searches a standard list of directories for the library,
-which is actually a file named @file{lib@var{library}.a}.  The linker
-then uses this file as if it had been specified precisely by name.
-
-The directories searched include several standard system directories
-plus any that you specify with @option{-L}.
-
-Normally the files found this way are library files---archive files
-whose members are object files.  The linker handles an archive file by
-scanning through it for members which define symbols that have so far
-been referenced but not defined.  But if the file that is found is an
-ordinary object file, it is linked in the usual fashion.  The only
-difference between using an @option{-l} option and specifying a file name
-is that @option{-l} surrounds @var{library} with @samp{lib} and @samp{.a}
-and searches several directories.
 
 @item -lobjc
 @opindex lobjc
@@ -15622,7 +15687,7 @@ Specify the name of the target processor for which GCC should tune the
 performance of the code.  Permissible values for this option are:
 @samp{generic}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a55},
 @samp{cortex-a57}, @samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75},
-@samp{cortex-a76}, @samp{ares}, @samp{exynos-m1}, @samp{falkor},
+@samp{cortex-a76}, @samp{ares}, @samp{exynos-m1}, @samp{emag}, @samp{falkor},
 @samp{qdf24xx}, @samp{saphira}, @samp{phecda}, @samp{xgene1}, @samp{vulcan},
 @samp{thunderx}, @samp{thunderxt88}, @samp{thunderxt88p1}, @samp{thunderxt81},
 @samp{tsv110}, @samp{thunderxt83}, @samp{thunderx2t99},
@@ -17142,6 +17207,14 @@ The single-precision VFPv3 floating-point instructions.  The extension
 The VFPv3 floating-point instructions with 16 double-precision registers.
 The extension +vfpv3-d16 can be used as an alias for this extension.
 
+@item +vfpv3xd-d16-fp16
+The single-precision VFPv3 floating-point instructions with 16 double-precision
+registers and the half-precision floating-point conversion operations.
+
+@item +vfpv3-d16-fp16
+The VFPv3 floating-point instructions with 16 double-precision
+registers and the half-precision floating-point conversion operations.
+
 @item +nofp
 Disable the floating-point extension.
 
@@ -17214,21 +17287,13 @@ This option specifies the name of the target ARM processor for
 which GCC should tune the performance of the code.
 For some ARM implementations better performance can be obtained by using
 this option.
-Permissible names are: @samp{arm2}, @samp{arm250},
-@samp{arm3}, @samp{arm6}, @samp{arm60}, @samp{arm600}, @samp{arm610},
-@samp{arm620}, @samp{arm7}, @samp{arm7m}, @samp{arm7d}, @samp{arm7dm},
-@samp{arm7di}, @samp{arm7dmi}, @samp{arm70}, @samp{arm700},
-@samp{arm700i}, @samp{arm710}, @samp{arm710c}, @samp{arm7100},
-@samp{arm720},
-@samp{arm7500}, @samp{arm7500fe}, @samp{arm7tdmi}, @samp{arm7tdmi-s},
-@samp{arm710t}, @samp{arm720t}, @samp{arm740t},
-@samp{strongarm}, @samp{strongarm110}, @samp{strongarm1100},
-@samp{strongarm1110},
-@samp{arm8}, @samp{arm810}, @samp{arm9}, @samp{arm9e}, @samp{arm920},
-@samp{arm920t}, @samp{arm922t}, @samp{arm946e-s}, @samp{arm966e-s},
-@samp{arm968e-s}, @samp{arm926ej-s}, @samp{arm940t}, @samp{arm9tdmi},
-@samp{arm10tdmi}, @samp{arm1020t}, @samp{arm1026ej-s},
-@samp{arm10e}, @samp{arm1020e}, @samp{arm1022e},
+Permissible names are: @samp{arm7tdmi}, @samp{arm7tdmi-s}, @samp{arm710t},
+@samp{arm720t}, @samp{arm740t}, @samp{strongarm}, @samp{strongarm110},
+@samp{strongarm1100}, 0@samp{strongarm1110}, @samp{arm8}, @samp{arm810},
+@samp{arm9}, @samp{arm9e}, @samp{arm920}, @samp{arm920t}, @samp{arm922t},
+@samp{arm946e-s}, @samp{arm966e-s}, @samp{arm968e-s}, @samp{arm926ej-s},
+@samp{arm940t}, @samp{arm9tdmi}, @samp{arm10tdmi}, @samp{arm1020t},
+@samp{arm1026ej-s}, @samp{arm10e}, @samp{arm1020e}, @samp{arm1022e},
 @samp{arm1136j-s}, @samp{arm1136jf-s}, @samp{mpcore}, @samp{mpcorenovfp},
 @samp{arm1156t2-s}, @samp{arm1156t2f-s}, @samp{arm1176jz-s}, @samp{arm1176jzf-s},
 @samp{generic-armv7-a}, @samp{cortex-a5}, @samp{cortex-a7}, @samp{cortex-a8},
@@ -17237,22 +17302,12 @@ Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{cortex-a57}, @samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75},
 @samp{cortex-a76}, @samp{ares}, @samp{cortex-r4}, @samp{cortex-r4f},
 @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8}, @samp{cortex-r52},
-@samp{cortex-m33},
-@samp{cortex-m23},
-@samp{cortex-m7},
-@samp{cortex-m4},
-@samp{cortex-m3},
-@samp{cortex-m1},
-@samp{cortex-m0},
-@samp{cortex-m0plus},
-@samp{cortex-m1.small-multiply},
-@samp{cortex-m0.small-multiply},
-@samp{cortex-m0plus.small-multiply},
-@samp{exynos-m1},
-@samp{marvell-pj4},
-@samp{xscale}, @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312},
-@samp{fa526}, @samp{fa626},
-@samp{fa606te}, @samp{fa626te}, @samp{fmp626}, @samp{fa726te},
+@samp{cortex-m0}, @samp{cortex-m0plus}, @samp{cortex-m1}, @samp{cortex-m3},
+@samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m23}, @samp{cortex-m33},
+@samp{cortex-m1.small-multiply}, @samp{cortex-m0.small-multiply},
+@samp{cortex-m0plus.small-multiply}, @samp{exynos-m1}, @samp{marvell-pj4},
+@samp{xscale}, @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312}, @samp{fa526},
+@samp{fa626}, @samp{fa606te}, @samp{fa626te}, @samp{fmp626}, @samp{fa726te},
 @samp{xgene1}.
 
 Additionally, this option can specify that GCC should tune the performance
@@ -17329,7 +17384,8 @@ Disables the floating-point and SIMD instructions on
 
 @item +nofp.dp
 Disables the double-precision component of the floating-point instructions
-on @samp{cortex-r5}, @samp{cortex-r52} and @samp{cortex-m7}.
+on @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8}, @samp{cortex-r52} and
+@samp{cortex-m7}.
 
 @item +nosimd
 Disables the SIMD (but not floating-point) instructions on
@@ -21343,7 +21399,8 @@ The processor names are:
 @samp{orion},
 @samp{p5600}, @samp{p6600},
 @samp{r2000}, @samp{r3000}, @samp{r3900}, @samp{r4000}, @samp{r4400},
-@samp{r4600}, @samp{r4650}, @samp{r4700}, @samp{r6000}, @samp{r8000},
+@samp{r4600}, @samp{r4650}, @samp{r4700}, @samp{r5900},
+@samp{r6000}, @samp{r8000},
 @samp{rm7000}, @samp{rm9000},
 @samp{r10000}, @samp{r12000}, @samp{r14000}, @samp{r16000},
 @samp{sb1},
@@ -22134,6 +22191,16 @@ This option can only be used if the target architecture supports
 branch-likely instructions.  @option{-mfix-r10000} is the default when
 @option{-march=r10000} is used; @option{-mno-fix-r10000} is the default
 otherwise.
+
+@item -mfix-r5900
+@itemx -mno-fix-r5900
+@opindex mfix-r5900
+Do not attempt to schedule the preceding instruction into the delay slot
+of a branch instruction placed at the end of a short loop of six
+instructions or fewer and always schedule a @code{nop} instruction there
+instead.  The short loop bug under certain conditions causes loops to
+execute only once or twice, due to a hardware bug in the R5900 chip.  The
+workaround is implemented by the assembler rather than by GCC@.
 
 @item -mfix-rm7000
 @itemx -mno-fix-rm7000
@@ -25979,8 +26046,8 @@ Generate code that runs on @var{cpu-type}, which is the name of a
 system representing a certain processor type.  Possible values for
 @var{cpu-type} are @samp{z900}/@samp{arch5}, @samp{z990}/@samp{arch6},
 @samp{z9-109}, @samp{z9-ec}/@samp{arch7}, @samp{z10}/@samp{arch8},
-@samp{z196}/@samp{arch9}, @samp{zEC12}, @samp{z13}/@samp{arch11}, and
-@samp{native}.
+@samp{z196}/@samp{arch9}, @samp{zEC12}, @samp{z13}/@samp{arch11},
+@samp{z14}/@samp{arch12}, and @samp{native}.
 
 The default is @option{-march=z900}.
 
@@ -29066,6 +29133,27 @@ If profiling is active (@option{-pg}), generate the calls to
 the profiling functions as NOPs. This is useful when they
 should be patched in later dynamically. This is likely only
 useful together with @option{-mrecord-mcount}.
+
+@item -minstrument-return=@var{type}
+@opindex minstrument-return
+Instrument function exit in -pg -mfentry instrumented functions with
+call to specified function. This only instruments true returns ending
+with ret, but not sibling calls ending with jump. Valid types
+are @var{none} to not instrument, @var{call} to generate a call to __return__,
+or @var{nop5} to generate a 5 byte nop.
+
+@item -mrecord-return
+@itemx -mno-record-return
+@opindex mrecord-return
+Generate a __return_loc section pointing to all return instrumentation code.
+
+@item -mfentry-name=@var{name}
+@opindex mfentry-name
+Set name of __fentry__ symbol called at function entry for -pg -mfentry functions.
+
+@item -mfentry-section=@var{name}
+@opindex mfentry-section
+Set name of section to record -mrecord-mcount calls (default __mcount_loc).
 
 @item -mskip-rax-setup
 @itemx -mno-skip-rax-setup

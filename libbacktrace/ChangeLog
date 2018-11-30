@@ -1,3 +1,50 @@
+2018-11-30  Tom de Vries  <tdevries@suse.de>
+
+	* Makefile.am (check_PROGRAMS): Add test_elf, test_xcoff_32,
+	test_xcoff_64, test_pecoff and test_unknown.
+	* Makefile.in: Regenerate.
+	* test_format.c: New file.
+
+2018-11-30  Tom de Vries  <tdevries@suse.de>
+
+	* Makefile.am : Add _with_alloc version for each test in
+	check_PROGRAMS.
+	* Makefile.in: Regenerate.
+
+2018-11-30  Tom de Vries  <tdevries@suse.de>
+
+	* internal.h (backtrace_vector_free): New static inline fuction,
+	factored out of ...
+	* dwarf.c (read_line_info): ... here.
+
+2018-11-28  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (read_abbrevs): Fix handling of abbrevs->abbrevs allocation
+	failure.
+
+2018-11-27  Tom de Vries  <tdevries@suse.de>
+
+	* mmap.c (backtrace_vector_release): Same.
+	* unittest.c (test1): Add check.
+
+2018-11-27  Tom de Vries  <tdevries@suse.de>
+
+	* alloc.c (backtrace_vector_release): Handle vec->size == 0 using free
+	instead of realloc.
+	* Makefile.am (check_PROGRAMS): Add unittest.
+	* Makefile.in: Regenerate.
+	* unittest.c: New file.
+
+2018-11-22  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (read_initial_length): Factor out of ...
+	(build_address_map, read_line_info): ... here.
+
+2018-11-21  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (read_string): Factor out of ...
+	(read_attribute, read_line_header, read_line_program): ... here.
+
 2018-10-31  Joseph Myers  <joseph@codesourcery.com>
 
 	PR bootstrap/82856

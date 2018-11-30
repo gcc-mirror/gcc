@@ -25,5 +25,7 @@ int i(int x){
 }
 
 /* { dg-final { scan-tree-dump-times " \\+ 24;" 2 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "\\(unsigned int\\)" 2 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "\\(unsigned int\\)" 2 "optimized" { target { ! int16 } } } } */
+/* { dg-final { scan-tree-dump-times "\\(unsigned int\\)" 1 "optimized" { target int16 } } } */
+/* { dg-final { scan-tree-dump-times "\\(unsigned short\\)" 1 "optimized" { target int16 } } } */
 /* { dg-final { scan-tree-dump-not "2147483647" "optimized" } } */

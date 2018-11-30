@@ -199,15 +199,16 @@ report_unroll (struct loop *loop, dump_location_t locus)
   if (!dump_enabled_p ())
     return;
 
-  dump_printf_loc (report_flags, locus,
+  dump_metadata_t metadata (report_flags, locus.get_impl_location ());
+  dump_printf_loc (metadata, locus.get_user_location (),
                    "loop unrolled %d times",
                    loop->lpt_decision.times);
   if (profile_info && loop->header->count.initialized_p ())
-    dump_printf (report_flags,
+    dump_printf (metadata,
                  " (header execution count %d)",
                  (int)loop->header->count.to_gcov_type ());
 
-  dump_printf (report_flags, "\n");
+  dump_printf (metadata, "\n");
 }
 
 /* Decide whether unroll loops and how much.  */

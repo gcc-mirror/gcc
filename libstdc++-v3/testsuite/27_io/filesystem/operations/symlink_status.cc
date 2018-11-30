@@ -42,6 +42,7 @@ test01()
 
   fs::path link = __gnu_test::nonexistent_path();
   create_directory_symlink(dot, link);
+  __gnu_test::scoped_file l(link, __gnu_test::scoped_file::adopt_file);
 
   st1 = fs::symlink_status(link);
   VERIFY( st1.type() == fs::file_type::symlink );

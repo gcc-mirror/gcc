@@ -360,8 +360,15 @@ update_profile_after_ifcombine (basic_block inner_cond_bb,
 
   inner_cond_bb->count = outer_cond_bb->count;
 
-  inner_taken->probability = outer2->probability + outer_to_inner->probability
-			     * inner_taken->probability;
+  /* Handle special case where inner_taken probability is always. In this case
+     we know that the overall outcome will be always as well, but combining
+     probabilities will be conservative because it does not know that
+     outer2->probability is inverse of outer_to_inner->probability.  */
+  if (inner_taken->probability == profile_probability::always ())
+    ;
+  else
+    inner_taken->probability = outer2->probability + outer_to_inner->probability
+			       * inner_taken->probability;
   inner_not_taken->probability = profile_probability::always ()
 				 - inner_taken->probability;
 

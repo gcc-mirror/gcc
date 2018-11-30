@@ -4723,7 +4723,15 @@ vect_mark_pattern_stmts (stmt_vec_info orig_stmt_info, gimple *pattern_stmt,
   if (def_seq)
     for (gimple_stmt_iterator si = gsi_start (def_seq);
 	 !gsi_end_p (si); gsi_next (&si))
-      vect_init_pattern_stmt (gsi_stmt (si), orig_stmt_info, pattern_vectype);
+      {
+	stmt_vec_info pattern_stmt_info
+	  = vect_init_pattern_stmt (gsi_stmt (si),
+				    orig_stmt_info, pattern_vectype);
+	/* Stmts in the def sequence are not vectorizable cycle or
+	   induction defs, instead they should all be vect_internal_def
+	   feeding the main pattern stmt which retains this def type.  */
+	STMT_VINFO_DEF_TYPE (pattern_stmt_info) = vect_internal_def;
+      }
 
   if (orig_pattern_stmt)
     {

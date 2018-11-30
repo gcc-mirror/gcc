@@ -65,8 +65,8 @@ class Conditional_expression;
 class Compound_expression;
 class Numeric_constant;
 class Named_object;
-class Export;
-class Import;
+class Export_function_body;
+class Import_expression;
 class Temporary_statement;
 class Label;
 class Ast_dump_context;
@@ -939,6 +939,11 @@ class Expression
   copy()
   { return this->do_copy(); }
 
+  // Return the cost of this statement for inlining purposes.
+  int
+  inlining_cost() const
+  { return this->do_inlining_cost(); }
+
   // Return whether the expression is addressable--something which may
   // be used as the operand of the unary & operator.
   bool
@@ -1004,16 +1009,16 @@ class Expression
   backend_numeric_constant_expression(Translate_context*,
                                       Numeric_constant* val);
 
-  // Export the expression.  This is only used for constants.  It will
-  // be used for things like values of named constants and sizes of
-  // arrays.
+  // Export the expression.
   void
-  export_expression(Export* exp) const
-  { this->do_export(exp); }
+  export_expression(Export_function_body* efb) const
+  { this->do_export(efb); }
 
-  // Import an expression.
+  // Import an expression.  The location should be used for the
+  // returned expression.  Errors should be reported using the
+  // Import's location method.
   static Expression*
-  import_expression(Import*);
+  import_expression(Import_expression*, Location);
 
   // Return an expression which checks that VAL, of arbitrary integer type,
   // is non-negative and is not more than the maximum integer value.
@@ -1084,6 +1089,13 @@ class Expression
   virtual Expression*
   do_copy() = 0;
 
+  // Child class implements determining the cost of this statement for
+  // inlining.  The default cost is high, so we only need to define
+  // this method for expressions that can be inlined.
+  virtual int
+  do_inlining_cost() const
+  { return 0x100000; }
+
   // Child class implements whether the expression is addressable.
   virtual bool
   do_is_addressable() const
@@ -1118,7 +1130,7 @@ class Expression
 
   // Child class implements export.
   virtual void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   // For children to call to give an error for an unused value.
   void
@@ -1343,6 +1355,12 @@ class Var_expression : public Expression
   do_copy()
   { return this; }
 
+  int
+  do_inlining_cost() const;
+
+  void
+  do_export(Export_function_body*) const;
+
   bool
   do_is_addressable() const
   { return true; }
@@ -1555,7 +1573,7 @@ class String_expression : public Expression
   { return this->val_; }
 
   static Expression*
-  do_import(Import*);
+  do_import(Import_expression*, Location);
 
  protected:
   bool
@@ -1590,8 +1608,14 @@ class String_expression : public Expression
   static void
   export_string(String_dump* exp, const String_expression* str);
 
+  // Set the inlining cost a bit high since inlining may cause
+  // duplicated string literals.
+  int
+  do_inlining_cost() const
+  { return 5; }
+
   void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -1634,7 +1658,7 @@ class Type_conversion_expression : public Expression
 
   // Import a type conversion expression.
   static Expression*
-  do_import(Import*);
+  do_import(Import_expression*, Location);
 
  protected:
   int
@@ -1674,8 +1698,11 @@ class Type_conversion_expression : public Expression
   Bexpression*
   do_get_backend(Translate_context* context);
 
+  int
+  do_inlining_cost() const;
+
   void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -1805,7 +1832,7 @@ class Unary_expression : public Expression
 		Location, Numeric_constant* nc, bool *issued_error);
 
   static Expression*
-  do_import(Import*);
+  do_import(Import_expression*, Location);
 
   // Declare that this deref does or does not require an explicit nil check.
   void
@@ -1865,8 +1892,12 @@ class Unary_expression : public Expression
   Bexpression*
   do_get_backend(Translate_context*);
 
+  int
+  do_inlining_cost() const
+  { return 1; }
+
   void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -1954,7 +1985,7 @@ class Binary_expression : public Expression
 		   bool* result);
 
   static Expression*
-  do_import(Import*);
+  do_import(Import_expression*, Location);
 
   // Report an error if OP can not be applied to TYPE.  Return whether
   // it can.  OTYPE is the type of the other operand.
@@ -2010,8 +2041,12 @@ class Binary_expression : public Expression
   Bexpression*
   do_get_backend(Translate_context*);
 
+  int
+  do_inlining_cost() const
+  { return 1; }
+
   void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -2118,7 +2153,7 @@ class String_concat_expression : public Expression
   { go_unreachable(); }
 
   void
-  do_export(Export*) const
+  do_export(Export_function_body*) const
   { go_unreachable(); }
 
   void
@@ -2444,7 +2479,7 @@ class Builtin_call_expression : public Call_expression
   do_get_backend(Translate_context*);
 
   void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   virtual bool
   do_is_recover_call() const;
@@ -3539,7 +3574,7 @@ class Struct_construction_expression : public Expression,
   do_get_backend(Translate_context*);
 
   void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -3594,7 +3629,7 @@ protected:
   do_check_types(Gogo*);
 
   void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   // The indexes.
   const std::vector<unsigned long>*
@@ -3732,7 +3767,7 @@ class Map_construction_expression : public Expression
   do_get_backend(Translate_context*);
 
   void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -3847,7 +3882,7 @@ class Heap_expression : public Expression
   // We only export global objects, and the parser does not generate
   // this in global scope.
   void
-  do_export(Export*) const
+  do_export(Export_function_body*) const
   { go_unreachable(); }
 
   void

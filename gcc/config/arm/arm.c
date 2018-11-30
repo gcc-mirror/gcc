@@ -7379,21 +7379,34 @@ legitimate_pic_operand_p (rtx x)
   return 1;
 }
 
-/* Record that the current function needs a PIC register.  Initialize
-   cfun->machine->pic_reg if we have not already done so.  */
+/* Record that the current function needs a PIC register.  If PIC_REG is null,
+   a new pseudo is allocated as PIC register, otherwise PIC_REG is used.  In
+   both case cfun->machine->pic_reg is initialized if we have not already done
+   so.  COMPUTE_NOW decide whether and where to set the PIC register.  If true,
+   PIC register is reloaded in the current position of the instruction stream
+   irregardless of whether it was loaded before.  Otherwise, it is only loaded
+   if not already done so (crtl->uses_pic_offset_table is null).  Note that
+   nonnull PIC_REG is only supported iff COMPUTE_NOW is true and null PIC_REG
+   is only supported iff COMPUTE_NOW is false.  */
 
 static void
-require_pic_register (void)
+require_pic_register (rtx pic_reg, bool compute_now)
 {
+  gcc_assert (compute_now == (pic_reg != NULL_RTX));
+
   /* A lot of the logic here is made obscure by the fact that this
      routine gets called as part of the rtx cost estimation process.
      We don't want those calls to affect any assumptions about the real
      function; and further, we can't call entry_of_function() until we
      start the real expansion process.  */
-  if (!crtl->uses_pic_offset_table)
+  if (!crtl->uses_pic_offset_table || compute_now)
     {
-      gcc_assert (can_create_pseudo_p ());
+      gcc_assert (can_create_pseudo_p ()
+		  || (pic_reg != NULL_RTX
+		      && REG_P (pic_reg)
+		      && GET_MODE (pic_reg) == Pmode));
       if (arm_pic_register != INVALID_REGNUM
+	  && !compute_now
 	  && !(TARGET_THUMB1 && arm_pic_register > LAST_LO_REGNUM))
 	{
 	  if (!cfun->machine->pic_reg)
@@ -7409,8 +7422,10 @@ require_pic_register (void)
 	{
 	  rtx_insn *seq, *insn;
 
+	  if (pic_reg == NULL_RTX)
+	    pic_reg = gen_reg_rtx (Pmode);
 	  if (!cfun->machine->pic_reg)
-	    cfun->machine->pic_reg = gen_reg_rtx (Pmode);
+	    cfun->machine->pic_reg = pic_reg;
 
 	  /* Play games to avoid marking the function as needing pic
 	     if we are being called as part of the cost-estimation
@@ -7421,11 +7436,12 @@ require_pic_register (void)
 	      start_sequence ();
 
 	      if (TARGET_THUMB1 && arm_pic_register != INVALID_REGNUM
-		  && arm_pic_register > LAST_LO_REGNUM)
+		  && arm_pic_register > LAST_LO_REGNUM
+		  && !compute_now)
 		emit_move_insn (cfun->machine->pic_reg,
 				gen_rtx_REG (Pmode, arm_pic_register));
 	      else
-		arm_load_pic_register (0UL);
+		arm_load_pic_register (0UL, pic_reg);
 
 	      seq = get_insns ();
 	      end_sequence ();
@@ -7438,16 +7454,33 @@ require_pic_register (void)
 	         we can't yet emit instructions directly in the final
 		 insn stream.  Queue the insns on the entry edge, they will
 		 be committed after everything else is expanded.  */
-	      insert_insn_on_edge (seq,
-				   single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
+	      if (currently_expanding_to_rtl)
+		insert_insn_on_edge (seq,
+				     single_succ_edge
+				     (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
+	      else
+		emit_insn (seq);
 	    }
 	}
     }
 }
 
+/* Legitimize PIC load to ORIG into REG.  If REG is NULL, a new pseudo is
+   created to hold the result of the load.  If not NULL, PIC_REG indicates
+   which register to use as PIC register, otherwise it is decided by register
+   allocator.  COMPUTE_NOW forces the PIC register to be loaded at the current
+   location in the instruction stream, irregardless of whether it was loaded
+   previously.  Note that nonnull PIC_REG is only supported iff COMPUTE_NOW is
+   true and null PIC_REG is only supported iff COMPUTE_NOW is false.
+
+   Returns the register REG into which the PIC load is performed.  */
+
 rtx
-legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
+legitimize_pic_address (rtx orig, machine_mode mode, rtx reg, rtx pic_reg,
+			bool compute_now)
 {
+  gcc_assert (compute_now == (pic_reg != NULL_RTX));
+
   if (GET_CODE (orig) == SYMBOL_REF
       || GET_CODE (orig) == LABEL_REF)
     {
@@ -7480,9 +7513,12 @@ legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 	  rtx mem;
 
 	  /* If this function doesn't have a pic register, create one now.  */
-	  require_pic_register ();
+	  require_pic_register (pic_reg, compute_now);
 
-	  pat = gen_calculate_pic_address (reg, cfun->machine->pic_reg, orig);
+	  if (pic_reg == NULL_RTX)
+	    pic_reg = cfun->machine->pic_reg;
+
+	  pat = gen_calculate_pic_address (reg, pic_reg, orig);
 
 	  /* Make the MEM as close to a constant as possible.  */
 	  mem = SET_SRC (pat);
@@ -7531,9 +7567,11 @@ legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 
       gcc_assert (GET_CODE (XEXP (orig, 0)) == PLUS);
 
-      base = legitimize_pic_address (XEXP (XEXP (orig, 0), 0), Pmode, reg);
+      base = legitimize_pic_address (XEXP (XEXP (orig, 0), 0), Pmode, reg,
+				     pic_reg, compute_now);
       offset = legitimize_pic_address (XEXP (XEXP (orig, 0), 1), Pmode,
-				       base == reg ? 0 : reg);
+				       base == reg ? 0 : reg, pic_reg,
+				       compute_now);
 
       if (CONST_INT_P (offset))
 	{
@@ -7633,16 +7671,17 @@ static GTY(()) int pic_labelno;
    low register.  */
 
 void
-arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED)
+arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED, rtx pic_reg)
 {
-  rtx l1, labelno, pic_tmp, pic_rtx, pic_reg;
+  rtx l1, labelno, pic_tmp, pic_rtx;
 
   if (crtl->uses_pic_offset_table == 0 || TARGET_SINGLE_PIC_BASE)
     return;
 
   gcc_assert (flag_pic);
 
-  pic_reg = cfun->machine->pic_reg;
+  if (pic_reg == NULL_RTX)
+    pic_reg = cfun->machine->pic_reg;
   if (TARGET_VXWORKS_RTP)
     {
       pic_rtx = gen_rtx_SYMBOL_REF (Pmode, VXWORKS_GOTT_BASE);
@@ -8718,7 +8757,8 @@ arm_legitimize_address (rtx x, rtx orig_x, machine_mode mode)
     {
       /* We need to find and carefully transform any SYMBOL and LABEL
 	 references; so go back to the original address expression.  */
-      rtx new_x = legitimize_pic_address (orig_x, mode, NULL_RTX);
+      rtx new_x = legitimize_pic_address (orig_x, mode, NULL_RTX, NULL_RTX,
+					  false /*compute_now*/);
 
       if (new_x != orig_x)
 	x = new_x;
@@ -8786,7 +8826,8 @@ thumb_legitimize_address (rtx x, rtx orig_x, machine_mode mode)
     {
       /* We need to find and carefully transform any SYMBOL and LABEL
 	 references; so go back to the original address expression.  */
-      rtx new_x = legitimize_pic_address (orig_x, mode, NULL_RTX);
+      rtx new_x = legitimize_pic_address (orig_x, mode, NULL_RTX, NULL_RTX,
+					  false /*compute_now*/);
 
       if (new_x != orig_x)
 	x = new_x;
@@ -18074,7 +18115,7 @@ arm_emit_call_insn (rtx pat, rtx addr, bool sibcall)
 	  ? !targetm.binds_local_p (SYMBOL_REF_DECL (addr))
 	  : !SYMBOL_REF_LOCAL_P (addr)))
     {
-      require_pic_register ();
+      require_pic_register (NULL_RTX, false /*compute_now*/);
       use_reg (&CALL_INSN_FUNCTION_USAGE (insn), cfun->machine->pic_reg);
     }
 
@@ -22006,7 +22047,7 @@ arm_expand_prologue (void)
       mask &= THUMB2_WORK_REGS;
       if (!IS_NESTED (func_type))
 	mask |= (1 << IP_REGNUM);
-      arm_load_pic_register (mask);
+      arm_load_pic_register (mask, NULL_RTX);
     }
 
   /* If we are profiling, make sure no instructions are scheduled before
@@ -25237,7 +25278,7 @@ thumb1_expand_prologue (void)
   /* Load the pic register before setting the frame pointer,
      so we can use r7 as a temporary work register.  */
   if (flag_pic && arm_pic_register != INVALID_REGNUM)
-    arm_load_pic_register (live_regs_mask);
+    arm_load_pic_register (live_regs_mask, NULL_RTX);
 
   if (!frame_pointer_needed && CALLER_INTERWORKING_SLOT_SIZE > 0)
     emit_move_insn (gen_rtx_REG (Pmode, ARM_HARD_FRAME_POINTER_REGNUM),
@@ -28547,8 +28588,7 @@ void
 arm_expand_compare_and_swap (rtx operands[])
 {
   rtx bval, bdst, rval, mem, oldval, newval, is_weak, mod_s, mod_f, x;
-  machine_mode mode;
-  rtx (*gen) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
+  machine_mode mode, cmp_mode;
 
   bval = operands[0];
   rval = operands[1];
@@ -28596,32 +28636,13 @@ arm_expand_compare_and_swap (rtx operands[])
     }
 
   if (TARGET_THUMB1)
-    {
-      switch (mode)
-	{
-	case E_QImode: gen = gen_atomic_compare_and_swapt1qi_1; break;
-	case E_HImode: gen = gen_atomic_compare_and_swapt1hi_1; break;
-	case E_SImode: gen = gen_atomic_compare_and_swapt1si_1; break;
-	case E_DImode: gen = gen_atomic_compare_and_swapt1di_1; break;
-	default:
-	  gcc_unreachable ();
-	}
-    }
+    cmp_mode = E_SImode;
   else
-    {
-      switch (mode)
-	{
-	case E_QImode: gen = gen_atomic_compare_and_swap32qi_1; break;
-	case E_HImode: gen = gen_atomic_compare_and_swap32hi_1; break;
-	case E_SImode: gen = gen_atomic_compare_and_swap32si_1; break;
-	case E_DImode: gen = gen_atomic_compare_and_swap32di_1; break;
-	default:
-	  gcc_unreachable ();
-	}
-    }
+    cmp_mode = CC_Zmode;
 
   bdst = TARGET_THUMB1 ? bval : gen_rtx_REG (CC_Zmode, CC_REGNUM);
-  emit_insn (gen (bdst, rval, mem, oldval, newval, is_weak, mod_s, mod_f));
+  emit_insn (gen_atomic_compare_and_swap_1 (cmp_mode, mode, bdst, rval, mem,
+                                        oldval, newval, is_weak, mod_s, mod_f));
 
   if (mode == QImode || mode == HImode)
     emit_move_insn (operands[1], gen_lowpart (mode, rval));
@@ -28987,7 +29008,6 @@ arm_evpc_neon_vuzp (struct expand_vec_perm_d *d)
 {
   unsigned int i, odd, mask, nelt = d->perm.length ();
   rtx out0, out1, in0, in1;
-  rtx (*gen)(rtx, rtx, rtx, rtx);
   int first_elem;
   int swap_nelt;
 
@@ -29021,22 +29041,6 @@ arm_evpc_neon_vuzp (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  switch (d->vmode)
-    {
-    case E_V16QImode: gen = gen_neon_vuzpv16qi_internal; break;
-    case E_V8QImode:  gen = gen_neon_vuzpv8qi_internal;  break;
-    case E_V8HImode:  gen = gen_neon_vuzpv8hi_internal;  break;
-    case E_V4HImode:  gen = gen_neon_vuzpv4hi_internal;  break;
-    case E_V8HFmode:  gen = gen_neon_vuzpv8hf_internal;  break;
-    case E_V4HFmode:  gen = gen_neon_vuzpv4hf_internal;  break;
-    case E_V4SImode:  gen = gen_neon_vuzpv4si_internal;  break;
-    case E_V2SImode:  gen = gen_neon_vuzpv2si_internal;  break;
-    case E_V2SFmode:  gen = gen_neon_vuzpv2sf_internal;  break;
-    case E_V4SFmode:  gen = gen_neon_vuzpv4sf_internal;  break;
-    default:
-      gcc_unreachable ();
-    }
-
   in0 = d->op0;
   in1 = d->op1;
   if (swap_nelt != 0)
@@ -29047,7 +29051,7 @@ arm_evpc_neon_vuzp (struct expand_vec_perm_d *d)
   if (odd)
     std::swap (out0, out1);
 
-  emit_insn (gen (out0, in0, in1, out1));
+  emit_insn (gen_neon_vuzp_internal (d->vmode, out0, in0, in1, out1));
   return true;
 }
 
@@ -29058,7 +29062,6 @@ arm_evpc_neon_vzip (struct expand_vec_perm_d *d)
 {
   unsigned int i, high, mask, nelt = d->perm.length ();
   rtx out0, out1, in0, in1;
-  rtx (*gen)(rtx, rtx, rtx, rtx);
   int first_elem;
   bool is_swapped;
 
@@ -29096,22 +29099,6 @@ arm_evpc_neon_vzip (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  switch (d->vmode)
-    {
-    case E_V16QImode: gen = gen_neon_vzipv16qi_internal; break;
-    case E_V8QImode:  gen = gen_neon_vzipv8qi_internal;  break;
-    case E_V8HImode:  gen = gen_neon_vzipv8hi_internal;  break;
-    case E_V4HImode:  gen = gen_neon_vzipv4hi_internal;  break;
-    case E_V8HFmode:  gen = gen_neon_vzipv8hf_internal;  break;
-    case E_V4HFmode:  gen = gen_neon_vzipv4hf_internal;  break;
-    case E_V4SImode:  gen = gen_neon_vzipv4si_internal;  break;
-    case E_V2SImode:  gen = gen_neon_vzipv2si_internal;  break;
-    case E_V2SFmode:  gen = gen_neon_vzipv2sf_internal;  break;
-    case E_V4SFmode:  gen = gen_neon_vzipv4sf_internal;  break;
-    default:
-      gcc_unreachable ();
-    }
-
   in0 = d->op0;
   in1 = d->op1;
   if (is_swapped)
@@ -29122,17 +29109,16 @@ arm_evpc_neon_vzip (struct expand_vec_perm_d *d)
   if (high)
     std::swap (out0, out1);
 
-  emit_insn (gen (out0, in0, in1, out1));
+  emit_insn (gen_neon_vzip_internal (d->vmode, out0, in0, in1, out1));
   return true;
 }
 
 /* Recognize patterns for the VREV insns.  */
-
 static bool
 arm_evpc_neon_vrev (struct expand_vec_perm_d *d)
 {
   unsigned int i, j, diff, nelt = d->perm.length ();
-  rtx (*gen)(rtx, rtx);
+  rtx (*gen) (machine_mode, rtx, rtx);
 
   if (!d->one_vector_p)
     return false;
@@ -29141,23 +29127,29 @@ arm_evpc_neon_vrev (struct expand_vec_perm_d *d)
   switch (diff)
     {
     case 7:
-      switch (d->vmode)
-	{
-	case E_V16QImode: gen = gen_neon_vrev64v16qi; break;
-	case E_V8QImode:  gen = gen_neon_vrev64v8qi;  break;
-	default:
-	  return false;
-	}
-      break;
+       switch (d->vmode)
+        {
+         case E_V16QImode:
+         case E_V8QImode:
+          gen = gen_neon_vrev64;
+          break;
+         default:
+          return false;
+        }
+       break;
     case 3:
-      switch (d->vmode)
-	{
-	case E_V16QImode: gen = gen_neon_vrev32v16qi; break;
-	case E_V8QImode:  gen = gen_neon_vrev32v8qi;  break;
-	case E_V8HImode:  gen = gen_neon_vrev64v8hi;  break;
-	case E_V4HImode:  gen = gen_neon_vrev64v4hi;  break;
-	case E_V8HFmode:  gen = gen_neon_vrev64v8hf;  break;
-	case E_V4HFmode:  gen = gen_neon_vrev64v4hf;  break;
+       switch (d->vmode)
+        {
+	case E_V16QImode:
+	case E_V8QImode:
+          gen = gen_neon_vrev32;
+          break;
+	case E_V8HImode:
+	case E_V4HImode:
+	case E_V8HFmode:
+	case E_V4HFmode:
+          gen = gen_neon_vrev64;
+          break;
 	default:
 	  return false;
 	}
@@ -29165,15 +29157,21 @@ arm_evpc_neon_vrev (struct expand_vec_perm_d *d)
     case 1:
       switch (d->vmode)
 	{
-	case E_V16QImode: gen = gen_neon_vrev16v16qi; break;
-	case E_V8QImode:  gen = gen_neon_vrev16v8qi;  break;
-	case E_V8HImode:  gen = gen_neon_vrev32v8hi;  break;
-	case E_V4HImode:  gen = gen_neon_vrev32v4hi;  break;
-	case E_V4SImode:  gen = gen_neon_vrev64v4si;  break;
-	case E_V2SImode:  gen = gen_neon_vrev64v2si;  break;
-	case E_V4SFmode:  gen = gen_neon_vrev64v4sf;  break;
-	case E_V2SFmode:  gen = gen_neon_vrev64v2sf;  break;
-	default:
+	case E_V16QImode:
+	case E_V8QImode:
+          gen = gen_neon_vrev16;
+          break;
+	case E_V8HImode:
+	case E_V4HImode:
+          gen = gen_neon_vrev32;
+          break;
+	case E_V4SImode:
+	case E_V2SImode:
+	case E_V4SFmode:
+	case E_V2SFmode:
+          gen = gen_neon_vrev64;
+	  break;
+        default:
 	  return false;
 	}
       break;
@@ -29198,7 +29196,7 @@ arm_evpc_neon_vrev (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  emit_insn (gen (d->target, d->op0));
+  emit_insn (gen (d->vmode, d->target, d->op0));
   return true;
 }
 
@@ -29209,7 +29207,6 @@ arm_evpc_neon_vtrn (struct expand_vec_perm_d *d)
 {
   unsigned int i, odd, mask, nelt = d->perm.length ();
   rtx out0, out1, in0, in1;
-  rtx (*gen)(rtx, rtx, rtx, rtx);
 
   if (GET_MODE_UNIT_SIZE (d->vmode) >= 8)
     return false;
@@ -29235,22 +29232,6 @@ arm_evpc_neon_vtrn (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  switch (d->vmode)
-    {
-    case E_V16QImode: gen = gen_neon_vtrnv16qi_internal; break;
-    case E_V8QImode:  gen = gen_neon_vtrnv8qi_internal;  break;
-    case E_V8HImode:  gen = gen_neon_vtrnv8hi_internal;  break;
-    case E_V4HImode:  gen = gen_neon_vtrnv4hi_internal;  break;
-    case E_V8HFmode:  gen = gen_neon_vtrnv8hf_internal;  break;
-    case E_V4HFmode:  gen = gen_neon_vtrnv4hf_internal;  break;
-    case E_V4SImode:  gen = gen_neon_vtrnv4si_internal;  break;
-    case E_V2SImode:  gen = gen_neon_vtrnv2si_internal;  break;
-    case E_V2SFmode:  gen = gen_neon_vtrnv2sf_internal;  break;
-    case E_V4SFmode:  gen = gen_neon_vtrnv4sf_internal;  break;
-    default:
-      gcc_unreachable ();
-    }
-
   in0 = d->op0;
   in1 = d->op1;
   if (BYTES_BIG_ENDIAN)
@@ -29264,7 +29245,7 @@ arm_evpc_neon_vtrn (struct expand_vec_perm_d *d)
   if (odd)
     std::swap (out0, out1);
 
-  emit_insn (gen (out0, in0, in1, out1));
+  emit_insn (gen_neon_vtrn_internal (d->vmode, out0, in0, in1, out1));
   return true;
 }
 
@@ -29274,7 +29255,6 @@ static bool
 arm_evpc_neon_vext (struct expand_vec_perm_d *d)
 {
   unsigned int i, nelt = d->perm.length ();
-  rtx (*gen) (rtx, rtx, rtx, rtx);
   rtx offset;
 
   unsigned int location;
@@ -29310,29 +29290,16 @@ arm_evpc_neon_vext (struct expand_vec_perm_d *d)
 
   location = d->perm[0];
 
-  switch (d->vmode)
-    {
-    case E_V16QImode: gen = gen_neon_vextv16qi; break;
-    case E_V8QImode: gen = gen_neon_vextv8qi; break;
-    case E_V4HImode: gen = gen_neon_vextv4hi; break;
-    case E_V8HImode: gen = gen_neon_vextv8hi; break;
-    case E_V2SImode: gen = gen_neon_vextv2si; break;
-    case E_V4SImode: gen = gen_neon_vextv4si; break;
-    case E_V4HFmode: gen = gen_neon_vextv4hf; break;
-    case E_V8HFmode: gen = gen_neon_vextv8hf; break;
-    case E_V2SFmode: gen = gen_neon_vextv2sf; break;
-    case E_V4SFmode: gen = gen_neon_vextv4sf; break;
-    case E_V2DImode: gen = gen_neon_vextv2di; break;
-    default:
-      return false;
-    }
-
   /* Success! */
   if (d->testing_p)
     return true;
 
   offset = GEN_INT (location);
-  emit_insn (gen (d->target, d->op0, d->op1, offset));
+
+  if(d->vmode == E_DImode)
+    return false;
+
+  emit_insn (gen_neon_vext (d->vmode, d->target, d->op0, d->op1, offset));
   return true;
 }
 

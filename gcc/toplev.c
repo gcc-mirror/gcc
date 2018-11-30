@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "dumpfile.h"
 #include "ipa-fnsummary.h"
+#include "dump-context.h"
 #include "optinfo-emit-json.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
@@ -492,7 +493,7 @@ compile_file (void)
   if (lang_hooks.decls.post_compilation_parsing_cleanups)
     lang_hooks.decls.post_compilation_parsing_cleanups ();
 
-  optimization_records_finish ();
+  dump_context::get ().finish_any_json_writer ();
 
   if (seen_error ())
     return;
@@ -2135,7 +2136,10 @@ do_compile ()
 
       timevar_start (TV_PHASE_SETUP);
 
-      optimization_records_start ();
+      if (flag_save_optimization_record)
+	{
+	  dump_context::get ().set_json_writer (new optrecord_json_writer ());
+	}
 
       /* This must be run always, because it is needed to compute the FP
 	 predefined macros, such as __LDBL_MAX__, for targets using non

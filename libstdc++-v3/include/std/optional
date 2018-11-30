@@ -103,10 +103,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <typename _Tp,
 	    bool /*_HasTrivialDestructor*/ =
 	      is_trivially_destructible_v<_Tp>,
-	    bool /*_HasTrivialCopyAssignment*/ =
-	      is_trivially_copy_assignable_v<_Tp>,
-	    bool /*_HasTrivialMoveAssignment*/ =
-	      is_trivially_move_assignable_v<_Tp>>
+	    bool /*_HasTrivialCopy */ =
+	      is_trivially_copy_assignable_v<_Tp>
+	      && is_trivially_copy_constructible_v<_Tp>,
+	    bool /*_HasTrivialMove */ =
+	      is_trivially_move_assignable_v<_Tp>
+	      && is_trivially_move_constructible_v<_Tp>>
     struct _Optional_payload
     {
       constexpr _Optional_payload() noexcept : _M_empty() { }
@@ -148,6 +150,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  this->_M_construct(std::move(__other._M_payload));
       }
 
+      constexpr
       _Optional_payload&
       operator=(const _Optional_payload& __other)
       {
@@ -163,6 +166,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+      constexpr
       _Optional_payload&
       operator=(_Optional_payload&& __other)
       noexcept(__and_v<is_nothrow_move_constructible<_Tp>,
@@ -216,6 +220,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return this->_M_payload; }
 
       // _M_reset is a 'safe' operation with no precondition.
+      constexpr
       void
       _M_reset() noexcept
       {
@@ -346,6 +351,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Optional_payload(const _Optional_payload&) = default;
       _Optional_payload(_Optional_payload&&) = default;
 
+      constexpr
       _Optional_payload&
       operator=(const _Optional_payload& __other)
       {
@@ -394,6 +400,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return this->_M_payload; }
 
       // _M_reset is a 'safe' operation with no precondition.
+      constexpr
       void
       _M_reset() noexcept
       {
@@ -466,6 +473,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Optional_payload&
       operator=(const _Optional_payload& __other) = default;
 
+      constexpr
       _Optional_payload&
       operator=(_Optional_payload&& __other)
       noexcept(__and_v<is_nothrow_move_constructible<_Tp>,
@@ -513,6 +521,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return this->_M_payload; }
 
       // _M_reset is a 'safe' operation with no precondition.
+      constexpr
       void
       _M_reset() noexcept
       {
@@ -581,6 +590,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Optional_payload(const _Optional_payload&) = default;
       _Optional_payload(_Optional_payload&&) = default;
 
+      constexpr
       _Optional_payload&
       operator=(const _Optional_payload& __other)
       {
@@ -596,6 +606,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+      constexpr
       _Optional_payload&
       operator=(_Optional_payload&& __other)
       noexcept(__and_v<is_nothrow_move_constructible<_Tp>,
@@ -624,6 +635,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool _M_engaged;
 
       template<typename... _Args>
+        constexpr
         void
         _M_construct(_Args&&... __args)
         noexcept(is_nothrow_constructible_v<_Stored_type, _Args...>)
@@ -643,6 +655,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return this->_M_payload; }
 
       // _M_reset is a 'safe' operation with no precondition.
+      constexpr
       void
       _M_reset() noexcept
       {
@@ -681,6 +694,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
       
       // _M_reset is a 'safe' operation with no precondition.
+      constexpr
       void
       _M_reset() noexcept
       {
@@ -1217,6 +1231,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator->() const
       { return std::__addressof(this->_M_get()); }
 
+      constexpr
       _Tp*
       operator->()
       { return std::__addressof(this->_M_get()); }

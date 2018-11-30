@@ -221,7 +221,6 @@ libgcov-merge-tool.o-warn = -Wno-error
 gimple-match.o-warn = -Wno-unused
 generic-match.o-warn = -Wno-unused
 dfp.o-warn = -Wno-strict-aliasing
-bitmap.o-warn = -Wno-error # PR 87926
 
 # All warnings have to be shut off in stage1 if the compiler used then
 # isn't gcc; configure determines that.  WARN_CFLAGS will be either

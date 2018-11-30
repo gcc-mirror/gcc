@@ -19,6 +19,19 @@ load_lib gcc-dg.exp
 # Define gdc callbacks for dg.exp.
 
 proc gdc-dg-test { prog do_what extra_tool_flags } {
+    upvar dg-do-what dg-do-what
+
+    # Demote link and run tests to compile-only if D runtime is missing.
+    if ![check_effective_target_d_runtime] {
+	switch $do_what {
+	    link -
+	    run {
+		set do_what compile
+		set dg-do-what compile
+	    }
+	}
+    }
+
     set result \
         [gcc-dg-test-1 gdc_target_compile $prog $do_what $extra_tool_flags]
 

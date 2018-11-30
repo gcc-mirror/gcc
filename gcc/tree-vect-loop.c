@@ -5861,7 +5861,7 @@ vectorize_fold_left_reduction (stmt_vec_info stmt_info,
 	  /* Remove the statement, so that we can use the same code paths
 	     as for statements that we've just created.  */
 	  gimple_stmt_iterator tmp_gsi = gsi_for_stmt (new_stmt);
-	  gsi_remove (&tmp_gsi, false);
+	  gsi_remove (&tmp_gsi, true);
 	}
 
       if (i == vec_num - 1)
@@ -6223,7 +6223,14 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
      The last use is the reduction variable.  In case of nested cycle this
      assumption is not true: we use reduc_index to record the index of the
      reduction variable.  */
-  stmt_vec_info reduc_def_info = NULL;
+  stmt_vec_info reduc_def_info;
+  if (orig_stmt_info)
+    reduc_def_info = STMT_VINFO_REDUC_DEF (orig_stmt_info);
+  else
+    reduc_def_info = STMT_VINFO_REDUC_DEF (stmt_info);
+  gcc_assert (reduc_def_info);
+  gphi *reduc_def_phi = as_a <gphi *> (reduc_def_info->stmt);
+  tree reduc_def = PHI_RESULT (reduc_def_phi);
   int reduc_index = -1;
   for (i = 0; i < op_type; i++)
     {
@@ -6236,9 +6243,9 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 					  &def_stmt_info);
       dt = dts[i];
       gcc_assert (is_simple_use);
-      if (dt == vect_reduction_def)
+      if (dt == vect_reduction_def
+	  && ops[i] == reduc_def)
 	{
-	  reduc_def_info = def_stmt_info;
 	  reduc_index = i;
 	  continue;
 	}
@@ -6259,10 +6266,10 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
           && !(dt == vect_nested_cycle && nested_cycle))
 	return false;
 
-      if (dt == vect_nested_cycle)
+      if (dt == vect_nested_cycle
+	  && ops[i] == reduc_def)
 	{
 	  found_nested_cycle_def = true;
-	  reduc_def_info = def_stmt_info;
 	  reduc_index = i;
 	}
 
@@ -6298,19 +6305,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			     "in-order reduction chain without SLP.\n");
 	  return false;
 	}
-
-      if (orig_stmt_info)
-	reduc_def_info = STMT_VINFO_REDUC_DEF (orig_stmt_info);
-      else
-	reduc_def_info = STMT_VINFO_REDUC_DEF (stmt_info);
     }
-
-  if (! reduc_def_info)
-    return false;
-
-  gphi *reduc_def_phi = dyn_cast <gphi *> (reduc_def_info->stmt);
-  if (!reduc_def_phi)
-    return false;
 
   if (!(reduc_index == -1
 	|| dts[reduc_index] == vect_reduction_def
@@ -8515,6 +8510,15 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	}
     }
 
+  /* Loops vectorized with a variable factor won't benefit from
+     unrolling/peeling.  */
+  if (!vf.is_constant ())
+    {
+      loop->unroll = 1;
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location, "Disabling unrolling due to"
+			 " variable-length vectorization factor\n");
+    }
   /* Free SLP instances here because otherwise stmt reference counting
      won't work.  */
   slp_instance instance;

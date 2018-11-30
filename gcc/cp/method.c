@@ -1821,8 +1821,12 @@ maybe_explain_implicit_delete (tree decl)
       if (!informed)
 	{
 	  tree parms = FUNCTION_FIRST_USER_PARMTYPE (decl);
-	  tree parm_type = TREE_VALUE (parms);
-	  bool const_p = CP_TYPE_CONST_P (non_reference (parm_type));
+	  bool const_p = false;
+	  if (parms)
+	    {
+	      tree parm_type = TREE_VALUE (parms);
+	      const_p = CP_TYPE_CONST_P (non_reference (parm_type));
+	    }
 	  tree raises = NULL_TREE;
 	  bool deleted_p = false;
 	  tree scope = push_scope (ctype);

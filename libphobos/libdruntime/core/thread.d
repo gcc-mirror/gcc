@@ -3582,6 +3582,15 @@ private
             version = AsmExternal;
         }
     }
+    else version (AArch64)
+    {
+        version (Posix)
+        {
+            version = AsmAArch64_Posix;
+            version = AsmExternal;
+            version = AlignFiberStackTo16Byte;
+        }
+    }
     else version (ARM)
     {
         version (Posix)
@@ -3673,7 +3682,11 @@ private
 
   // Look above the definition of 'class Fiber' for some information about the implementation of this routine
   version (AsmExternal)
-    extern (C) void fiber_switchContext( void** oldp, void* newp ) nothrow @nogc;
+  {
+      extern (C) void fiber_switchContext( void** oldp, void* newp ) nothrow @nogc;
+      version (AArch64)
+          extern (C) void fiber_trampoline() nothrow;
+  }
   else
     extern (C) void fiber_switchContext( void** oldp, void* newp ) nothrow @nogc
     {
@@ -4908,6 +4921,29 @@ private:
             (cast(ubyte*)pstack - SZ)[0 .. SZ] = 0;
             pstack -= ABOVE;
             *cast(size_t*)(pstack - SZ_RA) = cast(size_t)&fiber_entryPoint;
+        }
+        else version (AsmAArch64_Posix)
+        {
+            // Like others, FP registers and return address (lr) are kept
+            // below the saved stack top (tstack) to hide from GC scanning.
+            // fiber_switchContext expects newp sp to look like this:
+            //   19: x19
+            //   ...
+            //    9: x29 (fp)  <-- newp tstack
+            //    8: x30 (lr)  [&fiber_entryPoint]
+            //    7: d8
+            //   ...
+            //    0: d15
+
+            version (StackGrowsDown) {}
+            else
+                static assert(false, "Only full descending stacks supported on AArch64");
+
+            // Only need to set return address (lr).  Everything else is fine
+            // zero initialized.
+            pstack -= size_t.sizeof * 11;    // skip past x19-x29
+            push(cast(size_t) &fiber_trampoline); // see threadasm.S for docs
+            pstack += size_t.sizeof;         // adjust sp (newp) above lr
         }
         else version (AsmARM_Posix)
         {

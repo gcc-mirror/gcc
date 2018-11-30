@@ -1720,7 +1720,7 @@ vect_finish_replace_stmt (stmt_vec_info stmt_info, gimple *vec_stmt)
   gcc_assert (gimple_get_lhs (stmt_info->stmt) == gimple_get_lhs (vec_stmt));
 
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt_info->stmt);
-  gsi_replace (&gsi, vec_stmt, false);
+  gsi_replace (&gsi, vec_stmt, true);
 
   return vect_finish_stmt_generation_1 (stmt_info, vec_stmt);
 }
@@ -8911,26 +8911,21 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		  vec_cond_lhs
 		    = vect_get_vec_def_for_operand (cond_expr, stmt_info,
 						    comp_vectype);
-		  vect_is_simple_use (cond_expr, stmt_info->vinfo, &dts[0]);
 		}
 	      else
 		{
 		  vec_cond_lhs
 		    = vect_get_vec_def_for_operand (cond_expr0,
 						    stmt_info, comp_vectype);
-		  vect_is_simple_use (cond_expr0, loop_vinfo, &dts[0]);
-
 		  vec_cond_rhs
 		    = vect_get_vec_def_for_operand (cond_expr1,
 						    stmt_info, comp_vectype);
-		  vect_is_simple_use (cond_expr1, loop_vinfo, &dts[1]);
 		}
 	      vec_then_clause = vect_get_vec_def_for_operand (then_clause,
 							      stmt_info);
-	      vect_is_simple_use (then_clause, loop_vinfo, &dts[2]);
-	      vec_else_clause = vect_get_vec_def_for_operand (else_clause,
-							      stmt_info);
-	      vect_is_simple_use (else_clause, loop_vinfo, &dts[3]);
+	      if (reduction_type != EXTRACT_LAST_REDUCTION)
+		vec_else_clause = vect_get_vec_def_for_operand (else_clause,
+								stmt_info);
 	    }
 	}
       else

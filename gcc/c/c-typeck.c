@@ -3186,182 +3186,187 @@ c_build_function_call_vec (location_t loc, vec<location_t> arg_loc,
 
 /* Helper for convert_arguments called to convert the VALue of argument
    number ARGNUM from ORIGTYPE to the corresponding parameter number
-   PARMNUL and TYPE.  */
+   PARMNUM and TYPE.
+   PLOC is the location where the conversion is being performed.
+   FUNCTION and FUNDECL are the same as in convert_arguments.
+   VALTYPE is the original type of VAL before the conversion and,
+   for EXCESS_PRECISION_EXPR, the operand of the expression.
+   NPC is true if VAL represents the null pointer constant (VAL itself
+   will have been folded to an integer constant).
+   RNAME is the same as FUNCTION except in Objective C when it's
+   the function selector.
+   EXCESS_PRECISION is true when VAL was originally represented
+   as EXCESS_PRECISION_EXPR.
+   WARNOPT is the same as in convert_for_assignment.  */
 
 static tree
 convert_argument (location_t ploc, tree function, tree fundecl,
-		  tree type, tree origtype, tree val, bool npc,
-		  tree rname, int parmnum, int argnum,
+		  tree type, tree origtype, tree val, tree valtype,
+		  bool npc, tree rname, int parmnum, int argnum,
 		  bool excess_precision, int warnopt)
 {
-  tree valtype = TREE_TYPE (val);
-
-  tree parmval;
-
   /* Formal parm type is specified by a function prototype.  */
 
   if (type == error_mark_node || !COMPLETE_TYPE_P (type))
     {
       error_at (ploc, "type of formal parameter %d is incomplete",
 		parmnum + 1);
-      parmval = val;
+      return val;
     }
-  else
+
+  /* Optionally warn about conversions that differ from the default
+     conversions.  */
+  if (warn_traditional_conversion || warn_traditional)
     {
-      /* Optionally warn about conversions that differ from the default
-	 conversions.  */
-      if (warn_traditional_conversion || warn_traditional)
+      unsigned int formal_prec = TYPE_PRECISION (type);
+
+      if (INTEGRAL_TYPE_P (type)
+	  && TREE_CODE (valtype) == REAL_TYPE)
+	warning_at (ploc, OPT_Wtraditional_conversion,
+		    "passing argument %d of %qE as integer rather "
+		    "than floating due to prototype",
+		    argnum, rname);
+      if (INTEGRAL_TYPE_P (type)
+	  && TREE_CODE (valtype) == COMPLEX_TYPE)
+	warning_at (ploc, OPT_Wtraditional_conversion,
+		    "passing argument %d of %qE as integer rather "
+		    "than complex due to prototype",
+		    argnum, rname);
+      else if (TREE_CODE (type) == COMPLEX_TYPE
+	       && TREE_CODE (valtype) == REAL_TYPE)
+	warning_at (ploc, OPT_Wtraditional_conversion,
+		    "passing argument %d of %qE as complex rather "
+		    "than floating due to prototype",
+		    argnum, rname);
+      else if (TREE_CODE (type) == REAL_TYPE
+	       && INTEGRAL_TYPE_P (valtype))
+	warning_at (ploc, OPT_Wtraditional_conversion,
+		    "passing argument %d of %qE as floating rather "
+		    "than integer due to prototype",
+		    argnum, rname);
+      else if (TREE_CODE (type) == COMPLEX_TYPE
+	       && INTEGRAL_TYPE_P (valtype))
+	warning_at (ploc, OPT_Wtraditional_conversion,
+		    "passing argument %d of %qE as complex rather "
+		    "than integer due to prototype",
+		    argnum, rname);
+      else if (TREE_CODE (type) == REAL_TYPE
+	       && TREE_CODE (valtype) == COMPLEX_TYPE)
+	warning_at (ploc, OPT_Wtraditional_conversion,
+		    "passing argument %d of %qE as floating rather "
+		    "than complex due to prototype",
+		    argnum, rname);
+      /* ??? At some point, messages should be written about
+	 conversions between complex types, but that's too messy
+	 to do now.  */
+      else if (TREE_CODE (type) == REAL_TYPE
+	       && TREE_CODE (valtype) == REAL_TYPE)
 	{
-	  unsigned int formal_prec = TYPE_PRECISION (type);
+	  /* Warn if any argument is passed as `float',
+	     since without a prototype it would be `double'.  */
+	  if (formal_prec == TYPE_PRECISION (float_type_node)
+	      && type != dfloat32_type_node)
+	    warning_at (ploc, 0,
+			"passing argument %d of %qE as %<float%> "
+			"rather than %<double%> due to prototype",
+			argnum, rname);
 
-	  if (INTEGRAL_TYPE_P (type)
-	      && TREE_CODE (valtype) == REAL_TYPE)
-	    warning_at (ploc, OPT_Wtraditional_conversion,
-			"passing argument %d of %qE as integer rather "
-			"than floating due to prototype",
-			argnum, rname);
-	  if (INTEGRAL_TYPE_P (type)
-	      && TREE_CODE (valtype) == COMPLEX_TYPE)
-	    warning_at (ploc, OPT_Wtraditional_conversion,
-			"passing argument %d of %qE as integer rather "
-			"than complex due to prototype",
-			argnum, rname);
-	  else if (TREE_CODE (type) == COMPLEX_TYPE
-		   && TREE_CODE (valtype) == REAL_TYPE)
-	    warning_at (ploc, OPT_Wtraditional_conversion,
-			"passing argument %d of %qE as complex rather "
-			"than floating due to prototype",
-			argnum, rname);
-	  else if (TREE_CODE (type) == REAL_TYPE
-		   && INTEGRAL_TYPE_P (valtype))
-	    warning_at (ploc, OPT_Wtraditional_conversion,
-			"passing argument %d of %qE as floating rather "
-			"than integer due to prototype",
-			argnum, rname);
-	  else if (TREE_CODE (type) == COMPLEX_TYPE
-		   && INTEGRAL_TYPE_P (valtype))
-	    warning_at (ploc, OPT_Wtraditional_conversion,
-			"passing argument %d of %qE as complex rather "
-			"than integer due to prototype",
-			argnum, rname);
-	  else if (TREE_CODE (type) == REAL_TYPE
-		   && TREE_CODE (valtype) == COMPLEX_TYPE)
-	    warning_at (ploc, OPT_Wtraditional_conversion,
-			"passing argument %d of %qE as floating rather "
-			"than complex due to prototype",
-			argnum, rname);
-	  /* ??? At some point, messages should be written about
-	     conversions between complex types, but that's too messy
-	     to do now.  */
-	  else if (TREE_CODE (type) == REAL_TYPE
-		   && TREE_CODE (valtype) == REAL_TYPE)
-	    {
-	      /* Warn if any argument is passed as `float',
-		 since without a prototype it would be `double'.  */
-	      if (formal_prec == TYPE_PRECISION (float_type_node)
-		  && type != dfloat32_type_node)
-		warning_at (ploc, 0,
-			    "passing argument %d of %qE as %<float%> "
-			    "rather than %<double%> due to prototype",
-			    argnum, rname);
-
-	      /* Warn if mismatch between argument and prototype
-		 for decimal float types.  Warn of conversions with
-		 binary float types and of precision narrowing due to
-		 prototype.  */
-	      else if (type != valtype
-		       && (type == dfloat32_type_node
-			   || type == dfloat64_type_node
-			   || type == dfloat128_type_node
-			   || valtype == dfloat32_type_node
-			   || valtype == dfloat64_type_node
-			   || valtype == dfloat128_type_node)
-		       && (formal_prec
-			   <= TYPE_PRECISION (valtype)
-			   || (type == dfloat128_type_node
+	  /* Warn if mismatch between argument and prototype
+	     for decimal float types.  Warn of conversions with
+	     binary float types and of precision narrowing due to
+	     prototype.  */
+	  else if (type != valtype
+		   && (type == dfloat32_type_node
+		       || type == dfloat64_type_node
+		       || type == dfloat128_type_node
+		       || valtype == dfloat32_type_node
+		       || valtype == dfloat64_type_node
+		       || valtype == dfloat128_type_node)
+		   && (formal_prec
+		       <= TYPE_PRECISION (valtype)
+		       || (type == dfloat128_type_node
+			   && (valtype
+			       != dfloat64_type_node
 			       && (valtype
-				   != dfloat64_type_node
-				   && (valtype
-				       != dfloat32_type_node)))
-			   || (type == dfloat64_type_node
-			       && (valtype
-				   != dfloat32_type_node))))
-		warning_at (ploc, 0,
-			    "passing argument %d of %qE as %qT "
-			    "rather than %qT due to prototype",
-			    argnum, rname, type, valtype);
+				   != dfloat32_type_node)))
+		       || (type == dfloat64_type_node
+			   && (valtype
+			       != dfloat32_type_node))))
+	    warning_at (ploc, 0,
+			"passing argument %d of %qE as %qT "
+			"rather than %qT due to prototype",
+			argnum, rname, type, valtype);
 
-	    }
-	  /* Detect integer changing in width or signedness.
-	     These warnings are only activated with
-	     -Wtraditional-conversion, not with -Wtraditional.  */
-	  else if (warn_traditional_conversion
-		   && INTEGRAL_TYPE_P (type)
-		   && INTEGRAL_TYPE_P (valtype))
-	    {
-	      tree would_have_been = default_conversion (val);
-	      tree type1 = TREE_TYPE (would_have_been);
-
-	      if (val == error_mark_node)
-		/* VAL could have been of incomplete type.  */;
-	      else if (TREE_CODE (type) == ENUMERAL_TYPE
-		       && (TYPE_MAIN_VARIANT (type)
-			   == TYPE_MAIN_VARIANT (valtype)))
-		/* No warning if function asks for enum
-		   and the actual arg is that enum type.  */
-		;
-	      else if (formal_prec != TYPE_PRECISION (type1))
-		warning_at (ploc, OPT_Wtraditional_conversion,
-			    "passing argument %d of %qE "
-			    "with different width due to prototype",
-			    argnum, rname);
-	      else if (TYPE_UNSIGNED (type) == TYPE_UNSIGNED (type1))
-		;
-	      /* Don't complain if the formal parameter type
-		 is an enum, because we can't tell now whether
-		 the value was an enum--even the same enum.  */
-	      else if (TREE_CODE (type) == ENUMERAL_TYPE)
-		;
-	      else if (TREE_CODE (val) == INTEGER_CST
-		       && int_fits_type_p (val, type))
-		/* Change in signedness doesn't matter
-		   if a constant value is unaffected.  */
-		;
-	      /* If the value is extended from a narrower
-		 unsigned type, it doesn't matter whether we
-		 pass it as signed or unsigned; the value
-		 certainly is the same either way.  */
-	      else if (TYPE_PRECISION (valtype) < TYPE_PRECISION (type)
-		       && TYPE_UNSIGNED (valtype))
-		;
-	      else if (TYPE_UNSIGNED (type))
-		warning_at (ploc, OPT_Wtraditional_conversion,
-			    "passing argument %d of %qE "
-			    "as unsigned due to prototype",
-			    argnum, rname);
-	      else
-		warning_at (ploc, OPT_Wtraditional_conversion,
-			    "passing argument %d of %qE "
-			    "as signed due to prototype",
-			    argnum, rname);
-	    }
 	}
+      /* Detect integer changing in width or signedness.
+	 These warnings are only activated with
+	 -Wtraditional-conversion, not with -Wtraditional.  */
+      else if (warn_traditional_conversion
+	       && INTEGRAL_TYPE_P (type)
+	       && INTEGRAL_TYPE_P (valtype))
+	{
+	  tree would_have_been = default_conversion (val);
+	  tree type1 = TREE_TYPE (would_have_been);
 
-      /* Possibly restore an EXCESS_PRECISION_EXPR for the
-	 sake of better warnings from convert_and_check.  */
-      if (excess_precision)
-	val = build1 (EXCESS_PRECISION_EXPR, valtype, val);
-
-      parmval = convert_for_assignment (ploc, ploc, type,
-					val, origtype, ic_argpass,
-					npc, fundecl, function,
-					parmnum + 1, warnopt);
-
-      if (targetm.calls.promote_prototypes (fundecl ? TREE_TYPE (fundecl) : 0)
-	  && INTEGRAL_TYPE_P (type)
-	  && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
-	parmval = default_conversion (parmval);
+	  if (val == error_mark_node)
+	    /* VAL could have been of incomplete type.  */;
+	  else if (TREE_CODE (type) == ENUMERAL_TYPE
+		   && (TYPE_MAIN_VARIANT (type)
+		       == TYPE_MAIN_VARIANT (valtype)))
+	    /* No warning if function asks for enum
+	       and the actual arg is that enum type.  */
+	    ;
+	  else if (formal_prec != TYPE_PRECISION (type1))
+	    warning_at (ploc, OPT_Wtraditional_conversion,
+			"passing argument %d of %qE "
+			"with different width due to prototype",
+			argnum, rname);
+	  else if (TYPE_UNSIGNED (type) == TYPE_UNSIGNED (type1))
+	    ;
+	  /* Don't complain if the formal parameter type
+	     is an enum, because we can't tell now whether
+	     the value was an enum--even the same enum.  */
+	  else if (TREE_CODE (type) == ENUMERAL_TYPE)
+	    ;
+	  else if (TREE_CODE (val) == INTEGER_CST
+		   && int_fits_type_p (val, type))
+	    /* Change in signedness doesn't matter
+	       if a constant value is unaffected.  */
+	    ;
+	  /* If the value is extended from a narrower
+	     unsigned type, it doesn't matter whether we
+	     pass it as signed or unsigned; the value
+	     certainly is the same either way.  */
+	  else if (TYPE_PRECISION (valtype) < TYPE_PRECISION (type)
+		   && TYPE_UNSIGNED (valtype))
+	    ;
+	  else if (TYPE_UNSIGNED (type))
+	    warning_at (ploc, OPT_Wtraditional_conversion,
+			"passing argument %d of %qE "
+			"as unsigned due to prototype",
+			argnum, rname);
+	  else
+	    warning_at (ploc, OPT_Wtraditional_conversion,
+			"passing argument %d of %qE "
+			"as signed due to prototype",
+			argnum, rname);
+	}
     }
+
+  /* Possibly restore an EXCESS_PRECISION_EXPR for the
+     sake of better warnings from convert_and_check.  */
+  if (excess_precision)
+    val = build1 (EXCESS_PRECISION_EXPR, valtype, val);
+
+  tree parmval = convert_for_assignment (ploc, ploc, type,
+					 val, origtype, ic_argpass,
+					 npc, fundecl, function,
+					 parmnum + 1, warnopt);
+
+  if (targetm.calls.promote_prototypes (fundecl ? TREE_TYPE (fundecl) : 0)
+      && INTEGRAL_TYPE_P (type)
+      && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
+    parmval = default_conversion (parmval);
 
   return parmval;
 }
@@ -3422,7 +3427,10 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
       built_in_function code = DECL_FUNCTION_CODE (fundecl);
       if (C_DECL_BUILTIN_PROTOTYPE (fundecl))
 	{
-	  if (tree bdecl = builtin_decl_implicit (code))
+	  /* For a call to a built-in function declared without a prototype
+	     use the types of the parameters of the internal built-in to
+	     match those of the arguments to.  */
+	  if (tree bdecl = builtin_decl_explicit (code))
 	    builtin_typelist = TYPE_ARG_TYPES (TREE_TYPE (bdecl));
 	}
 
@@ -3454,8 +3462,8 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 	  }
     }
 
-  /* Scan the given expressions and types, producing individual
-     converted arguments.  */
+  /* Scan the given expressions (VALUES) and types (TYPELIST), producing
+     individual converted arguments.  */
 
   tree typetail, builtin_typetail, val;
   for (typetail = typelist,
@@ -3464,14 +3472,23 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
        values && values->iterate (parmnum, &val);
        ++parmnum)
     {
+      /* The type of the function parameter (if it was declared with one).  */
       tree type = typetail ? TREE_VALUE (typetail) : NULL_TREE;
+      /* The type of the built-in function parameter (if the function
+	 is a built-in).  Used to detect type incompatibilities in
+	 calls to built-ins declared without a prototype.  */
       tree builtin_type = (builtin_typetail
 			   ? TREE_VALUE (builtin_typetail) : NULL_TREE);
+      /* The original type of the argument being passed to the function.  */
       tree valtype = TREE_TYPE (val);
+      /* The called function (or function selector in Objective C).  */
       tree rname = function;
       int argnum = parmnum + 1;
       const char *invalid_func_diag;
+      /* Set for EXCESS_PRECISION_EXPR arguments.  */
       bool excess_precision = false;
+      /* The value of the argument after conversion to the type
+	 of the function parameter it is passed to.  */
       tree parmval;
       /* Some __atomic_* builtins have additional hidden argument at
 	 position 0.  */
@@ -3555,7 +3572,7 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 	{
 	  tree origtype = (!origtypes) ? NULL_TREE : (*origtypes)[parmnum];
 	  parmval = convert_argument (ploc, function, fundecl, type, origtype,
-				      val, npc, rname, parmnum, argnum,
+				      val, valtype, npc, rname, parmnum, argnum,
 				      excess_precision, 0);
 	}
       else if (promote_float_arg)
@@ -3607,7 +3624,8 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 	     above by applying default conversions instead.  */
 	  tree origtype = (!origtypes) ? NULL_TREE : (*origtypes)[parmnum];
 	  convert_argument (ploc, function, fundecl, builtin_type, origtype,
-			    val, npc, rname, parmnum, argnum, excess_precision,
+			    val, valtype, npc, rname, parmnum, argnum,
+			    excess_precision,
 			    OPT_Wbuiltin_declaration_mismatch);
 	}
 
@@ -6461,7 +6479,9 @@ maybe_warn_builtin_no_proto_arg (location_t loc, tree fundecl, int parmnum,
       && TYPE_MODE (parmtype) == TYPE_MODE (argtype))
     return;
 
-  if (parmcode == argcode
+  if ((parmcode == argcode
+       || (parmcode == INTEGER_TYPE
+	   && argcode == ENUMERAL_TYPE))
       && TYPE_MAIN_VARIANT (parmtype) == TYPE_MAIN_VARIANT (promoted))
     return;
 

@@ -1,3 +1,121 @@
+2018-11-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (compute_array_index_type_loc): New, like the current
+	compute_array_index_type but takes a location_t too.
+	(compute_array_index_type): Forward to the latter.
+	(create_array_type_for_decl): Use compute_array_index_type_loc.
+
+2018-11-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/88121
+	* cp-name-hint.h (suggest_alternative_in_scoped_enum): New decl.
+	* error.c (dump_scope): Ensure that we print any scope for values
+	of unscoped enums.  Print the scope of values of scoped enums.
+	(qualified_name_lookup_error): Offer suggestions for failures
+	within scoped enums by calling suggest_alternative_in_scoped_enum.
+	* name-lookup.c (class namespace_hints): Update comment to mention
+	scoped enums.
+	(namespace_hints::namespace_hints): Call
+	maybe_add_candidate_for_scoped_enum.
+	(namespace_hints::maybe_add_candidate_for_scoped_enum): New member
+	(suggest_alternatives_for): Update comment to mention scoped
+	enums.
+	(suggest_alternative_in_scoped_enum): New function.
+
+2018-11-28  Marek Polacek  <polacek@redhat.com>
+
+	Implement P1094R2, Nested inline namespaces.
+	* parser.c (cp_parser_namespace_definition): Parse the optional inline
+	keyword in a nested-namespace-definition.  Adjust push_namespace call.
+	Formatting fix.
+
+2018-11-28  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/87531
+	* class.c (finish_struct): In a template, add artificial using
+	decl for operator=.
+
+2018-11-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* except.c (do_allocate_exception): Annotate __cxa_allocate_exception
+	as COLD.
+
+2018-11-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88222 - ICE with bit-field with invalid type.
+	* decl.c (grokdeclarator): Check if declarator is null.
+
+2018-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87476
+	* typeck2.c (digest_init_r): Re-add handing of signed/unsigned char
+	strings and add it to the initialization of wide array from non-wide
+	string diagnostics too.
+
+2018-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88187
+	* decl.c (grokdeclarator): Don't diagnose deduction guide errors
+	if !funcdecl_p.
+
+	PR c++/88181
+	* class.c (fixup_attribute_variants): Also propagate TYPE_PACKED
+	to variants.
+
+2018-11-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88120 - ICE when calling save_expr in a template.
+	* typeck.c (cp_build_binary_op): Call cp_save_expr instead of
+	save_expr.
+
+2018-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87386
+	* parser.c (cp_parser_operator): Use str.get_value () instead of just
+	str in USERDEF_LITERAL_VALUE and USERDEF_LITERAL_SUFFIX_ID arguments.
+
+2018-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88122
+	* method.c (maybe_explain_implicit_delete): If
+	FUNCTION_FIRST_USER_PARMTYPE (decl) is NULL, set const_p to false
+	instead of ICEing.
+
+	PR c++/87386
+	* parser.c (cp_parser_primary_expression): Use
+	id_expression.get_location () instead of id_expr_token->location.
+	Adjust the range from id_expr_token->location to
+	id_expressio.get_finish ().
+	(cp_parser_operator_function_id): Pass location of the operator
+	token down to cp_parser_operator.
+	(cp_parser_operator): Add start_loc argument, always construct a
+	location with caret at start_loc and range from start_loc to the
+	finish of the last token.
+
+	PR c++/87393
+	* parser.c (cp_parser_linkage_specification): Remove useless
+	dereference of the consume_open method result.
+
+2018-11-20  Martin Sebor  <msebor@redhat.com>
+
+	* cp-tree.h (cp_check_const_attributes): Declare.
+	* decl2.c (cp_check_const_attributes): Declare extern.
+	* parser.c (cp_parser_has_attribute_expression): New function.
+	(cp_parser_unary_expression): Handle RID_HAS_ATTRIBUTE_EXPRESSION.
+	(cp_parser_gnu_attribute_list): Add argument.
+
+2018-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88110
+	* constexpr.c (cxx_eval_constant_expression) <case OBJ_TYPE_REF>: Punt
+	if get_base_address of ADDR_EXPR operand is not a DECL_P.
+
+2018-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87781 - detect invalid elaborated-type-specifier.
+	* parser.c (cp_parser_elaborated_type_specifier): Ensure that
+	typename follows a nested-name-specifier.
+
 2018-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl2.c (grokfield): Remove obsolete _vptr check; fix

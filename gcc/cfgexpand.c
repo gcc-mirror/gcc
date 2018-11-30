@@ -1125,13 +1125,17 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 	      && stack_vars[i].size.is_constant ())
 	    {
 	      prev_offset = align_base (prev_offset,
-					MAX (alignb, ASAN_RED_ZONE_SIZE),
+					MAX (alignb, ASAN_MIN_RED_ZONE_SIZE),
 					!FRAME_GROWS_DOWNWARD);
 	      tree repr_decl = NULL_TREE;
-	      offset
-		= alloc_stack_frame_space (stack_vars[i].size
-					   + ASAN_RED_ZONE_SIZE,
-					   MAX (alignb, ASAN_RED_ZONE_SIZE));
+	      unsigned HOST_WIDE_INT size
+		= asan_var_and_redzone_size (stack_vars[i].size.to_constant ());
+	      if (data->asan_vec.is_empty ())
+		size = MAX (size, ASAN_RED_ZONE_SIZE);
+
+	      unsigned HOST_WIDE_INT alignment = MAX (alignb,
+						      ASAN_MIN_RED_ZONE_SIZE);
+	      offset = alloc_stack_frame_space (size, alignment);
 
 	      data->asan_vec.safe_push (prev_offset);
 	      /* Allocating a constant amount of space from a constant
@@ -6185,6 +6189,23 @@ stack_protect_prologue (void)
   rtx x, y;
 
   x = expand_normal (crtl->stack_protect_guard);
+
+  if (targetm.have_stack_protect_combined_set () && guard_decl)
+    {
+      gcc_assert (DECL_P (guard_decl));
+      y = DECL_RTL (guard_decl);
+
+      /* Allow the target to compute address of Y and copy it to X without
+	 leaking Y into a register.  This combined address + copy pattern
+	 allows the target to prevent spilling of any intermediate results by
+	 splitting it after register allocator.  */
+      if (rtx_insn *insn = targetm.gen_stack_protect_combined_set (x, y))
+	{
+	  emit_insn (insn);
+	  return;
+	}
+    }
+
   if (guard_decl)
     y = expand_normal (guard_decl);
   else

@@ -31,6 +31,7 @@
 # Assume by default that CONTENTS is C code.  
 # Otherwise, code should contain:
 # "// C++" for c++,
+# "// D" for D,
 # "! Fortran" for Fortran code,
 # "/* ObjC", for ObjC
 # "// ObjC++" for ObjC++
@@ -58,6 +59,7 @@ proc check_compile {basename type contents args} {
     switch -glob -- $contents {
 	"*! Fortran*" { set src ${basename}[pid].f90 }
 	"*// C++*" { set src ${basename}[pid].cc }
+	"*// D*" { set src ${basename}[pid].d }
 	"*// ObjC++*" { set src ${basename}[pid].mm }
 	"*/* ObjC*" { set src ${basename}[pid].m }
 	"*// Go*" { set src ${basename}[pid].go }
@@ -312,6 +314,12 @@ proc check_weak_available { } {
 
     if { [istarget nvptx-*-*] } {
 	return 1
+    }
+
+    # pdp11 doesn't support it
+
+    if { [istarget pdp11*-*-*] } {
+	return 0
     }
 
     # ELF and ECOFF support it. a.out does with gas/gld but may also with
@@ -2600,9 +2608,21 @@ proc check_effective_target_ptr32plus { } {
     }]
 }
 
-# Return 1 if we support 32-bit or larger array and structure sizes
-# using default options, 0 otherwise.  Avoid false positive on
-# targets with 20 or 24 bit address spaces.
+# Return 1 if we support 16-bit or larger array and structure sizes
+# using default options, 0 otherwise.
+# This implies at least a 20-bit address space, as no targets have an address
+# space between 16 and 20 bits.
+
+proc check_effective_target_size20plus { } {
+    return [check_no_compiler_messages size20plus object {
+	char dummy[65537L];
+    }]
+}
+
+# Return 1 if we support 24-bit or larger array and structure sizes
+# using default options, 0 otherwise.
+# This implies at least a 32-bit address space, as no targets have an address
+# space between 24 and 32 bits.
 
 proc check_effective_target_size32plus { } {
     return [check_no_compiler_messages size32plus object {
@@ -2648,6 +2668,29 @@ proc check_effective_target_llp64 { } {
 proc check_effective_target_long_neq_int { } {
     return [check_no_compiler_messages long_ne_int object {
 	int dummy[sizeof (int) != sizeof (long) ? 1 : -1];
+    }]
+}
+
+# Return 1 if int size is equal to float size,
+# 0 otherwise.
+
+proc check_effective_target_int_eq_float { } {
+    return [check_no_compiler_messages int_eq_float object {
+	int dummy[sizeof (int) >= sizeof (float) ? 1 : -1];
+    }]
+}
+
+# Return 1 if pointer size is equal to long size,
+# 0 otherwise.
+
+proc check_effective_target_ptr_eq_long { } {
+    # sizeof (void *) == 4 for msp430-elf -mlarge which is equal to
+    # sizeof (long). Avoid false positive.
+    if { [istarget msp430-*-*] } {
+	return 0
+    }
+    return [check_no_compiler_messages ptr_eq_long object {
+	int dummy[sizeof (void *) == sizeof (long) ? 1 : -1];
     }]
 }
 
@@ -4394,6 +4437,7 @@ proc check_effective_target_arm_v8_2a_dotprod_neon_ok_nocache { } {
     foreach flags {"" "-mfloat-abi=softfp -mfpu=neon-fp-armv8" "-mfloat-abi=hard -mfpu=neon-fp-armv8"} {
         if { [check_no_compiler_messages_nocache \
                   arm_v8_2a_dotprod_neon_ok object {
+	    #include <stdint.h>
             #if !defined (__ARM_FEATURE_DOTPROD)
             #error "__ARM_FEATURE_DOTPROD not defined"
             #endif
@@ -6690,6 +6734,11 @@ proc check_effective_target_newlib {} {
     }]
 }
 
+# Return true if GCC was configured with --enable-newlib-nano-formatted-io
+proc check_effective_target_newlib_nano_io { } {
+    return [check_configured_with "--enable-newlib-nano-formatted-io"]
+}
+
 # Some newlib versions don't provide a frexpl and instead depend
 # on frexp to implement long double conversions in their printf-like
 # functions.  This leads to broken results.  Detect such versions here.
@@ -7145,6 +7194,19 @@ proc check_effective_target_c99_runtime { } {
 	}
 	check_no_compiler_messages_nocache c99_runtime assembly \
 	    $contents [add_options_for_c99_runtime ""]
+    }]
+}
+
+# Return 1 if the target provides the D runtime.
+
+proc check_effective_target_d_runtime { } {
+    return [check_no_compiler_messages d_runtime executable {
+	// D
+	module mod;
+
+	extern(C) int main() {
+	    return 0;
+	}
     }]
 }
 
@@ -8434,6 +8496,7 @@ proc check_effective_target_logical_op_short_circuit {} {
 	 || [istarget crisv32-*-*] || [istarget cris-*-*]
 	 || [istarget csky*-*-*]
 	 || [istarget mmix-*-*]
+	 || [istarget msp430-*-*]
 	 || [istarget s390*-*-*]
 	 || [istarget powerpc*-*-*]
 	 || [istarget nios2*-*-*]

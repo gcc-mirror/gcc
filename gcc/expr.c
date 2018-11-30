@@ -1146,7 +1146,7 @@ class move_by_pieces_d : public op_by_pieces_d
     : op_by_pieces_d (to, false, from, true, NULL, NULL, len, align)
   {
   }
-  rtx finish_endp (int);
+  rtx finish_retmode (memop_ret);
 };
 
 /* Return true if MODE can be used for a set of copies, given an
@@ -1182,15 +1182,14 @@ move_by_pieces_d::generate (rtx op0, rtx op1,
 }
 
 /* Perform the final adjustment at the end of a string to obtain the
-   correct return value for the block operation.  If ENDP is 1 return
-   memory at the end ala mempcpy, and if ENDP is 2 return memory the
-   end minus one byte ala stpcpy.  */
+   correct return value for the block operation.
+   Return value is based on RETMODE argument.  */
 
 rtx
-move_by_pieces_d::finish_endp (int endp)
+move_by_pieces_d::finish_retmode (memop_ret retmode)
 {
   gcc_assert (!m_reverse);
-  if (endp == 2)
+  if (retmode == RETURN_END_MINUS_ONE)
     {
       m_to.maybe_postinc (-1);
       --m_offset;
@@ -1206,13 +1205,11 @@ move_by_pieces_d::finish_endp (int endp)
 
    ALIGN is maximum stack alignment we can assume.
 
-   If ENDP is 0 return to, if ENDP is 1 return memory at the end ala
-   mempcpy, and if ENDP is 2 return memory the end minus one byte ala
-   stpcpy.  */
+   Return value is based on RETMODE argument.  */
 
 rtx
 move_by_pieces (rtx to, rtx from, unsigned HOST_WIDE_INT len,
-		unsigned int align, int endp)
+		unsigned int align, memop_ret retmode)
 {
 #ifndef PUSH_ROUNDING
   if (to == NULL)
@@ -1223,8 +1220,8 @@ move_by_pieces (rtx to, rtx from, unsigned HOST_WIDE_INT len,
 
   data.run ();
 
-  if (endp)
-    return data.finish_endp (endp);
+  if (retmode)
+    return data.finish_retmode (retmode);
   else
     return to;
 }
@@ -1244,7 +1241,7 @@ class store_by_pieces_d : public op_by_pieces_d
     : op_by_pieces_d (to, false, NULL_RTX, true, cfn, cfn_data, len, align)
   {
   }
-  rtx finish_endp (int);
+  rtx finish_retmode (memop_ret);
 };
 
 /* Return true if MODE can be used for a set of stores, given an
@@ -1272,15 +1269,14 @@ store_by_pieces_d::generate (rtx op0, rtx op1, machine_mode)
 }
 
 /* Perform the final adjustment at the end of a string to obtain the
-   correct return value for the block operation.  If ENDP is 1 return
-   memory at the end ala mempcpy, and if ENDP is 2 return memory the
-   end minus one byte ala stpcpy.  */
+   correct return value for the block operation.
+   Return value is based on RETMODE argument.  */
 
 rtx
-store_by_pieces_d::finish_endp (int endp)
+store_by_pieces_d::finish_retmode (memop_ret retmode)
 {
   gcc_assert (!m_reverse);
-  if (endp == 2)
+  if (retmode == RETURN_END_MINUS_ONE)
     {
       m_to.maybe_postinc (-1);
       --m_offset;
@@ -1370,18 +1366,17 @@ can_store_by_pieces (unsigned HOST_WIDE_INT len,
    pointer which will be passed as argument in every CONSTFUN call.
    ALIGN is maximum alignment we can assume.  MEMSETP is true if this is
    a memset operation and false if it's a copy of a constant string.
-   If ENDP is 0 return to, if ENDP is 1 return memory at the end ala
-   mempcpy, and if ENDP is 2 return memory the end minus one byte ala
-   stpcpy.  */
+   Return value is based on RETMODE argument.  */
 
 rtx
 store_by_pieces (rtx to, unsigned HOST_WIDE_INT len,
 		 rtx (*constfun) (void *, HOST_WIDE_INT, scalar_int_mode),
-		 void *constfundata, unsigned int align, bool memsetp, int endp)
+		 void *constfundata, unsigned int align, bool memsetp,
+		 memop_ret retmode)
 {
   if (len == 0)
     {
-      gcc_assert (endp != 2);
+      gcc_assert (retmode != RETURN_END_MINUS_ONE);
       return to;
     }
 
@@ -1393,8 +1388,8 @@ store_by_pieces (rtx to, unsigned HOST_WIDE_INT len,
   store_by_pieces_d data (to, constfun, constfundata, len, align);
   data.run ();
 
-  if (endp)
-    return data.finish_endp (endp);
+  if (retmode)
+    return data.finish_retmode (retmode);
   else
     return to;
 }
@@ -1624,7 +1619,7 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
     }
 
   if (CONST_INT_P (size) && can_move_by_pieces (INTVAL (size), align))
-    move_by_pieces (x, y, INTVAL (size), align, 0);
+    move_by_pieces (x, y, INTVAL (size), align, RETURN_BEGIN);
   else if (emit_block_move_via_movmem (x, y, size, align,
 				       expected_align, expected_size,
 				       min_size, max_size, probable_max_size))
@@ -4421,7 +4416,8 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 	      && where_pad != stack_direction)
 	    anti_adjust_stack (gen_int_mode (extra, Pmode));
 
-	  move_by_pieces (NULL, xinner, INTVAL (size) - used, align, 0);
+	  move_by_pieces (NULL, xinner, INTVAL (size) - used, align,
+			  RETURN_BEGIN);
 	}
       else
 #endif /* PUSH_ROUNDING  */
@@ -5618,7 +5614,8 @@ store_expr (tree exp, rtx target, int call_param_p,
 				  CONST_CAST (char *,
 					      TREE_STRING_POINTER (str)),
 				  MEM_ALIGN (target), false,
-				  exp_len > str_copy_len ? 1 : 0);
+				  (exp_len > str_copy_len ? RETURN_END :
+				   RETURN_BEGIN));
       if (exp_len > str_copy_len)
 	clear_storage (adjust_address (dest_mem, BLKmode, 0),
 		       GEN_INT (exp_len - str_copy_len),
@@ -11484,18 +11481,46 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 	offset = off;
     }
 
-  if (!init || TREE_CODE (init) != STRING_CST)
+  if (!init)
     return NULL_TREE;
 
+  *ptr_offset = offset;
+
+  tree eltype = TREE_TYPE (init);
+  tree initsize = TYPE_SIZE_UNIT (eltype);
   if (mem_size)
-    *mem_size = TYPE_SIZE_UNIT (TREE_TYPE (init));
+    *mem_size = initsize;
+
   if (decl)
     *decl = array;
 
-  gcc_checking_assert (tree_to_shwi (TYPE_SIZE_UNIT (TREE_TYPE (init)))
-		       >= TREE_STRING_LENGTH (init));
+  if (TREE_CODE (init) == INTEGER_CST
+      && (TREE_CODE (TREE_TYPE (array)) == INTEGER_TYPE
+	  || TYPE_MAIN_VARIANT (eltype) == char_type_node))
+    {
+      /* For a reference to (address of) a single constant character,
+	 store the native representation of the character in CHARBUF.
+	 If the reference is to an element of an array or a member
+	 of a struct, only consider narrow characters until ctors
+	 for wide character arrays are transformed to STRING_CSTs
+	 like those for narrow arrays.  */
+      unsigned char charbuf[MAX_BITSIZE_MODE_ANY_MODE / BITS_PER_UNIT];
+      int len = native_encode_expr (init, charbuf, sizeof charbuf, 0);
+      if (len > 0)
+	{
+	  /* Construct a string literal with elements of ELTYPE and
+	     the representation above.  Then strip
+	     the ADDR_EXPR (ARRAY_REF (...)) around the STRING_CST.  */
+	  init = build_string_literal (len, (char *)charbuf, eltype);
+	  init = TREE_OPERAND (TREE_OPERAND (init, 0), 0);
+	}
+    }
 
-  *ptr_offset = offset;
+  if (TREE_CODE (init) != STRING_CST)
+    return NULL_TREE;
+
+  gcc_checking_assert (tree_to_shwi (initsize) >= TREE_STRING_LENGTH (init));
+
   return init;
 }
 

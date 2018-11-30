@@ -1,14 +1,14 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fdump-tree-fnsplit" } */
 int make_me_big (void);
-void abort (void);
+void do_work (void);
 
 int
 split_me (int a)
 {
   if (__builtin_expect(a<10, 1))
     {
-      abort ();
+      do_work ();
     }
   else
     {

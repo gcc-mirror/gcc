@@ -1,3 +1,7 @@
+2018-11-22  Martin Liska  <mliska@suse.cz>
+
+	* bugzilla-close-candidate.py: New file.
+
 2018-10-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* update_version_svn (IGNORE_BRANCHES): Add gcc-6-branch.

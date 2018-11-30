@@ -576,11 +576,11 @@ Feature-testing recommendations for C++</a>.
       </td><td align="center"> 7.1 </td><td align="left"> <code class="code">__has_include(&lt;string_view&gt;)</code>,
               <code class="code">__cpp_lib_string_view &gt;= 201603</code>
               (since 7.3, see Note 1)
-      </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Library Fundamentals V1 TS Components: <code class="code">memory_resource</code> </td><td align="left">
+      </td></tr><tr><td align="left"> Library Fundamentals V1 TS Components: <code class="code">memory_resource</code> </td><td align="left">
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0220r1.html" target="_top">
 	P0220R1
 	</a>
-      </td><td align="center"> No </td><td align="left"> <code class="code">__has_include(&lt;memory_resource&gt;)</code>,
+      </td><td align="center"> 9.1 </td><td align="left"> <code class="code">__has_include(&lt;memory_resource&gt;)</code>,
               <code class="code">__cpp_lib_memory_resource &gt;= 201603</code>
       </td></tr><tr><td align="left"> Library Fundamentals V1 TS Components: <code class="code">apply</code> </td><td align="left">
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0220r1.html" target="_top">
@@ -711,7 +711,7 @@ Feature-testing recommendations for C++</a>.
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0426r1.html" target="_top">
 	P0426R1
 	</a>
-      </td><td align="center"> 8 </td><td align="left"><code class="code"> __cpp_lib_constexpr_char_traits &gt;= 201611 </code></td></tr><tr><td align="left"> Integrating <code class="code">std::string_view</code> and <code class="code">std::string</code> </td><td align="left">
+      </td><td align="center"> 8.1 </td><td align="left"><code class="code"> __cpp_lib_constexpr_char_traits &gt;= 201611 </code></td></tr><tr><td align="left"> Integrating <code class="code">std::string_view</code> and <code class="code">std::string</code> </td><td align="left">
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0254r2.pdf" target="_top">
 	P0254R2
 	</a>
@@ -784,22 +784,22 @@ Feature-testing recommendations for C++</a>.
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0218r1.html" target="_top">
 	P0218R1
 	</a>
-      </td><td align="center"> 8 </td><td align="left"><code class="code"> __has_include(&lt;filesystem&gt;) </code>,
+      </td><td align="center"> 8.1 </td><td align="left"><code class="code"> __has_include(&lt;filesystem&gt;) </code>,
 	     <code class="code"> __cpp_lib_filesystem &gt;= 201603 </code>
 	     (requires linking with <code class="code">-lstdc++fs</code>)
       </td></tr><tr><td align="left"> Relative Paths for Filesystem</td><td align="left">
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0219r1.html" target="_top">
 	P0219R1
 	</a>
-      </td><td align="center"> 8 </td><td align="left"><code class="code"> __cpp_lib_filesystem &gt;= 201606 </code></td></tr><tr><td align="left"> Adapting string_view by filesystem paths </td><td align="left">
+      </td><td align="center"> 8.1 </td><td align="left"><code class="code"> __cpp_lib_filesystem &gt;= 201606 </code></td></tr><tr><td align="left"> Adapting string_view by filesystem paths </td><td align="left">
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0392r0.pdf" target="_top">
 	P0392R0
 	</a>
-      </td><td align="center"> 8 </td><td align="left"><code class="code"> __cpp_lib_filesystem &gt;= 201606 </code></td></tr><tr><td align="left"> Directory Entry Caching for Filesystem </td><td align="left">
+      </td><td align="center"> 8.1 </td><td align="left"><code class="code"> __cpp_lib_filesystem &gt;= 201606 </code></td></tr><tr><td align="left"> Directory Entry Caching for Filesystem </td><td align="left">
        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0317r1.html" target="_top">
        P0317R1
        </a>
-      </td><td align="center"> 8 </td><td align="left"><code class="code"> __cpp_lib_filesystem &gt;= 201703 </code></td></tr><tr><td align="left"> constexpr <code class="code">atomic&lt;T&gt;::is_always_lock_free</code>	 </td><td align="left">
+      </td><td align="center"> 8.1 </td><td align="left"><code class="code"> __cpp_lib_filesystem &gt;= 201703 </code></td></tr><tr><td align="left"> constexpr <code class="code">atomic&lt;T&gt;::is_always_lock_free</code>	 </td><td align="left">
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0152r1.html" target="_top">
 	P0152R1
 	</a>
@@ -820,7 +820,7 @@ Feature-testing recommendations for C++</a>.
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0067r5.html" target="_top">
 	P0067R5
 	</a>
-      </td><td align="center"> 8 (only integral types supported) </td><td align="left"><code class="code"> __has_include(&lt;charconv&gt;) </code>
+      </td><td align="center"> 8.1 (only integral types supported) </td><td align="left"><code class="code"> __has_include(&lt;charconv&gt;) </code>
              <code class="code"> __cpp_lib_to_chars &gt;= 201611 </code></td></tr></tbody></table></div></div><br class="table-break" /><p>
 Note 1: This feature is supported in GCC 7.1 and 7.2 but before GCC 7.3 the
 <code class="code">__cpp_lib</code> macro is not defined, and compilation will fail if the
@@ -874,7 +874,10 @@ and test for <code class="code">__STDCPP_MATH_SPEC_FUNCS__ &gt;= 201003L</code>.
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4521.html" target="_top">
 	  N4521
 	</a>
-      </td><td align="left"> Merge Fundamentals V1 into V2 </td><td align="left">N</td><td align="left">Library Fundamentals 2 TS</td></tr><tr><td align="left">
+      </td><td align="left"> Merge Fundamentals V1 into V2 </td><td align="left">
+        N (components from V1 are still in namespace
+        <code class="code">fundamentals_v1</code>)
+      </td><td align="left">Library Fundamentals 2 TS</td></tr><tr><td align="left">
 	<a class="link" href="http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/p0013r1.html" target="_top">
 	  P0013R1
 	</a>

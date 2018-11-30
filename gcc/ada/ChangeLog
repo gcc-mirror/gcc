@@ -1,3 +1,14 @@
+2018-11-26  Matthias Klose <doko@ubuntu.com>
+
+	PR ada/88191
+	* libgnarl/s-linux__alpha.ads: Define SIGSYS.
+
+2018-11-19  Alexandre Oliva <oliva@adacore.com>
+
+	PR ada/81878
+	* gcc-interface/config-lang.in (lang_requires): Set to "c c++"
+	when gnattools wants it.
+
 2018-11-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/cuintp.c (UI_From_gnu): Remove code for 32-bit hosts.

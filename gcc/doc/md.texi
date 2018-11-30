@@ -6022,6 +6022,15 @@ vector floating-point mode.
 
 This pattern is not allowed to @code{FAIL}.
 
+@cindex @code{xorsign@var{m}3} instruction pattern
+@item @samp{xorsign@var{m}3}
+Equivalent to @samp{op0 = op1 * copysign (1.0, op2)}: store a value with
+the magnitude of operand 1 and the sign of operand 2 into operand 0.
+All operands have mode @var{m}, which is a scalar or vector
+floating-point mode.
+
+This pattern is not allowed to @code{FAIL}.
+
 @cindex @code{ffs@var{m}2} instruction pattern
 @item @samp{ffs@var{m}2}
 Store into operand 0 one plus the index of the least significant 1-bit
@@ -7450,22 +7459,61 @@ builtins.
 The get/set patterns have a single output/input operand respectively,
 with @var{mode} intended to be @code{Pmode}.
 
+@cindex @code{stack_protect_combined_set} instruction pattern
+@item @samp{stack_protect_combined_set}
+This pattern, if defined, moves a @code{ptr_mode} value from an address
+whose declaration RTX is given in operand 1 to the memory in operand 0
+without leaving the value in a register afterward.  If several
+instructions are needed by the target to perform the operation (eg. to
+load the address from a GOT entry then load the @code{ptr_mode} value
+and finally store it), it is the backend's responsibility to ensure no
+intermediate result gets spilled.  This is to avoid leaking the value
+some place that an attacker might use to rewrite the stack guard slot
+after having clobbered it.
+
+If this pattern is not defined, then the address declaration is
+expanded first in the standard way and a @code{stack_protect_set}
+pattern is then generated to move the value from that address to the
+address in operand 0.
+
 @cindex @code{stack_protect_set} instruction pattern
 @item @samp{stack_protect_set}
-This pattern, if defined, moves a @code{ptr_mode} value from the memory
-in operand 1 to the memory in operand 0 without leaving the value in
-a register afterward.  This is to avoid leaking the value some place
-that an attacker might use to rewrite the stack guard slot after
-having clobbered it.
+This pattern, if defined, moves a @code{ptr_mode} value from the valid
+memory location in operand 1 to the memory in operand 0 without leaving
+the value in a register afterward.  This is to avoid leaking the value
+some place that an attacker might use to rewrite the stack guard slot
+after having clobbered it.
+
+Note: on targets where the addressing modes do not allow to load
+directly from stack guard address, the address is expanded in a standard
+way first which could cause some spills.
 
 If this pattern is not defined, then a plain move pattern is generated.
+
+@cindex @code{stack_protect_combined_test} instruction pattern
+@item @samp{stack_protect_combined_test}
+This pattern, if defined, compares a @code{ptr_mode} value from an
+address whose declaration RTX is given in operand 1 with the memory in
+operand 0 without leaving the value in a register afterward and
+branches to operand 2 if the values were equal.  If several
+instructions are needed by the target to perform the operation (eg. to
+load the address from a GOT entry then load the @code{ptr_mode} value
+and finally store it), it is the backend's responsibility to ensure no
+intermediate result gets spilled.  This is to avoid leaking the value
+some place that an attacker might use to rewrite the stack guard slot
+after having clobbered it.
+
+If this pattern is not defined, then the address declaration is
+expanded first in the standard way and a @code{stack_protect_test}
+pattern is then generated to compare the value from that address to the
+value at the memory in operand 0.
 
 @cindex @code{stack_protect_test} instruction pattern
 @item @samp{stack_protect_test}
 This pattern, if defined, compares a @code{ptr_mode} value from the
-memory in operand 1 with the memory in operand 0 without leaving the
-value in a register afterward and branches to operand 2 if the values
-were equal.
+valid memory location in operand 1 with the memory in operand 0 without
+leaving the value in a register afterward and branches to operand 2 if
+the values were equal.
 
 If this pattern is not defined, then a plain compare pattern and
 conditional branch pattern is used.

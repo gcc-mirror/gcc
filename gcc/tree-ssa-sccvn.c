@@ -68,6 +68,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "tree-ssa-loop.h"
 #include "tree-scalar-evolution.h"
+#include "tree-ssa-loop-niter.h"
 #include "tree-ssa-sccvn.h"
 
 /* This algorithm is based on the SCC algorithm presented by Keith
@@ -1206,7 +1207,7 @@ copy_reference_ops_from_call (gcall *call,
 
   /* Copy the type, opcode, function, static chain and EH region, if any.  */
   memset (&temp, 0, sizeof (temp));
-  temp.type = gimple_call_return_type (call);
+  temp.type = gimple_call_fntype (call);
   temp.opcode = CALL_EXPR;
   temp.op0 = gimple_call_fn (call);
   temp.op1 = gimple_call_chain (call);
@@ -1926,7 +1927,16 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	 VN_WALKREWRITE guard).  */
       if (vn_walk_kind == VN_WALKREWRITE
 	  && is_gimple_reg_type (TREE_TYPE (lhs))
-	  && types_compatible_p (TREE_TYPE (lhs), vr->type))
+	  && types_compatible_p (TREE_TYPE (lhs), vr->type)
+	  /* The overlap restriction breaks down when either access
+	     alias-set is zero.  Still for accesses of the size of
+	     an addressable unit there can be no overlaps.  Overlaps
+	     between different union members are not an issue since
+	     activation of a union member via a store makes the
+	     values of untouched bytes unspecified.  */
+	  && (known_eq (ref->size, BITS_PER_UNIT)
+	      || (get_alias_set (lhs) != 0
+		  && ao_ref_alias_set (ref) != 0)))
 	{
 	  tree *saved_last_vuse_ptr = last_vuse_ptr;
 	  /* Do not update last_vuse_ptr in vn_reference_lookup_2.  */
@@ -2114,6 +2124,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
       base2 = get_ref_base_and_extent (gimple_assign_lhs (def_stmt),
 				       &offset2, &size2, &maxsize2, &reverse);
       if (known_size_p (maxsize2)
+	  && known_eq (maxsize2, size2)
 	  && operand_equal_p (base, base2, 0)
 	  && known_subrange_p (offset, maxsize, offset2, size2))
 	{
@@ -4194,12 +4205,20 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
      value from the backedge as that confuses the alias-walking code.
      See gcc.dg/torture/pr87176.c.  If the value is the same on a
      non-backedge everything is OK though.  */
-  if (backedge_val
-      && !seen_non_backedge
-      && TREE_CODE (backedge_val) == SSA_NAME
-      && sameval == backedge_val
-      && (SSA_NAME_IS_VIRTUAL_OPERAND (backedge_val)
-	  || SSA_VAL (backedge_val) != backedge_val))
+  bool visited_p;
+  if ((backedge_val
+       && !seen_non_backedge
+       && TREE_CODE (backedge_val) == SSA_NAME
+       && sameval == backedge_val
+       && (SSA_NAME_IS_VIRTUAL_OPERAND (backedge_val)
+	   || SSA_VAL (backedge_val) != backedge_val))
+      /* Do not value-number a virtual operand to sth not visited though
+	 given that allows us to escape a region in alias walking.  */
+      || (sameval
+	  && TREE_CODE (sameval) == SSA_NAME
+	  && !SSA_NAME_IS_DEFAULT_DEF (sameval)
+	  && SSA_NAME_IS_VIRTUAL_OPERAND (sameval)
+	  && (SSA_VAL (sameval, &visited_p), !visited_p)))
     /* Note this just drops to VARYING without inserting the PHI into
        the hashes.  */
     result = PHI_RESULT (phi);
@@ -5895,6 +5914,16 @@ process_bb (rpo_elim &avail, basic_block bb,
 	  lc_phi_nodes = true;
 	  break;
 	}
+
+  /* When we visit a loop header substitute into loop info.  */
+  if (!iterate && eliminate && bb->loop_father->header == bb)
+    {
+      /* Keep fields in sync with substitute_in_loop_info.  */
+      if (bb->loop_father->nb_iterations)
+	bb->loop_father->nb_iterations
+	  = simplify_replace_tree (bb->loop_father->nb_iterations,
+				   NULL_TREE, NULL_TREE, vn_valueize);
+    }
 
   /* Value-number all defs in the basic-block.  */
   for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);

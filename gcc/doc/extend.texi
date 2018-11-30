@@ -2104,7 +2104,7 @@ Another syntax that has the same meaning, obsolete since GCC 2.5, is
 struct point p = @{ y: yvalue, x: xvalue @};
 @end smallexample
 
-Omitted field members are implicitly initialized the same as objects
+Omitted fields are implicitly initialized the same as for objects
 that have static storage duration.
 
 @cindex designators
@@ -2162,11 +2162,13 @@ example, with the @samp{struct point} declaration above:
 struct point ptarray[10] = @{ [2].y = yv2, [2].x = xv2, [0].x = xv0 @};
 @end smallexample
 
-@noindent
-If the same field is initialized multiple times, it has the value from
-the last initialization.  If any such overridden initialization has
-side effect, it is unspecified whether the side effect happens or not.
-Currently, GCC discards them and issues a warning.
+If the same field is initialized multiple times, or overlapping
+fields of a union are initialized, the value from the last
+initialization is used.  When a field of a union is itself a structure, 
+the entire structure from the last field initialized is used.  If any previous
+initializer has side effect, it is unspecified whether the side effect
+happens or not.  Currently, GCC discards the side-effecting
+initializer expressions and issues a warning.
 
 @node Case Ranges
 @section Case Ranges
@@ -2519,11 +2521,13 @@ are automatically detected and this attribute is ignored.
 Many functions do not examine any values except their arguments, and
 have no effects except to return a value.  Calls to such functions lend
 themselves to optimization such as common subexpression elimination.
+The presence of the @code{const} attribute on a function declaration 
+allows GCC to emit more efficient code for some calls to the function.  
+
 The @code{const} attribute imposes greater restrictions on a function's
-definition than the similar @code{pure} attribute below because it prohibits
-the function from reading global variables.  Consequently, the presence of
-the attribute on a function declaration allows GCC to emit more efficient
-code for some calls to the function.  Decorating the same function with
+definition than the similar @code{pure} attribute below because it
+additionally prohibits the function from reading memory except for
+constant global variables.  Decorating the same function with
 both the @code{const} and the @code{pure} attribute is diagnosed.
 
 @cindex pointer arguments
@@ -2548,8 +2552,9 @@ called.  Functions with these attributes are useful for
 initializing data that is used implicitly during the execution of
 the program.
 
-You may provide an optional integer priority to control the order in
-which constructor and destructor functions are run.  A constructor
+On some targets the attributes also accept an integer argument to
+specify a priority to control the order in which constructor and
+destructor functions are run.  A constructor
 with a smaller priority number runs before a constructor with a larger
 priority number; the opposite relationship holds for destructors.  So,
 if you have a constructor that allocates a resource and a destructor
@@ -2561,6 +2566,10 @@ constructors for C++ objects with static storage duration and functions
 decorated with attribute @code{constructor} are invoked is unspecified.
 In mixed declarations, attribute @code{init_priority} can be used to
 impose a specific ordering.
+
+Using the argument forms of the @code{constructor} and @code{destructor}
+attributes on targets where the feature is not supported is rejected with
+an error.
 
 @item copy
 @itemx copy (@var{function})
@@ -3313,8 +3322,9 @@ depending on volatile memory or other system resource, that may change between
 two consecutive calls (such as @code{feof} in a multithreading environment).
 
 The @code{pure} attribute imposes similar but looser restrictions on
-a function's defintion than the @code{const} attribute: it allows the
-function to read global variables.  Decorating the same function with
+a function's definition than the @code{const} attribute: @code{pure}
+allows the function to read any non-volatile memory, not just
+constant global variables.  Decorating the same function with
 both the @code{pure} and the @code{const} attribute is diagnosed.
 Because a @code{pure} function cannot have any side effects it does not
 make sense for such a function to return @code{void}.  Declaring such
@@ -6016,6 +6026,19 @@ The @code{indirect_return} attribute can be applied to a function,
 as well as variable or type of function pointer to inform the
 compiler that the function may return via indirect branch.
 
+@item fentry_name("@var{name}")
+@cindex @code{fentry_name} function attribute, x86
+On x86 targets, the @code{fentry_name} attribute sets the function to
+call on function entry when function instrumentation is enabled
+with @option{-pg -mfentry}. When @var{name} is nop then a 5 byte
+nop sequence is generated.
+
+@item fentry_section("@var{name}")
+@cindex @code{fentry_section} function attribute, x86
+On x86 targets, the @code{fentry_section} attribute sets the name
+of the section to record function entry instrumentation calls in when
+enabled with @option{-pg -mrecord-mcount}
+
 @end table
 
 On the x86, the inliner does not inline a
@@ -6175,7 +6198,7 @@ struct foo
 @{
   int i1;
   int i2;
-  unsigned long long x __attribute__((warn_if_not_aligned(16)));
+  unsigned long long x __attribute__ ((warn_if_not_aligned (16)));
 @};
 @end smallexample
 
@@ -6187,12 +6210,12 @@ The compiler also issues a warning, like @samp{warning: 'x' offset
 the misaligned offset:
 
 @smallexample
-struct foo
+struct __attribute__ ((aligned (16))) foo
 @{
   int i1;
   int i2;
-  unsigned long long x __attribute__((warn_if_not_aligned(16)));
-@} __attribute__((aligned(16)));
+  unsigned long long x __attribute__ ((warn_if_not_aligned (16)));
+@};
 @end smallexample
 
 This warning can be disabled by @option{-Wno-if-not-aligned}.
@@ -7017,9 +7040,10 @@ inside double parentheses.
 
 You may specify type attributes in an enum, struct or union type
 declaration or definition by placing them immediately after the
-@code{struct}, @code{union} or @code{enum} keyword.  A less preferred
-syntax is to place them just past the closing curly brace of the
-definition.
+@code{struct}, @code{union} or @code{enum} keyword.  You can also place
+them just past the closing curly brace of the definition, but this is less
+preferred because logically the type should be fully defined at 
+the closing brace.
 
 You can also include type attributes in a @code{typedef} declaration.
 @xref{Attribute Syntax}, for details of the exact syntax for using
@@ -7051,7 +7075,7 @@ alignment for the target, which is often, but by no means always, 8 or 16
 bytes.  For example, the declarations:
 
 @smallexample
-struct S @{ short f[3]; @} __attribute__ ((aligned (8)));
+struct __attribute__ ((aligned (8))) S @{ short f[3]; @};
 typedef int more_aligned_int __attribute__ ((aligned (8)));
 @end smallexample
 
@@ -7082,7 +7106,7 @@ useful alignment for the target machine you are compiling for.  For
 example, you could write:
 
 @smallexample
-struct S @{ short f[3]; @} __attribute__ ((aligned));
+struct __attribute__ ((aligned)) S @{ short f[3]; @};
 @end smallexample
 
 Whenever you leave out the alignment factor in an @code{aligned}
@@ -7117,7 +7141,7 @@ by inherent limitations in your linker.  On many systems, the linker is
 only able to arrange for variables to be aligned up to a certain maximum
 alignment.  (For some linkers, the maximum supported alignment may
 be very very small.)  If your linker is only able to align variables
-up to a maximum of 8-byte alignment, then specifying @code{aligned(16)}
+up to a maximum of 8-byte alignment, then specifying @code{aligned (16)}
 in an @code{__attribute__} still only provides you with 8-byte
 alignment.  See your linker documentation for further information.
 
@@ -7135,7 +7159,7 @@ warning will be issued.  For example, the declaration:
 
 @smallexample
 typedef unsigned long long __u64
-   __attribute__((aligned(4),warn_if_not_aligned(8)));
+   __attribute__((aligned (4), warn_if_not_aligned (8)));
 
 struct foo
 @{
@@ -7154,12 +7178,12 @@ has the same alignment when @code{__u64} is aligned at either 4 or
 8 bytes.  Align @code{struct foo} to 8 bytes:
 
 @smallexample
-struct foo
+struct __attribute__ ((aligned (8))) foo
 @{
   int i1;
   int i2;
   __u64 x;
-@} __attribute__((aligned(8)));
+@};
 @end smallexample
 
 @noindent
@@ -7168,13 +7192,13 @@ silences the warning.  The compiler also issues a warning, like
 when the structure field has the misaligned offset:
 
 @smallexample
-struct foo
+struct __attribute__ ((aligned (8))) foo
 @{
   int i1;
   int i2;
   int i3;
   __u64 x;
-@} __attribute__((aligned(8)));
+@};
 @end smallexample
 
 This warning can be disabled by @option{-Wno-if-not-aligned}.
@@ -7279,7 +7303,7 @@ special semantics.
 Example of use:
 
 @smallexample
-typedef short __attribute__((__may_alias__)) short_a;
+typedef short __attribute__ ((__may_alias__)) short_a;
 
 int
 main (void)
@@ -11140,6 +11164,7 @@ is called and the @var{flag} argument passed to it.
 @findex __builtin_call_with_static_chain
 @findex __builtin_extend_pointer
 @findex __builtin_fpclassify
+@findex __builtin_has_attribute
 @findex __builtin_isfinite
 @findex __builtin_isnormal
 @findex __builtin_isgreater
@@ -11794,6 +11819,46 @@ at compile time, for use by @option{-fstack-usage}, @option{-Wstack-usage}
 and @option{-Walloca-larger-than}.  @var{max_size} must be a constant integer
 expression, it has no effect on code generation and no attempt is made to
 check its compatibility with @var{size}.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} bool __builtin_has_attribute (@var{type-or-expression}, @var{attribute})
+The @code{__builtin_has_attribute} function evaluates to an integer constant
+expression equal to @code{true} if the symbol or type referenced by
+the @var{type-or-expression} argument has been declared with
+the @var{attribute} referenced by the second argument.  Neither argument
+is evaluated.  The @var{type-or-expression} argument is subject to the same
+restrictions as the argument to @code{typeof} (@pxref{Typeof}).  The
+@var{attribute} argument is an attribute name optionally followed by
+a comma-separated list of arguments enclosed in parentheses.  Both forms
+of attribute names---with and without double leading and trailing
+underscores---are recognized.  See @xref{Attribute Syntax} for details.
+When no attribute arguments are specified for an attribute that expects
+one or more arguments the function returns @code{true} if
+@var{type-or-expression} has been declared with the attribute regardless
+of the attribute argument values.  Arguments provided for an attribute
+that expects some are validated and matched up to the provided number.
+The function returns @code{true} if all provided arguments match.  For
+example, the first call to the function below evaluates to @code{true}
+because @code{x} is declared with the @code{aligned} attribute but
+the second call evaluates to @code{false} because @code{x} is declared
+@code{aligned (8)} and not @code{aligned (4)}.
+
+@smallexample
+__attribute__ ((aligned (8))) int x;
+_Static_assert (__builtin_has_attribute (x, aligned), "aligned");
+_Static_assert (!__builtin_has_attribute (x, aligned (4)), "aligned (4)");
+@end smallexample
+
+Due to a limitation the @code{__builtin_has_attribute} function returns
+@code{false} for the @code{mode} attribute even if the type or variable
+referenced by the @var{type-or-expression} argument was declared with one.
+The function is also not supported with labels, and in C with enumerators.
+
+Note that unlike the @code{__has_attribute} preprocessor operator which
+is suitable for use in @code{#if} preprocessing directives
+@code{__builtin_has_attribute} is an intrinsic function that is not
+recognized in such contexts.
 
 @end deftypefn
 

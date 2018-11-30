@@ -68,6 +68,7 @@ set_dec_flags (int value)
   flag_dec_intrinsic_ints |= value;
   flag_dec_static |= value;
   flag_dec_math |= value;
+  flag_dec_include |= value;
 }
 
 

@@ -128,6 +128,7 @@ static int last_discriminator;
 /* Discriminator to be written to assembly for current instruction.
    Note: actual usage depends on loc_discriminator_kind setting.  */
 static int discriminator;
+static inline int compute_discriminator (location_t loc);
 
 /* Discriminator identifying current basic block among others sharing
    the same locus.  */
@@ -149,6 +150,7 @@ static const char *last_filename;
 static const char *override_filename;
 static int override_linenum;
 static int override_columnnum;
+static int override_discriminator;
 
 /* Whether to force emission of a line note before the next insn.  */
 static bool force_source_line = false;
@@ -2342,6 +2344,7 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		  override_filename = LOCATION_FILE (*locus_ptr);
 		  override_linenum = LOCATION_LINE (*locus_ptr);
 		  override_columnnum = LOCATION_COLUMN (*locus_ptr);
+		  override_discriminator = compute_discriminator (*locus_ptr);
 		}
 	    }
 	  break;
@@ -2379,12 +2382,14 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		  override_filename = LOCATION_FILE (*locus_ptr);
 		  override_linenum = LOCATION_LINE (*locus_ptr);
 		  override_columnnum = LOCATION_COLUMN (*locus_ptr);
+		  override_discriminator = compute_discriminator (*locus_ptr);
 		}
 	      else
 		{
 		  override_filename = NULL;
 		  override_linenum = 0;
 		  override_columnnum = 0;
+		  override_discriminator = 0;
 		}
 	    }
 	  break;
@@ -3185,9 +3190,11 @@ map_decl_to_instance (const_tree decl)
 
 /* Set DISCRIMINATOR to the appropriate value, possibly derived from LOC.  */
 
-static inline void
-maybe_set_discriminator (location_t loc)
+static inline int
+compute_discriminator (location_t loc)
 {
+  int discriminator;
+
   if (!decl_to_instance_map)
     discriminator = bb_discriminator;
   else
@@ -3209,6 +3216,8 @@ maybe_set_discriminator (location_t loc)
 
       discriminator = map_decl_to_instance (decl);
     }
+
+  return discriminator;
 }
 
 /* Return whether a source line note needs to be emitted before INSN.
@@ -3234,7 +3243,7 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
       filename = xloc.file;
       linenum = xloc.line;
       columnnum = xloc.column;
-      maybe_set_discriminator (loc);
+      discriminator = compute_discriminator (loc);
       force_source_line = true;
     }
   else if (override_filename)
@@ -3242,6 +3251,7 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
       filename = override_filename;
       linenum = override_linenum;
       columnnum = override_columnnum;
+      discriminator = override_discriminator;
     }
   else if (INSN_HAS_LOCATION (insn))
     {
@@ -3249,13 +3259,14 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
       filename = xloc.file;
       linenum = xloc.line;
       columnnum = xloc.column;
-      maybe_set_discriminator (INSN_LOCATION (insn));
+      discriminator = compute_discriminator (INSN_LOCATION (insn));
     }
   else
     {
       filename = NULL;
       linenum = 0;
       columnnum = 0;
+      discriminator = 0;
     }
 
   if (filename == NULL)

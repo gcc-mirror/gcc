@@ -121,11 +121,17 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3)
-@NATIVE_TRUE@am__append_1 = btest stest ztest edtest
+@NATIVE_TRUE@am__append_1 = test_elf test_xcoff_32 test_xcoff_64 \
+@NATIVE_TRUE@	test_pecoff test_unknown unittest unittest_alloc \
+@NATIVE_TRUE@	btest btest_alloc stest stest_alloc ztest \
+@NATIVE_TRUE@	ztest_alloc edtest edtest_alloc
 @HAVE_ZLIB_TRUE@@NATIVE_TRUE@am__append_2 = -lz
-@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__append_3 = ttest
-@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_4 = dtest
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__append_5 = ctestg ctesta
+@HAVE_ZLIB_TRUE@@NATIVE_TRUE@am__append_3 = -lz
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__append_4 = ttest ttest_alloc
+@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_5 = dtest
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__append_6 = ctestg ctesta \
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg_alloc \
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta_alloc
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/cet.m4 \
@@ -158,12 +164,30 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-@NATIVE_TRUE@am__EXEEXT_1 = btest$(EXEEXT) stest$(EXEEXT) \
-@NATIVE_TRUE@	ztest$(EXEEXT) edtest$(EXEEXT)
-@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__EXEEXT_2 = ttest$(EXEEXT)
+am__objects_1 = atomic.lo dwarf.lo fileline.lo posix.lo print.lo \
+	sort.lo state.lo
+@NATIVE_TRUE@am_libbacktrace_alloc_la_OBJECTS = $(am__objects_1)
+libbacktrace_alloc_la_OBJECTS = $(am_libbacktrace_alloc_la_OBJECTS)
+@NATIVE_TRUE@am_libbacktrace_alloc_la_rpath =
+@NATIVE_TRUE@am_libbacktrace_noformat_la_OBJECTS = $(am__objects_1)
+libbacktrace_noformat_la_OBJECTS =  \
+	$(am_libbacktrace_noformat_la_OBJECTS)
+@NATIVE_TRUE@am_libbacktrace_noformat_la_rpath =
+@NATIVE_TRUE@am__EXEEXT_1 = test_elf$(EXEEXT) test_xcoff_32$(EXEEXT) \
+@NATIVE_TRUE@	test_xcoff_64$(EXEEXT) test_pecoff$(EXEEXT) \
+@NATIVE_TRUE@	test_unknown$(EXEEXT) unittest$(EXEEXT) \
+@NATIVE_TRUE@	unittest_alloc$(EXEEXT) btest$(EXEEXT) \
+@NATIVE_TRUE@	btest_alloc$(EXEEXT) stest$(EXEEXT) \
+@NATIVE_TRUE@	stest_alloc$(EXEEXT) ztest$(EXEEXT) \
+@NATIVE_TRUE@	ztest_alloc$(EXEEXT) edtest$(EXEEXT) \
+@NATIVE_TRUE@	edtest_alloc$(EXEEXT)
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__EXEEXT_2 = ttest$(EXEEXT) \
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	ttest_alloc$(EXEEXT)
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__EXEEXT_3 =  \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg$(EXEEXT) \
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta$(EXEEXT)
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta$(EXEEXT) \
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg_alloc$(EXEEXT) \
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta_alloc$(EXEEXT)
 @NATIVE_TRUE@am_btest_OBJECTS = btest-btest.$(OBJEXT) \
 @NATIVE_TRUE@	btest-testlib.$(OBJEXT)
 btest_OBJECTS = $(am_btest_OBJECTS)
@@ -171,6 +195,14 @@ btest_OBJECTS = $(am_btest_OBJECTS)
 btest_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(btest_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+@NATIVE_TRUE@am__objects_2 = btest_alloc-btest.$(OBJEXT) \
+@NATIVE_TRUE@	btest_alloc-testlib.$(OBJEXT)
+@NATIVE_TRUE@am_btest_alloc_OBJECTS = $(am__objects_2)
+btest_alloc_OBJECTS = $(am_btest_alloc_OBJECTS)
+@NATIVE_TRUE@btest_alloc_DEPENDENCIES = libbacktrace_alloc.la
+btest_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(btest_alloc_CFLAGS) \
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am_ctesta_OBJECTS = ctesta-btest.$(OBJEXT) \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta-testlib.$(OBJEXT)
 ctesta_OBJECTS = $(am_ctesta_OBJECTS)
@@ -179,6 +211,15 @@ ctesta_OBJECTS = $(am_ctesta_OBJECTS)
 ctesta_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(ctesta_CFLAGS) $(CFLAGS) \
 	$(ctesta_LDFLAGS) $(LDFLAGS) -o $@
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__objects_3 = ctesta_alloc-btest.$(OBJEXT) \
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta_alloc-testlib.$(OBJEXT)
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am_ctesta_alloc_OBJECTS =  \
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	$(am__objects_3)
+ctesta_alloc_OBJECTS = $(am_ctesta_alloc_OBJECTS)
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_alloc_DEPENDENCIES = libbacktrace_alloc.la
+ctesta_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(ctesta_alloc_CFLAGS) \
+	$(CFLAGS) $(ctesta_alloc_LDFLAGS) $(LDFLAGS) -o $@
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am_ctestg_OBJECTS = ctestg-btest.$(OBJEXT) \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg-testlib.$(OBJEXT)
 ctestg_OBJECTS = $(am_ctestg_OBJECTS)
@@ -187,13 +228,55 @@ ctestg_OBJECTS = $(am_ctestg_OBJECTS)
 ctestg_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(ctestg_CFLAGS) $(CFLAGS) \
 	$(ctestg_LDFLAGS) $(LDFLAGS) -o $@
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__objects_4 = ctestg_alloc-btest.$(OBJEXT) \
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg_alloc-testlib.$(OBJEXT)
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am_ctestg_alloc_OBJECTS =  \
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	$(am__objects_4)
+ctestg_alloc_OBJECTS = $(am_ctestg_alloc_OBJECTS)
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_alloc_DEPENDENCIES = libbacktrace_alloc.la
+ctestg_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(ctestg_alloc_CFLAGS) \
+	$(CFLAGS) $(ctestg_alloc_LDFLAGS) $(LDFLAGS) -o $@
 @NATIVE_TRUE@am_edtest_OBJECTS = edtest.$(OBJEXT) \
 @NATIVE_TRUE@	edtest2_build.$(OBJEXT) testlib.$(OBJEXT)
 edtest_OBJECTS = $(am_edtest_OBJECTS)
 @NATIVE_TRUE@edtest_DEPENDENCIES = libbacktrace.la
+@NATIVE_TRUE@am__objects_5 = edtest.$(OBJEXT) edtest2_build.$(OBJEXT) \
+@NATIVE_TRUE@	testlib.$(OBJEXT)
+@NATIVE_TRUE@am_edtest_alloc_OBJECTS = $(am__objects_5)
+edtest_alloc_OBJECTS = $(am_edtest_alloc_OBJECTS)
+@NATIVE_TRUE@edtest_alloc_DEPENDENCIES = libbacktrace_alloc.la
 @NATIVE_TRUE@am_stest_OBJECTS = stest.$(OBJEXT)
 stest_OBJECTS = $(am_stest_OBJECTS)
 @NATIVE_TRUE@stest_DEPENDENCIES = libbacktrace.la
+@NATIVE_TRUE@am__objects_6 = stest.$(OBJEXT)
+@NATIVE_TRUE@am_stest_alloc_OBJECTS = $(am__objects_6)
+stest_alloc_OBJECTS = $(am_stest_alloc_OBJECTS)
+@NATIVE_TRUE@stest_alloc_DEPENDENCIES = libbacktrace_alloc.la
+@NATIVE_TRUE@am_test_elf_OBJECTS = test_format.$(OBJEXT) \
+@NATIVE_TRUE@	testlib.$(OBJEXT)
+test_elf_OBJECTS = $(am_test_elf_OBJECTS)
+@NATIVE_TRUE@test_elf_DEPENDENCIES = libbacktrace_noformat.la elf.lo
+@NATIVE_TRUE@am_test_pecoff_OBJECTS = test_format.$(OBJEXT) \
+@NATIVE_TRUE@	testlib.$(OBJEXT)
+test_pecoff_OBJECTS = $(am_test_pecoff_OBJECTS)
+@NATIVE_TRUE@test_pecoff_DEPENDENCIES = libbacktrace_noformat.la \
+@NATIVE_TRUE@	pecoff.lo
+@NATIVE_TRUE@am_test_unknown_OBJECTS = test_format.$(OBJEXT) \
+@NATIVE_TRUE@	testlib.$(OBJEXT)
+test_unknown_OBJECTS = $(am_test_unknown_OBJECTS)
+@NATIVE_TRUE@test_unknown_DEPENDENCIES = libbacktrace_noformat.la \
+@NATIVE_TRUE@	unknown.lo
+@NATIVE_TRUE@am_test_xcoff_32_OBJECTS = test_format.$(OBJEXT) \
+@NATIVE_TRUE@	testlib.$(OBJEXT)
+test_xcoff_32_OBJECTS = $(am_test_xcoff_32_OBJECTS)
+@NATIVE_TRUE@test_xcoff_32_DEPENDENCIES = libbacktrace_noformat.la \
+@NATIVE_TRUE@	xcoff_32.lo
+@NATIVE_TRUE@am_test_xcoff_64_OBJECTS = test_format.$(OBJEXT) \
+@NATIVE_TRUE@	testlib.$(OBJEXT)
+test_xcoff_64_OBJECTS = $(am_test_xcoff_64_OBJECTS)
+@NATIVE_TRUE@test_xcoff_64_DEPENDENCIES = libbacktrace_noformat.la \
+@NATIVE_TRUE@	xcoff_64.lo
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am_ttest_OBJECTS =  \
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	ttest-ttest.$(OBJEXT) \
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	ttest-testlib.$(OBJEXT)
@@ -202,6 +285,25 @@ ttest_OBJECTS = $(am_ttest_OBJECTS)
 ttest_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(ttest_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__objects_7 =  \
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	ttest_alloc-ttest.$(OBJEXT) \
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	ttest_alloc-testlib.$(OBJEXT)
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am_ttest_alloc_OBJECTS =  \
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	$(am__objects_7)
+ttest_alloc_OBJECTS = $(am_ttest_alloc_OBJECTS)
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_alloc_DEPENDENCIES =  \
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	libbacktrace_alloc.la
+ttest_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(ttest_alloc_CFLAGS) \
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+@NATIVE_TRUE@am_unittest_OBJECTS = unittest.$(OBJEXT) \
+@NATIVE_TRUE@	testlib.$(OBJEXT)
+unittest_OBJECTS = $(am_unittest_OBJECTS)
+@NATIVE_TRUE@unittest_DEPENDENCIES = libbacktrace.la
+@NATIVE_TRUE@am__objects_8 = unittest.$(OBJEXT) testlib.$(OBJEXT)
+@NATIVE_TRUE@am_unittest_alloc_OBJECTS = $(am__objects_8)
+unittest_alloc_OBJECTS = $(am_unittest_alloc_OBJECTS)
+@NATIVE_TRUE@unittest_alloc_DEPENDENCIES = libbacktrace_alloc.la
 @NATIVE_TRUE@am_ztest_OBJECTS = ztest-ztest.$(OBJEXT) \
 @NATIVE_TRUE@	ztest-testlib.$(OBJEXT)
 ztest_OBJECTS = $(am_ztest_OBJECTS)
@@ -210,6 +312,15 @@ ztest_OBJECTS = $(am_ztest_OBJECTS)
 ztest_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(ztest_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+@NATIVE_TRUE@am__objects_9 = ztest_alloc-ztest.$(OBJEXT) \
+@NATIVE_TRUE@	ztest_alloc-testlib.$(OBJEXT)
+@NATIVE_TRUE@am_ztest_alloc_OBJECTS = $(am__objects_9)
+ztest_alloc_OBJECTS = $(am_ztest_alloc_OBJECTS)
+@NATIVE_TRUE@ztest_alloc_DEPENDENCIES = libbacktrace_alloc.la \
+@NATIVE_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+ztest_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(ztest_alloc_CFLAGS) \
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -244,9 +355,18 @@ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(libbacktrace_la_SOURCES) $(EXTRA_libbacktrace_la_SOURCES) \
-	$(btest_SOURCES) $(ctesta_SOURCES) $(ctestg_SOURCES) \
-	$(edtest_SOURCES) $(stest_SOURCES) $(ttest_SOURCES) \
-	$(ztest_SOURCES)
+	$(libbacktrace_alloc_la_SOURCES) \
+	$(libbacktrace_noformat_la_SOURCES) $(btest_SOURCES) \
+	$(btest_alloc_SOURCES) $(ctesta_SOURCES) \
+	$(ctesta_alloc_SOURCES) $(ctestg_SOURCES) \
+	$(ctestg_alloc_SOURCES) $(edtest_SOURCES) \
+	$(edtest_alloc_SOURCES) $(stest_SOURCES) \
+	$(stest_alloc_SOURCES) $(test_elf_SOURCES) \
+	$(test_pecoff_SOURCES) $(test_unknown_SOURCES) \
+	$(test_xcoff_32_SOURCES) $(test_xcoff_64_SOURCES) \
+	$(ttest_SOURCES) $(ttest_alloc_SOURCES) $(unittest_SOURCES) \
+	$(unittest_alloc_SOURCES) $(ztest_SOURCES) \
+	$(ztest_alloc_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -654,21 +774,57 @@ libbacktrace_la_LIBADD = \
 	$(ALLOC_FILE)
 
 libbacktrace_la_DEPENDENCIES = $(libbacktrace_la_LIBADD)
-TESTS = $(check_PROGRAMS) $(am__append_4)
+TESTS = $(check_PROGRAMS) $(am__append_5)
+@NATIVE_TRUE@check_LTLIBRARIES = libbacktrace_alloc.la \
+@NATIVE_TRUE@	libbacktrace_noformat.la
+@NATIVE_TRUE@libbacktrace_alloc_la_SOURCES = $(libbacktrace_la_SOURCES)
+@NATIVE_TRUE@libbacktrace_alloc_la_LIBADD = $(BACKTRACE_FILE) $(FORMAT_FILE) read.lo alloc.lo
+@NATIVE_TRUE@libbacktrace_alloc_la_DEPENDENCIES = $(libbacktrace_alloc_la_LIBADD)
+@NATIVE_TRUE@libbacktrace_noformat_la_SOURCES = $(libbacktrace_la_SOURCES)
+@NATIVE_TRUE@libbacktrace_noformat_la_LIBADD = $(BACKTRACE_FILE) $(VIEW_FILE) $(ALLOC_FILE)
+@NATIVE_TRUE@libbacktrace_noformat_la_DEPENDENCIES = $(libbacktrace_noformat_la_LIBADD)
+@NATIVE_TRUE@test_elf_SOURCES = test_format.c testlib.c
+@NATIVE_TRUE@test_elf_LDADD = libbacktrace_noformat.la elf.lo
+@NATIVE_TRUE@test_xcoff_32_SOURCES = test_format.c testlib.c
+@NATIVE_TRUE@test_xcoff_32_LDADD = libbacktrace_noformat.la xcoff_32.lo
+@NATIVE_TRUE@test_xcoff_64_SOURCES = test_format.c testlib.c
+@NATIVE_TRUE@test_xcoff_64_LDADD = libbacktrace_noformat.la xcoff_64.lo
+@NATIVE_TRUE@test_pecoff_SOURCES = test_format.c testlib.c
+@NATIVE_TRUE@test_pecoff_LDADD = libbacktrace_noformat.la pecoff.lo
+@NATIVE_TRUE@test_unknown_SOURCES = test_format.c testlib.c
+@NATIVE_TRUE@test_unknown_LDADD = libbacktrace_noformat.la unknown.lo
+@NATIVE_TRUE@unittest_SOURCES = unittest.c testlib.c
+@NATIVE_TRUE@unittest_LDADD = libbacktrace.la
+@NATIVE_TRUE@unittest_alloc_SOURCES = $(unittest_SOURCES)
+@NATIVE_TRUE@unittest_alloc_LDADD = libbacktrace_alloc.la
 @NATIVE_TRUE@btest_SOURCES = btest.c testlib.c
 @NATIVE_TRUE@btest_CFLAGS = $(AM_CFLAGS) -g -O
 @NATIVE_TRUE@btest_LDADD = libbacktrace.la
+@NATIVE_TRUE@btest_alloc_SOURCES = $(btest_SOURCES)
+@NATIVE_TRUE@btest_alloc_CFLAGS = $(btest_CFLAGS)
+@NATIVE_TRUE@btest_alloc_LDADD = libbacktrace_alloc.la
 @NATIVE_TRUE@stest_SOURCES = stest.c
 @NATIVE_TRUE@stest_LDADD = libbacktrace.la
+@NATIVE_TRUE@stest_alloc_SOURCES = $(stest_SOURCES)
+@NATIVE_TRUE@stest_alloc_LDADD = libbacktrace_alloc.la
 @NATIVE_TRUE@ztest_SOURCES = ztest.c testlib.c
 @NATIVE_TRUE@ztest_CFLAGS = -DSRCDIR=\"$(srcdir)\"
 @NATIVE_TRUE@ztest_LDADD = libbacktrace.la $(am__append_2) \
 @NATIVE_TRUE@	$(CLOCK_GETTIME_LINK)
+@NATIVE_TRUE@ztest_alloc_LDADD = libbacktrace_alloc.la $(am__append_3) \
+@NATIVE_TRUE@	$(CLOCK_GETTIME_LINK)
+@NATIVE_TRUE@ztest_alloc_SOURCES = $(ztest_SOURCES)
+@NATIVE_TRUE@ztest_alloc_CFLAGS = $(ztest_CFLAGS)
 @NATIVE_TRUE@edtest_SOURCES = edtest.c edtest2_build.c testlib.c
 @NATIVE_TRUE@edtest_LDADD = libbacktrace.la
+@NATIVE_TRUE@edtest_alloc_SOURCES = $(edtest_SOURCES)
+@NATIVE_TRUE@edtest_alloc_LDADD = libbacktrace_alloc.la
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_SOURCES = ttest.c testlib.c
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_CFLAGS = $(AM_CFLAGS) -pthread
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_LDADD = libbacktrace.la
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_alloc_SOURCES = $(ttest_SOURCES)
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_alloc_CFLAGS = $(ttest_CFLAGS)
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_alloc_LDADD = libbacktrace_alloc.la
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_SOURCES = btest.c testlib.c
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_CFLAGS = $(AM_CFLAGS) -g
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_LDFLAGS = -Wl,--compress-debug-sections=zlib-gnu
@@ -677,6 +833,14 @@ TESTS = $(check_PROGRAMS) $(am__append_4)
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_CFLAGS = $(AM_CFLAGS) -g
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_LDFLAGS = -Wl,--compress-debug-sections=zlib-gabi
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_LDADD = libbacktrace.la
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_alloc_SOURCES = $(ctestg_SOURCES)
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_alloc_CFLAGS = $(ctestg_CFLAGS)
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_alloc_LDFLAGS = $(ctestg_LDFLAGS)
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_alloc_LDADD = libbacktrace_alloc.la
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_alloc_SOURCES = $(ctesta_SOURCES)
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_alloc_CFLAGS = $(ctesta_CFLAGS)
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_alloc_LDFLAGS = $(ctesta_LDFLAGS)
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_alloc_LDADD = libbacktrace_alloc.la
 
 # We can't use automake's automatic dependency tracking, because it
 # breaks when using bootstrap-lean.  Automatic dependency tracking
@@ -753,6 +917,17 @@ distclean-hdr:
 backtrace-supported.h: $(top_builddir)/config.status $(srcdir)/backtrace-supported.h.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
+clean-checkLTLIBRARIES:
+	-test -z "$(check_LTLIBRARIES)" || rm -f $(check_LTLIBRARIES)
+	@list='$(check_LTLIBRARIES)'; \
+	locs=`for p in $$list; do echo $$p; done | \
+	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
+	      sort -u`; \
+	test -z "$$locs" || { \
+	  echo rm -f $${locs}; \
+	  rm -f $${locs}; \
+	}
+
 clean-noinstLTLIBRARIES:
 	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
 	@list='$(noinst_LTLIBRARIES)'; \
@@ -767,6 +942,12 @@ clean-noinstLTLIBRARIES:
 libbacktrace.la: $(libbacktrace_la_OBJECTS) $(libbacktrace_la_DEPENDENCIES) $(EXTRA_libbacktrace_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(LINK)  $(libbacktrace_la_OBJECTS) $(libbacktrace_la_LIBADD) $(LIBS)
 
+libbacktrace_alloc.la: $(libbacktrace_alloc_la_OBJECTS) $(libbacktrace_alloc_la_DEPENDENCIES) $(EXTRA_libbacktrace_alloc_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(LINK) $(am_libbacktrace_alloc_la_rpath) $(libbacktrace_alloc_la_OBJECTS) $(libbacktrace_alloc_la_LIBADD) $(LIBS)
+
+libbacktrace_noformat.la: $(libbacktrace_noformat_la_OBJECTS) $(libbacktrace_noformat_la_DEPENDENCIES) $(EXTRA_libbacktrace_noformat_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(LINK) $(am_libbacktrace_noformat_la_rpath) $(libbacktrace_noformat_la_OBJECTS) $(libbacktrace_noformat_la_LIBADD) $(LIBS)
+
 clean-checkPROGRAMS:
 	@list='$(check_PROGRAMS)'; test -n "$$list" || exit 0; \
 	echo " rm -f" $$list; \
@@ -780,29 +961,85 @@ btest$(EXEEXT): $(btest_OBJECTS) $(btest_DEPENDENCIES) $(EXTRA_btest_DEPENDENCIE
 	@rm -f btest$(EXEEXT)
 	$(AM_V_CCLD)$(btest_LINK) $(btest_OBJECTS) $(btest_LDADD) $(LIBS)
 
+btest_alloc$(EXEEXT): $(btest_alloc_OBJECTS) $(btest_alloc_DEPENDENCIES) $(EXTRA_btest_alloc_DEPENDENCIES) 
+	@rm -f btest_alloc$(EXEEXT)
+	$(AM_V_CCLD)$(btest_alloc_LINK) $(btest_alloc_OBJECTS) $(btest_alloc_LDADD) $(LIBS)
+
 ctesta$(EXEEXT): $(ctesta_OBJECTS) $(ctesta_DEPENDENCIES) $(EXTRA_ctesta_DEPENDENCIES) 
 	@rm -f ctesta$(EXEEXT)
 	$(AM_V_CCLD)$(ctesta_LINK) $(ctesta_OBJECTS) $(ctesta_LDADD) $(LIBS)
+
+ctesta_alloc$(EXEEXT): $(ctesta_alloc_OBJECTS) $(ctesta_alloc_DEPENDENCIES) $(EXTRA_ctesta_alloc_DEPENDENCIES) 
+	@rm -f ctesta_alloc$(EXEEXT)
+	$(AM_V_CCLD)$(ctesta_alloc_LINK) $(ctesta_alloc_OBJECTS) $(ctesta_alloc_LDADD) $(LIBS)
 
 ctestg$(EXEEXT): $(ctestg_OBJECTS) $(ctestg_DEPENDENCIES) $(EXTRA_ctestg_DEPENDENCIES) 
 	@rm -f ctestg$(EXEEXT)
 	$(AM_V_CCLD)$(ctestg_LINK) $(ctestg_OBJECTS) $(ctestg_LDADD) $(LIBS)
 
+ctestg_alloc$(EXEEXT): $(ctestg_alloc_OBJECTS) $(ctestg_alloc_DEPENDENCIES) $(EXTRA_ctestg_alloc_DEPENDENCIES) 
+	@rm -f ctestg_alloc$(EXEEXT)
+	$(AM_V_CCLD)$(ctestg_alloc_LINK) $(ctestg_alloc_OBJECTS) $(ctestg_alloc_LDADD) $(LIBS)
+
 edtest$(EXEEXT): $(edtest_OBJECTS) $(edtest_DEPENDENCIES) $(EXTRA_edtest_DEPENDENCIES) 
 	@rm -f edtest$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(edtest_OBJECTS) $(edtest_LDADD) $(LIBS)
+
+edtest_alloc$(EXEEXT): $(edtest_alloc_OBJECTS) $(edtest_alloc_DEPENDENCIES) $(EXTRA_edtest_alloc_DEPENDENCIES) 
+	@rm -f edtest_alloc$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(edtest_alloc_OBJECTS) $(edtest_alloc_LDADD) $(LIBS)
 
 stest$(EXEEXT): $(stest_OBJECTS) $(stest_DEPENDENCIES) $(EXTRA_stest_DEPENDENCIES) 
 	@rm -f stest$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(stest_OBJECTS) $(stest_LDADD) $(LIBS)
 
+stest_alloc$(EXEEXT): $(stest_alloc_OBJECTS) $(stest_alloc_DEPENDENCIES) $(EXTRA_stest_alloc_DEPENDENCIES) 
+	@rm -f stest_alloc$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(stest_alloc_OBJECTS) $(stest_alloc_LDADD) $(LIBS)
+
+test_elf$(EXEEXT): $(test_elf_OBJECTS) $(test_elf_DEPENDENCIES) $(EXTRA_test_elf_DEPENDENCIES) 
+	@rm -f test_elf$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_elf_OBJECTS) $(test_elf_LDADD) $(LIBS)
+
+test_pecoff$(EXEEXT): $(test_pecoff_OBJECTS) $(test_pecoff_DEPENDENCIES) $(EXTRA_test_pecoff_DEPENDENCIES) 
+	@rm -f test_pecoff$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_pecoff_OBJECTS) $(test_pecoff_LDADD) $(LIBS)
+
+test_unknown$(EXEEXT): $(test_unknown_OBJECTS) $(test_unknown_DEPENDENCIES) $(EXTRA_test_unknown_DEPENDENCIES) 
+	@rm -f test_unknown$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_unknown_OBJECTS) $(test_unknown_LDADD) $(LIBS)
+
+test_xcoff_32$(EXEEXT): $(test_xcoff_32_OBJECTS) $(test_xcoff_32_DEPENDENCIES) $(EXTRA_test_xcoff_32_DEPENDENCIES) 
+	@rm -f test_xcoff_32$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_xcoff_32_OBJECTS) $(test_xcoff_32_LDADD) $(LIBS)
+
+test_xcoff_64$(EXEEXT): $(test_xcoff_64_OBJECTS) $(test_xcoff_64_DEPENDENCIES) $(EXTRA_test_xcoff_64_DEPENDENCIES) 
+	@rm -f test_xcoff_64$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_xcoff_64_OBJECTS) $(test_xcoff_64_LDADD) $(LIBS)
+
 ttest$(EXEEXT): $(ttest_OBJECTS) $(ttest_DEPENDENCIES) $(EXTRA_ttest_DEPENDENCIES) 
 	@rm -f ttest$(EXEEXT)
 	$(AM_V_CCLD)$(ttest_LINK) $(ttest_OBJECTS) $(ttest_LDADD) $(LIBS)
 
+ttest_alloc$(EXEEXT): $(ttest_alloc_OBJECTS) $(ttest_alloc_DEPENDENCIES) $(EXTRA_ttest_alloc_DEPENDENCIES) 
+	@rm -f ttest_alloc$(EXEEXT)
+	$(AM_V_CCLD)$(ttest_alloc_LINK) $(ttest_alloc_OBJECTS) $(ttest_alloc_LDADD) $(LIBS)
+
+unittest$(EXEEXT): $(unittest_OBJECTS) $(unittest_DEPENDENCIES) $(EXTRA_unittest_DEPENDENCIES) 
+	@rm -f unittest$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(unittest_OBJECTS) $(unittest_LDADD) $(LIBS)
+
+unittest_alloc$(EXEEXT): $(unittest_alloc_OBJECTS) $(unittest_alloc_DEPENDENCIES) $(EXTRA_unittest_alloc_DEPENDENCIES) 
+	@rm -f unittest_alloc$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(unittest_alloc_OBJECTS) $(unittest_alloc_LDADD) $(LIBS)
+
 ztest$(EXEEXT): $(ztest_OBJECTS) $(ztest_DEPENDENCIES) $(EXTRA_ztest_DEPENDENCIES) 
 	@rm -f ztest$(EXEEXT)
 	$(AM_V_CCLD)$(ztest_LINK) $(ztest_OBJECTS) $(ztest_LDADD) $(LIBS)
+
+ztest_alloc$(EXEEXT): $(ztest_alloc_OBJECTS) $(ztest_alloc_DEPENDENCIES) $(EXTRA_ztest_alloc_DEPENDENCIES) 
+	@rm -f ztest_alloc$(EXEEXT)
+	$(AM_V_CCLD)$(ztest_alloc_LINK) $(ztest_alloc_OBJECTS) $(ztest_alloc_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -831,6 +1068,18 @@ btest-testlib.o: testlib.c
 btest-testlib.obj: testlib.c
 	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(btest_CFLAGS) $(CFLAGS) -c -o btest-testlib.obj `if test -f 'testlib.c'; then $(CYGPATH_W) 'testlib.c'; else $(CYGPATH_W) '$(srcdir)/testlib.c'; fi`
 
+btest_alloc-btest.o: btest.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(btest_alloc_CFLAGS) $(CFLAGS) -c -o btest_alloc-btest.o `test -f 'btest.c' || echo '$(srcdir)/'`btest.c
+
+btest_alloc-btest.obj: btest.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(btest_alloc_CFLAGS) $(CFLAGS) -c -o btest_alloc-btest.obj `if test -f 'btest.c'; then $(CYGPATH_W) 'btest.c'; else $(CYGPATH_W) '$(srcdir)/btest.c'; fi`
+
+btest_alloc-testlib.o: testlib.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(btest_alloc_CFLAGS) $(CFLAGS) -c -o btest_alloc-testlib.o `test -f 'testlib.c' || echo '$(srcdir)/'`testlib.c
+
+btest_alloc-testlib.obj: testlib.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(btest_alloc_CFLAGS) $(CFLAGS) -c -o btest_alloc-testlib.obj `if test -f 'testlib.c'; then $(CYGPATH_W) 'testlib.c'; else $(CYGPATH_W) '$(srcdir)/testlib.c'; fi`
+
 ctesta-btest.o: btest.c
 	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctesta_CFLAGS) $(CFLAGS) -c -o ctesta-btest.o `test -f 'btest.c' || echo '$(srcdir)/'`btest.c
 
@@ -842,6 +1091,18 @@ ctesta-testlib.o: testlib.c
 
 ctesta-testlib.obj: testlib.c
 	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctesta_CFLAGS) $(CFLAGS) -c -o ctesta-testlib.obj `if test -f 'testlib.c'; then $(CYGPATH_W) 'testlib.c'; else $(CYGPATH_W) '$(srcdir)/testlib.c'; fi`
+
+ctesta_alloc-btest.o: btest.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctesta_alloc_CFLAGS) $(CFLAGS) -c -o ctesta_alloc-btest.o `test -f 'btest.c' || echo '$(srcdir)/'`btest.c
+
+ctesta_alloc-btest.obj: btest.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctesta_alloc_CFLAGS) $(CFLAGS) -c -o ctesta_alloc-btest.obj `if test -f 'btest.c'; then $(CYGPATH_W) 'btest.c'; else $(CYGPATH_W) '$(srcdir)/btest.c'; fi`
+
+ctesta_alloc-testlib.o: testlib.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctesta_alloc_CFLAGS) $(CFLAGS) -c -o ctesta_alloc-testlib.o `test -f 'testlib.c' || echo '$(srcdir)/'`testlib.c
+
+ctesta_alloc-testlib.obj: testlib.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctesta_alloc_CFLAGS) $(CFLAGS) -c -o ctesta_alloc-testlib.obj `if test -f 'testlib.c'; then $(CYGPATH_W) 'testlib.c'; else $(CYGPATH_W) '$(srcdir)/testlib.c'; fi`
 
 ctestg-btest.o: btest.c
 	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctestg_CFLAGS) $(CFLAGS) -c -o ctestg-btest.o `test -f 'btest.c' || echo '$(srcdir)/'`btest.c
@@ -855,6 +1116,18 @@ ctestg-testlib.o: testlib.c
 ctestg-testlib.obj: testlib.c
 	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctestg_CFLAGS) $(CFLAGS) -c -o ctestg-testlib.obj `if test -f 'testlib.c'; then $(CYGPATH_W) 'testlib.c'; else $(CYGPATH_W) '$(srcdir)/testlib.c'; fi`
 
+ctestg_alloc-btest.o: btest.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctestg_alloc_CFLAGS) $(CFLAGS) -c -o ctestg_alloc-btest.o `test -f 'btest.c' || echo '$(srcdir)/'`btest.c
+
+ctestg_alloc-btest.obj: btest.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctestg_alloc_CFLAGS) $(CFLAGS) -c -o ctestg_alloc-btest.obj `if test -f 'btest.c'; then $(CYGPATH_W) 'btest.c'; else $(CYGPATH_W) '$(srcdir)/btest.c'; fi`
+
+ctestg_alloc-testlib.o: testlib.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctestg_alloc_CFLAGS) $(CFLAGS) -c -o ctestg_alloc-testlib.o `test -f 'testlib.c' || echo '$(srcdir)/'`testlib.c
+
+ctestg_alloc-testlib.obj: testlib.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctestg_alloc_CFLAGS) $(CFLAGS) -c -o ctestg_alloc-testlib.obj `if test -f 'testlib.c'; then $(CYGPATH_W) 'testlib.c'; else $(CYGPATH_W) '$(srcdir)/testlib.c'; fi`
+
 ttest-ttest.o: ttest.c
 	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ttest_CFLAGS) $(CFLAGS) -c -o ttest-ttest.o `test -f 'ttest.c' || echo '$(srcdir)/'`ttest.c
 
@@ -867,6 +1140,18 @@ ttest-testlib.o: testlib.c
 ttest-testlib.obj: testlib.c
 	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ttest_CFLAGS) $(CFLAGS) -c -o ttest-testlib.obj `if test -f 'testlib.c'; then $(CYGPATH_W) 'testlib.c'; else $(CYGPATH_W) '$(srcdir)/testlib.c'; fi`
 
+ttest_alloc-ttest.o: ttest.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ttest_alloc_CFLAGS) $(CFLAGS) -c -o ttest_alloc-ttest.o `test -f 'ttest.c' || echo '$(srcdir)/'`ttest.c
+
+ttest_alloc-ttest.obj: ttest.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ttest_alloc_CFLAGS) $(CFLAGS) -c -o ttest_alloc-ttest.obj `if test -f 'ttest.c'; then $(CYGPATH_W) 'ttest.c'; else $(CYGPATH_W) '$(srcdir)/ttest.c'; fi`
+
+ttest_alloc-testlib.o: testlib.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ttest_alloc_CFLAGS) $(CFLAGS) -c -o ttest_alloc-testlib.o `test -f 'testlib.c' || echo '$(srcdir)/'`testlib.c
+
+ttest_alloc-testlib.obj: testlib.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ttest_alloc_CFLAGS) $(CFLAGS) -c -o ttest_alloc-testlib.obj `if test -f 'testlib.c'; then $(CYGPATH_W) 'testlib.c'; else $(CYGPATH_W) '$(srcdir)/testlib.c'; fi`
+
 ztest-ztest.o: ztest.c
 	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ztest_CFLAGS) $(CFLAGS) -c -o ztest-ztest.o `test -f 'ztest.c' || echo '$(srcdir)/'`ztest.c
 
@@ -878,6 +1163,18 @@ ztest-testlib.o: testlib.c
 
 ztest-testlib.obj: testlib.c
 	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ztest_CFLAGS) $(CFLAGS) -c -o ztest-testlib.obj `if test -f 'testlib.c'; then $(CYGPATH_W) 'testlib.c'; else $(CYGPATH_W) '$(srcdir)/testlib.c'; fi`
+
+ztest_alloc-ztest.o: ztest.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ztest_alloc_CFLAGS) $(CFLAGS) -c -o ztest_alloc-ztest.o `test -f 'ztest.c' || echo '$(srcdir)/'`ztest.c
+
+ztest_alloc-ztest.obj: ztest.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ztest_alloc_CFLAGS) $(CFLAGS) -c -o ztest_alloc-ztest.obj `if test -f 'ztest.c'; then $(CYGPATH_W) 'ztest.c'; else $(CYGPATH_W) '$(srcdir)/ztest.c'; fi`
+
+ztest_alloc-testlib.o: testlib.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ztest_alloc_CFLAGS) $(CFLAGS) -c -o ztest_alloc-testlib.o `test -f 'testlib.c' || echo '$(srcdir)/'`testlib.c
+
+ztest_alloc-testlib.obj: testlib.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ztest_alloc_CFLAGS) $(CFLAGS) -c -o ztest_alloc-testlib.obj `if test -f 'testlib.c'; then $(CYGPATH_W) 'testlib.c'; else $(CYGPATH_W) '$(srcdir)/testlib.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -1077,7 +1374,7 @@ check-TESTS:
 	log_list=`echo $$log_list`; trs_list=`echo $$trs_list`; \
 	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) TEST_LOGS="$$log_list"; \
 	exit $$?;
-recheck: all $(check_PROGRAMS)
+recheck: all $(check_LTLIBRARIES) $(check_PROGRAMS)
 	@test -z "$(TEST_SUITE_LOG)" || rm -f $(TEST_SUITE_LOG)
 	@set +e; $(am__set_TESTS_bases); \
 	bases=`for i in $$bases; do echo $$i; done \
@@ -1088,9 +1385,65 @@ recheck: all $(check_PROGRAMS)
 	        am__force_recheck=am--force-recheck \
 	        TEST_LOGS="$$log_list"; \
 	exit $$?
+test_elf.log: test_elf$(EXEEXT)
+	@p='test_elf$(EXEEXT)'; \
+	b='test_elf'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_xcoff_32.log: test_xcoff_32$(EXEEXT)
+	@p='test_xcoff_32$(EXEEXT)'; \
+	b='test_xcoff_32'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_xcoff_64.log: test_xcoff_64$(EXEEXT)
+	@p='test_xcoff_64$(EXEEXT)'; \
+	b='test_xcoff_64'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_pecoff.log: test_pecoff$(EXEEXT)
+	@p='test_pecoff$(EXEEXT)'; \
+	b='test_pecoff'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_unknown.log: test_unknown$(EXEEXT)
+	@p='test_unknown$(EXEEXT)'; \
+	b='test_unknown'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+unittest.log: unittest$(EXEEXT)
+	@p='unittest$(EXEEXT)'; \
+	b='unittest'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+unittest_alloc.log: unittest_alloc$(EXEEXT)
+	@p='unittest_alloc$(EXEEXT)'; \
+	b='unittest_alloc'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 btest.log: btest$(EXEEXT)
 	@p='btest$(EXEEXT)'; \
 	b='btest'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+btest_alloc.log: btest_alloc$(EXEEXT)
+	@p='btest_alloc$(EXEEXT)'; \
+	b='btest_alloc'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1102,9 +1455,23 @@ stest.log: stest$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+stest_alloc.log: stest_alloc$(EXEEXT)
+	@p='stest_alloc$(EXEEXT)'; \
+	b='stest_alloc'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 ztest.log: ztest$(EXEEXT)
 	@p='ztest$(EXEEXT)'; \
 	b='ztest'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+ztest_alloc.log: ztest_alloc$(EXEEXT)
+	@p='ztest_alloc$(EXEEXT)'; \
+	b='ztest_alloc'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1116,9 +1483,23 @@ edtest.log: edtest$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+edtest_alloc.log: edtest_alloc$(EXEEXT)
+	@p='edtest_alloc$(EXEEXT)'; \
+	b='edtest_alloc'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 ttest.log: ttest$(EXEEXT)
 	@p='ttest$(EXEEXT)'; \
 	b='ttest'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+ttest_alloc.log: ttest_alloc$(EXEEXT)
+	@p='ttest_alloc$(EXEEXT)'; \
+	b='ttest_alloc'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1133,6 +1514,20 @@ ctestg.log: ctestg$(EXEEXT)
 ctesta.log: ctesta$(EXEEXT)
 	@p='ctesta$(EXEEXT)'; \
 	b='ctesta'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+ctestg_alloc.log: ctestg_alloc$(EXEEXT)
+	@p='ctestg_alloc$(EXEEXT)'; \
+	b='ctestg_alloc'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+ctesta_alloc.log: ctesta_alloc$(EXEEXT)
+	@p='ctesta_alloc$(EXEEXT)'; \
+	b='ctesta_alloc'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1159,7 +1554,7 @@ dtest.log: dtest
 @am__EXEEXT_TRUE@	$(am__common_driver_flags) $(AM_TEST_LOG_DRIVER_FLAGS) $(TEST_LOG_DRIVER_FLAGS) -- $(TEST_LOG_COMPILE) \
 @am__EXEEXT_TRUE@	"$$tst" $(AM_TESTS_FD_REDIRECT)
 check-am: all-am
-	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS)
+	$(MAKE) $(AM_MAKEFLAGS) $(check_LTLIBRARIES) $(check_PROGRAMS)
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
 check: check-am
 all-am: Makefile $(LTLIBRARIES) config.h all-local
@@ -1199,8 +1594,9 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-checkPROGRAMS clean-generic clean-libtool clean-local \
-	clean-noinstLTLIBRARIES mostlyclean-am
+clean-am: clean-checkLTLIBRARIES clean-checkPROGRAMS clean-generic \
+	clean-libtool clean-local clean-noinstLTLIBRARIES \
+	mostlyclean-am
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
@@ -1273,14 +1669,14 @@ uninstall-am:
 .MAKE: all check-am install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am all-local am--refresh check \
-	check-TESTS check-am clean clean-checkPROGRAMS clean-cscope \
-	clean-generic clean-libtool clean-local \
-	clean-noinstLTLIBRARIES cscope cscopelist-am ctags ctags-am \
-	distclean distclean-compile distclean-generic distclean-hdr \
-	distclean-libtool distclean-local distclean-tags dvi dvi-am \
-	html html-am info info-am install install-am install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-exec-local install-html \
+	check-TESTS check-am clean clean-checkLTLIBRARIES \
+	clean-checkPROGRAMS clean-cscope clean-generic clean-libtool \
+	clean-local clean-noinstLTLIBRARIES cscope cscopelist-am ctags \
+	ctags-am distclean distclean-compile distclean-generic \
+	distclean-hdr distclean-libtool distclean-local distclean-tags \
+	dvi dvi-am html html-am info info-am install install-am \
+	install-data install-data-am install-dvi install-dvi-am \
+	install-exec install-exec-am install-exec-local install-html \
 	install-html-am install-info install-info-am install-man \
 	install-pdf install-pdf-am install-ps install-ps-am \
 	install-strip installcheck installcheck-am installdirs \
@@ -1291,6 +1687,13 @@ uninstall-am:
 
 .PRECIOUS: Makefile
 
+
+@NATIVE_TRUE@xcoff_%.c: xcoff.c
+@NATIVE_TRUE@	SEARCH='#error "Unknown BACKTRACE_XCOFF_SIZE"'; \
+@NATIVE_TRUE@	REPLACE='#undef BACKTRACE_XCOFF_SIZE\n#define BACKTRACE_XCOFF_SIZE'; \
+@NATIVE_TRUE@	$(SED) "s/^$$SEARCH\$$/$$REPLACE $*/" \
+@NATIVE_TRUE@		$(srcdir)/xcoff.c \
+@NATIVE_TRUE@		> $@
 
 @NATIVE_TRUE@edtest2_build.c: gen_edtest2_build; @true
 @NATIVE_TRUE@gen_edtest2_build: $(srcdir)/edtest2.c

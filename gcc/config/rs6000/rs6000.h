@@ -40,12 +40,10 @@
 
 #define OBJECT_XCOFF 1
 #define OBJECT_ELF 2
-#define OBJECT_PEF 3
 #define OBJECT_MACHO 4
 
 #define TARGET_ELF (TARGET_OBJECT_FORMAT == OBJECT_ELF)
 #define TARGET_XCOFF (TARGET_OBJECT_FORMAT == OBJECT_XCOFF)
-#define TARGET_MACOS (TARGET_OBJECT_FORMAT == OBJECT_PEF)
 #define TARGET_MACHO (TARGET_OBJECT_FORMAT == OBJECT_MACHO)
 
 #ifndef TARGET_AIX
@@ -78,68 +76,66 @@
    you make changes here, make them also there.  PR63177: Do not pass -mpower8
    to the assembler if -mpower9-vector was also used.  */
 #define ASM_CPU_SPEC \
-"%{!mcpu*: \
-  %{mpowerpc64*: -mppc64} \
-  %{!mpowerpc64*: %(asm_default)}} \
-%{mcpu=native: %(asm_cpu_native)} \
-%{mcpu=cell: -mcell} \
-%{mcpu=power3: -mppc64} \
-%{mcpu=power4: -mpower4} \
-%{mcpu=power5: -mpower5} \
-%{mcpu=power5+: -mpower5} \
-%{mcpu=power6: -mpower6 -maltivec} \
-%{mcpu=power6x: -mpower6 -maltivec} \
-%{mcpu=power7: -mpower7} \
-%{mcpu=power8: %{!mpower9-vector: -mpower8}} \
-%{mcpu=power9: -mpower9} \
-%{mcpu=a2: -ma2} \
-%{mcpu=powerpc: -mppc} \
-%{mcpu=powerpc64le: -mpower8} \
-%{mcpu=rs64a: -mppc64} \
-%{mcpu=401: -mppc} \
-%{mcpu=403: -m403} \
-%{mcpu=405: -m405} \
-%{mcpu=405fp: -m405} \
-%{mcpu=440: -m440} \
-%{mcpu=440fp: -m440} \
-%{mcpu=464: -m440} \
-%{mcpu=464fp: -m440} \
-%{mcpu=476: -m476} \
-%{mcpu=476fp: -m476} \
-%{mcpu=505: -mppc} \
-%{mcpu=601: -m601} \
-%{mcpu=602: -mppc} \
-%{mcpu=603: -mppc} \
-%{mcpu=603e: -mppc} \
-%{mcpu=ec603e: -mppc} \
-%{mcpu=604: -mppc} \
-%{mcpu=604e: -mppc} \
-%{mcpu=620: -mppc64} \
-%{mcpu=630: -mppc64} \
-%{mcpu=740: -mppc} \
-%{mcpu=750: -mppc} \
-%{mcpu=G3: -mppc} \
-%{mcpu=7400: -mppc -maltivec} \
-%{mcpu=7450: -mppc -maltivec} \
-%{mcpu=G4: -mppc -maltivec} \
-%{mcpu=801: -mppc} \
-%{mcpu=821: -mppc} \
-%{mcpu=823: -mppc} \
-%{mcpu=860: -mppc} \
-%{mcpu=970: -mpower4 -maltivec} \
-%{mcpu=G5: -mpower4 -maltivec} \
-%{mcpu=8540: -me500} \
-%{mcpu=8548: -me500} \
-%{mcpu=e300c2: -me300} \
-%{mcpu=e300c3: -me300} \
-%{mcpu=e500mc: -me500mc} \
-%{mcpu=e500mc64: -me500mc64} \
-%{mcpu=e5500: -me5500} \
-%{mcpu=e6500: -me6500} \
-%{maltivec: -maltivec} \
-%{mvsx: -mvsx %{!maltivec: -maltivec} %{!mcpu*: -mpower7}} \
-%{mpower8-vector|mcrypto|mdirect-move|mhtm: %{!mcpu*: -mpower8}} \
-%{mpower9-vector: %{!mcpu*|mcpu=power8: -mpower9}} \
+"%{mcpu=native: %(asm_cpu_native); \
+  mcpu=power9: -mpower9; \
+  mcpu=power8|mcpu=powerpc64le: %{mpower9-vector: -mpower9;: -mpower8}; \
+  mcpu=power7: -mpower7; \
+  mcpu=power6x: -mpower6 %{!mvsx:%{!maltivec:-maltivec}}; \
+  mcpu=power6: -mpower6 %{!mvsx:%{!maltivec:-maltivec}}; \
+  mcpu=power5+: -mpower5; \
+  mcpu=power5: -mpower5; \
+  mcpu=power4: -mpower4; \
+  mcpu=power3: -mppc64; \
+  mcpu=powerpc: -mppc; \
+  mcpu=a2: -ma2; \
+  mcpu=cell: -mcell; \
+  mcpu=rs64a: -mppc64; \
+  mcpu=401: -mppc; \
+  mcpu=403: -m403; \
+  mcpu=405: -m405; \
+  mcpu=405fp: -m405; \
+  mcpu=440: -m440; \
+  mcpu=440fp: -m440; \
+  mcpu=464: -m440; \
+  mcpu=464fp: -m440; \
+  mcpu=476: -m476; \
+  mcpu=476fp: -m476; \
+  mcpu=505: -mppc; \
+  mcpu=601: -m601; \
+  mcpu=602: -mppc; \
+  mcpu=603: -mppc; \
+  mcpu=603e: -mppc; \
+  mcpu=ec603e: -mppc; \
+  mcpu=604: -mppc; \
+  mcpu=604e: -mppc; \
+  mcpu=620: -mppc64; \
+  mcpu=630: -mppc64; \
+  mcpu=740: -mppc; \
+  mcpu=750: -mppc; \
+  mcpu=G3: -mppc; \
+  mcpu=7400: -mppc %{!mvsx:%{!maltivec:-maltivec}}; \
+  mcpu=7450: -mppc %{!mvsx:%{!maltivec:-maltivec}}; \
+  mcpu=G4: -mppc %{!mvsx:%{!maltivec:-maltivec}}; \
+  mcpu=801: -mppc; \
+  mcpu=821: -mppc; \
+  mcpu=823: -mppc; \
+  mcpu=860: -mppc; \
+  mcpu=970: -mpower4 %{!mvsx:%{!maltivec:-maltivec}}; \
+  mcpu=G5: -mpower4 %{!mvsx:%{!maltivec:-maltivec}}; \
+  mcpu=8540: -me500; \
+  mcpu=8548: -me500; \
+  mcpu=e300c2: -me300; \
+  mcpu=e300c3: -me300; \
+  mcpu=e500mc: -me500mc; \
+  mcpu=e500mc64: -me500mc64; \
+  mcpu=e5500: -me5500; \
+  mcpu=e6500: -me6500; \
+  !mcpu*: %{mpower9-vector: -mpower9; \
+	    mpower8-vector|mcrypto|mdirect-move|mhtm: -mpower8; \
+	    mvsx: -mpower7; \
+	    mpowerpc64: -mppc64;: %(asm_default)}; \
+  :%eMissing -mcpu option in ASM_SPEC_CPU?\n} \
+%{mvsx: -mvsx -maltivec; maltivec: -maltivec} \
 -many"
 
 #define CPP_DEFAULT_SPEC ""
@@ -222,6 +218,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #ifndef HAVE_AS_TLS
 #define HAVE_AS_TLS 0
+#endif
+
+#ifndef HAVE_AS_PLTSEQ
+#define HAVE_AS_PLTSEQ 0
 #endif
 
 #ifndef TARGET_LINK_STACK

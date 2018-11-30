@@ -2,6 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fno-strict-aliasing -fstack-protector" } */
 /* { dg-require-effective-target fstack_protector } */
+/* { dg-require-effective-target size20plus } */
 
 typedef __SIZE_TYPE__ size_t;
 extern int sscanf (const char *, const char *, ...);

@@ -70,10 +70,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   ///  Return phase angle of @a z.
   template<typename _Tp> _Tp arg(const complex<_Tp>&);
   ///  Return @a z magnitude squared.
-  template<typename _Tp> _Tp norm(const complex<_Tp>&);
+  template<typename _Tp> _Tp _GLIBCXX20_CONSTEXPR norm(const complex<_Tp>&);
 
   ///  Return complex conjugate of @a z.
-  template<typename _Tp> complex<_Tp> conj(const complex<_Tp>&);
+  template<typename _Tp>
+    _GLIBCXX20_CONSTEXPR complex<_Tp> conj(const complex<_Tp>&);
   ///  Return complex with magnitude @a rho and angle @a theta.
   template<typename _Tp> complex<_Tp> polar(const _Tp&, const _Tp& = 0);
 
@@ -169,18 +170,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
-      void
+      _GLIBCXX20_CONSTEXPR void
       real(_Tp __val) { _M_real = __val; }
 
-      void
+      _GLIBCXX20_CONSTEXPR void
       imag(_Tp __val) { _M_imag = __val; }
 
       /// Assign a scalar to this complex number.
-      complex<_Tp>& operator=(const _Tp&);
+      _GLIBCXX20_CONSTEXPR complex<_Tp>& operator=(const _Tp&);
 
       /// Add a scalar to this complex number.
       // 26.2.5/1
-      complex<_Tp>&
+      _GLIBCXX20_CONSTEXPR complex<_Tp>&
       operator+=(const _Tp& __t)
       {
 	_M_real += __t;
@@ -189,7 +190,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /// Subtract a scalar from this complex number.
       // 26.2.5/3
-      complex<_Tp>&
+      _GLIBCXX20_CONSTEXPR complex<_Tp>&
       operator-=(const _Tp& __t)
       {
 	_M_real -= __t;
@@ -197,30 +198,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       /// Multiply this complex number by a scalar.
-      complex<_Tp>& operator*=(const _Tp&);
+      _GLIBCXX20_CONSTEXPR complex<_Tp>& operator*=(const _Tp&);
       /// Divide this complex number by a scalar.
-      complex<_Tp>& operator/=(const _Tp&);
+      _GLIBCXX20_CONSTEXPR complex<_Tp>& operator/=(const _Tp&);
 
       // Let the compiler synthesize the copy assignment operator
 #if __cplusplus >= 201103L
-      complex& operator=(const complex&) = default;
+      _GLIBCXX20_CONSTEXPR complex& operator=(const complex&) = default;
 #endif
 
       /// Assign another complex number to this one.
       template<typename _Up>
-        complex<_Tp>& operator=(const complex<_Up>&);
+        _GLIBCXX20_CONSTEXPR complex<_Tp>& operator=(const complex<_Up>&);
       /// Add another complex number to this one.
       template<typename _Up>
-        complex<_Tp>& operator+=(const complex<_Up>&);
+        _GLIBCXX20_CONSTEXPR complex<_Tp>& operator+=(const complex<_Up>&);
       /// Subtract another complex number from this one.
       template<typename _Up>
-        complex<_Tp>& operator-=(const complex<_Up>&);
+        _GLIBCXX20_CONSTEXPR complex<_Tp>& operator-=(const complex<_Up>&);
       /// Multiply this complex number by another.
       template<typename _Up>
-        complex<_Tp>& operator*=(const complex<_Up>&);
+        _GLIBCXX20_CONSTEXPR complex<_Tp>& operator*=(const complex<_Up>&);
       /// Divide this complex number by another.
       template<typename _Up>
-        complex<_Tp>& operator/=(const complex<_Up>&);
+        _GLIBCXX20_CONSTEXPR complex<_Tp>& operator/=(const complex<_Up>&);
 
       _GLIBCXX_CONSTEXPR complex __rep() const
       { return *this; }
@@ -231,7 +232,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Tp>
-    complex<_Tp>&
+    _GLIBCXX20_CONSTEXPR complex<_Tp>&
     complex<_Tp>::operator=(const _Tp& __t)
     {
      _M_real = __t;
@@ -241,7 +242,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // 26.2.5/5
   template<typename _Tp>
-    complex<_Tp>&
+    _GLIBCXX20_CONSTEXPR complex<_Tp>&
     complex<_Tp>::operator*=(const _Tp& __t)
     {
       _M_real *= __t;
@@ -251,7 +252,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // 26.2.5/7
   template<typename _Tp>
-    complex<_Tp>&
+    _GLIBCXX20_CONSTEXPR complex<_Tp>&
     complex<_Tp>::operator/=(const _Tp& __t)
     {
       _M_real /= __t;
@@ -261,7 +262,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     template<typename _Up>
-    complex<_Tp>&
+    _GLIBCXX20_CONSTEXPR complex<_Tp>&
     complex<_Tp>::operator=(const complex<_Up>& __z)
     {
       _M_real = __z.real();
@@ -272,7 +273,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // 26.2.5/9
   template<typename _Tp>
     template<typename _Up>
-    complex<_Tp>&
+    _GLIBCXX20_CONSTEXPR complex<_Tp>&
     complex<_Tp>::operator+=(const complex<_Up>& __z)
     {
       _M_real += __z.real();
@@ -283,7 +284,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // 26.2.5/11
   template<typename _Tp>
     template<typename _Up>
-    complex<_Tp>&
+    _GLIBCXX20_CONSTEXPR complex<_Tp>&
     complex<_Tp>::operator-=(const complex<_Up>& __z)
     {
       _M_real -= __z.real();
@@ -295,7 +296,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // XXX: This is a grammar school implementation.
   template<typename _Tp>
     template<typename _Up>
-    complex<_Tp>&
+    _GLIBCXX20_CONSTEXPR complex<_Tp>&
     complex<_Tp>::operator*=(const complex<_Up>& __z)
     {
       const _Tp __r = _M_real * __z.real() - _M_imag * __z.imag();
@@ -308,7 +309,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // XXX: This is a grammar school implementation.
   template<typename _Tp>
     template<typename _Up>
-    complex<_Tp>&
+    _GLIBCXX20_CONSTEXPR complex<_Tp>&
     complex<_Tp>::operator/=(const complex<_Up>& __z)
     {
       const _Tp __r =  _M_real * __z.real() + _M_imag * __z.imag();
@@ -322,7 +323,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   //@{
   ///  Return new complex value @a x plus @a y.
   template<typename _Tp>
-    inline complex<_Tp>
+    inline _GLIBCXX20_CONSTEXPR complex<_Tp>
     operator+(const complex<_Tp>& __x, const complex<_Tp>& __y)
     {
       complex<_Tp> __r = __x;
@@ -331,7 +332,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp>
-    inline complex<_Tp>
+    inline _GLIBCXX20_CONSTEXPR complex<_Tp>
     operator+(const complex<_Tp>& __x, const _Tp& __y)
     {
       complex<_Tp> __r = __x;
@@ -340,7 +341,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp>
-    inline complex<_Tp>
+    inline _GLIBCXX20_CONSTEXPR complex<_Tp>
     operator+(const _Tp& __x, const complex<_Tp>& __y)
     {
       complex<_Tp> __r = __y;
@@ -352,7 +353,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   //@{
   ///  Return new complex value @a x minus @a y.
   template<typename _Tp>
-    inline complex<_Tp>
+    inline _GLIBCXX20_CONSTEXPR complex<_Tp>
     operator-(const complex<_Tp>& __x, const complex<_Tp>& __y)
     {
       complex<_Tp> __r = __x;
@@ -361,7 +362,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp>
-    inline complex<_Tp>
+    inline _GLIBCXX20_CONSTEXPR complex<_Tp>
     operator-(const complex<_Tp>& __x, const _Tp& __y)
     {
       complex<_Tp> __r = __x;
@@ -370,11 +371,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp>
-    inline complex<_Tp>
+    inline _GLIBCXX20_CONSTEXPR complex<_Tp>
     operator-(const _Tp& __x, const complex<_Tp>& __y)
     {
-      complex<_Tp> __r(__x, -__y.imag());
-      __r -= __y.real();
+      complex<_Tp> __r = -__y;
+      __r += __x;
       return __r;
     }
   //@}
@@ -382,7 +383,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   //@{
   ///  Return new complex value @a x times @a y.
   template<typename _Tp>
-    inline complex<_Tp>
+    inline _GLIBCXX20_CONSTEXPR complex<_Tp>
     operator*(const complex<_Tp>& __x, const complex<_Tp>& __y)
     {
       complex<_Tp> __r = __x;
@@ -391,7 +392,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp>
-    inline complex<_Tp>
+    inline _GLIBCXX20_CONSTEXPR complex<_Tp>
     operator*(const complex<_Tp>& __x, const _Tp& __y)
     {
       complex<_Tp> __r = __x;
@@ -400,7 +401,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp>
-    inline complex<_Tp>
+    inline _GLIBCXX20_CONSTEXPR complex<_Tp>
     operator*(const _Tp& __x, const complex<_Tp>& __y)
     {
       complex<_Tp> __r = __y;
@@ -412,7 +413,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   //@{
   ///  Return new complex value @a x divided by @a y.
   template<typename _Tp>
-    inline complex<_Tp>
+    inline _GLIBCXX20_CONSTEXPR complex<_Tp>
     operator/(const complex<_Tp>& __x, const complex<_Tp>& __y)
     {
       complex<_Tp> __r = __x;
@@ -421,7 +422,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp>
-    inline complex<_Tp>
+    inline _GLIBCXX20_CONSTEXPR complex<_Tp>
     operator/(const complex<_Tp>& __x, const _Tp& __y)
     {
       complex<_Tp> __r = __x;
@@ -430,7 +431,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp>
-    inline complex<_Tp>
+    inline _GLIBCXX20_CONSTEXPR complex<_Tp>
     operator/(const _Tp& __x, const complex<_Tp>& __y)
     {
       complex<_Tp> __r = __x;
@@ -441,15 +442,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   ///  Return @a x.
   template<typename _Tp>
-    inline complex<_Tp>
+    inline _GLIBCXX20_CONSTEXPR complex<_Tp>
     operator+(const complex<_Tp>& __x)
     { return __x; }
 
   ///  Return complex negation of @a x.
   template<typename _Tp>
-    inline complex<_Tp>
+    inline _GLIBCXX20_CONSTEXPR complex<_Tp>
     operator-(const complex<_Tp>& __x)
-    {  return complex<_Tp>(-__x.real(), -__x.imag()); }
+    { return complex<_Tp>(-__x.real(), -__x.imag()); }
 
   //@{
   ///  Return true if @a x is equal to @a y.
@@ -658,7 +659,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct _Norm_helper
     {
       template<typename _Tp>
-        static inline _Tp _S_do_it(const complex<_Tp>& __z)
+        static inline _GLIBCXX_CONSTEXPR _Tp _S_do_it(const complex<_Tp>& __z)
         {
           const _Tp __x = __z.real();
           const _Tp __y = __z.imag();
@@ -670,15 +671,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct _Norm_helper<true>
     {
       template<typename _Tp>
-        static inline _Tp _S_do_it(const complex<_Tp>& __z)
+        static inline _GLIBCXX_CONSTEXPR _Tp _S_do_it(const complex<_Tp>& __z)
         {
-          _Tp __res = std::abs(__z);
-          return __res * __res;
+          //_Tp __res = std::abs(__z);
+          //return __res * __res;
+          const _Tp __x = __z.real();
+          const _Tp __y = __z.imag();
+          return __x * __x + __y * __y;
         }
     };
 
   template<typename _Tp>
-    inline _Tp
+    inline _GLIBCXX20_CONSTEXPR _Tp
     norm(const complex<_Tp>& __z)
     {
       return _Norm_helper<__is_floating<_Tp>::__value
@@ -694,7 +698,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp>
-    inline complex<_Tp>
+    inline _GLIBCXX20_CONSTEXPR complex<_Tp>
     conj(const complex<_Tp>& __z)
     { return complex<_Tp>(__z.real(), -__z.imag()); }
 
@@ -1115,41 +1119,41 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
-      void
+      _GLIBCXX20_CONSTEXPR void
       real(float __val) { __real__ _M_value = __val; }
 
-      void
+      _GLIBCXX20_CONSTEXPR void
       imag(float __val) { __imag__ _M_value = __val; }
 
-      complex&
+      _GLIBCXX20_CONSTEXPR complex&
       operator=(float __f)
       {
 	_M_value = __f;
 	return *this;
       }
 
-      complex&
+      _GLIBCXX20_CONSTEXPR complex&
       operator+=(float __f)
       {
 	_M_value += __f;
 	return *this;
       }
 
-      complex&
+      _GLIBCXX20_CONSTEXPR complex&
       operator-=(float __f)
       {
 	_M_value -= __f;
 	return *this;
       }
 
-      complex&
+      _GLIBCXX20_CONSTEXPR complex&
       operator*=(float __f)
       {
 	_M_value *= __f;
 	return *this;
       }
 
-      complex&
+      _GLIBCXX20_CONSTEXPR complex&
       operator/=(float __f)
       {
 	_M_value /= __f;
@@ -1163,7 +1167,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       template<typename _Tp>
-        complex&
+        _GLIBCXX20_CONSTEXPR complex&
         operator=(const complex<_Tp>&  __z)
 	{
 	  __real__ _M_value = __z.real();
@@ -1172,41 +1176,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Tp>
-        complex&
+        _GLIBCXX20_CONSTEXPR complex&
         operator+=(const complex<_Tp>& __z)
 	{
-	  __real__ _M_value += __z.real();
-	  __imag__ _M_value += __z.imag();
+	  _M_value += __z.__rep();
 	  return *this;
 	}
 
       template<class _Tp>
-        complex&
+        _GLIBCXX20_CONSTEXPR complex&
         operator-=(const complex<_Tp>& __z)
 	{
-	  __real__ _M_value -= __z.real();
-	  __imag__ _M_value -= __z.imag();
+	  _M_value -= __z.__rep();
 	  return *this;
 	}
 
       template<class _Tp>
-        complex&
+        _GLIBCXX20_CONSTEXPR complex&
         operator*=(const complex<_Tp>& __z)
 	{
-	  _ComplexT __t;
-	  __real__ __t = __z.real();
-	  __imag__ __t = __z.imag();
+	  const _ComplexT __t = __z.__rep();
 	  _M_value *= __t;
 	  return *this;
 	}
 
       template<class _Tp>
-        complex&
+        _GLIBCXX20_CONSTEXPR complex&
         operator/=(const complex<_Tp>& __z)
 	{
-	  _ComplexT __t;
-	  __real__ __t = __z.real();
-	  __imag__ __t = __z.imag();
+	  const _ComplexT __t = __z.__rep();
 	  _M_value /= __t;
 	  return *this;
 	}
@@ -1268,41 +1266,41 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
-      void
+      _GLIBCXX20_CONSTEXPR void
       real(double __val) { __real__ _M_value = __val; }
 
-      void
+      _GLIBCXX20_CONSTEXPR void
       imag(double __val) { __imag__ _M_value = __val; }
 
-      complex&
+      _GLIBCXX20_CONSTEXPR complex&
       operator=(double __d)
       {
 	_M_value = __d;
 	return *this;
       }
 
-      complex&
+      _GLIBCXX20_CONSTEXPR complex&
       operator+=(double __d)
       {
 	_M_value += __d;
 	return *this;
       }
 
-      complex&
+      _GLIBCXX20_CONSTEXPR complex&
       operator-=(double __d)
       {
 	_M_value -= __d;
 	return *this;
       }
 
-      complex&
+      _GLIBCXX20_CONSTEXPR complex&
       operator*=(double __d)
       {
 	_M_value *= __d;
 	return *this;
       }
 
-      complex&
+      _GLIBCXX20_CONSTEXPR complex&
       operator/=(double __d)
       {
 	_M_value /= __d;
@@ -1315,50 +1313,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       template<typename _Tp>
-        complex&
+        _GLIBCXX20_CONSTEXPR complex&
         operator=(const complex<_Tp>& __z)
 	{
-	  __real__ _M_value = __z.real();
-	  __imag__ _M_value = __z.imag();
+	  _M_value = __z.__rep();
 	  return *this;
 	}
 
       template<typename _Tp>
-        complex&
+        _GLIBCXX20_CONSTEXPR complex&
         operator+=(const complex<_Tp>& __z)
 	{
-	  __real__ _M_value += __z.real();
-	  __imag__ _M_value += __z.imag();
+	  _M_value += __z.__rep();
 	  return *this;
 	}
 
       template<typename _Tp>
-        complex&
+        _GLIBCXX20_CONSTEXPR complex&
         operator-=(const complex<_Tp>& __z)
 	{
-	  __real__ _M_value -= __z.real();
-	  __imag__ _M_value -= __z.imag();
+	  _M_value -= __z.__rep();
 	  return *this;
 	}
 
       template<typename _Tp>
-        complex&
+        _GLIBCXX20_CONSTEXPR complex&
         operator*=(const complex<_Tp>& __z)
 	{
-	  _ComplexT __t;
-	  __real__ __t = __z.real();
-	  __imag__ __t = __z.imag();
+	  const _ComplexT __t = __z.__rep();
 	  _M_value *= __t;
 	  return *this;
 	}
 
       template<typename _Tp>
-        complex&
+        _GLIBCXX20_CONSTEXPR complex&
         operator/=(const complex<_Tp>& __z)
 	{
-	  _ComplexT __t;
-	  __real__ __t = __z.real();
-	  __imag__ __t = __z.imag();
+	  const _ComplexT __t = __z.__rep();
 	  _M_value /= __t;
 	  return *this;
 	}
@@ -1422,41 +1413,41 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
-      void
+      _GLIBCXX20_CONSTEXPR void
       real(long double __val) { __real__ _M_value = __val; }
 
-      void
+      _GLIBCXX20_CONSTEXPR void
       imag(long double __val) { __imag__ _M_value = __val; }
 
-      complex&
+      _GLIBCXX20_CONSTEXPR complex&
       operator=(long double __r)
       {
 	_M_value = __r;
 	return *this;
       }
 
-      complex&
+      _GLIBCXX20_CONSTEXPR complex&
       operator+=(long double __r)
       {
 	_M_value += __r;
 	return *this;
       }
 
-      complex&
+      _GLIBCXX20_CONSTEXPR complex&
       operator-=(long double __r)
       {
 	_M_value -= __r;
 	return *this;
       }
 
-      complex&
+      _GLIBCXX20_CONSTEXPR complex&
       operator*=(long double __r)
       {
 	_M_value *= __r;
 	return *this;
       }
 
-      complex&
+      _GLIBCXX20_CONSTEXPR complex&
       operator/=(long double __r)
       {
 	_M_value /= __r;
@@ -1469,50 +1460,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       template<typename _Tp>
-        complex&
+        _GLIBCXX20_CONSTEXPR complex&
         operator=(const complex<_Tp>& __z)
 	{
-	  __real__ _M_value = __z.real();
-	  __imag__ _M_value = __z.imag();
+	  _M_value = __z.__rep();
 	  return *this;
 	}
 
       template<typename _Tp>
-        complex&
+        _GLIBCXX20_CONSTEXPR complex&
 	operator+=(const complex<_Tp>& __z)
 	{
-	  __real__ _M_value += __z.real();
-	  __imag__ _M_value += __z.imag();
+	  _M_value += __z.__rep();
 	  return *this;
 	}
 
       template<typename _Tp>
-        complex&
+        _GLIBCXX20_CONSTEXPR complex&
 	operator-=(const complex<_Tp>& __z)
 	{
-	  __real__ _M_value -= __z.real();
-	  __imag__ _M_value -= __z.imag();
+	  _M_value -= __z.__rep();
 	  return *this;
 	}
 
       template<typename _Tp>
-        complex&
+        _GLIBCXX20_CONSTEXPR complex&
 	operator*=(const complex<_Tp>& __z)
 	{
-	  _ComplexT __t;
-	  __real__ __t = __z.real();
-	  __imag__ __t = __z.imag();
+	  const _ComplexT __t = __z.__rep();
 	  _M_value *= __t;
 	  return *this;
 	}
 
       template<typename _Tp>
-        complex&
+        _GLIBCXX20_CONSTEXPR complex&
 	operator/=(const complex<_Tp>& __z)
 	{
-	  _ComplexT __t;
-	  __real__ __t = __z.real();
-	  __imag__ __t = __z.imag();
+	  const _ComplexT __t = __z.__rep();
 	  _M_value /= __t;
 	  return *this;
 	}
@@ -1872,7 +1856,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return _Tp(); }
 
   template<typename _Tp>
-    inline typename __gnu_cxx::__promote<_Tp>::__type
+    _GLIBCXX20_CONSTEXPR inline typename __gnu_cxx::__promote<_Tp>::__type
     norm(_Tp __x)
     {
       typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
@@ -1911,7 +1895,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Forward declarations.
   // DR 781.
-  template<typename _Tp> std::complex<_Tp> proj(const std::complex<_Tp>&);
+  template<typename _Tp>
+    std::complex<_Tp> proj(const std::complex<_Tp>&);
 
   template<typename _Tp>
     std::complex<_Tp>
@@ -1957,7 +1942,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp>
-    inline std::complex<typename __gnu_cxx::__promote<_Tp>::__type>
+    inline _GLIBCXX20_CONSTEXPR
+	std::complex<typename __gnu_cxx::__promote<_Tp>::__type>
     conj(_Tp __x)
     {
       typedef typename __gnu_cxx::__promote<_Tp>::__type __type;

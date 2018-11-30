@@ -506,7 +506,7 @@ do_allocate_exception (tree type)
     allocate_exception_fn
       = declare_library_fn ("__cxa_allocate_exception",
 			    ptr_type_node, size_type_node,
-			    ECF_NOTHROW | ECF_MALLOC, ECF_TM_PURE);
+			    ECF_NOTHROW | ECF_MALLOC | ECF_COLD, ECF_TM_PURE);
 
   return cp_build_function_call_nary (allocate_exception_fn,
 				      tf_warning_or_error,

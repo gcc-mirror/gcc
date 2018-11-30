@@ -41,7 +41,9 @@ class Label;
 class Translate_context;
 class Backend;
 class Export;
+class Export_function_body;
 class Import;
+class Import_function_body;
 class Bexpression;
 class Btype;
 class Bstatement;
@@ -419,6 +421,17 @@ class Gogo
   Named_object*
   declare_package_function(const std::string&, Function_type*, Location);
 
+  // Add a function declaration to the list of functions we may want
+  // to inline.
+  void
+  add_imported_inlinable_function(Named_object*);
+
+  // Add a function to the list of functions that we do want to
+  // inline.
+  void
+  add_imported_inline_function(Named_object* no)
+  { this->imported_inline_functions_.push_back(no); }
+
   // Add a label.
   Label*
   add_label_definition(const std::string&, Location);
@@ -624,6 +637,10 @@ class Gogo
   void
   finalize_methods();
 
+  // Finalize the method list for one type.
+  void
+  finalize_methods_for_type(Type*);
+
   // Work out the types to use for unspecified variables and
   // constants.
   void
@@ -660,7 +677,7 @@ class Gogo
   propagate_escape(Escape_context*, Node*);
 
   // Add notes about the escape level of a function's input and output
-  // parameters for exporting and importing top level functions. 
+  // parameters for exporting and importing top level functions.
   void
   tag_function(Escape_context*, Named_object*);
 
@@ -725,7 +742,7 @@ class Gogo
   void
   simplify_thunk_statements();
 
-  // Dump AST if -fgo-dump-ast is set 
+  // Dump AST if -fgo-dump-ast is set.
   void
   dump_ast(const char* basename);
 
@@ -1061,6 +1078,12 @@ class Gogo
   std::vector<Analysis_set> analysis_sets_;
   // A list of objects to add to the GC roots.
   std::vector<Expression*> gc_roots_;
+  // A list of function declarations with imported bodies that we may
+  // want to inline.
+  std::vector<Named_object*> imported_inlinable_functions_;
+  // A list of functions that we want to inline.  These will be sent
+  // to the backend.
+  std::vector<Named_object*> imported_inline_functions_;
 };
 
 // A block of statements.
@@ -1138,6 +1161,14 @@ class Block
   // next block.
   bool
   may_fall_through() const;
+
+  // Write the export data for the block's statements to the string.
+  void
+  export_block(Export_function_body*);
+
+  // Turn exported block data into a block.
+  static bool
+  import_block(Block*, Import_function_body*, Location);
 
   // Convert the block to the backend representation.
   Bblock*
@@ -1404,6 +1435,27 @@ class Function
   set_in_unique_section()
   { this->in_unique_section_ = true; }
 
+  // Return whether this function should be exported for inlining.
+  bool
+  export_for_inlining() const
+  { return this->export_for_inlining_; }
+
+  // Mark the function to be exported for inlining.
+  void
+  set_export_for_inlining()
+  { this->export_for_inlining_ = true; }
+
+  // Return whether this function is inline only.
+  bool
+  is_inline_only() const
+  { return this->is_inline_only_; }
+
+  // Mark the function as inline only: the body should not be emitted
+  // if it is not inlined.
+  void
+  set_is_inline_only()
+  { this->is_inline_only_ = true; }
+
   // Swap with another function.  Used only for the thunk which calls
   // recover.
   void
@@ -1461,14 +1513,15 @@ class Function
   // Export a function with a type.
   static void
   export_func_with_type(Export*, const std::string& name,
-			const Function_type*, bool nointerface);
+			const Function_type*, Results*, bool nointerface,
+			Block* block, Location);
 
   // Import a function.
   static void
   import_func(Import*, std::string* pname, Typed_identifier** receiver,
 	      Typed_identifier_list** pparameters,
 	      Typed_identifier_list** presults, bool* is_varargs,
-	      bool* nointerface);
+	      bool* nointerface, std::string* body);
 
  private:
   // Type for mapping from label names to Label objects.
@@ -1539,6 +1592,12 @@ class Function
   // True if this function should be put in a unique section.  This is
   // turned on for field tracking.
   bool in_unique_section_ : 1;
+  // True if we should export the body of this function for
+  // cross-package inlining.
+  bool export_for_inlining_ : 1;
+  // True if this function is inline only: if it should not be emitted
+  // if it is not inlined.
+  bool is_inline_only_ : 1;
 };
 
 // A snapshot of the current binding state.
@@ -1582,7 +1641,8 @@ class Function_declaration
  public:
   Function_declaration(Function_type* fntype, Location location)
     : fntype_(fntype), location_(location), asm_name_(), descriptor_(NULL),
-      fndecl_(NULL), pragmas_(0)
+      fndecl_(NULL), pragmas_(0), imported_body_(),
+      is_on_inlinable_list_(false)
   { }
 
   Function_type*
@@ -1628,6 +1688,33 @@ class Function_declaration
   void
   set_nointerface();
 
+  // Whether we have an imported function body.
+  bool
+  has_imported_body() const
+  { return !this->imported_body_.empty(); }
+
+  // Record the imported body of this function.
+  void
+  set_imported_body(Import* imp, const std::string& imported_body)
+  {
+    this->imp_ = imp;
+    this->imported_body_ = imported_body;
+  }
+
+  // Whether this declaration is on the list of inlinable functions.
+  bool
+  is_on_inlinable_list() const
+  { return this->is_on_inlinable_list_; }
+
+  // Set that this function is on the list of inlinable functions.
+  void
+  set_is_on_inlinable_list()
+  { this->is_on_inlinable_list_ = true; }
+
+  // Import the function body, creating a function.
+  void
+  import_function_body(Gogo*, Named_object*);
+
   // Return an expression for the function descriptor, given the named
   // object for this function.  This may only be called for functions
   // without a closure.  This will be an immutable struct with one
@@ -1653,8 +1740,9 @@ class Function_declaration
   void
   export_func(Export* exp, const std::string& name) const
   {
-    Function::export_func_with_type(exp, name, this->fntype_,
-				    this->is_method() && this->nointerface());
+    Function::export_func_with_type(exp, name, this->fntype_, NULL,
+				    this->is_method() && this->nointerface(),
+				    NULL, this->location_);
   }
 
   // Check that the types used in this declaration's signature are defined.
@@ -1675,6 +1763,12 @@ class Function_declaration
   Bfunction* fndecl_;
   // Pragmas for this function.  This is a set of GOPRAGMA bits.
   unsigned int pragmas_;
+  // Importer for function body if imported from a different package.
+  Import* imp_;
+  // Export data for function body if imported from a different package.
+  std::string imported_body_;
+  // Whether this declaration is already on the list of inlinable functions.
+  bool is_on_inlinable_list_;
 };
 
 // A variable.
@@ -1770,7 +1864,7 @@ class Variable
   bool
   is_in_heap() const
   {
-    return this->is_address_taken_ 
+    return this->is_address_taken_
       && this->escapes_
       && !this->is_global_;
   }
@@ -2084,7 +2178,7 @@ class Result_variable
   void
   set_non_escaping_address_taken()
   { this->is_non_escaping_address_taken_ = true; }
-  
+
   // Return whether this variable escapes the function it is declared in.
   bool
   escapes()
@@ -3181,7 +3275,7 @@ class Package
 
   // Return the bindings.
   Bindings*
-  bindings()
+  bindings() const
   { return this->bindings_; }
 
   // Type used to map import names to package aliases.

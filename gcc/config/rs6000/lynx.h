@@ -71,16 +71,6 @@
     }						\
   while (0)
 
-/* Override the rs6000.h definition.  */
-
-#undef ASM_APP_ON
-#define ASM_APP_ON "#APP\n"
-
-/* Override the rs6000.h definition.  */
-
-#undef ASM_APP_OFF
-#define ASM_APP_OFF "#NO_APP\n"
-
 /* LynxOS does not do anything with .fixup plus let's not create
    writable section for linkonce.r and linkonce.t.  */
 

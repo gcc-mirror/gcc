@@ -1377,7 +1377,9 @@ generate_results (const char *file_name)
   json::object *root = new json::object ();
   root->set ("format_version", new json::string ("1"));
   root->set ("gcc_version", new json::string (version_string));
-  root->set ("current_working_directory", new json::string (bbg_cwd));
+
+  if (bbg_cwd != NULL)
+    root->set ("current_working_directory", new json::string (bbg_cwd));
 
   json::array *json_files = new json::array ();
   root->set ("files", json_files);

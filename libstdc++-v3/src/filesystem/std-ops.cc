@@ -646,38 +646,74 @@ fs::create_directories(const path& p, error_code& ec)
       ec = std::make_error_code(errc::invalid_argument);
       return false;
     }
+
+  file_status st = symlink_status(p, ec);
+  if (is_directory(st))
+    return false;
+  else if (ec && !status_known(st))
+    return false;
+  else if (exists(st))
+    {
+      if (!ec)
+	ec = std::make_error_code(std::errc::not_a_directory);
+      return false;
+    }
+
   std::stack<path> missing;
   path pp = p;
 
-  while (pp.has_filename() && status(pp, ec).type() == file_type::not_found)
-    {
-      ec.clear();
-      const auto& filename = pp.filename();
-      if (!is_dot(filename) && !is_dotdot(filename))
-	missing.push(pp);
-      pp = pp.parent_path();
-
-      if (missing.size() > 1000) // sanity check
-	{
-	  ec = std::make_error_code(std::errc::filename_too_long);
-	  return false;
-	}
-    }
-
-  if (ec || missing.empty())
-    return false;
+  // Strip any trailing slash
+  if (pp.has_relative_path() && !pp.has_filename())
+    pp = pp.parent_path();
 
   do
     {
+      const auto& filename = pp.filename();
+      if (is_dot(filename) || is_dotdot(filename))
+	pp = pp.parent_path();
+      else
+	{
+	  missing.push(std::move(pp));
+	  if (missing.size() > 1000) // sanity check
+	    {
+	      ec = std::make_error_code(std::errc::filename_too_long);
+	      return false;
+	    }
+	  pp = missing.top().parent_path();
+	}
+
+      if (pp.empty())
+	break;
+
+      st = status(pp, ec);
+      if (exists(st))
+	{
+	  if (ec)
+	    return false;
+	  if (!is_directory(st))
+	    {
+	      ec = std::make_error_code(std::errc::not_a_directory);
+	      return false;
+	    }
+	}
+
+      if (ec && exists(st))
+	return false;
+    }
+  while (st.type() == file_type::not_found);
+
+  bool created;
+  do
+    {
       const path& top = missing.top();
-      create_directory(top, ec);
-      if (ec && is_directory(top))
-	ec.clear();
+      created = create_directory(top, ec);
+      if (ec)
+	return false;
       missing.pop();
     }
-  while (!missing.empty() && !ec);
+  while (!missing.empty());
 
-  return missing.empty();
+  return created;
 }
 
 namespace

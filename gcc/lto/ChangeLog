@@ -1,3 +1,18 @@
+2018-11-28  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_read_decls): Fix handling of INTEGER_CST.
+
+2018-11-22  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (cmp_type_location): Remove.
+	(lto_read_decls): Do not allocate odr_types.
+
+2018-11-19  Martin Liska  <mliska@suse.cz>
+
+	PR lto/88077
+	* lto-symtab.c (lto_symtab_merge): Transform the
+	condition before r256989.
+
 2018-11-16  Martin Liska  <mliska@suse.cz>
 
 	PR lto/88004

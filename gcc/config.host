@@ -282,6 +282,10 @@ case ${host} in
     out_host_hook_obj=host-openbsd.o
     host_xmake_file="${host_xmake_file} x-openbsd"
     ;;
+  *-*-netbsd*)
+    out_host_hook_obj=host-netbsd.o
+    host_xmake_file="${host_xmake_file} x-netbsd"
+    ;;
   ia64-*-hpux*)
     use_long_long_for_widest_fast_int=yes
     out_host_hook_obj=host-hpux.o

@@ -11,6 +11,8 @@
 #include "types.h"
 #include "expressions.h"
 #include "gogo.h"
+#include "export.h"
+#include "import.h"
 #include "runtime.h"
 #include "backend.h"
 #include "statements.h"
@@ -118,6 +120,46 @@ void
 Statement::determine_types()
 {
   this->do_determine_types();
+}
+
+// Read a statement from export data.
+
+Statement*
+Statement::import_statement(Import_function_body* ifb, Location loc)
+{
+  if (ifb->match_c_string("{"))
+    {
+      size_t nl = ifb->body().find('\n', ifb->off());
+      if (nl == std::string::npos)
+	{
+	  if (!ifb->saw_error())
+	    go_error_at(ifb->location(),
+			"import error: no newline after { at %lu",
+			static_cast<unsigned long>(ifb->off()));
+	  ifb->set_saw_error();
+	  return Statement::make_error_statement(loc);
+	}
+      ifb->set_off(nl + 1);
+      ifb->increment_indent();
+      Block* block = new Block(ifb->block(), loc);
+      bool ok = Block::import_block(block, ifb, loc);
+      ifb->decrement_indent();
+      if (!ok)
+	return Statement::make_error_statement(loc);
+      return Statement::make_block_statement(block, loc);
+    }
+  else if (ifb->match_c_string("return"))
+    {
+      // After lowering return statements have no expressions.  The
+      // return expressions are assigned to result parameters.
+      ifb->advance(6);
+      return Statement::make_return_statement(NULL, loc);
+    }
+
+  Expression* lhs = Expression::import_expression(ifb, loc);
+  ifb->require_c_string(" = ");
+  Expression* rhs = Expression::import_expression(ifb, loc);
+  return Statement::make_assignment(lhs, rhs, loc);
 }
 
 // If this is a thunk statement, return it.
@@ -823,6 +865,14 @@ Assignment_statement::do_check_types(Gogo*)
 
   if (lhs_type->is_error() || rhs_type->is_error())
     this->set_is_error();
+}
+
+void
+Assignment_statement::do_export_statement(Export_function_body* efb)
+{
+  this->lhs_->export_expression(efb);
+  efb->write_c_string(" = ");
+  this->rhs_->export_expression(efb);
 }
 
 // Flatten an assignment statement.  We may need a temporary for
@@ -1779,6 +1829,27 @@ Statement*
 Statement::make_statement(Expression* expr, bool is_ignored)
 {
   return new Expression_statement(expr, is_ignored);
+}
+
+// Export data for a block.
+
+void
+Block_statement::do_export_statement(Export_function_body* efb)
+{
+  // We are already indented to the right position.
+  char buf[50];
+  snprintf(buf, sizeof buf, "{ //%d\n",
+	   Linemap::location_to_line(this->block_->start_location()));
+  efb->write_c_string(buf);
+
+  this->block_->export_block(efb);
+  // The indentation is correct for the statements in the block, so
+  // subtract one for the closing curly brace.
+  efb->decrement_indent();
+  efb->indent();
+  efb->write_c_string("}");
+  // Increment back to the value the caller thinks it has.
+  efb->increment_indent();
 }
 
 // Convert a block to the backend representation of a statement.
@@ -2812,6 +2883,16 @@ Return_statement::do_get_backend(Translate_context* context)
 
   return context->backend()->return_statement(function->get_decl(),
 					      retvals, loc);
+}
+
+// Export a return statement.  At this point all the expressions have
+// been converted to assignments to the result variables, so this is
+// simple.
+
+void
+Return_statement::do_export_statement(Export_function_body* efb)
+{
+  efb->write_c_string("return");
 }
 
 // Dump the AST representation for a return statement.

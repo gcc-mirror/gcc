@@ -24693,12 +24693,12 @@ foo:	.long	25
 	;;
   or1k*-*-*)
     conftest_s='
-        .section ".tdata","awT",@progbits
-foo:    .long   25
-        .text
-        l.movhi r3, tpoffha(foo)
-        l.add   r3, r3, r10
-        l.lwz   r4, tpofflo(foo)(r3)'
+	.section ".tdata","awT",@progbits
+foo:	.long	25
+	.text
+	l.movhi	r3, tpoffha(foo)
+	l.add	r3, r3, r10
+	l.lwz	r4, tpofflo(foo)(r3)'
     tls_first_major=2
     tls_first_minor=30
     tls_as_opt=--fatal-warnings
@@ -27242,6 +27242,42 @@ $as_echo "#define HAVE_AS_ENTRY_MARKERS 1" >>confdefs.h
 fi
 
 
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for plt sequence marker support" >&5
+$as_echo_n "checking assembler for plt sequence marker support... " >&6; }
+if ${gcc_cv_as_powerpc_pltseq_markers+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_powerpc_pltseq_markers=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 31 \) \* 1000 + 0`
+  then gcc_cv_as_powerpc_pltseq_markers=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo ' .reloc .,R_PPC_PLTSEQ; nop' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -a32 --fatal-warnings -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_powerpc_pltseq_markers=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_powerpc_pltseq_markers" >&5
+$as_echo "$gcc_cv_as_powerpc_pltseq_markers" >&6; }
+if test $gcc_cv_as_powerpc_pltseq_markers = yes; then
+
+$as_echo "#define HAVE_AS_PLTSEQ 1" >>confdefs.h
+
+fi
+
+
     case $target in
       *-*-aix*)
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for AIX .ref support" >&5
@@ -27819,6 +27855,42 @@ if test $gcc_cv_as_s390_architecture_modifiers = yes; then
 $as_echo "#define HAVE_AS_ARCHITECTURE_MODIFIERS 1" >>confdefs.h
 
 fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for vector load/store alignment hints" >&5
+$as_echo_n "checking assembler for vector load/store alignment hints... " >&6; }
+if ${gcc_cv_as_s390_vector_loadstore_alignment_hints+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_s390_vector_loadstore_alignment_hints=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 31 \) \* 1000 + 0`
+  then gcc_cv_as_s390_vector_loadstore_alignment_hints=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo '	vl %v24,0(%r15),3 ' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_s390_vector_loadstore_alignment_hints=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_s390_vector_loadstore_alignment_hints" >&5
+$as_echo "$gcc_cv_as_s390_vector_loadstore_alignment_hints" >&6; }
+if test $gcc_cv_as_s390_vector_loadstore_alignment_hints = yes; then
+
+$as_echo "#define HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS 1" >>confdefs.h
+
+fi
+
 
     ;;
 esac

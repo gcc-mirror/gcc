@@ -12,6 +12,7 @@
 class Go_sha1_helper;
 class Gogo;
 class Named_object;
+class Export_function_body;
 class Import_init;
 class Named_object;
 class Bindings;
@@ -183,6 +184,10 @@ class Export : public String_dump
   void
   write_type(const Type*);
 
+  // Write a type to an exported function body.
+  void
+  write_type_to(const Type*, Export_function_body*);
+
   // Write the escape note to the export stream.  If NOTE is NULL, write
   // nothing.
   void
@@ -241,6 +246,10 @@ class Export : public String_dump
   void
   register_builtin_type(Gogo*, const char* name, Builtin_code);
 
+  // Return the index of a type in the export data.
+  int
+  type_index(const Type*);
+
   // The stream to which we are writing data.
   Stream* stream_;
   // Index number of next type.
@@ -284,6 +293,81 @@ class Stream_to_string : public Export::Stream
 
  private:
   std::string string_;
+};
+
+// Class to manage exporting a function body.  This is passed around
+// to Statements and Expressions.  It builds up the export data for
+// the function.
+
+class Export_function_body : public String_dump
+{
+ public:
+  Export_function_body(Export* exp, int indent)
+    : exp_(exp), type_context_(NULL), indent_(indent)
+  { }
+
+  // Write a character to the body.
+  void
+  write_char(char c)
+  { this->body_.append(1, c); }
+
+  // Write a NUL terminated string to the body.
+  void
+  write_c_string(const char* str)
+  { this->body_.append(str); }
+
+  // Write a string to the body.
+  void
+  write_string(const std::string& str)
+  { this->body_.append(str); }
+
+  // Write a type reference to the body.
+  void
+  write_type(const Type* type)
+  { this->exp_->write_type_to(type, this); }
+
+  // Return the current type context.
+  Type*
+  type_context() const
+  { return this->type_context_; }
+
+  // Set the current type context.
+  void
+  set_type_context(Type* type)
+  { this->type_context_ = type; }
+
+  // Append as many spaces as the current indentation level.
+  void
+  indent()
+  {
+    for (int i = this->indent_; i > 0; i--)
+      this->write_char(' ');
+  }
+
+  // Increment the indentation level.
+  void
+  increment_indent()
+  { ++this->indent_; }
+
+  // Decrement the indentation level.
+  void
+  decrement_indent()
+  { --this->indent_; }
+
+  // Return a reference to the completed body.
+  const std::string&
+  body() const
+  { return this->body_; }
+
+ private:
+  // The overall export data.
+  Export* exp_;
+  // The body we are building.
+  std::string body_;
+  // Current type context.  Used to avoid duplicate type conversions.
+  Type* type_context_;
+  // Current indentation level: the number of spaces before each statement.
+  int indent_;
 };
 
 #endif // !defined(GO_EXPORT_H)

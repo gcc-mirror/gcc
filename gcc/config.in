@@ -595,6 +595,12 @@
 #endif
 
 
+/* Define if your assembler supports R_PPC*_PLTSEQ relocations. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_PLTSEQ
+#endif
+
+
 /* Define if your assembler supports .ref */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_REF
@@ -672,6 +678,13 @@
 /* Define if your assembler supports arg info for __tls_get_addr. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_TLS_MARKERS
+#endif
+
+
+/* Define if your assembler supports vl/vst/vlm/vstm with an optional
+   alignment hint argument. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS
 #endif
 
 

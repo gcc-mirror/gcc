@@ -1012,6 +1012,7 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
   struct cpp_dir *dir;
   _cpp_file *file;
   bool stacked;
+  bool decremented = false;
 
   /* For -include command-line flags we have type == IT_CMDLINE.
      When the first -include file is processed we have the case, where
@@ -1035,20 +1036,33 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
     return false;
 
   /* Compensate for the increment in linemap_add that occurs if
-      _cpp_stack_file actually stacks the file.  In the case of a
-     normal #include, we're currently at the start of the line
-     *following* the #include.  A separate location_t for this
-     location makes no sense (until we do the LC_LEAVE), and
-     complicates LAST_SOURCE_LINE_LOCATION.  This does not apply if we
-     found a PCH file (in which case linemap_add is not called) or we
-     were included from the command-line.  */
+     _cpp_stack_file actually stacks the file.  In the case of a normal
+     #include, we're currently at the start of the line *following* the
+     #include.  A separate location_t for this location makes no
+     sense (until we do the LC_LEAVE), and complicates
+     LAST_SOURCE_LINE_LOCATION.  This does not apply if we found a PCH
+     file (in which case linemap_add is not called) or we were included
+     from the command-line.  In the case that the #include is the last
+     line in the file, highest_location still points to the current
+     line, not the start of the next line, so we do not decrement in
+     this case.  See plugin/location-overflow-test-pr83173.h for an
+     example.  */
   if (file->pchname == NULL && file->err_no == 0
       && type != IT_CMDLINE && type != IT_DEFAULT)
-    pfile->line_table->highest_location--;
+    {
+      int highest_line = linemap_get_expansion_line (pfile->line_table,
+						     pfile->line_table->highest_location);
+      int source_line = linemap_get_expansion_line (pfile->line_table, loc);
+      if (highest_line > source_line)
+	{
+	  pfile->line_table->highest_location--;
+	  decremented = true;
+	}
+    }
 
   stacked = _cpp_stack_file (pfile, file, type == IT_IMPORT, loc);
 
-  if (!stacked)
+  if (decremented && !stacked)
     /* _cpp_stack_file didn't stack the file, so let's rollback the
        compensation dance we performed above.  */
     pfile->line_table->highest_location++;

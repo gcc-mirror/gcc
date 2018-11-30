@@ -1,3 +1,22 @@
+2018-11-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.in: Rebuild.
+	* configure: Rebuild.
+	* configure.ac (DRUNTIME_SOVERSION): Remove.
+	(PHOBOS_SOVERSION): Remove.
+	(libtool_VERSION): Add.
+	* libdruntime/Makefile.am: Use libtool_VERSION.
+	* libdruntime/Makefile.in: Rebuild.
+	* src/Makefile.am: Use libtool_VERSION.
+	* src/Makefile.in: Rebuild.
+	* testsuite/Makefile.in: Rebuild.
+
+2018-11-22  Johannes Pfau  <johannespfau@gmail.com>
+
+	PR d/87824
+	* testsuite/libphobos.shared/shared.exp: Set proper path to phobos
+	library for multilib builds.
+
 2018-11-19  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* src/Makefile.am: Remove std.internal.digest.sha_SSSE3 and

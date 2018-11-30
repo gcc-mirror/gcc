@@ -1,3 +1,5 @@
+/* { dg-options "-O1" { target msp430-*-* } } */
+
 #include "compat-common.h"
 
 #include "fp-struct-defs.h"

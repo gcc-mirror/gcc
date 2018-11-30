@@ -103,6 +103,7 @@ enum rid
   RID_EXTENSION, RID_IMAGPART, RID_REALPART, RID_LABEL,      RID_CHOOSE_EXPR,
   RID_TYPES_COMPATIBLE_P,      RID_BUILTIN_COMPLEX,	     RID_BUILTIN_SHUFFLE,
   RID_BUILTIN_TGMATH,
+  RID_BUILTIN_HAS_ATTRIBUTE,
   RID_DFLOAT32, RID_DFLOAT64, RID_DFLOAT128,
 
   /* TS 18661-3 keywords, in the same sequence as the TI_* values.  */
@@ -1365,6 +1366,7 @@ extern void maybe_suggest_missing_token_insertion (rich_location *richloc,
 						   enum cpp_ttype token_type,
 						   location_t prev_token_loc);
 extern tree braced_list_to_string (tree, tree);
+extern bool has_attribute (location_t, tree, tree, tree (*)(tree));
 
 #if CHECKING_P
 namespace selftest {

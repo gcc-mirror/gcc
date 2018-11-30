@@ -1,5 +1,7 @@
 2018-11-30  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r266680.
+
 	gcc/cp/
 	* module.cc: Fix enums with trailing commas.
 	* name-lookup.c (match_global_decl): Avoid unused arg warning.
@@ -35,7 +37,7 @@
 
 	Merge global module function definitions.
 	gcc/cp/
-	* modules.cc (module_state::write_function_def ): Don't rely on
+	* modules.cc (module_state::write_function_def): Don't rely on
 	decl's form.
 	(module_state::read_function_def): Allow multiple decls.
 	gcc/testsuite/

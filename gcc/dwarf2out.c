@@ -16742,7 +16742,15 @@ secname_for_decl (const_tree decl)
       && DECL_SECTION_NAME (decl))
     secname = DECL_SECTION_NAME (decl);
   else if (current_function_decl && DECL_SECTION_NAME (current_function_decl))
-    secname = DECL_SECTION_NAME (current_function_decl);
+    {
+      if (in_cold_section_p)
+	{
+	  section *sec = current_function_section ();
+	  if (sec->common.flags & SECTION_NAMED)
+	    return sec->named.name;
+	}
+      secname = DECL_SECTION_NAME (current_function_decl);
+    }
   else if (cfun && in_cold_section_p)
     secname = crtl->subsections.cold_section_label;
   else
@@ -26403,7 +26411,7 @@ dwarf2out_early_global_decl (tree decl)
 		 enough so that it lands in its own context.  This avoids type
 		 pruning issues later on.  */
 	      if (context_die == NULL || is_declaration_die (context_die))
-		dwarf2out_decl (context);
+		dwarf2out_early_global_decl (context);
 	    }
 
 	  /* Emit an abstract origin of a function first.  This happens

@@ -76,6 +76,7 @@ int test_o_var (int i)
   ASSERT_MAYBE (5 == n);
   ASSERT_MAYBE (6 == n);
   ASSERT_MAYBE (7 == n);
+  /* Below will be optimized out for 16-bit int.  */
   ASSERT_MAYBE (8 == n);
   ASSERT_MAYBE (9 == n);
   ASSERT_MAYBE (10 == n);
@@ -147,6 +148,7 @@ int test_x_var (int i)
   ASSERT_MAYBE (4 == n);
   ASSERT_MAYBE (5 == n);
   ASSERT_MAYBE (6 == n);
+  /* Below will be optimized out for 16-bit int.  */
   ASSERT_MAYBE (7 == n);
   ASSERT_MAYBE (8 == n);
   ASSERT_MAYBE (9 == n);
@@ -156,4 +158,5 @@ int test_x_var (int i)
 }
 
 /* { dg-final { scan-tree-dump-not "failure_on_line" "optimized"} }
-   { dg-final { scan-tree-dump-times "keep_call_on_line" 43 "optimized"} } */
+   { dg-final { scan-tree-dump-times "keep_call_on_line" 43 "optimized" { target { ! int16 } } } }
+   { dg-final { scan-tree-dump-times "keep_call_on_line" 34 "optimized" { target int16 } } } */

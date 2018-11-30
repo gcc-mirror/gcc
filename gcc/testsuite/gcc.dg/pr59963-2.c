@@ -33,4 +33,5 @@ foo (int i)
                -8); /* { dg-warning "16:-Wsign-conversion" } */
   bazu (i, i); /* { dg-warning "9:conversion" } */
   bazi (0x8, 0x80000000); /* { dg-warning "14:-Wsign-conversion" "" { xfail int16 } } */
+			  /* { dg-warning "overflow in conversion from" "" { target int16 } .-1 } */
 }

@@ -6119,8 +6119,8 @@ class suggest_alternatives : public deferred_diagnostic
 };
 
 /* A class for encapsulating the result of a search across
-   multiple namespaces for an unrecognized name seen at a
-   given source location.  */
+   multiple namespaces (and scoped enums within them) for an
+   unrecognized name seen at a given source location.  */
 
 class namespace_hints
 {
@@ -6131,6 +6131,8 @@ class namespace_hints
   name_hint maybe_decorate_with_limit (name_hint);
 
  private:
+  void maybe_add_candidate_for_scoped_enum (tree scoped_enum, tree name);
+
   location_t m_loc;
   tree m_name;
   vec<tree> m_candidates;
@@ -6142,8 +6144,8 @@ class namespace_hints
   bool m_limited;
 };
 
-/* Constructor for namespace_hints.  Search namespaces, looking for a match
-   for unrecognized NAME seen at LOC.  */
+/* Constructor for namespace_hints.  Search namespaces and scoped enums,
+   looking for an exact match for unrecognized NAME seen at LOC.  */
 
 namespace_hints::namespace_hints (location_t loc, tree name)
 : m_loc(loc), m_name (name)
@@ -6174,10 +6176,22 @@ namespace_hints::namespace_hints (location_t loc, tree name)
 
 	  for (tree decl = NAMESPACE_LEVEL (ns)->names;
 	       decl; decl = TREE_CHAIN (decl))
-	    if (TREE_CODE (decl) == NAMESPACE_DECL
-		&& !DECL_NAMESPACE_ALIAS (decl)
-		&& !DECL_NAMESPACE_INLINE_P (decl))
-	      children.safe_push (decl);
+	    {
+	      if (TREE_CODE (decl) == NAMESPACE_DECL
+		  && !DECL_NAMESPACE_ALIAS (decl)
+		  && !DECL_NAMESPACE_INLINE_P (decl))
+		children.safe_push (decl);
+
+	      /* Look for exact matches for NAME within scoped enums.
+		 These aren't added to the worklist, and so don't count
+		 against the search limit.  */
+	      if (TREE_CODE (decl) == TYPE_DECL)
+		{
+		  tree type = TREE_TYPE (decl);
+		  if (SCOPED_ENUM_P (type))
+		    maybe_add_candidate_for_scoped_enum (type, name);
+		}
+	    }
 
 	  while (!m_limited && !children.is_empty ())
 	    {
@@ -6245,11 +6259,32 @@ namespace_hints::maybe_decorate_with_limit (name_hint hint)
     return hint;
 }
 
+/* Look inside SCOPED_ENUM for exact matches for NAME.
+   If one is found, add its CONST_DECL to m_candidates.  */
+
+void
+namespace_hints::maybe_add_candidate_for_scoped_enum (tree scoped_enum,
+						      tree name)
+{
+  gcc_assert (SCOPED_ENUM_P (scoped_enum));
+
+  for (tree iter = TYPE_VALUES (scoped_enum); iter; iter = TREE_CHAIN (iter))
+    {
+      tree id = TREE_PURPOSE (iter);
+      if (id == name)
+	{
+	  m_candidates.safe_push (TREE_VALUE (iter));
+	  return;
+	}
+    }
+}
+
 /* Generate a name_hint at LOCATION for NAME, an IDENTIFIER_NODE for which
    name lookup failed.
 
-   Search through all available namespaces and generate a suggestion and/or
-   a deferred diagnostic that lists possible candidate(s).
+   Search through all available namespaces and any scoped enums within them
+   and generate a suggestion and/or a deferred diagnostic that lists possible
+   candidate(s).
 
    If no exact matches are found, and SUGGEST_MISSPELLINGS is true, then also
    look for near-matches and suggest the best near-match, if there is one.
@@ -6631,6 +6666,23 @@ suggest_alternative_in_explicit_scope (location_t location, tree name,
     return name_hint (fuzzy_name, NULL);
 
   return name_hint ();
+}
+
+/* Given NAME, look within SCOPED_ENUM for possible spell-correction
+   candidates.  */
+
+name_hint
+suggest_alternative_in_scoped_enum (tree name, tree scoped_enum)
+{
+  gcc_assert (SCOPED_ENUM_P (scoped_enum));
+
+  best_match <tree, const char *> bm (name);
+  for (tree iter = TYPE_VALUES (scoped_enum); iter; iter = TREE_CHAIN (iter))
+    {
+      tree id = TREE_PURPOSE (iter);
+      bm.consider (IDENTIFIER_POINTER (id));
+    }
+  return name_hint (bm.get_best_meaningful_candidate (), NULL);
 }
 
 /* Look up NAME (an IDENTIFIER_NODE) in SCOPE (either a NAMESPACE_DECL

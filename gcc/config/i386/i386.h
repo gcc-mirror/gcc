@@ -2279,7 +2279,7 @@ enum processor_type
 };
 
 #if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)
-extern const char *const processor_names[PROCESSOR_max];
+extern const char *const processor_names[];
 
 #include "wide-int-bitmask.h"
 

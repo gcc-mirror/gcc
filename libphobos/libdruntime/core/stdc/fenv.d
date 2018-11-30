@@ -28,10 +28,18 @@ extern (C):
 nothrow:
 @nogc:
 
-version (PPC)
-    version = PPC_Any;
-else version (PPC64)
-    version = PPC_Any;
+version (ARM)     version = ARM_Any;
+version (AArch64) version = ARM_Any;
+version (MIPS32)  version = MIPS_Any;
+version (MIPS64)  version = MIPS_Any;
+version (PPC)     version = PPC_Any;
+version (PPC64)   version = PPC_Any;
+version (S390)    version = IBMZ_Any;
+version (SPARC)   version = SPARC_Any;
+version (SPARC64) version = SPARC_Any;
+version (SystemZ) version = IBMZ_Any;
+version (X86)     version = X86_Any;
+version (X86_64)  version = X86_Any;
 
 version (MinGW)
     version = GNUFP;
@@ -84,17 +92,7 @@ version (GNUFP)
         alias fexcept_t = ushort;
     }
     // https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/mips/bits/fenv.h
-    else version (MIPS32)
-    {
-        struct fenv_t
-        {
-            uint   __fp_control_register;
-        }
-
-        alias fexcept_t = ushort;
-    }
-    // https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/mips/bits/fenv.h
-    else version (MIPS64)
+    else version (MIPS_Any)
     {
         struct fenv_t
         {
@@ -137,7 +135,7 @@ version (GNUFP)
         alias fexcept_t = ulong;
     }
     // https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/s390/fpu/bits/fenv.h
-    else version (SystemZ)
+    else version (IBMZ_Any)
     {
         struct fenv_t
         {
@@ -499,7 +497,7 @@ else
             FE_TOWARDZERO   = 0xC00, ///
         }
     }
-    else version (ARM)
+    else version (ARM_Any)
     {
         // Define bits representing exceptions in the FPU status word.
         enum
@@ -521,29 +519,7 @@ else
             FE_TOWARDZERO   = 0xC00000, ///
         }
     }
-    else version (AArch64)
-    {
-        // Define bits representing exceptions in the FPSR status word.
-        enum
-        {
-            FE_INVALID      = 1,  ///
-            FE_DIVBYZERO    = 2,  ///
-            FE_OVERFLOW     = 4,  ///
-            FE_UNDERFLOW    = 8,  ///
-            FE_INEXACT      = 16, ///
-            FE_ALL_EXCEPT   = 31, ///
-        }
-
-        // Define bits representing rounding modes in the FPCR Rmode field.
-        enum
-        {
-            FE_TONEAREST    = 0x000000, ///
-            FE_UPWARD       = 0x400000, ///
-            FE_DOWNWARD     = 0x800000, ///
-            FE_TOWARDZERO   = 0xC00000, ///
-        }
-    }
-    else version (MIPS32)
+    else version (MIPS_Any)
     {
         // Define bits representing the exception.
         enum
@@ -565,29 +541,7 @@ else
             FE_DOWNWARD     = 0x3, ///
         }
     }
-    else version (MIPS64)
-    {
-        // Define bits representing the exception.
-        enum
-        {
-            FE_INEXACT      = 0x04, ///
-            FE_UNDERFLOW    = 0x08, ///
-            FE_OVERFLOW     = 0x10, ///
-            FE_DIVBYZERO    = 0x20, ///
-            FE_INVALID      = 0x40, ///
-            FE_ALL_EXCEPT   = 0x7C, ///
-        }
-
-        // The MIPS FPU supports all of the four defined rounding modes.
-        enum
-        {
-            FE_TONEAREST    = 0x0, ///
-            FE_TOWARDZERO   = 0x1, ///
-            FE_UPWARD       = 0x2, ///
-            FE_DOWNWARD     = 0x3, ///
-        }
-    }
-    else version (PPC)
+    else version (PPC_Any)
     {
         // Define bits representing the exception.
         enum
@@ -619,39 +573,7 @@ else
             FE_DOWNWARD     = 3, ///
         }
     }
-    else version (PPC64)
-    {
-        // Define bits representing the exception.
-        enum
-        {
-            FE_INEXACT                    = 0x2000000,  ///
-            FE_DIVBYZERO                  = 0x4000000,  ///
-            FE_UNDERFLOW                  = 0x8000000,  ///
-            FE_OVERFLOW                   = 0x10000000, ///
-            FE_INVALID                    = 0x20000000, ///
-            FE_INVALID_SNAN               = 0x1000000,  /// non-standard
-            FE_INVALID_ISI                = 0x800000,   /// non-standard
-            FE_INVALID_IDI                = 0x400000,   /// non-standard
-            FE_INVALID_ZDZ                = 0x200000,   /// non-standard
-            FE_INVALID_IMZ                = 0x100000,   /// non-standard
-            FE_INVALID_COMPARE            = 0x80000,    /// non-standard
-            FE_INVALID_SOFTWARE           = 0x400,      /// non-standard
-            FE_INVALID_SQRT               = 0x200,      /// non-standard
-            FE_INVALID_INTEGER_CONVERSION = 0x100,      /// non-standard
-            FE_ALL_INVALID                = 0x1F80700,  /// non-standard
-            FE_ALL_EXCEPT                 = 0x3E000000, ///
-        }
-
-        // PowerPC chips support all of the four defined rounding modes.
-        enum
-        {
-            FE_TONEAREST    = 0, ///
-            FE_TOWARDZERO   = 1, ///
-            FE_UPWARD       = 2, ///
-            FE_DOWNWARD     = 3, ///
-        }
-    }
-    else version (SPARC64)
+    else version (SPARC_Any)
     {
         // Define bits representing the exception.
         enum
@@ -673,7 +595,7 @@ else
             FE_DOWNWARD     = 0xc0000000, ///
         }
     }
-    else version (SystemZ)
+    else version (IBMZ_Any)
     {
         // Define bits representing the exception.
         enum

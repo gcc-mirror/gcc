@@ -4783,6 +4783,12 @@ LCF0:
       [AC_DEFINE(HAVE_AS_ENTRY_MARKERS, 1,
 	  [Define if your assembler supports the R_PPC64_ENTRY relocation.])])
 
+    gcc_GAS_CHECK_FEATURE([plt sequence marker support],
+      gcc_cv_as_powerpc_pltseq_markers, [2,31,0],-a32 --fatal-warnings,
+      [ .reloc .,R_PPC_PLTSEQ; nop],,
+      [AC_DEFINE(HAVE_AS_PLTSEQ, 1,
+	  [Define if your assembler supports R_PPC*_PLTSEQ relocations.])])
+
     case $target in
       *-*-aix*)
 	gcc_GAS_CHECK_FEATURE([AIX .ref support],
@@ -4981,6 +4987,12 @@ pointers into PC-relative form.])
       [	.machine z13+vx ],,
       [AC_DEFINE(HAVE_AS_ARCHITECTURE_MODIFIERS, 1,
 	  [Define if your assembler supports architecture modifiers.])])
+    gcc_GAS_CHECK_FEATURE([vector load/store alignment hints],
+      gcc_cv_as_s390_vector_loadstore_alignment_hints, [2,31,0],,
+      [	vl %v24,0(%r15),3 ],,
+      [AC_DEFINE(HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS, 1,
+	  [Define if your assembler supports vl/vst/vlm/vstm with an optional alignment hint argument.])])
+
     ;;
 esac
 

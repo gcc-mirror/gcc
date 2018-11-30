@@ -1,3 +1,58 @@
+2018-11-29  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88172
+	PR testsuite/88208
+	* c-attribs.c (common_handle_aligned_attribute): Silently avoid setting
+	alignments to values less than the target requires.
+	(has_attribute): For attribute aligned consider both the attribute
+	and the alignment bits.
+	* c-common.c (c_init_attributes): Optionally issue a warning for
+	zero alignment.
+
+2018-11-28  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88065
+	PR c/87297
+	* c-warn.c (sizeof_pointer_memaccess_warning): Bail if source
+	or destination is an error.
+
+2018-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88215
+	* c-ubsan.c: Include langhooks.h.
+	(ubsan_instrument_division): Change gcc_assert that main variants
+	of op0 and op1 types are equal to gcc_checking_assert that the
+	main variants are compatible types.
+
+2018-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c: Include stringpool.h.
+	(has_static_fields): Return false for incomplete types.
+	(is_tagged_type): Likewise.
+	(has_nontrivial_methods): Likewise.
+	(dump_ada_node) <INTEGER_TYPE>: Deal specifically with __int128.
+	(struct overloaded_name_hash): New structure.
+	(struct overloaded_name_hasher): Likewise.
+	(overloaded_names): New global variable.
+	(init_overloaded_names): New static function.
+	(overloaded_name_p): New predicate.
+	(dump_ada_declaration) <TYPE_DECL>: Tidy up and set TREE_VISITED
+	on the TYPE_STUB_DECL of the original type of a typedef, if any.
+	<FUNCTION_DECL>: Bail out for an unsupported overloaded name.
+	Remove always-true condition and dump forward types.
+	(dump_ada_specs): Delete overloaded_names.
+
+2018-11-20  Martin Sebor  <msebor@redhat.com>
+
+	* c-attribs.c (type_for_vector_size): New function.
+	(type_valid_for_vector_size): Same.
+	(handle_vector_size_attribute): Move code to the functions above
+	and call them.
+	(validate_attribute, has_attribute): New functions.
+	* c-common.h (has_attribute): Declare.
+	(rid): Add RID_HAS_ATTRIBUTE_EXPRESSION.
+	* c-common.c (c_common_resword): Same.
+
 2018-11-16  Jason Merrill  <jason@redhat.com>
 
 	* c-lex.c (c_common_has_attribute): Handle likely/unlikely.

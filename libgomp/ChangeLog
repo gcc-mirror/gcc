@@ -1,3 +1,30 @@
+2018-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88182
+	* testsuite/libgomp.c++/pr88182.C: Move to g++.dg/gomp.
+
+2018-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/Makefile.am (AUTOMAKE_OPTIONS): Drop dejagnu.
+	(RUNTEST): Don't define.
+	(RUNTESTDEFAULTFLAGS): Add.
+	(check-DEJAGNU, site.exp, distclean-DEJAGNU): New goals.
+	(distclean-am): Depend on distclean-DEJAGNU.
+	(check-am): If -j% option is present in MFLAGS and if
+	`getconf _NPROCESSORS_ONLN` is more than 8, export OMP_NUM_THREADS=8.
+	(.PHONY): Add check-DEJAGNU and distclean-DEJAGNU.
+	* testsuite/Makefile.in: Regenerated.
+
+2018-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88182
+	* testsuite/libgomp.c++/pr88182.C: New testcase.
+
+2018-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/88106
+	* config/mingw32/affinity-fmt.c: New file.
+
 2018-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* affinity-fmt.c: Include inttypes.h if HAVE_INTTYPES_H.

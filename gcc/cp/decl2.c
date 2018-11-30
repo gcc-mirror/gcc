@@ -1368,7 +1368,7 @@ cp_reconstruct_complex_type (tree type, tree bottom)
 /* Replaces any constexpr expression that may be into the attributes
    arguments with their reduced value.  */
 
-static void
+void
 cp_check_const_attributes (tree attributes)
 {
   if (attributes == error_mark_node)

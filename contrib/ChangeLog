@@ -1,3 +1,10 @@
+2018-11-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* update-copyright.py (TestsuiteFilter): Skip .d tests.
+	(LibPhobosFilter): Add filter for upstream D sources.
+	(GCCCopyright): Add D Language Foundation as external author.
+	(GCCCmdLine): Add libphobos.
+
 2018-11-19  Martin Liska  <mliska@suse.cz>
 
 	* check_GNU_style_lib.py: Detect mixed usage

@@ -1,3 +1,385 @@
+2018-11-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement P0457R2 String Prefix and Suffix Checking.
+	* include/bits/basic_string.h: Add starts_with, ends_with members.
+	* include/std/string_view: Ditto.
+	* testsuite/21_strings/basic_string/operations/starts_with/
+	char/1.cc: New test.
+	* testsuite/21_strings/basic_string/operations/starts_with/
+	wchar_t/1.cc: New test.
+	* testsuite/21_strings/basic_string/operations/ends_with/
+	char/1.cc: New test.
+	* testsuite/21_strings/basic_string/operations/ends_with/
+	wchar_t/1.cc: New test.
+	* testsuite/21_strings/basic_string_view/operations/starts_with/
+	char/1.cc: New test.
+	* testsuite/21_strings/basic_string_view/operations/starts_with/
+	wchar_t/1.cc: New test.
+	* testsuite/21_strings/basic_string_view/operations/ends_with/
+	char/1.cc: New test.
+	* testsuite/21_strings/basic_string_view/operations/ends_with/
+	wchar_t/1.cc: New test.
+
+2018-11-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Pre-emptively support P0646R1 for std container erasure.
+	* include/bits/erase_if.h: Accumulate and return number of erased nodes.
+	* include/std/forward_list (): Return number of erased items.
+	* include/std/list (): Ditto.
+	* include/std/map (): Ditto.
+	* include/std/set (): Ditto.
+	* include/std/string (): Ditto.
+	* include/std/unordered_map (): Ditto.
+	* include/std/unordered_set (): Ditto.
+	* include/std/vector (): Ditto.
+	* include/std/deque (): Ditto.
+	* testsuite/21_strings/basic_string/erasure.cc: Test number of erasures.
+	* testsuite/23_containers/deque/erasure.cc: Ditto.
+	* testsuite/23_containers/forward_list/erasure.cc: Ditto.
+	* testsuite/23_containers/list/erasure.cc: Ditto.
+	* testsuite/23_containers/map/erasure.cc: Ditto.
+	* testsuite/23_containers/set/erasure.cc: Ditto.
+	* testsuite/23_containers/unordered_map/erasure.cc: Ditto.
+	* testsuite/23_containers/unordered_set/erasure.cc: Ditto.
+	* testsuite/23_containers/vector/erasure.cc: Ditto.
+
+2018-11-29  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Only include bits/stl_algo.h for C++20.
+	* include/std/deque: Only include bits/stl_algo.h for C++20.
+	* include/std/string: Ditto.
+	* include/std/vector: Ditto.
+
+2018-11-29  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Fix erasure goofs.
+	* include/experimental/deque: Make inline.
+	* include/std/deque: Include bits/stl_algo.h.
+	(erase, erase_if): Make inline.
+	* include/std/string: Include bits/stl_algo.h.
+	* include/std/unordered_set: Add erase, erase_if!
+	* include/std/vector: Include bits/stl_algo.h.
+	* testsuite/21_strings/basic_string/erasure.cc:
+	Add { dg-options "-std=gnu++2a" }.
+	* testsuite/23_containers/deque/erasure.cc: Ditto.
+	* testsuite/23_containers/forward_list/erasure.cc: Ditto.
+	* testsuite/23_containers/list/erasure.cc: Ditto.
+	* testsuite/23_containers/map/erasure.cc: Ditto.
+	* testsuite/23_containers/set/erasure.cc: Ditto.
+	* testsuite/23_containers/unordered_map/erasure.cc: Ditto.
+	* testsuite/23_containers/unordered_set/erasure.cc: Ditto.
+	* testsuite/23_containers/vector/erasure.cc: Ditto.
+
+2018-11-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88119
+	* include/ext/aligned_buffer.h (__aligned_membuf): Add comment.
+	(__aligned_buffer): Use __alignof__ instead of std::alignment_of.
+	* include/std/type_traits (alignment_of): Use alignof instead of
+	__alignof__.
+	* testsuite/20_util/alignment_of/value.cc: Fix test to check values
+	match alignof not __alignof__, as required by the standard.
+
+	PR libstdc++/86910
+	PR libstdc++/87846
+	* src/filesystem/ops.cc (experimental::create_directories): Report
+	an error when the path resolves to an existing non-directory (P1164).
+	* src/filesystem/std-ops.cc (create_directories): Likewise. Handle
+	empty filenames due to trailing slashes.
+	* testsuite/27_io/filesystem/operations/create_directories.cc: Test
+	when some component of the path exists and is not a directory. Test
+	trailing slashes.
+	* testsuite/experimental/filesystem/operations/create_directories.cc:
+	Likewise.
+
+2018-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83306
+	* src/filesystem/path.cc (filesystem_error::_M_gen_what()): Create
+	string directly, instead of calling fs_err_concat.
+
+	PR libstdc++/83511
+	* include/std/string_view (basic_string_view::substr): Add default
+	argument to first parameter.
+	* include/experimental/string_view (basic_string_view::substr):
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/substr/char/
+	83511.cc: New test.
+	* testsuite/21_strings/basic_string_view/operations/substr/wchar_t/
+	83511.cc: New test.
+	* testsuite/experimental/string_view/operations/substr/char/83511.cc:
+	New test.
+	* testsuite/experimental/string_view/operations/substr/wchar_t/83511.cc:
+	New test.
+
+2018-11-28  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement uniform container erasure for C++20.
+	* include/Makefile.am: Move erase_if.h.
+	* include/Makefile.in: Move erase_if.h.
+	* include/experimental/bits/erase_if.h: Move ...
+	* include/bits/erase_if.h: ... here.
+	* include/experimental/map: Move erase_if.h.
+	* include/experimental/set: Move erase_if.h.
+	* include/experimental/unordered_map: Move erase_if.h.
+	* include/experimental/unordered_set: Move erase_if.h.
+	* include/std/deque (erase_if, erase): New functions.
+	* include/std/forward_list: Ditto.
+	* include/std/list: Ditto.
+	* include/std/map: Ditto.
+	* include/std/set: Ditto.
+	* include/std/string: Ditto.
+	* include/std/unordered_map: Ditto.
+	* include/std/unordered_set: Ditto.
+	* include/std/vector: Ditto.
+	* testsuite/21_strings/basic_string/erasure.cc: New test.
+	* testsuite/23_containers/deque/erasure.cc: New test.
+	* testsuite/23_containers/forward_list/erasure.cc: New test.
+	* testsuite/23_containers/list/erasure.cc: New test.
+	* testsuite/23_containers/map/erasure.cc: New test.
+	* testsuite/23_containers/set/erasure.cc: New test.
+	* testsuite/23_containers/unordered_map/erasure.cc: New test.
+	* testsuite/23_containers/unordered_set/erasure.cc: New test.
+	* testsuite/23_containers/vector/erasure.cc: New test.
+
+2018-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/intro.xml: Document LWG 3096 change.
+	* src/filesystem/std-path.cc (path::lexically_relative(const path&)):
+	Treat a final empty element equivalently to a final dot element.
+	* testsuite/27_io/filesystem/path/generation/relative.cc: Add checks
+	for the examples in the DR.
+
+	PR libstdc++/83306
+	* include/bits/fs_path.h (filesystem_error): Move data members into
+	pimpl class owned by shared_ptr. Remove inline definitions of member
+	functions.
+	* src/filesystem/std-path.cc (filesystem_error::_Impl): Define.
+	(filesystem_error): Define member functions.
+	* testsuite/27_io/filesystem/filesystem_error/cons.cc: New test.
+	* testsuite/27_io/filesystem/filesystem_error/copy.cc: New test.
+
+	* doc/xml/manual/status_cxx2017.xml: Update C++17 status.
+	* doc/html/*: Regenerate.
+
+2018-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/operations/canonical.cc: Remove
+	directory created by test.
+	* testsuite/27_io/filesystem/operations/symlink_status.cc: Remove
+	symlink created by test.
+
+	PR libstdc++/67843
+	* acinclude.m4 (GLIBCXX_ENABLE_LOCK_POLICY): Add new macro
+	that defines _GLIBCXX_HAVE_ATOMIC_LOCK_POLICY.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Use GLIBCXX_ENABLE_LOCK_POLICY.
+	* doc/xml/manual/configure.xml: Document new configure option.
+	* include/bits/fs_dir.h (directory_iterator): Use __shared_ptr
+	instead of shared_ptr.
+	(recursive_directory_iterator): Likewise.
+	(__shared_ptr<_Dir>): Add explicit instantiation declaration.
+	(__shared_ptr<recursive_directory_iterator::_Dir_stack>): Likewise.
+	* include/bits/shared_ptr_base.h (__allocate_shared, __make_shared):
+	Add default template argument for _Lock_policy template parameter.
+	* include/ext/concurrence.h (__default_lock_policy): Check macro
+	_GLIBCXX_HAVE_ATOMIC_LOCK_POLICY instead of checking if the current
+	target supports the builtins for compare-and-swap.
+	* src/filesystem/std-dir.cc (__shared_ptr<_Dir>): Add explicit
+	instantiation definition.
+	(__shared_ptr<recursive_directory_iterator::_Dir_stack>): Likewise.
+	(directory_iterator, recursive_directory_iterator): Use __make_shared
+	instead of make_shared.
+
+2018-11-27  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/88199
+	* include/bits/hashtable.h (_Hashtable<>::_M_assign_elements): New.
+	(_Hashtable<>::operator=(const _Hashtable&)): Use latter.
+	(_Hashtable<>::_M_move_assign(_Hashtable&&, false_type)): Likewise.
+	* testsuite/23_containers/unordered_set/allocator/move_assign.cc
+	(test03): New.
+
+2018-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/complex/requirements/more_constexpr.cc: Fix
+	failure on targets without __float128.
+
+2018-11-23  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement P0415 More constexpr for std::complex.
+	* include/std/complex (conj(complex<Tp>), norm(complex<Tp>)): Constexpr;
+	(real(Tp), imag(Tp)): Constexpr;
+	(operator@=(Tp), operator@=(complex<Tp>)): Constexpr;
+	(operator@(Tp,complex<Tp>), operator@(complex<Tp>,Tp)
+	operator@(complex<Tp>,complex<Tp>)): Constexpr.
+	* testsuite/26_numerics/complex/comparison_operators/
+	more_constexpr.cc: New test.
+	* testsuite/26_numerics/complex/operators/more_constexpr.cc: New test.
+	* testsuite/26_numerics/complex/requirements/
+	more_constexpr.cc: New test.
+	* testsuite/26_numerics/complex/value_operations/
+	more_constexpr.cc: New test.
+	* testsuite/26_numerics/headers/complex/synopsis.cc:
+	Add _GLIBCXX20_CONSTEXPR to applicable operators; Add missing proj().
+	* testsuite/26_numerics/headers/complex/synopsis.cc:
+	Add _GLIBCXX20_CONSTEXPR to relevant decls.
+
+2018-11-23  Martin Sebor  <msebor@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65229
+	* python/libstdcxx/v6/printers.py (StdBitsetPrinter): Handle
+	exception thrown for std::bitset<0>.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Test std::bitset<0>.
+
+2018-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87308 (partial)
+	* python/libstdcxx/v6/printers.py (StdExpAnyPrinter): Adjust regex to
+	work around PR 88166.
+	* testsuite/libstdc++-prettyprinters/cxx17.cc: Test std::any
+	containing a local type.
+
+2018-11-22  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/87106
+	* include/bits/stl_algobase.h: Include <type_traits>.
+	(__niter_base): Add noexcept specification.
+	* include/bits/stl_deque.h: Include <bits/stl_uninitialized.h>.
+	(__is_trivially_relocatable): Specialize for deque.
+	* include/bits/stl_iterator.h: Include <type_traits>.
+	(__niter_base): Add noexcept specification.
+	* include/bits/stl_uninitialized.h (__is_trivially_relocatable):
+	Add parameter for meta-programming.
+	(__relocate_a_1, __relocate_a): Add noexcept specification.
+	* include/bits/stl_vector.h (__use_relocate): Test __relocate_a.
+
+2018-11-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85930
+	PR libstdc++/87520
+	* include/bits/shared_ptr_base.h (_Sp_make_shared_tag::_S_ti)
+	[__cpp_rtti]: Define even when RTTI is enabled. Use array of
+	sizeof(type_info) so that type-punned reference binds to an object
+	of the correct size as well as correct alignment.
+	(_Sp_counted_ptr_inplace::_M_get_deleter) [__cpp_rtti]: Check for
+	_S_ti() reference even when RTTI is enabled.
+	(__shared_ptr(_Sp_make_shared_tag, const _Alloc&, _Args&&...))
+	[__cpp_rtti]: Pass _S_ti() instead of typeid(_Sp_make_shared_tag).
+
+2018-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87386
+	* testsuite/20_util/scoped_allocator/69293_neg.cc: Adjust expected
+	line.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: Likewise.
+	* testsuite/20_util/uses_allocator/69293_neg.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements2.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements3.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements4.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements5.cc: Likewise.
+
+2018-11-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88111
+	* include/std/memory_resource (pool_options): Add Doxygen comments.
+	* src/c++17/memory_resource.cc (pool_sizes): Only use suitable values
+	on targets with 16-bit or 20-bit size_t type.
+	(munge_options): Make default values depend on width of size_t type.
+
+	PR libstdc++/88113
+	* src/c++17/memory_resource.cc (bitset::size_type): Use the smaller
+	of uint32_t and size_t.
+	(bitset::size(), bitset::free(), bitset::update_next_word())
+	(bitset::max_blocks_per_chunk(), bitset::max_word_index()): Use
+	size_type consistently instead of size_t.
+	(chunk): Adjust static_assert checking sizeof(chunk).
+
+2018-11-20  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Housekeeping for the effective targets of optional's tests.
+	* testsuite/20_util/optional/77288.cc: Adjust.
+	* testsuite/20_util/optional/84601.cc: Likewise.
+	* testsuite/20_util/optional/assignment/1.cc: Likewise.
+	* testsuite/20_util/optional/assignment/2.cc: Likewise.
+	* testsuite/20_util/optional/assignment/3.cc: Likewise.
+	* testsuite/20_util/optional/assignment/4.cc: Likewise.
+	* testsuite/20_util/optional/assignment/5.cc: Likewise.
+	* testsuite/20_util/optional/assignment/6.cc: Likewise.
+	* testsuite/20_util/optional/assignment/7.cc: Likewise.
+	* testsuite/20_util/optional/assignment/8.cc: Likewise.
+	* testsuite/20_util/optional/cons/77727.cc: Likewise.
+	* testsuite/20_util/optional/cons/copy.cc: Likewise.
+	* testsuite/20_util/optional/cons/deduction.cc: Likewise.
+	* testsuite/20_util/optional/cons/default.cc: Likewise.
+	* testsuite/20_util/optional/cons/move.cc: Likewise.
+	* testsuite/20_util/optional/cons/trivial.cc: Likewise.
+	* testsuite/20_util/optional/cons/value.cc: Likewise.
+	* testsuite/20_util/optional/cons/value_neg.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/cons/default.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/cons/value.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/in_place.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/nullopt.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/observers/1.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/observers/4.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/observers/5.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/relops/1.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/relops/2.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/relops/3.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/relops/4.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/relops/5.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/relops/6.cc: Likewise.
+	* testsuite/20_util/optional/in_place.cc: Likewise.
+	* testsuite/20_util/optional/make_optional.cc: Likewise.
+	* testsuite/20_util/optional/nullopt.cc: Likewise.
+	* testsuite/20_util/optional/observers/1.cc: Likewise.
+	* testsuite/20_util/optional/observers/2.cc: Likewise.
+	* testsuite/20_util/optional/observers/3.cc: Likewise.
+	* testsuite/20_util/optional/observers/4.cc: Likewise.
+	* testsuite/20_util/optional/observers/5.cc: Likewise.
+	* testsuite/20_util/optional/observers/6.cc: Likewise.
+	* testsuite/20_util/optional/relops/1.cc: Likewise.
+	* testsuite/20_util/optional/relops/2.cc: Likewise.
+	* testsuite/20_util/optional/relops/3.cc: Likewise.
+	* testsuite/20_util/optional/relops/4.cc: Likewise.
+	* testsuite/20_util/optional/relops/5.cc: Likewise.
+	* testsuite/20_util/optional/relops/6.cc: Likewise.
+	* testsuite/20_util/optional/relops/7.cc: Likewise.
+	* testsuite/20_util/optional/requirements.cc: Likewise.
+	* testsuite/20_util/optional/swap/1.cc: Likewise.
+	* testsuite/20_util/optional/swap/2.cc: Likewise.
+	* testsuite/20_util/optional/typedefs.cc: Likewise.
+
+2018-11-19  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/ext/throw_allocator.h
+	(annotate_base::insert(void*, size_t)): Use insert result to check for
+	double insert attempt.
+	(annotate_base::insert_construct(void*)): Likewise.
+	(annotate_base::check_allocated(void*, size_t)): Return found iterator.
+	(annotate_base::erase(void*, size_t)): Use latter method returned
+	iterator.
+	(annotate_base::check_constructed(void*, size_t)): Return found iterator.
+	(annotate_base::erase_construct(void*)): Use latter method returned
+	iterator.
+
+2018-11-19  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/87855
+	Also implement P0602R4 (variant and optional
+	should propagate copy/move triviality) for std::optional.
+	* include/std/optional (_Optional_payload): Change
+	the main constraints to check constructibility in
+	addition to assignability.
+	(operator=): Make constexpr.
+	(_M_reset): Likewise.
+	(_M_construct): Likewise.
+	(operator->): Likewise.
+	* testsuite/20_util/optional/assignment/8.cc: Adjust.
+	* testsuite/20_util/optional/assignment/9.cc: New.
+
 2018-11-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/88084 - Implement LWG 2777
@@ -17,7 +399,7 @@
 	of the asymptotic series (nu is the Bessel order).
 	* testsuite/tr1/5_numerical_facilities/special_functions/
 	09_cyl_bessel_j/check_value.cc: Add tests at nu=100, 1000<=x<=2000.
-	* testsuite/tr1/5_numerical_facilities/special_functions/	
+	* testsuite/tr1/5_numerical_facilities/special_functions/
 	11_cyl_neumann/check_value.cc: Ditto.
 	* testsuite/special_functions/08_cyl_bessel_j/check_value.cc: Ditto.
 	* testsuite/special_functions/10_cyl_neumann/check_value.cc: Ditto.

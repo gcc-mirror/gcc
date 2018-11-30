@@ -148,3 +148,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   LD_STATIC_OPTION " --whole-archive -llsan --no-whole-archive " \
   LD_DYNAMIC_OPTION "}}%{!static-liblsan:-llsan}"
 #endif
+
+#undef TARGET_F951_OPTIONS
+#define TARGET_F951_OPTIONS "%{!nostdinc:\
+  %:fortran-preinclude-file(-fpre-include= math-vector-fortran.h)}"

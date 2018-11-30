@@ -265,6 +265,8 @@ static void print_type_hash_statistics (void);
 static void print_debug_expr_statistics (void);
 static void print_value_expr_statistics (void);
 
+static tree build_array_type_1 (tree, tree, bool, bool);
+
 tree global_trees[TI_MAX];
 tree integer_types[itk_none];
 
@@ -1902,6 +1904,18 @@ build_vector_from_val (tree vectype, tree sc)
 	CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, sc);
       return build_constructor (vectype, v);
     }
+}
+
+/* If TYPE is not a vector type, just return SC, otherwise return
+   build_vector_from_val (TYPE, SC).  */
+
+tree
+build_uniform_cst (tree type, tree sc)
+{
+  if (!VECTOR_TYPE_P (type))
+    return sc;
+
+  return build_vector_from_val (type, sc);
 }
 
 /* Build a vector series of type TYPE in which element I has the value
@@ -5109,10 +5123,11 @@ fld_simplified_type_name (tree type)
 
 /* Do same comparsion as check_qualified_type skipping lang part of type
    and be more permissive about type names: we only care that names are
-   same (for diagnostics) and that ODR names are the same.  */
+   same (for diagnostics) and that ODR names are the same.
+   If INNER_TYPE is non-NULL, be sure that TREE_TYPE match it.  */
 
 static bool
-fld_type_variant_equal_p (tree t, tree v)
+fld_type_variant_equal_p (tree t, tree v, tree inner_type)
 {
   if (TYPE_QUALS (t) != TYPE_QUALS (v)
       /* We want to match incomplete variants with complete types.
@@ -5122,21 +5137,24 @@ fld_type_variant_equal_p (tree t, tree v)
 	      || TYPE_USER_ALIGN (t) != TYPE_USER_ALIGN (v)))
       || fld_simplified_type_name (t) != fld_simplified_type_name (v)
       || !attribute_list_equal (TYPE_ATTRIBUTES (t),
-			        TYPE_ATTRIBUTES (v)))
+			        TYPE_ATTRIBUTES (v))
+      || (inner_type && TREE_TYPE (v) != inner_type))
     return false;
- 
+
   return true;
 }
 
-/* Find variant of FIRST that match T and create new one if necessary.  */
+/* Find variant of FIRST that match T and create new one if necessary.
+   Set TREE_TYPE to INNER_TYPE if non-NULL.  */
 
 static tree
-fld_type_variant (tree first, tree t, struct free_lang_data_d *fld)
+fld_type_variant (tree first, tree t, struct free_lang_data_d *fld,
+		  tree inner_type = NULL)
 {
   if (first == TYPE_MAIN_VARIANT (t))
     return t;
   for (tree v = first; v; v = TYPE_NEXT_VARIANT (v))
-    if (fld_type_variant_equal_p (t, v))
+    if (fld_type_variant_equal_p (t, v, inner_type))
       return v;
   tree v = build_variant_type_copy (first);
   TYPE_READONLY (v) = TYPE_READONLY (t);
@@ -5154,7 +5172,9 @@ fld_type_variant (tree first, tree t, struct free_lang_data_d *fld)
       SET_TYPE_ALIGN (v, TYPE_ALIGN (t));
       TYPE_USER_ALIGN (v) = TYPE_USER_ALIGN (t);
     }
-  gcc_checking_assert (fld_type_variant_equal_p (t,v));
+  if (inner_type)
+    TREE_TYPE (v) = inner_type;
+  gcc_checking_assert (fld_type_variant_equal_p (t,v, inner_type));
   add_tree_to_fld_list (v, fld);
   return v;
 }
@@ -5162,6 +5182,59 @@ fld_type_variant (tree first, tree t, struct free_lang_data_d *fld)
 /* Map complete types to incomplete types.  */
 
 static hash_map<tree, tree> *fld_incomplete_types;
+
+/* Map types to simplified types.  */
+
+static hash_map<tree, tree> *fld_simplified_types;
+
+/* Produce variant of T whose TREE_TYPE is T2. If it is main variant,
+   use MAP to prevent duplicates.  */
+
+static tree
+fld_process_array_type (tree t, tree t2, hash_map<tree, tree> *map,
+			struct free_lang_data_d *fld)
+{
+  if (TREE_TYPE (t) == t2)
+    return t;
+
+  if (TYPE_MAIN_VARIANT (t) != t)
+    {
+      return fld_type_variant
+	       (fld_process_array_type (TYPE_MAIN_VARIANT (t),
+					TYPE_MAIN_VARIANT (t2), map, fld),
+		t, fld, t2);
+    }
+
+  bool existed;
+  tree &array
+     = map->get_or_insert (t, &existed);
+  if (!existed)
+    {
+      array = build_array_type_1 (t2, TYPE_DOMAIN (t),
+				  TYPE_TYPELESS_STORAGE (t), false);
+      TYPE_CANONICAL (array) = TYPE_CANONICAL (t);
+      add_tree_to_fld_list (array, fld);
+    }
+  return array;
+}
+
+/* Return CTX after removal of contexts that are not relevant  */
+
+static tree
+fld_decl_context (tree ctx)
+{
+  /* Variably modified types are needed for tree_is_indexable to decide
+     whether the type needs to go to local or global section.
+     This code is semi-broken but for now it is easiest to keep contexts
+     as expected.  */
+  if (ctx && TYPE_P (ctx)
+      && !variably_modified_type_p (ctx, NULL_TREE))
+     {
+       while (ctx && TYPE_P (ctx))
+	 ctx = TYPE_CONTEXT (ctx);
+     }
+  return ctx;
+}
 
 /* For T being aggregate type try to turn it into a incomplete variant.
    Return T if no simplification is possible.  */
@@ -5190,7 +5263,12 @@ fld_incomplete_type_of (tree t, struct free_lang_data_d *fld)
 	}
       return t;
     }
-  if (!RECORD_OR_UNION_TYPE_P (t) || !COMPLETE_TYPE_P (t))
+  if (TREE_CODE (t) == ARRAY_TYPE)
+    return fld_process_array_type (t,
+				   fld_incomplete_type_of (TREE_TYPE (t), fld),
+				   fld_incomplete_types, fld);
+  if ((!RECORD_OR_UNION_TYPE_P (t) && TREE_CODE (t) != ENUMERAL_TYPE)
+      || !COMPLETE_TYPE_P (t))
     return t;
   if (TYPE_MAIN_VARIANT (t) == t)
     {
@@ -5202,23 +5280,45 @@ fld_incomplete_type_of (tree t, struct free_lang_data_d *fld)
 	{
 	  copy = build_distinct_type_copy (t);
 
-	  /* It is possible type was not seen by free_lang_data yet.  */
+	  /* It is possible that type was not seen by free_lang_data yet.  */
 	  add_tree_to_fld_list (copy, fld);
 	  TYPE_SIZE (copy) = NULL;
-	  SET_TYPE_MODE (copy, VOIDmode);
-	  SET_TYPE_ALIGN (copy, BITS_PER_UNIT);
 	  TYPE_USER_ALIGN (copy) = 0;
 	  TYPE_SIZE_UNIT (copy) = NULL;
 	  TYPE_CANONICAL (copy) = TYPE_CANONICAL (t);
-	  TYPE_TYPELESS_STORAGE (copy) = 0;
 	  TREE_ADDRESSABLE (copy) = 0;
 	  if (AGGREGATE_TYPE_P (t))
 	    {
+	      SET_TYPE_MODE (copy, VOIDmode);
+	      SET_TYPE_ALIGN (copy, BITS_PER_UNIT);
+	      TYPE_TYPELESS_STORAGE (copy) = 0;
 	      TYPE_FIELDS (copy) = NULL;
 	      TYPE_BINFO (copy) = NULL;
 	    }
 	  else
 	    TYPE_VALUES (copy) = NULL;
+
+	  /* Build copy of TYPE_DECL in TYPE_NAME if necessary.
+	     This is needed for ODR violation warnings to come out right (we
+	     want duplicate TYPE_DECLs whenever the type is duplicated because
+	     of ODR violation.  Because lang data in the TYPE_DECL may not
+	     have been freed yet, rebuild it from scratch and copy relevant
+	     fields.  */
+	  TYPE_NAME (copy) = fld_simplified_type_name (copy);
+	  tree name = TYPE_NAME (copy);
+
+	  if (name && TREE_CODE (name) == TYPE_DECL)
+	    {
+	      gcc_checking_assert (TREE_TYPE (name) == t);
+	      tree name2 = build_decl (DECL_SOURCE_LOCATION (name), TYPE_DECL,
+				       DECL_NAME (name), copy);
+	      if (DECL_ASSEMBLER_NAME_SET_P (name))
+	        SET_DECL_ASSEMBLER_NAME (name2, DECL_ASSEMBLER_NAME (name));
+	      SET_DECL_ALIGN (name2, 0);
+	      DECL_CONTEXT (name2) = fld_decl_context
+					 (DECL_CONTEXT (name));
+	      TYPE_NAME (copy) = name2;
+	    }
 	}
       return copy;
    }
@@ -5232,8 +5332,13 @@ fld_incomplete_type_of (tree t, struct free_lang_data_d *fld)
 static tree
 fld_simplified_type (tree t, struct free_lang_data_d *fld)
 {
-  if (t && POINTER_TYPE_P (t))
+  if (!t)
+    return t;
+  if (POINTER_TYPE_P (t))
     return fld_incomplete_type_of (t, fld);
+  if (TREE_CODE (t) == ARRAY_TYPE)
+    return fld_process_array_type (t, fld_simplified_type (TREE_TYPE (t), fld),
+				   fld_simplified_types, fld);
   return t;
 }
 
@@ -5254,13 +5359,6 @@ free_lang_data_in_one_sizepos (tree *expr_p)
   tree expr = *expr_p;
   if (CONTAINS_PLACEHOLDER_P (expr))
     *expr_p = build0 (PLACEHOLDER_EXPR, TREE_TYPE (expr));
-  /* ???  We have to reset all non-GIMPLE sizepos because those eventually
-     refer to trees we cannot stream.  See for example PR87229 which
-     shows an example with non-gimplified abstract origins in C++.
-     Note this should only happen for abstract copies so setting sizes
-     to NULL is OK (but we cannot easily assert this).  */
-  else if (expr && !is_gimple_val (expr))
-    *expr_p = NULL_TREE;
 }
 
 
@@ -5370,7 +5468,8 @@ free_lang_data_in_type (tree type, struct free_lang_data_d *fld)
       if (TREE_CODE (type) == ENUMERAL_TYPE)
 	{
 	  /* Type values are used only for C++ ODR checking.  Drop them
-	     for all type variants and non-ODR types.  */
+	     for all type variants and non-ODR types.
+	     For ODR types the data is freed in free_odr_warning_data.  */
 	  if (TYPE_MAIN_VARIANT (type) != type
 	      || !type_with_linkage_p (type))
 	    TYPE_VALUES (type) = NULL;
@@ -5402,11 +5501,7 @@ free_lang_data_in_type (tree type, struct free_lang_data_d *fld)
       TYPE_CONTEXT (type) = ctx;
     }
 
-  /* Drop TYPE_DECLs in TYPE_NAME in favor of the identifier in the
-     TYPE_DECL if the type doesn't have linkage.
-     this must match fld_  */
-  if (type != TYPE_MAIN_VARIANT (type) || ! type_with_linkage_p (type))
-    TYPE_STUB_DECL (type) = NULL;
+  TYPE_STUB_DECL (type) = NULL;
   TYPE_NAME (type) = fld_simplified_type_name (type);
 }
 
@@ -5433,16 +5528,19 @@ need_assembler_name_p (tree decl)
      e.g.  -fno-signed-char/-fsigned-char mismatches to be handled well.
      See cp/mangle.c:write_builtin_type for details.  */
 
-  if (flag_lto_odr_type_mering
-      && TREE_CODE (decl) == TYPE_DECL
-      && DECL_NAME (decl)
-      && decl == TYPE_NAME (TREE_TYPE (decl))
-      && TYPE_MAIN_VARIANT (TREE_TYPE (decl)) == TREE_TYPE (decl)
-      && !TYPE_ARTIFICIAL (TREE_TYPE (decl))
-      && (type_with_linkage_p (TREE_TYPE (decl))
-	  || TREE_CODE (TREE_TYPE (decl)) == INTEGER_TYPE)
-      && !variably_modified_type_p (TREE_TYPE (decl), NULL_TREE))
-    return !DECL_ASSEMBLER_NAME_SET_P (decl);
+  if (TREE_CODE (decl) == TYPE_DECL)
+    {
+      if (flag_lto_odr_type_mering
+	  && DECL_NAME (decl)
+	  && decl == TYPE_NAME (TREE_TYPE (decl))
+	  && TYPE_MAIN_VARIANT (TREE_TYPE (decl)) == TREE_TYPE (decl)
+	  && !TYPE_ARTIFICIAL (TREE_TYPE (decl))
+	  && (type_with_linkage_p (TREE_TYPE (decl))
+	      || TREE_CODE (TREE_TYPE (decl)) == INTEGER_TYPE)
+	  && !variably_modified_type_p (TREE_TYPE (decl), NULL_TREE))
+	return !DECL_ASSEMBLER_NAME_SET_P (decl);
+      return false;
+    }
   /* Only FUNCTION_DECLs and VAR_DECLs are considered.  */
   if (!VAR_OR_FUNCTION_DECL_P (decl))
     return false;
@@ -5596,13 +5694,15 @@ free_lang_data_in_decl (tree decl, struct free_lang_data_d *fld)
     {
       DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
       DECL_VISIBILITY_SPECIFIED (decl) = 0;
-      /* TREE_PUBLIC is used to tell if type is anonymous.  */
+      TREE_PUBLIC (decl) = 0;
+      TREE_PRIVATE (decl) = 0;
+      DECL_ARTIFICIAL (decl) = 0;
       TYPE_DECL_SUPPRESS_DEBUG (decl) = 0;
       DECL_INITIAL (decl) = NULL_TREE;
       DECL_ORIGINAL_TYPE (decl) = NULL_TREE;
       DECL_MODE (decl) = VOIDmode;
-      TREE_TYPE (decl) = void_type_node;
       SET_DECL_ALIGN (decl, 0);
+      /* TREE_TYPE is cleared at WPA time in free_odr_warning_data.  */
     }
   else if (TREE_CODE (decl) == FIELD_DECL)
     {
@@ -5635,20 +5735,7 @@ free_lang_data_in_decl (tree decl, struct free_lang_data_d *fld)
   if (TREE_CODE (decl) != FIELD_DECL
       && ((TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL)
           || !DECL_VIRTUAL_P (decl)))
-    {
-      tree ctx = DECL_CONTEXT (decl);
-      /* Variably modified types are needed for tree_is_indexable to decide
-	 whether the type needs to go to local or global section.
-	 This code is semi-broken but for now it is easiest to keep contexts
-	 as expected.  */
-      if (ctx && TYPE_P (ctx)
-	  && !variably_modified_type_p (ctx, NULL_TREE))
-	 {
-	   while (ctx && TYPE_P (ctx))
-	     ctx = TYPE_CONTEXT (ctx);
-	   DECL_CONTEXT (decl) = ctx;
-	 }
-    }
+    DECL_CONTEXT (decl) = fld_decl_context (DECL_CONTEXT (decl));
 }
 
 
@@ -6021,44 +6108,38 @@ assign_assembler_name_if_needed (tree t)
    been set up.  */
 
 static void
-free_lang_data_in_cgraph (void)
+free_lang_data_in_cgraph (struct free_lang_data_d *fld)
 {
   struct cgraph_node *n;
   varpool_node *v;
-  struct free_lang_data_d fld;
   tree t;
   unsigned i;
   alias_pair *p;
 
   /* Find decls and types in the body of every function in the callgraph.  */
   FOR_EACH_FUNCTION (n)
-    find_decls_types_in_node (n, &fld);
+    find_decls_types_in_node (n, fld);
 
   FOR_EACH_VEC_SAFE_ELT (alias_pairs, i, p)
-    find_decls_types (p->decl, &fld);
+    find_decls_types (p->decl, fld);
 
   /* Find decls and types in every varpool symbol.  */
   FOR_EACH_VARIABLE (v)
-    find_decls_types_in_var (v, &fld);
+    find_decls_types_in_var (v, fld);
 
   /* Set the assembler name on every decl found.  We need to do this
      now because free_lang_data_in_decl will invalidate data needed
      for mangling.  This breaks mangling on interdependent decls.  */
-  FOR_EACH_VEC_ELT (fld.decls, i, t)
+  FOR_EACH_VEC_ELT (fld->decls, i, t)
     assign_assembler_name_if_needed (t);
 
   /* Traverse every decl found freeing its language data.  */
-  FOR_EACH_VEC_ELT (fld.decls, i, t)
-    free_lang_data_in_decl (t, &fld);
+  FOR_EACH_VEC_ELT (fld->decls, i, t)
+    free_lang_data_in_decl (t, fld);
 
   /* Traverse every type found freeing its language data.  */
-  FOR_EACH_VEC_ELT (fld.types, i, t)
-    free_lang_data_in_type (t, &fld);
-  if (flag_checking)
-    {
-      FOR_EACH_VEC_ELT (fld.types, i, t)
-	verify_type (t);
-    }
+  FOR_EACH_VEC_ELT (fld->types, i, t)
+    free_lang_data_in_type (t, fld);
 }
 
 
@@ -6068,6 +6149,7 @@ static unsigned
 free_lang_data (void)
 {
   unsigned i;
+  struct free_lang_data_d fld;
 
   /* If we are the LTO frontend we have freed lang-specific data already.  */
   if (in_lto_p
@@ -6075,6 +6157,7 @@ free_lang_data (void)
     return 0;
 
   fld_incomplete_types = new hash_map<tree, tree>;
+  fld_simplified_types = new hash_map<tree, tree>;
 
   /* Provide a dummy TRANSLATION_UNIT_DECL if the FE failed to provide one.  */
   if (vec_safe_is_empty (all_translation_units))
@@ -6088,7 +6171,7 @@ free_lang_data (void)
 
   /* Traverse the IL resetting language specific information for
      operands, expressions, etc.  */
-  free_lang_data_in_cgraph ();
+  free_lang_data_in_cgraph (&fld);
 
   /* Create gimple variants for common types.  */
   for (unsigned i = 0;
@@ -6109,6 +6192,15 @@ free_lang_data (void)
 
   lang_hooks.tree_inlining.var_mod_type_p = hook_bool_tree_tree_false;
 
+  if (flag_checking)
+    {
+      int i;
+      tree t;
+
+      FOR_EACH_VEC_ELT (fld.types, i, t)
+	verify_type (t);
+    }
+
   /* We do not want the default decl_assembler_name implementation,
      rather if we have fixed everything we want a wrapper around it
      asserting that all non-local symbols already got their assembler
@@ -6122,6 +6214,7 @@ free_lang_data (void)
   rebuild_type_inheritance_graph ();
 
   delete fld_incomplete_types;
+  delete fld_simplified_types;
 
   return 0;
 }
@@ -11131,6 +11224,26 @@ uniform_vector_p (const_tree vec)
   return NULL_TREE;
 }
 
+/* If the argument is INTEGER_CST, return it.  If the argument is vector
+   with all elements the same INTEGER_CST, return that INTEGER_CST.  Otherwise
+   return NULL_TREE.  */
+
+tree
+uniform_integer_cst_p (tree t)
+{
+  if (TREE_CODE (t) == INTEGER_CST)
+    return t;
+
+  if (VECTOR_TYPE_P (TREE_TYPE (t)))
+    {
+      t = uniform_vector_p (t);
+      if (t && TREE_CODE (t) == INTEGER_CST)
+	return t;
+    }
+
+  return NULL_TREE;
+}
+
 /* Build an empty statement at location LOC.  */
 
 tree
@@ -11436,25 +11549,28 @@ build_alloca_call_expr (tree size, unsigned int align, HOST_WIDE_INT max_size)
     }
 }
 
-/* Create a new constant string literal and return a char* pointer to it.
-   The STRING_CST value is the LEN characters at STR.  */
-tree
-build_string_literal (int len, const char *str)
-{
-  tree t, elem, index, type;
+/* Create a new constant string literal consisting of elements of type
+   ELTYPE and return a tree node representing char* pointer to it as
+   an ADDR_EXPR (ARRAY_REF (ELTYPE, ...)).  The STRING_CST value is
+   the LEN bytes at STR (the representation of the string, which may
+   be wide).  */
 
-  t = build_string (len, str);
-  elem = build_type_variant (char_type_node, 1, 0);
-  index = build_index_type (size_int (len - 1));
-  type = build_array_type (elem, index);
+tree
+build_string_literal (int len, const char *str,
+		      tree eltype /* = char_type_node */)
+{
+  tree t = build_string (len, str);
+  tree index = build_index_type (size_int (len - 1));
+  eltype = build_type_variant (eltype, 1, 0);
+  tree type = build_array_type (eltype, index);
   TREE_TYPE (t) = type;
   TREE_CONSTANT (t) = 1;
   TREE_READONLY (t) = 1;
   TREE_STATIC (t) = 1;
 
-  type = build_pointer_type (elem);
+  type = build_pointer_type (eltype);
   t = build1 (ADDR_EXPR, type,
-	      build4 (ARRAY_REF, elem,
+	      build4 (ARRAY_REF, eltype,
 		      t, integer_zero_node, NULL_TREE, NULL_TREE));
   return t;
 }

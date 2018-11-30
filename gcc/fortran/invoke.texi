@@ -119,9 +119,9 @@ by type.  Explanations are in the following sections.
 @gccoptlist{-fall-intrinsics -fbackslash -fcray-pointer -fd-lines-as-code @gol
 -fd-lines-as-comments @gol
 -fdec -fdec-structure -fdec-intrinsic-ints -fdec-static -fdec-math @gol
--fdefault-double-8 -fdefault-integer-8 -fdefault-real-8 @gol
+-fdec-include -fdefault-double-8 -fdefault-integer-8 -fdefault-real-8 @gol
 -fdefault-real-10 -fdefault-real-16 -fdollar-ok -ffixed-line-length-@var{n} @gol
--ffixed-line-length-none -ffree-form -ffree-line-length-@var{n} @gol
+-ffixed-line-length-none -fpad-source -ffree-form -ffree-line-length-@var{n} @gol
 -ffree-line-length-none -fimplicit-none -finteger-4-integer-8 @gol
 -fmax-identifier-length -fmodule-private -ffixed-form -fno-range-check @gol
 -fopenacc -fopenmp -freal-4-real-10 -freal-4-real-16 -freal-4-real-8 @gol
@@ -277,6 +277,12 @@ functions (e.g. TAND, ATAND, etc...) for compatability with older code.
 Enable DEC-style STATIC and AUTOMATIC attributes to explicitly specify
 the storage of variables and other objects.
 
+@item -fdec-include
+@opindex @code{fdec-include}
+Enable parsing of INCLUDE as a statement in addition to parsing it as
+INCLUDE line.  When parsed as INCLUDE statement, INCLUDE does not have to
+be on a single line and can use line continuations.
+
 @item -fdollar-ok
 @opindex @code{fdollar-ok}
 @cindex @code{$}
@@ -315,8 +321,9 @@ declared as @code{PUBLIC}.
 @opindex @code{ffixed-line-length-}@var{n}
 @cindex file format, fixed
 Set column after which characters are ignored in typical fixed-form
-lines in the source file, and through which spaces are assumed (as
-if padded to that length) after the ends of short fixed-form lines.
+lines in the source file, and, unless @code{-fno-pad-source}, through which
+spaces are assumed (as if padded to that length) after the ends of short
+fixed-form lines.
 
 Popular values for @var{n} include 72 (the
 standard and the default), 80 (card image), and 132 (corresponding
@@ -326,6 +333,15 @@ and that continued character constants never have implicit spaces appended
 to them to fill out the line.
 @option{-ffixed-line-length-0} means the same thing as
 @option{-ffixed-line-length-none}.
+
+@item -fno-pad-source
+@opindex @code{fpad-source}
+By default fixed-form lines have spaces assumed (as if padded to that length)
+after the ends of short fixed-form lines.  This is not done either if
+@option{-ffixed-line-length-0}, @option{-ffixed-line-length-none} or
+if @option{-fno-pad-source} option is used.  With any of those options
+continued character constants never have implicit spaces appended
+to them to fill out the line.
 
 @item -ffree-line-length-@var{n}
 @opindex @code{ffree-line-length-}@var{n}

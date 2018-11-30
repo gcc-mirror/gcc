@@ -1,3 +1,34 @@
+2018-11-30  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Parse
+	_Literal (type) { ... } as empty aggregate or vector constructor.
+
+2018-11-29  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88091
+	* c-typeck.c (convert_argument): Add a parameter.  Adjust indentation.
+	(convert_arguments): Add comments.  Pass additional argument to
+	the function above.
+
+2018-11-29  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88172
+	PR testsuite/88208
+	* c-decl.c (declspec_add_alignas): Adjust call to check_user_alignment.
+
+2018-11-23  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/88098
+	* c-typeck.c (convert_arguments): Call builtin_decl_explicit instead.
+	(maybe_warn_builtin_no_proto_arg): Handle short enum to int promotion.
+
+2018-11-20  Martin Sebor  <msebor@redhat.com>
+
+	* c-parser.c (c_parser_has_attribute_expression): New function.
+	(c_parser_attribute): New function.
+	(c_parser_attributes): Move code into c_parser_attribute.
+	(c_parser_unary_expression): Handle RID_HAS_ATTRIBUTE_EXPRESSION.
+
 2018-11-15  Martin Sebor  <msebor@redhat.com>
 
 	PR c/83656

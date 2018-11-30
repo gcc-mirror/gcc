@@ -1,3 +1,10 @@
+2018-11-19  Alexandre Oliva <oliva@adacore.com>
+
+	PR ada/81878
+	* configure.ac (default_gnattools_target): Do not mistake
+	just-built host tools as native in cross-back toolchains.
+	* configure: Rebuilt.
+
 2018-11-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/81878

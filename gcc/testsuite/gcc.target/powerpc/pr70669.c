@@ -13,7 +13,7 @@ void foo (TYPE *p, TYPE *q)
 #ifndef NO_ASM
   __asm__ (" # %0" : "+r" (r));
 #endif
-  *p = r + r;
+  *p = -r;
 }
 
 /* { dg-final { scan-assembler       "mfvsrd"    } } */

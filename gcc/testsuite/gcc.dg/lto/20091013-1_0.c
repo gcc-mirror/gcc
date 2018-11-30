@@ -1,5 +1,6 @@
 /* { dg-lto-do link } */
 /* { dg-require-effective-target fpic } */
+/* { dg-require-effective-target ptr_eq_long } */
 /* { dg-lto-options {{-fPIC -r -nostdlib -flto} {-fPIC -r -nostdlib -O2 -flto}} } */
 /* { dg-extra-ld-options "-flinker-output=nolto-rel" } */
 
