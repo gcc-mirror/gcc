@@ -1,5 +1,14 @@
 2018-11-30  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/predicates.md (easy_fp_constant): Avoid long
+	dependent insn sequences.
+	* config/rs6000/rs6000.c (num_insns_constant): Support long
+	double constants.
+	* config/rs6000/rs6000.md (mov<mode>_softfloat <FMOVE128>): Adjust
+	length attribute.
+
+2018-11-30  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/rs6000.c (num_insns_constant_gpr): Renamed from
 	num_insns_constant_wide.  Make static.  Revise comment.
 	(num_insns_constant_multi): New function.

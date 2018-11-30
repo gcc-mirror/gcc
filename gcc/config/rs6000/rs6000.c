@@ -5940,6 +5940,25 @@ num_insns_constant (rtx op, machine_mode mode)
 	    val |= l[WORDS_BIG_ENDIAN ? 1 : 0] & 0xffffffffUL;
 	    mode = DImode;
 	  }
+	else if (mode == TFmode || mode == TDmode
+		 || mode == KFmode || mode == IFmode)
+	  {
+	    long l[4];
+	    int insns;
+
+	    if (mode == TDmode)
+	      REAL_VALUE_TO_TARGET_DECIMAL128 (*rv, l);
+	    else
+	      REAL_VALUE_TO_TARGET_LONG_DOUBLE (*rv, l);
+
+	    val = (unsigned HOST_WIDE_INT) l[WORDS_BIG_ENDIAN ? 0 : 3] << 32;
+	    val |= l[WORDS_BIG_ENDIAN ? 1 : 2] & 0xffffffffUL;
+	    insns = num_insns_constant_multi (val, DImode);
+	    val = (unsigned HOST_WIDE_INT) l[WORDS_BIG_ENDIAN ? 2 : 1] << 32;
+	    val |= l[WORDS_BIG_ENDIAN ? 3 : 0] & 0xffffffffUL;
+	    insns += num_insns_constant_multi (val, DImode);
+	    return insns;
+	  }
 	else
 	  gcc_unreachable ();
       }
