@@ -1,5 +1,12 @@
 2018-11-30  Tom de Vries  <tdevries@suse.de>
 
+	* Makefile.am (check_PROGRAMS): Add test_elf, test_xcoff_32,
+	test_xcoff_64, test_pecoff and test_unknown.
+	* Makefile.in: Regenerate.
+	* test_format.c: New file.
+
+2018-11-30  Tom de Vries  <tdevries@suse.de>
+
 	* Makefile.am : Add _with_alloc version for each test in
 	check_PROGRAMS.
 	* Makefile.in: Regenerate.

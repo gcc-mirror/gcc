@@ -96,6 +96,45 @@ libbacktrace_alloc_la_LIBADD = $(BACKTRACE_FILE) $(FORMAT_FILE) read.lo alloc.lo
 
 libbacktrace_alloc_la_DEPENDENCIES = $(libbacktrace_alloc_la_LIBADD)
 
+check_LTLIBRARIES += libbacktrace_noformat.la
+
+libbacktrace_noformat_la_SOURCES = $(libbacktrace_la_SOURCES)
+libbacktrace_noformat_la_LIBADD = $(BACKTRACE_FILE) $(VIEW_FILE) $(ALLOC_FILE)
+
+libbacktrace_noformat_la_DEPENDENCIES = $(libbacktrace_noformat_la_LIBADD)
+
+xcoff_%.c: xcoff.c
+	SEARCH='#error "Unknown BACKTRACE_XCOFF_SIZE"'; \
+	REPLACE='#undef BACKTRACE_XCOFF_SIZE\n#define BACKTRACE_XCOFF_SIZE'; \
+	$(SED) "s/^$$SEARCH\$$/$$REPLACE $*/" \
+		$(srcdir)/xcoff.c \
+		> $@
+
+test_elf_SOURCES = test_format.c testlib.c
+test_elf_LDADD = libbacktrace_noformat.la elf.lo
+
+check_PROGRAMS += test_elf
+
+test_xcoff_32_SOURCES = test_format.c testlib.c
+test_xcoff_32_LDADD = libbacktrace_noformat.la xcoff_32.lo
+
+check_PROGRAMS += test_xcoff_32
+
+test_xcoff_64_SOURCES = test_format.c testlib.c
+test_xcoff_64_LDADD = libbacktrace_noformat.la xcoff_64.lo
+
+check_PROGRAMS += test_xcoff_64
+
+test_pecoff_SOURCES = test_format.c testlib.c
+test_pecoff_LDADD = libbacktrace_noformat.la pecoff.lo
+
+check_PROGRAMS += test_pecoff
+
+test_unknown_SOURCES = test_format.c testlib.c
+test_unknown_LDADD = libbacktrace_noformat.la unknown.lo
+
+check_PROGRAMS += test_unknown
+
 unittest_SOURCES = unittest.c testlib.c
 unittest_LDADD = libbacktrace.la
 
