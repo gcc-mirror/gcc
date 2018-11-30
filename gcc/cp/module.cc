@@ -2999,7 +2999,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool read_enum_def (trees_in &in, tree decl);
 
   static void write_binfos (trees_out &out, tree type);
-  bool read_binfos (trees_in &in, tree type);
+  vec<tree, va_gc> *read_binfos (trees_in &in, tree type, tree *main_binfo);
 
  private:
   /* Add writable bindings to hash table.  */
@@ -8851,13 +8851,12 @@ module_state::write_binfos (trees_out &out, tree type)
 
   if (out.streaming_p ())
     {
+      unsigned nvbases = 0;
       if (TYPE_LANG_SPECIFIC (type))
-	{
-	  unsigned nvbases = vec_safe_length (CLASSTYPE_VBASECLASSES (type));
-	  out.u (nvbases);
-	  if (nvbases)
-	    dump (dumper::TREE) && dump ("Type %N has %u vbases", type, nvbases);
-	}
+	nvbases = vec_safe_length (CLASSTYPE_VBASECLASSES (type));
+      out.u (nvbases);
+      if (nvbases)
+	dump (dumper::TREE) && dump ("Type %N has %u vbases", type, nvbases);
 
       /* Stream out contents in DFS order.  */
       for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
@@ -8884,46 +8883,38 @@ module_state::write_binfos (trees_out &out, tree type)
     }
 }
 
-/* Read the binfo heirarchy of TYPE.  Sets TYPE_BINFO and
-   CLASSTYPE_VBASECLASSES.  */
+/* Read a binfo heirarchy. Returns the main BINFO and sets vbases.  */
 
-bool
-module_state::read_binfos (trees_in &in, tree type)
+vec<tree, va_gc> *
+module_state::read_binfos (trees_in &in, tree type, tree *main_binfo)
 {
-  tree *binfo_p = &TYPE_BINFO (type);
-
   /* Stream in the types and sizes in DFS order.  */
-  while (tree t = in.tree_node ())
+  for (tree child, t, *binfo_p = main_binfo;
+       (t = in.tree_node ());
+       binfo_p = &TREE_CHAIN (child))
     {
       unsigned n_children = in.u ();
       if (in.get_overrun ())
-	return false;
-      tree child = make_tree_binfo (n_children);
+	return NULL;
+      child = make_tree_binfo (n_children);
       BINFO_TYPE (child) = t;
 
       int tag = in.insert (child);
       dump (dumper::TREE)
 	&& dump ("Read binfo:%d child %N of %N", tag, child, type);
       *binfo_p = child;
-      binfo_p = &TREE_CHAIN (child);
     }
 
-  unsigned nvbases = 0;
+  unsigned nvbases = in.u ();
   vec<tree, va_gc> *vbase_vec = NULL;
-  if (TYPE_LANG_SPECIFIC (type))
+  if (nvbases)
     {
-      nvbases = in.u ();
-      if (nvbases)
-	{
-	  vec_alloc (vbase_vec, nvbases);
-	  CLASSTYPE_VBASECLASSES (type) = vbase_vec;
-	  dump (dumper::TREE)
-	    && dump ("Type %N has %u vbases", type, nvbases);
-	}
+      vec_alloc (vbase_vec, nvbases);
+      dump (dumper::TREE) && dump ("Type %N has %u vbases", type, nvbases);
     }
 
   /* Stream in the contents in DFS order.  */
-  for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
+  for (tree child = *main_binfo; child; child = TREE_CHAIN (child))
     {
       dump (dumper::TREE)
 	&& dump ("Reading binfo:%N of %N contents", child, type);
@@ -8940,7 +8931,7 @@ module_state::read_binfos (trees_in &in, tree type)
 
       BINFO_BASE_ACCESSES (child) = in.tree_vec ();
       if (in.get_overrun ())
-	return false;
+	return NULL;
       unsigned num = vec_safe_length (BINFO_BASE_ACCESSES (child));
       for (unsigned ix = 0; ix != num; ix++)
 	BINFO_BASE_APPEND (child, in.tree_node ());
@@ -8950,7 +8941,7 @@ module_state::read_binfos (trees_in &in, tree type)
 	  if (vec_safe_length (vbase_vec) == nvbases)
 	    {
 	      in.set_overrun ();
-	      return false;
+	      return NULL;
 	    }
 	  vbase_vec->quick_push (child);
 	}
@@ -8959,7 +8950,7 @@ module_state::read_binfos (trees_in &in, tree type)
   if (vec_safe_length (vbase_vec) != nvbases)
     in.set_overrun ();
 
-  return !in.get_overrun ();
+  return vbase_vec;
 }
 
 void
@@ -8970,6 +8961,8 @@ module_state::write_class_def (trees_out &out, tree type)
   out.tree_node (TYPE_SIZE_UNIT (type));
   out.chained_decls (TYPE_FIELDS (type));
   out.tree_node (TYPE_VFIELD (type));
+  write_binfos (out, type);
+  
   if (TYPE_LANG_SPECIFIC (type))
     {
       out.tree_vec (CLASSTYPE_MEMBER_VEC (type));
@@ -8990,8 +8983,6 @@ module_state::write_class_def (trees_out &out, tree type)
 	}
     }
 
-  write_binfos (out, type);
-  
   if (TYPE_LANG_SPECIFIC (type))
     {
       out.tree_node (CLASSTYPE_PRIMARY_BINFO (type));
@@ -9065,13 +9056,15 @@ module_state::read_class_def (trees_in &in, tree type)
   tree size_unit = in.tree_node ();
   tree fields = in.chained_decls ();
   tree vfield = in.tree_node ();
+  tree binfo = NULL_TREE;
+  vec<tree, va_gc> *vbases = read_binfos (in, type, &binfo);
+
   vec<tree, va_gc> *member_vec = NULL;
   vec<tree, va_gc> *pure_virts = NULL;
   vec<tree_pair_s, va_gc> *vcall_indices = NULL;
   tree key_method = NULL_TREE;
   tree lambda = NULL_TREE;
   tree friends = NULL_TREE;
-
   if (TYPE_LANG_SPECIFIC (type))
     {
       member_vec = in.tree_vec ();
@@ -9095,6 +9088,7 @@ module_state::read_class_def (trees_in &in, tree type)
 
   TYPE_FIELDS (type) = fields;
   TYPE_VFIELD (type) = vfield;
+  TYPE_BINFO (type) = binfo;
 
   if (TYPE_LANG_SPECIFIC (type))
     {
@@ -9107,12 +9101,11 @@ module_state::read_class_def (trees_in &in, tree type)
 
       CLASSTYPE_KEY_METHOD (type) = key_method;
 
+      CLASSTYPE_VBASECLASSES (type) = vbases;
+
       /* Resort the member vector.  */
       resort_type_member_vec (member_vec, NULL, nop, NULL);
     }
-
-  if (!read_binfos (in, type))
-    return false;
 
   if (TYPE_LANG_SPECIFIC (type))
     {

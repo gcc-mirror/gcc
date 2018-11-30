@@ -1,6 +1,12 @@
 2018-11-30  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::write_binfos): Always write number of
+	vbases.
+	(module_state::read_binfos): Don't smash the type here.
+	(module_state:{read,write}_class_def): Adjust binfo serializing.
+
+	gcc/cp/
 	* class.c (fixup_type_variants): Copy TYPE_SIZE & TYPE_SIZE_UNIT.
 	(finish_struct): Use fixup_type_variants for template.
 	* module.cc (trees_{in.out}::core_vals): Don't serialize TYPE_SIZE
