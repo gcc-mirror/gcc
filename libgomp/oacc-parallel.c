@@ -257,7 +257,16 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
 
   tgt = gomp_map_vars_async (acc_dev, aq, mapnum, hostaddrs, NULL, sizes, kinds,
 			     true, GOMP_MAP_VARS_OPENACC);
-  
+
+#ifdef RC_CHECKING
+  gomp_mutex_lock (&acc_dev->lock);
+  assert (tgt);
+  dump_tgt (__FUNCTION__, tgt);
+  tgt->prev = thr->mapped_data;
+  gomp_rc_check (acc_dev, tgt);
+  gomp_mutex_unlock (&acc_dev->lock);
+#endif
+
   devaddrs = gomp_alloca (sizeof (void *) * mapnum);
   for (i = 0; i < mapnum; i++)
     devaddrs[i] = (void *) gomp_map_val (tgt, hostaddrs, i);
@@ -275,6 +284,12 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
 					dims, tgt, aq);
       gomp_unmap_vars_async (tgt, true, aq);
     }
+
+#ifdef RC_CHECKING
+  gomp_mutex_lock (&acc_dev->lock);
+  gomp_rc_check (acc_dev, thr->mapped_data);
+  gomp_mutex_unlock (&acc_dev->lock);
+#endif
 }
 
 /* Legacy entry point, only provide host execution.  */
@@ -330,6 +345,12 @@ GOACC_data_start (int flags_m, size_t mapnum,
   gomp_debug (0, "  %s: mappings prepared\n", __FUNCTION__);
   tgt->prev = thr->mapped_data;
   thr->mapped_data = tgt;
+
+#ifdef RC_CHECKING
+  gomp_mutex_lock (&acc_dev->lock);
+  gomp_rc_check (acc_dev, thr->mapped_data);
+  gomp_mutex_unlock (&acc_dev->lock);
+#endif
 }
 
 void
@@ -342,6 +363,12 @@ GOACC_data_end (void)
   thr->mapped_data = tgt->prev;
   gomp_unmap_vars (tgt, true);
   gomp_debug (0, "  %s: mappings restored\n", __FUNCTION__);
+
+#ifdef RC_CHECKING
+  gomp_mutex_lock (&thr->dev->lock);
+  gomp_rc_check (thr->dev, thr->mapped_data);
+  gomp_mutex_unlock (&thr->dev->lock);
+#endif
 }
 
 void
@@ -622,6 +649,12 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
 	    }
 	}
     }
+
+#ifdef RC_CHECKING
+  gomp_mutex_lock (&acc_dev->lock);
+  gomp_rc_check (acc_dev, thr->mapped_data);
+  gomp_mutex_unlock (&acc_dev->lock);
+#endif
 }
 
 static void

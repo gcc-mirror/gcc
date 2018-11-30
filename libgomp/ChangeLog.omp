@@ -1,3 +1,23 @@
+2018-11-28  Julian Brown  <julian@codesourcery.com>
+
+	* libgomp.h (RC_CHECKING): New macro, disabled by default, guarding all
+	hunks in this patch.
+	(target_mem_desc): Add forward declaration.
+	(async_tgt_use): New struct.
+	(target_mem_desc): Add refcount_chk, mark fields.
+	(acc_dispatch_t): Add tgt_uses, au_lock fields.
+	(dump_tgt, gomp_rc_check): Add prototypes.
+	* oacc-async (goacc_async_unmap_tgt): Add refcount self-check code.
+	(goacc_async_copyout_unmap_vars): Likewise.
+	(goacc_remove_var_async): Likewise.
+	* oacc-parallel.c (GOACC_parallel_keyed_internal): Add refcount
+	self-check code.
+	(GOACC_data_start, GOACC_data_end, GOACC_enter_exit_data): Likewise.
+	* target.c (stdio.h): Include.
+	(dump_tgt, rc_check_clear, rc_check_count, rc_check_verify)
+	(gomp_rc_check): New functions to consistency-check reference counts.
+	(gomp_target_init): Initialise self-check-related device fields.
+
 2018-12-14  Julian Brown  <julian@codesourcery.com>
 
 	* libgomp.h (struct target_var_desc): Add do_detach flag.
