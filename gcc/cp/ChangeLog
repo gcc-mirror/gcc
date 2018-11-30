@@ -1,3 +1,10 @@
+2018-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* typeck2.c: Include "gcc-rich-location.h".
+	(cxx_incomplete_type_diagnostic): When complaining about possibly
+	missing parens, add a fix-it hint if the member function takes no
+	additional params.
+
 2018-11-30  James Norris  <jnorris@codesourcery.com>
 
 	* parser.c (cp_parser_oacc_enter_exit_data): Use existing local
