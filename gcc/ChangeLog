@@ -1,5 +1,11 @@
 2018-11-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/88274
+	* tree-ssa-reassoc.c (optimize_range_tests_xor,
+	optimize_range_tests_diff): If type has smaller precision than
+	corresponding mode or if it has non-standard min/max, compute
+	everything in a standard type for the precision.
+
 	PR testsuite/85368
 	* params.def (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT): New param.
 	* tree-ssa-ifcombine.c (ifcombine_ifandif): If

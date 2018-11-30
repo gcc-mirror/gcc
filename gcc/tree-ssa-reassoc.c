@@ -2537,8 +2537,23 @@ optimize_range_tests_xor (enum tree_code opcode, tree type,
   if (!tree_int_cst_equal (lowxor, highxor))
     return false;
 
+  exp = rangei->exp;
+  scalar_int_mode mode = as_a <scalar_int_mode> (TYPE_MODE (type));
+  int prec = GET_MODE_PRECISION (mode);
+  if (TYPE_PRECISION (type) < prec
+      || (wi::to_wide (TYPE_MIN_VALUE (type))
+	  != wi::min_value (prec, TYPE_SIGN (type)))
+      || (wi::to_wide (TYPE_MAX_VALUE (type))
+	  != wi::max_value (prec, TYPE_SIGN (type))))
+    {
+      type = build_nonstandard_integer_type (prec, TYPE_UNSIGNED (type));
+      exp = fold_convert (type, exp);
+      lowxor = fold_convert (type, lowxor);
+      lowi = fold_convert (type, lowi);
+      highi = fold_convert (type, highi);
+    }
   tem = fold_build1 (BIT_NOT_EXPR, type, lowxor);
-  exp = fold_build2 (BIT_AND_EXPR, type, rangei->exp, tem);
+  exp = fold_build2 (BIT_AND_EXPR, type, exp, tem);
   lowj = fold_build2 (BIT_AND_EXPR, type, lowi, tem);
   highj = fold_build2 (BIT_AND_EXPR, type, highi, tem);
   if (update_range_test (rangei, rangej, NULL, 1, opcode, ops, exp,
@@ -2581,7 +2596,16 @@ optimize_range_tests_diff (enum tree_code opcode, tree type,
   if (!integer_pow2p (tem1))
     return false;
 
-  type = unsigned_type_for (type);
+  scalar_int_mode mode = as_a <scalar_int_mode> (TYPE_MODE (type));
+  int prec = GET_MODE_PRECISION (mode);
+  if (TYPE_PRECISION (type) < prec
+      || (wi::to_wide (TYPE_MIN_VALUE (type))
+	  != wi::min_value (prec, TYPE_SIGN (type)))
+      || (wi::to_wide (TYPE_MAX_VALUE (type))
+	  != wi::max_value (prec, TYPE_SIGN (type))))
+    type = build_nonstandard_integer_type (prec, 1);
+  else
+    type = unsigned_type_for (type);
   tem1 = fold_convert (type, tem1);
   tem2 = fold_convert (type, tem2);
   lowi = fold_convert (type, lowi);
