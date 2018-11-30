@@ -146,11 +146,15 @@ full_callback (void *data, uintptr_t pc, const char *filename,
 void
 show_backtrace (bool in_signal_handler)
 {
-  struct backtrace_state *lbstate;
+  /* Note that libbacktrace allows the state to be accessed from
+     multiple threads, so we don't need to use a TLS variable for the
+     state here.  */
+  static struct backtrace_state *lbstate;
   struct mystate state = { 0, false, in_signal_handler };
- 
-  lbstate = backtrace_create_state (NULL, __gthread_active_p (),
-				    error_callback, NULL);
+
+  if (!lbstate)
+    lbstate = backtrace_create_state (NULL, __gthread_active_p (),
+				      error_callback, NULL);
 
   if (lbstate == NULL)
     return;
