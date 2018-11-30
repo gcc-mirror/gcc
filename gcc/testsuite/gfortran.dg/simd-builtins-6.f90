@@ -1,5 +1,5 @@
 ! { dg-do compile { target { i?86-*-linux* x86_64-*-linux* } } }
-! { dg-additional-options "-msse2 -nostdinc -Ofast -fdump-tree-optimized" }
+! { dg-additional-options "-msse2 -mno-avx -nostdinc -Ofast -fdump-tree-optimized" }
 
 !GCC$ builtin (sin) attributes simd (inbranch)
 !GCC$ builtin (sinf) attributes simd (notinbranch)

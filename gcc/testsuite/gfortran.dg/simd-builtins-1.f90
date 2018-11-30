@@ -1,5 +1,5 @@
 ! { dg-do compile { target { i?86-*-linux* x86_64-*-linux* } } }
-! { dg-additional-options "-msse2 -nostdinc -Ofast -fpre-include=simd-builtins-1.h -fdump-tree-optimized" }
+! { dg-additional-options "-msse2 -mno-avx -nostdinc -Ofast -fpre-include=simd-builtins-1.h -fdump-tree-optimized" }
 
 program test_overloaded_intrinsic
   real(4) :: x4(3200), y4(3200)
