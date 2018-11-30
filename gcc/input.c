@@ -1471,7 +1471,12 @@ get_substring_ranges_for_loc (cpp_reader *pfile,
 	 for start vs finish due to line-length jumps.  */
       if (start_ord_map != final_ord_map
 	  && start_ord_map->to_file != final_ord_map->to_file)
-	  return "start and finish are spelled in different ordinary maps";
+	return "start and finish are spelled in different ordinary maps";
+      /* The file from linemap_resolve_location ought to match that from
+	 expand_location_to_spelling_point.  */
+      if (start_ord_map->to_file != start.file)
+	return "mismatching file after resolving linemap";
+
       location_t start_loc
 	= linemap_position_for_line_and_column (line_table, final_ord_map,
 						start.line, start.column);
