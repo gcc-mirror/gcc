@@ -1,3 +1,9 @@
+2018-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88274
+	* tree-vrp.c (ranges_from_anti_range): Fix handling of
+	TYPE_MIN/MAX_VALUE.
+
 2018-11-29  Andi Kleen  <ak@linux.intel.com>
 
 	* config/i386/i386.c (current_fentry_section): Add.
