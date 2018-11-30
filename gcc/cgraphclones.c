@@ -572,6 +572,19 @@ clone_function_name (const char *name, const char *suffix,
   return get_identifier (tmp_name);
 }
 
+/* Return a new assembler name for a clone of DECL.  Apart from the
+   string SUFFIX, the new name will end with the specified NUMBER.  If
+   clone numbering is not needed then the two argument
+   clone_function_name should be used instead.  */
+
+tree
+clone_function_name (tree decl, const char *suffix,
+		     unsigned long number)
+{
+  return clone_function_name (
+	   IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)), suffix, number);
+}
+
 /* Return a new assembler name ending with the string SUFFIX for a
    clone of DECL.  */
 
@@ -599,8 +612,9 @@ clone_function_name (tree decl, const char *suffix)
 }
 
 
-/* Create callgraph node clone with new declaration.  The actual body will
-   be copied later at compilation stage.
+/* Create callgraph node clone with new declaration.  The actual body will be
+   copied later at compilation stage.  The name of the new clone will be
+   constructed from the name of the original node, SUFFIX and NUM_SUFFIX.
 
    TODO: after merging in ipa-sra use function call notes instead of args_to_skip
    bitmap interface.
@@ -608,7 +622,8 @@ clone_function_name (tree decl, const char *suffix)
 cgraph_node *
 cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
 				   vec<ipa_replace_map *, va_gc> *tree_map,
-				   bitmap args_to_skip, const char * suffix)
+				   bitmap args_to_skip, const char * suffix,
+				   unsigned num_suffix)
 {
   tree old_decl = decl;
   cgraph_node *new_node = NULL;
@@ -643,8 +658,8 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
   strcpy (name + len + 1, suffix);
   name[len] = '.';
   DECL_NAME (new_decl) = get_identifier (name);
-  SET_DECL_ASSEMBLER_NAME (new_decl, clone_function_name_numbered (old_decl,
-								   suffix));
+  SET_DECL_ASSEMBLER_NAME (new_decl,
+			   clone_function_name (old_decl, suffix, num_suffix));
   SET_DECL_RTL (new_decl, NULL);
 
   new_node = create_clone (new_decl, count, false,
