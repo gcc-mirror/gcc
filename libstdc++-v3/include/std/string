@@ -81,19 +81,23 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   typename _Predicate>
-    inline void
+    inline typename basic_string<_CharT, _Traits, _Alloc>::size_type
     erase_if(basic_string<_CharT, _Traits, _Alloc>& __cont, _Predicate __pred)
     {
+      const auto __osz = __cont.size();
       __cont.erase(std::remove_if(__cont.begin(), __cont.end(), __pred),
 		   __cont.end());
+      return __osz - __cont.size();
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc, typename _Up>
-    inline void
+    inline typename basic_string<_CharT, _Traits, _Alloc>::size_type
     erase(basic_string<_CharT, _Traits, _Alloc>& __cont, const _Up& __value)
     {
+      const auto __osz = __cont.size();
       __cont.erase(std::remove(__cont.begin(), __cont.end(), __value),
 		   __cont.end());
+      return __osz - __cont.size();
     }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

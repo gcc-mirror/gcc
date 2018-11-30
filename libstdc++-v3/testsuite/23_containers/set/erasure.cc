@@ -27,18 +27,20 @@ void
 test01()
 {
   std::set<int> s{ 10, 11, 12, 14, 15, 17, 18, 19 };
-  std::erase_if(s, is_odd);
+  auto num = std::erase_if(s, is_odd);
   std::set<int> t{ 10, 12, 14, 18 };
   VERIFY( s == t );
+  VERIFY( num == 4 );
 }
 
 void
 test02()
 {
   std::multiset<int> ms{ 20, 21, 22, 22, 23, 23, 24, 25 };
-  std::erase_if(ms, is_odd);
+  auto num = std::erase_if(ms, is_odd);
   std::multiset<int> t{ 20, 22, 22, 24 };
   VERIFY( ms == t );
+  VERIFY( num == 4 );
 }
 
 int

@@ -27,20 +27,23 @@ test01()
   auto is_odd = [](const int i) { return i % 2 != 0; };
 
   std::forward_list<int> fl{ 10, 11, 12, 14, 15, 17, 18, 19 };
-  std::erase_if(fl, is_odd);
+  auto num = std::erase_if(fl, is_odd);
   std::forward_list<int> t{ 10, 12, 14, 18 };
   VERIFY( fl == t );
+  VERIFY( num == 4 );
 }
 
 void
 test02()
 {
   std::forward_list<int> fl{ 10, 11, 12, 14, 15, 17, 18, 19 };
-  std::erase(fl, 14);
+  auto num = std::erase(fl, 14);
   std::forward_list<int> t{ 10, 11, 12, 15, 17, 18, 19 };
   VERIFY( fl == t );
-  std::erase(fl, 20);
+  VERIFY( num == 1 );
+  num = std::erase(fl, 20);
   VERIFY( fl == t );
+  VERIFY( num == 0 );
 }
 
 int
