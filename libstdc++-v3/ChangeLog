@@ -1,5 +1,27 @@
 2018-11-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
+	Implement P0457R2 String Prefix and Suffix Checking.
+	* include/bits/basic_string.h: Add starts_with, ends_with members.
+	* include/std/string_view: Ditto.
+	* testsuite/21_strings/basic_string/operations/starts_with/
+	char/1.cc: New test.
+	* testsuite/21_strings/basic_string/operations/starts_with/
+	wchar_t/1.cc: New test.
+	* testsuite/21_strings/basic_string/operations/ends_with/
+	char/1.cc: New test.
+	* testsuite/21_strings/basic_string/operations/ends_with/
+	wchar_t/1.cc: New test.
+	* testsuite/21_strings/basic_string_view/operations/starts_with/
+	char/1.cc: New test.
+	* testsuite/21_strings/basic_string_view/operations/starts_with/
+	wchar_t/1.cc: New test.
+	* testsuite/21_strings/basic_string_view/operations/ends_with/
+	char/1.cc: New test.
+	* testsuite/21_strings/basic_string_view/operations/ends_with/
+	wchar_t/1.cc: New test.
+
+2018-11-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
 	Pre-emptively support P0646R1 for std container erasure.
 	* include/bits/erase_if.h: Accumulate and return number of erased nodes.
 	* include/std/forward_list (): Return number of erased items.
@@ -10,6 +32,7 @@
 	* include/std/unordered_map (): Ditto.
 	* include/std/unordered_set (): Ditto.
 	* include/std/vector (): Ditto.
+	* include/std/deque (): Ditto.
 	* testsuite/21_strings/basic_string/erasure.cc: Test number of erasures.
 	* testsuite/23_containers/deque/erasure.cc: Ditto.
 	* testsuite/23_containers/forward_list/erasure.cc: Ditto.
