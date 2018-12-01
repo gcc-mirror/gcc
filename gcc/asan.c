@@ -1326,7 +1326,7 @@ asan_redzone_buffer::flush_redzone_payload (void)
   for (unsigned i = 0; i < RZ_BUFFER_SIZE; i++)
     {
       unsigned char v
-	= m_shadow_bytes[BYTES_BIG_ENDIAN ? RZ_BUFFER_SIZE - i : i];
+	= m_shadow_bytes[BYTES_BIG_ENDIAN ? RZ_BUFFER_SIZE - i - 1 : i];
       val |= (unsigned HOST_WIDE_INT)v << (BITS_PER_UNIT * i);
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "%02x ", v);

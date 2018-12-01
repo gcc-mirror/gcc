@@ -1,5 +1,9 @@
 2018-12-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/88289
+	* asan.c (asan_redzone_buffer::flush_redzone_payload): Fix up
+	an off-by-one for BYTES_BIG_ENDIAN.
+
 	PR target/54589
 	* combine.c (find_split_point): For invalid memory address
 	nonobj + obj + const, if reg + obj + const is valid addressing
