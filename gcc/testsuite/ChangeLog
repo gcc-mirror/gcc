@@ -40,6 +40,9 @@
 	PR c++/79629
 	* g++.dg/other/error35.C: New test.
 
+	PR c++/87523
+	* g++.dg/cpp1y/lambda-generic-87523.C: New test.
+
 2018-12-01  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/predict-22.c: Update expected output.
