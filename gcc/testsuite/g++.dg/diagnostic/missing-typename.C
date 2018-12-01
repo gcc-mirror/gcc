@@ -1,4 +1,5 @@
 // fix-it hint for missing "typename" (PR c++/63392)
+// { dg-do compile { target c++17_down } }
 // { dg-options "-fdiagnostics-show-caret" }
 
 template<typename T>

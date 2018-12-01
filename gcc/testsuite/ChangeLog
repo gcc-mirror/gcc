@@ -1,3 +1,39 @@
+2018-12-01  Marek Polacek  <polacek@redhat.com>
+
+	Implement P0634R3, Down with typename!
+	* g++.dg/cpp0x/alias-decl-43.C: Adjust dg-error.
+	* g++.dg/cpp0x/decltype67.C: Only expect error in c++17_down.
+	* g++.dg/cpp1z/typename1.C: New test.
+	* g++.dg/cpp2a/typename1.C: New test.
+	* g++.dg/cpp2a/typename10.C: New test.
+	* g++.dg/cpp2a/typename11.C: New test.
+	* g++.dg/cpp2a/typename2.C: New test.
+	* g++.dg/cpp2a/typename3.C: New test.
+	* g++.dg/cpp2a/typename4.C: New test.
+	* g++.dg/cpp2a/typename5.C: New test.
+	* g++.dg/cpp2a/typename6.C: New test.
+	* g++.dg/cpp2a/typename7.C: New test.
+	* g++.dg/cpp2a/typename8.C: New test.
+	* g++.dg/cpp2a/typename9.C: New test.
+	* g++.dg/diagnostic/missing-typename.C: Only run the test in
+	c++17_down.
+	* g++.dg/other/crash-9.C: Add template disambiguator.
+	* g++.dg/other/nontype-1.C: Only expect error in c++17_down.
+	* g++.dg/parse/crash13.C: Likewise.
+	* g++.dg/parse/error36.C: Likewise.
+	* g++.dg/parse/no-typename1.C: Likewise.
+	* g++.dg/parse/typedef2.C: Likewise.
+	* g++.dg/parse/typename11.C: Likewise.
+	* g++.dg/template/crash48.C: Adjust dg-error.
+	* g++.dg/template/dependent-name5.C: Only expect error in c++17_down.
+	Add dg-error.
+	* g++.dg/template/error29.C: Only expect error in c++17_down.
+	* g++.dg/template/nested5.C: Add template disambiguator.
+	* g++.dg/template/pr84789.C: Only expect error in c++17_down.
+	* g++.dg/template/static30.C: Add dg-error.
+	* g++.dg/template/typedef6.C: Adjust dg-error.
+	* g++.dg/template/typename3.C: Only expect error in c++17_down.
+
 2018-12-01  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/predict-22.c: Update expected output.
