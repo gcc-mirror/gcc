@@ -1,3 +1,7 @@
+2018-12-01  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/predict-22.c: Update expected output.
+
 2018-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/54589
