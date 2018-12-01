@@ -31,6 +31,8 @@ version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
 version (PPC64)   version = PPC_Any;
+version (RISCV32) version = RISCV_Any;
+version (RISCV64) version = RISCV_Any;
 version (S390)    version = IBMZ_Any;
 version (SPARC)   version = SPARC_Any;
 version (SPARC64) version = SPARC_Any;
@@ -305,6 +307,30 @@ version (linux)
         enum SIGURG     = 23;
     }
     else version (ARM_Any)
+    {
+        //SIGABRT (defined in core.stdc.signal)
+        enum SIGALRM    = 14;
+        enum SIGBUS     = 7;
+        enum SIGCHLD    = 17;
+        enum SIGCONT    = 18;
+        //SIGFPE (defined in core.stdc.signal)
+        enum SIGHUP     = 1;
+        //SIGILL (defined in core.stdc.signal)
+        //SIGINT (defined in core.stdc.signal)
+        enum SIGKILL    = 9;
+        enum SIGPIPE    = 13;
+        enum SIGQUIT    = 3;
+        //SIGSEGV (defined in core.stdc.signal)
+        enum SIGSTOP    = 19;
+        //SIGTERM (defined in core.stdc.signal)
+        enum SIGTSTP    = 20;
+        enum SIGTTIN    = 21;
+        enum SIGTTOU    = 22;
+        enum SIGUSR1    = 10;
+        enum SIGUSR2    = 12;
+        enum SIGURG     = 23;
+    }
+    else version (RISCV_Any)
     {
         //SIGABRT (defined in core.stdc.signal)
         enum SIGALRM    = 14;
@@ -2010,6 +2036,16 @@ version (CRuntime_Glibc)
         enum SIGXFSZ    = 25;
     }
     else version (ARM_Any)
+    {
+        enum SIGPOLL    = 29;
+        enum SIGPROF    = 27;
+        enum SIGSYS     = 31;
+        enum SIGTRAP    = 5;
+        enum SIGVTALRM  = 26;
+        enum SIGXCPU    = 24;
+        enum SIGXFSZ    = 25;
+    }
+    else version (RISCV_Any)
     {
         enum SIGPOLL    = 29;
         enum SIGPROF    = 27;

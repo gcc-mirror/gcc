@@ -20,6 +20,9 @@ private import core.sys.posix.signal; // for sigset_t
 version (Posix):
 extern (C) nothrow @nogc:
 
+version (RISCV32) version = RISCV_Any;
+version (RISCV64) version = RISCV_Any;
+
 //
 // Required
 //
@@ -124,6 +127,17 @@ version (CRuntime_Glibc)
             else
                 double[6] __fpregs;
         }
+    }
+    else version (RISCV_Any)
+    {
+        struct __riscv_jmp_buf
+        {
+            c_long __pc;
+            c_long[12] __regs;
+            c_long __sp;
+            double[12] __fpregs;
+        }
+        alias __jmp_buf = __riscv_jmp_buf[1];
     }
     else version (SystemZ)
     {

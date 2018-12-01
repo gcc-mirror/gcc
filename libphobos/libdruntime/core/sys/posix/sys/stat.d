@@ -28,6 +28,9 @@ else version (TVOS)
 else version (WatchOS)
     version = Darwin;
 
+version (RISCV32) version = RISCV_Any;
+version (RISCV64) version = RISCV_Any;
+
 version (Posix):
 extern (C) nothrow @nogc:
 
@@ -351,6 +354,30 @@ version (CRuntime_Glibc)
             c_ulong     __unused4;
             c_ulong     __unused5;
             c_ulong     __unused6;
+        }
+    }
+    else version (RISCV_Any)
+    {
+        struct stat_t
+        {
+            dev_t       st_dev;
+            ino_t       st_ino;
+            mode_t      st_mode;
+            nlink_t     st_nlink;
+            uid_t       st_uid;
+            gid_t       st_gid;
+            dev_t       st_rdev;
+            dev_t       __pad1;
+            off_t       st_size;
+            blksize_t   st_blksize;
+            int         __pad2;
+            time_t      st_atime;
+            c_ulong     st_atime_nsec;
+            time_t      st_mtime;
+            c_ulong     st_mtime_nsec;
+            time_t      st_ctime;
+            c_ulong     st_ctime_nsec;
+            int[2]      __reserved;
         }
     }
     else version (ARM)

@@ -31,6 +31,8 @@ version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
 version (PPC64)   version = PPC_Any;
+version (RISCV32) version = RISCV_Any;
+version (RISCV64) version = RISCV_Any;
 version (S390)    version = IBMZ_Any;
 version (SPARC)   version = SPARC_Any;
 version (SPARC64) version = SPARC_Any;
@@ -82,6 +84,13 @@ version (CRuntime_Glibc)
         enum RTLD_LOCAL     = 0;
     }
     else version (ARM_Any)
+    {
+        enum RTLD_LAZY      = 0x00001;
+        enum RTLD_NOW       = 0x00002;
+        enum RTLD_GLOBAL    = 0x00100;
+        enum RTLD_LOCAL     = 0;
+    }
+    else version (RISCV_Any)
     {
         enum RTLD_LAZY      = 0x00001;
         enum RTLD_NOW       = 0x00002;
