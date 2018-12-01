@@ -4945,7 +4945,7 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 	}
 
       /* If we have a PLUS whose second operand is a constant and the
-	 address is not valid, perhaps will can split it up using
+	 address is not valid, perhaps we can split it up using
 	 the machine-specific way to split large constants.  We use
 	 the first pseudo-reg (one of the virtual regs) as a placeholder;
 	 it will not remain in the result.  */
@@ -4960,7 +4960,7 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 
 	  /* This should have produced two insns, each of which sets our
 	     placeholder.  If the source of the second is a valid address,
-	     we can make put both sources together and make a split point
+	     we can put both sources together and make a split point
 	     in the middle.  */
 
 	  if (seq
@@ -5001,14 +5001,51 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 		}
 	    }
 
+	  /* If that didn't work and we have a nested plus, like:
+	     ((REG1 * CONST1) + REG2) + CONST2 and (REG1 + REG2) + CONST2
+	     is valid address, try to split (REG1 * CONST1).  */
+	  if (GET_CODE (XEXP (XEXP (x, 0), 0)) == PLUS
+	      && !OBJECT_P (XEXP (XEXP (XEXP (x, 0), 0), 0))
+	      && OBJECT_P (XEXP (XEXP (XEXP (x, 0), 0), 1))
+	      && ! (GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == SUBREG
+		    && OBJECT_P (SUBREG_REG (XEXP (XEXP (XEXP (x, 0),
+							 0), 0)))))
+	    {
+	      rtx tem = XEXP (XEXP (XEXP (x, 0), 0), 0);
+	      XEXP (XEXP (XEXP (x, 0), 0), 0) = reg;
+	      if (memory_address_addr_space_p (GET_MODE (x), XEXP (x, 0),
+					       MEM_ADDR_SPACE (x)))
+		{
+		  XEXP (XEXP (XEXP (x, 0), 0), 0) = tem;
+		  return &XEXP (XEXP (XEXP (x, 0), 0), 0);
+		}
+	      XEXP (XEXP (XEXP (x, 0), 0), 0) = tem;
+	    }
+	  else if (GET_CODE (XEXP (XEXP (x, 0), 0)) == PLUS
+		   && OBJECT_P (XEXP (XEXP (XEXP (x, 0), 0), 0))
+		   && !OBJECT_P (XEXP (XEXP (XEXP (x, 0), 0), 1))
+		   && ! (GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1)) == SUBREG
+			 && OBJECT_P (SUBREG_REG (XEXP (XEXP (XEXP (x, 0),
+							      0), 1)))))
+	    {
+	      rtx tem = XEXP (XEXP (XEXP (x, 0), 0), 1);
+	      XEXP (XEXP (XEXP (x, 0), 0), 1) = reg;
+	      if (memory_address_addr_space_p (GET_MODE (x), XEXP (x, 0),
+					       MEM_ADDR_SPACE (x)))
+		{
+		  XEXP (XEXP (XEXP (x, 0), 0), 1) = tem;
+		  return &XEXP (XEXP (XEXP (x, 0), 0), 1);
+		}
+	      XEXP (XEXP (XEXP (x, 0), 0), 1) = tem;
+	    }
+
 	  /* If that didn't work, perhaps the first operand is complex and
 	     needs to be computed separately, so make a split point there.
 	     This will occur on machines that just support REG + CONST
 	     and have a constant moved through some previous computation.  */
-
-	  else if (!OBJECT_P (XEXP (XEXP (x, 0), 0))
-		   && ! (GET_CODE (XEXP (XEXP (x, 0), 0)) == SUBREG
-			 && OBJECT_P (SUBREG_REG (XEXP (XEXP (x, 0), 0)))))
+	  if (!OBJECT_P (XEXP (XEXP (x, 0), 0))
+	      && ! (GET_CODE (XEXP (XEXP (x, 0), 0)) == SUBREG
+		    && OBJECT_P (SUBREG_REG (XEXP (XEXP (x, 0), 0)))))
 	    return &XEXP (XEXP (x, 0), 0);
 	}
 

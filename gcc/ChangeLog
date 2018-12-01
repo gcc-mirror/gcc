@@ -1,3 +1,11 @@
+2018-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/54589
+	* combine.c (find_split_point): For invalid memory address
+	nonobj + obj + const, if reg + obj + const is valid addressing
+	mode, split at nonobj.  Use if rather than else if for the
+	fallback.  Comment fixes.
+
 2018-11-30  Indu Bhagat  <indu.bhagat@oracle.com>
 
 	* coverage.c (get_coverage_counts): Use from_function_decl for precise
