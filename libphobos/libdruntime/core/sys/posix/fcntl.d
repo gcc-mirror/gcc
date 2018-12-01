@@ -34,6 +34,8 @@ version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
 version (PPC64)   version = PPC_Any;
+version (RISCV32) version = RISCV_Any;
+version (RISCV64) version = RISCV_Any;
 version (S390)    version = IBMZ_Any;
 version (SPARC)   version = SPARC_Any;
 version (SPARC64) version = SPARC_Any;
@@ -179,6 +181,19 @@ version (CRuntime_Glibc)
         enum O_RSYNC        = O_SYNC;
     }
     else version (ARM_Any)
+    {
+        enum O_CREAT        = 0x40;     // octal     0100
+        enum O_EXCL         = 0x80;     // octal     0200
+        enum O_NOCTTY       = 0x100;    // octal     0400
+        enum O_TRUNC        = 0x200;    // octal    01000
+
+        enum O_APPEND       = 0x400;    // octal    02000
+        enum O_NONBLOCK     = 0x800;    // octal    04000
+        enum O_SYNC         = 0x101000; // octal 04010000
+        enum O_DSYNC        = 0x1000;   // octal   010000
+        enum O_RSYNC        = O_SYNC;
+    }
+    else version (RISCV_Any)
     {
         enum O_CREAT        = 0x40;     // octal     0100
         enum O_EXCL         = 0x80;     // octal     0200

@@ -34,6 +34,8 @@ version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
 version (PPC64)   version = PPC_Any;
+version (RISCV32) version = RISCV_Any;
+version (RISCV64) version = RISCV_Any;
 version (S390)    version = IBMZ_Any;
 version (SPARC)   version = SPARC_Any;
 version (SPARC64) version = SPARC_Any;
@@ -356,6 +358,8 @@ version (CRuntime_Glibc)
         enum MS_INVALIDATE = 2;
         enum MS_SYNC = 4;
     }
+    else version (RISCV_Any)
+        private enum DEFAULTS = true;
     else version (SPARC_Any)
         private enum DEFAULTS = true;
     else version (PPC_Any)
