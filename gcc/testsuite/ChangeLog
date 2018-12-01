@@ -34,6 +34,9 @@
 	* g++.dg/template/typedef6.C: Adjust dg-error.
 	* g++.dg/template/typename3.C: Only expect error in c++17_down.
 
+	PR c++/83856
+	* g++.dg/cpp1y/lambda-generic-83856.C: New test.
+
 2018-12-01  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/predict-22.c: Update expected output.
