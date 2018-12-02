@@ -7248,6 +7248,17 @@
    (set_attr "prefix" "orig,maybe_evex,orig,maybe_evex")
    (set_attr "mode" "V4SF,V4SF,V2SF,V2SF")])
 
+(define_insn "*vec_concatv4sf_0"
+  [(set (match_operand:V4SF 0 "register_operand"       "=v")
+	(vec_concat:V4SF
+	  (match_operand:V2SF 1 "nonimmediate_operand" "xm")
+	  (match_operand:V2SF 2 "const0_operand"       " C")))]
+  "TARGET_SSE2"
+  "%vmovq\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "DF")])
+
 ;; Avoid combining registers from different units in a single alternative,
 ;; see comment above inline_secondary_memory_needed function in i386.c
 (define_insn "vec_set<mode>_0"
@@ -14408,6 +14419,23 @@
    (set_attr "type" "sselog,sselog,ssemov,ssemov,ssemov")
    (set_attr "prefix" "orig,maybe_evex,orig,orig,maybe_evex")
    (set_attr "mode" "TI,TI,V4SF,V2SF,V2SF")])
+
+(define_insn "*vec_concatv4si_0"
+  [(set (match_operand:V4SI 0 "register_operand"       "=v,x")
+	(vec_concat:V4SI
+	  (match_operand:V2SI 1 "nonimmediate_operand" "xm,?!*y")
+	  (match_operand:V2SI 2 "const0_operand"       " C,C")))]
+  "TARGET_SSE2"
+  "@
+   %vmovq\t{%1, %0|%0, %1}
+   movq2dq\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "maybe_vex,orig")
+   (set_attr "mode" "TI")
+   (set (attr "preferred_for_speed")
+     (if_then_else (eq_attr "alternative" "1")
+       (symbol_ref "TARGET_INTER_UNIT_MOVES_FROM_VEC")
+       (symbol_ref "true")))])
 
 ;; movd instead of movq is required to handle broken assemblers.
 (define_insn "vec_concatv2di"
