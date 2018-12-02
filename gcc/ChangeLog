@@ -1,5 +1,11 @@
 2018-12-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Handle OMP_CLAUSE_IN_REDUCTION,
+	OMP_CLAUSE_TASK_REDUCTION and OMP_CLAUSE__SIMT_ clauses.
+	(convert_nonlocal_reference_stmt, convert_local_reference_stmt):
+	Convert clauses for GIMPLE_OMP_TASKGROUP.
+
 	* omp-low.c (check_omp_nesting_restrictions): Allow cancel or
 	cancellation point with taskgroup clause inside of taskloop.  Consider
 	a taskloop construct without nogroup clause as implicit taskgroup for

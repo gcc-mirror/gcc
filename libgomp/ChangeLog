@@ -1,5 +1,7 @@
 2018-12-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* testsuite/libgomp.c/task-reduction-3.c: New test.
+
 	* testsuite/libgomp.c-c++-common/cancel-taskgroup-4.c: New test.
 
 2018-11-30  Cesar Philippidis  <cesar@codesourcery.com>
