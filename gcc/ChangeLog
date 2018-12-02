@@ -1,5 +1,11 @@
 2018-12-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* omp-low.c (check_omp_nesting_restrictions): Allow cancel or
+	cancellation point with taskgroup clause inside of taskloop.  Consider
+	a taskloop construct without nogroup clause as implicit taskgroup for
+	diagnostics if cancel/cancellation point with taskgroup clause is
+	closely nested inside of taskgroup region.
+
 	PR sanitizer/88291
 	* asan.c (asan_clear_shadow): Move assert that len is multiple of 4
 	to the start of the function.
