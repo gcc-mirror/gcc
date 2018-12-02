@@ -3558,8 +3558,11 @@ cp_parser_skip_to_closing_parenthesis_1 (cp_parser *parser,
 
       switch (token->type)
 	{
-	case CPP_EOF:
 	case CPP_PRAGMA_EOL:
+	  if (!parser->lexer->in_pragma)
+	    break;
+	  /* FALLTHRU */
+	case CPP_EOF:
 	  /* If we've run out of tokens, then there is no closing `)'.  */
 	  return 0;
 
@@ -3654,8 +3657,11 @@ cp_parser_skip_to_end_of_statement (cp_parser* parser)
 
       switch (token->type)
 	{
-	case CPP_EOF:
 	case CPP_PRAGMA_EOL:
+	  if (!parser->lexer->in_pragma)
+	    break;
+	  /* FALLTHRU */
+	case CPP_EOF:
 	  /* If we've run out of tokens, stop.  */
 	  return;
 
@@ -3744,8 +3750,11 @@ cp_parser_skip_to_end_of_block_or_statement (cp_parser* parser)
 
       switch (token->type)
 	{
-	case CPP_EOF:
 	case CPP_PRAGMA_EOL:
+	  if (!parser->lexer->in_pragma)
+	    break;
+	  /* FALLTHRU */
+	case CPP_EOF:
 	  /* If we've run out of tokens, stop.  */
 	  return;
 
@@ -3794,8 +3803,11 @@ cp_parser_skip_to_closing_brace (cp_parser *parser)
 
       switch (token->type)
 	{
-	case CPP_EOF:
 	case CPP_PRAGMA_EOL:
+	  if (!parser->lexer->in_pragma)
+	    break;
+	  /* FALLTHRU */
+	case CPP_EOF:
 	  /* If we've run out of tokens, stop.  */
 	  return false;
 
@@ -22560,8 +22572,11 @@ cp_parser_skip_to_closing_square_bracket (cp_parser *parser)
 
       switch (token->type)
 	{
-	case CPP_EOF:
 	case CPP_PRAGMA_EOL:
+	  if (!parser->lexer->in_pragma)
+	    break;
+	  /* FALLTHRU */
+	case CPP_EOF:
 	  /* If we've run out of tokens, then there is no closing `]'.  */
 	  return false;
 
@@ -26074,8 +26089,11 @@ cp_parser_skip_balanced_tokens (cp_parser *parser, size_t n)
   do
     switch (cp_lexer_peek_nth_token (parser->lexer, n++)->type)
       {
-      case CPP_EOF:
       case CPP_PRAGMA_EOL:
+	if (!parser->lexer->in_pragma)
+	  break;
+	/* FALLTHRU */
+      case CPP_EOF:
 	/* Ran out of tokens.  */
 	return orig_n;
       case CPP_OPEN_PAREN:
