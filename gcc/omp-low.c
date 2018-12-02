@@ -2744,7 +2744,10 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	      kind = "sections";
 	      break;
 	    case 8:
-	      if (gimple_code (ctx->stmt) != GIMPLE_OMP_TASK)
+	      if (!is_task_ctx (ctx)
+		  && (!is_taskloop_ctx (ctx)
+		      || ctx->outer == NULL
+		      || !is_task_ctx (ctx->outer)))
 		bad = "#pragma omp task";
 	      else
 		{
@@ -2767,6 +2770,17 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 				    "nested inside of %<taskgroup%> region",
 				    construct);
 			  return false;
+			case GIMPLE_OMP_TASK:
+			  if (gimple_omp_task_taskloop_p (octx->stmt)
+			      && octx->outer
+			      && is_taskloop_ctx (octx->outer))
+			    {
+			      tree clauses
+				= gimple_omp_for_clauses (octx->outer->stmt);
+			      if (!omp_find_clause (clauses, OMP_CLAUSE_NOGROUP))
+				break;
+			    }
+			  continue;
 			default:
 			  continue;
 			}

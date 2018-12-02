@@ -1,5 +1,8 @@
 2018-12-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/gomp/cancel-1.c (f2): Add various taskloop related
+	tests.
+
 	PR sanitizer/88291
 	* c-c++-common/asan/pr88291.c: New test.
 
