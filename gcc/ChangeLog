@@ -1,3 +1,8 @@
+2018-12-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (inline_memory_move_cost): Correctly
+	compute number of TFmode GPR moves.
+
 2018-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88278
@@ -5,7 +10,7 @@
 
 2018-12-02  Jeff Law  <law@redhat.com>
 
-	* config/h8300/h8300.md (call, call_value): Drop mode from 
+	* config/h8300/h8300.md (call, call_value): Drop mode from
 	operand containing number of bytes pushed.
 	(call_insn, call_value_insn): Use mode iterator for number
 	of bytes pushed operand.  Make pattern name vary appropriately.
