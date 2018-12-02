@@ -135,10 +135,11 @@ public:
   virtual bool outgoing_edge_range_p (irange &r, edge e, tree name,
 				      irange *name_range = NULL);
   tree terminal_name (tree name);
+  bool range_from_import (irange &r, tree name, irange &import_range);
 
   void dump (FILE *f);
   void calculate_and_dump (FILE *f);   /* Calculate all stmts and dump */
-private:
+protected:
   gori_cache m_gori; 	  /* Generates Outgoing Range Info.  */
   ssa_global_cache m_globals;
 };

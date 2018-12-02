@@ -251,13 +251,13 @@ ssa_ranger::outgoing_edge_range_p (irange &r, edge e, tree name,
 }
 
 // Calculate a range for NAME on edge E and return it in R.  
+// if NAME is a PHI node at the dest of E, get the argument result.
 // Return false if no range can be determined.
 
 void
 ssa_ranger::range_on_edge (irange &r, edge e, tree name)
 {
   irange edge_range;
-
   gcc_checking_assert (valid_ssa_p (name));
 
   range_on_exit (r, e->src, name);
@@ -805,6 +805,15 @@ tree
 global_ranger::terminal_name (tree name)
 {
   return m_gori.terminal_name (name);
+}
+
+// Calculate a range for NAME via it's def chain using IMPORT_RANGE as the
+// range of the terminal name.
+
+bool
+global_ranger::range_from_import (irange &r, tree name, irange &import_range)
+{
+  return m_gori.range_from_import (r, name, import_range);
 }
 
 // Print the known table values to file F.

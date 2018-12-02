@@ -183,14 +183,33 @@ range_def_chain::get_def_chain (tree name)
 
   // build_def_chain returns the terminal name. If we have more than one unique
   // terminal name, then this statement will have no terminal.
+  bool has_term = true;
+  m_terminal[v] = NULL_TREE;
   if (ssa1)
-    ssa1 = build_def_chain (ssa1, m_def_chain[v], bb);
+    {
+      ssa1 = build_def_chain (ssa1, m_def_chain[v], bb);
+      // if this chain has no terminal, root cannot either.
+      if (!ssa1)
+        has_term = false;
+    }
   if (ssa2)
-    ssa2 = build_def_chain (ssa2, m_def_chain[v], bb);
+    {
+      ssa2 = build_def_chain (ssa2, m_def_chain[v], bb);
+      if (!ssa2)
+        has_term = false;
+    }
   if (ssa3)
-    ssa3 = build_def_chain (ssa3, m_def_chain[v], bb);
+    {
+      ssa3 = build_def_chain (ssa3, m_def_chain[v], bb);
+      if (!ssa3)
+        has_term = false;
+    }
 
-  m_terminal[v] = pick_import (ssa1, ssa2, ssa3);
+  if (has_term)
+    m_terminal[v] = pick_import (ssa1, ssa2, ssa3);
+  else
+    m_terminal[v] = NULL_TREE;
+    
   // If we run into pathological cases where the defintion chains are huge
   // (I'm thinking fppp for instance.. huge basic block fully unrolled)
   // we might be able to limit this by deciding here that if there is no
@@ -1038,5 +1057,76 @@ gori_compute::outgoing_edge_range_p (irange &r, edge e, tree name,
   return reevaluate_definition (r, name, e, name_range);
 }
 
+// Calculate a range for NAME given an import range of IMPORT_RANGE and
+// return it in r.  Return true if successful.
 
+bool
+gori_compute::range_from_import (irange &r, tree name, irange &import_range)
+{
+  irange r1, r2;
+  bool res;
+  tree import = terminal_name (name);
+
+  gcc_checking_assert (import &&
+		       useless_type_conversion_p (TREE_TYPE (import),
+						  import_range.type ()));
+
+  // Only handling range_ops until we find a cond-expr that matters.
+  // We process this specially so we can handle self-referencing chains. ie:
+  //   b_3 = b_1 + 10
+  //   b_4 = b_3 + b_1  // b_4 = b_1 * 2 + 10 really
+  //   if (b_4 < 20)
+  //
+  // import b_1 = [0,0]
+  // we want to make sure b_4 evaluates both b_3 and b_1 with this import value
+  // Due to the nature of def chains, there can only be one import in the chain.
+  // its possible 2 different chains occur in one stmt, ie:
+  // if (b_4 < d_6), but there is no DEF for this stmt, so it can't happen.
+  // f_5 = b_4 + d_6 would have no import since there are 2 symbolics.
+  
+  grange_op *s = dyn_cast<grange_op *> (SSA_NAME_DEF_STMT (name));
+  if (!s)
+    return false;
+
+  tree op1 = s->operand1 ();
+  tree op2 = s->operand2 ();
+
+  // Evaluate op1
+  if (ssa_ranger::valid_ssa_p (op1))
+    {
+      if (op1 == import)
+        {
+	  res = true;
+	  r1 = import_range;
+	}
+      else
+	res = range_from_import (r1, op1, import_range);
+    }
+  else
+    res = get_tree_range (r1, op1);
+
+  if (!res)
+    return false;
+  if (!op2)
+    return s->fold (r, r1);
+
+  // Now evaluate op2.
+  if (ssa_ranger::valid_ssa_p (op2))
+    {
+      if (op2 == import)
+        {
+	  res = true;
+	  r2 = import_range;
+	}
+      else
+	res = range_from_import (r2, op2, import_range);
+    }
+  else
+    res = get_tree_range (r2, op2);
+
+  if (res)
+    return s->fold (r, r1, r2);
+
+  return false;
+}
 

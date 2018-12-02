@@ -154,13 +154,14 @@ public:
   gori_compute ();
   ~gori_compute ();
 
+  bool outgoing_edge_range_p (irange &r, edge e, tree name,
+			      irange *name_range = NULL);
+  bool range_from_import (irange &r, tree name, irange &import_range);
+private:
   // Evaluate the range for NAME on stmt S if the lhs has range LHS. 
   // Substituting results back until we encounter NAME.
   bool compute_operand_range (irange &r, gimple *s, const irange &lhs,
 			      tree name, irange *name_range = NULL);
-  bool outgoing_edge_range_p (irange &r, edge e, tree name,
-			      irange *name_range = NULL);
-private:
   bool compute_operand_range_switch (irange &r, gswitch *s, const irange &lhs,
 				     tree name, irange *name_range);
   bool compute_operand_range_op (irange &r, grange_op *stmt, const irange &lhs,

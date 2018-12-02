@@ -510,7 +510,13 @@ gori_cache::block_range (irange &r, basic_block bb, tree name, bool calc)
       if (def_stmt)
 	def_bb = gimple_bb (def_stmt);;
       if (!def_bb)
-	def_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
+        {
+	  // IF we get to the entry block, this better be a default def
+	  // or range_on_entry was called fo a block not dominated by 
+	  // the def.  This would be a bug.
+	  gcc_checking_assert (SSA_NAME_IS_DEFAULT_DEF (name));
+	  def_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
+	}
       
       // There is no range on entry for the defintion block.
       if (def_bb == bb)
