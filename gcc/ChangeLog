@@ -1,3 +1,8 @@
+2018-12-02  Jan Hubicka  <jh@suse.cz>
+
+	* bb-reorer.c (find_rarely_executed_basic_blocks_and_crossin_edges):
+	trust precise profiles.
+
 2018-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-nested.c (convert_nonlocal_omp_clauses,
