@@ -1,3 +1,10 @@
+2018-12-02  Jeff Law  <law@redhat.com>
+
+	* config/h8300/h8300.md (call, call_value): Drop mode from 
+	operand containing number of bytes pushed.
+	(call_insn, call_value_insn): Use mode iterator for number
+	of bytes pushed operand.  Make pattern name vary appropriately.
+
 2018-12-02  Jan Hubicka  <jh@suse.cz>
 
 	* bb-reorer.c (find_rarely_executed_basic_blocks_and_crossin_edges):
