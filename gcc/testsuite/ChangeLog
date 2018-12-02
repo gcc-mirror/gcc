@@ -1,5 +1,8 @@
 2018-12-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/88291
+	* c-c++-common/asan/pr88291.c: New test.
+
 	PR c++/88258
 	* g++.dg/gomp/pr88258.C: New test.
 
