@@ -1,3 +1,8 @@
+2018-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/88278
+	* config/i386/sse.md (*vec_concatv4sf_0, *vec_concatv4si_0): New insns.
+
 2018-12-02  Jeff Law  <law@redhat.com>
 
 	* config/h8300/h8300.md (call, call_value): Drop mode from 

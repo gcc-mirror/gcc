@@ -1,5 +1,11 @@
 2018-12-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/88278
+	* gcc.target/i386/pr88278.c: New test.
+	* gcc.target/i386/pr53759.c: Don't expect vmovlps insn, expect vmovq
+	instead.
+	* gcc.target/i386/pr53759-2.c: New test.
+
 	* c-c++-common/gomp/cancel-1.c (f2): Add various taskloop related
 	tests.
 
