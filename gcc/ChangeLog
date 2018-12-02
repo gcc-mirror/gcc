@@ -1,3 +1,14 @@
+2018-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/88291
+	* asan.c (asan_clear_shadow): Move assert that len is multiple of 4
+	to the start of the function.
+	(asan_emit_stack_protection): When emitting clearing sequence for
+	epilogue, align offset down to ASAN_RED_ZONE_SIZE granularity,
+	add last_size_aligned which is last_size padded to multiples of
+	ASAN_RED_ZONE_SIZE and emit asan_clear_shadow always on 4 byte
+	boundaries.
+
 2018-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/88289
