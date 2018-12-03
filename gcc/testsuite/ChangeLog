@@ -1,5 +1,10 @@
 2018-12-03  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/generic_inst2.adb, gnat.dg/generic_inst2.ads,
+	gnat.dg/generic_inst2_c.ads: New testcase.
+
+2018-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/overload2.adb, gnat.dg/overload2_p.adb,
 	gnat.dg/overload2_p.ads, gnat.dg/overload2_q.adb,
 	gnat.dg/overload2_q.ads: New testcase.

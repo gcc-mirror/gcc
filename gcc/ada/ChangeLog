@@ -1,5 +1,14 @@
 2018-12-03  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* freeze.adb (Freeze_Entity): Do not freeze the partial view of
+	a private subtype if its base type is also private with delayed
+	freeze before the full type declaration of the base type has
+	been seen.
+	* sem_ch7.adb (Preserve_Full_Attributes): Add assertion on
+	freeze node.
+
+2018-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* exp_ch3.adb (Build_Record_Init_Proc): Inherit an
 	initialization procedure if it is present, even if it is null.
 

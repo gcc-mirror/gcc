@@ -2733,6 +2733,15 @@ package body Sem_Ch7 is
             Propagate_Concurrent_Flags (Priv, Base_Type (Full));
          end if;
 
+         --  As explained in Freeze_Entity, private types are required to point
+         --  to the same freeze node as their corresponding full view, if any.
+         --  But we ought not to overwrite a node already inserted in the tree.
+
+         pragma Assert (Serious_Errors_Detected /= 0
+           or else No (Freeze_Node (Priv))
+           or else No (Parent (Freeze_Node (Priv)))
+           or else Freeze_Node (Priv) = Freeze_Node (Full));
+
          Set_Freeze_Node (Priv, Freeze_Node (Full));
 
          --  Propagate Default_Initial_Condition-related attributes from the
