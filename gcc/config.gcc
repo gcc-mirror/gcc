@@ -278,6 +278,7 @@ case ${target} in
  | m68k-*-uclinuxoldabi*		\
  | mips64orion*-*-rtems*		\
  | pdp11-*-bsd				\
+ | powerpc*-*-linux*paired*		\
  | sparc-hal-solaris2*			\
  | thumb-*-*				\
  | *-*-freebsd[12] | *-*-freebsd[1234].* \
@@ -2660,7 +2661,7 @@ powerpc*-*-linux*)
 	    all) maybe_biarch=yes ;;
 	esac
 	case ${target} in
-	    powerpc64*-*-linux*spe* | powerpc*-*-linux*paired*)
+	    powerpc64*-*-linux*spe*)
 		echo "*** Configuration ${target} not supported" 1>&2
 		exit 1
 		;;
