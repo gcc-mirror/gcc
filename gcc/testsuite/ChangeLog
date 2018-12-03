@@ -1,3 +1,8 @@
+2018-12-03  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/pr59963-2.c: Make testnames unique.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-18.c: Likewise.
+
 2018-12-03  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* gcc.target/s390/nodatarel-1.c: Expect .LANCHOR0@GOTENT instead
