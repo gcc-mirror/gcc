@@ -7,7 +7,7 @@ template <class _E> class initializer_list {
   _E *_M_len;
 
 public:
-  unsigned long size;
+  __SIZE_TYPE__ size;
   _E begin();
 };
 template <typename, unsigned> struct array { void operator[](long); };
