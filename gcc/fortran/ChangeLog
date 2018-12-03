@@ -1,12 +1,16 @@
 2018-12-03  Fritz Reese  <fritzoreese@gmail.com>
-            Mark Eggleston <mark.eggleston@codethink.co.uk>
+	    Mark Eggleston  <mark.eggleston@codethink.co.uk>
 
 	PR fortran/87919
 	* options.c (SET_FLAG, SET_BITFLAG, SET_BITFLAG2): New macros.
 	(set_dec_flags): Set/unset DEC and std flags according to value.
-	(set_init_local_zero): New helper for -finit-local-zero flag group.
-	(gfc_init_options): Fix disabling of init flags, array temporaries
-	check, and dec flags when value is zero (from -fno-*).
+	(post_dec_flags, set_init_local_zero): New functions.
+	(gfc_init_options): Use set_init_local_zero and post_dec_flags.
+	(gfc_handle_options) <case OPT_fcheck_array_temporaries>: Use
+	SET_BITFLAG.
+	<case OPT_finit_local_zero>: Use set_init_local_zero.
+	<case OPT_fdec>: Pass value to set_dec_flags.
+	<case OPT_fdec_structure>: Remove.
 
 2018-11-30  Thomas Schwinge  <thomas@codesourcery.com>
 
