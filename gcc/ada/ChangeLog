@@ -1,3 +1,10 @@
+2018-12-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Apply_Check): For array types, apply a length
+	check rather than a qualification, to avoid spurious errors when
+	the value of a dependend expression has a matching length but
+	different bounds from those of the type of the contect.
+
 2018-12-03  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* libgnat/a-calend.adb: Update the number of leap seconds. Add

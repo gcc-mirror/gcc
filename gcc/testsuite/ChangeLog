@@ -1,3 +1,7 @@
+2018-12-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/array33.adb: New testcase.
+
 2018-12-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/array32.adb, gnat.dg/array32.ads: New testcase.
