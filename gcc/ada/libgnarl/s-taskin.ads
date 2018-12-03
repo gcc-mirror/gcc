@@ -826,7 +826,7 @@ package System.Tasking is
    --  ATC_Level of a task that has "completed". A task reaches the completed
    --  state after an abort, exception propagation, or normal exit.
 
-   Level_No_ATC_Occuring : constant ATC_Level_Base := 0;
+   Level_No_ATC_Occurring : constant ATC_Level_Base := 0;
    --  ATC_Level of a task not executing a entry call or an asynchronous
    --  select statement.
 
@@ -834,11 +834,11 @@ package System.Tasking is
    --  ATC_Level when there is no pending abort
 
    subtype ATC_Level is ATC_Level_Base range
-     Level_No_ATC_Occuring .. Level_No_Pending_Abort - 1;
+     Level_No_ATC_Occurring .. Level_No_Pending_Abort - 1;
    --  Nested ATC_Levels valid during the execution of a task
 
    subtype ATC_Level_Index is ATC_Level range
-     Level_No_ATC_Occuring + 1 .. ATC_Level'Last;
+     Level_No_ATC_Occurring + 1 .. ATC_Level'Last;
    --  ATC_Levels valid when a task is executing an entry call or asynchronous
    --  task control statements.
 
@@ -1101,7 +1101,7 @@ package System.Tasking is
 
       --  Beginning of counts
 
-      ATC_Nesting_Level : ATC_Level := Level_No_ATC_Occuring;
+      ATC_Nesting_Level : ATC_Level := Level_No_ATC_Occurring;
       --  The dynamic level of ATC nesting (currently executing nested
       --  asynchronous select statements) in this task.
 

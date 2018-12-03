@@ -563,7 +563,7 @@ package body System.Tasking.Restricted.Stages is
       end if;
 
       --  Only the first element of the Entry_Calls array is used when the
-      --  Ravenscar Profile is active as no asynchronous transfer of control
+      --  Ravenscar Profile is active, as no asynchronous transfer of control
       --  is allowed.
 
       Created_Task.Entry_Calls (Created_Task.Entry_Calls'First) :=

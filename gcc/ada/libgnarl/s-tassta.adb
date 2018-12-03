@@ -1982,7 +1982,7 @@ package body System.Tasking.Stages is
            Self_ID.Master_Of_Task .. Self_ID.Master_Of_Task + 3);
       pragma Assert (Self_ID.Common.Wait_Count = 0);
       pragma Assert (Self_ID.Open_Accepts = null);
-      pragma Assert (Self_ID.ATC_Nesting_Level = Level_No_ATC_Occuring);
+      pragma Assert (Self_ID.ATC_Nesting_Level = Level_No_ATC_Occurring);
 
       pragma Debug (Debug.Trace (Self_ID, "V_Complete_Task", 'C'));
 
