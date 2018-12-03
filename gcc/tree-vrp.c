@@ -2966,6 +2966,23 @@ register_edge_assert_for_2 (tree name, edge e,
 	    add_assert_info (asserts, name2, tmp, new_comp_code, new_val);
 	}
 
+      /* If we have a conversion that doesn't change the value of the source
+         simply register the same assert for it.  */
+      if (CONVERT_EXPR_CODE_P (rhs_code))
+	{
+	  wide_int rmin, rmax;
+	  tree rhs1 = gimple_assign_rhs1 (def_stmt);
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
+	      && int_fits_type_p (val, TREE_TYPE (rhs1))
+	      && ((TYPE_PRECISION (TREE_TYPE (name))
+		   > TYPE_PRECISION (TREE_TYPE (rhs1)))
+		  || (get_range_info (rhs1, &rmin, &rmax) == VR_RANGE
+		      && wi::fits_to_tree_p (rmin, TREE_TYPE (name))
+		      && wi::fits_to_tree_p (rmax, TREE_TYPE (name)))))
+	    add_assert_info (asserts, rhs1, rhs1,
+		 	     comp_code, fold_convert (TREE_TYPE (rhs1), val));
+	}
+
       /* Add asserts for NAME cmp CST and NAME being defined as
 	 NAME = NAME2 & CST2.
 
