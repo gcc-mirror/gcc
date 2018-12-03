@@ -1,3 +1,9 @@
+2018-12-02  Andi Kleen  <ak@linux.intel.com>
+
+	* gcc.target/i386/returninst1.c: Run on 64bit only.
+	* gcc.target/i386/returninst2.c: Dito.
+	* gcc.target/i386/returninst3.c: Dito.
+
 2018-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88278
