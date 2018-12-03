@@ -4984,10 +4984,6 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	    return;
 
 	  /* Else replace its RHS.  */
-	  bool can_make_abnormal_goto
-	      = is_gimple_call (stmt)
-	      && stmt_can_make_abnormal_goto (stmt);
-
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Replaced ");
@@ -4997,12 +4993,23 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	      fprintf (dump_file, " in ");
 	      print_gimple_stmt (dump_file, stmt, 0);
 	    }
-
 	  eliminations++;
+
+	  bool can_make_abnormal_goto = (is_gimple_call (stmt)
+					 && stmt_can_make_abnormal_goto (stmt));
 	  gimple *orig_stmt = stmt;
 	  if (!useless_type_conversion_p (TREE_TYPE (lhs),
 					  TREE_TYPE (sprime)))
-	    sprime = fold_convert (TREE_TYPE (lhs), sprime);
+	    {
+	      /* We preserve conversions to but not from function or method
+		 types.  This asymmetry makes it necessary to re-instantiate
+		 conversions here.  */
+	      if (POINTER_TYPE_P (TREE_TYPE (lhs))
+		  && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (lhs))))
+		sprime = fold_convert (TREE_TYPE (lhs), sprime);
+	      else
+		gcc_unreachable ();
+	    }
 	  tree vdef = gimple_vdef (stmt);
 	  tree vuse = gimple_vuse (stmt);
 	  propagate_tree_value_into_stmt (gsi, sprime);
