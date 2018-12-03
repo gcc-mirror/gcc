@@ -14160,7 +14160,6 @@ package body Sem_Util is
                --  Check for prefix being an aliased component???
 
                null;
-
             end if;
 
             --  A heap object is constrained by its initial value

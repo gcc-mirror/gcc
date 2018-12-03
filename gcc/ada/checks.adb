@@ -4574,7 +4574,6 @@ package body Checks is
             Typ := Actual_Subtype (Entity (N));
          end if;
 
-         null;
       else
          Typ := Underlying_Type (Base_Type (Typ));
       end if;

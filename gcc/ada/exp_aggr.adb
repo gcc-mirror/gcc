@@ -4541,7 +4541,7 @@ package body Exp_Aggr is
 
                            declare
                               P : constant Entity_Id :=
-                                Cunit_Entity (Current_Sem_Unit);
+                                    Cunit_Entity (Current_Sem_Unit);
 
                            begin
                               --  Check if duplication is always OK and, if so,

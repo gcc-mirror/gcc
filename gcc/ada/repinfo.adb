@@ -120,9 +120,9 @@ package body Repinfo is
    --  the current entity. Set True when a new entity is processed, and false
    --  when the blank line is output.
 
-   -------------------------------
-   --  Set of Relevant Entities --
-   -------------------------------
+   ------------------------------
+   -- Set of Relevant Entities --
+   ------------------------------
 
    Relevant_Entities_Size : constant := 4093;
    --  Number of headers in hash table

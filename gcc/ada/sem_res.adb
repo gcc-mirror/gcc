@@ -8457,38 +8457,43 @@ package body Sem_Res is
    ---------------------------
 
    procedure Resolve_If_Expression (N : Node_Id; Typ : Entity_Id) is
-      Condition : constant Node_Id := First (Expressions (N));
-      Then_Expr : Node_Id;
-      Else_Expr : Node_Id;
-
       procedure Apply_Check (Expr : Node_Id);
-      --  When a dependent expression is of a subtype different from the
-      --  context subtype, then insert a qualification  to ensure the
-      --  generation of a constraint check. This was previously done only
-      --  for scalar types.
+      --  When a dependent expression is of a subtype different from
+      --  the context subtype, then insert a qualification to ensure
+      --  the generation of a constraint check. This was previously
+      --  done only for scalar types.
 
       -----------------
       -- Apply_Check --
       -----------------
 
       procedure Apply_Check (Expr : Node_Id) is
-         Loc       : constant Source_Ptr := Sloc (Expr);
-         Expr_Type : constant Entity_Id := Etype (Expr);
-      begin
+         Expr_Typ : constant Entity_Id  := Etype (Expr);
+         Loc      : constant Source_Ptr := Sloc (Expr);
 
-         if Expr_Type /= Typ
-            and then not Is_Tagged_Type (Typ)
-            and then not Is_Access_Type (Typ)
-            and then Is_Constrained (Typ)
-            and then not Inside_A_Generic
+      begin
+         if Expr_Typ /= Typ
+           and then not Is_Tagged_Type (Typ)
+           and then not Is_Access_Type (Typ)
+           and then Is_Constrained (Typ)
+           and then not Inside_A_Generic
          then
             Rewrite (Expr,
-                 Make_Qualified_Expression (Loc,
-                   Subtype_Mark => New_Occurrence_Of (Typ, Loc),
-                   Expression   => Relocate_Node (Expr)));
+              Make_Qualified_Expression (Loc,
+                Subtype_Mark => New_Occurrence_Of (Typ, Loc),
+                Expression   => Relocate_Node (Expr)));
+
             Analyze_And_Resolve (Expr, Typ);
          end if;
       end Apply_Check;
+
+      --  Local variables
+
+      Condition : constant Node_Id := First (Expressions (N));
+      Else_Expr : Node_Id;
+      Then_Expr : Node_Id;
+
+   --  Start of processing for Resolve_If_Expression
 
    begin
       --  Defend against malformed expressions
