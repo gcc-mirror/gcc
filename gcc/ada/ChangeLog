@@ -1,3 +1,8 @@
+2018-12-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* libgnat/a-calend.adb: Update the number of leap seconds. Add
+	the hard time values for year 2015 and 2016.
+
 2018-12-03  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch3.adb, libgnarl/s-taasde.adb, libgnarl/s-taenca.adb,
