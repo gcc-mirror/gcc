@@ -1,3 +1,7 @@
+2018-12-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Complete_Private_Subtype): Enhance comment.
+
 2018-12-03  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc-interface/lang.opt (fopenacc): New option for Ada.
