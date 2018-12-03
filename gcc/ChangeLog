@@ -1,5 +1,8 @@
 2018-12-03  Jeff Law  <law@redhat.com>
 
+	* config/h8300/h8300.md (<code>qi3_1): Add gcc_unreachable to keep
+	warnings quiet.
+
 	* config/h8300/h8300.md (low byte masking peepholes): Only accept
 	nonimmediate_operand for the to-be-masked operand.
 
