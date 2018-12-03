@@ -1,3 +1,30 @@
+2018-12-03  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_aux.adb (Object_Type_Has_Constrained_Partial_View): Return
+	True for an untagged discriminated formal derived type when
+	referenced within a generic body (augments existing test for
+	formal private types).
+	* sem_util.adb (Is_Dependent_Component_Of_Mutable_Type): If the
+	prefix of the name is a qualified expression, retrieve the
+	operand of that. Add a test of whether the (possible)
+	dereference prefix is a variable, and also test whether that
+	prefix might just be of an access type (occurs in some implicit
+	dereference cases) rather than being an explicit dereference.
+	Retrieve the Original_Node of the object name's main prefix and
+	handle the possibility of that being a qualified expression.
+	Remove special-case code for explicit dereferences that don't
+	come from source. Add test for the renaming not being within a
+	generic body for proper determination of whether a formal access
+	type is known to be constrained (it is within a generic spec,
+	but not in the body).  Fix an existing incorrect test for
+	renaming of a discriminant-dependent component of a untagged
+	generic formal type being within a generic body, adding test of
+	taggedness and calling In_Generic_Body (now properly checks for
+	cases where the renaming is in a nongeneric body nested within a
+	generic).  Return False in cases where the selector is not a
+	component (or discriminant), which can occur for
+	prefixed-notation calls.
+
 2018-12-03  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Apply_Check): For array types, apply a length
