@@ -13414,7 +13414,10 @@ package body Exp_Util is
    --  See also Silly_Boolean_Array_Not_Test
 
    procedure Silly_Boolean_Array_Xor_Test
-     (N : Node_Id; R : Node_Id;  T : Entity_Id) is
+     (N : Node_Id;
+      R : Node_Id;
+      T : Entity_Id)
+   is
       Loc : constant Source_Ptr := Sloc (N);
       CT  : constant Entity_Id  := Component_Type (T);
 
@@ -13435,9 +13438,9 @@ package body Exp_Util is
         Make_Raise_Constraint_Error (Loc,
           Condition =>
             Make_And_Then (Loc,
-              Left_Opnd =>
+              Left_Opnd  =>
                 Make_And_Then (Loc,
-                  Left_Opnd =>
+                  Left_Opnd  =>
                     Convert_To (Standard_Boolean,
                       Make_Attribute_Reference (Loc,
                         Prefix         => New_Occurrence_Of (CT, Loc),
@@ -13450,7 +13453,7 @@ package body Exp_Util is
                         Attribute_Name => Name_Last))),
 
               Right_Opnd => Make_Non_Empty_Check (Loc, R)),
-          Reason => CE_Range_Check_Failed));
+          Reason    => CE_Range_Check_Failed));
    end Silly_Boolean_Array_Xor_Test;
 
    --------------------------

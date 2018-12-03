@@ -8284,7 +8284,7 @@ package body Sem_Attr is
 
          Analyze_And_Resolve (N, Standard_Boolean);
          Static := True;
-         Set_Is_Static_Expression (N, True);
+         Set_Is_Static_Expression (N);
       end Atomic_Always_Lock_Free;
 
       ---------
@@ -8737,7 +8737,7 @@ package body Sem_Attr is
 
          Analyze_And_Resolve (N, Standard_Boolean);
          Static := True;
-         Set_Is_Static_Expression (N, True);
+         Set_Is_Static_Expression (N);
       end Lock_Free;
 
       ----------

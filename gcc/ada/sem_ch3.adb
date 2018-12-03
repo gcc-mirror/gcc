@@ -4278,21 +4278,19 @@ package body Sem_Ch3 is
            and then Nkind (E) = N_Aggregate
            and then
              ((Present (Following_Address_Clause (N))
-                            and then not Ignore_Rep_Clauses)
+                 and then not Ignore_Rep_Clauses)
               or else Delayed_Aspect_Present)
          then
             Set_Etype (E, T);
 
-            --  If the aggregate is limited it will be built in place,
-            --  and its expansion is deferred until the object declaration
-            --  is expanded.
+            --  If the aggregate is limited it will be built in place, and its
+            --  expansion is deferred until the object declaration is expanded.
 
             if Is_Limited_Type (T) then
                Set_Expansion_Delayed (E);
             end if;
 
          else
-
             --  If the expression is a formal that is a "subprogram pointer"
             --  this is illegal in accessibility terms (see RM 3.10.2 (13.1/2)
             --  and AARM 3.10.2 (13.b/2)). Add an explicit conversion to force
@@ -4365,9 +4363,7 @@ package body Sem_Ch3 is
                Set_Current_Value (Id, E);
             end if;
 
-         elsif Is_Scalar_Type (T)
-            and then Is_OK_Static_Expression (E)
-         then
+         elsif Is_Scalar_Type (T) and then Is_OK_Static_Expression (E) then
             Set_Is_Known_Valid (Id);
 
          --  If it is a constant initialized with a valid nonstatic entity,
