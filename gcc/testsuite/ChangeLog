@@ -1,3 +1,11 @@
+2018-12-03  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/nodatarel-1.c: Expect .LANCHOR0@GOTENT instead
+	of a@GOTENT.
+	* gcc.target/s390/section-anchors.c: New test.
+	* gcc.target/s390/section-anchors2.c: New test.
+	* gcc.target/s390/section-anchors3.c: New test.
+
 2018-12-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88301

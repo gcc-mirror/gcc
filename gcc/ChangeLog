@@ -1,3 +1,15 @@
+2018-12-03  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* common/config/s390/s390-common.c (s390_option_init_struct):
+	Use section anchors by default.
+	* config/s390/s390.c (s390_check_symref_alignment): Handle
+	anchors.
+	(TARGET_MAX_ANCHOR_OFFSET): Use short displacement.
+	* output.h (assemble_align): Pass `align' as unsigned int, so
+	that the value 0x80000000, which corresponds to `aligned(1 <<
+	28)', would pass the `align > BITS_PER_UNIT' check.
+	* varasm.c (assemble_align): Likewise.
+
 2018-12-03  Julian Brown  <julian@codesourcery.com>
 
 	* tree-pretty-print.c (dump_omp_clause): Make default case
