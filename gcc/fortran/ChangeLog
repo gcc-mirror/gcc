@@ -1,3 +1,13 @@
+2018-12-03  Fritz Reese  <fritzoreese@gmail.com>
+            Mark Eggleston <mark.eggleston@codethink.co.uk>
+
+	PR fortran/87919
+	* options.c (SET_FLAG, SET_BITFLAG, SET_BITFLAG2): New macros.
+	(set_dec_flags): Set/unset DEC and std flags according to value.
+	(set_init_local_zero): New helper for -finit-local-zero flag group.
+	(gfc_init_options): Fix disabling of init flags, array temporaries
+	check, and dec flags when value is zero (from -fno-*).
+
 2018-11-30  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gfortran.h (struct gfc_omp_clauses): Remove "wait".  Adjust all
