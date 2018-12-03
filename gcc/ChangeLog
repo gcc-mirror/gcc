@@ -1,3 +1,13 @@
+2018-12-03  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/80080
+	* cfgcleanup.c (class pass_postreload_jump): New pass.
+	(pass_postreload_jump::execute): Likewise.
+	(make_pass_postreload_jump): Likewise.
+	* passes.def: Add pass_postreload_jump before
+	pass_postreload_cse.
+	* tree-pass.h (make_pass_postreload_jump): New pass.
+
 2018-12-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (inline_memory_move_cost): Correctly

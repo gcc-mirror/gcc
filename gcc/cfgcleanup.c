@@ -3259,6 +3259,48 @@ make_pass_jump (gcc::context *ctxt)
 
 namespace {
 
+const pass_data pass_data_postreload_jump =
+{
+  RTL_PASS, /* type */
+  "postreload_jump", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_JUMP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_postreload_jump : public rtl_opt_pass
+{
+public:
+  pass_postreload_jump (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_postreload_jump, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual unsigned int execute (function *);
+
+}; // class pass_postreload_jump
+
+unsigned int
+pass_postreload_jump::execute (function *)
+{
+  cleanup_cfg (flag_thread_jumps ? CLEANUP_THREADING : 0);
+  return 0;
+}
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_postreload_jump (gcc::context *ctxt)
+{
+  return new pass_postreload_jump (ctxt);
+}
+
+namespace {
+
 const pass_data pass_data_jump2 =
 {
   RTL_PASS, /* type */
