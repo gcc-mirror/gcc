@@ -1,3 +1,8 @@
+2018-12-03  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/targtyps.c (MALLOC_OBSERVABLE_ALIGNMENT): Set to
+	2 * POINTER_SIZE.
+
 2018-12-03  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Set_Slice_Subtype): The index type of a slice is
