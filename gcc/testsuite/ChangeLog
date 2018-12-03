@@ -1,3 +1,7 @@
+2018-12-03  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp1y/lambda-generic-83856.C: Use __SIZE_TYPE__.
+
 2018-12-03  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/array33.adb: New testcase.
