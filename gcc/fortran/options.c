@@ -32,6 +32,20 @@ along with GCC; see the file COPYING3.  If not see
 
 gfc_option_t gfc_option;
 
+#define SET_FLAG(flag, condition, on_value, off_value) \
+  do \
+    { \
+      if (condition) \
+	flag = (on_value); \
+      else \
+	flag = (off_value); \
+    } while (0)
+
+#define SET_BITFLAG2(m) m
+
+#define SET_BITFLAG(flag, condition, value) \
+  SET_BITFLAG2 (SET_FLAG (flag, condition, (flag | (value)), (flag & ~(value))))
+
 
 /* Set flags that control warnings and errors for different
    Fortran standards to their default values.  Keep in sync with
@@ -47,30 +61,55 @@ set_default_std_flags (void)
   gfc_option.warn_std = GFC_STD_F2018_DEL | GFC_STD_F95_DEL | GFC_STD_LEGACY;
 }
 
-
-/* Set all the DEC extension flags.  */
+/* Set (or unset) the DEC extension flags.  */
 
 static void
 set_dec_flags (int value)
 {
-  if (value)
-    {
-      /* Allow legacy code without warnings.  */
-      gfc_option.allow_std |= GFC_STD_F95_OBS | GFC_STD_F95_DEL
-        | GFC_STD_GNU | GFC_STD_LEGACY;
-      gfc_option.warn_std &= ~(GFC_STD_LEGACY | GFC_STD_F95_DEL);
-    }
-
-  /* Set other DEC compatibility extensions.  */
-  flag_dollar_ok |= value;
-  flag_cray_pointer |= value;
-  flag_dec_structure |= value;
-  flag_dec_intrinsic_ints |= value;
-  flag_dec_static |= value;
-  flag_dec_math |= value;
-  flag_dec_include |= value;
+  /* Set (or unset) other DEC compatibility extensions.  */
+  SET_BITFLAG (flag_dollar_ok, value, value);
+  SET_BITFLAG (flag_cray_pointer, value, value);
+  SET_BITFLAG (flag_dec_structure, value, value);
+  SET_BITFLAG (flag_dec_intrinsic_ints, value, value);
+  SET_BITFLAG (flag_dec_static, value, value);
+  SET_BITFLAG (flag_dec_math, value, value);
+  SET_BITFLAG (flag_dec_include, value, value);
 }
 
+/* Finalize DEC flags.  */
+
+static void
+post_dec_flags (int value)
+{
+  /* Don't warn for legacy code if -fdec is given; however, setting -fno-dec
+     does not force these warnings.  We make one final determination on this
+     at the end because -std= is always set first; thus, we can avoid
+     clobbering the user's desired standard settings in gfc_handle_option
+     e.g. when -fdec and -fno-dec are both given.  */
+  if (value)
+    {
+      gfc_option.allow_std |= GFC_STD_F95_OBS | GFC_STD_F95_DEL
+	| GFC_STD_GNU | GFC_STD_LEGACY;
+      gfc_option.warn_std &= ~(GFC_STD_LEGACY | GFC_STD_F95_DEL);
+    }
+}
+
+/* Enable (or disable) -finit-local-zero.  */
+
+static void
+set_init_local_zero (int value)
+{
+  gfc_option.flag_init_integer_value = 0;
+  gfc_option.flag_init_character_value = (char)0;
+
+  SET_FLAG (gfc_option.flag_init_integer, value, GFC_INIT_INTEGER_ON,
+	    GFC_INIT_INTEGER_OFF);
+  SET_FLAG (gfc_option.flag_init_logical, value, GFC_INIT_LOGICAL_FALSE,
+	    GFC_INIT_LOGICAL_OFF);
+  SET_FLAG (gfc_option.flag_init_character, value, GFC_INIT_CHARACTER_ON,
+	    GFC_INIT_CHARACTER_OFF);
+  SET_FLAG (flag_init_real, value, GFC_INIT_REAL_ZERO, GFC_INIT_REAL_OFF);
+}
 
 /* Return language mask for Fortran options.  */
 
