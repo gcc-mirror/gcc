@@ -1,3 +1,36 @@
+2018-12-03  Patrick Bernardi  <bernardi@adacore.com>
+
+	* libgnarl/s-taskin.ads (ATC_Level_Base): Redefine to span from
+	-1 to Max_ATC_Nesting so that 0 represents no ATC nesting and -1
+	represented a completed task. To increase readability, new
+	constants are introduced to represent key ATC nesting levels.
+	Consequently, Level_No_Pending_Abort replaces
+	ATC_Level_Infinity.  ATC_Level related definitions now
+	documented.
+	(Ada_Task_Control_Block): The default initialization of
+	components ATC_Nesting_Level and Pending_ATC_Level now use new
+	ATC_Level_Base constants.  Comments improved
+	* libgnarl/s-taskin.adb (Initialize): Improve the initialisation
+	of the first element of the Entry_Calls array to facilitate
+	better maintenance.
+	* libgnarl/s-taasde.ads: Update comment.
+	* libgnarl/s-taasde.adb, libgnarl/s-taenca.adb,
+	libgnarl/s-tasren.adb, libgnarl/s-tassta.adb,
+	libgnarl/s-tasuti.ads, libgnarl/s-tasuti.adb: Use new
+	ATC_Level_Base constants.
+	* libgnarl/s-tarest.adb (Create_Restricted_Task): Improve the
+	initialisation of the first element of the task's Entry_Calls
+	array to facilitate better maintenance.
+	* libgnarl/s-tasini.ads (Locked_Abort_To_Level): Update
+	signature to accept ATC_Level_Base.
+	* libgnarl/s-tasini.adb (Locked_Abort_To_Level): Update
+	signature to accept ATC_Level_Base.  Use new ATC_Level_Base
+	constants and only modify the aborting task's Entry_Calls array
+	if any entry call is happening.
+	* libgnarl/s-tposen.adb (Protected_Single_Entry_Call): Reference
+	the first element of the task's Entry_Calls array via 'First
+	attribute to facilitate better maintenance.
+
 2018-12-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* einfo.adb (Write_Entity_Info): Don't take Scope of Standard
