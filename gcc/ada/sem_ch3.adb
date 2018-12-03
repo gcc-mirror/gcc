@@ -12328,6 +12328,9 @@ package body Sem_Ch3 is
       --  Note that the type of the full view is the same entity as the type
       --  of the partial view. In this fashion, the subtype has access to the
       --  correct view of the parent.
+      --  The list below included access types, but this leads to several
+      --  regressions. How should the base type of the full view be
+      --  set consistently for subtypes completed by access types?
 
       Save_Next_Entity := Next_Entity (Full);
       Save_Homonym     := Homonym (Priv);
