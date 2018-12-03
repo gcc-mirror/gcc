@@ -1,3 +1,8 @@
+2018-12-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_transform_loop): Properly compute
+	upper bound for the epilogue when doing epilogue vectorization.
+
 2018-12-03  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR target/80080
