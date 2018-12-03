@@ -1,3 +1,8 @@
+2018-12-03  Julian Brown  <julian@codesourcery.com>
+
+	* tree-pretty-print.c (dump_omp_clause): Make default case
+	gcc_unreachable.
+
 2018-12-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88301
