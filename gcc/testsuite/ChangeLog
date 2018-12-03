@@ -1,5 +1,9 @@
 2018-12-03  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/array32.adb, gnat.dg/array32.ads: New testcase.
+
+2018-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/generic_inst2.adb, gnat.dg/generic_inst2.ads,
 	gnat.dg/generic_inst2_c.ads: New testcase.
 
