@@ -1,3 +1,8 @@
+2018-12-03  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/80080
+	* gcc.target/s390/pr80080-4.c: New test.
+
 2018-12-02  Andi Kleen  <ak@linux.intel.com>
 
 	* gcc.target/i386/returninst1.c: Run on 64bit only.

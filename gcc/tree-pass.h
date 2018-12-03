@@ -579,6 +579,7 @@ extern rtl_opt_pass *make_pass_clean_state (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_branch_prob (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_value_profile_transformations (gcc::context
 							      *ctxt);
+extern rtl_opt_pass *make_pass_postreload_jump (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_postreload_cse (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_gcse2 (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_split_after_reload (gcc::context *ctxt);
