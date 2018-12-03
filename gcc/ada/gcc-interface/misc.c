@@ -166,6 +166,7 @@ gnat_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       /* These are handled by the front-end.  */
       break;
 
+    case OPT_fopenacc:
     case OPT_fshort_enums:
     case OPT_fsigned_char:
     case OPT_funsigned_char:
