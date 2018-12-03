@@ -8461,7 +8461,9 @@ package body Sem_Res is
       --  When a dependent expression is of a subtype different from
       --  the context subtype, then insert a qualification to ensure
       --  the generation of a constraint check. This was previously
-      --  done only for scalar types.
+      --  for scalar types. For array types apply a length check, given
+      --  that the context in general allows sliding, while a qualified
+      --  expression forces equality of bounds.
 
       -----------------
       -- Apply_Check --
@@ -8472,12 +8474,18 @@ package body Sem_Res is
          Loc      : constant Source_Ptr := Sloc (Expr);
 
       begin
-         if Expr_Typ /= Typ
-           and then not Is_Tagged_Type (Typ)
-           and then not Is_Access_Type (Typ)
-           and then Is_Constrained (Typ)
-           and then not Inside_A_Generic
+         if Expr_Typ = Typ
+           or else Is_Tagged_Type (Typ)
+           or else Is_Access_Type (Typ)
+           or else not Is_Constrained (Typ)
+           or else Inside_A_Generic
          then
+            null;
+
+         elsif Is_Array_Type (Typ) then
+            Apply_Length_Check (Expr, Typ);
+
+         else
             Rewrite (Expr,
               Make_Qualified_Expression (Loc,
                 Subtype_Mark => New_Occurrence_Of (Typ, Loc),
