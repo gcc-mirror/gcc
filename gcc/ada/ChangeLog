@@ -1,3 +1,11 @@
+2018-12-03  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch3.adb, libgnarl/s-taasde.adb, libgnarl/s-taenca.adb,
+	libgnarl/s-tarest.adb, libgnarl/s-tasini.adb,
+	libgnarl/s-taskin.ads, libgnarl/s-tasren.adb,
+	libgnarl/s-tassta.adb, libgnarl/s-tasuti.adb: Spelling fixes and
+	minor reformatting.
+
 2018-12-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_aggr.adb (Convert_To_Positional): Use

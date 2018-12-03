@@ -106,7 +106,7 @@ package body System.Tasking.Async_Delays is
 
    begin
       --  A delay block level of Level_No_Pending_Abort indicates the delay
-      --  has been cancelled. If the delay has already been canceled, there is
+      --  has been canceled. If the delay has already been canceled, there is
       --  nothing more to be done.
 
       if D.Level = Level_No_Pending_Abort then
@@ -181,8 +181,8 @@ package body System.Tasking.Async_Delays is
 
    --  Allocate a queue element for the wakeup time T and put it in the
    --  queue in wakeup time order.  Assume we are on an asynchronous
-   --  select statement with delay trigger.  Put the calling task to
-   --  sleep until either the delay expires or is cancelled.
+   --  select statement with delay trigger. Put the calling task to
+   --  sleep until either the delay expires or is canceled.
 
    --  We use one entry call record for this delay, since we have
    --  to increment the ATC nesting level, but since it is not a

@@ -206,7 +206,7 @@ package body System.Tasking.Rendezvous is
          if Self_Id.Common.Call /= null then
             Caller := Self_Id.Common.Call.Self;
 
-            pragma Assert (Caller.ATC_Nesting_Level > Level_No_ATC_Occuring);
+            pragma Assert (Caller.ATC_Nesting_Level > Level_No_ATC_Occurring);
 
             Uninterpreted_Data :=
               Caller.Entry_Calls (Caller.ATC_Nesting_Level).Uninterpreted_Data;

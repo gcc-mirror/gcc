@@ -206,7 +206,7 @@ package body System.Tasking.Utilities is
 
    procedure Exit_One_ATC_Level (Self_ID : Task_Id) is
    begin
-      pragma Assert (Self_ID.ATC_Nesting_Level > Level_No_ATC_Occuring);
+      pragma Assert (Self_ID.ATC_Nesting_Level > Level_No_ATC_Occurring);
 
       Self_ID.ATC_Nesting_Level := Self_ID.ATC_Nesting_Level - 1;
 

@@ -6589,7 +6589,7 @@ package body Exp_Ch3 is
 
             --  An aggregate that must be built in place is not resolved and
             --  expanded until the enclosing construct is expanded. This will
-            --  happen when the aggregqte is limited and the declared object
+            --  happen when the aggregate is limited and the declared object
             --  has a following address clause.
 
             if Is_Limited_Type (Typ) and then not Analyzed (Expr) then

@@ -440,9 +440,9 @@ package body System.Tasking.Initialization is
             when Activating
                | Runnable
             =>
-               if T.ATC_Nesting_Level > Level_No_ATC_Occuring then
+               if T.ATC_Nesting_Level > Level_No_ATC_Occurring then
                   --  This scenario occurs when an asynchronous protected entry
-                  --  call is canceld during a requeue with abort.
+                  --  call is canceled during a requeue with abort.
 
                   T.Entry_Calls
                     (T.ATC_Nesting_Level).Cancellation_Attempted := True;
@@ -467,7 +467,7 @@ package body System.Tasking.Initialization is
                Wakeup (T, T.Common.State);
 
             when Entry_Caller_Sleep  =>
-               pragma Assert (T.ATC_Nesting_Level > Level_No_ATC_Occuring);
+               pragma Assert (T.ATC_Nesting_Level > Level_No_ATC_Occurring);
 
                T.Entry_Calls
                  (T.ATC_Nesting_Level).Cancellation_Attempted := True;
