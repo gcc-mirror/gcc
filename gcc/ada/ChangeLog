@@ -1,3 +1,8 @@
+2018-12-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Set_Slice_Subtype): The index type of a slice is
+	constrained.
+
 2018-11-26  Matthias Klose <doko@ubuntu.com>
 
 	PR ada/88191
