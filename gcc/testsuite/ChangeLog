@@ -1,3 +1,14 @@
+2018-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/64242
+	* gcc.c-torture/execute/pr64242.c (foo, bar): New functions.
+	(p): Make it void *volatile instead of volatile void *.
+	(q): New variable.
+	(main): Add a dummy 32-byte aligned variable and escape its address.
+	Don't require that the two __builtin_alloca (0) calls return the
+	same address, just require that their difference is smaller than
+	1024 bytes.
+
 2018-12-03  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/cpp1y/lambda-generic-83856.C: Use __SIZE_TYPE__.
