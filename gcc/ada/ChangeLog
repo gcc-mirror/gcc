@@ -1,3 +1,12 @@
+2018-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.adb (Write_Entity_Info): Don't take Scope of Standard
+	package.
+	* sem_ch4.adb (Remove_Abstract_Operations): Add missing blank
+	lines to -gnatdv output.
+	* sem_type.adb (Write_Overloads): Take Entity of entity names
+	only.
+
 2018-12-03  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* checks.adb, exp_aggr.adb, exp_attr.adb, exp_ch3.adb,
