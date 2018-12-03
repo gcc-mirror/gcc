@@ -1,5 +1,19 @@
 2018-12-03  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* exp_aggr.adb (Convert_To_Positional): Use
+	Static_Array_Aggregate to decide whether to set
+	Compile_Time_Known_Aggregate on an already flat aggregate.
+	(Expand_Array_Aggregate): Remove test on
+	Compile_Time_Known_Aggregate that turns out to be dead and
+	simplify.
+	(Is_Static_Component): New predicate extracted from...
+	(Static_Array_Aggregate): ...here.  Test neither Is_Tagged_Type
+	nor Is_Controlled for the type, but test whether the component
+	type has discriminants.  Use the Is_Static_Component predicate
+	consistently for the positional and named cases.
+
+2018-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* freeze.adb (Freeze_Entity): Do not freeze the partial view of
 	a private subtype if its base type is also private with delayed
 	freeze before the full type declaration of the base type has
