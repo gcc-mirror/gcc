@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "intl.h"
+#include "diagnostic.h"
 #include "diagnostic-core.h"
 #include "selftest.h"
 #include "cpplib.h"
@@ -1067,6 +1068,37 @@ dump_location_info (FILE *stream)
 	       map->m_column_and_range_bits - map->m_range_bits);
       fprintf (stream, "  range bits: %i\n",
 	       map->m_range_bits);
+      const char * reason;
+      switch (map->reason) {
+      case LC_ENTER:
+	reason = "LC_ENTER";
+	break;
+      case LC_LEAVE:
+	reason = "LC_LEAVE";
+	break;
+      case LC_RENAME:
+	reason = "LC_RENAME";
+	break;
+      case LC_RENAME_VERBATIM:
+	reason = "LC_RENAME_VERBATIM";
+	break;
+      case LC_ENTER_MACRO:
+	reason = "LC_RENAME_MACRO";
+	break;
+      default:
+	reason = "Unknown";
+      }
+      fprintf (stream, "  reason: %d (%s)\n", map->reason, reason);
+
+      const line_map_ordinary *includer_map
+	= linemap_included_from_linemap (line_table, map);
+      fprintf (stream, "  included from location: %d",
+	       linemap_included_from (map));
+      if (includer_map) {
+	fprintf (stream, " (in ordinary map %d)",
+		 int (includer_map - line_table->info_ordinary.maps));
+      }
+      fprintf (stream, "\n");
 
       /* Render the span of source lines that this "map" covers.  */
       for (location_t loc = MAP_START_LOCATION (map);
@@ -1100,7 +1132,14 @@ dump_location_info (FILE *stream)
 	      if (max_col > line_text.length ())
 		max_col = line_text.length () + 1;
 
-	      int indent = 14 + strlen (exploc.file);
+	      int len_lnum = num_digits (exploc.line);
+	      if (len_lnum < 3)
+		len_lnum = 3;
+	      int len_loc = num_digits (loc);
+	      if (len_loc < 5)
+		len_loc = 5;
+
+	      int indent = 6 + strlen (exploc.file) + len_lnum + len_loc;
 
 	      /* Thousands.  */
 	      if (end_location > 999)
@@ -1432,7 +1471,12 @@ get_substring_ranges_for_loc (cpp_reader *pfile,
 	 for start vs finish due to line-length jumps.  */
       if (start_ord_map != final_ord_map
 	  && start_ord_map->to_file != final_ord_map->to_file)
-	  return "start and finish are spelled in different ordinary maps";
+	return "start and finish are spelled in different ordinary maps";
+      /* The file from linemap_resolve_location ought to match that from
+	 expand_location_to_spelling_point.  */
+      if (start_ord_map->to_file != start.file)
+	return "mismatching file after resolving linemap";
+
       location_t start_loc
 	= linemap_position_for_line_and_column (line_table, final_ord_map,
 						start.line, start.column);

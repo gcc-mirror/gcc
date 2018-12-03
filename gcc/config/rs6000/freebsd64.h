@@ -306,15 +306,6 @@ extern int dot_symbols;
 #undef  WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 
-
-/* Override rs6000.h definition.  */
-#undef  ASM_APP_ON
-#define ASM_APP_ON "#APP\n"
-
-/* Override rs6000.h definition.  */
-#undef  ASM_APP_OFF
-#define ASM_APP_OFF "#NO_APP\n"
-
 /* Function profiling bits */
 #undef  RS6000_MCOUNT
 #define RS6000_MCOUNT "_mcount"

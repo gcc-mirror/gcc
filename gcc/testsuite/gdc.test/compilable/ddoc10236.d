@@ -1,5 +1,5 @@
 // PERMUTE_ARGS:
-// REQUIRED_ARGS: -D -Dd${RESULTS_DIR}/compilable -w -o-
+// REQUIRED_ARGS: -D -Dd${RESULTS_DIR}/compilable -wi -o-
 
 /*
 TEST_OUTPUT:

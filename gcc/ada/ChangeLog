@@ -1,3 +1,8 @@
+2018-11-26  Matthias Klose <doko@ubuntu.com>
+
+	PR ada/88191
+	* libgnarl/s-linux__alpha.ads: Define SIGSYS.
+
 2018-11-19  Alexandre Oliva <oliva@adacore.com>
 
 	PR ada/81878

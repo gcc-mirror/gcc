@@ -6,7 +6,7 @@ template <typename T> struct A
   {
     template <typename U> struct D {};
   };
-  template <typename S> static C::D<S> bar (S const &);
+  template <typename S> static C::template D<S> bar (S const &);
 };
 
 struct E {};

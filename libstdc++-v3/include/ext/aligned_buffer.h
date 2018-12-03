@@ -49,6 +49,8 @@ namespace __gnu_cxx
       // Target macro ADJUST_FIELD_ALIGN can produce different alignment for
       // types when used as class members. __aligned_membuf is intended
       // for use as a class member, so align the buffer as for a class member.
+      // Since GCC 8 we could just use alignof(_Tp) instead, but older
+      // versions of non-GNU compilers might still need this trick.
       struct _Tp2 { _Tp _M_t; };
 
       alignas(__alignof__(_Tp2::_M_t)) unsigned char _M_storage[sizeof(_Tp)];
@@ -86,11 +88,10 @@ namespace __gnu_cxx
   // This type is still used to avoid an ABI change.
   template<typename _Tp>
     struct __aligned_buffer
-    : std::aligned_storage<sizeof(_Tp), std::alignment_of<_Tp>::value>
+    : std::aligned_storage<sizeof(_Tp), __alignof__(_Tp)>
     {
       typename
-	std::aligned_storage<sizeof(_Tp), std::alignment_of<_Tp>::value>::type
-	_M_storage;
+	std::aligned_storage<sizeof(_Tp), __alignof__(_Tp)>::type _M_storage;
 
       __aligned_buffer() = default;
 

@@ -93,7 +93,7 @@
 (define_insn_reservation "cortex_a5_mul" 2
   (and (eq_attr "tune" "cortexa5")
        (ior (eq_attr "mul32" "yes")
-	    (eq_attr "mul64" "yes")))
+	    (eq_attr "widen_mul64" "yes")))
   "cortex_a5_ex1")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

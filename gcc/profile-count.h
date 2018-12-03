@@ -447,8 +447,12 @@ public:
     {
       profile_probability ret = *this * cprob;
       /* The following is equivalent to:
-         *this = cprob.invert () * *this / ret.invert ();  */
-      *this = (*this - ret) / ret.invert ();
+         *this = cprob.invert () * *this / ret.invert ();
+	 Avoid scaling when overall outcome is supposed to be always.
+	 Without knowing that one is inverse of toher, the result would be
+	 conservative.  */
+      if (!(*this == profile_probability::always ()))
+        *this = (*this - ret) / ret.invert ();
       return ret;
     }
 

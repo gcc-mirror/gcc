@@ -15,6 +15,21 @@ extern (C):
 @nogc:
 nothrow:
 
+version (ARM)     version = ARM_Any;
+version (AArch64) version = ARM_Any;
+version (MIPS32)  version = MIPS_Any;
+version (MIPS64)  version = MIPS_Any;
+version (PPC)     version = PPC_Any;
+version (PPC64)   version = PPC_Any;
+version (RISCV32) version = RISCV_Any;
+version (RISCV64) version = RISCV_Any;
+version (S390)    version = IBMZ_Any;
+version (SPARC)   version = SPARC_Any;
+version (SPARC64) version = SPARC_Any;
+version (SystemZ) version = IBMZ_Any;
+version (X86)     version = X86_Any;
+version (X86_64)  version = X86_Any;
+
 enum
 {
     EPOLL_CLOEXEC  = 0x80000,
@@ -46,7 +61,7 @@ enum
     EPOLL_CTL_MOD = 3, // Change file descriptor epoll_event structure.
 }
 
-version (X86)
+version (X86_Any)
 {
     align(1) struct epoll_event
     {
@@ -55,16 +70,7 @@ version (X86)
         epoll_data_t data;
     }
 }
-else version (X86_64)
-{
-    align(1) struct epoll_event
-    {
-    align(1):
-        uint events;
-        epoll_data_t data;
-    }
-}
-else version (ARM)
+else version (ARM_Any)
 {
     struct epoll_event
     {
@@ -72,7 +78,7 @@ else version (ARM)
         epoll_data_t data;
     }
 }
-else version (AArch64)
+else version (PPC_Any)
 {
     struct epoll_event
     {
@@ -80,7 +86,7 @@ else version (AArch64)
         epoll_data_t data;
     }
 }
-else version (PPC)
+else version (MIPS_Any)
 {
     struct epoll_event
     {
@@ -88,7 +94,7 @@ else version (PPC)
         epoll_data_t data;
     }
 }
-else version (PPC64)
+else version (RISCV_Any)
 {
     struct epoll_event
     {
@@ -96,7 +102,7 @@ else version (PPC64)
         epoll_data_t data;
     }
 }
-else version (MIPS32)
+else version (SPARC_Any)
 {
     struct epoll_event
     {
@@ -104,23 +110,7 @@ else version (MIPS32)
         epoll_data_t data;
     }
 }
-else version (MIPS64)
-{
-    struct epoll_event
-    {
-        uint events;
-        epoll_data_t data;
-    }
-}
-else version (SPARC64)
-{
-    struct epoll_event
-    {
-        uint events;
-        epoll_data_t data;
-    }
-}
-else version (SystemZ)
+else version (IBMZ_Any)
 {
     struct epoll_event
     {

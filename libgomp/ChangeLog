@@ -1,3 +1,41 @@
+2018-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/task-reduction-3.c: New test.
+
+	* testsuite/libgomp.c-c++-common/cancel-taskgroup-4.c: New test.
+
+2018-11-30  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR libgomp/88288
+	* oacc-parallel.c (GOACC_parallel_keyed): Add offset to devaddrs.
+	* testsuite/libgomp.oacc-c-c++-common/pr88288.c: New test.
+
+2018-11-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/lib-16-2.f90: New file.
+
+2018-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88182
+	* testsuite/libgomp.c++/pr88182.C: Move to g++.dg/gomp.
+
+2018-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/Makefile.am (AUTOMAKE_OPTIONS): Drop dejagnu.
+	(RUNTEST): Don't define.
+	(RUNTESTDEFAULTFLAGS): Add.
+	(check-DEJAGNU, site.exp, distclean-DEJAGNU): New goals.
+	(distclean-am): Depend on distclean-DEJAGNU.
+	(check-am): If -j% option is present in MFLAGS and if
+	`getconf _NPROCESSORS_ONLN` is more than 8, export OMP_NUM_THREADS=8.
+	(.PHONY): Add check-DEJAGNU and distclean-DEJAGNU.
+	* testsuite/Makefile.in: Regenerated.
+
+2018-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88182
+	* testsuite/libgomp.c++/pr88182.C: New testcase.
+
 2018-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/88106

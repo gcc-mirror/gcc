@@ -126,10 +126,11 @@ static rtx builtin_memcpy_read_str (void *, HOST_WIDE_INT, scalar_int_mode);
 static rtx expand_builtin_memchr (tree, rtx);
 static rtx expand_builtin_memcpy (tree, rtx);
 static rtx expand_builtin_memory_copy_args (tree dest, tree src, tree len,
-					    rtx target, tree exp, int endp);
+					    rtx target, tree exp,
+					    memop_ret retmode);
 static rtx expand_builtin_memmove (tree, rtx);
 static rtx expand_builtin_mempcpy (tree, rtx);
-static rtx expand_builtin_mempcpy_args (tree, tree, tree, rtx, tree, int);
+static rtx expand_builtin_mempcpy_args (tree, tree, tree, rtx, tree, memop_ret);
 static rtx expand_builtin_strcat (tree, rtx);
 static rtx expand_builtin_strcpy (tree, rtx);
 static rtx expand_builtin_strcpy_args (tree, tree, tree, rtx);
@@ -1142,8 +1143,11 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
 	  emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
 	  emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
 
-	  emit_move_insn (hard_frame_pointer_rtx, fp);
+	  /* Restore the frame pointer and stack pointer.  We must use a
+	     temporary since the setjmp buffer may be a local.  */
+	  fp = copy_to_reg (fp);
 	  emit_stack_restore (SAVE_NONLOCAL, stack);
+	  emit_move_insn (hard_frame_pointer_rtx, fp);
 
 	  emit_use (hard_frame_pointer_rtx);
 	  emit_use (stack_pointer_rtx);
@@ -1286,9 +1290,11 @@ expand_builtin_nonlocal_goto (tree exp)
       emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
       emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
 
-      /* Restore frame pointer for containing function.  */
-      emit_move_insn (hard_frame_pointer_rtx, r_fp);
+      /* Restore the frame pointer and stack pointer.  We must use a
+	 temporary since the setjmp buffer may be a local.  */
+      r_fp = copy_to_reg (r_fp);
       emit_stack_restore (SAVE_NONLOCAL, r_sp);
+      emit_move_insn (hard_frame_pointer_rtx, r_fp);
 
       /* USE of hard_frame_pointer_rtx added for consistency;
 	 not clear if really needed.  */
@@ -3751,7 +3757,7 @@ expand_builtin_memcpy (tree exp, rtx target)
   check_memop_access (exp, dest, src, len);
 
   return expand_builtin_memory_copy_args (dest, src, len, target, exp,
-					  /*endp=*/ 0);
+					  /*retmode=*/ RETURN_BEGIN);
 }
 
 /* Check a call EXP to the memmove built-in for validity.
@@ -3776,10 +3782,7 @@ expand_builtin_memmove (tree exp, rtx)
 /* Expand a call EXP to the mempcpy builtin.
    Return NULL_RTX if we failed; the caller should emit a normal call,
    otherwise try to get the result in TARGET, if convenient (and in
-   mode MODE if that's convenient).  If ENDP is 0 return the
-   destination pointer, if ENDP is 1 return the end pointer ala
-   mempcpy, and if ENDP is 2 return the end pointer minus one ala
-   stpcpy.  */
+   mode MODE if that's convenient).  */
 
 static rtx
 expand_builtin_mempcpy (tree exp, rtx target)
@@ -3812,20 +3815,17 @@ expand_builtin_mempcpy (tree exp, rtx target)
     return NULL_RTX;
 
   return expand_builtin_mempcpy_args (dest, src, len,
-				      target, exp, /*endp=*/ 1);
+				      target, exp, /*retmode=*/ RETURN_END);
 }
 
 /* Helper function to do the actual work for expand of memory copy family
    functions (memcpy, mempcpy, stpcpy).  Expansing should assign LEN bytes
-   of memory from SRC to DEST and assign to TARGET if convenient.
-   If ENDP is 0 return the
-   destination pointer, if ENDP is 1 return the end pointer ala
-   mempcpy, and if ENDP is 2 return the end pointer minus one ala
-   stpcpy.  */
+   of memory from SRC to DEST and assign to TARGET if convenient.  Return
+   value is based on RETMODE argument.  */
 
 static rtx
 expand_builtin_memory_copy_args (tree dest, tree src, tree len,
-				 rtx target, tree exp, int endp)
+				 rtx target, tree exp, memop_ret retmode)
 {
   const char *src_str;
   unsigned int src_align = get_pointer_alignment (src);
@@ -3872,7 +3872,7 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
       dest_mem = store_by_pieces (dest_mem, INTVAL (len_rtx),
 				  builtin_memcpy_read_str,
 				  CONST_CAST (char *, src_str),
-				  dest_align, false, endp);
+				  dest_align, false, retmode);
       dest_mem = force_operand (XEXP (dest_mem, 0), target);
       dest_mem = convert_memory_address (ptr_mode, dest_mem);
       return dest_mem;
@@ -3883,9 +3883,10 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
 
   /* Copy word part most expediently.  */
   enum block_op_methods method = BLOCK_OP_NORMAL;
-  if (CALL_EXPR_TAILCALL (exp) && (endp == 0 || target == const0_rtx))
+  if (CALL_EXPR_TAILCALL (exp)
+      && (retmode == RETURN_BEGIN || target == const0_rtx))
     method = BLOCK_OP_TAILCALL;
-  if (endp == 1 && target != const0_rtx)
+  if (retmode == RETURN_END && target != const0_rtx)
     method = BLOCK_OP_NO_LIBCALL_RET;
   dest_addr = emit_block_move_hints (dest_mem, src_mem, len_rtx, method,
 				     expected_align, expected_size,
@@ -3899,11 +3900,11 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
       dest_addr = convert_memory_address (ptr_mode, dest_addr);
     }
 
-  if (endp && target != const0_rtx)
+  if (retmode != RETURN_BEGIN && target != const0_rtx)
     {
       dest_addr = gen_rtx_PLUS (ptr_mode, dest_addr, len_rtx);
       /* stpcpy pointer to last byte.  */
-      if (endp == 2)
+      if (retmode == RETURN_END_MINUS_ONE)
 	dest_addr = gen_rtx_MINUS (ptr_mode, dest_addr, const1_rtx);
     }
 
@@ -3912,21 +3913,19 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
 
 static rtx
 expand_builtin_mempcpy_args (tree dest, tree src, tree len,
-			     rtx target, tree orig_exp, int endp)
+			     rtx target, tree orig_exp, memop_ret retmode)
 {
   return expand_builtin_memory_copy_args (dest, src, len, target, orig_exp,
-					  endp);
+					  retmode);
 }
 
 /* Expand into a movstr instruction, if one is available.  Return NULL_RTX if
    we failed, the caller should emit a normal call, otherwise try to
-   get the result in TARGET, if convenient.  If ENDP is 0 return the
-   destination pointer, if ENDP is 1 return the end pointer ala
-   mempcpy, and if ENDP is 2 return the end pointer minus one ala
-   stpcpy.  */
+   get the result in TARGET, if convenient.
+   Return value is based on RETMODE argument.  */
 
 static rtx
-expand_movstr (tree dest, tree src, rtx target, int endp)
+expand_movstr (tree dest, tree src, rtx target, memop_ret retmode)
 {
   struct expand_operand ops[3];
   rtx dest_mem;
@@ -3937,25 +3936,25 @@ expand_movstr (tree dest, tree src, rtx target, int endp)
 
   dest_mem = get_memory_rtx (dest, NULL);
   src_mem = get_memory_rtx (src, NULL);
-  if (!endp)
+  if (retmode == RETURN_BEGIN)
     {
       target = force_reg (Pmode, XEXP (dest_mem, 0));
       dest_mem = replace_equiv_address (dest_mem, target);
     }
 
-  create_output_operand (&ops[0], endp ? target : NULL_RTX, Pmode);
+  create_output_operand (&ops[0], retmode ? target : NULL_RTX, Pmode);
   create_fixed_operand (&ops[1], dest_mem);
   create_fixed_operand (&ops[2], src_mem);
   if (!maybe_expand_insn (targetm.code_for_movstr, 3, ops))
     return NULL_RTX;
 
-  if (endp && target != const0_rtx)
+  if (retmode != RETURN_BEGIN && target != const0_rtx)
     {
       target = ops[0].value;
       /* movstr is supposed to set end to the address of the NUL
 	 terminator.  If the caller requested a mempcpy-like return value,
 	 adjust it.  */
-      if (endp == 1)
+      if (retmode == RETURN_END)
 	{
 	  rtx tem = plus_constant (GET_MODE (target),
 				   gen_lowpart (GET_MODE (target), target), 1);
@@ -4044,7 +4043,7 @@ expand_builtin_strcpy_args (tree exp, tree dest, tree src, rtx target)
       return NULL_RTX;
     }
 
-  return expand_movstr (dest, src, target, /*endp=*/0);
+  return expand_movstr (dest, src, target, /*retmode=*/ RETURN_BEGIN);
 }
 
 /* Expand a call EXP to the stpcpy builtin.
@@ -4091,14 +4090,16 @@ expand_builtin_stpcpy_1 (tree exp, rtx target, machine_mode mode)
       memset (&data, 0, sizeof (c_strlen_data));
       if (!c_getstr (src, NULL)
 	  || !(len = c_strlen (src, 0, &data, 1)))
-	return expand_movstr (dst, src, target, /*endp=*/2);
+	return expand_movstr (dst, src, target,
+			      /*retmode=*/ RETURN_END_MINUS_ONE);
 
       if (data.decl && !TREE_NO_WARNING (exp))
 	warn_string_no_nul (EXPR_LOCATION (exp), "stpcpy", src, data.decl);
 
       lenp1 = size_binop_loc (loc, PLUS_EXPR, len, ssize_int (1));
       ret = expand_builtin_mempcpy_args (dst, src, lenp1,
-					 target, exp, /*endp=*/2);
+					 target, exp,
+					 /*retmode=*/ RETURN_END_MINUS_ONE);
 
       if (ret)
 	return ret;
@@ -4132,7 +4133,8 @@ expand_builtin_stpcpy_1 (tree exp, rtx target, machine_mode mode)
 	    }
 	}
 
-      return expand_movstr (dst, src, target, /*endp=*/2);
+      return expand_movstr (dst, src, target,
+			    /*retmode=*/ RETURN_END_MINUS_ONE);
     }
 }
 
@@ -4378,7 +4380,8 @@ expand_builtin_strncpy (tree exp, rtx target)
 	  dest_mem = get_memory_rtx (dest, len);
 	  store_by_pieces (dest_mem, tree_to_uhwi (len),
 			   builtin_strncpy_read_str,
-			   CONST_CAST (char *, p), dest_align, false, 0);
+			   CONST_CAST (char *, p), dest_align, false,
+			   RETURN_BEGIN);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), target);
 	  dest_mem = convert_memory_address (ptr_mode, dest_mem);
 	  return dest_mem;
@@ -4523,7 +4526,7 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
 	  val_rtx = force_reg (val_mode, val_rtx);
 	  store_by_pieces (dest_mem, tree_to_uhwi (len),
 			   builtin_memset_gen_str, val_rtx, dest_align,
-			   true, 0);
+			   true, RETURN_BEGIN);
 	}
       else if (!set_storage_via_setmem (dest_mem, len_rtx, val_rtx,
 					dest_align, expected_align,
@@ -4546,7 +4549,8 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
 				  builtin_memset_read_str, &c, dest_align,
 				  true))
 	store_by_pieces (dest_mem, tree_to_uhwi (len),
-			 builtin_memset_read_str, &c, dest_align, true, 0);
+			 builtin_memset_read_str, &c, dest_align, true,
+			 RETURN_BEGIN);
       else if (!set_storage_via_setmem (dest_mem, len_rtx,
 					gen_int_mode (c, val_mode),
 					dest_align, expected_align,

@@ -634,8 +634,7 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 GDCFLAGSX
-PHOBOS_SOVERSION
-DRUNTIME_SOVERSION
+libtool_VERSION
 SPEC_PHOBOS_DEPS
 gdc_include_dir
 libphobos_toolexeclibdir
@@ -11509,7 +11508,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11512 "configure"
+#line 11511 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11615,7 +11614,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11618 "configure"
+#line 11617 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14874,9 +14873,7 @@ SPEC_PHOBOS_DEPS="$LIBS"
 
 
 # Libdruntime / phobos soname version
-DRUNTIME_SOVERSION="76:2:0"
-PHOBOS_SOVERSION="76:2:0"
-
+libtool_VERSION=76:3:0
 
 
 # Set default flags (after DRUNTIME_WERROR!)

@@ -1803,7 +1803,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       mutable __weak_ptr<_Tp, _Lp>  _M_weak_this;
     };
 
-  template<typename _Tp, _Lock_policy _Lp, typename _Alloc, typename... _Args>
+  template<typename _Tp, _Lock_policy _Lp = __default_lock_policy,
+	   typename _Alloc, typename... _Args>
     inline __shared_ptr<_Tp, _Lp>
     __allocate_shared(const _Alloc& __a, _Args&&... __args)
     {
@@ -1811,7 +1812,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				    std::forward<_Args>(__args)...);
     }
 
-  template<typename _Tp, _Lock_policy _Lp, typename... _Args>
+  template<typename _Tp, _Lock_policy _Lp = __default_lock_policy,
+	   typename... _Args>
     inline __shared_ptr<_Tp, _Lp>
     __make_shared(_Args&&... __args)
     {

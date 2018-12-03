@@ -158,6 +158,10 @@
   (and (match_code "const_int")
        (match_test "!h8300_shift_needs_scratch_p (ival, QImode)")))
 
+(define_constraint "C"
+  "@internal"
+  (match_code "symbol_ref"))
+
 (define_constraint "S"
   "@internal"
   (and (match_code "const_int")

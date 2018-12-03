@@ -577,7 +577,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
            {
              informed = 1;
              dump_printf_loc (MSG_NOTE,
-			      dump_location_t::from_location_t (input_location),
+			      dump_user_location_t::from_location_t (input_location),
                               "correcting inconsistent profile data\n");
            }
          correct_negative_edge_counts ();
@@ -698,6 +698,9 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	}
     }
 
+  if (exec_counts)
+    profile_status_for_fn (cfun) = PROFILE_READ;
+
   /* If we have real data, use them!  */
   if (bb_gcov_count (ENTRY_BLOCK_PTR_FOR_FN (cfun))
       || !flag_guess_branch_prob)
@@ -705,7 +708,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
       bb->count = profile_count::from_gcov_type (bb_gcov_count (bb));
   /* If function was not trained, preserve local estimates including statically
      determined zero counts.  */
-  else
+  else if (profile_status_for_fn (cfun) == PROFILE_READ)
     FOR_ALL_BB_FN (bb, cfun)
       if (!(bb->count == profile_count::zero ()))
         bb->count = bb->count.global0 ();
@@ -718,6 +721,11 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 
   if (dump_file)
     {
+      fprintf (dump_file, " Profile feedback for function");
+      fprintf (dump_file, ((profile_status_for_fn (cfun) == PROFILE_READ)
+			   ? " is available \n"
+			   : " is not available \n"));
+
       fprintf (dump_file, "%d branches\n", num_branches);
       if (num_branches)
 	for (i = 0; i < 10; i++)
@@ -1317,12 +1325,12 @@ branch_prob (void)
   values.release ();
   free_edge_list (el);
   coverage_end_function (lineno_checksum, cfg_checksum);
-  if (flag_branch_probabilities && profile_info)
+  if (flag_branch_probabilities
+      && (profile_status_for_fn (cfun) == PROFILE_READ))
     {
       struct loop *loop;
       if (dump_file && (dump_flags & TDF_DETAILS))
 	report_predictor_hitrates ();
-      profile_status_for_fn (cfun) = PROFILE_READ;
 
       /* At this moment we have precise loop iteration count estimates.
 	 Record them to loop structure before the profile gets out of date. */

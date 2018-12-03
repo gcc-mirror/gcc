@@ -8,5 +8,5 @@
 
 int main() {
 int offset;
-char buf[offset]=""; // { dg-error "" } ansi forbids variable arrays
+char buf[offset]=""; // { dg-error "6:ISO C\\+\\+ forbids variable length array .buf" } ansi forbids variable arrays
 }

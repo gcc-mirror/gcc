@@ -1194,6 +1194,13 @@ requirements of the license of GCC.
     <listitem><para>Change constructors to constrained templates.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr3096"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#3096">3096</link>:
+       <emphasis><code>path::lexically_relative</code> is confused by trailing slashes
+       </emphasis>
+    </term>
+    <listitem><para>Implement the fix for trailing slashes.
+    </para></listitem></varlistentry>
+
   </variablelist>
 
  </section>

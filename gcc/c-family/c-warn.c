@@ -784,7 +784,12 @@ sizeof_pointer_memaccess_warning (location_t *sizeof_arg_loc, tree callee,
   if (idx >= 3)
     return;
 
-  if (sizeof_arg[idx] == NULL || sizeof_arg[idx] == error_mark_node)
+  /* Use error_operand_p to detect non-error arguments with an error
+     type that the C++ front-end constructs.  */
+  if (error_operand_p (src)
+      || error_operand_p (dest)
+      || !sizeof_arg[idx]
+      || error_operand_p (sizeof_arg[idx]))
     return;
 
   type = TYPE_P (sizeof_arg[idx])

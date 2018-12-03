@@ -1535,36 +1535,40 @@ scan_one_insn (rtx_insn *insn)
   /* Now add the cost for each operand to the total costs for its
      allocno.  */
   for (i = 0; i < recog_data.n_operands; i++)
-    if (REG_P (recog_data.operand[i])
-	&& REGNO (recog_data.operand[i]) >= FIRST_PSEUDO_REGISTER)
-      {
-	int regno = REGNO (recog_data.operand[i]);
-	struct costs *p = COSTS (costs, COST_INDEX (regno));
-	struct costs *q = op_costs[i];
-	int *p_costs = p->cost, *q_costs = q->cost;
-	cost_classes_t cost_classes_ptr = regno_cost_classes[regno];
-	int add_cost;
-
-	/* If the already accounted for the memory "cost" above, don't
-	   do so again.  */
-	if (!counted_mem)
-	  {
-	    add_cost = q->mem_cost;
-	    if (add_cost > 0 && INT_MAX - add_cost < p->mem_cost)
-	      p->mem_cost = INT_MAX;
-	    else
-	      p->mem_cost += add_cost;
-	  }
-	for (k = cost_classes_ptr->num - 1; k >= 0; k--)
-	  {
-	    add_cost = q_costs[k];
-	    if (add_cost > 0 && INT_MAX - add_cost < p_costs[k])
-	      p_costs[k] = INT_MAX;
-	    else
-	      p_costs[k] += add_cost;
-	  }
-      }
-
+    {
+      rtx op = recog_data.operand[i];
+      
+      if (GET_CODE (op) == SUBREG)
+	op = SUBREG_REG (op);
+      if (REG_P (op) && REGNO (op) >= FIRST_PSEUDO_REGISTER)
+	{
+	  int regno = REGNO (op);
+	  struct costs *p = COSTS (costs, COST_INDEX (regno));
+	  struct costs *q = op_costs[i];
+	  int *p_costs = p->cost, *q_costs = q->cost;
+	  cost_classes_t cost_classes_ptr = regno_cost_classes[regno];
+	  int add_cost;
+	  
+	  /* If the already accounted for the memory "cost" above, don't
+	     do so again.  */
+	  if (!counted_mem)
+	    {
+	      add_cost = q->mem_cost;
+	      if (add_cost > 0 && INT_MAX - add_cost < p->mem_cost)
+		p->mem_cost = INT_MAX;
+	      else
+		p->mem_cost += add_cost;
+	    }
+	  for (k = cost_classes_ptr->num - 1; k >= 0; k--)
+	    {
+	      add_cost = q_costs[k];
+	      if (add_cost > 0 && INT_MAX - add_cost < p_costs[k])
+		p_costs[k] = INT_MAX;
+	      else
+		p_costs[k] += add_cost;
+	    }
+	}
+    }
   return insn;
 }
 

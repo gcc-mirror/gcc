@@ -1,3 +1,4 @@
+! See also "lib-16-2.f90".
 ! { dg-do run }
 ! { dg-skip-if "" { *-*-* } { "*" } { "-DACC_MEM_SHARED=0" } }
 

@@ -5,6 +5,12 @@
 /* { dg-final { scan-tree-dump-times "r\[<>]\[<>]" 23 "optimized" } } */
 /* { dg-final { scan-tree-dump-not "PHI <" "optimized" } } */
 
+#if __SIZEOF_INT__ == 2
+#define LARGE_UNSIGNED 0x1234U
+#else
+#define LARGE_UNSIGNED 0x12345678U
+#endif
+
 unsigned int
 f1 (unsigned int x, unsigned char y)
 {
@@ -60,25 +66,25 @@ f8 (unsigned int x, unsigned char y)
 unsigned int
 f9 (unsigned int x, int y)
 {
-  return (0x12345678U << (y & (__CHAR_BIT__ * __SIZEOF_INT__ - 1))) | (0x12345678U >> (-y & (__CHAR_BIT__ * __SIZEOF_INT__ - 1)));
+  return (LARGE_UNSIGNED << (y & (__CHAR_BIT__ * __SIZEOF_INT__ - 1))) | (LARGE_UNSIGNED >> (-y & (__CHAR_BIT__ * __SIZEOF_INT__ - 1)));
 }
 
 unsigned int
 f10 (unsigned int x, int y)
 {
-  return (0x12345678U >> (-y & (__CHAR_BIT__ * __SIZEOF_INT__ - 1))) | (0x12345678U << (y & (__CHAR_BIT__ * __SIZEOF_INT__ - 1)));
+  return (LARGE_UNSIGNED >> (-y & (__CHAR_BIT__ * __SIZEOF_INT__ - 1))) | (LARGE_UNSIGNED << (y & (__CHAR_BIT__ * __SIZEOF_INT__ - 1)));
 }
 
 unsigned int
 f11 (unsigned int x, int y)
 {
-  return (0x12345678U >> (y & (__CHAR_BIT__ * __SIZEOF_INT__ - 1))) | (0x12345678U << (-y & (__CHAR_BIT__ * __SIZEOF_INT__ - 1)));
+  return (LARGE_UNSIGNED >> (y & (__CHAR_BIT__ * __SIZEOF_INT__ - 1))) | (LARGE_UNSIGNED << (-y & (__CHAR_BIT__ * __SIZEOF_INT__ - 1)));
 }
 
 unsigned int
 f12 (unsigned int x, int y)
 {
-  return (0x12345678U << (-y & (__CHAR_BIT__ * __SIZEOF_INT__ - 1))) | (0x12345678U >> (y & (__CHAR_BIT__ * __SIZEOF_INT__ - 1)));
+  return (LARGE_UNSIGNED << (-y & (__CHAR_BIT__ * __SIZEOF_INT__ - 1))) | (LARGE_UNSIGNED >> (y & (__CHAR_BIT__ * __SIZEOF_INT__ - 1)));
 }
 
 unsigned

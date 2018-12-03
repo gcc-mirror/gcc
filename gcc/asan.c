@@ -1155,20 +1155,6 @@ asan_pp_string (pretty_printer *pp)
   return build1 (ADDR_EXPR, shadow_ptr_types[0], ret);
 }
 
-/* Return a CONST_INT representing 4 subsequent shadow memory bytes.  */
-
-static rtx
-asan_shadow_cst (unsigned char shadow_bytes[4])
-{
-  int i;
-  unsigned HOST_WIDE_INT val = 0;
-  gcc_assert (WORDS_BIG_ENDIAN == BYTES_BIG_ENDIAN);
-  for (i = 0; i < 4; i++)
-    val |= (unsigned HOST_WIDE_INT) shadow_bytes[BYTES_BIG_ENDIAN ? 3 - i : i]
-	   << (BITS_PER_UNIT * i);
-  return gen_int_mode (val, SImode);
-}
-
 /* Clear shadow memory at SHADOW_MEM, LEN bytes.  Can't call a library call here
    though.  */
 
@@ -1179,6 +1165,7 @@ asan_clear_shadow (rtx shadow_mem, HOST_WIDE_INT len)
   rtx_code_label *top_label;
   rtx end, addr, tmp;
 
+  gcc_assert ((len & 3) == 0);
   start_sequence ();
   clear_storage (shadow_mem, GEN_INT (len), BLOCK_OP_NORMAL);
   insns = get_insns ();
@@ -1192,7 +1179,6 @@ asan_clear_shadow (rtx shadow_mem, HOST_WIDE_INT len)
       return;
     }
 
-  gcc_assert ((len & 3) == 0);
   top_label = gen_label_rtx ();
   addr = copy_to_mode_reg (Pmode, XEXP (shadow_mem, 0));
   shadow_mem = adjust_automodify_address (shadow_mem, SImode, addr, 0);
@@ -1235,6 +1221,136 @@ shadow_mem_size (unsigned HOST_WIDE_INT size)
   return ROUND_UP (size, ASAN_SHADOW_GRANULARITY) / ASAN_SHADOW_GRANULARITY;
 }
 
+/* Always emit 4 bytes at a time.  */
+#define RZ_BUFFER_SIZE 4
+
+/* ASAN redzone buffer container that handles emission of shadow bytes.  */
+struct asan_redzone_buffer
+{
+  /* Constructor.  */
+  asan_redzone_buffer (rtx shadow_mem, HOST_WIDE_INT prev_offset):
+    m_shadow_mem (shadow_mem), m_prev_offset (prev_offset),
+    m_original_offset (prev_offset), m_shadow_bytes (RZ_BUFFER_SIZE)
+  {}
+
+  /* Emit VALUE shadow byte at a given OFFSET.  */
+  void emit_redzone_byte (HOST_WIDE_INT offset, unsigned char value);
+
+  /* Emit RTX emission of the content of the buffer.  */
+  void flush_redzone_payload (void);
+
+private:
+  /* Flush if the content of the buffer is full
+     (equal to RZ_BUFFER_SIZE).  */
+  void flush_if_full (void);
+
+  /* Memory where we last emitted a redzone payload.  */
+  rtx m_shadow_mem;
+
+  /* Relative offset where we last emitted a redzone payload.  */
+  HOST_WIDE_INT m_prev_offset;
+
+  /* Relative original offset.  Used for checking only.  */
+  HOST_WIDE_INT m_original_offset;
+
+public:
+  /* Buffer with redzone payload.  */
+  auto_vec<unsigned char> m_shadow_bytes;
+};
+
+/* Emit VALUE shadow byte at a given OFFSET.  */
+
+void
+asan_redzone_buffer::emit_redzone_byte (HOST_WIDE_INT offset,
+					unsigned char value)
+{
+  gcc_assert ((offset & (ASAN_SHADOW_GRANULARITY - 1)) == 0);
+  gcc_assert (offset >= m_prev_offset);
+
+  HOST_WIDE_INT off
+    = m_prev_offset + ASAN_SHADOW_GRANULARITY * m_shadow_bytes.length ();
+  if (off == offset)
+    {
+      /* Consecutive shadow memory byte.  */
+      m_shadow_bytes.safe_push (value);
+      flush_if_full ();
+    }
+  else
+    {
+      if (!m_shadow_bytes.is_empty ())
+	flush_redzone_payload ();
+
+      /* Maybe start earlier in order to use aligned store.  */
+      HOST_WIDE_INT align = (offset - m_prev_offset) % ASAN_RED_ZONE_SIZE;
+      if (align)
+	{
+	  offset -= align;
+	  for (unsigned i = 0; i < align / BITS_PER_UNIT; i++)
+	    m_shadow_bytes.safe_push (0);
+	}
+
+      /* Adjust m_prev_offset and m_shadow_mem.  */
+      HOST_WIDE_INT diff = offset - m_prev_offset;
+      m_shadow_mem = adjust_address (m_shadow_mem, VOIDmode,
+				     diff >> ASAN_SHADOW_SHIFT);
+      m_prev_offset = offset;
+      m_shadow_bytes.safe_push (value);
+      flush_if_full ();
+    }
+}
+
+/* Emit RTX emission of the content of the buffer.  */
+
+void
+asan_redzone_buffer::flush_redzone_payload (void)
+{
+  gcc_assert (WORDS_BIG_ENDIAN == BYTES_BIG_ENDIAN);
+
+  if (m_shadow_bytes.is_empty ())
+    return;
+
+  /* Be sure we always emit to an aligned address.  */
+  gcc_assert (((m_prev_offset - m_original_offset)
+	      & (ASAN_RED_ZONE_SIZE - 1)) == 0);
+
+  /* Fill it to RZ_BUFFER_SIZE bytes with zeros if needed.  */
+  unsigned l = m_shadow_bytes.length ();
+  for (unsigned i = 0; i <= RZ_BUFFER_SIZE - l; i++)
+    m_shadow_bytes.safe_push (0);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file,
+	     "Flushing rzbuffer at offset %" PRId64 " with: ", m_prev_offset);
+
+  unsigned HOST_WIDE_INT val = 0;
+  for (unsigned i = 0; i < RZ_BUFFER_SIZE; i++)
+    {
+      unsigned char v
+	= m_shadow_bytes[BYTES_BIG_ENDIAN ? RZ_BUFFER_SIZE - i - 1 : i];
+      val |= (unsigned HOST_WIDE_INT)v << (BITS_PER_UNIT * i);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "%02x ", v);
+    }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "\n");
+
+  rtx c = gen_int_mode (val, SImode);
+  m_shadow_mem = adjust_address (m_shadow_mem, SImode, 0);
+  emit_move_insn (m_shadow_mem, c);
+  m_shadow_bytes.truncate (0);
+}
+
+/* Flush if the content of the buffer is full
+   (equal to RZ_BUFFER_SIZE).  */
+
+void
+asan_redzone_buffer::flush_if_full (void)
+{
+  if (m_shadow_bytes.length () == RZ_BUFFER_SIZE)
+    flush_redzone_payload ();
+}
+
 /* Insert code to protect stack vars.  The prologue sequence should be emitted
    directly, epilogue sequence returned.  BASE is the register holding the
    stack base, against which OFFSETS array offsets are relative to, OFFSETS
@@ -1256,11 +1372,10 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
   rtx_code_label *lab;
   rtx_insn *insns;
   char buf[32];
-  unsigned char shadow_bytes[4];
   HOST_WIDE_INT base_offset = offsets[length - 1];
   HOST_WIDE_INT base_align_bias = 0, offset, prev_offset;
   HOST_WIDE_INT asan_frame_size = offsets[0] - base_offset;
-  HOST_WIDE_INT last_offset, last_size;
+  HOST_WIDE_INT last_offset, last_size, last_size_aligned;
   int l;
   unsigned char cur_shadow_byte = ASAN_STACK_MAGIC_LEFT;
   tree str_cst, decl, id;
@@ -1421,46 +1536,43 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
   if (STRICT_ALIGNMENT)
     set_mem_align (shadow_mem, (GET_MODE_ALIGNMENT (SImode)));
   prev_offset = base_offset;
+
+  asan_redzone_buffer rz_buffer (shadow_mem, prev_offset);
   for (l = length; l; l -= 2)
     {
       if (l == 2)
 	cur_shadow_byte = ASAN_STACK_MAGIC_RIGHT;
       offset = offsets[l - 1];
-      if ((offset - base_offset) & (ASAN_RED_ZONE_SIZE - 1))
+
+      bool extra_byte = (offset - base_offset) & (ASAN_SHADOW_GRANULARITY - 1);
+      /* If a red-zone is not aligned to ASAN_SHADOW_GRANULARITY then
+	 the previous stack variable has size % ASAN_SHADOW_GRANULARITY != 0.
+	 In that case we have to emit one extra byte that will describe
+	 how many bytes (our of ASAN_SHADOW_GRANULARITY) can be accessed.  */
+      if (extra_byte)
 	{
-	  int i;
 	  HOST_WIDE_INT aoff
 	    = base_offset + ((offset - base_offset)
-			     & ~(ASAN_RED_ZONE_SIZE - HOST_WIDE_INT_1));
-	  shadow_mem = adjust_address (shadow_mem, VOIDmode,
-				       (aoff - prev_offset)
-				       >> ASAN_SHADOW_SHIFT);
-	  prev_offset = aoff;
-	  for (i = 0; i < 4; i++, aoff += ASAN_SHADOW_GRANULARITY)
-	    if (aoff < offset)
-	      {
-		if (aoff < offset - (HOST_WIDE_INT)ASAN_SHADOW_GRANULARITY + 1)
-		  shadow_bytes[i] = 0;
-		else
-		  shadow_bytes[i] = offset - aoff;
-	      }
-	    else
-	      shadow_bytes[i] = ASAN_STACK_MAGIC_MIDDLE;
-	  emit_move_insn (shadow_mem, asan_shadow_cst (shadow_bytes));
-	  offset = aoff;
+			     & ~(ASAN_SHADOW_GRANULARITY - HOST_WIDE_INT_1));
+	  rz_buffer.emit_redzone_byte (aoff, offset - aoff);
+	  offset = aoff + ASAN_SHADOW_GRANULARITY;
 	}
-      while (offset <= offsets[l - 2] - ASAN_RED_ZONE_SIZE)
+
+      /* Calculate size of red zone payload.  */
+      while (offset < offsets[l - 2])
 	{
-	  shadow_mem = adjust_address (shadow_mem, VOIDmode,
-				       (offset - prev_offset)
-				       >> ASAN_SHADOW_SHIFT);
-	  prev_offset = offset;
-	  memset (shadow_bytes, cur_shadow_byte, 4);
-	  emit_move_insn (shadow_mem, asan_shadow_cst (shadow_bytes));
-	  offset += ASAN_RED_ZONE_SIZE;
+	  rz_buffer.emit_redzone_byte (offset, cur_shadow_byte);
+	  offset += ASAN_SHADOW_GRANULARITY;
 	}
+
       cur_shadow_byte = ASAN_STACK_MAGIC_MIDDLE;
     }
+
+  /* As the automatic variables are aligned to
+     ASAN_RED_ZONE_SIZE / ASAN_SHADOW_GRANULARITY, the buffer should be
+     flushed here.  */
+  gcc_assert (rz_buffer.m_shadow_bytes.is_empty ());
+
   do_pending_stack_adjust ();
 
   /* Construct epilogue sequence.  */
@@ -1484,7 +1596,7 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
 	  && can_store_by_pieces (sz, builtin_memset_read_str, &c,
 				  BITS_PER_UNIT, true))
 	store_by_pieces (shadow_mem, sz, builtin_memset_read_str, &c,
-			 BITS_PER_UNIT, true, 0);
+			 BITS_PER_UNIT, true, RETURN_BEGIN);
       else if (use_after_return_class >= 5
 	       || !set_storage_via_setmem (shadow_mem,
 					   GEN_INT (sz),
@@ -1516,22 +1628,25 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
   prev_offset = base_offset;
   last_offset = base_offset;
   last_size = 0;
+  last_size_aligned = 0;
   for (l = length; l; l -= 2)
     {
       offset = base_offset + ((offsets[l - 1] - base_offset)
-			     & ~(ASAN_RED_ZONE_SIZE - HOST_WIDE_INT_1));
-      if (last_offset + last_size != offset)
+			      & ~(ASAN_RED_ZONE_SIZE - HOST_WIDE_INT_1));
+      if (last_offset + last_size_aligned < offset)
 	{
 	  shadow_mem = adjust_address (shadow_mem, VOIDmode,
 				       (last_offset - prev_offset)
 				       >> ASAN_SHADOW_SHIFT);
 	  prev_offset = last_offset;
-	  asan_clear_shadow (shadow_mem, last_size >> ASAN_SHADOW_SHIFT);
+	  asan_clear_shadow (shadow_mem, last_size_aligned >> ASAN_SHADOW_SHIFT);
 	  last_offset = offset;
 	  last_size = 0;
 	}
+      else
+	last_size = offset - last_offset;
       last_size += base_offset + ((offsets[l - 2] - base_offset)
-				  & ~(ASAN_RED_ZONE_SIZE - HOST_WIDE_INT_1))
+				  & ~(ASAN_MIN_RED_ZONE_SIZE - HOST_WIDE_INT_1))
 		   - offset;
 
       /* Unpoison shadow memory that corresponds to a variable that is 
@@ -1552,16 +1667,19 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
 			   "%s (%" PRId64 " B)\n", n, size);
 		}
 
-		last_size += size & ~(ASAN_RED_ZONE_SIZE - HOST_WIDE_INT_1);
+		last_size += size & ~(ASAN_MIN_RED_ZONE_SIZE - HOST_WIDE_INT_1);
 	    }
 	}
+      last_size_aligned
+	= ((last_size + (ASAN_RED_ZONE_SIZE - HOST_WIDE_INT_1))
+	   & ~(ASAN_RED_ZONE_SIZE - HOST_WIDE_INT_1));
     }
-  if (last_size)
+  if (last_size_aligned)
     {
       shadow_mem = adjust_address (shadow_mem, VOIDmode,
 				   (last_offset - prev_offset)
 				   >> ASAN_SHADOW_SHIFT);
-      asan_clear_shadow (shadow_mem, last_size >> ASAN_SHADOW_SHIFT);
+      asan_clear_shadow (shadow_mem, last_size_aligned >> ASAN_SHADOW_SHIFT);
     }
 
   /* Clean-up set with instrumented stack variables.  */

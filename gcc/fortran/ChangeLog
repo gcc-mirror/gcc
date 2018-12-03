@@ -1,3 +1,27 @@
+2018-11-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.h (struct gfc_omp_clauses): Remove "wait".  Adjust all
+	users.
+
+	* openmp.c (gfc_match_omp_clauses): Support multiple OpenACC wait
+	clauses.
+
+2018-11-27  Martin Liska  <mliska@suse.cz>
+
+	* decl.c (gfc_match_gcc_builtin): New function.
+	* gfortran.h (struct vect_builtin_tuple): New.
+	(gfc_adjust_builtins): Likewise.
+	* lang-specs.h (TARGET_F951_OPTIONS): New.
+	(F951_OPTIONS): Use it.
+	* lang.opt: Add new option -fpre-include.
+	* match.h (gfc_match_gcc_builtin): Declare new function.
+	* parse.c (decode_gcc_attribute): Handle builtin.
+	(parse_progunit): Call gfc_adjust_builtins.
+	* scanner.c (gfc_new_file): Load pre-included header file
+	when provided.
+	* trans-intrinsic.c (add_simd_flag_for_built_in): New.
+	(gfc_adjust_builtins): Likewise.
+
 2018-11-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/88143

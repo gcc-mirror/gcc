@@ -1105,13 +1105,13 @@ read_abbrevs (struct backtrace_state *state, uint64_t abbrev_offset,
   if (num_abbrevs == 0)
     return 1;
 
-  abbrevs->num_abbrevs = num_abbrevs;
   abbrevs->abbrevs = ((struct abbrev *)
 		      backtrace_alloc (state,
 				       num_abbrevs * sizeof (struct abbrev),
 				       error_callback, data));
   if (abbrevs->abbrevs == NULL)
     return 0;
+  abbrevs->num_abbrevs = num_abbrevs;
   memset (abbrevs->abbrevs, 0, num_abbrevs * sizeof (struct abbrev));
 
   num_abbrevs = 0;
@@ -2057,9 +2057,7 @@ read_line_info (struct backtrace_state *state, struct dwarf_data *ddata,
   return 1;
 
  fail:
-  vec.vec.alc += vec.vec.size;
-  vec.vec.size = 0;
-  backtrace_vector_release (state, &vec.vec, error_callback, data);
+  backtrace_vector_free (state, &vec.vec, error_callback, data);
   free_line_header (state, hdr, error_callback, data);
   *lines = (struct line *) (uintptr_t) -1;
   *lines_count = 0;

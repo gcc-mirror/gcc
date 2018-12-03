@@ -423,6 +423,19 @@ fs::create_directories(const path& p, error_code& ec) noexcept
       ec = std::make_error_code(errc::invalid_argument);
       return false;
     }
+
+  file_status st = symlink_status(p, ec);
+  if (is_directory(st))
+    return false;
+  else if (ec && !status_known(st))
+    return false;
+  else if (exists(st))
+    {
+      if (!ec)
+	ec = std::make_error_code(std::errc::not_a_directory);
+      return false;
+    }
+
   std::stack<path> missing;
   path pp = p;
 
@@ -431,24 +444,29 @@ fs::create_directories(const path& p, error_code& ec) noexcept
       ec.clear();
       const auto& filename = pp.filename();
       if (!is_dot(filename) && !is_dotdot(filename))
-	missing.push(pp);
-      pp.remove_filename();
+	{
+	  missing.push(std::move(pp));
+	  pp = missing.top().parent_path();
+	}
+      else
+	pp = pp.parent_path();
     }
 
   if (ec || missing.empty())
     return false;
 
+  bool created;
   do
     {
       const path& top = missing.top();
-      create_directory(top, ec);
-      if (ec && is_directory(top))
-	ec.clear();
+      created = create_directory(top, ec);
+      if (ec)
+	return false;
       missing.pop();
     }
-  while (!missing.empty() && !ec);
+  while (!missing.empty());
 
-  return missing.empty();
+  return created;
 }
 
 namespace

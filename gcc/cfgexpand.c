@@ -1125,13 +1125,17 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 	      && stack_vars[i].size.is_constant ())
 	    {
 	      prev_offset = align_base (prev_offset,
-					MAX (alignb, ASAN_RED_ZONE_SIZE),
+					MAX (alignb, ASAN_MIN_RED_ZONE_SIZE),
 					!FRAME_GROWS_DOWNWARD);
 	      tree repr_decl = NULL_TREE;
-	      offset
-		= alloc_stack_frame_space (stack_vars[i].size
-					   + ASAN_RED_ZONE_SIZE,
-					   MAX (alignb, ASAN_RED_ZONE_SIZE));
+	      unsigned HOST_WIDE_INT size
+		= asan_var_and_redzone_size (stack_vars[i].size.to_constant ());
+	      if (data->asan_vec.is_empty ())
+		size = MAX (size, ASAN_RED_ZONE_SIZE);
+
+	      unsigned HOST_WIDE_INT alignment = MAX (alignb,
+						      ASAN_MIN_RED_ZONE_SIZE);
+	      offset = alloc_stack_frame_space (size, alignment);
 
 	      data->asan_vec.safe_push (prev_offset);
 	      /* Allocating a constant amount of space from a constant

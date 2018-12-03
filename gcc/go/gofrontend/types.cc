@@ -6566,7 +6566,11 @@ Struct_type::do_export(Export* exp) const
 	  exp->write_c_string(" ");
 	  Expression* expr =
             Expression::make_string(p->tag(), Linemap::predeclared_location());
-	  expr->export_expression(exp);
+
+	  Export_function_body efb(exp, 0);
+	  expr->export_expression(&efb);
+	  exp->write_string(efb.body());
+
 	  delete expr;
 	}
 
@@ -6602,7 +6606,8 @@ Struct_type::do_import(Import* imp)
 	  if (imp->peek_char() == ' ')
 	    {
 	      imp->advance(1);
-	      Expression* expr = Expression::import_expression(imp);
+	      Expression* expr = Expression::import_expression(imp,
+							       imp->location());
 	      String_expression* sexpr = expr->string_expression();
 	      go_assert(sexpr != NULL);
 	      sf.set_tag(sexpr->val());
@@ -7545,7 +7550,12 @@ Array_type::do_export(Export* exp) const
 {
   exp->write_c_string("[");
   if (this->length_ != NULL)
-    this->length_->export_expression(exp);
+    {
+      Export_function_body efb(exp, 0);
+      efb.set_type_context(this->length_->type());
+      this->length_->export_expression(&efb);
+      exp->write_string(efb.body());
+    }
   exp->write_c_string("] ");
   exp->write_type(this->element_type_);
 }
@@ -7560,7 +7570,7 @@ Array_type::do_import(Import* imp)
   if (imp->peek_char() == ']')
     length = NULL;
   else
-    length = Expression::import_expression(imp);
+    length = Expression::import_expression(imp, imp->location());
   imp->require_c_string("] ");
   Type* element_type = imp->read_type();
   return Type::make_array_type(element_type, length);
@@ -9865,7 +9875,9 @@ Named_type::add_method(const std::string& name, Function* function)
   go_assert(!this->is_alias_);
   if (this->local_methods_ == NULL)
     this->local_methods_ = new Bindings(NULL);
-  return this->local_methods_->add_function(name, NULL, function);
+  return this->local_methods_->add_function(name,
+					    this->named_object_->package(),
+					    function);
 }
 
 // Add a method declaration to this type.

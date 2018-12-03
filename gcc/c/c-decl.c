@@ -11061,12 +11061,15 @@ struct c_declspecs *
 declspecs_add_alignas (location_t loc,
 		       struct c_declspecs *specs, tree align)
 {
-  int align_log;
   specs->alignas_p = true;
   specs->locations[cdw_alignas] = loc;
   if (align == error_mark_node)
     return specs;
-  align_log = check_user_alignment (align, false, true);
+
+  /* Only accept the alignment if it's valid and greater than
+     the current one.  Zero is invalid but by C11 required to
+     be silently ignored.  */
+  int align_log = check_user_alignment (align, false, /* warn_zero = */false);
   if (align_log > specs->align_log)
     specs->align_log = align_log;
   return specs;

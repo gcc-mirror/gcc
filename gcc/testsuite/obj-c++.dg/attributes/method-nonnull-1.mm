@@ -5,6 +5,8 @@
 #include <objc/objc.h>
 #include <stdlib.h>
 
+typedef __SIZE_TYPE__ my_size_t;
+
 @interface MyArray
 {
   Class isa;
@@ -25,8 +27,8 @@
 + (void) removeObject: (id)object __attribute__ ((nonnull (2))); /* { dg-warning "exceeds the number of function parameters 3" } */
 - (void) removeObject: (id)object __attribute__ ((nonnull (2))); /* { dg-warning "exceeds the number of function parameters 3" } */
 
-+ (void) removeObjectAtIndex: (size_t)object __attribute__ ((nonnull (1))); /* { dg-warning "refers to parameter type .size_t." } */
-- (void) removeObjectAtIndex: (size_t)object __attribute__ ((nonnull (1))); /* { dg-warning "refers to parameter type .size_t." } */
++ (void) removeObjectAtIndex: (my_size_t)object __attribute__ ((nonnull (1))); /* { dg-warning "refers to parameter type .my_size_t." } */
+- (void) removeObjectAtIndex: (my_size_t)object __attribute__ ((nonnull (1))); /* { dg-warning "refers to parameter type .my_size_t." } */
 
 + (void) removeObject: (id)object __attribute__ ((nonnull (MyArray))); /* { dg-error "" } */
   /* { dg-warning "attribute argument is invalid" "" { target *-*-* } .-1 } */

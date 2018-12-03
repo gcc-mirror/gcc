@@ -288,3 +288,10 @@
   { "asm_spec64",		ASM_SPEC64 },				\
   { "link_os_spec32",		LINK_OS_SPEC32 },			\
   { "link_os_spec64",		LINK_OS_SPEC64 },
+
+/* Use gnu-user.h LINK_GCC_SEQUENCE_SPEC for rtems.  */
+#undef LINK_GCC_C_SEQUENCE_SPEC
+#define	LINK_GCC_C_SEQUENCE_SPEC \
+  "%{mads|myellowknife|mmvme|msim:%G %L %G;" \
+  "!mcall-*|mcall-linux:" GNU_USER_TARGET_LINK_GCC_C_SEQUENCE_SPEC ";" \
+  ":%G %L %G}"

@@ -1,3 +1,177 @@
+2018-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88258
+	* parser.c (cp_parser_skip_to_closing_parenthesis_1,
+	cp_parser_skip_to_end_of_statement,
+	cp_parser_skip_to_end_of_block_or_statement,
+	cp_parser_skip_to_closing_brace,
+	cp_parser_skip_to_closing_square_bracket,
+	cp_parser_skip_balanced_tokens): Don't treat CPP_PRAGMA_EOL specially
+	if in_pragma is false.
+
+2018-12-01  Marek Polacek  <polacek@redhat.com>
+
+	Implement P0634R3, Down with typename!
+	* parser.c (CP_PARSER_FLAGS_TYPENAME_OPTIONAL): New enumerator.
+	(cp_parser_type_name): Remove declaration.
+	(cp_parser_postfix_expression): Pass CP_PARSER_FLAGS_TYPENAME_OPTIONAL
+	to cp_parser_type_id.
+	(cp_parser_new_type_id): Pass CP_PARSER_FLAGS_TYPENAME_OPTIONAL to
+	cp_parser_type_specifier_seq.
+	(cp_parser_lambda_declarator_opt): Pass
+	CP_PARSER_FLAGS_TYPENAME_OPTIONAL to
+	cp_parser_parameter_declaration_clause.
+	(cp_parser_condition): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_declarator.
+	(cp_parser_simple_declaration): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_init_declarator.
+	(cp_parser_conversion_type_id): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_type_specifier_seq.
+	(cp_parser_default_type_template_argument): Pass
+	CP_PARSER_FLAGS_TYPENAME_OPTIONAL to cp_parser_type_id.
+	(cp_parser_template_parameter): Pass CP_PARSER_FLAGS_TYPENAME_OPTIONAL
+	to cp_parser_parameter_declaration.
+	(cp_parser_explicit_instantiation): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_declarator.
+	(cp_parser_simple_type_specifier): Adjust call to cp_parser_type_name
+	to relay if we should treat the typename keyword as optional.  Maybe
+	call cp_parser_make_typename_type is parsing a template-id and it's
+	not a TYPE_DECL.
+	(cp_parser_type_name): Remove unused function.
+	(cp_parser_enum_specifier): Pass to CP_PARSER_FLAGS_NONE
+	cp_parser_type_specifier_seq.
+	(cp_parser_alias_declaration): Pass CP_PARSER_FLAGS_TYPENAME_OPTIONAL
+	to cp_parser_type_id.
+	(cp_parser_init_declarator): New parameter.  Pass it down to
+	cp_parser_declarator.
+	(cp_parser_declarator): New parameter.  Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_declarator.  Pass the new parameter to
+	cp_parser_direct_declarator.
+	(cp_parser_direct_declarator): New parameter.  Pass it to
+	cp_parser_parameter_declaration_clause and cp_parser_declarator.
+	(cp_parser_declarator_id):
+	(cp_parser_type_id_1): New parameter.  Pass it to
+	cp_parser_type_specifier_seq.  Adjust call to cp_parser_declarator.
+	(cp_parser_type_id): New parameter.  Pass it to cp_parser_type_id_1.
+	(cp_parser_template_type_arg): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_type_id_1.
+	(cp_parser_trailing_type_id): Pass CP_PARSER_FLAGS_TYPENAME_OPTIONAL
+	to cp_parser_type_id_1.
+	(cp_parser_type_specifier_seq): New parameter.
+	(function_being_declared_is_template_p):
+	(cp_parser_parameter_declaration_clause): New parameter.  Pass it to
+	cp_parser_parameter_declaration_list.
+	(cp_parser_parameter_declaration_list): New parameter.  Pass it to
+	cp_parser_parameter_declaration.
+	(cp_parser_parameter_declaration): New parameter.  Pass it to
+	cp_parser_decl_specifier_seq.  Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_declarator.
+	(cp_parser_member_declaration): Adjust call to
+	cp_parser_decl_specifier_seq to also include
+	CP_PARSER_FLAGS_TYPENAME_OPTIONAL.  Pass
+	CP_PARSER_FLAGS_TYPENAME_OPTIONAL to cp_parser_declarator.
+	(cp_parser_exception_declaration): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_type_specifier_seq and cp_parser_declarator.
+	(cp_parser_requirement_parameter_list): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_parameter_declaration_clause.
+	(cp_parser_constructor_declarator_p): Resolve the TYPENAME_TYPE.
+	(cp_parser_single_declaration): Pass CP_PARSER_FLAGS_TYPENAME_OPTIONAL
+	to cp_parser_decl_specifier_seq and cp_parser_init_declarator.
+	(cp_parser_cache_defarg): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_declarator and cp_parser_parameter_declaration_list.
+	(cp_parser_objc_method_tail_params_opt): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_parameter_declaration.
+	(cp_parser_objc_class_ivars): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_declarator.
+	(cp_parser_objc_try_catch_finally_statement): Pass CP_PARSER_FLAGS_NONE
+	to cp_parser_parameter_declaration
+	(cp_parser_objc_struct_declaration): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_declarator.
+	(cp_parser_omp_for_loop_init): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_declarator and cp_parser_type_specifier_seq.
+
+2018-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* typeck2.c: Include "gcc-rich-location.h".
+	(cxx_incomplete_type_diagnostic): When complaining about possibly
+	missing parens, add a fix-it hint if the member function takes no
+	additional params.
+
+2018-11-30  James Norris  <jnorris@codesourcery.com>
+
+	* parser.c (cp_parser_oacc_enter_exit_data): Use existing local
+	variable.
+
+2018-11-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (compute_array_index_type_loc): New, like the current
+	compute_array_index_type but takes a location_t too.
+	(compute_array_index_type): Forward to the latter.
+	(create_array_type_for_decl): Use compute_array_index_type_loc.
+
+2018-11-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/88121
+	* cp-name-hint.h (suggest_alternative_in_scoped_enum): New decl.
+	* error.c (dump_scope): Ensure that we print any scope for values
+	of unscoped enums.  Print the scope of values of scoped enums.
+	(qualified_name_lookup_error): Offer suggestions for failures
+	within scoped enums by calling suggest_alternative_in_scoped_enum.
+	* name-lookup.c (class namespace_hints): Update comment to mention
+	scoped enums.
+	(namespace_hints::namespace_hints): Call
+	maybe_add_candidate_for_scoped_enum.
+	(namespace_hints::maybe_add_candidate_for_scoped_enum): New member
+	(suggest_alternatives_for): Update comment to mention scoped
+	enums.
+	(suggest_alternative_in_scoped_enum): New function.
+
+2018-11-28  Marek Polacek  <polacek@redhat.com>
+
+	Implement P1094R2, Nested inline namespaces.
+	* parser.c (cp_parser_namespace_definition): Parse the optional inline
+	keyword in a nested-namespace-definition.  Adjust push_namespace call.
+	Formatting fix.
+
+2018-11-28  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/87531
+	* class.c (finish_struct): In a template, add artificial using
+	decl for operator=.
+
+2018-11-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* except.c (do_allocate_exception): Annotate __cxa_allocate_exception
+	as COLD.
+
+2018-11-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88222 - ICE with bit-field with invalid type.
+	* decl.c (grokdeclarator): Check if declarator is null.
+
+2018-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87476
+	* typeck2.c (digest_init_r): Re-add handing of signed/unsigned char
+	strings and add it to the initialization of wide array from non-wide
+	string diagnostics too.
+
+2018-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88187
+	* decl.c (grokdeclarator): Don't diagnose deduction guide errors
+	if !funcdecl_p.
+
+	PR c++/88181
+	* class.c (fixup_attribute_variants): Also propagate TYPE_PACKED
+	to variants.
+
+2018-11-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88120 - ICE when calling save_expr in a template.
+	* typeck.c (cp_build_binary_op): Call cp_save_expr instead of
+	save_expr.
+
 2018-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/87386

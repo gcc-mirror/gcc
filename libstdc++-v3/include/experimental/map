@@ -34,7 +34,7 @@
 #if __cplusplus >= 201402L
 
 #include <map>
-#include <experimental/bits/erase_if.h>
+#include <bits/erase_if.h>
 #include <experimental/memory_resource>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -49,13 +49,13 @@ inline namespace fundamentals_v2
 	   typename _Predicate>
     inline void
     erase_if(map<_Key, _Tp, _Compare, _Alloc>& __cont, _Predicate __pred)
-    { __detail::__erase_nodes_if(__cont, __pred); }
+    { std::__detail::__erase_nodes_if(__cont, __pred); }
 
   template<typename _Key, typename _Tp, typename _Compare, typename _Alloc,
 	   typename _Predicate>
     inline void
     erase_if(multimap<_Key, _Tp, _Compare, _Alloc>& __cont, _Predicate __pred)
-    { __detail::__erase_nodes_if(__cont, __pred); }
+    { std::__detail::__erase_nodes_if(__cont, __pred); }
 
   namespace pmr {
     template<typename _Key, typename _Tp, typename _Compare = less<_Key>>

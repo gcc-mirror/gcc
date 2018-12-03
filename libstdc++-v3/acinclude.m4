@@ -3562,6 +3562,72 @@ EOF
 
 ])
 
+dnl
+dnl Set default lock policy for synchronizing shared_ptr reference counting.
+dnl
+dnl --with-libstdcxx-lock-policy=auto
+dnl	Use atomic operations for shared_ptr reference counting only if
+dnl	the default target supports atomic compare-and-swap.
+dnl --with-libstdcxx-lock-policy=atomic
+dnl	Use atomic operations for shared_ptr reference counting.
+dnl --with-libstdcxx-lock-policy=mutex
+dnl	Use a mutex to synchronize shared_ptr reference counting.
+dnl
+dnl This controls the value of __gnu_cxx::__default_lock_policy, which
+dnl determines how shared_ptr reference counts are synchronized.
+dnl The option "atomic" means that atomic operations should be used,
+dnl "mutex" means that a mutex will be used. The default option, "auto",
+dnl will check if the target supports the compiler-generated builtins
+dnl for atomic compare-and-swap operations for 2-byte and 4-byte integers,
+dnl and will use "atomic" if supported, "mutex" otherwise.
+dnl This option is ignored if the thread model used by GCC is "single",
+dnl as no synchronization is used at all in that case.
+dnl This option affects the library ABI (except in the "single" thread model).
+dnl
+dnl Defines _GLIBCXX_HAVE_ATOMIC_LOCK_POLICY to 1 if atomics should be used.
+dnl
+AC_DEFUN([GLIBCXX_ENABLE_LOCK_POLICY], [
+
+  AC_ARG_WITH([libstdcxx-lock-policy],
+    AC_HELP_STRING([--with-libstdcxx-lock-policy={atomic,mutex,auto}],
+      [synchronization policy for shared_ptr reference counting [default=auto]]),
+              [libstdcxx_atomic_lock_policy=$withval],
+              [libstdcxx_atomic_lock_policy=auto])
+
+  case "$libstdcxx_atomic_lock_policy" in
+    atomic|mutex|auto) ;;
+    *) AC_MSG_ERROR([Invalid argument for --with-libstdcxx-lock-policy]) ;;
+  esac
+  AC_MSG_CHECKING([for lock policy for shared_ptr reference counts])
+
+  if test x"$libstdcxx_atomic_lock_policy" = x"auto"; then
+    AC_LANG_SAVE
+    AC_LANG_CPLUSPLUS
+    ac_save_CXXFLAGS="$CXXFLAGS"
+
+    dnl Why do we care about 2-byte CAS on targets with 4-byte _Atomic_word?!
+    AC_TRY_COMPILE([
+    #if ! defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2
+    # error "No 2-byte compare-and-swap"
+    #elif ! defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
+    # error "No 4-byte compare-and-swap"
+    #endif
+    ],,
+    [libstdcxx_atomic_lock_policy=atomic],
+    [libstdcxx_atomic_lock_policy=mutex])
+    AC_LANG_RESTORE
+    CXXFLAGS="$ac_save_CXXFLAGS"
+  fi
+
+  if test x"$libstdcxx_atomic_lock_policy" = x"atomic"; then
+    AC_MSG_RESULT(atomic)
+    AC_DEFINE(HAVE_ATOMIC_LOCK_POLICY,1,
+      [Defined if shared_ptr reference counting should use atomic operations.])
+  else
+    AC_MSG_RESULT(mutex)
+  fi
+
+])
 
 dnl
 dnl Allow visibility attributes to be used on namespaces, objects, etc.

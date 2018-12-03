@@ -93,6 +93,7 @@ static void predict_paths_leading_to_edge (edge, enum br_predictor,
 					   struct loop *in_loop = NULL);
 static bool can_predict_insn_p (const rtx_insn *);
 static HOST_WIDE_INT get_predictor_value (br_predictor, HOST_WIDE_INT);
+static void determine_unlikely_bbs ();
 
 /* Information we hold about each branch predictor.
    Filled using information from predict.def.  */
@@ -3063,6 +3064,9 @@ tree_estimate_probability (bool dry_run)
      preheaders.  */
   create_preheaders (CP_SIMPLE_PREHEADERS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
+  /* Decide which edges are known to be unlikely.  This improves later
+     branch prediction. */
+  determine_unlikely_bbs ();
 
   bb_predictions = new hash_map<const_basic_block, edge_prediction *>;
   tree_bb_level_predictions ();
@@ -3768,17 +3772,40 @@ determine_unlikely_bbs ()
     }
   /* Finally all edges from non-0 regions to 0 are unlikely.  */
   FOR_ALL_BB_FN (bb, cfun)
-    if (!(bb->count == profile_count::zero ()))
+    {
+      if (!(bb->count == profile_count::zero ()))
+	FOR_EACH_EDGE (e, ei, bb->succs)
+	  if (!(e->probability == profile_probability::never ())
+	      && e->dest->count == profile_count::zero ())
+	     {
+	       if (dump_file && (dump_flags & TDF_DETAILS))
+		 fprintf (dump_file, "Edge %i->%i is unlikely because "
+			  "it enters unlikely block\n",
+			  bb->index, e->dest->index);
+	       e->probability = profile_probability::never ();
+	     }
+
+      edge other = NULL;
+
       FOR_EACH_EDGE (e, ei, bb->succs)
-	if (!(e->probability == profile_probability::never ())
-	    && e->dest->count == profile_count::zero ())
-	   {
-	     if (dump_file && (dump_flags & TDF_DETAILS))
-	       fprintf (dump_file, "Edge %i->%i is unlikely because "
-		 	"it enters unlikely block\n",
-			bb->index, e->dest->index);
-	     e->probability = profile_probability::never ();
-	   }
+	if (e->probability == profile_probability::never ())
+	  ;
+	else if (other)
+	  {
+	    other = NULL;
+	    break;
+	  }
+	else
+	  other = e;
+      if (other
+	  && !(other->probability == profile_probability::always ()))
+	{
+            if (dump_file && (dump_flags & TDF_DETAILS))
+	      fprintf (dump_file, "Edge %i->%i is locally likely\n",
+		       bb->index, other->dest->index);
+	  other->probability = profile_probability::always ();
+	}
+    }
   if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count == profile_count::zero ())
     cgraph_node::get (current_function_decl)->count = profile_count::zero ();
 }

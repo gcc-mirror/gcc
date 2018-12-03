@@ -562,50 +562,43 @@
 (define_predicate "easy_fp_constant"
   (match_code "const_double")
 {
-  if (GET_MODE (op) != mode
-      || (!SCALAR_FLOAT_MODE_P (mode) && mode != DImode))
-    return 0;
+  gcc_assert (GET_MODE (op) == mode && SCALAR_FLOAT_MODE_P (mode));
 
-  /* Consider all constants with -msoft-float to be easy.  */
-  if (TARGET_SOFT_FLOAT && mode != DImode)
-    return 1;
+  /* Consider all constants with -msoft-float to be easy when regs are
+     32-bit and thus can be loaded with a maximum of 2 insns.  For
+     64-bit avoid long dependent insn sequences.  */
+  if (TARGET_SOFT_FLOAT)
+    {
+      if (!TARGET_POWERPC64)
+        return 1;
+
+      int size = GET_MODE_SIZE (mode);
+      if (size < 8)
+        return 1;
+
+      int load_from_mem_insns = 2;
+      if (size > 8)
+        load_from_mem_insns++;
+      if (TARGET_CMODEL != CMODEL_SMALL)
+        load_from_mem_insns++;
+      if (num_insns_constant (op, mode) <= load_from_mem_insns)
+        return 1;
+    }
 
   /* 0.0D is not all zero bits.  */
   if (DECIMAL_FLOAT_MODE_P (mode))
     return 0;
 
   /* The constant 0.0 is easy under VSX.  */
-  if (TARGET_VSX && SCALAR_FLOAT_MODE_P (mode) && op == CONST0_RTX (mode))
+  if (TARGET_VSX && op == CONST0_RTX (mode))
     return 1;
 
-  /* If we are using V.4 style PIC, consider all constants to be hard.  */
-  if (flag_pic && DEFAULT_ABI == ABI_V4)
-    return 0;
-
-  /* If we have real FPRs, consider floating point constants hard (other than
-     0.0 under VSX), so that the constant gets pushed to memory during the
-     early RTL phases.  This has the advantage that double precision constants
-     that can be represented in single precision without a loss of precision
-     will use single precision loads.  */
-
-  switch (mode)
-    {
-    case E_KFmode:
-    case E_IFmode:
-    case E_TFmode:
-    case E_DFmode:
-    case E_SFmode:
-      return 0;
-
-    case E_DImode:
-      return (num_insns_constant (op, DImode) <= 2);
-
-    case E_SImode:
-      return 1;
-
-    default:
-      gcc_unreachable ();
-    }
+  /* Otherwise consider floating point constants hard, so that the
+     constant gets pushed to memory during the early RTL phases.  This
+     has the advantage that double precision constants that can be
+     represented in single precision without a loss of precision will
+     use single precision loads.  */
+   return 0;
 })
 
 ;; Return 1 if the operand is a constant that can loaded with a XXSPLTIB
@@ -644,12 +637,6 @@
 (define_predicate "easy_vector_constant"
   (match_code "const_vector")
 {
-  /* Because IEEE 128-bit floating point is considered a vector type
-     in order to pass it in VSX registers, it might use this function
-     instead of easy_fp_constant.  */
-  if (FLOAT128_VECTOR_P (mode))
-    return easy_fp_constant (op, mode);
-
   if (VECTOR_MEM_ALTIVEC_OR_VSX_P (mode))
     {
       int value = 256;
@@ -997,6 +984,13 @@
   (and (match_code "symbol_ref")
        (match_test "RS6000_SYMBOL_REF_TLS_P (op)")))
 
+;; Return 1 for the UNSPEC used in TLS call operands
+(define_predicate "unspec_tls"
+  (match_code "unspec")
+{
+  return XINT (op, 1) == UNSPEC_TLSGD || XINT (op, 1) == UNSPEC_TLSLD;
+})
+
 ;; Return 1 if the operand, used inside a MEM, is a valid first argument
 ;; to CALL.  This is a SYMBOL_REF, a pseudo-register, LR or CTR.
 (define_predicate "call_operand"
@@ -1005,6 +999,24 @@
 		  || REGNO (op) == CTR_REGNO
 		  || REGNO (op) >= FIRST_PSEUDO_REGISTER")
      (match_code "symbol_ref")))
+
+;; Return 1 if the operand, used inside a MEM, is a valid first argument
+;; to an indirect CALL.  This is LR, CTR, or a PLTSEQ unspec using CTR.
+(define_predicate "indirect_call_operand"
+  (match_code "reg,unspec")
+{
+  if (REG_P (op))
+    return (REGNO (op) == LR_REGNO
+	    || REGNO (op) == CTR_REGNO);
+  if (GET_CODE (op) == UNSPEC)
+    {
+      if (XINT (op, 1) != UNSPEC_PLTSEQ)
+	return false;
+      op = XVECEXP (op, 0, 0);
+      return REG_P (op) && REGNO (op) == CTR_REGNO;
+    }
+  return false;
+})
 
 ;; Return 1 if the operand is a SYMBOL_REF for a function known to be in
 ;; this file.

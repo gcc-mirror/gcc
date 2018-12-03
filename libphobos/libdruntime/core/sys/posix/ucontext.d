@@ -23,6 +23,9 @@ extern (C):
 nothrow:
 @nogc:
 
+version (RISCV32) version = RISCV_Any;
+version (RISCV64) version = RISCV_Any;
+
 //
 // XOpen (XSI)
 //
@@ -539,6 +542,55 @@ version (CRuntime_Glibc)
             ucontext_t* uc_link;
             stack_t     uc_stack;
             sigset_t    uc_sigmask;
+            mcontext_t  uc_mcontext;
+        }
+    }
+    else version (RISCV_Any)
+    {
+        private
+        {
+            alias c_ulong[32] __riscv_mc_gp_state;
+
+            struct __riscv_mc_f_ext_state
+            {
+                uint[32] __f;
+                uint __fcsr;
+            }
+
+            struct __riscv_mc_d_ext_state
+            {
+                ulong[32] __f;
+                uint __fcsr;
+            }
+
+            struct __riscv_mc_q_ext_state
+            {
+                align(16) ulong[64] __f;
+                uint __fcsr;
+                uint[3] __reserved;
+            }
+
+            union __riscv_mc_fp_state
+            {
+                __riscv_mc_f_ext_state __f;
+                __riscv_mc_d_ext_state __d;
+                __riscv_mc_q_ext_state __q;
+            }
+        }
+
+        struct mcontext_t
+        {
+            __riscv_mc_gp_state __gregs;
+            __riscv_mc_fp_state __fpregs;
+        }
+
+        struct ucontext_t
+        {
+            c_ulong     __uc_flags;
+            ucontext_t* uc_link;
+            stack_t     uc_stack;
+            sigset_t    uc_sigmask;
+            char[1024 / 8 - sigset_t.sizeof] __reserved;
             mcontext_t  uc_mcontext;
         }
     }

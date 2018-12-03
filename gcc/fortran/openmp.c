@@ -1876,10 +1876,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	  break;
 	case 'w':
 	  if ((mask & OMP_CLAUSE_WAIT)
-	      && !c->wait
 	      && gfc_match ("wait") == MATCH_YES)
 	    {
-	      c->wait = true;
 	      match m = match_oacc_expr_list (" (", &c->wait_list, false);
 	      if (m == MATCH_ERROR)
 		{
@@ -4780,10 +4778,8 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
     resolve_positive_int_expr (omp_clauses->worker_expr, "WORKER");
   if (omp_clauses->vector_expr)
     resolve_positive_int_expr (omp_clauses->vector_expr, "VECTOR");
-  if (omp_clauses->wait)
-    if (omp_clauses->wait_list)
-      for (el = omp_clauses->wait_list; el; el = el->next)
-	resolve_scalar_int_expr (el->expr, "WAIT");
+  for (el = omp_clauses->wait_list; el; el = el->next)
+    resolve_scalar_int_expr (el->expr, "WAIT");
   if (omp_clauses->collapse && omp_clauses->tile_list)
     gfc_error ("Incompatible use of TILE and COLLAPSE at %L", &code->loc);
   if (omp_clauses->depend_source && code->op != EXEC_OMP_ORDERED)

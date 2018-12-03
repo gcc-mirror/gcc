@@ -35,7 +35,7 @@ ATTR (alias ("fnoreturn")) void falias (void);
 void test_aligned (void)
 {
   A (0, fnone, aligned);
-  A (0, fnone, aligned (0));
+  A (0, fnone, aligned (0));            /* { dg-warning "requested alignment .0. is not a positive power of 2" } */
   A (0, fnone, aligned (1));
   A (0, fnone, aligned (2));
   A (0, fnone, aligned (4));
@@ -43,18 +43,18 @@ void test_aligned (void)
   A (0, fnone, aligned (16));
 
   A (1, faligned, aligned);
-  A (0, faligned, aligned (0));
+  A (0, faligned, aligned (0));         /* { dg-warning "requested alignment .0. is not a positive power of 2" } */
   A (0, faligned, aligned (1));
   A (0, faligned, aligned (2));
 
   A (1, faligned_1, aligned);
-  A (0, faligned_1, aligned (0));
+  A (0, faligned_1, aligned (0));       /* { dg-warning "requested alignment .0. is not a positive power of 2" } */
   A (1, faligned_1, aligned (1));
   A (0, faligned_1, aligned (2));
   A (0, faligned_1, aligned (4));
 
   A (1, faligned_2, aligned);
-  A (0, faligned_2, aligned (0));
+  A (0, faligned_2, aligned (0));       /* { dg-warning "requested alignment .0. is not a positive power of 2" } */
   A (0, faligned_2, aligned (1));
   A (1, faligned_2, aligned (2));
   A (0, faligned_2, aligned (4));
@@ -193,18 +193,6 @@ void test_ctor_dtor (void)
 
   A (1, fctor_dtor, constructor);
   A (1, fctor_dtor, destructor);
-
-  extern ATTR (constructor (123)) void fctor_123 (void);
-  A (1, fctor_123, constructor);
-  A (0, fctor_123, destructor);
-  A (1, fctor_123, constructor (123));
-  A (0, fctor_123, constructor (124));
-
-  extern ATTR (destructor (234)) void fctor_123 (void);
-  A (1, fctor_123, constructor (123));
-  A (1, fctor_123, destructor);
-  A (1, fctor_123, destructor (234));
-  A (0, fctor_123, destructor (235));
 }
 
 

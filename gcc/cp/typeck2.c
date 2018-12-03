@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "varasm.h"
 #include "intl.h"
+#include "gcc-rich-location.h"
 
 static tree
 process_init_constructor (tree type, tree init, int nested,
@@ -507,9 +508,16 @@ cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
 
 	if (DECL_FUNCTION_MEMBER_P (member)
 	    && ! flag_ms_extensions)
-	  emit_diagnostic (diag_kind, loc, 0,
-			   "invalid use of member function %qD "
-			   "(did you forget the %<()%> ?)", member);
+	  {
+	    gcc_rich_location richloc (loc);
+	    /* If "member" has no arguments (other than "this"), then
+	       add a fix-it hint.  */
+	    if (type_num_arguments (TREE_TYPE (member)) == 1)
+	      richloc.add_fixit_insert_after ("()");
+	    emit_diagnostic (diag_kind, &richloc, 0,
+			     "invalid use of member function %qD "
+			     "(did you forget the %<()%> ?)", member);
+	  }
 	else
 	  emit_diagnostic (diag_kind, loc, 0,
 			   "invalid use of member %qD "
@@ -1063,7 +1071,9 @@ digest_init_r (tree type, tree init, int nested, int flags,
 
 	  if (TYPE_PRECISION (typ1) == BITS_PER_UNIT)
 	    {
-	      if (char_type != char_type_node)
+	      if (char_type != char_type_node
+		  && char_type != signed_char_type_node
+		  && char_type != unsigned_char_type_node)
 		{
 		  if (complain & tf_error)
 		    error_at (loc, "char-array initialized from wide string");
@@ -1072,7 +1082,9 @@ digest_init_r (tree type, tree init, int nested, int flags,
 	    }
 	  else
 	    {
-	      if (char_type == char_type_node)
+	      if (char_type == char_type_node
+		  || char_type == signed_char_type_node
+		  || char_type == unsigned_char_type_node)
 		{
 		  if (complain & tf_error)
 		    error_at (loc,

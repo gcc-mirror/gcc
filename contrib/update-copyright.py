@@ -574,6 +574,7 @@ class TestsuiteFilter (GenericFilter):
                 '.c',
                 '.C',
                 '.cc',
+                '.d',
                 '.h',
                 '.hs',
                 '.f',
@@ -614,6 +615,25 @@ class LibGCCFilter (GenericFilter):
         self.skip_dirs |= set ([
                 # Imported from GLIBC.
                 'soft-fp',
+                ])
+
+class LibPhobosFilter (GenericFilter):
+    def __init__ (self):
+        GenericFilter.__init__ (self)
+
+        self.skip_files |= set ([
+                # Source module imported from upstream.
+                'object.d',
+                ])
+
+        self.skip_dirs |= set ([
+                # Contains sources imported from upstream.
+                'core',
+                'etc',
+                'gc',
+                'gcstub',
+                'rt',
+                'std',
                 ])
 
 class LibStdCxxFilter (GenericFilter):
@@ -682,6 +702,7 @@ class GCCCopyright (Copyright):
         self.add_external_author ('Silicon Graphics')
         self.add_external_author ('Stephen L. Moshier')
         self.add_external_author ('Sun Microsystems, Inc. All rights reserved.')
+        self.add_external_author ('The D Language Foundation, All Rights Reserved')
         self.add_external_author ('The Go Authors.  All rights reserved.')
         self.add_external_author ('The Go Authors. All rights reserved.')
         self.add_external_author ('The Go Authors.')
@@ -720,6 +741,7 @@ class GCCCmdLine (CmdLine):
         self.add_dir ('libitm')
         self.add_dir ('libobjc')
         # liboffloadmic is imported from upstream.
+        self.add_dir ('libphobos', LibPhobosFilter())
         self.add_dir ('libquadmath')
         # libsanitizer is imported from upstream.
         self.add_dir ('libssp')
@@ -745,6 +767,7 @@ class GCCCmdLine (CmdLine):
             'libiberty',
             'libitm',
             'libobjc',
+            'libphobos',
             'libssp',
             'libstdc++-v3',
             'libvtv',

@@ -182,6 +182,12 @@ dump_scope (cxx_pretty_printer *pp, tree scope, int flags)
   if (scope == NULL_TREE)
     return;
 
+  /* Enum values within an unscoped enum will be CONST_DECL with an
+     ENUMERAL_TYPE as their "scope".  Use CP_TYPE_CONTEXT of the
+     ENUMERAL_TYPE, so as to print any enclosing namespace.  */
+  if (UNSCOPED_ENUM_P (scope))
+    scope = CP_TYPE_CONTEXT (scope);
+
   if (TREE_CODE (scope) == NAMESPACE_DECL)
     {
       if (scope != global_namespace)
@@ -190,7 +196,8 @@ dump_scope (cxx_pretty_printer *pp, tree scope, int flags)
 	  pp_cxx_colon_colon (pp);
 	}
     }
-  else if (AGGREGATE_TYPE_P (scope))
+  else if (AGGREGATE_TYPE_P (scope)
+	   || SCOPED_ENUM_P (scope))
     {
       dump_type (pp, scope, f);
       pp_cxx_colon_colon (pp);
@@ -4261,7 +4268,21 @@ qualified_name_lookup_error (tree scope, tree name,
 	  print_candidates (decl);
 	}
       else
-	error_at (location, "%qD is not a member of %qT", name, scope);
+	{
+	  name_hint hint;
+	  if (SCOPED_ENUM_P (scope))
+	    hint = suggest_alternative_in_scoped_enum (name, scope);
+	  if (const char *suggestion = hint.suggestion ())
+	    {
+	      gcc_rich_location richloc (location);
+	      richloc.add_fixit_replace (suggestion);
+	      error_at (&richloc,
+			"%qD is not a member of %qT; did you mean %qs?",
+			name, scope, suggestion);
+	    }
+	  else
+	    error_at (location, "%qD is not a member of %qT", name, scope);
+	}
     }
   else if (scope != global_namespace)
     {

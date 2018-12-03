@@ -16742,7 +16742,15 @@ secname_for_decl (const_tree decl)
       && DECL_SECTION_NAME (decl))
     secname = DECL_SECTION_NAME (decl);
   else if (current_function_decl && DECL_SECTION_NAME (current_function_decl))
-    secname = DECL_SECTION_NAME (current_function_decl);
+    {
+      if (in_cold_section_p)
+	{
+	  section *sec = current_function_section ();
+	  if (sec->common.flags & SECTION_NAMED)
+	    return sec->named.name;
+	}
+      secname = DECL_SECTION_NAME (current_function_decl);
+    }
   else if (cfun && in_cold_section_p)
     secname = crtl->subsections.cold_section_label;
   else

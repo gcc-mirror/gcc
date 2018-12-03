@@ -214,7 +214,7 @@ extern tree arm_fp16_type_node;
 #define TARGET_NEON_RDMA (TARGET_NEON && arm_arch8_1)
 
 /* Supports the Dot Product AdvSIMD extensions.  */
-#define TARGET_DOTPROD (TARGET_NEON					\
+#define TARGET_DOTPROD (TARGET_NEON && TARGET_VFP5			\
 			&& bitmap_bit_p (arm_active_target.isa,		\
 					isa_bit_dotprod)		\
 			&& arm_arch8_2)

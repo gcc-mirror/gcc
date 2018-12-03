@@ -965,19 +965,24 @@ extern(C) void* __tls_get_addr(tls_index* ti) nothrow @nogc;
  * each TLS block. This is at least true for PowerPC and Mips platforms.
  * See: https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/powerpc/dl-tls.h;h=f7cf6f96ebfb505abfd2f02be0ad0e833107c0cd;hb=HEAD#l34
  *      https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/mips/dl-tls.h;h=93a6dc050cb144b9f68b96fb3199c60f5b1fcd18;hb=HEAD#l32
+ *      https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/riscv/dl-tls.h;h=ab2d860314de94c18812bc894ff6b3f55368f20f;hb=HEAD#l32
  */
 version (X86)
-    enum TLS_DTV_OFFSET = 0x;
+    enum TLS_DTV_OFFSET = 0x0;
 else version (X86_64)
-    enum TLS_DTV_OFFSET = 0x;
+    enum TLS_DTV_OFFSET = 0x0;
 else version (ARM)
-    enum TLS_DTV_OFFSET = 0x;
+    enum TLS_DTV_OFFSET = 0x0;
 else version (AArch64)
-    enum TLS_DTV_OFFSET = 0x;
+    enum TLS_DTV_OFFSET = 0x0;
+else version (RISCV32)
+    enum TLS_DTV_OFFSET = 0x800;
+else version (RISCV64)
+    enum TLS_DTV_OFFSET = 0x800;
 else version (SPARC)
-    enum TLS_DTV_OFFSET = 0x;
+    enum TLS_DTV_OFFSET = 0x0;
 else version (SPARC64)
-    enum TLS_DTV_OFFSET = 0x;
+    enum TLS_DTV_OFFSET = 0x0;
 else version (PPC)
     enum TLS_DTV_OFFSET = 0x8000;
 else version (PPC64)

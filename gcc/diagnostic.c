@@ -1035,6 +1035,27 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   return true;
 }
 
+/* Get the number of digits in the decimal representation of VALUE.  */
+
+int
+num_digits (int value)
+{
+  /* Perhaps simpler to use log10 for this, but doing it this way avoids
+     using floating point.  */
+  gcc_assert (value >= 0);
+
+  if (value == 0)
+    return 1;
+
+  int digits = 0;
+  while (value > 0)
+    {
+      digits++;
+      value /= 10;
+    }
+  return digits;
+}
+
 /* Given a partial pathname as input, return another pathname that
    shares no directory elements with the pathname of __FILE__.  This
    is used by fancy_abort() to print `Internal compiler error in expr.c'
@@ -1175,6 +1196,20 @@ emit_diagnostic (diagnostic_t kind, location_t location, int opt,
   va_start (ap, gmsgid);
   rich_location richloc (line_table, location);
   bool ret = diagnostic_impl (&richloc, opt, gmsgid, &ap, kind);
+  va_end (ap);
+  return ret;
+}
+
+/* As above, but for rich_location *.  */
+
+bool
+emit_diagnostic (diagnostic_t kind, rich_location *richloc, int opt,
+		 const char *gmsgid, ...)
+{
+  auto_diagnostic_group d;
+  va_list ap;
+  va_start (ap, gmsgid);
+  bool ret = diagnostic_impl (richloc, opt, gmsgid, &ap, kind);
   va_end (ap);
   return ret;
 }
@@ -1785,6 +1820,29 @@ test_diagnostic_get_location_text ()
   progname = old_progname;
 }
 
+/* Selftest for num_digits.  */
+
+static void
+test_num_digits ()
+{
+  ASSERT_EQ (1, num_digits (0));
+  ASSERT_EQ (1, num_digits (9));
+  ASSERT_EQ (2, num_digits (10));
+  ASSERT_EQ (2, num_digits (99));
+  ASSERT_EQ (3, num_digits (100));
+  ASSERT_EQ (3, num_digits (999));
+  ASSERT_EQ (4, num_digits (1000));
+  ASSERT_EQ (4, num_digits (9999));
+  ASSERT_EQ (5, num_digits (10000));
+  ASSERT_EQ (5, num_digits (99999));
+  ASSERT_EQ (6, num_digits (100000));
+  ASSERT_EQ (6, num_digits (999999));
+  ASSERT_EQ (7, num_digits (1000000));
+  ASSERT_EQ (7, num_digits (9999999));
+  ASSERT_EQ (8, num_digits (10000000));
+  ASSERT_EQ (8, num_digits (99999999));
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -1796,6 +1854,8 @@ diagnostic_c_tests ()
   test_print_parseable_fixits_remove ();
   test_print_parseable_fixits_replace ();
   test_diagnostic_get_location_text ();
+  test_num_digits ();
+
 }
 
 } // namespace selftest

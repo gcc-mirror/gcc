@@ -399,6 +399,28 @@
    </para>
  </listitem></varlistentry>
 
+ <varlistentry><term><code>--with-libstdcxx-lock-policy=OPTION</code></term>
+ <listitem><para>Sets the lock policy that controls how
+        <classname>shared_ptr</classname> reference counting is
+        synchronized.
+        The choice OPTION=atomic enables use of atomics for updates to
+        <classname>shared_ptr</classname> reference counts.
+        The choice OPTION=mutex enables use of a mutex to synchronize updates
+        to <classname>shared_ptr</classname> reference counts.
+        If the compiler's thread model is "single" then this option has no
+        effect, as no synchronization is used for the reference counts.
+	The default is OPTION=auto, which checks for the availability of
+        compiler built-ins for 2-byte and 4-byte atomic compare-and-swap,
+        and uses OPTION=atomic if they're available, OPTION=mutex otherwise.
+        This option can change the library ABI.
+        If the library is configured to use atomics and user programs are
+        compiled using a target that doesn't natively support the atomic
+        operations (e.g. the library is configured for armv7 and then code
+        is compiled with <option>-march=armv5t</option>) then the program
+        might rely on support in libgcc to provide the atomics.
+    </para>
+ </listitem></varlistentry>
+
  <varlistentry><term><code>--enable-vtable-verify</code>[default]</term>
  <listitem>
     <para>Use <code>-fvtable-verify=std</code> to compile the C++

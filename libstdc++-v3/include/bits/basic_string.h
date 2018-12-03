@@ -3038,6 +3038,32 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       compare(size_type __pos, size_type __n1, const _CharT* __s,
 	      size_type __n2) const;
 
+#if __cplusplus > 201703L
+      bool
+      starts_with(basic_string_view<_CharT, _Traits> __x) const noexcept
+      { return __sv_type(this->data(), this->size()).starts_with(__x); }
+
+      bool
+      starts_with(_CharT __x) const noexcept
+      { return __sv_type(this->data(), this->size()).starts_with(__x); }
+
+      bool
+      starts_with(const _CharT* __x) const noexcept
+      { return __sv_type(this->data(), this->size()).starts_with(__x); }
+
+      bool
+      ends_with(basic_string_view<_CharT, _Traits> __x) const noexcept
+      { return __sv_type(this->data(), this->size()).ends_with(__x); }
+
+      bool
+      ends_with(_CharT __x) const noexcept
+      { return __sv_type(this->data(), this->size()).ends_with(__x); }
+
+      bool
+      ends_with(const _CharT* __x) const noexcept
+      { return __sv_type(this->data(), this->size()).ends_with(__x); }
+#endif // C++20
+
       // Allow basic_stringbuf::__xfer_bufptrs to call _M_length:
       template<typename, typename, typename> friend class basic_stringbuf;
     };
@@ -5883,6 +5909,32 @@ _GLIBCXX_END_NAMESPACE_CXX11
       int
       compare(size_type __pos, size_type __n1, const _CharT* __s,
 	      size_type __n2) const;
+
+#if __cplusplus > 201703L
+      bool
+      starts_with(basic_string_view<_CharT, _Traits> __x) const noexcept
+      { return __sv_type(this->data(), this->size()).starts_with(__x); }
+
+      bool
+      starts_with(_CharT __x) const noexcept
+      { return __sv_type(this->data(), this->size()).starts_with(__x); }
+
+      bool
+      starts_with(const _CharT* __x) const noexcept
+      { return __sv_type(this->data(), this->size()).starts_with(__x); }
+
+      bool
+      ends_with(basic_string_view<_CharT, _Traits> __x) const noexcept
+      { return __sv_type(this->data(), this->size()).ends_with(__x); }
+
+      bool
+      ends_with(_CharT __x) const noexcept
+      { return __sv_type(this->data(), this->size()).ends_with(__x); }
+
+      bool
+      ends_with(const _CharT* __x) const noexcept
+      { return __sv_type(this->data(), this->size()).ends_with(__x); }
+#endif // C++20
 
 # ifdef _GLIBCXX_TM_TS_INTERNAL
       friend void

@@ -4182,6 +4182,7 @@ extern tree build_int_cst_type (tree, poly_int64);
 extern tree make_vector (unsigned, unsigned CXX_MEM_STAT_INFO);
 extern tree build_vector_from_ctor (tree, vec<constructor_elt, va_gc> *);
 extern tree build_vector_from_val (tree, tree);
+extern tree build_uniform_cst (tree, tree);
 extern tree build_vec_series (tree, tree, tree);
 extern tree build_index_vector (tree, poly_uint64, poly_uint64);
 extern void recompute_constructor_flags (tree);
@@ -4491,6 +4492,12 @@ extern tree vector_cst_elt (const_tree, unsigned int);
    the same.  Otherwise return NULL_TREE.  */
 
 extern tree uniform_vector_p (const_tree);
+
+/* If the argument is INTEGER_CST, return it.  If the argument is vector
+   with all elements the same INTEGER_CST, return that INTEGER_CST.  Otherwise
+   return NULL_TREE.  */
+
+extern tree uniform_integer_cst_p (tree);
 
 /* Given a CONSTRUCTOR CTOR, return the element values as a vector.  */
 

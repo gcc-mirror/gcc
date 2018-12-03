@@ -169,9 +169,9 @@
        (eq_attr "mul32" "yes"))
   "xgene1_decode2op, xgene1_IXB + xgene1_multiply, xgene1_multiply, nothing, xgene1_IXB_compl")
 
-(define_insn_reservation "xgene1_mul64" 5
+(define_insn_reservation "xgene1_widen_mul64" 5
   (and (eq_attr "tune" "xgene1")
-       (eq_attr "mul64" "yes"))
+       (eq_attr "widen_mul64" "yes"))
   "xgene1_decode2op, xgene1_IXB + xgene1_multiply, xgene1_multiply, nothing*2, xgene1_IXB_compl")
 
 (define_insn_reservation "xgene1_div" 34

@@ -111,7 +111,7 @@ init_ic_make_global_vars (void)
   DECL_INITIAL (ic_tuple_var) = NULL;
   DECL_EXTERNAL (ic_tuple_var) = 1;
   if (targetm.have_tls)
-    set_decl_tls_model (ic_tuple_var, decl_default_tls_model (tuple_type));
+    set_decl_tls_model (ic_tuple_var, decl_default_tls_model (ic_tuple_var));
 }
 
 /* Create the type and function decls for the interface with gcov.  */

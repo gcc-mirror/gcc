@@ -1,3 +1,18 @@
+2018-11-30  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
+
+	Minimize clone counter memory usage in LTO.
+	* lto-partition.c (privatize_symbol_name_1): Keep track of
+	non-unique symbol counters in the lto_clone_numbers hash
+	map.
+	(lto_promote_cross_file_statics): Allocate and free the
+	lto_clone_numbers hash map.
+	(lto_promote_statics_nonwpa): Free the lto_clone_numbers hash
+	map.
+
+2018-11-28  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_read_decls): Fix handling of INTEGER_CST.
+
 2018-11-22  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (cmp_type_location): Remove.

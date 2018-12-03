@@ -8064,7 +8064,7 @@ mips_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
       src = adjust_address (src, BLKmode, offset);
       dest = adjust_address (dest, BLKmode, offset);
       move_by_pieces (dest, src, length - offset,
-		      MIN (MEM_ALIGN (src), MEM_ALIGN (dest)), 0);
+		      MIN (MEM_ALIGN (src), MEM_ALIGN (dest)), RETURN_BEGIN);
     }
 }
 
@@ -18908,13 +18908,13 @@ mips_reorg_process_insns (void)
   if (crtl->profile)
     cfun->machine->all_noreorder_p = false;
 
-  /* Code compiled with -mfix-vr4120, -mfix-rm7000 or -mfix-24k can't be
-     all noreorder because we rely on the assembler to work around some
-     errata.  The R5900 too has several bugs.  */
+  /* Code compiled with -mfix-vr4120, -mfix-r5900, -mfix-rm7000 or
+     -mfix-24k can't be all noreorder because we rely on the assembler
+     to work around some errata.  The R5900 target has several bugs.  */
   if (TARGET_FIX_VR4120
       || TARGET_FIX_RM7000
       || TARGET_FIX_24K
-      || TARGET_MIPS5900)
+      || TARGET_FIX_R5900)
     cfun->machine->all_noreorder_p = false;
 
   /* The same is true for -mfix-vr4130 if we might generate MFLO or
@@ -20288,6 +20288,12 @@ mips_option_override (void)
   if ((target_flags_explicit & MASK_FIX_R4400) == 0
       && strcmp (mips_arch_info->name, "r4400") == 0)
     target_flags |= MASK_FIX_R4400;
+
+  /* Default to working around R5900 errata only if the processor
+     was selected explicitly.  */
+  if ((target_flags_explicit & MASK_FIX_R5900) == 0
+      && strcmp (mips_arch_info->name, "r5900") == 0)
+    target_flags |= MASK_FIX_R5900;
 
   /* Default to working around R10000 errata only if the processor
      was selected explicitly.  */

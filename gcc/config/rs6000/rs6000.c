@@ -4291,16 +4291,22 @@ rs6000_option_override_internal (bool global_init_p)
   if (!global_options_set.x_rs6000_ieeequad)
     rs6000_ieeequad = TARGET_IEEEQUAD_DEFAULT;
 
-  else if (rs6000_ieeequad != TARGET_IEEEQUAD_DEFAULT && TARGET_LONG_DOUBLE_128)
+  else
     {
-      static bool warned_change_long_double;
-      if (!warned_change_long_double)
+      if (!TARGET_POPCNTD || !TARGET_VSX)
+	error ("%qs requires full ISA 2.06 support", "-mabi=ieeelongdouble");
+
+      if (rs6000_ieeequad != TARGET_IEEEQUAD_DEFAULT && TARGET_LONG_DOUBLE_128)
 	{
-	  warned_change_long_double = true;
-	  if (TARGET_IEEEQUAD)
-	    warning (OPT_Wpsabi, "Using IEEE extended precision long double");
-	  else
-	    warning (OPT_Wpsabi, "Using IBM extended precision long double");
+	  static bool warned_change_long_double;
+	  if (!warned_change_long_double)
+	    {
+	      warned_change_long_double = true;
+	      if (TARGET_IEEEQUAD)
+		warning (OPT_Wpsabi, "Using IEEE extended precision long double");
+	      else
+		warning (OPT_Wpsabi, "Using IBM extended precision long double");
+	    }
 	}
     }
 
@@ -5815,11 +5821,12 @@ direct_return (void)
   return 0;
 }
 
-/* Return the number of instructions it takes to form a constant in an
-   integer register.  */
+/* Helper for num_insns_constant.  Calculate number of instructions to
+   load VALUE to a single gpr using combinations of addi, addis, ori,
+   oris and sldi instructions.  */
 
-int
-num_insns_constant_wide (HOST_WIDE_INT value)
+static int
+num_insns_constant_gpr (HOST_WIDE_INT value)
 {
   /* signed constant loadable with addi */
   if (((unsigned HOST_WIDE_INT) value + 0x8000) < 0x10000)
@@ -5841,85 +5848,127 @@ num_insns_constant_wide (HOST_WIDE_INT value)
       high >>= 1;
 
       if (low == 0)
-	return num_insns_constant_wide (high) + 1;
+	return num_insns_constant_gpr (high) + 1;
       else if (high == 0)
-	return num_insns_constant_wide (low) + 1;
+	return num_insns_constant_gpr (low) + 1;
       else
-	return (num_insns_constant_wide (high)
-		+ num_insns_constant_wide (low) + 1);
+	return (num_insns_constant_gpr (high)
+		+ num_insns_constant_gpr (low) + 1);
     }
 
   else
     return 2;
 }
 
+/* Helper for num_insns_constant.  Allow constants formed by the
+   num_insns_constant_gpr sequences, plus li -1, rldicl/rldicr/rlwinm,
+   and handle modes that require multiple gprs.  */
+
+static int
+num_insns_constant_multi (HOST_WIDE_INT value, machine_mode mode)
+{
+  int nregs = (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  int total = 0;
+  while (nregs-- > 0)
+    {
+      HOST_WIDE_INT low = sext_hwi (value, BITS_PER_WORD);
+      int insns = num_insns_constant_gpr (low);
+      if (insns > 2
+	  /* We won't get more than 2 from num_insns_constant_gpr
+	     except when TARGET_POWERPC64 and mode is DImode or
+	     wider, so the register mode must be DImode.  */
+	  && rs6000_is_valid_and_mask (GEN_INT (low), DImode))
+	insns = 2;
+      total += insns;
+      value >>= BITS_PER_WORD;
+    }
+  return total;
+}
+
+/* Return the number of instructions it takes to form a constant in as
+   many gprs are needed for MODE.  */
+
 int
 num_insns_constant (rtx op, machine_mode mode)
 {
-  HOST_WIDE_INT low, high;
+  HOST_WIDE_INT val;
 
   switch (GET_CODE (op))
     {
     case CONST_INT:
-      if ((INTVAL (op) >> 31) != 0 && (INTVAL (op) >> 31) != -1
-	  && rs6000_is_valid_and_mask (op, mode))
-	return 2;
-      else
-	return num_insns_constant_wide (INTVAL (op));
+      val = INTVAL (op);
+      break;
 
     case CONST_WIDE_INT:
       {
-	int i;
-	int ins = CONST_WIDE_INT_NUNITS (op) - 1;
-	for (i = 0; i < CONST_WIDE_INT_NUNITS (op); i++)
-	  ins += num_insns_constant_wide (CONST_WIDE_INT_ELT (op, i));
-	return ins;
+	int insns = 0;
+	for (int i = 0; i < CONST_WIDE_INT_NUNITS (op); i++)
+	  insns += num_insns_constant_multi (CONST_WIDE_INT_ELT (op, i),
+					     DImode);
+	return insns;
       }
 
-      case CONST_DOUBLE:
+    case CONST_DOUBLE:
+      {
+	const struct real_value *rv = CONST_DOUBLE_REAL_VALUE (op);
+
 	if (mode == SFmode || mode == SDmode)
 	  {
 	    long l;
 
-	    if (DECIMAL_FLOAT_MODE_P (mode))
-	      REAL_VALUE_TO_TARGET_DECIMAL32
-		(*CONST_DOUBLE_REAL_VALUE (op), l);
+	    if (mode == SDmode)
+	      REAL_VALUE_TO_TARGET_DECIMAL32 (*rv, l);
 	    else
-	      REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (op), l);
-	    return num_insns_constant_wide ((HOST_WIDE_INT) l);
+	      REAL_VALUE_TO_TARGET_SINGLE (*rv, l);
+	    /* See the first define_split in rs6000.md handling a
+	       const_double_operand.  */
+	    val = l;
+	    mode = SImode;
 	  }
-
-	long l[2];
-	if (DECIMAL_FLOAT_MODE_P (mode))
-	  REAL_VALUE_TO_TARGET_DECIMAL64 (*CONST_DOUBLE_REAL_VALUE (op), l);
-	else
-	  REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (op), l);
-	high = l[WORDS_BIG_ENDIAN == 0];
-	low  = l[WORDS_BIG_ENDIAN != 0];
-
-	if (TARGET_32BIT)
-	  return (num_insns_constant_wide (low)
-		  + num_insns_constant_wide (high));
-	else
+	else if (mode == DFmode || mode == DDmode)
 	  {
-	    if ((high == 0 && low >= 0)
-		|| (high == -1 && low < 0))
-	      return num_insns_constant_wide (low);
+	    long l[2];
 
-	    else if (rs6000_is_valid_and_mask (op, mode))
-	      return 2;
-
-	    else if (low == 0)
-	      return num_insns_constant_wide (high) + 1;
-
+	    if (mode == DDmode)
+	      REAL_VALUE_TO_TARGET_DECIMAL64 (*rv, l);
 	    else
-	      return (num_insns_constant_wide (high)
-		      + num_insns_constant_wide (low) + 1);
+	      REAL_VALUE_TO_TARGET_DOUBLE (*rv, l);
+
+	    /* See the second (32-bit) and third (64-bit) define_split
+	       in rs6000.md handling a const_double_operand.  */
+	    val = (unsigned HOST_WIDE_INT) l[WORDS_BIG_ENDIAN ? 0 : 1] << 32;
+	    val |= l[WORDS_BIG_ENDIAN ? 1 : 0] & 0xffffffffUL;
+	    mode = DImode;
 	  }
+	else if (mode == TFmode || mode == TDmode
+		 || mode == KFmode || mode == IFmode)
+	  {
+	    long l[4];
+	    int insns;
+
+	    if (mode == TDmode)
+	      REAL_VALUE_TO_TARGET_DECIMAL128 (*rv, l);
+	    else
+	      REAL_VALUE_TO_TARGET_LONG_DOUBLE (*rv, l);
+
+	    val = (unsigned HOST_WIDE_INT) l[WORDS_BIG_ENDIAN ? 0 : 3] << 32;
+	    val |= l[WORDS_BIG_ENDIAN ? 1 : 2] & 0xffffffffUL;
+	    insns = num_insns_constant_multi (val, DImode);
+	    val = (unsigned HOST_WIDE_INT) l[WORDS_BIG_ENDIAN ? 2 : 1] << 32;
+	    val |= l[WORDS_BIG_ENDIAN ? 3 : 0] & 0xffffffffUL;
+	    insns += num_insns_constant_multi (val, DImode);
+	    return insns;
+	  }
+	else
+	  gcc_unreachable ();
+      }
+      break;
 
     default:
       gcc_unreachable ();
     }
+
+  return num_insns_constant_multi (val, mode);
 }
 
 /* Interpret element ELT of the CONST_VECTOR OP as an integer value.
@@ -8566,6 +8615,43 @@ rs6000_legitimize_tls_address_aix (rtx addr, enum tls_model model)
   return dest;
 }
 
+/* Mess with a call, to make it look like the tls_gdld insns when
+   !TARGET_TLS_MARKERS.  These insns have an extra unspec to
+   differentiate them from standard calls, because they need to emit
+   the arg setup insns as well as the actual call.  That keeps the
+   arg setup insns immediately adjacent to the branch and link.  */
+
+static void
+edit_tls_call_insn (rtx arg)
+{
+  rtx call_insn = last_call_insn ();
+  if (!TARGET_TLS_MARKERS)
+    {
+      rtx patt = PATTERN (call_insn);
+      gcc_assert (GET_CODE (patt) == PARALLEL);
+      rtvec orig = XVEC (patt, 0);
+      rtvec v = rtvec_alloc (GET_NUM_ELEM (orig) + 1);
+      gcc_assert (GET_NUM_ELEM (orig) > 0);
+      /* The (set (..) (call (mem ..))).  */
+      RTVEC_ELT (v, 0) = RTVEC_ELT (orig, 0);
+      /* The extra unspec.  */
+      RTVEC_ELT (v, 1) = arg;
+      /* All other assorted call pattern pieces.  */
+      for (int i = 1; i < GET_NUM_ELEM (orig); i++)
+	RTVEC_ELT (v, i + 1) = RTVEC_ELT (orig, i);
+      XVEC (patt, 0) = v;
+    }
+  if (DEFAULT_ABI == ABI_V4 && TARGET_SECURE_PLT && flag_pic)
+    use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn),
+	     pic_offset_table_rtx);
+}
+
+/* Passes the tls arg value for global dynamic and local dynamic
+   emit_library_call_value in rs6000_legitimize_tls_address to
+   rs6000_call_aix and rs6000_call_sysv.  This is used to emit the
+   marker relocs put on __tls_get_addr calls.  */
+static rtx global_tlsarg;
+
 /* ADDR contains a thread-local SYMBOL_REF.  Generate code to compute
    this (thread-local) address.  */
 
@@ -8618,7 +8704,7 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
     }
   else
     {
-      rtx r3, got, tga, tmp1, tmp2, call_insn;
+      rtx got, tga, tmp1, tmp2;
 
       /* We currently use relocations like @got@tlsgd for tls, which
 	 means the linker will handle allocation of tls entries, placing
@@ -8658,52 +8744,42 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 
       if (model == TLS_MODEL_GLOBAL_DYNAMIC)
 	{
+	  rtx arg = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, addr, got),
+				    UNSPEC_TLSGD);
+	  global_tlsarg = arg;
+	  rtx argreg = const0_rtx;
+	  if (TARGET_TLS_MARKERS)
+	    {
+	      argreg = gen_rtx_REG (Pmode, 3);
+	      emit_insn (gen_rtx_SET (argreg, arg));
+	    }
+
 	  tga = rs6000_tls_get_addr ();
 	  emit_library_call_value (tga, dest, LCT_CONST, Pmode,
-				   const0_rtx, Pmode);
+				   argreg, Pmode);
+	  global_tlsarg = NULL_RTX;
 
-	  r3 = gen_rtx_REG (Pmode, 3);
-	  if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
-	    {
-	      if (TARGET_64BIT)
-		insn = gen_tls_gd_aix64 (r3, got, addr, tga, const0_rtx);
-	      else
-		insn = gen_tls_gd_aix32 (r3, got, addr, tga, const0_rtx);
-	    }
-	  else if (DEFAULT_ABI == ABI_V4)
-	    insn = gen_tls_gd_sysvsi (r3, got, addr, tga, const0_rtx);
-	  else
-	    gcc_unreachable ();
-	  call_insn = last_call_insn ();
-	  PATTERN (call_insn) = insn;
-	  if (DEFAULT_ABI == ABI_V4 && TARGET_SECURE_PLT && flag_pic)
-	    use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn),
-		     pic_offset_table_rtx);
+	  edit_tls_call_insn (arg);
 	}
       else if (model == TLS_MODEL_LOCAL_DYNAMIC)
 	{
+	  rtx arg = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, got),
+				    UNSPEC_TLSLD);
+	  global_tlsarg = arg;
+	  rtx argreg = const0_rtx;
+	  if (TARGET_TLS_MARKERS)
+	    {
+	      argreg = gen_rtx_REG (Pmode, 3);
+	      emit_insn (gen_rtx_SET (argreg, arg));
+	    }
+
 	  tga = rs6000_tls_get_addr ();
 	  tmp1 = gen_reg_rtx (Pmode);
 	  emit_library_call_value (tga, tmp1, LCT_CONST, Pmode,
-				   const0_rtx, Pmode);
+				   argreg, Pmode);
+	  global_tlsarg = NULL_RTX;
 
-	  r3 = gen_rtx_REG (Pmode, 3);
-	  if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
-	    {
-	      if (TARGET_64BIT)
-		insn = gen_tls_ld_aix64 (r3, got, tga, const0_rtx);
-	      else
-		insn = gen_tls_ld_aix32 (r3, got, tga, const0_rtx);
-	    }
-	  else if (DEFAULT_ABI == ABI_V4)
-	    insn = gen_tls_ld_sysvsi (r3, got, tga, const0_rtx);
-	  else
-	    gcc_unreachable ();
-	  call_insn = last_call_insn ();
-	  PATTERN (call_insn) = insn;
-	  if (DEFAULT_ABI == ABI_V4 && TARGET_SECURE_PLT && flag_pic)
-	    use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn),
-		     pic_offset_table_rtx);
+	  edit_tls_call_insn (arg);
 
 	  if (rs6000_tls_size == 16)
 	    {
@@ -9856,13 +9932,10 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
       debug_rtx (source);
     }
 
-  /* Sanity checks.  Check that we get CONST_DOUBLE only when we should.  */
+  /* Check that we get CONST_WIDE_INT only when we should.  */
   if (CONST_WIDE_INT_P (operands[1])
       && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
-    {
-      /* This should be fixed with the introduction of CONST_WIDE_INT.  */
-      gcc_unreachable ();
-    }
+    gcc_unreachable ();
 
 #ifdef HAVE_AS_GNU_ATTRIBUTE
   /* If we use a long double type, set the flags in .gnu_attribute that say
@@ -9943,8 +10016,8 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
   /* 128-bit constant floating-point values on Darwin should really be loaded
      as two parts.  However, this premature splitting is a problem when DFmode
      values can go into Altivec registers.  */
-  if (FLOAT128_IBM_P (mode) && !reg_addr[DFmode].scalar_in_vmx_p
-      && GET_CODE (operands[1]) == CONST_DOUBLE)
+  if (TARGET_MACHO && CONST_DOUBLE_P (operands[1]) && FLOAT128_IBM_P (mode)
+      && !reg_addr[DFmode].scalar_in_vmx_p)
     {
       rs6000_emit_move (simplify_gen_subreg (DFmode, operands[0], mode, 0),
 			simplify_gen_subreg (DFmode, operands[1], mode, 0),
@@ -10201,13 +10274,11 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
       else if (mode == Pmode
 	       && CONSTANT_P (operands[1])
 	       && GET_CODE (operands[1]) != HIGH
-	       && ((GET_CODE (operands[1]) != CONST_INT
-		    && ! easy_fp_constant (operands[1], mode))
-		   || (GET_CODE (operands[1]) == CONST_INT
-		       && (num_insns_constant (operands[1], mode)
-			   > (TARGET_CMODEL != CMODEL_SMALL ? 3 : 2)))
-		   || (GET_CODE (operands[0]) == REG
-		       && FP_REGNO_P (REGNO (operands[0]))))
+	       && ((REG_P (operands[0])
+		    && FP_REGNO_P (REGNO (operands[0])))
+		   || !CONST_INT_P (operands[1])
+		   || (num_insns_constant (operands[1], mode)
+		       > (TARGET_CMODEL != CMODEL_SMALL ? 3 : 2)))
 	       && !toc_relative_expr_p (operands[1], false, NULL, NULL)
 	       && (TARGET_CMODEL == CMODEL_SMALL
 		   || can_create_pseudo_p ()
@@ -10662,7 +10733,7 @@ void
 init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 		      rtx libname ATTRIBUTE_UNUSED, int incoming,
 		      int libcall, int n_named_args,
-		      tree fndecl ATTRIBUTE_UNUSED,
+		      tree fndecl,
 		      machine_mode return_mode ATTRIBUTE_UNUSED)
 {
   static CUMULATIVE_ARGS zero_cumulative;
@@ -10688,6 +10759,27 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 	  && lookup_attribute ("longcall", TYPE_ATTRIBUTES (fntype))
 	  && !lookup_attribute ("shortcall", TYPE_ATTRIBUTES (fntype))))
     cum->call_cookie |= CALL_LONG;
+  else if (DEFAULT_ABI != ABI_DARWIN)
+    {
+      bool is_local = (fndecl
+		       && !DECL_EXTERNAL (fndecl)
+		       && !DECL_WEAK (fndecl)
+		       && (*targetm.binds_local_p) (fndecl));
+      if (is_local)
+	;
+      else if (flag_plt)
+	{
+	  if (fntype
+	      && lookup_attribute ("noplt", TYPE_ATTRIBUTES (fntype)))
+	    cum->call_cookie |= CALL_LONG;
+	}
+      else
+	{
+	  if (!(fntype
+		&& lookup_attribute ("plt", TYPE_ATTRIBUTES (fntype))))
+	    cum->call_cookie |= CALL_LONG;
+	}
+    }
 
   if (TARGET_DEBUG_ARG)
     {
@@ -15328,6 +15420,7 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   enum rs6000_builtins fn_code
     = (enum rs6000_builtins) DECL_FUNCTION_CODE (fndecl);
   tree arg0, arg1, lhs, temp;
+  enum tree_code bcode;
   gimple *g;
 
   size_t uns_fncode = (size_t) fn_code;
@@ -15366,10 +15459,32 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case P8V_BUILTIN_VADDUDM:
     case ALTIVEC_BUILTIN_VADDFP:
     case VSX_BUILTIN_XVADDDP:
+      bcode = PLUS_EXPR;
+    do_binary:
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
       lhs = gimple_call_lhs (stmt);
-      g = gimple_build_assign (lhs, PLUS_EXPR, arg0, arg1);
+      if (INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (lhs)))
+	  && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (TREE_TYPE (lhs))))
+	{
+	  /* Ensure the binary operation is performed in a type
+	     that wraps if it is integral type.  */
+	  gimple_seq stmts = NULL;
+	  tree type = unsigned_type_for (TREE_TYPE (lhs));
+	  tree uarg0 = gimple_build (&stmts, VIEW_CONVERT_EXPR,
+				     type, arg0);
+	  tree uarg1 = gimple_build (&stmts, VIEW_CONVERT_EXPR,
+				     type, arg1);
+	  tree res = gimple_build (&stmts, gimple_location (stmt), bcode,
+				   type, uarg0, uarg1);
+	  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	  g = gimple_build_assign (lhs, VIEW_CONVERT_EXPR,
+				   build1 (VIEW_CONVERT_EXPR,
+					   TREE_TYPE (lhs), res));
+	  gsi_replace (gsi, g, true);
+	  return true;
+	}
+      g = gimple_build_assign (lhs, bcode, arg0, arg1);
       gimple_set_location (g, gimple_location (stmt));
       gsi_replace (gsi, g, true);
       return true;
@@ -15381,13 +15496,8 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case P8V_BUILTIN_VSUBUDM:
     case ALTIVEC_BUILTIN_VSUBFP:
     case VSX_BUILTIN_XVSUBDP:
-      arg0 = gimple_call_arg (stmt, 0);
-      arg1 = gimple_call_arg (stmt, 1);
-      lhs = gimple_call_lhs (stmt);
-      g = gimple_build_assign (lhs, MINUS_EXPR, arg0, arg1);
-      gimple_set_location (g, gimple_location (stmt));
-      gsi_replace (gsi, g, true);
-      return true;
+      bcode = MINUS_EXPR;
+      goto do_binary;
     case VSX_BUILTIN_XVMULSP:
     case VSX_BUILTIN_XVMULDP:
       arg0 = gimple_call_arg (stmt, 0);
@@ -20644,7 +20754,11 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'D':
       /* Like 'J' but get to the GT bit only.  */
-      gcc_assert (REG_P (x));
+      if (!REG_P (x))
+	{
+	  output_operand_lossage ("invalid %%D value");
+	  return;
+	}
 
       /* Bit 1 is GT bit.  */
       i = 4 * (REGNO (x) - CR0_REGNO) + 1;
@@ -20900,7 +21014,11 @@ print_operand (FILE *file, rtx x, int code)
 
     case 't':
       /* Like 'J' but get to the OVERFLOW/UNORDERED bit.  */
-      gcc_assert (REG_P (x) && GET_MODE (x) == CCmode);
+      if (!REG_P (x) || GET_MODE (x) != CCmode)
+	{
+	  output_operand_lossage ("invalid %%t value");
+	  return;
+	}
 
       /* Bit 3 is OV bit.  */
       i = 4 * (REGNO (x) - CR0_REGNO) + 3;
@@ -20911,6 +21029,8 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'T':
       /* Print the symbolic name of a branch target register.  */
+      if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_PLTSEQ)
+	x = XVECEXP (x, 0, 0);
       if (GET_CODE (x) != REG || (REGNO (x) != LR_REGNO
 				  && REGNO (x) != CTR_REGNO))
 	output_operand_lossage ("invalid %%T value");
@@ -20989,7 +21109,7 @@ print_operand (FILE *file, rtx x, int code)
 	  fputs ("lge", file);  /* 5 */
 	  break;
 	default:
-	  gcc_unreachable ();
+	  output_operand_lossage ("invalid %%V value");
 	}
       break;
 
@@ -21054,12 +21174,18 @@ print_operand (FILE *file, rtx x, int code)
       return;
 
     case 'z':
+      if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_PLTSEQ)
+	x = XVECEXP (x, 0, 1);
       /* X is a SYMBOL_REF.  Write out the name preceded by a
 	 period and without any trailing data in brackets.  Used for function
 	 names.  If we are configured for System V (or the embedded ABI) on
 	 the PowerPC, do not emit the period, since those systems do not use
 	 TOCs and the like.  */
-      gcc_assert (GET_CODE (x) == SYMBOL_REF);
+      if (!SYMBOL_REF_P (x))
+	{
+	  output_operand_lossage ("invalid %%z value");
+	  return;
+	}
 
       /* For macho, check to see if we need a stub.  */
       if (TARGET_MACHO)
@@ -21158,19 +21284,21 @@ print_operand (FILE *file, rtx x, int code)
 	  else
 	    output_address (GET_MODE (x), XEXP (x, 0));
 	}
+      else if (toc_relative_expr_p (x, false,
+				    &tocrel_base_oac, &tocrel_offset_oac))
+	/* This hack along with a corresponding hack in
+	   rs6000_output_addr_const_extra arranges to output addends
+	   where the assembler expects to find them.  eg.
+	   (plus (unspec [(symbol_ref ("x")) (reg 2)] tocrel) 4)
+	   without this hack would be output as "x@toc+4".  We
+	   want "x+4@toc".  */
+	output_addr_const (file, CONST_CAST_RTX (tocrel_base_oac));
+      else if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_TLSGD)
+	output_addr_const (file, XVECEXP (x, 0, 0));
+      else if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_PLTSEQ)
+	output_addr_const (file, XVECEXP (x, 0, 1));
       else
-	{
-	  if (toc_relative_expr_p (x, false, &tocrel_base_oac, &tocrel_offset_oac))
-	    /* This hack along with a corresponding hack in
-	       rs6000_output_addr_const_extra arranges to output addends
-	       where the assembler expects to find them.  eg.
-	       (plus (unspec [(symbol_ref ("x")) (reg 2)] tocrel) 4)
-	       without this hack would be output as "x@toc+4".  We
-	       want "x+4@toc".  */
-	    output_addr_const (file, CONST_CAST_RTX (tocrel_base_oac));
-	  else
-	    output_addr_const (file, x);
-	}
+	output_addr_const (file, x);
       return;
 
     case '&':
@@ -21354,6 +21482,236 @@ rs6000_assemble_integer (rtx x, unsigned int size, int aligned_p)
 #endif /* RELOCATABLE_NEEDS_FIXUP */
   return default_assemble_integer (x, size, aligned_p);
 }
+
+/* Return a template string for assembly to emit when making an
+   external call.  FUNOP is the call mem argument operand number.  */
+
+static const char *
+rs6000_call_template_1 (rtx *operands, unsigned int funop, bool sibcall)
+{
+  /* -Wformat-overflow workaround, without which gcc thinks that %u
+      might produce 10 digits.  */
+  gcc_assert (funop <= MAX_RECOG_OPERANDS);
+
+  char arg[12];
+  arg[0] = 0;
+  if (TARGET_TLS_MARKERS && GET_CODE (operands[funop + 1]) == UNSPEC)
+    {
+      if (XINT (operands[funop + 1], 1) == UNSPEC_TLSGD)
+	sprintf (arg, "(%%%u@tlsgd)", funop + 1);
+      else if (XINT (operands[funop + 1], 1) == UNSPEC_TLSLD)
+	sprintf (arg, "(%%&@tlsld)");
+      else
+	gcc_unreachable ();
+    }
+
+  /* The magic 32768 offset here corresponds to the offset of
+     r30 in .got2, as given by LCTOC1.  See sysv4.h:toc_section.  */
+  char z[11];
+  sprintf (z, "%%z%u%s", funop,
+	   (DEFAULT_ABI == ABI_V4 && TARGET_SECURE_PLT && flag_pic == 2
+	    ? "+32768" : ""));
+
+  static char str[32];  /* 2 spare */
+  if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
+    sprintf (str, "b%s %s%s%s", sibcall ? "" : "l", z, arg,
+	     sibcall ? "" : "\n\tnop");
+  else if (DEFAULT_ABI == ABI_V4)
+    sprintf (str, "b%s %s%s%s", sibcall ? "" : "l", z, arg,
+	     flag_pic ? "@plt" : "");
+  else
+    gcc_unreachable ();
+  return str;
+}
+
+const char *
+rs6000_call_template (rtx *operands, unsigned int funop)
+{
+  return rs6000_call_template_1 (operands, funop, false);
+}
+
+const char *
+rs6000_sibcall_template (rtx *operands, unsigned int funop)
+{
+  return rs6000_call_template_1 (operands, funop, true);
+}
+
+/* As above, for indirect calls.  */
+
+static const char *
+rs6000_indirect_call_template_1 (rtx *operands, unsigned int funop,
+				 bool sibcall)
+{
+  /* -Wformat-overflow workaround, without which gcc thinks that %u
+      might produce 10 digits.  */
+  gcc_assert (funop <= MAX_RECOG_OPERANDS);
+
+  static char str[144];  /* 1 spare */
+  char *s = str;
+  const char *ptrload = TARGET_64BIT ? "d" : "wz";
+
+  if (DEFAULT_ABI == ABI_AIX)
+    s += sprintf (s,
+		  "l%s 2,%%%u\n\t",
+		  ptrload, funop + 2);
+
+  /* We don't need the extra code to stop indirect call speculation if
+     calling via LR.  */
+  bool speculate = (TARGET_MACHO
+		    || rs6000_speculate_indirect_jumps
+		    || (REG_P (operands[funop])
+			&& REGNO (operands[funop]) == LR_REGNO));
+
+  if (!TARGET_MACHO && HAVE_AS_PLTSEQ && GET_CODE (operands[funop]) == UNSPEC)
+    {
+      const char *rel64 = TARGET_64BIT ? "64" : "";
+      char tls[29];
+      tls[0] = 0;
+      if (GET_CODE (operands[funop + 1]) == UNSPEC)
+	{
+	  if (XINT (operands[funop + 1], 1) == UNSPEC_TLSGD)
+	    sprintf (tls, ".reloc .,R_PPC%s_TLSGD,%%%u\n\t",
+		     rel64, funop + 1);
+	  else if (XINT (operands[funop + 1], 1) == UNSPEC_TLSLD)
+	    sprintf (tls, ".reloc .,R_PPC%s_TLSLD,%%&\n\t",
+		     rel64);
+	  else
+	    gcc_unreachable ();
+	}
+
+      const char *addend = (DEFAULT_ABI == ABI_V4 && TARGET_SECURE_PLT
+			    && flag_pic == 2 ? "+32768" : "");
+      if (!speculate)
+	{
+	  s += sprintf (s,
+			"%s.reloc .,R_PPC%s_PLTSEQ,%%z%u%s\n\t",
+			tls, rel64, funop, addend);
+	  s += sprintf (s, "crset 2\n\t");
+	}
+      s += sprintf (s,
+		    "%s.reloc .,R_PPC%s_PLTCALL,%%z%u%s\n\t",
+		    tls, rel64, funop, addend);
+    }
+  else if (!speculate)
+    s += sprintf (s, "crset 2\n\t");
+
+  if (DEFAULT_ABI == ABI_AIX)
+    {
+      if (speculate)
+	sprintf (s,
+		 "b%%T%ul\n\t"
+		 "l%s 2,%%%u(1)",
+		 funop, ptrload, funop + 3);
+      else
+	sprintf (s,
+		 "beq%%T%ul-\n\t"
+		 "l%s 2,%%%u(1)",
+		 funop, ptrload, funop + 3);
+    }
+  else if (DEFAULT_ABI == ABI_ELFv2)
+    {
+      if (speculate)
+	sprintf (s,
+		 "b%%T%ul\n\t"
+		 "l%s 2,%%%u(1)",
+		 funop, ptrload, funop + 2);
+      else
+	sprintf (s,
+		 "beq%%T%ul-\n\t"
+		 "l%s 2,%%%u(1)",
+		 funop, ptrload, funop + 2);
+    }
+  else
+    {
+      if (speculate)
+	sprintf (s,
+		 "b%%T%u%s",
+		 funop, sibcall ? "" : "l");
+      else
+	sprintf (s,
+		 "beq%%T%u%s-%s",
+		 funop, sibcall ? "" : "l", sibcall ? "\n\tb $" : "");
+    }
+  return str;
+}
+
+const char *
+rs6000_indirect_call_template (rtx *operands, unsigned int funop)
+{
+  return rs6000_indirect_call_template_1 (operands, funop, false);
+}
+
+const char *
+rs6000_indirect_sibcall_template (rtx *operands, unsigned int funop)
+{
+  return rs6000_indirect_call_template_1 (operands, funop, true);
+}
+
+#if HAVE_AS_PLTSEQ
+/* Output indirect call insns.
+   WHICH is 0 for tocsave, 1 for plt16_ha, 2 for plt16_lo, 3 for mtctr.  */
+const char *
+rs6000_pltseq_template (rtx *operands, int which)
+{
+  const char *rel64 = TARGET_64BIT ? "64" : "";
+  char tls[28];
+  tls[0] = 0;
+  if (GET_CODE (operands[3]) == UNSPEC)
+    {
+      if (XINT (operands[3], 1) == UNSPEC_TLSGD)
+	sprintf (tls, ".reloc .,R_PPC%s_TLSGD,%%3\n\t",
+		 rel64);
+      else if (XINT (operands[3], 1) == UNSPEC_TLSLD)
+	sprintf (tls, ".reloc .,R_PPC%s_TLSLD,%%&\n\t",
+		 rel64);
+      else
+	gcc_unreachable ();
+    }
+
+  gcc_assert (DEFAULT_ABI == ABI_ELFv2 || DEFAULT_ABI == ABI_V4);
+  static char str[96];  /* 15 spare */
+  const char *off = WORDS_BIG_ENDIAN ? "+2" : "";
+  const char *addend = (DEFAULT_ABI == ABI_V4 && TARGET_SECURE_PLT
+			&& flag_pic == 2 ? "+32768" : "");
+  switch (which)
+    {
+    case 0:
+      sprintf (str,
+	       "%s.reloc .,R_PPC%s_PLTSEQ,%%z2\n\t"
+	       "st%s",
+	       tls, rel64, TARGET_64BIT ? "d 2,24(1)" : "w 2,12(1)");
+      break;
+    case 1:
+      if (DEFAULT_ABI == ABI_V4 && !flag_pic)
+	sprintf (str,
+		 "%s.reloc .%s,R_PPC%s_PLT16_HA,%%z2\n\t"
+		 "lis %%0,0",
+		 tls, off, rel64);
+      else
+	sprintf (str,
+		 "%s.reloc .%s,R_PPC%s_PLT16_HA,%%z2%s\n\t"
+		 "addis %%0,%%1,0",
+		 tls, off, rel64, addend);
+      break;
+    case 2:
+      sprintf (str,
+	       "%s.reloc .%s,R_PPC%s_PLT16_LO%s,%%z2%s\n\t"
+	       "l%s %%0,0(%%1)",
+	       tls, off, rel64, TARGET_64BIT ? "_DS" : "", addend,
+	       TARGET_64BIT ? "d" : "wz");
+      break;
+    case 3:
+      sprintf (str,
+	       "%s.reloc .,R_PPC%s_PLTSEQ,%%z2%s\n\t"
+	       "mtctr %%1",
+	       tls, rel64, addend);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  return str;
+}
+#endif
 
 #if defined (HAVE_GAS_HIDDEN) && !TARGET_MACHO
 /* Emit an assembler directive to set symbol visibility for DECL to
@@ -29157,10 +29515,7 @@ rs6000_hash_constant (rtx k)
       }
 
     case CONST_DOUBLE:
-      if (mode != VOIDmode)
-	return real_hash (CONST_DOUBLE_REAL_VALUE (k)) * result;
-      flen = 2;
-      break;
+      return real_hash (CONST_DOUBLE_REAL_VALUE (k)) * result;
 
     case CODE_LABEL:
       fidx = 3;
@@ -29365,9 +29720,9 @@ output_toc (FILE *file, rtx x, int labelno, machine_mode mode)
   /* Handle FP constants specially.  Note that if we have a minimal
      TOC, things we put here aren't actually in the TOC, so we can allow
      FP constants.  */
-  if (GET_CODE (x) == CONST_DOUBLE &&
-      (GET_MODE (x) == TFmode || GET_MODE (x) == TDmode
-       || GET_MODE (x) == IFmode || GET_MODE (x) == KFmode))
+  if (CONST_DOUBLE_P (x)
+      && (GET_MODE (x) == TFmode || GET_MODE (x) == TDmode
+	  || GET_MODE (x) == IFmode || GET_MODE (x) == KFmode))
     {
       long k[4];
 
@@ -29405,8 +29760,8 @@ output_toc (FILE *file, rtx x, int labelno, machine_mode mode)
 	  return;
 	}
     }
-  else if (GET_CODE (x) == CONST_DOUBLE &&
-	   (GET_MODE (x) == DFmode || GET_MODE (x) == DDmode))
+  else if (CONST_DOUBLE_P (x)
+	   && (GET_MODE (x) == DFmode || GET_MODE (x) == DDmode))
     {
       long k[2];
 
@@ -29439,8 +29794,8 @@ output_toc (FILE *file, rtx x, int labelno, machine_mode mode)
 	  return;
 	}
     }
-  else if (GET_CODE (x) == CONST_DOUBLE &&
-	   (GET_MODE (x) == SFmode || GET_MODE (x) == SDmode))
+  else if (CONST_DOUBLE_P (x)
+	   && (GET_MODE (x) == SFmode || GET_MODE (x) == SDmode))
     {
       long l;
 
@@ -32365,24 +32720,48 @@ rs6000_set_default_type_attributes (tree type)
 /* Return a reference suitable for calling a function with the
    longcall attribute.  */
 
-rtx
-rs6000_longcall_ref (rtx call_ref)
+static rtx
+rs6000_longcall_ref (rtx call_ref, rtx arg)
 {
-  const char *call_name;
-  tree node;
-
-  if (GET_CODE (call_ref) != SYMBOL_REF)
-    return call_ref;
-
   /* System V adds '.' to the internal name, so skip them.  */
-  call_name = XSTR (call_ref, 0);
+  const char *call_name = XSTR (call_ref, 0);
   if (*call_name == '.')
     {
       while (*call_name == '.')
 	call_name++;
 
-      node = get_identifier (call_name);
+      tree node = get_identifier (call_name);
       call_ref = gen_rtx_SYMBOL_REF (VOIDmode, IDENTIFIER_POINTER (node));
+    }
+
+  if (HAVE_AS_PLTSEQ
+      && TARGET_TLS_MARKERS
+      && (DEFAULT_ABI == ABI_ELFv2 || DEFAULT_ABI == ABI_V4))
+    {
+      rtx base = const0_rtx;
+      int regno;
+      if (DEFAULT_ABI == ABI_ELFv2)
+	{
+	  base = gen_rtx_REG (Pmode, TOC_REGISTER);
+	  regno = 12;
+	}
+      else
+	{
+	  if (flag_pic)
+	    base = gen_rtx_REG (Pmode, RS6000_PIC_OFFSET_TABLE_REGNUM);
+	  regno = 11;
+	}
+      /* Reg must match that used by linker PLT stubs.  For ELFv2, r12
+	 may be used by a function global entry point.  For SysV4, r11
+	 is used by __glink_PLTresolve lazy resolver entry.  */
+      rtx reg = gen_rtx_REG (Pmode, regno);
+      rtx hi = gen_rtx_UNSPEC (Pmode, gen_rtvec (3, base, call_ref, arg),
+			       UNSPEC_PLT16_HA);
+      rtx lo = gen_rtx_UNSPEC (Pmode, gen_rtvec (3, reg, call_ref, arg),
+			       UNSPEC_PLT16_LO);
+      emit_insn (gen_rtx_SET (reg, hi));
+      emit_insn (gen_rtx_SET (reg, lo));
+      return reg;
     }
 
   return force_reg (Pmode, call_ref);
@@ -32793,8 +33172,8 @@ get_prev_label (tree function_name)
    CALL_DEST is the routine we are calling.  */
 
 char *
-output_call (rtx_insn *insn, rtx *operands, int dest_operand_number,
-	     int cookie_operand_number)
+macho_call_template (rtx_insn *insn, rtx *operands, int dest_operand_number,
+		     int cookie_operand_number)
 {
   static char buf[256];
   if (darwin_emit_branch_islands
@@ -36970,7 +37349,7 @@ make_resolver_func (const tree default_decl,
 {
   /* Make the resolver function static.  The resolver function returns
      void *.  */
-  tree decl_name = clone_function_name_numbered (default_decl, "resolver");
+  tree decl_name = clone_function_name (default_decl, "resolver");
   const char *resolver_name = IDENTIFIER_POINTER (decl_name);
   tree type = build_function_type_list (ptr_type_node, NULL_TREE);
   tree decl = build_fn_decl (resolver_name, type);
@@ -37318,11 +37697,13 @@ rs6000_legitimate_constant_p (machine_mode mode, rtx x)
   if (TARGET_ELF && tls_referenced_p (x))
     return false;
 
-  return ((GET_CODE (x) != CONST_DOUBLE && GET_CODE (x) != CONST_VECTOR)
-	  || GET_MODE (x) == VOIDmode
-	  || (TARGET_POWERPC64 && mode == DImode)
-	  || easy_fp_constant (x, mode)
-	  || easy_vector_constant (x, mode));
+  if (CONST_DOUBLE_P (x))
+    return easy_fp_constant (x, mode);
+
+  if (GET_CODE (x) == CONST_VECTOR)
+    return easy_vector_constant (x, mode);
+
+  return true;
 }
 
 
@@ -37352,10 +37733,9 @@ chain_already_loaded (rtx_insn *last)
 /* Expand code to perform a call under the AIX or ELFv2 ABI.  */
 
 void
-rs6000_call_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
+rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 {
-  const bool direct_call_p
-    = GET_CODE (func_desc) == SYMBOL_REF && SYMBOL_REF_FUNCTION_P (func_desc);
+  rtx func = func_desc;
   rtx toc_reg = gen_rtx_REG (Pmode, TOC_REGNUM);
   rtx toc_load = NULL_RTX;
   rtx toc_restore = NULL_RTX;
@@ -37365,21 +37745,21 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
   int n_call;
   rtx insn;
 
+  if (global_tlsarg)
+    tlsarg = global_tlsarg;
+
   /* Handle longcall attributes.  */
-  if (INTVAL (cookie) & CALL_LONG)
-    func_desc = rs6000_longcall_ref (func_desc);
+  if ((INTVAL (cookie) & CALL_LONG) != 0
+      && GET_CODE (func_desc) == SYMBOL_REF)
+    func = rs6000_longcall_ref (func_desc, tlsarg);
 
   /* Handle indirect calls.  */
-  if (GET_CODE (func_desc) != SYMBOL_REF
-      || (DEFAULT_ABI == ABI_AIX && !SYMBOL_REF_FUNCTION_P (func_desc)))
+  if (GET_CODE (func) != SYMBOL_REF
+      || (DEFAULT_ABI == ABI_AIX && !SYMBOL_REF_FUNCTION_P (func)))
     {
       /* Save the TOC into its reserved slot before the call,
 	 and prepare to restore it after the call.  */
-      rtx stack_ptr = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
       rtx stack_toc_offset = GEN_INT (RS6000_TOC_SAVE_SLOT);
-      rtx stack_toc_mem = gen_frame_mem (Pmode,
-					 gen_rtx_PLUS (Pmode, stack_ptr,
-						       stack_toc_offset));
       rtx stack_toc_unspec = gen_rtx_UNSPEC (Pmode,
 					     gen_rtvec (1, stack_toc_offset),
 					     UNSPEC_TOCSLOT);
@@ -37391,8 +37771,22 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
 	cfun->machine->save_toc_in_prologue = true;
       else
 	{
+	  rtx stack_ptr = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
+	  rtx stack_toc_mem = gen_frame_mem (Pmode,
+					     gen_rtx_PLUS (Pmode, stack_ptr,
+							   stack_toc_offset));
 	  MEM_VOLATILE_P (stack_toc_mem) = 1;
-	  emit_move_insn (stack_toc_mem, toc_reg);
+	  if (HAVE_AS_PLTSEQ
+	      && TARGET_TLS_MARKERS
+	      && DEFAULT_ABI == ABI_ELFv2
+	      && GET_CODE (func_desc) == SYMBOL_REF)
+	    {
+	      rtvec v = gen_rtvec (3, toc_reg, func_desc, tlsarg);
+	      rtx mark_toc_reg = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
+	      emit_insn (gen_rtx_SET (stack_toc_mem, mark_toc_reg));
+	    }
+	  else
+	    emit_move_insn (stack_toc_mem, toc_reg);
 	}
 
       if (DEFAULT_ABI == ABI_ELFv2)
@@ -37400,8 +37794,25 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
 	  /* A function pointer in the ELFv2 ABI is just a plain address, but
 	     the ABI requires it to be loaded into r12 before the call.  */
 	  func_addr = gen_rtx_REG (Pmode, 12);
-	  emit_move_insn (func_addr, func_desc);
+	  if (!rtx_equal_p (func_addr, func))
+	    emit_move_insn (func_addr, func);
 	  abi_reg = func_addr;
+	  /* Indirect calls via CTR are strongly preferred over indirect
+	     calls via LR, so move the address there.  Needed to mark
+	     this insn for linker plt sequence editing too.  */
+	  func_addr = gen_rtx_REG (Pmode, CTR_REGNO);
+	  if (HAVE_AS_PLTSEQ
+	      && TARGET_TLS_MARKERS
+	      && GET_CODE (func_desc) == SYMBOL_REF)
+	    {
+	      rtvec v = gen_rtvec (3, abi_reg, func_desc, tlsarg);
+	      rtx mark_func = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
+	      emit_insn (gen_rtx_SET (func_addr, mark_func));
+	      v = gen_rtvec (2, func_addr, func_desc);
+	      func_addr = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
+	    }
+	  else
+	    emit_move_insn (func_addr, abi_reg);
 	}
       else
 	{
@@ -37413,9 +37824,15 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
 	     not have any executable code.  */
 
 	  /* Load up address of the actual function.  */
-	  func_desc = force_reg (Pmode, func_desc);
+	  func = force_reg (Pmode, func);
 	  func_addr = gen_reg_rtx (Pmode);
-	  emit_move_insn (func_addr, gen_rtx_MEM (Pmode, func_desc));
+	  emit_move_insn (func_addr, gen_rtx_MEM (Pmode, func));
+
+	  /* Indirect calls via CTR are strongly preferred over indirect
+	     calls via LR, so move the address there.  */
+	  rtx ctr_reg = gen_rtx_REG (Pmode, CTR_REGNO);
+	  emit_move_insn (ctr_reg, func_addr);
+	  func_addr = ctr_reg;
 
 	  /* Prepare to load the TOC of the called function.  Note that the
 	     TOC load must happen immediately before the actual call so
@@ -37423,7 +37840,7 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
 	     comment in frob_update_context.  */
 	  rtx func_toc_offset = GEN_INT (GET_MODE_SIZE (Pmode));
 	  rtx func_toc_mem = gen_rtx_MEM (Pmode,
-					  gen_rtx_PLUS (Pmode, func_desc,
+					  gen_rtx_PLUS (Pmode, func,
 							func_toc_offset));
 	  toc_load = gen_rtx_USE (VOIDmode, func_toc_mem);
 
@@ -37431,14 +37848,15 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
 	     originally direct, the 3rd word has not been written since no
 	     trampoline has been built, so we ought not to load it, lest we
 	     override a static chain value.  */
-	  if (!direct_call_p
+	  if (!(GET_CODE (func_desc) == SYMBOL_REF
+		&& SYMBOL_REF_FUNCTION_P (func_desc))
 	      && TARGET_POINTERS_TO_NESTED_FUNCTIONS
 	      && !chain_already_loaded (get_current_sequence ()->next->last))
 	    {
 	      rtx sc_reg = gen_rtx_REG (Pmode, STATIC_CHAIN_REGNUM);
 	      rtx func_sc_offset = GEN_INT (2 * GET_MODE_SIZE (Pmode));
 	      rtx func_sc_mem = gen_rtx_MEM (Pmode,
-					     gen_rtx_PLUS (Pmode, func_desc,
+					     gen_rtx_PLUS (Pmode, func,
 							   func_sc_offset));
 	      emit_move_insn (sc_reg, func_sc_mem);
 	      abi_reg = sc_reg;
@@ -37451,11 +37869,11 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
 	 assume the TOC register is set; for non-local calls, the
 	 PLT stub needs the TOC register.  */
       abi_reg = toc_reg;
-      func_addr = func_desc;
+      func_addr = func;
     }
 
   /* Create the call.  */
-  call[0] = gen_rtx_CALL (VOIDmode, gen_rtx_MEM (SImode, func_addr), flag);
+  call[0] = gen_rtx_CALL (VOIDmode, gen_rtx_MEM (SImode, func_addr), tlsarg);
   if (value != NULL_RTX)
     call[0] = gen_rtx_SET (value, call[0]);
   n_call = 1;
@@ -37479,15 +37897,18 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
 /* Expand code to perform a sibling call under the AIX or ELFv2 ABI.  */
 
 void
-rs6000_sibcall_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
+rs6000_sibcall_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 {
   rtx call[2];
   rtx insn;
 
   gcc_assert (INTVAL (cookie) == 0);
 
+  if (global_tlsarg)
+    tlsarg = global_tlsarg;
+
   /* Create the call.  */
-  call[0] = gen_rtx_CALL (VOIDmode, gen_rtx_MEM (SImode, func_desc), flag);
+  call[0] = gen_rtx_CALL (VOIDmode, gen_rtx_MEM (SImode, func_desc), tlsarg);
   if (value != NULL_RTX)
     call[0] = gen_rtx_SET (value, call[0]);
 
@@ -37498,6 +37919,138 @@ rs6000_sibcall_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
 
   /* Note use of the TOC register.  */
   use_reg (&CALL_INSN_FUNCTION_USAGE (insn), gen_rtx_REG (Pmode, TOC_REGNUM));
+}
+
+/* Expand code to perform a call under the SYSV4 ABI.  */
+
+void
+rs6000_call_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
+{
+  rtx func = func_desc;
+  rtx func_addr;
+  rtx call[3];
+  rtx insn;
+  rtx abi_reg = NULL_RTX;
+
+  if (global_tlsarg)
+    tlsarg = global_tlsarg;
+
+  /* Handle longcall attributes.  */
+  if ((INTVAL (cookie) & CALL_LONG) != 0
+      && GET_CODE (func_desc) == SYMBOL_REF)
+    {
+      func = rs6000_longcall_ref (func_desc, tlsarg);
+      /* If the longcall was implemented using PLT16 relocs, then r11
+	 needs to be valid at the call for lazy linking.  */
+      if (HAVE_AS_PLTSEQ
+	  && TARGET_TLS_MARKERS)
+	abi_reg = func;
+    }
+
+  /* Handle indirect calls.  */
+  if (GET_CODE (func) != SYMBOL_REF)
+    {
+      func = force_reg (Pmode, func);
+
+      /* Indirect calls via CTR are strongly preferred over indirect
+	 calls via LR, so move the address there.  Needed to mark
+	 this insn for linker plt sequence editing too.  */
+      func_addr = gen_rtx_REG (Pmode, CTR_REGNO);
+      if (HAVE_AS_PLTSEQ
+	  && TARGET_TLS_MARKERS
+	  && GET_CODE (func_desc) == SYMBOL_REF)
+	{
+	  rtvec v = gen_rtvec (3, func, func_desc, tlsarg);
+	  rtx mark_func = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
+	  emit_insn (gen_rtx_SET (func_addr, mark_func));
+	  v = gen_rtvec (2, func_addr, func_desc);
+	  func_addr = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
+	}
+      else
+	emit_move_insn (func_addr, func);
+    }
+  else
+    func_addr = func;
+
+  /* Create the call.  */
+  call[0] = gen_rtx_CALL (VOIDmode, gen_rtx_MEM (SImode, func_addr), tlsarg);
+  if (value != NULL_RTX)
+    call[0] = gen_rtx_SET (value, call[0]);
+
+  unsigned int mask = CALL_V4_SET_FP_ARGS | CALL_V4_CLEAR_FP_ARGS;
+  call[1] = gen_rtx_USE (VOIDmode, GEN_INT (INTVAL (cookie) & mask));
+
+  call[2] = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, LR_REGNO));
+
+  insn = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (3, call));
+  insn = emit_call_insn (insn);
+  if (abi_reg)
+    use_reg (&CALL_INSN_FUNCTION_USAGE (insn), abi_reg);
+}
+
+/* Expand code to perform a sibling call under the SysV4 ABI.  */
+
+void
+rs6000_sibcall_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
+{
+  rtx func = func_desc;
+  rtx func_addr;
+  rtx call[3];
+  rtx insn;
+  rtx abi_reg = NULL_RTX;
+
+  if (global_tlsarg)
+    tlsarg = global_tlsarg;
+
+  /* Handle longcall attributes.  */
+  if ((INTVAL (cookie) & CALL_LONG) != 0
+      && GET_CODE (func_desc) == SYMBOL_REF)
+    {
+      func = rs6000_longcall_ref (func_desc, tlsarg);
+      /* If the longcall was implemented using PLT16 relocs, then r11
+	 needs to be valid at the call for lazy linking.  */
+      if (HAVE_AS_PLTSEQ
+	  && TARGET_TLS_MARKERS)
+	abi_reg = func;
+    }
+
+  /* Handle indirect calls.  */
+  if (GET_CODE (func) != SYMBOL_REF)
+    {
+      func = force_reg (Pmode, func);
+
+      /* Indirect sibcalls must go via CTR.  Needed to mark
+	 this insn for linker plt sequence editing too.  */
+      func_addr = gen_rtx_REG (Pmode, CTR_REGNO);
+      if (HAVE_AS_PLTSEQ
+	  && TARGET_TLS_MARKERS
+	  && GET_CODE (func_desc) == SYMBOL_REF)
+	{
+	  rtvec v = gen_rtvec (3, func, func_desc, tlsarg);
+	  rtx mark_func = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
+	  emit_insn (gen_rtx_SET (func_addr, mark_func));
+	  v = gen_rtvec (2, func_addr, func_desc);
+	  func_addr = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
+	}
+      else
+	emit_move_insn (func_addr, func);
+    }
+  else
+    func_addr = func;
+
+  /* Create the call.  */
+  call[0] = gen_rtx_CALL (VOIDmode, gen_rtx_MEM (SImode, func_addr), tlsarg);
+  if (value != NULL_RTX)
+    call[0] = gen_rtx_SET (value, call[0]);
+
+  unsigned int mask = CALL_V4_SET_FP_ARGS | CALL_V4_CLEAR_FP_ARGS;
+  call[1] = gen_rtx_USE (VOIDmode, GEN_INT (INTVAL (cookie) & mask));
+  call[2] = simple_return_rtx;
+
+  insn = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (3, call));
+  insn = emit_call_insn (insn);
+  if (abi_reg)
+    use_reg (&CALL_INSN_FUNCTION_USAGE (insn), abi_reg);
 }
 
 /* Return whether we need to always update the saved TOC pointer when we update

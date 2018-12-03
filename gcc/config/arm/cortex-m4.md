@@ -44,7 +44,7 @@
                              mvn_imm,mvn_reg,mvn_shift,mvn_shift_reg,\
                              mrs,multiple,no_insn")
 	    (ior (eq_attr "mul32" "yes")
-		 (eq_attr "mul64" "yes"))))
+		 (eq_attr "widen_mul64" "yes"))))
   "cortex_m4_ex")
 
 ;; Byte, half-word and word load is two cycles.

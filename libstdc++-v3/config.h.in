@@ -33,6 +33,9 @@
 /* Define to 1 if you have the `atanl' function. */
 #undef HAVE_ATANL
 
+/* Defined if shared_ptr reference counting should use atomic operations. */
+#undef HAVE_ATOMIC_LOCK_POLICY
+
 /* Define to 1 if you have the `at_quick_exit' function. */
 #undef HAVE_AT_QUICK_EXIT
 

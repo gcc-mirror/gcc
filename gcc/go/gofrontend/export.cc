@@ -290,6 +290,11 @@ Find_types_to_prepare::type(Type* type)
   if (type->is_void_type())
     return TRAVERSE_SKIP_COMPONENTS;
 
+  // Skip abstract types.  We should never see these in real code,
+  // only in things like const declarations.
+  if (type->is_abstract())
+    return TRAVERSE_SKIP_COMPONENTS;
+
   if (!this->exp_->set_type_index(type))
     {
       // We've already seen this type.
@@ -367,7 +372,12 @@ Find_types_to_prepare::traverse_named_type(Named_type* nt)
 	     methods->begin_definitions();
 	   pm != methods->end_definitions();
 	   ++pm)
-	this->traverse_function((*pm)->func_value()->type());
+	{
+	  Function* fn = (*pm)->func_value();
+	  this->traverse_function(fn->type());
+	  if (fn->export_for_inlining())
+	    fn->block()->traverse(this);
+	}
 
       for (Bindings::const_declarations_iterator pm =
 	     methods->begin_declarations();
@@ -434,7 +444,12 @@ Export::prepare_types(const std::vector<Named_object*>* exports,
 	  break;
 
 	case Named_object::NAMED_OBJECT_FUNC:
-	  find.traverse_function(no->func_value()->type());
+	  {
+	    Function* fn = no->func_value();
+	    find.traverse_function(fn->type());
+	    if (fn->export_for_inlining())
+	      fn->block()->traverse(&find);
+	  }
 	  break;
 
 	case Named_object::NAMED_OBJECT_FUNC_DECLARATION:
@@ -936,19 +951,39 @@ Export::write_unsigned(unsigned value)
   this->write_c_string(buf);
 }
 
-// Export a type.
+// Return the index of a type.
 
-void
-Export::write_type(const Type* type)
+int
+Export::type_index(const Type* type)
 {
   type = type->forwarded();
   Type_refs::const_iterator p = type_refs.find(type);
   go_assert(p != type_refs.end());
   int index = p->second;
   go_assert(index != 0);
+  return index;
+}
+
+// Export a type.
+
+void
+Export::write_type(const Type* type)
+{
+  int index = this->type_index(type);
   char buf[30];
   snprintf(buf, sizeof buf, "<type %d>", index);
   this->write_c_string(buf);
+}
+
+// Export a type to a function body.
+
+void
+Export::write_type_to(const Type* type, Export_function_body* efb)
+{
+  int index = this->type_index(type);
+  char buf[30];
+  snprintf(buf, sizeof buf, "<type %d>", index);
+  efb->write_c_string(buf);
 }
 
 // Export escape note.

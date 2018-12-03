@@ -23,6 +23,11 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#undef GNU_USER_TARGET_CRTI
+#define GNU_USER_TARGET_CRTI "%{mnewlib:ecrti.o%s;:crti.o%s}"
+#undef GNU_USER_TARGET_CRTN
+#define GNU_USER_TARGET_CRTN "%{mnewlib:ecrtn.o%s;:crtn.o%s}"
+
 /* Yes!  We are ELF.  */
 #define	TARGET_OBJECT_FORMAT OBJECT_ELF
 
@@ -556,8 +561,8 @@ ENDIAN_SELECT(" -mbig", " -mlittle", DEFAULT_ASM_ENDIAN)
     %{mcall-openbsd: -mno-eabi }}} \
 %{msdata: -msdata=default} \
 %{mno-sdata: -msdata=none} \
-%{!mbss-plt: %{!msecure-plt: %(cc1_secure_plt_default)}} \
-%{profile: -p}"
+%{!mbss-plt: %{!msecure-plt: %(cc1_secure_plt_default)}}" \
+GNU_USER_TARGET_CC1_SPEC
 
 /* Default starting address if specified.  */
 #define LINK_START_SPEC "\
@@ -739,85 +744,28 @@ ENDIAN_SELECT(" -mbig", " -mlittle", DEFAULT_ASM_ENDIAN)
   %{symbolic:-Bsymbolic}"
 
 /* GNU/Linux support.  */
-#define LIB_LINUX_SPEC "%{mnewlib: --start-group -llinux -lc --end-group } \
-%{!mnewlib: %{pthread:-lpthread} %{shared:-lc} \
-%{!shared: %{profile:-lc_p} %{!profile:-lc}}}"
+#define LIB_LINUX_SPEC \
+  "%{mnewlib: --start-group -llinux -lc --end-group; \
+     :" GNU_USER_TARGET_LIB_SPEC "}"
 
-#if ENABLE_OFFLOADING == 1
-#define CRTOFFLOADBEGIN "%{fopenacc|fopenmp:crtoffloadbegin%O%s}"
-#define CRTOFFLOADEND "%{fopenacc|fopenmp:crtoffloadend%O%s}"
-#else
-#define CRTOFFLOADBEGIN ""
-#define CRTOFFLOADEND ""
-#endif
+#define	STARTFILE_LINUX_SPEC GNU_USER_TARGET_STARTFILE_SPEC
 
-/* STARTFILE_LINUX_SPEC should be the same as GNU_USER_TARGET_STARTFILE_SPEC
-   but with the mnewlib ecrti.o%s selection substituted for crti.o%s.  */
-#define	STARTFILE_LINUX_SPEC \
-  "%{shared:; \
-     pg|p|profile:gcrt1.o%s; \
-     static:crt1.o%s; \
-     static-pie|" PIE_SPEC ":Scrt1.o%s; \
-     :crt1.o%s} \
-   %{mnewlib:ecrti.o%s;:crti.o%s} \
-   %{static:crtbeginT.o%s; \
-     shared|static-pie|" PIE_SPEC ":crtbeginS.o%s; \
-     :crtbegin.o%s} \
-   %{fvtable-verify=none:%s; \
-     fvtable-verify=preinit:vtv_start_preinit.o%s; \
-     fvtable-verify=std:vtv_start.o%s} \
-   " CRTOFFLOADBEGIN
-
-/* ENDFILE_LINUX_SPEC should be the same as GNU_USER_TARGET_ENDFILE_SPEC
-   but with the mnewlib ecrtn.o%s selection substituted for crtn.o%s.  */
-#define ENDFILE_LINUX_SPEC \
-  "%{fvtable-verify=none:%s; \
-     fvtable-verify=preinit:vtv_end_preinit.o%s; \
-     fvtable-verify=std:vtv_end.o%s} \
-   %{static:crtend.o%s; \
-     shared|static-pie|" PIE_SPEC ":crtendS.o%s; \
-     :crtend.o%s} \
-   %{mnewlib:ecrtn.o%s;:crtn.o%s} \
-   " CRTOFFLOADEND
+#define ENDFILE_LINUX_SPEC GNU_USER_TARGET_ENDFILE_SPEC
 
 #define LINK_START_LINUX_SPEC ""
 
 #define MUSL_DYNAMIC_LINKER_E ENDIAN_SELECT("","le","")
 
 #define GLIBC_DYNAMIC_LINKER "/lib/ld.so.1"
-#define UCLIBC_DYNAMIC_LINKER "/lib/ld-uClibc.so.0"
+#undef MUSL_DYNAMIC_LINKER
 #define MUSL_DYNAMIC_LINKER \
   "/lib/ld-musl-powerpc" MUSL_DYNAMIC_LINKER_E "%{msoft-float:-sf}.so.1"
-#if DEFAULT_LIBC == LIBC_UCLIBC
-#define CHOOSE_DYNAMIC_LINKER(G, U, M) \
-  "%{mglibc:" G ";:%{mmusl:" M ";:" U "}}"
-#elif DEFAULT_LIBC == LIBC_MUSL
-#define CHOOSE_DYNAMIC_LINKER(G, U, M) \
-  "%{mglibc:" G ";:%{muclibc:" U ";:" M "}}"
-#elif !defined (DEFAULT_LIBC) || DEFAULT_LIBC == LIBC_GLIBC
-#define CHOOSE_DYNAMIC_LINKER(G, U, M) \
-  "%{muclibc:" U ";:%{mmusl:" M ";:" G "}}"
-#else
-#error "Unsupported DEFAULT_LIBC"
-#endif
-#define GNU_USER_DYNAMIC_LINKER \
-  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER, UCLIBC_DYNAMIC_LINKER, \
-			 MUSL_DYNAMIC_LINKER)
 
 #define LINK_OS_LINUX_SPEC "-m elf32ppclinux %{!shared: %{!static: \
   %{rdynamic:-export-dynamic} \
   -dynamic-linker " GNU_USER_DYNAMIC_LINKER "}}"
 
-#if defined(HAVE_LD_EH_FRAME_HDR)
-# define LINK_EH_SPEC "%{!static|static-pie:--eh-frame-hdr} "
-#endif
-
-#define CPP_OS_LINUX_SPEC "-D__unix__ -D__gnu_linux__ -D__linux__ \
-%{!undef:							  \
-  %{!ansi:							  \
-    %{!std=*:-Dunix -D__unix -Dlinux -D__linux}			  \
-    %{std=gnu*:-Dunix -D__unix -Dlinux -D__linux}}}		  \
--Asystem=linux -Asystem=unix -Asystem=posix %{pthread:-D_REENTRANT}"
+#define CPP_OS_LINUX_SPEC "%{pthread:-D_REENTRANT}"
 
 /* NetBSD support.  */
 #define LIB_NETBSD_SPEC "\
