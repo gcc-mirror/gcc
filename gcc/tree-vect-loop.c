@@ -8548,9 +8548,12 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	{
 	  unsigned int eiters
 	    = (LOOP_VINFO_INT_NITERS (loop_vinfo)
-	       - LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo));
-	  eiters = eiters % lowest_vf;
+	       - LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo)
+	       - LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo));
+	  eiters
+	    = eiters % lowest_vf + LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo);
 	  epilogue->nb_iterations_upper_bound = eiters - 1;
+	  epilogue->any_upper_bound = true;
 
 	  unsigned int ratio;
 	  while (next_size < vector_sizes.length ()
