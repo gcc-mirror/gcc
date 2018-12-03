@@ -219,7 +219,7 @@ extern void assemble_external (tree);
 extern void assemble_zeros (unsigned HOST_WIDE_INT);
 
 /* Assemble an alignment pseudo op for an ALIGN-bit boundary.  */
-extern void assemble_align (int);
+extern void assemble_align (unsigned int);
 
 /* Assemble a string constant with the specified C string as contents.  */
 extern void assemble_string (const char *, int);
