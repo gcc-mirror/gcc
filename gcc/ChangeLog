@@ -1,3 +1,8 @@
+2018-12-03  Jeff Law  <law@redhat.com>
+
+	* config/h8300/h8300.md (low byte masking peepholes): Only accept
+	nonimmediate_operand for the to-be-masked operand.
+
 2018-12-03  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (eliminate_dom_walker::eliminate_stmt): Only
