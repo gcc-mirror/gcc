@@ -1,3 +1,8 @@
+2018-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88103
+	* g++.dg/cpp0x/rv-cond3.C: New test.
+
 2018-12-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88315
