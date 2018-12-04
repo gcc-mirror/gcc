@@ -8501,13 +8501,13 @@ vect_transform_loop (loop_vec_info loop_vinfo)
       targetm.vectorize.autovectorize_vector_sizes (&vector_sizes);
       unsigned int next_size = 0;
 
+      /* Note LOOP_VINFO_NITERS_KNOWN_P and LOOP_VINFO_INT_NITERS work
+         on niters already ajusted for the iterations of the prologue.  */
       if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-	  && LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) >= 0
 	  && known_eq (vf, lowest_vf))
 	{
-	  unsigned int eiters
+	  unsigned HOST_WIDE_INT eiters
 	    = (LOOP_VINFO_INT_NITERS (loop_vinfo)
-	       - LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo)
 	       - LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo));
 	  eiters
 	    = eiters % lowest_vf + LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo);
