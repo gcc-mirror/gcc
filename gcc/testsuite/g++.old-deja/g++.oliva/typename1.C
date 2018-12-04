@@ -12,5 +12,5 @@ template <class T> struct bar {
 };
 
 template <class T> struct baz {
-  typedef bar<T>::foo foo; // { dg-error "" } missing typename
+  typedef bar<T>::foo foo; // { dg-error "need 'typename' before" "" { target c++17_down } }
 };
