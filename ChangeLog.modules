@@ -1,5 +1,18 @@
 2018-12-04  Nathan Sidwell  <nathan@acm.org>
 
+	TYPE streamed with its implicit typedef.
+	gcc/cp/
+	* module.cc (trees_in::reserve_gmes): Only 2 per.
+	(trees_in::{set,get}_backref_gme): Delete.
+	(trees_in::existing_gme): Rename to ...
+	(trees_in::is_existing_gme): ... this.  Return bool.
+	(trees_out::mark_gme): Adjust assert.
+	(trees_in::insert): Add assert.
+	(trees_out::tree_type): Always look at typedef.
+	(trees_out::tree_value): Stream type with its decl.
+	(trees_in::tree_node): Likewise.
+	(trees_{in,out}::tree_gme): Adjust.
+
 	gcc/cp/
 	* module.c (module_state::{read,write,mark}_enum): Take DECL.
 	(module_state::{read,write,mark}_definition): Adjust.
@@ -21,7 +34,7 @@
 	(trees_out::tree_type): Don't handle fake base specially here.
 	(trees_in::tree_node): Read fake base as pseudo-named.  Delete
 	tt_as_base handling.
-	(module_State::mark_class_def): Adjust.
+	(module_state::mark_class_def): Adjust.
 
 	gcc/cp/
 	* module.cc (trees_in): Rename bad_decls to skip_defns.

@@ -2486,23 +2486,15 @@ public:
   {
     if (gmes.length ())
       set_overrun ();
-    /* Up to 3 nodes per GME (template, decl, type).  */
-    gmes.reserve (len * 3);
+    /* Up to 2 nodes per GME (template, decl).  */
+    gmes.reserve (len * 2);
   }
-  unsigned existing_gme (tree t)
+  bool is_existing_gme (tree t)
   {
     for (unsigned ix = gmes.length (); ix--;)
       if (gmes[ix] == t)
-	return ix + 1;
-    return 0;
-  }
-  void set_backref_gme (unsigned cookie, tree t)
-  {
-    gmes[cookie - 1] = t;
-  }
-  tree get_backref_gme (unsigned cookie)
-  {
-    return gmes[cookie];
+	return true;
+    return false;
   }
 
 public:
@@ -3900,9 +3892,6 @@ trees_out::mark_gme (tree t)
   int *val = tree_map.get (t);
   gcc_assert (val && *val);
   *val = gme_lwm - *val;
-
-  if (TREE_CODE (t) == TYPE_DECL)
-    mark_gme (TREE_TYPE (t));
 }
 
 /* Insert T into the map, return its back reference number.
@@ -3917,7 +3906,9 @@ trees_out::insert (tree t, walk_kind walk)
 
   bool existed;
   int &slot = tree_map.get_or_insert (t, &existed);
-  gcc_checking_assert (existed == (walk != WK_normal));
+  gcc_checking_assert (walk == WK_body ? existed && !slot
+		       : walk == WK_gme ? existed && slot > gme_lwm
+		       : !existed);
   if (walk == WK_gme)
     slot = gme_lwm - slot;
   else
@@ -3943,6 +3934,7 @@ trees_out::maybe_insert_typeof (tree decl)
 int
 trees_in::insert (tree t)
 {
+  gcc_checking_assert (t);
   back_refs.safe_push (t);
   return -(int)back_refs.length ();
 }
@@ -6300,11 +6292,14 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
   if (ref == WK_body)
     return true;
 
+  // FIXME:this should be about IMPLICIT_TYPEDEF_P
   if (tree name = TYPE_NAME (type))
     if (TREE_TYPE (name) == type)
       {
 	int *name_val = tree_map.get (name);
-	if (!name_val || *name_val > gme_lwm)
+	// FIXME:Is this check needed?  Shouldn't we always grab the
+	// type_decl first?
+	if (!name_val || !*name_val || *name_val > gme_lwm)
 	  {
 	    /* A new named type -> tt_named_type.  */
 
@@ -6359,6 +6354,25 @@ trees_out::tree_value (tree t, walk_kind walk)
 	       DECL_P (t) && DECL_MODULE_EXPORT_P (t) ? " (exported)" : "");
   tree_node_specific (t);
   tree_node_bools (t);
+  if (DECL_IMPLICIT_TYPEDEF_P (t))
+    {
+      tree type = TREE_TYPE (t);
+      gcc_assert (TYPE_NAME (type) == t);
+      walk_kind type_walk = ref_node (type);
+      gcc_assert (type_walk == WK_normal);
+      if (streaming_p ())
+	{
+	  u (TREE_CODE (type));
+	  start (type);
+	}
+      int tag = insert (type, WK_normal);
+      if (streaming_p ())
+	dump (dumper::TREE)
+	  && dump ("Writing:%d %C:%N%S", tag, TREE_CODE (type), type, type);
+      tree_node_specific (type);
+      tree_node_bools (type);
+      tree_node_vals (type);
+    }
   tree_node_vals (t);
   if (streaming_p ())
     dump (dumper::TREE) && dump ("Written:%d %C:%N", tag, TREE_CODE (t), t);
@@ -6748,7 +6762,7 @@ trees_in::tree_node ()
 	/* A new node.  Stream it in.  */
 	bool is_gme = tag == tt_gme;
 	tree existing = NULL_TREE;
-	unsigned cookie = 0;
+	tree type = NULL_TREE;
 
 	if (is_gme)
 	  {
@@ -6758,20 +6772,15 @@ trees_in::tree_node ()
 	    tag = i ();
 	    if (tag < 0 && unsigned (~tag) < back_refs.length ())
 	      res = back_refs[~tag];
-	    if (!res || !(DECL_P (res) || TYPE_P (res)))
+	    if (!res || !DECL_P (res))
 	      set_overrun ();
 
 	    /* Determine if we had already known about this.  */
-	    cookie = existing_gme (res);
 	    unsigned c = u ();
-	    if (cookie)
+	    if (is_existing_gme (res))
 	      {
 		existing = res;
 		res = start (c);
-		if (TYPE_P (res))
-		  /* Save the dummy type, so we can get at it below it
-		     below.  */
-		  set_backref_gme (cookie, res);
 	      }
 	    // FIXME:Mark function parms as GME during this read in.
 	  }
@@ -6794,7 +6803,23 @@ trees_in::tree_node ()
 
 	    specific = tree_node_specific (res, is_gme && !existing);
 	    ok = tree_node_bools (res, specific);
-	    bflush ();
+	  }
+
+	if (ok && DECL_IMPLICIT_TYPEDEF_P (res))
+	  {
+	    unsigned c = u ();
+	    type = is_gme && !existing ? TREE_TYPE (res) : start (c);
+	    int tag = insert (is_gme && existing ? TREE_TYPE (existing) : type);
+	    dump (dumper::TREE)
+	      && dump ("Reading:%d %C", tag, TREE_CODE (type));
+	    bool specific = tree_node_specific (type, is_gme && !existing);
+	    tree_node_bools (type, specific);
+	    tree_node_vals (type, specific);
+	    if (!existing)
+	      {
+		type = finish (type);
+		back_refs[~tag] = type;
+	      }
 	  }
 
 	if (!ok || !tree_node_vals (res, specific))
@@ -6823,22 +6848,21 @@ trees_in::tree_node ()
 	      }
 	  }
 
-	if (existing && DECL_P (res))
+	if (existing)
 	  {
-	    if (tree type = get_backref_gme (cookie))
+	    dump (dumper::GM) && dump ("Deduping %N", existing);
+	    if (type)
 	      {
 		TYPE_NAME (type) = res;
 		TREE_TYPE (res) = type;
 	      }
 
 	    if (!state->is_matching_decl (existing, res))
-	      /* Record EXISTING as the bad decl, because that's what
+	      /* Record EXISTING as the skip defn, because that's what
 		 we'll see when reading a definition.  */
 	      record_skip_defn (existing, true);
+	    res = existing;
 	  }
-
-	if (existing)
-	  res = existing;
 
 	break;
       }
@@ -6893,8 +6917,6 @@ trees_out::tree_gme (tree decl)
   tree_node (DECL_NAME (decl));
   state->write_location (*this, DECL_SOURCE_LOCATION (decl));
 
-  bool do_type = false;
-
   switch (TREE_CODE (decl))
     {
     case FUNCTION_DECL:
@@ -6915,7 +6937,6 @@ trees_out::tree_gme (tree decl)
 	tree_node_specific (type);
 	core_bools (type);
 	bflush ();
-	do_type = true;
       }
       break;
 
@@ -6927,13 +6948,6 @@ trees_out::tree_gme (tree decl)
   int tag = insert (decl);
   dump (dumper::GM)
     && dump ("Wrote:%d global decl %N", tag, decl);
-
-  if (do_type)
-    {
-      int tag = insert (TREE_TYPE (decl));
-      dump (dumper::GM)
-	&& dump ("Wrote:%d global type %N", tag, TREE_TYPE (decl));
-    }
 }
 
 void
@@ -6952,7 +6966,6 @@ trees_in::tree_gme ()
       tree tpl = NULL_TREE;
       tree ret = NULL_TREE;
       tree args = NULL_TREE;
-      bool do_type = false;
       switch (TREE_CODE (decl))
 	{
 	case FUNCTION_DECL:
@@ -6974,7 +6987,6 @@ trees_in::tree_gme ()
 		bflush ();
 		TREE_TYPE (decl) = type;
 		TYPE_NAME (type) = decl;
-		do_type = true;
 	      }
 	  }
 	  break;
@@ -6991,19 +7003,11 @@ trees_in::tree_gme ()
 	    {
 	      decl = existing;
 	      gmes.quick_push (decl);
-	      gmes.quick_push (do_type ? TREE_TYPE (decl) : NULL_TREE);
 	      kind = "matched";
 	    }
 	  int tag = insert (decl);
 	  dump (dumper::GM)
 	    && dump ("Read:%d %s global decl %N", tag, kind, decl);
-	  if (do_type)
-	    {
-	      int tag = insert (TREE_TYPE (decl));
-	      dump (dumper::GM)
-		&& dump ("Read:%d %s global type %N", tag,
-			 kind, TREE_TYPE (decl));
-	    }
 	}
     }
 }
@@ -9673,12 +9677,12 @@ module_state::read_cluster (unsigned snum)
 	    if (!set_module_binding (ns, name, mod, is_interface (),
 				     decls, type, visible))
 	      sec.set_overrun ();
-	    if (type && !sec.existing_gme (type))
+	    if (type && !sec.is_existing_gme (type))
 	      add_module_decl (ns, name, type);
 	    for (ovl_iterator iter (decls); iter; ++iter)
 	      {
 		tree decl = *iter;
-		if (!sec.existing_gme (decl))
+		if (!sec.is_existing_gme (decl))
 		  add_module_decl (ns, name, decl);
 	      }
 	  }
