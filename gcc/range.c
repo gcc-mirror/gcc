@@ -144,6 +144,41 @@ irange::irange (tree type, tree lbound, tree ubound, kind rt)
   init (type, wi::to_wide (lbound), wi::to_wide (ubound), rt);
 }
 
+// Mark pair [i, j] to empty.  This is done by building a non-sensical pair.
+
+void
+irange_storage::set_empty_pair (unsigned i, unsigned j, tree type)
+{
+  unsigned precision = trailing_bounds[0].get_precision ();
+  if (precision == 1 && TYPE_SIGN (type) == SIGNED)
+    {
+      // For stupid ass signed 1-bit types, we can't use [1, 0] as a
+      // nonsensical pair, since it maps to [-1, 0] which is valid.
+      // In this case, use [0, 1] which is invalid in this brain-dead world.
+      trailing_bounds[i] = wi::zero (precision);
+      trailing_bounds[j] = wi::one (precision);
+    }
+  else
+    {
+      // For almost all types, we mark empty ranges with a nonsensical [1, 0] range.
+      trailing_bounds[i] = wi::one (precision);
+      trailing_bounds[j] = wi::zero (precision);
+    }
+}
+
+// Return TRUE if pair [i, j] is marked as empty.
+
+bool
+irange_storage::empty_pair_p (unsigned i, unsigned j, tree type) const
+{
+  unsigned precision = wi::get_precision (trailing_bounds[0]);
+  if (precision == 1 && TYPE_SIGN (type) == SIGNED)
+    return (trailing_bounds[i] == wi::zero (precision)
+	    && trailing_bounds[j] == wi::one (precision));
+  return (trailing_bounds[i] == wi::one (precision)
+	  && trailing_bounds[j] == wi::zero (precision));
+}
+
 irange::irange (tree type, const irange_storage *storage)
 {
   m_type = type;
@@ -153,13 +188,10 @@ irange::irange (tree type, const irange_storage *storage)
   gcc_assert (precision == TYPE_PRECISION (type));
   while (i < m_max_pairs * 2)
     {
-      wide_int lo = storage->trailing_bounds[i];
-      wide_int hi = storage->trailing_bounds[i + 1];
-      // A nonsensical sub-range of [1,0] marks the end of valid ranges.
-      if (lo == wi::one (precision) && hi == wi::zero (precision))
+      if (storage->empty_pair_p (i, i + 1, type))
 	break;
-      m_bounds[i] = lo;
-      m_bounds[i + 1] = hi;
+      m_bounds[i] = storage->trailing_bounds[i];
+      m_bounds[i + 1] = storage->trailing_bounds[i + 1];
       i += 2;
     }
   m_nitems = i;
@@ -804,13 +836,9 @@ irange_storage::set_irange (const irange &ir)
   for (i = 0; i < ir.num_pairs () * 2; ++i)
     trailing_bounds[i] = ir.m_bounds[i];
 
-  // Build nonsensical [1,0] pairs for the remaining empty ranges.
-  // These will be recognized as empty when we read the structure back.
+  // Clear the remaining empty ranges.
   for (; i < irange::m_max_pairs * 2; i += 2)
-    {
-      trailing_bounds[i] = wi::one (precision);
-      trailing_bounds[i + 1] = wi::zero (precision);
-    }
+    set_empty_pair (i, i + 1, ir.type ());
 }
 
 void
@@ -949,6 +977,7 @@ value_range_to_irange (irange &r, tree type, const value_range &vr)
 }
 
 #ifdef CHECKING_P
+#include "stor-layout.h"
 
 // Ideally this should go in namespace selftest, but irange_tests
 // needs to be a friend of class irange so it can access
@@ -1438,6 +1467,15 @@ irange_tests ()
   r0 = irange (integer_type_node, INT (5), INT (10));
   irange_storage *stow = irange_storage::ggc_alloc_init (r0);
   r1 = irange (integer_type_node, stow);
+  ASSERT_TRUE (r0 == r1);
+
+  // Test irange_storage with signed 1-bit fields.
+  tree s1bit_type = make_signed_type (1);
+  r0 = irange (s1bit_type,
+	       build_int_cst (s1bit_type, -1),
+	       build_int_cst (s1bit_type, 0));
+  stow = irange_storage::ggc_alloc_init (r0);
+  r1 = irange (s1bit_type, stow);
   ASSERT_TRUE (r0 == r1);
 
   // Test zero_p().

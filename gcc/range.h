@@ -216,6 +216,8 @@ class GTY((variable_size)) irange_storage
   void set_irange (const irange &);
   void set_nonzero_bits (const wide_int &);
   wide_int get_nonzero_bits ();
+  bool empty_pair_p (unsigned, unsigned, tree) const;
+  void set_empty_pair (unsigned, unsigned, tree);
   static irange_storage *ggc_alloc_init (const irange &);
 
  private:
