@@ -2435,8 +2435,8 @@ class trees_in : public bytes_in {
 private:
   module_state *state;		/* Module being imported.  */
   auto_vec<tree> back_refs;	/* Back references.  */
-  auto_vec<tree> gmes;		/* Global module entities.  */
-  auto_vec<tree> bad_decls;	/* ODR failed decls.  */
+  auto_vec<tree> gmes;		/* Global module decls.  */
+  auto_vec<intptr_t> skip_defns; /* Definitions to skip.  */
   auto_vec<tree> post_decls;	/* Decls to post process.  */
 
 public:
@@ -2508,16 +2508,11 @@ public:
 
 public:
   /* We expect very few bad decls, usually none!.  */
-  void record_bad_decl (tree decl)
+  void record_skip_defn (tree defn, bool informed, bool existing = false);
+  int is_skip_defn (tree defn);
+  bool any_skip_defns () const
   {
-    bad_decls.safe_push (decl);
-  }
-  bool is_bad_decl (tree decl)
-  {
-    for (unsigned ix = bad_decls.length (); ix--;)
-      if (bad_decls[ix] == decl)
-	return true;
-    return false;
+    return skip_defns.length () != 0;
   }
 
 public:
@@ -2970,7 +2965,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  public:
   bool is_matching_decl (tree existing, tree node);
-  int is_ignorable_defn (trees_in &in, tree node, bool have_defn);
+  int is_skippable_defn (trees_in &in, tree node, bool have_defn);
 
  private:
   /* Serialize various definitions. */
@@ -6854,7 +6849,7 @@ trees_in::tree_node ()
 	    if (!state->is_matching_decl (existing, res))
 	      /* Record EXISTING as the bad decl, because that's what
 		 we'll see when reading a definition.  */
-	      record_bad_decl (existing);
+	      record_skip_defn (existing, true);
 	  }
 
 	if (existing)
@@ -6866,6 +6861,39 @@ trees_in::tree_node ()
 
   dump.outdent ();
   return res;
+}
+
+void
+trees_in::record_skip_defn (tree defn, bool informed, bool existing)
+{
+  if (!existing)
+    {
+      gcc_checking_assert (!is_skip_defn (defn));
+      skip_defns.safe_push (intptr_t (defn) | intptr_t (informed));
+    }
+  else if (informed)
+    {
+      /* Record that we informed the user of a problem.  So we don't
+	 give a whole slew of mismatch diagnostics.  */
+      for (unsigned ix = skip_defns.length (); ix--;)
+	if ((skip_defns[ix] & ~1u) == intptr_t (defn))
+	  {
+	    skip_defns[ix] |= 1;
+	    break;
+	  }
+    }
+}
+
+/* Return non-zero if DEFN is a (namespace-scope) skippable entity.
+   >0 if we already warned, < 0 if we have not.  */
+
+int
+trees_in::is_skip_defn (tree defn)
+{
+  for (unsigned ix = skip_defns.length (); ix--;)
+    if ((skip_defns[ix] & ~1u) == intptr_t (defn))
+      return (skip_defns[ix] & 1) ? +1 : -1;
+  return 0;
 }
 
 void
@@ -8707,40 +8735,69 @@ module_state::is_matching_decl (tree existing, tree decl)
   return true;
 }
 
-/* We're reading a definition for DECL.  Check that makes sense and
-   issue a diagnostic on errors.  Return zero if the new decl should
-   be attached.  Return +1 if it should be ignored and -1 if it
-   should be checked for ODR.  */
+/* Return the namespace scope DECL enclosing T.  */
+
+static tree
+topmost_decl (tree t)
+{
+  for (;;)
+    {
+      while (TYPE_P (t))
+	{
+	  if (tree name = TYPE_NAME (t))
+	    t = name;
+	  else if (tree ctx = TYPE_CONTEXT (t))
+	    t = ctx;
+	  else
+	    return NULL_TREE;
+	}
+
+      gcc_checking_assert (DECL_P (t));
+      tree ctx = CP_DECL_CONTEXT (t);
+      if (!ctx || TREE_CODE (ctx) == NAMESPACE_DECL)
+	return t;
+      t = ctx;
+    }
+}
+
+/* We're reading a definition of DEFN (a _DECL or structured _TYPE).
+   Check that makes sense and issue a diagnostic on errors.  Return
+   zero if the new defn should be added.  Return +1 if it should be
+   ignored and -1 if it should be checked for ODR.  */
 
 int
-module_state::is_ignorable_defn (trees_in &in, tree decl, bool have_defn)
+module_state::is_skippable_defn (trees_in &in, tree defn, bool have_defn)
 {
   if (in.get_overrun ())
     return +1;
 
-  if (!decl || TREE_CODE (CP_DECL_CONTEXT (decl)) != NAMESPACE_DECL)
+  /* The most common case is to have nothing to skip.  Short circuit
+     the complexity in that case. */
+  if (!in.any_skip_defns ())
+    return 0;
+
+  /* If there are skip defns, we're merging entities.  Find the
+     namespace-scope dominating decl. */
+  tree top = topmost_decl (defn);
+  if (int skip = in.is_skip_defn (top))
+    return skip;
+  
+  /* This isn's skippable.  There'd better not be an existing
+     defn.  */
+  if (!have_defn)
+    return 0;
+
+  if (TYPE_P (defn))
+    defn = TYPE_NAME (defn);
+
+  if (defn)
     {
-      /* Non-namespace scope definitions should never be duplicates.  */
-      if (have_defn)
-	in.set_overrun ();
-      return have_defn ? +1 : 0;
+      in.record_skip_defn (top, true, false);
+      error_at (loc, "unexpected definition of %q#D", defn);
+      inform (DECL_SOURCE_LOCATION (defn), "existing definition here");
     }
 
-  unsigned owner = MAYBE_DECL_MODULE_OWNER (decl);
-  module_state *other = owner ? (*modules)[owner] : NULL;
-
-  if (other != this && !((!other || other->is_legacy ()) && is_legacy ()))
-    {
-      /* Only definitions from legacy modules should be mergeable.  */
-      // FIXME:Will need changing for partitions and global module fragment
-      error_at (loc, "unexpected definition of %q#D", decl);
-      return +1;
-    }
-
-  if (in.is_bad_decl (decl))
-    return +1;
-
-  return have_defn ? -1 : 0;
+  return +1;
 }
 
 /* The following writer functions rely on the current behaviour of
@@ -8778,10 +8835,11 @@ module_state::read_function_def (trees_in &in, tree decl)
   if (in.get_overrun ())
     return NULL_TREE;
 
-  if (int odr = is_ignorable_defn (in, decl, DECL_SAVED_TREE (decl)))
+  if (int odr = is_skippable_defn (in, decl, bool (DECL_SAVED_TREE (decl))))
     {
       if (odr < 0)
-	{ // FIXME: check matching defn
+	{
+	  // FIXME: check matching defn
 	}
       return true;
     }
@@ -9043,6 +9101,10 @@ static void
 nop (void *, void *)
 {
 }
+
+/* While it would be more logical to pass the TYPE_DECL in here, some
+   record types don't have TYPE_NAMES (The FAKE_BASE_TYPE is the
+   example).  Adding a TYPE_NAME to the fake base proved difficult.  */
 
 bool
 module_state::read_class_def (trees_in &in, tree type)
