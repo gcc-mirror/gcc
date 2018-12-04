@@ -376,8 +376,8 @@ static profile_count max_count;
 
 static long overall_size, max_new_size;
 
-/* Node to unique clone suffix number map.  */
-static hash_map<cgraph_node *, unsigned> *clone_num_suffixes;
+/* Node name to unique clone suffix number map.  */
+static hash_map<const char *, unsigned> *clone_num_suffixes;
 
 /* Return the param lattices structure corresponding to the Ith formal
    parameter of the function described by INFO.  */
@@ -3832,7 +3832,9 @@ create_specialized_node (struct cgraph_node *node,
 	}
     }
 
-  unsigned &suffix_counter = clone_num_suffixes->get_or_insert (node);
+  unsigned &suffix_counter = clone_num_suffixes->get_or_insert (
+			       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (
+				 node->decl)));
   new_node = node->create_virtual_clone (callers, replace_trees,
 					 args_to_skip, "constprop",
 					 suffix_counter);
@@ -5050,7 +5052,7 @@ ipcp_driver (void)
 
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();
-  clone_num_suffixes = new hash_map<cgraph_node *, unsigned>;
+  clone_num_suffixes = new hash_map<const char *, unsigned>;
 
   if (dump_file)
     {
