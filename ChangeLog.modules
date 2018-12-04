@@ -1,5 +1,13 @@
 2018-12-04  Nathan Sidwell  <nathan@acm.org>
 
+	Class deduping
+	gcc/cp/
+	* module.cc (trees_in::tree_node): Record defn to skip.
+	(trees_in::is_skip{,pable}_defn): Fix int/long ptr const.
+	(module_state::read_{function,var,class}_def): Add skip checking.
+	gcc/testsuite/
+	* g++.dg/modules/leg-merge-6_[abc].[HC]: New.
+
 	TYPE streamed with its implicit typedef.
 	gcc/cp/
 	* module.cc (trees_in::reserve_gmes): Only 2 per.

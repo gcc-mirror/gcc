@@ -6857,10 +6857,10 @@ trees_in::tree_node ()
 		TREE_TYPE (res) = type;
 	      }
 
-	    if (!state->is_matching_decl (existing, res))
-	      /* Record EXISTING as the skip defn, because that's what
-		 we'll see when reading a definition.  */
-	      record_skip_defn (existing, true);
+	    bool matched = state->is_matching_decl (existing, res);
+	    /* Record EXISTING as the skip defn, because that's what
+	       we'll see when reading a definition.  */
+	    record_skip_defn (existing, !matched, false);
 	    res = existing;
 	  }
 
@@ -6875,6 +6875,10 @@ trees_in::tree_node ()
 void
 trees_in::record_skip_defn (tree defn, bool informed, bool existing)
 {
+  dump (dumper::GM)
+    && dump ("Recording %s skippable %C:%N",
+	     existing ? "existing" : "new", TREE_CODE (defn), defn);
+
   if (!existing)
     {
       gcc_checking_assert (!is_skip_defn (defn));
@@ -6885,7 +6889,7 @@ trees_in::record_skip_defn (tree defn, bool informed, bool existing)
       /* Record that we informed the user of a problem.  So we don't
 	 give a whole slew of mismatch diagnostics.  */
       for (unsigned ix = skip_defns.length (); ix--;)
-	if ((skip_defns[ix] & ~1u) == intptr_t (defn))
+	if ((skip_defns[ix] & ~intptr_t (1)) == intptr_t (defn))
 	  {
 	    skip_defns[ix] |= 1;
 	    break;
@@ -6900,7 +6904,7 @@ int
 trees_in::is_skip_defn (tree defn)
 {
   for (unsigned ix = skip_defns.length (); ix--;)
-    if ((skip_defns[ix] & ~1u) == intptr_t (defn))
+    if ((skip_defns[ix] & ~intptr_t (1)) == intptr_t (defn))
       return (skip_defns[ix] & 1) ? +1 : -1;
   return 0;
 }
@@ -8767,8 +8771,13 @@ module_state::is_skippable_defn (trees_in &in, tree defn, bool have_defn)
      namespace-scope dominating decl. */
   tree top = topmost_decl (defn);
   if (int skip = in.is_skip_defn (top))
-    return skip;
-  
+    {
+      dump (dumper::GM)
+	&& dump ("Skipping definition %N%s",
+		 defn, skip < 0 ? " check ODR" : "");
+      return skip;
+    }
+
   /* This isn's skippable.  There'd better not be an existing
      defn.  */
   if (!have_defn)
@@ -8822,23 +8831,22 @@ module_state::read_function_def (trees_in &in, tree decl)
   if (in.get_overrun ())
     return NULL_TREE;
 
-  if (int odr = is_skippable_defn (in, decl, bool (DECL_SAVED_TREE (decl))))
+  int odr = is_skippable_defn (in, decl, DECL_SAVED_TREE (decl) != NULL_TREE);
+
+  if (!odr)
     {
-      if (odr < 0)
-	{
-	  // FIXME: check matching defn
-	}
-      return true;
+      DECL_RESULT (decl) = result;
+      DECL_INITIAL (decl) = initial;
+      DECL_SAVED_TREE (decl) = saved;
+      if (constexpr_body)
+	register_constexpr_fundef (decl, constexpr_body);
+      in.post_process (decl);
     }
-
-  DECL_RESULT (decl) = result;
-  DECL_INITIAL (decl) = initial;
-  DECL_SAVED_TREE (decl) = saved;
-  if (constexpr_body)
-    register_constexpr_fundef (decl, constexpr_body);
-
-  in.post_process (decl);
-
+  else if (odr < 0)
+    {
+      // FIXME: check matching defn
+    }
+  
   return true;
 }
 
@@ -8861,7 +8869,16 @@ module_state::read_var_def (trees_in &in, tree decl)
   if (in.get_overrun ())
     return false;
 
-  DECL_INITIAL (decl) = init;
+  int odr = is_skippable_defn (in, decl, DECL_INITIAL (decl) != NULL_TREE);
+
+  if (!odr)
+    {
+      DECL_INITIAL (decl) = init;
+    }
+  else if (odr < 0)
+    {
+      // FIXME: check matching defn
+    }
 
   return true;
 }
@@ -9042,7 +9059,7 @@ module_state::write_class_def (trees_out &out, tree defn)
       out.chained_decls (vtables);
       /* Write the vtable initializers.  */
       for (; vtables; vtables = TREE_CHAIN (vtables))
-	out.tree_node (DECL_INITIAL (vtables));
+	write_definition (out, vtables);
     }
 
   // lang->nested_udts
@@ -9134,55 +9151,72 @@ module_state::read_class_def (trees_in &in, tree defn)
   // FIXME:read more stuff!
   // lang->nested_udts
 
-  TYPE_SIZE (type) = size;
-  TYPE_SIZE_UNIT (type) = size_unit;
-
-  TYPE_FIELDS (type) = fields;
-  TYPE_VFIELD (type) = vfield;
-  TYPE_BINFO (type) = binfo;
-
-  if (TYPE_LANG_SPECIFIC (type))
+  int odr = is_skippable_defn (in, type, TYPE_SIZE (type) != NULL_TREE);
+  if (!odr)
     {
-      CLASSTYPE_FRIEND_CLASSES (type) = friends;
-      CLASSTYPE_LAMBDA_EXPR (type) = lambda;
+      TYPE_SIZE (type) = size;
+      TYPE_SIZE_UNIT (type) = size_unit;
 
-      CLASSTYPE_MEMBER_VEC (type) = member_vec;
-      CLASSTYPE_PURE_VIRTUALS (type) = pure_virts;
-      CLASSTYPE_VCALL_INDICES (type) = vcall_indices;
+      TYPE_FIELDS (type) = fields;
+      TYPE_VFIELD (type) = vfield;
+      TYPE_BINFO (type) = binfo;
 
-      CLASSTYPE_KEY_METHOD (type) = key_method;
+      if (TYPE_LANG_SPECIFIC (type))
+	{
+	  CLASSTYPE_FRIEND_CLASSES (type) = friends;
+	  CLASSTYPE_LAMBDA_EXPR (type) = lambda;
 
-      CLASSTYPE_VBASECLASSES (type) = vbases;
+	  CLASSTYPE_MEMBER_VEC (type) = member_vec;
+	  CLASSTYPE_PURE_VIRTUALS (type) = pure_virts;
+	  CLASSTYPE_VCALL_INDICES (type) = vcall_indices;
 
-      /* Resort the member vector.  */
-      resort_type_member_vec (member_vec, NULL, nop, NULL);
+	  CLASSTYPE_KEY_METHOD (type) = key_method;
+
+	  CLASSTYPE_VBASECLASSES (type) = vbases;
+
+	  /* Resort the member vector.  */
+	  resort_type_member_vec (member_vec, NULL, nop, NULL);
+	}
+    }
+  else if (odr < 0)
+    {
+      // FIXME: check matching defn
     }
 
   if (TYPE_LANG_SPECIFIC (type))
     {
-      CLASSTYPE_PRIMARY_BINFO (type) = in.tree_node ();
-
+      tree primary = in.tree_node ();
       tree as_base = in.tree_node ();
-      CLASSTYPE_AS_BASE (type) = as_base ? TREE_TYPE (as_base) : NULL_TREE;
-      if (as_base && as_base != defn)
-	read_class_def (in, as_base);
+
+      if (as_base)
+	{
+	  if (as_base != defn)
+	    read_class_def (in, as_base);
+	  as_base = TREE_TYPE (as_base);
+	}
 
       /* Read the vtables.  */
-      // FIXME: via read_var_def?
       tree vtables = in.chained_decls ();
-      if (!CLASSTYPE_KEY_METHOD (type) && vtables)
-	vec_safe_push (keyed_classes, type);
-      CLASSTYPE_VTABLES (type) = vtables;
-      for (; vtables; vtables = TREE_CHAIN (vtables))
-	DECL_INITIAL (vtables) = in.tree_node ();
+      for (tree vt = vtables; vt; vt = TREE_CHAIN (vt))
+	read_var_def (in, vt);
+
+      if (!odr)
+	{
+	  CLASSTYPE_PRIMARY_BINFO (type) = primary;
+	  CLASSTYPE_AS_BASE (type) = as_base;
+	  if (!CLASSTYPE_KEY_METHOD (type) && vtables)
+	    vec_safe_push (keyed_classes, type);
+	  CLASSTYPE_VTABLES (type) = vtables;
+	}
+
+      // FIXME:
+      if (false/*TREE_CODE (decl) == TEMPLATE_DECL*/)
+	CLASSTYPE_DECL_LIST (type) = in.tree_node ();
     }
 
-  // FIXME:
-  if (false/*TREE_CODE (decl) == TEMPLATE_DECL*/)
-    CLASSTYPE_DECL_LIST (type) = in.tree_node ();
-
   /* Propagate to all variants.  */
-  fixup_type_variants (type);
+  if (!odr)
+    fixup_type_variants (type);
 
   /* Now define all the members.  */
   while (tree member = in.tree_node ())
