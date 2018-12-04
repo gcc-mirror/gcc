@@ -1,3 +1,8 @@
+2018-12-04  Julian Brown  <julian@codesourcery.com>
+
+	* parser.c (cp_parser_oacc_wait_list): Fix error message and avoid
+	duplicate diagnostic.
+
 2018-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88103

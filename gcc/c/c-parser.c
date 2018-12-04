@@ -11801,14 +11801,6 @@ c_parser_oacc_wait_list (c_parser *parser, location_t clause_loc, tree list)
     return list;
 
   args = c_parser_expr_list (parser, false, true, NULL, NULL, NULL, NULL);
-
-  if (args->length () == 0)
-    {
-      c_parser_error (parser, "expected integer expression before ')'");
-      release_tree_vector (args);
-      return list;
-    }
-
   args_tree = build_tree_list_vec (args);
 
   for (t = args_tree; t; t = TREE_CHAIN (t))
