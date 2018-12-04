@@ -309,6 +309,12 @@ irange::cast (tree new_type)
       // specially as [-MIN,Y][X,MAX].
       else
 	{
+	  /* For one bit precision, the swapped range covers all values.  */
+	  if (TYPE_PRECISION (new_type) == 1)
+	    {
+	      set_varying (new_type);
+	      return;
+	    }
 	  // If we're about to go over the maximum number of ranges,
 	  // convert to something conservative and cast again.
 	  if (m_nitems >= m_max_pairs * 2)
