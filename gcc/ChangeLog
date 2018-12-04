@@ -1,3 +1,7 @@
+2018-12-04  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (attribute aligned): Expand.
+
 2018-12-04  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/61976
