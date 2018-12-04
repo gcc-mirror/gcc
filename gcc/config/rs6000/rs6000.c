@@ -20626,7 +20626,8 @@ ccr_bit (rtx op, int scc_p)
 
   reg = XEXP (op, 0);
 
-  gcc_assert (GET_CODE (reg) == REG && CR_REGNO_P (REGNO (reg)));
+  if (!REG_P (reg) || !CR_REGNO_P (REGNO (reg)))
+    return -1;
 
   cc_mode = GET_MODE (reg);
   cc_regnum = REGNO (reg);
@@ -20636,9 +20637,19 @@ ccr_bit (rtx op, int scc_p)
 
   /* When generating a sCOND operation, only positive conditions are
      allowed.  */
-  gcc_assert (!scc_p
-	      || code == EQ || code == GT || code == LT || code == UNORDERED
-	      || code == GTU || code == LTU);
+  if (scc_p)
+    switch (code)
+      {
+      case EQ:
+      case GT:
+      case LT:
+      case UNORDERED:
+      case GTU:
+      case LTU:
+	break;
+      default:
+	return -1;
+      }
 
   switch (code)
     {
@@ -20663,7 +20674,7 @@ ccr_bit (rtx op, int scc_p)
       return scc_p ? base_bit + 3 : base_bit + 1;
 
     default:
-      gcc_unreachable ();
+      return -1;
     }
 }
 
@@ -20756,7 +20767,7 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'D':
       /* Like 'J' but get to the GT bit only.  */
-      if (!REG_P (x))
+      if (!REG_P (x) || !CR_REGNO_P (REGNO (x)))
 	{
 	  output_operand_lossage ("invalid %%D value");
 	  return;
@@ -20784,7 +20795,7 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'E':
       /* X is a CR register.  Print the number of the EQ bit of the CR */
-      if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
+      if (!REG_P (x) || !CR_REGNO_P (REGNO (x)))
 	output_operand_lossage ("invalid %%E value");
       else
 	fprintf (file, "%d", 4 * (REGNO (x) - CR0_REGNO) + 2);
@@ -20793,7 +20804,7 @@ print_operand (FILE *file, rtx x, int code)
     case 'f':
       /* X is a CR register.  Print the shift count needed to move it
 	 to the high-order four bits.  */
-      if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
+      if (!REG_P (x) || !CR_REGNO_P (REGNO (x)))
 	output_operand_lossage ("invalid %%f value");
       else
 	fprintf (file, "%d", 4 * (REGNO (x) - CR0_REGNO));
@@ -20802,7 +20813,7 @@ print_operand (FILE *file, rtx x, int code)
     case 'F':
       /* Similar, but print the count for the rotate in the opposite
 	 direction.  */
-      if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
+      if (!REG_P (x) || !CR_REGNO_P (REGNO (x)))
 	output_operand_lossage ("invalid %%F value");
       else
 	fprintf (file, "%d", 32 - 4 * (REGNO (x) - CR0_REGNO));
@@ -21000,7 +21011,7 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'R':
       /* X is a CR register.  Print the mask for `mtcrf'.  */
-      if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
+      if (!REG_P (x) || !CR_REGNO_P (REGNO (x)))
 	output_operand_lossage ("invalid %%R value");
       else
 	fprintf (file, "%d", 128 >> (REGNO (x) - CR0_REGNO));
@@ -21016,7 +21027,7 @@ print_operand (FILE *file, rtx x, int code)
 
     case 't':
       /* Like 'J' but get to the OVERFLOW/UNORDERED bit.  */
-      if (!REG_P (x) || GET_MODE (x) != CCmode)
+      if (!REG_P (x) || !CR_REGNO_P (REGNO (x)))
 	{
 	  output_operand_lossage ("invalid %%t value");
 	  return;
