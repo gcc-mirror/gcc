@@ -2442,16 +2442,20 @@ and may not be available on all targets.
 @itemx aligned (@var{alignment})
 @cindex @code{aligned} function attribute
 The @code{aligned} attribute specifies a minimum alignment for
-the function, measured in bytes.  When specified, @var{alignment} must
-be an integer constant power of 2.  Specifying no @var{alignment} argument
-implies the maximum alignment for the target, which is often, but by no
-means always, 8 or 16 bytes.
+the first instruction of the function, measured in bytes.  When specified,
+@var{alignment} must be an integer constant power of 2.  Specifying no
+@var{alignment} argument implies the ideal alignment for the target.
+The @code{__alignof__} operator can be used to determine what that is
+(@pxref{Alignment}).  The attribute has no effect when a definition for
+the function is not provided in the same translation unit.
 
-You cannot use this attribute to decrease the alignment of a function,
-only to increase it.  However, when you explicitly specify a function
-alignment this overrides the effect of the
-@option{-falign-functions} (@pxref{Optimize Options}) option for this
-function.
+The attribute cannot be used to decrease the alignment of a function
+previously declared with a more restrictive alignment; only to increase
+it.  Attempts to do otherwise are diagnosed.  Some targets specify
+a minimum default alignment for functions that is greater than 1.  On
+such targets, specifying a less restrictive alignment is silently ignored.
+Using the attribute overrides the effect of the @option{-falign-functions}
+(@pxref{Optimize Options}) option for this function.
 
 Note that the effectiveness of @code{aligned} attributes may be
 limited by inherent limitations in the system linker 
