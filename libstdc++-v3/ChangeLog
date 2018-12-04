@@ -1,3 +1,9 @@
+2018-12-03  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/88341 - Complex norm doesn't compile with C++11
+	* include/std/complex (_S_do_it): Make C++20 constexpr.
+	* testsuite/26_numerics/complex/value_operations/pr88341.cc: New test.
+
 2018-11-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement P0457R2 String Prefix and Suffix Checking.
