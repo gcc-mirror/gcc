@@ -1,6 +1,12 @@
 2018-12-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* class.c (layout_class_type): Base type has same module as owner.
+	* module.c (module_state::{read,write,mark}_class): Take DECL.
+	(module_state::{read,write,mark}_definition): Adjust.
+	(topmost_decl, get_module_owner): Don't look at TYPE_CONTEXT.
+
+	gcc/cp/
 	* class.c (build_base_field_1): Refactor.
 	(layout_class_type): Give as_base type a name.
 	* decl.c (initialize_predefined_identifiers): Make as_base name

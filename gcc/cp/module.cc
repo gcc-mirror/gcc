@@ -2984,8 +2984,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   static void write_var_def (trees_out &out, tree decl);
   bool read_var_def (trees_in &in, tree decl);
 
-  static void mark_class_def (trees_out &out, tree type);
-  static void write_class_def (trees_out &out, tree type);
+  static void mark_class_def (trees_out &out, tree decl);
+  static void write_class_def (trees_out &out, tree decl);
   bool read_class_def (trees_in &in, tree decl);
 
   static void mark_enum_def (trees_out &out, tree type);
@@ -8731,8 +8731,6 @@ topmost_decl (tree t)
 	{
 	  if (tree name = TYPE_NAME (t))
 	    t = name;
-	  else if (tree ctx = TYPE_CONTEXT (t))
-	    t = ctx;
 	  else
 	    return NULL_TREE;
 	}
@@ -8993,9 +8991,12 @@ module_state::read_binfos (trees_in &in, tree type, tree *main_binfo)
 }
 
 void
-module_state::write_class_def (trees_out &out, tree type)
+module_state::write_class_def (trees_out &out, tree defn)
 {
-  dump () && dump ("Writing class definition %N", type);
+  gcc_assert (DECL_P (defn));
+  dump () && dump ("Writing class definition %N", defn);
+
+  tree type = TREE_TYPE (defn);
   out.tree_node (TYPE_SIZE (type));
   out.tree_node (TYPE_SIZE_UNIT (type));
   out.chained_decls (TYPE_FIELDS (type));
@@ -9027,8 +9028,10 @@ module_state::write_class_def (trees_out &out, tree type)
       out.tree_node (CLASSTYPE_PRIMARY_BINFO (type));
 
       tree as_base = CLASSTYPE_AS_BASE (type);
+      if (as_base)
+	as_base = TYPE_NAME (as_base);
       out.tree_node (as_base);
-      if (as_base && as_base != type)
+      if (as_base && as_base != defn)
 	write_class_def (out, as_base);
 
       tree vtables = CLASSTYPE_VTABLES (type);
@@ -9053,8 +9056,10 @@ module_state::write_class_def (trees_out &out, tree type)
 }
 
 void
-module_state::mark_class_def (trees_out &out, tree type)
+module_state::mark_class_def (trees_out &out, tree defn)
 {
+  gcc_assert (DECL_P (defn));
+  tree type = TREE_TYPE (defn);
   for (tree member = TYPE_FIELDS (type); member; member = DECL_CHAIN (member))
     {
       out.mark_node (member);
@@ -9069,7 +9074,7 @@ module_state::mark_class_def (trees_out &out, tree type)
 	  {
 	    tree base_decl = TYPE_NAME (as_base);
 	    out.mark_node (base_decl);
-	    mark_class_def (out, as_base);
+	    mark_class_def (out, base_decl);
 	  }
 
       for (tree vtables = CLASSTYPE_VTABLES (type);
@@ -9088,14 +9093,12 @@ nop (void *, void *)
 {
 }
 
-/* While it would be more logical to pass the TYPE_DECL in here, some
-   record types don't have TYPE_NAMES (The FAKE_BASE_TYPE is the
-   example).  Adding a TYPE_NAME to the fake base proved difficult.  */
-
 bool
-module_state::read_class_def (trees_in &in, tree type)
+module_state::read_class_def (trees_in &in, tree defn)
 {
-  dump () && dump ("Reading class definition %N", type);
+  gcc_assert (DECL_P (defn));
+  dump () && dump ("Reading class definition %N", defn);
+  tree type = TREE_TYPE (defn);
   tree size = in.tree_node ();
   tree size_unit = in.tree_node ();
   tree fields = in.chained_decls ();
@@ -9156,12 +9159,9 @@ module_state::read_class_def (trees_in &in, tree type)
       CLASSTYPE_PRIMARY_BINFO (type) = in.tree_node ();
 
       tree as_base = in.tree_node ();
-      CLASSTYPE_AS_BASE (type) = as_base;
-      if (as_base && as_base != type)
-	{
-	  TYPE_CONTEXT (as_base) = type;
-	  read_class_def (in, as_base);
-	}
+      CLASSTYPE_AS_BASE (type) = as_base ? TREE_TYPE (as_base) : NULL_TREE;
+      if (as_base && as_base != defn)
+	read_class_def (in, as_base);
 
       /* Read the vtables.  */
       // FIXME: via read_var_def?
@@ -9296,7 +9296,7 @@ module_state::write_definition (trees_out &out, tree decl)
 	if (TREE_CODE (type) == ENUMERAL_TYPE)
 	  write_enum_def (out, type);
 	else
-	  write_class_def (out, type);
+	  write_class_def (out, decl);
       }
       break;
     }
@@ -9332,7 +9332,7 @@ module_state::mark_definition (trees_out &out, tree decl)
 	if (TREE_CODE (type) == ENUMERAL_TYPE)
 	  mark_enum_def (out, type);
 	else
-	  mark_class_def (out, type);
+	  mark_class_def (out, decl);
       }
       break;
     }
@@ -9367,7 +9367,7 @@ module_state::read_definition (trees_in &in, tree decl)
 	if (TREE_CODE (type) == ENUMERAL_TYPE)
 	  return read_enum_def (in, type);
 	else
-	  return read_class_def (in, type);
+	  return read_class_def (in, decl);
       }
       break;
     }
@@ -12353,14 +12353,8 @@ get_module_owner (tree decl)
   gcc_assert (ctx && TREE_CODE (decl) != NAMESPACE_DECL);
   if (TYPE_P (ctx))
     {
-    again_again:
       if (tree tn = TYPE_NAME (ctx))
 	ctx = tn;
-      else if (tree tc = TYPE_CONTEXT (ctx))
-	{
-	  ctx = tc;
-	  goto again_again;
-	}
       else
 	/* Always return something, global_namespace is a useful
 	   non-owning decl.  */
