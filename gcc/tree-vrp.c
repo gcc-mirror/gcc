@@ -1562,8 +1562,8 @@ normalize_value_range_to_irange (irange &ir, const value_range *vr,
       && TREE_CODE (vr->max ()) == INTEGER_CST)
     value_range_to_irange (ir, vr_type, *vr);
   /* This will return ~[0,0] for [&var, &var].  */
-  else if (POINTER_TYPE_P (vr_type) && !range_includes_zero_p (vr))
-    range_non_zero (&ir, vr_type);
+  else if (POINTER_TYPE_P (expr_type) && !range_includes_zero_p (vr))
+    range_non_zero (&ir, expr_type);
   else
     ir.set_varying (vr_type);
 }
