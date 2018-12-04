@@ -1,3 +1,7 @@
+2018-12-04  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/strlenopt-58.c: Handle targets with 2 byte wchar_t.
+
 2018-12-04  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.target/i386/attr-aligned-2.c: New test.
