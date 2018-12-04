@@ -310,4 +310,4 @@ func (f *File) matchStructArgType(t printfArgType, typ *types.Struct, arg ast.Ex
 	return true
 }
 
-var archSizes = types.SizesFor("gc", build.Default.GOARCH)
+var archSizes = types.SizesFor(build.Default.Compiler, build.Default.GOARCH)
