@@ -1,3 +1,8 @@
+2018-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/87320
+	* gcc.dg/pr87320.c: New test.
+
 2018-12-04  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/strlenopt-58.c: Handle targets with 2 byte wchar_t.
