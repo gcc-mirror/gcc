@@ -1,5 +1,9 @@
 2018-12-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.old-deja/g++.oliva/typename1.C: Don't expect any diagnostics
+	for C++2a.
+	* g++.old-deja/g++.oliva/typename2.C: Likewise.
+
 	PR tree-optimization/88285
 	* gcc.dg/predict-22.c: Only compile on freorder targets.
 
