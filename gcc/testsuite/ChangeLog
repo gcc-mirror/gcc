@@ -1,3 +1,9 @@
+2018-12-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/88310
+	* lib/target-supports.exp (check_effective_target_freorder):
+	Suppress warnings for missing profile.
+
 2018-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.old-deja/g++.oliva/typename1.C: Don't expect any diagnostics
