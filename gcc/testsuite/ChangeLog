@@ -1,3 +1,8 @@
+2018-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/88285
+	* gcc.dg/predict-22.c: Only compile on freorder targets.
+
 2018-12-04  Julian Brown  <julian@codesourcery.com>
 
 	* c-c++-common/goacc/asyncwait-1: Update expected errors and add a
