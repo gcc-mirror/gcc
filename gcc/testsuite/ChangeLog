@@ -1,3 +1,8 @@
+2018-12-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84636
+	* g++.dg/parse/bitfield6.C: New.
+
 2018-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/87320
