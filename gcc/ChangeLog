@@ -1,3 +1,9 @@
+2018-12-04  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/88317
+	* lra-constraints.c (split_reg): Don't set up check_only_regs if
+	we are outside the inheritance pass.
+
 2018-12-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-prop.c (jump_function_useful_p): New.
