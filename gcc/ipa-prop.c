@@ -4344,6 +4344,26 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
     }
 }
 
+/* If jump functions points to node we possibly can propagate into.
+   At this moment symbol table is still not merged, but the prevailing
+   symbol is always first in the list.  */
+
+static bool
+jump_function_useful_p (symtab_node *node)
+{
+  /* While incremental linking we may end up getting function body later.  */
+  if (flag_incremental_link == INCREMENTAL_LINK_LTO)
+    return true;
+  if (!TREE_PUBLIC (node->decl) && !DECL_EXTERNAL (node->decl))
+    return true;
+  for (int n = 10; node->previous_sharing_asm_name && n ; n--)
+    node = node->previous_sharing_asm_name;
+  if (node->previous_sharing_asm_name)
+    node = symtab_node::get_for_asmname (DECL_ASSEMBLER_NAME (node->decl));
+  gcc_assert (TREE_PUBLIC (node->decl));
+  return node->definition;
+}
+
 /* Stream in NODE info from IB.  */
 
 static void
@@ -4380,6 +4400,20 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
 
       if (!count)
 	continue;
+      if (!jump_function_useful_p (e->callee))
+	{
+          for (k = 0; k < count; k++)
+	    {
+	      struct ipa_jump_func dummy;
+	      ipa_read_jump_function (ib, &dummy, e, data_in);
+	      if (contexts_computed)
+		{
+		  struct ipa_polymorphic_call_context ctx;
+		  ctx.stream_in (ib, data_in);
+		}
+	    }
+	  continue;
+	}
       vec_safe_grow_cleared (args->jump_functions, count);
       if (contexts_computed)
 	vec_safe_grow_cleared (args->polymorphic_call_contexts, count);
