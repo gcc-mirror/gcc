@@ -2415,7 +2415,8 @@ enum tree_tag {
   tt_conv_id,		/* Conversion operator name.  */
   tt_tinfo_var,		/* Typeinfo object. */
   tt_tinfo_typedef,	/* Typeinfo typedef.  */
-  tt_named_type,	/* TYPE_DECL for type.  */
+  tt_primary_type,	/* TYPE_DECL for an implicit typedef.  */
+  tt_secondary_type,	/* */
   tt_named_decl,  	/* Named decl. */
   tt_namespace,		/* Namespace reference.  */
   tt_inst,		/* A template instantiation.  */
@@ -6292,38 +6293,33 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
   if (ref == WK_body)
     return true;
 
-  // FIXME:this should be about IMPLICIT_TYPEDEF_P
   if (tree name = TYPE_NAME (type))
-    if (TREE_TYPE (name) == type)
+    if (DECL_IMPLICIT_TYPEDEF_P (name))
       {
-	int *name_val = tree_map.get (name);
-	// FIXME:Is this check needed?  Shouldn't we always grab the
-	// type_decl first?
-	if (!name_val || !*name_val || *name_val > gme_lwm)
+	/* A new named type -> tt_named_type.  */
+	bool primary = TREE_TYPE (name) == type;
+
+	/* Make sure this is not a named builtin. We should find
+	   those some other way to be canonically correct.  */
+	gcc_assert (DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION);
+	if (streaming_p ())
 	  {
-	    /* A new named type -> tt_named_type.  */
-
-	    /* Make sure this is not a named builtin. We should find
-	       those some other way to be canonically correct.  */
-	    gcc_assert (DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION);
-	    if (streaming_p ())
-	      {
-		i (tt_named_type);
-		dump (dumper::TREE)
-		  && dump ("Writing interstitial named type %C:%N%S",
-			   TREE_CODE (name), name, name);
-	      }
-	    tree_ctx (name, looking_inside, NULL_TREE);
-	    if (streaming_p ())
-	      dump (dumper::TREE) && dump ("Wrote named type %C:%N%S",
-					   TREE_CODE (name), name, name);
-
-	    /* The type itself could be a variant of TREE_TYPE (name), so
-	       stream it out in its own right.  We'll find the name in the
-	       map, so not end up here next time.  */
-	    tree_node (type);
-	    return false;
+	    i (primary ? tt_primary_type : tt_secondary_type);
+	    dump (dumper::TREE)
+	      && dump ("Writing interstitial named type %C:%N%S",
+		       TREE_CODE (name), name, name);
 	  }
+	tree_ctx (name, looking_inside, NULL_TREE);
+	if (streaming_p ())
+	  dump (dumper::TREE) && dump ("Wrote named type %C:%N%S",
+				       TREE_CODE (name), name, name);
+	if (primary)
+	  return false;
+
+	ref = ref_node (type);
+	if (ref == WK_none)
+	  return true;
+	gcc_assert (ref != WK_gme);
       }
 
   return true;
@@ -6552,15 +6548,22 @@ trees_in::tree_node ()
       }
       break;
 
-    case tt_named_type:
+    case tt_primary_type:
+    case tt_secondary_type:
       /* An interstitial type name.  Read the name and then the type again.  */
       res = tree_node ();
       dump (dumper::TREE)
 	&& dump ("Read named type %C:%N%S",
 		 res ? TREE_CODE (res) : ERROR_MARK, res, res);
       if (!res || TREE_CODE (res) != TYPE_DECL)
-	set_overrun ();
-      res = tree_node ();
+	{
+	  set_overrun ();
+	  res = NULL_TREE;
+	}
+      else if (tag == tt_primary_type)
+	res = TREE_TYPE (res);
+      else
+	res = tree_node ();
       break;
 
     case tt_tinfo_var:
