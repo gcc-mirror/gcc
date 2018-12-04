@@ -1,3 +1,8 @@
+2018-12-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-prop.c (jump_function_useful_p): New.
+	(ipa_read_node_info): Do not allocated useless jump functions.
+
 2018-12-04  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/82967
