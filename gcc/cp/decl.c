@@ -12187,7 +12187,8 @@ grokdeclarator (const cp_declarator *declarator,
     }
 
   if (ctype && TREE_CODE (type) == FUNCTION_TYPE && staticp < 2
-      && !(identifier_p (unqualified_id)
+      && !(unqualified_id
+	   && identifier_p (unqualified_id)
 	   && IDENTIFIER_NEWDEL_OP_P (unqualified_id)))
     {
       cp_cv_quals real_quals = memfn_quals;
@@ -12267,8 +12268,7 @@ grokdeclarator (const cp_declarator *declarator,
 	    error ("invalid use of %<::%>");
 	    return error_mark_node;
 	  }
-	else if (TREE_CODE (type) == FUNCTION_TYPE
-		 || TREE_CODE (type) == METHOD_TYPE)
+	else if (FUNC_OR_METHOD_TYPE_P (type) && unqualified_id)
 	  {
 	    int publicp = 0;
 	    tree function_context;

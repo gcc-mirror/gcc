@@ -1,3 +1,9 @@
+2018-12-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84636
+	* decl.c (grokdeclarator): Avoid crashing on an anonymous bit-field
+	with function type.
+
 2018-12-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88184 - ICE when treating name as template-name.
