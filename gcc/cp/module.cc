@@ -2420,7 +2420,6 @@ enum tree_tag {
   tt_namespace,		/* Namespace reference.  */
   tt_inst,		/* A template instantiation.  */
   tt_binfo,		/* A BINFO.  */
-  tt_as_base,		/* An As-Base type.  */
   tt_vtable,		/* A vtable.  */
   tt_gme		/* Global Module Entity.  */
 };
@@ -3876,7 +3875,7 @@ trees_out::unmark_trees ()
 void
 trees_out::mark_node (tree decl)
 {
-  gcc_checking_assert (DECL_P (decl) || IS_FAKE_BASE_TYPE (decl));
+  gcc_checking_assert (DECL_P (decl));
 
   if (TREE_VISITED (decl))
     gcc_checking_assert (!*tree_map.get (decl)
@@ -6241,7 +6240,6 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
     if (streaming_p ())
       {
 	i (tt_named_decl);
-	u (owner);
 	tree_ctx (ctx, true, decl);
       }
     else if (!is_import)
@@ -6256,10 +6254,15 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
     tree_node (name);
     if (streaming_p ())
       {
-	int ident = get_lookup_ident (ctx, name, owner, decl);
-	i (ident);
-	/* Make sure we can find it by name.  */
-	gcc_checking_assert (decl == lookup_by_ident (ctx, name, owner, ident));
+	u (owner);
+	if (name != as_base_identifier)
+	  {
+	    int ident = get_lookup_ident (ctx, name, owner, decl);
+	    i (ident);
+	    /* Make sure we can find it by name.  */
+	    gcc_checking_assert (decl
+				 == lookup_by_ident (ctx, name, owner, ident));
+	  }
       }
     kind = is_import ? "import" : "named decl";
   }
@@ -6296,19 +6299,6 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
   gcc_assert (TYPE_P (type));
   if (ref == WK_body)
     return true;
-
-  if (IS_FAKE_BASE_TYPE (type))
-    {
-      /* A fake base type -> tt_as_base.  */
-      if (streaming_p ())
-	{
-	  i (tt_as_base);
-	  dump (dumper::TREE)
-	    && dump ("Writing as_base for %N", TYPE_CONTEXT (type));
-	}
-      tree_ctx (TYPE_NAME (TYPE_CONTEXT (type)), true, NULL_TREE);
-      return false;
-    }
 
   if (tree name = TYPE_NAME (type))
     if (TREE_TYPE (name) == type)
@@ -6645,13 +6635,18 @@ trees_in::tree_node ()
     case tt_named_decl:
       {
 	/* A named decl.  */
-	owner = u ();
 	tree ctx = tree_node ();
 	tree name = tree_node ();
+	owner = u ();
 	owner = state->slurp ()->remap_module (owner);
-	int ident = i ();
-	if (owner != MODULE_NONE && !get_overrun ())
-	  res = lookup_by_ident (ctx, name, owner, ident);
+	if (name == as_base_identifier)
+	  res = TYPE_NAME (CLASSTYPE_AS_BASE (ctx));
+	else
+	  {
+	    int ident = i ();
+	    if (owner != MODULE_NONE && !get_overrun ())
+	      res = lookup_by_ident (ctx, name, owner, ident);
+	  }
 
 	if (!res)
 	  {
@@ -6728,16 +6723,6 @@ trees_in::tree_node ()
 	    tag = insert (res);
 	    dump (dumper::TREE) && dump ("Read binfo:%d %N", tag, res);
 	  }
-      }
-      break;
-
-    case tt_as_base:
-      {
-	/* A fake as base type. */
-	res = tree_node ();
-	dump (dumper::TREE) && dump ("Read as-base for %N", res);
-	if (res)
-	  res = CLASSTYPE_AS_BASE  (TREE_TYPE (res));
       }
       break;
 
@@ -9079,12 +9064,13 @@ module_state::mark_class_def (trees_out &out, tree type)
 
   if (TYPE_LANG_SPECIFIC (type))
     {
-      tree as_base = CLASSTYPE_AS_BASE (type);
-      if (as_base && as_base != type)
-	{
-	  out.mark_node (as_base);
-	  mark_class_def (out, as_base);
-	}
+      if (tree as_base = CLASSTYPE_AS_BASE (type))
+	if (as_base != type)
+	  {
+	    tree base_decl = TYPE_NAME (as_base);
+	    out.mark_node (base_decl);
+	    mark_class_def (out, as_base);
+	  }
 
       for (tree vtables = CLASSTYPE_VTABLES (type);
 	   vtables; vtables = TREE_CHAIN (vtables))

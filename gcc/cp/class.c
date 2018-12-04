@@ -4265,9 +4265,9 @@ static tree
 build_base_field_1 (tree t, tree basetype, tree *&next_field)
 {
   /* Create the FIELD_DECL.  */
-  gcc_assert (CLASSTYPE_AS_BASE (basetype));
-  tree decl = build_decl (input_location,
-			  FIELD_DECL, NULL_TREE, CLASSTYPE_AS_BASE (basetype));
+  tree as_base = CLASSTYPE_AS_BASE (basetype);
+  gcc_assert (as_base);
+  tree decl = build_decl (input_location, FIELD_DECL, NULL_TREE, as_base);
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
   DECL_FIELD_CONTEXT (decl) = t;
@@ -6340,8 +6340,10 @@ layout_class_type (tree t, tree *virtuals_p)
       /* T needs a different layout as a base (eliding virtual bases
 	 or whatever).  Create that version.  */
       tree base_t = make_node (TREE_CODE (t));
+      tree base_d = create_implicit_typedef (as_base_identifier, base_t);
 
       TYPE_CONTEXT (base_t) = t;
+      DECL_CONTEXT (base_d) = t;
 
       /* If the ABI version is not at least two, and the last
 	 field was a bit-field, RLI may not be on a byte

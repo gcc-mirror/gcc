@@ -1,6 +1,19 @@
 2018-12-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* class.c (build_base_field_1): Refactor.
+	(layout_class_type): Give as_base type a name.
+	* decl.c (initialize_predefined_identifiers): Make as_base name
+	unpronouncable.
+	* module.cc (tree_tag): Delete tt_as_base.
+	(trees_out::mark_node): Don't expect fake base here.
+	(trees_out::tree_decl): Write fake base as pseudo-named.
+	(trees_out::tree_type): Don't handle fake base specially here.
+	(trees_in::tree_node): Read fake base as pseudo-named.  Delete
+	tt_as_base handling.
+	(module_State::mark_class_def): Adjust.
+
+	gcc/cp/
 	* module.cc (trees_in): Rename bad_decls to skip_defns.
 	(trees_in::{record,is}_bad_decl): Delete.
 	(trees_in::{record,is,any}_skip_defn): New.
