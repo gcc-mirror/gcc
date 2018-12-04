@@ -1,3 +1,11 @@
+2018-12-04  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
+
+	PR ipa/88297
+	* ipa-cp.c (create_specialized_node): Track clone counters by
+	node assembler names.
+	(ipcp_driver): Change type of clone_num_suffixes key to const
+	char*.
+
 2018-12-04  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop.c (vect_transform_loop): Fix epilogue iterations
