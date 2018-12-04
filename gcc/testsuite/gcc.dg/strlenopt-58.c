@@ -34,8 +34,8 @@ extern void* memchr (const void*, int, size_t);
 
 static const wchar_t wc = L'1';
 static const wchar_t ws1[] = L"1";
-static const wchar_t wsx[] = L"\x12345678";
-static const wchar_t ws4[] = L"\x00123456\x12005678\x12340078\x12345600";
+static const wchar_t wsx[] = L"\x12345678";		/* { dg-warning "hex escape" "" { target { ! 4byte_wchar_t } } } */
+static const wchar_t ws4[] = L"\x00123456\x12005678\x12340078\x12345600";		/* { dg-warning "hex escape" "" { target { ! 4byte_wchar_t } } } */
 
 void test_wide (void)
 {
@@ -47,7 +47,7 @@ void test_wide (void)
 
   ELIM (memchr (L"" + 1, 0, 0) == 0);
   ELIM (memchr (&wc + 1, 0, 0) == 0);
-  ELIM (memchr (L"\x12345678", 0, sizeof (wchar_t)) == 0);
+  ELIM (memchr (L"\x12345678", 0, sizeof (wchar_t)) == 0);		/* { dg-warning "hex escape" "" { target { ! 4byte_wchar_t } } } */
 
   const size_t nb = sizeof ws4;
   const size_t nwb = sizeof (wchar_t);
