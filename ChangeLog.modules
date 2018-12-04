@@ -1,6 +1,10 @@
 2018-12-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (module_state::{read,write,mark}_enum): Take DECL.
+	(module_state::{read,write,mark}_definition): Adjust.
+
+	gcc/cp/
 	* class.c (layout_class_type): Base type has same module as owner.
 	* module.c (module_state::{read,write,mark}_class): Take DECL.
 	(module_state::{read,write,mark}_definition): Adjust.

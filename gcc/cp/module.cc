@@ -2988,8 +2988,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   static void write_class_def (trees_out &out, tree decl);
   bool read_class_def (trees_in &in, tree decl);
 
-  static void mark_enum_def (trees_out &out, tree type);
-  static void write_enum_def (trees_out &out, tree type);
+  static void mark_enum_def (trees_out &out, tree decl);
+  static void write_enum_def (trees_out &out, tree decl);
   bool read_enum_def (trees_in &in, tree decl);
 
   static void write_binfos (trees_out &out, tree type);
@@ -9193,24 +9193,27 @@ module_state::read_class_def (trees_in &in, tree defn)
 }
 
 void
-module_state::write_enum_def (trees_out &out, tree type)
+module_state::write_enum_def (trees_out &out, tree decl)
 {
+  tree type = TREE_TYPE (decl);
   out.tree_node (TYPE_VALUES (type));
   out.tree_node (TYPE_MIN_VALUE (type));
   out.tree_node (TYPE_MAX_VALUE (type));
 }
 
 void
-module_state::mark_enum_def (trees_out &out, tree type)
+module_state::mark_enum_def (trees_out &out, tree decl)
 {
+  tree type = TREE_TYPE (decl);
   if (!UNSCOPED_ENUM_P (type))
     for (tree values = TYPE_VALUES (type); values; values = TREE_CHAIN (values))
       out.mark_node (TREE_VALUE (values));
 }
 
 bool
-module_state::read_enum_def (trees_in &in, tree type)
+module_state::read_enum_def (trees_in &in, tree decl)
 {
+  tree type = TREE_TYPE (decl);
   tree values = in.tree_node ();
   tree min = in.tree_node ();
   tree max = in.tree_node ();
@@ -9294,7 +9297,7 @@ module_state::write_definition (trees_out &out, tree decl)
 	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
 		    && TYPE_MAIN_VARIANT (type) == type);
 	if (TREE_CODE (type) == ENUMERAL_TYPE)
-	  write_enum_def (out, type);
+	  write_enum_def (out, decl);
 	else
 	  write_class_def (out, decl);
       }
@@ -9330,7 +9333,7 @@ module_state::mark_definition (trees_out &out, tree decl)
 	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
 		    && TYPE_MAIN_VARIANT (type) == type);
 	if (TREE_CODE (type) == ENUMERAL_TYPE)
-	  mark_enum_def (out, type);
+	  mark_enum_def (out, decl);
 	else
 	  mark_class_def (out, decl);
       }
@@ -9365,7 +9368,7 @@ module_state::read_definition (trees_in &in, tree decl)
 	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
 		    && TYPE_MAIN_VARIANT (type) == type);
 	if (TREE_CODE (type) == ENUMERAL_TYPE)
-	  return read_enum_def (in, type);
+	  return read_enum_def (in, decl);
 	else
 	  return read_class_def (in, decl);
       }
