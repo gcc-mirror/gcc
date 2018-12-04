@@ -1,3 +1,10 @@
+2018-12-04  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/61976
+	* config/rs6000/rs6000.c (rs6000_function_arg): Don't pass aggregates
+	in FPRs on AIX.
+	(rs6000_arg_partial_bytes): Same.
+
 2018-12-04  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/88282
