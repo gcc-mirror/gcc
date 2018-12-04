@@ -659,7 +659,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct _Norm_helper
     {
       template<typename _Tp>
-        static inline _GLIBCXX_CONSTEXPR _Tp _S_do_it(const complex<_Tp>& __z)
+        static inline _GLIBCXX20_CONSTEXPR _Tp _S_do_it(const complex<_Tp>& __z)
         {
           const _Tp __x = __z.real();
           const _Tp __y = __z.imag();
@@ -671,7 +671,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct _Norm_helper<true>
     {
       template<typename _Tp>
-        static inline _GLIBCXX_CONSTEXPR _Tp _S_do_it(const complex<_Tp>& __z)
+        static inline _GLIBCXX20_CONSTEXPR _Tp _S_do_it(const complex<_Tp>& __z)
         {
           //_Tp __res = std::abs(__z);
           //return __res * __res;
