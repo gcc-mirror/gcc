@@ -1,3 +1,8 @@
+2018-12-03  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c/59039
+	* doc/extend.texi (Nonlocal gotos): New section.
+
 2018-12-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (vec_concatv2df): Change (v,xm,C)

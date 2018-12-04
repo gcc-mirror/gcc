@@ -27,6 +27,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Local Labels::        Labels local to a block.
 * Labels as Values::    Getting pointers to labels, and computed gotos.
 * Nested Functions::    Nested function in GNU C.
+* Nonlocal Gotos::      Nonlocal gotos.
 * Constructing Calls::  Dispatching a call to another function.
 * Typeof::              @code{typeof}: referring to the type of an expression.
 * Conditionals::        Omitting the middle operand of a @samp{?:} expression.
@@ -519,6 +520,61 @@ bar (int *array, int offset, int size)
   /* @r{@dots{}} */
 @}
 @end smallexample
+
+@node Nonlocal Gotos
+@section Nonlocal Gotos
+@cindex nonlocal gotos
+
+GCC provides the built-in functions @code{__builtin_setjmp} and
+@code{__builtin_longjmp} which are similar to, but not interchangeable
+with, the C library functions @code{setjmp} and @code{longjmp}.  
+The built-in versions are used internally by GCC's libraries
+to implement exception handling on some targets.  You should use the 
+standard C library functions declared in @code{<setjmp.h>} in user code
+instead of the builtins.
+
+The built-in versions of these functions use GCC's normal
+mechanisms to save and restore registers using the stack on function
+entry and exit.  The jump buffer argument @var{buf} holds only the
+information needed to restore the stack frame, rather than the entire 
+set of saved register values.  
+
+An important caveat is that GCC arranges to save and restore only
+those registers known to the specific architecture variant being
+compiled for.  This can make @code{__builtin_setjmp} and
+@code{__builtin_longjmp} more efficient than their library
+counterparts in some cases, but it can also cause incorrect and
+mysterious behavior when mixing with code that uses the full register
+set.
+
+You should declare the jump buffer argument @var{buf} to the
+built-in functions as:
+
+@smallexample
+#include <stdint.h>
+intptr_t @var{buf}[5];
+@end smallexample
+
+@deftypefn {Built-in Function} {int} __builtin_setjmp (intptr_t *@var{buf})
+This function saves the current stack context in @var{buf}.  
+@code{__builtin_setjmp} returns 0 when returning directly,
+and 1 when returning from @code{__builtin_longjmp} using the same
+@var{buf}.
+@end deftypefn
+
+@deftypefn {Built-in Function} {void} __builtin_longjmp (intptr_t *@var{buf}, int @var{val})
+This function restores the stack context in @var{buf}, 
+saved by a previous call to @code{__builtin_setjmp}.  After
+@code{__builtin_longjmp} is finished, the program resumes execution as
+if the matching @code{__builtin_setjmp} returns the value @var{val},
+which must be 1.
+
+Because @code{__builtin_longjmp} depends on the function return
+mechanism to restore the stack context, it cannot be called
+from the same function calling @code{__builtin_setjmp} to
+initialize @var{buf}.  It can only be called from a function called
+(directly or indirectly) from the function calling @code{__builtin_setjmp}.
+@end deftypefn
 
 @node Constructing Calls
 @section Constructing Function Calls
