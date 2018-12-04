@@ -1,3 +1,9 @@
+2018-12-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88184 - ICE when treating name as template-name.
+	* pt.c (lookup_template_function): Always build the TEMPLATE_ID_EXPR
+	with unknown_type_node.
+
 2018-12-04  Julian Brown  <julian@codesourcery.com>
 
 	* parser.c (cp_parser_oacc_wait_list): Fix error message and avoid
