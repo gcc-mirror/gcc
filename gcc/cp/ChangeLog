@@ -1,3 +1,12 @@
+2018-12-04  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2018-11-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88120 - ICE when calling save_expr in a template.
+	* typeck.c (cp_build_binary_op): Call cp_save_expr instead of
+	save_expr.
+
 2018-11-29  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/87531
