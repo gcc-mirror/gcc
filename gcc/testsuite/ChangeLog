@@ -1,3 +1,9 @@
+2018-12-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88184 - ICE when treating name as template-name.
+	* g++.dg/cpp2a/fn-template17.C: New test.
+	* g++.dg/cpp2a/fn-template18.C: New test.
+
 2018-12-04  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/live-patching-2.c: Require LTO.
