@@ -2973,6 +2973,21 @@ register_edge_assert_for_2 (tree name, edge e,
 	  wide_int rmin, rmax;
 	  tree rhs1 = gimple_assign_rhs1 (def_stmt);
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
+	      /* Make sure the relation preserves the upper/lower boundary of
+	         the range conservatively.  */
+	      && (comp_code == NE_EXPR
+		  || comp_code == EQ_EXPR
+		  || (TYPE_SIGN (TREE_TYPE (name))
+		      == TYPE_SIGN (TREE_TYPE (rhs1)))
+		  || ((comp_code == LE_EXPR
+		       || comp_code == LT_EXPR)
+		      && !TYPE_UNSIGNED (TREE_TYPE (rhs1)))
+		  || ((comp_code == GE_EXPR
+		       || comp_code == GT_EXPR)
+		      && TYPE_UNSIGNED (TREE_TYPE (rhs1))))
+	      /* And the conversion does not alter the value we compare
+	         against and all values in rhs1 can be represented in
+		 the converted to type.  */
 	      && int_fits_type_p (val, TREE_TYPE (rhs1))
 	      && ((TYPE_PRECISION (TREE_TYPE (name))
 		   > TYPE_PRECISION (TREE_TYPE (rhs1)))
