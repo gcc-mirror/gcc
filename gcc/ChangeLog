@@ -1,5 +1,12 @@
 2018-12-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/87360
+	* gimple-loop-jam.c (tree_loop_unroll_and_jam): On failure to analyze
+	data dependencies, don't return false, just continue.  Formatting
+	fixes.
+	(merge_loop_tree, bb_prevents_fusion_p, unroll_jam_possible_p,
+	fuse_loops): Formatting fixes.
+
 	PR sanitizer/88333
 	* cfgexpand.c (expand_stack_vars): If asan_vec is empty, start with
 	aligning frame offset to ASAN_RED_ZONE_SIZE bytes.
