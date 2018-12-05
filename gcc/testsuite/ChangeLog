@@ -1,3 +1,8 @@
+2018-12-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/sparc/20181129-1.c: Compile with -std=c99.
+	* gcc.target/sparc/20181129-2.c: Likewise.
+
 2018-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/87360
