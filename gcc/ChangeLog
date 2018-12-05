@@ -1,3 +1,9 @@
+2018-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86637
+	* tree-vectorizer.c (pass_slp_vectorize::execute): Reset
+	vect_location at the end.
+
 2018-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/87360
