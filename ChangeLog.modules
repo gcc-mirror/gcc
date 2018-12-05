@@ -1,6 +1,10 @@
 2018-12-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (slurping::remap): Heap allocate.
+	(gt_pch_nx): Delete hacks.
+
+	gcc/cp/
 	* module.cc (tree_tag): Replace tt_named_type with
 	tt_{primary,secondary}_type.
 	(trees_out::tree_type): Not recursive.

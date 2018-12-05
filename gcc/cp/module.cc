@@ -2728,7 +2728,8 @@ static loc_spans spans;
 /* Data needed by a module during the process of loading.  */
 struct GTY(()) slurping {
   vec<mc_slot, va_gc> *unnamed;		/* Unnamed decls.  */
-  vec<unsigned, va_gc_atomic> *remap;	/* Module owner remapping.  */
+  vec<unsigned, va_heap, vl_embed> *
+    GTY((skip)) remap;			/* Module owner remapping.  */
   elf_in *GTY((skip)) from;     	/* The elf loader.  */
 
   /* This map is only for legacy imports themselves -- the global
@@ -13299,12 +13300,3 @@ handle_module_option (unsigned code, const char *str, int)
 }
 
 #include "gt-cp-module.h"
-
-#if 1
-/* Use of vec<unsigned, va_gc_atomic> caused these fns to be needed.  */
-void gt_pch_nx (unsigned int &) {}
-void gt_pch_nx (unsigned int *, void (*)(void *, void *), void *) {}
-/* Use of vec<char *, va_gc_atomic> caused this fn to be needed.  */
-void gt_pch_nx (char *&)  {}
-/* I know not why.  */
-#endif
