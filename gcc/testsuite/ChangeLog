@@ -1,3 +1,11 @@
+2018-12-05  Martin Sebor  <msebor@redhat.com>
+
+	PR c/87028
+	* c-c++-common/Wstringop-truncation.c: Remove xfails.
+	* gcc.dg/Wstringop-truncation-5.c: New test.
+	* gcc.dg/strcmpopt_1.c: Adjust.
+	* gcc.dg/tree-ssa/pr79697.c: Same.
+
 2018-12-05  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/88064

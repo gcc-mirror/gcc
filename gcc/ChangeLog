@@ -1,3 +1,12 @@
+2018-12-05  Richard Biener  <rguenther@suse.de>
+	    Martin Sebor <msebor@redhat.com>
+
+	PR c/87028
+	* calls.c (get_attr_nonstring_decl): Avoid setting *REF to
+	SSA_NAME_VAR.
+	* gcc/gimple-low.c (lower_stmt): Fold builtin calls here.
+	* gimplify (maybe_fold_stmt): Avoid folding builtin calls.
+
 2018-12-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* configure.ac (gcc_cv_otool): Set.
