@@ -1356,6 +1356,9 @@ csky-*-*)
 		case ${target} in
 		    csky-*-linux-gnu*)
 			tm_defines="$tm_defines DEFAULT_LIBC=LIBC_GLIBC"
+			# Force .init_array support.  The configure script cannot always
+			# automatically detect that GAS supports it, yet we require it.
+			gcc_cv_initfini_array=yes
 			;;
 		    csky-*-linux-uclibc*)
 			tm_defines="$tm_defines DEFAULT_LIBC=LIBC_UCLIBC"
