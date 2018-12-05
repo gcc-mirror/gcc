@@ -447,3 +447,10 @@ func bool2int(x bool) int {
 // signal handler, which will attempt to tear down the runtime
 // immediately.
 func abort()
+
+// usestackmaps is true if stack map (precise stack scan) is enabled.
+var usestackmaps bool
+
+// probestackmaps detects whether there are stack maps.
+//go:linkname probestackmaps runtime.probestackmaps
+func probestackmaps() bool

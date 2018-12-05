@@ -502,3 +502,16 @@ struct funcfileline_return
 struct funcfileline_return
 runtime_funcfileline (uintptr targetpc, int32 index)
   __asm__ (GOSYM_PREFIX "runtime.funcfileline");
+
+/*
+ * helpers for stack scan.
+ */
+bool scanstackwithmap(void*)
+  __asm__(GOSYM_PREFIX "runtime.scanstackwithmap");
+bool doscanstack(G*, void*)
+  __asm__("runtime.doscanstack");
+
+bool runtime_usestackmaps;
+
+bool probestackmaps(void)
+  __asm__("runtime.probestackmaps");

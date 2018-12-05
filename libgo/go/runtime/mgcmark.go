@@ -664,7 +664,10 @@ func gcFlushBgCredit(scanWork int64) {
 }
 
 // We use a C function to find the stack.
-func doscanstack(*g, *gcWork)
+// Returns whether we succesfully scanned the stack.
+func doscanstack(*g, *gcWork) bool
+
+func doscanstackswitch(*g, *g)
 
 // scanstack scans gp's stack, greying all pointers found on the stack.
 //
@@ -691,7 +694,16 @@ func scanstack(gp *g, gcw *gcWork) {
 		return
 	case _Grunning:
 		// ok for gccgo, though not for gc.
-	case _Grunnable, _Gsyscall, _Gwaiting:
+		if usestackmaps {
+			print("runtime: gp=", gp, ", goid=", gp.goid, ", gp->atomicstatus=", readgstatus(gp), "\n")
+			throw("scanstack: goroutine not stopped")
+		}
+	case _Gsyscall:
+		if usestackmaps {
+			print("runtime: gp=", gp, ", goid=", gp.goid, ", gp->atomicstatus=", readgstatus(gp), "\n")
+			throw("scanstack: goroutine in syscall")
+		}
+	case _Grunnable, _Gwaiting:
 		// ok
 	}
 
@@ -701,13 +713,62 @@ func scanstack(gp *g, gcw *gcWork) {
 	}
 
 	// Scan the stack.
-	doscanstack(gp, gcw)
+	if usestackmaps {
+		g := getg()
+		if g == gp {
+			// Scan its own stack.
+			doscanstack(gp, gcw)
+		} else if gp.entry != nil {
+			// This is a newly created g that hasn't run. No stack to scan.
+		} else {
+			// Scanning another g's stack. We need to switch to that g
+			// to unwind its stack. And switch back after scan.
+			scanstackswitch(gp, gcw)
+		}
+	} else {
+		doscanstack(gp, gcw)
 
-	// Conservatively scan the saved register values.
-	scanstackblock(uintptr(unsafe.Pointer(&gp.gcregs)), unsafe.Sizeof(gp.gcregs), gcw)
-	scanstackblock(uintptr(unsafe.Pointer(&gp.context)), unsafe.Sizeof(gp.context), gcw)
+		// Conservatively scan the saved register values.
+		scanstackblock(uintptr(unsafe.Pointer(&gp.gcregs)), unsafe.Sizeof(gp.gcregs), gcw)
+		scanstackblock(uintptr(unsafe.Pointer(&gp.context)), unsafe.Sizeof(gp.context), gcw)
+	}
 
 	gp.gcscanvalid = true
+}
+
+// scanstackswitch scans gp's stack by switching (gogo) to gp and
+// letting it scan its own stack, and switching back upon finish.
+//
+//go:nowritebarrier
+func scanstackswitch(gp *g, gcw *gcWork) {
+	g := getg()
+
+	// We are on the system stack which prevents preemption. But
+	// we are going to switch to g stack. Lock m to block preemption.
+	mp := acquirem()
+
+	// The doscanstackswitch function will modify the current g's
+	// context. Preserve it.
+	// The stack scan code may call systemstack, which will modify
+	// gp's context. Preserve it as well so we can resume gp.
+	context := g.context
+	stackcontext := g.stackcontext
+	context2 := gp.context
+	stackcontext2 := gp.stackcontext
+
+	gp.scangcw = uintptr(unsafe.Pointer(gcw))
+	gp.scang = uintptr(unsafe.Pointer(g))
+	doscanstackswitch(g, gp)
+
+	// Restore the contexts.
+	g.context = context
+	g.stackcontext = stackcontext
+	gp.context = context2
+	gp.stackcontext = stackcontext2
+	gp.scangcw = 0
+	// gp.scang is already cleared in C code.
+
+	releasem(mp)
 }
 
 type gcDrainFlags int
@@ -1064,11 +1125,59 @@ func scanobject(b uintptr, gcw *gcWork) {
 // scanblock, but we scan the stack conservatively, so there is no
 // bitmask of pointers.
 func scanstackblock(b, n uintptr, gcw *gcWork) {
+	if usestackmaps {
+		throw("scanstackblock: conservative scan but stack map is used")
+	}
+
 	for i := uintptr(0); i < n; i += sys.PtrSize {
 		// Same work as in scanobject; see comments there.
 		obj := *(*uintptr)(unsafe.Pointer(b + i))
 		if obj, span, objIndex := findObject(obj, b, i, true); obj != 0 {
 			greyobject(obj, b, i, span, gcw, objIndex, true)
+		}
+	}
+}
+
+// scanstackblockwithmap is like scanstackblock, but with an explicit
+// pointer bitmap. This is used only when precise stack scan is enabled.
+//go:linkname scanstackblockwithmap runtime.scanstackblockwithmap
+//go:nowritebarrier
+func scanstackblockwithmap(pc, b0, n0 uintptr, ptrmask *uint8, gcw *gcWork) {
+	// Use local copies of original parameters, so that a stack trace
+	// due to one of the throws below shows the original block
+	// base and extent.
+	b := b0
+	n := n0
+
+	for i := uintptr(0); i < n; {
+		// Find bits for the next word.
+		bits := uint32(*addb(ptrmask, i/(sys.PtrSize*8)))
+		if bits == 0 {
+			i += sys.PtrSize * 8
+			continue
+		}
+		for j := 0; j < 8 && i < n; j++ {
+			if bits&1 != 0 {
+				// Same work as in scanobject; see comments there.
+				obj := *(*uintptr)(unsafe.Pointer(b + i))
+				if obj != 0 {
+					o, span, objIndex := findObject(obj, b, i, false)
+					if obj < minPhysPageSize ||
+						span != nil && span.state != _MSpanManual &&
+							(obj < span.base() || obj >= span.limit || span.state != mSpanInUse) {
+						print("runtime: found in object at *(", hex(b), "+", hex(i), ") = ", hex(obj), ", pc=", hex(pc), "\n")
+						name, file, line := funcfileline(pc, -1)
+						print(name, "\n", file, ":", line, "\n")
+						//gcDumpObject("object", b, i)
+						throw("found bad pointer in Go stack (incorrect use of unsafe or cgo?)")
+					}
+					if o != 0 {
+						greyobject(o, b, i, span, gcw, objIndex, false)
+					}
+				}
+			}
+			bits >>= 1
+			i += sys.PtrSize
 		}
 	}
 }
