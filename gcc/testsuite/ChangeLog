@@ -1,3 +1,8 @@
+2018-12-05  Chenghua Xu  <paul.hua.gm@gmail.com>
+
+	* gcc.target/mips/msa.c: Adjusted clti_<su>.df $wn,$wn,5
+	to clei_<su>.df $wn,$wn,4 in test31.
+
 2018-12-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84636
