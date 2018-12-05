@@ -1,3 +1,9 @@
+2018-12-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_function_arg): Only do the special
+	aggregate handling on actual AIX, not on somewhat similar systems.
+	(rs6000_arg_partial_bytes): Ditto.
+
 2018-12-04  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/88317
