@@ -1,3 +1,8 @@
+2018-12-05  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/85569
+	* g++.dg/cpp1z/pr85569.C: New.
+
 2018-12-05  Chenghua Xu  <paul.hua.gm@gmail.com>
 
 	* gcc.target/mips/msa.c: Adjusted clti_<su>.df $wn,$wn,5
