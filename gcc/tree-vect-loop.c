@@ -2391,14 +2391,22 @@ start_over:
     /* The main loop handles all iterations.  */
     LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo) = false;
   else if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-	   && LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) > 0)
+	   && LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) >= 0)
     {
-      if (!multiple_p (LOOP_VINFO_INT_NITERS (loop_vinfo)
-		       - LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo),
+      /* Work out the (constant) number of iterations that need to be
+	 peeled for reasons other than niters.  */
+      unsigned int peel_niter = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
+      if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
+	peel_niter += 1;
+      if (!multiple_p (LOOP_VINFO_INT_NITERS (loop_vinfo) - peel_niter,
 		       LOOP_VINFO_VECT_FACTOR (loop_vinfo)))
 	LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo) = true;
     }
   else if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo)
+	   /* ??? When peeling for gaps but not alignment, we could
+	      try to check whether the (variable) niters is known to be
+	      VF * N + 1.  That's something of a niche case though.  */
+	   || LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
 	   || !LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant (&const_vf)
 	   || ((tree_ctz (LOOP_VINFO_NITERS (loop_vinfo))
 		< (unsigned) exact_log2 (const_vf))
