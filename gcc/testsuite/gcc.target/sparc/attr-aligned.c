@@ -10,7 +10,11 @@
 #define HAS_ALIGN(f, n)  __builtin_has_attribute (f, __aligned__ (n))
 
 #define MINALIGN(N)   ((N) < 4 ? 4 : (N))
+#if defined(__sparcv9) || defined(__arch64__)
+#define MAXALIGN      16
+#else
 #define MAXALIGN      8
+#endif
 
 /* No alignment specified.  */
 void f (void) { }
