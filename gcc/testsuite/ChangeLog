@@ -1,3 +1,13 @@
+2018-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2018-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/debug/dwarf2/pr85302.C: Skip unsupported split DWARF
+	test on Darwin.
+	* g++.dg/debug/dwarf2/pr85302.C: Likewise.
+	* gcc.dg/lto/pr83719_0.c: Likewise.
+
 2018-11-29  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backport from mainline

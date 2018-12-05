@@ -1,4 +1,14 @@
-2018-08-12  Iain Sandoe  <iain@sandoe.co.uk>
+2018-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2018-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_override_options): If -gsplit-dwarf is set,
+	emit a diagnostic that it is not supported and reset the option.
+	* config/darwin.h (DRIVER_SELF_SPECS): Note that gsplit-dwarf is not
+	supported and consume the option.  (ASM_FINAL_SPEC): New.
+
+2018-12-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline
 	2018-08-15  Iain Sandoe  <iain@sandoe.co.uk>
