@@ -1,5 +1,8 @@
 2018-12-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/87897
+	* g++.dg/init/const13.C: New test.
+
 	PR sanitizer/88333
 	* c-c++-common/asan/pr88333.c: New test.
 
