@@ -1,3 +1,8 @@
+2018-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.ac (gcc_cv_otool): Set.
+	* configure: Regenerate.
+
 2018-12-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/cygming.h (PCC_BITFIELD_TYPE_MATTERS): Remove.
