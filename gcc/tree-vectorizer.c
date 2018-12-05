@@ -1303,6 +1303,8 @@ pass_slp_vectorize::execute (function *fun)
       loop_optimizer_finalize ();
     }
 
+  vect_location = dump_user_location_t ();
+
   return 0;
 }
 
