@@ -287,6 +287,7 @@ void
 block_range_cache::set_bb_range (tree name, const basic_block bb,
 				 const irange &r)
 {
+  gcc_checking_assert (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun));
   return get_block_ranges (name).set_bb_range (bb, r);
 }
 
@@ -295,6 +296,7 @@ block_range_cache::set_bb_range (tree name, const basic_block bb,
 void
 block_range_cache::set_bb_varying (tree name, const basic_block bb)
 {
+  gcc_checking_assert (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun));
   return get_block_ranges (name).set_bb_varying (bb);
 }
 
@@ -303,6 +305,7 @@ block_range_cache::set_bb_varying (tree name, const basic_block bb)
 bool 
 block_range_cache::get_bb_range (irange &r, tree name, const basic_block bb)
 {
+  gcc_checking_assert (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun));
   return get_block_ranges (name).get_bb_range (r, bb);
 }
 
@@ -311,6 +314,7 @@ block_range_cache::get_bb_range (irange &r, tree name, const basic_block bb)
 bool 
 block_range_cache::bb_range_p (tree name, const basic_block bb)
 {
+  gcc_checking_assert (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun));
   return get_block_ranges (name).bb_range_p (bb);
 }
 
@@ -529,93 +533,97 @@ gori_cache::block_range (irange &r, basic_block bb, tree name, bool calc)
   return m_on_entry.get_bb_range (r, name, bb);
 }
 
-// Check if the range for NAME on outgoing edge E may change the incoming 
-// range for NAME at the destination.  IF it does, update that range and
-// push the destination block onto the update list.
+// Return the static range for NAME on edge E in R. If there is no
+// range-on-entry cache for E->src, then return false.
+// If this is the def block, then see if the DEF can be evaluated with them
+// import name, otherwise use varying as the range.
+// If there is any outgoing range information on edge E, incorporate it 
+// into the results.
 
 bool
-gori_cache::maybe_propagate_on_edge (tree name, edge e)
+gori_cache::edge_range (irange &r, edge e, tree name)
 {
-  basic_block pred = e->src;
-  basic_block succ = e->dest;
-  irange block_range;
-  irange edge_range;
-  irange succ_range_on_entry;
+  basic_block src = e->src;
+  irange er, tmp;
+  gimple *s = SSA_NAME_DEF_STMT (name);
+  basic_block def_bb = ((s && gimple_bb (s)) ? gimple_bb (s) :
+					       ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
-  // Look for entry block, DEF block or a block will a filled cache.
-  if (pred == ENTRY_BLOCK_PTR_FOR_FN (cfun))
-    get_tree_range (block_range, name);
-  else if (pred == gimple_bb (SSA_NAME_DEF_STMT (name)))
-    get_tree_range (block_range, name);
-  else if (!m_on_entry.get_bb_range (block_range, name, pred))
-    return false;
-
-  // Otherwise pick up the edge range and intersect it with block.
-  if (outgoing_edge_range_p (edge_range, e, name, &block_range))
-    block_range = edge_range;
+  if (src == def_bb)
+    {
+      // Check to see if the import has a cache_entry, and if it does use that
+      // in an evaluation to get a static starting value.
+      // The import should have a range if the global range is requested
+      // before any other lookups.
+      tree term = terminal_name (name);
+      if (!term || !m_on_entry.get_bb_range (tmp, term, src) ||
+	  !range_from_import (r, name, tmp))
+	r = range_from_ssa (name);
+    }
+  else
+    if (!m_on_entry.get_bb_range (r, name, src))
+      return false;
 
   // Check if pointers have any non-null dereferences.
   // Non-call exceptions mean we could throw in the middle of he block,
   // so just punt for now on those.
-  if (block_range.varying_p () && !cfun->can_throw_non_call_exceptions &&
-      m_non_null.non_null_deref_p (name, pred))
-    range_non_zero (&block_range, TREE_TYPE (name));
+  if (r.varying_p () && m_non_null.non_null_deref_p (name, src) &&
+      !cfun->can_throw_non_call_exceptions)
+    range_non_zero (&r, TREE_TYPE (name));
 
-  // Now pick up the current range on entry to the successor and see if
-  // union with the edge range causes a change.
-  gcc_assert (m_on_entry.get_bb_range (succ_range_on_entry, name, succ));
-  irange new_range = range_union (succ_range_on_entry, block_range);
-
-  if (new_range != succ_range_on_entry)
-    {
-      // If ranges are different, Set new range and mark succ to be visited.
-      m_on_entry.set_bb_range (name, succ, new_range);
-      if (!m_update_list.contains (succ))
-	m_update_list.quick_push (succ);
-    }
+  if (outgoing_edge_range_p (er, e, name, &r))
+    r = er;
   return true;
 }
 
-// See if the cache for NAME may need updating on any outgoing edges of BB.
-
-inline void
-gori_cache::maybe_propagate_block (tree name, basic_block bb)
-{
-  edge_iterator ei;
-  edge e;
-
-  FOR_EACH_EDGE (e, ei, bb->succs)
-    {
-      basic_block dest = e->dest;
-
-      // Only look at edges where the succ has been visited.
-      if (!m_on_entry.bb_range_p (name, dest))
-	continue;
-
-      // Anything in this list ought to have range_on_entry set and
-      // thus return a TRUE.
-      gcc_assert (maybe_propagate_on_edge (name, e));
-    }
-}
+#define DEBUG_CACHE (0 && dump_file)
 
 // If there is anything in the iterative update_list, continue processing NAME
-// until the list of blocks is empty.  Note calls to maybe_propagate_block may
-// add to the current list.
+// until the list of blocks is empty.  
 
 void
 gori_cache::iterative_cache_update (tree name)
 {
-  // Now the update_list queue has all the blocks that have had their entry
-  // ranges "updated" from undefined. Start propagating until nothing
-  // changes.
+  basic_block bb;
+  edge_iterator ei;
+  edge e;
+  irange new_range;
+  irange current_range;
+  irange e_range;
 
+  // Process each block by seeing if it's calculated range on entry is the same
+  // as it's cached value. IF there is a difference, update the cache to 
+  // reflect the new value, and check to see if any successors have cache 
+  // entries which may need to be checked for updates.
+  
   while (m_update_list.length () > 0)
     {
-      basic_block bb = m_update_list.pop ();
-// fprintf (stderr, "FWD visiting block %d\n", bb->index);
-      maybe_propagate_block (name, bb);
+      bb = m_update_list.pop ();
+if (DEBUG_CACHE) fprintf (dump_file, "FWD visiting block %d\n", bb->index);
+
+      gcc_assert (m_on_entry.get_bb_range (current_range, name, bb));
+      // Calculate the "new" range on entry by unioning the pred edges..
+      new_range.set_undefined (TREE_TYPE (name));
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	{
+	  gcc_assert (edge_range (e_range, e, name));
+	  new_range.union_ (e_range);
+	  if (new_range.varying_p ())
+	    break;
+	}
+      // If the range on entry has changed, update it.
+      if (new_range != current_range)
+	{
+if (DEBUG_CACHE) { fprintf (dump_file, "updating range from/to "); current_range.dump (dump_file); new_range.dump (dump_file); }
+	  m_on_entry.set_bb_range (name, bb, new_range);
+	  // Mark each successor that has a range to re-check it's range 
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    if (m_on_entry.bb_range_p (name, e->dest) &&
+		!m_update_list.contains (e->dest))
+	      m_update_list.quick_push (e->dest);
+	}
     }
-// fprintf (stderr, "DONE visiting blocks \n\n");
+if (DEBUG_CACHE) fprintf (dump_file, "DONE visiting blocks \n\n");
 }
 
 // Make sure that the range-on-entry cache for NAME is set for block BB.
@@ -625,12 +633,10 @@ gori_cache::iterative_cache_update (tree name)
 void
 gori_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 {
-  tree type = TREE_TYPE (name);
   edge_iterator ei;
   edge e;
   irange block_result;
   irange undefined;
-  undefined.set_undefined (type);
 
   if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun)
       || bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
@@ -646,32 +652,58 @@ gori_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
   // the range_on_entry cache for.
   m_workback.truncate (0);
   m_workback.quick_push (bb);
+  undefined.set_undefined (TREE_TYPE(name));
   m_on_entry.set_bb_range (name, bb, undefined);
   gcc_checking_assert (m_update_list.length () == 0);
+  gimple *def_stmt = SSA_NAME_DEF_STMT (name);
 
-// fprintf (stderr, "\n");
-// print_generic_expr (stderr, name, TDF_SLIM);
-// fprintf (stderr, " : ");
+if (DEBUG_CACHE) { fprintf (dump_file, "\n"); print_generic_expr (dump_file, name, TDF_SLIM); fprintf (dump_file, " : "); }
 
   while (m_workback.length () > 0)
     {
       basic_block node = m_workback.pop ();
-// fprintf (stderr, "BACK visiting block %d\n", node->index);
+if (DEBUG_CACHE)  fprintf (dump_file, "BACK visiting block %d\n", node->index);
 
       FOR_EACH_EDGE (e, ei, node->preds)
         {
-	  // If this is a propagation edge, dont go to the pred.
-	  if (maybe_propagate_on_edge (name, e))
-	    continue;
-
-	  // If the pred hasn't been visited, add it to the list.
-	  if (!m_on_entry.bb_range_p (name, e->src))
+	  basic_block pred = e->src;
+	  irange r;
+	  // If the pred block is the def block or entry block,  add this BB
+	  // to update list.
+	  if (pred == ENTRY_BLOCK_PTR_FOR_FN (cfun) ||
+	      pred == gimple_bb (def_stmt))
 	    {
-	      m_on_entry.set_bb_range (name, e->src, undefined);
-	      m_workback.quick_push (e->src);
+	      if (!m_update_list.contains (node))
+		m_update_list.quick_push (node);
+	      continue;
 	    }
-	  }
-      }
+
+	  // Regardless of whther we have visited pred or not, if the pred has
+	  // a non-null reference, revisit this block.
+	  if (m_non_null.non_null_deref_p (name, pred))
+	    {
+	      if (!m_update_list.contains (node))
+		m_update_list.quick_push (node);
+	    }
+
+	  // If the pred block already has a range, or if it can contribute
+	  // something new. Ie, the edge generates a range of some sort.
+	  if (m_on_entry.get_bb_range (r, name, pred))
+	    {
+	      if (!r.undefined_p () || has_edge_range_p (e, name))
+	        {
+		  if (!m_update_list.contains (node))
+		    m_update_list.quick_push (node);
+		}
+	      continue;
+	    }
+	    
+	  // If the pred hasn't been visited (has no range), add it to the list.
+	  gcc_checking_assert (!m_on_entry.bb_range_p (name, pred));
+	  m_on_entry.set_bb_range (name, pred, undefined);
+	  m_workback.quick_push (pred);
+	}
+    }
 
   iterative_cache_update (name);
 }

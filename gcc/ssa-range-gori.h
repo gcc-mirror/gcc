@@ -154,6 +154,7 @@ public:
   gori_compute ();
   ~gori_compute ();
 
+  bool has_edge_range_p (edge e, tree name);
   bool outgoing_edge_range_p (irange &r, edge e, tree name,
 			      irange *name_range = NULL);
   bool range_from_import (irange &r, tree name, irange &import_range);

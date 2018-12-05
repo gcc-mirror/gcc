@@ -1017,7 +1017,7 @@ gori_compute::reevaluate_definition (irange &r, tree name, edge e,
 	  // Try reevaluating USE. we have no range on entry for USE.
 	  else if (!reevaluate_definition (use_range, use, e, NULL))
 	    continue;
-	  // Invoke a no-overhead range calculator for the statement so we dont
+	  // Invoke basic range calculator for the statement so we dont
 	  // get any dynamic calls to range_of_expr which could cause another
 	  // iterative evaluation to fill a cache.
 	  ssa_ranger eval;
@@ -1030,6 +1030,12 @@ gori_compute::reevaluate_definition (irange &r, tree name, edge e,
         }
     }
   return false;
+}
+
+bool
+gori_compute::has_edge_range_p (edge e, tree name)
+{
+  return (is_export_p (name, e->src) || def_chain_in_export_p (name, e->src));
 }
 
 // Calculate a range on edge E and return it in R.  Try to evaluate a range

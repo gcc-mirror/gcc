@@ -89,9 +89,8 @@ public:
   void dump_block (FILE *f, basic_block bb);
 
 private:
+  bool edge_range (irange &r, edge e, tree name);
   void fill_block_cache (tree name, basic_block bb, basic_block def_bb);
-  bool maybe_propagate_on_edge (tree name, edge e);
-  void maybe_propagate_block (tree name, basic_block bb);
   void iterative_cache_update (tree name);
 
   block_range_cache m_on_entry;
