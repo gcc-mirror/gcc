@@ -1,6 +1,6 @@
 /* PR tree-optimization/80933 - redundant bzero/bcopy calls not eliminated
    { dg-do compile }
-   { dg-options "-O0 -Wall -fdump-tree-gimple" } */
+   { dg-options "-O1 -Wall -fdump-tree-lower" } */
 
 void f0 (void *dst, const void *src, unsigned n)
 {
@@ -46,9 +46,9 @@ void f6 (void *p)
 /* Verify that calls to bcmp, bcopy, and bzero have all been removed
    and one of each replaced with memcmp, memmove, and memset, respectively.
    The remaining three should be eliminated.
-  { dg-final { scan-tree-dump-not "bcmp|bcopy|bzero" "gimple" } }
-  { dg-final { scan-tree-dump-times "memcmp|memmove|memset" 3 "gimple" } }
+  { dg-final { scan-tree-dump-not "bcmp|bcopy|bzero" "lower" } }
+  { dg-final { scan-tree-dump-times "memcmp|memmove|memset" 3 "lower" } }
 
   Verify that the bcopy to memmove transformation correctly transposed
   the source and destination pointer arguments.
-  { dg-final { scan-tree-dump-times "memmove \\(dst, src" 1 "gimple" } }  */
+  { dg-final { scan-tree-dump-times "memmove \\(dst, src" 1 "lower" } }  */
