@@ -1,3 +1,7 @@
+2018-12-05  Xianmiao Qu  <xianmiao_qu@c-sky.com>
+
+	* config.gcc (csky-*-linux-gnu*): Force .init_array support.
+
 2018-12-05  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (rs6000_function_arg): Only do the special
