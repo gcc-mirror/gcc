@@ -1,3 +1,9 @@
+2018-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/88333
+	* cfgexpand.c (expand_stack_vars): If asan_vec is empty, start with
+	aligning frame offset to ASAN_RED_ZONE_SIZE bytes.
+
 2018-12-05  Xianmiao Qu  <xianmiao_qu@c-sky.com>
 
 	* config.gcc (csky-*-linux-gnu*): Force .init_array support.
