@@ -1,3 +1,9 @@
+2018-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/63184
+	* c-c++-common/pr19807-2.c: New testcase.
+	* c-c++-common/pr19807-3.c: Likewise.
+
 2018-12-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR testsuite/88208
