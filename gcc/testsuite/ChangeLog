@@ -1,3 +1,8 @@
+2018-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/88064
+	* gcc.dg/vect/vect-over-widen-23.c: New test.
+
 2018-12-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* lib/gcc-dg.exp (process-message): Change verbosity level of

@@ -1,3 +1,18 @@
+2018-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/88064
+	* tree-vect-patterns.c (vect_convert_input): Convert the result of
+	an existing cast if it has the right width but the wrong sign.
+	Do not test the signedness of the required result when
+	considering whether to split an existing cast; instead split to
+	a type with the same signedness as the source of the cast, then
+	convert it to the opposite signedness where necessary.
+	(vect_recog_over_widening_pattern): Handle sign changes between
+	the final PLUS_EXPR and the RSHIFT_EXPR.
+	(vect_recog_average_pattern): Use an unsigned operation when
+	truncating an addition, subtraction or multiplication.  Cast the
+	result back to the "real" signedness before promoting.
+
 2018-12-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/86637
