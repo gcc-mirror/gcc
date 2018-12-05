@@ -1,3 +1,8 @@
+2018-12-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/cygming.h (PCC_BITFIELD_TYPE_MATTERS): Remove.
+	(GROUP_BITFIELDS_BY_ALIGN): Ditto.
+
 2018-12-05  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/88064
@@ -56,8 +61,7 @@
 2018-12-04  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/82967
-	* spellcheck.c (selftest::test_suggestions): Add another
-	assertion.
+	* spellcheck.c (selftest::test_suggestions): Add another assertion.
 
 2018-12-04  Martin Sebor  <msebor@redhat.com>
 
@@ -96,8 +100,7 @@
 	PR ipa/88297
 	* ipa-cp.c (create_specialized_node): Track clone counters by
 	node assembler names.
-	(ipcp_driver): Change type of clone_num_suffixes key to const
-	char*.
+	(ipcp_driver): Change type of clone_num_suffixes key to const char*.
 
 2018-12-04  Richard Biener  <rguenther@suse.de>
 
