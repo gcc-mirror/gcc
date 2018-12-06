@@ -1,3 +1,10 @@
+2018-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87598
+	* config/aarch64/aarch64.c (aarch64_print_address_internal): Don't
+	call output_operand_lossage on VOIDmode CONST_INTs.  After
+	output_operand_lossage do return false.
+
 2018-12-06  Richard Biener  <rguenther@suse.de>
 
 	* df-problems.c (df_rd_local_compute): Use bitmap_release.
