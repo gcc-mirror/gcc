@@ -1,5 +1,10 @@
+2018-12-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* dwarf2out.c (field_byte_offset): Remove
+	#ifdef PCC_BITFIELD_TYPE_MATTERS check.
+
 2018-12-05  Richard Biener  <rguenther@suse.de>
-	    Martin Sebor <msebor@redhat.com>
+	    Martin Sebor  <msebor@redhat.com>
 
 	PR c/87028
 	* calls.c (get_attr_nonstring_decl): Avoid setting *REF to
