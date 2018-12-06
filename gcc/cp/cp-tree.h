@@ -6145,6 +6145,7 @@ extern location_t get_fndecl_argument_location  (tree, int);
 extern void complain_about_bad_argument	(location_t arg_loc,
 						 tree from_type, tree to_type,
 						 tree fndecl, int parmnum);
+extern void maybe_inform_about_fndecl_for_bogus_argument_init (tree, int);
 
 
 /* A class for recording information about access failures (e.g. private
