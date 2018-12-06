@@ -1,3 +1,8 @@
+2018-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87506
+	* g++.dg/cpp0x/constexpr-87506.C: New test.
+
 2018-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/parse/bitfield7.C: New.
@@ -5,7 +10,7 @@
 	* g++.dg/parse/bitfield1.C: Likewise.
 	* g++.dg/parse/bitfield2.C: Likewise.
 
-2018-12-06  Alexandre Oliva <aoliva@redhat.com>
+2018-12-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/86747
 	* g++.dg/pr86747.C: New.
