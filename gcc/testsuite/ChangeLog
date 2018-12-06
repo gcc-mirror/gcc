@@ -1,5 +1,8 @@
 2018-12-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/85770
+	* gcc.target/i386/pr85770.c: Require int128 effective target.
+
 	PR fortran/88377
 	* gfortran.dg/gomp/pr88377.f90: New test.
 
