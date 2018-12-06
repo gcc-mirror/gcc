@@ -1189,11 +1189,8 @@ type_throw_all_p (const_tree type)
 tree
 build_noexcept_spec (tree expr, tsubst_flags_t complain)
 {
-  /* This isn't part of the signature, so don't bother trying to evaluate
-     it until instantiation.  */
   if (TREE_CODE (expr) != DEFERRED_NOEXCEPT
-      && (!processing_template_decl
-	  || (flag_noexcept_type && !value_dependent_expression_p (expr))))
+      && !value_dependent_expression_p (expr))
     {
       expr = perform_implicit_conversion_flags (boolean_type_node, expr,
 						complain,
