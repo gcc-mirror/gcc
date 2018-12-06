@@ -1,3 +1,11 @@
+2018-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* class.c (check_bitfield_decl): In error message about non-integral
+	type print the type itself too.
+	* decl.c (grokdeclarator): Do not ICE on unnamed bit-fields declared
+	friends; when calling build_decl for a FIELD_DECL possibly pass the
+	declarator->id_loc.
+
 2018-12-06  Alexandre Oliva <aoliva@redhat.com>
 
 	PR c++/86747
