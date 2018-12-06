@@ -1,3 +1,8 @@
+2018-12-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88373 - wrong parse error with ~.
+	* g++.dg/cpp2a/fn-template19.C: New test.
+
 2018-12-06  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.dg/vect/vect-over-widen-23.c: Remove unwanted line.

@@ -16579,7 +16579,8 @@ cp_parser_template_name (cp_parser* parser,
       if (!found
 	  && (cxx_dialect > cxx17)
 	  && !scoped_p
-	  && cp_lexer_next_token_is (parser->lexer, CPP_LESS))
+	  && cp_lexer_next_token_is (parser->lexer, CPP_LESS)
+	  && tag_type == none_type)
 	{
 	  /* [temp.names] says "A name is also considered to refer to a template
 	     if it is an unqualified-id followed by a < and name lookup finds
