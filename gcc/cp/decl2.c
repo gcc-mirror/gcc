@@ -1016,18 +1016,21 @@ grokbitfield (const cp_declarator *declarator,
 
   if (value == error_mark_node)
     return NULL_TREE; /* friends went bad.  */
-  if (TREE_TYPE (value) == error_mark_node)
+
+  tree type = TREE_TYPE (value);
+  if (type == error_mark_node)
     return value;
 
   /* Pass friendly classes back.  */
   if (VOID_TYPE_P (value))
     return void_type_node;
 
-  if (!INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (value))
-      && (INDIRECT_TYPE_P (value)
-          || !dependent_type_p (TREE_TYPE (value))))
+  if (!INTEGRAL_OR_ENUMERATION_TYPE_P (type)
+      && (INDIRECT_TYPE_P (type) || !dependent_type_p (type)))
     {
-      error ("bit-field %qD with non-integral type", value);
+      error_at (DECL_SOURCE_LOCATION (value),
+		"bit-field %qD with non-integral type %qT",
+		value, type);
       return error_mark_node;
     }
 
@@ -1048,7 +1051,7 @@ grokbitfield (const cp_declarator *declarator,
       return NULL_TREE;
     }
 
-  if (width && TYPE_WARN_IF_NOT_ALIGN (TREE_TYPE (value)))
+  if (width && TYPE_WARN_IF_NOT_ALIGN (type))
     {
       error ("cannot declare bit-field %qD with %<warn_if_not_aligned%> type",
 	     DECL_NAME (value));

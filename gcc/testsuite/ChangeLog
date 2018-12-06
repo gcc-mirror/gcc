@@ -1,3 +1,8 @@
+2018-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/parse/bitfield6b.C: New.
+	* g++.dg/parse/bitfield3.C: Test location and type.
+
 2018-12-06  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* lib/c-compat.exp (compat-use-alt-compiler):
