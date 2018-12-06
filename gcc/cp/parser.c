@@ -19592,6 +19592,7 @@ cp_parser_using_directive (cp_parser* parser)
 
   asm-qualifier:
     volatile
+    inline
     goto
 
   asm-qualifier-list:
@@ -19632,6 +19633,7 @@ cp_parser_asm_definition (cp_parser* parser)
   bool extended_p = false;
   bool invalid_inputs_p = false;
   bool invalid_outputs_p = false;
+  bool inline_p = false;
   bool goto_p = false;
   required_token missing = RT_NONE;
 
@@ -19655,6 +19657,17 @@ cp_parser_asm_definition (cp_parser* parser)
 	    {
 	      /* Remember that we saw the `volatile' keyword.  */
 	      volatile_p = true;
+	      /* Consume the token.  */
+	      cp_lexer_consume_token (parser->lexer);
+	    }
+	  else
+	    done = true;
+	  break;
+	case RID_INLINE:
+	  if (!inline_p && parser->in_function_body)
+	    {
+	      /* Remember that we saw the `inline' keyword.  */
+	      inline_p = true;
 	      /* Consume the token.  */
 	      cp_lexer_consume_token (parser->lexer);
 	    }
@@ -19802,7 +19815,7 @@ cp_parser_asm_definition (cp_parser* parser)
       if (parser->in_function_body)
 	{
 	  asm_stmt = finish_asm_stmt (volatile_p, string, outputs,
-				      inputs, clobbers, labels);
+				      inputs, clobbers, labels, inline_p);
 	  /* If the extended syntax was not used, mark the ASM_EXPR.  */
 	  if (!extended_p)
 	    {

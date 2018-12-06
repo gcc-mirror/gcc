@@ -1,5 +1,13 @@
 2018-12-06  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* c-parser.c (c_parser_asm_statement): Detect the inline keyword
+	after asm.  Pass a flag for it to build_asm_expr.
+	* c-tree.h (build_asm_expr): Update declaration.
+	* c-typeck.c (build_asm_stmt): Add is_inline parameter.  Use it to
+	set ASM_INLINE_P.
+
+2018-12-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	PR inline-asm/55681
 	* c-parser.c (c_parser_asm_statement): Update grammar.  Allow any
 	combination of volatile and goto, in any order, without repetitions.
