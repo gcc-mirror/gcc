@@ -1,3 +1,12 @@
+2018-12-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88136 - -Wdeprecated-copy false positives
+	* class.c (classtype_has_depr_implicit_copy): Rename from
+	classtype_has_user_copy_or_dtor.
+	* method.c (lazily_declare_fn): Adjust.
+	* decl2.c (cp_warn_deprecated_use): Refer to -Wdeprecated-copy-dtor
+	if deprecation is due to a destructor.
+
 2018-12-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88373 - wrong parse error with ~.

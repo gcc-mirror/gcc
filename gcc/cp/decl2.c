@@ -5298,18 +5298,23 @@ cp_warn_deprecated_use (tree decl, tsubst_flags_t complain)
       && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
       && copy_fn_p (decl))
     {
-      auto_diagnostic_group d;
-      /* Don't warn about system library classes (c++/86342).  */
-      if (!DECL_IN_SYSTEM_HEADER (decl))
-	warned = warning (OPT_Wdeprecated_copy,
-			  "implicitly-declared %qD is deprecated", decl);
-      if (warned)
+      if (warn_deprecated_copy
+	  /* Don't warn about system library classes (c++/86342).  */
+	  && (!DECL_IN_SYSTEM_HEADER (decl)
+	      || global_dc->dc_warn_system_headers))
 	{
+	  auto_diagnostic_group d;
 	  tree ctx = DECL_CONTEXT (decl);
-	  tree other = classtype_has_user_copy_or_dtor (ctx);
-	  inform (DECL_SOURCE_LOCATION (other),
-		  "because %qT has user-provided %qD",
-		  ctx, other);
+	  tree other = classtype_has_depr_implicit_copy (ctx);
+	  int opt = (DECL_DESTRUCTOR_P (other)
+		     ? OPT_Wdeprecated_copy_dtor
+		     : OPT_Wdeprecated_copy);
+	  warned = warning (opt, "implicitly-declared %qD is deprecated",
+			    decl);
+	  if (warned)
+	    inform (DECL_SOURCE_LOCATION (other),
+		    "because %qT has user-provided %qD",
+		    ctx, other);
 	}
     }
   else

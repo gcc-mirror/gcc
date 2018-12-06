@@ -6,7 +6,7 @@
    of this International Standard, these implicit definitions could become
    deleted (11.4).  */
 
-// { dg-additional-options -Wdeprecated-copy }
+// { dg-additional-options -Wdeprecated-copy-dtor }
 
 struct X
 {

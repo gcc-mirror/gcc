@@ -5233,7 +5233,7 @@ classtype_has_non_deleted_move_ctor (tree t)
    operator, or destructor, returns that function.  Otherwise, null.  */
 
 tree
-classtype_has_user_copy_or_dtor (tree t)
+classtype_has_depr_implicit_copy (tree t)
 {
   if (!CLASSTYPE_LAZY_COPY_CTOR (t))
     for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
