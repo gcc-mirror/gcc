@@ -1,3 +1,14 @@
+2018-12-06  Jonathan Wakely  <jwakely@redhat.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR libstdc++/64883
+	* testsuite/17_intro/headers/c++1998/all_attributes.cc: Don't test
+	always_inline on Darwin.
+	* testsuite/17_intro/headers/c++2011/all_attributes.cc: Likewise.
+	* testsuite/17_intro/headers/c++2014/all_attributes.cc: Likewise.
+	* testsuite/17_intro/headers/c++2017/all_attributes.cc: Likewise.
+	* testsuite/17_intro/headers/c++2020/all_attributes.cc: Likewise.
+
 2018-12-03  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR libstdc++/88341 - Complex norm doesn't compile with C++11
