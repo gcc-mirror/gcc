@@ -1,3 +1,10 @@
+2018-12-06  Jeff Law  <law@redhat.com>
+
+	PR testsuite/86540
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Skip the post switch conversion
+	tests on aarch64.
+	* gcc.dg/tree-ssa/pr77445-2.c: Similarly.
+ 
 2018-12-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/85110
