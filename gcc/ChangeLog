@@ -1,3 +1,11 @@
+2018-12-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/88282
+	* ira.c (ira_init_register_move_cost): Use info from
+	hard_regno_mode_ok instead of contains_reg_of_mode.
+	* ira-costs.c (contains_reg_of_mode): Don't use cost from bigger
+	hard register class for some fixed hard registers.
+
 2018-12-06  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* doc/extend.texi (Using Assembly Language with C): Document asm inline.

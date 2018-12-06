@@ -1323,14 +1323,6 @@ record_operand_costs (rtx_insn *insn, enum reg_class *pref)
 	  move_costs = ira_register_move_cost[mode];
 	  hard_reg_class = REGNO_REG_CLASS (other_regno);
 	  bigger_hard_reg_class = ira_pressure_class_translate[hard_reg_class];
-	  if (bigger_hard_reg_class == NO_REGS
-	      && (other_regno == STACK_POINTER_REGNUM
-#ifdef STATIC_CHAIN_REGNUM
-		  || other_regno == STATIC_CHAIN_REGNUM
-#endif
-		  || other_regno == FRAME_POINTER_REGNUM
-		  || other_regno == HARD_FRAME_POINTER_REGNUM))
-	    bigger_hard_reg_class = GENERAL_REGS;
 	  /* Target code may return any cost for mode which does not
 	     fit the the hard reg class (e.g. DImode for AREG on
 	     i386).  Check this and use a bigger class to get the
@@ -1345,17 +1337,6 @@ record_operand_costs (rtx_insn *insn, enum reg_class *pref)
 	      cost = (i == 0
 		      ? move_costs[hard_reg_class][rclass]
 		      : move_costs[rclass][hard_reg_class]);
-	      /* Target code might define wrong big costs for smaller
-		 reg classes or reg classes containing only fixed hard
-		 regs.  Try a bigger class.  */
-	      if (bigger_hard_reg_class != hard_reg_class)
-		{
-		  int cost2 = (i == 0
-			       ? move_costs[bigger_hard_reg_class][rclass]
-			       : move_costs[rclass][bigger_hard_reg_class]);
-		  if (cost2 < cost)
-		    cost = cost2;
-		}
 	      
 	      op_costs[i]->cost[k] = cost * frequency;
 	      /* If we have assigned a class to this allocno in our
