@@ -1,5 +1,9 @@
 2018-12-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/85593
+	* final.c (rest_of_handle_final): Don't call collect_fn_hard_reg_usage
+	for functions with naked attribute.
+
 	PR c/88367
 	* tree-vrp.c (extract_range_from_binary_expr): For POINTER_PLUS_EXPR
 	with -fno-delete-null-pointer-checks, set_nonnull only if the pointer

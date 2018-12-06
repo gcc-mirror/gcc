@@ -1,5 +1,8 @@
 2018-12-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/85593
+	* gcc.target/i386/pr85593.c: New test.
+
 	PR rtl-optimization/85770
 	* gcc.target/i386/pr85770.c: Require int128 effective target.
 
