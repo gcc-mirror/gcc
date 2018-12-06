@@ -19590,22 +19590,34 @@ cp_parser_using_directive (cp_parser* parser)
 
 /* Parse an asm-definition.
 
+  asm-qualifier:
+    volatile
+    goto
+
+  asm-qualifier-list:
+    asm-qualifier
+    asm-qualifier-list asm-qualifier
+
    asm-definition:
      asm ( string-literal ) ;
 
    GNU Extension:
 
    asm-definition:
-     asm volatile [opt] ( string-literal ) ;
-     asm volatile [opt] ( string-literal : asm-operand-list [opt] ) ;
-     asm volatile [opt] ( string-literal : asm-operand-list [opt]
-			  : asm-operand-list [opt] ) ;
-     asm volatile [opt] ( string-literal : asm-operand-list [opt]
-			  : asm-operand-list [opt]
+     asm asm-qualifier-list [opt] ( string-literal ) ;
+     asm asm-qualifier-list [opt] ( string-literal : asm-operand-list [opt] ) ;
+     asm asm-qualifier-list [opt] ( string-literal : asm-operand-list [opt]
+				    : asm-operand-list [opt] ) ;
+     asm asm-qualifier-list [opt] ( string-literal : asm-operand-list [opt]
+				    : asm-operand-list [opt]
 			  : asm-clobber-list [opt] ) ;
-     asm volatile [opt] goto ( string-literal : : asm-operand-list [opt]
-			       : asm-clobber-list [opt]
-			       : asm-goto-list ) ;  */
+     asm asm-qualifier-list [opt] ( string-literal : : asm-operand-list [opt]
+				    : asm-clobber-list [opt]
+				    : asm-goto-list ) ;
+
+  The form with asm-goto-list is valid if and only if the asm-qualifier-list
+  contains goto, and is the only allowed form in that case.  No duplicates are
+  allowed in an asm-qualifier-list.  */
 
 static void
 cp_parser_asm_definition (cp_parser* parser)
@@ -19634,23 +19646,36 @@ cp_parser_asm_definition (cp_parser* parser)
     }
 
   /* See if the next token is `volatile'.  */
-  if (cp_parser_allow_gnu_extensions_p (parser)
-      && cp_lexer_next_token_is_keyword (parser->lexer, RID_VOLATILE))
-    {
-      /* Remember that we saw the `volatile' keyword.  */
-      volatile_p = true;
-      /* Consume the token.  */
-      cp_lexer_consume_token (parser->lexer);
-    }
-  if (cp_parser_allow_gnu_extensions_p (parser)
-      && parser->in_function_body
-      && cp_lexer_next_token_is_keyword (parser->lexer, RID_GOTO))
-    {
-      /* Remember that we saw the `goto' keyword.  */
-      goto_p = true;
-      /* Consume the token.  */
-      cp_lexer_consume_token (parser->lexer);
-    }
+  if (cp_parser_allow_gnu_extensions_p (parser))
+    for (bool done = false; !done ; )
+      switch (cp_lexer_peek_token (parser->lexer)->keyword)
+	{
+	case RID_VOLATILE:
+	  if (!volatile_p)
+	    {
+	      /* Remember that we saw the `volatile' keyword.  */
+	      volatile_p = true;
+	      /* Consume the token.  */
+	      cp_lexer_consume_token (parser->lexer);
+	    }
+	  else
+	    done = true;
+	  break;
+	case RID_GOTO:
+	  if (!goto_p && parser->in_function_body)
+	    {
+	      /* Remember that we saw the `goto' keyword.  */
+	      goto_p = true;
+	      /* Consume the token.  */
+	      cp_lexer_consume_token (parser->lexer);
+	    }
+	  else
+	    done = true;
+	  break;
+	default:
+	  done = true;
+	}
+
   /* Look for the opening `('.  */
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
     return;

@@ -1,3 +1,10 @@
+2018-12-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR inline-asm/55681
+	* gcc.dg/asm-qual-1.c: Test that "const" and "restrict" are refused.
+	* gcc.dg/asm-qual-2.c: New test, test that asm-qualifiers are allowed
+	in any order, but that duplicates are not allowed.
+
 2018-12-06  Jeff Law  <law@redhat.com>
 
 	PR testsuite/86540

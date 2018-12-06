@@ -1,3 +1,9 @@
+2018-12-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR inline-asm/55681
+	* doc/extend.texi (Basic Asm): Update grammar.
+	(Extended Asm): Update grammar.
+
 2018-12-06  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/78444
