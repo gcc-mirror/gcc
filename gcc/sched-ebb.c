@@ -588,15 +588,14 @@ schedule_ebbs_init (void)
   compute_bb_for_insn ();
 
   /* Initialize DONT_CALC_DEPS and ebb-{start, end} markers.  */
-  bitmap_initialize (&dont_calc_deps, 0);
-  bitmap_clear (&dont_calc_deps);
+  bitmap_initialize (&dont_calc_deps, &bitmap_default_obstack);
 }
 
 /* Perform cleanups after scheduling using schedules_ebbs or schedule_ebb.  */
 void
 schedule_ebbs_finish (void)
 {
-  bitmap_clear (&dont_calc_deps);
+  bitmap_release (&dont_calc_deps);
 
   /* Reposition the prologue and epilogue notes in case we moved the
      prologue/epilogue insns.  */

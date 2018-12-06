@@ -1,5 +1,26 @@
 2018-12-06  Richard Biener  <rguenther@suse.de>
 
+	* df-problems.c (df_rd_local_compute): Use bitmap_release.
+	(df_live_free): Likewise.
+	(df_md_local_compute): Likewise.
+	(df_md_free): Release df_md_scratch bitmap.
+	* loop-invariant.c (calculate_loop_reg_pressure): Use
+	bitmap_release.
+	* sched-deps.c (true_dependency_cache, output_dependency_cache,
+	anti_dependency_cache, control_dependency_cache,
+	spec_dependency_cache): Use bitmap instead of bitmap_head *.
+	* sched-ebb.c (schedule_ebbs_init): Initialize non-GTY
+	dont_calc_deps as bitmap allocated from obstack not GC.
+	(schedule_ebbs_finish): Use bitmap_release.
+	* sched-rgn.c (schedule_insns): Initialize non-GTY
+	not_in_df as bitmap allocated from obstack not GC.
+	Use bitmap_release.
+	* sel-sched.c (_forced_ebb_heads): Remove premature optimization.
+	(sel_region_init): Allocate forced_ebb_heads.
+	(sel_region_finish): Free forced_ebb_heads.
+
+2018-12-06  Richard Biener  <rguenther@suse.de>
+
 	* bitmap.c (bitmap_head::crashme): Define.
 	* bitmap.h (bitmap_head): Add constexpr default constructor
 	poisoning the obstack member.
