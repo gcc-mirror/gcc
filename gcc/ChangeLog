@@ -1,3 +1,8 @@
+2018-12-06  Alexandre Oliva <aoliva@redhat.com>
+
+	* cselib.c (cselib_record_sets): Skip strict low part sets
+	with NULL src_elt.
+
 2018-12-06  Paul A. Clarke  <pc@us.ibm.com>
 
 	PR target/88316
