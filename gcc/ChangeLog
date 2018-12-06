@@ -1,6 +1,12 @@
 2018-12-06  Paul A. Clarke  <pc@us.ibm.com>
 
 	PR target/88316
+	* config/rs6000/smmintrin.h: New file.
+	* config.gcc: Add smmintrin.h to extra_headers for powerpc*-*-*.
+
+2018-12-06  Paul A. Clarke  <pc@us.ibm.com>
+
+	PR target/88316
 	* config/rs6000/mmintrin.h (_mm_unpackhi_pi8): Fix for big-endian.
 	(_mm_unpacklo_pi8): Likewise.
 	(_mm_mulhi_pi16): Likewise.

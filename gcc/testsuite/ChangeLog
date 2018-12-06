@@ -1,3 +1,17 @@
+2018-12-06  Paul A. Clarke  <pc@us.ibm.com>
+
+	PR target/88316
+	* gcc.target/powerpc/mmx-packssdw-1.c: Fixes for big-endian.
+	* gcc.target/powerpc/mmx-packsswb-1.c: Likewise.
+	* gcc.target/powerpc/mmx-packuswb-1.c: Likewise.
+	* gcc.target/powerpc/mmx-pmulhw-1.c: Likewise.
+	* gcc.target/powerpc/sse-cvtpi32x2ps-1.c: Likewise.
+	* gcc.target/powerpc/sse-cvtpu16ps-1.c: Likewise.
+	* gcc.target/powerpc/sse-cvtss2si-1.c: Likewise.
+	* gcc.target/powerpc/sse-cvtss2si-2.c: Likewise.
+	* gcc.target/powerpc/sse2-pshufhw-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pshuflw-1.c: Likewise.
+
 2018-12-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88373 - wrong parse error with ~.
