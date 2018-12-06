@@ -1,3 +1,14 @@
+2018-12-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2018-08-16  Iain Sandoe <iain@sandoe.co.uk>
+
+	PR testsuite/78544
+	* gcc.dg/tree-prof/section-attr-1.c: Add Darwin-specific section
+	attributes and matching.
+	* gcc.dg/tree-prof/section-attr-2.c: Likewise.
+	* gcc.dg/tree-prof/section-attr-3.c: Likewise.
+
 2018-12-05  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
