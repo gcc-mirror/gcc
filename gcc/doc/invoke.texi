@@ -228,7 +228,8 @@ in the following sections.
 -fvisibility-ms-compat @gol
 -fext-numeric-literals @gol
 -Wabi=@var{n}  -Wabi-tag  -Wconversion-null  -Wctor-dtor-privacy @gol
--Wdelete-non-virtual-dtor  -Wdeprecated-copy  -Wliteral-suffix @gol
+-Wdelete-non-virtual-dtor  -Wdeprecated-copy  -Wdeprecated-copy-dtor @gol
+-Wliteral-suffix @gol
 -Wmultiple-inheritance  -Wno-init-list-lifetime @gol
 -Wnamespaces  -Wnarrowing @gol
 -Wpessimizing-move  -Wredundant-move @gol
@@ -3000,8 +3001,10 @@ by @option{-Wall}.
 @opindex Wno-deprecated-copy
 Warn that the implicit declaration of a copy constructor or copy
 assignment operator is deprecated if the class has a user-provided
-copy constructor, copy assignment operator, or destructor, in C++11
-and up.  This warning is enabled by @option{-Wall}.
+copy constructor or copy assignment operator, in C++11 and up.  This
+warning is enabled by @option{-Wextra}.  With
+@option{-Wdeprecated-copy-dtor}, also deprecate if the class has a
+user-provided destructor.
 
 @item -Wno-init-list-lifetime @r{(C++ and Objective-C++ only)}
 @opindex Winit-list-lifetime
@@ -4407,6 +4410,7 @@ name is still supported, but the newer name is more descriptive.)
 
 @gccoptlist{-Wclobbered  @gol
 -Wcast-function-type  @gol
+-Wdeprecated-copy @r{(C++ only)} @gol
 -Wempty-body  @gol
 -Wignored-qualifiers @gol
 -Wimplicit-fallthrough=3 @gol
