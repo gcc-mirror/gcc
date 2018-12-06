@@ -1,3 +1,7 @@
+2018-12-06  Release Manager
+
+	* GCC 7.4.0 released.
+
 2018-11-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/misc.c (gnat_init_gcc_eh): Do not override the switch
