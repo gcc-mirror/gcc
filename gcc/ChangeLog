@@ -1,5 +1,11 @@
 2018-12-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/85726
+	* generic-match-head.c (optimize_successive_divisions_p): New function.
+	* gimple-match-head.c (optimize_successive_divisions_p): Likewise.
+	* match.pd: Don't combine successive divisions if they aren't exact
+	and optimize_successive_divisions_p is false.
+
 	PR fortran/88304
 	* tree-nested.c (convert_nonlocal_reference_stmt): Remove clobbers
 	for non-local automatic decls.
