@@ -1,3 +1,9 @@
+2018-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/88304
+	* tree-nested.c (convert_nonlocal_reference_stmt): Remove clobbers
+	for non-local automatic decls.
+
 2018-12-05  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/aix72.h (ASM_DEFAULT_SPEC): Match Power7 processor
