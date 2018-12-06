@@ -10327,10 +10327,12 @@ build_asm_stmt (tree cv_qualifier, tree args)
    some INPUTS, and some CLOBBERS.  The latter three may be NULL.
    SIMPLE indicates whether there was anything at all after the
    string in the asm expression -- asm("blah") and asm("blah" : )
-   are subtly different.  We use a ASM_EXPR node to represent this.  */
+   are subtly different.  We use a ASM_EXPR node to represent this.
+   LOC is the location of the asm, and IS_INLINE says whether this
+   is asm inline.  */
 tree
 build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
-		tree clobbers, tree labels, bool simple)
+		tree clobbers, tree labels, bool simple, bool is_inline)
 {
   tree tail;
   tree args;
@@ -10448,6 +10450,7 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
      as volatile.  */
   ASM_INPUT_P (args) = simple;
   ASM_VOLATILE_P (args) = (noutputs == 0);
+  ASM_INLINE_P (args) = is_inline;
 
   return args;
 }

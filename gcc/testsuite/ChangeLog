@@ -1,5 +1,10 @@
 2018-12-06  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* c-c++-common/torture/asm-inline.c: New testcase.
+	* gcc.dg/asm-qual-2.c: Test asm inline, too.
+
+2018-12-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	PR inline-asm/55681
 	* gcc.dg/asm-qual-1.c: Test that "const" and "restrict" are refused.
 	* gcc.dg/asm-qual-2.c: New test, test that asm-qualifiers are allowed

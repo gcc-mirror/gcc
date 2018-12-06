@@ -6329,11 +6329,12 @@ c_parser_for_statement (c_parser *parser, bool ivdep, unsigned short unroll,
 }
 
 /* Parse an asm statement, a GNU extension.  This is a full-blown asm
-   statement with inputs, outputs, clobbers, and volatile and goto tag
-   allowed.
+   statement with inputs, outputs, clobbers, and volatile, inline, and goto
+   tags allowed.
 
    asm-qualifier:
      volatile
+     inline
      goto
 
    asm-qualifier-list:
@@ -6360,7 +6361,7 @@ static tree
 c_parser_asm_statement (c_parser *parser)
 {
   tree quals, str, outputs, inputs, clobbers, labels, ret;
-  bool simple, is_volatile, is_goto;
+  bool simple, is_volatile, is_inline, is_goto;
   location_t asm_loc = c_parser_peek_token (parser)->location;
   int section, nsections;
 
@@ -6369,6 +6370,7 @@ c_parser_asm_statement (c_parser *parser)
 
   quals = NULL_TREE;
   is_volatile = false;
+  is_inline = false;
   is_goto = false;
   for (bool done = false; !done; )
     switch (c_parser_peek_token (parser)->keyword)
@@ -6377,6 +6379,16 @@ c_parser_asm_statement (c_parser *parser)
 	if (!is_volatile)
 	  {
 	    is_volatile = true;
+	    quals = c_parser_peek_token (parser)->value;
+	    c_parser_consume_token (parser);
+	  }
+	else
+	  done = true;
+	break;
+      case RID_INLINE:
+	if (!is_inline)
+	  {
+	    is_inline = true;
 	    quals = c_parser_peek_token (parser)->value;
 	    c_parser_consume_token (parser);
 	  }
@@ -6471,7 +6483,8 @@ c_parser_asm_statement (c_parser *parser)
     c_parser_skip_to_end_of_block_or_statement (parser);
 
   ret = build_asm_stmt (quals, build_asm_expr (asm_loc, str, outputs, inputs,
-					       clobbers, labels, simple));
+					       clobbers, labels, simple,
+					       is_inline));
 
  error:
   parser->lex_untranslated_string = false;
