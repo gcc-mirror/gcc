@@ -93,7 +93,7 @@ do {									\
 -many"
 
 #undef	ASM_DEFAULT_SPEC
-#define ASM_DEFAULT_SPEC "-mpwr4"
+#define ASM_DEFAULT_SPEC "-mpwr7"
 
 #undef TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()     \
