@@ -1,3 +1,9 @@
+2018-12-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/c-compat.exp (compat-use-alt-compiler):
+	Handle -fno-diagnostics-show-line-numbers.
+	(compat_setup_dfp): Likewise.
+
 2018-12-05  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/85770
