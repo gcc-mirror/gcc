@@ -1,4 +1,16 @@
-2018-12-06  Alexandre Oliva <aoliva@redhat.com>
+2018-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/88367
+	* tree-vrp.c (extract_range_from_binary_expr): For POINTER_PLUS_EXPR
+	with -fno-delete-null-pointer-checks, set_nonnull only if the pointer
+	is non-NULL and offset is known to have most significant bit clear.
+	* vr-values.c (vr_values::vrp_stmt_computes_nonzero): For ADDR_EXPR
+	of MEM_EXPR, return true if the MEM_EXPR has non-zero offset with
+	most significant bit clear.  If offset does have most significant bit
+	set and -fno-delete-null-pointer-checks, don't return true even if
+	the base pointer is non-NULL.
+
+2018-12-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	* cselib.c (cselib_record_sets): Skip strict low part sets
 	with NULL src_elt.

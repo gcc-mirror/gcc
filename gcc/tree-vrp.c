@@ -1673,9 +1673,26 @@ extract_range_from_binary_expr (value_range_base *vr,
       else if (code == POINTER_PLUS_EXPR)
 	{
 	  /* For pointer types, we are really only interested in asserting
-	     whether the expression evaluates to non-NULL.  */
-	  if (!range_includes_zero_p (&vr0)
-	      || !range_includes_zero_p (&vr1))
+	     whether the expression evaluates to non-NULL.
+	     With -fno-delete-null-pointer-checks we need to be more
+	     conservative.  As some object might reside at address 0,
+	     then some offset could be added to it and the same offset
+	     subtracted again and the result would be NULL.
+	     E.g.
+	     static int a[12]; where &a[0] is NULL and
+	     ptr = &a[6];
+	     ptr -= 6;
+	     ptr will be NULL here, even when there is POINTER_PLUS_EXPR
+	     where the first range doesn't include zero and the second one
+	     doesn't either.  As the second operand is sizetype (unsigned),
+	     consider all ranges where the MSB could be set as possible
+	     subtractions where the result might be NULL.  */
+	  if ((!range_includes_zero_p (&vr0)
+	       || !range_includes_zero_p (&vr1))
+	      && !TYPE_OVERFLOW_WRAPS (expr_type)
+	      && (flag_delete_null_pointer_checks
+		  || (range_int_cst_p (&vr1)
+		      && !tree_int_cst_sign_bit (vr1.max ()))))
 	    vr->set_nonnull (expr_type);
 	  else if (range_is_null (&vr0) && range_is_null (&vr1))
 	    vr->set_null (expr_type);
