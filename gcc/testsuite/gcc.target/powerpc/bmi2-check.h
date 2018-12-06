@@ -13,22 +13,10 @@ do_test (void)
 int
 main ()
 {
-#ifdef __BUILTIN_CPU_SUPPORTS__
-  /* The BMI2 test for pext test requires the Bit Permute doubleword
-     (bpermd) instruction added in PowerISA 2.06 along with the VSX
-     facility.  So we can test for arch_2_06.  */
-  if ( __builtin_cpu_supports ("arch_2_06") )
-    {
-      do_test ();
+  do_test ();
 #ifdef DEBUG
-      printf ("PASSED\n");
+  printf ("PASSED\n");
 #endif
-    }
-#ifdef DEBUG
-  else
-    printf ("SKIPPED\n");
-#endif
-#endif /* __BUILTIN_CPU_SUPPORTS__ */
   return 0;
 }
 

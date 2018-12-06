@@ -1,6 +1,17 @@
 2018-12-06  Paul A. Clarke  <pc@us.ibm.com>
 
 	PR target/88316
+	* gcc.target/powerpc/bmi-check.h: Remove test for
+	__BUILTIN_CPU_SUPPORTS__, thereby enabling test code to run.
+	* gcc.target/powerpc/bmi2-check.h: Likewise.
+	* gcc.target/powerpc/mmx-check.h: Likewise.
+	* gcc.target/powerpc/sse-check.h: Likewise.
+	* gcc.target/powerpc/sse2-check.h: Likewise.
+	* gcc.target/powerpc/sse3-check.h: Likewise.
+
+2018-12-06  Paul A. Clarke  <pc@us.ibm.com>
+
+	PR target/88316
 	* gcc.target/powerpc/mmx-packssdw-1.c: Fixes for big-endian.
 	* gcc.target/powerpc/mmx-packsswb-1.c: Likewise.
 	* gcc.target/powerpc/mmx-packuswb-1.c: Likewise.
