@@ -1,3 +1,7 @@
+2018-12-06  Richard Biener  <rguenther@suse.de>
+
+	* BASE-VER: Increment to 7.4.1.
+
 2018-12-06  Release Manager
 
 	* GCC 7.4.0 released.
