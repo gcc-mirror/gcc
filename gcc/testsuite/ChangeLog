@@ -1,3 +1,7 @@
+2018-12-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/vect-over-widen-23.c: Remove unwanted line.
+
 2018-12-06  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* c-c++-common/torture/asm-inline.c: New testcase.

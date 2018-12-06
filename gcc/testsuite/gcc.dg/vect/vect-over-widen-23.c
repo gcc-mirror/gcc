@@ -25,7 +25,6 @@ foo ()
     }
 }
 
-/* { dg-final { scan-tree-dump-times "vect_recog_widen_shift_pattern: detected" 2 "vect" { target vect_widen_shift } } } */
 /* { dg-final { scan-tree-dump {vect_recog_over_widening_pattern: detected:[^\n]* \+} "vect" } } */
 /* { dg-final { scan-tree-dump {VIEW_CONVERT_EXPR<vector[^ ]* unsigned} "vect" } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
