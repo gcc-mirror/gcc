@@ -1,5 +1,8 @@
 2018-12-06  Alexandre Oliva <aoliva@redhat.com>
 
+	PR c++/86747
+	* pt.c (tsubst_friend_class): Enter tsubsted class context.
+
 	PR c++/86397
 	* except.c (build_noexcept_spec): Resolve nondependent
 	expressions.
