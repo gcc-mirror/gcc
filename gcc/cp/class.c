@@ -3218,7 +3218,8 @@ check_bitfield_decl (tree field)
   /* Detect invalid bit-field type.  */
   if (!INTEGRAL_OR_ENUMERATION_TYPE_P (type))
     {
-      error ("bit-field %q+#D with non-integral type", field);
+      error_at (DECL_SOURCE_LOCATION (field),
+		"bit-field %q#D with non-integral type %qT", field, type);
       w = error_mark_node;
     }
   else

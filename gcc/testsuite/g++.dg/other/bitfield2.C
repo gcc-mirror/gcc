@@ -3,7 +3,7 @@
 
 struct A
 {
-  double d : 2;  // { dg-error "non-integral" }
+  double d : 2;  // { dg-error "10:bit-field .d. with non-integral type .double." }
   A() {}
   ~A() {}
 };
