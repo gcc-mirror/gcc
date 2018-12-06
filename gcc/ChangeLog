@@ -1,3 +1,10 @@
+2018-12-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/78444
+	* config/i386/darwin.h (STACK_BOUNDARY): Remove macro.
+	* config/i386/i386.c (ix86_compute_frame_layout): Ensure at least 128b
+	stack alignment in non-leaf functions.
+
 2018-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/87598
