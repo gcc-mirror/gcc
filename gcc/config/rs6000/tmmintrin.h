@@ -94,12 +94,12 @@ _mm_alignr_epi8 (__m128i __A, __m128i __B, const unsigned int __count)
 {
   if (__builtin_constant_p (__count) && __count < 16)
     {
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#ifdef __LITTLE_ENDIAN__
       __A = (__m128i) vec_reve ((__v16qu) __A);
       __B = (__m128i) vec_reve ((__v16qu) __B);
 #endif
       __A = (__m128i) vec_sld ((__v16qu) __B, (__v16qu) __A, __count);
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#ifdef __LITTLE_ENDIAN__
       __A = (__m128i) vec_reve ((__v16qu) __A);
 #endif
       return __A;
@@ -119,7 +119,7 @@ _mm_alignr_epi8 (__m128i __A, __m128i __B, const unsigned int __count)
 	{
 	  const __v16qu __shift =
 	    vec_splats ((unsigned char) ((__count - 16) * 8));
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#ifdef __LITTLE_ENDIAN__
 	  return (__m128i) vec_sro ((__v16qu) __A, __shift);
 #else
 	  return (__m128i) vec_slo ((__v16qu) __A, __shift);
@@ -131,7 +131,7 @@ _mm_alignr_epi8 (__m128i __A, __m128i __B, const unsigned int __count)
       const __v16qu __shiftA =
 	vec_splats ((unsigned char) ((16 - __count) * 8));
       const __v16qu __shiftB = vec_splats ((unsigned char) (__count * 8));
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#ifdef __LITTLE_ENDIAN__
       __A = (__m128i) vec_slo ((__v16qu) __A, __shiftA);
       __B = (__m128i) vec_sro ((__v16qu) __B, __shiftB);
 #else
@@ -149,7 +149,7 @@ _mm_alignr_pi8 (__m64 __A, __m64 __B, unsigned int __count)
   if (__count < 16)
     {
       __v2du __C = { __B, __A };
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#ifdef __LITTLE_ENDIAN__
       const __v4su __shift = { __count << 3, 0, 0, 0 };
       __C = (__v2du) vec_sro ((__v16qu) __C, (__v16qu) __shift);
 #else
