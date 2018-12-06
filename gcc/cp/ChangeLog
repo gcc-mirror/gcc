@@ -1,3 +1,8 @@
+2018-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87506
+	* constexpr.c (adjust_temp_type): Handle EMPTY_CLASS_EXPR.
+
 2018-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* class.c (check_bitfield_decl): In error message about non-integral
@@ -6,7 +11,7 @@
 	friends; when calling build_decl for a FIELD_DECL possibly pass the
 	declarator->id_loc.
 
-2018-12-06  Alexandre Oliva <aoliva@redhat.com>
+2018-12-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/86747
 	* pt.c (tsubst_friend_class): Enter tsubsted class context.
