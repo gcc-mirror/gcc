@@ -461,11 +461,11 @@ static HARD_REG_SET implicit_reg_pending_uses;
    has enough entries to represent a dependency on any other insn in
    the insn chain.  All bitmap for true dependencies cache is
    allocated then the rest two ones are also allocated.  */
-static bitmap_head *true_dependency_cache = NULL;
-static bitmap_head *output_dependency_cache = NULL;
-static bitmap_head *anti_dependency_cache = NULL;
-static bitmap_head *control_dependency_cache = NULL;
-static bitmap_head *spec_dependency_cache = NULL;
+static bitmap true_dependency_cache = NULL;
+static bitmap output_dependency_cache = NULL;
+static bitmap anti_dependency_cache = NULL;
+static bitmap control_dependency_cache = NULL;
+static bitmap spec_dependency_cache = NULL;
 static int cache_size;
 
 /* True if we should mark added dependencies as a non-register deps.  */
