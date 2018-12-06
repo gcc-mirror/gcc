@@ -1,4 +1,5 @@
-/* { dg-do compile } */
+/* PR rtl-optimization/85770 */
+/* { dg-do compile { target int128 } } */
 /* { dg-options "-O2 -march=nano-1000 -fnon-call-exceptions -fno-tree-coalesce-vars" } */
 
 unsigned a, b, c, d, e, f, g, h, i;
@@ -14,4 +15,3 @@ __int128 foo(char k, unsigned short l, unsigned m, unsigned n, __int128 o,
   return k + l + m + n + o + a + b + c + d + j + l + e + f + q + 4294967295 +
          p + g + h + i;
 }
-
