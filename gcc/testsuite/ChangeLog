@@ -1,3 +1,10 @@
+2018-12-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/63184
+	* c-c++-common/pr19807-2.c: Try link only on x86, add xfailed
+	optimized dump scanning.
+	* c-c++-common/pr19807-3.c: Likewise.
+
 2018-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/parse/bitfield6b.C: New.
