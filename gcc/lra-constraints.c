@@ -6651,11 +6651,11 @@ lra_inheritance (void)
 	   inherit_in_ebb.  */
 	update_ebb_live_info (BB_HEAD (start_bb), BB_END (bb));
     }
-  bitmap_clear (&ebb_global_regs);
-  bitmap_clear (&temp_bitmap);
-  bitmap_clear (&live_regs);
-  bitmap_clear (&invalid_invariant_regs);
-  bitmap_clear (&check_only_regs);
+  bitmap_release (&ebb_global_regs);
+  bitmap_release (&temp_bitmap);
+  bitmap_release (&live_regs);
+  bitmap_release (&invalid_invariant_regs);
+  bitmap_release (&check_only_regs);
   free (usage_insns);
 
   timevar_pop (TV_LRA_INHERITANCE);

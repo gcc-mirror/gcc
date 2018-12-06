@@ -1,3 +1,17 @@
+2018-12-06  Richard Biener  <rguenther@suse.de>
+
+	* bitmap.c (bitmap_head::crashme): Define.
+	* bitmap.h (bitmap_head): Add constexpr default constructor
+	poisoning the obstack member.
+	(bitmap_head::crashme): Declare.
+	(bitmap_release): New function clearing a bitmap and poisoning
+	the obstack member.
+	* gengtype.c (main): Make it recognize CONSTEXPR.
+	* lra-constraints.c (lra_inheritance): Use bitmap_release
+	instead of bitmap_clear.
+	* ira.c (ira): Work around class-memaccess warning.
+	* regrename.c (create_new_chain): Likewise.
+
 2018-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/85726
