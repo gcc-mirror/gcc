@@ -4659,7 +4659,11 @@ rest_of_handle_final (void)
   final_start_function_1 (&first, asm_out_file, &seen, optimize);
   final_1 (first, asm_out_file, seen, optimize);
   if (flag_ipa_ra
-      && !lookup_attribute ("noipa", DECL_ATTRIBUTES (current_function_decl)))
+      && !lookup_attribute ("noipa", DECL_ATTRIBUTES (current_function_decl))
+      /* Functions with naked attributes are supported only with basic asm
+	 statements in the body, thus for supported use cases the information
+	 on clobbered registers is not available.  */
+      && !lookup_attribute ("naked", DECL_ATTRIBUTES (current_function_decl)))
     collect_fn_hard_reg_usage ();
   final_end_function ();
 
