@@ -1,3 +1,32 @@
+2018-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85110
+	* call.c (conversion_null_warnings): Try to use the location of
+	the expression for the warnings.  Add notes showing the parameter
+	of the function decl, where available.
+	(get_fndecl_argument_location): For implicitly-declared functions,
+	use the fndecl location rather than that of the param.
+	(maybe_inform_about_fndecl_for_bogus_argument_init): New function.
+	(convert_like_real): Use it in various places to avoid repetition.
+	(complain_about_bad_argument): Likewise.
+	* cp-tree.h (maybe_inform_about_fndecl_for_bogus_argument_init):
+	New declaration.
+	* decl2.c (check_default_args): Put all diagnostics for the fndecl
+	into a diagnostic group.  Use the location of the parameter when
+	complaining about parameters with missing default arguments in
+	preference to that of the fndecl.  Attempt to record the location
+	of the first parameter with a default argument and emit a note
+	for the first parameter that's missing one.
+	* typeck.c (convert_arguments): When complaining about parameters
+	with incomplete types, attempt to use the location of the
+	argument.  Where available, add a note showing the pertinent
+	parameter in the fndecl.
+	(convert_for_assignment): When complaining about bad conversions
+	at function calls, use the location of the unstripped argument.
+	(convert_for_initialization): When checking for bogus references,
+	add an auto_diagnostic_group, and update the note to use the
+	location of the pertinent parameter, rather than just the callee.
+
 2018-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl2.c (grokbitfield): Use DECL_SOURCE_LOCATION in error message;

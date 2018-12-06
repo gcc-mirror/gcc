@@ -1,3 +1,12 @@
+2018-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85110
+	* g++.dg/diagnostic/missing-default-args.C: New test.
+	* g++.dg/diagnostic/param-type-mismatch-3.C: New test.
+	* g++.dg/diagnostic/param-type-mismatch.C: Add tests for invalid
+	references and incomplete types.
+	* g++.dg/warn/Wconversion-null-4.C: New test.
+
 2018-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/87598

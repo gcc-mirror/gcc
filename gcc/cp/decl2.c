@@ -5182,14 +5182,37 @@ check_default_args (tree x)
 {
   tree arg = TYPE_ARG_TYPES (TREE_TYPE (x));
   bool saw_def = false;
+  bool noted_first_def = false;
+  int idx_of_first_default_arg = 0;
+  location_t loc_of_first_default_arg = UNKNOWN_LOCATION;
   int i = 0 - (TREE_CODE (TREE_TYPE (x)) == METHOD_TYPE);
+  tree fndecl = STRIP_TEMPLATE (x);
+  auto_diagnostic_group d;
   for (; arg && arg != void_list_node; arg = TREE_CHAIN (arg), ++i)
     {
       if (TREE_PURPOSE (arg))
-	saw_def = true;
+	{
+	  if (!saw_def)
+	    {
+	      saw_def = true;
+	      idx_of_first_default_arg = i;
+	      location_t loc = get_fndecl_argument_location (fndecl, i);
+	      if (loc != DECL_SOURCE_LOCATION (x))
+		loc_of_first_default_arg = loc;
+	    }
+	}
       else if (saw_def && !PACK_EXPANSION_P (TREE_VALUE (arg)))
 	{
-	  error ("default argument missing for parameter %P of %q+#D", i, x);
+	  error_at (get_fndecl_argument_location (fndecl, i),
+		    "default argument missing for parameter %P of %q#D", i, x);
+	  if (loc_of_first_default_arg != UNKNOWN_LOCATION
+	      && !noted_first_def)
+	    {
+	      inform (loc_of_first_default_arg,
+		      "...following parameter %P which has a default argument",
+		      idx_of_first_default_arg);
+	      noted_first_def = true;
+	    }
 	  TREE_PURPOSE (arg) = error_mark_node;
 	}
     }
