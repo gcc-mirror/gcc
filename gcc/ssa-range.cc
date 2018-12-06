@@ -722,25 +722,10 @@ global_ranger::range_of_stmt (irange &r, gimple *s, tree name)
   if (is_a<gphi *> (s))
     r.intersect (tmp);
   m_globals.set_global_range (name, r);
-
-  // Now copy this to the SSA_NAME_RANGE_INFO field.
-#if 0
-  if (r.varying_p ())
-    {
-      // we need a proper set_to_varying and undefined.
-      SSA_NAME_RANGE_INFO (name) = NULL;
-    }
-  else if (!r.undefined_p () && !POINTER_TYPE_P (TREE_TYPE (name)))
-    {
-      value_range vr;
-      irange_to_value_range (vr, r);
-      set_range_info (name, vr.kind (), wi::to_wide (vr.min ()),
-		      wi::to_wide (vr.max ()));
-    }
-#endif
-
   return true;
 }
+
+// Return the range of expr OP on edge E in R.  
 
 bool
 global_ranger::range_of_expr (irange&r, tree op, edge e)
@@ -815,6 +800,53 @@ global_ranger::range_from_import (irange &r, tree name, irange &import_range)
 {
   return m_gori.range_from_import (r, name, import_range);
 }
+
+// This routine will export whatever global ranges are known to GCC
+// SSA_RANGE_NAME_INFO fields.
+
+void
+global_ranger::export_global_ranges ()
+{
+  unsigned x;
+  irange r;
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Updating global range table\n");
+      fprintf (dump_file, "===========================\n");
+    }
+
+  for ( x = 1; x < num_ssa_names; x++)
+    {
+      tree name = ssa_name (x);
+      if (name && !SSA_NAME_IN_FREE_LIST (name) &&
+	  valid_ssa_p (name) && m_globals.get_global_range (r, name) &&
+	  !r.varying_p())
+	{
+	  // WTF? Can't write non-null pointer ranges?? stupid set_range_info!
+	  if (POINTER_TYPE_P (TREE_TYPE (name)))
+	    continue;
+	  if (r.undefined_p ())
+	    continue;
+
+	  value_range vr;
+	  // Make sure that the new range is a subet of the old range.
+	  irange old_range = range_from_ssa (name);
+	  gcc_checking_assert (old_range.intersect (r) == r);
+
+	  irange_to_value_range (vr, r);
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      print_generic_expr (dump_file, name , TDF_SLIM);
+	      fprintf (dump_file, " --> ");
+	      r.dump (dump_file);
+	      fprintf (dump_file, "\n");
+	    }
+	  set_range_info (name, vr.kind (), wi::to_wide (vr.min ()),
+			  wi::to_wide (vr.max ()));
+	}
+    }
+}
+
 
 // Print the known table values to file F.
 

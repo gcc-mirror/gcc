@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdisable-tree-evrp -fdump-tree-vrp1-details" } */
+/* { dg-options "-O2 -fdisable-tree-evrp -fdisable-tree-rvrp -fdump-tree-vrp1-details" } */
 
 int foo(int i)
 {

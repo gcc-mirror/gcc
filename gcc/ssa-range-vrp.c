@@ -186,6 +186,7 @@ execute_ranger_vrp ()
 
   // Now delete any statements with 0 uses.
   simple_dce_from_worklist (touched);
+  ranger.export_global_ranges ();
 
   return 0;
 }
@@ -219,6 +220,7 @@ execute_ranger_vrp_conditional ()
 
   // Now delete any statements with 0 uses.
   simple_dce_from_worklist (touched);
+  ranger.export_global_ranges ();
 
   return 0;
 }

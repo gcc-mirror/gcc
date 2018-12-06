@@ -137,6 +137,8 @@ public:
   tree terminal_name (tree name);
   bool range_from_import (irange &r, tree name, irange &import_range);
 
+  void export_global_ranges ();
+
   void dump (FILE *f);
   void calculate_and_dump (FILE *f);   /* Calculate all stmts and dump */
 protected:
