@@ -1,3 +1,8 @@
+2018-12-05  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/85770
+	* gcc.target/i386/pr85770.c: New test.
+
 2018-12-05  Martin Sebor  <msebor@redhat.com>
 
 	PR c/87028
