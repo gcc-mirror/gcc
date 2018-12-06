@@ -27,8 +27,8 @@ static void
 TEST (void)
 {
   __m64_union s1, s2;
-  union128 u;
-  float e[4] = {1000.0, -20000.0, 43.0, 546.0};
+  union128 u, e;
+  e.x = _mm_set_ps (546.0, 43.0, -20000.0, 1000.0);
 
   /* input signed in {1000, -20000, 43, 546}.  */
   s1.as_m64 = _mm_setr_pi32 (1000, -20000);
@@ -37,6 +37,6 @@ TEST (void)
   u.x = test (s1.as_m64, s2.as_m64);
 
 
-  if (check_union128 (u, e))
+  if (check_union128 (u, e.a))
     abort ();
 }

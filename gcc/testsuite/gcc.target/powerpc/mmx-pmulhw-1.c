@@ -33,12 +33,11 @@ TEST (void)
   s2.as_m64 = _mm_set_pi16 (11, 9834, 7444, -10222);
   u.as_m64 = test (s1.as_m64, s2.as_m64);
 
-  for (i = 0; i < 4; i++)
-    {
-      tmp = s1.as_short[i] * s2.as_short[i];
-
-      e.as_short[i] = (tmp & 0xffff0000)>>16;
-    }
+  e.as_m64 = _mm_set_pi16 (
+    ((s1.as_short[3] * s2.as_short[3]) & 0xffff0000) >> 16,
+    ((s1.as_short[2] * s2.as_short[2]) & 0xffff0000) >> 16,
+    ((s1.as_short[1] * s2.as_short[1]) & 0xffff0000) >> 16,
+    ((s1.as_short[0] * s2.as_short[0]) & 0xffff0000) >> 16);
 
   if (u.as_m64 != e.as_m64)
     abort ();

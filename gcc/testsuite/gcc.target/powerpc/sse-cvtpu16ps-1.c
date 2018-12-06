@@ -27,14 +27,14 @@ static void
 TEST (void)
 {
   __m64_union s1;
-  union128 u;
-  float e[4] = {1000.0, 45536.0, 45.0, 65535.0};
+  union128 u, e;
+  e.x = _mm_set_ps (65535.0, 45.0, 45536.0, 1000.0);
 
   /* input unsigned short {1000, 45536, 45, 65535}.  */
   s1.as_m64 = _mm_setr_pi16 (1000, -20000, 45, -1);
    
   u.x = test (s1.as_m64);
 
-  if (check_union128 (u, e))
+  if (check_union128 (u, e.a))
     abort ();
 }
