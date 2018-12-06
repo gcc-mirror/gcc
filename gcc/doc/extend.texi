@@ -8447,7 +8447,7 @@ for a C symbol, or to place a C variable in a specific register.
 A basic @code{asm} statement has the following syntax:
 
 @example
-asm @r{[} volatile @r{]} ( @var{AssemblerInstructions} )
+asm @var{asm-qualifiers} ( @var{AssemblerInstructions} )
 @end example
 
 The @code{asm} keyword is a GNU extension.
@@ -8575,17 +8575,19 @@ Extended @code{asm} syntax uses colons (@samp{:}) to delimit
 the operand parameters after the assembler template:
 
 @example
-asm @r{[}volatile@r{]} ( @var{AssemblerTemplate} 
+asm @var{asm-qualifiers} ( @var{AssemblerTemplate} 
                  : @var{OutputOperands} 
                  @r{[} : @var{InputOperands}
                  @r{[} : @var{Clobbers} @r{]} @r{]})
 
-asm @r{[}volatile@r{]} goto ( @var{AssemblerTemplate} 
+asm @var{asm-qualifiers} ( @var{AssemblerTemplate} 
                       : 
                       : @var{InputOperands}
                       : @var{Clobbers}
                       : @var{GotoLabels})
 @end example
+where in the last form, @var{asm-qualifiers} contains @code{goto} (and in the
+first form, not).
 
 The @code{asm} keyword is a GNU extension.
 When writing code that can be compiled with @option{-ansi} and the
