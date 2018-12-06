@@ -5417,7 +5417,7 @@ ira (FILE *f)
 	    = ((struct ira_spilled_reg_stack_slot *)
 	       ira_allocate (max_regno
 			     * sizeof (struct ira_spilled_reg_stack_slot)));
-	  memset (ira_spilled_reg_stack_slots, 0,
+	  memset ((void *)ira_spilled_reg_stack_slots, 0,
 		  max_regno * sizeof (struct ira_spilled_reg_stack_slot));
 	}
     }
