@@ -2852,21 +2852,35 @@ d_ref_qualifier (struct d_info *di, struct demangle_component *sub)
 static struct demangle_component *
 d_function_type (struct d_info *di)
 {
-  struct demangle_component *ret;
+  struct demangle_component *ret = NULL;
 
-  if (! d_check_char (di, 'F'))
-    return NULL;
-  if (d_peek_char (di) == 'Y')
+  if ((di->options & DMGL_NO_RECURSE_LIMIT) == 0)
     {
-      /* Function has C linkage.  We don't print this information.
-	 FIXME: We should print it in verbose mode.  */
-      d_advance (di, 1);
-    }
-  ret = d_bare_function_type (di, 1);
-  ret = d_ref_qualifier (di, ret);
+      if (di->recursion_level > DEMANGLE_RECURSION_LIMIT)
+	/* FIXME: There ought to be a way to report
+	   that the recursion limit has been reached.  */
+	return NULL;
 
-  if (! d_check_char (di, 'E'))
-    return NULL;
+      di->recursion_level ++;
+    }
+
+  if (d_check_char (di, 'F'))
+    {
+      if (d_peek_char (di) == 'Y')
+	{
+	  /* Function has C linkage.  We don't print this information.
+	     FIXME: We should print it in verbose mode.  */
+	  d_advance (di, 1);
+	}
+      ret = d_bare_function_type (di, 1);
+      ret = d_ref_qualifier (di, ret);
+      
+      if (! d_check_char (di, 'E'))
+	ret = NULL;
+    }
+
+  if ((di->options & DMGL_NO_RECURSE_LIMIT) == 0)
+    di->recursion_level --;
   return ret;
 }
 
@@ -6203,6 +6217,7 @@ cplus_demangle_init_info (const char *mangled, int options, size_t len,
   di->expansion = 0;
   di->is_expression = 0;
   di->is_conversion = 0;
+  di->recursion_level = 0;
 }
 
 /* Internal implementation for the demangler.  If MANGLED is a g++ v3 ABI
@@ -6241,6 +6256,20 @@ d_demangle_callback (const char *mangled, int options,
     }
 
   cplus_demangle_init_info (mangled, options, strlen (mangled), &di);
+
+  /* PR 87675 - Check for a mangled string that is so long
+     that we do not have enough stack space to demangle it.  */
+  if (((options & DMGL_NO_RECURSE_LIMIT) == 0)
+      /* This check is a bit arbitrary, since what we really want to do is to
+	 compare the sizes of the di.comps and di.subs arrays against the
+	 amount of stack space remaining.  But there is no portable way to do
+	 this, so instead we use the recursion limit as a guide to the maximum
+	 size of the arrays.  */
+      && (unsigned long) di.num_comps > DEMANGLE_RECURSION_LIMIT)
+    {
+      /* FIXME: We need a way to indicate that a stack limit has been reached.  */
+      return 0;
+    }
 
   {
 #ifdef CP_DYNAMIC_ARRAYS
