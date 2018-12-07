@@ -1,3 +1,9 @@
+2018-12-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/88349
+	* ira-costs.c (record_operand_costs): Check bigger reg class on
+	NO_REGS.
+
 2018-12-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64-sve.md (*mul<mode>3, *v<optab><mode>3):
