@@ -1046,15 +1046,15 @@ grokbitfield (const cp_declarator *declarator,
      check here.  */
   if (TREE_CODE (value) == FUNCTION_DECL)
     {
-      error ("cannot declare bit-field %qD with function type",
-	     DECL_NAME (value));
+      error_at (DECL_SOURCE_LOCATION (value),
+		"cannot declare bit-field %qD with function type", value);
       return NULL_TREE;
     }
 
-  if (width && TYPE_WARN_IF_NOT_ALIGN (type))
+  if (TYPE_WARN_IF_NOT_ALIGN (type))
     {
-      error ("cannot declare bit-field %qD with %<warn_if_not_aligned%> type",
-	     DECL_NAME (value));
+      error_at (DECL_SOURCE_LOCATION (value), "cannot declare bit-field "
+		"%qD with %<warn_if_not_aligned%> type", value);
       return NULL_TREE;
     }
 
@@ -1067,7 +1067,8 @@ grokbitfield (const cp_declarator *declarator,
 
   if (TREE_STATIC (value))
     {
-      error ("static member %qD cannot be a bit-field", value);
+      error_at (DECL_SOURCE_LOCATION (value),
+		"static member %qD cannot be a bit-field", value);
       return NULL_TREE;
     }
 
