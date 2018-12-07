@@ -84,6 +84,7 @@ enum aarch64_function_type {
 /* SVE vector register sizes.  */
 enum aarch64_sve_vector_bits_enum {
   SVE_SCALABLE,
+  SVE_NOT_IMPLEMENTED = SVE_SCALABLE,
   SVE_128 = 128,
   SVE_256 = 256,
   SVE_512 = 512,
