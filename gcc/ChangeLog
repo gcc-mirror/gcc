@@ -1,3 +1,9 @@
+2018-12-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_tuning_override_functions): Add
+	sve_width entry.
+	(aarch64_parse_sve_width_string): Define.
+
 2018-12-07  Jeff Law  <law@redhat.com>
 
 	PR middle-end/87813
