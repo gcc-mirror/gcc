@@ -1,3 +1,10 @@
+2018-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86669
+	* g++.dg/cpp0x/initlist105.C: New test.
+	* g++.dg/cpp0x/initlist106.C: New test.
+	* g++.dg/other/pr86669.C: New test.
+
 2018-12-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/pred_elim_2.c: New test.
