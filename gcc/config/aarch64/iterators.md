@@ -1220,6 +1220,9 @@
 ;; SVE integer binary division operations.
 (define_code_iterator SVE_INT_BINARY_SD [div udiv])
 
+;; SVE floating-point operations with an unpredicated all-register form.
+(define_code_iterator SVE_UNPRED_FP_BINARY [plus minus mult])
+
 ;; SVE integer comparisons.
 (define_code_iterator SVE_INT_CMP [lt le eq ne ge gt ltu leu geu gtu])
 
@@ -1423,6 +1426,8 @@
 
 ;; The floating-point SVE instruction that implements an rtx code.
 (define_code_attr sve_fp_op [(plus "fadd")
+			     (minus "fsub")
+			     (mult "fmul")
 			     (neg "fneg")
 			     (abs "fabs")
 			     (sqrt "fsqrt")])
