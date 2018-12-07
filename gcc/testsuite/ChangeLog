@@ -1,3 +1,11 @@
+2018-12-07  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/87496
+	* gcc.target/powerpc/pr87496.c: Rename from this...
+	* gcc.target/powerpc/pr87496-1.c: ...to this.  Update comment.
+	* gcc.target/powerpc/pr87496-2.c: New test.
+	* gcc.target/powerpc/pr87496-3.c: New test.
+
 2018-12-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/sve/override_sve_width_1.c: New test.

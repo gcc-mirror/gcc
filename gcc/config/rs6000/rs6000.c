@@ -4282,6 +4282,13 @@ rs6000_option_override_internal (bool global_init_p)
     }
   else if (rs6000_long_double_type_size == 128)
     rs6000_long_double_type_size = FLOAT_PRECISION_TFmode;
+  else if (global_options_set.x_rs6000_ieeequad)
+    {
+      if (global_options.x_rs6000_ieeequad)
+	error ("%qs requires %qs", "-mabi=ieeelongdouble", "-mlong-double-128");
+      else
+	error ("%qs requires %qs", "-mabi=ibmlongdouble", "-mlong-double-128");
+    }
 
   /* Set -mabi=ieeelongdouble on some old targets.  In the future, power server
      systems will also set long double to be IEEE 128-bit.  AIX and Darwin
@@ -4293,7 +4300,8 @@ rs6000_option_override_internal (bool global_init_p)
 
   else
     {
-      if (!TARGET_POPCNTD || !TARGET_VSX)
+      if (global_options.x_rs6000_ieeequad
+	  && (!TARGET_POPCNTD || !TARGET_VSX))
 	error ("%qs requires full ISA 2.06 support", "-mabi=ieeelongdouble");
 
       if (rs6000_ieeequad != TARGET_IEEEQUAD_DEFAULT && TARGET_LONG_DOUBLE_128)
