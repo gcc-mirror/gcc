@@ -1086,12 +1086,14 @@ struct aarch64_tuning_override_function
 
 static void aarch64_parse_fuse_string (const char*, struct tune_params*);
 static void aarch64_parse_tune_string (const char*, struct tune_params*);
+static void aarch64_parse_sve_width_string (const char*, struct tune_params*);
 
 static const struct aarch64_tuning_override_function
 aarch64_tuning_override_functions[] =
 {
   { "fuse", aarch64_parse_fuse_string },
   { "tune", aarch64_parse_tune_string },
+  { "sve_width", aarch64_parse_sve_width_string },
   { NULL, NULL }
 };
 
@@ -10832,6 +10834,37 @@ aarch64_parse_tune_string (const char *tune_string,
 				     aarch64_tuning_flags,
 				     tune->extra_tuning_flags,
 				     "tune=");
+}
+
+/* Parse the sve_width tuning moverride string in TUNE_STRING.
+   Accept the valid SVE vector widths allowed by
+   aarch64_sve_vector_bits_enum and use it to override sve_width
+   in TUNE.  */
+
+static void
+aarch64_parse_sve_width_string (const char *tune_string,
+				struct tune_params *tune)
+{
+  int width = -1;
+
+  int n = sscanf (tune_string, "%d", &width);
+  if (n == EOF)
+    {
+      error ("invalid format for sve_width");
+      return;
+    }
+  switch (width)
+    {
+    case SVE_128:
+    case SVE_256:
+    case SVE_512:
+    case SVE_1024:
+    case SVE_2048:
+      break;
+    default:
+      error ("invalid sve_width value: %d", width);
+    }
+  tune->sve_width = (enum aarch64_sve_vector_bits_enum) width;
 }
 
 /* Parse TOKEN, which has length LENGTH to see if it is a tuning option
