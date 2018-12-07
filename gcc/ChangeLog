@@ -1,3 +1,22 @@
+2018-12-07  Jeff Law  <law@redhat.com>
+
+	PR middle-end/87813
+	* gimple-ssa-evrp-analyze.h (class evrp_range_analyzer): Add
+	m_update_global_ranges member.  Add corresponding argument to ctor.
+	* gimple-ssa-evrp-analyze.c
+	(evrp_range_analyzer::evrp_range_analyzer): Add new argument and
+	initialize m_update_global_ranges.
+	(evrp_range_analyzer::set_ssa_range_info): Assert that we are
+	updating global ranges.
+	(evrp_range_analyzer::record_ranges_from_incoming_edge): Only
+	update global ranges if explicitly requested.
+	(evrp_range_analyzer::record_ranges_from_phis): Similarly.
+	(evrp_range_analyzer::record_ranges_from_stmt): Similarly.
+	* gimple-ssa-evrp.c (evrp_dom_walker): Pass new argument to
+	evrp_range_analyzer ctor.
+	* gimple-ssa-sprintf.c (sprintf_dom_walker): Similarly.
+	* tree-ssa-dom.c (dom_opt_dom_walker): Similarly.
+
 2018-12-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-opts.h (aarch64_sve_vector_bits_enum):
