@@ -1,5 +1,12 @@
 2018-12-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-sve.md (*mul<mode>3, *v<optab><mode>3):
+	Split the patterns after reload if we don't need the predicate
+	operand.
+	(*post_ra_mul<mode>3, *post_ra_v<optab><mode>3): New patterns.
+
+2018-12-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/iterators.md (SVE_UNPRED_FP_BINARY): New code
 	iterator.
 	(sve_fp_op): Handle minus and mult.
