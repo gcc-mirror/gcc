@@ -1,3 +1,18 @@
+2018-12-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-opts.h (aarch64_sve_vector_bits_enum):
+	Add SVE_NOT_IMPLEMENTED value.
+	* config/aarch64/aarch64-protos.h (struct tune_params): Add sve_width
+	field.
+	* config/aarch64/aarch64.c (generic_tunings,cortexa35_tunings,
+	cortexa53_tunings, cortexa57_tunings, cortexa72_tunings,
+	cortexa73_tunings, exynosm1_tunings, thunderx_tunings,
+	thunderx_tunings, tsv110_tunings, xgene1_tunings, qdf24xx_tunings,
+	saphira_tunings, thunderx2t99_tunings, emag_tunings):
+	Specify sve_width.
+	(aarch64_estimated_poly_value): Define.
+	(TARGET_ESTIMATED_POLY_VALUE): Define.
+
 2018-12-07  Paul A. Clarke  <pc@us.ibm.com>
 
 	PR target/88408
