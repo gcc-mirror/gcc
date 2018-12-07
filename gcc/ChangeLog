@@ -1,3 +1,8 @@
+2018-12-07  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* profile-count.h (profile_count::oeprator>=): Fix typo by inverting
+	return condition when *this is precise zero.
+
 2018-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85593
