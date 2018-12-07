@@ -23932,7 +23932,8 @@ Change the current ABI to use IBM extended-precision long double.
 This is not likely to work if your system defaults to using IEEE
 extended-precision long double.  If you change the long double type
 from IEEE extended-precision, the compiler will issue a warning unless
-you use the @option{-Wno-psabi} option.
+you use the @option{-Wno-psabi} option.  Requires @option{-mlong-double-128}
+to be enabled.
 
 @item -mabi=ieeelongdouble
 @opindex mabi=ieeelongdouble
@@ -23940,7 +23941,8 @@ Change the current ABI to use IEEE extended-precision long double.
 This is not likely to work if your system defaults to using IBM
 extended-precision long double.  If you change the long double type
 from IBM extended-precision, the compiler will issue a warning unless
-you use the @option{-Wno-psabi} option.
+you use the @option{-Wno-psabi} option.  Requires @option{-mlong-double-128}
+to be enabled.
 
 @item -mabi=elfv1
 @opindex mabi=elfv1
@@ -25201,7 +25203,8 @@ Change the current ABI to use IBM extended-precision long double.
 This is not likely to work if your system defaults to using IEEE
 extended-precision long double.  If you change the long double type
 from IEEE extended-precision, the compiler will issue a warning unless
-you use the @option{-Wno-psabi} option.
+you use the @option{-Wno-psabi} option.  Requires @option{-mlong-double-128}
+to be enabled.
 
 @item -mabi=ieeelongdouble
 @opindex mabi=ieeelongdouble
@@ -25209,7 +25212,8 @@ Change the current ABI to use IEEE extended-precision long double.
 This is not likely to work if your system defaults to using IBM
 extended-precision long double.  If you change the long double type
 from IBM extended-precision, the compiler will issue a warning unless
-you use the @option{-Wno-psabi} option.
+you use the @option{-Wno-psabi} option.  Requires @option{-mlong-double-128}
+to be enabled.
 
 @item -mabi=elfv1
 @opindex mabi=elfv1
