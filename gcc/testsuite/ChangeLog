@@ -1,3 +1,9 @@
+2018-12-07  Jeff Law  <law@redhat.com>
+
+	PR middle-end/87813
+	* gcc.c-torture/builtins/strnlen.x: New file to filter -Og from
+	options to test.
+
 2018-12-07  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/88349
