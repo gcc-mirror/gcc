@@ -576,6 +576,13 @@ gori_cache::edge_range (irange &r, edge e, tree name)
   return true;
 }
 
+void
+gori_cache::add_to_update (basic_block bb)
+{
+  if (!m_update_list.contains (bb))
+    m_update_list.quick_push (bb);
+}
+
 #define DEBUG_CACHE (0 && dump_file)
 
 // If there is anything in the iterative update_list, continue processing NAME
@@ -618,9 +625,8 @@ if (DEBUG_CACHE) { fprintf (dump_file, "updating range from/to "); current_range
 	  m_on_entry.set_bb_range (name, bb, new_range);
 	  // Mark each successor that has a range to re-check it's range 
 	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    if (m_on_entry.bb_range_p (name, e->dest) &&
-		!m_update_list.contains (e->dest))
-	      m_update_list.quick_push (e->dest);
+	    if (m_on_entry.bb_range_p (name, e->dest))
+	      add_to_update (e->dest);
 	}
     }
 if (DEBUG_CACHE) fprintf (dump_file, "DONE visiting blocks \n\n");
@@ -638,10 +644,9 @@ gori_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
   irange block_result;
   irange undefined;
 
-  if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun)
-      || bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
-      || bb == def_bb)
-    return;
+  // At this point we shouldnt be looking at the def, entry or exit block.
+  gcc_checking_assert (bb != def_bb && bb != ENTRY_BLOCK_PTR_FOR_FN (cfun) &&
+		       bb != EXIT_BLOCK_PTR_FOR_FN (cfun));
 
   // If the block cache is set, then we've already visited this block.
   if (m_on_entry.bb_range_p (name, bb))
@@ -652,10 +657,9 @@ gori_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
   // the range_on_entry cache for.
   m_workback.truncate (0);
   m_workback.quick_push (bb);
-  undefined.set_undefined (TREE_TYPE(name));
+  undefined.set_undefined (TREE_TYPE (name));
   m_on_entry.set_bb_range (name, bb, undefined);
   gcc_checking_assert (m_update_list.length () == 0);
-  gimple *def_stmt = SSA_NAME_DEF_STMT (name);
 
 if (DEBUG_CACHE) { fprintf (dump_file, "\n"); print_generic_expr (dump_file, name, TDF_SLIM); fprintf (dump_file, " : "); }
 
@@ -668,33 +672,29 @@ if (DEBUG_CACHE)  fprintf (dump_file, "BACK visiting block %d\n", node->index);
         {
 	  basic_block pred = e->src;
 	  irange r;
-	  // If the pred block is the def block or entry block,  add this BB
-	  // to update list.
-	  if (pred == ENTRY_BLOCK_PTR_FOR_FN (cfun) ||
-	      pred == gimple_bb (def_stmt))
+	  // If the pred block is the def block add this BB to update list.
+	  if (pred == def_bb) 
 	    {
-	      if (!m_update_list.contains (node))
-		m_update_list.quick_push (node);
+	      add_to_update (node);
 	      continue;
 	    }
+
+	  // If the pred is entry but NOT def, then it is used before defined,
+	  // It'll get set to []. and no need to update it.
+	  if (pred == ENTRY_BLOCK_PTR_FOR_FN (cfun))
+	    continue;
 
 	  // Regardless of whther we have visited pred or not, if the pred has
 	  // a non-null reference, revisit this block.
 	  if (m_non_null.non_null_deref_p (name, pred))
-	    {
-	      if (!m_update_list.contains (node))
-		m_update_list.quick_push (node);
-	    }
+	    add_to_update (node);
 
 	  // If the pred block already has a range, or if it can contribute
 	  // something new. Ie, the edge generates a range of some sort.
 	  if (m_on_entry.get_bb_range (r, name, pred))
 	    {
 	      if (!r.undefined_p () || has_edge_range_p (e, name))
-	        {
-		  if (!m_update_list.contains (node))
-		    m_update_list.quick_push (node);
-		}
+		add_to_update (node);
 	      continue;
 	    }
 	    
