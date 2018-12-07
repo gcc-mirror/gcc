@@ -68,6 +68,17 @@ extern "C" {
 /* If none of these are set, use 'current_demangling_style' as the default. */
 #define DMGL_STYLE_MASK (DMGL_AUTO|DMGL_GNU|DMGL_LUCID|DMGL_ARM|DMGL_HP|DMGL_EDG|DMGL_GNU_V3|DMGL_JAVA|DMGL_GNAT|DMGL_DLANG|DMGL_RUST)
 
+/* Disable a limit on the depth of recursion in mangled strings.
+   Note if this limit is disabled then stack exhaustion is possible when
+   demangling pathologically complicated strings.  Bug reports about stack
+   exhaustion when the option is enabled will be rejected.  */  
+#define DMGL_NO_RECURSE_LIMIT (1 << 18)	
+
+/* If DMGL_NO_RECURSE_LIMIT is not enabled, then this is the value used as
+   the maximum depth of recursion allowed.  It should be enough for any
+   real-world mangled name.  */
+#define DEMANGLE_RECURSION_LIMIT 1024
+  
 /* Enumeration of possible demangling styles.
 
    Lucid and ARM styles are still kept logically distinct, even though

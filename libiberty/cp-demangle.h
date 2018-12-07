@@ -122,6 +122,9 @@ struct d_info
   /* Non-zero if we are parsing the type operand of a conversion
      operator, but not when in an expression.  */
   int is_conversion;
+  /* If DMGL_NO_RECURSE_LIMIT is not active then this is set to
+     the current recursion level.  */
+  unsigned int recursion_level;
 };
 
 /* To avoid running past the ending '\0', don't:
