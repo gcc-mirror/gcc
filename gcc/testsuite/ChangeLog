@@ -1,5 +1,9 @@
 2018-12-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/pred_elim_2.c: New test.
+
+2018-12-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/pred_elim_1.c: New test.
 
 2018-12-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
