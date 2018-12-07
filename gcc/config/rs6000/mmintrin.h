@@ -228,9 +228,9 @@ _mm_packs_pu16 (__m64 __m1, __m64 __m2)
 #endif
   const __vector signed short __zero = { 0 };
   __vector __bool short __select = vec_cmplt (vm1, __zero);
-  r = vec_packs ((vector unsigned short) vm1, (vector unsigned short) vm1);
+  r = vec_packs ((__vector unsigned short) vm1, (__vector unsigned short) vm1);
   __vector __bool char packsel = vec_pack (__select, __select);
-  r = vec_sel (r, (const vector unsigned char) __zero, packsel);
+  r = vec_sel (r, (const __vector unsigned char) __zero, packsel);
   return (__m64) ((__vector long long) r)[0];
 }
 
