@@ -1327,8 +1327,9 @@ record_operand_costs (rtx_insn *insn, enum reg_class *pref)
 	     fit the the hard reg class (e.g. DImode for AREG on
 	     i386).  Check this and use a bigger class to get the
 	     right cost.  */
-	  if (! ira_hard_reg_in_set_p (other_regno, mode,
-				       reg_class_contents[hard_reg_class]))
+	  if (bigger_hard_reg_class != NO_REGS
+	      && ! ira_hard_reg_in_set_p (other_regno, mode,
+					  reg_class_contents[hard_reg_class]))
 	    hard_reg_class = bigger_hard_reg_class;
 	  i = regno == (int) REGNO (src) ? 1 : 0;
 	  for (k = cost_classes_ptr->num - 1; k >= 0; k--)
