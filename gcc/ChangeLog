@@ -6820,6 +6820,7 @@
 
 2018-10-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
+	PR bootstrap/87551
 	* varasm.c (mergeable_string_section): Don't try to move zero-length
 	strings to the merge section.
 
