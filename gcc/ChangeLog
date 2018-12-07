@@ -1,3 +1,8 @@
+2018-12-07  Paul A. Clarke  <pc@us.ibm.com>
+
+	PR target/88408
+	* config/rs6000/mmintrin.h (_mm_packs_pu16): Correctly use "__vector".
+
 2018-12-07  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/88349
