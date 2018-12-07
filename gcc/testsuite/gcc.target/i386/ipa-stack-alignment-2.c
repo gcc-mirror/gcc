@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-flive-patching -O" } */
+/* { dg-options "-flive-patching -O -fomit-frame-pointer" } */
 
 typedef struct {
   long a;
