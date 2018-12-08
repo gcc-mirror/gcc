@@ -1,3 +1,15 @@
+2018-12-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/88390
+	* dwarf2cfi.c (struct dw_cfi_row): Add window_save field.
+	(cfi_row_equal_p): Compare it.
+	(dwarf2out_frame_debug_cfa_window_save): Add FAKE parameter.
+	If FAKE is false, set window_save of the current row.
+	(dwarf2out_frame_debug) <REG_CFA_TOGGLE_RA_MANGLE>: Call above
+	function with FAKE parameter set to true.
+	<REG_CFA_WINDOW_SAVE>: Likewise but with FAKE parameter set to false.
+	(change_cfi_row): Emit a DW_CFA_GNU_window_save if necessary.
+
 2018-12-07  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR target/87496
