@@ -6389,7 +6389,6 @@ c_parser_asm_statement (c_parser *parser)
 	if (!is_inline)
 	  {
 	    is_inline = true;
-	    quals = c_parser_peek_token (parser)->value;
 	    c_parser_consume_token (parser);
 	  }
 	else

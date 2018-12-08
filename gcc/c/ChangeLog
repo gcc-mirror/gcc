@@ -1,3 +1,8 @@
+2018-12-08  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* c-parser (c_parser_asm_statement) [RID_INLINE]: Delete stray line
+	setting "quals".
+
 2018-12-06  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* c-parser.c (c_parser_asm_statement): Detect the inline keyword
