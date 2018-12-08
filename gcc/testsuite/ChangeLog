@@ -1,3 +1,8 @@
+2018-12-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/pr88357_1.f90: New test.
+	* gfortran.dg/pr88357_2.f90: New test.
+
 2018-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/88304
