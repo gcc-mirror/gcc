@@ -1,3 +1,11 @@
+2018-12-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88357
+	* class.c (insert_component_ref): Check for NULL pointer and 
+	previous error message issued.
+	* parse.c (parse_associate): Check for NULL pointer.
+	* resolve.c (resolve_assoc_var): Check for NULL pointer.
+
 2018-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/88377

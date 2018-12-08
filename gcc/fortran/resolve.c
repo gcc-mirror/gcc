@@ -8715,7 +8715,8 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
     {
       /* target's rank is 0, but the type of the sym is still array valued,
 	 which has to be corrected.  */
-      if (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->as)
+      if (sym->ts.type == BT_CLASS
+	  && CLASS_DATA (sym) && CLASS_DATA (sym)->as)
 	{
 	  gfc_array_spec *as;
 	  symbol_attribute attr;
