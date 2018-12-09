@@ -6,7 +6,7 @@ program np
 
   !$acc parallel loop gang
   do i = 1, n
-     !$acc loop gang ! { dg-error "gangs is not allowed inside another loop parallelized across gangs" }
+     !$acc loop gang ! { dg-error "inner loop uses same OpenACC parallelism as containing loop" }
      do j = 1, n
      end do
 
@@ -21,11 +21,11 @@ program np
   
   !$acc parallel loop worker
   do i = 1, n
-     !$acc loop gang ! { dg-error "gangs is not allowed inside loop parallelized across workers" }
+     !$acc loop gang ! { dg-error "incorrectly nested OpenACC loop parallelism" }
      do j = 1, n
      end do
 
-     !$acc loop worker ! { dg-error "workers is not allowed inside another loop parallelized across workers" }
+     !$acc loop worker ! { dg-error "inner loop uses same OpenACC parallelism as containing loop" }
      do j = 1, n
      end do
 
@@ -36,15 +36,15 @@ program np
 
   !$acc parallel loop vector
   do i = 1, n
-     !$acc loop gang ! { dg-error "gangs is not allowed inside loop parallelized across vectors" }
+     !$acc loop gang ! { dg-error "incorrectly nested OpenACC loop parallelism" }
      do j = 1, n
      end do
 
-     !$acc loop worker ! { dg-error "workers is not allowed inside another loop parallelized across vectors" }
+     !$acc loop worker ! { dg-error "incorrectly nested OpenACC loop parallelism" }
      do j = 1, n
      end do
 
-     !$acc loop vector ! { dg-error "vectors is not allowed inside another loop parallelized across vectors" }
+     !$acc loop vector ! { dg-error "inner loop uses same OpenACC parallelism as containing loop" }
      do j = 1, n
      end do     
   end do

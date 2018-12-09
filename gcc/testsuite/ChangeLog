@@ -1,5 +1,9 @@
 2018-12-09  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* gfortran.dg/goacc/loop-2-kernels.f95: Update.
+	* gfortran.dg/goacc/loop-2-parallel.f95: Likewise.
+	* gfortran.dg/goacc/nested-parallelism.f90: Likewise.
+
 	* gfortran.dg/goacc/loop-2.f95: Split into...
 	* gfortran.dg/goacc/loop-2-kernels-nested.f95: ... this new
 	file...
