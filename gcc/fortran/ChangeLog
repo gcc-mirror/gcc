@@ -1,5 +1,11 @@
 2018-12-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/88048
+	* resolve.c (check_data_variable): Named constant cannot be a
+	data object.
+
+2018-12-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/88025
 	* expr.c (gfc_apply_init):  Remove asserts that cannot trigger.
 	Check for a NULL pointer.
