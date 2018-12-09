@@ -1,3 +1,9 @@
+2018-12-09  Thomas Schwinge  <thomas@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* target.c (gomp_map_vars): Call gomp_copy_host2dev instead of
+	devicep->host2dev_func.
+
 2018-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/87995
