@@ -123,15 +123,58 @@ else version (DragonFlyBSD)
 
     version = BSD_Posix;
 }
+else version (Solaris)
+{
+    struct aio_result_t
+    {
+        ssize_t aio_return;
+        int aio_errno;
+    }
+
+    struct aiocb
+    {
+        int aio_fildes;
+        void* aio_buf;   // volatile
+        size_t aio_nbytes;
+        off_t aio_offset;
+        int aio_reqprio;
+        sigevent aio_sigevent;
+        int aio_lio_opcode;
+        aio_result_t aio_resultp;
+        int aio_state;
+        int[1] aio__pad;
+    }
+}
 else
     static assert(false, "Unsupported platform");
 
 /* Return values of cancelation function.  */
-enum
+version (CRuntime_Glibc)
 {
-    AIO_CANCELED,
-    AIO_NOTCANCELED,
-    AIO_ALLDONE
+    enum
+    {
+        AIO_CANCELED,
+        AIO_NOTCANCELED,
+        AIO_ALLDONE
+    }
+}
+else version (Solaris)
+{
+    enum
+    {
+        AIO_CANCELED,
+        AIO_ALLDONE,
+        AIO_NOTCANCELED
+    }
+}
+else version (BSD_Posix)
+{
+    enum
+    {
+        AIO_CANCELED,
+        AIO_NOTCANCELED,
+        AIO_ALLDONE
+    }
 }
 
 /* Operation codes for `aio_lio_opcode'.  */
@@ -142,6 +185,15 @@ version (CRuntime_Glibc)
         LIO_READ,
         LIO_WRITE,
         LIO_NOP
+    }
+}
+else version (Solaris)
+{
+    enum
+    {
+        LIO_NOP,
+        LIO_READ,
+        LIO_WRITE,
     }
 }
 else version (BSD_Posix)
@@ -161,6 +213,14 @@ version (CRuntime_Glibc)
     {
         LIO_WAIT,
         LIO_NOWAIT
+    }
+}
+else version (Solaris)
+{
+    enum
+    {
+        LIO_NOWAIT,
+        LIO_WAIT
     }
 }
 else version (BSD_Posix)
