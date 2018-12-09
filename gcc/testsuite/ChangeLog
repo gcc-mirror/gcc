@@ -1,3 +1,9 @@
+20180-12-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/87945
+	* gfortran.dg/pr87945_1.f90: New test.
+	* gfortran.dg/pr87945_2.f90: New test.
+
 2018-12-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88025
