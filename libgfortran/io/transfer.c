@@ -3189,7 +3189,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	}
     }
 
-  if (au)
+  if (au && dtp->u.p.async)
     {
       NOTE ("enqueue_data_transfer");
       enqueue_data_transfer_init (au, dtp, read_flag);
@@ -4313,11 +4313,8 @@ st_read_done (st_parameter_dt *dtp)
 	    *dtp->id = enqueue_done_id (dtp->u.p.current_unit->au, AIO_READ_DONE);  
 	  else
 	    {
-	      enqueue_done (dtp->u.p.current_unit->au, AIO_READ_DONE);
-	      /* An asynchronous unit without ASYNCHRONOUS="YES" - make this
-		 synchronous by performing a wait operation.  */
-	      if (!dtp->u.p.async)
-		async_wait (&dtp->common, dtp->u.p.current_unit->au);
+	      if (dtp->u.p.async)
+		enqueue_done (dtp->u.p.current_unit->au, AIO_READ_DONE);
 	    }
 	}
       else
@@ -4401,18 +4398,17 @@ st_write_done (st_parameter_dt *dtp)
 {
   if (dtp->u.p.current_unit)
     {
-      if (dtp->u.p.current_unit->au)
+      if (dtp->u.p.current_unit->au && dtp->u.p.async)
 	{
 	  if (dtp->common.flags & IOPARM_DT_HAS_ID)
 	    *dtp->id = enqueue_done_id (dtp->u.p.current_unit->au,
 					AIO_WRITE_DONE);
 	  else
 	    {
-	      enqueue_done (dtp->u.p.current_unit->au, AIO_WRITE_DONE);
-	      /* An asynchronous unit without ASYNCHRONOUS="YES" - make this
-		 synchronous by performing a wait operation.  */
-	      if (!dtp->u.p.async)
-		async_wait (&dtp->common, dtp->u.p.current_unit->au);
+	      /* We perform synchronous I/O on an asynchronous unit, so no need
+		 to enqueue AIO_READ_DONE.  */
+	      if (dtp->u.p.async)
+		enqueue_done (dtp->u.p.current_unit->au, AIO_WRITE_DONE);
 	    }
 	}
       else
