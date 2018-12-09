@@ -4485,12 +4485,10 @@ gfc_apply_init (gfc_typespec *ts, symbol_attribute *attr, gfc_expr *init)
 {
   if (ts->type == BT_CHARACTER && !attr->pointer && init
       && ts->u.cl
-      && ts->u.cl->length && ts->u.cl->length->expr_type == EXPR_CONSTANT)
+      && ts->u.cl->length
+      && ts->u.cl->length->expr_type == EXPR_CONSTANT
+      && ts->u.cl->length->ts.type == BT_INTEGER)
     {
-      gcc_assert (ts->u.cl && ts->u.cl->length);
-      gcc_assert (ts->u.cl->length->expr_type == EXPR_CONSTANT);
-      gcc_assert (ts->u.cl->length->ts.type == BT_INTEGER);
-
       HOST_WIDE_INT len = gfc_mpz_get_hwi (ts->u.cl->length->value.integer);
 
       if (init->expr_type == EXPR_CONSTANT)
