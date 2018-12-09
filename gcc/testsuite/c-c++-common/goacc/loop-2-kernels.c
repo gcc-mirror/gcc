@@ -1,3 +1,5 @@
+/* See also "../../gfortran.dg/goacc/loop-2-kernels.f95".  */
+
 void K(void)
 {
   int i, j;
