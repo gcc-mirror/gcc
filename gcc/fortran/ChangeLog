@@ -1,3 +1,9 @@
+2018-12-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88025
+	* expr.c (gfc_apply_init):  Remove asserts that cannot trigger.
+	Check for a NULL pointer.
+
 2018-11-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
