@@ -3719,9 +3719,11 @@ update_profiling_info (struct cgraph_node *orig_node,
   new_sum = orig_node_count.combine_with_ipa_count (new_sum);
   orig_node->count = remainder;
 
+  profile_count::adjust_for_ipa_scaling (&new_sum, &orig_node_count);
   for (cs = new_node->callees; cs; cs = cs->next_callee)
     cs->count = cs->count.apply_scale (new_sum, orig_node_count);
 
+  profile_count::adjust_for_ipa_scaling (&remainder, &orig_node_count);
   for (cs = orig_node->callees; cs; cs = cs->next_callee)
     cs->count = cs->count.apply_scale (remainder, orig_node_count);
 
