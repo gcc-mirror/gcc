@@ -1,3 +1,8 @@
+20180-12-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/87945
+	* decl.c (var_element): Inquiry parameters cannit be data objects.
+
 2018-12-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88025

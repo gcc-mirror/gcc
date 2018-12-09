@@ -281,6 +281,14 @@ var_element (gfc_data_variable *new_var)
   if (m != MATCH_YES)
     return m;
 
+  if (new_var->expr->expr_type == EXPR_CONSTANT
+      && new_var->expr->symtree == NULL)
+    {
+      gfc_error ("Inquiry parameter cannot appear in a "
+		 "data-stmt-object-list at %C");
+      return MATCH_ERROR;
+    }
+
   sym = new_var->expr->symtree->n.sym;
 
   /* Symbol should already have an associated type.  */
