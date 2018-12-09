@@ -1,3 +1,8 @@
+2018-12-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88206
+	* match.c (gfc_match_type_spec): REAL can be an intrinsic function.
+
 2018-12-09  Fritz Reese  <fritzoreese@gmail.com>
 
 	PR fortran/88228
