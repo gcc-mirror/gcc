@@ -1,5 +1,10 @@
 2018-12-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/88206
+	* gfortran.dg/pr88206.f90: New test.
+
+2018-12-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/88228
 	* gfortran.dg/pr88228.f90: New test.
 
