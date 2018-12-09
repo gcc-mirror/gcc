@@ -1,5 +1,6 @@
 /* Verify the accuracy of the line number associated with combined
    constructs.  */
+/* See also "../../gfortran.dg/goacc/combined-directives-3.f90".  */
 
 int
 main ()

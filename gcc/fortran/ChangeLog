@@ -1,3 +1,8 @@
+2018-12-09  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* trans-openmp.c (gfc_trans_oacc_combined_directive): Set the
+	location of combined acc loops.
+
 2018-12-09  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* openmp.c (resolve_oacc_loop_blocks): Remove checking of OpenACC
