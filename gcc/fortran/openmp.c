@@ -5895,8 +5895,6 @@ resolve_oacc_loop_blocks (gfc_code *code)
 
   if (code->ext.omp_clauses->seq)
     {
-      if (code->ext.omp_clauses->independent)
-	gfc_error ("Clause SEQ conflicts with INDEPENDENT at %L", &code->loc);
       if (code->ext.omp_clauses->gang)
 	gfc_error ("Clause SEQ conflicts with GANG at %L", &code->loc);
       if (code->ext.omp_clauses->worker)

@@ -1,3 +1,9 @@
+2018-12-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/88420
+	* gfortran.dg/goacc/loop-1-2.f95: Update.
+	* gfortran.dg/goacc/loop-1.f95: Likewise.
+
 2018-12-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88048
