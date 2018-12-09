@@ -1,3 +1,10 @@
+2018-12-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/88039
+	* gdc.test/gdc-test.exp (gdc-convert-args): Handle -D.
+	(dmd2dg): Check generated html in ddoc tests.
+	(gdc-do-test): Set dg-do-what-default to compile for ddoc tests.
+
 2018-12-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88206
