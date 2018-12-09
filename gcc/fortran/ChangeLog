@@ -1,3 +1,9 @@
+2018-12-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/88420
+	* openmp.c (resolve_oacc_loop_blocks): Remove "Clause SEQ
+	conflicts with INDEPENDENT" diagnostic.
+
 2018-12-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88048
