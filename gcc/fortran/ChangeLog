@@ -1,5 +1,10 @@
 2018-12-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/88205
+	* io.c (gfc_match_open): Move NEWUNIT checks to after STATUS checks.
+
+2018-12-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/88206
 	* match.c (gfc_match_type_spec): REAL can be an intrinsic function.
 
