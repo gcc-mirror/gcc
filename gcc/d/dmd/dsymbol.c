@@ -1191,12 +1191,12 @@ void ScopeDsymbol::importScope(Dsymbol *s, Prot protection)
 
 static void bitArraySet(BitArray *array, size_t idx)
 {
-    array->ptr[idx / (sizeof(size_t) * CHAR_BIT)] |= 1 << (idx & (sizeof(size_t) * CHAR_BIT - 1));
+    array->ptr[idx / (sizeof(size_t) * CHAR_BIT)] |= 1ULL << (idx & (sizeof(size_t) * CHAR_BIT - 1));
 }
 
 static bool bitArrayGet(BitArray *array, size_t idx)
 {
-    return (array->ptr[idx / (sizeof(size_t) * CHAR_BIT)] & (1 << (idx & (sizeof(size_t) * CHAR_BIT - 1)))) != 0;
+    return (array->ptr[idx / (sizeof(size_t) * CHAR_BIT)] & (1ULL << (idx & (sizeof(size_t) * CHAR_BIT - 1)))) != 0;
 }
 
 static void bitArrayLength(BitArray *array, size_t len)

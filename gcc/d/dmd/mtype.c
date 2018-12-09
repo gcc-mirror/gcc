@@ -3832,6 +3832,7 @@ MATCH TypeVector::implicitConvTo(Type *to)
     //printf("TypeVector::implicitConvTo(%s) from %s\n", to->toChars(), toChars());
     if (this == to)
         return MATCHexact;
+#ifdef IN_GCC
     if (to->ty == Tvector)
     {
         TypeVector *tv = (TypeVector *)to;
@@ -3848,6 +3849,10 @@ MATCH TypeVector::implicitConvTo(Type *to)
         // Otherwise implicitly convertible only if basetypes are.
         return basetype->implicitConvTo(tv->basetype);
     }
+#else
+    if (ty == to->ty)
+        return MATCHconvert;
+#endif
     return MATCHnomatch;
 }
 
