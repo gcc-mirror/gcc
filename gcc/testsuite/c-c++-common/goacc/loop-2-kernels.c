@@ -147,8 +147,8 @@ void K(void)
 #pragma acc kernels loop worker(num:5)
   for (i = 0; i < 10; i++)
     { }
-#pragma acc kernels loop seq worker // { dg-error "'seq' overrides" "" { target c } }
-  for (i = 0; i < 10; i++) // { dg-error "'seq' overrides" "" { target c++ } }
+#pragma acc kernels loop seq worker // { dg-error "'seq' overrides" }
+  for (i = 0; i < 10; i++)
     { }
 #pragma acc kernels loop gang worker
   for (i = 0; i < 10; i++)
@@ -163,8 +163,8 @@ void K(void)
 #pragma acc kernels loop vector(length:5)
   for (i = 0; i < 10; i++)
     { }
-#pragma acc kernels loop seq vector // { dg-error "'seq' overrides" "" { target c } }
-  for (i = 0; i < 10; i++) // { dg-error "'seq' overrides" "" { target c++ } }
+#pragma acc kernels loop seq vector // { dg-error "'seq' overrides" }
+  for (i = 0; i < 10; i++)
     { }
 #pragma acc kernels loop gang vector
   for (i = 0; i < 10; i++)
@@ -176,16 +176,16 @@ void K(void)
 #pragma acc kernels loop auto
   for (i = 0; i < 10; i++)
     { }
-#pragma acc kernels loop seq auto // { dg-error "'seq' overrides" "" { target c } }
-  for (i = 0; i < 10; i++) // { dg-error "'seq' overrides" "" { target c++ } }
+#pragma acc kernels loop seq auto // { dg-error "'seq' overrides" }
+  for (i = 0; i < 10; i++)
     { }
-#pragma acc kernels loop gang auto // { dg-error "'auto' conflicts" "" { target c } }
-  for (i = 0; i < 10; i++) // { dg-error "'auto' conflicts" "" { target c++ } }
+#pragma acc kernels loop gang auto // { dg-error "'auto' conflicts" }
+  for (i = 0; i < 10; i++)
     { }
-#pragma acc kernels loop worker auto // { dg-error "'auto' conflicts" "" { target c } }
-  for (i = 0; i < 10; i++) // { dg-error "'auto' conflicts" "" { target c++ } }
+#pragma acc kernels loop worker auto // { dg-error "'auto' conflicts" }
+  for (i = 0; i < 10; i++)
     { }
-#pragma acc kernels loop vector auto // { dg-error "'auto' conflicts" "" { target c } }
-  for (i = 0; i < 10; i++) // { dg-error "'auto' conflicts" "" { target c++ } }
+#pragma acc kernels loop vector auto // { dg-error "'auto' conflicts" }
+  for (i = 0; i < 10; i++)
     { }
 }

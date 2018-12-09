@@ -38742,8 +38742,9 @@ cp_parser_oacc_kernels_parallel (cp_parser *parser, cp_token *pragma_tok,
 	  cp_lexer_consume_token (parser->lexer);
 	  tree block = begin_omp_parallel ();
 	  tree clauses;
-	  cp_parser_oacc_loop (parser, pragma_tok, p_name, mask, &clauses,
-			       if_p);
+	  tree stmt = cp_parser_oacc_loop (parser, pragma_tok, p_name, mask,
+					   &clauses, if_p);
+	  protected_set_expr_location (stmt, pragma_tok->location);
 	  return finish_omp_construct (code, block, clauses);
 	}
     }
