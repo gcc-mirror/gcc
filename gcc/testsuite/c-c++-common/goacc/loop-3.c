@@ -1,3 +1,5 @@
+/* See also "../../gfortran.dg/goacc/loop-2-parallel-3.f95".  */
+
 void par1 (void)
 {
   int i, j;
