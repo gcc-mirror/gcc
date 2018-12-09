@@ -1,3 +1,12 @@
+2018-12-09  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config.gcc (hppa*-*-linux*): Add pa/t-pa to tmake_file.  Define
+	d_target_objs.
+	* config/pa/pa-protos.h (pa_d_target_versions): New prototype.
+	* config/pa/pa.h (TARGET_D_CPU_VERSIONS): Define.
+	* config/pa/pa-d.c: New file.
+	* config/pa/t-pa: New file.
+
 2018-12-08  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	* ipa-cp.c (update_profiling_info): Call adjust_for_ipa_scaling for

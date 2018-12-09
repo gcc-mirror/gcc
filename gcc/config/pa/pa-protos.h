@@ -110,3 +110,6 @@ extern HOST_WIDE_INT pa_initial_elimination_offset (int, int);
 extern HOST_WIDE_INT pa_function_arg_size (machine_mode, const_tree);
 
 extern const int pa_magic_milli[];
+
+/* Routines implemented in pa-d.c  */
+extern void pa_d_target_versions (void);
