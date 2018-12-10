@@ -1,3 +1,10 @@
+2018-12-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-c++-common/patchable_function_entry-decl.c: Pass -mcpu=gr6 for
+	Visium and remove other specific handling.
+	* c-c++-common/patchable_function_entry-default.c: Likewise.
+	* c-c++-common/patchable_function_entry-definition.c: Likewise.
+
 2018-12-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88205
