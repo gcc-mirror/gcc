@@ -1,3 +1,8 @@
+2018-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/87955
+	* gcc.target/i386/pr87955.c: Add -msse2 -mfpmath=sse to dg-options.
+
 2018-12-10  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/88214
