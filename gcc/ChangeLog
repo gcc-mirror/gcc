@@ -1,3 +1,19 @@
+2018-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config.gcc (Obsolete configurations): Delete powerpc*-*-*spe*.
+	(Unsupported targets): Add powerpc*-*-*spe*.
+	(powerpc*-*-*spe*): Delete.
+	(powerpc-*-eabispe*): Delete.
+	(powerpc-*-rtems*spe*): Delete.
+	(powerpc*-*-linux*spe*): Delete.
+	(powerpc*-*-linux*): Do not handle the linux*spe* targets.
+	(powerpc-wrs-vxworks*spe): Delete.
+	(with_cpu setting code): Delete powerpc*-*-*spe* handling.
+	* config.host (target powerpc*-*-*spe*): Delete.
+	* doc/invoke.texi (PowerPC SPE Options): Delete.
+	(PowerPC SPE Options): Delete.
+	* config/powerpcspe: Delete.
+
 2018-12-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/88418

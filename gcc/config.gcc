@@ -248,7 +248,6 @@ md_file=
 # Obsolete configurations.
 case ${target} in
   *-*-solaris2.10*			\
-  | powerpc*-*-*spe*			\
   | tile*-*-*				\
  )
     if test "x$enable_obsolete" != xyes; then
@@ -279,6 +278,7 @@ case ${target} in
  | mips64orion*-*-rtems*		\
  | pdp11-*-bsd				\
  | powerpc*-*-linux*paired*		\
+ | powerpc*-*-*spe*			\
  | sparc-hal-solaris2*			\
  | thumb-*-*				\
  | *-*-freebsd[12] | *-*-freebsd[1234].* \
@@ -487,16 +487,6 @@ nvptx-*-*)
 	;;
 or1k*-*-*)
 	cpu_type=or1k
-	;;
-powerpc*-*-*spe*)
-	cpu_type=powerpcspe
-	extra_headers="ppc-asm.h altivec.h spe.h ppu_intrinsics.h paired.h spu2vmx.h vec_types.h si2vmx.h htmintrin.h htmxlintrin.h"
-	case x$with_cpu in
-	    xpowerpc64|xdefault64|x6[23]0|x970|xG5|xpower[3456789]|xpower6x|xrs64a|xcell|xa2|xe500mc64|xe5500|xe6500)
-		cpu_is_64bit=yes
-		;;
-	esac
-	extra_options="${extra_options} g.opt fused-madd.opt powerpcspe/powerpcspe-tables.opt"
 	;;
 powerpc*-*-*)
 	cpu_type=rs6000
@@ -2592,12 +2582,6 @@ powerpc-*-netbsd*)
 	tmake_file="${tmake_file} rs6000/t-netbsd"
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	;;
-powerpc-*-eabispe*)
-	tm_file="${tm_file} dbxelf.h elfos.h freebsd-spec.h newlib-stdint.h ${cpu_type}/sysv4.h ${cpu_type}/eabi.h ${cpu_type}/e500.h ${cpu_type}/eabispe.h"
-	extra_options="${extra_options} ${cpu_type}/sysv4.opt"
-	tmake_file="${cpu_type}/t-spe ${cpu_type}/t-ppccomm"
-	use_gcc_stdint=wrap
-	;;
 powerpc-*-eabisimaltivec*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/eabi.h rs6000/eabisim.h rs6000/eabialtivec.h"
 	extra_options="${extra_options} rs6000/sysv4.opt"
@@ -2627,25 +2611,10 @@ powerpc-*-eabi*)
 	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
 	use_gcc_stdint=wrap
 	;;
-powerpc-*-rtems*spe*)
-	tm_file="${tm_file} dbxelf.h elfos.h freebsd-spec.h newlib-stdint.h powerpcspe/sysv4.h powerpcspe/eabi.h powerpcspe/e500.h powerpcspe/rtems.h rtems.h"
-	extra_options="${extra_options} powerpcspe/sysv4.opt"
-	tmake_file="${tmake_file} powerpcspe/t-fprules powerpcspe/t-rtems powerpcspe/t-ppccomm"
-	;;
 powerpc-*-rtems*)
 	tm_file="rs6000/biarch64.h ${tm_file} dbxelf.h elfos.h gnu-user.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/rtems.h rtems.h"
 	extra_options="${extra_options} rs6000/sysv4.opt rs6000/linux64.opt"
 	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-rtems rs6000/t-ppccomm"
-	;;
-powerpc*-*-linux*spe*)
-	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h freebsd-spec.h powerpcspe/sysv4.h"
-	extra_options="${extra_options} powerpcspe/sysv4.opt"
-	tmake_file="${tmake_file} powerpcspe/t-fprules powerpcspe/t-ppccomm"
-	extra_objs="$extra_objs powerpcspe-linux.o"
-	maybe_biarch=
-	tm_file="${tm_file} powerpcspe/linux.h glibc-stdint.h"
-	tmake_file="${tmake_file} powerpcspe/t-ppcos powerpcspe/t-linux"
-	tm_file="${tm_file} powerpcspe/linuxspe.h powerpcspe/e500.h"
 	;;
 powerpc*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h freebsd-spec.h rs6000/sysv4.h"
@@ -2663,15 +2632,6 @@ powerpc*-*-linux*)
 	case ${enable_targets} in
 	    *powerpc64*) maybe_biarch=yes ;;
 	    all) maybe_biarch=yes ;;
-	esac
-	case ${target} in
-	    powerpc64*-*-linux*spe*)
-		echo "*** Configuration ${target} not supported" 1>&2
-		exit 1
-		;;
-	    powerpc*-*-linux*spe*)
-		maybe_biarch=
-		;;
 	esac
 	case ${target}:${enable_targets}:${maybe_biarch} in
 	    powerpc64-* | powerpc-*:*:yes | *:*powerpc64-*:yes | *:all:yes \
@@ -2713,8 +2673,6 @@ powerpc*-*-linux*)
 		extra_options="${extra_options} rs6000/476.opt" ;;
 	    powerpc*-*-linux*altivec*)
 		tm_file="${tm_file} rs6000/linuxaltivec.h" ;;
-	    powerpc*-*-linux*spe*)
-		tm_file="${tm_file} ${cpu_type}/linuxspe.h ${cpu_type}/e500.h" ;;
 	esac
 	case ${target} in
 	    *-linux*-musl*)
@@ -2723,13 +2681,6 @@ powerpc*-*-linux*)
 	if test x${enable_secureplt} = xyes; then
 		tm_file="rs6000/secureplt.h ${tm_file}"
 	fi
-	;;
-powerpc-wrs-vxworks*spe)
-	tm_file="${tm_file} elfos.h freebsd-spec.h powerpcspe/sysv4.h"
-	tmake_file="${tmake_file} powerpcspe/t-fprules powerpcspe/t-ppccomm powerpcspe/t-vxworks"
-	extra_options="${extra_options} powerpcspe/sysv4.opt"
-	extra_headers=ppc-asm.h
-	tm_file="${tm_file} vx-common.h vxworks.h powerpcspe/vxworks.h powerpcspe/e500.h"
 	;;
 powerpc-wrs-vxworks*)
 	tm_file="${tm_file} elfos.h gnu-user.h freebsd-spec.h rs6000/sysv4.h"
@@ -3617,20 +3568,6 @@ if test x$with_cpu = x ; then
 	"" | "m68k")
 	  with_cpu=m${default_m68k_cpu}
 	  ;;
-      esac
-      ;;
-    powerpc*-*-*spe*)
-      # For SPE, start with 8540, then upgrade to 8548 if
-      # --enable-e500-double was requested explicitly or if we were
-      # configured for e500v2.
-      with_cpu=8540
-      if test x$enable_e500_double = xyes; then
-        with_cpu=8548
-      fi
-      case ${target_noncanonical} in
-        e500v2*)
-          with_cpu=8548
-          ;;
       esac
       ;;
     sparc*-*-*)
