@@ -3617,10 +3617,13 @@ static match
 check_io_constraints (io_kind k, gfc_dt *dt, gfc_code *io_code,
 		      locus *spec_end)
 {
-#define io_constraint(condition,msg,arg)\
+#define io_constraint(condition, msg, arg)\
 if (condition) \
   {\
-    gfc_error(msg,arg);\
+    if ((arg)->lb != NULL)\
+      gfc_error ((msg), (arg));\
+    else\
+      gfc_error ((msg), &gfc_current_locus);\
     m = MATCH_ERROR;\
   }
 
@@ -3680,11 +3683,14 @@ if (condition) \
   if (expr && expr->ts.type != BT_CHARACTER)
     {
 
-      io_constraint (gfc_pure (NULL) && (k == M_READ || k == M_WRITE),
-		     "IO UNIT in %s statement at %C must be "
+      if (gfc_pure (NULL) && (k == M_READ || k == M_WRITE))
+	{
+	  gfc_error ("IO UNIT in %s statement at %C must be "
 		     "an internal file in a PURE procedure",
 		     io_kind_name (k));
-
+	  return MATCH_ERROR;
+	}
+	  
       if (k == M_READ || k == M_WRITE)
 	gfc_unset_implicit_pure (NULL);
     }
