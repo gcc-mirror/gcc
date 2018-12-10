@@ -50,6 +50,12 @@ along with GCC; see the file COPYING3.  If not see
 #define VXWORKS_LIBGCC_SPEC	\
   "-lgcc"
 
+/* The VxWorks AE ports features are restricted on purpose.  No RTPs,
+   for example.  */
+
+#undef TARGET_VXWORKS_HAVE_CTORS_DTORS
+#define TARGET_VXWORKS_HAVE_CTORS_DTORS 0
+
 #undef VXWORKS_STARTFILE_SPEC
 #define VXWORKS_STARTFILE_SPEC ""
 

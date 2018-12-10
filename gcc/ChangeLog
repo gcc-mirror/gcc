@@ -1,3 +1,7 @@
+2018-12-10  Jerome Lambourg  <lambourg@adacore.com>
+
+	* config/vxworksae.h (TARGET_VXWORKS_HAVE_CTORS_DTORS): Define.
+
 2018-12-10  Fredrik Nyström  <fredrik@lysator.liu.se>
 
 	PR bootstrap/65725
@@ -2440,7 +2444,6 @@
 	Default to TARGET_VXWORKS_RTP.
 	(SUPPORTS_INIT_PRIORITY): Use TARGET_VXWORKS_HAVE_CTORS_DTORS instead
 	of TARGET_VXWORKS_RTP.
-	* config/vxworksae.h: Also define TARGET_VXWORKS_HAVE_CTORS_DTORS.
 	* config/vxworks.c: Use TARGET_VXWORKS_HAVE_CTORS_DTORS instead
 	of TARGET_VXWORKS_RTP to set targetm.have_ctors_dtors.
 
