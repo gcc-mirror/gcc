@@ -1,8 +1,11 @@
-/* { dg-do run } */
+/* { dg-do run { target tls_runtime } } */
 /* { dg-set-target-env-var OMP_CANCELLATION "true" } */
 
 #include <stdlib.h>
 #include <omp.h>
+
+int t;
+#pragma omp threadprivate (t)
 
 int
 main ()
@@ -42,11 +45,12 @@ main ()
   #pragma omp parallel
   #pragma omp taskgroup
   {
-    #pragma omp taskwait
+    int p;
     #pragma omp for reduction (task, +: a)
     for (i = 0; i < 64; ++i)
       {
 	a++;
+	t = 1;
 	#pragma omp task in_reduction (+: a)
 	{
 	  volatile int zero = 0;
@@ -58,9 +62,10 @@ main ()
       }
     if (a != 64)
       abort ();
-    #pragma omp task
+    p = t;
+    #pragma omp task firstprivate (p)
     {
-      if (omp_get_cancellation ())
+      if (p && omp_get_cancellation ())
 	abort ();
     }
   }

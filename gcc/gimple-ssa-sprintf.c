@@ -121,7 +121,9 @@ struct format_result;
 class sprintf_dom_walker : public dom_walker
 {
  public:
-  sprintf_dom_walker () : dom_walker (CDI_DOMINATORS) {}
+  sprintf_dom_walker ()
+    : dom_walker (CDI_DOMINATORS),
+      evrp_range_analyzer (false) {}
   ~sprintf_dom_walker () {}
 
   edge before_dom_children (basic_block) FINAL OVERRIDE;

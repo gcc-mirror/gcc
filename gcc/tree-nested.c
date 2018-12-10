@@ -1648,6 +1648,21 @@ convert_nonlocal_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       *handled_ops_p = false;
       return NULL_TREE;
 
+    case GIMPLE_ASSIGN:
+      if (gimple_clobber_p (stmt))
+	{
+	  tree lhs = gimple_assign_lhs (stmt);
+	  if (DECL_P (lhs)
+	      && !(TREE_STATIC (lhs) || DECL_EXTERNAL (lhs))
+	      && decl_function_context (lhs) != info->context)
+	    {
+	      gsi_replace (gsi, gimple_build_nop (), true);
+	      break;
+	    }
+	}
+      *handled_ops_p = false;
+      return NULL_TREE;
+
     default:
       /* For every other statement that we are not interested in
 	 handling here, let the walker traverse the operands.  */
@@ -2309,7 +2324,8 @@ convert_local_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       if (gimple_clobber_p (stmt))
 	{
 	  tree lhs = gimple_assign_lhs (stmt);
-	  if (!use_pointer_in_frame (lhs)
+	  if (DECL_P (lhs)
+	      && !use_pointer_in_frame (lhs)
 	      && lookup_field_for_decl (info, lhs, NO_INSERT))
 	    {
 	      gsi_replace (gsi, gimple_build_nop (), true);

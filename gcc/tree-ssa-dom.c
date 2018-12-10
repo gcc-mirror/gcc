@@ -578,6 +578,7 @@ public:
     : dom_walker (direction, REACHABLE_BLOCKS),
       m_const_and_copies (const_and_copies),
       m_avail_exprs_stack (avail_exprs_stack),
+      evrp_range_analyzer (true),
       m_dummy_cond (dummy_cond) { }
 
   virtual edge before_dom_children (basic_block);

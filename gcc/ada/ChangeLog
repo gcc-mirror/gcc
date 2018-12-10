@@ -1,3 +1,158 @@
+2018-12-03  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_aux.adb (Object_Type_Has_Constrained_Partial_View): Return
+	True for an untagged discriminated formal derived type when
+	referenced within a generic body (augments existing test for
+	formal private types).
+	* sem_util.adb (Is_Dependent_Component_Of_Mutable_Type): If the
+	prefix of the name is a qualified expression, retrieve the
+	operand of that. Add a test of whether the (possible)
+	dereference prefix is a variable, and also test whether that
+	prefix might just be of an access type (occurs in some implicit
+	dereference cases) rather than being an explicit dereference.
+	Retrieve the Original_Node of the object name's main prefix and
+	handle the possibility of that being a qualified expression.
+	Remove special-case code for explicit dereferences that don't
+	come from source. Add test for the renaming not being within a
+	generic body for proper determination of whether a formal access
+	type is known to be constrained (it is within a generic spec,
+	but not in the body).  Fix an existing incorrect test for
+	renaming of a discriminant-dependent component of a untagged
+	generic formal type being within a generic body, adding test of
+	taggedness and calling In_Generic_Body (now properly checks for
+	cases where the renaming is in a nongeneric body nested within a
+	generic).  Return False in cases where the selector is not a
+	component (or discriminant), which can occur for
+	prefixed-notation calls.
+
+2018-12-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Apply_Check): For array types, apply a length
+	check rather than a qualification, to avoid spurious errors when
+	the value of a dependend expression has a matching length but
+	different bounds from those of the type of the contect.
+
+2018-12-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* libgnat/a-calend.adb: Update the number of leap seconds. Add
+	the hard time values for year 2015 and 2016.
+
+2018-12-03  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch3.adb, libgnarl/s-taasde.adb, libgnarl/s-taenca.adb,
+	libgnarl/s-tarest.adb, libgnarl/s-tasini.adb,
+	libgnarl/s-taskin.ads, libgnarl/s-tasren.adb,
+	libgnarl/s-tassta.adb, libgnarl/s-tasuti.adb: Spelling fixes and
+	minor reformatting.
+
+2018-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Convert_To_Positional): Use
+	Static_Array_Aggregate to decide whether to set
+	Compile_Time_Known_Aggregate on an already flat aggregate.
+	(Expand_Array_Aggregate): Remove test on
+	Compile_Time_Known_Aggregate that turns out to be dead and
+	simplify.
+	(Is_Static_Component): New predicate extracted from...
+	(Static_Array_Aggregate): ...here.  Test neither Is_Tagged_Type
+	nor Is_Controlled for the type, but test whether the component
+	type has discriminants.  Use the Is_Static_Component predicate
+	consistently for the positional and named cases.
+
+2018-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Do not freeze the partial view of
+	a private subtype if its base type is also private with delayed
+	freeze before the full type declaration of the base type has
+	been seen.
+	* sem_ch7.adb (Preserve_Full_Attributes): Add assertion on
+	freeze node.
+
+2018-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Build_Record_Init_Proc): Inherit an
+	initialization procedure if it is present, even if it is null.
+
+2018-12-03  Patrick Bernardi  <bernardi@adacore.com>
+
+	* libgnarl/s-taskin.ads (ATC_Level_Base): Redefine to span from
+	-1 to Max_ATC_Nesting so that 0 represents no ATC nesting and -1
+	represented a completed task. To increase readability, new
+	constants are introduced to represent key ATC nesting levels.
+	Consequently, Level_No_Pending_Abort replaces
+	ATC_Level_Infinity.  ATC_Level related definitions now
+	documented.
+	(Ada_Task_Control_Block): The default initialization of
+	components ATC_Nesting_Level and Pending_ATC_Level now use new
+	ATC_Level_Base constants.  Comments improved
+	* libgnarl/s-taskin.adb (Initialize): Improve the initialisation
+	of the first element of the Entry_Calls array to facilitate
+	better maintenance.
+	* libgnarl/s-taasde.ads: Update comment.
+	* libgnarl/s-taasde.adb, libgnarl/s-taenca.adb,
+	libgnarl/s-tasren.adb, libgnarl/s-tassta.adb,
+	libgnarl/s-tasuti.ads, libgnarl/s-tasuti.adb: Use new
+	ATC_Level_Base constants.
+	* libgnarl/s-tarest.adb (Create_Restricted_Task): Improve the
+	initialisation of the first element of the task's Entry_Calls
+	array to facilitate better maintenance.
+	* libgnarl/s-tasini.ads (Locked_Abort_To_Level): Update
+	signature to accept ATC_Level_Base.
+	* libgnarl/s-tasini.adb (Locked_Abort_To_Level): Update
+	signature to accept ATC_Level_Base.  Use new ATC_Level_Base
+	constants and only modify the aborting task's Entry_Calls array
+	if any entry call is happening.
+	* libgnarl/s-tposen.adb (Protected_Single_Entry_Call): Reference
+	the first element of the task's Entry_Calls array via 'First
+	attribute to facilitate better maintenance.
+
+2018-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.adb (Write_Entity_Info): Don't take Scope of Standard
+	package.
+	* sem_ch4.adb (Remove_Abstract_Operations): Add missing blank
+	lines to -gnatdv output.
+	* sem_type.adb (Write_Overloads): Take Entity of entity names
+	only.
+
+2018-12-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb, exp_aggr.adb, exp_attr.adb, exp_ch3.adb,
+	exp_util.adb, exp_util.ads, repinfo.adb, sem_attr.adb,
+	sem_ch3.adb, sem_res.adb, sem_util.adb: Minor reformatting.
+
+2018-12-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Complete_Private_Subtype): Enhance comment.
+
+2018-12-03  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/lang.opt (fopenacc): New option for Ada.
+	* gcc-interface/misc.c (gnat_handle_option): Handle it.
+	* gcc-interface/trans.c (struct loop_info_d): Add OMP
+	attributes.
+	(Iterate_Acc_Clause_Arg, Acc_gnat_to_gnu): New functions,
+	helpers for OpenACC pragmas processing in Pragma_to_gnu.
+	(Acc_Var_to_gnu, Acc_Reduc_Var_to_gnu, Acc_Reduc_to_gnu):
+	Likewise.
+	(Acc_Size_Expr_to_gnu, Acc_Size_List_to_gnu): Likewise.
+	(Pragma_Acc_Data_to_gnu): Likewise.
+	(Pragma_to_gnu): Handle Pragma_Acc_Loop, Pragma_Acc_Data,
+	Pragma_Acc_Kernels and Pragma_Acc_Parallel.
+	(Acc_Loop_to_gnu, Regular_Loop_to_gnu): New functions. Helpers
+	for ...
+	(Loop_Statement_to_gnu): Rework to handle OpenACC loops.
+
+2018-12-03  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/targtyps.c (MALLOC_OBSERVABLE_ALIGNMENT): Set to
+	2 * POINTER_SIZE.
+
+2018-12-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Set_Slice_Subtype): The index type of a slice is
+	constrained.
+
 2018-11-26  Matthias Klose <doko@ubuntu.com>
 
 	PR ada/88191

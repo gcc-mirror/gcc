@@ -1165,7 +1165,7 @@ proc process-message { msgproc msgprefix dgargs } {
     set newentry [lreplace $newentry 2 2 $expmsg]
 
     set dg-messages [lreplace ${dg-messages} end end $newentry]
-    verbose "process-message:\n${dg-messages}" 2
+    verbose "process-message:\n${dg-messages}" 3
 }
 
 # Look for messages that don't have standard prefixes.
@@ -1199,7 +1199,7 @@ proc dg-locus { args } {
 
     set newentry [lreplace $newentry 2 2 $expmsg]
     set dg-messages [lreplace ${dg-messages} end end $newentry]
-    verbose "process-message:\n${dg-messages}" 2
+    verbose "process-message:\n${dg-messages}" 3
 }
 
 # Handle output from -fopt-info for MSG_OPTIMIZED_LOCATIONS:

@@ -60,22 +60,29 @@ struct SignExtendedNumber
     bool operator<=(const SignExtendedNumber& a) const { return !(a < *this); }
     bool operator>=(const SignExtendedNumber& a) const { return !(*this < a); }
 
+    /// Increase the sign-extended number by 1 (saturated).
+    SignExtendedNumber& operator++();
+    /// Compute the saturated complement of a sign-extended number.
+    SignExtendedNumber operator~() const;
     /// Compute the saturated negation of a sign-extended number.
     SignExtendedNumber operator-() const;
 
+    /// Compute the saturated binary and of two sign-extended number.
+    SignExtendedNumber operator&(const SignExtendedNumber&) const;
+    /// Compute the saturated binary or of two sign-extended number.
+    SignExtendedNumber operator|(const SignExtendedNumber&) const;
+    /// Compute the saturated binary xor of two sign-extended number.
+    SignExtendedNumber operator^(const SignExtendedNumber&) const;
     /// Compute the saturated sum of two sign-extended number.
     SignExtendedNumber operator+(const SignExtendedNumber&) const;
     /// Compute the saturated difference of two sign-extended number.
-    SignExtendedNumber operator-(const SignExtendedNumber& a) const;
+    SignExtendedNumber operator-(const SignExtendedNumber&) const;
     /// Compute the saturated product of two sign-extended number.
     SignExtendedNumber operator*(const SignExtendedNumber&) const;
     /// Compute the saturated quotient of two sign-extended number.
     SignExtendedNumber operator/(const SignExtendedNumber&) const;
     /// Compute the saturated modulus of two sign-extended number.
     SignExtendedNumber operator%(const SignExtendedNumber&) const;
-
-    /// Increase the sign-extended number by 1 (saturated).
-    SignExtendedNumber& operator++();
 
     /// Compute the saturated shifts of two sign-extended number.
     SignExtendedNumber operator<<(const SignExtendedNumber&) const;
@@ -146,4 +153,25 @@ struct IntRange
     /// Split the range into two nonnegative- and negative-only subintervals.
     void splitBySign(IntRange& negRange, bool& hasNegRange,
                      IntRange& nonNegRange, bool& hasNonNegRange) const;
+
+    /// Credits to Timon Gehr maxOr, minOr, maxAnd, minAnd
+    /// https://github.com/tgehr/d-compiler/blob/master/vrange.d
+    static SignExtendedNumber maxOr(const IntRange&, const IntRange&);
+    static SignExtendedNumber minOr(const IntRange&, const IntRange&);
+    static SignExtendedNumber maxAnd(const IntRange&, const IntRange&);
+    static SignExtendedNumber minAnd(const IntRange&, const IntRange&);
+    static void swap(IntRange&, IntRange&);
+
+    IntRange operator~() const;
+    IntRange operator-() const;
+    IntRange operator&(const IntRange&) const;
+    IntRange operator|(const IntRange&) const;
+    IntRange operator^(const IntRange&) const;
+    IntRange operator+(const IntRange&) const;
+    IntRange operator-(const IntRange&) const;
+    IntRange operator*(const IntRange&) const;
+    IntRange operator/(const IntRange&) const;
+    IntRange operator%(const IntRange&) const;
+    IntRange operator<<(const IntRange&) const;
+    IntRange operator>>(const IntRange&) const;
 };

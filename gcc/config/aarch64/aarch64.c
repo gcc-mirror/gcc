@@ -681,6 +681,7 @@ static const struct tune_params generic_tunings =
   &generic_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost  */
   2, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC), /* fusible_ops  */
@@ -706,6 +707,7 @@ static const struct tune_params cortexa35_tunings =
   &generic_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost  */
   1, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
@@ -732,6 +734,7 @@ static const struct tune_params cortexa53_tunings =
   &generic_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost  */
   2, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
@@ -758,6 +761,7 @@ static const struct tune_params cortexa57_tunings =
   &cortexa57_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost  */
   3, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
@@ -784,6 +788,7 @@ static const struct tune_params cortexa72_tunings =
   &cortexa57_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost  */
   3, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
@@ -810,6 +815,7 @@ static const struct tune_params cortexa73_tunings =
   &cortexa57_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost.  */
   2, /* issue_rate.  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
@@ -838,6 +844,7 @@ static const struct tune_params exynosm1_tunings =
   &exynosm1_vector_cost,
   &generic_branch_cost,
   &exynosm1_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   4,	/* memmov_cost  */
   3,	/* issue_rate  */
   (AARCH64_FUSE_AES_AESMC), /* fusible_ops  */
@@ -863,6 +870,7 @@ static const struct tune_params thunderxt88_tunings =
   &thunderx_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   6, /* memmov_cost  */
   2, /* issue_rate  */
   AARCH64_FUSE_CMP_BRANCH, /* fusible_ops  */
@@ -888,6 +896,7 @@ static const struct tune_params thunderx_tunings =
   &thunderx_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   6, /* memmov_cost  */
   2, /* issue_rate  */
   AARCH64_FUSE_CMP_BRANCH, /* fusible_ops  */
@@ -914,6 +923,7 @@ static const struct tune_params tsv110_tunings =
   &tsv110_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   4,    /* memmov_cost  */
   4,    /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH
@@ -940,6 +950,7 @@ static const struct tune_params xgene1_tunings =
   &xgene1_vector_cost,
   &generic_branch_cost,
   &xgene1_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   6, /* memmov_cost  */
   4, /* issue_rate  */
   AARCH64_FUSE_NOTHING, /* fusible_ops  */
@@ -965,6 +976,7 @@ static const struct tune_params emag_tunings =
   &xgene1_vector_cost,
   &generic_branch_cost,
   &xgene1_approx_modes,
+  SVE_NOT_IMPLEMENTED,
   6, /* memmov_cost  */
   4, /* issue_rate  */
   AARCH64_FUSE_NOTHING, /* fusible_ops  */
@@ -990,6 +1002,7 @@ static const struct tune_params qdf24xx_tunings =
   &qdf24xx_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost  */
   4, /* issue_rate  */
   (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
@@ -1018,6 +1031,7 @@ static const struct tune_params saphira_tunings =
   &generic_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost  */
   4, /* issue_rate  */
   (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
@@ -1044,6 +1058,7 @@ static const struct tune_params thunderx2t99_tunings =
   &thunderx2t99_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost.  */
   4, /* issue_rate.  */
   (AARCH64_FUSE_CMP_BRANCH | AARCH64_FUSE_AES_AESMC
@@ -1071,12 +1086,14 @@ struct aarch64_tuning_override_function
 
 static void aarch64_parse_fuse_string (const char*, struct tune_params*);
 static void aarch64_parse_tune_string (const char*, struct tune_params*);
+static void aarch64_parse_sve_width_string (const char*, struct tune_params*);
 
 static const struct aarch64_tuning_override_function
 aarch64_tuning_override_functions[] =
 {
   { "fuse", aarch64_parse_fuse_string },
   { "tune", aarch64_parse_tune_string },
+  { "sve_width", aarch64_parse_sve_width_string },
   { NULL, NULL }
 };
 
@@ -7635,8 +7652,13 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x,
   unsigned int size;
 
   /* Check all addresses are Pmode - including ILP32.  */
-  if (GET_MODE (x) != Pmode)
-    output_operand_lossage ("invalid address mode");
+  if (GET_MODE (x) != Pmode
+      && (!CONST_INT_P (x)
+	  || trunc_int_for_mode (INTVAL (x), Pmode) != INTVAL (x)))
+    {
+      output_operand_lossage ("invalid address mode");
+      return false;
+    }
 
   if (aarch64_classify_address (&addr, x, mode, true, type))
     switch (addr.type)
@@ -10812,6 +10834,37 @@ aarch64_parse_tune_string (const char *tune_string,
 				     aarch64_tuning_flags,
 				     tune->extra_tuning_flags,
 				     "tune=");
+}
+
+/* Parse the sve_width tuning moverride string in TUNE_STRING.
+   Accept the valid SVE vector widths allowed by
+   aarch64_sve_vector_bits_enum and use it to override sve_width
+   in TUNE.  */
+
+static void
+aarch64_parse_sve_width_string (const char *tune_string,
+				struct tune_params *tune)
+{
+  int width = -1;
+
+  int n = sscanf (tune_string, "%d", &width);
+  if (n == EOF)
+    {
+      error ("invalid format for sve_width");
+      return;
+    }
+  switch (width)
+    {
+    case SVE_128:
+    case SVE_256:
+    case SVE_512:
+    case SVE_1024:
+    case SVE_2048:
+      break;
+    default:
+      error ("invalid sve_width value: %d", width);
+    }
+  tune->sve_width = (enum aarch64_sve_vector_bits_enum) width;
 }
 
 /* Parse TOKEN, which has length LENGTH to see if it is a tuning option
@@ -17864,6 +17917,25 @@ aarch64_speculation_safe_value (machine_mode mode,
   return result;
 }
 
+/* Implement TARGET_ESTIMATED_POLY_VALUE.
+   Look into the tuning structure for an estimate.
+   VAL.coeffs[1] is multiplied by the number of VQ chunks over the initial
+   Advanced SIMD 128 bits.  */
+
+static HOST_WIDE_INT
+aarch64_estimated_poly_value (poly_int64 val)
+{
+  enum aarch64_sve_vector_bits_enum width_source
+    = aarch64_tune_params.sve_width;
+
+  /* If we still don't have an estimate, use the default.  */
+  if (width_source == SVE_SCALABLE)
+    return default_estimated_poly_value (val);
+
+  HOST_WIDE_INT over_128 = width_source - 128;
+  return val.coeffs[0] + val.coeffs[1] * over_128 / 128;
+}
+
 /* Target-specific selftests.  */
 
 #if CHECKING_P
@@ -18342,6 +18414,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_SPECULATION_SAFE_VALUE
 #define TARGET_SPECULATION_SAFE_VALUE aarch64_speculation_safe_value
+
+#undef TARGET_ESTIMATED_POLY_VALUE
+#define TARGET_ESTIMATED_POLY_VALUE aarch64_estimated_poly_value
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

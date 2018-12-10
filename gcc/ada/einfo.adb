@@ -10032,7 +10032,9 @@ package body Einfo is
       Write_Eol;
       Write_Attribute ("   Type    ", Etype (Id));
       Write_Eol;
-      Write_Attribute ("   Scope   ", Scope (Id));
+      if Id /= Standard_Standard then
+         Write_Attribute ("   Scope   ", Scope (Id));
+      end if;
       Write_Eol;
 
       case Ekind (Id) is

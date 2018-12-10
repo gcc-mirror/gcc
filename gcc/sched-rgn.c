@@ -3507,8 +3507,7 @@ schedule_insns (void)
   haifa_sched_init ();
   sched_rgn_init (reload_completed);
 
-  bitmap_initialize (&not_in_df, 0);
-  bitmap_clear (&not_in_df);
+  bitmap_initialize (&not_in_df, &bitmap_default_obstack);
 
   /* Schedule every region in the subroutine.  */
   for (rgn = 0; rgn < nr_regions; rgn++)
@@ -3517,7 +3516,7 @@ schedule_insns (void)
 
   /* Clean up.  */
   sched_rgn_finish ();
-  bitmap_clear (&not_in_df);
+  bitmap_release (&not_in_df);
 
   haifa_sched_finish ();
 }

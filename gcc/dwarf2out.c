@@ -18985,7 +18985,6 @@ field_byte_offset (const_tree decl, struct vlr_context *ctx,
   if (TREE_CODE (DECL_FIELD_BIT_OFFSET (decl)) != INTEGER_CST)
     return NULL;
 
-#ifdef PCC_BITFIELD_TYPE_MATTERS
   /* We used to handle only constant offsets in all cases.  Now, we handle
      properly dynamic byte offsets only when PCC bitfield type doesn't
      matter.  */
@@ -19100,7 +19099,6 @@ field_byte_offset (const_tree decl, struct vlr_context *ctx,
       tree_result = wide_int_to_tree (sizetype, object_offset_in_bytes);
     }
   else
-#endif /* PCC_BITFIELD_TYPE_MATTERS */
     tree_result = byte_position (decl);
 
   if (ctx->variant_part_offset != NULL_TREE)

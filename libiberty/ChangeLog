@@ -1,3 +1,26 @@
+2018-12-07  Nick Clifton  <nickc@redhat.com>
+
+	PR 87681
+	PR 87675
+	PR 87636
+	PR 87350
+	PR 87335
+	* cp-demangle.h (struct d_info): Add recursion_level field.
+	* cp-demangle.c (d_function_type): Add recursion counter.
+	If the recursion limit is reached and the check is not disabled,
+	then return with a failure result.
+	(cplus_demangle_init_info): Initialise the recursion_level field.
+        (d_demangle_callback): If the recursion limit is enabled, check
+	for a mangled string that is so long that there is not enough
+	stack space for the local arrays.
+        * cplus-dem.c (struct work): Add recursion_level field.
+	(squangle_mop_up): Set the numb and numk fields to zero.
+	(work_stuff_copy_to_from): Handle the case where a btypevec or
+	ktypevec field is NULL.
+	(demangle_nested_args): Add recursion counter.  If
+	the recursion limit is not disabled and reached, return with a
+	failure result.
+
 2018-10-23  Jason Merrill  <jason@redhat.com>
 
 	Implement P0732R2, class types in non-type template parameters.

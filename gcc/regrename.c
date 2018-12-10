@@ -231,7 +231,7 @@ create_new_chain (unsigned this_regno, unsigned this_nregs, rtx *loc,
   struct du_chain *this_du;
   int nregs;
 
-  memset (head, 0, sizeof *head);
+  memset ((void *)head, 0, sizeof *head);
   head->next_chain = open_chains;
   head->regno = this_regno;
   head->nregs = this_nregs;

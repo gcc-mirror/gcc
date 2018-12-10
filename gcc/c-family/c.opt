@@ -481,7 +481,12 @@ C C++ ObjC ObjC++ CPP(cpp_warn_deprecated) CppReason(CPP_W_DEPRECATED) Var(warn_
 Warn if a deprecated compiler feature, class, method, or field is used.
 
 Wdeprecated-copy
-C++ ObjC++ Var(warn_deprecated_copy) Warning LangEnabledBy(C++ ObjC++, Wall)
+C++ ObjC++ Var(warn_deprecated_copy) Warning LangEnabledBy(C++ ObjC++, Wextra)
+Mark implicitly-declared copy operations as deprecated if the class has a
+user-provided copy operation.
+
+Wdeprecated-copy-dtor
+C++ ObjC++ Var(warn_deprecated_copy, 2) Warning
 Mark implicitly-declared copy operations as deprecated if the class has a
 user-provided copy operation or destructor.
 

@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target freorder } } */
 /* { dg-options "-O2 -fdump-tree-optimized-details-blocks -fdump-rtl-bbpart-details-blocks -freorder-blocks-and-partition" } */
 volatile int v;
 void bar (void) __attribute__((leaf, cold));

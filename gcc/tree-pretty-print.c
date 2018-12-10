@@ -1180,9 +1180,7 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       break;
 
     default:
-      /* Should never happen.  */
-      dump_generic_node (pp, clause, spc, flags, false);
-      break;
+      gcc_unreachable ();
     }
 }
 

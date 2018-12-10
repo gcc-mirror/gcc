@@ -459,6 +459,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_reload);
       NEXT_PASS (pass_postreload);
       PUSH_INSERT_PASSES_WITHIN (pass_postreload)
+	  NEXT_PASS (pass_postreload_jump);
 	  NEXT_PASS (pass_postreload_cse);
 	  NEXT_PASS (pass_gcse2);
 	  NEXT_PASS (pass_split_after_reload);

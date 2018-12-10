@@ -430,6 +430,9 @@ type g struct {
 
 	scanningself bool // whether goroutine is scanning its own stack
 
+	scang   uintptr // the g that wants to scan this g's stack (uintptr to avoid write barrier)
+	scangcw uintptr // gc worker for scanning stack (uintptr to avoid write barrier)
+
 	isSystemGoroutine bool // whether goroutine is a "system" goroutine
 
 	traceback uintptr // stack traceback buffer
@@ -514,6 +517,8 @@ type m struct {
 	exiting    bool // thread is exiting
 
 	gcing int32
+
+	scannote note // synchonization for signal-based stack scanning
 }
 
 type p struct {

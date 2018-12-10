@@ -7509,7 +7509,7 @@ package body Sem_Ch4 is
    begin
       if Is_Overloaded (N) then
          if Debug_Flag_V then
-            Write_Str ("Remove_Abstract_Operations: ");
+            Write_Line ("Remove_Abstract_Operations: ");
             Write_Overloads (N);
          end if;
 
@@ -7704,7 +7704,7 @@ package body Sem_Ch4 is
          end if;
 
          if Debug_Flag_V then
-            Write_Str ("Remove_Abstract_Operations done: ");
+            Write_Line ("Remove_Abstract_Operations done: ");
             Write_Overloads (N);
          end if;
       end if;

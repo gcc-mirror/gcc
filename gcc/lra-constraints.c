@@ -5496,7 +5496,9 @@ lra_copy_reg_equiv (unsigned int new_regno, unsigned int original_regno)
    ORIGINAL_REGNO.  NEXT_USAGE_INSNS specifies which instruction in
    the EBB next uses ORIGINAL_REGNO; it has the same form as the
    "insns" field of usage_insns.  If TO is not NULL, we don't use
-   usage_insns, we put restore insns after TO insn.
+   usage_insns, we put restore insns after TO insn.  It is a case when
+   we call it from lra_split_hard_reg_for, outside the inheritance
+   pass.
 
    The transformations look like:
 
@@ -5652,16 +5654,18 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
       && mode == PSEUDO_REGNO_MODE (original_regno))
     lra_copy_reg_equiv (new_regno, original_regno);
   lra_reg_info[new_regno].restore_rtx = regno_reg_rtx[original_regno];
-  bitmap_set_bit (&check_only_regs, new_regno);
-  bitmap_set_bit (&check_only_regs, original_regno);
   bitmap_set_bit (&lra_split_regs, new_regno);
   if (to != NULL)
     {
+      lra_assert (next_usage_insns == NULL);
       usage_insn = to;
       after_p = TRUE;
     }
   else
     {
+      /* We need check_only_regs only inside the inheritance pass.  */
+      bitmap_set_bit (&check_only_regs, new_regno);
+      bitmap_set_bit (&check_only_regs, original_regno);
       after_p = usage_insns[original_regno].after_p;
       for (;;)
 	{
@@ -6647,11 +6651,11 @@ lra_inheritance (void)
 	   inherit_in_ebb.  */
 	update_ebb_live_info (BB_HEAD (start_bb), BB_END (bb));
     }
-  bitmap_clear (&ebb_global_regs);
-  bitmap_clear (&temp_bitmap);
-  bitmap_clear (&live_regs);
-  bitmap_clear (&invalid_invariant_regs);
-  bitmap_clear (&check_only_regs);
+  bitmap_release (&ebb_global_regs);
+  bitmap_release (&temp_bitmap);
+  bitmap_release (&live_regs);
+  bitmap_release (&invalid_invariant_regs);
+  bitmap_release (&check_only_regs);
   free (usage_insns);
 
   timevar_pop (TV_LRA_INHERITANCE);

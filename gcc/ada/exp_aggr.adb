@@ -4541,7 +4541,7 @@ package body Exp_Aggr is
 
                            declare
                               P : constant Entity_Id :=
-                                Cunit_Entity (Current_Sem_Unit);
+                                    Cunit_Entity (Current_Sem_Unit);
 
                            begin
                               --  Check if duplication is always OK and, if so,
@@ -4759,17 +4759,8 @@ package body Exp_Aggr is
       --  initial value of a thread-local variable.
 
       if Is_Flat (N, Number_Dimensions (Typ)) then
-         Check_Static_Components;
-         if Static_Components then
-            if Is_Packed (Etype (N))
-              or else
-                (Is_Record_Type (Component_Type (Etype (N)))
-                  and then Has_Discriminants (Component_Type (Etype (N))))
-            then
-               null;
-            else
-               Set_Compile_Time_Known_Aggregate (N);
-            end if;
+         if Static_Array_Aggregate (N) then
+            Set_Compile_Time_Known_Aggregate (N);
          end if;
 
          return;
@@ -6205,15 +6196,8 @@ package body Exp_Aggr is
         or else (Parent_Kind = N_Assignment_Statement
                   and then Inside_Init_Proc)
       then
-         if Static_Array_Aggregate (N)
-           or else Compile_Time_Known_Aggregate (N)
-         then
-            Set_Expansion_Delayed (N, False);
-            return;
-         else
-            Set_Expansion_Delayed (N);
-            return;
-         end if;
+         Set_Expansion_Delayed (N, not Static_Array_Aggregate (N));
+         return;
       end if;
 
       --  STEP 4
@@ -8506,20 +8490,48 @@ package body Exp_Aggr is
    ----------------------------
 
    function Static_Array_Aggregate (N : Node_Id) return Boolean is
+
+      function Is_Static_Component (N : Node_Id) return Boolean;
+      --  Return True if N has a compile-time known value and can be passed as
+      --  is to the back-end without further expansion.
+
+      ---------------------------
+      --  Is_Static_Component  --
+      ---------------------------
+
+      function Is_Static_Component (N : Node_Id) return Boolean is
+      begin
+         if Nkind_In (N, N_Integer_Literal, N_Real_Literal) then
+            return True;
+
+         elsif Is_Entity_Name (N)
+           and then Present (Entity (N))
+           and then Ekind (Entity (N)) = E_Enumeration_Literal
+         then
+            return True;
+
+         elsif Nkind (N) = N_Aggregate
+           and then Compile_Time_Known_Aggregate (N)
+         then
+            return True;
+
+         else
+            return False;
+         end if;
+      end Is_Static_Component;
+
       Bounds : constant Node_Id := Aggregate_Bounds (N);
 
       Typ       : constant Entity_Id := Etype (N);
-      Comp_Type : constant Entity_Id := Component_Type (Typ);
       Agg       : Node_Id;
       Expr      : Node_Id;
       Lo        : Node_Id;
       Hi        : Node_Id;
 
+   --  Start of processing for Static_Array_Aggregate
+
    begin
-      if Is_Tagged_Type (Typ)
-        or else Is_Controlled (Typ)
-        or else Is_Packed (Typ)
-      then
+      if Is_Packed (Typ) or else Has_Discriminants (Component_Type (Typ)) then
          return False;
       end if;
 
@@ -8533,11 +8545,11 @@ package body Exp_Aggr is
 
          if No (Component_Associations (N)) then
 
-            --  Verify that all components are static integers
+            --  Verify that all components are static
 
             Expr := First (Expressions (N));
             while Present (Expr) loop
-               if Nkind (Expr) /= N_Integer_Literal then
+               if not Is_Static_Component (Expr) then
                   return False;
                end if;
 
@@ -8567,17 +8579,7 @@ package body Exp_Aggr is
                --  component type. We also limit the size of a static aggregate
                --  to prevent runaway static expressions.
 
-               if Is_Array_Type (Comp_Type)
-                 or else Is_Record_Type (Comp_Type)
-               then
-                  if Nkind (Expression (Expr)) /= N_Aggregate
-                    or else
-                      not Compile_Time_Known_Aggregate (Expression (Expr))
-                  then
-                     return False;
-                  end if;
-
-               elsif Nkind (Expression (Expr)) /= N_Integer_Literal then
+               if not Is_Static_Component (Expression (Expr)) then
                   return False;
                end if;
 

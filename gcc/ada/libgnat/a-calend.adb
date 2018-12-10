@@ -38,7 +38,6 @@ with System.OS_Primitives;
 package body Ada.Calendar with
   SPARK_Mode => Off
 is
-
    --------------------------
    -- Implementation Notes --
    --------------------------
@@ -157,7 +156,7 @@ is
    Leap_Support : constant Boolean := (Flag = 1);
    --  Flag to controls the usage of leap seconds in all Ada.Calendar routines
 
-   Leap_Seconds_Count : constant Natural := 25;
+   Leap_Seconds_Count : constant Natural := 27;
 
    ---------------------
    -- Local Constants --
@@ -236,7 +235,9 @@ is
       -4765132779000000000,
       -4544207978000000000,
       -4449513577000000000,
-      -4339180776000000000);
+      -4339180776000000000,
+      -4244572775000000000,
+      -4197052774000000000);
 
    ---------
    -- "+" --

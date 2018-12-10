@@ -6239,13 +6239,34 @@ package body Freeze is
 
                goto Leave;
 
-            --  Case of no full view present. If entity is derived or subtype,
+            --  Case of no full view present. If entity is subtype or derived,
             --  it is safe to freeze, correctness depends on the frozen status
             --  of parent. Otherwise it is either premature usage, or a Taft
             --  amendment type, so diagnosis is at the point of use and the
             --  type might be frozen later.
 
-            elsif E /= Base_Type (E) or else Is_Derived_Type (E) then
+            elsif E /= Base_Type (E) then
+               declare
+                  Btyp : constant Entity_Id := Base_Type (E);
+
+               begin
+                  --  However, if the base type is itself private and has no
+                  --  (underlying) full view either, wait until the full type
+                  --  declaration is seen and all the full views are created.
+
+                  if Is_Private_Type (Btyp)
+                    and then No (Full_View (Btyp))
+                    and then No (Underlying_Full_View (Btyp))
+                    and then Has_Delayed_Freeze (Btyp)
+                    and then No (Freeze_Node (Btyp))
+                  then
+                     Set_Is_Frozen (E, False);
+                     Result := No_List;
+                     goto Leave;
+                  end if;
+               end;
+
+            elsif Is_Derived_Type (E) then
                null;
 
             else

@@ -26,24 +26,28 @@ test (__m128i s1)
 static void
 TEST (void)
 {
-  union128i_q s1;
-  union128i_w u;
+  union128i_w s1, u;
   short  e[8] = { 0 };
   int i;
   int m1[4] = { 0x3, 0x3<<2, 0x3<<4, 0x3<<6 };
   int m2[4];
   
-  s1.x = _mm_set_epi64x (0xabcde,0xef58a234);
+  s1.x = _mm_set_epi16 (0, 0, 0xa, 0xbcde, 0, 0, 0xef58, 0xa234);
   u.x = test (s1.x);
 
   for (i = 0; i < 4; i++)
-    e[i] = (s1.a[0]>>(16 * i)) & 0xffff;
+    e[i] = s1.a[i];
+
+  for (i = 0; i < 4; i++) {
+    int i2 = i;
+#ifdef __LITTLE_ENDIAN__
+    i2 = 3 - i;
+#endif
+    m2[i2] = (N & m1[i2]) >> (2 * i2);
+  }
 
   for (i = 0; i < 4; i++)
-    m2[i] = (N & m1[i])>>(2*i);
-
-  for (i = 0; i < 4; i++)
-    e[i+4] = (s1.a[1] >> (16 * m2[i])) & 0xffff;
+    e[i + 4] = s1.a[m2[i] + 4];
 
   if (check_union128i_w(u, e))
     {

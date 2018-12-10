@@ -16616,7 +16616,8 @@ cp_parser_template_name (cp_parser* parser,
       if (!found
 	  && (cxx_dialect > cxx17)
 	  && !scoped_p
-	  && cp_lexer_next_token_is (parser->lexer, CPP_LESS))
+	  && cp_lexer_next_token_is (parser->lexer, CPP_LESS)
+	  && tag_type == none_type)
 	{
 	  /* [temp.names] says "A name is also considered to refer to a template
 	     if it is an unqualified-id followed by a < and name lookup finds
@@ -19627,22 +19628,35 @@ cp_parser_using_directive (cp_parser* parser)
 
 /* Parse an asm-definition.
 
+  asm-qualifier:
+    volatile
+    inline
+    goto
+
+  asm-qualifier-list:
+    asm-qualifier
+    asm-qualifier-list asm-qualifier
+
    asm-definition:
      asm ( string-literal ) ;
 
    GNU Extension:
 
    asm-definition:
-     asm volatile [opt] ( string-literal ) ;
-     asm volatile [opt] ( string-literal : asm-operand-list [opt] ) ;
-     asm volatile [opt] ( string-literal : asm-operand-list [opt]
-			  : asm-operand-list [opt] ) ;
-     asm volatile [opt] ( string-literal : asm-operand-list [opt]
-			  : asm-operand-list [opt]
+     asm asm-qualifier-list [opt] ( string-literal ) ;
+     asm asm-qualifier-list [opt] ( string-literal : asm-operand-list [opt] ) ;
+     asm asm-qualifier-list [opt] ( string-literal : asm-operand-list [opt]
+				    : asm-operand-list [opt] ) ;
+     asm asm-qualifier-list [opt] ( string-literal : asm-operand-list [opt]
+				    : asm-operand-list [opt]
 			  : asm-clobber-list [opt] ) ;
-     asm volatile [opt] goto ( string-literal : : asm-operand-list [opt]
-			       : asm-clobber-list [opt]
-			       : asm-goto-list ) ;  */
+     asm asm-qualifier-list [opt] ( string-literal : : asm-operand-list [opt]
+				    : asm-clobber-list [opt]
+				    : asm-goto-list ) ;
+
+  The form with asm-goto-list is valid if and only if the asm-qualifier-list
+  contains goto, and is the only allowed form in that case.  No duplicates are
+  allowed in an asm-qualifier-list.  */
 
 static void
 cp_parser_asm_definition (cp_parser* parser)
@@ -19657,6 +19671,7 @@ cp_parser_asm_definition (cp_parser* parser)
   bool extended_p = false;
   bool invalid_inputs_p = false;
   bool invalid_outputs_p = false;
+  bool inline_p = false;
   bool goto_p = false;
   required_token missing = RT_NONE;
 
@@ -19671,23 +19686,47 @@ cp_parser_asm_definition (cp_parser* parser)
     }
 
   /* See if the next token is `volatile'.  */
-  if (cp_parser_allow_gnu_extensions_p (parser)
-      && cp_lexer_next_token_is_keyword (parser->lexer, RID_VOLATILE))
-    {
-      /* Remember that we saw the `volatile' keyword.  */
-      volatile_p = true;
-      /* Consume the token.  */
-      cp_lexer_consume_token (parser->lexer);
-    }
-  if (cp_parser_allow_gnu_extensions_p (parser)
-      && parser->in_function_body
-      && cp_lexer_next_token_is_keyword (parser->lexer, RID_GOTO))
-    {
-      /* Remember that we saw the `goto' keyword.  */
-      goto_p = true;
-      /* Consume the token.  */
-      cp_lexer_consume_token (parser->lexer);
-    }
+  if (cp_parser_allow_gnu_extensions_p (parser))
+    for (bool done = false; !done ; )
+      switch (cp_lexer_peek_token (parser->lexer)->keyword)
+	{
+	case RID_VOLATILE:
+	  if (!volatile_p)
+	    {
+	      /* Remember that we saw the `volatile' keyword.  */
+	      volatile_p = true;
+	      /* Consume the token.  */
+	      cp_lexer_consume_token (parser->lexer);
+	    }
+	  else
+	    done = true;
+	  break;
+	case RID_INLINE:
+	  if (!inline_p && parser->in_function_body)
+	    {
+	      /* Remember that we saw the `inline' keyword.  */
+	      inline_p = true;
+	      /* Consume the token.  */
+	      cp_lexer_consume_token (parser->lexer);
+	    }
+	  else
+	    done = true;
+	  break;
+	case RID_GOTO:
+	  if (!goto_p && parser->in_function_body)
+	    {
+	      /* Remember that we saw the `goto' keyword.  */
+	      goto_p = true;
+	      /* Consume the token.  */
+	      cp_lexer_consume_token (parser->lexer);
+	    }
+	  else
+	    done = true;
+	  break;
+	default:
+	  done = true;
+	}
+
   /* Look for the opening `('.  */
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
     return;
@@ -19814,7 +19853,7 @@ cp_parser_asm_definition (cp_parser* parser)
       if (parser->in_function_body)
 	{
 	  asm_stmt = finish_asm_stmt (volatile_p, string, outputs,
-				      inputs, clobbers, labels);
+				      inputs, clobbers, labels, inline_p);
 	  /* If the extended syntax was not used, mark the ASM_EXPR.  */
 	  if (!extended_p)
 	    {
@@ -32642,9 +32681,11 @@ cp_parser_oacc_wait_list (cp_parser *parser, location_t clause_loc, tree list)
 
   if (args == NULL || args->length () == 0)
     {
-      cp_parser_error (parser, "expected integer expression before ')'");
       if (args != NULL)
-	release_tree_vector (args);
+	{
+	  cp_parser_error (parser, "expected integer expression list");
+	  release_tree_vector (args);
+	}
       return list;
     }
 
@@ -38738,8 +38779,9 @@ cp_parser_oacc_kernels_parallel (cp_parser *parser, cp_token *pragma_tok,
 	  cp_lexer_consume_token (parser->lexer);
 	  tree block = begin_omp_parallel ();
 	  tree clauses;
-	  cp_parser_oacc_loop (parser, pragma_tok, p_name, mask, &clauses,
-			       if_p);
+	  tree stmt = cp_parser_oacc_loop (parser, pragma_tok, p_name, mask,
+					   &clauses, if_p);
+	  protected_set_expr_location (stmt, pragma_tok->location);
 	  return finish_omp_construct (code, block, clauses);
 	}
     }

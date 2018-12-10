@@ -3218,7 +3218,8 @@ check_bitfield_decl (tree field)
   /* Detect invalid bit-field type.  */
   if (!INTEGRAL_OR_ENUMERATION_TYPE_P (type))
     {
-      error ("bit-field %q+#D with non-integral type", field);
+      error_at (DECL_SOURCE_LOCATION (field),
+		"bit-field %q#D with non-integral type %qT", field, type);
       w = error_mark_node;
     }
   else
@@ -5233,7 +5234,7 @@ classtype_has_non_deleted_move_ctor (tree t)
    operator, or destructor, returns that function.  Otherwise, null.  */
 
 tree
-classtype_has_user_copy_or_dtor (tree t)
+classtype_has_depr_implicit_copy (tree t)
 {
   if (!CLASSTYPE_LAZY_COPY_CTOR (t))
     for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)

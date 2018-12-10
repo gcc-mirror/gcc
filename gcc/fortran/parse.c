@@ -4563,7 +4563,7 @@ parse_associate (void)
 	  else
 	    rank = a->target->rank;
 	  /* When the rank is greater than zero then sym will be an array.  */
-	  if (sym->ts.type == BT_CLASS)
+	  if (sym->ts.type == BT_CLASS && CLASS_DATA (sym))
 	    {
 	      if ((!CLASS_DATA (sym)->as && rank != 0)
 		  || (CLASS_DATA (sym)->as

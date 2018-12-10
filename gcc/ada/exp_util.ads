@@ -1141,7 +1141,9 @@ package Exp_Util is
    --  that a Constraint_Error exception be raised (RM 4.5.6(6)).
 
    procedure Silly_Boolean_Array_Xor_Test
-     (N : Node_Id; R : Node_Id;  T : Entity_Id);
+     (N : Node_Id;
+      R : Node_Id;
+      T : Entity_Id);
    --  N is the node for a boolean array XOR operation, T is the type of the
    --  array, and R is a copy of the right operand of N, required to prevent
    --  scope anomalies when unnesting is in effect. This routine deals with

@@ -1,3 +1,9 @@
+2018-12-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88136 - -Wdeprecated-copy false positives
+	* c.opt (Wdeprecated-copy-dtor): New.
+	(Wdeprecated-copy): Move to -Wextra.
+
 2018-11-29  Martin Sebor  <msebor@redhat.com>
 
 	PR c/88172

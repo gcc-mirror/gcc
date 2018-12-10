@@ -470,7 +470,7 @@ string_table::get_index_by_decl (tree decl) const
   ret = get_index (lang_hooks.dwarf_name (decl, 0));
   if (ret != -1)
     return ret;
-  if (DECL_ABSTRACT_ORIGIN (decl) && DECL_ABSTRACT_ORIGIN (decl) != decl)
+  if (DECL_FROM_INLINE (decl))
     return get_index_by_decl (DECL_ABSTRACT_ORIGIN (decl));
 
   return -1;
@@ -537,7 +537,7 @@ function_instance::get_function_instance_by_decl (unsigned lineno,
       if (ret != callsites.end ())
         return ret->second;
     }
-  if (DECL_ABSTRACT_ORIGIN (decl))
+  if (DECL_FROM_INLINE (decl))
     return get_function_instance_by_decl (lineno, DECL_ABSTRACT_ORIGIN (decl));
 
   return NULL;
@@ -1400,7 +1400,7 @@ afdo_calculate_branch_prob (bb_set *annotated_bb, edge_set *annotated_edge)
     edge e;
     edge_iterator ei;
     int num_unknown_succ = 0;
-    profile_count total_count = profile_count::zero ();
+    profile_count total_count = profile_count::zero ().afdo ();
 
     FOR_EACH_EDGE (e, ei, bb->succs)
     {
@@ -1507,6 +1507,7 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
      = profile_count::from_gcov_type (s->head_count ()).afdo ();
   ENTRY_BLOCK_PTR_FOR_FN (cfun)->count
      = profile_count::from_gcov_type (s->head_count ()).afdo ();
+  EXIT_BLOCK_PTR_FOR_FN (cfun)->count = profile_count::zero ().afdo ();
   profile_count max_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
 
   FOR_EACH_BB_FN (bb, cfun)
@@ -1686,11 +1687,12 @@ afdo_callsite_hot_enough_for_early_inline (struct cgraph_edge *edge)
   if (count > 0)
     {
       bool is_hot;
+      profile_count pcount = profile_count::from_gcov_type (count).afdo ();
       gcov_summary *saved_profile_info = profile_info;
       /* At early inline stage, profile_info is not set yet. We need to
          temporarily set it to afdo_profile_info to calculate hotness.  */
       profile_info = autofdo::afdo_profile_info;
-      is_hot = maybe_hot_count_p (NULL, profile_count::from_gcov_type (count));
+      is_hot = maybe_hot_count_p (NULL, pcount);
       profile_info = saved_profile_info;
       return is_hot;
     }

@@ -12187,7 +12187,8 @@ grokdeclarator (const cp_declarator *declarator,
     }
 
   if (ctype && TREE_CODE (type) == FUNCTION_TYPE && staticp < 2
-      && !(identifier_p (unqualified_id)
+      && !(unqualified_id
+	   && identifier_p (unqualified_id)
 	   && IDENTIFIER_NEWDEL_OP_P (unqualified_id)))
     {
       cp_cv_quals real_quals = memfn_quals;
@@ -12267,8 +12268,7 @@ grokdeclarator (const cp_declarator *declarator,
 	    error ("invalid use of %<::%>");
 	    return error_mark_node;
 	  }
-	else if (TREE_CODE (type) == FUNCTION_TYPE
-		 || TREE_CODE (type) == METHOD_TYPE)
+	else if (FUNC_OR_METHOD_TYPE_P (type) && unqualified_id)
 	  {
 	    int publicp = 0;
 	    tree function_context;
@@ -12446,9 +12446,13 @@ grokdeclarator (const cp_declarator *declarator,
 	  {
 	    if (friendp)
 	      {
-		error_at (declarator->id_loc,
-			  "%qE is neither function nor member function; "
-			  "cannot be declared friend", unqualified_id);
+		if (unqualified_id && declarator)
+		  error_at (declarator->id_loc,
+			    "%qE is neither function nor member function; "
+			    "cannot be declared friend", unqualified_id);
+		else
+		  error ("unnamed field is neither function nor member "
+			 "function; cannot be declared friend");
 		return error_mark_node;
 	      }
 	    decl = NULL_TREE;
@@ -12483,14 +12487,13 @@ grokdeclarator (const cp_declarator *declarator,
 
 	if (decl == NULL_TREE)
 	  {
+	    location_t loc = declarator ? declarator->id_loc : input_location;
 	    if (staticp)
 	      {
 		/* C++ allows static class members.  All other work
 		   for this is done by grokfield.  */
-		decl = build_lang_decl_loc (declarator
-					    ? declarator->id_loc
-					    : input_location,
-					    VAR_DECL, unqualified_id, type);
+		decl = build_lang_decl_loc (loc, VAR_DECL,
+					    unqualified_id, type);
 		set_linkage_for_static_data_member (decl);
 		if (concept_p)
 		  error_at (declspecs->locations[ds_concept],
@@ -12536,8 +12539,7 @@ grokdeclarator (const cp_declarator *declarator,
 			      unqualified_id);
 		    constexpr_p = false;
 		  }
-		decl = build_decl (input_location,
-				   FIELD_DECL, unqualified_id, type);
+		decl = build_decl (loc, FIELD_DECL, unqualified_id, type);
 		DECL_NONADDRESSABLE_P (decl) = bitfield;
 		if (bitfield && !unqualified_id)
 		  {

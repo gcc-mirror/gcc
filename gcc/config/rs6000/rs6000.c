@@ -4282,6 +4282,13 @@ rs6000_option_override_internal (bool global_init_p)
     }
   else if (rs6000_long_double_type_size == 128)
     rs6000_long_double_type_size = FLOAT_PRECISION_TFmode;
+  else if (global_options_set.x_rs6000_ieeequad)
+    {
+      if (global_options.x_rs6000_ieeequad)
+	error ("%qs requires %qs", "-mabi=ieeelongdouble", "-mlong-double-128");
+      else
+	error ("%qs requires %qs", "-mabi=ibmlongdouble", "-mlong-double-128");
+    }
 
   /* Set -mabi=ieeelongdouble on some old targets.  In the future, power server
      systems will also set long double to be IEEE 128-bit.  AIX and Darwin
@@ -4293,7 +4300,8 @@ rs6000_option_override_internal (bool global_init_p)
 
   else
     {
-      if (!TARGET_POPCNTD || !TARGET_VSX)
+      if (global_options.x_rs6000_ieeequad
+	  && (!TARGET_POPCNTD || !TARGET_VSX))
 	error ("%qs requires full ISA 2.06 support", "-mabi=ieeelongdouble");
 
       if (rs6000_ieeequad != TARGET_IEEEQUAD_DEFAULT && TARGET_LONG_DOUBLE_128)
@@ -11989,7 +11997,8 @@ rs6000_function_arg (cumulative_args_t cum_v, machine_mode mode,
       if (elt_mode == TDmode && (cum->fregno % 2) == 1)
 	cum->fregno++;
 
-      if (USE_FP_FOR_ARG_P (cum, elt_mode))
+      if (USE_FP_FOR_ARG_P (cum, elt_mode)
+	  && !(TARGET_AIX && !TARGET_ELF && AGGREGATE_TYPE_P (type)))
 	{
 	  rtx rvec[GP_ARG_NUM_REG + AGGR_ARG_NUM_REG + 1];
 	  rtx r, off;
@@ -12125,7 +12134,8 @@ rs6000_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
 
   align_words = rs6000_parm_start (mode, type, cum->words);
 
-  if (USE_FP_FOR_ARG_P (cum, elt_mode))
+  if (USE_FP_FOR_ARG_P (cum, elt_mode)
+      && !(TARGET_AIX && !TARGET_ELF && AGGREGATE_TYPE_P (type)))
     {
       unsigned long n_fpreg = (GET_MODE_SIZE (elt_mode) + 7) >> 3;
 
@@ -20624,7 +20634,8 @@ ccr_bit (rtx op, int scc_p)
 
   reg = XEXP (op, 0);
 
-  gcc_assert (GET_CODE (reg) == REG && CR_REGNO_P (REGNO (reg)));
+  if (!REG_P (reg) || !CR_REGNO_P (REGNO (reg)))
+    return -1;
 
   cc_mode = GET_MODE (reg);
   cc_regnum = REGNO (reg);
@@ -20634,9 +20645,19 @@ ccr_bit (rtx op, int scc_p)
 
   /* When generating a sCOND operation, only positive conditions are
      allowed.  */
-  gcc_assert (!scc_p
-	      || code == EQ || code == GT || code == LT || code == UNORDERED
-	      || code == GTU || code == LTU);
+  if (scc_p)
+    switch (code)
+      {
+      case EQ:
+      case GT:
+      case LT:
+      case UNORDERED:
+      case GTU:
+      case LTU:
+	break;
+      default:
+	return -1;
+      }
 
   switch (code)
     {
@@ -20661,7 +20682,7 @@ ccr_bit (rtx op, int scc_p)
       return scc_p ? base_bit + 3 : base_bit + 1;
 
     default:
-      gcc_unreachable ();
+      return -1;
     }
 }
 
@@ -20754,7 +20775,7 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'D':
       /* Like 'J' but get to the GT bit only.  */
-      if (!REG_P (x))
+      if (!REG_P (x) || !CR_REGNO_P (REGNO (x)))
 	{
 	  output_operand_lossage ("invalid %%D value");
 	  return;
@@ -20782,7 +20803,7 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'E':
       /* X is a CR register.  Print the number of the EQ bit of the CR */
-      if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
+      if (!REG_P (x) || !CR_REGNO_P (REGNO (x)))
 	output_operand_lossage ("invalid %%E value");
       else
 	fprintf (file, "%d", 4 * (REGNO (x) - CR0_REGNO) + 2);
@@ -20791,7 +20812,7 @@ print_operand (FILE *file, rtx x, int code)
     case 'f':
       /* X is a CR register.  Print the shift count needed to move it
 	 to the high-order four bits.  */
-      if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
+      if (!REG_P (x) || !CR_REGNO_P (REGNO (x)))
 	output_operand_lossage ("invalid %%f value");
       else
 	fprintf (file, "%d", 4 * (REGNO (x) - CR0_REGNO));
@@ -20800,7 +20821,7 @@ print_operand (FILE *file, rtx x, int code)
     case 'F':
       /* Similar, but print the count for the rotate in the opposite
 	 direction.  */
-      if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
+      if (!REG_P (x) || !CR_REGNO_P (REGNO (x)))
 	output_operand_lossage ("invalid %%F value");
       else
 	fprintf (file, "%d", 32 - 4 * (REGNO (x) - CR0_REGNO));
@@ -20998,7 +21019,7 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'R':
       /* X is a CR register.  Print the mask for `mtcrf'.  */
-      if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
+      if (!REG_P (x) || !CR_REGNO_P (REGNO (x)))
 	output_operand_lossage ("invalid %%R value");
       else
 	fprintf (file, "%d", 128 >> (REGNO (x) - CR0_REGNO));
@@ -21014,7 +21035,7 @@ print_operand (FILE *file, rtx x, int code)
 
     case 't':
       /* Like 'J' but get to the OVERFLOW/UNORDERED bit.  */
-      if (!REG_P (x) || GET_MODE (x) != CCmode)
+      if (!REG_P (x) || !CR_REGNO_P (REGNO (x)))
 	{
 	  output_operand_lossage ("invalid %%t value");
 	  return;

@@ -1,3 +1,24 @@
+2018-12-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/88411
+	* testsuite/libgomp.fortran/async_io_8.f90: New test.
+
+2018-12-09  Thomas Schwinge  <thomas@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* target.c (gomp_map_vars): Call gomp_copy_host2dev instead of
+	devicep->host2dev_func.
+
+2018-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/87995
+	* testsuite/libgomp.c-c++-common/cancel-taskgroup-3.c: Require
+	tls_runtime effective target.
+	(t): New threadprivate variable.
+	(main): Set t in threads which execute iterations of the worksharing
+	loop.  Propagate that to the task after the loop and don't abort
+	if the current taskgroup hasn't been cancelled.
+
 2018-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/task-reduction-3.c: New test.

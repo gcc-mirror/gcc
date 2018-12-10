@@ -9068,8 +9068,6 @@ add_pending_template (tree d)
 tree
 lookup_template_function (tree fns, tree arglist)
 {
-  tree type;
-
   if (fns == error_mark_node || arglist == error_mark_node)
     return error_mark_node;
 
@@ -9090,11 +9088,7 @@ lookup_template_function (tree fns, tree arglist)
       return fns;
     }
 
-  type = TREE_TYPE (fns);
-  if (TREE_CODE (fns) == OVERLOAD || !type)
-    type = unknown_type_node;
-
-  return build2 (TEMPLATE_ID_EXPR, type, fns, arglist);
+  return build2 (TEMPLATE_ID_EXPR, unknown_type_node, fns, arglist);
 }
 
 /* Within the scope of a template class S<T>, the name S gets bound
@@ -10564,7 +10558,10 @@ tsubst_friend_class (tree friend_tmpl, tree args)
   if (TREE_CODE (context) == NAMESPACE_DECL)
     push_nested_namespace (context);
   else
-    push_nested_class (context);
+    {
+      context = tsubst (context, args, tf_error, NULL_TREE);
+      push_nested_class (context);
+    }
 
   tmpl = lookup_name_real (DECL_NAME (friend_tmpl), /*prefer_type=*/false,
 			   /*non_class=*/false, /*block_p=*/false,
@@ -17226,7 +17223,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	tree labels = tsubst_copy_asm_operands (ASM_LABELS (t), args,
 						complain, in_decl);
 	tmp = finish_asm_stmt (ASM_VOLATILE_P (t), string, outputs, inputs,
-			       clobbers, labels);
+			       clobbers, labels, ASM_INLINE_P (t));
 	tree asm_expr = tmp;
 	if (TREE_CODE (asm_expr) == CLEANUP_POINT_EXPR)
 	  asm_expr = TREE_OPERAND (asm_expr, 0);

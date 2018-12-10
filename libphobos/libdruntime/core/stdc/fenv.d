@@ -457,6 +457,54 @@ version (CRuntime_Microsoft)
         FE_TOWARDZERO   = 0x300, ///
     }
 }
+else version (Solaris)
+{
+    version (SPARC_Any)
+    {
+        enum
+        {
+            FE_TONEAREST    = 0,
+            FE_TOWARDZERO   = 1,
+            FE_UPWARD       = 2,
+            FE_DOWNWARD     = 3,
+        }
+
+        enum
+        {
+            FE_INEXACT      = 0x01,
+            FE_DIVBYZERO    = 0x02,
+            FE_UNDERFLOW    = 0x04,
+            FE_OVERFLOW     = 0x08,
+            FE_INVALID      = 0x10,
+            FE_ALL_EXCEPT   = 0x1f,
+        }
+
+    }
+    else version (X86_Any)
+    {
+        enum
+        {
+            FE_TONEAREST    = 0,
+            FE_DOWNWARD     = 1,
+            FE_UPWARD       = 2,
+            FE_TOWARDZERO   = 3,
+        }
+
+        enum
+        {
+            FE_INVALID      = 0x01,
+            FE_DIVBYZERO    = 0x04,
+            FE_OVERFLOW     = 0x08,
+            FE_UNDERFLOW    = 0x10,
+            FE_INEXACT      = 0x20,
+            FE_ALL_EXCEPT   = 0x3d,
+        }
+    }
+    else
+    {
+        static assert(0, "Unimplemented architecture");
+    }
+}
 else
 {
     version (X86)

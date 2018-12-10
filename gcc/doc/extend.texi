@@ -27,6 +27,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Local Labels::        Labels local to a block.
 * Labels as Values::    Getting pointers to labels, and computed gotos.
 * Nested Functions::    Nested function in GNU C.
+* Nonlocal Gotos::      Nonlocal gotos.
 * Constructing Calls::  Dispatching a call to another function.
 * Typeof::              @code{typeof}: referring to the type of an expression.
 * Conditionals::        Omitting the middle operand of a @samp{?:} expression.
@@ -519,6 +520,61 @@ bar (int *array, int offset, int size)
   /* @r{@dots{}} */
 @}
 @end smallexample
+
+@node Nonlocal Gotos
+@section Nonlocal Gotos
+@cindex nonlocal gotos
+
+GCC provides the built-in functions @code{__builtin_setjmp} and
+@code{__builtin_longjmp} which are similar to, but not interchangeable
+with, the C library functions @code{setjmp} and @code{longjmp}.  
+The built-in versions are used internally by GCC's libraries
+to implement exception handling on some targets.  You should use the 
+standard C library functions declared in @code{<setjmp.h>} in user code
+instead of the builtins.
+
+The built-in versions of these functions use GCC's normal
+mechanisms to save and restore registers using the stack on function
+entry and exit.  The jump buffer argument @var{buf} holds only the
+information needed to restore the stack frame, rather than the entire 
+set of saved register values.  
+
+An important caveat is that GCC arranges to save and restore only
+those registers known to the specific architecture variant being
+compiled for.  This can make @code{__builtin_setjmp} and
+@code{__builtin_longjmp} more efficient than their library
+counterparts in some cases, but it can also cause incorrect and
+mysterious behavior when mixing with code that uses the full register
+set.
+
+You should declare the jump buffer argument @var{buf} to the
+built-in functions as:
+
+@smallexample
+#include <stdint.h>
+intptr_t @var{buf}[5];
+@end smallexample
+
+@deftypefn {Built-in Function} {int} __builtin_setjmp (intptr_t *@var{buf})
+This function saves the current stack context in @var{buf}.  
+@code{__builtin_setjmp} returns 0 when returning directly,
+and 1 when returning from @code{__builtin_longjmp} using the same
+@var{buf}.
+@end deftypefn
+
+@deftypefn {Built-in Function} {void} __builtin_longjmp (intptr_t *@var{buf}, int @var{val})
+This function restores the stack context in @var{buf}, 
+saved by a previous call to @code{__builtin_setjmp}.  After
+@code{__builtin_longjmp} is finished, the program resumes execution as
+if the matching @code{__builtin_setjmp} returns the value @var{val},
+which must be 1.
+
+Because @code{__builtin_longjmp} depends on the function return
+mechanism to restore the stack context, it cannot be called
+from the same function calling @code{__builtin_setjmp} to
+initialize @var{buf}.  It can only be called from a function called
+(directly or indirectly) from the function calling @code{__builtin_setjmp}.
+@end deftypefn
 
 @node Constructing Calls
 @section Constructing Function Calls
@@ -2386,16 +2442,20 @@ and may not be available on all targets.
 @itemx aligned (@var{alignment})
 @cindex @code{aligned} function attribute
 The @code{aligned} attribute specifies a minimum alignment for
-the function, measured in bytes.  When specified, @var{alignment} must
-be an integer constant power of 2.  Specifying no @var{alignment} argument
-implies the maximum alignment for the target, which is often, but by no
-means always, 8 or 16 bytes.
+the first instruction of the function, measured in bytes.  When specified,
+@var{alignment} must be an integer constant power of 2.  Specifying no
+@var{alignment} argument implies the ideal alignment for the target.
+The @code{__alignof__} operator can be used to determine what that is
+(@pxref{Alignment}).  The attribute has no effect when a definition for
+the function is not provided in the same translation unit.
 
-You cannot use this attribute to decrease the alignment of a function,
-only to increase it.  However, when you explicitly specify a function
-alignment this overrides the effect of the
-@option{-falign-functions} (@pxref{Optimize Options}) option for this
-function.
+The attribute cannot be used to decrease the alignment of a function
+previously declared with a more restrictive alignment; only to increase
+it.  Attempts to do otherwise are diagnosed.  Some targets specify
+a minimum default alignment for functions that is greater than 1.  On
+such targets, specifying a less restrictive alignment is silently ignored.
+Using the attribute overrides the effect of the @option{-falign-functions}
+(@pxref{Optimize Options}) option for this function.
 
 Note that the effectiveness of @code{aligned} attributes may be
 limited by inherent limitations in the system linker 
@@ -8387,7 +8447,7 @@ for a C symbol, or to place a C variable in a specific register.
 A basic @code{asm} statement has the following syntax:
 
 @example
-asm @r{[} volatile @r{]} ( @var{AssemblerInstructions} )
+asm @var{asm-qualifiers} ( @var{AssemblerInstructions} )
 @end example
 
 The @code{asm} keyword is a GNU extension.
@@ -8400,6 +8460,10 @@ various @option{-std} options, use @code{__asm__} instead of
 @item volatile
 The optional @code{volatile} qualifier has no effect. 
 All basic @code{asm} blocks are implicitly volatile.
+
+@item inline
+If you use the @code{inline} qualifier, then for inlining purposes the size
+of the asm is taken as the smallest size possible (@pxref{Size of an asm}).
 @end table
 
 @subsubheading Parameters
@@ -8515,17 +8579,19 @@ Extended @code{asm} syntax uses colons (@samp{:}) to delimit
 the operand parameters after the assembler template:
 
 @example
-asm @r{[}volatile@r{]} ( @var{AssemblerTemplate} 
+asm @var{asm-qualifiers} ( @var{AssemblerTemplate} 
                  : @var{OutputOperands} 
                  @r{[} : @var{InputOperands}
                  @r{[} : @var{Clobbers} @r{]} @r{]})
 
-asm @r{[}volatile@r{]} goto ( @var{AssemblerTemplate} 
+asm @var{asm-qualifiers} ( @var{AssemblerTemplate} 
                       : 
                       : @var{InputOperands}
                       : @var{Clobbers}
                       : @var{GotoLabels})
 @end example
+where in the last form, @var{asm-qualifiers} contains @code{goto} (and in the
+first form, not).
 
 The @code{asm} keyword is a GNU extension.
 When writing code that can be compiled with @option{-ansi} and the
@@ -8540,6 +8606,10 @@ The typical use of extended @code{asm} statements is to manipulate input
 values to produce output values. However, your @code{asm} statements may 
 also produce side effects. If so, you may need to use the @code{volatile} 
 qualifier to disable certain optimizations. @xref{Volatile}.
+
+@item inline
+If you use the @code{inline} qualifier, then for inlining purposes the size
+of the asm is taken as the smallest size possible (@pxref{Size of an asm}).
 
 @item goto
 This qualifier informs the compiler that the @code{asm} statement may 
@@ -9999,7 +10069,7 @@ does this by counting the number of instructions in the pattern of the
 @code{asm} and multiplying that by the length of the longest
 instruction supported by that processor.  (When working out the number
 of instructions, it assumes that any occurrence of a newline or of
-whatever statement separator character is supported by the assembler --
+whatever statement separator character is supported by the assembler ---
 typically @samp{;} --- indicates the end of an instruction.)
 
 Normally, GCC's estimate is adequate to ensure that correct
@@ -10009,6 +10079,11 @@ instructions, or if you use assembler directives that expand to more
 space in the object file than is needed for a single instruction.
 If this happens then the assembler may produce a diagnostic saying that
 a label is unreachable.
+
+@cindex @code{asm inline}
+This size is also used for inlining decisions.  If you use @code{asm inline}
+instead of just @code{asm}, then for inlining purposes the size of the asm
+is taken as the minimum size, ignoring how many instructions GCC thinks it is.
 
 @node Alternate Keywords
 @section Alternate Keywords
@@ -11832,7 +11907,7 @@ restrictions as the argument to @code{typeof} (@pxref{Typeof}).  The
 @var{attribute} argument is an attribute name optionally followed by
 a comma-separated list of arguments enclosed in parentheses.  Both forms
 of attribute names---with and without double leading and trailing
-underscores---are recognized.  See @xref{Attribute Syntax} for details.
+underscores---are recognized.  @xref{Attribute Syntax} for details.
 When no attribute arguments are specified for an attribute that expects
 one or more arguments the function returns @code{true} if
 @var{type-or-expression} has been declared with the attribute regardless

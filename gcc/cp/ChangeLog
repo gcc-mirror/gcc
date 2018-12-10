@@ -1,3 +1,134 @@
+2018-12-09  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* parser.c (cp_parser_oacc_kernels_parallel): Adjust EXPR_LOCATION
+	on the combined acc loop.
+
+2018-12-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl2.c (grokbitfield): Use DECL_SOURCE_LOCATION in error messages
+	about bit-fields with function type, warn_if_not_aligned type, and
+	static bit-fields; avoid DECL_NAME for unnamed declarations.
+
+2018-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86669
+	* call.c (make_temporary_var_for_ref_to_temp): Call pushdecl even for
+	automatic vars.
+
+	PR c++/87506
+	* constexpr.c (adjust_temp_type): Handle EMPTY_CLASS_EXPR.
+
+2018-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* class.c (check_bitfield_decl): In error message about non-integral
+	type print the type itself too.
+	* decl.c (grokdeclarator): Do not ICE on unnamed bit-fields declared
+	friends; when calling build_decl for a FIELD_DECL possibly pass the
+	declarator->id_loc.
+
+2018-12-06  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/86747
+	* pt.c (tsubst_friend_class): Enter tsubsted class context.
+
+	PR c++/86397
+	* except.c (build_noexcept_spec): Resolve nondependent
+	expressions.
+
+2018-12-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88136 - -Wdeprecated-copy false positives
+	* class.c (classtype_has_depr_implicit_copy): Rename from
+	classtype_has_user_copy_or_dtor.
+	* method.c (lazily_declare_fn): Adjust.
+	* decl2.c (cp_warn_deprecated_use): Refer to -Wdeprecated-copy-dtor
+	if deprecation is due to a destructor.
+
+2018-12-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88373 - wrong parse error with ~.
+	* parser.c (cp_parser_template_name): Check tag_type for
+	none_type.
+
+2018-12-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* cp-tree.h (finish_asm_stmt): Update declaration.
+	* parser.c (cp_parser_asm_definition): Detect the inline keyword
+	after asm.  Pass a flag for it to finish_asm_stmt.
+	* pt.c (tsubst_expr): Pass the ASM_INLINE_P flag to finish_asm_stmt.
+	* semantics.c (finish_asm_stmt): Add inline_p parameter.  Use it to
+	set ASM_INLINE_P.
+
+2018-12-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR inline-asm/55681
+	* parser.c (cp_parser_asm_definition): Update grammar.  Allow any
+	combination of volatile and goto, in any order, without repetitions.
+
+2018-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85110
+	* call.c (conversion_null_warnings): Try to use the location of
+	the expression for the warnings.  Add notes showing the parameter
+	of the function decl, where available.
+	(get_fndecl_argument_location): For implicitly-declared functions,
+	use the fndecl location rather than that of the param.
+	(maybe_inform_about_fndecl_for_bogus_argument_init): New function.
+	(convert_like_real): Use it in various places to avoid repetition.
+	(complain_about_bad_argument): Likewise.
+	* cp-tree.h (maybe_inform_about_fndecl_for_bogus_argument_init):
+	New declaration.
+	* decl2.c (check_default_args): Put all diagnostics for the fndecl
+	into a diagnostic group.  Use the location of the parameter when
+	complaining about parameters with missing default arguments in
+	preference to that of the fndecl.  Attempt to record the location
+	of the first parameter with a default argument and emit a note
+	for the first parameter that's missing one.
+	* typeck.c (convert_arguments): When complaining about parameters
+	with incomplete types, attempt to use the location of the
+	argument.  Where available, add a note showing the pertinent
+	parameter in the fndecl.
+	(convert_for_assignment): When complaining about bad conversions
+	at function calls, use the location of the unstripped argument.
+	(convert_for_initialization): When checking for bogus references,
+	add an auto_diagnostic_group, and update the note to use the
+	location of the pertinent parameter, rather than just the callee.
+
+2018-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl2.c (grokbitfield): Use DECL_SOURCE_LOCATION in error message;
+	print the type too; fix thinko in INDIRECT_TYPE_P use.
+
+2018-12-05  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/85569
+	* constexpr.c (adjust_temp_type): Test for type equality with
+	same_type_p.
+	(constexpr_call_hasher::equal): Likewise.
+
+2018-12-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84636
+	* decl.c (grokdeclarator): Avoid crashing on an anonymous bit-field
+	with function type.
+
+2018-12-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88184 - ICE when treating name as template-name.
+	* pt.c (lookup_template_function): Always build the TEMPLATE_ID_EXPR
+	with unknown_type_node.
+
+2018-12-04  Julian Brown  <julian@codesourcery.com>
+
+	* parser.c (cp_parser_oacc_wait_list): Fix error message and avoid
+	duplicate diagnostic.
+
+2018-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88103
+	* typeck.c (build_class_member_access_expr): If unary_complex_lvalue
+	turned xvalue_p into non-xvalue_p, call move on it.
+
 2018-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88258

@@ -9526,7 +9526,7 @@
 (define_insn "vec_concatv2df"
   [(set (match_operand:V2DF 0 "register_operand"     "=x,x,v,x,v,x,x, v,x,x")
 	(vec_concat:V2DF
-	  (match_operand:DF 1 "nonimmediate_operand" " 0,x,v,m,m,0,x,xm,0,0")
+	  (match_operand:DF 1 "nonimmediate_operand" " 0,x,v,m,m,0,x,vm,0,0")
 	  (match_operand:DF 2 "nonimm_or_0_operand"  " x,x,v,1,1,m,m, C,x,m")))]
   "TARGET_SSE
    && (!(MEM_P (operands[1]) && MEM_P (operands[2]))

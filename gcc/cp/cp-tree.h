@@ -6173,6 +6173,7 @@ extern location_t get_fndecl_argument_location  (tree, int);
 extern void complain_about_bad_argument	(location_t arg_loc,
 						 tree from_type, tree to_type,
 						 tree fndecl, int parmnum);
+extern void maybe_inform_about_fndecl_for_bogus_argument_init (tree, int);
 
 
 /* A class for recording information about access failures (e.g. private
@@ -6300,7 +6301,7 @@ extern bool type_has_constexpr_default_constructor (tree);
 extern bool type_has_virtual_destructor		(tree);
 extern bool classtype_has_move_assign_or_move_ctor_p (tree, bool user_declared);
 extern bool classtype_has_non_deleted_move_ctor (tree);
-extern tree classtype_has_user_copy_or_dtor	(tree);
+extern tree classtype_has_depr_implicit_copy	(tree);
 extern bool type_build_ctor_call		(tree);
 extern bool type_build_dtor_call		(tree);
 extern void explain_non_literal_class		(tree);
@@ -7025,7 +7026,7 @@ extern tree begin_compound_stmt			(unsigned int);
 
 extern void finish_compound_stmt		(tree);
 extern tree finish_asm_stmt			(int, tree, tree, tree, tree,
-						 tree);
+						 tree, bool);
 extern tree finish_label_stmt			(tree);
 extern void finish_label_decl			(tree);
 extern cp_expr finish_parenthesized_expr	(cp_expr);

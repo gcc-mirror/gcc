@@ -323,6 +323,12 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) bitmap_element {
    already pointed to by the chain started by first, so GTY((skip)) it.  */
 
 struct GTY(()) bitmap_head {
+  static bitmap_obstack crashme;
+  /* Poison obstack to not make it not a valid initialized GC bitmap.  */
+  CONSTEXPR bitmap_head()
+    : indx(0), tree_form(false), first(NULL), current(NULL),
+      obstack (&crashme)
+  {}
   /* Index of last element looked at.  */
   unsigned int indx;
   /* False if the bitmap is in list form; true if the bitmap is in tree form.
@@ -439,6 +445,18 @@ bitmap_initialize (bitmap head, bitmap_obstack *obstack CXX_MEM_STAT_INFO)
   head->obstack = obstack;
   if (GATHER_STATISTICS)
     bitmap_register (head PASS_MEM_STAT);
+}
+
+/* Release a bitmap (but not its head).  This is suitable for pairing with
+   bitmap_initialize.  */
+
+static inline void
+bitmap_release (bitmap head)
+{
+  bitmap_clear (head);
+  /* Poison the obstack pointer so the obstack can be safely released.
+     Do not zero it as the bitmap then becomes initialized GC.  */
+  head->obstack = &bitmap_head::crashme;
 }
 
 /* Allocate and free bitmaps from obstack, malloc and gc'd memory.  */

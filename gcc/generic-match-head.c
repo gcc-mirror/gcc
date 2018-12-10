@@ -77,3 +77,12 @@ canonicalize_math_after_vectorization_p ()
 {
   return false;
 }
+
+/* Return true if successive divisions can be optimized.
+   Defer to GIMPLE opts.  */
+
+static inline bool
+optimize_successive_divisions_p (tree, tree)
+{
+  return false;
+}

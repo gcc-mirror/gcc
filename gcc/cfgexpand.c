@@ -1124,6 +1124,11 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 	      && frame_offset.is_constant (&prev_offset)
 	      && stack_vars[i].size.is_constant ())
 	    {
+	      if (data->asan_vec.is_empty ())
+		{
+		  alloc_stack_frame_space (0, ASAN_RED_ZONE_SIZE);
+		  prev_offset = frame_offset.to_constant ();
+		}
 	      prev_offset = align_base (prev_offset,
 					MAX (alignb, ASAN_MIN_RED_ZONE_SIZE),
 					!FRAME_GROWS_DOWNWARD);

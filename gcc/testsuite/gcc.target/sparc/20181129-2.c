@@ -2,6 +2,7 @@
 /* Reported by Rainer Orth <ro@gcc.gnu.org> */
 
 /* { dg-do run } */
+/* { dg-options "-std=c99" } */
 
 #include <stdarg.h>
 

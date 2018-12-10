@@ -1302,3 +1302,6 @@ do {									     \
   (flag_pic ? (TARGET_HPUX ? 198164 : 221312) : 240000)
 
 #define NEED_INDICATE_EXEC_STACK 0
+
+/* Target CPU versions for D.  */
+#define TARGET_D_CPU_VERSIONS pa_d_target_versions

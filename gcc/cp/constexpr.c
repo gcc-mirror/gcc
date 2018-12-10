@@ -1060,7 +1060,7 @@ constexpr_call_hasher::equal (constexpr_call *lhs, constexpr_call *rhs)
     {
       tree lhs_arg = TREE_VALUE (lhs_bindings);
       tree rhs_arg = TREE_VALUE (rhs_bindings);
-      gcc_assert (TREE_TYPE (lhs_arg) == TREE_TYPE (rhs_arg));
+      gcc_assert (same_type_p (TREE_TYPE (lhs_arg), TREE_TYPE (rhs_arg)));
       if (!cp_tree_equal (lhs_arg, rhs_arg))
         return false;
       lhs_bindings = TREE_CHAIN (lhs_bindings);
@@ -1276,11 +1276,13 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
 static tree
 adjust_temp_type (tree type, tree temp)
 {
-  if (TREE_TYPE (temp) == type)
+  if (same_type_p (TREE_TYPE (temp), type))
     return temp;
   /* Avoid wrapping an aggregate value in a NOP_EXPR.  */
   if (TREE_CODE (temp) == CONSTRUCTOR)
     return build_constructor (type, CONSTRUCTOR_ELTS (temp));
+  if (TREE_CODE (temp) == EMPTY_CLASS_EXPR)
+    return build0 (EMPTY_CLASS_EXPR, type);
   gcc_assert (scalarish_type_p (type));
   return cp_fold_convert (type, temp);
 }

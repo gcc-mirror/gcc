@@ -278,6 +278,7 @@ case ${target} in
  | m68k-*-uclinuxoldabi*		\
  | mips64orion*-*-rtems*		\
  | pdp11-*-bsd				\
+ | powerpc*-*-linux*paired*		\
  | sparc-hal-solaris2*			\
  | thumb-*-*				\
  | *-*-freebsd[12] | *-*-freebsd[1234].* \
@@ -504,7 +505,7 @@ powerpc*-*-*)
 	extra_headers="${extra_headers} bmi2intrin.h bmiintrin.h"
 	extra_headers="${extra_headers} xmmintrin.h mm_malloc.h emmintrin.h"
 	extra_headers="${extra_headers} mmintrin.h x86intrin.h"
-	extra_headers="${extra_headers} pmmintrin.h tmmintrin.h"
+	extra_headers="${extra_headers} pmmintrin.h tmmintrin.h smmintrin.h"
 	extra_headers="${extra_headers} ppu_intrinsics.h spu2vmx.h vec_types.h si2vmx.h"
 	extra_headers="${extra_headers} amo.h"
 	case x$with_cpu in
@@ -1355,6 +1356,9 @@ csky-*-*)
 		case ${target} in
 		    csky-*-linux-gnu*)
 			tm_defines="$tm_defines DEFAULT_LIBC=LIBC_GLIBC"
+			# Force .init_array support.  The configure script cannot always
+			# automatically detect that GAS supports it, yet we require it.
+			gcc_cv_initfini_array=yes
 			;;
 		    csky-*-linux-uclibc*)
 			tm_defines="$tm_defines DEFAULT_LIBC=LIBC_UCLIBC"
@@ -1447,7 +1451,8 @@ hppa*-*-linux*)
 	target_cpu_default="MASK_PA_11|MASK_NO_SPACE_REGS|MASK_CALLER_COPIES"
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h pa/pa-linux.h \
 		 pa/pa32-regs.h pa/pa32-linux.h"
-	tmake_file="${tmake_file} pa/t-linux"
+	tmake_file="${tmake_file} pa/t-pa pa/t-linux"
+	d_target_objs="${d_target_objs} pa-d.o"
 	;;
 hppa*-*-openbsd*)
 	target_cpu_default="MASK_PA_11"
@@ -2660,7 +2665,7 @@ powerpc*-*-linux*)
 	    all) maybe_biarch=yes ;;
 	esac
 	case ${target} in
-	    powerpc64*-*-linux*spe* | powerpc*-*-linux*paired*)
+	    powerpc64*-*-linux*spe*)
 		echo "*** Configuration ${target} not supported" 1>&2
 		exit 1
 		;;

@@ -3192,6 +3192,10 @@ maybe_fold_stmt (gimple_stmt_iterator *gsi)
       return false;
     else if ((ctx->region_type & ORT_HOST_TEAMS) == ORT_HOST_TEAMS)
       return false;
+  /* Delay folding of builtins until the IL is in consistent state
+     so the diagnostic machinery can do a better job.  */
+  if (gimple_call_builtin_p (gsi_stmt (*gsi)))
+    return false;
   return fold_stmt (gsi);
 }
 
@@ -6357,6 +6361,7 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
       gimple_asm_set_volatile (stmt, ASM_VOLATILE_P (expr) || noutputs == 0);
       gimple_asm_set_input (stmt, ASM_INPUT_P (expr));
+      gimple_asm_set_inline (stmt, ASM_INLINE_P (expr));
 
       gimplify_seq_add_stmt (pre_p, stmt);
     }

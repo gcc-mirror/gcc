@@ -4187,6 +4187,20 @@ s390_check_symref_alignment (rtx addr, HOST_WIDE_INT alignment)
 
   if (GET_CODE (symref) == SYMBOL_REF)
     {
+      /* s390_encode_section_info is not called for anchors, since they don't
+	 have corresponding VAR_DECLs.  Therefore, we cannot rely on
+	 SYMBOL_FLAG_NOTALIGN{2,4,8}_P returning useful information.  */
+      if (SYMBOL_REF_ANCHOR_P (symref))
+	{
+	  HOST_WIDE_INT block_offset = SYMBOL_REF_BLOCK_OFFSET (symref);
+	  unsigned int block_alignment = (SYMBOL_REF_BLOCK (symref)->alignment
+					  / BITS_PER_UNIT);
+
+	  gcc_assert (block_offset >= 0);
+	  return ((block_offset & (alignment - 1)) == 0
+		  && block_alignment >= alignment);
+	}
+
       /* We have load-relative instructions for 2-byte, 4-byte, and
 	 8-byte alignment so allow only these.  */
       switch (alignment)
@@ -16337,6 +16351,11 @@ s390_case_values_threshold (void)
 
 #undef TARGET_CASE_VALUES_THRESHOLD
 #define TARGET_CASE_VALUES_THRESHOLD s390_case_values_threshold
+
+/* Use only short displacement, since long displacement is not available for
+   the floating point instructions.  */
+#undef TARGET_MAX_ANCHOR_OFFSET
+#define TARGET_MAX_ANCHOR_OFFSET 0xfff
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
