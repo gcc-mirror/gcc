@@ -2090,33 +2090,6 @@ gfc_match_open (void)
 
   warn = (open->err || open->iostat) ? true : false;
 
-  /* Checks on NEWUNIT specifier.  */
-  if (open->newunit)
-    {
-      if (open->unit)
-	{
-	  gfc_error ("UNIT specifier not allowed with NEWUNIT at %C");
-	  goto cleanup;
-	}
-
-      if (!open->file && open->status)
-        {
-	  if (open->status->expr_type == EXPR_CONSTANT
-	     && gfc_wide_strncasecmp (open->status->value.character.string,
-				       "scratch", 7) != 0)
-	   {
-	     gfc_error ("NEWUNIT specifier must have FILE= "
-			"or STATUS='scratch' at %C");
-	     goto cleanup;
-	   }
-	}
-    }
-  else if (!open->unit)
-    {
-      gfc_error ("OPEN statement at %C must have UNIT or NEWUNIT specified");
-      goto cleanup;
-    }
-
   /* Checks on the ACCESS specifier.  */
   if (open->access && open->access->expr_type == EXPR_CONSTANT)
     {
@@ -2439,6 +2412,33 @@ gfc_match_open (void)
 			 "cannot have the value SCRATCH if a FILE specifier "
 			 "is present");
 	}
+    }
+
+  /* Checks on NEWUNIT specifier.  */
+  if (open->newunit)
+    {
+      if (open->unit)
+	{
+	  gfc_error ("UNIT specifier not allowed with NEWUNIT at %C");
+	  goto cleanup;
+	}
+
+      if (!open->file && open->status)
+        {
+	  if (open->status->expr_type == EXPR_CONSTANT
+	     && gfc_wide_strncasecmp (open->status->value.character.string,
+				       "scratch", 7) != 0)
+	   {
+	     gfc_error ("NEWUNIT specifier must have FILE= "
+			"or STATUS='scratch' at %C");
+	     goto cleanup;
+	   }
+	}
+    }
+  else if (!open->unit)
+    {
+      gfc_error ("OPEN statement at %C must have UNIT or NEWUNIT specified");
+      goto cleanup;
     }
 
   /* Things that are not allowed for unformatted I/O.  */
