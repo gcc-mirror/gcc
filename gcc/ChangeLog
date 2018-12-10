@@ -1,5 +1,12 @@
 2018-12-10  Richard Biener  <rguenther@suse.de>
 
+	* tree-affine.c (tree_to_aff_combination): Remove unreachable
+	MEM_REF case.
+	(aff_combination_expand): Cache on SSA names, not possibly
+	on conversion trees.  Avoid expanding cases we do not handle.
+
+2018-12-10  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/88427
 	* vr-values.c (vr_values::extract_range_from_phi_node):
 	Handle symbolic ranges conservatively when trying to drop
