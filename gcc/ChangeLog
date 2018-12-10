@@ -1,3 +1,10 @@
+2018-12-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88427
+	* vr-values.c (vr_values::extract_range_from_phi_node):
+	Handle symbolic ranges conservatively when trying to drop
+	to Inf +- 1.
+
 2018-12-10  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/88214
