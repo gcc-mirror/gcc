@@ -1,3 +1,8 @@
+2018-12-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88427
+	* gcc.dg/pr88427.c: New testcase.
+
 2018-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/87955
