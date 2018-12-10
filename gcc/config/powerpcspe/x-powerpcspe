@@ -1,3 +1,0 @@
-driver-powerpcspe.o : $(srcdir)/config/powerpcspe/driver-powerpcspe.c \
-  $(CONFIG_H) $(SYSTEM_H) $(TM_H) coretypes.h
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
