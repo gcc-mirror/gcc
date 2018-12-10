@@ -1,3 +1,9 @@
+2018-12-10  Fredrik Nyström  <fredrik@lysator.liu.se>
+
+	PR bootstrap/65725
+	* config/sol2.h: Only use libgcc-unwind.map if
+	ENABLE_SHARED_LIBGCC.
+
 2018-12-10  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	* auto-profile.c (afdo_calculate_branch_prob): Convert profile_count
