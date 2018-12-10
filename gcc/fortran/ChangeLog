@@ -1,3 +1,11 @@
+2018-12-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88269
+	* io.c (io_constraint): Update macro. If locus line buffer is NULL,
+	use gfc_current_locus in error messages.
+	(check_io_constraints): Catch missing IO UNIT in write and read
+	statements.  io_constraint macro is incompatible here.
+
 2018-12-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88205
