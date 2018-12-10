@@ -1,3 +1,14 @@
+2018-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/88369
+	* gcc.dg/vect/vect-ivdep-1.c: Prune versioning for alignment messages.
+	* gcc.dg/vect/vect-ivdep-2.c: Likewise.
+	* gcc.dg/vect/nodump-vect-opt-info-1.c: Likewise.
+	* g++.dg/vect/pr33426-ivdep.cc: Likewise.
+	* g++.dg/vect/pr33426-ivdep-2.cc: Likewise. 
+	* g++.dg/vect/pr33426-ivdep-3.cc: Likewise.
+	* g++.dg/vect/pr33426-ivdep-4.cc: Likewise.
+
 2018-12-10  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/88415
