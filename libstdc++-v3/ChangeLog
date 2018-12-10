@@ -1,3 +1,8 @@
+2018-12-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/filesystem/path/query/is_absolute.cc: Fix
+	test to use TS, not C++17.
+
 2018-12-06  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* scripts/make_exports.pl (check names): Don’t try to export
