@@ -1,5 +1,12 @@
 2018-12-10  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
+	* auto-profile.c (afdo_calculate_branch_prob): Convert profile_count
+	to afdo precision quality.
+	(afdo_callsite_hot_enough_for_early_inline): Likewise.
+	(afdo_annotate_cfg): Set profile_count for exit basic block.
+
+2018-12-10  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
 	* auto-profile.c (string_table::get_index_by_decl)
 	(function_instance::get_function_instance_by_decl): Avoid infinite
 	recursion by using DECL_FROM_INLINE.
