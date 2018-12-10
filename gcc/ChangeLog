@@ -1,3 +1,9 @@
+2018-12-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/88214
+	* ipa-prop.c (determine_locally_known_aggregate_parts): Make sure
+	we check pointers against pointers.
+
 2018-12-10  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/88415
