@@ -1,3 +1,9 @@
+2018-12-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/88415
+	* gimple.c (gimple_assign_set_rhs_with_ops): Transfer EH
+	info to a newly allocated stmt.
+
 2018-12-10  Jerome Lambourg  <lambourg@adacore.com>
 
 	* config/vxworksae.h (TARGET_VXWORKS_HAVE_CTORS_DTORS): Define.

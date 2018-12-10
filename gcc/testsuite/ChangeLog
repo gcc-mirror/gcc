@@ -1,3 +1,8 @@
+2018-12-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/88415
+	* gcc.dg/gomp/pr88415.c: New testcase.
+
 2018-12-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-c++-common/patchable_function_entry-decl.c: Pass -mcpu=gr6 for
