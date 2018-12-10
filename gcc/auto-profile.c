@@ -470,7 +470,7 @@ string_table::get_index_by_decl (tree decl) const
   ret = get_index (lang_hooks.dwarf_name (decl, 0));
   if (ret != -1)
     return ret;
-  if (DECL_ABSTRACT_ORIGIN (decl) && DECL_ABSTRACT_ORIGIN (decl) != decl)
+  if (DECL_FROM_INLINE (decl))
     return get_index_by_decl (DECL_ABSTRACT_ORIGIN (decl));
 
   return -1;
@@ -537,7 +537,7 @@ function_instance::get_function_instance_by_decl (unsigned lineno,
       if (ret != callsites.end ())
         return ret->second;
     }
-  if (DECL_ABSTRACT_ORIGIN (decl))
+  if (DECL_FROM_INLINE (decl))
     return get_function_instance_by_decl (lineno, DECL_ABSTRACT_ORIGIN (decl));
 
   return NULL;
