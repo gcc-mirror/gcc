@@ -1,3 +1,8 @@
+2018-12-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88269
+	* gfortran.dg/pr88269.f90: New test.
+
 2018-12-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-c++-common/patchable_function_entry-decl.c: Pass -mcpu=gr6 for
