@@ -1,3 +1,9 @@
+2018-12-10  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* auto-profile.c (string_table::get_index_by_decl)
+	(function_instance::get_function_instance_by_decl): Avoid infinite
+	recursion by using DECL_FROM_INLINE.
+
 2018-12-09  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config.gcc (hppa*-*-linux*): Add pa/t-pa to tmake_file.  Define
