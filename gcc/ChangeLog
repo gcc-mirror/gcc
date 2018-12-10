@@ -1,3 +1,11 @@
+2018-12-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/88418
+	* config/i386/i386.c (ix86_expand_sse_cmp): For vector modes,
+	check operand 1 with vector_operand predicate.
+	(ix86_expand_sse_movcc): For vector modes, check op_true with
+	vector_operand, not nonimmediate_operand.
+
 2018-12-10  Richard Biener  <rguenther@suse.de>
 
 	* tree-affine.c (tree_to_aff_combination): Remove unreachable

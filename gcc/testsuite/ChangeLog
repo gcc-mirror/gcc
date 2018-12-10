@@ -1,3 +1,8 @@
+2018-12-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/88418
+	* gcc.target/i386/pr88418.c: New test.
+
 2018-12-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88427
@@ -20,7 +25,7 @@
 	* gcc.dg/vect/vect-ivdep-2.c: Likewise.
 	* gcc.dg/vect/nodump-vect-opt-info-1.c: Likewise.
 	* g++.dg/vect/pr33426-ivdep.cc: Likewise.
-	* g++.dg/vect/pr33426-ivdep-2.cc: Likewise. 
+	* g++.dg/vect/pr33426-ivdep-2.cc: Likewise.
 	* g++.dg/vect/pr33426-ivdep-3.cc: Likewise.
 	* g++.dg/vect/pr33426-ivdep-4.cc: Likewise.
 
@@ -254,7 +259,7 @@
 	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Skip the post switch conversion
 	tests on aarch64.
 	* gcc.dg/tree-ssa/pr77445-2.c: Similarly.
- 
+
 2018-12-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/85110
@@ -940,8 +945,8 @@
 
 	* lib/target-supports.exp
 	(check_effective_target_logical_op_short_circuit): Add msp430.
-	(check_effective_target_int_eq_float): New. 
-	(check_effective_target_ptr_eq_long): New. 
+	(check_effective_target_int_eq_float): New.
+	(check_effective_target_ptr_eq_long): New.
 	* c-c++-common/pr41779.c: Require int_eq_float for dg-warning tests.
 	* c-c++-common/pr57371-2.c: XFAIL optimized dump scan when
 	sizeof (float) != sizeof (int).
