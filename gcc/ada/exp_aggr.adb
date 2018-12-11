@@ -4245,6 +4245,22 @@ package body Exp_Aggr is
            Build_Record_Aggr_Code (N, Typ, Target_Expr));
          Rewrite (Parent (N), Make_Null_Statement (Loc));
 
+      --  Generating C, do not declare a temporary to initialize an aggregate
+      --  assigned to Out or In_Out parameters whose type has no discriminants.
+      --  This avoids stack overflow errors at run time.
+
+      elsif Modify_Tree_For_C
+        and then Nkind (Parent (N)) = N_Assignment_Statement
+        and then Nkind (Name (Parent (N))) = N_Identifier
+        and then Ekind_In (Entity (Name (Parent (N))), E_Out_Parameter,
+                                                       E_In_Out_Parameter)
+        and then not Has_Discriminants (Etype (Entity (Name (Parent (N)))))
+      then
+         Target_Expr := New_Copy_Tree (Name (Parent (N)));
+         Insert_Actions (Parent (N),
+           Build_Record_Aggr_Code (N, Typ, Target_Expr));
+         Rewrite (Parent (N), Make_Null_Statement (Loc));
+
       else
          Temp := Make_Temporary (Loc, 'A', N);
 
