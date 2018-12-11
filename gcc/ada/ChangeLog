@@ -1,3 +1,10 @@
+2018-12-11  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (In_Object_Declaration): Removed.
+	(Is_CCG_Supported_Aggregate): New subprogram that replaces
+	In_Object_Declaration extending its functionality to indicate if
+	an aggregate is in a context supported by the CCG backend.
+
 2018-12-11  Bob Duff  <duff@adacore.com>
 
 	* doc/gnat_ugn/gnat_utility_programs.rst: Update gnatstub
