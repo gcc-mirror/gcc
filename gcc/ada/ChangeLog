@@ -1,5 +1,10 @@
 2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* exp_aggr.adb (Packed_Array_Aggregate_Handled): Bail out for
+	any non-scalar type as component type of the array.
+
+2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* einfo.ads (Is_Bit_Packed_Array): Fix values of component size.
 	(Is_Packed): Likewise.
 	* gcc-interface/utils.c (convert): Do not extract the value of a
