@@ -2205,6 +2205,21 @@ gfc_match_open (void)
       if (!is_char_type ("ASYNCHRONOUS", open->asynchronous))
 	goto cleanup;
 
+      if (open->asynchronous->ts.kind != 1)
+	{
+	  gfc_error ("ASYNCHRONOUS= specifier at %L must be of default "
+		     "CHARACTER kind", &open->asynchronous->where);
+	  return MATCH_ERROR;
+	}
+
+      if (open->asynchronous->expr_type == EXPR_ARRAY
+	  || open->asynchronous->expr_type == EXPR_STRUCTURE)
+	{
+	  gfc_error ("ASYNCHRONOUS= specifier at %L must be scalar",
+		     &open->asynchronous->where);
+	  return MATCH_ERROR;
+	}
+
       if (open->asynchronous->expr_type == EXPR_CONSTANT)
 	{
 	  static const char * asynchronous[] = { "YES", "NO", NULL };
@@ -3798,6 +3813,21 @@ if (condition) \
 
       if (!is_char_type ("ASYNCHRONOUS", dt->asynchronous))
 	return MATCH_ERROR;
+
+      if (dt->asynchronous->ts.kind != 1)
+	{
+	  gfc_error ("ASYNCHRONOUS= specifier at %L must be of default "
+		     "CHARACTER kind", &dt->asynchronous->where);
+	  return MATCH_ERROR;
+	}
+
+      if (dt->asynchronous->expr_type == EXPR_ARRAY
+	  || dt->asynchronous->expr_type == EXPR_STRUCTURE)
+	{
+	  gfc_error ("ASYNCHRONOUS= specifier at %L must be scalar",
+		     &dt->asynchronous->where);
+	  return MATCH_ERROR;
+	}
 
       if (!compare_to_allowed_values
 		("ASYNCHRONOUS", asynchronous, NULL, NULL,
