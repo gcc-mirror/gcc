@@ -185,6 +185,7 @@ extern Boolean In_Same_Source_Unit              (Node_Id, Node_Id);
 /* opt: */
 
 #define Back_End_Inlining              opt__back_end_inlining
+#define Debug_Generated_Code           opt__debug_generated_code
 #define Exception_Extra_Info           opt__exception_extra_info
 #define Exception_Locations_Suppressed opt__exception_locations_suppressed
 #define Exception_Mechanism            opt__exception_mechanism
@@ -200,6 +201,7 @@ typedef enum {
 } Exception_Mechanism_Type;
 
 extern Boolean Back_End_Inlining;
+extern Boolean Debug_Generated_Code;
 extern Boolean Exception_Extra_Info;
 extern Boolean Exception_Locations_Suppressed;
 extern Exception_Mechanism_Type Exception_Mechanism;

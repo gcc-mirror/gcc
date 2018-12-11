@@ -3235,12 +3235,9 @@ create_subprog_decl (tree name, tree asm_name, tree type, tree param_decl_list,
 
   DECL_ARTIFICIAL (subprog_decl) = artificial_p;
   DECL_EXTERNAL (subprog_decl) = extern_flag;
+  DECL_FUNCTION_IS_DEF (subprog_decl) = definition;
+  DECL_IGNORED_P (subprog_decl) = !debug_info_p;
   TREE_PUBLIC (subprog_decl) = public_flag;
-
-  if (!debug_info_p)
-    DECL_IGNORED_P (subprog_decl) = 1;
-  if (definition)
-    DECL_FUNCTION_IS_DEF (subprog_decl) = 1;
 
   switch (inline_status)
     {
@@ -3248,7 +3245,7 @@ create_subprog_decl (tree name, tree asm_name, tree type, tree param_decl_list,
       DECL_UNINLINABLE (subprog_decl) = 1;
       break;
 
-    case is_disabled:
+    case is_default:
       break;
 
     case is_required:
@@ -3269,9 +3266,15 @@ create_subprog_decl (tree name, tree asm_name, tree type, tree param_decl_list,
 
       /* ... fall through ... */
 
-    case is_enabled:
+    case is_prescribed:
+      DECL_DISREGARD_INLINE_LIMITS (subprog_decl) = 1;
+
+      /* ... fall through ... */
+
+    case is_requested:
       DECL_DECLARED_INLINE_P (subprog_decl) = 1;
-      DECL_NO_INLINE_WARNING_P (subprog_decl) = artificial_p;
+      if (!Debug_Generated_Code)
+	DECL_NO_INLINE_WARNING_P (subprog_decl) = artificial_p;
       break;
 
     default:
