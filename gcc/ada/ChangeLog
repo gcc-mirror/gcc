@@ -1,3 +1,11 @@
+2018-12-11  Jerome Lambourg  <lambourg@adacore.com>
+
+	* vxaddr2line.adb, vxlink-bind.adb, vxlink-bind.ads,
+	vxlink-link.adb, vxlink-link.ads, vxlink-main.adb, vxlink.adb,
+	vxlink.ads: Remove.
+	* gcc-interface/Make-lang.in, gcc-interface/Makefile.in: Remove
+	bits for vxaddr2line.
+
 2018-12-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_aggr.adb, exp_ch7.adb, gnat1drv.adb, sem_ch10.adb,
