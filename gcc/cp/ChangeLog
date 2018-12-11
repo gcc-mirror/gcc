@@ -1,3 +1,10 @@
+2018-12-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl2.c (grokvardecl): Add location_t parameter and use it
+	in build_lang_decl_loc and build_decl calls.
+	(grokdeclarator): Move up loc declaration and use it in the
+	grokvardecl call too.
+
 2018-12-09  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* parser.c (cp_parser_oacc_kernels_parallel): Adjust EXPR_LOCATION

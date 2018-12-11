@@ -2,11 +2,11 @@
 /* { dg-do compile } */
 /* { dg-options "-O0" } */
 
-int foo1 __attribute__((warn_if_not_aligned(8))); /* { dg-error "'warn_if_not_aligned' may not be specified for 'foo1'" } */
+int foo1 __attribute__((warn_if_not_aligned(8))); /* { dg-error "5:'warn_if_not_aligned' may not be specified for 'foo1'" } */
 
 __attribute__((warn_if_not_aligned(8)))
 void
-foo2 (void) /* { dg-error "'warn_if_not_aligned' may not be specified for 'void foo2\\(\\)'" } */
+foo2 (void) /* { dg-error "1:'warn_if_not_aligned' may not be specified for 'void foo2\\(\\)'" } */
 {
 }
 
