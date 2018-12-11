@@ -8014,6 +8014,18 @@ proc check_effective_target_lto { } {
     } "-flto"]
 }
 
+# Return 1 if the compiler and linker support incremental link-time
+# optimization.
+
+proc check_effective_target_lto_incremental { } {
+    if ![check_effective_target_lto] {
+	return 0
+    }
+    return [check_no_compiler_messages lto_incremental executable {
+	int main () { return 0; }
+    } "-flto -r -nostdlib"]
+}
+
 # Return 1 if -mx32 -maddress-mode=short can compile, 0 otherwise.
 
 proc check_effective_target_maybe_x32 { } {

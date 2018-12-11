@@ -1,4 +1,5 @@
 // { dg-lto-do link }
+// { dg-require-effective-target lto_incremental }
 /* { dg-extra-ld-options { -O2 -Wno-odr -r -nostdlib } } */
 struct SPxPricer;
 struct SoPlex {
