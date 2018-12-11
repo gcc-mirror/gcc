@@ -1,3 +1,10 @@
+2018-12-11  Bob Duff  <duff@adacore.com>
+
+	* gnat1drv.adb (gnat1drv): Pass the correct Object value when
+	calling Write_ALI in the case of -gnatQ.
+	* gnatbind.adb (Gnatbind): Avoid silent failure; give an error
+	message.
+
 2018-12-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_unst.adb (Needs_Fat_Pointer): A fat pointer is required if
