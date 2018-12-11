@@ -281,13 +281,17 @@ extern Boolean Is_OK_Static_Subtype	(Entity_Id);
 #define Defining_Entity			sem_util__defining_entity
 #define First_Actual			sem_util__first_actual
 #define Next_Actual			sem_util__next_actual
+#define Is_Atomic_Object		sem_util__is_atomic_object
 #define Is_Variable_Size_Record 	sem_util__is_variable_size_record
+#define Is_Volatile_Object		sem_util__is_volatile_object
 #define Requires_Transient_Scope	sem_util__requires_transient_scope
 
 extern Entity_Id Defining_Entity	(Node_Id);
 extern Node_Id First_Actual		(Node_Id);
 extern Node_Id Next_Actual		(Node_Id);
+extern Boolean Is_Atomic_Object 	(Node_Id);
 extern Boolean Is_Variable_Size_Record 	(Entity_Id Id);
+extern Boolean Is_Volatile_Object 	(Node_Id);
 extern Boolean Requires_Transient_Scope	(Entity_Id);
 
 /* sinfo: */

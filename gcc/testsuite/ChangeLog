@@ -1,3 +1,8 @@
+2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/atomic11.adb, gnat.dg/atomic11_pkg1.ads,
+	gnat.dg/atomic11_pkg2.ads: New testcase.
+
 2018-12-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/aspect1.adb, gnat.dg/aspect1_horizontal.adb,
