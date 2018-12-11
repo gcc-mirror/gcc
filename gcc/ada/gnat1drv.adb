@@ -1168,8 +1168,9 @@ begin
          --  error message but do not print the internal 'usage' message.
 
          if GNATprove_Mode then
-            Write_Str ("one of the following is not a valid switch"
-                       & " or source file name: ");
+            Write_Str
+              ("one of the following is not a valid switch or source file "
+               & "name: ");
             Osint.Dump_Command_Line_Source_File_Names;
          else
             Usage;

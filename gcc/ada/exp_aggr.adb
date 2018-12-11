@@ -7687,6 +7687,7 @@ package body Exp_Aggr is
    is
       In_Obj_Decl : Boolean := False;
       P           : Node_Id := Parent (N);
+
    begin
       while Present (P) loop
          if Nkind (P) = N_Object_Declaration then
@@ -8524,28 +8525,27 @@ package body Exp_Aggr is
    ----------------------------
 
    function Static_Array_Aggregate (N : Node_Id) return Boolean is
-
-      function Is_Static_Component (N : Node_Id) return Boolean;
-      --  Return True if N has a compile-time known value and can be passed as
-      --  is to the back-end without further expansion.
+      function Is_Static_Component (Nod : Node_Id) return Boolean;
+      --  Return True if Nod has a compile-time known value and can be passed
+      --  as is to the back-end without further expansion.
 
       ---------------------------
       --  Is_Static_Component  --
       ---------------------------
 
-      function Is_Static_Component (N : Node_Id) return Boolean is
+      function Is_Static_Component (Nod : Node_Id) return Boolean is
       begin
-         if Nkind_In (N, N_Integer_Literal, N_Real_Literal) then
+         if Nkind_In (Nod, N_Integer_Literal, N_Real_Literal) then
             return True;
 
-         elsif Is_Entity_Name (N)
-           and then Present (Entity (N))
-           and then Ekind (Entity (N)) = E_Enumeration_Literal
+         elsif Is_Entity_Name (Nod)
+           and then Present (Entity (Nod))
+           and then Ekind (Entity (Nod)) = E_Enumeration_Literal
          then
             return True;
 
-         elsif Nkind (N) = N_Aggregate
-           and then Compile_Time_Known_Aggregate (N)
+         elsif Nkind (Nod) = N_Aggregate
+           and then Compile_Time_Known_Aggregate (Nod)
          then
             return True;
 
@@ -8554,13 +8554,15 @@ package body Exp_Aggr is
          end if;
       end Is_Static_Component;
 
-      Bounds : constant Node_Id := Aggregate_Bounds (N);
+      --  Local variables
 
-      Typ       : constant Entity_Id := Etype (N);
-      Agg       : Node_Id;
-      Expr      : Node_Id;
-      Lo        : Node_Id;
-      Hi        : Node_Id;
+      Bounds : constant Node_Id   := Aggregate_Bounds (N);
+      Typ    : constant Entity_Id := Etype (N);
+
+      Agg  : Node_Id;
+      Expr : Node_Id;
+      Lo   : Node_Id;
+      Hi   : Node_Id;
 
    --  Start of processing for Static_Array_Aggregate
 

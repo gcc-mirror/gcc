@@ -4005,14 +4005,14 @@ package body Exp_Ch7 is
       --  may need an activation record.
 
       function First_Local_Scope (L : List_Id) return Entity_Id;
-      --  Find first entity in the elaboration code of the body that
-      --  contains or represents a subprogrsam body. A body can appear
-      --  within a block or a loop. or can appear by itself if generated
-      --  for an object declaration that involves controlled actions.
-      --  The first such entity encountered is used to reset the scopes
-      --  of all entities that become local to the hew elboration procedure.
-      --  This is needed for subsequent unnesting, which depends on the
-      --  scope links to determine the nesting level of each subprogram.
+      --  Find first entity in the elaboration code of the body that contains
+      --  or represents a subprogram body. A body can appear within a block or
+      --  a loop or can appear by itself if generated for an object declaration
+      --  that involves controlled actions. The first such entity encountered
+      --  is used to reset the scopes of all entities that become local to the
+      --  new elaboration procedure. This is needed for subsequent unnesting,
+      --  which depends on the scope links to determine the nesting level of
+      --  each subprogram.
 
       --------------------------
       --  Contains_Subprogram --
@@ -4023,7 +4023,6 @@ package body Exp_Ch7 is
 
       begin
          E := First_Entity (Blk);
-
          while Present (E) loop
             if Is_Subprogram (E) then
                return True;
@@ -4055,6 +4054,7 @@ package body Exp_Ch7 is
             case Nkind (Stat) is
                when N_Block_Statement =>
                   Id := Entity (Identifier (Stat));
+
                   if No (First_Ent) then
                      First_Ent := Id;
                   end if;
@@ -4065,6 +4065,7 @@ package body Exp_Ch7 is
 
                when N_Loop_Statement =>
                   Id := Entity (Identifier (Stat));
+
                   if No (First_Ent) then
                      First_Ent := Id;
                   end if;
@@ -4092,9 +4093,9 @@ package body Exp_Ch7 is
 
                   declare
                      Elif : Node_Id;
+
                   begin
                      Elif := First (Elsif_Parts (Stat));
-
                      while Present (Elif) loop
                         Scop := First_Local_Scope (Statements (Elif));
 
@@ -4109,9 +4110,9 @@ package body Exp_Ch7 is
                when N_Case_Statement =>
                   declare
                      Alt : Node_Id;
+
                   begin
                      Alt := First (Alternatives (Stat));
-
                      while Present (Alt) loop
                         Scop := First_Local_Scope (Statements (Alt));
 
@@ -4125,6 +4126,7 @@ package body Exp_Ch7 is
 
                when N_Subprogram_Body =>
                   Id := Defining_Entity (Stat);
+
                   if No (First_Ent) then
                      First_Ent := Id;
                   end if;
@@ -4156,8 +4158,7 @@ package body Exp_Ch7 is
         and then Present (H_Seq)
         and then Is_Compilation_Unit (Current_Scope)
       then
-         Ent :=
-           First_Local_Scope (Statements (H_Seq));
+         Ent := First_Local_Scope (Statements (H_Seq));
 
          --  There msy be subprograms declared in the exception handlers
          --  of the current body.

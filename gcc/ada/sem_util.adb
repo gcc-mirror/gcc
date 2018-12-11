@@ -14137,11 +14137,11 @@ package body Sem_Util is
          Deref := Expression (Deref);
       end if;
 
-      --  Ada 2005: If we have a component or slice of a dereference,
-      --  something like X.all.Y (2), and the type of X is access-to-constant,
-      --  Is_Variable will return False, because it is indeed a constant
-      --  view. But it might be a view of a variable object, so we want the
-      --  following condition to be True in that case.
+      --  Ada 2005: If we have a component or slice of a dereference, something
+      --  like X.all.Y (2) and the type of X is access-to-constant, Is_Variable
+      --  will return False, because it is indeed a constant view. But it might
+      --  be a view of a variable object, so we want the following condition to
+      --  be True in that case.
 
       if Is_Variable (Object)
         or else Is_Variable (Deref)
@@ -14155,9 +14155,8 @@ package body Sem_Util is
             --  False (it could be a function selector in a prefix form call
             --  occurring in an iterator specification).
 
-            if not
-              Ekind_In
-                (Entity (Selector_Name (Object)), E_Component, E_Discriminant)
+            if not Ekind_In (Entity (Selector_Name (Object)), E_Component,
+                                                              E_Discriminant)
             then
                return False;
             end if;
@@ -14172,8 +14171,8 @@ package body Sem_Util is
             P := Original_Node (Prefix (Object));
             Prefix_Type := Etype (P);
 
-            --  If the prefix is a qualified expression, we want to look at
-            --  its operand.
+            --  If the prefix is a qualified expression, we want to look at its
+            --  operand.
 
             if Nkind (P) = N_Qualified_Expression then
                P := Expression (P);
