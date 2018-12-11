@@ -2265,6 +2265,10 @@ Target keeps null pointer checks, either due to the use of
 @item lto
 Compiler has been configured to support link-time optimization (LTO).
 
+@item lto_incremental
+Compiler and linker support link-time optimization relocatable linking
+with @option{-r} and @option{-flto} options.
+
 @item naked_functions
 Target supports the @code{naked} function attribute.
 

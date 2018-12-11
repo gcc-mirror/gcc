@@ -1,3 +1,25 @@
+2018-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/86004
+	* lib/target-supports.exp (check_effective_target_lto_incremental):
+	New.
+	* g++.dg/lto/pr69137_0.C: Require lto_incremental effective target.
+	* g++.dg/lto/pr65316_0.C: Likewise.
+	* g++.dg/lto/pr85176_0.C: Likewise.
+	* g++.dg/lto/pr79000_0.C: Likewise.
+	* g++.dg/lto/pr66180_0.C: Likewise.
+	* g++.dg/lto/pr65193_0.C: Likewise.
+	* g++.dg/lto/pr69077_0.C: Likewise.
+	* g++.dg/lto/pr68057_0.C: Likewise.
+	* g++.dg/lto/pr66705_0.C: Likewise.
+	* g++.dg/lto/pr65302_0.C: Likewise.
+	* g++.dg/lto/20091002-1_0.C: Likewise.
+	* g++.dg/lto/pr81940_0.C: Likewise.
+	* g++.dg/lto/pr64043_0.C: Likewise.
+	* g++.dg/lto/pr65549_0.C: Likewise.
+	* g++.dg/lto/pr69133_0.C: Likewise.
+	* gfortran.dg/lto/pr79108_0.f90: Likewise.
+
 2018-12-10  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/80520
