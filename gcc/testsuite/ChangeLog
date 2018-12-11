@@ -1,3 +1,8 @@
+2018-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/88426
+	* c-c++-common/ubsan/float-cast-overflow-11.c: New test.
+
 2018-12-11  Yannick Moy  <moy@adacore.com>
 
 	* gnat.dg/ghost4.adb: New testcase.
