@@ -13351,7 +13351,7 @@ rs6000_expand_zeroop_builtin (enum insn_code icode, rtx target)
     return 0;
 
   if (icode == CODE_FOR_rs6000_mffsl
-      && rs6000_isa_flags_explicit & OPTION_MASK_SOFT_FLOAT)
+      && rs6000_isa_flags & OPTION_MASK_SOFT_FLOAT)
     {
       error ("__builtin_mffsl() not supported with -msoft-float");
       return const0_rtx;
@@ -13423,7 +13423,7 @@ rs6000_expand_mtfsb_builtin (enum insn_code icode, tree exp)
     /* Builtin not supported on this processor.  */
     return 0;
 
-  if (rs6000_isa_flags_explicit & OPTION_MASK_SOFT_FLOAT)
+  if (rs6000_isa_flags & OPTION_MASK_SOFT_FLOAT)
     {
       error ("__builtin_mtfsb0 and __builtin_mtfsb1 not supported with -msoft-float");
       return const0_rtx;
@@ -13460,7 +13460,7 @@ rs6000_expand_set_fpscr_rn_builtin (enum insn_code icode, tree exp)
     /* Builtin not supported on this processor.  */
     return 0;
 
-  if (rs6000_isa_flags_explicit & OPTION_MASK_SOFT_FLOAT)
+  if (rs6000_isa_flags & OPTION_MASK_SOFT_FLOAT)
     {
       error ("__builtin_set_fpscr_rn not supported with -msoft-float");
       return const0_rtx;
@@ -13504,7 +13504,7 @@ rs6000_expand_set_fpscr_drn_builtin (enum insn_code icode, tree exp)
     fatal_error (input_location,
 		 "__builtin_set_fpscr_drn is not supported in 32-bit mode.");
 
-  if (rs6000_isa_flags_explicit & OPTION_MASK_SOFT_FLOAT)
+  if (rs6000_isa_flags & OPTION_MASK_SOFT_FLOAT)
     {
       error ("__builtin_set_fpscr_drn not supported with -msoft-float");
       return const0_rtx;
