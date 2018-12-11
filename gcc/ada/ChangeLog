@@ -1,3 +1,85 @@
+2018-12-11  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/g-socket.ads (Family_Type): Add new enumerated value
+	Family_Unspec to be able to use it in Get_Address_Info parameter
+	and find IPv4 together with IPv6 addresses.
+	(Inet_Addr_Bytes_Length): Zero length for Family_Unspec.  New
+	IPv6 predefined constant addresses.
+	(IPv4_To_IPv6_Prefix): IPv4 mapped to IPv6 address prefix.
+	(Is_IPv4_Address): Rename from Is_IP_Address and published.
+	(Is_IPv6_Address): New routine.
+	(Image of Inet_Addr_Type): Fix description about IPv6 address
+	text representation.
+	(Level_Type): New propocol level IP_Protocol_For_IPv6_Level.
+	(Add_Membership_V4): New socket option equal to Add_Membership.
+	(Drop_Membership_V4): New socket option equal to
+	Drop_Membership.
+	(Multicast_If_V4): New socket option equal to Multicast_If.
+	(Multicast_Loop_V4, Add_Membership_V6, Drop_Membership_V6,
+	Multicast_If_V6, Multicast_Loop_V6, Multicast_Hops, IPv6_Only):
+	New socket option for IPv6.
+	(Address_Info): New record to keep address info.
+	(Address_Info_Array): Array to keep address info records.
+	(Get_Address_Info): Routine to get address info records by host
+	and service names.
+	(Host_Service): Record to keep host and service names.
+	(Get_Name_Info): New routine to get host and service names by
+	address.
+	(Create_Socket): Add Level parameter, IP_Protocol_For_IP_Level
+	default.
+	(Name_Array, Inet_Addr_Array): Change array index to Positive.
+	* libgnat/g-socket.adb (IPV6_Mreq): New record definition for
+	IPv6.
+	(Hex_To_Char): Remove.
+	(Short_To_Network, Network_To_Short): Move to package
+	GNAT.Sockets.Thin_Common.
+	(Is_IP_Address): Remove.
+	(To_In_Addr, To_Inet_Addr): Move to package
+	GNAT.Sockets.Thin_Common.
+	(Get_Socket_Option): Get value of Multicast_Loop option as
+	integer boolean, process IPv6 options. Don't try to get
+	Add_Membership_V4, Add_Membership_V6, Drop_Membership_V4, and
+	Drop_Membership_V6 as not supported by the socket API.
+	(Set_Socket_Option): Set value of Multicast_Loop option as
+	integer boolean, process IPv6 options.
+	* gsocket.h
+	(IPV6_ADD_MEMBERSHIP): Define from IPV6_JOIN_GROUP if necessary
+	for VxWorks.
+	(IPV6_DROP_MEMBERSHIP): Define from IPV6_LEAVE_GROUP if
+	necessary for VxWorks
+	(HAVE_INET_NTOP): New definition.
+	(HAVE_INET_PTON): Includes VxWorks now.
+	* socket.c (__gnat_getaddrinfo, __gnat_getnameinfo,
+	__gnat_freeaddrinfo, __gnat_gai_strerror, __gnat_inet_ntop): New
+	routines.
+	* libgnat/g-sothco.ads, libgnat/g-sothco.adb
+	(socklen_t, In6_Addr, To_In6_Addr): New.
+	(To_In_Addr, To_Inet_Addr): Move from package body GNAT.Sockets.
+	(To_Inet_Addr): New overload with In6_Addr type parmeter.
+	(In_Addr_Access_Array): Remove.
+	(Sockaddr): Unchecked_Union instead of Sockaddr_In and old
+	defined generic Sockaddr.
+	(Set_Address): Use it to set family, port and address into
+	Sockaddr.
+	(Get_Address): New routine to get Socket_Addr_Type from
+	Sockaddr.
+	(Addrinfo): Structure to use with getaddrinfo.
+	(C_Getaddrinfo, C_Freeaddrinfo, C_Getnameinfo, C_GAI_Strerror,
+	Inet_Ntop): New routine import.
+	(Short_To_Network, Network_To_Short): Move from package body
+	GNAT.Sockets.
+	* libgnat/g-stsifd__sockets.adb: Use Sockaddr instead of
+	Sockaddr_In.
+	* s-oscons-tmplt.c (AF_UNSPEC, EAI_SYSTEM, SOCK_RAW,
+	IPPROTO_IPV6, IP_RECVERR, SIZEOF_socklen_t, IF_NAMESIZE): New
+	constants.
+	(AI_xxxx_OFFSET): Constants to consider platform differences in
+	field positions and sizes for addrinfo structure.
+	(AI_xxxxx): Flags for getaddrinfo.
+	(NI_xxxxx): Flags for getnameinfo.
+	(IPV6_xxxxx): Socket options for IPv6.
+	(Inet_Ntop_Linkname): New routine.
+
 2018-12-11  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Deactivate
