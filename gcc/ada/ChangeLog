@@ -1,3 +1,9 @@
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Check_Aspect_At_End_Of_Declarations,
+	Freeze_Entity_Checks): Process aspect Predicate in the same
+	fashion as aspect Dynamic_Predicate.
+
 2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (elaborate_all_entities_for_package):

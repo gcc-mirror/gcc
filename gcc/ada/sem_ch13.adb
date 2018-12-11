@@ -9364,6 +9364,7 @@ package body Sem_Ch13 is
          --  components and discriminants of the type.
 
          elsif A_Id  = Aspect_Dynamic_Predicate
+           or else A_Id = Aspect_Predicate
            or else A_Id = Aspect_Priority
          then
             Push_Type (Ent);
@@ -11252,6 +11253,7 @@ package body Sem_Ch13 is
                then
                   A_Id := Get_Aspect_Id (Ritem);
                   if A_Id = Aspect_Dynamic_Predicate
+                    or else A_Id = Aspect_Predicate
                     or else A_Id = Aspect_Priority
                   then
                     --  Retrieve the visibility to components and discriminants
