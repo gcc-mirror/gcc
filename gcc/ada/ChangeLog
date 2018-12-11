@@ -1,5 +1,16 @@
 2018-12-11  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_unst.adb (Needs_Fat_Pointer): A fat pointer is required if
+	the entity has a private type whose full view is an
+	unconstrained array type.
+	(Rewrite_One_Ref): If the reference is to a static constant, use
+	its value rather than create a reference through the activation
+	record. This is more efficient, and furthermore indispensable if
+	the context requires a static constant, such as in a branch of a
+	case statement.
+
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch3.adb (Analyze_Object_Declaration): Apply
 	Dynamic_Predicate check to an object of an array type
 	initialized with an aggregate.
