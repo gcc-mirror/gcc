@@ -1,3 +1,9 @@
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Apply
+	Dynamic_Predicate check to an object of an array type
+	initialized with an aggregate.
+
 2018-12-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* freeze.adb (Add_To_Result): Move the ignored Ghost-specific
