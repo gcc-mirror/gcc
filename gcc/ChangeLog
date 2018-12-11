@@ -1,3 +1,9 @@
+2018-12-10  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86196
+	* gimple-ssa-warn-restrict.c (builtin_memref::builtin_memref): Use
+	base size only of arrays.
+
 2018-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config.gcc (Obsolete configurations): Delete powerpc*-*-*spe*.
