@@ -1,3 +1,8 @@
+2018-12-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/a-calend.ads: Add "Global => null" contracts to pure
+	routines.
+
 2018-12-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* freeze.adb (Check_Pragma_Thread_Local_Storage): Use the
