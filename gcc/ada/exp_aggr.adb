@@ -7893,9 +7893,7 @@ package body Exp_Aggr is
          return False;
       end if;
 
-      if not Is_Scalar_Type (Component_Type (Typ))
-        and then Has_Non_Standard_Rep (Component_Type (Typ))
-      then
+      if not Is_Scalar_Type (Ctyp) then
          return False;
       end if;
 
