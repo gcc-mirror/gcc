@@ -1,5 +1,15 @@
 2018-12-11  Ed Schonberg  <schonberg@adacore.com>
 
+	* uintp.ads, uintp.adb (UI_From_Integral): New generic function,
+	to simplify construction of Universal_Integer representations
+	from any Integer type. If type is small enough the code is
+	equivalent to a call to UI_To_Int with appropriate conversions;
+	otherwise the routine uses the existing mechanism of building a
+	vector of suitable integer values and calling Vector_To_Uint.
+	The routine must not be applied to a biased type.
+
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch3.adb (Build_Itype_Reference): Handle properly an itype
 	reference created for a function that is a compilation unit, for
 	example if the function builds in place an object of a limited

@@ -248,6 +248,13 @@ package Uintp is
    function UI_From_Int (Input : Int) return Uint;
    --  Converts Int value to universal integer form
 
+   generic
+      type In_T is range <>;
+   function UI_From_Integral (Input : In_T) return Uint;
+   --  Likewise, but converts from any integer type.
+   --  Must not be applied to biased types (instantiation will provide
+   --  a warning if actual is a biased type).
+
    function UI_From_CC (Input : Char_Code) return Uint;
    --  Converts Char_Code value to universal integer form
 
