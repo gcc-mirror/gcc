@@ -68,7 +68,7 @@ static int decl_jump_unsafe (tree);
 static void require_complete_types_for_parms (tree);
 static tree grok_reference_init (tree, tree, tree, int);
 static tree grokvardecl (tree, tree, tree, const cp_decl_specifier_seq *,
-			 int, int, int, bool, int, tree);
+			 int, int, int, bool, int, tree, location_t);
 static void check_static_variable_definition (tree, tree);
 static void record_unknown_type (tree, const char *);
 static tree builtin_function_1 (tree, tree, bool);
@@ -9282,7 +9282,8 @@ grokvardecl (tree type,
 	     int inlinep,
 	     bool conceptp,
 	     int template_count,
-	     tree scope)
+	     tree scope,
+	     location_t location)
 {
   tree decl;
   tree explicit_scope;
@@ -9318,9 +9319,9 @@ grokvardecl (tree type,
 	  /* Similarly for explicit specializations.  */
 	  || (orig_declarator
 	      && TREE_CODE (orig_declarator) == TEMPLATE_ID_EXPR)))
-    decl = build_lang_decl (VAR_DECL, name, type);
+    decl = build_lang_decl_loc (location, VAR_DECL, name, type);
   else
-    decl = build_decl (input_location, VAR_DECL, name, type);
+    decl = build_decl (location, VAR_DECL, name, type);
 
   if (explicit_scope && TREE_CODE (explicit_scope) == NAMESPACE_DECL)
     set_decl_namespace (decl, explicit_scope, 0);
@@ -12200,6 +12201,7 @@ grokdeclarator (const cp_declarator *declarator,
 
   {
     tree decl = NULL_TREE;
+    location_t loc = declarator ? declarator->id_loc : input_location;
 
     if (decl_context == PARM)
       {
@@ -12216,13 +12218,13 @@ grokdeclarator (const cp_declarator *declarator,
 	if (!staticp && !friendp && TREE_CODE (type) != METHOD_TYPE)
 	  if (tree auto_node = type_uses_auto (type))
 	    {
-	      location_t loc = declspecs->locations[ds_type_spec];
+	      location_t tloc = declspecs->locations[ds_type_spec];
 	      if (CLASS_PLACEHOLDER_TEMPLATE (auto_node))
-		error_at (loc, "invalid use of template-name %qE without an "
+		error_at (tloc, "invalid use of template-name %qE without an "
 			  "argument list",
 			  CLASS_PLACEHOLDER_TEMPLATE (auto_node));
 	      else
-		error_at (loc, "non-static data member declared with "
+		error_at (tloc, "non-static data member declared with "
 			  "placeholder %qT", auto_node);
 	      type = error_mark_node;
 	    }
@@ -12487,7 +12489,6 @@ grokdeclarator (const cp_declarator *declarator,
 
 	if (decl == NULL_TREE)
 	  {
-	    location_t loc = declarator ? declarator->id_loc : input_location;
 	    if (staticp)
 	      {
 		/* C++ allows static class members.  All other work
@@ -12704,7 +12705,8 @@ grokdeclarator (const cp_declarator *declarator,
 			    inlinep,
 			    concept_p,
 			    template_count,
-			    ctype ? ctype : in_namespace);
+			    ctype ? ctype : in_namespace,
+			    loc);
 	if (decl == NULL_TREE)
 	  return error_mark_node;
 
