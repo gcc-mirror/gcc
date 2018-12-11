@@ -1,3 +1,13 @@
+2018-12-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/88145
+	* config/rs6000/rs6000.c (rs6000_expand_zeroop_builtin): Use
+	rs6000_isa_flags instead of rs6000_isa_flags_explicit to decide
+	whether soft float is enabled.
+	(rs6000_expand_mtfsb_builtin): Ditto.
+	(rs6000_expand_set_fpscr_rn_builtin): Ditto.
+	(rs6000_expand_set_fpscr_drn_builtin): Ditto.
+
 2018-12-10  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/80520
