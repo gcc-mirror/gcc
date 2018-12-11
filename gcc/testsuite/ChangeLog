@@ -1,3 +1,9 @@
+2018-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/80520
+	* gcc.dg/tree-ssa/split-path-11.c (foo): Make the test ilp32 target
+	clean.
+
 2018-12-11  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/86608 - reading constexpr volatile variable.
