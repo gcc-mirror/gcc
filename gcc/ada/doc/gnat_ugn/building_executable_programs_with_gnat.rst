@@ -1243,6 +1243,13 @@ Alphabetical List of All Switches
   :file:`scos.adb`.
 
 
+.. index:: -fgnat-encodings  (gcc)
+
+:switch:`-fgnat-encodings=[all|gdb|minimal]`
+  This switch controls the balance between GNAT encodings and standard DWARF
+  emitted in the debug information.
+
+
 .. index:: -flto  (gcc)
 
 :switch:`-flto[={n}]`
@@ -5914,6 +5921,36 @@ Debugging Control
   including ``gnatfind`` and ``gnatxref``. The :switch:`-gnatx` switch
   suppresses this information. This saves some space and may slightly
   speed up compilation, but means that these tools cannot be used.
+
+
+.. index:: -fgnat-encodings  (gcc)
+
+:switch:`-fgnat-encodings=[all|gdb|minimal]`
+  This switch controls the balance between GNAT encodings and standard DWARF
+  emitted in the debug information.
+
+  Historically, old debug formats like stabs were not powerful enough to
+  express some Ada types (for instance, variant records or fixed-point types).
+  To work around this, GNAT introduced proprietary encodings that embed the
+  missing information ("GNAT encodings").
+
+  Recent versions of the DWARF debug information format are now able to
+  correctly describe most of these Ada constructs ("standard DWARF"). As
+  third-party tools started to use this format, GNAT has been enhanced to
+  generate it. However, most tools (including GDB) are still relying on GNAT
+  encodings.
+
+  To support all tools, GNAT needs to be versatile about the balance between
+  generation of GNAT encodings and standard DWARF. This is what
+  :switch:`-fgnat-encodings` is about.
+
+  * ``=all``: Emit all GNAT encodings, and then emit as much standard DWARF as
+    possible so it does not conflict with GNAT encodings.
+  * ``=gdb``: Emit as much standard DWARF as possible as long as the current
+    GDB handles it. Emit GNAT encodings for the rest.
+  * ``=minimal``: Emit as much standard DWARF as possible and emit GNAT
+    encodings for the rest.
+
 
 .. _Exception_Handling_Control:
 
