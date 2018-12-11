@@ -1,3 +1,10 @@
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch7.adb (Check_Unnesting_Elaboration_Code): Extend
+	algorithm to cover subprograms generated in nested loops and in
+	exception handlers, in order to build an explicit elaboration
+	procedure in more complex cases.
+
 2018-12-11  Jerome Lambourg  <lambourg@adacore.com>
 
 	* Makefile.rtl, gcc-interface/Makefile.in: Remove crtbe bits for
