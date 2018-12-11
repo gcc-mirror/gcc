@@ -1,3 +1,9 @@
+2018-12-11  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* cfgexpand.c (asm_clobber_reg_is_valid): Also produce
+	error when stack pointer is clobbered.
+	(expand_asm_stmt): Refactor clobber check in separate function.
+
 2018-12-11  Eric Botcazou  <botcazou@adacore.com>
 
 	* config/rs6000/vxworks.h (RS6000_STARTING_FRAME_OFFSET): Define,
