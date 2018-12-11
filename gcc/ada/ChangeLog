@@ -1,3 +1,10 @@
+2018-12-11  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Deactivate
+	expansion in ignored ghost subprogram body.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Deactivate
+	expansion in ignored ghost package body.
+
 2018-12-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_unst.adb (Register_Subprogram): A subprogram whose address

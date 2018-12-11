@@ -3370,6 +3370,7 @@ package body Sem_Ch6 is
 
       Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
       Saved_IGR  : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_EA   : constant Boolean         := Expander_Active;
       Saved_ISMP : constant Boolean         :=
                      Ignore_SPARK_Mode_Pragmas_In_Instance;
       --  Save the Ghost and SPARK mode-related data to restore on exit
@@ -3608,6 +3609,18 @@ package body Sem_Ch6 is
 
             Install_Elaboration_Model (Spec_Id);
          end if;
+      end if;
+
+      --  Deactivate expansion inside the body of ignored Ghost entities,
+      --  as this code will ultimately be ignored. This avoids requiring the
+      --  presence of run-time units which are not needed. Only do this for
+      --  user entities, as internally generated entitities might still need
+      --  to be expanded (e.g. those generated for types).
+
+      if Present (Ignored_Ghost_Region)
+        and then Comes_From_Source (Body_Id)
+      then
+         Expander_Active := False;
       end if;
 
       --  Previously we scanned the body to look for nested subprograms, and
@@ -4588,6 +4601,10 @@ package body Sem_Ch6 is
       end if;
 
    <<Leave>>
+      if Present (Ignored_Ghost_Region) then
+         Expander_Active := Saved_EA;
+      end if;
+
       Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
       Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Analyze_Subprogram_Body_Helper;
