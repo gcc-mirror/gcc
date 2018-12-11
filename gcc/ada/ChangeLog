@@ -1,3 +1,12 @@
+2018-12-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Add_To_Result): Move the ignored Ghost-specific
+	handling of freeze nodes to...
+	(Freeze_Entity): ...here. This ensures that the freeze nodes of
+	constructs that have recursive freezing are preserved when the
+	context is ignored Ghost, and the top level construct being
+	frozen is non-Ghost.
+
 2018-12-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* uintp.ads, uintp.adb (UI_From_Integral): New generic function,

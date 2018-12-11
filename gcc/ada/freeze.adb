@@ -2241,29 +2241,7 @@ package body Freeze is
 
       procedure Add_To_Result (Fnod : Node_Id) is
       begin
-         --  The Ghost mode of the enclosing context is ignored, while the
-         --  entity being frozen is living. Insert the freezing action prior
-         --  to the start of the enclosing ignored Ghost region. As a result
-         --  the freezeing action will be preserved when the ignored Ghost
-         --  context is eliminated. The insertion must take place even when
-         --  the context is a spec expression, otherwise "Handling of Default
-         --  and Per-Object Expressions" will suppress the insertion, and the
-         --  freeze node will be dropped on the floor.
-
-         if Saved_GM = Ignore
-           and then Ghost_Mode /= Ignore
-           and then Present (Ignored_Ghost_Region)
-         then
-            Insert_Action
-              (Assoc_Node   => Ignored_Ghost_Region,
-               Ins_Action   => Fnod,
-               Spec_Expr_OK => True);
-
-         --  Otherwise add the freezing action to the result list
-
-         else
-            Append_New_To (Result, Fnod);
-         end if;
+         Append_New_To (Result, Fnod);
       end Add_To_Result;
 
       ----------------------------
@@ -5301,6 +5279,7 @@ package body Freeze is
 
       if Is_Itype (E) and then Is_Record_Type (Scope (E)) then
          Test_E := Scope (E);
+
       elsif Is_Itype (E) and then Present (Underlying_Type (Scope (E)))
         and then Is_Record_Type (Underlying_Type (Scope (E)))
       then
@@ -5582,8 +5561,8 @@ package body Freeze is
          --  Here for other than a subprogram or type
 
          else
-            --  If entity has a type, and it is not a generic unit, then
-            --  freeze it first (RM 13.14(10)).
+            --  If entity has a type, and it is not a generic unit, then freeze
+            --  it first (RM 13.14(10)).
 
             if Present (Etype (E))
               and then Ekind (E) /= E_Generic_Function
@@ -5603,7 +5582,7 @@ package body Freeze is
                  and then Has_Delayed_Aspects (E)
                then
                   Set_Has_Delayed_Aspects (E, False);
-                  Set_Has_Delayed_Freeze (E, False);
+                  Set_Has_Delayed_Freeze  (E, False);
                   Set_Freeze_Node (E, Empty);
                end if;
             end if;
@@ -6916,18 +6895,35 @@ package body Freeze is
 
       Check_Debug_Info_Needed (E);
 
-      --  Special handling for subprograms
+      --  If subprogram has address clause then reset Is_Public flag, since we
+      --  do not want the backend to generate external references.
 
-      if Is_Subprogram (E) then
+      if Is_Subprogram (E)
+        and then Present (Address_Clause (E))
+        and then not Is_Library_Level_Entity (E)
+      then
+         Set_Is_Public (E, False);
+      end if;
 
-         --  If subprogram has address clause then reset Is_Public flag, since
-         --  we do not want the backend to generate external references.
+      --  The Ghost mode of the enclosing context is ignored, while the
+      --  entity being frozen is living. Insert the freezing action prior
+      --  to the start of the enclosing ignored Ghost region. As a result
+      --  the freezeing action will be preserved when the ignored Ghost
+      --  context is eliminated. The insertion must take place even when
+      --  the context is a spec expression, otherwise "Handling of Default
+      --  and Per-Object Expressions" will suppress the insertion, and the
+      --  freeze node will be dropped on the floor.
 
-         if Present (Address_Clause (E))
-           and then not Is_Library_Level_Entity (E)
-         then
-            Set_Is_Public (E, False);
-         end if;
+      if Saved_GM = Ignore
+        and then Ghost_Mode /= Ignore
+        and then Present (Ignored_Ghost_Region)
+      then
+         Insert_Actions
+           (Assoc_Node   => Ignored_Ghost_Region,
+            Ins_Actions  => Result,
+            Spec_Expr_OK => True);
+
+         Result := No_List;
       end if;
 
    <<Leave>>
