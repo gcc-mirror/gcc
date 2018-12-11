@@ -77,7 +77,7 @@ extern "C" {
 /* If DMGL_NO_RECURSE_LIMIT is not enabled, then this is the value used as
    the maximum depth of recursion allowed.  It should be enough for any
    real-world mangled name.  */
-#define DEMANGLE_RECURSION_LIMIT 1024
+#define DEMANGLE_RECURSION_LIMIT 2048
   
 /* Enumeration of possible demangling styles.
 
