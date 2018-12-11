@@ -1,3 +1,11 @@
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Array_Aggr_Subtype. Resolve_Aggr_Expr): Indicate
+	that aggregate subtype has a predicate if the component type has
+	a predicate; do not rely on exisatence of predicate function for
+	component, in case component is a type no yet frozen, for which
+	predicate function has not been created yet.
+
 2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_aggr.adb (Packed_Array_Aggregate_Handled): Bail out for
