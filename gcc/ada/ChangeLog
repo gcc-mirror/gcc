@@ -1,3 +1,10 @@
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Itype_Reference): Handle properly an itype
+	reference created for a function that is a compilation unit, for
+	example if the function builds in place an object of a limited
+	type.
+
 2018-12-11  Dmitriy Anisimkov  <anisimko@adacore.com>
 
 	* libgnat/g-socket.ads, libgnat/g-socket.adb: Fix duration

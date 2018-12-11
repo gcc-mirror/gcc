@@ -1,3 +1,9 @@
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/bip_cu.adb, gnat.dg/bip_cu_constructor.adb,
+	gnat.dg/bip_cu_constructor.ads, gnat.dg/bip_cu_t.adb,
+	gnat.dg/bip_cu_t.ads: New testcase.
+
 2018-12-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* gnat.dg/ghost2.adb, gnat.dg/ghost2.ads: New testcase.
