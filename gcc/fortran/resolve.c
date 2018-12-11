@@ -11545,7 +11545,7 @@ start:
 	case EXEC_ENDFILE:
 	case EXEC_REWIND:
 	case EXEC_FLUSH:
-	  if (!gfc_resolve_filepos (code->ext.filepos))
+	  if (!gfc_resolve_filepos (code->ext.filepos, &code->loc))
 	    break;
 
 	  resolve_branch (code->ext.filepos->err, code);
