@@ -1,3 +1,9 @@
+2018-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/88444
+	* tree-vrp.c (register_edge_assert_for_2): Only register assertions
+	for conversions if rhs1 is a SSA_NAME.
+
 2018-12-11  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* cfgexpand.c (asm_clobber_reg_is_valid): Also produce
