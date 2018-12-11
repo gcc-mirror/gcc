@@ -1,3 +1,41 @@
+2018-12-11  Jerome Lambourg  <lambourg@adacore.com>
+
+	* Makefile.rtl, gcc-interface/Makefile.in: Remove crtbe bits for
+	VxWorks.
+	* libgnat/system-vxworks-arm-rtp-smp.ads,
+	libgnat/system-vxworks-arm-rtp.ads,
+	libgnat/system-vxworks-arm.ads,
+	libgnat/system-vxworks-e500-kernel.ads,
+	libgnat/system-vxworks-e500-rtp-smp.ads,
+	libgnat/system-vxworks-e500-rtp.ads,
+	libgnat/system-vxworks-ppc-kernel.ads,
+	libgnat/system-vxworks-ppc-rtp-smp.ads,
+	libgnat/system-vxworks-ppc-rtp.ads,
+	libgnat/system-vxworks-ppc.ads,
+	libgnat/system-vxworks-x86-kernel.ads,
+	libgnat/system-vxworks-x86-rtp-smp.ads,
+	libgnat/system-vxworks-x86-rtp.ads,
+	libgnat/system-vxworks7-aarch64-rtp-smp.ads,
+	libgnat/system-vxworks7-aarch64.ads,
+	libgnat/system-vxworks7-arm-rtp-smp.ads,
+	libgnat/system-vxworks7-e500-kernel.ads,
+	libgnat/system-vxworks7-e500-rtp-smp.ads,
+	libgnat/system-vxworks7-e500-rtp.ads,
+	libgnat/system-vxworks7-ppc-kernel.ads,
+	libgnat/system-vxworks7-ppc-rtp-smp.ads,
+	libgnat/system-vxworks7-ppc-rtp.ads,
+	libgnat/system-vxworks7-ppc64-kernel.ads,
+	libgnat/system-vxworks7-ppc64-rtp-smp.ads,
+	libgnat/system-vxworks7-x86-kernel.ads,
+	libgnat/system-vxworks7-x86-rtp-smp.ads,
+	libgnat/system-vxworks7-x86-rtp.ads,
+	libgnat/system-vxworks7-x86_64-kernel.ads,
+	libgnat/system-vxworks7-x86_64-rtp-smp.ads: Remove pragma
+	Linker_Options for --specs.
+	* vx_crtbegin.c, vx_crtbegin.inc, vx_crtbegin_array.c,
+	vx_crtbegin_attr.c, vx_crtend.c, vxworks-gnat-crtbe-link.spec:
+	Remove.
+
 2018-12-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Check_Aspect_At_End_Of_Declarations,
