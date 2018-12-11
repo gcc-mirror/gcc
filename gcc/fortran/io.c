@@ -2849,21 +2849,20 @@ cleanup:
 
 
 bool
-gfc_resolve_filepos (gfc_filepos *fp)
+gfc_resolve_filepos (gfc_filepos *fp, locus *where)
 {
   RESOLVE_TAG (&tag_unit, fp->unit);
   RESOLVE_TAG (&tag_iostat, fp->iostat);
   RESOLVE_TAG (&tag_iomsg, fp->iomsg);
-  if (!gfc_reference_st_label (fp->err, ST_LABEL_TARGET))
-    return false;
 
-  if (!fp->unit && (fp->iostat || fp->iomsg))
+  if (!fp->unit && (fp->iostat || fp->iomsg || fp->err))
     {
-      locus where;
-      where = fp->iostat ? fp->iostat->where : fp->iomsg->where;
-      gfc_error ("UNIT number missing in statement at %L", &where);
+      gfc_error ("UNIT number missing in statement at %L", where);
       return false;
     }
+
+  if (!gfc_reference_st_label (fp->err, ST_LABEL_TARGET))
+    return false;
 
   if (fp->unit->expr_type == EXPR_CONSTANT
       && fp->unit->ts.type == BT_INTEGER
