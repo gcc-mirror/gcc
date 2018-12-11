@@ -1,3 +1,13 @@
+2018-12-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Check_Pragma_Thread_Local_Storage): Use the
+	violating set to diagnose detect an illegal initialization,
+	rather than the complement of the OK set.
+	(Freeze_Object_Declaration): Factorize code in
+	Has_Default_Initialization.
+	(Has_Default_Initialization, Has_Incompatible_Initialization):
+	New routines.
+
 2018-12-11  Dmitriy Anisimkov  <anisimko@adacore.com>
 
 	* libgnat/g-socket.ads (Family_Type): Add new enumerated value
