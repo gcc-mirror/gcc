@@ -1,3 +1,8 @@
+2018-12-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/documentation_hacking.xml: Update reference
+	to epubcheck.
+
 2018-12-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/experimental/filesystem/path/query/is_absolute.cc: Fix
