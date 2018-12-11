@@ -834,7 +834,6 @@ gnatlib-sjlj:
 	sed \
 	  -e 's/Frontend_Exceptions.*/Frontend_Exceptions       : constant Boolean := True;/' \
 	  -e 's/ZCX_By_Default.*/ZCX_By_Default            : constant Boolean := False;/' \
-	  -e 's/\(pragma Linker.*crtbe.*\)/--  \1/' \
 	  $(RTSDIR)/system.ads > $(RTSDIR)/s.ads
 	$(MV) $(RTSDIR)/s.ads $(RTSDIR)/system.ads
 	$(MAKE) $(FLAGS_TO_PASS) \
@@ -934,21 +933,6 @@ cio.o     : cio.c
 
 init.o    : init.c adaint.h raise.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
-	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
-
-vx_crtbegin.o : vx_crtbegin.c vx_crtbegin.inc
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
-		 -iquote $(srcdir) -iquote $(ftop_srcdir)/libgcc \
-	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
-
-vx_crtbegin_auto.o : vx_crtbegin_auto.c vx_crtbegin.inc
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
-		 -iquote $(srcdir) -iquote $(ftop_srcdir)/libgcc \
-	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
-
-vx_crtend.o : vx_crtend.c
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
-		 -iquote $(srcdir) -iquote $(ftop_srcdir)/libgcc \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 init-vxsim.o : init-vxsim.c
