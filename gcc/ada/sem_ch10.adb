@@ -2352,8 +2352,8 @@ package body Sem_Ch10 is
                Remove_Scope;
             end if;
 
-            if Nkind_In
-                 (Unit (Lib_Spec), N_Package_Body, N_Subprogram_Body)
+            if Nkind_In (Unit (Lib_Spec), N_Package_Body,
+                                          N_Subprogram_Body)
             then
                Remove_Context (Library_Unit (Lib_Spec));
             end if;

@@ -5708,6 +5708,7 @@ package body Sem_Ch13 is
                Assoc := First (Component_Associations (Expr));
                while Present (Assoc) loop
                   Analyze (Expression (Assoc));
+
                   if not Is_Entity_Name (Expression (Assoc)) then
                      Error_Msg_N ("value must be a function", Assoc);
                   end if;
@@ -9363,7 +9364,7 @@ package body Sem_Ch13 is
          --  The following aspect expressions may contain references to
          --  components and discriminants of the type.
 
-         elsif A_Id  = Aspect_Dynamic_Predicate
+         elsif A_Id = Aspect_Dynamic_Predicate
            or else A_Id = Aspect_Predicate
            or else A_Id = Aspect_Priority
          then
@@ -9375,7 +9376,8 @@ package body Sem_Ch13 is
             Preanalyze_Spec_Expression (End_Decl_Expr, T);
          end if;
 
-         Err := not Fully_Conformant_Expressions
+         Err :=
+           not Fully_Conformant_Expressions
                  (End_Decl_Expr, Freeze_Expr, Report => True);
       end if;
 
@@ -11239,8 +11241,8 @@ package body Sem_Ch13 is
         and then Scope (E) = Current_Scope
       then
          declare
+            A_Id  : Aspect_Id;
             Ritem : Node_Id;
-            A_Id : Aspect_Id;
 
          begin
             --  Look for aspect specification entries for this entity
@@ -11252,6 +11254,7 @@ package body Sem_Ch13 is
                  and then Is_Delayed_Aspect (Ritem)
                then
                   A_Id := Get_Aspect_Id (Ritem);
+
                   if A_Id = Aspect_Dynamic_Predicate
                     or else A_Id = Aspect_Predicate
                     or else A_Id = Aspect_Priority
@@ -11274,10 +11277,10 @@ package body Sem_Ch13 is
 
       end if;
 
-      --  For a record type, deal with variant parts. This has to be delayed
-      --  to this point, because of the issue of statically predicated
-      --  subtypes, which we have to ensure are frozen before checking
-      --  choices, since we need to have the static choice list set.
+      --  For a record type, deal with variant parts. This has to be delayed to
+      --  this point, because of the issue of statically predicated subtypes,
+      --  which we have to ensure are frozen before checking choices, since we
+      --  need to have the static choice list set.
 
       if Is_Record_Type (E) then
          Check_Variant_Part : declare
@@ -12456,15 +12459,35 @@ package body Sem_Ch13 is
       end if;
    end New_Stream_Subprogram;
 
+   --------------
+   -- Pop_Type --
+   --------------
+
+   procedure Pop_Type (E : Entity_Id) is
+   begin
+      if Ekind (E) = E_Record_Type and then E = Current_Scope then
+         End_Scope;
+
+      elsif Is_Type (E)
+        and then Has_Discriminants (E)
+        and then Nkind (Parent (E)) /= N_Subtype_Declaration
+      then
+         Uninstall_Discriminants (E);
+         Pop_Scope;
+      end if;
+   end Pop_Type;
+
    ---------------
    -- Push_Type --
    ---------------
 
    procedure Push_Type (E : Entity_Id) is
       Comp : Entity_Id;
+
    begin
       if Ekind (E) = E_Record_Type then
          Push_Scope (E);
+
          Comp := First_Component (E);
          while Present (Comp) loop
             Install_Entity (Comp);
@@ -12476,8 +12499,8 @@ package body Sem_Ch13 is
          end if;
 
       elsif Is_Type (E)
-         and then Has_Discriminants (E)
-         and then Nkind (Parent (E)) /= N_Subtype_Declaration
+        and then Has_Discriminants (E)
+        and then Nkind (Parent (E)) /= N_Subtype_Declaration
       then
          Push_Scope (E);
          Install_Discriminants (E);
@@ -12559,9 +12582,6 @@ package body Sem_Ch13 is
       N     : Node_Id;
       FOnly : Boolean := False) return Boolean
    is
-      S           : Entity_Id;
-      Parent_Type : Entity_Id;
-
       function Is_Derived_Type_With_Constraint return Boolean;
       --  Check whether T is a derived type with an explicit constraint, in
       --  which case the constraint has frozen the type and the item is too
@@ -12589,6 +12609,7 @@ package body Sem_Ch13 is
 
       function Is_Derived_Type_With_Constraint return Boolean is
          Decl : constant Node_Id := Declaration_Node (T);
+
       begin
          return Is_Derived_Type (T)
            and then Is_Frozen (Base_Type (T))
@@ -12623,14 +12644,19 @@ package body Sem_Ch13 is
          end if;
       end Too_Late;
 
+      --  Local variables
+
+      Parent_Type : Entity_Id;
+      S           : Entity_Id;
+
    --  Start of processing for Rep_Item_Too_Late
 
    begin
       --  First make sure entity is not frozen (RM 13.1(9))
 
       if (Is_Frozen (T)
-         or else (Is_Type (T)
-           and then Is_Derived_Type_With_Constraint))
+           or else (Is_Type (T)
+                     and then Is_Derived_Type_With_Constraint))
 
         --  Exclude imported types, which may be frozen if they appear in a
         --  representation clause for a local type.
@@ -13678,25 +13704,6 @@ package body Sem_Ch13 is
          end loop;
       end if;
    end Uninstall_Discriminants;
-
-   --------------
-   -- Pop_Type --
-   --------------
-
-   procedure Pop_Type (E : Entity_Id) is
-   begin
-      if Ekind (E) = E_Record_Type and then E = Current_Scope then
-         End_Scope;
-         return;
-
-      elsif Is_Type (E)
-         and then Has_Discriminants (E)
-         and then Nkind (Parent (E)) /= N_Subtype_Declaration
-      then
-         Uninstall_Discriminants (E);
-         Pop_Scope;
-      end if;
-   end Pop_Type;
 
    ------------------------------
    -- Validate_Address_Clauses --

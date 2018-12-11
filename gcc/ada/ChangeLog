@@ -1,3 +1,9 @@
+2018-12-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_aggr.adb, exp_ch7.adb, gnat1drv.adb, sem_ch10.adb,
+	sem_ch13.adb, sem_ch6.adb, sem_ch7.adb, sem_util.adb: Minor
+	reformatting.
+
 2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fe.h (Is_Atomic_Object): Declare.

@@ -2737,10 +2737,11 @@ package body Sem_Ch7 is
          --  to the same freeze node as their corresponding full view, if any.
          --  But we ought not to overwrite a node already inserted in the tree.
 
-         pragma Assert (Serious_Errors_Detected /= 0
-           or else No (Freeze_Node (Priv))
-           or else No (Parent (Freeze_Node (Priv)))
-           or else Freeze_Node (Priv) = Freeze_Node (Full));
+         pragma Assert
+           (Serious_Errors_Detected /= 0
+             or else No (Freeze_Node (Priv))
+             or else No (Parent (Freeze_Node (Priv)))
+             or else Freeze_Node (Priv) = Freeze_Node (Full));
 
          Set_Freeze_Node (Priv, Freeze_Node (Full));
 
