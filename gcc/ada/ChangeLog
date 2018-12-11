@@ -1,3 +1,21 @@
+2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fe.h (Debug_Generated_Code): Declare.
+	* gcc-interface/gigi.h (enum inline_status_t): Rename
+	is_disabled to is_default, is_enabled to is_requested and add
+	is_prescribed.
+	* gcc-interface/decl.c (inline_status_for_subprog): New function.
+	(gnat_to_gnu_entity) <E_Subprogram_Type>: Use it to get the
+	inlining status of the subprogram.
+	* gcc-interface/trans.c (gigi): Adjust to above renaming.
+	(build_raise_check): Likewise.
+	(Compilation_Unit_to_gnu): Likewise.
+	(gnat_to_gnu): Likewise.
+	* gcc-interface/utils.c (create_subprog_decl): Likewise.  Deal
+	with is_prescribed status by setting
+	DECL_DISREGARD_INLINE_LIMITS.  Do not set the
+	DECL_NO_INLINE_WARNING_P flag if Debug_Generated_Code is true.
+
 2018-12-03  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_aux.adb (Object_Type_Has_Constrained_Partial_View): Return

@@ -205,6 +205,7 @@ static tree gnat_to_gnu_component_type (Entity_Id, bool, bool);
 static tree gnat_to_gnu_subprog_type (Entity_Id, bool, bool, tree *);
 static int adjust_packed (tree, tree, int);
 static tree gnat_to_gnu_field (Entity_Id, tree, int, bool, bool);
+static enum inline_status_t inline_status_for_subprog (Entity_Id);
 static tree gnu_ext_name_for_subprog (Entity_Id, tree);
 static void set_nonaliased_component_on_array_type (tree);
 static void set_reverse_storage_order_on_array_type (tree);
@@ -3883,12 +3884,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       {
 	tree gnu_ext_name
 	  = gnu_ext_name_for_subprog (gnat_entity, gnu_entity_name);
-	enum inline_status_t inline_status
-	  = Has_Pragma_No_Inline (gnat_entity)
-	    ? is_suppressed
-	    : Has_Pragma_Inline_Always (gnat_entity)
-	      ? is_required
-	      : (Is_Inlined (gnat_entity) ? is_enabled : is_disabled);
+	const enum inline_status_t inline_status
+	  = inline_status_for_subprog (gnat_entity);
 	bool public_flag = Is_Public (gnat_entity) || imported_p;
 	/* Subprograms marked both Intrinsic and Always_Inline need not
 	   have a body of their own.  */
@@ -4932,6 +4929,44 @@ is_cplusplus_method (Entity_Id gnat_entity)
     }
 
   return false;
+}
+
+/* Return the inlining status of the GNAT subprogram SUBPROG.  */
+
+static enum inline_status_t
+inline_status_for_subprog (Entity_Id subprog)
+{
+  if (Has_Pragma_No_Inline (subprog))
+    return is_suppressed;
+
+  if (Has_Pragma_Inline_Always (subprog))
+    return is_required;
+
+  if (Is_Inlined (subprog))
+    {
+      tree gnu_type;
+
+      /* This is a kludge to work around a pass ordering issue: for small
+	 record types with many components, i.e. typically bit-fields, the
+	 initialization routine can contain many assignments that will be
+	 merged by the GIMPLE store merging pass.  But this pass runs very
+	 late in the pipeline, in particular after the inlining decisions
+	 are made, so the inlining heuristics cannot take its outcome into
+	 account.  Therefore, we optimistically override the heuristics for
+	 the initialization routine in this case.  */
+      if (Is_Init_Proc (subprog)
+	  && flag_store_merging
+	  && Is_Record_Type (Etype (First_Formal (subprog)))
+	  && (gnu_type = gnat_to_gnu_type (Etype (First_Formal (subprog))))
+	  && !TYPE_IS_BY_REFERENCE_P (gnu_type)
+	  && tree_fits_uhwi_p (TYPE_SIZE (gnu_type))
+	  && compare_tree_int (TYPE_SIZE (gnu_type), MAX_FIXED_MODE_SIZE) <= 0)
+	return is_prescribed;
+
+      return is_requested;
+    }
+
+  return is_default;
 }
 
 /* Finalize the processing of From_Limited_With incomplete types.  */
