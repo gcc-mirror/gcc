@@ -1,3 +1,12 @@
+2018-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/88448
+	PR middle-end/88415
+	* gimple.c (gimple_assign_set_rhs_with_ops): Revert previous
+	change.
+	* tree-complex.c (update_complex_assignment): Properly transfer
+	or clean EH info around gimple_assign_set_rhs_with_ops.
+
 2018-12-11  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/37369

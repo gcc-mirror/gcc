@@ -1752,7 +1752,7 @@ gimple_assign_set_rhs_with_ops (gimple_stmt_iterator *gsi, enum tree_code code,
   if (new_rhs_ops > 2)
     gimple_assign_set_rhs3 (stmt, op3);
   if (stmt != old_stmt)
-    gsi_replace (gsi, stmt, true);
+    gsi_replace (gsi, stmt, false);
 }
 
 
