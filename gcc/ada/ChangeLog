@@ -1,3 +1,10 @@
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Get_Actual_Subtype): Function can return type
+	mark.
+	(Get_Cursor_Type): Improve recovery and error message on a
+	misplaced First aspect for an iterable type.
+
 2018-12-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* checks.adb: Add with and use clauses for Sem_Mech.
