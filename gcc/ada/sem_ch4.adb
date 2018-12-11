@@ -171,7 +171,6 @@ package body Sem_Ch4 is
    --  being called. The caller will have verified that the object is legal
    --  for the call. If the remaining parameters match, the first parameter
    --  will rewritten as a dereference if needed, prior to completing analysis.
-
    procedure Check_Misspelled_Selector
      (Prefix : Entity_Id;
       Sel    : Node_Id);
@@ -675,7 +674,11 @@ package body Sem_Ch4 is
                   return;
                end if;
 
-               if Expander_Active then
+               --  In GNATprove mode we need to preserve the link between
+               --  the original subtype indication and the anonymous subtype,
+               --  to extend proofs to constrained acccess types.
+
+               if Expander_Active or else GNATprove_Mode then
                   Def_Id := Make_Temporary (Loc, 'S');
 
                   Insert_Action (E,
