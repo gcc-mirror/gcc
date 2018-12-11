@@ -41,6 +41,9 @@ do {									\
     return t;								\
  } while (0)
 
+static HOST_WIDE_INT find_array_ctor_elt (tree ary, tree dindex,
+					  bool insert = false);
+
 /* Returns true iff FUN is an instantiation of a constexpr function
    template or a defaulted constexpr function.  */
 
@@ -1516,6 +1519,36 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       STRIP_NOPS (fun);
       if (TREE_CODE (fun) == ADDR_EXPR)
 	fun = TREE_OPERAND (fun, 0);
+      /* For TARGET_VTABLE_USES_DESCRIPTORS targets, there is no
+	 indirection, the called expression is a pointer into the
+	 virtual table which should contain FDESC_EXPR.  Extract the
+	 FUNCTION_DECL from there.  */
+      else if (TARGET_VTABLE_USES_DESCRIPTORS
+	       && TREE_CODE (fun) == POINTER_PLUS_EXPR
+	       && TREE_CODE (TREE_OPERAND (fun, 0)) == ADDR_EXPR
+	       && TREE_CODE (TREE_OPERAND (fun, 1)) == INTEGER_CST)
+	{
+	  tree d = TREE_OPERAND (TREE_OPERAND (fun, 0), 0);
+	  if (VAR_P (d)
+	      && DECL_VTABLE_OR_VTT_P (d)
+	      && TREE_CODE (TREE_TYPE (d)) == ARRAY_TYPE
+	      && TREE_TYPE (TREE_TYPE (d)) == vtable_entry_type
+	      && DECL_INITIAL (d)
+	      && TREE_CODE (DECL_INITIAL (d)) == CONSTRUCTOR)
+	    {
+	      tree i = int_const_binop (TRUNC_DIV_EXPR, TREE_OPERAND (fun, 1),
+					TYPE_SIZE_UNIT (vtable_entry_type));
+	      HOST_WIDE_INT idx = find_array_ctor_elt (DECL_INITIAL (d), i);
+	      if (idx >= 0)
+		{
+		  tree fdesc
+		    = (*CONSTRUCTOR_ELTS (DECL_INITIAL (d)))[idx].value;
+		  if (TREE_CODE (fdesc) == FDESC_EXPR
+		      && integer_zerop (TREE_OPERAND (fdesc, 1)))
+		    fun = TREE_OPERAND (fdesc, 0);
+		}
+	    }
+	}
     }
   if (TREE_CODE (fun) != FUNCTION_DECL)
     {
@@ -2240,7 +2273,7 @@ array_index_cmp (tree key, tree index)
    if none.  If INSERT is true, insert a matching element rather than fail.  */
 
 static HOST_WIDE_INT
-find_array_ctor_elt (tree ary, tree dindex, bool insert = false)
+find_array_ctor_elt (tree ary, tree dindex, bool insert)
 {
   if (tree_int_cst_sgn (dindex) < 0)
     return -1;
@@ -4834,6 +4867,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	/* Find the function decl in the virtual functions list.  TOKEN is
 	   the DECL_VINDEX that says which function we're looking for.  */
 	tree virtuals = BINFO_VIRTUALS (TYPE_BINFO (objtype));
+	if (TARGET_VTABLE_USES_DESCRIPTORS)
+	  token /= MAX (TARGET_VTABLE_USES_DESCRIPTORS, 1);
 	r = TREE_VALUE (chain_index (token, virtuals));
 	break;
       }
