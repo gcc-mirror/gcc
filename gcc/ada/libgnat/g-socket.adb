@@ -1154,10 +1154,12 @@ package body GNAT.Sockets is
       Optname : Interfaces.C.int := -1) return Option_Type
    is
       use SOSC;
+      use type C.unsigned;
       use type C.unsigned_char;
 
       V8  : aliased Two_Ints;
       V4  : aliased C.int;
+      U4  : aliased C.unsigned;
       V1  : aliased C.unsigned_char;
       VT  : aliased Timeval;
       Len : aliased C.int;
@@ -1207,8 +1209,8 @@ package body GNAT.Sockets is
             --  a DWORD.
 
             if Target_OS = Windows then
-               Len := V4'Size / 8;
-               Add := V4'Address;
+               Len := U4'Size / 8;
+               Add := U4'Address;
 
             else
                Len := VT'Size / 8;
@@ -1286,10 +1288,10 @@ package body GNAT.Sockets is
                --  Timeout is in milliseconds, actual value is 500 ms +
                --  returned value (unless it is 0).
 
-               if V4 = 0 then
+               if U4 = 0 then
                   Opt.Timeout := 0.0;
                else
-                  Opt.Timeout := Natural (V4) * 0.001 + 0.500;
+                  Opt.Timeout :=  Duration (U4) / 1000 + 0.500;
                end if;
 
             else
@@ -2293,9 +2295,11 @@ package body GNAT.Sockets is
       Option : Option_Type)
    is
       use SOSC;
+      use type C.unsigned;
 
       V8  : aliased Two_Ints;
       V4  : aliased C.int;
+      U4  : aliased C.unsigned;
       V1  : aliased C.unsigned_char;
       VT  : aliased Timeval;
       Len : C.int;
@@ -2376,17 +2380,17 @@ package body GNAT.Sockets is
                --  the actual timeout is 500 ms + the given value (unless it
                --  is 0).
 
-               V4 := C.int (Option.Timeout / 0.001);
+               U4 := C.unsigned (Option.Timeout / 0.001);
 
-               if V4 > 500 then
-                  V4 := V4 - 500;
+               if U4 > 500 then
+                  U4 := U4 - 500;
 
-               elsif V4 > 0 then
-                  V4 := 1;
+               elsif U4 > 0 then
+                  U4 := 1;
                end if;
 
-               Len := V4'Size / 8;
-               Add := V4'Address;
+               Len := U4'Size / 8;
+               Add := U4'Address;
 
             else
                VT  := To_Timeval (Option.Timeout);
@@ -2509,8 +2513,24 @@ package body GNAT.Sockets is
    -----------------
 
    function To_Duration (Val : Timeval) return Timeval_Duration is
+      Max_D : constant Long_Long_Integer := Long_Long_Integer (Forever - 0.5);
+      Tv_sec_64 : constant Boolean := SOSC.SIZEOF_tv_sec = 8;
+      --  Need to separate this condition into the constant declaration to
+      --  avoid GNAT warning about "always true" or "always false".
    begin
-      return Natural (Val.Tv_Sec) * 1.0 + Natural (Val.Tv_Usec) * 1.0E-6;
+      if Tv_sec_64 then
+         --  Check for possible Duration overflow when Tv_Sec field is 64 bit
+         --  integer.
+
+         if Val.Tv_Sec > time_t (Max_D) or else
+            (Val.Tv_Sec = time_t (Max_D) and then
+             Val.Tv_Usec > suseconds_t ((Forever - Duration (Max_D)) * 1E6))
+         then
+            return Forever;
+         end if;
+      end if;
+
+      return Duration (Val.Tv_Sec) + Duration (Val.Tv_Usec) * 1.0E-6;
    end To_Duration;
 
    -------------------
@@ -2701,7 +2721,12 @@ package body GNAT.Sockets is
 
       else
          S  := time_t (Val - 0.5);
-         uS := suseconds_t (1_000_000 * (Val - Selector_Duration (S)));
+         uS := suseconds_t (1_000_000 * (Val - Selector_Duration (S)) - 0.5);
+
+         if uS = -1 then
+            --  It happen on integer duration
+            uS := 0;
+         end if;
       end if;
 
       return (S, uS);

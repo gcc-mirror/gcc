@@ -433,8 +433,13 @@ package GNAT.Sockets is
    Immediate : constant Duration := 0.0;
 
    Forever : constant Duration :=
-               Duration'Min (Duration'Last, 1.0 * SOSC.MAX_tv_sec);
-   --  Largest possible Duration that is also a valid value for struct timeval
+               Duration'Min
+                 (Duration'Last,
+                  (if SOSC."=" (SOSC.Target_OS, SOSC.Windows)
+                   then Duration (2 ** 32 / 1000)
+                   else 1.0 * SOSC.MAX_tv_sec));
+   --  Largest possible Duration that is also a valid value for the OS type
+   --  used for socket timeout.
 
    subtype Timeval_Duration is Duration range Immediate .. Forever;
 

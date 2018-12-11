@@ -1,3 +1,9 @@
+2018-12-11  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/g-socket.ads, libgnat/g-socket.adb: Fix duration
+	computations to be compatible with the type for socket timeouts
+	on Windows.
+
 2018-12-11  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_util.ads: Use preferred U.S. spelling of "honored".
