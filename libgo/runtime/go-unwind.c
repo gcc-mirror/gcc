@@ -392,6 +392,12 @@ parse_lsda_header (struct _Unwind_Context *context, const unsigned char *p,
 #define CONTINUE_UNWINDING return _URC_CONTINUE_UNWIND
 #endif
 
+#ifdef __ARM_EABI_UNWINDER__
+#define STOP_UNWINDING _URC_FAILURE
+#else
+#define STOP_UNWINDING _URC_NORMAL_STOP
+#endif
+
 #ifdef __USING_SJLJ_EXCEPTIONS__
 #define PERSONALITY_FUNCTION    __gccgo_personality_sj0
 #define __builtin_eh_return_data_regno(x) x
@@ -751,7 +757,7 @@ scanstackwithmap_callback (struct _Unwind_Context *context, void *arg)
               // TODO: print gp, pc, sp
               runtime_throw ("no stack map");
             }
-          return _URC_NORMAL_STOP;
+          return STOP_UNWINDING;
         }
       case FOUND:
         break;
@@ -799,7 +805,7 @@ probestackmaps_callback (struct _Unwind_Context *context,
 
   // Found a stack map. No need to keep unwinding.
   runtime_usestackmaps = true;
-  return _URC_NORMAL_STOP;
+  return STOP_UNWINDING;
 }
 
 // Try to find a stack map, store the result in global variable runtime_usestackmaps.
