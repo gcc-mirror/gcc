@@ -1,3 +1,10 @@
+2018-12-11  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (Convert_To_Assignments): When gnerating C, do
+	not declare a temporary to initialize an aggregate assigned to
+	Out or In_Out parameters whose type has no discriminants. This
+	avoids stack overflow errors at runtime.
+
 2018-12-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch7.adb (Check_Unnesting_Elaboration_Code): Extend
