@@ -1,3 +1,10 @@
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/aspect1.adb, gnat.dg/aspect1_horizontal.adb,
+	gnat.dg/aspect1_horizontal.ads, gnat.dg/aspect1_vectors_2d.ads:
+	New testcase.
+	* gnat.dg/static_pred1.adb: Expect an error message.
+
 2018-12-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR lto/86004

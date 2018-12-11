@@ -1938,12 +1938,6 @@ package body Freeze is
             --  for a description of how we handle aspect visibility).
 
             elsif Has_Delayed_Aspects (E) then
-
-               --  Retrieve the visibility to the discriminants in order to
-               --  analyze properly the aspects.
-
-               Push_Scope_And_Install_Discriminants (E);
-
                declare
                   Ritem : Node_Id;
 
@@ -1960,8 +1954,6 @@ package body Freeze is
                      Ritem := Next_Rep_Item (Ritem);
                   end loop;
                end;
-
-               Uninstall_Discriminants_And_Pop_Scope (E);
             end if;
 
             --  If an incomplete type is still not frozen, this may be a

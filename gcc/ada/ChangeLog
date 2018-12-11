@@ -1,3 +1,27 @@
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Push_Type, Pop_Type): New procedures, used for
+	analysis of aspect expressions for record types, whose
+	components (not only discriminants) may be referenced in aspect
+	expressions.
+	(Analyze_Aspect_Specifications, Analyze_Aspects_At_Freeze_Point,
+	Analyze_Aspect_At_End-Of_Declarations,
+	Resolve_Aspect_Expressions): Use the new subprograms.
+	(Check_Aspect_At_End_Of_Declarations): Improve error message.
+	(Build_Predicate_Functions): Do not build their bodies in a
+	generic unit.
+	(Is_Derived_Type_With_Constraint): New subprogram to uncover and
+	reject aspect specificationss on types that appear after the
+	type is frozen.
+	* sem_ch13.ads (Push_Scope_And_Install_Discriminants,
+	Uninstall_Discriminants_And_Pop_Scope): Remove.
+	* sem_ch6.adb, sem_ch6.ads (Fully_Conformant_Expressions):
+	Additional parameter to improve error message on illegal aspect
+	specifications whose resolution differ between aspect
+	specification and freeze point.
+	* freeze.adb: Remove references to
+	Install/Uninstall_Discriminants.
+
 2018-12-11  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
