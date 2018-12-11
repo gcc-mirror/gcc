@@ -4361,12 +4361,13 @@ convert (tree type, tree expr)
 						TYPE_MIN_VALUE (etype))));
 
   /* If the input is a justified modular type, we need to extract the actual
-     object before converting it to any other type with the exceptions of an
-     unconstrained array or of a mere type variant.  It is useful to avoid the
-     extraction and conversion in the type variant case because it could end
-     up replacing a VAR_DECL expr by a constructor and we might be about the
-     take the address of the result.  */
+     object before converting it to an other type with the exceptions of an
+     [unconstrained] array or a mere type variant.  It is useful to avoid
+     the extraction and conversion in these cases because it could end up
+     replacing a VAR_DECL by a constructor and we might be about the take
+     the address of the result.  */
   if (ecode == RECORD_TYPE && TYPE_JUSTIFIED_MODULAR_P (etype)
+      && code != ARRAY_TYPE
       && code != UNCONSTRAINED_ARRAY_TYPE
       && TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (etype))
     return

@@ -1,3 +1,14 @@
+2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Is_Bit_Packed_Array): Fix values of component size.
+	(Is_Packed): Likewise.
+	* gcc-interface/utils.c (convert): Do not extract the value of a
+	justified modular type if the destination type is a regular
+	array.
+	* gcc-interface/decl.c (gnat_to_gnu_component_type): Pass
+	TYPE_DECL to validate_size wherever the array has packed
+	components.
+
 2018-12-11  Bob Duff  <duff@adacore.com>
 
 	* gnat1drv.adb (gnat1drv): Pass the correct Object value when

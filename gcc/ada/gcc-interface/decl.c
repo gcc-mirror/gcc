@@ -5051,6 +5051,7 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
 {
   const Entity_Id gnat_type = Component_Type (gnat_array);
   tree gnu_type = gnat_to_gnu_type (gnat_type);
+  bool has_packed_components = Is_Bit_Packed_Array (gnat_array);
   tree gnu_comp_size;
   unsigned int max_align;
 
@@ -5063,20 +5064,23 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
   else
     max_align = 0;
 
-  /* Try to get a smaller form of the component if needed.  */
+  /* Try to get a packable form of the component if needed.  */
   if ((Is_Packed (gnat_array) || Has_Component_Size_Clause (gnat_array))
-      && !Is_Bit_Packed_Array (gnat_array)
       && !Has_Aliased_Components (gnat_array)
       && !Strict_Alignment (gnat_type)
+      && !has_packed_components
       && RECORD_OR_UNION_TYPE_P (gnu_type)
       && !TYPE_FAT_POINTER_P (gnu_type)
       && tree_fits_uhwi_p (TYPE_SIZE (gnu_type)))
-    gnu_type = make_packable_type (gnu_type, false, max_align);
+    {
+      gnu_type = make_packable_type (gnu_type, false, max_align);
+      has_packed_components = true;
+    }
 
   /* Get and validate any specified Component_Size.  */
   gnu_comp_size
     = validate_size (Component_Size (gnat_array), gnu_type, gnat_array,
-		     Is_Bit_Packed_Array (gnat_array) ? TYPE_DECL : VAR_DECL,
+		     has_packed_components ? TYPE_DECL : VAR_DECL,
 		     true, Has_Component_Size_Clause (gnat_array));
 
   /* If the component type is a RECORD_TYPE that has a self-referential size,
