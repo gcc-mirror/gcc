@@ -1,3 +1,10 @@
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Allocator): In GNATprove mode build a
+	subtype declaration if the allocator has a subtype indication
+	with a constraint. This allows additional proofs to be applied
+	to allocators that designate uninitialized constrained objects.
+
 2018-12-11  Yannick Moy  <moy@adacore.com>
 
 	* sem_util.adb (Has_Full_Default_Initialization): Consider
