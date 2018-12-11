@@ -1,3 +1,8 @@
+2018-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/88430
+	* quadmath_weak.h (__qmath2): Add __quadmath_throw.
+
 2018-11-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* quadmath-imp.h (ieee854_float128): Use mantissa0, mantissa1,
