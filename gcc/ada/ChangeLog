@@ -1,3 +1,21 @@
+2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Add
+	gnat_annotate_type local variable initialized to Empty.
+	<E_Record_Subtype>: Set it to the Cloned_Subtype, if any.  For
+	types, back-annotate alignment and size values earlier and only
+	if the DECL was created here; otherwise, if gnat_annotate_type
+	is present, take the values from it.
+	(gnat_to_gnu_field): Add gnat_clause local variable.  If a
+	component clause is present, call validate_size only once on the
+	Esize of the component.  Otherwise, in the packed case, do not
+	call validate_size again on the type of the component but
+	retrieve directly its RM size.
+	(components_to_record): Minor tweak.
+	(set_rm_size): Remove useless test.
+	* gcc-interface/trans.c (gnat_to_gnu): Do wrap the instance of a
+	boolean discriminant attached to a variant part.
+
 2018-12-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_aggr.adb (Array_Aggr_Subtype. Resolve_Aggr_Expr): Indicate
