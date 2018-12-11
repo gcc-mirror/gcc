@@ -3996,15 +3996,23 @@ package body Exp_Ch7 is
    --------------------------------------
 
    procedure Check_Unnesting_Elaboration_Code (N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (N);
+      Loc       : constant Source_Ptr := Sloc (N);
+      First_Ent : Entity_Id := Empty;
+      Loop_Id   : Entity_Id := Empty;
 
       function Contains_Subprogram (Blk : Entity_Id) return Boolean;
       --  Check recursively whether a loop or block contains a subprogram that
       --  may need an activation record.
 
       function First_Local_Scope (L : List_Id) return Entity_Id;
-      --  Find first block or loop that contains a subprogram and is not itself
-      --  nested within another local scope.
+      --  Find first entity in the elaboration code of the body that
+      --  contains or represents a subprogrsam body. A body can appear
+      --  within a block or a loop. or can appear by itself if generated
+      --  for an object declaration that involves controlled actions.
+      --  The first such entity encountered is used to reset the scopes
+      --  of all entities that become local to the hew elboration procedure.
+      --  This is needed for subsequent unnesting, which depends on the
+      --  scope links to determine the nesting level of each subprogram.
 
       --------------------------
       --  Contains_Subprogram --
@@ -4037,6 +4045,7 @@ package body Exp_Ch7 is
       -----------------------
 
       function First_Local_Scope (L : List_Id) return Entity_Id is
+         Id   : Entity_Id;
          Scop : Entity_Id;
          Stat : Node_Id;
 
@@ -4045,13 +4054,27 @@ package body Exp_Ch7 is
          while Present (Stat) loop
             case Nkind (Stat) is
                when N_Block_Statement =>
-                  if Present (Identifier (Stat)) then
-                     return Entity (Identifier (Stat));
+                  Id := Entity (Identifier (Stat));
+                  if No (First_Ent) then
+                     First_Ent := Id;
+                  end if;
+
+                  if Present (Id) and then Contains_Subprogram (Id) then
+                     return Id;
                   end if;
 
                when N_Loop_Statement =>
-                  if Contains_Subprogram (Entity (Identifier (Stat))) then
-                     return Entity (Identifier (Stat));
+                  Id := Entity (Identifier (Stat));
+                  if No (First_Ent) then
+                     First_Ent := Id;
+                  end if;
+
+                  if Contains_Subprogram (Id) then
+                     if Scope (Id) = Current_Scope then
+                        Loop_Id := Id;
+                     end if;
+
+                     return Id;
                   end if;
 
                when N_If_Statement =>
@@ -4101,7 +4124,12 @@ package body Exp_Ch7 is
                   end;
 
                when N_Subprogram_Body =>
-                  return Defining_Entity (Stat);
+                  Id := Defining_Entity (Stat);
+                  if No (First_Ent) then
+                     First_Ent := Id;
+                  end if;
+
+                  return Id;
 
                when others =>
                   null;
@@ -4115,6 +4143,7 @@ package body Exp_Ch7 is
 
       --  Local variables
 
+      H_Seq     : constant Node_Id := Handled_Statement_Sequence (N);
       Elab_Body : Node_Id;
       Elab_Call : Node_Id;
       Elab_Proc : Entity_Id;
@@ -4124,11 +4153,30 @@ package body Exp_Ch7 is
 
    begin
       if Unnest_Subprogram_Mode
-        and then Present (Handled_Statement_Sequence (N))
+        and then Present (H_Seq)
         and then Is_Compilation_Unit (Current_Scope)
       then
          Ent :=
-           First_Local_Scope (Statements (Handled_Statement_Sequence (N)));
+           First_Local_Scope (Statements (H_Seq));
+
+         --  There msy be subprograms declared in the exception handlers
+         --  of the current body.
+
+         if No (Ent) and then Present (Exception_Handlers (H_Seq)) then
+            declare
+               Handler : Node_Id := First (Exception_Handlers (H_Seq));
+            begin
+               while Present (Handler) loop
+                  Ent := First_Local_Scope (Statements (Handler));
+                  if Present (Ent) then
+                     First_Ent := Ent;
+                     exit;
+                  end if;
+
+                  Next (Handler);
+               end loop;
+            end;
+         end if;
 
          if Present (Ent) then
             Elab_Proc :=
@@ -4161,12 +4209,18 @@ package body Exp_Ch7 is
             --  The scope of all blocks and loops in the elaboration code is
             --  now the constructed elaboration procedure. Nested subprograms
             --  within those blocks will have activation records if they
-            --  contain references to entities in the enclosing block.
+            --  contain references to entities in the enclosing block or
+            --  the package itself.
 
+            Ent := First_Ent;
             while Present (Ent) loop
                Set_Scope (Ent, Elab_Proc);
                Next_Entity (Ent);
             end loop;
+
+            if Present (Loop_Id) then
+               Set_Scope (Loop_Id, Elab_Proc);
+            end if;
          end if;
       end if;
    end Check_Unnesting_Elaboration_Code;
