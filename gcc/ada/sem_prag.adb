@@ -2282,6 +2282,12 @@ package body Sem_Prag is
                   SPARK_Msg_N
                     ("global item must denote object, state or current "
                      & "instance of concurrent type", Item);
+
+                  if Ekind (Item_Id) in Named_Kind then
+                     SPARK_Msg_NE
+                       ("\named number & is not an object", Item, Item);
+                  end if;
+
                   return;
                end if;
 

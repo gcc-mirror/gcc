@@ -1,3 +1,7 @@
+2018-12-11  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Global_Item): Refine error message.
+
 2018-12-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch7.adb (Check_Unnesting_In_Declarations): Extend
