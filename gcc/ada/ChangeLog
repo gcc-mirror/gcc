@@ -1,3 +1,10 @@
+2018-12-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Initial_Condition): Do not
+	generate an Initial_Condition procedure and a call to it when
+	the associated pragma is ignored.
+	* sem_ch10.adb (Analyze_Compilation_Unit): Minor cleanup.
+
 2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fe.h (Debug_Generated_Code): Declare.
