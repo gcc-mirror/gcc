@@ -1,3 +1,12 @@
+2018-12-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb: Add with and use clauses for Sem_Mech.
+	(Ensure_Valid): Update the "annoying special case" to include
+	entry and function calls. Use Get_Called_Entity to obtain the
+	entry or subprogram being invoked, rather than retrieving it
+	manually. Parameters passed by reference do not need a validity
+	check.
+
 2018-12-11  Yannick Moy  <moy@adacore.com>
 
 	* sem_prag.adb (Analyze_Global_Item): Refine error message.
