@@ -1,3 +1,9 @@
+2018-12-11  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Update gnatstub
+	documentation for the Libadalang-based version.
+	* gnat_ugn.texi: Regenerate.
+
 2018-12-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Push_Type, Pop_Type): New procedures, used for

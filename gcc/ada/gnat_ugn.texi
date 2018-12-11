@@ -17384,7 +17384,7 @@ normal mode is listed, but no file is actually deleted.
 
 @item @code{--version}
 
-Display Copyright and version, then exit disregarding all other options.
+Display copyright and version, then exit disregarding all other options.
 @end table
 
 @geindex --help (gnatclean)
@@ -17687,7 +17687,7 @@ version of the same source that has been modified.
 
 @item @code{--version}
 
-Display Copyright and version, then exit disregarding all other options.
+Display copyright and version, then exit disregarding all other options.
 @end table
 
 @geindex --help (gnatls)
@@ -18020,7 +18020,7 @@ The following switches are available for @code{gnatxref}:
 
 @item @code{--version}
 
-Display Copyright and version, then exit disregarding all other options.
+Display copyright and version, then exit disregarding all other options.
 @end table
 
 @geindex --help (gnatxref)
@@ -18278,7 +18278,7 @@ The following switches are available:
 
 @item @code{--version}
 
-Display Copyright and version, then exit disregarding all other options.
+Display copyright and version, then exit disregarding all other options.
 @end table
 
 @geindex --help (gnatfind)
