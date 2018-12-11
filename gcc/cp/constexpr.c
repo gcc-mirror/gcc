@@ -5476,10 +5476,11 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
        available, so we don't bother with switch tracking.  */
     return true;
 
-  if (TREE_THIS_VOLATILE (t) && !DECL_P (t))
+  if (TREE_THIS_VOLATILE (t) && want_rval)
     {
       if (flags & tf_error)
-        error_at (loc, "expression %qE has side-effects", t);
+	error_at (loc, "lvalue-to-rvalue conversion of a volatile lvalue "
+		  "%qE with type %qT", t, TREE_TYPE (t));
       return false;
     }
   if (CONSTANT_CLASS_P (t))

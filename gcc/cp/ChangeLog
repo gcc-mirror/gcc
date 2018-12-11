@@ -1,3 +1,11 @@
+2018-12-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86608 - reading constexpr volatile variable.
+	* constexpr.c (potential_constant_expression_1): Check want_rval
+	instead of checking if we have a decl.
+	* decl2.c (decl_maybe_constant_var_p): Don't consider volatile
+	constexpr variables as maybe constant.
+
 2018-12-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (grokvardecl): Add location_t parameter and use it

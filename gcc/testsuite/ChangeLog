@@ -1,3 +1,9 @@
+2018-12-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86608 - reading constexpr volatile variable.
+	* g++.dg/cpp0x/constexpr-volatile2.C: New test.
+	* g++.dg/cpp0x/pr65327.C: Add dg-error.
+
 2018-12-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/pr53037-4.C: Test the first two locations too.
