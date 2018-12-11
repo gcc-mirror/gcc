@@ -8823,7 +8823,8 @@ package body Sem_Ch6 is
 
    function Fully_Conformant_Expressions
      (Given_E1 : Node_Id;
-      Given_E2 : Node_Id) return Boolean
+      Given_E2 : Node_Id;
+      Report   : Boolean := False) return Boolean
    is
       E1 : constant Node_Id := Original_Node (Given_E1);
       E2 : constant Node_Id := Original_Node (Given_E2);
@@ -8831,8 +8832,12 @@ package body Sem_Ch6 is
       --  for analysis and/or expansion to make things look as though they
       --  conform when they do not, e.g. by converting 1+2 into 3.
 
-      function FCE (Given_E1, Given_E2 : Node_Id) return Boolean
-        renames Fully_Conformant_Expressions;
+      Result : Boolean;
+      function FCE (Given_E1, Given_E2 : Node_Id) return Boolean;
+      function FCE (Given_E1, Given_E2 : Node_Id) return Boolean is
+      begin
+         return Fully_Conformant_Expressions (Given_E1, Given_E2, Report);
+      end FCE;
 
       function FCL (L1, L2 : List_Id) return Boolean;
       --  Compare elements of two lists for conformance. Elements have to be
@@ -8917,6 +8922,8 @@ package body Sem_Ch6 is
    --  Start of processing for Fully_Conformant_Expressions
 
    begin
+      Result := True;
+
       --  Nonconformant if paren count does not match. Note: if some idiot
       --  complains that we don't do this right for more than 3 levels of
       --  parentheses, they will be treated with the respect they deserve.
@@ -8929,7 +8936,7 @@ package body Sem_Ch6 is
 
       elsif Is_Entity_Name (E1) and then Is_Entity_Name (E2) then
          if Present (Entity (E1)) then
-            return Entity (E1) = Entity (E2)
+            Result := Entity (E1) = Entity (E2)
 
               --  One may be a discriminant that has been replaced by the
               --  corresponding discriminal.
@@ -8968,6 +8975,14 @@ package body Sem_Ch6 is
                    and then Is_Intrinsic_Subprogram (Entity (E1))
                    and then Is_Generic_Instance (Entity (E1))
                    and then Entity (E2) = Alias (Entity (E1)));
+            if Report and not Result then
+               Error_Msg_Sloc :=
+                 Text_Ptr'Max (Sloc (Entity (E1)), Sloc (Entity (E2)));
+               Error_Msg_NE
+                 ("Meaning of& differs because of declaration#", E1, E2);
+            end if;
+
+            return Result;
 
          elsif Nkind (E1) = N_Expanded_Name
            and then Nkind (E2) = N_Expanded_Name
