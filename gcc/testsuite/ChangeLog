@@ -1,3 +1,8 @@
+2018-12-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/valid4.adb, gnat.dg/valid4_pkg.adb,
+	gnat.dg/valid4_pkg.ads: New testcase.
+
 2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/packed_array.adb, gnat.dg/packed_array.ads,
