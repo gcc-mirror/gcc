@@ -2245,13 +2245,19 @@ package body Freeze is
          --  entity being frozen is living. Insert the freezing action prior
          --  to the start of the enclosing ignored Ghost region. As a result
          --  the freezeing action will be preserved when the ignored Ghost
-         --  context is eliminated.
+         --  context is eliminated. The insertion must take place even when
+         --  the context is a spec expression, otherwise "Handling of Default
+         --  and Per-Object Expressions" will suppress the insertion, and the
+         --  freeze node will be dropped on the floor.
 
          if Saved_GM = Ignore
            and then Ghost_Mode /= Ignore
            and then Present (Ignored_Ghost_Region)
          then
-            Insert_Action (Ignored_Ghost_Region, Fnod);
+            Insert_Action
+              (Assoc_Node   => Ignored_Ghost_Region,
+               Ins_Action   => Fnod,
+               Spec_Expr_OK => True);
 
          --  Otherwise add the freezing action to the result list
 

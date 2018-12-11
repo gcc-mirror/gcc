@@ -1,3 +1,16 @@
+2018-12-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Insert_Action): Add new formal parameter
+	Spec_Expr_OK.
+	(Insert_Actions): Add new formal parameter Spec_Expr_OK. Update
+	all calls to Insert_Actions where relevant. Honour an insertion
+	from a spec expression context when requested by the caller.
+	* exp_util.ads (Insert_Action): Add new formal parameter
+	Spec_Expr_OK.
+	(Insert_Actions): Add new formal parameter Spec_Expr_OK.
+	* freeze.adb (Add_To_Result): Force the insertion of the freeze
+	node even when the context is a spec expression.
+
 2018-12-11  Jerome Lambourg  <lambourg@adacore.com>
 
 	* vxaddr2line.adb, vxlink-bind.adb, vxlink-bind.ads,
