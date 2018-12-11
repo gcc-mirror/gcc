@@ -1797,7 +1797,10 @@ Alternatively, you may run the script using the following command line:
   .. index:: ! gnatmetric
   .. index:: Metric tool
 
-  The ``gnatmetric`` tool is an ASIS-based utility
+  This documentation is for the new libadalang-based version
+  of ``gnatmetric``, which replaces the ASIS-based version.
+
+  The ``gnatmetric`` tool is a utility
   for computing various program metrics.
   It takes an Ada source file as input and generates a file containing the
   metrics data as output. Various switches control which
@@ -1808,26 +1811,11 @@ Alternatively, you may run the script using the following command line:
   the project-related switches).  The project file package that can specify
   ``gnatmetric`` switches is named ``Metrics``.
 
-  To compute program metrics, ``gnatmetric`` invokes the Ada
-  compiler and generates and uses the ASIS tree for the input source;
-  thus the input must be legal Ada code, and the tool should have all the
-  information needed to compile the input source. To provide this information,
-  you may specify as a tool parameter the project file the input source belongs to.
-  Another possibility is to specify the source search
-  path and needed configuration files in :switch:`-cargs` section of ``gnatmetric``
-  call, see the description of the ``gnatmetric`` switches below.
-
-  If the set of sources to be processed by ``gnatmetric`` contains sources with
-  preprocessing directives
-  then the needed options should be provided to run preprocessor as a part of
-  the ``gnatmetric`` call, and the computed metrics
-  will correspond to preprocessed sources.
-
   The ``gnatmetric`` command has the form
 
     ::
 
-       $ gnatmetric [ switches ] { filename } [ -cargs gcc_switches ]
+       $ gnatmetric [ switches ] { filename }
 
   where:
 
@@ -1839,17 +1827,9 @@ Alternatively, you may run the script using the following command line:
     the file name may contain path information.
     If no ``filename`` is supplied, then the ``switches`` list must contain
     at least one
-    :switch:`-files` switch (see :ref:`Other_gnatmetric_Switches`).
-    Including both a :switch:`-files` switch and one or more
+    :switch:`--files` switch (see :ref:`Other_gnatmetric_Switches`).
+    Including both a :switch:`--files` switch and one or more
     ``filename`` arguments is permitted.
-
-  * ``gcc_switches`` is a list of switches for
-    ``gcc``. They will be passed on to all compiler invocations made by
-    ``gnatmetric`` to generate the ASIS trees. Here you can provide
-    :switch:`-I` switches to form the source search path,
-    and use the :switch:`-gnatec` switch to set the configuration file,
-    use the :switch:`-gnat05` switch if sources should be compiled in
-    Ada 2005 mode etc.
 
   The following subsections describe the various switches accepted by
   ``gnatmetric``, organized by category.
@@ -1877,76 +1857,76 @@ Alternatively, you may run the script using the following command line:
   directory as where the source file is located. If ``gnatmetric`` has a
   project  file as its parameter, it places all the generated files in the
   object directory of the project (or in the project source directory if the
-  project does not define an objects directory), if :switch:`--subdirs` option
+  project does not define an object directory). If :switch:`--subdirs` option
   is specified, the files are placed in the subrirectory of this directory
   specified by this option.
 
   All the output information generated in XML format is placed in a single
   file. By default the name of this file is :file:`metrix.xml`.
   If not otherwise specified and if no project file is specified
-  as ``gnatmetric`` option  this file is placed in the
+  as ``gnatmetric`` option this file is placed in the
   current directory.
 
   Some of the computed metrics are summed over the units passed to
   ``gnatmetric``; for example, the total number of lines of code.
   By default this information is sent to :file:`stdout`, but a file
-  can be specified with the :switch:`-og` switch.
+  can be specified with the :switch:`--global-file-name` switch.
 
   The following switches control the ``gnatmetric`` output:
 
-  .. index:: -x (gnatmetric)
+  .. index:: --generate-xml-output (gnatmetric)
 
-  :switch:`-x`
-    Generate the XML output
+  :switch:`--generate-xml-output`
+    Generate XML output.
 
-  .. index:: -xs (gnatmetric)
+  .. index:: --generate-xml-schema (gnatmetric)
 
-  :switch:`-xs`
-    Generate the XML output and the XML schema file that describes the structure
-    of the XML metric report, this schema is assigned to the XML file. The schema
+  :switch:`--generate-xml-schema`
+    Generate XML output and an XML schema file that describes the structure
+    of the XML metric report. This schema is assigned to the XML file. The schema
     file has the same name as the XML output file with :file:`.xml` suffix replaced
-    with :file:`.xsd`
+    with :file:`.xsd`.
 
-  .. index:: -nt (gnatmetric)
-
-
-  :switch:`-nt`
-    Do not generate the output in text form (implies :switch:`-x`)
-
-  .. index:: -d (gnatmetric)
+  .. index:: --no-text-output (gnatmetric)
 
 
-  :switch:`-d {output_dir}`
-    Put text files with detailed metrics into ``output_dir``
+  :switch:`--no-text-output`
+    Do not generate the output in text form (implies :switch:`-x`).
 
-  .. index:: -o (gnatmetric)
+  .. index:: --output-dir (gnatmetric)
 
 
-  :switch:`-o {file_suffix}`
+  :switch:`--output-dir={output_dir}`
+    Put text files with detailed metrics into ``output_dir``.
+
+  .. index:: --output-suffix (gnatmetric)
+
+
+  :switch:`--output-suffix={file_suffix}`
     Use ``file_suffix``, instead of :file:`.metrix`
     in the name of the output file.
 
-  .. index:: -og (gnatmetric)
+  .. index:: --global-file-name (gnatmetric)
+
+  :switch:`--global-file-name={file_name}`
+    Put global metrics into ``file_name``.
+
+  .. index:: --xml-file-name (gnatmetric)
 
 
-  :switch:`-og {file_name}`
-    Put global metrics into ``file_name``
+  :switch:`--xml-file-name={file_name}`
+    Put the XML output into ``file_name``
+    (also implies :switch:`--generate-xml-output`).
 
-  .. index:: -ox (gnatmetric)
+  .. index:: --short-file-names (gnatmetric)
 
-
-  :switch:`-ox {file_name}`
-    Put the XML output into ``file_name`` (also implies :switch:`-x`)
-
-  .. index:: -sfn (gnatmetric)
-
-
-  :switch:`-sfn`
+  :switch:`--short-file-names`
     Use 'short' source file names in the output.  (The ``gnatmetric``
-    output includes the name(s) of the Ada source file(s) from which the metrics
-    are computed.  By default each name includes the absolute path. The
-    :switch:`-sfn` switch causes ``gnatmetric``
-    to exclude all directory information from the file names that are output.)
+    output includes the name(s) of the Ada source file(s) from which the
+    metrics are computed.  By default each name includes the absolute
+    path. The :switch:`--short-file-names` switch causes ``gnatmetric``
+    to exclude all directory information from the file names that are
+    output.)
 
 
   .. index:: Disable Metrics For Local Units in gnatmetric
@@ -1988,11 +1968,11 @@ Alternatively, you may run the script using the following command line:
   obtained via the following switch:
 
 
-  .. index:: -nolocal (gnatmetric)
+  .. index:: --no-local-metrics (gnatmetric)
 
 
-  :switch:`-nolocal`
-    Do not compute detailed metrics for eligible local program units
+  :switch:`--no-local-metrics`
+    Do not compute detailed metrics for eligible local program units.
 
 
   .. _Specifying_a_set_of_metrics_to_compute:
@@ -2002,10 +1982,9 @@ Alternatively, you may run the script using the following command line:
 
   By default all the metrics are computed and reported. The switches
   described in this subsection allow you to control, on an individual
-  basis, whether metrics are computed and
-  reported. If at least one positive metric
-  switch is specified (that is, a switch that defines that a given
-  metric or set of metrics is to be computed), then only
+  basis, whether metrics are computed and reported. If at least one
+  positive metric switch is specified (that is, a switch that defines
+  that a given metric or set of metrics is to be computed), then only
   explicitly specified metrics are reported.
 
   .. _Line_Metrics_Control:
@@ -2015,32 +1994,33 @@ Alternatively, you may run the script using the following command line:
 
   .. index:: Line metrics control in gnatmetric
 
-  For any (legal) source file, and for each of its
-  eligible local program units, ``gnatmetric`` computes the following
-  metrics:
+  For each source file, and for each of its eligible local program
+  units, ``gnatmetric`` computes the following metrics:
 
   * the total number of lines;
 
-  * the total number of code lines (i.e., non-blank lines that are not comments)
+  * the total number of code lines (i.e., non-blank lines that are not
+    comments)
 
   * the number of comment lines
 
   * the number of code lines containing end-of-line comments;
 
-  * the comment percentage: the ratio between the number of lines that contain
-    comments and the number of all non-blank lines, expressed as a percentage;
+  * the comment percentage: the ratio between the number of lines that
+    contain comments and the number of all non-blank lines, expressed as
+    a percentage
 
-  * the number of empty lines and lines containing only space characters and/or
-    format effectors (blank lines)
+  * the number of empty lines and lines containing only space characters
+    and/or format effectors (blank lines)
 
-  * the average number of code lines in subprogram bodies, task bodies, entry
-    bodies and statement sequences in package bodies (this metric is only computed
-    across the whole set of the analyzed units)
+  * the average number of code lines in subprogram bodies, task bodies,
+    entry bodies and statement sequences in package bodies (this metric
+    is only computed across the whole set of the analyzed units)
 
-  ``gnatmetric`` sums the values of the line metrics for all the
-  files being processed and then generates the cumulative results. The tool
-  also computes for all the files being processed the average number of code
-  lines in bodies.
+  ``gnatmetric`` sums the values of the line metrics for all the files
+  being processed and then generates the cumulative results. The tool
+  also computes for all the files being processed the average number of
+  code lines in bodies.
 
   You can use the following switches to select the specific line metrics
   to be computed and reported.
@@ -2109,9 +2089,10 @@ Alternatively, you may run the script using the following command line:
 
 
   :switch:`--lines-average`
-    Report the average number of code lines in subprogram bodies, task bodies,
-    entry bodies and statement sequences in package bodies. The metric is computed
-    and reported for the whole set of processed Ada sources only.
+    Report the average number of code lines in subprogram bodies, task
+    bodies, entry bodies and statement sequences in package bodies. The
+    metric is computed and reported for the whole set of processed Ada
+    sources only.
 
 
   :switch:`--no-lines-average`
@@ -2130,79 +2111,78 @@ Alternatively, you may run the script using the following command line:
   outermost unit and for each eligible local unit:
 
   * *LSLOC ('Logical Source Lines Of Code')*
-      The total number of declarations and the total number of statements. Note
-      that the definition of declarations is the one given in the reference
-      manual:
+      The total number of declarations and the total number of
+      statements. Note that the definition of declarations is the one
+      given in the reference manual:
 
-        "Each of the following is defined to be a declaration: any basic_declaration;
-        an enumeration_literal_specification; a discriminant_specification;
-        a component_declaration; a loop_parameter_specification; a
-        parameter_specification; a subprogram_body; an entry_declaration;
-        an entry_index_specification; a choice_parameter_specification;
-        a generic_formal_parameter_declaration."
+        "Each of the following is defined to be a declaration: any
+        basic_declaration; an enumeration_literal_specification; a
+        discriminant_specification; a component_declaration; a
+        loop_parameter_specification; a parameter_specification; a
+        subprogram_body; an entry_declaration; an
+        entry_index_specification; a choice_parameter_specification; a
+        generic_formal_parameter_declaration."
 
-      This means for example that each enumeration literal adds one to the count,
-      as well as each subprogram parameter.
-
-      Thus the results from this metric will be significantly greater than might
-      be expected from a naive view of counting semicolons.
+      This means for example that each enumeration literal adds one to
+      the count, as well as each subprogram parameter.
 
   * *Maximal static nesting level of inner program units*
       According to :title:`Ada Reference Manual`, 10.1(1):
 
-        "A program unit is either a package, a task unit, a protected unit, a
-        protected entry, a generic unit, or an explicitly declared subprogram other
-        than an enumeration literal."
+        "A program unit is either a package, a task unit, a protected
+        unit, a protected entry, a generic unit, or an explicitly
+        declared subprogram other than an enumeration literal."
 
   * *Maximal nesting level of composite syntactic constructs*
-      This corresponds to the notion of the
-      maximum nesting level in the GNAT built-in style checks
-      (see :ref:`Style_Checking`)
+      This corresponds to the notion of the maximum nesting level in the
+      GNAT built-in style checks (see :ref:`Style_Checking`).
 
   * *Number of formal parameters*
-      Number of formal parameters of a subprogram; if a subprogram does have
-      parameters, then numbers of "in", "out" and "in out" parameters are also
-      reported. This metric is reported for subprogram specifications and for
-      subprogram instantiations. For subprogram bodies, expression functions
-      and null procedures this metric is reported if the construct acts as a
-      subprogram declaration but is not a completion of previous declaration.
-      This metric is not reported for generic and formal subprograms.
+      Number of formal parameters of a subprogram; if a subprogram does
+      have parameters, then numbers of "in", "out" and "in out"
+      parameters are also reported. This metric is reported for
+      subprogram specifications and for subprogram instantiations. For
+      subprogram bodies, expression functions and null procedures this
+      metric is reported if the construct acts as a subprogram
+      declaration but is not a completion of previous declaration. This
+      metric is not reported for generic and formal subprograms.
 
-  For the outermost unit in the file, ``gnatmetric`` additionally computes
-  the following metrics:
+  For the outermost unit in the file, ``gnatmetric`` additionally
+  computes the following metrics:
 
   * *Public subprograms*
-      This metric is computed for package specs. It is the
-      number of subprograms and generic subprograms declared in the visible
-      part (including the visible part of nested packages, protected objects, and
-      protected types).
+      This metric is computed for package specs. It is the number of
+      subprograms and generic subprograms declared in the visible part
+      (including the visible part of nested packages, protected objects,
+      and protected types).
 
 
   * *All subprograms*
-      This metric is computed for bodies and subunits. The
-      metric is equal to a total number of subprogram bodies in the compilation
+      This metric is computed for bodies and subunits. The metric is
+      equal to a total number of subprogram bodies in the compilation
       unit.
-      Neither generic instantiations nor renamings-as-a-body nor body stubs
-      are counted. Any subprogram body is counted, independently of its nesting
-      level and enclosing constructs. Generic bodies and bodies of protected
-      subprograms are counted in the same way as 'usual' subprogram bodies.
+      Neither generic instantiations nor renamings-as-a-body nor body
+      stubs are counted. Any subprogram body is counted, independently
+      of its nesting level and enclosing constructs. Generic bodies and
+      bodies of protected subprograms are counted in the same way as
+      'usual' subprogram bodies.
 
 
   * *Public types*
-      This metric is computed for package specs and
-      generic package declarations. It is the total number of types
-      that can be referenced from outside this compilation unit, plus the
-      number of types from all the visible parts of all the visible generic
-      packages. Generic formal types are not counted.  Only types, not subtypes,
-      are included.
+      This metric is computed for package specs and generic package
+      declarations. It is the total number of types that can be
+      referenced from outside this compilation unit, plus the number of
+      types from all the visible parts of all the visible generic
+      packages. Generic formal types are not counted.  Only types, not
+      subtypes, are included.
 
       Along with the total number of public types, the following
       types are counted and reported separately:
 
       * *Abstract types*
 
-      * *Root tagged types^ (abstract, non-abstract, private, non-private). Type
-        extensions are *not* counted
+      * *Root tagged types^ (abstract, non-abstract, private,
+        non-private). Type extensions are *not* counted
 
       * *Private types* (including private extensions)
 
@@ -2211,16 +2191,16 @@ Alternatively, you may run the script using the following command line:
       * *Protected types*
 
   * *All types*
-      This metric is computed for any compilation unit. It is equal to the total
-      number of the declarations of different types given in the compilation unit.
-      The private and the corresponding full type declaration are counted as one
-      type declaration. Incomplete type declarations and generic formal types
-      are not counted.
+      This metric is computed for any compilation unit. It is equal to
+      the total number of the declarations of different types given in
+      the compilation unit.  The private and the corresponding full type
+      declaration are counted as one type declaration. Incomplete type
+      declarations and generic formal types are not counted.
       No distinction is made among different kinds of types (abstract,
       private etc.); the total number of types is computed and reported.
 
-  By default, all the syntax metrics are computed and reported. You can use the
-  following switches to select specific syntax metrics.
+  By default, all the syntax metrics are computed and reported. You can
+  use the following switches to select specific syntax metrics.
 
 
   .. index:: --syntax (gnatmetric)
@@ -2313,10 +2293,10 @@ Alternatively, you may run the script using the following command line:
 
   .. index:: Complexity metrics control in gnatmetric
 
-  For a program unit that is an executable body (a subprogram body (including
-  generic bodies), task body, entry body or a package body containing
-  its own statement sequence) ``gnatmetric`` computes the following
-  complexity metrics:
+  For a program unit that is an executable body (a subprogram body
+  (including generic bodies), task body, entry body or a package body
+  containing its own statement sequence) ``gnatmetric`` computes the
+  following complexity metrics:
 
   * McCabe cyclomatic complexity;
 
@@ -2329,17 +2309,19 @@ Alternatively, you may run the script using the following command line:
   The McCabe cyclomatic complexity metric is defined
   in `http://www.mccabe.com/pdf/mccabe-nist235r.pdf <http://www.mccabe.com/pdf/mccabe-nist235r.pdf>`_
 
-  According to McCabe, both control statements and short-circuit control forms
-  should be taken into account when computing cyclomatic complexity.
-  For Ada 2012 we have also take into account conditional expressions
-  and quantified expressions. For each body, we compute three metric values:
+  According to McCabe, both control statements and short-circuit control
+  forms should be taken into account when computing cyclomatic
+  complexity.  For Ada 2012 we have also take into account conditional
+  expressions and quantified expressions. For each body, we compute
+  three metric values:
 
   * the complexity introduced by control
     statements only, without taking into account short-circuit forms
     (referred as ``statement complexity`` in ``gnatmetric`` output),
 
   * the complexity introduced by short-circuit control forms only
-    (referred as ``expression complexity`` in ``gnatmetric`` output), and
+    (referred as ``expression complexity`` in ``gnatmetric`` output),
+    and
 
   * the total
     cyclomatic complexity, which is the sum of these two values
@@ -2387,7 +2369,7 @@ Alternatively, you may run the script using the following command line:
   the following switches:
 
 
-  .. index:: -complexity (gnatmetric)
+  .. index:: --complexity (gnatmetric)
   .. index:: --no-complexity (gnatmetric)
 
 
@@ -2434,10 +2416,10 @@ Alternatively, you may run the script using the following command line:
     Do not report the average McCabe Cyclomatic Complexity for all the subprogram
     bodies, task bodies, entry bodies and statement sequences in package bodies
 
-  .. index:: -ne (gnatmetric)
+  .. index:: --no-treat-exit-as-goto (gnatmetric)
 
 
-  :switch:`-ne`
+  :switch:`--no-treat-exit-as-goto`
     Do not consider ``exit`` statements as ``goto``\ s when
     computing Essential Complexity
 
@@ -2753,18 +2735,9 @@ Alternatively, you may run the script using the following command line:
     tool argument r if :switch:`--no_objects_dir` is specified.
 
 
-  .. index:: --no_objects_dir (gnatmetric)
+  .. index:: --files (gnatmetric)
 
-  :switch:`--no_objects_dir`
-    Place all the result files into the current directory instead of
-    project objects directory. This corresponds to the ``gnatcheck``
-    behavior when it is called with the project file from the
-    GNAT driver. Has no effect if no project is specified.
-
-
-  .. index:: -files (gnatmetric)
-
-  :switch:`-files {filename}`
+  :switch:`--files={file}`
     Take as arguments the files listed in text file ``file``.
     Text file ``file`` may contain empty lines that are ignored.
     Each nonempty line should contain the name of an existing file.
@@ -2776,32 +2749,18 @@ Alternatively, you may run the script using the following command line:
   :switch:`--ignore={filename}`
     Do not process the sources listed in a specified file.
 
-  .. index:: -j (gnatmetric)
 
-  :switch:`-j{n}`
-    Use ``n`` processes to carry out the tree creations (internal representations
-    of the argument sources). On a multiprocessor machine this speeds up processing
-    of big sets of argument sources. If ``n`` is 0, then the maximum number of
-    parallel tree creations is the number of core processors on the platform.
+  .. index:: --verbose (gnatmetric)
 
-  .. index:: -t (gnatmetric)
-
-
-  :switch:`-t`
-    Print out execution time.
-
-
-  .. index:: -v (gnatmetric)
-
-  :switch:`-v`
+  :switch:`--verbose`
     Verbose mode;
     ``gnatmetric`` generates version information and then
     a trace of sources being processed.
 
 
-  .. index:: -q (gnatmetric)
+  .. index:: --quiet (gnatmetric)
 
-  :switch:`-q`
+  :switch:`--quiet`
     Quiet mode.
 
   If a project file is specified and no argument source is explicitly
@@ -2809,6 +2768,77 @@ Alternatively, you may run the script using the following command line:
   :switch:`-U` is specified, then the set of processed sources is
   all the immediate units of the argument project.
 
+
+  Legacy Switches
+  ^^^^^^^^^^^^^^^
+
+  Some switches have a short form, mostly for legacy reasons,
+  as shown below.
+
+  .. index:: -x (gnatmetric)
+
+  :switch:`-x`
+    :switch:`--generate-xml-output`
+
+  .. index:: -xs (gnatmetric)
+
+  :switch:`-xs`
+    :switch:`--generate-xml-schema`
+
+  .. index:: -nt (gnatmetric)
+
+  :switch:`-nt`
+    :switch:`--no-text-output`
+
+  .. index:: -d (gnatmetric)
+
+  :switch:`-d {output-dir}`
+    :switch:`--output-dir`
+
+  .. index:: -o (gnatmetric)
+
+  :switch:`-o {file-suffix}`
+    :switch:`--output-suffix`
+
+  .. index:: -og (gnatmetric)
+
+  :switch:`-og {file-name}`
+    :switch:`--global-file-name`
+
+  .. index:: -ox (gnatmetric)
+
+  :switch:`-ox {file-name}`
+    :switch:`--xml-file-name`
+
+  .. index:: -sfn (gnatmetric)
+
+  :switch:`-sfn`
+    :switch:`--short-file-names`
+
+  .. index:: -nolocal (gnatmetric)
+
+  :switch:`-nolocal`
+    :switch:`--no-local-metrics`
+
+  .. index:: -ne (gnatmetric)
+
+  :switch:`-ne`
+    :switch:`--no-treat-exit-as-goto`
+
+  .. index:: -files (gnatmetric)
+
+  :switch:`-files {filename}`
+    :switch:`--files`
+
+  .. index:: -v (gnatmetric)
+
+  :switch:`-v`
+    :switch:`--verbose`
+
+  .. index:: -q (gnatmetric)
+
+  :switch:`-q`
+    :switch:`--quiet`
 
 .. only:: PRO or GPL
 
