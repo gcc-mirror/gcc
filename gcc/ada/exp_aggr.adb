@@ -90,8 +90,9 @@ package body Exp_Aggr is
    --  N is an aggregate (record or array). Checks the presence of default
    --  initialization (<>) in any component (Ada 2005: AI-287).
 
-   function In_Object_Declaration (N : Node_Id) return Boolean;
-   --  Return True if N is part of an object declaration, False otherwise
+   function Is_CCG_Supported_Aggregate (N : Node_Id) return Boolean;
+   --  Return True if aggregate N is located in a context supported by the
+   --  CCG backend; False otherwise.
 
    function Is_Static_Dispatch_Table_Aggregate (N : Node_Id) return Boolean;
    --  Returns true if N is an aggregate used to initialize the components
@@ -4741,7 +4742,7 @@ package body Exp_Aggr is
       --  object declaration, this is the only case where aggregates are
       --  supported in C.
 
-      if Modify_Tree_For_C and then not In_Object_Declaration (N) then
+      if Modify_Tree_For_C and then not Is_CCG_Supported_Aggregate (N) then
          return;
       end if;
 
@@ -7553,7 +7554,7 @@ package body Exp_Aggr is
       --  When generating C, only generate an aggregate when declaring objects
       --  since C does not support aggregates in e.g. assignment statements.
 
-      elsif Modify_Tree_For_C and then not In_Object_Declaration (N) then
+      elsif Modify_Tree_For_C and then not Is_CCG_Supported_Aggregate (N) then
          Convert_To_Assignments (N, Typ);
 
       --  In all other cases, build a proper aggregate to be handled by gigi
@@ -7661,23 +7662,40 @@ package body Exp_Aggr is
       end if;
    end Is_Delayed_Aggregate;
 
-   ---------------------------
-   -- In_Object_Declaration --
-   ---------------------------
+   --------------------------------
+   -- Is_CCG_Supported_Aggregate --
+   --------------------------------
 
-   function In_Object_Declaration (N : Node_Id) return Boolean is
-      P : Node_Id := Parent (N);
+   function Is_CCG_Supported_Aggregate
+     (N : Node_Id) return Boolean
+   is
+      In_Obj_Decl : Boolean := False;
+      P           : Node_Id := Parent (N);
    begin
       while Present (P) loop
          if Nkind (P) = N_Object_Declaration then
-            return True;
+            In_Obj_Decl := True;
          end if;
 
          P := Parent (P);
       end loop;
 
+      --  Cases where aggregates are supported by the CCG backend
+
+      if In_Obj_Decl then
+         if Nkind (Parent (N)) = N_Object_Declaration then
+            return True;
+
+         elsif Nkind (Parent (N)) = N_Qualified_Expression
+            and then Nkind_In (Parent (Parent (N)), N_Allocator,
+                                                    N_Object_Declaration)
+         then
+            return True;
+         end if;
+      end if;
+
       return False;
-   end In_Object_Declaration;
+   end Is_CCG_Supported_Aggregate;
 
    ----------------------------------------
    -- Is_Static_Dispatch_Table_Aggregate --
