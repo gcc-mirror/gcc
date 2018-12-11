@@ -96,7 +96,7 @@ package Exp_Util is
    --  above. The action is analyzed using the default checks after it is
    --  inserted. Assoc_Node is the node with which the action is associated.
    --  When flag Spec_Expr_OK is set, insertions triggered in the context of
-   --  spec expressions are honoured, even though they contradict "Handling
+   --  spec expressions are honored, even though they contradict "Handling
    --  of Default and Per-Object Expressions".
 
    procedure Insert_Action
@@ -109,7 +109,7 @@ package Exp_Util is
    --  by the given Suppress argument after it is inserted. Assoc_Node is
    --  the node with which the action is associated. When flag Spec_Expr_OK
    --  is set, insertions triggered in the context of spec expressions are
-   --  honoured, even though they contradict "Handling of Default and Per-
+   --  honored, even though they contradict "Handling of Default and Per-
    --  Object Expressions".
 
    procedure Insert_Actions
@@ -121,7 +121,7 @@ package Exp_Util is
    --  after they are inserted. Assoc_Node is the node with which the actions
    --  are associated. Ins_Actions may be No_List, in which case the call has
    --  no effect. When flag Spec_Expr_OK is set, insertions triggered in the
-   --  context of spec expressions are honoured, even though they contradict
+   --  context of spec expressions are honored, even though they contradict
    --  "Handling of Default and Per-Object Expressions".
 
    procedure Insert_Actions
@@ -135,7 +135,7 @@ package Exp_Util is
    --  Assoc_Node is the node with which the actions are associated. List
    --  Ins_Actions may be No_List, in which case the call has no effect.
    --  When flag Spec_Expr_OK is set, insertions triggered in the context of
-   --  spec expressions are honoured, even though they contradict "Handling
+   --  spec expressions are honored, even though they contradict "Handling
    --  of Default and Per-Object Expressions".
 
    procedure Insert_Action_After
