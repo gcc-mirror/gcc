@@ -1,7 +1,16 @@
+2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/88429
+	* gcc-interface/Makefile.in (./stamp-gnatlib1-$(RTSDIR)): Also pass
+	MULTISUBDIR to sub-make and add quotes around $(THREAD_KIND).
+	(gnatlib-shared-dual): Also pass PICFLAG_FOR_TARGET to sub-make.
+	(gnatlib-sjlj): Also pass MULTISUBDIR to sub-make, but do not pass
+	PICFLAG_FOR_TARGET.
+	(gnatlib-zcx): Likewise.
+
 2018-12-11  Piotr Trojanek  <trojanek@adacore.com>
 
-	* libgnat/a-calend.ads: Add "Global => null" contracts to pure
-	routines.
+	* libgnat/a-calend.ads: Add "Global => null" contract to pure routines.
 
 2018-12-11  Hristian Kirtchev  <kirtchev@adacore.com>
 

@@ -10,7 +10,7 @@
 	error when stack pointer is clobbered.
 	(expand_asm_stmt): Refactor clobber check in separate function.
 
-2018-12-11  Eric Botcazou  <botcazou@adacore.com>
+2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/rs6000/vxworks.h (RS6000_STARTING_FRAME_OFFSET): Define,
 	accounting for STACK_BOUNDARY 128.
