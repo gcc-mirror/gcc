@@ -350,6 +350,18 @@ package body Exp_Ch7 is
    --  Build the deep Initialize/Adjust/Finalize for a record Typ with
    --  Has_Component_Component set and store them using the TSS mechanism.
 
+   -------------------------------------------
+   -- Unnesting procedures for CCG and LLVM --
+   -------------------------------------------
+
+   --  Expansion generates subprograms for controlled types management that
+   --  may appear in declarative lists in package declarations and bodies.
+   --  These subprograms appear within generated blocks that contain local
+   --  declarations and a call to finalization procedures. To ensure that
+   --  such subprograms get activation records when needed, we transform the
+   --  block into a procedure body, followed by a call to it in the same
+   --  declarative list.
+
    procedure Check_Unnesting_Elaboration_Code (N : Node_Id);
    --  The statement part of a package body that is a compilation unit may
    --  contain blocks that declare local subprograms. In Subprogram_Unnesting
@@ -360,12 +372,16 @@ package body Exp_Ch7 is
    --  a call to this subprogram. This is only done if blocks are present
    --  in the statement list of the body.
 
-   procedure Check_Unnesting_In_Declarations (N : Node_Id);
+   procedure Check_Unnesting_In_Declarations (Decls : List_Id);
    --  Similarly, the declarations in the package body may have created
    --  blocks with nested subprograms. Such a block must be transformed into a
    --  procedure followed by a call to it, so that unnesting can handle uplevel
    --  references within these nested subprograms (typically generated
    --  subprograms to handle finalization actions).
+
+   function Contains_Subprogram (Blk : Entity_Id) return Boolean;
+   --  Check recursively whether a loop or block contains a subprogram that
+   --  may need an activation record.
 
    procedure Check_Visibly_Controlled
      (Prim : Final_Primitives;
@@ -4000,10 +4016,6 @@ package body Exp_Ch7 is
       First_Ent : Entity_Id := Empty;
       Loop_Id   : Entity_Id := Empty;
 
-      function Contains_Subprogram (Blk : Entity_Id) return Boolean;
-      --  Check recursively whether a loop or block contains a subprogram that
-      --  may need an activation record.
-
       function First_Local_Scope (L : List_Id) return Entity_Id;
       --  Find first entity in the elaboration code of the body that contains
       --  or represents a subprogram body. A body can appear within a block or
@@ -4013,31 +4025,6 @@ package body Exp_Ch7 is
       --  new elaboration procedure. This is needed for subsequent unnesting,
       --  which depends on the scope links to determine the nesting level of
       --  each subprogram.
-
-      --------------------------
-      --  Contains_Subprogram --
-      --------------------------
-
-      function Contains_Subprogram (Blk : Entity_Id) return Boolean is
-         E : Entity_Id;
-
-      begin
-         E := First_Entity (Blk);
-         while Present (E) loop
-            if Is_Subprogram (E) then
-               return True;
-
-            elsif Ekind_In (E, E_Block, E_Loop)
-              and then Contains_Subprogram (E)
-            then
-               return True;
-            end if;
-
-            Next_Entity (E);
-         end loop;
-
-         return False;
-      end Contains_Subprogram;
 
       -----------------------
       --  Find_Local_Scope --
@@ -4230,10 +4217,9 @@ package body Exp_Ch7 is
    -- Check_Unnesting_In_Declarations --
    -------------------------------------
 
-   procedure Check_Unnesting_In_Declarations (N : Node_Id) is
+   procedure Check_Unnesting_In_Declarations (Decls : List_Id) is
       Decl       : Node_Id;
       Ent        : Entity_Id;
-      Inner_Decl : Node_Id;
       Loc        : Source_Ptr;
       Local_Body : Node_Id;
       Local_Call : Node_Id;
@@ -4243,49 +4229,43 @@ package body Exp_Ch7 is
       Local_Call := Empty;
 
       if Unnest_Subprogram_Mode
-        and then Present (Declarations (N))
+        and then Present (Decls)
         and then Is_Compilation_Unit (Current_Scope)
       then
-         Decl := First (Declarations (N));
+         Decl := First (Decls);
          while Present (Decl) loop
-            if Nkind (Decl) = N_Block_Statement then
+            if Nkind (Decl) = N_Block_Statement
+               and then Contains_Subprogram (Entity (Identifier (Decl)))
+            then
                Ent := First_Entity (Entity (Identifier (Decl)));
-               Inner_Decl := First (Declarations (Decl));
+               Loc := Sloc (Decl);
+               Local_Proc :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => New_Internal_Name ('P'));
 
-               while Present (Inner_Decl) loop
-                  if Nkind (Inner_Decl) = N_Subprogram_Body then
-                     Loc := Sloc (Decl);
-                     Local_Proc :=
-                       Make_Defining_Identifier (Loc,
-                         Chars => New_Internal_Name ('P'));
+               Local_Body :=
+                 Make_Subprogram_Body (Loc,
+                   Specification              =>
+                     Make_Procedure_Specification (Loc,
+                       Defining_Unit_Name => Local_Proc),
+                       Declarations       => Declarations (Decl),
+                   Handled_Statement_Sequence =>
+                     Handled_Statement_Sequence (Decl));
 
-                     Local_Body :=
-                       Make_Subprogram_Body (Loc,
-                         Specification              =>
-                           Make_Procedure_Specification (Loc,
-                             Defining_Unit_Name => Local_Proc),
-                             Declarations       => Declarations (Decl),
-                         Handled_Statement_Sequence =>
-                           Handled_Statement_Sequence (Decl));
+               Rewrite (Decl, Local_Body);
+               Analyze (Decl);
+               Set_Has_Nested_Subprogram (Local_Proc);
 
-                     Rewrite (Decl, Local_Body);
-                     Analyze (Decl);
-                     Set_Has_Nested_Subprogram (Local_Proc);
+               Local_Call :=
+                 Make_Procedure_Call_Statement (Loc,
+                   Name => New_Occurrence_Of (Local_Proc, Loc));
 
-                     Local_Call :=
-                       Make_Procedure_Call_Statement (Loc,
-                         Name => New_Occurrence_Of (Local_Proc, Loc));
+               Insert_After (Decl, Local_Call);
+               Analyze (Local_Call);
 
-                     Insert_After (Decl, Local_Call);
-                     Analyze (Local_Call);
-
-                     while Present (Ent) loop
-                        Set_Scope (Ent, Local_Proc);
-                        Next_Entity (Ent);
-                     end loop;
-                  end if;
-
-                  Next (Inner_Decl);
+               while Present (Ent) loop
+                  Set_Scope (Ent, Local_Proc);
+                  Next_Entity (Ent);
                end loop;
             end if;
 
@@ -4334,6 +4314,32 @@ package body Exp_Ch7 is
          end if;
       end if;
    end Check_Visibly_Controlled;
+
+   --------------------------
+   --  Contains_Subprogram --
+   --------------------------
+
+   function Contains_Subprogram (Blk : Entity_Id) return Boolean is
+      E : Entity_Id;
+
+   begin
+      E := First_Entity (Blk);
+
+      while Present (E) loop
+         if Is_Subprogram (E) then
+            return True;
+
+         elsif Ekind_In (E, E_Block, E_Loop)
+           and then Contains_Subprogram (E)
+         then
+            return True;
+         end if;
+
+         Next_Entity (E);
+      end loop;
+
+      return False;
+   end Contains_Subprogram;
 
    ------------------
    -- Convert_View --
@@ -5023,7 +5029,7 @@ package body Exp_Ch7 is
 
          Expand_Pragma_Initial_Condition (Spec_Id, N);
          Check_Unnesting_Elaboration_Code (N);
-         Check_Unnesting_In_Declarations (N);
+         Check_Unnesting_In_Declarations (Declarations (N));
 
          Pop_Scope;
       end if;
@@ -5181,6 +5187,8 @@ package body Exp_Ch7 is
 
          Set_Finalizer (Id, Fin_Id);
       end if;
+      Check_Unnesting_In_Declarations (Visible_Declarations (Spec));
+      Check_Unnesting_In_Declarations (Private_Declarations (Spec));
    end Expand_N_Package_Declaration;
 
    ----------------------------

@@ -1,3 +1,14 @@
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch7.adb (Check_Unnesting_In_Declarations): Extend
+	subprogram so that it is usable for visible and private
+	declarations of a package declaration, not just for declarations
+	in the pakage body.
+	* exp_ch13.adb (Expand_Freeze_Entity): Handle properly the
+	freezing of a finalizer routine generated for a controlled objet
+	declaration. Special processing already applies to finalizers
+	because they are usually displaced into another construct.
+
 2018-12-11  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_unst.adb (Unnest_Subprogram): Ensure Current_Subprogram is
