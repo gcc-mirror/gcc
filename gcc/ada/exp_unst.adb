@@ -770,7 +770,8 @@ package body Exp_Unst is
                  ((Ent           => E,
                    Bod           => Bod,
                    Lev           => L,
-                   Reachable     => In_Synchronized_Unit (E),
+                   Reachable     => In_Synchronized_Unit (E)
+                                      or else Address_Taken (E),
                    Uplevel_Ref   => L,
                    Declares_AREC => False,
                    Uents         => No_Elist,

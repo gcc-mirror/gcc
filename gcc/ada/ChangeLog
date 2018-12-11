@@ -1,5 +1,13 @@
 2018-12-11  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_unst.adb (Register_Subprogram): A subprogram whose address
+	is taken (through attribute Address or Access) is reachable and
+	cannot be eliminated, even if there is no explicit call to it:
+	the address may be used in an indirect call or in some
+	address-related operation.
+
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_util.adb (Get_Actual_Subtype): Function can return type
 	mark.
 	(Get_Cursor_Type): Improve recovery and error message on a
