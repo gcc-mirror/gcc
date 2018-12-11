@@ -1,3 +1,9 @@
+2018-12-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Is_Subprogram_Stub_Without_Prior_Declaration):
+	Return False on stubs that complete a generic subprogram.
+	* sem_util.ads: Update corresponding comment.
+
 2018-12-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Analyze_Allocator): In GNATprove mode build a
