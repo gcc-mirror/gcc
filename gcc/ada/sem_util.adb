@@ -9049,6 +9049,13 @@ package body Sem_Util is
 
          else
             Decl := Build_Actual_Subtype (Typ, N);
+
+            --  The call may yield a declaration, or just return the entity
+
+            if Decl = Typ then
+               return Typ;
+            end if;
+
             Atyp := Defining_Identifier (Decl);
 
             --  If Build_Actual_Subtype generated a new declaration then use it
@@ -9162,6 +9169,9 @@ package body Sem_Util is
       if First_Op = Any_Id then
          Error_Msg_N ("aspect Iterable must specify First operation", Aspect);
          return Any_Type;
+
+      elsif not Analyzed (First_Op) then
+         Analyze (First_Op);
       end if;
 
       Cursor := Any_Type;
@@ -9195,7 +9205,8 @@ package body Sem_Util is
 
       if Cursor = Any_Type then
          Error_Msg_N
-           ("No legal primitive operation First for Iterable type", Aspect);
+           ("primitive operation for Iterable type must appear "
+             & "in the same list of declarations as the type", Aspect);
       end if;
 
       return Cursor;
