@@ -1161,8 +1161,21 @@ begin
       --  gnat1 is invoked from gcc in the normal case.
 
       if Osint.Number_Of_Files /= 1 then
-         Usage;
-         Write_Eol;
+
+         --  In GNATprove mode, gcc is not called, so we may end up with
+         --  switches wrongly interpreted as source file names when they are
+         --  written by mistake without a starting hyphen. Issue a specific
+         --  error message but do not print the internal 'usage' message.
+
+         if GNATprove_Mode then
+            Write_Str ("one of the following is not a valid switch"
+                       & " or source file name: ");
+            Osint.Dump_Command_Line_Source_File_Names;
+         else
+            Usage;
+            Write_Eol;
+         end if;
+
          Osint.Fail ("you must provide one source file");
 
       elsif Usage_Requested then
