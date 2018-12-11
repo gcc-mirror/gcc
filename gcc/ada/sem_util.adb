@@ -10880,6 +10880,11 @@ package body Sem_Util is
       if Is_Scalar_Type (Typ) then
          return Has_Default_Aspect (Typ);
 
+      --  An access type is fully default initialized by default
+
+      elsif Is_Access_Type (Typ) then
+         return True;
+
       --  An array type is fully default initialized if its element type is
       --  scalar and the array type carries aspect Default_Component_Value or
       --  the element type is fully default initialized.
