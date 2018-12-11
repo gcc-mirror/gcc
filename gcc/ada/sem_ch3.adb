@@ -10368,12 +10368,13 @@ package body Sem_Ch3 is
          --  If Nod is a library unit entity, then Insert_After won't work,
          --  because Nod is not a member of any list. Therefore, we use
          --  Add_Global_Declaration in this case. This can happen if we have a
-         --  build-in-place library function.
+         --  build-in-place library function, child unit or not.
 
          if (Nkind (Nod) in N_Entity and then Is_Compilation_Unit (Nod))
            or else
-             (Nkind (Nod) = N_Defining_Program_Unit_Name
-               and then Is_Compilation_Unit (Defining_Identifier (Nod)))
+             (Nkind_In (Nod,
+                N_Defining_Program_Unit_Name, N_Subprogram_Declaration)
+               and then Is_Compilation_Unit (Defining_Entity (Nod)))
          then
             Add_Global_Declaration (IR);
          else
