@@ -41,4 +41,4 @@ bmhi_init (const char *pattern)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "Duplicating join block" 1 "split-paths" } } */
+/* { dg-final { scan-tree-dump-times "join point for if-convertable half-diamond" 1 "split-paths" } } */
