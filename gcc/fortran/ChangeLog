@@ -1,5 +1,10 @@
 2018-12-10  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/97922
+	* io.c (gfc_match_open): Additional checks on ASYNCHRONOUS.
+
+2018-12-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/88269
 	* io.c (io_constraint): Update macro. If locus line buffer is NULL,
 	use gfc_current_locus in error messages.
