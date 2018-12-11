@@ -1,3 +1,8 @@
+2018-12-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_unst.adb (Unnest_Subprogram): Ensure Current_Subprogram is
+	always initialized.
+
 2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Add

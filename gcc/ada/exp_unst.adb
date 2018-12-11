@@ -440,7 +440,7 @@ package body Exp_Unst is
       Urefs.Init;
 
       Build_Tables : declare
-         Current_Subprogram : Entity_Id;
+         Current_Subprogram : Entity_Id := Empty;
          --  When we scan a subprogram body, we set Current_Subprogram to the
          --  corresponding entity. This gets recursively saved and restored.
 
