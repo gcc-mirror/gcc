@@ -1,3 +1,10 @@
+2018-12-11  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Issue specific error message in
+	GNATprove mode when multiple file names on the command line.
+	* osint.adb, osint.ads (Dump_Command_Line_Source_File_Names):
+	New procedure to print file names on the command line.
+
 2018-12-11  Javier Miranda  <miranda@adacore.com>
 
 	* exp_aggr.adb (Convert_To_Assignments): When gnerating C, do
