@@ -4454,11 +4454,16 @@ package body Sem_Ch3 is
       --  default initialization when we have at least one case of an explicit
       --  default initial value and then this is not an internal declaration
       --  whose initialization comes later (as for an aggregate expansion).
+      --  If expression is an aggregate it may be expanded into assignments
+      --  and the declaration itself is marked with No_Initialization, but
+      --  the predicate still applies.
 
       if not Suppress_Assignment_Checks (N)
         and then Present (Predicate_Function (T))
         and then not Predicates_Ignored (T)
-        and then not No_Initialization (N)
+        and then
+          (not No_Initialization (N)
+            or else (Present (E) and then Nkind (E) = N_Aggregate))
         and then
           (Present (E)
             or else
