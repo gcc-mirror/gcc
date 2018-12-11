@@ -1,5 +1,10 @@
 2018-12-11  Yannick Moy  <moy@adacore.com>
 
+	* sem_util.adb (Has_Full_Default_Initialization): Consider
+	access types as having full default initialization.
+
+2018-12-11  Yannick Moy  <moy@adacore.com>
+
 	* gnat1drv.adb (Gnat1drv): Issue specific error message in
 	GNATprove mode when multiple file names on the command line.
 	* osint.adb, osint.ads (Dump_Command_Line_Source_File_Names):
