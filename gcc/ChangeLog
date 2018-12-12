@@ -1,3 +1,9 @@
+2018-12-12  Olivier Hainque  <hainque@adacore.com>
+
+	* config/aarch64/aarch64.c (PROBE_STACK_FIRST_REG) : Redefine as
+	R9_REGNUM instead of 9.
+	(PROBE_STACK_SECOND_REG): Redefine as R10_REGNUM instead of 10.
+
 2018-12-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/86806
