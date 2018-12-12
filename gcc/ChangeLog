@@ -1,3 +1,14 @@
+2018-12-12  Tom de Vries  <tdevries@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-builtins.def (BUILT_IN_GOMP_LOOP_NONMONOTONIC_RUNTIME_START,
+	BUILT_IN_GOMP_LOOP_MAYBE_NONMONOTONIC_RUNTIME_START,
+	BUILT_IN_GOMP_LOOP_ULL_NONMONOTONIC_RUNTIME_START,
+	BUILT_IN_GOMP_LOOP_ULL_MAYBE_NONMONOTONIC_RUNTIME_START,
+	BUILT_IN_GOMP_PARALLEL_LOOP_NONMONOTONIC_RUNTIME,
+	BUILT_IN_GOMP_PARALLEL_LOOP_MAYBE_NONMONOTONIC_RUNTIME): Fix up
+	function types - remove one argument.
+
 2018-12-12  Martin Sebor  <msebor@redhat.com>
 
 	* doc/extend.texi (attribute copy): Fix typos.
