@@ -1,3 +1,13 @@
+2018-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88449
+	* constexpr.c (struct constexpr_call): Add pretend_const_required
+	member.
+	(constexpr_call_hasher::equal): Return false if pretend_const_required
+	members differ.
+	(cxx_eval_call_expression): Adjust new_call initialization.  Hash in
+	ctx->pretend_const_required.
+
 2018-12-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/87861
