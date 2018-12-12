@@ -627,6 +627,9 @@ namespace std
 # define _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP 1
 # define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
 # define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
+# if __GNUC__ >= 9
+#  define _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED 1
+# endif
 #elif defined(__is_identifier)
 // For non-GNU compilers:
 # if ! __is_identifier(__has_unique_object_representations)
@@ -637,6 +640,9 @@ namespace std
 # endif
 # if ! __is_identifier(__builtin_launder)
 #  define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
+# endif
+# if ! __is_identifier(__builtin_is_constant_evaluated)
+#  define _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED 1
 # endif
 #endif // GCC
 

@@ -1,3 +1,13 @@
+2018-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	P0595R2 - is_constant_evaluated
+	* include/bits/c++config (_GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED):
+	Define if __builtin_is_constant_evaluated is available.
+	* include/std/type_traits (std::is_constant_evaluated): New constexpr
+	inline function.
+	* testsuite/20_util/is_constant_evaluated/1.cc: New test.
+	* testsuite/20_util/is_constant_evaluated/noexcept.cc: New test.
+
 2018-12-10  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/documentation_hacking.xml: Update reference

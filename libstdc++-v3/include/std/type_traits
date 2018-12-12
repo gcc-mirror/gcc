@@ -3029,6 +3029,12 @@ template <typename _From, typename _To>
   template<typename _Tp>
     using unwrap_ref_decay_t = typename unwrap_ref_decay<_Tp>::type;
 
+#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+  constexpr inline bool
+  is_constant_evaluated() noexcept
+  { return __builtin_is_constant_evaluated(); }
+#endif
+
 #endif // C++2a
 
 _GLIBCXX_END_NAMESPACE_VERSION
