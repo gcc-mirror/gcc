@@ -123,13 +123,14 @@ target_triplet = @target@
 check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3)
 @NATIVE_TRUE@am__append_1 = test_elf test_xcoff_32 test_xcoff_64 \
 @NATIVE_TRUE@	test_pecoff test_unknown unittest unittest_alloc \
-@NATIVE_TRUE@	btest btest_alloc stest stest_alloc ztest \
-@NATIVE_TRUE@	ztest_alloc edtest edtest_alloc
-@HAVE_ZLIB_TRUE@@NATIVE_TRUE@am__append_2 = -lz
+@NATIVE_TRUE@	allocfail btest btest_alloc stest stest_alloc \
+@NATIVE_TRUE@	ztest ztest_alloc edtest edtest_alloc
+@NATIVE_TRUE@am__append_2 = allocfail.sh
 @HAVE_ZLIB_TRUE@@NATIVE_TRUE@am__append_3 = -lz
-@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__append_4 = ttest ttest_alloc
-@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_5 = dtest
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__append_6 = ctestg ctesta \
+@HAVE_ZLIB_TRUE@@NATIVE_TRUE@am__append_4 = -lz
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__append_5 = ttest ttest_alloc
+@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_6 = dtest
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__append_7 = ctestg ctesta \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg_alloc \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta_alloc
 subdir = .
@@ -169,6 +170,11 @@ am__objects_1 = atomic.lo dwarf.lo fileline.lo posix.lo print.lo \
 @NATIVE_TRUE@am_libbacktrace_alloc_la_OBJECTS = $(am__objects_1)
 libbacktrace_alloc_la_OBJECTS = $(am_libbacktrace_alloc_la_OBJECTS)
 @NATIVE_TRUE@am_libbacktrace_alloc_la_rpath =
+@NATIVE_TRUE@am_libbacktrace_instrumented_alloc_la_OBJECTS =  \
+@NATIVE_TRUE@	$(am__objects_1)
+libbacktrace_instrumented_alloc_la_OBJECTS =  \
+	$(am_libbacktrace_instrumented_alloc_la_OBJECTS)
+@NATIVE_TRUE@am_libbacktrace_instrumented_alloc_la_rpath =
 @NATIVE_TRUE@am_libbacktrace_noformat_la_OBJECTS = $(am__objects_1)
 libbacktrace_noformat_la_OBJECTS =  \
 	$(am_libbacktrace_noformat_la_OBJECTS)
@@ -176,11 +182,11 @@ libbacktrace_noformat_la_OBJECTS =  \
 @NATIVE_TRUE@am__EXEEXT_1 = test_elf$(EXEEXT) test_xcoff_32$(EXEEXT) \
 @NATIVE_TRUE@	test_xcoff_64$(EXEEXT) test_pecoff$(EXEEXT) \
 @NATIVE_TRUE@	test_unknown$(EXEEXT) unittest$(EXEEXT) \
-@NATIVE_TRUE@	unittest_alloc$(EXEEXT) btest$(EXEEXT) \
-@NATIVE_TRUE@	btest_alloc$(EXEEXT) stest$(EXEEXT) \
-@NATIVE_TRUE@	stest_alloc$(EXEEXT) ztest$(EXEEXT) \
-@NATIVE_TRUE@	ztest_alloc$(EXEEXT) edtest$(EXEEXT) \
-@NATIVE_TRUE@	edtest_alloc$(EXEEXT)
+@NATIVE_TRUE@	unittest_alloc$(EXEEXT) allocfail$(EXEEXT) \
+@NATIVE_TRUE@	btest$(EXEEXT) btest_alloc$(EXEEXT) \
+@NATIVE_TRUE@	stest$(EXEEXT) stest_alloc$(EXEEXT) \
+@NATIVE_TRUE@	ztest$(EXEEXT) ztest_alloc$(EXEEXT) \
+@NATIVE_TRUE@	edtest$(EXEEXT) edtest_alloc$(EXEEXT)
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__EXEEXT_2 = ttest$(EXEEXT) \
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	ttest_alloc$(EXEEXT)
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__EXEEXT_3 =  \
@@ -188,6 +194,11 @@ libbacktrace_noformat_la_OBJECTS =  \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta$(EXEEXT) \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg_alloc$(EXEEXT) \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta_alloc$(EXEEXT)
+@NATIVE_TRUE@am_allocfail_OBJECTS = allocfail.$(OBJEXT) \
+@NATIVE_TRUE@	testlib.$(OBJEXT)
+allocfail_OBJECTS = $(am_allocfail_OBJECTS)
+@NATIVE_TRUE@allocfail_DEPENDENCIES =  \
+@NATIVE_TRUE@	libbacktrace_instrumented_alloc.la
 @NATIVE_TRUE@am_btest_OBJECTS = btest-btest.$(OBJEXT) \
 @NATIVE_TRUE@	btest-testlib.$(OBJEXT)
 btest_OBJECTS = $(am_btest_OBJECTS)
@@ -356,8 +367,9 @@ am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(libbacktrace_la_SOURCES) $(EXTRA_libbacktrace_la_SOURCES) \
 	$(libbacktrace_alloc_la_SOURCES) \
-	$(libbacktrace_noformat_la_SOURCES) $(btest_SOURCES) \
-	$(btest_alloc_SOURCES) $(ctesta_SOURCES) \
+	$(libbacktrace_instrumented_alloc_la_SOURCES) \
+	$(libbacktrace_noformat_la_SOURCES) $(allocfail_SOURCES) \
+	$(btest_SOURCES) $(btest_alloc_SOURCES) $(ctesta_SOURCES) \
 	$(ctesta_alloc_SOURCES) $(ctestg_SOURCES) \
 	$(ctestg_alloc_SOURCES) $(edtest_SOURCES) \
 	$(edtest_alloc_SOURCES) $(stest_SOURCES) \
@@ -774,9 +786,10 @@ libbacktrace_la_LIBADD = \
 	$(ALLOC_FILE)
 
 libbacktrace_la_DEPENDENCIES = $(libbacktrace_la_LIBADD)
-TESTS = $(check_PROGRAMS) $(am__append_5)
+TESTS = $(check_PROGRAMS) $(am__append_2) $(am__append_6)
 @NATIVE_TRUE@check_LTLIBRARIES = libbacktrace_alloc.la \
-@NATIVE_TRUE@	libbacktrace_noformat.la
+@NATIVE_TRUE@	libbacktrace_noformat.la \
+@NATIVE_TRUE@	libbacktrace_instrumented_alloc.la
 @NATIVE_TRUE@libbacktrace_alloc_la_SOURCES = $(libbacktrace_la_SOURCES)
 @NATIVE_TRUE@libbacktrace_alloc_la_LIBADD = $(BACKTRACE_FILE) $(FORMAT_FILE) read.lo alloc.lo
 @NATIVE_TRUE@libbacktrace_alloc_la_DEPENDENCIES = $(libbacktrace_alloc_la_LIBADD)
@@ -797,6 +810,15 @@ TESTS = $(check_PROGRAMS) $(am__append_5)
 @NATIVE_TRUE@unittest_LDADD = libbacktrace.la
 @NATIVE_TRUE@unittest_alloc_SOURCES = $(unittest_SOURCES)
 @NATIVE_TRUE@unittest_alloc_LDADD = libbacktrace_alloc.la
+@NATIVE_TRUE@libbacktrace_instrumented_alloc_la_SOURCES = $(libbacktrace_la_SOURCES)
+@NATIVE_TRUE@libbacktrace_instrumented_alloc_la_LIBADD = $(BACKTRACE_FILE) $(FORMAT_FILE) \
+@NATIVE_TRUE@	read.lo instrumented_alloc.lo
+
+@NATIVE_TRUE@libbacktrace_instrumented_alloc_la_DEPENDENCIES = \
+@NATIVE_TRUE@	$(libbacktrace_instrumented_alloc_la_LIBADD)
+
+@NATIVE_TRUE@allocfail_SOURCES = allocfail.c testlib.c
+@NATIVE_TRUE@allocfail_LDADD = libbacktrace_instrumented_alloc.la
 @NATIVE_TRUE@btest_SOURCES = btest.c testlib.c
 @NATIVE_TRUE@btest_CFLAGS = $(AM_CFLAGS) -g -O
 @NATIVE_TRUE@btest_LDADD = libbacktrace.la
@@ -809,9 +831,9 @@ TESTS = $(check_PROGRAMS) $(am__append_5)
 @NATIVE_TRUE@stest_alloc_LDADD = libbacktrace_alloc.la
 @NATIVE_TRUE@ztest_SOURCES = ztest.c testlib.c
 @NATIVE_TRUE@ztest_CFLAGS = -DSRCDIR=\"$(srcdir)\"
-@NATIVE_TRUE@ztest_LDADD = libbacktrace.la $(am__append_2) \
+@NATIVE_TRUE@ztest_LDADD = libbacktrace.la $(am__append_3) \
 @NATIVE_TRUE@	$(CLOCK_GETTIME_LINK)
-@NATIVE_TRUE@ztest_alloc_LDADD = libbacktrace_alloc.la $(am__append_3) \
+@NATIVE_TRUE@ztest_alloc_LDADD = libbacktrace_alloc.la $(am__append_4) \
 @NATIVE_TRUE@	$(CLOCK_GETTIME_LINK)
 @NATIVE_TRUE@ztest_alloc_SOURCES = $(ztest_SOURCES)
 @NATIVE_TRUE@ztest_alloc_CFLAGS = $(ztest_CFLAGS)
@@ -945,6 +967,9 @@ libbacktrace.la: $(libbacktrace_la_OBJECTS) $(libbacktrace_la_DEPENDENCIES) $(EX
 libbacktrace_alloc.la: $(libbacktrace_alloc_la_OBJECTS) $(libbacktrace_alloc_la_DEPENDENCIES) $(EXTRA_libbacktrace_alloc_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(LINK) $(am_libbacktrace_alloc_la_rpath) $(libbacktrace_alloc_la_OBJECTS) $(libbacktrace_alloc_la_LIBADD) $(LIBS)
 
+libbacktrace_instrumented_alloc.la: $(libbacktrace_instrumented_alloc_la_OBJECTS) $(libbacktrace_instrumented_alloc_la_DEPENDENCIES) $(EXTRA_libbacktrace_instrumented_alloc_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(LINK) $(am_libbacktrace_instrumented_alloc_la_rpath) $(libbacktrace_instrumented_alloc_la_OBJECTS) $(libbacktrace_instrumented_alloc_la_LIBADD) $(LIBS)
+
 libbacktrace_noformat.la: $(libbacktrace_noformat_la_OBJECTS) $(libbacktrace_noformat_la_DEPENDENCIES) $(EXTRA_libbacktrace_noformat_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(LINK) $(am_libbacktrace_noformat_la_rpath) $(libbacktrace_noformat_la_OBJECTS) $(libbacktrace_noformat_la_LIBADD) $(LIBS)
 
@@ -956,6 +981,10 @@ clean-checkPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
+
+allocfail$(EXEEXT): $(allocfail_OBJECTS) $(allocfail_DEPENDENCIES) $(EXTRA_allocfail_DEPENDENCIES) 
+	@rm -f allocfail$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(allocfail_OBJECTS) $(allocfail_LDADD) $(LIBS)
 
 btest$(EXEEXT): $(btest_OBJECTS) $(btest_DEPENDENCIES) $(EXTRA_btest_DEPENDENCIES) 
 	@rm -f btest$(EXEEXT)
@@ -1434,6 +1463,13 @@ unittest_alloc.log: unittest_alloc$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+allocfail.log: allocfail$(EXEEXT)
+	@p='allocfail$(EXEEXT)'; \
+	b='allocfail'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 btest.log: btest$(EXEEXT)
 	@p='btest$(EXEEXT)'; \
 	b='btest'; \
@@ -1528,6 +1564,13 @@ ctestg_alloc.log: ctestg_alloc$(EXEEXT)
 ctesta_alloc.log: ctesta_alloc$(EXEEXT)
 	@p='ctesta_alloc$(EXEEXT)'; \
 	b='ctesta_alloc'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+allocfail.sh.log: allocfail.sh
+	@p='allocfail.sh'; \
+	b='allocfail.sh'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1694,6 +1737,10 @@ uninstall-am:
 @NATIVE_TRUE@	$(SED) "s/^$$SEARCH\$$/$$REPLACE $*/" \
 @NATIVE_TRUE@		$(srcdir)/xcoff.c \
 @NATIVE_TRUE@		> $@
+
+@NATIVE_TRUE@instrumented_alloc.lo: alloc.c
+
+@NATIVE_TRUE@allocfail.sh: allocfail
 
 @NATIVE_TRUE@edtest2_build.c: gen_edtest2_build; @true
 @NATIVE_TRUE@gen_edtest2_build: $(srcdir)/edtest2.c

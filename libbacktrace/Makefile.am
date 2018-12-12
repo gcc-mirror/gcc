@@ -145,6 +145,26 @@ unittest_alloc_LDADD = libbacktrace_alloc.la
 
 check_PROGRAMS += unittest_alloc
 
+check_LTLIBRARIES += libbacktrace_instrumented_alloc.la
+
+libbacktrace_instrumented_alloc_la_SOURCES = $(libbacktrace_la_SOURCES)
+libbacktrace_instrumented_alloc_la_LIBADD = $(BACKTRACE_FILE) $(FORMAT_FILE) \
+	read.lo instrumented_alloc.lo
+
+libbacktrace_instrumented_alloc_la_DEPENDENCIES = \
+	$(libbacktrace_instrumented_alloc_la_LIBADD)
+
+instrumented_alloc.lo: alloc.c
+
+allocfail_SOURCES = allocfail.c testlib.c
+allocfail_LDADD = libbacktrace_instrumented_alloc.la
+
+check_PROGRAMS += allocfail
+
+allocfail.sh: allocfail
+
+TESTS += allocfail.sh
+
 btest_SOURCES = btest.c testlib.c
 btest_CFLAGS = $(AM_CFLAGS) -g -O
 btest_LDADD = libbacktrace.la
