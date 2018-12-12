@@ -11408,6 +11408,10 @@ aarch64_override_options (void)
   if (aarch64_tune_string)
     valid_tune = aarch64_validate_mtune (aarch64_tune_string, &selected_tune);
 
+#ifdef SUBTARGET_OVERRIDE_OPTIONS
+  SUBTARGET_OVERRIDE_OPTIONS;
+#endif
+
   /* If the user did not specify a processor, choose the default
      one for them.  This will be the CPU set during configuration using
      --with-cpu, otherwise it is "generic".  */
