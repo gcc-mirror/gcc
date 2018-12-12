@@ -1,3 +1,7 @@
+2018-12-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/other/static5.C: New.
+
 2018-12-12  Segher Boessenkool  <segher@kernel,crashing.org>
 
 	PR testsuite/88318
