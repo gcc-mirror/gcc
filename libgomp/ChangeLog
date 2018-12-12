@@ -1,3 +1,7 @@
+2018-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/for-16.c: New test.
+
 2018-12-12  Andreas Schwab  <schwab@suse.de>
 
 	* config/linux/ia64/futex.h (sys_futex0): Don't mark r12 as
