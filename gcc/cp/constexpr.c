@@ -977,7 +977,7 @@ struct GTY((for_user)) constexpr_call {
      recalculate it when expanding the hash table.  */
   hashval_t hash;
   /* Whether __builtin_is_constant_evaluated() should evaluate to true.  */
-  bool pretend_const_required;
+  bool manifestly_const_eval;
 };
 
 struct constexpr_call_hasher : ggc_ptr_hash<constexpr_call>
@@ -1025,7 +1025,7 @@ struct constexpr_ctx {
      trying harder to get a constant value.  */
   bool strict;
   /* Whether __builtin_is_constant_evaluated () should be true.  */
-  bool pretend_const_required;
+  bool manifestly_const_eval;
 };
 
 /* A table of all constexpr calls that have been evaluated by the
@@ -1057,7 +1057,7 @@ constexpr_call_hasher::equal (constexpr_call *lhs, constexpr_call *rhs)
     return true;
   if (lhs->hash != rhs->hash)
     return false;
-  if (lhs->pretend_const_required != rhs->pretend_const_required)
+  if (lhs->manifestly_const_eval != rhs->manifestly_const_eval)
     return false;
   if (!constexpr_fundef_hasher::equal (lhs->fundef, rhs->fundef))
     return false;
@@ -1206,11 +1206,11 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
     }
 
   /* For __builtin_is_constant_evaluated, defer it if not
-     ctx->pretend_const_required, otherwise fold it to true.  */
+     ctx->manifestly_const_eval, otherwise fold it to true.  */
   if (fndecl_built_in_p (fun, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
-		       BUILT_IN_FRONTEND))
+			 BUILT_IN_FRONTEND))
     {
-      if (!ctx->pretend_const_required)
+      if (!ctx->manifestly_const_eval)
 	{
 	  *non_constant_p = true;
 	  return t;
@@ -1508,7 +1508,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
   location_t loc = cp_expr_loc_or_loc (t, input_location);
   tree fun = get_function_named_in_call (t);
   constexpr_call new_call
-    = { NULL, NULL, NULL, 0, ctx->pretend_const_required };
+    = { NULL, NULL, NULL, 0, ctx->manifestly_const_eval };
   bool depth_ok;
 
   if (fun == NULL_TREE)
@@ -1684,7 +1684,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       new_call.hash
 	= iterative_hash_template_arg (new_call.bindings, new_call.hash);
       new_call.hash
-	= iterative_hash_object (ctx->pretend_const_required, new_call.hash);
+	= iterative_hash_object (ctx->manifestly_const_eval, new_call.hash);
 
       /* If we have seen this call before, we are done.  */
       maybe_initialize_constexpr_call_table ();
@@ -5022,13 +5022,13 @@ instantiate_constexpr_fns (tree t)
    STRICT has the same sense as for constant_value_1: true if we only allow
    conforming C++ constant expressions, or false if we want a constant value
    even if it doesn't conform.
-   PRETEND_CONST_REQUIRED is true if T is required to be const-evaluated as
+   MANIFESTLY_CONST_EVAL is true if T is manifestly const-evaluated as
    per P0595 even when ALLOW_NON_CONSTANT is true.  */
 
 static tree
 cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 				  bool strict = true,
-				  bool pretend_const_required = false,
+				  bool manifestly_const_eval = false,
 				  tree object = NULL_TREE)
 {
   auto_timevar time (TV_CONSTEXPR);
@@ -5039,7 +5039,7 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 
   constexpr_ctx ctx = { NULL, &map, NULL, NULL, NULL, NULL,
 			allow_non_constant, strict,
-			pretend_const_required || !allow_non_constant };
+			manifestly_const_eval || !allow_non_constant };
 
   tree type = initialized_type (t);
   tree r = t;
@@ -5131,7 +5131,7 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
       /* If __builtin_is_constant_evaluated () was evaluated to true
 	 and the result is not a valid constant expression, we need to
 	 punt.  */
-      if (pretend_const_required)
+      if (manifestly_const_eval)
 	return cxx_eval_outermost_constant_expr (t, true, strict,
 						 false, object);
       /* This isn't actually constant, so unset TREE_CONSTANT.
@@ -5274,12 +5274,14 @@ fold_simple (tree t)
 
 /* If T is a constant expression, returns its reduced value.
    Otherwise, if T does not have TREE_CONSTANT set, returns T.
-   Otherwise, returns a version of T without TREE_CONSTANT.  */
+   Otherwise, returns a version of T without TREE_CONSTANT.
+   MANIFESTLY_CONST_EVAL is true if T is manifestly const-evaluated
+   as per P0595.  */
 
 static GTY((deletable)) hash_map<tree, tree> *cv_cache;
 
 tree
-maybe_constant_value (tree t, tree decl)
+maybe_constant_value (tree t, tree decl, bool manifestly_const_eval)
 {
   tree r;
 
@@ -5295,6 +5297,9 @@ maybe_constant_value (tree t, tree decl)
   else if (CONSTANT_CLASS_P (t))
     /* No caching or evaluation needed.  */
     return t;
+
+  if (manifestly_const_eval)
+    return cxx_eval_outermost_constant_expr (t, true, true, true, decl);
 
   if (cv_cache == NULL)
     cv_cache = hash_map<tree, tree>::create_ggc (101);
@@ -5399,12 +5404,12 @@ fold_non_dependent_expr (tree t,
 /* Like maybe_constant_value, but returns a CONSTRUCTOR directly, rather
    than wrapped in a TARGET_EXPR.
    ALLOW_NON_CONSTANT is false if T is required to be a constant expression.
-   PRETEND_CONST_REQUIRED is true if T is required to be const-evaluated as
+   MANIFESTLY_CONST_EVAL is true if T is manifestly const-evaluated as
    per P0595 even when ALLOW_NON_CONSTANT is true.  */
 
 static tree
 maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant,
-		       bool pretend_const_required)
+		       bool manifestly_const_eval)
 {
   if (!t)
     return t;
@@ -5424,7 +5429,7 @@ maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant,
   else
     t = cxx_eval_outermost_constant_expr (t, allow_non_constant,
 					  /*strict*/false,
-					  pretend_const_required, decl);
+					  manifestly_const_eval, decl);
   if (TREE_CODE (t) == TARGET_EXPR)
     {
       tree init = TARGET_EXPR_INITIAL (t);
@@ -5437,9 +5442,9 @@ maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant,
 /* Wrapper for maybe_constant_init_1 which permits non constants.  */
 
 tree
-maybe_constant_init (tree t, tree decl, bool pretend_const_required)
+maybe_constant_init (tree t, tree decl, bool manifestly_const_eval)
 {
-  return maybe_constant_init_1 (t, decl, true, pretend_const_required);
+  return maybe_constant_init_1 (t, decl, true, manifestly_const_eval);
 }
 
 /* Wrapper for maybe_constant_init_1 which does not permit non constants.  */
