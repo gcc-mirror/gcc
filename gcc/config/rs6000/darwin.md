@@ -300,66 +300,6 @@ You should have received a copy of the GNU General Public License
   "addis %0,%1,ha16(%2-%3)\n\taddi %0,%0,lo16(%2-%3)"
   [(set_attr "length" "8")])
 
-(define_insn "*call_indirect_nonlocal_darwin64"
-  [(call (mem:SI (match_operand:DI 0 "register_operand" "c,*l,c,*l"))
-	 (match_operand 1))
-   (use (match_operand:SI 2 "immediate_operand" "O,O,n,n"))
-   (clobber (reg:SI LR_REGNO))]
-  "DEFAULT_ABI == ABI_DARWIN && TARGET_64BIT"
-{
-  return "b%T0l";
-}
-  [(set_attr "type" "jmpreg,jmpreg,jmpreg,jmpreg")
-   (set_attr "length" "4,4,8,8")])
-
-(define_insn "*call_nonlocal_darwin64"
-  [(call (mem:SI (match_operand:DI 0 "symbol_ref_operand" "s,s"))
-	 (match_operand 1))
-   (use (match_operand:SI 2 "immediate_operand" "O,n"))
-   (clobber (reg:SI LR_REGNO))]
-  "(DEFAULT_ABI == ABI_DARWIN)
-   && (INTVAL (operands[2]) & CALL_LONG) == 0"
-{
-#if TARGET_MACHO
-  return output_call(insn, operands, 0, 2);
-#else
-  gcc_unreachable ();
-#endif
-}
-  [(set_attr "type" "branch,branch")
-   (set_attr "length" "4,8")])
-
-(define_insn "*call_value_indirect_nonlocal_darwin64"
-  [(set (match_operand 0 "" "")
-	(call (mem:SI (match_operand:DI 1 "register_operand" "c,*l,c,*l"))
-	      (match_operand 2)))
-   (use (match_operand:SI 3 "immediate_operand" "O,O,n,n"))
-   (clobber (reg:SI LR_REGNO))]
-  "DEFAULT_ABI == ABI_DARWIN"
-{
-  return "b%T1l";
-}
-  [(set_attr "type" "jmpreg,jmpreg,jmpreg,jmpreg")
-   (set_attr "length" "4,4,8,8")])
-
-(define_insn "*call_value_nonlocal_darwin64"
-  [(set (match_operand 0 "" "")
-	(call (mem:SI (match_operand:DI 1 "symbol_ref_operand" "s,s"))
-	      (match_operand 2)))
-   (use (match_operand:SI 3 "immediate_operand" "O,n"))
-   (clobber (reg:SI LR_REGNO))]
-  "(DEFAULT_ABI == ABI_DARWIN)
-   && (INTVAL (operands[3]) & CALL_LONG) == 0"
-{
-#if TARGET_MACHO
-  return output_call(insn, operands, 1, 3);
-#else
-  gcc_unreachable ();
-#endif
-}
-  [(set_attr "type" "branch,branch")
-   (set_attr "length" "4,8")])
-
 (define_expand "reload_macho_picbase"
   [(set (reg:SI LR_REGNO)
         (unspec [(match_operand 0 "")]

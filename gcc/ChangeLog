@@ -1,3 +1,26 @@
+2018-12-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.md (call_indirect_nonlocal_darwin64): Remove.
+	(call_nonlocal_darwin64): Remove.
+	(call_value_indirect_nonlocal_darwin64): Remove.
+	(call_value_nonlocal_darwin64): Remove.
+	* config/rs6000/rs6000.c (rs6000_call_template_1): Handle Darwin with
+	the same asm output as AIX/ELFv2.  (rs6000_call_sysv): Preserve the
+	CALL_LONG flag when needed for Darwin.
+	* config/rs6000/rs6000.md (define expand “call”): Expand Darwin as
+	per sysv.
+	(define_expand “call_value”): Likewise.
+	(define_expand “sibcall”): Likewise.
+	(define_expand “sibcall_value”): Likewise.
+	(call_indirect_nonlocal_sysv): Mark the clobber mode P.
+	(call_nonlocal_sysv): Likewise.
+	(call_nonlocal_sysv_secure): Likewise.
+	(call_value_indirect_nonlocal_sysv): Likewise.
+	(call_value_nonlocal_sysv): Likewise.
+	(call_value_nonlocal_sysv_secure): Likewise.
+	(call_local64): Mark the clobber DI.
+	(call_value_local64): Likewise.
+
 2018-12-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/88444

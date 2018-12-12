@@ -21534,7 +21534,8 @@ rs6000_call_template_1 (rtx *operands, unsigned int funop, bool sibcall)
 	    ? "+32768" : ""));
 
   static char str[32];  /* 2 spare */
-  if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
+  if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2
+      || DEFAULT_ABI == ABI_DARWIN)
     sprintf (str, "b%s %s%s%s", sibcall ? "" : "l", z, arg,
 	     sibcall ? "" : "\n\tnop");
   else if (DEFAULT_ABI == ABI_V4)
@@ -37958,6 +37959,7 @@ rs6000_call_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 
   /* Handle longcall attributes.  */
   if ((INTVAL (cookie) & CALL_LONG) != 0
+      && DEFAULT_ABI != ABI_DARWIN /* Darwin does it's own thing.  */
       && GET_CODE (func_desc) == SYMBOL_REF)
     {
       func = rs6000_longcall_ref (func_desc, tlsarg);
@@ -37998,8 +38000,13 @@ rs6000_call_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
   if (value != NULL_RTX)
     call[0] = gen_rtx_SET (value, call[0]);
 
-  unsigned int mask = CALL_V4_SET_FP_ARGS | CALL_V4_CLEAR_FP_ARGS;
-  call[1] = gen_rtx_USE (VOIDmode, GEN_INT (INTVAL (cookie) & mask));
+  if (DEFAULT_ABI == ABI_DARWIN && TARGET_32BIT)
+    call[1] = gen_rtx_USE (VOIDmode, GEN_INT (INTVAL (cookie)));
+  else
+    {
+      unsigned int mask = CALL_V4_SET_FP_ARGS | CALL_V4_CLEAR_FP_ARGS;
+      call[1] = gen_rtx_USE (VOIDmode, GEN_INT (INTVAL (cookie) & mask));
+    }
 
   call[2] = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, LR_REGNO));
 
