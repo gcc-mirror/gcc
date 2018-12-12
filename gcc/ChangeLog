@@ -1,5 +1,9 @@
 2018-12-12  Martin Sebor  <msebor@redhat.com>
 
+	* doc/extend.texi (attribute copy): Fix typos.
+
+2018-12-12  Martin Sebor  <msebor@redhat.com>
+
 	* doc/extend.texi (Function Attributes): Clarify C++ aspects.
 	(Variable Attributes): Same.
 	(Type Attributes): Same.
