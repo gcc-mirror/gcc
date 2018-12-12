@@ -1,3 +1,8 @@
+2018-12-12  Andreas Schwab  <schwab@suse.de>
+
+	* config/linux/ia64/futex.h (sys_futex0): Don't mark r12 as
+	clobbered.
+
 2018-12-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/88411
