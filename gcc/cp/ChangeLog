@@ -1,3 +1,8 @@
+2018-12-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Fix location of error message about
+	static data member definition.
+
 2018-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88446

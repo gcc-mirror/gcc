@@ -12724,7 +12724,8 @@ grokdeclarator (const cp_declarator *declarator,
 	    DECL_CONTEXT (decl) = ctype;
 	    if (staticp == 1)
 	      {
-		permerror (input_location, "%<static%> may not be used when defining "
+		permerror (declspecs->locations[ds_storage_class],
+			   "%<static%> may not be used when defining "
 			   "(as opposed to declaring) a static data member");
 		staticp = 0;
 		storage_class = sc_none;
