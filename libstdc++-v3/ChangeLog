@@ -1,3 +1,11 @@
+2018-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80762
+	* include/bits/fs_path.h (path::_Path): Use remove_cv_t and is_void.
+	* include/experimental/bits/fs_path.h (path::_Path): Likewise.
+	* testsuite/27_io/filesystem/path/construct/80762.cc: New test.
+	* testsuite/experimental/filesystem/path/construct/80762.cc: New test.
+
 2018-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	P0595R2 - is_constant_evaluated
