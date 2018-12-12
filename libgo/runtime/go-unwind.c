@@ -318,6 +318,8 @@ value_size (uint8_t encoding)
       case DW_EH_PE_sdata8:
       case DW_EH_PE_udata8:
         return 8;
+      case DW_EH_PE_absptr:
+        return sizeof(uintptr);
       default:
         break;
     }
