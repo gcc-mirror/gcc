@@ -1,3 +1,8 @@
+2018-12-12  Segher Boessenkool  <segher@kernel,crashing.org>
+
+	PR testsuite/88318
+	* gcc.dg/independent-cloneids-1.c: Use ^ not \m.
+
 2018-12-12  Joel Brobecker  <brobecker@adacore.com>
 
 	* gcc.dg/lto/20100430-1_0.c: Add dg-require-profiling requirement.

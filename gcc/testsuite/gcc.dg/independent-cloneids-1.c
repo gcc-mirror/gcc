@@ -28,11 +28,11 @@ baz (int arg)
   return foo (8);
 }
 
-/* { dg-final { scan-assembler-times {(?n)\m_*bar[.$_]constprop[.$_]0:} 1 } } */
-/* { dg-final { scan-assembler-times {(?n)\m_*bar[.$_]constprop[.$_]1:} 1 } } */
-/* { dg-final { scan-assembler-times {(?n)\m_*bar[.$_]constprop[.$_]2:} 1 } } */
-/* { dg-final { scan-assembler-times {(?n)\m_*foo[.$_]constprop[.$_]0:} 1 } } */
-/* { dg-final { scan-assembler-times {(?n)\m_*foo[.$_]constprop[.$_]1:} 1 } } */
-/* { dg-final { scan-assembler-times {(?n)\m_*foo[.$_]constprop[.$_]2:} 1 } } */
-/* { dg-final { scan-assembler-not {(?n)\m_*foo[.$_]constprop[.$_]3:} } } */
-/* { dg-final { scan-assembler-not {(?n)\m_*foo[.$_]constprop[.$_]4:} } } */
+/* { dg-final { scan-assembler-times {(?n)^_*bar[.$_]constprop[.$_]0:} 1 } } */
+/* { dg-final { scan-assembler-times {(?n)^_*bar[.$_]constprop[.$_]1:} 1 } } */
+/* { dg-final { scan-assembler-times {(?n)^_*bar[.$_]constprop[.$_]2:} 1 } } */
+/* { dg-final { scan-assembler-times {(?n)^_*foo[.$_]constprop[.$_]0:} 1 } } */
+/* { dg-final { scan-assembler-times {(?n)^_*foo[.$_]constprop[.$_]1:} 1 } } */
+/* { dg-final { scan-assembler-times {(?n)^_*foo[.$_]constprop[.$_]2:} 1 } } */
+/* { dg-final { scan-assembler-not {(?n)^_*foo[.$_]constprop[.$_]3:} } } */
+/* { dg-final { scan-assembler-not {(?n)^_*foo[.$_]constprop[.$_]4:} } } */
