@@ -1,5 +1,22 @@
 2018-12-12  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* config/rs6000/rs6000-protos.h (rs6000_call_darwin): New.
+	(rs6000_sibcall_darwin): New. (macho_call_template): Remove.
+	* config/rs6000/rs6000.c (get_prev_label): Forward declaration. 
+	(rs6000_call_template_1): Handle Darwin.
+	(macho_call_template): Remove.
+	(rs6000_call_sysv): Remove handling for Darwin.
+	(rs6000_call_darwin_1, rs6000_call_darwin): New
+	(rs6000_sibcall_darwin): New.
+	* config/rs6000/rs6000.md (define_expand “call”): Handle Darwin
+	with its own expander. (define_expand “call_value”): Likewise.
+	(define_expand “sibcall”): Likewise.
+	(define_expand “sibcall_value”): Likewise.
+	(call_nonlocal_sysv): Remove Darwin special-casing.
+	(call_value_nonlocal_sysv): Likewise.
+
+2018-12-12  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* config/rs6000/darwin.md (call_indirect_nonlocal_darwin64): Remove.
 	(call_nonlocal_darwin64): Remove.
 	(call_value_indirect_nonlocal_darwin64): Remove.
