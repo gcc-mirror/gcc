@@ -9646,7 +9646,11 @@ compute_array_index_type_loc (location_t name_loc, tree name, tree size,
 	{
 	  size = instantiate_non_dependent_expr_sfinae (size, complain);
 	  size = build_converted_constant_expr (size_type_node, size, complain);
-	  size = maybe_constant_value (size);
+	  /* Pedantically a constant expression is required here and so
+	     __builtin_is_constant_evaluated () should fold to true if it
+	     is successfully folded into a constant.  */
+	  size = maybe_constant_value (size, NULL_TREE,
+				       /*manifestly_const_eval=*/true);
 
 	  if (!TREE_CONSTANT (size))
 	    size = osize;

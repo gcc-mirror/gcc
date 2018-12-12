@@ -1,5 +1,23 @@
 2018-12-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/88446
+	* cp-tree.h (maybe_constant_value): Add manifestly_const_eval
+	argument.
+	* constexpr.c (struct constexpr_call): Rename pretend_const_required
+	member to manifestly_const_eval.
+	(struct constexpr_ctx): Likewise.
+	(constexpr_call_hasher::equal): Adjust users.
+	(cxx_eval_builtin_function_call): Likewise.  Formatting fix.
+	(cxx_eval_call_expression): Adjust users.
+	(cxx_eval_outermost_constant_expr, maybe_constant_init_1,
+	maybe_constant_init): Rename pretend_const_required argument to
+	manifestly_const_eval, adjust function comments.
+	(maybe_constant_value): Add manifestly_const_eval argument.  If true,
+	don't cache and call cxx_eval_outermost_constant_expr with true as
+	manifestly_const_eval.
+	* decl.c (compute_array_index_type_loc): Call maybe_constant_value
+	with true as manifestly_const_eval.
+
 	PR c++/88449
 	* constexpr.c (struct constexpr_call): Add pretend_const_required
 	member.

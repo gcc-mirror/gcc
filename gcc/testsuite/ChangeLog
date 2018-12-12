@@ -1,5 +1,8 @@
 2018-12-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/88446
+	* g++.dg/cpp2a/is-constant-evaluated3.C: New test.
+
 	PR c++/88449
 	* g++.dg/cpp2a/is-constant-evaluated1.C: Change from dg-do compile
 	to dg-do run.
