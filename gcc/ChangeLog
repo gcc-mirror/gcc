@@ -87,7 +87,7 @@
 
 2018-12-11  Richard Earnshaw  <rearnsha@arm.com>
 
-	PR target/37369
+	PR target/87369
 	* config/aarch64/iterators.md (sizem1): Add sizes for SFmode and DFmode.
 	(Vbtype): Add SFmode mapping.
 	* config/aarch64/aarch64.md (copysigndf3, copysignsf3): Delete.
