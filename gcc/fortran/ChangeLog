@@ -1,3 +1,9 @@
+2018-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/88463
+	* trans-openmp.c (gfc_omp_predetermined_sharing): Handle TREE_READONLY
+	VAR_DECLs with DECL_EXTERNAL like those with TREE_STATIC.
+
 2018-12-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88155

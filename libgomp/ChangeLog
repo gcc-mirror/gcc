@@ -1,5 +1,9 @@
 2018-12-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/88463
+	* testsuite/libgomp.fortran/pr88463-1.f90: New test.
+	* testsuite/libgomp.fortran/pr88463-2.f90: New test.
+
 	* testsuite/libgomp.c-c++-common/for-16.c: New test.
 
 2018-12-12  Andreas Schwab  <schwab@suse.de>

@@ -149,7 +149,8 @@ gfc_omp_predetermined_sharing (tree decl)
      variables at all (they can't be redefined), but they can nevertheless appear
      in parallel/task regions and for default(none) purposes treat them as shared.
      For vtables likely the same handling is desirable.  */
-  if (VAR_P (decl) && TREE_READONLY (decl) && TREE_STATIC (decl))
+  if (VAR_P (decl) && TREE_READONLY (decl)
+      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
     return OMP_CLAUSE_DEFAULT_SHARED;
 
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
