@@ -1,5 +1,11 @@
 2018-12-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/88155
+	* primary.c (gfc_match_structure_constructor):  Set the locus of
+	an expression to avoid a NULL pointer dereference.
+
+2018-12-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/88249
 	* gfortran.h: Update prototype for gfc_resolve_filepos().
 	* io.c (gfc_resolve_filepos): Check for UNIT number if ERR= is present.
