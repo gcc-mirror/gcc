@@ -2332,30 +2332,46 @@ the enclosing block.
 @cindex @code{volatile} applied to function
 @cindex @code{const} applied to function
 
-In GNU C, you can use function attributes to declare certain things
-about functions called in your program which help the compiler
-optimize calls and check your code more carefully.  For example, you
-can use attributes to declare that a function never returns
-(@code{noreturn}), returns a value depending only on its arguments
-(@code{pure}), or has @code{printf}-style arguments (@code{format}).
+In GNU C and C++, you can use function attributes to specify certain
+function properties that may help the compiler optimize calls or
+check code more carefully for correctness.  For example, you
+can use attributes to specify that a function never returns
+(@code{noreturn}), returns a value depending only on the values of
+its arguments (@code{const}), or has @code{printf}-style arguments
+(@code{format}).
 
 You can also use attributes to control memory placement, code
 generation options or call/return conventions within the function
 being annotated.  Many of these attributes are target-specific.  For
 example, many targets support attributes for defining interrupt
 handler functions, which typically must follow special register usage
-and return conventions.
+and return conventions.  Such attributes are described in the subsection
+for each target.  However, a considerable number of attributes are
+supported by most, if not all targets.  Those are described in
+the @ref{Common Function Attributes} section.
 
 Function attributes are introduced by the @code{__attribute__} keyword
-on a declaration, followed by an attribute specification inside double
-parentheses.  You can specify multiple attributes in a declaration by
-separating them by commas within the double parentheses or by
-immediately following an attribute declaration with another attribute
-declaration.  @xref{Attribute Syntax}, for the exact rules on attribute
-syntax and placement.  Compatible attribute specifications on distinct
-declarations of the same function are merged.  An attribute specification
-that is not compatible with attributes already applied to a declaration
-of the same function is ignored with a warning.
+in the declaration of a function, followed by an attribute specification
+enclosed in double parentheses.  You can specify multiple attributes in
+a declaration by separating them by commas within the double parentheses
+or by immediately following one attribute specification with another.
+@xref{Attribute Syntax}, for the exact rules on attribute syntax and
+placement.  Compatible attribute specifications on distinct declarations
+of the same function are merged.  An attribute specification that is not
+compatible with attributes already applied to a declaration of the same
+function is ignored with a warning.
+
+Some function attributes take one or more arguments that refer to
+the function's parameters by their positions within the function parameter
+list.  Such attribute arguments are referred to as @dfn{positional arguments}.
+Unless specified otherwise, positional arguments that specify properties
+of parameters with pointer types can also specify the same properties of
+the implicit C++ @code{this} argument in non-static member functions, and
+of parameters of reference to a pointer type.  For ordinary functions,
+position one refers to the first parameter on the list.  In C++ non-static
+member functions, position one refers to the implicit @code{this} pointer.
+The same restrictions and effects apply to function attributes used with
+ordinary functions or C++ member functions.
 
 GCC also supports attributes on
 variable declarations (@pxref{Variable Attributes}),
@@ -6127,13 +6143,13 @@ when this attribute is present.
 @cindex attribute of variables
 @cindex variable attributes
 
-The keyword @code{__attribute__} allows you to specify special
-attributes of variables or structure fields.  This keyword is followed
-by an attribute specification inside double parentheses.  Some
-attributes are currently defined generically for variables.
-Other attributes are defined for variables on particular target
-systems.  Other attributes are available for functions
-(@pxref{Function Attributes}), labels (@pxref{Label Attributes}),
+The keyword @code{__attribute__} allows you to specify special properties
+of variables, function parameters, or structure, union, and, in C++, class
+members.  This @code{__attribute__} keyword is followed by an attribute
+specification enclosed in double parentheses.  Some attributes are currently
+defined generically for variables.  Other attributes are defined for
+variables on particular target systems.  Other attributes are available
+for functions (@pxref{Function Attributes}), labels (@pxref{Label Attributes}),
 enumerators (@pxref{Enumerator Attributes}), statements
 (@pxref{Statement Attributes}), and for types (@pxref{Type Attributes}).
 Other front ends might define more attributes
@@ -7086,17 +7102,21 @@ placed in either the @code{.bss_below100} section or the
 @cindex attribute of types
 @cindex type attributes
 
-The keyword @code{__attribute__} allows you to specify special
-attributes of types.  Some type attributes apply only to @code{struct}
-and @code{union} types, while others can apply to any type defined
-via a @code{typedef} declaration.  Other attributes are defined for
-functions (@pxref{Function Attributes}), labels (@pxref{Label 
-Attributes}), enumerators (@pxref{Enumerator Attributes}), 
-statements (@pxref{Statement Attributes}), and for
-variables (@pxref{Variable Attributes}).
+The keyword @code{__attribute__} allows you to specify various special
+properties of types.  Some type attributes apply only to structure and
+union types, and in C++, also class types, while others can apply to
+any type defined via a @code{typedef} declaration.  Unless otherwise
+specified, the same restrictions and effects apply to attributes regardless
+of whether a type is a trivial structure or a C++ class with user-defined
+constructors, destructors, or a copy assignment.
+
+Other attributes are defined for functions (@pxref{Function Attributes}),
+labels (@pxref{Label  Attributes}), enumerators (@pxref{Enumerator
+Attributes}), statements (@pxref{Statement Attributes}), and for variables
+(@pxref{Variable Attributes}).
 
 The @code{__attribute__} keyword is followed by an attribute specification
-inside double parentheses.  
+enclosed in double parentheses.
 
 You may specify type attributes in an enum, struct or union type
 declaration or definition by placing them immediately after the
