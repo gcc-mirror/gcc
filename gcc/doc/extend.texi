@@ -2658,15 +2658,15 @@ to specify the same set of attributes as their targets.  The @code{copy}
 attribute can be used with functions, variables, or types.  However,
 the kind of symbol to which the attribute is applied (either function
 or variable) must match the kind of symbol to which the argument refers.
-The @code{copy} attribute copies only syntaxtic and semantic attributes
-but attributes that affect a symbol's linkage or visibility such as
+The @code{copy} attribute copies only syntactic and semantic attributes
+but not attributes that affect a symbol's linkage or visibility such as
 @code{alias}, @code{visibility}, or @code{weak}.  The @code{deprecated}
 attribute is also not copied.  @xref{Common Type Attributes}.
 @xref{Common Variable Attributes}.
 
 For example, the @var{StrongAlias} macro below makes use of the @code{alias}
 and @code{copy} attributes to define an alias named @var{alloc} for function
-@var{allocate} declated with attributes @var{alloc_size}, @var{malloc}, and
+@var{allocate} declared with attributes @var{alloc_size}, @var{malloc}, and
 @var{nothrow}.  Thanks to the @code{__typeof__} operator the alias has
 the same type as the target function.  As a result of the @code{copy}
 attribute the alias also shares the same attributes as the target.
@@ -6338,8 +6338,8 @@ set of attributes as the aliased symbols.  The @code{copy} attribute
 can be used with variables, functions or types.  However, the kind
 of symbol to which the attribute is applied (either varible or
 function) must match the kind of symbol to which the argument refers.
-The @code{copy} attribute copies only syntaxtic and semantic attributes
-but attributes that affect a symbol's linkage or visibility such as
+The @code{copy} attribute copies only syntactic and semantic attributes
+but not attributes that affect a symbol's linkage or visibility such as
 @code{alias}, @code{visibility}, or @code{weak}.  The @code{deprecated}
 attribute is also not copied.  @xref{Common Function Attributes}.
 @xref{Common Type Attributes}.
@@ -7295,14 +7295,14 @@ The @code{copy} attribute can be used with types, variables, or
 functions.  However, the kind of symbol to which the attribute is
 applied (either varible or function) must match the kind of symbol
 to which the argument refers.
-The @code{copy} attribute copies only syntaxtic and semantic attributes
-but attributes that affect a symbol's linkage or visibility such as
+The @code{copy} attribute copies only syntactic and semantic attributes
+but not attributes that affect a symbol's linkage or visibility such as
 @code{alias}, @code{visibility}, or @code{weak}.  The @code{deprecated}
 attribute is also not copied.  @xref{Common Function Attributes}.
 @xref{Common Variable Attributes}.
 
 For example, suppose @code{struct A} below is defined in some third
-partly library header to have the alignment requirement @code{N} and
+party library header to have the alignment requirement @code{N} and
 to force a warning whenever a variable of the type is not so aligned
 due to attribute @code{packed}.  Specifying the @code{copy} attribute
 on the definition on the unrelated @code{struct B} has the effect of
