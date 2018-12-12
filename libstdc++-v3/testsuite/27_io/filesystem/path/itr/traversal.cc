@@ -136,10 +136,28 @@ test03()
     }
 }
 
+void
+test04()
+{
+  std::filesystem::path p = "/a/b/c/d/e/f/g";
+  VERIFY( std::distance(p.begin(), p.end()) == 8);
+  auto it = p.begin();
+  std::advance(it, 1);
+  VERIFY( std::distance(p.begin(), it) == 1 );
+  VERIFY( it->native() == "a" );
+  std::advance(it, 3);
+  VERIFY( std::distance(p.begin(), it) == 4 );
+  VERIFY( it->native() == "d" );
+  std::advance(it, -2);
+  VERIFY( std::distance(p.begin(), it) == 2 );
+  VERIFY( it->native() == "b" );
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
+  test04();
 }
