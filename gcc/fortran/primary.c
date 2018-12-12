@@ -3212,6 +3212,7 @@ gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result)
   e = gfc_get_expr ();
   e->symtree = symtree;
   e->expr_type = EXPR_FUNCTION;
+  e->where = gfc_current_locus;
 
   gcc_assert (gfc_fl_struct (sym->attr.flavor)
 	      && symtree->n.sym->attr.flavor == FL_PROCEDURE);
