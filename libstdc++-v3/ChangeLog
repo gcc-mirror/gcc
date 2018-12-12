@@ -1,5 +1,13 @@
 2018-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/71044 (partial)
+	* include/bits/fs_path.h (__path_iter_distance, __path_iter_advance):
+	New friend functions to implement std::distance and std::advance more
+	efficiently.
+	(distance, advance): Add overloads for path::iterator.
+	* testsuite/27_io/filesystem/path/itr/components.cc: Test new
+	overload.
+
 	PR libstdc++/80762
 	* include/bits/fs_path.h (path::_Path): Use remove_cv_t and is_void.
 	* include/experimental/bits/fs_path.h (path::_Path): Likewise.

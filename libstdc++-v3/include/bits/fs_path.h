@@ -733,6 +733,37 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   private:
     friend class path;
 
+    bool _M_is_multi() const { return _M_path->_M_type == _Type::_Multi; }
+
+    friend difference_type
+    __path_iter_distance(const iterator& __first, const iterator& __last)
+    {
+      __glibcxx_assert(__first._M_path != nullptr);
+      __glibcxx_assert(__first._M_path == __last._M_path);
+      if (__first._M_is_multi())
+	return std::distance(__first._M_cur, __last._M_cur);
+      else if (__first._M_at_end == __last._M_at_end)
+	return 0;
+      else
+	return __first._M_at_end ? -1 : 1;
+    }
+
+    friend void
+    __path_iter_advance(iterator& __i, difference_type __n)
+    {
+      if (__n == 1)
+	++__i;
+      else if (__n == -1)
+	--__i;
+      else if (__n != 0)
+	{
+	  __glibcxx_assert(__i._M_path != nullptr);
+	  __glibcxx_assert(__i._M_is_multi());
+	  // __glibcxx_assert(__i._M_path->_M_cmpts.end() - __i._M_cur >= __n);
+	  __i._M_cur += __n;
+	}
+    }
+
     iterator(const path* __path, path::_List::const_iterator __iter)
     : _M_path(__path), _M_cur(__iter), _M_at_end()
     { }
@@ -1159,6 +1190,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   // @} group filesystem
 _GLIBCXX_END_NAMESPACE_CXX11
 } // namespace filesystem
+
+inline ptrdiff_t
+distance(filesystem::path::iterator __first, filesystem::path::iterator __last)
+{ return __path_iter_distance(__first, __last); }
+
+template<typename _InputIterator, typename _Distance>
+  void
+  advance(filesystem::path::iterator& __i, _Distance __n)
+  { __path_iter_advance(__i, static_cast<ptrdiff_t>(__n)); }
 
 extern template class __shared_ptr<const filesystem::filesystem_error::_Impl>;
 
