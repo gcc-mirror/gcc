@@ -1,3 +1,12 @@
+2018-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88449
+	* g++.dg/cpp2a/is-constant-evaluated1.C: Change from dg-do compile
+	to dg-do run.
+	(e): Adjust comment with correct expected value.
+	(main): Expect e == 1.
+	* g++.dg/cpp2a/is-constant-evaluated2.C: New test.
+
 2018-12-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88155

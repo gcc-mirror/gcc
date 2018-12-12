@@ -1,14 +1,20 @@
 // P0595R1
 // { dg-do run { target c++14 } }
 
+constexpr inline bool
+is_constant_evaluated () noexcept
+{
+  return __builtin_is_constant_evaluated ();
+}
+
 template<int N> struct X { int v = N; };
-X<__builtin_is_constant_evaluated ()> x; // type X<true>
+X<is_constant_evaluated ()> x; // type X<true>
 int y = 4;
-int a = __builtin_is_constant_evaluated () ? y : 1; // initializes a to 1
-int b = __builtin_is_constant_evaluated () ? 2 : y; // initializes b to 2
-int c = y + (__builtin_is_constant_evaluated () ? 2 : y); // initializes c to 2*y
-int d = __builtin_is_constant_evaluated (); // initializes d to 1
-int e = d + __builtin_is_constant_evaluated (); // initializes e to 1 + 0
+int a = is_constant_evaluated () ? y : 1; // initializes a to 1
+int b = is_constant_evaluated () ? 2 : y; // initializes b to 2
+int c = y + (is_constant_evaluated () ? 2 : y); // initializes c to 2*y
+int d = is_constant_evaluated (); // initializes d to 1
+int e = d + is_constant_evaluated (); // initializes e to 1 + 0
 
 struct false_type { static constexpr bool value = false; };
 struct true_type { static constexpr bool value = true; };
@@ -20,8 +26,8 @@ struct is_same<T, T> : true_type {};
 constexpr int
 foo (int x)
 {
-  const int n = __builtin_is_constant_evaluated () ? 13 : 17; // n == 13
-  int m = __builtin_is_constant_evaluated () ? 13 : 17; // m might be 13 or 17 (see below)
+  const int n = is_constant_evaluated () ? 13 : 17; // n == 13
+  int m = is_constant_evaluated () ? 13 : 17; // m might be 13 or 17 (see below)
   char arr[n] = {}; // char[13]
   return m + sizeof (arr) + x;
 }
@@ -29,9 +35,9 @@ foo (int x)
 constexpr int
 bar ()
 {
-  const int n = __builtin_is_constant_evaluated() ? 13 : 17;
+  const int n = is_constant_evaluated() ? 13 : 17;
   X<n> x1;
-  X<__builtin_is_constant_evaluated() ? 13 : 17> x2;
+  X<is_constant_evaluated() ? 13 : 17> x2;
   static_assert (is_same<decltype (x1), decltype (x2)>::value, "x1/x2's type");
   return x1.v + x2.v;
 }
@@ -42,8 +48,8 @@ static_assert (bar () == 26, "bar");
 
 struct S { int a, b; };
 
-S s = { __builtin_is_constant_evaluated () ? 2 : 3, y };
-S t = { __builtin_is_constant_evaluated () ? 2 : 3, 4 };
+S s = { is_constant_evaluated () ? 2 : 3, y };
+S t = { is_constant_evaluated () ? 2 : 3, 4 };
 
 static_assert (is_same<decltype (x), X<true> >::value, "x's type");
 

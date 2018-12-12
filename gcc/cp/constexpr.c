@@ -976,6 +976,8 @@ struct GTY((for_user)) constexpr_call {
   /* The hash of this call; we remember it here to avoid having to
      recalculate it when expanding the hash table.  */
   hashval_t hash;
+  /* Whether __builtin_is_constant_evaluated() should evaluate to true.  */
+  bool pretend_const_required;
 };
 
 struct constexpr_call_hasher : ggc_ptr_hash<constexpr_call>
@@ -1054,6 +1056,8 @@ constexpr_call_hasher::equal (constexpr_call *lhs, constexpr_call *rhs)
   if (lhs == rhs)
     return true;
   if (lhs->hash != rhs->hash)
+    return false;
+  if (lhs->pretend_const_required != rhs->pretend_const_required)
     return false;
   if (!constexpr_fundef_hasher::equal (lhs->fundef, rhs->fundef))
     return false;
@@ -1503,7 +1507,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 {
   location_t loc = cp_expr_loc_or_loc (t, input_location);
   tree fun = get_function_named_in_call (t);
-  constexpr_call new_call = { NULL, NULL, NULL, 0 };
+  constexpr_call new_call
+    = { NULL, NULL, NULL, 0, ctx->pretend_const_required };
   bool depth_ok;
 
   if (fun == NULL_TREE)
@@ -1675,8 +1680,11 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
   constexpr_call *entry = NULL;
   if (depth_ok && !non_constant_args && ctx->strict)
     {
-      new_call.hash = iterative_hash_template_arg
-	(new_call.bindings, constexpr_fundef_hasher::hash (new_call.fundef));
+      new_call.hash = constexpr_fundef_hasher::hash (new_call.fundef);
+      new_call.hash
+	= iterative_hash_template_arg (new_call.bindings, new_call.hash);
+      new_call.hash
+	= iterative_hash_object (ctx->pretend_const_required, new_call.hash);
 
       /* If we have seen this call before, we are done.  */
       maybe_initialize_constexpr_call_table ();
