@@ -4829,6 +4829,13 @@ rs6000_option_override_internal (bool global_init_p)
       else
 	rs6000_long_double_type_size = RS6000_DEFAULT_LONG_DOUBLE_SIZE;
     }
+  else if (global_options_set.x_rs6000_ieeequad)
+    {
+      if (global_options.x_rs6000_ieeequad)
+	error ("%qs requires %qs", "-mabi=ieeelongdouble", "-mlong-double-128");
+      else
+	error ("%qs requires %qs", "-mabi=ibmlongdouble", "-mlong-double-128");
+    }
 
   /* Set -mabi=ieeelongdouble on some old targets.  Note, AIX and Darwin
      explicitly redefine TARGET_IEEEQUAD to 0, so those systems will not
@@ -4837,6 +4844,11 @@ rs6000_option_override_internal (bool global_init_p)
   if (!global_options_set.x_rs6000_ieeequad)
     rs6000_ieeequad = 1;
 #endif
+
+  if (global_options_set.x_rs6000_ieeequad
+      && global_options.x_rs6000_ieeequad
+      && (!TARGET_POPCNTD || !TARGET_VSX))
+    error ("%qs requires full ISA 2.06 support", "-mabi=ieeelongdouble");
 
   /* Enable the default support for IEEE 128-bit floating point on Linux VSX
      sytems, but don't enable the __float128 keyword.  */

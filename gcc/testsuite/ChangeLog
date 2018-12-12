@@ -1,3 +1,13 @@
+2018-12-12  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backport from mainline
+	2018-12-07  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/87496
+	* gcc.target/powerpc/pr87496-1.c: New test.
+	* gcc.target/powerpc/pr87496-2.c: New test.
+	* gcc.target/powerpc/pr87496-3.c: New test.
+
 2018-12-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88155
