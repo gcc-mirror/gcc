@@ -33208,49 +33208,6 @@ get_prev_label (tree function_name)
   return NULL_TREE;
 }
 
-/* INSN is either a function call or a millicode call.  It may have an
-   unconditional jump in its delay slot.
-
-   CALL_DEST is the routine we are calling.  */
-
-char *
-macho_call_template (rtx_insn *insn, rtx *operands, int dest_operand_number,
-		     int cookie_operand_number)
-{
-  static char buf[256];
-  if (darwin_emit_branch_islands
-      && GET_CODE (operands[dest_operand_number]) == SYMBOL_REF
-      && (INTVAL (operands[cookie_operand_number]) & CALL_LONG))
-    {
-      tree labelname;
-      tree funname = get_identifier (XSTR (operands[dest_operand_number], 0));
-
-      if (no_previous_def (funname))
-	{
-	  rtx label_rtx = gen_label_rtx ();
-	  char *label_buf, temp_buf[256];
-	  ASM_GENERATE_INTERNAL_LABEL (temp_buf, "L",
-				       CODE_LABEL_NUMBER (label_rtx));
-	  label_buf = temp_buf[0] == '*' ? temp_buf + 1 : temp_buf;
-	  labelname = get_identifier (label_buf);
-	  add_compiler_branch_island (labelname, funname, insn_line (insn));
-	}
-      else
-	labelname = get_prev_label (funname);
-
-      /* "jbsr foo, L42" is Mach-O for "Link as 'bl foo' if a 'bl'
-	 instruction will reach 'foo', otherwise link as 'bl L42'".
-	 "L42" should be a 'branch island', that will do a far jump to
-	 'foo'.  Branch islands are generated in
-	 macho_branch_islands().  */
-      sprintf (buf, "jbsr %%z%d,%.246s",
-	       dest_operand_number, IDENTIFIER_POINTER (labelname));
-    }
-  else
-    sprintf (buf, "bl %%z%d", dest_operand_number);
-  return buf;
-}
-
 /* Generate PIC and indirect symbol stubs.  */
 
 void
