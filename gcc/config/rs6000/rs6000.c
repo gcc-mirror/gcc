@@ -1364,6 +1364,7 @@ static rtx rs6000_darwin64_record_arg (CUMULATIVE_ARGS *, const_tree,
 				       bool, bool);
 #if TARGET_MACHO
 static void macho_branch_islands (void);
+static tree get_prev_label (tree);
 #endif
 static rtx rs6000_legitimize_reload_address (rtx, machine_mode, int, int,
 					     int, int *);
@@ -21534,13 +21535,39 @@ rs6000_call_template_1 (rtx *operands, unsigned int funop, bool sibcall)
 	    ? "+32768" : ""));
 
   static char str[32];  /* 2 spare */
-  if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2
-      || DEFAULT_ABI == ABI_DARWIN)
+  if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
     sprintf (str, "b%s %s%s%s", sibcall ? "" : "l", z, arg,
 	     sibcall ? "" : "\n\tnop");
   else if (DEFAULT_ABI == ABI_V4)
     sprintf (str, "b%s %s%s%s", sibcall ? "" : "l", z, arg,
 	     flag_pic ? "@plt" : "");
+#if TARGET_MACHO
+  /* If/when we remove the mlongcall opt, we can share the AIX/ELGv2 case. */
+   else if (DEFAULT_ABI == ABI_DARWIN)
+    {
+      /* The cookie is in operand func+2.  */
+      gcc_checking_assert (GET_CODE (operands[funop + 2]) == CONST_INT);
+      int cookie = INTVAL (operands[funop + 2]);
+      if (cookie & CALL_LONG)
+	{
+	  tree funname = get_identifier (XSTR (operands[funop], 0));
+	  tree labelname = get_prev_label (funname);
+	  gcc_checking_assert (labelname && !sibcall);
+
+	  /* "jbsr foo, L42" is Mach-O for "Link as 'bl foo' if a 'bl'
+	     instruction will reach 'foo', otherwise link as 'bl L42'".
+	     "L42" should be a 'branch island', that will do a far jump to
+	     'foo'.  Branch islands are generated in
+	     macho_branch_islands().  */
+	  sprintf (str, "jbsr %%z%u,%.10s", funop,
+		   IDENTIFIER_POINTER (labelname));
+	}
+      else
+        /* Same as AIX or ELFv2, except to keep backwards compat, no nop
+	   after the call.  */
+	sprintf (str, "b%s %s%s", sibcall ? "" : "l", z, arg);
+    }
+#endif
   else
     gcc_unreachable ();
   return str;
@@ -37959,7 +37986,6 @@ rs6000_call_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 
   /* Handle longcall attributes.  */
   if ((INTVAL (cookie) & CALL_LONG) != 0
-      && DEFAULT_ABI != ABI_DARWIN /* Darwin does it's own thing.  */
       && GET_CODE (func_desc) == SYMBOL_REF)
     {
       func = rs6000_longcall_ref (func_desc, tlsarg);
@@ -38000,14 +38026,8 @@ rs6000_call_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
   if (value != NULL_RTX)
     call[0] = gen_rtx_SET (value, call[0]);
 
-  if (DEFAULT_ABI == ABI_DARWIN && TARGET_32BIT)
-    call[1] = gen_rtx_USE (VOIDmode, GEN_INT (INTVAL (cookie)));
-  else
-    {
-      unsigned int mask = CALL_V4_SET_FP_ARGS | CALL_V4_CLEAR_FP_ARGS;
-      call[1] = gen_rtx_USE (VOIDmode, GEN_INT (INTVAL (cookie) & mask));
-    }
-
+  unsigned int mask = CALL_V4_SET_FP_ARGS | CALL_V4_CLEAR_FP_ARGS;
+  call[1] = gen_rtx_USE (VOIDmode, GEN_INT (INTVAL (cookie) & mask));
   call[2] = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, LR_REGNO));
 
   insn = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (3, call));
@@ -38080,6 +38100,121 @@ rs6000_sibcall_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
   if (abi_reg)
     use_reg (&CALL_INSN_FUNCTION_USAGE (insn), abi_reg);
 }
+
+#if TARGET_MACHO
+
+/* Expand code to perform a call under the Darwin ABI.
+   Modulo handling of mlongcall, this is much the same as sysv.
+   if/when the longcall optimisation is removed, we could drop this
+   code and use the sysv case (taking care to avoid the tls stuff).
+
+   We can use this for sibcalls too, if needed.  */
+
+void
+rs6000_call_darwin_1 (rtx value, rtx func_desc, rtx tlsarg,
+		      rtx cookie, bool sibcall)
+{
+  rtx func = func_desc;
+  rtx func_addr;
+  rtx call[3];
+  rtx insn;
+  int cookie_val = INTVAL (cookie);
+  bool make_island = false;
+
+  /* Handle longcall attributes, there are two cases for Darwin:
+     1) Newer linkers are capable of synthesising any branch islands needed.
+     2) We need a helper branch island synthesised by the compiler.
+     The second case has mostly been retired and we don't use it for m64.
+     In fact, it's is an optimisation, we could just indirect as sysv does..
+     ... however, backwards compatibility for now.
+     If we're going to use this, then we need to keep the CALL_LONG bit set,
+     so that we can pick up the special insn form later.  */
+  if ((cookie_val & CALL_LONG) != 0
+      && GET_CODE (func_desc) == SYMBOL_REF)
+    {
+      if (darwin_emit_branch_islands && TARGET_32BIT)
+	make_island = true; /* Do nothing yet, retain the CALL_LONG flag.  */
+      else
+	{
+	  /* The linker is capable of doing this, but the user explicitly
+	     asked for -mlongcall, so we'll do the 'normal' version.  */
+	  func = rs6000_longcall_ref (func_desc, NULL_RTX);
+	  cookie_val &= ~CALL_LONG; /* Handled, zap it.  */
+	}
+    }
+
+  /* Handle indirect calls.  */
+  if (GET_CODE (func) != SYMBOL_REF)
+    {
+      func = force_reg (Pmode, func);
+
+      /* Indirect calls via CTR are strongly preferred over indirect
+	 calls via LR, and are required for indirect sibcalls, so move
+	 the address there.   */
+      func_addr = gen_rtx_REG (Pmode, CTR_REGNO);
+      emit_move_insn (func_addr, func);
+    }
+  else
+    func_addr = func;
+
+  /* Create the call.  */
+  call[0] = gen_rtx_CALL (VOIDmode, gen_rtx_MEM (SImode, func_addr), tlsarg);
+  if (value != NULL_RTX)
+    call[0] = gen_rtx_SET (value, call[0]);
+
+  call[1] = gen_rtx_USE (VOIDmode, GEN_INT (cookie_val));
+
+  if (sibcall)
+    call[2] = simple_return_rtx;
+  else
+    call[2] = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, LR_REGNO));
+
+  insn = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (3, call));
+  insn = emit_call_insn (insn);
+  /* Now we have the debug info in the insn, we can set up the branch island
+     if we're using one.  */
+  if (make_island)
+    {
+      tree funname = get_identifier (XSTR (func_desc, 0));
+
+      if (no_previous_def (funname))
+	{
+	  rtx label_rtx = gen_label_rtx ();
+	  char *label_buf, temp_buf[256];
+	  ASM_GENERATE_INTERNAL_LABEL (temp_buf, "L",
+				       CODE_LABEL_NUMBER (label_rtx));
+	  label_buf = temp_buf[0] == '*' ? temp_buf + 1 : temp_buf;
+	  tree labelname = get_identifier (label_buf);
+	  add_compiler_branch_island (labelname, funname,
+				     insn_line ((const rtx_insn*)insn));
+	}
+     }
+}
+#endif
+
+void
+rs6000_call_darwin (rtx value ATTRIBUTE_UNUSED, rtx func_desc ATTRIBUTE_UNUSED,
+		    rtx tlsarg ATTRIBUTE_UNUSED, rtx cookie ATTRIBUTE_UNUSED)
+{
+#if TARGET_MACHO
+  rs6000_call_darwin_1 (value, func_desc, tlsarg, cookie, false);
+#else
+  gcc_unreachable();
+#endif
+}
+
+
+void
+rs6000_sibcall_darwin (rtx value ATTRIBUTE_UNUSED, rtx func_desc ATTRIBUTE_UNUSED,
+		       rtx tlsarg ATTRIBUTE_UNUSED, rtx cookie ATTRIBUTE_UNUSED)
+{
+#if TARGET_MACHO
+  rs6000_call_darwin_1 (value, func_desc, tlsarg, cookie, true);
+#else
+  gcc_unreachable();
+#endif
+}
+
 
 /* Return whether we need to always update the saved TOC pointer when we update
    the stack pointer.  */
