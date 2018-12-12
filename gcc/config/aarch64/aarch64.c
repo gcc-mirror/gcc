@@ -3913,8 +3913,8 @@ aarch64_libgcc_cmp_return_mode (void)
 #endif
 
 /* The pair of scratch registers used for stack probing.  */
-#define PROBE_STACK_FIRST_REG  9
-#define PROBE_STACK_SECOND_REG 10
+#define PROBE_STACK_FIRST_REG  R9_REGNUM
+#define PROBE_STACK_SECOND_REG R10_REGNUM
 
 /* Emit code to probe a range of stack addresses from FIRST to FIRST+POLY_SIZE,
    inclusive.  These are offsets from the current stack pointer.  */
