@@ -23969,7 +23969,7 @@ save_reg_p (int reg)
 	return true;
 
       if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_DARWIN)
-	  && flag_pic)
+	  && flag_pic && crtl->uses_pic_offset_table)
 	return true;
     }
 
@@ -23988,13 +23988,6 @@ first_reg_to_save (void)
   for (first_reg = 13; first_reg <= 31; first_reg++)
     if (save_reg_p (first_reg))
       break;
-
-#if TARGET_MACHO
-  if (flag_pic
-      && crtl->uses_pic_offset_table
-      && first_reg > RS6000_PIC_OFFSET_TABLE_REGNUM)
-    return RS6000_PIC_OFFSET_TABLE_REGNUM;
-#endif
 
   return first_reg;
 }

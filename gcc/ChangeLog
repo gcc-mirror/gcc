@@ -1,3 +1,11 @@
+2018-12-12 Segher Boessenkool  <segher@kernel.crashing.org>
+	   Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/88343
+	* config/rs6000/rs6000.c (save_reg_p): Do not save the picbase reg
+	unless it has been used.
+	(first_reg_to_save): Remove dead code.
+
 2018-12-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/rs6000/rs6000-protos.h (rs6000_call_darwin): New.
