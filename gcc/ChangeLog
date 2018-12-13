@@ -1,3 +1,14 @@
+2018-12-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/88414
+	* lra-int.h (lra_asm_error_p): New.
+	* lra-assigns.c (lra_assign): Check lra_asm_error_p for checking
+	call crossed pseudo assignment correctness.
+	(lra_split_hard_reg_for): Set up lra_asm_error_p.
+	* lra-constraints.c (curr_insn_transform): Ditto.
+	* lra.c (lra_asm_error_p): New.
+	(lra): Reset lra_asm_error_p.
+
 2018-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/88416
