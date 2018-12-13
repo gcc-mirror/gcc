@@ -57,8 +57,36 @@ test01()
   VERIFY( p.filename().string() == file );
 }
 
+void
+test02()
+{
+  std::basic_string_view<path::value_type> s;
+
+  path p = "0/1/2/3/4/5/6";
+  // The string_view aliases the path's internal string:
+  s = p.native();
+  // Append that string_view, which must work correctly even though the
+  // internal string will be reallocated during the operation:
+  p += s;
+  VERIFY( p.string() == "0/1/2/3/4/5/60/1/2/3/4/5/6" );
+
+  // Same again with a trailing slash:
+  path p2 = "0/1/2/3/4/5/";
+  s = p2.native();
+  p2 += s;
+  VERIFY( p2.string() == "0/1/2/3/4/5/0/1/2/3/4/5/" );
+
+  // And aliasing one of the components of the path:
+  path p3 = "0/123456789";
+  path::iterator second = std::next(p3.begin());
+  s = second->native();
+  p3 += s;
+  VERIFY( p3.string() == "0/123456789123456789" );
+}
+
 int
 main()
 {
   test01();
+  test02();
 }

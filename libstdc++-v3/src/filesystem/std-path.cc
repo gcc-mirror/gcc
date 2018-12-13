@@ -27,19 +27,410 @@
 #endif
 
 #include <filesystem>
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-# include <algorithm>
-#endif
+#include <algorithm>
+#include <bits/stl_uninitialized.h>
 
 namespace fs = std::filesystem;
 using fs::path;
 
-constexpr path::value_type path::preferred_separator;
-
+static inline bool is_dir_sep(path::value_type ch)
+{
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+    return ch == L'/' || ch == path::preferred_separator;
+#else
+    return ch == '/';
+#endif
+}
+
+struct path::_Parser
+{
+  using string_view_type = std::basic_string_view<value_type>;
+
+  struct cmpt
+  {
+    string_view_type str;
+    _Type type = _Type::_Multi;
+
+    bool valid() const { return type != _Type::_Multi; }
+  };
+
+  string_view_type input;
+  string_view_type::size_type pos = 0;
+  size_t origin;
+
+  _Parser(string_view_type s, size_t o = 0) : input(s), origin(o) { }
+
+  pair<cmpt, cmpt> root_path() noexcept
+  {
+    pos = 0;
+    pair<cmpt, cmpt> root;
+
+    const size_t len = input.size();
+
+    // look for root name or root directory
+    if (is_dir_sep(input[0]))
+      {
+#ifdef __CYGWIN__
+	// look for root name, such as "//foo"
+	if (len > 2 && input[1] == input[0])
+	  {
+	    if (!is_dir_sep(input[2]))
+	      {
+		// got root name, find its end
+		pos = 3;
+		while (pos < len && !is_dir_sep(input[pos]))
+		  ++pos;
+		root.first.str = input.substr(0, pos);
+		root.first.type = _Type::_Root_name;
+
+		if (pos < len) // also got root directory
+		  {
+		    root.second.str = input.substr(pos, 1);
+		    root.second.type = _Type::_Root_dir;
+		    ++pos;
+		  }
+	      }
+	    else
+	      {
+		// got something like "///foo" which is just a root directory
+		// composed of multiple redundant directory separators
+		root.first.str = input.substr(0, 1);
+		root.first.type = _Type::_Root_dir;
+		pos += 2;
+	      }
+	  }
+	else
+#endif
+	  {
+	    root.first.str = input.substr(0, 1);
+	    root.first.type = _Type::_Root_dir;
+	    ++pos;
+	  }
+	// Find the start of the first filename
+	while (pos < len && is_dir_sep(input[pos]))
+	  ++pos;
+      }
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+    else if (len > 1 && input[1] == L':')
+      {
+	// got disk designator
+	root.first.str = input.substr(0, 2);
+	root.first.type = _Type::_Root_name;
+	if (len > 2 && is_dir_sep(input[2]))
+	  {
+	    root.second.str = input.substr(2, 1);
+	    root.second.type = _Type::_Root_dir;
+	  }
+	pos = input.find_first_not_of(L"/\\", 2);
+      }
+#endif
+    return root;
+  }
+
+  cmpt next() noexcept
+  {
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+    string_view_type sep = L"/\\";
+#else
+    char sep = '/';
+#endif
+
+    cmpt f;
+    pos = input.find_first_not_of(sep, pos);
+    if (pos != input.npos)
+      {
+	const auto end = input.find_first_of(sep, pos);
+	f.str = input.substr(pos, end - pos);
+	f.type = _Type::_Filename;
+	pos = end;
+      }
+    return f;
+  }
+
+  string_view_type::size_type
+  offset(const cmpt& c) const noexcept
+  { return origin + c.str.data() - input.data(); }
+};
+
+struct path::_List::_Impl
+{
+  using value_type = _Cmpt;
+
+  _Impl(int cap) : _M_size(0), _M_capacity(cap) { }
+
+  alignas(value_type) int _M_size;
+  int _M_capacity;
+
+  using iterator = value_type*;
+  using const_iterator = const value_type*;
+
+  iterator begin() { return reinterpret_cast<value_type*>(this + 1); }
+  iterator end() { return begin() + size(); }
+
+  const_iterator begin() const
+  { return reinterpret_cast<const value_type*>(this + 1); }
+  const_iterator end() const { return begin() + size(); }
+
+  const value_type& front() const { return *begin(); }
+  const value_type& back() const { return end()[-1]; }
+
+  int size() const { return _M_size; }
+  int capacity() const { return _M_capacity; }
+  bool empty() const { return _M_size == 0; }
+
+  void clear() { std::destroy_n(begin(), _M_size); _M_size = 0; }
+
+  void erase(const_iterator cpos)
+  {
+    iterator pos = begin() + (cpos - begin());
+    if (pos + 1 != end())
+      std::move(pos + 1, end(), pos);
+    pos->~_Cmpt();
+    --_M_size;
+  }
+
+  void erase(const_iterator cfirst, const_iterator clast)
+  {
+    iterator first = begin() + (cfirst - begin());
+    iterator last = begin() + (clast - begin());
+    if (last != end())
+      std::move(last, end(), first);
+    std::destroy(first + (end() - last), end());
+    _M_size -= last - first;
+  }
+
+  unique_ptr<_Impl, _Impl_deleter> copy() const
+  {
+    const auto n = size();
+    void* p = ::operator new(sizeof(_Impl) + n * sizeof(value_type));
+    unique_ptr<_Impl, _Impl_deleter> newptr(::new (p) _Impl{n});
+    std::uninitialized_copy_n(begin(), n, newptr->begin());
+    newptr->_M_size = n;
+    return newptr;
+  }
+
+  // Clear the lowest two bits from the pointer (i.e. remove the _Type value)
+  static _Impl* notype(_Impl* p)
+  {
+    constexpr uintptr_t mask = ~(uintptr_t)0x3;
+    return reinterpret_cast<_Impl*>(reinterpret_cast<uintptr_t>(p) & mask);
+  }
+};
+
+void path::_List::_Impl_deleter::operator()(_Impl* p) const noexcept
+{
+  p = _Impl::notype(p);
+  if (p)
+    {
+      __glibcxx_assert(p->_M_size <= p->_M_capacity);
+      p->clear();
+      ::operator delete(p, sizeof(*p) + p->_M_capacity * sizeof(value_type));
+    }
+}
+
+path::_List::_List() : _M_impl(reinterpret_cast<_Impl*>(_Type::_Filename)) { }
+
+path::_List::_List(const _List& other)
+{
+  if (!other.empty())
+    _M_impl = other._M_impl->copy();
+  else
+    type(other.type());
+}
+
+path::_List&
+path::_List::operator=(const _List& other)
+{
+  if (!other.empty())
+    {
+      // copy in-place if there is capacity
+      const int newsize = other._M_impl->size();
+      auto impl = _Impl::notype(_M_impl.get());
+      if (impl && impl->capacity() >= newsize)
+	{
+	  const int oldsize = impl->_M_size;
+	  auto to = impl->begin();
+	  auto from = other._M_impl->begin();
+	  const int minsize = std::min(newsize, oldsize);
+	  for (int i = 0; i < minsize; ++i)
+	    to[i]._M_pathname.reserve(from[i]._M_pathname.length());
+	  if (newsize > oldsize)
+	    {
+	      std::uninitialized_copy_n(to + oldsize, newsize - oldsize,
+					from + oldsize);
+	      impl->_M_size = newsize;
+	    }
+	  else if (newsize < oldsize)
+	    impl->erase(impl->begin() + newsize, impl->end());
+	  std::copy_n(from, minsize, to);
+	  type(_Type::_Multi);
+	}
+      else
+	_M_impl = other._M_impl->copy();
+    }
+  else
+    {
+      clear();
+      type(other.type());
+    }
+  return *this;
+}
+
+inline void
+path::_List::type(_Type t) noexcept
+{
+  auto val = reinterpret_cast<uintptr_t>(_Impl::notype(_M_impl.release()));
+  _M_impl.reset(reinterpret_cast<_Impl*>(val | (unsigned char)t));
+}
+
+inline int
+path::_List::size() const noexcept
+{
+  if (auto* ptr = _Impl::notype(_M_impl.get()))
+    return ptr->size();
+  return 0;
+}
+
+inline int
+path::_List::capacity() const noexcept
+{
+  if (auto* ptr = _Impl::notype(_M_impl.get()))
+    return ptr->capacity();
+  return 0;
+}
+
+inline bool
+path::_List::empty() const noexcept
+{
+  return size() == 0;
+}
+
+inline auto
+path::_List::begin() noexcept
+-> iterator
+{
+  __glibcxx_assert(!empty());
+  if (auto* ptr = _Impl::notype(_M_impl.get()))
+    return ptr->begin();
+  return nullptr;
+}
+
+inline auto
+path::_List::end() noexcept
+-> iterator
+{
+  __glibcxx_assert(!empty());
+  if (auto* ptr = _Impl::notype(_M_impl.get()))
+    return ptr->end();
+  return nullptr;
+}
+
+auto
+path::_List::begin() const noexcept
+-> const_iterator
+{
+  __glibcxx_assert(!empty());
+  if (auto* ptr = _Impl::notype(_M_impl.get()))
+    return ptr->begin();
+  return nullptr;
+}
+
+auto
+path::_List::end() const noexcept
+-> const_iterator
+{
+  __glibcxx_assert(!empty());
+  if (auto* ptr = _Impl::notype(_M_impl.get()))
+    return ptr->end();
+  return nullptr;
+}
+
+inline auto
+path::_List::front() noexcept
+-> value_type&
+{
+  return *_M_impl->begin();
+}
+
+inline auto
+path::_List::back() noexcept
+-> value_type&
+{
+  return _M_impl->begin()[_M_impl->size() - 1];
+}
+
+inline auto
+path::_List::front() const noexcept
+-> const value_type&
+{
+  return *_M_impl->begin();
+}
+
+inline auto
+path::_List::back() const noexcept
+-> const value_type&
+{
+  return _M_impl->begin()[_M_impl->size() - 1];
+}
+
+inline void
+path::_List::erase(const_iterator pos)
+{
+  _M_impl->erase(pos);
+}
+
+inline void
+path::_List::erase(const_iterator first, const_iterator last)
+{
+  _M_impl->erase(first, last);
+}
+
+inline void
+path::_List::clear()
+{
+  if (auto ptr = _Impl::notype(_M_impl.get()))
+    ptr->clear();
+}
+
+void
+path::_List::reserve(int newcap, bool exact = false)
+{
+  // __glibcxx_assert(type() == _Type::_Multi);
+
+  _Impl* curptr = _Impl::notype(_M_impl.get());
+
+  int curcap = curptr ? curptr->capacity() : 0;
+
+  if (curcap < newcap)
+    {
+      if (!exact && newcap < int(1.5 * curcap))
+	newcap = 1.5 * curcap;
+
+      void* p = ::operator new(sizeof(_Impl) + newcap * sizeof(value_type));
+      std::unique_ptr<_Impl, _Impl_deleter> newptr(::new(p) _Impl{newcap});
+      const int cursize = curptr ? curptr->size() : 0;
+      if (cursize)
+	{
+	  std::uninitialized_move_n(curptr->begin(), cursize, newptr->begin());
+	  newptr->_M_size = cursize;
+	}
+      std::swap(newptr, _M_impl);
+    }
+}
+
+path&
+path::operator=(const path& p)
+{
+  _M_pathname.reserve(p._M_pathname.length());
+  _M_cmpts = p._M_cmpts;	// might throw
+  _M_pathname = p._M_pathname;	// won't throw because we reserved enough space
+  return *this;
+}
+
 path&
 path::operator/=(const path& __p)
 {
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
   if (__p.is_absolute()
       || (__p.has_root_name() && __p.root_name() != root_name()))
     return operator=(__p);
@@ -50,10 +441,10 @@ path::operator/=(const path& __p)
   if (__p.has_root_directory())
     {
       // Remove any root directory and relative path
-      if (_M_type != _Type::_Root_name)
+      if (_M_type() != _Type::_Root_name)
 	{
 	  if (!_M_cmpts.empty()
-	      && _M_cmpts.front()._M_type == _Type::_Root_name)
+	      && _M_cmpts.front()._M_type() == _Type::_Root_name)
 	    __lhs = _M_cmpts.front()._M_pathname;
 	  else
 	    __lhs = {};
@@ -64,14 +455,14 @@ path::operator/=(const path& __p)
 
   basic_string_view<value_type> __rhs = __p._M_pathname;
   // Omit any root-name from the generic format pathname:
-  if (__p._M_type == _Type::_Root_name)
+  if (__p._M_type() == _Type::_Root_name)
     __rhs = {};
   else if (!__p._M_cmpts.empty()
-      && __p._M_cmpts.front()._M_type == _Type::_Root_name)
+      && __p._M_cmpts.front()._M_type() == _Type::_Root_name)
     __rhs.remove_prefix(__p._M_cmpts.front()._M_pathname.size());
 
   const size_t __len = __lhs.size() + (int)__add_sep + __rhs.size();
-  const size_t __maxcmpts = _M_cmpts.size() + __p._M_cmpts.size();
+  const int __maxcmpts = _M_cmpts.size() + __p._M_cmpts.size();
   if (_M_pathname.capacity() < __len || _M_cmpts.capacity() < __maxcmpts)
     {
       // Construct new path and swap (strong exception-safety guarantee).
@@ -90,36 +481,688 @@ path::operator/=(const path& __p)
       if (__add_sep)
 	_M_pathname += preferred_separator;
       _M_pathname += __rhs;
-      _M_split_cmpts();
+      __try
+	{
+	  _M_split_cmpts();
+	}
+      __catch (...)
+	{
+	  __try
+	    {
+	      // try to restore original state
+	      _M_pathname.resize(__lhs.length());
+	      _M_split_cmpts();
+	    }
+	  __catch (...)
+	    {
+	      // give up, basic exception safety guarantee only:
+	      clear();
+	      __throw_exception_again;
+	    }
+	}
+    }
+#else
+  // POSIX version is simpler than the specification in the standard,
+  // as any path with root-name or root-dir is absolute.
+
+  if (__p.is_absolute() || this->empty())
+    {
+      return operator=(__p);
+    }
+
+  using string_view_type = basic_string_view<value_type>;
+
+  string_view_type sep;
+  if (has_filename())
+    sep = { &preferred_separator, 1 };  // need to add a separator
+#ifdef __CYGWIN__
+  else if (_M_type() == _Type::_Root_name) // root-name with no root-dir
+    sep = { &preferred_separator, 1 };  // need to add a separator
+#endif
+  else if (__p.empty())
+    return *this;			    // nothing to do
+
+  const auto orig_pathlen = _M_pathname.length();
+  const auto orig_size = _M_cmpts.size();
+  const auto orig_type = _M_type();
+
+  int capacity = 0;
+  if (_M_type() == _Type::_Multi)
+    capacity += _M_cmpts.size();
+  else if (!empty())
+    capacity += 1;
+  if (__p._M_type() == _Type::_Multi)
+    capacity += __p._M_cmpts.size();
+  else if (!__p.empty() || !sep.empty())
+    capacity += 1;
+
+  if (orig_type == _Type::_Multi)
+    {
+      const int curcap = _M_cmpts._M_impl->capacity();
+      if (capacity > curcap)
+	capacity = std::max(capacity, (int) (curcap * 1.5));
+    }
+
+  _M_pathname.reserve(_M_pathname.length() + sep.length()
+		      + __p._M_pathname.length());
+
+  __try
+    {
+      _M_pathname += sep;
+      const auto basepos = _M_pathname.length();
+      _M_pathname += __p.native();
+
+      _M_cmpts.type(_Type::_Multi);
+      _M_cmpts.reserve(capacity);
+      _Cmpt* output = _M_cmpts._M_impl->end();
+
+      if (orig_type == _Type::_Multi)
+	{
+	  // Remove empty final component
+	  if (_M_cmpts._M_impl->back().empty())
+	    _M_cmpts._M_impl->erase(--output);
+	}
+      else if (orig_pathlen != 0)
+	{
+	  // Create single component from original path
+	  string_view_type s(_M_pathname.data(), orig_pathlen);
+	  ::new(output++) _Cmpt(s, orig_type, 0);
+	  ++_M_cmpts._M_impl->_M_size;
+	}
+
+      if (__p._M_type() == _Type::_Multi)
+	{
+	  for (auto& c : *__p._M_cmpts._M_impl)
+	    {
+	      ::new(output++) _Cmpt(c._M_pathname, _Type::_Filename,
+				    c._M_pos + basepos);
+	      ++_M_cmpts._M_impl->_M_size;
+	    }
+	}
+      else if (!__p.empty() || !sep.empty())
+	{
+	  __glibcxx_assert(__p._M_type() == _Type::_Filename);
+	  ::new(output) _Cmpt(__p._M_pathname, __p._M_type(), basepos);
+	  ++_M_cmpts._M_impl->_M_size;
+	}
+    }
+  __catch (...)
+    {
+      _M_pathname.resize(orig_pathlen);
+      if (orig_type == _Type::_Multi)
+	_M_cmpts.erase(_M_cmpts.begin() + orig_size, _M_cmpts.end());
+      else
+	_M_cmpts.clear();
+      _M_cmpts.type(orig_type);
+      __throw_exception_again;
+    }
+#endif
+  return *this;
+}
+
+// [fs.path.append]
+void
+path::_M_append(basic_string_view<value_type> s)
+{
+  _Parser parser(s);
+  auto root_path = parser.root_path();
+
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  bool is_absolute = root_path.second.type == _Type::_Root_dir;
+  bool has_root_name = root_path.first.type == _Type::_Root_name;
+  if (is_absolute || (has_root_name && root_path.first.str != root_name()))
+    {
+      operator=(s);
+      return;
+    }
+
+  basic_string_view<value_type> lhs = _M_pathname;
+  bool add_sep = false;
+
+  bool has_root_directory = root_path.first.type == _Type::_Root_dir
+    || root_path.second.type == _Type::_Root_dir;
+
+  if (has_root_directory)
+    {
+      // Remove any root directory and relative path
+      if (_M_type() != _Type::_Root_name)
+	{
+	  if (!_M_cmpts.empty()
+	      && _M_cmpts.front()._M_type() == _Type::_Root_name)
+	    lhs = _M_cmpts.front()._M_pathname;
+	  else
+	    lhs = {};
+	}
+    }
+  else if (has_filename() || (!has_root_directory && is_absolute))
+    add_sep = true;
+
+  basic_string_view<value_type> rhs = s;
+  // Omit any root-name from the generic format pathname:
+  if (has_root_name)
+    rhs.remove_prefix(root_path.first.str.length());
+
+  // Construct new path and swap (strong exception-safety guarantee).
+  string_type tmp;
+  tmp.reserve(lhs.size() + (int)add_sep + rhs.size());
+  tmp = lhs;
+  if (add_sep)
+    tmp += preferred_separator;
+  tmp += rhs;
+  path newp = std::move(tmp);
+  swap(newp);
+#else
+
+  bool is_absolute = root_path.first.type == _Type::_Root_dir
+    || root_path.second.type == _Type::_Root_dir;
+  if (is_absolute || this->empty())
+    {
+      operator=(s);
+      return;
+    }
+
+  const auto orig_pathlen = _M_pathname.length();
+  const auto orig_size = _M_cmpts.size();
+  const auto orig_type = _M_type();
+
+  basic_string_view<value_type> sep;
+  if (has_filename())
+    sep = { &preferred_separator, 1 };  // need to add a separator
+#ifdef __CYGWIN__
+  else if (_M_type() == _Type::_Root_name) // root-name with no root-dir
+    sep = { &preferred_separator, 1 };  // need to add a separator
+#endif
+  else if (s.empty())
+    return;			    // nothing to do
+
+  // Copy the input into _M_pathname:
+  _M_pathname += s;
+  _M_pathname.insert(orig_pathlen, sep);
+  // Update s to refer to the new copy (this ensures s is not a dangling
+  // reference to deallocated characters, in the case where it was referring
+  // into _M_pathname or a member of _M_cmpts).
+  s = _M_pathname;
+  const auto orig_pathname = s.substr(0, orig_pathlen);
+  s.remove_prefix(orig_pathlen + sep.length());
+
+  parser.input = s; // reset parser to use updated string view
+  const auto basepos = orig_pathname.length() + sep.length();
+  parser.origin = basepos;
+
+  std::array<_Parser::cmpt, 64> buf;
+  auto next = buf.begin();
+
+  int capacity = 0;
+  if (_M_type() == _Type::_Multi)
+    capacity += _M_cmpts.size();
+  else if (!empty())
+    capacity += 1;
+
+  auto cmpt = parser.next();
+  if (cmpt.valid())
+    {
+      do
+	{
+	  *next++ = cmpt;
+	  cmpt = parser.next();
+	}
+      while (cmpt.valid() && next != buf.end());
+
+      capacity += next - buf.begin();
+      if (cmpt.valid()) // filled buffer before parsing whole input
+	{
+	  ++capacity;
+	  _Parser parser2(parser);
+	  while (parser2.next().valid())
+	    ++capacity;
+	}
+
+      if (s.back() == '/')
+	++capacity;
+    }
+  else if (!sep.empty())
+    ++capacity;
+
+  __try
+    {
+      _M_cmpts.type(_Type::_Multi);
+      _M_cmpts.reserve(capacity);
+      _Cmpt* output = _M_cmpts._M_impl->end();
+
+      if (orig_type == _Type::_Multi)
+	{
+	  // Remove empty final component
+	  if (_M_cmpts._M_impl->back().empty())
+	    _M_cmpts._M_impl->erase(--output);
+	}
+      else if (orig_pathlen != 0)
+	{
+	  // Create single component from original path
+	  ::new(output++) _Cmpt(orig_pathname, orig_type, 0);
+	  ++_M_cmpts._M_impl->_M_size;
+	}
+
+      if (next != buf.begin())
+	{
+	  for (auto it = buf.begin(); it != next; ++it)
+	    {
+	      auto c = *it;
+	      ::new(output++) _Cmpt(c.str, c.type, parser.offset(c));
+	      ++_M_cmpts._M_impl->_M_size;
+	    }
+	  for (auto c = parser.next(); c.valid(); c = parser.next())
+	    {
+	      ::new(output++) _Cmpt(c.str, c.type, parser.offset(c));
+	      ++_M_cmpts._M_impl->_M_size;
+	    }
+
+	  if (s.back() == '/')
+	    {
+	      ::new(output++) _Cmpt({}, _Type::_Filename, _M_pathname.length());
+	      ++_M_cmpts._M_impl->_M_size;
+	    }
+	}
+      else if (!sep.empty())
+	{
+	  // Empty filename at the end:
+	  ::new(output) _Cmpt({}, _Type::_Filename, basepos);
+	  ++_M_cmpts._M_impl->_M_size;
+	}
+    }
+  __catch (...)
+    {
+      _M_pathname.resize(orig_pathlen);
+      if (orig_type == _Type::_Multi)
+	_M_cmpts.erase(_M_cmpts.begin() + orig_size, _M_cmpts.end());
+      else
+	_M_cmpts.clear();
+      _M_cmpts.type(orig_type);
+      __throw_exception_again;
+    }
+#endif
+}
+
+// [fs.path.concat]
+path&
+path::operator+=(const path& p)
+{
+  if (p.empty())
+    return *this;
+
+  if (this->empty())
+    {
+      operator=(p);
+      return *this;
+    }
+
+  const auto orig_pathlen = _M_pathname.length();
+  const auto orig_type = _M_type();
+  const auto orig_size = _M_cmpts.size();
+  int orig_filenamelen = -1;
+  basic_string_view<value_type> extra;
+
+  // Ensure that '_M_pathname += p._M_pathname' won't throw:
+  _M_pathname.reserve(orig_pathlen + p._M_pathname.length());
+
+  _Cmpt c;
+  _Cmpt* it = nullptr;
+  _Cmpt* last = nullptr;
+  if (p._M_type() == _Type::_Multi)
+    {
+      it = p._M_cmpts._M_impl->begin();
+      last = p._M_cmpts._M_impl->end();
+    }
+  else
+    {
+      c = _Cmpt(p._M_pathname, p._M_type(), 0);
+      it = &c;
+      last = it + 1;
+    }
+
+  if (it->_M_type() == _Type::_Filename)
+    {
+      // See if there's a filename or root-name at the end of the original path
+      // that we can add to.
+      if (_M_type() == _Type::_Filename)
+	{
+	  if (p._M_type() == _Type::_Filename)
+	    {
+	      // Simplest case where we just add the whole of p to the
+	      // original path.
+	      _M_pathname += p._M_pathname;
+	      return *this;
+	    }
+	  // Only the first component of s should be appended, do so below:
+	  extra = it->_M_pathname;
+	  ++it;
+	}
+      else if (_M_type() == _Type::_Multi
+	  && _M_cmpts.back()._M_type() == _Type::_Filename)
+	{
+	  auto& back = _M_cmpts.back();
+	  if (p._M_type() == _Type::_Filename)
+	    {
+	      basic_string_view<value_type> s = p._M_pathname;
+	      back._M_pathname += s;
+	      _M_pathname += s;
+	      return *this;
+	    }
+
+	  orig_filenamelen = back._M_pathname.length();
+	  back._M_pathname += it->_M_pathname;
+	  extra = it->_M_pathname;
+	  ++it;
+	}
+    }
+  else if (is_dir_sep(_M_pathname.back()) && _M_type() == _Type::_Multi
+      && _M_cmpts.back()._M_type() == _Type::_Filename)
+    orig_filenamelen = 0; // current path has empty filename at end
+
+  // TODO handle "//rootname" + "foo" case for Cygwin.
+
+  int capacity = 0;
+  if (_M_type() == _Type::_Multi)
+    capacity += _M_cmpts.size();
+  else
+    capacity += 1;
+  if (p._M_type() == _Type::_Multi)
+    capacity += p._M_cmpts.size();
+  else
+    capacity += 1;
+
+  __try
+    {
+      _M_cmpts.type(_Type::_Multi);
+      _M_cmpts.reserve(capacity);
+      _Cmpt* output = _M_cmpts._M_impl->end();
+
+      if (orig_type != _Type::_Multi)
+	{
+	  // Create single component from original path
+	  auto ptr = ::new(output++) _Cmpt({}, orig_type, 0);
+	  ++_M_cmpts._M_impl->_M_size;
+	  ptr->_M_pathname.reserve(_M_pathname.length() + extra.length());
+	  ptr->_M_pathname = _M_pathname;
+	  ptr->_M_pathname += extra;
+	}
+      else if (orig_filenamelen == 0 && it != last)
+	{
+	  // Remove empty filename at end of original path.
+	  _M_cmpts.erase(std::prev(output));
+	}
+
+      if (it != last && it->_M_type() == _Type::_Root_name)
+	{
+	  basic_string_view<value_type> s = it->_M_pathname;
+	  auto pos = orig_pathlen;
+#ifdef __CYGWIN__
+	  s.remove_prefix(2);
+	  pos += 2;
+#endif
+	  ::new(output++) _Cmpt(s, _Type::_Filename, pos);
+	  ++_M_cmpts._M_impl->_M_size;
+	  ++it;
+	}
+
+      if (it != last && it->_M_type() == _Type::_Root_dir)
+	{
+	  ++it;
+	  if (it == last)
+	    {
+	      // This root-dir becomes a trailing slash
+	      auto pos = _M_pathname.length() + p._M_pathname.length();
+	      ::new(output++) _Cmpt({}, _Type::_Filename, pos);
+	      ++_M_cmpts._M_impl->_M_size;
+	    }
+	}
+
+      while (it != last)
+	{
+	  auto pos = it->_M_pos + orig_pathlen;
+	  ::new(output++) _Cmpt(it->_M_pathname, _Type::_Filename, pos);
+	  ++_M_cmpts._M_impl->_M_size;
+	  ++it;
+	}
+
+      _M_pathname += p._M_pathname;
+
+      if (is_dir_sep(_M_pathname.back()))
+	{
+	  ::new(output++) _Cmpt({}, _Type::_Filename, _M_pathname.length());
+	  ++_M_cmpts._M_impl->_M_size;
+	}
+      }
+  __catch (...)
+    {
+      _M_pathname.resize(orig_pathlen);
+      if (orig_type == _Type::_Multi)
+	{
+	  if (_M_cmpts.size() > orig_size)
+	    _M_cmpts.erase(_M_cmpts.begin() + orig_size, _M_cmpts.end());
+	  if (orig_filenamelen != -1)
+	    {
+	      if (_M_cmpts.size() == orig_size)
+		{
+		  auto& back = _M_cmpts.back();
+		  back._M_pathname.resize(orig_filenamelen);
+		  if (orig_filenamelen == 0)
+		    back._M_pos = orig_pathlen;
+		}
+	      else
+		{
+		  auto output = _M_cmpts._M_impl->end();
+		  ::new(output) _Cmpt({}, _Type::_Filename, orig_pathlen);
+		  ++_M_cmpts._M_impl->_M_size;
+		}
+	    }
+	}
+      else
+	_M_cmpts.clear();
+      _M_cmpts.type(orig_type);
+      __throw_exception_again;
     }
   return *this;
 }
-#endif
+
+// [fs.path.concat]
+void
+path::_M_concat(basic_string_view<value_type> s)
+{
+  if (s.empty())
+    return;
+
+  if (this->empty())
+    {
+      operator=(s);
+      return;
+    }
+
+  const auto orig_pathlen = _M_pathname.length();
+  const auto orig_type = _M_type();
+  const auto orig_size = _M_cmpts.size();
+  int orig_filenamelen = -1;
+  basic_string_view<value_type> extra;
+
+  // Copy the input into _M_pathname:
+  _M_pathname += s;
+  // Update s to refer to the new copy (this ensures s is not a dangling
+  // reference to deallocated characters, in the case where it was referring
+  // into _M_pathname or a member of _M_cmpts).
+  s = _M_pathname;
+  const auto orig_pathname = s.substr(0, orig_pathlen);
+  s.remove_prefix(orig_pathlen);
+
+  _Parser parser(s, orig_pathlen);
+  auto cmpt = parser.next();
+
+  if (cmpt.str.data() == s.data())
+    {
+      // See if there's a filename or root-name at the end of the original path
+      // that we can add to.
+      if (_M_type() == _Type::_Filename)
+	{
+	  if (cmpt.str.length() == s.length())
+	    {
+	      // Simplest case where we just need to add the whole of s
+	      // to the original path, which was already done above.
+	      return;
+	    }
+	  // Only the first component of s should be appended, do so below:
+	  extra = cmpt.str;
+	  cmpt = {}; // so we don't process it again
+	}
+      else if (_M_type() == _Type::_Multi
+	  && _M_cmpts.back()._M_type() == _Type::_Filename)
+	{
+	  auto& back = _M_cmpts.back();
+	  if (cmpt.str.length() == s.length())
+	    {
+	      back._M_pathname += s;
+	      return;
+	    }
+
+	  orig_filenamelen = back._M_pathname.length();
+	  back._M_pathname += cmpt.str;
+	  extra = cmpt.str;
+	  cmpt = {};
+	}
+    }
+  else if (is_dir_sep(orig_pathname.back()) && _M_type() == _Type::_Multi
+      && _M_cmpts.back()._M_type() == _Type::_Filename)
+    orig_filenamelen = 0; // original path had empty filename at end
+
+
+  // TODO handle "//rootname" + "foo" case for Cygwin.
+
+  std::array<_Parser::cmpt, 64> buf;
+  auto next = buf.begin();
+
+  if (cmpt.valid())
+    *next++ = cmpt;
+
+  cmpt = parser.next();
+  while (cmpt.valid() && next != buf.end())
+    {
+      *next++ = cmpt;
+      cmpt = parser.next();
+    }
+
+  int capacity = 0;
+  if (_M_type() == _Type::_Multi)
+    capacity += _M_cmpts.size();
+  else
+    capacity += 1;
+
+  capacity += next - buf.begin();
+
+  if (cmpt.valid()) // filled buffer before parsing whole input
+    {
+      ++capacity;
+      _Parser parser2(parser);
+      while (parser2.next().valid())
+	++capacity;
+    }
+  if (is_dir_sep(s.back()))
+    ++capacity;
+
+  __try
+    {
+      _M_cmpts.type(_Type::_Multi);
+      _M_cmpts.reserve(capacity);
+      _Cmpt* output = _M_cmpts._M_impl->end();
+      auto it = buf.begin();
+
+      if (orig_type != _Type::_Multi)
+	{
+	  // Create single component from original path
+	  auto p = ::new(output++) _Cmpt({}, orig_type, 0);
+	  ++_M_cmpts._M_impl->_M_size;
+	  p->_M_pathname.reserve(orig_pathname.length() + extra.length());
+	  p->_M_pathname = orig_pathname;
+	  p->_M_pathname += extra;
+	}
+      else if (orig_filenamelen == 0)
+	{
+	  // Replace empty filename at end of original path.
+	  std::prev(output)->_M_pathname = it->str;
+	  std::prev(output)->_M_pos = parser.offset(*it);
+	  ++it;
+	}
+
+      while (it != next)
+	{
+	  ::new(output++) _Cmpt(it->str, _Type::_Filename, parser.offset(*it));
+	  ++_M_cmpts._M_impl->_M_size;
+	  ++it;
+	}
+
+      if (next == buf.end())
+	{
+	  while (cmpt.valid())
+	    {
+	      auto pos = parser.offset(cmpt);
+	      ::new(output++) _Cmpt(cmpt.str, _Type::_Filename, pos);
+	      ++_M_cmpts._M_impl->_M_size;
+	      cmpt = parser.next();
+	    }
+	}
+
+      if (is_dir_sep(s.back()))
+	{
+	  // Empty filename at the end:
+	  ::new(output++) _Cmpt({}, _Type::_Filename, _M_pathname.length());
+	  ++_M_cmpts._M_impl->_M_size;
+	}
+    }
+  __catch (...)
+    {
+      _M_pathname.resize(orig_pathlen);
+      if (orig_type == _Type::_Multi)
+	{
+	  _M_cmpts.erase(_M_cmpts.begin() + orig_size, _M_cmpts.end());
+	  if (orig_filenamelen != -1)
+	    {
+	      auto& back = _M_cmpts.back();
+	      back._M_pathname.resize(orig_filenamelen);
+	      if (orig_filenamelen == 0)
+		back._M_pos = orig_pathlen;
+	    }
+	}
+      else
+	_M_cmpts.clear();
+      _M_cmpts.type(orig_type);
+      __throw_exception_again;
+    }
+}
 
 path&
 path::remove_filename()
 {
-  if (_M_type == _Type::_Multi)
+  if (_M_type() == _Type::_Multi)
     {
       if (!_M_cmpts.empty())
 	{
 	  auto cmpt = std::prev(_M_cmpts.end());
-	  if (cmpt->_M_type == _Type::_Filename && !cmpt->empty())
+	  if (cmpt->_M_type() == _Type::_Filename && !cmpt->empty())
 	    {
 	      _M_pathname.erase(cmpt->_M_pos);
 	      auto prev = std::prev(cmpt);
-	      if (prev->_M_type == _Type::_Root_dir
-		  || prev->_M_type == _Type::_Root_name)
+	      if (prev->_M_type() == _Type::_Root_dir
+		  || prev->_M_type() == _Type::_Root_name)
 		{
 		  _M_cmpts.erase(cmpt);
-		  _M_trim();
+		  if (_M_cmpts.size() == 1)
+		    {
+		      _M_cmpts.type(_M_cmpts.front()._M_type());
+		      _M_cmpts.clear();
+		    }
 		}
 	      else
 		cmpt->clear();
 	    }
 	}
     }
-  else if (_M_type == _Type::_Filename)
+  else if (_M_type() == _Type::_Filename)
     clear();
   return *this;
 }
@@ -201,15 +1244,15 @@ path::compare(const path& p) const noexcept
 
   if (empty() && p.empty())
     return 0;
-  else if (_M_type == _Type::_Multi && p._M_type == _Type::_Multi)
+  else if (_M_type() == _Type::_Multi && p._M_type() == _Type::_Multi)
     return do_compare(_M_cmpts.begin(), _M_cmpts.end(),
 		      p._M_cmpts.begin(), p._M_cmpts.end());
-  else if (_M_type == _Type::_Multi)
+  else if (_M_type() == _Type::_Multi)
     {
       CmptRef c[1] = { { &p } };
       return do_compare(_M_cmpts.begin(), _M_cmpts.end(), c, c+1);
     }
-  else if (p._M_type == _Type::_Multi)
+  else if (p._M_type() == _Type::_Multi)
     {
       CmptRef c[1] = { { this } };
       return do_compare(c, c+1, p._M_cmpts.begin(), p._M_cmpts.end());
@@ -222,9 +1265,9 @@ path
 path::root_name() const
 {
   path __ret;
-  if (_M_type == _Type::_Root_name)
+  if (_M_type() == _Type::_Root_name)
     __ret = *this;
-  else if (_M_cmpts.size() && _M_cmpts.begin()->_M_type == _Type::_Root_name)
+  else if (_M_cmpts.size() && _M_cmpts.begin()->_M_type() == _Type::_Root_name)
     __ret = *_M_cmpts.begin();
   return __ret;
 }
@@ -233,17 +1276,17 @@ path
 path::root_directory() const
 {
   path __ret;
-  if (_M_type == _Type::_Root_dir)
+  if (_M_type() == _Type::_Root_dir)
     {
-      __ret._M_type = _Type::_Root_dir;
+      __ret._M_cmpts.type(_Type::_Root_dir);
       __ret._M_pathname.assign(1, preferred_separator);
     }
   else if (!_M_cmpts.empty())
     {
       auto __it = _M_cmpts.begin();
-      if (__it->_M_type == _Type::_Root_name)
+      if (__it->_M_type() == _Type::_Root_name)
         ++__it;
-      if (__it != _M_cmpts.end() && __it->_M_type == _Type::_Root_dir)
+      if (__it != _M_cmpts.end() && __it->_M_type() == _Type::_Root_dir)
         __ret = *__it;
     }
   return __ret;
@@ -253,23 +1296,23 @@ path
 path::root_path() const
 {
   path __ret;
-  if (_M_type == _Type::_Root_name)
+  if (_M_type() == _Type::_Root_name)
     __ret = *this;
-  else if (_M_type == _Type::_Root_dir)
+  else if (_M_type() == _Type::_Root_dir)
     {
       __ret._M_pathname.assign(1, preferred_separator);
-      __ret._M_type = _Type::_Root_dir;
+      __ret._M_cmpts.type(_Type::_Root_dir);
     }
   else if (!_M_cmpts.empty())
     {
       auto __it = _M_cmpts.begin();
-      if (__it->_M_type == _Type::_Root_name)
+      if (__it->_M_type() == _Type::_Root_name)
         {
           __ret = *__it++;
-          if (__it != _M_cmpts.end() && __it->_M_type == _Type::_Root_dir)
+          if (__it != _M_cmpts.end() && __it->_M_type() == _Type::_Root_dir)
 	    __ret /= *__it;
         }
-      else if (__it->_M_type == _Type::_Root_dir)
+      else if (__it->_M_type() == _Type::_Root_dir)
         __ret = *__it;
     }
   return __ret;
@@ -279,14 +1322,14 @@ path
 path::relative_path() const
 {
   path __ret;
-  if (_M_type == _Type::_Filename)
+  if (_M_type() == _Type::_Filename)
     __ret = *this;
   else if (!_M_cmpts.empty())
     {
       auto __it = _M_cmpts.begin();
-      if (__it->_M_type == _Type::_Root_name)
+      if (__it->_M_type() == _Type::_Root_name)
         ++__it;
-      if (__it != _M_cmpts.end() && __it->_M_type == _Type::_Root_dir)
+      if (__it != _M_cmpts.end() && __it->_M_type() == _Type::_Root_dir)
         ++__it;
       if (__it != _M_cmpts.end())
         __ret.assign(_M_pathname.substr(__it->_M_pos));
@@ -314,9 +1357,9 @@ path::parent_path() const
 bool
 path::has_root_name() const
 {
-  if (_M_type == _Type::_Root_name)
+  if (_M_type() == _Type::_Root_name)
     return true;
-  if (!_M_cmpts.empty() && _M_cmpts.begin()->_M_type == _Type::_Root_name)
+  if (!_M_cmpts.empty() && _M_cmpts.begin()->_M_type() == _Type::_Root_name)
     return true;
   return false;
 }
@@ -324,14 +1367,14 @@ path::has_root_name() const
 bool
 path::has_root_directory() const
 {
-  if (_M_type == _Type::_Root_dir)
+  if (_M_type() == _Type::_Root_dir)
     return true;
   if (!_M_cmpts.empty())
     {
       auto __it = _M_cmpts.begin();
-      if (__it->_M_type == _Type::_Root_name)
+      if (__it->_M_type() == _Type::_Root_name)
         ++__it;
-      if (__it != _M_cmpts.end() && __it->_M_type == _Type::_Root_dir)
+      if (__it != _M_cmpts.end() && __it->_M_type() == _Type::_Root_dir)
         return true;
     }
   return false;
@@ -340,11 +1383,11 @@ path::has_root_directory() const
 bool
 path::has_root_path() const
 {
-  if (_M_type == _Type::_Root_name || _M_type == _Type::_Root_dir)
+  if (_M_type() == _Type::_Root_name || _M_type() == _Type::_Root_dir)
     return true;
   if (!_M_cmpts.empty())
     {
-      auto __type = _M_cmpts.front()._M_type;
+      auto __type = _M_cmpts.front()._M_type();
       if (__type == _Type::_Root_name || __type == _Type::_Root_dir)
         return true;
     }
@@ -354,14 +1397,14 @@ path::has_root_path() const
 bool
 path::has_relative_path() const
 {
-  if (_M_type == _Type::_Filename && !_M_pathname.empty())
+  if (_M_type() == _Type::_Filename && !_M_pathname.empty())
     return true;
   if (!_M_cmpts.empty())
     {
       auto __it = _M_cmpts.begin();
-      if (__it->_M_type == _Type::_Root_name)
+      if (__it->_M_type() == _Type::_Root_name)
         ++__it;
-      if (__it != _M_cmpts.end() && __it->_M_type == _Type::_Root_dir)
+      if (__it != _M_cmpts.end() && __it->_M_type() == _Type::_Root_dir)
         ++__it;
       if (__it != _M_cmpts.end() && !__it->_M_pathname.empty())
         return true;
@@ -383,9 +1426,9 @@ path::has_filename() const
 {
   if (empty())
     return false;
-  if (_M_type == _Type::_Filename)
+  if (_M_type() == _Type::_Filename)
     return !_M_pathname.empty();
-  if (_M_type == _Type::_Multi)
+  if (_M_type() == _Type::_Multi)
     {
       if (_M_pathname.back() == preferred_separator)
 	return false;
@@ -436,7 +1479,7 @@ path::lexically_normal() const
     {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
       // Replace each slash character in the root-name
-      if (p._M_type == _Type::_Root_name || p._M_type == _Type::_Root_dir)
+      if (p._M_type() == _Type::_Root_name || p._M_type() == _Type::_Root_dir)
 	{
 	  string_type s = p.native();
 	  std::replace(s.begin(), s.end(), L'/', L'\\');
@@ -477,7 +1520,7 @@ path::lexically_normal() const
 		    {
 		      ret._M_pathname.erase(elem._M_cur->_M_pos);
 		      // Do we still have a trailing slash?
-		      if (std::prev(elem)->_M_type == _Type::_Filename)
+		      if (std::prev(elem)->_M_type() == _Type::_Filename)
 			ret._M_cmpts.erase(elem._M_cur);
 		      else
 			ret._M_cmpts.erase(elem._M_cur, ret._M_cmpts.end());
@@ -560,12 +1603,12 @@ path::_M_find_extension() const
 {
   const string_type* s = nullptr;
 
-  if (_M_type == _Type::_Filename)
+  if (_M_type() == _Type::_Filename)
     s = &_M_pathname;
-  else if (_M_type == _Type::_Multi && !_M_cmpts.empty())
+  else if (_M_type() == _Type::_Multi && !_M_cmpts.empty())
     {
       const auto& c = _M_cmpts.back();
-      if (c._M_type == _Type::_Filename)
+      if (c._M_type() == _Type::_Filename)
 	s = &c._M_pathname;
     }
 
@@ -586,119 +1629,87 @@ void
 path::_M_split_cmpts()
 {
   _M_cmpts.clear();
+
   if (_M_pathname.empty())
     {
-      _M_type = _Type::_Filename;
+      _M_cmpts.type(_Type::_Filename);
       return;
     }
-  _M_type = _Type::_Multi;
+  if (_M_pathname.length() == 1 && _M_pathname[0] == preferred_separator)
+    {
+      _M_cmpts.type(_Type::_Root_dir);
+      return;
+    }
 
-  size_t pos = 0;
-  const size_t len = _M_pathname.size();
+  _Parser parser(_M_pathname);
+
+  std::array<_Parser::cmpt, 64> buf;
+  auto next = buf.begin();
 
   // look for root name or root directory
-  if (_S_is_dir_sep(_M_pathname[0]))
+  auto root_path = parser.root_path();
+  if (root_path.first.valid())
     {
-#ifdef __CYGWIN__
-      // look for root name, such as "//foo"
-      if (len > 2 && _M_pathname[1] == _M_pathname[0])
+      *next++ = root_path.first;
+      if (root_path.second.valid())
+	*next++ = root_path.second;
+    }
+
+  bool got_at_least_one_filename = false;
+
+  auto cmpt = parser.next();
+  while (cmpt.valid())
+    {
+      got_at_least_one_filename = true;
+      do
 	{
-	  if (!_S_is_dir_sep(_M_pathname[2]))
-	    {
-	      // got root name, find its end
-	      pos = 3;
-	      while (pos < len && !_S_is_dir_sep(_M_pathname[pos]))
-		++pos;
-	      _M_add_root_name(pos);
-	      if (pos < len) // also got root directory
-		_M_add_root_dir(pos);
-	    }
-	  else
-	    {
-	      // got something like "///foo" which is just a root directory
-	      // composed of multiple redundant directory separators
-	      _M_add_root_dir(0);
-	    }
+	  *next++ = cmpt;
+	  cmpt = parser.next();
 	}
-      else
-#endif
-        {
-	  // got root directory
-	  if (_M_pathname.find_first_not_of('/') == string_type::npos)
-	    {
-	      // entire path is just slashes
-	      _M_type = _Type::_Root_dir;
-	      return;
-	    }
-	  _M_add_root_dir(0);
-	  ++pos;
-	}
-    }
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-  else if (len > 1 && _M_pathname[1] == L':')
-    {
-      // got disk designator
-      _M_add_root_name(2);
-      if (len > 2 && _S_is_dir_sep(_M_pathname[2]))
-	_M_add_root_dir(2);
-      pos = 2;
-    }
-#endif
+      while (cmpt.valid() && next != buf.end());
 
-  size_t back = pos;
-  while (pos < len)
-    {
-      if (_S_is_dir_sep(_M_pathname[pos]))
+      if (next == buf.end())
 	{
-	  if (back != pos)
-	    _M_add_filename(back, pos - back);
-	  back = ++pos;
+	  _M_cmpts.type(_Type::_Multi);
+	  _M_cmpts.reserve(_M_cmpts.size() + buf.size());
+	  auto output = _M_cmpts._M_impl->end();
+	  for (auto& c : buf)
+	    {
+	      auto pos = c.str.data() - _M_pathname.data();
+	      ::new(output++) _Cmpt(c.str, c.type, pos);
+	      ++_M_cmpts._M_impl->_M_size;
+	    }
+	  next = buf.begin();
 	}
-      else
-	++pos;
     }
 
-  if (back != pos)
-    _M_add_filename(back, pos - back);
-  else if (_S_is_dir_sep(_M_pathname.back()))
+  // [fs.path.itr]/4
+  // An empty element, if trailing non-root directory-separator present.
+  if (got_at_least_one_filename && is_dir_sep(_M_pathname.back()))
     {
-      // [fs.path.itr]/4
-      // An empty element, if trailing non-root directory-separator present.
-      if (_M_cmpts.back()._M_type == _Type::_Filename)
+      next->str = { _M_pathname.data() + _M_pathname.length(), 0 };
+      next->type = _Type::_Filename;
+      ++next;
+    }
+
+  if (auto n = next - buf.begin())
+    {
+      if (n == 1 && _M_cmpts.empty())
 	{
-	  pos = _M_pathname.size();
-	  _M_cmpts.emplace_back(string_type(), _Type::_Filename, pos);
+	  _M_cmpts.type(buf.front().type);
+	  return;
 	}
-    }
 
-  _M_trim();
-}
-
-void
-path::_M_add_root_name(size_t n)
-{
-  _M_cmpts.emplace_back(_M_pathname.substr(0, n), _Type::_Root_name, 0);
-}
-
-void
-path::_M_add_root_dir(size_t pos)
-{
-  _M_cmpts.emplace_back(_M_pathname.substr(pos, 1), _Type::_Root_dir, pos);
-}
-
-void
-path::_M_add_filename(size_t pos, size_t n)
-{
-  _M_cmpts.emplace_back(_M_pathname.substr(pos, n), _Type::_Filename, pos);
-}
-
-void
-path::_M_trim()
-{
-  if (_M_cmpts.size() == 1)
-    {
-      _M_type = _M_cmpts.front()._M_type;
-      _M_cmpts.clear();
+      _M_cmpts.type(_Type::_Multi);
+      _M_cmpts.reserve(_M_cmpts.size() + n, true);
+      auto output = _M_cmpts._M_impl->end();
+      for (int i = 0; i < n; ++i)
+	{
+	  auto c = buf[i];
+	  auto pos = c.str.data() - _M_pathname.data();
+	  ::new(output++) _Cmpt(c.str, c.type, pos);
+	  ++_M_cmpts._M_impl->_M_size;
+	}
     }
 }
 
