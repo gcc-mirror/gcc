@@ -1,3 +1,8 @@
+2018-12-13  Jason Merrill  <jason@redhat.com>
+
+	* gdbinit.in (pp): New macro.
+	(pbb): Remove.
+
 2018-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/88464
