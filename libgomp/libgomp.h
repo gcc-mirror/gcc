@@ -751,6 +751,7 @@ extern void gomp_display_affinity_place (char *, size_t, size_t *, int);
 
 /* affinity-fmt.c */
 
+extern void gomp_print_string (const char *str, size_t len);
 extern void gomp_set_affinity_format (const char *, size_t);
 extern void gomp_display_string (char *, size_t, size_t *, const char *,
 				 size_t);
