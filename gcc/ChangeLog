@@ -1,3 +1,10 @@
+2018-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/88470
+	* cfgcleanup.c (outgoing_edges_match): If the function is
+	shrink-wrapped and bb1 ends with a JUMP_INSN with a single fake
+	edge to EXIT, return false.
+
 2018-12-13  Martin Sebor  <msebor@redhat.com>
 
 	* doc/extend.texi: Consistently use @code for const and volatile
