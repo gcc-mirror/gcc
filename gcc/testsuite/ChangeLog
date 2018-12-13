@@ -1,5 +1,8 @@
 2018-12-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/88416
+	* gcc.target/i386/pr88416.c: New test.
+
 	PR tree-optimization/88464
 	* gcc.target/i386/avx512f-pr88462-1.c: New test.
 	* gcc.target/i386/avx512f-pr88462-2.c: New test.
