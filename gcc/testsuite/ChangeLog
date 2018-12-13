@@ -1,3 +1,11 @@
+2018-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/88454
+	* gcc.dg/tree-ssa/split-path-5.c (__ctype_ptr__): Change type from
+	const char * to const signed char *.
+	(bmhi_init): Change pattern parameter's type the same.  Use
+	__builtin_strlen instead of undeclared strlen.
+
 2018-12-13  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* gcc.target/s390/zvector/vec-double-1.c: New test.
