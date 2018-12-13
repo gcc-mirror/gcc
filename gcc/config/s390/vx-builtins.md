@@ -1607,7 +1607,7 @@
 (define_expand "vec_ctd_s64"
   [(set (match_operand:V2DF               0 "register_operand" "")
 	(unspec:V2DF [(match_operand:V2DI 1 "register_operand" "")
-		      (const_int 4) ; inexact suppressed
+		      (const_int VEC_NOINEXACT)
 		      (const_int VEC_RND_CURRENT)]
 		     UNSPEC_VEC_VCDGB))
    (use (match_operand:QI 2 "const_int_operand" ""))
@@ -1638,7 +1638,7 @@
 (define_expand "vec_ctd_u64"
   [(set (match_operand:V2DF               0 "register_operand" "")
 	(unspec:V2DF [(match_operand:V2DI 1 "register_operand" "")
-		      (const_int 4) ; inexact suppressed
+		      (const_int VEC_NOINEXACT)
 		      (const_int VEC_RND_CURRENT)]
 		     UNSPEC_VEC_VCDLGB))
    (use (match_operand:QI 2 "const_int_operand" ""))
@@ -1672,7 +1672,7 @@
 				 (match_dup 3)))
    (set (match_operand:V2DI 0 "register_operand" "")
 	(unspec:V2DI [(match_dup 4)
-		      (const_int 4) ; inexact suppressed
+		      (const_int VEC_NOINEXACT)
 		      (const_int VEC_RND_CURRENT)]
 		     UNSPEC_VEC_VCGDB))]
   "TARGET_VX"
@@ -1705,7 +1705,7 @@
 				 (match_dup 3)))
    (set (match_operand:V2DI 0 "register_operand" "")
 	(unspec:V2DI [(match_dup 4)
-		      (const_int 4) ; inexact suppressed
+		      (const_int VEC_NOINEXACT)
 		      (const_int VEC_RND_CURRENT)]
 		     UNSPEC_VEC_VCLGDB))]
   "TARGET_VX"
@@ -2026,7 +2026,7 @@
 (define_expand "vec_double_s64"
   [(set (match_operand:V2DF               0 "register_operand")
 	(unspec:V2DF [(match_operand:V2DI 1 "register_operand")
-		      (const_int 0)  ; inexact suppression disabled
+		      (const_int VEC_INEXACT)
 		      (const_int VEC_RND_CURRENT)]
 		     UNSPEC_VEC_VCDGB))]
   "TARGET_VX")
@@ -2034,7 +2034,7 @@
 (define_expand "vec_double_u64"
   [(set (match_operand:V2DF               0 "register_operand")
 	(unspec:V2DF [(match_operand:V2DI 1 "register_operand")
-		      (const_int 0)  ; inexact suppression disabled
+		      (const_int VEC_INEXACT)
 		      (const_int VEC_RND_CURRENT)]
 		     UNSPEC_VEC_VCDLGB))]
   "TARGET_VX")
