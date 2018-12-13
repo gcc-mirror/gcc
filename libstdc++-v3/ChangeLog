@@ -1,5 +1,19 @@
 2018-12-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/filesystem/std-path.cc (SLASHSLASH_IS_ROOT_NAME): New macro to
+	control whether interpret paths with two slashes as a root-name.
+	(path::operator/=(const path&)) [SLASHSLASH_IS_ROOT_NAME]: Add a
+	root-directory when appending to a root-name.
+	(path::_M_append(basic_string_view<value_type>))
+	[SLASHSLASH_IS_ROOT_NAME]: Likewise.
+	(path::operator/=(const path&)) [SLASHSLASH_IS_ROOT_NAME]: Likewise.
+	(path::_M_concat(basic_string_view<value_type>))
+	[SLASHSLASH_IS_ROOT_NAME]: Likewise.
+	(path::lexically_normal()) [SLASHSLASH_IS_ROOT_NAME]: Use += instead
+	of /= to add a root-directory to the result.
+	* testsuite/27_io/filesystem/path/decompose/root_directory.cc: Fix
+	expected result for Cygwin.
+
 	PR libstdc++/71044
 	* include/bits/fs_path.h (path::path(path&&)): Add noexcept when
 	appropriate. Move _M_cmpts instead of reparsing the native pathname.

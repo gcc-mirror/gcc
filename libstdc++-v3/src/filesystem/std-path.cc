@@ -26,6 +26,11 @@
 # define _GLIBCXX_USE_CXX11_ABI 1
 #endif
 
+#ifdef __CYGWIN__
+// Interpret "//x" as a root-name, not root-dir + filename
+# define SLASHSLASH_IS_ROOTNAME 1
+#endif
+
 #include <filesystem>
 #include <algorithm>
 #include <bits/stl_uninitialized.h>
@@ -70,7 +75,7 @@ struct path::_Parser
     // look for root name or root directory
     if (is_dir_sep(input[0]))
       {
-#ifdef __CYGWIN__
+#if SLASHSLASH_IS_ROOTNAME
 	// look for root name, such as "//foo"
 	if (len > 2 && input[1] == input[0])
 	  {
@@ -515,7 +520,7 @@ path::operator/=(const path& __p)
   string_view_type sep;
   if (has_filename())
     sep = { &preferred_separator, 1 };  // need to add a separator
-#ifdef __CYGWIN__
+#if SLASHSLASH_IS_ROOTNAME
   else if (_M_type() == _Type::_Root_name) // root-name with no root-dir
     sep = { &preferred_separator, 1 };  // need to add a separator
 #endif
@@ -535,6 +540,10 @@ path::operator/=(const path& __p)
     capacity += __p._M_cmpts.size();
   else if (!__p.empty() || !sep.empty())
     capacity += 1;
+#if SLASHSLASH_IS_ROOTNAME
+  if (orig_type == _Type::_Root_name)
+    ++capacity; // Need to insert root-directory after root-name
+#endif
 
   if (orig_type == _Type::_Multi)
     {
@@ -568,6 +577,14 @@ path::operator/=(const path& __p)
 	  string_view_type s(_M_pathname.data(), orig_pathlen);
 	  ::new(output++) _Cmpt(s, orig_type, 0);
 	  ++_M_cmpts._M_impl->_M_size;
+#if SLASHSLASH_IS_ROOTNAME
+	  if (orig_type == _Type::_Root_name)
+	    {
+	      ::new(output++) _Cmpt(sep, _Type::_Root_dir,
+				    orig_pathlen + sep.length());
+	      ++_M_cmpts._M_impl->_M_size;
+	    }
+#endif
 	}
 
       if (__p._M_type() == _Type::_Multi)
@@ -668,7 +685,7 @@ path::_M_append(basic_string_view<value_type> s)
   basic_string_view<value_type> sep;
   if (has_filename())
     sep = { &preferred_separator, 1 };  // need to add a separator
-#ifdef __CYGWIN__
+#if SLASHSLASH_IS_ROOTNAME
   else if (_M_type() == _Type::_Root_name) // root-name with no root-dir
     sep = { &preferred_separator, 1 };  // need to add a separator
 #endif
@@ -723,6 +740,11 @@ path::_M_append(basic_string_view<value_type> s)
   else if (!sep.empty())
     ++capacity;
 
+#if SLASHSLASH_IS_ROOTNAME
+  if (orig_type == _Type::_Root_name)
+    ++capacity; // Need to insert root-directory after root-name
+#endif
+
   __try
     {
       _M_cmpts.type(_Type::_Multi);
@@ -740,6 +762,15 @@ path::_M_append(basic_string_view<value_type> s)
 	  // Create single component from original path
 	  ::new(output++) _Cmpt(orig_pathname, orig_type, 0);
 	  ++_M_cmpts._M_impl->_M_size;
+
+#if SLASHSLASH_IS_ROOTNAME
+	  if (!sep.empty() && orig_type == _Type::_Root_name)
+	    {
+	      ::new(output++) _Cmpt(sep, _Type::_Root_dir,
+				    orig_pathlen + sep.length());
+	      ++_M_cmpts._M_impl->_M_size;
+	    }
+#endif
 	}
 
       if (next != buf.begin())
@@ -823,7 +854,11 @@ path::operator+=(const path& p)
     {
       // See if there's a filename or root-name at the end of the original path
       // that we can add to.
-      if (_M_type() == _Type::_Filename)
+      if (_M_type() == _Type::_Filename
+#if SLASHSLASH_IS_ROOTNAME
+	  || _M_type() == _Type::_Root_name
+#endif
+	  )
 	{
 	  if (p._M_type() == _Type::_Filename)
 	    {
@@ -858,8 +893,6 @@ path::operator+=(const path& p)
       && _M_cmpts.back()._M_type() == _Type::_Filename)
     orig_filenamelen = 0; // current path has empty filename at end
 
-  // TODO handle "//rootname" + "foo" case for Cygwin.
-
   int capacity = 0;
   if (_M_type() == _Type::_Multi)
     capacity += _M_cmpts.size();
@@ -884,6 +917,16 @@ path::operator+=(const path& p)
 	  ptr->_M_pathname.reserve(_M_pathname.length() + extra.length());
 	  ptr->_M_pathname = _M_pathname;
 	  ptr->_M_pathname += extra;
+
+#if SLASHSLASH_IS_ROOTNAME
+	  if (orig_type == _Type::_Root_name)
+	    {
+	      basic_string_view<value_type> s(p._M_pathname);
+	      ::new(output++) _Cmpt(s.substr(extra.length(), 1),
+		  _Type::_Root_dir, orig_pathlen + extra.length());
+	      ++_M_cmpts._M_impl->_M_size;
+	    }
+#endif
 	}
       else if (orig_filenamelen == 0 && it != last)
 	{
@@ -895,7 +938,7 @@ path::operator+=(const path& p)
 	{
 	  basic_string_view<value_type> s = it->_M_pathname;
 	  auto pos = orig_pathlen;
-#ifdef __CYGWIN__
+#if SLASHSLASH_IS_ROOTNAME
 	  s.remove_prefix(2);
 	  pos += 2;
 #endif
@@ -999,7 +1042,11 @@ path::_M_concat(basic_string_view<value_type> s)
     {
       // See if there's a filename or root-name at the end of the original path
       // that we can add to.
-      if (_M_type() == _Type::_Filename)
+      if (_M_type() == _Type::_Filename
+#if SLASHSLASH_IS_ROOTNAME
+	  || _M_type() == _Type::_Root_name
+#endif
+	  )
 	{
 	  if (cmpt.str.length() == s.length())
 	    {
@@ -1030,9 +1077,6 @@ path::_M_concat(basic_string_view<value_type> s)
   else if (is_dir_sep(orig_pathname.back()) && _M_type() == _Type::_Multi
       && _M_cmpts.back()._M_type() == _Type::_Filename)
     orig_filenamelen = 0; // original path had empty filename at end
-
-
-  // TODO handle "//rootname" + "foo" case for Cygwin.
 
   std::array<_Parser::cmpt, 64> buf;
   auto next = buf.begin();
@@ -1065,6 +1109,11 @@ path::_M_concat(basic_string_view<value_type> s)
   if (is_dir_sep(s.back()))
     ++capacity;
 
+#if SLASHSLASH_IS_ROOTNAME
+  if (orig_type == _Type::_Root_name)
+    ++capacity; // Need to insert root-directory after root-name
+#endif
+
   __try
     {
       _M_cmpts.type(_Type::_Multi);
@@ -1080,6 +1129,15 @@ path::_M_concat(basic_string_view<value_type> s)
 	  p->_M_pathname.reserve(orig_pathname.length() + extra.length());
 	  p->_M_pathname = orig_pathname;
 	  p->_M_pathname += extra;
+
+#if SLASHSLASH_IS_ROOTNAME
+	  if (orig_type == _Type::_Root_name)
+	    {
+	      ::new(output++) _Cmpt(s.substr(extra.length(), 1),
+		  _Type::_Root_dir, orig_pathlen + extra.length());
+	      ++_M_cmpts._M_impl->_M_size;
+	    }
+#endif
 	}
       else if (orig_filenamelen == 0)
 	{
@@ -1532,6 +1590,10 @@ path::lexically_normal() const
 	}
       else if (is_dot(p))
 	ret /= path();
+#if SLASHSLASH_IS_ROOTNAME
+      else if (p._M_type() == _Type::_Root_dir)
+	ret += '/'; // using operator/=('/') would replace whole of ret
+#endif
       else
 	ret /= p;
     }
