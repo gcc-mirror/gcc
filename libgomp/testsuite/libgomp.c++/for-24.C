@@ -113,11 +113,9 @@ short c[50];
 int d[1024];
 K e[1089];
 L f[1093];
-#pragma omp end declare target
 
 int results[2000];
 
-#pragma omp declare target
 template <typename T>
 void
 baz (I<T> &i)
@@ -370,58 +368,58 @@ main ()
       f[i].c = 5 * i;
     }
   #pragma omp target update to (a, b, c, d, e, f)
-  #pragma omp target teams map (tofrom: results)
+  #pragma omp target teams map (always, tofrom: results)
   f1 ();
   check (1);
-  #pragma omp target teams map (tofrom: results)
+  #pragma omp target teams map (always, tofrom: results)
   f2 ();
   check (1);
-  #pragma omp target teams map (tofrom: results)
+  #pragma omp target teams map (always, tofrom: results)
   f3 ();
   check (1);
-  #pragma omp target teams map (tofrom: results)
+  #pragma omp target teams map (always, tofrom: results)
   f4 (J<int> (&a[14], &a[1803]));
   check (i >= 14 && i < 1803);
-  #pragma omp target teams map (tofrom: results)
+  #pragma omp target teams map (always, tofrom: results)
   f5 ();
   check (i >= 0 && i < 1024);
-  #pragma omp target teams map (tofrom: results)
+  #pragma omp target teams map (always, tofrom: results)
   f6 (J<K> (&e[19], &e[1029]));
   check (i >= 19 && i < 1029);
-  #pragma omp target teams map (tofrom: results)
+  #pragma omp target teams map (always, tofrom: results)
   f7 (J<L> (&f[15], &f[1091]));
   check (i >= 15 && i < 1091);
-  #pragma omp target teams map (tofrom: results)
+  #pragma omp target teams map (always, tofrom: results)
   f8 (J<K> (&e[27], &e[1037]));
   check (i >= 27 && i < 1037);
-  #pragma omp target teams map (tofrom: results)
+  #pragma omp target teams map (always, tofrom: results)
   f9 (J<L> (&f[1], &f[1012]));
   check (i >= 1 && i < 1012);
-  #pragma omp target teams map (tofrom: results)
+  #pragma omp target teams map (always, tofrom: results)
   f10 <0> ();
   check (1);
-  #pragma omp target teams map (tofrom: results)
+  #pragma omp target teams map (always, tofrom: results)
   f11 <1> ();
   check (1);
-  #pragma omp target teams map (tofrom: results)
+  #pragma omp target teams map (always, tofrom: results)
   f12 <2> ();
   check (1);
-  #pragma omp target teams map (tofrom: results)
+  #pragma omp target teams map (always, tofrom: results)
   f13 (J<int> (&a[24], &a[1703]));
   check (i >= 24 && i < 1703);
-  #pragma omp target teams map (tofrom: results)
+  #pragma omp target teams map (always, tofrom: results)
   f14 <1024> ();
   check (i >= 0 && i < 1024);
-  #pragma omp target teams map (tofrom: results)
+  #pragma omp target teams map (always, tofrom: results)
   f15 (J<K> (&e[39], &e[929]));
   check (i >= 39 && i < 929);
-  #pragma omp target teams map (tofrom: results)
+  #pragma omp target teams map (always, tofrom: results)
   f16 (J<L> (&f[17], &f[1071]));
   check (i >= 17 && i < 1071);
-  #pragma omp target teams map (tofrom: results)
+  #pragma omp target teams map (always, tofrom: results)
   f17 <3> (J<K> (&e[7], &e[1017]));
   check (i >= 7 && i < 1017);
-  #pragma omp target teams map (tofrom: results)
+  #pragma omp target teams map (always, tofrom: results)
   f18 <5> (J<L> (&f[121], &f[1010]));
   check (i >= 121 && i < 1010);
 }
