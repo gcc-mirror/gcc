@@ -15675,16 +15675,19 @@ an effect when SVE is enabled.
 
 GCC supports two forms of SVE code generation: ``vector-length
 agnostic'' output that works with any size of vector register and
-``vector-length specific'' output that only works when the vector
-registers are a particular size.  Replacing @var{bits} with
-@samp{scalable} selects vector-length agnostic output while
-replacing it with a number selects vector-length specific output.
-The possible lengths in the latter case are: 128, 256, 512, 1024
-and 2048.  @samp{scalable} is the default.
+``vector-length specific'' output that allows GCC to make assumptions
+about the vector length when it is useful for optimization reasons.
+The possible values of @samp{bits} are: @samp{scalable}, @samp{128},
+@samp{256}, @samp{512}, @samp{1024} and @samp{2048}.
+Specifying @samp{scalable} selects vector-length agnostic
+output.  At present @samp{-msve-vector-bits=128} also generates vector-length
+agnostic output.  All other values generate vector-length specific code.
+The behavior of these values may change in future releases and no value except
+@samp{scalable} should be relied on for producing code that is portable across
+different hardware SVE vector lengths.
 
-At present, @samp{-msve-vector-bits=128} produces the same output
-as @samp{-msve-vector-bits=scalable}.
-
+The default is @samp{-msve-vector-bits=scalable}, which produces
+vector-length agnostic code.
 @end table
 
 @subsubsection @option{-march} and @option{-mcpu} Feature Modifiers
