@@ -1,3 +1,11 @@
+2018-12-13  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backport from mainline
+	2018-12-13  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/powerpc/target.h (htm_available):  Add support for
+	PPC_FEATURE2_HTM_NO_SUSPEND.  Use __builtin_cpu_supports if available.
+
 2018-07-26  Release Manager
 
 	* GCC 8.2.0 released.
