@@ -809,7 +809,7 @@ global_ranger::export_global_ranges ()
 {
   unsigned x;
   irange r;
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file)
     {
       fprintf (dump_file, "Updating global range table\n");
       fprintf (dump_file, "===========================\n");
@@ -822,25 +822,26 @@ global_ranger::export_global_ranges ()
 	  valid_ssa_p (name) && m_globals.get_global_range (r, name) &&
 	  !r.varying_p())
 	{
-	  // WTF? Can't write non-null pointer ranges?? stupid set_range_info!
-	  if (POINTER_TYPE_P (TREE_TYPE (name)))
-	    continue;
-	  if (r.undefined_p ())
-	    continue;
-
 	  value_range vr;
 	  // Make sure that the new range is a subet of the old range.
 	  irange old_range = range_from_ssa (name);
 	  gcc_checking_assert (old_range.intersect (r) == r);
 
-	  irange_to_value_range (vr, r);
-	  if (dump_file && (dump_flags & TDF_DETAILS))
+	  if (dump_file)
 	    {
 	      print_generic_expr (dump_file, name , TDF_SLIM);
 	      fprintf (dump_file, " --> ");
 	      r.dump (dump_file);
 	      fprintf (dump_file, "\n");
 	    }
+
+	  // WTF? Can't write non-null pointer ranges?? stupid set_range_info!
+	  if (POINTER_TYPE_P (TREE_TYPE (name)))
+	    continue;
+	  if (r.undefined_p ())
+	    continue;
+
+	  irange_to_value_range (vr, r);
 	  set_range_info (name, vr.kind (), wi::to_wide (vr.min ()),
 			  wi::to_wide (vr.max ()));
 	}
