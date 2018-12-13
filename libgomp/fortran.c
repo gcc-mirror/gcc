@@ -626,7 +626,7 @@ omp_display_affinity_ (const char *format, size_t format_len)
   if (ret < sizeof buf)
     {
       buf[ret] = '\n';
-      fwrite (buf, 1, ret + 1, stderr);
+      gomp_print_string (buf, ret + 1);
     }
   else
     {
@@ -635,7 +635,7 @@ omp_display_affinity_ (const char *format, size_t format_len)
 			     format_len ? fmt : gomp_affinity_format_var,
 			     gomp_thread_self (), &thr->ts, thr->place);
       b[ret] = '\n';
-      fwrite (b, 1, ret + 1, stderr);
+      gomp_print_string (b, ret + 1);
       free (b);
     }
   if (fmt && fmt != fmt_buf)

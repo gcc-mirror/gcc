@@ -1,3 +1,13 @@
+2018-12-13  Tom de Vries  <tdevries@suse.de>
+
+	* affinity-fmt.c (gomp_print_string): New function, factored out of ...
+	(omp_display_affinity, gomp_display_affinity_thread): ... here, and ...
+	* fortran.c (omp_display_affinity_): ... here.
+	* libgomp.h (gomp_print_string): Declare.
+	* config/nvptx/affinity-fmt.c: New file.  Include affinity-fmt.c,
+	undefining HAVE_GETPID and HAVE_GETHOSTNAME, and mapping fwrite to
+	write.
+
 2018-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/88460
