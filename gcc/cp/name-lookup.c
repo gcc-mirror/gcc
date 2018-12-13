@@ -1240,17 +1240,6 @@ get_class_binding_direct (tree klass, tree name, int type_or_fns)
 	}
       else if (STAT_HACK_P (val))
 	val = STAT_DECL (val);
-
-      if (val && TREE_CODE (val) == OVERLOAD
-	  && TREE_CODE (OVL_FUNCTION (val)) == USING_DECL)
-	{
-	  /* An overload with a dependent USING_DECL.  Does the caller
-	     want the USING_DECL or the functions?  */
-	  if (type_or_fns < 0)
-	    val = OVL_CHAIN (val);
-	  else
-	    val = OVL_FUNCTION (val);  
-	}
     }
   else
     {

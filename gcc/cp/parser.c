@@ -7150,14 +7150,19 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		else if (!args->is_empty ()
 			 && is_overloaded_fn (postfix_expression))
 		  {
+		    /* We only need to look at the first function,
+		       because all the fns share the attribute we're
+		       concerned with (all member fns or all local
+		       fns).  */
 		    tree fn = get_first_fn (postfix_expression);
 		    fn = STRIP_TEMPLATE (fn);
 
 		    /* Do not do argument dependent lookup if regular
 		       lookup finds a member function or a block-scope
 		       function declaration.  [basic.lookup.argdep]/3  */
-		    if (!DECL_FUNCTION_MEMBER_P (fn)
-			&& !DECL_LOCAL_FUNCTION_P (fn))
+		    if (!((TREE_CODE (fn) == USING_DECL && DECL_DEPENDENT_P (fn))
+			  || DECL_FUNCTION_MEMBER_P (fn)
+			  || DECL_LOCAL_FUNCTION_P (fn)))
 		      {
 			koenig_p = true;
 			if (!any_type_dependent_arguments_p (args))

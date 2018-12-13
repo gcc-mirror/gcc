@@ -3784,9 +3784,10 @@ finish_id_expression (tree id_expression,
 	    return error_mark_node;
 
 	  if (!template_arg_p
-	      && TREE_CODE (first_fn) == FUNCTION_DECL
-	      && DECL_FUNCTION_MEMBER_P (first_fn)
-	      && !shared_member_p (decl))
+	      && (TREE_CODE (first_fn) == USING_DECL
+		  || (TREE_CODE (first_fn) == FUNCTION_DECL
+		      && DECL_FUNCTION_MEMBER_P (first_fn)
+		      && !shared_member_p (decl))))
 	    {
 	      /* A set of member functions.  */
 	      decl = maybe_dummy_object (DECL_CONTEXT (first_fn), 0);
