@@ -1,3 +1,9 @@
+2018-12-13  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/vx-builtins.md ("vec_ctd_s64", "vec_ctd_u64")
+	("vec_ctsl", "vec_ctul"): Replace 0 with VEC_NOINEXACT.
+	("vec_double_s64", "vec_double_u64"): Replace 4 with VEC_INEXACT.
+
 2018-12-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* doc/invoke.texi (-msve-vector-bits): Clarify -msve-vector-bits=128
