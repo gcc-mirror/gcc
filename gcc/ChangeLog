@@ -1,5 +1,12 @@
 2018-12-13  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* config/s390/s390-builtins.def (s390_vec_double_s64): Map to
+	s390_vec_double_s64 instead of s390_vcdgb.
+	(s390_vec_double_u64): Map to s390_vec_double_u64 instead of
+	s390_vcdlgb.
+
+2018-12-13  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* config/s390/vx-builtins.md ("vec_ctd_s64", "vec_ctd_u64")
 	("vec_ctsl", "vec_ctul"): Replace 0 with VEC_NOINEXACT.
 	("vec_double_s64", "vec_double_u64"): Replace 4 with VEC_INEXACT.
