@@ -1,5 +1,9 @@
 2018-12-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/27_io/filesystem/path/generation/proximate.cc: Use
+	preferred directory separators for normalized paths.
+	* testsuite/27_io/filesystem/path/generation/relative.cc: Likewise.
+
 	* testsuite/27_io/filesystem/path/itr/traversal.cc: Fix test for
 	mingw.
 
