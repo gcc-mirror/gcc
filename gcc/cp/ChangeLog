@@ -1,3 +1,13 @@
+2018-12-13  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/87531
+	* class.c (finish_struct): Set DECL_CONTEXT of template assign op.
+	* name-lookup.c (get_class_binding_direct): Don't strip using-decl
+	of overload here.
+	* parser.c (cp_parser_postfix_expression): Cope with using decl in
+	overload set.
+	* semantics.c (finish_id_expr): Likewise.
+
 2018-12-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (grokdeclarator): Fix location of error message about
