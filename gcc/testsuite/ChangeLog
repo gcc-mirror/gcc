@@ -1,3 +1,8 @@
+2018-12-13  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/zvector/vec-double-1.c: New test.
+	* gcc.target/s390/zvector/vec-double-2.c: New test.
+
 2018-12-13  Wei Xiao  <wei3.xiao@intel.com>
 
 	* gcc.target/i386/funcspec-56.inc: Handle new march.
