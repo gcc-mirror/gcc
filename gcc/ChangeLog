@@ -1,3 +1,11 @@
+2018-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/88464
+	* tree-vect-stmts.c (vect_build_gather_load_calls): Handle INTEGER_TYPE
+	masktype if mask is non-NULL.
+	(vectorizable_load): Don't reject masked gather loads if masktype
+	in the decl is INTEGER_TYPE.
+
 2018-12-13  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/s390-builtins.def (s390_vec_double_s64): Map to
