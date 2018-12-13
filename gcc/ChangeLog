@@ -1,3 +1,9 @@
+2018-12-13  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_function_arg): Ensure type is
+	non-NULL.
+	(rs6000_arg_partial_bytes): Same.
+
 2018-12-13  Jason Merrill  <jason@redhat.com>
 
 	* gdbinit.in (pp): New macro.
