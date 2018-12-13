@@ -1,5 +1,8 @@
 2018-12-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/88444
+	* gcc.dg/tree-ssa/pr88444.c: New test.
+
 	PR rtl-optimization/88470
 	* gcc.target/i386/pr88470.c: New test.
 
