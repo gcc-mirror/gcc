@@ -1,3 +1,14 @@
+2018-12-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/88041
+	* lib/gdc-dg.exp (gdc-dg-test): Strip gdc.test prefix.
+	* gdc.test/gdc-test.exp (gdc-do-test): Create $subdir link.
+	Include $subdir in filename.
+	Cleanup generated source.
+	* gdc.test/compilable/ddoc9676a.d (EXTRA_SOURCES): Don't use
+	absolute path.
+	* gdc.test/compilable/depsOutput9948.d: Likewise.
+
 2018-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/88454
@@ -23,7 +34,7 @@
 
 	PR target/88461
 	* gcc.target/i386/pr88461.c: New test.
-	
+
 2018-12-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/other/static5.C: New.
