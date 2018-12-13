@@ -1,5 +1,9 @@
 2018-12-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/88444
+	* tree-inline.c (fold_marked_statements): Iterate up to
+	last_basic_block_for_fn rather than n_basic_blocks_for_fn.
+
 	PR rtl-optimization/88470
 	* cfgcleanup.c (outgoing_edges_match): If the function is
 	shrink-wrapped and bb1 ends with a JUMP_INSN with a single fake

@@ -4906,7 +4906,7 @@ gimple_expand_calls_inline (basic_block bb, copy_body_data *id)
 static void
 fold_marked_statements (int first, hash_set<gimple *> *statements)
 {
-  for (; first < n_basic_blocks_for_fn (cfun); first++)
+  for (; first < last_basic_block_for_fn (cfun); first++)
     if (BASIC_BLOCK_FOR_FN (cfun, first))
       {
         gimple_stmt_iterator gsi;
