@@ -1,6 +1,19 @@
 2018-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88461
+	* config/i386/sse.md (VI1248_AVX512VLBW, AVX512ZEXTMASK): New
+	mode iterators.
+	(<avx512>_testm<mode>3<mask_scalar_merge_name>,
+	<avx512>_testnm<mode>3<mask_scalar_merge_name>): Merge patterns
+	with VI12_AVX512VL and VI48_AVX512VL iterators into ones with
+	VI1248_AVX512VLBW iterator.
+	(*<avx512>_testm<VI1248_AVX512VLBW:mode>3_zext,
+	*<avx512>_testm<VI1248_AVX512VLBW:mode>3_zext_mask,
+	*<avx512>_testnm<VI1248_AVX512VLBW:mode>3_zext,
+	*<avx512>_testnm<VI1248_AVX512VLBW:mode>3_zext_mask): New
+	define_insns.
+
+	PR target/88461
 	* config/i386/i386.md (*zero_extendsidi2, zero_extend<mode>di2,
 	*zero_extend<mode>si2, *zero_extendqihi2): Add =*k, *km alternatives.
 
