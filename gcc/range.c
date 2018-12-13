@@ -769,6 +769,8 @@ range_invert (const irange &r1)
 void
 irange::dump (pretty_printer *buffer) const
 {
+  wide_int min = wi::min_value (TYPE_PRECISION (m_type), TYPE_SIGN (m_type));
+  wide_int max = wi::max_value (TYPE_PRECISION (m_type), TYPE_SIGN (m_type));
   if (POINTER_TYPE_P (m_type) && non_zero_p ())
     pp_string (buffer, "[ non-zero pointer ]");
   else
@@ -784,11 +786,26 @@ irange::dump (pretty_printer *buffer) const
 	widest_int val = widest_int::from (m_bounds[i], sign);
 	val &= wi::mask<widest_int> (m_bounds[i].get_precision (), false);
 
-	if (val > 0xffff)
-	  print_hex (val, pp_buffer (buffer)->digit_buffer);
+	if (i == 0
+	    && INTEGRAL_TYPE_P (m_type)
+	    && !TYPE_UNSIGNED (m_type)
+	    && m_bounds[i] == min
+	    && TYPE_PRECISION (m_type) != 1)
+	  pp_string (buffer, "-INF");
+	else if (i + 1 == m_nitems
+	    && INTEGRAL_TYPE_P (m_type)
+	    && !TYPE_UNSIGNED (m_type)
+	    && m_bounds[i] == max
+	    && TYPE_PRECISION (m_type) != 1)
+	  pp_string (buffer, "+INF");
 	else
-	  print_dec (m_bounds[i], pp_buffer (buffer)->digit_buffer, sign);
-	pp_string (buffer, pp_buffer (buffer)->digit_buffer);
+	  {
+	    if (val > 0xffff)
+	      print_hex (val, pp_buffer (buffer)->digit_buffer);
+	    else
+	      print_dec (m_bounds[i], pp_buffer (buffer)->digit_buffer, sign);
+	    pp_string (buffer, pp_buffer (buffer)->digit_buffer);
+	  }
 	if (i % 2 == 0)
 	  pp_string (buffer, ", ");
 	else
