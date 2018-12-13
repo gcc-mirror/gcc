@@ -7123,7 +7123,8 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
     {
       /* Replace the argument with a reference to the corresponding template
 	 parameter object.  */
-      expr = get_template_parm_object (expr, complain);
+      if (!value_dependent_expression_p (expr))
+	expr = get_template_parm_object (expr, complain);
       if (expr == error_mark_node)
 	return NULL_TREE;
     }

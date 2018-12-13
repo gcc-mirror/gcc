@@ -1,3 +1,11 @@
+2018-12-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88216 - ICE with class type in non-type template parameter.
+	* mangle.c (write_expression): Handle TARGET_EXPR and
+	VIEW_CONVERT_EXPR.
+	* pt.c (convert_nontype_argument): Don't call
+	get_template_parm_object for value-dependent expressions.
+
 2018-12-13  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/87531

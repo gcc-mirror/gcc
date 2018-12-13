@@ -1,3 +1,8 @@
+2018-12-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88216 - ICE with class type in non-type template parameter.
+	* g++.dg/cpp2a/nontype-class9.C: New test.
+
 2018-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/88416

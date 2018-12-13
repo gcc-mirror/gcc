@@ -2836,13 +2836,21 @@ write_expression (tree expr)
 {
   enum tree_code code = TREE_CODE (expr);
 
+  if (TREE_CODE (expr) == TARGET_EXPR)
+    {
+      expr = TARGET_EXPR_INITIAL (expr);
+      code = TREE_CODE (expr);
+    }
+
   /* Skip NOP_EXPR and CONVERT_EXPR.  They can occur when (say) a pointer
      argument is converted (via qualification conversions) to another type.  */
   while (CONVERT_EXPR_CODE_P (code)
 	 || location_wrapper_p (expr)
 	 /* Parentheses aren't mangled.  */
 	 || code == PAREN_EXPR
-	 || code == NON_LVALUE_EXPR)
+	 || code == NON_LVALUE_EXPR
+	 || (code == VIEW_CONVERT_EXPR
+	     && TREE_CODE (TREE_OPERAND (expr, 0)) == TEMPLATE_PARM_INDEX))
     {
       expr = TREE_OPERAND (expr, 0);
       code = TREE_CODE (expr);
