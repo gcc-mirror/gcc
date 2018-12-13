@@ -1,5 +1,8 @@
 2018-12-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/27_io/filesystem/path/itr/traversal.cc: Fix test for
+	mingw.
+
 	* testsuite/27_io/filesystem/path/construct/80762.cc: Skip test if
 	the Filesystem TS support is not configured.
 	* testsuite/experimental/filesystem/path/construct/80762.cc: Likewise.

@@ -144,13 +144,13 @@ test04()
   auto it = p.begin();
   std::advance(it, 1);
   VERIFY( std::distance(p.begin(), it) == 1 );
-  VERIFY( it->native() == "a" );
+  VERIFY( it->string() == "a" );
   std::advance(it, 3);
   VERIFY( std::distance(p.begin(), it) == 4 );
-  VERIFY( it->native() == "d" );
+  VERIFY( it->string() == "d" );
   std::advance(it, -2);
   VERIFY( std::distance(p.begin(), it) == 2 );
-  VERIFY( it->native() == "b" );
+  VERIFY( it->string() == "b" );
 }
 
 int
