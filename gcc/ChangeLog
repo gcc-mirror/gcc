@@ -1,5 +1,10 @@
 2018-12-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/88465
+	* config/i386/i386.md (*movdi_internal, *movsi_internal,
+	*movhi_internal, *movqi_internal): Add alternative(s) to load
+	0 or -1 into k registers using kxor or kxnoq instructions.
+
 	PR target/88461
 	* config/i386/sse.md (VI1248_AVX512VLBW, AVX512ZEXTMASK): New
 	mode iterators.

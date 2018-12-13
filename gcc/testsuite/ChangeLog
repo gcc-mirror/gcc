@@ -1,5 +1,9 @@
 2018-12-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/88465
+	* gcc.target/i386/avx512f-pr88465.c: New test.
+	* gcc.target/i386/avx512dq-pr88465.c: New test.
+
 	PR target/88461
 	* gcc.target/i386/pr88461.c: New test.
 	
