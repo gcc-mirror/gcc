@@ -3641,7 +3641,7 @@ merge_global_decl (tree ctx, unsigned mod_ix, tree decl)
    to duplicate decls to get ODR errors on loading?  */
 
 tree
-match_global_decl (tree decl, tree, tree, tree args)
+match_global_decl (tree decl, tree tpl, tree ret, tree args)
 {
   tree *slot = find_namespace_slot (CP_DECL_CONTEXT (decl), DECL_NAME (decl),
 				    true);
@@ -3652,14 +3652,29 @@ match_global_decl (tree decl, tree, tree, tree args)
       gcc_assert (!iter.using_p ());
       tree glob = *iter;
 
-      if (TREE_CODE (glob) != TREE_CODE (decl))
+      tree dinner = decl;
+      tree ginner = glob;
+
+    again:
+      if (TREE_CODE (dinner) != TREE_CODE (ginner))
 	continue;
 
-      switch (TREE_CODE (decl))
+      switch (TREE_CODE (dinner))
 	{
+	case TEMPLATE_DECL:
+	  if (comp_template_parms (tpl, DECL_TEMPLATE_PARMS (ginner)))
+	    {
+	      dinner = DECL_TEMPLATE_RESULT (dinner);
+	      ginner = DECL_TEMPLATE_RESULT (ginner);
+	      goto again;
+	    }
+	  break;
+
 	case FUNCTION_DECL:
-	  if (TREE_TYPE (glob)
-	      && compparms (args, TYPE_ARG_TYPES (TREE_TYPE (glob))))
+	  if (TREE_TYPE (ginner)
+	      && (dinner == decl
+		  || same_type_p (ret, TREE_TYPE (TREE_TYPE (ginner))))
+	      && compparms (args, TYPE_ARG_TYPES (TREE_TYPE (ginner))))
 	    return glob;
 	  break;
 

@@ -1,3 +1,15 @@
+2018-12-13  Nathan Sidwell  <nathan@acm.org>
+
+	Function template deduping
+	gcc/cp/
+	* module.cc (trees_{in,out}::tpl_parms): New.
+	(trees_out::mark_gme): Mark template result too.
+	(trees_{in,out}::tree_gme): Do templates.
+	(module_state::write_cluster): Any decl can be a GME.
+	* name-lookup.c (match_global_decl): Do template matching.
+	gcc/testsuite/
+	* g++.dg/modules/leg-merge-7_[abc].[HC]: New.
+
 2018-12-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

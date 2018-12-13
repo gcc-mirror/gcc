@@ -2478,6 +2478,7 @@ public:
 public:
   /* Read a tree node.  */
   tree tree_node ();
+  tree tpl_parms ();
 
 public:
   /* Read a global module entity.  We expect very few GMEs per
@@ -2610,6 +2611,9 @@ public:
 
 public:
   void tree_node (tree);
+  void tpl_parms (tree);
+
+public:
   void tree_gme (tree);
   void tree_value (tree, walk_kind ref);
 
@@ -3894,6 +3898,8 @@ trees_out::mark_gme (tree t)
   int *val = tree_map.get (t);
   gcc_assert (val && *val);
   *val = gme_lwm - *val;
+  if (TREE_CODE (t) == TEMPLATE_DECL)
+    mark_gme (DECL_TEMPLATE_RESULT (t));
 }
 
 /* Insert T into the map, return its back reference number.
@@ -6913,39 +6919,106 @@ trees_in::is_skip_defn (tree defn)
   return 0;
 }
 
+/* PARMS is a LIST, one node per level.
+   TREE_VALUE is a TREE_VEC of parm info for that level.
+   each ELT is a TREE_LIST
+   TREE_VALUE is PARM_DECL or TYPE_DECL
+   TEMPLATE_PARM_INDEX is DECL_INITIAL or TREE_TYPE.  */
+
+void
+trees_out::tpl_parms (tree parms)
+{
+  for (; parms; parms = TREE_CHAIN (parms))
+    {
+      tree vec = TREE_VALUE (parms);
+      unsigned len = TREE_VEC_LENGTH (vec);
+      u (len);
+      for (unsigned ix = 0; ix != len; ix++)
+	{
+	  tree val = TREE_VALUE (TREE_VEC_ELT (vec, ix));
+
+	  u (TREE_CODE (val));
+	  tree_node_specific (val);
+	  core_bools (val);
+	  bflush ();
+
+	  if (TREE_CODE (val) == TEMPLATE_TYPE_PARM
+	      && TEMPLATE_TYPE_PARAMETER_PACK (val))
+	    gcc_unreachable (); // FIXME:something
+
+	  tree_node (TREE_TYPE (val));
+	}
+    }
+
+  /* Mark end.  */
+  u (0);
+}
+
+tree
+trees_in::tpl_parms ()
+{
+  tree parms = NULL_TREE;
+  while (unsigned len = u ())
+    {
+      tree vec = make_tree_vec (len);
+      for (unsigned ix = 0; ix != len; ix++)
+	{
+	  tree val = start (u ());
+	  tree_node_specific (val, false);
+	  core_bools (val);
+	  bflush ();
+
+	  TREE_TYPE (val) = tree_node ();
+
+	  TREE_VEC_ELT (vec, ix) = tree_cons (NULL_TREE, val, NULL_TREE);
+	}
+      parms = tree_cons (NULL_TREE, vec, parms);
+    }
+
+  return nreverse (parms);
+}
+
 void
 trees_out::tree_gme (tree decl)
 {
   gcc_checking_assert (DECL_P (decl));
-  u (TREE_CODE (decl));
-  tree_node_specific (decl);
-  core_bools (decl);
-  bflush ();
-  tree_ctx (DECL_CONTEXT (decl), true, decl);
-  tree_node (DECL_NAME (decl));
-  state->write_location (*this, DECL_SOURCE_LOCATION (decl));
+  tree inner = decl;
 
-  switch (TREE_CODE (decl))
+  tree_ctx (DECL_CONTEXT (inner), true, inner);
+  tree_node (DECL_NAME (inner));
+  state->write_location (*this, DECL_SOURCE_LOCATION (inner));
+
+ again:
+  u (TREE_CODE (inner));
+  tree_node_specific (inner);
+  core_bools (inner);
+  bflush ();
+
+  switch (TREE_CODE (inner))
     {
+    case TEMPLATE_DECL:
+      tpl_parms (DECL_TEMPLATE_PARMS (inner));
+      inner = DECL_TEMPLATE_RESULT (inner);
+      goto again;
+
     case FUNCTION_DECL:
-      tree_node (TYPE_ARG_TYPES (TREE_TYPE (decl)));
+      if (inner != decl)
+	tree_node (TREE_TYPE (TREE_TYPE (inner)));
+      tree_node (TYPE_ARG_TYPES (TREE_TYPE (inner)));
       break;
 
     case VAR_DECL:
-      tree_node (TREE_TYPE (decl));
       break;
 
     case TYPE_DECL:
-      {
-	// FIXME:for now
-	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl));
-	tree type = TREE_TYPE (decl);
-	gcc_assert (TYPE_MAIN_VARIANT (type) == type);
-	u (TREE_CODE (type));
-	tree_node_specific (type);
-	core_bools (type);
-	bflush ();
-      }
+      // FIXME:for now
+      gcc_assert (DECL_IMPLICIT_TYPEDEF_P (inner));
+      inner = TREE_TYPE (inner);
+      gcc_assert (TYPE_MAIN_VARIANT (inner) == inner);
+      u (TREE_CODE (inner));
+      tree_node_specific (inner);
+      core_bools (inner);
+      bflush ();
       break;
 
     default:
@@ -6955,67 +7028,98 @@ trees_out::tree_gme (tree decl)
 
   int tag = insert (decl);
   dump (dumper::GM)
-    && dump ("Wrote:%d global decl %N", tag, decl);
+    && dump ("Wrote:%d global decl %C:%N", tag, TREE_CODE (decl), decl);
+
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    {
+      tree inner = DECL_TEMPLATE_RESULT (decl);
+      int tag = insert (inner);
+      dump (dumper::GM)
+	&& dump ("Wrote:%d inner decl %C:%N", tag, TREE_CODE (inner), inner);
+    }
 }
 
 void
 trees_in::tree_gme ()
 {
-  if (tree decl = start (u (), tcc_declaration))
+  tree decl = NULL_TREE;
+  tree ctx = tree_node ();
+  tree name = tree_node ();
+  location_t loc = state->read_location (*this);
+
+  tree tpl = NULL_TREE;
+  tree ret = NULL_TREE;
+  tree args = NULL_TREE;
+
+ again:
+  if (tree inner = start (u (), tcc_declaration))
     {
-      tree_node_specific (decl, false);
-      core_bools (decl);
+      tree_node_specific (inner, false);
+      core_bools (inner);
       bflush ();
+      
+      DECL_CONTEXT (inner) = ctx;
+      DECL_NAME (inner) = name;
+      DECL_SOURCE_LOCATION (inner) = loc;
 
-      DECL_CONTEXT (decl) = tree_node ();
-      DECL_NAME (decl) = tree_node ();
-      DECL_SOURCE_LOCATION (decl) = state->read_location (*this);
+      (decl ? DECL_TEMPLATE_RESULT (decl) : decl) = inner;
 
-      tree tpl = NULL_TREE;
-      tree ret = NULL_TREE;
-      tree args = NULL_TREE;
-      switch (TREE_CODE (decl))
+      switch (TREE_CODE (inner))
 	{
+	case TEMPLATE_DECL:
+	  tpl = tpl_parms ();
+	  goto again;
+
 	case FUNCTION_DECL:
+	  if (inner != decl)
+	    ret = tree_node ();
 	  args = tree_node ();
 	  break;
 
 	case VAR_DECL:
-	  ret = tree_node ();
 	  break;
 
 	case TYPE_DECL:
-	  {
-	    if (!DECL_IMPLICIT_TYPEDEF_P (decl))
-	      set_overrun ();
-	    if (tree type = start (u (), tcc_type))
-	      {
-		tree_node_specific (type, false);
-		core_bools (type);
-		bflush ();
-		TREE_TYPE (decl) = type;
-		TYPE_NAME (type) = decl;
-	      }
-	  }
+	  if (!DECL_IMPLICIT_TYPEDEF_P (inner))
+	    set_overrun ();
+	  if (tree type = start (u (), tcc_type))
+	    {
+	      tree_node_specific (type, false);
+	      core_bools (type);
+	      bflush ();
+	      TREE_TYPE (inner) = type;
+	      TYPE_NAME (type) = inner;
+	    }
 	  break;
 
 	default:
 	  // FIXME:More cases
 	  set_overrun ();
 	}
+    }
 
-      if (!get_overrun ())
+  if (!get_overrun ())
+    {
+      const char *kind = "new";
+      if (tree existing = match_global_decl (decl, tpl, ret, args))
 	{
-	  const char *kind = "new";
-	  if (tree existing = match_global_decl (decl, tpl, ret, args))
-	    {
-	      decl = existing;
-	      gmes.quick_push (decl);
-	      kind = "matched";
-	    }
-	  int tag = insert (decl);
+	  decl = existing;
+	  gmes.quick_push (decl);
+	  if (TREE_CODE (decl) == TEMPLATE_DECL)
+	    gmes.quick_push (DECL_TEMPLATE_RESULT (decl));
+	  kind = "matched";
+	}
+      int tag = insert (decl);
+      dump (dumper::GM)
+	&& dump ("Read:%d %s global decl %C:%N", tag, kind,
+		 TREE_CODE (decl), decl);
+      if (TREE_CODE (decl) == TEMPLATE_DECL)
+	{
+	  tree inner = DECL_TEMPLATE_RESULT (decl);
+	  int tag = insert (inner);
 	  dump (dumper::GM)
-	    && dump ("Read:%d %s global decl %N", tag, kind, decl);
+	    && dump ("Read:%d %s inner decl %C:%N", tag, kind,
+		     TREE_CODE (inner), inner);
 	}
     }
 }
@@ -9508,11 +9612,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	{
 	  if (TREE_PUBLIC (CP_DECL_CONTEXT (decl))
 	      && (is_legacy () || !MAYBE_DECL_MODULE_OWNER (decl)))
-	    // FIXME:fns, vars or classes only for now
-	    if (TREE_CODE (decl) == FUNCTION_DECL
-		|| TREE_CODE (decl) == VAR_DECL
-		|| DECL_IMPLICIT_TYPEDEF_P (decl))
-	      gmes.safe_push (decl);
+	    gmes.safe_push (decl);
 	}
     }
 
