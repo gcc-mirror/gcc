@@ -1,3 +1,8 @@
+2018-12-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* doc/invoke.texi (-msve-vector-bits): Clarify -msve-vector-bits=128
+	behavior.
+
 2018-12-13  Wei Xiao  <wei3.xiao@intel.com>
 
 	* common/config/i386/i386-common.c (processor_names): Add cascadelake.
