@@ -1,3 +1,11 @@
+2018-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/88460
+	* testsuite/libgomp.c++/for-24.C (results): Include it in
+	omp declare target region.
+	(main): Use map (always, tofrom: results) instead of
+	map (tofrom: results).
+
 2018-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/88463
