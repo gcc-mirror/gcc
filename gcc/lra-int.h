@@ -288,6 +288,7 @@ typedef struct lra_insn_recog_data *lra_insn_recog_data_t;
 
 extern FILE *lra_dump_file;
 
+extern bool lra_asm_error_p;
 extern bool lra_reg_spill_p;
 
 extern HARD_REG_SET lra_no_alloc_regs;

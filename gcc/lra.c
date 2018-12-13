@@ -2334,6 +2334,9 @@ bitmap_head lra_subreg_reload_pseudos;
 /* File used for output of LRA debug information.  */
 FILE *lra_dump_file;
 
+/* True if we found an asm error.  */
+bool lra_asm_error_p;
+
 /* True if we should try spill into registers of different classes
    instead of memory.  */
 bool lra_reg_spill_p;
@@ -2371,7 +2374,8 @@ lra (FILE *f)
   bool live_p, inserted_p;
 
   lra_dump_file = f;
-
+  lra_asm_error_p = false;
+  
   timevar_push (TV_LRA);
 
   /* Make sure that the last insn is a note.  Some subsequent passes
