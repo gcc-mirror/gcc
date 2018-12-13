@@ -7158,6 +7158,7 @@ finish_struct (tree t, tree attributes)
 	 time.  */
       tree ass_op = build_lang_decl (USING_DECL, assign_op_identifier,
 				     NULL_TREE);
+      DECL_CONTEXT (ass_op) = t;
       USING_DECL_SCOPE (ass_op) = t;
       DECL_DEPENDENT_P (ass_op) = true;
       DECL_ARTIFICIAL (ass_op) = true;
