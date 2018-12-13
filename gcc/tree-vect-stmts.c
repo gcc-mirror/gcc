@@ -2647,8 +2647,13 @@ vect_build_gather_load_calls (stmt_vec_info stmt_info,
   tree idxtype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
   tree masktype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
   tree scaletype = TREE_VALUE (arglist);
+  tree real_masktype = masktype;
   gcc_checking_assert (types_compatible_p (srctype, rettype)
-		       && (!mask || types_compatible_p (srctype, masktype)));
+		       && (!mask
+			   || TREE_CODE (masktype) == INTEGER_TYPE
+			   || types_compatible_p (srctype, masktype)));
+  if (mask && TREE_CODE (masktype) == INTEGER_TYPE)
+    masktype = build_same_sized_truth_vector_type (srctype);
 
   tree perm_mask = NULL_TREE;
   tree mask_perm_mask = NULL_TREE;
@@ -2763,9 +2768,9 @@ vect_build_gather_load_calls (stmt_vec_info stmt_info,
 	      mask_op = vec_mask;
 	      if (!useless_type_conversion_p (masktype, TREE_TYPE (vec_mask)))
 		{
-		  gcc_assert
-		    (known_eq (TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask_op)),
-			       TYPE_VECTOR_SUBPARTS (masktype)));
+		  poly_uint64 sub1 = TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask_op));
+		  poly_uint64 sub2 = TYPE_VECTOR_SUBPARTS (masktype);
+		  gcc_assert (known_eq (sub1, sub2));
 		  var = vect_get_new_ssa_name (masktype, vect_simple_var);
 		  mask_op = build1 (VIEW_CONVERT_EXPR, masktype, mask_op);
 		  gassign *new_stmt
@@ -2777,8 +2782,33 @@ vect_build_gather_load_calls (stmt_vec_info stmt_info,
 	  src_op = mask_op;
 	}
 
+      tree mask_arg = mask_op;
+      if (masktype != real_masktype)
+	{
+	  tree utype;
+	  if (TYPE_MODE (real_masktype) == TYPE_MODE (masktype))
+	    utype = real_masktype;
+	  else
+	    utype = lang_hooks.types.type_for_mode (TYPE_MODE (masktype), 1);
+	  var = vect_get_new_ssa_name (utype, vect_scalar_var);
+	  mask_arg = build1 (VIEW_CONVERT_EXPR, utype, mask_op);
+	  gassign *new_stmt
+	    = gimple_build_assign (var, VIEW_CONVERT_EXPR, mask_arg);
+	  vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
+	  mask_arg = var;
+	  if (!useless_type_conversion_p (real_masktype, utype))
+	    {
+	      gcc_assert (TYPE_PRECISION (utype)
+			  <= TYPE_PRECISION (real_masktype));
+	      var = vect_get_new_ssa_name (real_masktype, vect_scalar_var);
+	      new_stmt = gimple_build_assign (var, NOP_EXPR, utype);
+	      vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
+	      mask_arg = var;
+	    }
+	  src_op = build_zero_cst (srctype);
+	}
       gcall *new_call = gimple_build_call (gs_info->decl, 5, src_op, ptr, op,
-					   mask_op, scale);
+					   mask_arg, scale);
 
       stmt_vec_info new_stmt_info;
       if (!useless_type_conversion_p (vectype, rettype))
@@ -7554,20 +7584,6 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      || !can_vec_mask_load_store_p (vec_mode,
 					     TYPE_MODE (mask_vectype), true))
 	    return false;
-	}
-      else if (memory_access_type == VMAT_GATHER_SCATTER && gs_info.decl)
-	{
-	  tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gs_info.decl));
-	  tree masktype
-	    = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (arglist))));
-	  if (TREE_CODE (masktype) == INTEGER_TYPE)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "masked gather with integer mask not"
-				 " supported.");
-	      return false;
-	    }
 	}
       else if (memory_access_type != VMAT_LOAD_STORE_LANES
 	       && memory_access_type != VMAT_GATHER_SCATTER)
