@@ -1,3 +1,9 @@
+2018-12-14  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/data-2-lib.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/data-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-3.c: Likewise.
+
 2018-12-14  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR libgomp/88370
