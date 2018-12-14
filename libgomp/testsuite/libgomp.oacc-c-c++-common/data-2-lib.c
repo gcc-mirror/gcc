@@ -69,6 +69,8 @@ main (int argc, char **argv)
   acc_memcpy_from_device_async (b, d_b, nbytes, 1);
 
   acc_wait (1);
+  /* Test unseen async-argument.  */
+  acc_wait (10);
 
   for (i = 0; i < N; i++)
     {

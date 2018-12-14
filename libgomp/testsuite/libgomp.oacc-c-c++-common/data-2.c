@@ -65,6 +65,8 @@ main (int argc, char **argv)
 #pragma acc update self (b[0:N]) async (1)
 
 #pragma acc wait (1)
+  /* Test unseen async-argument.  */
+#pragma acc wait (10)
 
   for (i = 0; i < N; i++)
     {
