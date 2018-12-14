@@ -1,3 +1,9 @@
+2018-12-14  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/87814
+	* pt.c (tsubst_exception_specification): Handle
+	DEFERRED_NOEXCEPT with !defer_ok.
+
 2018-12-14  Jason Merrill <jason@redhat.com>
 
 	PR c++/86823

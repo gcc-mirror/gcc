@@ -14151,9 +14151,17 @@ tsubst_exception_specification (tree fntype,
 	    }
 	}
       else
-	new_specs = tsubst_copy_and_build
-	  (expr, args, complain, in_decl, /*function_p=*/false,
-	   /*integral_constant_expression_p=*/true);
+	{
+	  if (DEFERRED_NOEXCEPT_SPEC_P (specs))
+	    {
+	      args = add_to_template_args (DEFERRED_NOEXCEPT_ARGS (expr),
+					   args);
+	      expr = DEFERRED_NOEXCEPT_PATTERN (expr);
+	    }
+	  new_specs = tsubst_copy_and_build
+	    (expr, args, complain, in_decl, /*function_p=*/false,
+	     /*integral_constant_expression_p=*/true);
+	}
       new_specs = build_noexcept_spec (new_specs, complain);
     }
   else if (specs)
