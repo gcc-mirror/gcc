@@ -1553,9 +1553,9 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
     {
       /* Calculate, propagate count and probability information on CFG.  */
       afdo_calculate_branch_prob (&annotated_bb);
-      update_max_bb_count ();
-      profile_status_for_fn (cfun) = PROFILE_READ;
     }
+  update_max_bb_count ();
+  profile_status_for_fn (cfun) = PROFILE_READ;
   if (flag_value_profile_transformations)
     {
       gimple_value_profile_transformations ();

@@ -1,5 +1,10 @@
 2018-12-14  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
+	* auto-profile.c (afdo_annotate_cfg): Call update_max_bb_count even
+	if autofdo counts are all zeros.
+
+2018-12-14  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
 	* auto-profile.c (afdo_indirect_call): Skip generating histogram
 	value for internal call.
 
