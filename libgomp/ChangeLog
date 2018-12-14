@@ -1,5 +1,11 @@
 2018-12-14  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR libgomp/88495
+	* plugin/plugin-nvptx.c (nvptx_wait_async): Don't refuse
+	"identical parameters".
+	* testsuite/libgomp.oacc-c-c++-common/asyncwait-nop-1.c: Update.
+	* testsuite/libgomp.oacc-c-c++-common/lib-80.c: Remove.
+
 	PR libgomp/88484
 	* oacc-parallel.c (GOACC_wait): Correct handling for "async >= 0".
 	* testsuite/libgomp.oacc-c-c++-common/asyncwait-nop-1.c: New file.
