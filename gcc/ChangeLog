@@ -1,3 +1,13 @@
+2018-12-14  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* auto-profile.c (AFDO_EINFO): New macro.
+	(class edge_info): New class.
+	(is_edge_annotated, set_edge_annotated): Delete.
+	(afdo_propagate_edge, afdo_propagate_circuit, afdo_propagate): Remove
+	parameter.  Adjust edge count computation and annotation using class
+	edge_info.
+	(afdo_calculate_branch_prob, afdo_annotate_cfg): Likewise.
+
 2018-12-13  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
 
 	* ipa-cp.c (print_all_lattices): Skip cp clones.
