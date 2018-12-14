@@ -1,3 +1,8 @@
+2018-12-14  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/87814
+	* g++.dg/cpp1z/pr87814.C: New.
+
 2018-12-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/cf_check-1.c: New test.
