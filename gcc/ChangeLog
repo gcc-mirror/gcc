@@ -1,3 +1,8 @@
+2018-12-14  Richard Biener  <rguenther@suse.de>
+
+	* gimple-ssa-split-paths.c (is_feasible_trace): Remove
+	duplicated code block.
+
 2018-12-14  Alan Modra  <amodra@gmail.com>
 
 	PR rtl-optimization/88311
