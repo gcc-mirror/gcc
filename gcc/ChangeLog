@@ -1,5 +1,10 @@
 2018-12-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/88489
+	* config/i386/sse.md (UNSPEC_SFIXUPIMM): New unspec enumerator.
+	(avx512f_sfixupimm<mode><mask_name><round_saeonly_name>): Use it
+	instead of UNSPEC_FIXUPIMM.
+
 	PR rtl-optimization/88478
 	* cselib.c (cselib_record_sets): Move sets[i].src_elt tests
 	after REG_P (dest) test.

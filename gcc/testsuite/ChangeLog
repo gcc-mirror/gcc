@@ -1,5 +1,9 @@
 2018-12-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/88489
+	* gcc.target/i386/avx512vl-vfixupimmsd-2.c: New test.
+	* gcc.target/i386/avx512vl-vfixupimmss-2.c: New test.
+
 	PR rtl-optimization/88478
 	* g++.dg/opt/pr88478.C: New test.
 
