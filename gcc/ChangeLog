@@ -1,3 +1,41 @@
+2018-12-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.md (arm_movdi): Split if -mslow-flash-data and
+	source is a constant that would be loaded by literal pool.
+	(movsf expander): Generate a no_literal_pool_sf_immediate insn if
+	-mslow-flash-data is present, targeting hardfloat ABI and source is a
+	float constant that cannot be loaded via vmov.
+	(movdf expander): Likewise but generate a no_literal_pool_df_immediate
+	insn.
+	(arm_movsf_soft_insn): Split if -mslow-flash-data and source is a
+	float constant that would be loaded by literal pool.
+	(softfloat constant movsf splitter): Splitter for the above case.
+	(movdf_soft_insn): Split if -mslow-flash-data and source is a float
+	constant that would be loaded by literal pool.
+	(softfloat constant movdf splitter): Splitter for the above case.
+	* config/arm/constraints.md (Pz): Document existing constraint.
+	(Ha): Define constraint.
+	(Tu): Likewise.
+	* config/arm/predicates.md (hard_sf_operand): New predicate.
+	(hard_df_operand): Likewise.
+	* config/arm/thumb2.md (thumb2_movsi_insn): Split if
+	-mslow-flash-data and constant would be loaded by literal pool.
+	* constant/arm/vfp.md (thumb2_movsi_vfp): Likewise and disable constant
+	load in VFP register.
+	(movdi_vfp): Likewise.
+	(thumb2_movsf_vfp): Use hard_sf_operand as predicate for source to
+	prevent match for a constant load if -mslow-flash-data and constant
+	cannot be loaded via vmov.  Adapt constraint accordingly by
+	using Ha instead of E for generic floating-point constant load.
+	(thumb2_movdf_vfp): Likewise using hard_df_operand predicate instead.
+	(no_literal_pool_df_immediate): Add a clobber to use as the
+	intermediate general purpose register and also enable it after reload
+	but disable it constant is a valid FP constant.  Add constraints and
+	generate a DI intermediate load rather than 2 SI loads.
+	(no_literal_pool_sf_immediate): Add a clobber to use as the
+	intermediate general purpose register and also enable it after
+	reload.
+
 2018-12-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/88474
