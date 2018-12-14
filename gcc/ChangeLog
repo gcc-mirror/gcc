@@ -1,3 +1,11 @@
+2018-12-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2018-12-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* doc/invoke.texi (-msve-vector-bits): Clarify -msve-vector-bits=128
+	behavior.
+
 2018-12-14  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backport from mainline
