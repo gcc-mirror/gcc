@@ -2,6 +2,7 @@
 ! routine.
 
 ! { dg-additional-options "-O2" }
+! { dg-additional-options "-fopt-info-optimized-omp" }
 ! { dg-additional-options "-fdump-tree-ompexp" }
 ! { dg-additional-options "-fdump-tree-oaccdevlow" }
 
@@ -13,7 +14,7 @@ subroutine ROUTINE
 
   call setup(a, b)
 
-  !$acc loop
+  !$acc loop ! { dg-message "optimized: assigned OpenACC worker vector loop parallelism" }
   do i = 0, n - 1
      c(i) = a(i) + b(i)
   end do

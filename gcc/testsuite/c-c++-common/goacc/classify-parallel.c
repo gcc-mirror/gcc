@@ -2,6 +2,7 @@
    parallel.  */
 
 /* { dg-additional-options "-O2" }
+   { dg-additional-options "-fopt-info-optimized-omp" }
    { dg-additional-options "-fdump-tree-ompexp" }
    { dg-additional-options "-fdump-tree-oaccdevlow" } */
 
@@ -13,7 +14,7 @@ extern unsigned int *__restrict c;
 
 void PARALLEL ()
 {
-#pragma acc parallel loop copyin (a[0:N], b[0:N]) copyout (c[0:N])
+#pragma acc parallel loop copyin (a[0:N], b[0:N]) copyout (c[0:N]) /* { dg-message "optimized: assigned OpenACC gang vector loop parallelism" } */
   for (unsigned int i = 0; i < N; i++)
     c[i] = a[i] + b[i];
 }
