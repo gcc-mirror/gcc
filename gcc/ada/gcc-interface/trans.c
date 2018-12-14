@@ -2308,10 +2308,8 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       gnu_type = TREE_TYPE (gnu_prefix);
 
       /* Replace an unconstrained array type with the type of the underlying
-	 array.  We can't do this with a call to maybe_unconstrained_array
-	 since we may have a TYPE_DECL.  For 'Max_Size_In_Storage_Elements,
-	 use the record type that will be used to allocate the object and its
-	 template.  */
+	 array, except for 'Max_Size_In_Storage_Elements because we need to
+	 return the (maximum) size requested for an allocator.  */
       if (TREE_CODE (gnu_type) == UNCONSTRAINED_ARRAY_TYPE)
 	{
 	  gnu_type = TYPE_OBJECT_RECORD_TYPE (gnu_type);
@@ -2375,11 +2373,15 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	    gnu_result = substitute_placeholder_in_expr (gnu_result, gnu_expr);
 	}
 
-      /* If the type contains a template, subtract its size.  */
+      /* If the type contains a template, subtract the padded size of the
+	 template, except for 'Max_Size_In_Storage_Elements because we need
+	 to return the (maximum) size requested for an allocator.  */
       if (TREE_CODE (gnu_type) == RECORD_TYPE
-	  && TYPE_CONTAINS_TEMPLATE_P (gnu_type))
-	gnu_result = size_binop (MINUS_EXPR, gnu_result,
-				 DECL_SIZE (TYPE_FIELDS (gnu_type)));
+	  && TYPE_CONTAINS_TEMPLATE_P (gnu_type)
+	  && attribute != Attr_Max_Size_In_Storage_Elements)
+	gnu_result
+	  = size_binop (MINUS_EXPR, gnu_result,
+			bit_position (DECL_CHAIN (TYPE_FIELDS (gnu_type))));
 
       /* For 'Max_Size_In_Storage_Elements, adjust the unit.  */
       if (attribute == Attr_Max_Size_In_Storage_Elements)
@@ -2856,8 +2858,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       gnu_type = TREE_TYPE (gnu_prefix);
       gcc_assert (TREE_CODE (gnu_type) == UNCONSTRAINED_ARRAY_TYPE);
 
-      /* What we want is the offset of the ARRAY field in the record
-	 that the thin pointer designates.  */
+      /* Return the padded size of the template in the object record type.  */
       gnu_type = TYPE_OBJECT_RECORD_TYPE (gnu_type);
       gnu_result = bit_position (DECL_CHAIN (TYPE_FIELDS (gnu_type)));
       gnu_result_type = get_unpadded_type (Etype (gnat_node));

@@ -10049,13 +10049,14 @@ rm_size (tree gnu_type)
   if (INTEGRAL_TYPE_P (gnu_type) && TYPE_RM_SIZE (gnu_type))
     return TYPE_RM_SIZE (gnu_type);
 
-  /* Return the RM size of the actual data plus the size of the template.  */
+  /* If the type contains a template, return the padded size of the template
+     plus the RM size of the actual data.  */
   if (TREE_CODE (gnu_type) == RECORD_TYPE
       && TYPE_CONTAINS_TEMPLATE_P (gnu_type))
     return
       size_binop (PLUS_EXPR,
-		  rm_size (TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (gnu_type)))),
-		  DECL_SIZE (TYPE_FIELDS (gnu_type)));
+		  bit_position (DECL_CHAIN (TYPE_FIELDS (gnu_type))),
+		  rm_size (TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (gnu_type)))));
 
   /* For record or union types, we store the size explicitly.  */
   if (RECORD_OR_UNION_TYPE_P (gnu_type)

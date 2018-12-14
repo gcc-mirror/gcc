@@ -1,5 +1,13 @@
 2018-12-14  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (rm_size): Take into account the padding in
+	the case of a record type containing a template.
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Size>: Likewise.
+	Do not subtract the padded size for Max_Size_In_Storage_Elements.
+	<Attr_Descriptor_Size>: Tweak comment.
+
+2018-12-14  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (choices_to_gnu): Directly use a naked boolean
 	discriminant if the value is the boolean true.
 
