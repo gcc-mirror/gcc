@@ -1,3 +1,8 @@
+2018-12-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/max_size.adb: New test.
+	* gnat.dg/max_size_pkg.ads: Likewise.
+
 2018-12-14  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* gcc.target/arc/milli-1.c: New test.
