@@ -1,5 +1,15 @@
 2018-12-14  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/88372
+	* calls.c (maybe_warn_alloc_args_overflow): Handle function pointers.
+	* tree-object-size.c (alloc_object_size): Same.  Simplify.
+	* doc/extend.texi (Object Size Checking): Update.
+	(Other Builtins): Add __builtin_object_size.
+	(Common Type Attributes): Add alloc_size.
+	(Common Variable Attributes): Ditto.
+
+2018-12-14  Martin Sebor  <msebor@redhat.com>
+
 	PR rtl-optimization/87096
 	* gimple-ssa-sprintf.c (sprintf_dom_walker::handle_gimple_call): Avoid
 	folding calls whose bound may exceed INT_MAX.  Diagnose bound ranges
