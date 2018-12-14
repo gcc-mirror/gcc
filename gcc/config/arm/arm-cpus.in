@@ -525,6 +525,8 @@ begin arch armv7-r
  optalias vfpv3xd fp.sp
  option fp add VFPv3 FP_DBL
  optalias vfpv3-d16 fp
+ option vfpv3xd-fp16 add VFPv3 fp16conv
+ option vfpv3-d16-fp16 add VFPv3 FP_DBL fp16conv
  option idiv add adiv
  option nofp remove ALL_FP
  option noidiv remove adiv
@@ -1335,7 +1337,8 @@ begin cpu cortex-r7
  cname cortexr7
  tune flags LDSCHED
  architecture armv7-r+idiv
- fpu vfpv3-d16
+ fpu vfpv3-d16-fp16
+ option nofp.dp remove FP_DBL
  option nofp remove ALL_FP
  costs cortex
 end cpu cortex-r7
@@ -1345,7 +1348,8 @@ begin cpu cortex-r8
  tune for cortex-r7
  tune flags LDSCHED
  architecture armv7-r+idiv
- fpu vfpv3-d16
+ fpu vfpv3-d16-fp16
+ option nofp.dp remove FP_DBL
  option nofp remove ALL_FP
  costs cortex
 end cpu cortex-r8
