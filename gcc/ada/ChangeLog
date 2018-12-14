@@ -1,3 +1,8 @@
+2018-12-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (choices_to_gnu): Directly use a naked boolean
+	discriminant if the value is the boolean true.
+
 2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/88429
@@ -170,8 +175,8 @@
 	retrieve directly its RM size.
 	(components_to_record): Minor tweak.
 	(set_rm_size): Remove useless test.
-	* gcc-interface/trans.c (gnat_to_gnu): Do wrap the instance of a
-	boolean discriminant attached to a variant part.
+	* gcc-interface/trans.c (gnat_to_gnu): Do not wrap the instance of
+	a boolean discriminant attached to a variant part.
 
 2018-12-11  Ed Schonberg  <schonberg@adacore.com>
 
@@ -289,8 +294,7 @@
 
 	* fe.h (Is_Atomic_Object): Declare.
 	(Is_Volatile_Object): Likewise.
-	* gcc-interface/trans.c (atomic_or_volatile_copy_required_p):
-	New.
+	* gcc-interface/trans.c (atomic_or_volatile_copy_required_p): New.
 	(Call_to_gnu): Generate a copy for an actual parameter passed by
 	reference if the conditions set forth by RM C.6(19) are met and
 	specificially deal with an atomic actual parameter.

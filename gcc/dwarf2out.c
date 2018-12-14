@@ -24537,6 +24537,7 @@ gen_inheritance_die (tree binfo, tree access, tree type,
 
 /* Return whether DECL is a FIELD_DECL that represents the variant part of a
    structure.  */
+
 static bool
 is_variant_part (tree decl)
 {
@@ -24550,17 +24551,8 @@ is_variant_part (tree decl)
 static tree
 analyze_discr_in_predicate (tree operand, tree struct_type)
 {
-  bool continue_stripping = true;
-  while (continue_stripping)
-    switch (TREE_CODE (operand))
-      {
-      CASE_CONVERT:
-	operand = TREE_OPERAND (operand, 0);
-	break;
-      default:
-	continue_stripping = false;
-	break;
-      }
+  while (CONVERT_EXPR_P (operand))
+    operand = TREE_OPERAND (operand, 0);
 
   /* Match field access to members of struct_type only.  */
   if (TREE_CODE (operand) == COMPONENT_REF
@@ -24778,6 +24770,19 @@ analyze_variants_discr (tree variant_part_decl,
 		goto abort;
 
 	      new_node->dw_discr_range = true;
+	    }
+
+	  else if ((candidate_discr
+		      = analyze_discr_in_predicate (match_expr, struct_type))
+		   && TREE_TYPE (candidate_discr) == boolean_type_node)
+	    {
+	      /* We are matching:  <discr_field> for a boolean discriminant.
+		 This sub-expression matches boolean_true_node.  */
+	      new_node = ggc_cleared_alloc<dw_discr_list_node> ();
+	      if (!get_discr_value (boolean_true_node,
+				    &new_node->dw_discr_lower_bound))
+		goto abort;
+	      new_node->dw_discr_range = false;
 	    }
 
 	  else
