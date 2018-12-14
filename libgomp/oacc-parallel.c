@@ -630,8 +630,8 @@ GOACC_wait (int async, int num_waits, ...)
     }
   else if (async == acc_async_sync)
     acc_wait_all ();
-  else if (async == acc_async_noval)
-    goacc_thread ()->dev->openacc.async_wait_all_async_func (acc_async_noval);
+  else
+    acc_wait_all_async (async);
 }
 
 int

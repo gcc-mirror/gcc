@@ -1,5 +1,9 @@
 2018-12-14  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR libgomp/88484
+	* oacc-parallel.c (GOACC_wait): Correct handling for "async >= 0".
+	* testsuite/libgomp.oacc-c-c++-common/asyncwait-nop-1.c: New file.
+
 	PR libgomp/88407
 	* plugin/plugin-nvptx.c (nvptx_async_test, nvptx_wait)
 	(nvptx_wait_async): Unseen async-argument is a no-op.
