@@ -1,3 +1,8 @@
+2018-12-14  Tom de Vries  <tdevries@suse.de>
+
+	* lto-cgraph.c (verify_node_partition): New function.
+	(input_overwrite_node, input_varpool_node): Use verify_node_partition.
+
 2018-12-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/88483
