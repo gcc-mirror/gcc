@@ -1,5 +1,10 @@
 2018-12-14  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
+	* auto-profile.c (afdo_indirect_call): Skip generating histogram
+	value for internal call.
+
+2018-12-14  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
 	* auto-profile.c (AFDO_EINFO): New macro.
 	(class edge_info): New class.
 	(is_edge_annotated, set_edge_annotated): Delete.

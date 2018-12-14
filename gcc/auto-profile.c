@@ -987,7 +987,9 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
   if (map.size () == 0)
     return;
   gcall *stmt = dyn_cast <gcall *> (gs);
-  if ((!stmt) || gimple_call_fndecl (stmt) != NULL_TREE)
+  if (!stmt
+      || gimple_call_internal_p (stmt)
+      || gimple_call_fndecl (stmt) != NULL_TREE)
     return;
 
   callee = gimple_call_fn (stmt);
