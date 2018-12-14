@@ -6095,6 +6095,13 @@ foo (void)
 @}
 @end smallexample
 
+@item cf_check
+@cindex @code{cf_check} function attribute, x86
+
+The @code{cf_check} attribute on a function is used to inform the
+compiler that ENDBR instruction should be placed at the function
+entry when @option{-fcf-protection=branch} is enabled.
+
 @item indirect_return
 @cindex @code{indirect_return} function attribute, x86
 

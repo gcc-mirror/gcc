@@ -1,3 +1,11 @@
+2018-12-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/cf_check-1.c: New test.
+	* gcc.target/i386/cf_check-2.c: Likewise.
+	* gcc.target/i386/cf_check-3.c: Likewise.
+	* gcc.target/i386/cf_check-4.c: Likewise.
+	* gcc.target/i386/cf_check-5.c: Likewise.
+
 2018-12-14  Thomas Schwinge  <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 

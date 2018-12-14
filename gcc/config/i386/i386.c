@@ -2640,6 +2640,9 @@ rest_of_insert_endbranch (void)
 
   if (!lookup_attribute ("nocf_check",
 			 TYPE_ATTRIBUTES (TREE_TYPE (cfun->decl)))
+      && (!flag_manual_endbr
+	  || lookup_attribute ("cf_check",
+			       DECL_ATTRIBUTES (cfun->decl)))
       && !cgraph_node::get (cfun->decl)->only_called_directly_p ())
     {
       /* Queue ENDBR insertion to x86_function_profiler.  */
@@ -45260,6 +45263,9 @@ static const struct attribute_spec ix86_attribute_table[] =
     ix86_handle_fentry_name, NULL },
   { "fentry_section", 1, 1, true, false, false, false,
     ix86_handle_fentry_name, NULL },
+  { "cf_check", 0, 0, true, false, false, false,
+    ix86_handle_fndecl_attribute, NULL },
+
   /* End element.  */
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };

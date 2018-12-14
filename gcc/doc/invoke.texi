@@ -1263,7 +1263,7 @@ See RS/6000 and PowerPC Options.
 -msse4a  -m3dnow  -m3dnowa  -mpopcnt  -mabm  -mbmi  -mtbm  -mfma4  -mxop @gol
 -mlzcnt  -mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mlwp @gol
 -mmwaitx  -mclzero  -mpku  -mthreads  -mgfni  -mvaes  -mwaitpkg @gol
--mshstk  -mforce-indirect-call  -mavx512vbmi2 @gol
+-mshstk -mmanual-endbr -mforce-indirect-call  -mavx512vbmi2 @gol
 -mvpclmulqdq  -mavx512bitalg  -mmovdiri  -mmovdir64b  -mavx512vpopcntdq @gol
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
@@ -27967,6 +27967,13 @@ using the function attributes @code{ms_abi} and @code{sysv_abi}.
 Force all calls to functions to be indirect. This is useful
 when using Intel Processor Trace where it generates more precise timing
 information for function calls.
+
+@item -mmanual-endbr
+@opindex mmanual-endbr
+Insert ENDBR instruction at function entry only via the @code{cf_check}
+function attribute. This is useful when used with the option
+@option{-fcf-protection=branch} to control ENDBR insertion at the
+function entry.
 
 @item -mcall-ms2sysv-xlogues
 @opindex mcall-ms2sysv-xlogues

@@ -1,3 +1,13 @@
+2018-12-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (rest_of_insert_endbranch): Insert ENDBR
+	at the function entry only when -mmanual-endbr isn't used or
+	there is cf_check function attribute.
+	(ix86_attribute_table): Add cf_check.
+	* config/i386/i386.opt: Add -mmanual-endbr.
+	* doc/extend.texi: Document cf_check attribute.
+	* doc/invoke.texi: Document -mmanual-endbr.
+
 2018-12-14  Thomas Schwinge  <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
