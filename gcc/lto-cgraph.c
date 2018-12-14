@@ -1091,6 +1091,36 @@ output_offload_tables (void)
     }
 }
 
+/* Verify the partitioning of NODE.  */
+
+static inline void
+verify_node_partition (symtab_node *node)
+{
+  if (flag_ltrans)
+    return;
+
+#ifdef ACCEL_COMPILER
+  if (node->in_other_partition)
+    {
+      if (TREE_CODE (node->decl) == FUNCTION_DECL)
+	error_at (DECL_SOURCE_LOCATION (node->decl),
+		  "function %qs has been referenced in offloaded code but"
+		  " hasn%'t been marked to be included in the offloaded code",
+		  node->name ());
+      else if (VAR_P (node->decl))
+	error_at (DECL_SOURCE_LOCATION (node->decl),
+		  "variable %qs has been referenced in offloaded code but"
+		  " hasn%'t been marked to be included in the offloaded code",
+		  node->name ());
+      else
+	gcc_unreachable ();
+    }
+#else
+  gcc_assert (!node->in_other_partition
+	      && !node->used_from_other_partition);
+#endif
+}
+
 /* Overwrite the information in NODE based on FILE_DATA, TAG, FLAGS,
    STACK_SIZE, SELF_TIME and SELF_SIZE.  This is called either to initialize
    NODE or to replace the values in it, for instance because the first
@@ -1153,9 +1183,7 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->resolution = bp_unpack_enum (bp, ld_plugin_symbol_resolution,
 				     LDPR_NUM_KNOWN);
   node->split_part = bp_unpack_value (bp, 1);
-  gcc_assert (flag_ltrans
-	      || (!node->in_other_partition
-		  && !node->used_from_other_partition));
+  verify_node_partition (node);
 }
 
 /* Return string alias is alias of.  */
@@ -1366,10 +1394,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
     node->set_section_for_node (section);
   node->resolution = streamer_read_enum (ib, ld_plugin_symbol_resolution,
 					        LDPR_NUM_KNOWN);
-  gcc_assert (flag_ltrans
-	      || (!node->in_other_partition
-		  && !node->used_from_other_partition));
-
+  verify_node_partition (node);
   return node;
 }
 

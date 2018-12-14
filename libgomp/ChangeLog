@@ -1,3 +1,11 @@
+2018-12-14  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.c-c++-common/function-not-offloaded-aux.c: New test.
+	* testsuite/libgomp.c-c++-common/function-not-offloaded.c: New test.
+	* testsuite/libgomp.c-c++-common/variable-not-offloaded.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/function-not-offloaded.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/variable-not-offloaded.c: New test.
+
 2018-12-13  Tom de Vries  <tdevries@suse.de>
 
 	* affinity-fmt.c (gomp_print_string): New function, factored out of ...
