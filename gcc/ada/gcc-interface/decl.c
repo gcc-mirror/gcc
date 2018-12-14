@@ -6848,6 +6848,9 @@ choices_to_gnu (tree gnu_operand, Node_Id gnat_choices)
 			     build_binary_op (LE_EXPR, boolean_type_node,
 					      gnu_operand, gnu_high, true),
 			     true);
+      else if (gnu_low == boolean_true_node
+	       && TREE_TYPE (gnu_operand) == boolean_type_node)
+	gnu_test = gnu_operand;
       else if (gnu_low)
 	gnu_test
 	  = build_binary_op (EQ_EXPR, boolean_type_node, gnu_operand, gnu_low,
