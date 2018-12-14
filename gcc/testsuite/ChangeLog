@@ -1,3 +1,7 @@
+2018-12-14  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/milli-1.c: New test.
+
 2018-12-13  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
 
 	* gcc.dg/lto/pr88297_0.c: New test.
