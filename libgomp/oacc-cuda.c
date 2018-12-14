@@ -58,7 +58,7 @@ acc_get_cuda_stream (int async)
 {
   struct goacc_thread *thr = goacc_thread ();
 
-  if (!async_valid_stream_id_p (async))
+  if (!async_valid_p (async))
     return NULL;
 
   if (thr && thr->dev && thr->dev->openacc.cuda.get_stream_func)
@@ -72,7 +72,7 @@ acc_set_cuda_stream (int async, void *stream)
 {
   struct goacc_thread *thr;
 
-  if (!async_valid_stream_id_p (async) || stream == NULL)
+  if (!async_valid_p (async) || stream == NULL)
     return 0;
 
   goacc_lazy_initialize ();

@@ -1753,8 +1753,14 @@ nvptx_set_cuda_stream (int async, void *stream)
   pthread_t self = pthread_self ();
   struct nvptx_thread *nvthd = nvptx_thread ();
 
-  if (async < 0)
-    GOMP_PLUGIN_fatal ("bad async %d", async);
+  /* Due to the "null_stream" usage for "acc_async_sync", this cannot be used
+     to change the stream handle associated with "acc_async_sync".  */
+  if (async == acc_async_sync)
+    {
+      GOMP_PLUGIN_debug (0, "Refusing request to set CUDA stream associated"
+			 " with \"acc_async_sync\"\n");
+      return 0;
+    }
 
   pthread_mutex_lock (&nvthd->ptx_dev->stream_lock);
 
