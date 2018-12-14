@@ -1042,7 +1042,7 @@ update_scratch_ops (rtx_insn *remat_insn)
 	    fprintf (lra_dump_file, "	 Assigning the same %d to r%d\n",
 		     REGNO (*loc), hard_regno);
 	}
-      lra_register_new_scratch_op (remat_insn, i);
+      lra_register_new_scratch_op (remat_insn, i, id->icode);
     }
   
 }
