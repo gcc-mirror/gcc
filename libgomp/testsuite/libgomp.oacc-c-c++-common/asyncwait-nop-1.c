@@ -51,9 +51,6 @@ main ()
     {
       for (size_t j = 0; j < values_n; ++j)
 	{
-	  if (values[i] == values[j])
-	    continue;
-
 #pragma acc parallel wait (values[i]) async (values[j])
 	  ;
 #pragma acc wait (values[i]) async (values[j])

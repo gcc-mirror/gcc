@@ -1617,8 +1617,9 @@ nvptx_wait_async (int async1, int async2)
      necessarily have to exist already.  */
   s2 = select_stream_for_async (async2, self, true, NULL);
 
+  /* A stream is always synchronized with itself.  */
   if (s1 == s2)
-    GOMP_PLUGIN_fatal ("identical parameters");
+    return;
 
   e = (CUevent *) GOMP_PLUGIN_malloc (sizeof (CUevent));
 
