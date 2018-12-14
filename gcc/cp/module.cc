@@ -2422,6 +2422,7 @@ enum tree_tag {
   tt_inst,		/* A template instantiation.  */
   tt_binfo,		/* A BINFO.  */
   tt_vtable,		/* A vtable.  */
+  tt_template,
   tt_gme		/* Global Module Entity.  */
 };
 
@@ -2605,6 +2606,7 @@ public:
 
 public:
   /* Mark a node for special walking.  */
+  tree node_template_info (tree decl, int &use);
   void mark_node (tree);
   void mark_gme (tree);
   walk_kind ref_node (tree);
@@ -3864,6 +3866,38 @@ trees_out::unmark_trees ()
       gcc_checking_assert (TREE_VISITED (node) && ref && ref < gme_lwm);
       TREE_VISITED (node) = false;
     }
+}
+
+tree
+trees_out::node_template_info (tree decl, int &use)
+{
+  tree ti = NULL_TREE;
+  int use_tpl = -1;
+  if (DECL_IMPLICIT_TYPEDEF_P (decl))
+    {
+      tree type = TREE_TYPE (decl);
+      if (TYPE_LANG_SPECIFIC (type))
+	{
+	  ti = TYPE_TEMPLATE_INFO (type);
+	  use_tpl = CLASSTYPE_USE_TEMPLATE (type);
+	}
+    }
+  else if (DECL_LANG_SPECIFIC (decl)
+	   && (TREE_CODE (decl) == VAR_DECL
+	       || TREE_CODE (decl) == TYPE_DECL
+	       || TREE_CODE (decl) == FUNCTION_DECL
+	       /* || TREE_CODE (decl) == FIELD_DECL
+		  || TREE_CODE (decl) == TEMPLATE_DECL*/))
+    {
+      use_tpl = DECL_USE_TEMPLATE (decl);
+      ti = DECL_TEMPLATE_INFO (decl);
+      gcc_assert (!ti || use_tpl
+		  || TREE_CODE (decl) != TEMPLATE_DECL
+		  || TI_TEMPLATE (ti) == decl);
+    }
+
+  use = use_tpl;
+  return ti;
 }
 
 /* Mark DECL for by-value walking.  We do this by inserting it into
@@ -6136,50 +6170,32 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
     }
 
   const char *kind = NULL;
-  tree ti = NULL_TREE;
-  int use_tpl = -1;
-  if (DECL_IMPLICIT_TYPEDEF_P (decl))
-    {
-      tree type = TREE_TYPE (decl);
-      if (TYPE_LANG_SPECIFIC (type))
-	{
-	  ti = TYPE_TEMPLATE_INFO (type);
-	  use_tpl = CLASSTYPE_USE_TEMPLATE (type);
-	}
-    }
-  else if (DECL_LANG_SPECIFIC (decl)
-	   && (TREE_CODE (decl) == FUNCTION_DECL
-	       || TREE_CODE (decl) == VAR_DECL
-	       || TREE_CODE (decl) == TYPE_DECL))
-    {
-      use_tpl = DECL_USE_TEMPLATE (decl);
-      ti = DECL_TEMPLATE_INFO (decl);
-    }
-
   unsigned owner = MODULE_UNKNOWN;
-  if (!ti)
-    ;
-  else if (use_tpl & 1)
+  int use_tpl = -1;
+  if (tree ti = node_template_info (decl, use_tpl))
     {
-      /* Some kind of instantiation. */
-      tree tpl = TI_TEMPLATE (ti);
-      if (!RECORD_OR_UNION_CODE_P (TREE_CODE (DECL_CONTEXT (tpl)))
-	  || DECL_MEMBER_TEMPLATE_P (tpl))
+      if (use_tpl & 1)
 	{
-	  if (streaming_p ())
-	    i (tt_inst);
-	  tree_ctx (tpl, false, NULL_TREE);
-	  tree_node (INNERMOST_TEMPLATE_ARGS (TI_ARGS (ti)));
-	  kind = "instantiation";
-	  goto insert;
+	  /* Some kind of instantiation. */
+	  tree tpl = TI_TEMPLATE (ti);
+	  if (!RECORD_OR_UNION_CODE_P (TREE_CODE (DECL_CONTEXT (tpl)))
+	      || DECL_MEMBER_TEMPLATE_P (tpl))
+	    {
+	      if (streaming_p ())
+		i (tt_inst);
+	      tree_ctx (tpl, false, NULL_TREE);
+	      tree_node (INNERMOST_TEMPLATE_ARGS (TI_ARGS (ti)));
+	      kind = "instantiation";
+	      goto insert;
+	    }
 	}
+      else if (!use_tpl)
+	{
+	  /* Primary.  */
+	}
+      else
+	gcc_unreachable ();
     }
-  else if (!use_tpl)
-    {
-      /* Primary.  */
-    }
-  else
-    gcc_unreachable ();
 
   {
     /* Find the owning module and determine what to do.  */
