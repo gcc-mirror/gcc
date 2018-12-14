@@ -12876,7 +12876,6 @@ ix86_finalize_stack_frame_flags (void)
 	   && flag_exceptions
 	   && cfun->can_throw_non_call_exceptions)
       && !ix86_frame_pointer_required ()
-      && get_frame_size () == 0
       && ix86_nsaved_sseregs () == 0
       && ix86_varargs_gpr_size + ix86_varargs_fpr_size == 0)
     {

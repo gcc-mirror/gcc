@@ -1,0 +1,17 @@
+/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-options "-O2 -mavx2" } */
+
+struct B
+{
+  char a[12];
+  int b;
+};
+
+struct B
+f2 (void)
+{
+  struct B x = {};
+  return x;
+}
+
+/* { dg-final { scan-assembler-not "and\[lq\]?\[^\\n\]*-\[0-9\]+,\[^\\n\]*sp" } } */
