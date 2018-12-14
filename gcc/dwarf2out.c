@@ -969,6 +969,8 @@ dwarf2out_do_cfi_startproc (bool second)
 
   fprintf (asm_out_file, "\t.cfi_startproc\n");
 
+  targetm.asm_out.post_cfi_startproc (asm_out_file, current_function_decl);
+
   /* .cfi_personality and .cfi_lsda are only relevant to DWARF2
      eh unwinders.  */
   if (targetm_common.except_unwind_info (&global_options) != UI_DWARF2)
