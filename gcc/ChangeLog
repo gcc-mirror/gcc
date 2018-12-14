@@ -1,5 +1,7 @@
 2018-12-13  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
 
+	* ipa-cp.c (print_all_lattices): Skip cp clones.
+
 	* ipa-cp.c: Fix various comment typos.
 
 2018-12-13  Jakub Jelinek  <jakub@redhat.com>

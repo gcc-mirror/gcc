@@ -542,6 +542,9 @@ print_all_lattices (FILE * f, bool dump_sources, bool dump_benefits)
       struct ipa_node_params *info;
 
       info = IPA_NODE_REF (node);
+      /* Skip constprop clones since we don't make lattices for them.  */
+      if (info->ipcp_orig_node)
+	continue;
       fprintf (f, "  Node: %s:\n", node->dump_name ());
       count = ipa_get_param_count (info);
       for (i = 0; i < count; i++)
