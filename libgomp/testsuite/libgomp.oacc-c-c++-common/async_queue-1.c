@@ -41,6 +41,36 @@ int main(void)
       assert (queues[i].cuda_stream == NULL);
     }
 
+  /* No-ops still don't initialize them.  */
+  {
+    size_t i = 0;
+    /* Find the first non-special async-argument.  */
+    while (queues[i].async < 0)
+      ++i;
+    assert (i < queues_n);
+
+#pragma acc wait(queues[i].async) // no-op
+
+    ++i;
+    assert (i < queues_n);
+#pragma acc parallel wait(queues[i].async) // no-op
+    ;
+
+    ++i;
+    assert (i < queues_n);
+    acc_wait(queues[i].async); // no-op
+
+    i += 2;
+    assert (i < queues_n);
+    acc_wait_async(queues[i - 1].async, queues[i].async); // no-op, and async queue "i" does not get set up
+
+    for (size_t i = 0; i < queues_n; ++i)
+      {
+	queues[i].cuda_stream = acc_get_cuda_stream (queues[i].async);
+	assert (queues[i].cuda_stream == NULL);
+      }
+  }
+
   for (size_t i = 0; i < queues_n; ++i)
     {
       /* Use the queue to initialize it.  */
