@@ -1,3 +1,9 @@
+2018-12-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/88483
+	* config/i386/i386.c (ix86_finalize_stack_frame_flags): Don't
+	use get_frame_size ().
+
 2018-12-14  Andrew Stubbs  <ams@codesourcery.com>
 
 	* gcc/lra-int.h (lra_register_new_scratch_op): Add third parameter.
