@@ -1,3 +1,11 @@
+2018-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82294
+	PR c++/87436
+	* init.c (build_vec_init): Change num_initialized_elts type from int
+	to HOST_WIDE_INT.  Build a RANGE_EXPR if e needs to be repeated more
+	than once.
+
 2018-12-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88216 - ICE with class type in non-type template parameter.
