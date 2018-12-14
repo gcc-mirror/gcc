@@ -16187,16 +16187,18 @@ cp_parser_template_id (cp_parser *parser,
 				   is_declaration,
 				   tag_type,
 				   &is_identifier);
+
+  /* Push any access checks inside the firewall we're about to create.  */
+  vec<deferred_access_check, va_gc> *checks = get_deferred_access_checks ();
+  pop_deferring_access_checks ();
   if (templ == error_mark_node || is_identifier)
-    {
-      pop_deferring_access_checks ();
-      return templ;
-    }
+    return templ;
 
   /* Since we're going to preserve any side-effects from this parse, set up a
      firewall to protect our callers from cp_parser_commit_to_tentative_parse
      in the template arguments.  */
   tentative_firewall firewall (parser);
+  reopen_deferring_access_checks (checks);
 
   /* If we find the sequence `[:' after a template-name, it's probably
      a digraph-typo for `< ::'. Substitute the tokens and check if we can
