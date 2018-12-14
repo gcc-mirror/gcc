@@ -6138,20 +6138,22 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
   const char *kind = NULL;
   tree ti = NULL_TREE;
   int use_tpl = -1;
-  if ((TREE_CODE (decl) == FUNCTION_DECL
-       || TREE_CODE (decl) == VAR_DECL
-       || TREE_CODE (decl) == TYPE_DECL)
-      && DECL_LANG_SPECIFIC (decl))
+  if (DECL_IMPLICIT_TYPEDEF_P (decl))
+    {
+      tree type = TREE_TYPE (decl);
+      if (TYPE_LANG_SPECIFIC (type))
+	{
+	  ti = TYPE_TEMPLATE_INFO (type);
+	  use_tpl = CLASSTYPE_USE_TEMPLATE (type);
+	}
+    }
+  else if (DECL_LANG_SPECIFIC (decl)
+	   && (TREE_CODE (decl) == FUNCTION_DECL
+	       || TREE_CODE (decl) == VAR_DECL
+	       || TREE_CODE (decl) == TYPE_DECL))
     {
       use_tpl = DECL_USE_TEMPLATE (decl);
       ti = DECL_TEMPLATE_INFO (decl);
-    }
-
-  if (!ti && TREE_CODE (decl) == TYPE_DECL
-      && TYPE_LANG_SPECIFIC (TREE_TYPE (decl)))
-    {
-      ti = TYPE_TEMPLATE_INFO (TREE_TYPE (decl));
-      use_tpl = CLASSTYPE_USE_TEMPLATE (TREE_TYPE (decl));
     }
 
   unsigned owner = MODULE_UNKNOWN;
