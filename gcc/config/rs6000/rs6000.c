@@ -37978,8 +37978,7 @@ rs6000_call_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
   if (value != NULL_RTX)
     call[0] = gen_rtx_SET (value, call[0]);
 
-  unsigned int mask = CALL_V4_SET_FP_ARGS | CALL_V4_CLEAR_FP_ARGS;
-  call[1] = gen_rtx_USE (VOIDmode, GEN_INT (INTVAL (cookie) & mask));
+  call[1] = gen_rtx_USE (VOIDmode, cookie);
   call[2] = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, LR_REGNO));
 
   insn = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (3, call));
@@ -38043,8 +38042,7 @@ rs6000_sibcall_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
   if (value != NULL_RTX)
     call[0] = gen_rtx_SET (value, call[0]);
 
-  unsigned int mask = CALL_V4_SET_FP_ARGS | CALL_V4_CLEAR_FP_ARGS;
-  call[1] = gen_rtx_USE (VOIDmode, GEN_INT (INTVAL (cookie) & mask));
+  call[1] = gen_rtx_USE (VOIDmode, cookie);
   call[2] = simple_return_rtx;
 
   insn = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (3, call));
