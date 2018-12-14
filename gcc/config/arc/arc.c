@@ -3597,9 +3597,7 @@ arc_restore_callee_milli (unsigned int gmask,
     insn = frame_insn (insn);
 
   /* Add DWARF info.  */
-  for (regno = start_reg, off = 0;
-       regno <= end_reg;
-       regno++, off += UNITS_PER_WORD)
+  for (regno = start_reg; regno <= end_reg; regno++)
     {
       reg = gen_rtx_REG (SImode, regno);
       add_reg_note (insn, REG_CFA_RESTORE, reg);
