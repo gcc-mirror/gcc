@@ -425,14 +425,10 @@ GOACC_enter_exit_data (int device, size_t mapnum,
 	      switch (kind)
 		{
 		case GOMP_MAP_ALLOC:
-		  acc_present_or_create (hostaddrs[i], sizes[i]);
-		  break;
 		case GOMP_MAP_FORCE_ALLOC:
 		  acc_create (hostaddrs[i], sizes[i]);
 		  break;
 		case GOMP_MAP_TO:
-		  acc_present_or_copyin (hostaddrs[i], sizes[i]);
-		  break;
 		case GOMP_MAP_FORCE_TO:
 		  acc_copyin (hostaddrs[i], sizes[i]);
 		  break;
