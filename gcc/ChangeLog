@@ -1,3 +1,8 @@
+2018-12-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/88001
+	* function.c (match_asm_constraints_1): Don't invalidly share RTL.
+
 2018-12-14  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	* auto-profile.c (afdo_annotate_cfg): Call update_max_bb_count even
