@@ -1,3 +1,12 @@
+2018-12-14  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc/lra-int.h (lra_register_new_scratch_op): Add third parameter.
+	* gcc/lra-remat.c (update_scratch_ops): Pass icode to
+	lra_register_new_scratch_op.
+	* gcc/lra.c (struct sloc): Add icode field.
+	(lra_register_new_scratch_op): Add icode parameter.
+	Use icode to skip insns that have changed beyond recognition.
+
 2018-12-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dwarf2out.c (analyze_discr_in_predicate): Simplify.
