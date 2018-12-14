@@ -1,3 +1,10 @@
+2018-12-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/88474
+	* internal-fn.def (HYPOT): New.
+	* optabs.def (hypot_optab): New.
+	* config/i386/i386.md (hypot<mode>3): New expander.
+
 2018-12-14  Jeff Law  <law@redhat.com>
 
 	* target.def (post_cfi_startproc): Fix text.
