@@ -32,7 +32,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 set -e
-set -o pipefail
 
 if [ ! -f ./allocfail ]; then
     # Hard failure.
