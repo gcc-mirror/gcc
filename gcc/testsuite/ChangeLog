@@ -1,3 +1,21 @@
+2018-12-14  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-c++-common/goacc/note-parallelism.c: New test.
+	* gfortran.dg/goacc/note-parallelism.f90: New test.
+	* c-c++-common/goacc/classify-kernels-unparallelized.c: Update.
+	* c-c++-common/goacc/classify-kernels.c: Likewise.
+	* c-c++-common/goacc/classify-parallel.c: Likewise.
+	* c-c++-common/goacc/classify-routine.c: Likewise.
+	* c-c++-common/goacc/kernels-1.c: Likewise.
+	* c-c++-common/goacc/kernels-double-reduction-n.c: Likewise.
+	* c-c++-common/goacc/kernels-double-reduction.c: Likewise.
+	* gfortran.dg/goacc/classify-kernels-unparallelized.f95: Likewise.
+	* gfortran.dg/goacc/classify-kernels.f95: Likewise.
+	* gfortran.dg/goacc/classify-parallel.f95: Likewise.
+	* gfortran.dg/goacc/classify-routine.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-inner.f95: Likewise.
+
 2018-12-14  Alexandre Oliva <aoliva@redhat.com>
 
 	PR c++/86823

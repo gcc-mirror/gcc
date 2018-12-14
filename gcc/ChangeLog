@@ -1,3 +1,9 @@
+2018-12-14  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* omp-offload.c (inform_oacc_loop): New function.
+	(execute_oacc_device_lower): Use it to display loop parallelism.
+
 2018-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/82294
