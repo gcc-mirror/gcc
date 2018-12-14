@@ -1,3 +1,7 @@
+2018-12-14  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.h (reg_class): Add SIBCALL_REGS.
+
 2018-12-14  Richard Biener  <rguenther@suse.de>
 
 	* gimple-ssa-split-paths.c (is_feasible_trace): Remove
