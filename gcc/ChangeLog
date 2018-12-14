@@ -1,3 +1,19 @@
+2018-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82294
+	PR c++/87436
+	* expr.h (categorize_ctor_elements): Add p_unique_nz_elts argument.
+	* expr.c (categorize_ctor_elements_1): Likewise.  Compute it like
+	p_nz_elts, except don't multiply it by mult.  Adjust recursive call.
+	Fix up COMPLEX_CST handling.
+	(categorize_ctor_elements): Add p_unique_nz_elts argument, initialize
+	it and pass it through to categorize_ctor_elements_1.
+	(mostly_zeros_p, all_zeros_p): Adjust categorize_ctor_elements callers.
+	* gimplify.c (gimplify_init_constructor): Likewise.  Don't force
+	ctor into readonly data section if num_unique_nonzero_elements is
+	smaller or equal to 1/8 of num_nonzero_elements and size is >= 64
+	bytes.
+
 2018-12-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.md (arm_movdi): Split if -mslow-flash-data and

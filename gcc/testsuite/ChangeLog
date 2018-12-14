@@ -1,3 +1,10 @@
+2018-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82294
+	PR c++/87436
+	* g++.dg/tree-ssa/pr82294.C: New test.
+	* g++.dg/tree-ssa/pr87436.C: New test.
+
 2018-11-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.target/arm/thumb2-slow-flash-data-2.c: Require arm_fp_ok
