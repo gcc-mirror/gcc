@@ -95,6 +95,7 @@
   UNSPEC_RCP14
   UNSPEC_RSQRT14
   UNSPEC_FIXUPIMM
+  UNSPEC_SFIXUPIMM
   UNSPEC_SCALEF
   UNSPEC_VTERNLOG
   UNSPEC_GETEXP
@@ -8872,7 +8873,7 @@
           [(match_operand:VF_128 1 "register_operand" "v")
 	     (match_operand:<sseintvecmode> 2 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")
 	     (match_operand:SI 3 "const_0_to_255_operand")]
-	    UNSPEC_FIXUPIMM))]
+	    UNSPEC_SFIXUPIMM))]
    "TARGET_AVX512F"
   "vfixupimm<ssescalarmodesuffix>\t{%3, <round_saeonly_mask_op4>%2, %1, %0<mask_operand4>|%0<mask_operand4>, %1, %<iptr>2<round_saeonly_mask_op4>, %3}";
   [(set_attr "prefix" "evex")
