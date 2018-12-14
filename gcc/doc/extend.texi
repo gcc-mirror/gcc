@@ -2522,7 +2522,7 @@ The function parameter(s) denoting the allocated size are specified by
 one or two integer arguments supplied to the attribute.  The allocated size
 is either the value of the single function argument specified or the product
 of the two function arguments specified.  Argument numbering starts at
-one.
+one for ordinary functions, and at two for C++ non-static member functions.
 
 For instance,
 
@@ -6343,6 +6343,34 @@ This warning can be disabled by @option{-Wno-if-not-aligned}.
 The @code{warn_if_not_aligned} attribute can also be used for types
 (@pxref{Common Type Attributes}.)
 
+@item alloc_size (@var{position})
+@itemx alloc_size (@var{position-1}, @var{position-2})
+@cindex @code{alloc_size} variable attribute
+The @code{alloc_size} variable attribute may be applied to the declaration
+of a pointer to a function that returns a pointer and takes at least one
+argument of an integer type.  It indicates that the returned pointer points
+to an object whose size is given by the function argument at @var{position-1},
+or by the product of the arguments at @var{position-1} and @var{position-2}.
+Meaningful sizes are positive values less than @code{PTRDIFF_MAX}.  Other
+sizes are disagnosed when detected.  GCC uses this information to improve
+the results of @code{__builtin_object_size}.
+
+For instance, the following declarations
+
+@smallexample
+typedef __attribute__ ((alloc_size (1, 2))) void*
+  (*calloc_ptr) (size_t, size_t);
+typedef __attribute__ ((alloc_size (1))) void*
+  (*malloc_ptr) (size_t);
+@end smallexample
+
+@noindent
+specify that @code{calloc_ptr} is a pointer of a function that, like
+the standard C function @code{calloc}, returns an object whose size
+is given by the product of arguments 1 and 2, and similarly, that
+@code{malloc_ptr}, like the standard C function @code{malloc},
+returns an object whose size is given by argument 1 to the function.
+
 @item cleanup (@var{cleanup_function})
 @cindex @code{cleanup} variable attribute
 The @code{cleanup} attribute runs a function when the variable goes
@@ -7327,6 +7355,34 @@ struct __attribute__ ((aligned (8))) foo
 @end smallexample
 
 This warning can be disabled by @option{-Wno-if-not-aligned}.
+
+@item alloc_size (@var{position})
+@itemx alloc_size (@var{position-1}, @var{position-2})
+@cindex @code{alloc_size} type attribute
+The @code{alloc_size} type attribute may be applied to the definition
+of a type of a function that returns a pointer and takes at least one
+argument of an integer type.  It indicates that the returned pointer
+points to an object whose size is given by the function argument at
+@var{position-1}, or by the product of the arguments at @var{position-1}
+and @var{position-2}.  Meaningful sizes are positive values less than
+@code{PTRDIFF_MAX}.  Other sizes are disagnosed when detected.  GCC uses
+this information to improve the results of @code{__builtin_object_size}.
+
+For instance, the following declarations
+
+@smallexample
+typedef __attribute__ ((alloc_size (1, 2))) void*
+  calloc_type (size_t, size_t);
+typedef __attribute__ ((alloc_size (1))) void*
+  malloc_type (size_t);
+@end smallexample
+
+@noindent
+specify that @code{calloc_type} is a type of a function that, like
+the standard C function @code{calloc}, returns an object whose size
+is given by the product of arguments 1 and 2, and that
+@code{malloc_type}, like the standard C function @code{malloc},
+returns an object whose size is given by argument 1 to the function.
 
 @item copy
 @itemx copy (@var{expression})
@@ -11193,7 +11249,10 @@ a limited extent, they can be used without optimization as well.
 @deftypefn {Built-in Function} {size_t} __builtin_object_size (const void * @var{ptr}, int @var{type})
 is a built-in construct that returns a constant number of bytes from
 @var{ptr} to the end of the object @var{ptr} pointer points to
-(if known at compile time).  @code{__builtin_object_size} never evaluates
+(if known at compile time).  To determine the sizes of dynamically allocated
+objects the function relies on the allocation functions called to obtain
+the storage to be declared with the @code{alloc_size} attribute (@xref{Common
+Function Attributes}).  @code{__builtin_object_size} never evaluates
 its arguments for side effects.  If there are any side effects in them, it
 returns @code{(size_t) -1} for @var{type} 0 or 1 and @code{(size_t) 0}
 for @var{type} 2 or 3.  If there are multiple objects @var{ptr} can
@@ -11318,6 +11377,7 @@ is called and the @var{flag} argument passed to it.
 @findex __builtin_islessequal
 @findex __builtin_islessgreater
 @findex __builtin_isunordered
+@findex __builtin_object_size
 @findex __builtin_powi
 @findex __builtin_powif
 @findex __builtin_powil
@@ -12559,6 +12619,10 @@ address, but evaluation faults if @code{p} is not a valid address.
 If the target does not support data prefetch, the address expression
 is evaluated if it includes side effects but no other code is generated
 and GCC does not issue a warning.
+@end deftypefn
+
+@deftypefn {Built-in Function}{size_t} __builtin_object_size (const void * @var{ptr}, int @var{type})
+Returns the size of an object pointed to by @var{ptr}.  @xref{Object Size Checking} for a detailed description of the function.
 @end deftypefn
 
 @deftypefn {Built-in Function} double __builtin_huge_val (void)
