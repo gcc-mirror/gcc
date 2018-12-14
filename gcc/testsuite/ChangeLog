@@ -1,3 +1,8 @@
+2018-12-14  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/86823
+	* g++.dg/pr86823.C: New.
+
 2018-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/82294
