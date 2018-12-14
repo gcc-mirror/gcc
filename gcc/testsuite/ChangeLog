@@ -1,3 +1,8 @@
+2018-12-14  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/87096
+	* gcc.dg/tree-ssa/builtin-snprintf-4.c: New test.
+
 2018-12-14  Alexandre Oliva <aoliva@redhat.com>
 
 	PR c++/87814
