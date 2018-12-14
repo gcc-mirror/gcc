@@ -2594,25 +2594,45 @@ are automatically detected and this attribute is ignored.
 @item const
 @cindex @code{const} function attribute
 @cindex functions that have no side effects
-Many functions do not examine any values except their arguments, and
-have no effects except to return a value.  Calls to such functions lend
-themselves to optimization such as common subexpression elimination.
-The presence of the @code{const} attribute on a function declaration 
-allows GCC to emit more efficient code for some calls to the function.  
+Calls to functions whose return value is not affected by changes to
+the observable state of the program and that have no observable effects
+on such state other than to return a value may lend themselves to
+optimizations such as common subexpression elimination.  Declaring such
+functions with the @code{const} attribute allows GCC to avoid emitting
+some calls in repeated invocations of the function with the same argument
+values.
+
+For example,
+
+@smallexample
+int square (int) __attribute__ ((const));
+@end smallexample
+
+@noindent
+tells GCC that subsequent calls to function @code{square} with the same
+argument value can be replaced by the result of the first call regardless
+of the statements in between.
+
+The @code{const} attribute prohibits a function from reading objects
+that affect its return value between successive invocations.  However,
+functions declared with the attribute can safely read objects that do
+not change their return value, such as non-volatile constants.
 
 The @code{const} attribute imposes greater restrictions on a function's
-definition than the similar @code{pure} attribute below because it
-additionally prohibits the function from reading memory except for
-constant global variables.  Decorating the same function with
-both the @code{const} and the @code{pure} attribute is diagnosed.
+definition than the similar @code{pure} attribute.  Declaring the same
+function with both the @code{const} and the @code{pure} attribute is
+diagnosed.  Because a const function cannot have any observable side
+effects it does not make sense for it to return @code{void}.  Declaring
+such a function is diagnosed.
 
 @cindex pointer arguments
 Note that a function that has pointer arguments and examines the data
-pointed to must @emph{not} be declared @code{const}.  Likewise, a
-function that calls a non-@code{const} function usually must not be
-@code{const}.  Because a @code{const} function cannot have any side
-effects it does not make sense for such a function to return @code{void}.
-Declaring such a function is diagnosed.
+pointed to must @emph{not} be declared @code{const} if the pointed-to
+data might change between successive invocations of the function.  In
+general, since a function cannot distinguish data that might change
+from data that cannot, const functions should never take pointer or,
+in C++, reference arguments. Likewise, a function that calls a non-const
+function usually must not be const itself.
 
 @item constructor
 @itemx destructor
@@ -3377,34 +3397,52 @@ to prevent recursion.
 @item pure
 @cindex @code{pure} function attribute
 @cindex functions that have no side effects
-Many functions have no effects except the return value and their
-return value depends only on the parameters and/or global variables.
-Calls to such functions can be subject
-to common subexpression elimination and loop optimization just as an
-arithmetic operator would be.  These functions should be declared
-with the attribute @code{pure}.  For example,
+
+Calls to functions that have no observable effects on the state of
+the program other than to return a value may lend themselves to optimizations
+such as common subexpression elimination.  Declaring such functions with
+the @code{pure} attribute allows GCC to avoid emitting some calls in repeated
+invocations of the function with the same argument values.
+
+The @code{pure} attribute prohibits a function from modifying the state
+of the program that is observable by means other than inspecting
+the function's return value.  However, functions declared with the @code{pure}
+attribute can safely read any non-volatile objects, and modify the value of
+objects in a way that does not affect their return value or the observable
+state of the program.
+
+For example,
 
 @smallexample
-int square (int) __attribute__ ((pure));
+int hash (char *) __attribute__ ((pure));
 @end smallexample
 
 @noindent
-says that the hypothetical function @code{square} is safe to call
-fewer times than the program says.
+tells GCC that subsequent calls to the function @code{hash} with the same
+string can be replaced by the result of the first call provided the state
+of the program observable by @code{hash}, including the contents of the array
+itself, does not change in between.  Even though @code{hash} takes a non-const
+pointer argument it must not modify the array it points to, or any other object
+whose value the rest of the program may depend on.  However, the caller may
+safely change the contents of the array between successive calls to
+the function (doing so disables the optimization).  The restriction also
+applies to member objects referenced by the @code{this} pointer in C++
+non-static member functions.
 
 Some common examples of pure functions are @code{strlen} or @code{memcmp}.
 Interesting non-pure functions are functions with infinite loops or those
 depending on volatile memory or other system resource, that may change between
-two consecutive calls (such as @code{feof} in a multithreading environment).
+consecutive calls (such as the standard C @code{feof} function in
+a multithreading environment).
 
 The @code{pure} attribute imposes similar but looser restrictions on
 a function's definition than the @code{const} attribute: @code{pure}
-allows the function to read any non-volatile memory, not just
-constant global variables.  Decorating the same function with
-both the @code{pure} and the @code{const} attribute is diagnosed.
-Because a @code{pure} function cannot have any side effects it does not
-make sense for such a function to return @code{void}.  Declaring such
-a function is diagnosed.
+allows the function to read any non-volatile memory, even if it changes
+in between successive invocations of the function.  Declaring the same
+function with both the @code{pure} and the @code{const} attribute is
+diagnosed.  Because a pure function cannot have any observable side
+effects it does not make sense for such a function to return @code{void}.
+Declaring such a function is diagnosed.
 
 @item returns_nonnull
 @cindex @code{returns_nonnull} function attribute
