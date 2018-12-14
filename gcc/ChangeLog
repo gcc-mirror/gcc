@@ -1,5 +1,12 @@
 2018-12-14  Martin Sebor  <msebor@redhat.com>
 
+	PR rtl-optimization/87096
+	* gimple-ssa-sprintf.c (sprintf_dom_walker::handle_gimple_call): Avoid
+	folding calls whose bound may exceed INT_MAX.  Diagnose bound ranges
+	that exceed the limit.
+
+2018-12-14  Martin Sebor  <msebor@redhat.com>
+
 	PR web/79738
 	* doc/extend.texi (attribute const, pure): Clarify.
 
