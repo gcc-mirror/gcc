@@ -1,3 +1,9 @@
+2018-12-14  Alan Modra  <amodra@gmail.com>
+
+	PR rtl-optimization/88311
+	* config/rs6000/rs6000.c (rs6000_call_sysv): Do not mask cookie.
+	(rs6000_sibcall_sysv): Likewise.
+
 2018-12-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/88001
