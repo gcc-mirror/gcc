@@ -1,3 +1,17 @@
+2018-12-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/88370
+	* libgomp.texi (acc_get_current_cuda_context, acc_get_cuda_stream)
+	(acc_set_cuda_stream): Clarify.
+	* oacc-cuda.c (acc_get_cuda_stream, acc_set_cuda_stream): Use
+	"async_valid_p".
+	* plugin/plugin-nvptx.c (nvptx_set_cuda_stream): Refuse "async ==
+	acc_async_sync".
+	* testsuite/libgomp.oacc-c-c++-common/acc_set_cuda_stream-1.c: New file.
+	* testsuite/libgomp.oacc-c-c++-common/async_queue-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-84.c: Update.
+	* testsuite/libgomp.oacc-c-c++-common/lib-85.c: Likewise.
+
 2018-12-14  Tom de Vries  <tdevries@suse.de>
 
 	* testsuite/libgomp.c-c++-common/function-not-offloaded-aux.c: New test.
