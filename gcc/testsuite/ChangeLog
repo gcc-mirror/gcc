@@ -1,3 +1,8 @@
+2019-12-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88138
+	* gfortran.dg/pr88138.f90: new test.
+
 2018-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/88464
