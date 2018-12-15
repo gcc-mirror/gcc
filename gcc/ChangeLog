@@ -1,3 +1,11 @@
+2018-12-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from trunk
+	2018-12-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/88001
+	* function.c (match_asm_constraints_1): Don't invalidly share RTL.
+
 2018-12-13  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backport from mainline
