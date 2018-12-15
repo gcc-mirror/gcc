@@ -1,3 +1,18 @@
+2018-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/88464
+	PR target/88498
+	* gcc.target/i386/avx512f-pr88462-1.c: Rename to ...
+	* gcc.target/i386/avx512f-pr88464-1.c: ... this.  Fix up PR number.
+	Expect 4 vectorized loops instead of 3.
+	(f4): New function.
+	* gcc.target/i386/avx512f-pr88462-2.c: Rename to ...
+	* gcc.target/i386/avx512f-pr88464-2.c: ... this.  Fix up PR number
+	and #include.
+	(avx512f_test): Prepare arguments for f4 and check the results.
+	* gcc.target/i386/avx512f-pr88464-3.c: New test.
+	* gcc.target/i386/avx512f-pr88464-4.c: New test.
+
 2018-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84644

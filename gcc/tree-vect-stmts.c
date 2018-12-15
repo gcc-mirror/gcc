@@ -2655,6 +2655,7 @@ vect_build_gather_load_calls (stmt_vec_info stmt_info,
   if (mask && TREE_CODE (masktype) == INTEGER_TYPE)
     masktype = build_same_sized_truth_vector_type (srctype);
 
+  tree mask_halftype = masktype;
   tree perm_mask = NULL_TREE;
   tree mask_perm_mask = NULL_TREE;
   if (known_eq (nunits, gather_off_nunits))
@@ -2690,13 +2691,16 @@ vect_build_gather_load_calls (stmt_vec_info stmt_info,
 
       ncopies *= 2;
 
-      if (mask)
+      if (mask && masktype == real_masktype)
 	{
 	  for (int i = 0; i < count; ++i)
 	    sel[i] = i | (count / 2);
 	  indices.new_vector (sel, 2, count);
 	  mask_perm_mask = vect_gen_perm_mask_checked (masktype, indices);
 	}
+      else if (mask)
+	mask_halftype
+	  = build_same_sized_truth_vector_type (gs_info->offset_vectype);
     }
   else
     gcc_unreachable ();
@@ -2761,7 +2765,7 @@ vect_build_gather_load_calls (stmt_vec_info stmt_info,
 	    {
 	      if (j == 0)
 		vec_mask = vect_get_vec_def_for_operand (mask, stmt_info);
-	      else
+	      else if (modifier != NARROW || (j & 1) == 0)
 		vec_mask = vect_get_vec_def_for_stmt_copy (loop_vinfo,
 							   vec_mask);
 
@@ -2779,17 +2783,27 @@ vect_build_gather_load_calls (stmt_vec_info stmt_info,
 		  mask_op = var;
 		}
 	    }
+	  if (modifier == NARROW && masktype != real_masktype)
+	    {
+	      var = vect_get_new_ssa_name (mask_halftype, vect_simple_var);
+	      gassign *new_stmt
+		= gimple_build_assign (var, (j & 1) ? VEC_UNPACK_HI_EXPR
+						    : VEC_UNPACK_LO_EXPR,
+				       mask_op);
+	      vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
+	      mask_op = var;
+	    }
 	  src_op = mask_op;
 	}
 
       tree mask_arg = mask_op;
       if (masktype != real_masktype)
 	{
-	  tree utype;
-	  if (TYPE_MODE (real_masktype) == TYPE_MODE (masktype))
+	  tree utype, optype = TREE_TYPE (mask_op);
+	  if (TYPE_MODE (real_masktype) == TYPE_MODE (optype))
 	    utype = real_masktype;
 	  else
-	    utype = lang_hooks.types.type_for_mode (TYPE_MODE (masktype), 1);
+	    utype = lang_hooks.types.type_for_mode (TYPE_MODE (optype), 1);
 	  var = vect_get_new_ssa_name (utype, vect_scalar_var);
 	  mask_arg = build1 (VIEW_CONVERT_EXPR, utype, mask_op);
 	  gassign *new_stmt
@@ -2801,7 +2815,7 @@ vect_build_gather_load_calls (stmt_vec_info stmt_info,
 	      gcc_assert (TYPE_PRECISION (utype)
 			  <= TYPE_PRECISION (real_masktype));
 	      var = vect_get_new_ssa_name (real_masktype, vect_scalar_var);
-	      new_stmt = gimple_build_assign (var, NOP_EXPR, utype);
+	      new_stmt = gimple_build_assign (var, NOP_EXPR, mask_arg);
 	      vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
 	      mask_arg = var;
 	    }
@@ -6361,7 +6375,8 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	    return false;
 	}
       else if (memory_access_type != VMAT_LOAD_STORE_LANES
-	       && (memory_access_type != VMAT_GATHER_SCATTER || gs_info.decl))
+	       && (memory_access_type != VMAT_GATHER_SCATTER
+		   || (gs_info.decl && !VECTOR_BOOLEAN_TYPE_P (mask_vectype))))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6419,7 +6434,9 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       tree vec_oprnd0 = NULL_TREE, vec_oprnd1 = NULL_TREE, src;
       tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gs_info.decl));
       tree rettype, srctype, ptrtype, idxtype, masktype, scaletype;
-      tree ptr, mask, var, scale, perm_mask = NULL_TREE;
+      tree ptr, var, scale, vec_mask;
+      tree mask_arg = NULL_TREE, mask_op = NULL_TREE, perm_mask = NULL_TREE;
+      tree mask_halfvectype = mask_vectype;
       edge pe = loop_preheader_edge (loop);
       gimple_seq seq;
       basic_block new_bb;
@@ -6460,6 +6477,10 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  perm_mask = vect_gen_perm_mask_checked (vectype, indices);
 	  gcc_assert (perm_mask != NULL_TREE);
 	  ncopies *= 2;
+
+	  if (mask)
+	    mask_halfvectype
+	      = build_same_sized_truth_vector_type (gs_info.offset_vectype);
 	}
       else
 	gcc_unreachable ();
@@ -6482,10 +6503,11 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  gcc_assert (!new_bb);
 	}
 
-      /* Currently we support only unconditional scatter stores,
-	 so mask should be all ones.  */
-      mask = build_int_cst (masktype, -1);
-      mask = vect_init_vector (stmt_info, mask, masktype, NULL);
+      if (mask == NULL_TREE)
+	{
+	  mask_arg = build_int_cst (masktype, -1);
+	  mask_arg = vect_init_vector (stmt_info, mask_arg, masktype, NULL);
+	}
 
       scale = build_int_cst (scaletype, gs_info.scale);
 
@@ -6494,36 +6516,46 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	{
 	  if (j == 0)
 	    {
-	      src = vec_oprnd1
-		= vect_get_vec_def_for_operand (op, stmt_info);
-	      op = vec_oprnd0
-		= vect_get_vec_def_for_operand (gs_info.offset, stmt_info);
+	      src = vec_oprnd1 = vect_get_vec_def_for_operand (op, stmt_info);
+	      op = vec_oprnd0 = vect_get_vec_def_for_operand (gs_info.offset,
+							      stmt_info);
+	      if (mask)
+		mask_op = vec_mask = vect_get_vec_def_for_operand (mask,
+								   stmt_info);
 	    }
 	  else if (modifier != NONE && (j & 1))
 	    {
 	      if (modifier == WIDEN)
 		{
-		  src = vec_oprnd1
-		    = vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnd1);
+		  src
+		    = vec_oprnd1 = vect_get_vec_def_for_stmt_copy (vinfo,
+								   vec_oprnd1);
 		  op = permute_vec_elements (vec_oprnd0, vec_oprnd0, perm_mask,
 					     stmt_info, gsi);
+		  if (mask)
+		    mask_op
+		      = vec_mask = vect_get_vec_def_for_stmt_copy (vinfo,
+								   vec_mask);
 		}
 	      else if (modifier == NARROW)
 		{
 		  src = permute_vec_elements (vec_oprnd1, vec_oprnd1, perm_mask,
 					      stmt_info, gsi);
-		  op = vec_oprnd0
-		    = vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnd0);
+		  op = vec_oprnd0 = vect_get_vec_def_for_stmt_copy (vinfo,
+								    vec_oprnd0);
 		}
 	      else
 		gcc_unreachable ();
 	    }
 	  else
 	    {
-	      src = vec_oprnd1
-		= vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnd1);
-	      op = vec_oprnd0
-		= vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnd0);
+	      src = vec_oprnd1 = vect_get_vec_def_for_stmt_copy (vinfo,
+								 vec_oprnd1);
+	      op = vec_oprnd0 = vect_get_vec_def_for_stmt_copy (vinfo,
+								vec_oprnd0);
+	      if (mask)
+		mask_op = vec_mask = vect_get_vec_def_for_stmt_copy (vinfo,
+								     vec_mask);
 	    }
 
 	  if (!useless_type_conversion_p (srctype, TREE_TYPE (src)))
@@ -6550,8 +6582,45 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      op = var;
 	    }
 
+	  if (mask)
+	    {
+	      tree utype;
+	      mask_arg = mask_op;
+	      if (modifier == NARROW)
+		{
+		  var = vect_get_new_ssa_name (mask_halfvectype,
+					       vect_simple_var);
+		  gassign *new_stmt
+		    = gimple_build_assign (var, (j & 1) ? VEC_UNPACK_HI_EXPR
+							: VEC_UNPACK_LO_EXPR,
+					   mask_op);
+		  vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
+		  mask_arg = var;
+		}
+	      tree optype = TREE_TYPE (mask_arg);
+	      if (TYPE_MODE (masktype) == TYPE_MODE (optype))
+		utype = masktype;
+	      else
+		utype = lang_hooks.types.type_for_mode (TYPE_MODE (optype), 1);
+	      var = vect_get_new_ssa_name (utype, vect_scalar_var);
+	      mask_arg = build1 (VIEW_CONVERT_EXPR, utype, mask_arg);
+	      gassign *new_stmt
+		= gimple_build_assign (var, VIEW_CONVERT_EXPR, mask_arg);
+	      vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
+	      mask_arg = var;
+	      if (!useless_type_conversion_p (masktype, utype))
+		{
+		  gcc_assert (TYPE_PRECISION (utype)
+			      <= TYPE_PRECISION (masktype));
+		  var = vect_get_new_ssa_name (masktype, vect_scalar_var);
+		  new_stmt = gimple_build_assign (var, NOP_EXPR, mask_arg);
+		  vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
+		  mask_arg = var;
+		}
+	    }
+
 	  gcall *new_stmt
-	    = gimple_build_call (gs_info.decl, 5, ptr, mask, op, src, scale);
+	    = gimple_build_call (gs_info.decl, 5, ptr, mask_arg, op, src, scale);
 	  stmt_vec_info new_stmt_info
 	    = vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
 
@@ -7284,7 +7353,7 @@ permute_vec_elements (tree x, tree y, tree mask_vec, stmt_vec_info stmt_info,
   gimple *perm_stmt;
 
   tree scalar_dest = gimple_get_lhs (stmt_info->stmt);
-  if (TREE_CODE (scalar_dest) == SSA_NAME)
+  if (scalar_dest && TREE_CODE (scalar_dest) == SSA_NAME)
     perm_dest = vect_create_destination_var (scalar_dest, vectype);
   else
     perm_dest = vect_get_new_vect_var (vectype, vect_simple_var, NULL);

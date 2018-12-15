@@ -37607,13 +37607,7 @@ rdseed_step:
 	    op0 = copy_to_mode_reg (GET_MODE (op0), op0);
 	  emit_insn (gen (half, op0));
 	  op0 = half;
-	  if (GET_MODE (op3) != VOIDmode)
-	    {
-	      if (!nonimmediate_operand (op3, GET_MODE (op3)))
-		op3 = copy_to_mode_reg (GET_MODE (op3), op3);
-	      emit_insn (gen (half, op3));
-	      op3 = half;
-	    }
+	  op3 = lowpart_subreg (QImode, op3, HImode);
 	  break;
 	case IX86_BUILTIN_GATHER3ALTDIV8SF:
 	case IX86_BUILTIN_GATHER3ALTDIV8SI:
@@ -37630,6 +37624,7 @@ rdseed_step:
 	  op0 = half;
 	  if (GET_MODE (op3) != VOIDmode)
 	    {
+	      half = gen_reg_rtx (mode0);
 	      if (!nonimmediate_operand (op3, GET_MODE (op3)))
 		op3 = copy_to_mode_reg (GET_MODE (op3), op3);
 	      emit_insn (gen (half, op3));
