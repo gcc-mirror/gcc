@@ -402,6 +402,10 @@ ipa_merge_profiles (struct cgraph_node *dst,
   if (src->profile_id && !dst->profile_id)
     dst->profile_id = src->profile_id;
 
+  /* Merging zero profile to dst is no-op.  */
+  if (src->count.ipa () == profile_count::zero ())
+    return;
+
   /* FIXME when we merge in unknown profile, we ought to set counts as
      unsafe.  */
   if (!src->count.initialized_p ()
