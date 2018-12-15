@@ -16911,8 +16911,9 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	    tree inst;
 	    if (!DECL_PACK_P (decl))
 	      {
-		inst = lookup_name_real (DECL_NAME (decl), 0, 0,
-					 /*block_p=*/true, 0, LOOKUP_HIDDEN);
+		inst = lookup_name_real (DECL_NAME (decl), /*prefer_type*/0,
+					 /*nonclass*/1, /*block_p=*/true,
+					 /*ns_only*/0, LOOKUP_HIDDEN);
 		gcc_assert (inst != decl && is_capture_proxy (inst));
 	      }
 	    else if (is_normal_capture_proxy (decl))
