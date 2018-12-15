@@ -1,3 +1,11 @@
+2018-12-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa.c (cgraph_build_static_cdtor_1): Add OPTIMIZATION and TARGET
+	parameters.
+	(cgraph_build_static_cdtor): Update.
+	(build_cdtor): Use OPTIMIZATION and TARGET of the first real cdtor
+	callsed.
+
 2018-12-15  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (generate_set_vrsave, rs6000_emit_savres_rtx),
