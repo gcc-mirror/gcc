@@ -1,5 +1,16 @@
 2018-12-15  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cgraph.h (cgraph_node): Add predicate prevailing_p.
+	(cgraph_edge): Add predicate possible_call_in_translation_unit_p.
+	* ipa-prop.c (ipa_write_jump_function): Optimize streaming of ADDR_EXPR.
+	(ipa_read_jump_function): Add prevails parameter; optimize streaming.
+	(ipa_read_edge_info): Break out from ...
+	(ipa_read_node_info): ... here; optimize streaming.
+	* cgraph.c (cgraph_edge::possibly_call_in_translation_unit_p): New
+	predicate.
+
+2018-12-15  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-utils.c (ipa_merge_profiles): Do no merging when source function
 	has zero count.
 
