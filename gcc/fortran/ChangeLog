@@ -1,3 +1,9 @@
+2019-12-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88138
+	* decl.c (variable_decl): Check that a derived isn't being assigned
+	an incompatible entity in an initialization.
+ 
 2018-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/88463
