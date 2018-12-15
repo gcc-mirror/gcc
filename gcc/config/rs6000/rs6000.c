@@ -25952,8 +25952,7 @@ generate_set_vrsave (rtx reg, rs6000_stack_t *info, int epiloguep)
     if (info->vrsave_mask & ALTIVEC_REG_BIT (i))
       {
 	if (!epiloguep || call_used_regs [i])
-	  clobs[nclobs++] = gen_rtx_CLOBBER (VOIDmode,
-					     gen_rtx_REG (V4SImode, i));
+	  clobs[nclobs++] = gen_hard_reg_clobber (V4SImode, i);
 	else
 	  {
 	    rtx reg = gen_rtx_REG (V4SImode, i);
@@ -26277,8 +26276,7 @@ rs6000_emit_savres_rtx (rs6000_stack_t *info,
   if (!(sel & SAVRES_SAVE) && (sel & SAVRES_LR))
     RTVEC_ELT (p, offset++) = ret_rtx;
 
-  RTVEC_ELT (p, offset++)
-    = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, LR_REGNO));
+  RTVEC_ELT (p, offset++) = gen_hard_reg_clobber (Pmode, LR_REGNO);
 
   sym = rs6000_savres_routine_sym (info, sel);
   RTVEC_ELT (p, offset++) = gen_rtx_USE (VOIDmode, sym);
@@ -26287,8 +26285,7 @@ rs6000_emit_savres_rtx (rs6000_stack_t *info,
   if ((sel & SAVRES_REG) == SAVRES_VR)
     {
       /* Vector regs are saved/restored using [reg+reg] addressing.  */
-      RTVEC_ELT (p, offset++)
-	= gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, use_reg));
+      RTVEC_ELT (p, offset++) = gen_hard_reg_clobber (Pmode, use_reg);
       RTVEC_ELT (p, offset++)
 	= gen_rtx_USE (VOIDmode, gen_rtx_REG (Pmode, 0));
     }
@@ -26966,9 +26963,7 @@ rs6000_emit_prologue (void)
       sz += LAST_ALTIVEC_REGNO - info->first_altivec_reg_save + 1;
       p = rtvec_alloc (sz);
       j = 0;
-      RTVEC_ELT (p, j++) = gen_rtx_CLOBBER (VOIDmode,
-					    gen_rtx_REG (SImode,
-							 LR_REGNO));
+      RTVEC_ELT (p, j++) = gen_hard_reg_clobber (SImode, LR_REGNO);
       RTVEC_ELT (p, j++) = gen_rtx_USE (VOIDmode,
 					gen_rtx_SYMBOL_REF (Pmode,
 							    "*save_world"));
@@ -28131,8 +28126,7 @@ rs6000_emit_epilogue (int sibcall)
 	= gen_rtx_USE (VOIDmode, gen_rtx_SYMBOL_REF (Pmode, alloc_rname));
       /* The instruction pattern requires a clobber here;
 	 it is shared with the restVEC helper. */
-      RTVEC_ELT (p, j++)
-	= gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 11));
+      RTVEC_ELT (p, j++) = gen_hard_reg_clobber (Pmode, 11);
 
       {
 	/* CR register traditionally saved as CR2.  */
@@ -28178,14 +28172,10 @@ rs6000_emit_epilogue (int sibcall)
 	      && save_reg_p (info->first_fp_reg_save + i))
 	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
 	}
-      RTVEC_ELT (p, j++)
-	= gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 0));
-      RTVEC_ELT (p, j++)
-	= gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, 12));
-      RTVEC_ELT (p, j++)
-	= gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, 7));
-      RTVEC_ELT (p, j++)
-	= gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, 8));
+      RTVEC_ELT (p, j++) = gen_hard_reg_clobber (Pmode, 0);
+      RTVEC_ELT (p, j++) = gen_hard_reg_clobber (SImode, 12);
+      RTVEC_ELT (p, j++) = gen_hard_reg_clobber (SImode, 7);
+      RTVEC_ELT (p, j++) = gen_hard_reg_clobber (SImode, 8);
       RTVEC_ELT (p, j++)
 	= gen_rtx_USE (VOIDmode, gen_rtx_REG (SImode, 10));
       insn = emit_jump_insn (gen_rtx_PARALLEL (VOIDmode, p));
@@ -28833,8 +28823,7 @@ rs6000_emit_epilogue (int sibcall)
       int elt = 0;
       RTVEC_ELT (p, elt++) = ret_rtx;
       if (lr)
-	RTVEC_ELT (p, elt++)
-	  = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, LR_REGNO));
+	RTVEC_ELT (p, elt++) = gen_hard_reg_clobber (Pmode, LR_REGNO);
 
       /* We have to restore more than two FP registers, so branch to the
 	 restore function.  It will return to our caller.  */
@@ -37884,7 +37873,7 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
   if (toc_restore)
     call[n_call++] = toc_restore;
 
-  call[n_call++] = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, LR_REGNO));
+  call[n_call++] = gen_hard_reg_clobber (Pmode, LR_REGNO);
 
   insn = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (n_call, call));
   insn = emit_call_insn (insn);
@@ -37979,7 +37968,7 @@ rs6000_call_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
     call[0] = gen_rtx_SET (value, call[0]);
 
   call[1] = gen_rtx_USE (VOIDmode, cookie);
-  call[2] = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, LR_REGNO));
+  call[2] = gen_hard_reg_clobber (Pmode, LR_REGNO);
 
   insn = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (3, call));
   insn = emit_call_insn (insn);
@@ -38117,7 +38106,7 @@ rs6000_call_darwin_1 (rtx value, rtx func_desc, rtx tlsarg,
   if (sibcall)
     call[2] = simple_return_rtx;
   else
-    call[2] = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, LR_REGNO));
+    call[2] = gen_hard_reg_clobber (Pmode, LR_REGNO);
 
   insn = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (3, call));
   insn = emit_call_insn (insn);
