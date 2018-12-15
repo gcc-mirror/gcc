@@ -1,3 +1,15 @@
+2018-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88482
+	* g++.dg/eh/builtin5.C: New test.
+	* g++.dg/eh/builtin6.C: New test.
+	* g++.dg/eh/builtin7.C: New test.
+	* g++.dg/eh/builtin8.C: New test.
+	* g++.dg/eh/builtin9.C: New test.
+	* g++.dg/eh/builtin10.C: New test.
+	* g++.dg/eh/builtin11.C: New test.
+	* g++.dg/parse/crash55.C: Adjust expected diagnostics.
+
 2019-12-15  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88138

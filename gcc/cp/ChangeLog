@@ -1,3 +1,16 @@
+2018-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88482
+	* except.c (verify_library_fn): New function.
+	(declare_library_fn): Use it.  Initialize TM even if the non-TM
+	library function has been user declared.
+	(do_end_catch): Don't set TREE_NOTHROW on error_mark_node.
+	(expand_start_catch_block): Don't call initialize_handler_parm
+	for error_mark_node.
+	(build_throw): Use verify_library_fn.  Initialize TM even if the
+	non-TM library function has been user declared.  Don't crash if
+	any library fn is error_mark_node.
+
 2018-12-14  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (tsubst_expr) [DECL_EXPR]: Ignore class-scope bindings when
