@@ -1,3 +1,11 @@
+2018-12-15  Jan Hubicka  <jh@suse.cz>
+
+	Backport from mainline
+	2018-11-02  Richard Biener  <rguenther@suse.de>
+
+	* dwarf2out.c (build_abbrev_table): Guard lookup_external_ref call
+	with is_type_die.
+
 2018-12-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
