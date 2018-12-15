@@ -1,3 +1,9 @@
+2018-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84644
+	* decl.c (check_tag_decl): A decltype with no declarator
+	doesn't declare anything.
+
 2018-12-14  Alexandre Oliva <aoliva@redhat.com>
 
 	PR c++/87814

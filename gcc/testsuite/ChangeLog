@@ -1,3 +1,11 @@
+2018-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84644
+	* g++.dg/cpp0x/decltype68.C: New.
+	* g++.dg/cpp0x/decltype-33838.C: Adjust.
+	* g++.dg/template/spec32.C: Likewise.
+	* g++.dg/template/ttp22.C: Likewise.
+
 2018-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88489

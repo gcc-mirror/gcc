@@ -4803,15 +4803,20 @@ check_tag_decl (cp_decl_specifier_seq *declspecs,
     declared_type = declspecs->type;
   else if (declspecs->type == error_mark_node)
     error_p = true;
-  if (declared_type == NULL_TREE && ! saw_friend && !error_p)
-    permerror (input_location, "declaration does not declare anything");
-  else if (declared_type != NULL_TREE && type_uses_auto (declared_type))
+
+  if (type_uses_auto (declared_type))
     {
       error_at (declspecs->locations[ds_type_spec],
 		"%<auto%> can only be specified for variables "
 		"or function declarations");
       return error_mark_node;
     }
+
+  if (declared_type && !OVERLOAD_TYPE_P (declared_type))
+    declared_type = NULL_TREE;
+
+  if (!declared_type && !saw_friend && !error_p)
+    permerror (input_location, "declaration does not declare anything");
   /* Check for an anonymous union.  */
   else if (declared_type && RECORD_OR_UNION_CODE_P (TREE_CODE (declared_type))
 	   && TYPE_UNNAMED_P (declared_type))
