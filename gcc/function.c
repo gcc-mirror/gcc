@@ -6604,7 +6604,7 @@ match_asm_constraints_1 (rtx_insn *insn, rtx *p_sets, int noutputs)
       output_matched[match] = true;
 
       start_sequence ();
-      emit_move_insn (output, input);
+      emit_move_insn (output, copy_rtx (input));
       insns = get_insns ();
       end_sequence ();
       emit_insn_before (insns, insn);
