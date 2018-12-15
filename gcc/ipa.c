@@ -854,7 +854,9 @@ ipa_discover_readonly_nonaddressable_vars (void)
    be produced. */
 
 static void
-cgraph_build_static_cdtor_1 (char which, tree body, int priority, bool final)
+cgraph_build_static_cdtor_1 (char which, tree body, int priority, bool final,
+			     tree optimization,
+			     tree target)
 {
   static int counter = 0;
   char which_buf[16];
@@ -885,6 +887,8 @@ cgraph_build_static_cdtor_1 (char which, tree body, int priority, bool final)
 
   TREE_STATIC (decl) = 1;
   TREE_USED (decl) = 1;
+  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (decl) = optimization;
+  DECL_FUNCTION_SPECIFIC_TARGET (decl) = target;
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
   DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (decl) = 1;
@@ -949,7 +953,7 @@ cgraph_build_static_cdtor_1 (char which, tree body, int priority, bool final)
 void
 cgraph_build_static_cdtor (char which, tree body, int priority)
 {
-  cgraph_build_static_cdtor_1 (which, body, priority, false);
+  cgraph_build_static_cdtor_1 (which, body, priority, false, NULL, NULL);
 }
 
 /* When target does not have ctors and dtors, we call all constructor
@@ -1031,7 +1035,9 @@ build_cdtor (bool ctor_p, const vec<tree> &cdtors)
       gcc_assert (body != NULL_TREE);
       /* Generate a function to call all the function of like
 	 priority.  */
-      cgraph_build_static_cdtor_1 (ctor_p ? 'I' : 'D', body, priority, true);
+      cgraph_build_static_cdtor_1 (ctor_p ? 'I' : 'D', body, priority, true,
+				   DECL_FUNCTION_SPECIFIC_OPTIMIZATION (cdtors[0]),
+				   DECL_FUNCTION_SPECIFIC_TARGET (cdtors[0]));
     }
 }
 
