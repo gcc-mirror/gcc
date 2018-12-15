@@ -1,10 +1,10 @@
-/* PR tree-optimization/88462 */
+/* PR tree-optimization/88464 */
 /* { dg-do run { target { avx512f } } } */
 /* { dg-options "-O3 -mavx512f -mprefer-vector-width=512 -mtune=skylake-avx512" } */
 
 #include "avx512f-check.h"
 
-#include "avx512f-pr88462-1.c"
+#include "avx512f-pr88464-1.c"
 
 static void
 avx512f_test (void)
@@ -46,6 +46,16 @@ avx512f_test (void)
     {
       asm volatile ("" : "+g" (i));
       if (c[i] != ((i % 3) != 2 ? (1023 - i) * 4.0f : -5.0f))
+	abort ();
+      c[i] = (i % 3) != 0 ? 15.0f : -5.0f;
+      e[i] = (i % 3) != 0 ? 1023 - i : __INT_MAX__;
+      f[i] = 5 * i;
+    }
+  f4 (c, f, e, 1024);
+  for (i = 0; i < 1024; i++)
+    {
+      asm volatile ("" : "+g" (i));
+      if (c[i] != ((i % 3) != 0 ? (1023 - i) * 5.0f : -5.0f))
 	abort ();
     }
 }
