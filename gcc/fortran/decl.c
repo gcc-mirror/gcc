@@ -2793,14 +2793,14 @@ variable_decl (int elem)
     }
 
   /* Before adding a possible initilizer, do a simple check for compatibility
-     of lhs and rhs types.  Assigning a REAL value to a derive type is not a
+     of lhs and rhs types.  Assigning a REAL value to a derived type is not a
      good thing.  */
   if (current_ts.type == BT_DERIVED && initializer
       && (gfc_numeric_ts (&initializer->ts)
 	  || initializer->ts.type == BT_LOGICAL
 	  || initializer->ts.type == BT_CHARACTER))
     {
-      gfc_error ("Incompatible initialization between a derive type "
+      gfc_error ("Incompatible initialization between a derived type "
 		 "entity and an entity with %qs type at %C",
 		  gfc_typename (&initializer->ts));
       m = MATCH_ERROR;
