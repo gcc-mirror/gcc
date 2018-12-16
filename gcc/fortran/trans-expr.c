@@ -8152,7 +8152,7 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr, bool add_clobber)
 	  gfc_add_block_to_block (&se->pre, &se->post);
 	  se->expr = var;
 	}
-      else if (add_clobber)
+      else if (add_clobber && expr->ref == NULL)
 	{
 	  tree clobber;
 	  tree var;

@@ -1,3 +1,9 @@
+2018-12-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PF fortran/88364
+	* trans-expr.c (gfc_conv_expr_reference): Do not add clobber if
+	the expression contains a reference.
+
 2018-12-15  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/87944
@@ -9,7 +15,7 @@
 	PR fortran/88138
 	* decl.c (variable_decl): Check that a derived isn't being assigned
 	an incompatible entity in an initialization.
- 
+
 2018-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/88463
