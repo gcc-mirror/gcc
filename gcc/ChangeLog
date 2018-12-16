@@ -1,3 +1,9 @@
+2018-12-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/88483
+	* config/i386/i386.c (ix86_finalize_stack_frame_flags): Revert
+	reversion 267133.
+
 2018-12-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-fnsummary.c (analyze_function_body): Do not loeak conds and

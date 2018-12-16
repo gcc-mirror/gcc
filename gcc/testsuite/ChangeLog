@@ -1,3 +1,9 @@
+2018-12-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/88483
+	* gcc.target/i386/stackalign/pr88483.c: Removed.  Revert
+	reversion 267133.
+
 2018-12-15  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/87944
