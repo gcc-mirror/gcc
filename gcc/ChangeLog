@@ -1,5 +1,13 @@
 2018-12-15  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-fnsummary.c (analyze_function_body): Do not loeak conds and
+	size_time_table.
+	(ipa_fn_summary_generate): Add prevails parameter; do not allocate
+	data when symbol is not prevailing.
+	(inline_read_section): Likewise.
+
+2018-12-15  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cgraph.h (cgraph_node): Add predicate prevailing_p.
 	(cgraph_edge): Add predicate possible_call_in_translation_unit_p.
 	* ipa-prop.c (ipa_write_jump_function): Optimize streaming of ADDR_EXPR.
