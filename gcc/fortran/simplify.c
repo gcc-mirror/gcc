@@ -8360,7 +8360,7 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
 
     default:
     oops:
-      gfc_internal_error ("gfc_convert_constant(): Unexpected type");
+      return &gfc_bad_expr;
     }
 
   result = NULL;

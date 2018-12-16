@@ -5030,6 +5030,13 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
   if (expr->ts.type == BT_UNKNOWN)
     goto bad;
 
+  /* In building an array constructor, gfortran can end up here when no
+     conversion is required for an intrinsic type.  We need to let derived
+     types drop through.  */
+  if (from_ts.type != BT_DERIVED
+      && (from_ts.type == ts->type && from_ts.kind == ts->kind))
+    return true;
+
   if (expr->ts.type == BT_DERIVED && ts->type == BT_DERIVED
       && gfc_compare_types (&expr->ts, ts))
     return true;
