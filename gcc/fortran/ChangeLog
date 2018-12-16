@@ -1,5 +1,17 @@
 2018-12-16  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/88116
+	PR fortran/88467
+	* array.c (gfc_match_array_constructor): Check return value of
+	gfc_convert_type().  Skip constructor elements with BT_UNKNOWN,
+	which need to go through resolution.
+	* intrinsic.c (gfc_convert_type_warn): Return early if the types
+	match (i.e., no conversion is required).
+	* simplify.c (gfc_convert_constant): Remove a gfc_internal_error,
+	and return gfc_bad_expr.
+
+2018-12-16  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	* decl.c (variable_decl): Typo fixes in comment and error messsage.
 
 2018-12-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
