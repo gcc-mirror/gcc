@@ -1,3 +1,7 @@
+2018-12-16  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* decl.c (variable_decl): Typo fixes in comment and error messsage.
+
 2018-12-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PF fortran/88364
