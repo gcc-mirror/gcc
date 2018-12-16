@@ -2861,6 +2861,9 @@ remap_edge_change_prob (struct cgraph_edge *inlined_edge,
       struct ipa_call_summary *inlined_es
 	= ipa_call_summaries->get (inlined_edge);
 
+      if (es->param.length () == 0)
+	return;
+
       for (i = 0; i < ipa_get_cs_argument_count (args); i++)
 	{
 	  struct ipa_jump_func *jfunc = ipa_get_ith_jump_func (args, i);
