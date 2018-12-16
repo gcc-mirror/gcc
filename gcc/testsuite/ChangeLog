@@ -1,3 +1,10 @@
+2018-12-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/87944
+	* gfortran.dg/pr87994_1.f90: New test.
+	* gfortran.dg/pr87994_2.f90: Ditto.
+	* gfortran.dg/pr87994_3.f90: Ditto.
+
 2018-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88482
@@ -10,7 +17,7 @@
 	* g++.dg/eh/builtin11.C: New test.
 	* g++.dg/parse/crash55.C: Adjust expected diagnostics.
 
-2019-12-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+2018-12-15  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88138
 	* gfortran.dg/pr88138.f90: new test.
