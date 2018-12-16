@@ -399,6 +399,14 @@ match_data_constant (gfc_expr **result)
     }
   else if (m == MATCH_YES)
     {
+      /* If a parameter inquiry ends up here, symtree is NULL but **result
+	 contains the right constant expression.  Check here.  */
+      if ((*result)->symtree == NULL
+	  && (*result)->expr_type == EXPR_CONSTANT
+	  && ((*result)->ts.type == BT_INTEGER 
+	      || (*result)->ts.type == BT_REAL))
+	return m;
+
       /* F2018:R845 data-stmt-constant is initial-data-target.
 	 A data-stmt-constant shall be ... initial-data-target if and
 	 only if the corresponding data-stmt-object has the POINTER

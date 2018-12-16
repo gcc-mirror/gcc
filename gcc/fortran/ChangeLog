@@ -1,4 +1,10 @@
-2019-12-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+2018-12-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/87944
+	* decl.c (match_data_constant): Allow inquiry parameter as data
+	constant in data statement.
+
+2018-12-15  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88138
 	* decl.c (variable_decl): Check that a derived isn't being assigned
