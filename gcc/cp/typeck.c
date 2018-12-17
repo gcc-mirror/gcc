@@ -7348,8 +7348,21 @@ build_static_cast (tree type, tree oexpr, tsubst_flags_t complain)
     }
 
   if (complain & tf_error)
-    error ("invalid static_cast from type %qT to type %qT",
-           TREE_TYPE (expr), type);
+    {
+      error ("invalid static_cast from type %qT to type %qT",
+	     TREE_TYPE (expr), type);
+      if ((TYPE_PTR_P (type) || TYPE_REF_P (type))
+	  && CLASS_TYPE_P (TREE_TYPE (type))
+	    && !COMPLETE_TYPE_P (TREE_TYPE (type)))
+	inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (TREE_TYPE (type))),
+		"class type %qT is incomplete", TREE_TYPE (type));
+      tree expr_type = TREE_TYPE (expr);
+      if (TYPE_PTR_P (expr_type))
+	expr_type = TREE_TYPE (expr_type);
+      if (CLASS_TYPE_P (expr_type) && !COMPLETE_TYPE_P (expr_type))
+	inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (expr_type)),
+		"class type %qT is incomplete", expr_type);
+    }
   return error_mark_node;
 }
 
