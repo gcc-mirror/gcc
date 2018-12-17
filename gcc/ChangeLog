@@ -1,5 +1,10 @@
 2018-12-17  Tom de Vries  <tdevries@suse.de>
 
+	* config/nvptx/nvptx.c (nvptx_single): Fix whitespace.
+	(nvptx_neuter_pars): Likewise.
+
+2018-12-17  Tom de Vries  <tdevries@suse.de>
+
 	* config/nvptx/nvptx.c (nvptx_goacc_validate_dims): Work around Fortran
 	bug PR72741 by overriding dims parameter for routines.
 
