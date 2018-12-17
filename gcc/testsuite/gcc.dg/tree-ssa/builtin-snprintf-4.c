@@ -58,7 +58,12 @@ extern void sink (int, ...);
 static const size_t imax = __INT_MAX__;
 static const size_t imaxp1 = imax + 1;
 
+#if __PTRDIFF_MAX__ == __INT_MAX__
+/* Make the test pass on ILP32 the same way it does on LP64.  */
+static const size_t dmax = __PTRDIFF_MAX__ + (size_t)1;
+#else
 static const size_t dmax = __PTRDIFF_MAX__;
+#endif
 static const size_t dmaxp1 = dmax + 1;
 
 static const size_t szmax = __SIZE_MAX__;
