@@ -1,5 +1,10 @@
 2018-12-17  Tom de Vries  <tdevries@suse.de>
 
+	* config/nvptx/nvptx.c (PTX_VECTOR_LENGTH, PTX_WORKER_LENGTH,
+	PTX_DEFAULT_RUNTIME_DIM): Move to the top of the file.
+
+2018-12-17  Tom de Vries  <tdevries@suse.de>
+
 	* config/nvptx/nvptx.c (PTX_WARP_SIZE): Define.
 	(nvptx_simt_vf): Return PTX_WARP_SIZE instead of PTX_VECTOR_LENGTH.
 

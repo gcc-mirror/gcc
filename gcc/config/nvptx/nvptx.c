@@ -82,6 +82,9 @@
 #define WORKAROUND_PTXJIT_BUG_3 1
 
 #define PTX_WARP_SIZE 32
+#define PTX_VECTOR_LENGTH 32
+#define PTX_WORKER_LENGTH 32
+#define PTX_DEFAULT_RUNTIME_DIM 0 /* Defer to runtime.  */
 
 /* The various PTX memory areas an object might reside in.  */
 enum nvptx_data_area
@@ -5166,11 +5169,6 @@ nvptx_expand_builtin (tree exp, rtx target, rtx ARG_UNUSED (subtarget),
     default: gcc_unreachable ();
     }
 }
-
-/* Define dimension sizes for known hardware.  */
-#define PTX_VECTOR_LENGTH 32
-#define PTX_WORKER_LENGTH 32
-#define PTX_DEFAULT_RUNTIME_DIM 0 /* Defer to runtime.  */
 
 /* Implement TARGET_SIMT_VF target hook: number of threads in a warp.  */
 
