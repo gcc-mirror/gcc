@@ -1,3 +1,11 @@
+2018-12-17  Senthil Kumar Selvaraj  <senthilkumar.selvaraj@microchip.com>
+
+	Backport from trunk
+	2018-12-17  Senthil Kumar Selvaraj  <senthilkumar.selvaraj@microchip.com>
+
+	PR rtl-optimization/88253
+	* gcc.target/avr/pr88253.c: New test.
+
 2018-12-18  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88116
