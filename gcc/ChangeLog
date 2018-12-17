@@ -1,3 +1,25 @@
+2018-12-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/88502
+	* internal-fn.def (ACOSH): New.
+	(ASINH): Ditto.
+	(ATANH): Ditto.
+	* optabs.def (acosh_optab): New.
+	(asinh_optab): Ditto.
+	(atanh_optab): Ditto.
+	* config/i386/i386-protos.h (ix86_emit_i387_asinh): New prototype.
+	(ix86_emit_i387_acosh): Ditto.
+	(ix86_emit_i387_atanh): Ditto.
+	* config/i386/i386.c (ix86_emit_i387_asinh): New function.
+	(ix86_emit_i387_acosh): Ditto.
+	(ix86_emit_i387_atanh): Ditto.
+	* config/i386/i386.md (asinhxf2): New expander.
+	(asinh<mode>2):	Ditto.
+	(acoshxf2): Ditto.
+	(acosh<mode>2): Ditto.
+	(atanhxf2): Ditto.
+	(atanh<mode>2): Ditto.
+
 2018-12-17  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config.gcc (powerpc-ibm-aix6.*): Delete extra_headers.
