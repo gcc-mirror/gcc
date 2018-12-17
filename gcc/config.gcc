@@ -2734,7 +2734,6 @@ rs6000-ibm-aix6.* | powerpc-ibm-aix6.*)
 	use_collect2=yes
 	thread_file='aix'
 	use_gcc_stdint=wrap
-	extra_headers=altivec.h
 	default_use_cxa_atexit=yes
 	;;
 rs6000-ibm-aix7.1.* | powerpc-ibm-aix7.1.*)
@@ -2744,7 +2743,6 @@ rs6000-ibm-aix7.1.* | powerpc-ibm-aix7.1.*)
 	use_collect2=yes
 	thread_file='aix'
 	use_gcc_stdint=wrap
-	extra_headers="altivec.h amo.h"
 	default_use_cxa_atexit=yes
 	;;
 rs6000-ibm-aix[789].* | powerpc-ibm-aix[789].*)
@@ -2754,7 +2752,6 @@ rs6000-ibm-aix[789].* | powerpc-ibm-aix[789].*)
 	use_collect2=yes
 	thread_file='aix'
 	use_gcc_stdint=wrap
-	extra_headers="altivec.h amo.h"
 	default_use_cxa_atexit=yes
 	;;
 rl78-*-elf*)
