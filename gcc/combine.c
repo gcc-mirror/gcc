@@ -5807,8 +5807,9 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 	    && GET_MODE_PRECISION (mode) < GET_MODE_PRECISION (op0_mode)
 	    && subreg_lowpart_offset (mode, op0_mode) == SUBREG_BYTE (x)
 	    && HWI_COMPUTABLE_MODE_P (op0_mode)
-	    && (nonzero_bits (SUBREG_REG (x), op0_mode)
-		& GET_MODE_MASK (mode)) == 0)
+	    && ((nonzero_bits (SUBREG_REG (x), op0_mode)
+		 & GET_MODE_MASK (mode)) == 0)
+	    && !side_effects_p (SUBREG_REG (x)))
 	  return CONST0_RTX (mode);
       }
 
