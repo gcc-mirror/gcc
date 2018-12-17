@@ -781,10 +781,11 @@ path::_M_append(basic_string_view<value_type> s)
 	      ::new(output++) _Cmpt(c.str, c.type, parser.offset(c));
 	      ++_M_cmpts._M_impl->_M_size;
 	    }
-	  for (auto c = parser.next(); c.valid(); c = parser.next())
+	  while (cmpt.valid())
 	    {
-	      ::new(output++) _Cmpt(c.str, c.type, parser.offset(c));
+	      ::new(output++) _Cmpt(cmpt.str, cmpt.type, parser.offset(cmpt));
 	      ++_M_cmpts._M_impl->_M_size;
+	      cmpt = parser.next();
 	    }
 
 	  if (s.back() == '/')
@@ -1139,7 +1140,7 @@ path::_M_concat(basic_string_view<value_type> s)
 	    }
 #endif
 	}
-      else if (orig_filenamelen == 0)
+      else if (orig_filenamelen == 0 && extra.empty())
 	{
 	  // Replace empty filename at end of original path.
 	  std::prev(output)->_M_pathname = it->str;

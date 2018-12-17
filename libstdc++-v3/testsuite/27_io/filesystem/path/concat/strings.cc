@@ -24,8 +24,10 @@
 #include <filesystem>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
+#include <testsuite_fs.h>
 
 using std::filesystem::path;
+using __gnu_test::compare_paths;
 
 void
 test01()
@@ -60,7 +62,7 @@ test01()
 void
 test02()
 {
-  std::basic_string_view<path::value_type> s;
+  std::basic_string_view<path::value_type> s, expected;
 
   path p = "0/1/2/3/4/5/6";
   // The string_view aliases the path's internal string:
@@ -68,25 +70,54 @@ test02()
   // Append that string_view, which must work correctly even though the
   // internal string will be reallocated during the operation:
   p += s;
-  VERIFY( p.string() == "0/1/2/3/4/5/60/1/2/3/4/5/6" );
+  compare_paths(p, "0/1/2/3/4/5/60/1/2/3/4/5/6");
 
   // Same again with a trailing slash:
   path p2 = "0/1/2/3/4/5/";
   s = p2.native();
   p2 += s;
-  VERIFY( p2.string() == "0/1/2/3/4/5/0/1/2/3/4/5/" );
+  compare_paths(p2, "0/1/2/3/4/5/0/1/2/3/4/5/");
 
   // And aliasing one of the components of the path:
   path p3 = "0/123456789";
   path::iterator second = std::next(p3.begin());
   s = second->native();
   p3 += s;
-  VERIFY( p3.string() == "0/123456789123456789" );
+  compare_paths(p3, "0/123456789123456789" );
 }
 
+void
+test03()
+{
+  const std::string s0 = "a/b/c";
+  path p = s0;
+  std::string s;
+  for (int i = 0; i < 10; ++i)
+    s += "0/1/2/3/4/5/6/7/8/9/";
+  // concat a long string with many components:
+  p += s;
+  compare_paths(p, path(s0+s));
+
+  // Same again but with a trailing slash on the left operand:
+  path p2 = s0 + '/';
+  p2 += s;
+  compare_paths(p2, path(s0+'/'+s));
+
+  // And again but with a leading slash on the right operand:
+  path p3 = s0;
+  s.insert(0, 1, '/');
+  p3 += s;
+  compare_paths(p2, path(s0+s));
+
+  // And again but with a slash on both operands:
+  path p4 = s0 + '/';
+  p4 += s;
+  compare_paths(p4, path(s0+'/'+s));
+}
 int
 main()
 {
   test01();
   test02();
+  test03();
 }
