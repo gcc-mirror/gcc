@@ -137,6 +137,22 @@ test05()
   s = second->native();
   p3 /= s;
   VERIFY( p3.string() == "0/123456789/a/123456789" );
+  }
+
+void
+test06()
+{
+  const std::string s0 = "a/b/c";
+  path p = s0;
+  std::string s;
+  for (int i = 0; i < 10; ++i)
+    s += "0/1/2/3/4/5/6/7/8/9/";
+  // append a long string with many components
+  test(p, s.c_str());
+
+  // Same again but with a trailing slash on the left operand:
+  path p2 = s0 + '/';
+  test(p2, s.c_str());
 }
 
 int
@@ -147,4 +163,5 @@ main()
   test03();
   test04();
   test05();
+  test06();
 }

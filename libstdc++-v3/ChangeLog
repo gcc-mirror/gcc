@@ -1,3 +1,16 @@
+2018-12-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71044
+	* src/filesystem/std-path.cc (path::_M_append): Fix off-by-one error
+	that caused a component to be lost from the iteration sequence.
+	(path::_M_concat): Likewise.
+	* testsuite/27_io/filesystem/path/append/source.cc: Test appending
+	long strings.
+	* testsuite/27_io/filesystem/path/concat/strings.cc: Test
+	concatenating long strings.
+	* testsuite/27_io/filesystem/path/construct/string_view.cc: Test
+	construction from long string.
+
 2018-12-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/filesystem/std-path.cc (SLASHSLASH_IS_ROOT_NAME): New macro to
