@@ -1,3 +1,11 @@
+2018-12-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR debug/79342
+	* dwarf2out.c (find_AT_string_in_table): Add insert argument
+	defaulting to INSERT and replace INSERT.
+	(find_AT_string): Likewise.
+	(output_macinfo_op): Pass NO_INSERT to find_AT_string.
+
 2018-12-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	* coverage.c (struct conts_entry): Add n_counts.
