@@ -4618,12 +4618,13 @@ indirect_string_hasher::equal (indirect_string_node *x1, const char *x2)
 
 static struct indirect_string_node *
 find_AT_string_in_table (const char *str,
-			 hash_table<indirect_string_hasher> *table)
+			 hash_table<indirect_string_hasher> *table,
+			 enum insert_option insert = INSERT)
 {
   struct indirect_string_node *node;
 
   indirect_string_node **slot
-    = table->find_slot_with_hash (str, htab_hash_string (str), INSERT);
+    = table->find_slot_with_hash (str, htab_hash_string (str), insert);
   if (*slot == NULL)
     {
       node = ggc_cleared_alloc<indirect_string_node> ();
@@ -4640,12 +4641,12 @@ find_AT_string_in_table (const char *str,
 /* Add STR to the indirect string hash table.  */
 
 static struct indirect_string_node *
-find_AT_string (const char *str)
+find_AT_string (const char *str, enum insert_option insert = INSERT)
 {
   if (! debug_str_hash)
     debug_str_hash = hash_table<indirect_string_hasher>::create_ggc (10);
 
-  return find_AT_string_in_table (str, debug_str_hash);
+  return find_AT_string_in_table (str, debug_str_hash, insert);
 }
 
 /* Add a string attribute value to a DIE.  */
@@ -28095,7 +28096,19 @@ output_macinfo_op (macinfo_entry *ref)
       break;
     case DW_MACRO_define_strp:
     case DW_MACRO_undef_strp:
-      node = find_AT_string (ref->info);
+      /* NB: dwarf2out_finish performs:
+	   1. save_macinfo_strings
+	   2. hash table traverse of index_string
+	   3. output_macinfo -> output_macinfo_op
+	   4. output_indirect_strings
+		-> hash table traverse of output_index_string
+
+	 When output_macinfo_op is called, all index strings have been
+	 added to hash table by save_macinfo_strings and we can't pass
+	 INSERT to find_slot_with_hash which may expand hash table, even
+	 if no insertion is needed, and change hash table traverse order
+	 between index_string and output_index_string.  */
+      node = find_AT_string (ref->info, NO_INSERT);
       gcc_assert (node
 		  && (node->form == DW_FORM_strp
 		      || node->form == dwarf_FORM (DW_FORM_strx)));
