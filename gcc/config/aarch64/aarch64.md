@@ -727,7 +727,7 @@
 
 (define_insn "simple_return"
   [(simple_return)]
-  ""
+  "aarch64_use_simple_return_insn_p ()"
   "ret"
   [(set_attr "type" "branch")]
 )
@@ -1387,6 +1387,21 @@
    (set_attr "arch" "*,fp")]
 )
 
+(define_insn "load_pair_dw_tftf"
+  [(set (match_operand:TF 0 "register_operand" "=w")
+	(match_operand:TF 1 "aarch64_mem_pair_operand" "Ump"))
+   (set (match_operand:TF 2 "register_operand" "=w")
+	(match_operand:TF 3 "memory_operand" "m"))]
+   "TARGET_SIMD
+    && rtx_equal_p (XEXP (operands[3], 0),
+		    plus_constant (Pmode,
+				   XEXP (operands[1], 0),
+				   GET_MODE_SIZE (TFmode)))"
+  "ldp\\t%q0, %q2, %1"
+  [(set_attr "type" "neon_ldp_q")
+   (set_attr "fp" "yes")]
+)
+
 ;; Operands 0 and 2 are tied together by the final condition; so we allow
 ;; fairly lax checking on the second memory operation.
 (define_insn "store_pair_sw_<SX:mode><SX2:mode>"
@@ -1422,6 +1437,21 @@
    (set_attr "arch" "*,fp")]
 )
 
+(define_insn "store_pair_dw_tftf"
+  [(set (match_operand:TF 0 "aarch64_mem_pair_operand" "=Ump")
+	(match_operand:TF 1 "register_operand" "w"))
+   (set (match_operand:TF 2 "memory_operand" "=m")
+	(match_operand:TF 3 "register_operand" "w"))]
+   "TARGET_SIMD &&
+    rtx_equal_p (XEXP (operands[2], 0),
+		 plus_constant (Pmode,
+				XEXP (operands[0], 0),
+				GET_MODE_SIZE (TFmode)))"
+  "stp\\t%q1, %q3, %0"
+  [(set_attr "type" "neon_stp_q")
+   (set_attr "fp" "yes")]
+)
+
 ;; Load pair with post-index writeback.  This is primarily used in function
 ;; epilogues.
 (define_insn "loadwb_pair<GPI:mode>_<P:mode>"
@@ -1452,6 +1482,21 @@
   "INTVAL (operands[5]) == GET_MODE_SIZE (<GPF:MODE>mode)"
   "ldp\\t%<w>2, %<w>3, [%1], %4"
   [(set_attr "type" "neon_load1_2reg")]
+)
+
+(define_insn "loadwb_pair<TX:mode>_<P:mode>"
+  [(parallel
+    [(set (match_operand:P 0 "register_operand" "=k")
+          (plus:P (match_operand:P 1 "register_operand" "0")
+                  (match_operand:P 4 "aarch64_mem_pair_offset" "n")))
+     (set (match_operand:TX 2 "register_operand" "=w")
+          (mem:TX (match_dup 1)))
+     (set (match_operand:TX 3 "register_operand" "=w")
+          (mem:TX (plus:P (match_dup 1)
+			  (match_operand:P 5 "const_int_operand" "n"))))])]
+  "TARGET_SIMD && INTVAL (operands[5]) == GET_MODE_SIZE (<TX:MODE>mode)"
+  "ldp\\t%q2, %q3, [%1], %4"
+  [(set_attr "type" "neon_ldp_q")]
 )
 
 ;; Store pair with pre-index writeback.  This is primarily used in function
@@ -1486,6 +1531,24 @@
   "INTVAL (operands[5]) == INTVAL (operands[4]) + GET_MODE_SIZE (<GPF:MODE>mode)"
   "stp\\t%<w>2, %<w>3, [%0, %4]!"
   [(set_attr "type" "neon_store1_2reg<q>")]
+)
+
+(define_insn "storewb_pair<TX:mode>_<P:mode>"
+  [(parallel
+    [(set (match_operand:P 0 "register_operand" "=&k")
+          (plus:P (match_operand:P 1 "register_operand" "0")
+                  (match_operand:P 4 "aarch64_mem_pair_offset" "n")))
+     (set (mem:TX (plus:P (match_dup 0)
+			  (match_dup 4)))
+          (match_operand:TX 2 "register_operand" "w"))
+     (set (mem:TX (plus:P (match_dup 0)
+			  (match_operand:P 5 "const_int_operand" "n")))
+          (match_operand:TX 3 "register_operand" "w"))])]
+  "TARGET_SIMD
+   && INTVAL (operands[5])
+      == INTVAL (operands[4]) + GET_MODE_SIZE (<TX:MODE>mode)"
+  "stp\\t%q2, %q3, [%0, %4]!"
+  [(set_attr "type" "neon_stp_q")]
 )
 
 ;; -------------------------------------------------------------------
