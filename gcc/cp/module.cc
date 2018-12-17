@@ -3909,15 +3909,6 @@ trees_out::mark_node (tree decl)
 {
   gcc_checking_assert (DECL_P (decl));
 
-  // FIXME:Intermediate step
-  if (TREE_CODE(decl) == TEMPLATE_DECL
-      && !TREE_VISITED (DECL_TEMPLATE_RESULT (decl)))
-    {
-      tree r = DECL_TEMPLATE_RESULT (decl);
-      tree_map.put (r, 0);
-      TREE_VISITED (r) = true;
-    }
-
   int use_tpl = -1;
   if (tree ti = node_template_info (decl, use_tpl))
     if (!use_tpl)
@@ -3931,11 +3922,6 @@ trees_out::mark_node (tree decl)
       bool existed = tree_map.put (decl, 0);
       gcc_checking_assert (!existed);
       TREE_VISITED (decl) = true;
-
-      /* If the node is a template, mark the underlying decl too.  (The
-	 reverse does not need to be checked for.)  */
-      if (false && TREE_CODE (decl) == TEMPLATE_DECL)
-	mark_node (DECL_TEMPLATE_RESULT (decl));
     }
 }
 
@@ -3951,8 +3937,6 @@ trees_out::mark_gme (tree t)
   int *val = tree_map.get (t);
   gcc_assert (val && *val);
   *val = gme_lwm - *val;
-  if (false && TREE_CODE (t) == TEMPLATE_DECL)
-    mark_gme (DECL_TEMPLATE_RESULT (t));
 }
 
 /* Insert T into the map, return its back reference number.
@@ -6183,20 +6167,12 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
     {
       tree tpl = TI_TEMPLATE (ti);
       gcc_checking_assert (decl == DECL_TEMPLATE_RESULT (tpl));
-      if (!TREE_VISITED (tpl)
-	  || *tree_map.get (tpl) >= 0)
-	{
-	  if (TREE_VISITED (tpl))
-	    {
-	      bool existed = tree_map.put (decl, 0);
-	      gcc_checking_assert (!existed);
-	      TREE_VISITED (decl) = true;
-	    }
-	  if (streaming_p ())
-	    i (tt_template);
-	  tree_node (tpl);
-	  return false;
-	}
+      gcc_checking_assert (!TREE_VISITED (tpl)
+			   || *tree_map.get (tpl) >= 0);
+      if (streaming_p ())
+	i (tt_template);
+      tree_node (tpl);
+      return false;
     }
 
   if (false
@@ -6425,6 +6401,28 @@ trees_out::tree_value (tree t, walk_kind walk)
 	       DECL_P (t) && DECL_MODULE_EXPORT_P (t) ? " (exported)" : "");
   tree_node_specific (t);
   tree_node_bools (t);
+  tree tpl = NULL_TREE;
+
+  if (TREE_CODE (t) == TEMPLATE_DECL)
+    {
+      tpl = t;
+      t = DECL_TEMPLATE_RESULT (tpl);
+
+      walk_kind type_walk = ref_node (t);
+      gcc_assert (type_walk == WK_normal);
+      if (streaming_p ())
+	{
+	  u (TREE_CODE (t));
+	  start (t);
+	}
+      int tag = insert (t, WK_normal);
+      if (streaming_p ())
+	dump (dumper::TREE)
+	  && dump ("Writing:%d %C:%N%S", tag, TREE_CODE (t), t, t);
+      tree_node_specific (t);
+      tree_node_bools (t);
+    }
+
   if (DECL_IMPLICIT_TYPEDEF_P (t))
     {
       tree type = TREE_TYPE (t);
@@ -6444,6 +6442,8 @@ trees_out::tree_value (tree t, walk_kind walk)
       tree_node_bools (type);
       tree_node_vals (type);
     }
+  if (tpl)
+    tree_node_vals (tpl);
   tree_node_vals (t);
   if (streaming_p ())
     dump (dumper::TREE) && dump ("Written:%d %C:%N", tag, TREE_CODE (t), t);
@@ -6860,7 +6860,6 @@ trees_in::tree_node ()
 	/* A new node.  Stream it in.  */
 	bool is_gme = tag == tt_gme;
 	tree existing = NULL_TREE;
-	tree type = NULL_TREE;
 
 	if (is_gme)
 	  {
@@ -6903,33 +6902,62 @@ trees_in::tree_node ()
 	    ok = tree_node_bools (res, specific);
 	  }
 
+	tree tpl = NULL_TREE;
+	int r_tag = 0;
+	bool t_specific = false;
+	if (ok && TREE_CODE (res) == TEMPLATE_DECL)
+	  {
+	    tpl = res;
+	    t_specific = specific;
+	    unsigned c = u ();
+	    res = is_gme && !existing ? DECL_TEMPLATE_RESULT (tpl) : start (c);
+	    r_tag = insert (is_gme && existing
+			    ? DECL_TEMPLATE_RESULT (existing) : res);
+	    dump (dumper::TREE)
+	      && dump ("Reading:%d %C", r_tag, TREE_CODE (res));
+	    specific = tree_node_specific (res, is_gme && !existing);
+	    tree_node_bools (res, specific);
+	  }
+
+	tree type = NULL_TREE;
+	int t_tag = 0;
 	if (ok && DECL_IMPLICIT_TYPEDEF_P (res))
 	  {
 	    unsigned c = u ();
 	    type = is_gme && !existing ? TREE_TYPE (res) : start (c);
-	    int tag = insert (is_gme && existing ? TREE_TYPE (existing) : type);
+	    t_tag = insert (is_gme && existing ? TREE_TYPE (existing) : type);
 	    dump (dumper::TREE)
-	      && dump ("Reading:%d %C", tag, TREE_CODE (type));
+	      && dump ("Reading:%d %C", t_tag, TREE_CODE (type));
 	    bool specific = tree_node_specific (type, is_gme && !existing);
 	    tree_node_bools (type, specific);
 	    tree_node_vals (type, specific);
 	    if (!existing)
 	      {
 		type = finish (type);
-		back_refs[~tag] = type;
+		back_refs[~t_tag] = type;
 	      }
 	  }
 
-	if (!ok || !tree_node_vals (res, specific))
+	if (!ok
+	    || (tpl && !tree_node_vals (tpl, t_specific))
+	    || !tree_node_vals (res, specific))
 	  {
 	    if (res)
-	      back_refs[~tag] = NULL_TREE;
+	      {
+		back_refs[~tag] = NULL_TREE;
+		if (tpl)
+		  back_refs[~r_tag] = NULL_TREE;
+		if (type)
+		  back_refs[~t_tag] = NULL_TREE;
+	      }
 	    res = NULL_TREE;
 	    break;
 	  }
-
 	dump (dumper::TREE) && dump ("Read:%d %C:%N", tag, TREE_CODE (res), res);
-
+	if (tpl)
+	  res = tpl;
+	// FIXME: Is this right for any 'existing'?  I think not now
+	// we have GME handling right
 	if (!existing || !TYPE_P (res))
 	  {
 	    tree found = finish (res);
@@ -6939,7 +6967,12 @@ trees_in::tree_node ()
 		/* Update the mapping.  */
 		res = found;
 		if (!existing)
-		  back_refs[~tag] = res;
+		  {
+		    back_refs[~tag] = res;
+		    if (tpl)
+		      back_refs[~r_tag] = DECL_TEMPLATE_RESULT (res);
+		  }
+
 		dump (dumper::TREE)
 		  && dump ("Remapping:%d to %C:%N%S", tag,
 			   res ? TREE_CODE (res) : ERROR_MARK, res, res);
@@ -6949,6 +6982,8 @@ trees_in::tree_node ()
 	if (existing)
 	  {
 	    dump (dumper::GM) && dump ("Deduping %N", existing);
+	    if (tpl)
+	      DECL_TEMPLATE_RESULT (tpl) = res;
 	    if (type)
 	      {
 		TYPE_NAME (type) = res;
@@ -6958,7 +6993,7 @@ trees_in::tree_node ()
 	    bool matched = state->is_matching_decl (existing, res);
 	    /* Record EXISTING as the skip defn, because that's what
 	       we'll see when reading a definition.  */
-	    record_skip_defn (existing, !matched, false);
+	    record_skip_defn (STRIP_TEMPLATE (existing), !matched, false);
 	    res = existing;
 	  }
 
@@ -7117,14 +7152,6 @@ trees_out::tree_gme (tree decl)
   int tag = insert (decl);
   dump (dumper::GM)
     && dump ("Wrote:%d global decl %C:%N", tag, TREE_CODE (decl), decl);
-
-  if (TREE_CODE (decl) == TEMPLATE_DECL)
-    {
-      tree inner = DECL_TEMPLATE_RESULT (decl);
-      int tag = insert (inner);
-      dump (dumper::GM)
-	&& dump ("Wrote:%d inner decl %C:%N", tag, TREE_CODE (inner), inner);
-    }
 }
 
 void
@@ -7201,14 +7228,6 @@ trees_in::tree_gme ()
       dump (dumper::GM)
 	&& dump ("Read:%d %s global decl %C:%N", tag, kind,
 		 TREE_CODE (decl), decl);
-      if (TREE_CODE (decl) == TEMPLATE_DECL)
-	{
-	  tree inner = DECL_TEMPLATE_RESULT (decl);
-	  int tag = insert (inner);
-	  dump (dumper::GM)
-	    && dump ("Read:%d %s inner decl %C:%N", tag, kind,
-		     TREE_CODE (inner), inner);
-	}
     }
 }
 
@@ -9256,6 +9275,8 @@ module_state::write_class_def (trees_out &out, tree defn)
       /* Write the vtable initializers.  */
       for (; vtables; vtables = TREE_CHAIN (vtables))
 	write_definition (out, vtables);
+
+      out.tree_node (CLASSTYPE_DECL_LIST (type));
     }
 
   // lang->nested_udts
@@ -9283,7 +9304,6 @@ module_state::mark_class_def (trees_out &out, tree defn)
       if (has_definition (member))
 	mark_definition (out, member);
     }
-
   if (TYPE_LANG_SPECIFIC (type))
     {
       if (tree as_base = CLASSTYPE_AS_BASE (type))
@@ -9299,6 +9319,19 @@ module_state::mark_class_def (trees_out &out, tree defn)
 	{
 	  out.mark_node (vtables);
 	  mark_var_def (out, vtables);
+	}
+
+      for (tree decls = CLASSTYPE_DECL_LIST (type);
+	   decls; decls = TREE_CHAIN (decls))
+	{
+	  /* There may be decls here, that are not on the member vector.
+	     for instance forward declarations of member tagged types.  */
+	  tree member = TREE_VALUE (decls);
+	  if (TYPE_P (member))
+	    /* In spite of its name, non-decls appear :(.  */
+	    member = TYPE_NAME (member);
+	  gcc_assert (DECL_CONTEXT (member) == type);
+	  out.mark_node (member);
 	}
     }
 }
@@ -9396,6 +9429,8 @@ module_state::read_class_def (trees_in &in, tree defn)
       for (tree vt = vtables; vt; vt = TREE_CHAIN (vt))
 	read_var_def (in, vt);
 
+      tree decl_list = in.tree_node ();
+
       if (!odr)
 	{
 	  CLASSTYPE_PRIMARY_BINFO (type) = primary;
@@ -9403,11 +9438,8 @@ module_state::read_class_def (trees_in &in, tree defn)
 	  if (!CLASSTYPE_KEY_METHOD (type) && vtables)
 	    vec_safe_push (keyed_classes, type);
 	  CLASSTYPE_VTABLES (type) = vtables;
+	  CLASSTYPE_DECL_LIST (type) = decl_list;
 	}
-
-      // FIXME:
-      if (false/*TREE_CODE (decl) == TEMPLATE_DECL*/)
-	CLASSTYPE_DECL_LIST (type) = in.tree_node ();
     }
 
   /* Propagate to all variants.  */
@@ -9466,8 +9498,6 @@ void
 module_state::write_template_def (trees_out &out, tree decl)
 {
   tree res = DECL_TEMPLATE_RESULT (decl);
-  if (TREE_CODE (res) == TYPE_DECL && CLASS_TYPE_P (TREE_TYPE (res)))
-    out.tree_node (CLASSTYPE_DECL_LIST (TREE_TYPE (res)));
   write_definition (out, res);
 }
 
@@ -9475,19 +9505,6 @@ void
 module_state::mark_template_def (trees_out &out, tree decl)
 {
   tree res = DECL_TEMPLATE_RESULT (decl);
-  if (TREE_CODE (res) == TYPE_DECL && CLASS_TYPE_P (TREE_TYPE (res)))
-    for (tree decls = CLASSTYPE_DECL_LIST (TREE_TYPE (res));
-	 decls; decls = TREE_CHAIN (decls))
-      {
-	/* There may be decls here, that are not on the member vector.
-	   for instance forward declarations of member tagged types.  */
-	tree member = TREE_VALUE (decls);
-	if (TYPE_P (member))
-	  /* In spite of its name, non-decls appear :(.  */
-	  member = TYPE_NAME (member);
-	gcc_assert (DECL_CONTEXT (member) == TREE_TYPE (decl));
-	out.mark_node (member);
-      }
   mark_definition (out, res);
 }
 
@@ -9495,8 +9512,6 @@ bool
 module_state::read_template_def (trees_in &in, tree decl)
 {
   tree res = DECL_TEMPLATE_RESULT (decl);
-  if (TREE_CODE (res) == TYPE_DECL && CLASS_TYPE_P (TREE_TYPE (res)))
-    CLASSTYPE_DECL_LIST (TREE_TYPE (res)) = in.tree_node ();
   return read_definition (in, res);
 }
 
@@ -11831,6 +11846,11 @@ module_state_config::get_opts ()
       /* Drop any dump control options.  */
       if (opt->opt_index >= OPT_fdump_
 	  && opt->opt_index <= OPT_fdump_unnumbered_links)
+	continue;
+
+      /* Drop preprocessing options.  */
+      if (opt->opt_index == OPT_fpreprocessed
+	  || opt->opt_index == OPT_fdirectives_only)
 	continue;
 
       size_t l = strlen (text);

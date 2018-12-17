@@ -1,9 +1,21 @@
 2018-12-17  Nathan Sidwell  <nathan@acm.org>
 
+	Atomic TEMPLATE_DECL + DECL_TEMPLATE_RESULT.
+	gcc/cp/
+	* module.cc (trees_out::mark_node): Remove temp tpl hack.
+	(trees_out::tree_decl): Remove tt_template remarking.
+	(trees_out::tree_value): Atomic TEMPLATE_DECL.
+	(trees_in::tree_node): Likewise.
+	(trees_out::{mark,read,write}_template_def): Move DECL_LIST to ...
+	(trees_out::{mark,read,write}_class_def): ... here.
+	(trees_{in,out}::tree_gme): Don't mark inner decl.
+	gcc/testsuite/
+	* leg-merge-8_[abc].[CH]: New.
+
 	Intermediate step to atomic TEMPLATE_DECL + DECL_TEMPLATE_RESULT.
 	Breaks leg-merge-7_c.C,
 	gcc/cp/
-	* module.c (tree_tag): Add tt_template, tt_implicit_template.
+	* module.cc (tree_tag): Add tt_template, tt_implicit_template.
 	(node_template_info): Not a member fn.
 	(trees_out::{mark_node,mark_gme}): Mark the template.
 	(trees_{in,out}::tree_decl): Do implicit_template.
