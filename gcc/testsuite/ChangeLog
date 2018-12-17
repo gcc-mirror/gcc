@@ -1,3 +1,14 @@
+2018-12-17  Steve Ellcey  <sellcey@cavium.com>
+
+	* gcc.target/aarch64/torture/aarch64-torture.exp: New file.
+	* gcc.target/aarch64/torture/simd-abi-1.c: New test.
+	* gcc.target/aarch64/torture/simd-abi-2.c: Ditto.
+	* gcc.target/aarch64/torture/simd-abi-3.c: Ditto.
+	* gcc.target/aarch64/torture/simd-abi-4.c: Ditto.
+	* gcc.target/aarch64/torture/simd-abi-5.c: Ditto.
+	* gcc.target/aarch64/torture/simd-abi-6.c: Ditto.
+	* gcc.target/aarch64/torture/simd-abi-7.c: Ditto.
+
 2018-12-17  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/tree-ssa/builtin-snprintf-4.c: Adjust for ILP32.
