@@ -9386,10 +9386,7 @@ resolve_transfer (gfc_code *code)
   if (dt && dt->dt_io_kind->value.iokind != M_INQUIRE
       && (ts->type == BT_DERIVED || ts->type == BT_CLASS))
     {
-      if (ts->type == BT_DERIVED || ts->type == BT_CLASS)
-	derived = ts->u.derived;
-      else
-	derived = ts->u.derived->components->ts.u.derived;
+      derived = ts->u.derived;
 
       /* Determine when to use the formatted DTIO procedure.  */
       if (dt && (dt->format_expr || dt->format_label))
