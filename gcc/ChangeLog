@@ -1,3 +1,12 @@
+2018-12-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* coverage.c (struct conts_entry): Add n_counts.
+	(remap_counts_file): Record number of ocunts.
+	(get_coverage_counts): Verify that counts match.
+	* coverage.h (get_coverage_counts): Update prototype.
+	* profile.c (get_exec_counts. compute_value_histograms): Add
+	n_counts parametrs.
+
 2018-12-17  Senthil Kumar Selvaraj  <senthilkumar.selvaraj@microchip.com>
 
 	PR rtl-optimization/88253
