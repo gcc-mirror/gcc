@@ -335,6 +335,7 @@ public:
     virtual bool needsDestruction();
     virtual bool needsNested();
     void checkComplexTransition(Loc loc);
+    TypeFunction *toTypeFunction();
 
     static void error(Loc loc, const char *format, ...);
     static void warning(Loc loc, const char *format, ...);
