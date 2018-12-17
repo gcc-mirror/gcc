@@ -1,3 +1,31 @@
+2018-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/invoke.texi (-fversion-loops-for-strides): Document
+	(loop-versioning-group-size, loop-versioning-max-inner-insns)
+	(loop-versioning-max-outer-insns): Document new --params.
+	* Makefile.in (OBJS): Add gimple-loop-versioning.o.
+	* common.opt (fversion-loops-for-strides): New option.
+	* opts.c (default_options_table): Enable fversion-loops-for-strides
+	at -O3.
+	* params.def (PARAM_LOOP_VERSIONING_GROUP_SIZE)
+	(PARAM_LOOP_VERSIONING_MAX_INNER_INSNS)
+	(PARAM_LOOP_VERSIONING_MAX_OUTER_INSNS): New parameters.
+	* passes.def: Add pass_loop_versioning.
+	* timevar.def (TV_LOOP_VERSIONING): New time variable.
+	* tree-ssa-propagate.h
+	(substitute_and_fold_engine::substitute_and_fold): Add an optional
+	block parameter.
+	* tree-ssa-propagate.c
+	(substitute_and_fold_engine::substitute_and_fold): Likewise.
+	When passed, only walk blocks dominated by that block.
+	* tree-vrp.h (range_includes_p): Declare.
+	(range_includes_zero_p): Turn into an inline wrapper around
+	range_includes_p.
+	* tree-vrp.c (range_includes_p): New function, generalizing...
+	(range_includes_zero_p): ...this.
+	* tree-pass.h (make_pass_loop_versioning): Declare.
+	* gimple-loop-versioning.cc: New file.
+
 2018-12-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-fnsummary.c (remap_edge_change_prob): Do not ICE when changes

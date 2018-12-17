@@ -8220,7 +8220,8 @@ by @option{-O2} and also turns on the following optimization flags:
 -ftree-partial-pre @gol
 -ftree-slp-vectorize @gol
 -funswitch-loops @gol
--fvect-cost-model}
+-fvect-cost-model @gol
+-fversion-loops-for-strides}
 
 @item -O0
 @opindex O0
@@ -10772,6 +10773,30 @@ of the loop on both branches (modified according to result of the condition).
 
 Enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
+@item -fversion-loops-for-strides
+@opindex fversion-loops-for-strides
+If a loop iterates over an array with a variable stride, create another
+version of the loop that assumes the stride is always one.  For example:
+
+@smallexample
+for (int i = 0; i < n; ++i)
+  x[i * stride] = @dots{};
+@end smallexample
+
+becomes:
+
+@smallexample
+if (stride == 1)
+  for (int i = 0; i < n; ++i)
+    x[i] = @dots{};
+else
+  for (int i = 0; i < n; ++i)
+    x[i * stride] = @dots{};
+@end smallexample
+
+This is particularly useful for assumed-shape arrays in Fortran where
+(for example) it allows better vectorization assuming contiguous accesses.
+
 @item -ffunction-sections
 @itemx -fdata-sections
 @opindex ffunction-sections
@@ -11981,6 +12006,15 @@ Hardware autoprefetcher scheduler model control flag.
 Number of lookahead cycles the model looks into; at '
 ' only enable instruction sorting heuristic.
 
+@item loop-versioning-max-inner-insns
+The maximum number of instructions that an inner loop can have
+before the loop versioning pass considers it too big to copy.
+
+@item loop-versioning-max-outer-insns
+The maximum number of instructions that an outer loop can have
+before the loop versioning pass considers it too big to copy,
+discounting any instructions in inner loops that directly benefit
+from versioning.
 
 @end table
 @end table

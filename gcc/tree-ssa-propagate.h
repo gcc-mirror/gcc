@@ -104,7 +104,7 @@ class substitute_and_fold_engine
   virtual bool fold_stmt (gimple_stmt_iterator *) { return false; }
   virtual tree get_value (tree) { return NULL_TREE; }
 
-  bool substitute_and_fold (void);
+  bool substitute_and_fold (basic_block = NULL);
   bool replace_uses_in (gimple *);
   bool replace_phi_args_in (gphi *);
 };

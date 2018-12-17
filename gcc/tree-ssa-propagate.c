@@ -1154,6 +1154,10 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 
 
 /* Perform final substitution and folding of propagated values.
+   Process the whole function if BLOCK is null, otherwise only
+   process the blocks that BLOCK dominates.  In the latter case,
+   it is the caller's responsibility to ensure that dominator
+   information is available and up-to-date.
 
    PROP_VALUE[I] contains the single value that should be substituted
    at every use of SSA name N_I.  If PROP_VALUE is NULL, no values are
@@ -1170,16 +1174,24 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
    Return TRUE when something changed.  */
 
 bool
-substitute_and_fold_engine::substitute_and_fold (void)
+substitute_and_fold_engine::substitute_and_fold (basic_block block)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\nSubstituting values and folding statements\n\n");
 
   memset (&prop_stats, 0, sizeof (prop_stats));
 
-  calculate_dominance_info (CDI_DOMINATORS);
+  /* Don't call calculate_dominance_info when iterating over a subgraph.
+     Callers that are using the interface this way are likely to want to
+     iterate over several disjoint subgraphs, and it would be expensive
+     in enable-checking builds to revalidate the whole dominance tree
+     each time.  */
+  if (block)
+    gcc_assert (dom_info_state (CDI_DOMINATORS));
+  else
+    calculate_dominance_info (CDI_DOMINATORS);
   substitute_and_fold_dom_walker walker (CDI_DOMINATORS, this);
-  walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  walker.walk (block ? block : ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
   /* We cannot remove stmts during the BB walk, especially not release
      SSA names there as that destroys the lattice of our callers.
