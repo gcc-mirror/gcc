@@ -2972,10 +2972,6 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   static void write_definition (trees_out &out, tree decl);
   bool read_definition (trees_in &in, tree decl);
 
-  static void mark_template_def (trees_out &out, tree decl);
-  static void write_template_def (trees_out &out, tree decl);
-  bool read_template_def (trees_in &in, tree decl);
-
   static void mark_function_def (trees_out &out, tree decl);
   static void write_function_def (trees_out &out, tree decl);
   bool read_function_def (trees_in &in, tree decl);
@@ -9470,27 +9466,6 @@ module_state::read_enum_def (trees_in &in, tree decl)
   return true;
 }
 
-void
-module_state::write_template_def (trees_out &out, tree decl)
-{
-  tree res = DECL_TEMPLATE_RESULT (decl);
-  write_definition (out, res);
-}
-
-void
-module_state::mark_template_def (trees_out &out, tree decl)
-{
-  tree res = DECL_TEMPLATE_RESULT (decl);
-  mark_definition (out, res);
-}
-
-bool
-module_state::read_template_def (trees_in &in, tree decl)
-{
-  tree res = DECL_TEMPLATE_RESULT (decl);
-  return read_definition (in, res);
-}
-
 /* Write out the body of DECL.  See above circularity note.  */
 
 void
@@ -9500,14 +9475,15 @@ module_state::write_definition (trees_out &out, tree decl)
 		   out.streaming_p () ? "Writing" : "Depending",
 		   TREE_CODE (decl), decl);
 
+ again:
   switch (TREE_CODE (decl))
     {
     default:
       gcc_unreachable ();
 
     case TEMPLATE_DECL:
-      write_template_def (out, decl);
-      break;
+      decl = DECL_TEMPLATE_RESULT (decl);
+      goto again;
 
     case FUNCTION_DECL:
       write_function_def (out, decl);
@@ -9536,14 +9512,15 @@ module_state::write_definition (trees_out &out, tree decl)
 void
 module_state::mark_definition (trees_out &out, tree decl)
 {
+ again:
   switch (TREE_CODE (decl))
     {
     default:
       gcc_unreachable ();
 
     case TEMPLATE_DECL:
-      mark_template_def (out, decl);
-      break;
+      decl = DECL_TEMPLATE_RESULT (decl);
+      goto again;
 
     case FUNCTION_DECL:
       mark_function_def (out, decl);
@@ -9574,13 +9551,15 @@ module_state::read_definition (trees_in &in, tree decl)
 {
   dump () && dump ("Reading definition %C %N", TREE_CODE (decl), decl);
 
+ again:
   switch (TREE_CODE (decl))
     {
     default:
       break;
 
     case TEMPLATE_DECL:
-      return read_template_def (in, decl);
+      decl = DECL_TEMPLATE_RESULT (decl);
+      goto again;
 
     case FUNCTION_DECL:
       return read_function_def (in, decl);

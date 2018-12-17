@@ -1,5 +1,11 @@
 2018-12-17  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_out::{write,mark}_template_def): Delete.
+	(trees_out::{write,mark}_definition): Adjust.
+	(trees_in::read_template_def): Delete.
+	(trees_in::read_definition): Adjust.
+
 	Kill old broken global module merge code.
 	gcc/cp/
 	* module.cc (trees_in::finish): Remove DECL merging.
