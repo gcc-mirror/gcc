@@ -1,3 +1,37 @@
+2018-12-17  Steve Ellcey  <sellcey@cavium.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_use_simple_return_insn_p):
+	New prototype.
+	(aarch64_epilogue_uses): Ditto.
+	* config/aarch64/aarch64.c (aarch64_attribute_table): New array.
+	(aarch64_simd_decl_p): New function.
+	(aarch64_reg_save_mode): New function.
+	(aarch64_function_ok_for_sibcall): Check for simd calls.
+	(aarch64_layout_frame): Check for simd function.
+	(aarch64_gen_storewb_pair): Handle E_TFmode.
+	(aarch64_push_regs): Use aarch64_reg_save_mode to get mode.
+	(aarch64_gen_loadwb_pair): Handle E_TFmode.
+	(aarch64_pop_regs): Use aarch64_reg_save_mode to get mode.
+	(aarch64_gen_store_pair): Handle E_TFmode.
+	(aarch64_gen_load_pair): Ditto.
+	(aarch64_save_callee_saves): Handle different mode sizes.
+	(aarch64_restore_callee_saves): Ditto.
+	(aarch64_components_for_bb): Check for simd function.
+	(aarch64_epilogue_uses): New function.
+	(aarch64_process_components): Check for simd function.
+	(aarch64_expand_prologue): Ditto.
+	(aarch64_expand_epilogue): Ditto.
+	(aarch64_expand_call): Ditto.
+	(aarch64_use_simple_return_insn_p): New function.
+	(TARGET_ATTRIBUTE_TABLE): New define.
+	* config/aarch64/aarch64.h (EPILOGUE_USES): Redefine.
+	(FP_SIMD_SAVED_REGNUM_P): New macro.
+	* config/aarch64/aarch64.md (simple_return): New define_expand.
+	(load_pair_dw_tftf): New instruction.
+	(store_pair_dw_tftf): Ditto.
+	(loadwb_pair<TX:mode>_<P:mode>): Ditto.
+	(storewb_pair<TX:mode>_<P:mode>): Ditto.
+
 2018-12-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/88502
