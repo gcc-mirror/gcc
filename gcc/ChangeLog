@@ -1,3 +1,11 @@
+2018-12-17  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/87870
+	* config/rs6000/vsx.md (nW): New mode iterator.
+	(vsx_mov<mode>_64bit): Use it.  Remove redundant GPR 0/-1 alternative.
+	Update length attribute for (<??r>, <nW>)  alternative.
+	(vsx_mov<mode>_32bit): Likewise.
+
 2018-12-17  Tom de Vries  <tdevries@suse.de>
 
 	* config/nvptx/nvptx.c (PTX_VECTOR_LENGTH, PTX_WORKER_LENGTH,
