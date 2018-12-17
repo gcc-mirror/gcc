@@ -1,3 +1,8 @@
+2018-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88410
+	* g++.dg/cpp0x/pr88410.C: New test.
+
 2018-12-17  Steve Ellcey  <sellcey@cavium.com>
 
 	* gcc.target/aarch64/torture/aarch64-torture.exp: New file.
