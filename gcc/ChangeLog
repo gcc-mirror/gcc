@@ -1,3 +1,9 @@
+2018-12-17  Senthil Kumar Selvaraj  <senthilkumar.selvaraj@microchip.com>
+
+	PR rtl-optimization/88253
+	* combine.c (combine_simplify_rtx): Test for side-effects before
+	substituting by zero.
+
 2018-12-17  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* doc/invoke.texi (-fversion-loops-for-strides): Document
