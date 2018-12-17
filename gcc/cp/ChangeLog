@@ -1,3 +1,9 @@
+2018-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88410
+	* cp-gimplify.c (cp_fold) <case ADDR_EXPR>: For offsetof-like folding,
+	call maybe_constant_value on val to see if it is INTEGER_CST.
+
 2018-12-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/52321
