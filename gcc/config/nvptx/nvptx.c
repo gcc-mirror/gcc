@@ -81,6 +81,8 @@
 #define WORKAROUND_PTXJIT_BUG_2 1
 #define WORKAROUND_PTXJIT_BUG_3 1
 
+#define PTX_WARP_SIZE 32
+
 /* The various PTX memory areas an object might reside in.  */
 enum nvptx_data_area
 {
@@ -5175,7 +5177,7 @@ nvptx_expand_builtin (tree exp, rtx target, rtx ARG_UNUSED (subtarget),
 static int
 nvptx_simt_vf ()
 {
-  return PTX_VECTOR_LENGTH;
+  return PTX_WARP_SIZE;
 }
 
 /* Validate compute dimensions of an OpenACC offload or routine, fill

@@ -1,5 +1,10 @@
 2018-12-17  Tom de Vries  <tdevries@suse.de>
 
+	* config/nvptx/nvptx.c (PTX_WARP_SIZE): Define.
+	(nvptx_simt_vf): Return PTX_WARP_SIZE instead of PTX_VECTOR_LENGTH.
+
+2018-12-17  Tom de Vries  <tdevries@suse.de>
+
 	* config/nvptx/nvptx.c (nvptx_single): Fix whitespace.
 	(nvptx_neuter_pars): Likewise.
 
