@@ -1,5 +1,11 @@
 2018-12-17  Nathan Sidwell  <nathan@acm.org>
 
+	Kill old broken global module merge code.
+	gcc/cp/
+	* module.cc (trees_in::finish): Remove DECL merging.
+	* name-lookup.c (merge_global_decl): Delete.
+	* name-lookup.h (merge_global_decl): Delete decl.
+
 	Atomic TEMPLATE_DECL + DECL_TEMPLATE_RESULT.
 	gcc/cp/
 	* module.cc (trees_out::mark_node): Remove temp tpl hack.

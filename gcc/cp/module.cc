@@ -4224,30 +4224,6 @@ trees_in::finish (tree t)
       return remap;
     }
 
-  if (DECL_P (t) && MAYBE_DECL_MODULE_OWNER (t) < MODULE_IMPORT_BASE)
-    {
-      // FIXME:Revisit
-      tree ctx = CP_DECL_CONTEXT (t);
-
-      // We should have dealt with namespaces elsewhere
-      gcc_assert (TREE_CODE (t) != NAMESPACE_DECL || DECL_NAMESPACE_ALIAS (t));
-
-      if (TREE_CODE (ctx) == NAMESPACE_DECL)
-	{
-	  /* A global-module decl.  See if there's already a duplicate.  */
-	  tree old = merge_global_decl (ctx, state->mod, t);
-
-	  if (!old)
-	    error_at (state->loc, "failed to merge %#qD", t);
-	  else
-	    dump () && dump ("%s decl %N%S, (%p)",
-			     old == t ? "New" : "Existing",
-			     old, old, (void *)old);
-
-	  return old;
-	}
-    }
-
   if (TREE_CODE (t) == TEMPLATE_INFO)
     /* We're not a pending template in this TU.  */
     TI_PENDING_TEMPLATE_FLAG (t) = 0;

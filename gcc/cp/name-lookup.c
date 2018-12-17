@@ -3583,53 +3583,6 @@ pushdecl (tree x, bool is_friend)
   return ret;
 }
 
-/* DECL is a newly read in global-module _DECL, residing in CTX.
-   Merge it with an already matching declaration.  If DECL is a
-   namespace, insert it.Return the matched or new decl, or NULL
-   on error.  */
-
-tree
-merge_global_decl (tree ctx, unsigned mod_ix, tree decl)
-{
-  gcc_assert (TREE_CODE (decl) != NAMESPACE_DECL || DECL_NAMESPACE_ALIAS (decl));
-  gcc_assert (CP_DECL_CONTEXT (decl) == ctx);
-
-  // FIXME: need to properly think about artificial decls.  See rtti.c
-  // comment about abi_namespace too.
-  if (DECL_ARTIFICIAL (decl))
-    mod_ix = 0;
-  /* We know we'll eventually insert the decl, so we can create the
-     slot now.  */
-  tree *slot = find_namespace_slot (ctx, DECL_NAME (decl), true);
-  mc_slot *mslot = module_binding_slot
-    (slot, DECL_NAME (decl),
-     mod_ix == MODULE_PURVIEW ? MODULE_SLOT_CURRENT : mod_ix, false);
-  tree old = NULL_TREE;
-
-  if (!mslot)
-    return decl;
-
-  if (mslot->is_lazy ())
-    *mslot = NULL_TREE;
-
-  if (*mslot && anticipated_builtin_p (*mslot))
-    /* Zap out an anticipated builtin.  */
-    *mslot = NULL_TREE;
-
-  for (ovl_iterator iter (MAYBE_STAT_DECL (tree (*mslot))); !old && iter; ++iter)
-    if (!iter.using_p ())
-      old = duplicate_decls (decl, *iter, false);
-
-  if (old == error_mark_node)
-    old = NULL_TREE;
-  else if (old)
-    ;
-  else
-    old = decl;
-
-  return old;
-}
-
 /* DECL is a yet-to-be-loaded Global Module Entity.  TPL, RET and ARGS
    are its distinguishing features (some of which may be NULL).  Look
    for an existing GME that matches and return that if found.
