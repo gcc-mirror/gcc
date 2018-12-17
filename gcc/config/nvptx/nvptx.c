@@ -5187,13 +5187,39 @@ static bool
 nvptx_goacc_validate_dims (tree decl, int dims[], int fn_level)
 {
   bool changed = false;
+  bool oacc_default_dims_p = false;
+  bool oacc_min_dims_p = false;
+  bool offload_region_p = false;
+  bool routine_p = false;
+  bool routine_seq_p = false;
+
+  if (decl == NULL_TREE)
+    {
+      if (fn_level == -1)
+	oacc_default_dims_p = true;
+      else if (fn_level == -2)
+	oacc_min_dims_p = true;
+      else
+	gcc_unreachable ();
+    }
+  else if (fn_level == -1)
+    offload_region_p = true;
+  else if (0 <= fn_level && fn_level <= GOMP_DIM_MAX)
+    {
+      routine_p = true;
+      routine_seq_p = fn_level == GOMP_DIM_MAX;
+    }
+  else
+    gcc_unreachable ();
 
   /* The vector size must be 32, unless this is a SEQ routine.  */
-  if (fn_level <= GOMP_DIM_VECTOR && fn_level >= -1
+  if ((offload_region_p || oacc_default_dims_p
+       || (routine_p && !routine_seq_p))
       && dims[GOMP_DIM_VECTOR] >= 0
       && dims[GOMP_DIM_VECTOR] != PTX_VECTOR_LENGTH)
     {
-      if (fn_level < 0 && dims[GOMP_DIM_VECTOR] >= 0)
+      if ((offload_region_p || oacc_default_dims_p)
+	  && dims[GOMP_DIM_VECTOR] >= 0)
 	warning_at (decl ? DECL_SOURCE_LOCATION (decl) : UNKNOWN_LOCATION, 0,
 		    dims[GOMP_DIM_VECTOR]
 		    ? G_("using vector_length (%d), ignoring %d")
@@ -5213,7 +5239,7 @@ nvptx_goacc_validate_dims (tree decl, int dims[], int fn_level)
       changed = true;
     }
 
-  if (!decl)
+  if (oacc_default_dims_p || oacc_min_dims_p)
     {
       dims[GOMP_DIM_VECTOR] = PTX_VECTOR_LENGTH;
       if (dims[GOMP_DIM_WORKER] < 0)

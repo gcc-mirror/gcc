@@ -1,3 +1,8 @@
+2018-12-17  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.c (nvptx_goacc_validate_dims): Rewrite using
+	predicate vars.
+
 2018-12-17  Steve Ellcey  <sellcey@cavium.com>
 
 	* config/aarch64/aarch64-protos.h (aarch64_use_simple_return_insn_p):
