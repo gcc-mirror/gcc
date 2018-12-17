@@ -1801,7 +1801,7 @@ elf_out::create_mapping (unsigned ext, bool extending)
   if (extending && ext < 1024 * 1024)
     {
       if (!posix_fallocate (fd, offset, ext * 2))
-	mapping = mmap (NULL, ext * 2, PROT_READ + PROT_WRITE,
+	mapping = mmap (NULL, ext * 2, PROT_READ | PROT_WRITE,
 			MAP_SHARED, fd, offset);
       if (mapping != MAP_FAILED)
 	ext *= 2;
@@ -1809,7 +1809,7 @@ elf_out::create_mapping (unsigned ext, bool extending)
   if (mapping == MAP_FAILED)
     {
       if (!extending || !posix_fallocate (fd, offset, ext))
-	mapping = mmap (NULL, ext, PROT_READ + PROT_WRITE,
+	mapping = mmap (NULL, ext, PROT_READ | PROT_WRITE,
 			MAP_SHARED, fd, offset);
       if (mapping == MAP_FAILED)
 	{
@@ -2423,6 +2423,7 @@ enum tree_tag {
   tt_binfo,		/* A BINFO.  */
   tt_vtable,		/* A vtable.  */
   tt_template,
+  tt_implicit_template,
   tt_gme		/* Global Module Entity.  */
 };
 
@@ -2606,7 +2607,6 @@ public:
 
 public:
   /* Mark a node for special walking.  */
-  tree node_template_info (tree decl, int &use);
   void mark_node (tree);
   void mark_gme (tree);
   walk_kind ref_node (tree);
@@ -3868,8 +3868,8 @@ trees_out::unmark_trees ()
     }
 }
 
-tree
-trees_out::node_template_info (tree decl, int &use)
+static tree
+node_template_info (tree decl, int &use)
 {
   tree ti = NULL_TREE;
   int use_tpl = -1;
@@ -3909,6 +3909,20 @@ trees_out::mark_node (tree decl)
 {
   gcc_checking_assert (DECL_P (decl));
 
+  // FIXME:Intermediate step
+  if (TREE_CODE(decl) == TEMPLATE_DECL
+      && !TREE_VISITED (DECL_TEMPLATE_RESULT (decl)))
+    {
+      tree r = DECL_TEMPLATE_RESULT (decl);
+      tree_map.put (r, 0);
+      TREE_VISITED (r) = true;
+    }
+
+  int use_tpl = -1;
+  if (tree ti = node_template_info (decl, use_tpl))
+    if (!use_tpl)
+      decl = TI_TEMPLATE (ti);
+
   if (TREE_VISITED (decl))
     gcc_checking_assert (!*tree_map.get (decl)
 			 || *tree_map.get (decl) > gme_lwm);
@@ -3920,7 +3934,7 @@ trees_out::mark_node (tree decl)
 
       /* If the node is a template, mark the underlying decl too.  (The
 	 reverse does not need to be checked for.)  */
-      if (TREE_CODE (decl) == TEMPLATE_DECL)
+      if (false && TREE_CODE (decl) == TEMPLATE_DECL)
 	mark_node (DECL_TEMPLATE_RESULT (decl));
     }
 }
@@ -3928,11 +3942,16 @@ trees_out::mark_node (tree decl)
 void
 trees_out::mark_gme (tree t)
 {
+  int use_tpl = -1;
+  if (tree ti = node_template_info (t, use_tpl))
+    if (!use_tpl)
+      t = TI_TEMPLATE (ti);
+
   gcc_checking_assert (TREE_VISITED (t));
   int *val = tree_map.get (t);
   gcc_assert (val && *val);
   *val = gme_lwm - *val;
-  if (TREE_CODE (t) == TEMPLATE_DECL)
+  if (false && TREE_CODE (t) == TEMPLATE_DECL)
     mark_gme (DECL_TEMPLATE_RESULT (t));
 }
 
@@ -6146,8 +6165,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
       return true;
     }
 
-  if (TREE_CODE (decl) == PARM_DECL
-      || !DECL_CONTEXT (decl))
+  if (TREE_CODE (decl) == PARM_DECL || !DECL_CONTEXT (decl))
     {
       /* If we cannot name this, it better be the inner-most decl we
 	 asked about.  */
@@ -6159,7 +6177,30 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
     /* If this is a fixed decl, we're done.  */
     return false;
 
-  if (TREE_CODE (decl) == TEMPLATE_DECL
+  int use_tpl = -1;
+  tree ti = node_template_info (decl, use_tpl);
+  if (ti && !use_tpl)
+    {
+      tree tpl = TI_TEMPLATE (ti);
+      gcc_checking_assert (decl == DECL_TEMPLATE_RESULT (tpl));
+      if (!TREE_VISITED (tpl)
+	  || *tree_map.get (tpl) >= 0)
+	{
+	  if (TREE_VISITED (tpl))
+	    {
+	      bool existed = tree_map.put (decl, 0);
+	      gcc_checking_assert (!existed);
+	      TREE_VISITED (decl) = true;
+	    }
+	  if (streaming_p ())
+	    i (tt_template);
+	  tree_node (tpl);
+	  return false;
+	}
+    }
+
+  if (false
+      && TREE_CODE (decl) == TEMPLATE_DECL
       && RECORD_OR_UNION_CODE_P (TREE_CODE (DECL_CONTEXT (decl)))
       && !DECL_MEMBER_TEMPLATE_P (decl))
     {
@@ -6171,15 +6212,17 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 
   const char *kind = NULL;
   unsigned owner = MODULE_UNKNOWN;
-  int use_tpl = -1;
-  if (tree ti = node_template_info (decl, use_tpl))
+
+  if (ti)
     {
       if (use_tpl & 1)
 	{
 	  /* Some kind of instantiation. */
 	  tree tpl = TI_TEMPLATE (ti);
-	  if (!RECORD_OR_UNION_CODE_P (TREE_CODE (DECL_CONTEXT (tpl)))
-	      || DECL_MEMBER_TEMPLATE_P (tpl))
+	  if (RECORD_OR_UNION_CODE_P (TREE_CODE (DECL_CONTEXT (tpl)))
+	      && !DECL_MEMBER_TEMPLATE_P (tpl))
+	    ; /* Implicit member template.  */
+	  else
 	    {
 	      if (streaming_p ())
 		i (tt_inst);
@@ -6189,12 +6232,8 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	      goto insert;
 	    }
 	}
-      else if (!use_tpl)
-	{
-	  /* Primary.  */
-	}
       else
-	gcc_unreachable ();
+	gcc_assert (!use_tpl);
     }
 
   {
@@ -6204,7 +6243,8 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 
     /* We should not get cross-module references to the pseudo
        template of a member of a template class.  */
-    gcc_assert (TREE_CODE (decl) != TEMPLATE_DECL
+    gcc_assert (true
+		|| TREE_CODE (decl) != TEMPLATE_DECL
 		|| TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL
 		|| DECL_MEMBER_TEMPLATE_P (decl)
 		|| owner < MODULE_IMPORT_BASE);
@@ -6254,17 +6294,26 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	  }
       }
 
+    tree look = decl;
+    if (TREE_CODE (decl) == TEMPLATE_DECL
+	&& RECORD_OR_UNION_CODE_P (TREE_CODE (DECL_CONTEXT (decl)))
+	&& !DECL_MEMBER_TEMPLATE_P (decl))
+      look = DECL_TEMPLATE_RESULT (decl);
+
     /* A named decl -> tt_named_decl.  */
     if (streaming_p ())
       {
-	i (tt_named_decl);
+	i (look == decl ? tt_named_decl : tt_implicit_template);
 	tree_ctx (ctx, true, decl);
       }
     else if (!is_import)
       {
 	if (TREE_CODE (ctx) != NAMESPACE_DECL)
 	  tree_ctx (ctx, true, decl);
-	else if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION)
+	else if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION
+		 // FIXME:the DECL_TEMPLATE_RESULT.  When atomically
+		 // written, shouldn't be needed.
+		 && (!ti || use_tpl))
 	  dep_hash->add_dependency (decl, looking_inside);
       }
 
@@ -6275,10 +6324,11 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	u (owner);
 	if (name != as_base_identifier)
 	  {
-	    int ident = get_lookup_ident (ctx, name, owner, decl);
+
+	    int ident = get_lookup_ident (ctx, name, owner, look);
 	    i (ident);
 	    /* Make sure we can find it by name.  */
-	    gcc_checking_assert (decl
+	    gcc_checking_assert (look
 				 == lookup_by_ident (ctx, name, owner, ident));
 	  }
       }
@@ -6635,7 +6685,18 @@ trees_in::tree_node ()
       }
       break;
 
+    case tt_template:
+      /* A template.  */
+      if (tree tpl = tree_node ())
+	{
+	  res = DECL_TEMPLATE_RESULT (tpl);
+	  dump (dumper::TREE)
+	    && dump ("Read template %C:%N", TREE_CODE (res), res);
+	}
+      break;
+
     case tt_inst:
+      /* An instantiation.  */
       const char *kind;
       unsigned owner;
       {
@@ -6675,6 +6736,7 @@ trees_in::tree_node ()
       goto finish_decl;
 
     case tt_named_decl:
+    case tt_implicit_template:
       {
 	/* A named decl.  */
 	tree ctx = tree_node ();
@@ -6687,7 +6749,15 @@ trees_in::tree_node ()
 	  {
 	    int ident = i ();
 	    if (owner != MODULE_NONE && !get_overrun ())
-	      res = lookup_by_ident (ctx, name, owner, ident);
+	      {
+		res = lookup_by_ident (ctx, name, owner, ident);
+		if (tag == tt_implicit_template)
+		  {
+		    int use_tpl = -1;
+		    tree ti = node_template_info (res, use_tpl);
+		    res = TI_TEMPLATE (ti);
+		  }
+	      }
 	  }
 
 	if (!res)
@@ -7350,8 +7420,9 @@ depset::hash::add_dependency (tree decl, int kind)
     }
 
   dump (dumper::DEPEND)
-    && dump ("%s on %s %N added", kind < 0 ? "Binding" : "Dependency",
-	     dep->is_defn () ? "definition" : "declaration", decl);
+    && dump ("%s on %s %C:%N added", kind < 0 ? "Binding" : "Dependency",
+	     dep->is_defn () ? "definition" : "declaration",
+	     TREE_CODE (decl), decl);
 
   if (kind >= 0)
     {
@@ -8904,7 +8975,7 @@ module_state::is_skippable_defn (trees_in &in, tree defn, bool have_defn)
       return skip;
     }
 
-  /* This isn's skippable.  There'd better not be an existing
+  /* This isn't skippable.  There'd better not be an existing
      defn.  */
   if (!have_defn)
     return 0;
@@ -8932,7 +9003,6 @@ module_state::is_skippable_defn (trees_in &in, tree defn, bool have_defn)
 void
 module_state::write_function_def (trees_out &out, tree decl)
 {
-  dump () && dump ("Writing function definition %N", decl);
   out.tree_node (DECL_RESULT (decl));
   out.tree_node (DECL_INITIAL (decl));
   out.tree_node (DECL_SAVED_TREE (decl));
@@ -9435,8 +9505,9 @@ module_state::read_template_def (trees_in &in, tree decl)
 void
 module_state::write_definition (trees_out &out, tree decl)
 {
-  if (out.streaming_p ())
-    dump () && dump ("Writing definition %C:%N", TREE_CODE (decl), decl);
+  dump () && dump ("%s definition %C:%N",
+		   out.streaming_p () ? "Writing" : "Depending",
+		   TREE_CODE (decl), decl);
 
   switch (TREE_CODE (decl))
     {
@@ -9702,9 +9773,10 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   for (unsigned ix = 0; ix != size; ix++)
     {
       depset *b = scc[ix];
-      dump () && dump (b->is_decl () ? "Depset:%u declaration %N"
-		       : b->is_defn () ? "Depset:%u definition %N"
-		       : "Depset:%u binding %P", ix, b->get_decl (),
+      dump () && dump (b->is_decl () ? "Depset:%u declaration %C:%N"
+		       : b->is_defn () ? "Depset:%u definition %C:%N"
+		       : "Depset:%u binding %C:%P", ix,
+		       TREE_CODE (b->get_decl ()), b->get_decl (),
 		       b->is_binding () ? b->get_name () : NULL_TREE);
       tree decl = b->get_decl ();
 
@@ -11596,8 +11668,9 @@ module_state::find_dependencies (depset::hash &table)
       gcc_checking_assert (!d->is_binding ());
       tree decl = d->get_decl ();
       dump (dumper::DEPEND)
-	&& dump ("Dependencies of %s %N",
-		 d->is_decl () ? "declaration" : "definition", decl);
+	&& dump ("Dependencies of %s %C:%N",
+		 d->is_decl () ? "declaration" : "definition",
+		 TREE_CODE (decl), decl);
       dump.indent ();
       walker.begin (&table);
       walker.mark_node (decl);

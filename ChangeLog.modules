@@ -1,3 +1,13 @@
+2018-12-17  Nathan Sidwell  <nathan@acm.org>
+
+	Intermediate step to atomic TEMPLATE_DECL + DECL_TEMPLATE_RESULT.
+	Breaks leg-merge-7_c.C,
+	gcc/cp/
+	* module.c (tree_tag): Add tt_template, tt_implicit_template.
+	(node_template_info): Not a member fn.
+	(trees_out::{mark_node,mark_gme}): Mark the template.
+	(trees_{in,out}::tree_decl): Do implicit_template.
+
 2018-12-14  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
