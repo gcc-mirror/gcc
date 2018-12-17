@@ -218,7 +218,7 @@ get_exec_counts (unsigned cfg_checksum, unsigned lineno_checksum)
     }
 
   counts = get_coverage_counts (GCOV_COUNTER_ARCS, cfg_checksum,
-				lineno_checksum);
+				lineno_checksum, num_edges);
   if (!counts)
     return NULL;
 
@@ -780,7 +780,8 @@ compute_value_histograms (histogram_values values, unsigned cfg_checksum,
 
       histogram_counts[t] = get_coverage_counts (COUNTER_FOR_HIST_TYPE (t),
 						 cfg_checksum,
-						 lineno_checksum);
+						 lineno_checksum,
+						 n_histogram_counters[t]);
       if (histogram_counts[t])
 	any = 1;
       act_count[t] = histogram_counts[t];
