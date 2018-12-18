@@ -61,7 +61,9 @@ struct fs::_Dir : _Dir_base
   {
     if (const auto entp = _Dir_base::advance(skip_permission_denied, ec))
       {
-	entry = fs::directory_entry{path / entp->d_name, get_file_type(*entp)};
+	auto name = path;
+	name /= entp->d_name;
+	entry = fs::directory_entry{name, get_file_type(*entp)};
 	return true;
       }
     else if (!ec)
