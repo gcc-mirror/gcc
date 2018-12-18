@@ -63,7 +63,7 @@ struct fs::_Dir : _Dir_base
       {
 	auto name = path;
 	name /= entp->d_name;
-	entry = fs::directory_entry{name, get_file_type(*entp)};
+	entry = fs::directory_entry{std::move(name), get_file_type(*entp)};
 	return true;
       }
     else if (!ec)
