@@ -159,6 +159,11 @@ extern const char * msp430_select_hwmult_lib (int, const char **);
 #define PTR_SIZE			(TARGET_LARGE ? 4 : 2)
 #define	POINTERS_EXTEND_UNSIGNED	1
 
+/* TARGET_VTABLE_ENTRY_ALIGN defaults to POINTER_SIZE, which is 20 for
+   TARGET_LARGE.  Pointer alignment is always 16 for MSP430, so set explicitly
+   here.  */
+#define TARGET_VTABLE_ENTRY_ALIGN 16
+
 #define ADDR_SPACE_NEAR	1
 #define ADDR_SPACE_FAR	2
 
