@@ -1,6 +1,10 @@
 2018-12-18  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::tree_decl): Remove some remaining
+	non-atomic template hacks.
+
+	gcc/cp/
 	* module.cc (module_state::write): Sort dependency table.
 
 	gcc/cp

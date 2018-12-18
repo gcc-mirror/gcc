@@ -6147,17 +6147,6 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
       return false;
     }
 
-  if (false
-      && TREE_CODE (decl) == TEMPLATE_DECL
-      && RECORD_OR_UNION_CODE_P (TREE_CODE (DECL_CONTEXT (decl)))
-      && !DECL_MEMBER_TEMPLATE_P (decl))
-    {
-      /* An implicit member template, we should not meet as an import.  */
-      gcc_assert (MAYBE_DECL_MODULE_OWNER (get_module_owner (decl))
-		  <= MODULE_IMPORT_BASE);
-      return true;
-    }
-
   const char *kind = NULL;
   unsigned owner = MODULE_UNKNOWN;
 
@@ -6258,10 +6247,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
       {
 	if (TREE_CODE (ctx) != NAMESPACE_DECL)
 	  tree_ctx (ctx, true, decl);
-	else if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION
-		 // FIXME:the DECL_TEMPLATE_RESULT.  When atomically
-		 // written, shouldn't be needed.
-		 && (!ti || use_tpl))
+	else if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION)
 	  dep_hash->add_dependency (decl, looking_inside);
       }
 
