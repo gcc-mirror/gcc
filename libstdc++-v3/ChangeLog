@@ -1,3 +1,12 @@
+2018-12-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/string_view [__cplusplus > 201703L]
+	(basic_string_view::starts_with(basic_string_view)): Implement
+	proposed resolution of LWG 3040 to avoid redundant length check.
+	(basic_string_view::starts_with(_CharT)): Implement proposed
+	resolution of LWG 3040 to check at most one character.
+	(basic_string_view::ends_with(_CharT)): Likewise.
+
 2018-12-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/71044
