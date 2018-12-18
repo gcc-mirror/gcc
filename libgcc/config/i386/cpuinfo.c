@@ -215,9 +215,17 @@ get_intel_cpu (unsigned int family, unsigned int model, unsigned int brand_id)
 	      __cpu_model.__cpu_subtype = INTEL_COREI7_SKYLAKE;
 	      break;
 	    case 0x55:
-	      /* Skylake with AVX-512 support.  */
-	      __cpu_model.__cpu_type = INTEL_COREI7;
-	      __cpu_model.__cpu_subtype = INTEL_COREI7_SKYLAKE_AVX512;
+	      {
+	        unsigned int eax, ebx, ecx, edx;
+	        __cpu_model.__cpu_type = INTEL_COREI7;
+	        __cpuid_count (7, 0, eax, ebx, ecx, edx);
+	        if (ecx & bit_AVX512VNNI)
+	          /* Cascade Lake.  */
+	          __cpu_model.__cpu_subtype = INTEL_COREI7_CASCADELAKE;
+	        else
+	          /* Skylake with AVX-512 support.  */
+	          __cpu_model.__cpu_subtype = INTEL_COREI7_SKYLAKE_AVX512;
+	      }
 	      break;
 	    case 0x66:
 	      /* Cannon Lake.  */

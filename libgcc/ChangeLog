@@ -1,3 +1,8 @@
+2018-12-18  Wei Xiao  <wei3.xiao@intel.com>
+
+	* config/i386/cpuinfo.c (get_intel_cpu): Handle cascadelake.
+	* config/i386/cpuinfo.h: Add INTEL_COREI7_CASCADELAKE.
+
 2018-12-12  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
 
 	* config/rs6000/tramp.S (__trampoline_setup): Also emit .size
