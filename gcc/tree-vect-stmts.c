@@ -10313,6 +10313,17 @@ supportable_widening_operation (enum tree_code code, stmt_vec_info stmt_info,
       optab1 = optab_for_tree_code (c1, vectype_out, optab_default);
       optab2 = optab_for_tree_code (c2, vectype_out, optab_default);
     }
+  else if (CONVERT_EXPR_CODE_P (code)
+	   && VECTOR_BOOLEAN_TYPE_P (wide_vectype)
+	   && VECTOR_BOOLEAN_TYPE_P (vectype)
+	   && TYPE_MODE (wide_vectype) == TYPE_MODE (vectype)
+	   && SCALAR_INT_MODE_P (TYPE_MODE (vectype)))
+    {
+      /* If the input and result modes are the same, a different optab
+	 is needed where we pass in the number of units in vectype.  */
+      optab1 = vec_unpacks_sbool_lo_optab;
+      optab2 = vec_unpacks_sbool_hi_optab;
+    }
   else
     {
       optab1 = optab_for_tree_code (c1, vectype, optab_default);
@@ -10332,12 +10343,16 @@ supportable_widening_operation (enum tree_code code, stmt_vec_info stmt_info,
 
   if (insn_data[icode1].operand[0].mode == TYPE_MODE (wide_vectype)
       && insn_data[icode2].operand[0].mode == TYPE_MODE (wide_vectype))
+    {
+      if (!VECTOR_BOOLEAN_TYPE_P (vectype))
+	return true;
       /* For scalar masks we may have different boolean
 	 vector types having the same QImode.  Thus we
 	 add additional check for elements number.  */
-    return (!VECTOR_BOOLEAN_TYPE_P (vectype)
-	    || known_eq (TYPE_VECTOR_SUBPARTS (vectype),
-			 TYPE_VECTOR_SUBPARTS (wide_vectype) * 2));
+      if (known_eq (TYPE_VECTOR_SUBPARTS (vectype),
+		    TYPE_VECTOR_SUBPARTS (wide_vectype) * 2))
+	return true;
+    }
 
   /* Check if it's a multi-step conversion that can be done using intermediate
      types.  */
@@ -10367,8 +10382,21 @@ supportable_widening_operation (enum tree_code code, stmt_vec_info stmt_info,
 	  = lang_hooks.types.type_for_mode (intermediate_mode,
 					    TYPE_UNSIGNED (prev_type));
 
-      optab3 = optab_for_tree_code (c1, intermediate_type, optab_default);
-      optab4 = optab_for_tree_code (c2, intermediate_type, optab_default);
+      if (VECTOR_BOOLEAN_TYPE_P (intermediate_type)
+	  && VECTOR_BOOLEAN_TYPE_P (prev_type)
+	  && intermediate_mode == prev_mode
+	  && SCALAR_INT_MODE_P (prev_mode))
+	{
+	  /* If the input and result modes are the same, a different optab
+	     is needed where we pass in the number of units in vectype.  */
+	  optab3 = vec_unpacks_sbool_lo_optab;
+	  optab4 = vec_unpacks_sbool_hi_optab;
+	}
+      else
+	{
+	  optab3 = optab_for_tree_code (c1, intermediate_type, optab_default);
+	  optab4 = optab_for_tree_code (c2, intermediate_type, optab_default);
+	}
 
       if (!optab3 || !optab4
           || (icode1 = optab_handler (optab1, prev_mode)) == CODE_FOR_nothing
@@ -10386,9 +10414,13 @@ supportable_widening_operation (enum tree_code code, stmt_vec_info stmt_info,
 
       if (insn_data[icode1].operand[0].mode == TYPE_MODE (wide_vectype)
 	  && insn_data[icode2].operand[0].mode == TYPE_MODE (wide_vectype))
-	return (!VECTOR_BOOLEAN_TYPE_P (vectype)
-		|| known_eq (TYPE_VECTOR_SUBPARTS (intermediate_type),
-			     TYPE_VECTOR_SUBPARTS (wide_vectype) * 2));
+	{
+	  if (!VECTOR_BOOLEAN_TYPE_P (vectype))
+	    return true;
+	  if (known_eq (TYPE_VECTOR_SUBPARTS (intermediate_type),
+			TYPE_VECTOR_SUBPARTS (wide_vectype) * 2))
+	    return true;
+	}
 
       prev_type = intermediate_type;
       prev_mode = intermediate_mode;
@@ -10441,25 +10473,29 @@ supportable_narrowing_operation (enum tree_code code,
     {
     CASE_CONVERT:
       c1 = VEC_PACK_TRUNC_EXPR;
+      if (VECTOR_BOOLEAN_TYPE_P (narrow_vectype)
+	  && VECTOR_BOOLEAN_TYPE_P (vectype)
+	  && TYPE_MODE (narrow_vectype) == TYPE_MODE (vectype)
+	  && SCALAR_INT_MODE_P (TYPE_MODE (vectype)))
+	optab1 = vec_pack_sbool_trunc_optab;
+      else
+	optab1 = optab_for_tree_code (c1, vectype, optab_default);
       break;
 
     case FIX_TRUNC_EXPR:
       c1 = VEC_PACK_FIX_TRUNC_EXPR;
+      /* The signedness is determined from output operand.  */
+      optab1 = optab_for_tree_code (c1, vectype_out, optab_default);
       break;
 
     case FLOAT_EXPR:
       c1 = VEC_PACK_FLOAT_EXPR;
+      optab1 = optab_for_tree_code (c1, vectype, optab_default);
       break;
 
     default:
       gcc_unreachable ();
     }
-
-  if (code == FIX_TRUNC_EXPR)
-    /* The signedness is determined from output operand.  */
-    optab1 = optab_for_tree_code (c1, vectype_out, optab_default);
-  else
-    optab1 = optab_for_tree_code (c1, vectype, optab_default);
 
   if (!optab1)
     return false;
@@ -10471,12 +10507,16 @@ supportable_narrowing_operation (enum tree_code code,
   *code1 = c1;
 
   if (insn_data[icode1].operand[0].mode == TYPE_MODE (narrow_vectype))
-    /* For scalar masks we may have different boolean
-       vector types having the same QImode.  Thus we
-       add additional check for elements number.  */
-    return (!VECTOR_BOOLEAN_TYPE_P (vectype)
-	    || known_eq (TYPE_VECTOR_SUBPARTS (vectype) * 2,
-			 TYPE_VECTOR_SUBPARTS (narrow_vectype)));
+    {
+      if (!VECTOR_BOOLEAN_TYPE_P (vectype))
+	return true;
+      /* For scalar masks we may have different boolean
+	 vector types having the same QImode.  Thus we
+	 add additional check for elements number.  */
+      if (known_eq (TYPE_VECTOR_SUBPARTS (vectype) * 2,
+		    TYPE_VECTOR_SUBPARTS (narrow_vectype)))
+	return true;
+    }
 
   if (code == FLOAT_EXPR)
     return false;
@@ -10528,9 +10568,15 @@ supportable_narrowing_operation (enum tree_code code,
       else
 	intermediate_type
 	  = lang_hooks.types.type_for_mode (intermediate_mode, uns);
-      interm_optab
-	= optab_for_tree_code (VEC_PACK_TRUNC_EXPR, intermediate_type,
-			       optab_default);
+      if (VECTOR_BOOLEAN_TYPE_P (intermediate_type)
+	  && VECTOR_BOOLEAN_TYPE_P (prev_type)
+	  && intermediate_mode == prev_mode
+	  && SCALAR_INT_MODE_P (prev_mode))
+	interm_optab = vec_pack_sbool_trunc_optab;
+      else
+	interm_optab
+	  = optab_for_tree_code (VEC_PACK_TRUNC_EXPR, intermediate_type,
+				 optab_default);
       if (!interm_optab
 	  || ((icode1 = optab_handler (optab1, prev_mode)) == CODE_FOR_nothing)
 	  || insn_data[icode1].operand[0].mode != intermediate_mode
@@ -10542,9 +10588,13 @@ supportable_narrowing_operation (enum tree_code code,
       (*multi_step_cvt)++;
 
       if (insn_data[icode1].operand[0].mode == TYPE_MODE (narrow_vectype))
-	return (!VECTOR_BOOLEAN_TYPE_P (vectype)
-		|| known_eq (TYPE_VECTOR_SUBPARTS (intermediate_type) * 2,
-			     TYPE_VECTOR_SUBPARTS (narrow_vectype)));
+	{
+	  if (!VECTOR_BOOLEAN_TYPE_P (vectype))
+	    return true;
+	  if (known_eq (TYPE_VECTOR_SUBPARTS (intermediate_type) * 2,
+			TYPE_VECTOR_SUBPARTS (narrow_vectype)))
+	    return true;
+	}
 
       prev_mode = intermediate_mode;
       prev_type = intermediate_type;

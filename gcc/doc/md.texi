@@ -5428,6 +5428,16 @@ are vectors of the same mode having N integral or floating point elements
 of size S@.  Operand 0 is the resulting vector in which 2*N elements of
 size N/2 are concatenated after narrowing them down using truncation.
 
+@cindex @code{vec_pack_sbool_trunc_@var{m}} instruction pattern
+@item @samp{vec_pack_sbool_trunc_@var{m}}
+Narrow and merge the elements of two vectors.  Operands 1 and 2 are vectors
+of the same type having N boolean elements.  Operand 0 is the resulting
+vector in which 2*N elements are concatenated.  The last operand (operand 3)
+is the number of elements in the output vector 2*N as a @code{CONST_INT}.
+This instruction pattern is used when all the vector input and output
+operands have the same scalar mode @var{m} and thus using
+@code{vec_pack_trunc_@var{m}} would be ambiguous.
+
 @cindex @code{vec_pack_ssat_@var{m}} instruction pattern
 @cindex @code{vec_pack_usat_@var{m}} instruction pattern
 @item @samp{vec_pack_ssat_@var{m}}, @samp{vec_pack_usat_@var{m}}
@@ -5469,6 +5479,17 @@ Extract and widen (promote) the high/low part of a vector of unsigned
 integral elements.  The input vector (operand 1) has N elements of size S.
 Widen (promote) the high/low elements of the vector using zero extension and
 place the resulting N/2 values of size 2*S in the output vector (operand 0).
+
+@cindex @code{vec_unpacks_sbool_hi_@var{m}} instruction pattern
+@cindex @code{vec_unpacks_sbool_lo_@var{m}} instruction pattern
+@item @samp{vec_unpacks_sbool_hi_@var{m}}, @samp{vec_unpacks_sbool_lo_@var{m}}
+Extract the high/low part of a vector of boolean elements that have scalar
+mode @var{m}.  The input vector (operand 1) has N elements, the output
+vector (operand 0) has N/2 elements.  The last operand (operand 2) is the
+number of elements of the input vector N as a @code{CONST_INT}.  These
+patterns are used if both the input and output vectors have the same scalar
+mode @var{m} and thus using @code{vec_unpacks_hi_@var{m}} or
+@code{vec_unpacks_lo_@var{m}} would be ambiguous.
 
 @cindex @code{vec_unpacks_float_hi_@var{m}} instruction pattern
 @cindex @code{vec_unpacks_float_lo_@var{m}} instruction pattern

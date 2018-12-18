@@ -12435,20 +12435,57 @@
 })
 
 (define_expand "vec_pack_trunc_qi"
-  [(set (match_operand:HI 0 ("register_operand"))
-        (ior:HI (ashift:HI (zero_extend:HI (match_operand:QI 2 ("register_operand")))
+  [(set (match_operand:HI 0 "register_operand")
+	(ior:HI (ashift:HI (zero_extend:HI (match_operand:QI 2 "register_operand"))
                            (const_int 8))
-                (zero_extend:HI (match_operand:QI 1 ("register_operand")))))]
+		(zero_extend:HI (match_operand:QI 1 "register_operand"))))]
   "TARGET_AVX512F")
 
 (define_expand "vec_pack_trunc_<mode>"
-  [(set (match_operand:<DOUBLEMASKMODE> 0 ("register_operand"))
-        (ior:<DOUBLEMASKMODE> (ashift:<DOUBLEMASKMODE> (zero_extend:<DOUBLEMASKMODE> (match_operand:SWI24 2 ("register_operand")))
-                           (match_dup 3))
-                (zero_extend:<DOUBLEMASKMODE> (match_operand:SWI24 1 ("register_operand")))))]
+  [(set (match_operand:<DOUBLEMASKMODE> 0 "register_operand")
+	(ior:<DOUBLEMASKMODE>
+	  (ashift:<DOUBLEMASKMODE>
+	    (zero_extend:<DOUBLEMASKMODE>
+	      (match_operand:SWI24 2 "register_operand"))
+	    (match_dup 3))
+	  (zero_extend:<DOUBLEMASKMODE>
+	    (match_operand:SWI24 1 "register_operand"))))]
   "TARGET_AVX512BW"
 {
   operands[3] = GEN_INT (GET_MODE_BITSIZE (<MODE>mode));
+})
+
+(define_expand "vec_pack_sbool_trunc_qi"
+  [(match_operand:QI 0 "register_operand")
+   (match_operand:QI 1 "register_operand")
+   (match_operand:QI 2 "register_operand")
+   (match_operand:QI 3 "const_int_operand")]
+  "TARGET_AVX512F"
+{
+  HOST_WIDE_INT nunits = INTVAL (operands[3]);
+  rtx mask, tem1, tem2;
+  if (nunits != 8 && nunits != 4)
+    FAIL;
+  mask = gen_reg_rtx (QImode);
+  emit_move_insn (mask, GEN_INT ((1 << (nunits / 2)) - 1));
+  tem1 = gen_reg_rtx (QImode);
+  emit_insn (gen_kandqi (tem1, operands[1], mask));
+  if (TARGET_AVX512DQ)
+    {
+      tem2 = gen_reg_rtx (QImode);
+      emit_insn (gen_kashiftqi (tem2, operands[2],
+				GEN_INT (nunits / 2)));
+    }
+  else
+    {
+      tem2 = gen_reg_rtx (HImode);
+      emit_insn (gen_kashifthi (tem2, lowpart_subreg (HImode, operands[2],
+						      QImode),
+				GEN_INT (nunits / 2)));
+      tem2 = lowpart_subreg (QImode, tem2, HImode);
+    }
+  emit_insn (gen_kiorqi (operands[0], tem1, tem2));
+  DONE;
 })
 
 (define_insn "<sse2_avx2>_packsswb<mask_name>"
@@ -14603,6 +14640,18 @@
   "TARGET_SSE2"
   "ix86_expand_sse_unpack (operands[0], operands[1], true, false); DONE;")
 
+(define_expand "vec_unpacks_sbool_lo_qi"
+  [(match_operand:QI 0 "register_operand")
+   (match_operand:QI 1 "register_operand")
+   (match_operand:QI 2 "const_int_operand")]
+  "TARGET_AVX512F"
+{
+  if (INTVAL (operands[2]) != 8 && INTVAL (operands[2]) != 4)
+    FAIL;
+  emit_move_insn (operands[0], operands[1]);
+  DONE;
+})
+
 (define_expand "vec_unpacks_lo_hi"
   [(set (subreg:HI (match_operand:QI 0 "register_operand") 0)
         (match_operand:HI 1 "register_operand"))]
@@ -14623,6 +14672,29 @@
    (match_operand:VI124_AVX2_24_AVX512F_1_AVX512BW 1 "register_operand")]
   "TARGET_SSE2"
   "ix86_expand_sse_unpack (operands[0], operands[1], true, true); DONE;")
+
+(define_expand "vec_unpacks_sbool_hi_qi"
+  [(match_operand:QI 0 "register_operand")
+   (match_operand:QI 1 "register_operand")
+   (match_operand:QI 2 "const_int_operand")]
+  "TARGET_AVX512F"
+{
+  HOST_WIDE_INT nunits = INTVAL (operands[2]);
+  if (nunits != 8 && nunits != 4)
+    FAIL;
+  if (TARGET_AVX512DQ)
+    emit_insn (gen_klshiftrtqi (operands[0], operands[1],
+				GEN_INT (nunits / 2)));
+  else
+    {
+      rtx tem = gen_reg_rtx (HImode);
+      emit_insn (gen_klshiftrthi (tem, lowpart_subreg (HImode, operands[1],
+						       QImode),
+				  GEN_INT (nunits / 2)));
+      emit_move_insn (operands[0], lowpart_subreg (QImode, tem, HImode));
+    }
+  DONE;
+})
 
 (define_expand "vec_unpacks_hi_hi"
   [(parallel

@@ -1,3 +1,21 @@
+2018-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/88513
+	PR target/88514
+	* gcc.target/i386/avx512f-pr88513-1.c: New test.
+	* gcc.target/i386/avx512f-pr88513-2.c: New test.
+	* gcc.target/i386/avx512vl-pr88464-1.c: New test.
+	* gcc.target/i386/avx512vl-pr88464-2.c: New test.
+	* gcc.target/i386/avx512vl-pr88464-3.c: New test.
+	* gcc.target/i386/avx512vl-pr88464-4.c: New test.
+	* gcc.target/i386/avx512vl-pr88513-1.c: New test.
+	* gcc.target/i386/avx512vl-pr88513-2.c: New test.
+	* gcc.target/i386/avx512vl-pr88513-3.c: New test.
+	* gcc.target/i386/avx512vl-pr88513-4.c: New test.
+	* gcc.target/i386/avx512vl-pr88514-1.c: New test.
+	* gcc.target/i386/avx512vl-pr88514-2.c: New test.
+	* gcc.target/i386/avx512vl-pr88514-3.c: New test.
+
 2018-12-18  Wei Xiao  <wei3.xiao@intel.com>
 
 	* g++.target/i386/mv16.C: Handle new march.

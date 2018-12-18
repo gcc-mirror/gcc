@@ -9493,9 +9493,31 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
       gcc_assert (target);
       return target;
 
-    case VEC_PACK_TRUNC_EXPR:
     case VEC_PACK_SAT_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:
+      mode = TYPE_MODE (TREE_TYPE (treeop0));
+      goto binop;
+
+    case VEC_PACK_TRUNC_EXPR:
+      if (VECTOR_BOOLEAN_TYPE_P (type)
+	  && VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (treeop0))
+	  && mode == TYPE_MODE (TREE_TYPE (treeop0))
+	  && SCALAR_INT_MODE_P (mode))
+	{
+	  struct expand_operand eops[4];
+	  machine_mode imode = TYPE_MODE (TREE_TYPE (treeop0));
+	  expand_operands (treeop0, treeop1,
+			   subtarget, &op0, &op1, EXPAND_NORMAL);
+	  this_optab = vec_pack_sbool_trunc_optab;
+	  enum insn_code icode = optab_handler (this_optab, imode);
+	  create_output_operand (&eops[0], target, mode);
+	  create_convert_operand_from (&eops[1], op0, imode, false);
+	  create_convert_operand_from (&eops[2], op1, imode, false);
+	  temp = GEN_INT (TYPE_VECTOR_SUBPARTS (type).to_constant ());
+	  create_input_operand (&eops[3], temp, imode);
+	  expand_insn (icode, 4, eops);
+	  return eops[0].value;
+	}
       mode = TYPE_MODE (TREE_TYPE (treeop0));
       goto binop;
 

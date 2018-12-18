@@ -256,6 +256,7 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
   enum insn_code icode;
   int nops = TREE_CODE_LENGTH (ops->code);
   int op;
+  bool sbool = false;
 
   oprnd0 = ops->op0;
   tmode0 = TYPE_MODE (TREE_TYPE (oprnd0));
@@ -265,6 +266,22 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
        for these ops.  */
     widen_pattern_optab
       = optab_for_tree_code (ops->code, ops->type, optab_default);
+  else if ((ops->code == VEC_UNPACK_HI_EXPR
+	    || ops->code == VEC_UNPACK_LO_EXPR)
+	   && VECTOR_BOOLEAN_TYPE_P (ops->type)
+	   && VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (oprnd0))
+	   && TYPE_MODE (ops->type) == TYPE_MODE (TREE_TYPE (oprnd0))
+	   && SCALAR_INT_MODE_P (TYPE_MODE (ops->type)))
+    {
+      /* For VEC_UNPACK_{LO,HI}_EXPR if the mode of op0 and result is
+	 the same scalar mode for VECTOR_BOOLEAN_TYPE_P vectors, use
+	 vec_unpacks_sbool_{lo,hi}_optab, so that we can pass in
+	 the pattern number of elements in the wider vector.  */
+      widen_pattern_optab
+	= (ops->code == VEC_UNPACK_HI_EXPR
+	   ? vec_unpacks_sbool_hi_optab : vec_unpacks_sbool_lo_optab);
+      sbool = true;
+    }
   else
     widen_pattern_optab
       = optab_for_tree_code (ops->code, TREE_TYPE (oprnd0), optab_default);
@@ -281,6 +298,12 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
     {
       oprnd1 = ops->op1;
       tmode1 = TYPE_MODE (TREE_TYPE (oprnd1));
+    }
+  else if (sbool)
+    {
+      nops = 2;
+      op1 = GEN_INT (TYPE_VECTOR_SUBPARTS (TREE_TYPE (oprnd0)).to_constant ());
+      tmode1 = tmode0;
     }
 
   /* The last operand is of a wider mode than the rest of the operands.  */
