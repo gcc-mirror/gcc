@@ -1,5 +1,8 @@
 2018-12-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/filesystem/std-dir.cc (filesystem::_Dir::advance): Append
+	string to lvalue to avoid creating temporary path.
+
 	* include/bits/fs_path.h (path::compare(const string_type&))
 	(path::compare(const value_type*)): Add noexcept and construct a
 	string view to compare to instead of a path.
