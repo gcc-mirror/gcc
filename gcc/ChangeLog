@@ -1,3 +1,31 @@
+2018-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/88513
+	PR target/88514
+	* optabs.def (vec_pack_sbool_trunc_optab, vec_unpacks_sbool_hi_optab,
+	vec_unpacks_sbool_lo_optab): New optabs.
+	* optabs.c (expand_widen_pattern_expr): Use vec_unpacks_sbool_*_optab
+	and pass additional argument if both input and target have the same
+	scalar mode of VECTOR_BOOLEAN_TYPE_P vectors.
+	* expr.c (expand_expr_real_2) <case VEC_PACK_TRUNC_EXPR>: Handle
+	VECTOR_BOOLEAN_TYPE_P pack where result has the same scalar mode
+	as the operands using vec_pack_sbool_trunc_optab.
+	* tree-vect-stmts.c (supportable_widening_operation): Use
+	vec_unpacks_sbool_{lo,hi}_optab for VECTOR_BOOLEAN_TYPE_P conversions
+	where both wider_vectype and vectype have the same scalar mode.
+	(supportable_narrowing_operation): Similarly use
+	vec_pack_sbool_trunc_optab if narrow_vectype and vectype have the same
+	scalar mode.
+	* config/i386/i386.c (ix86_get_builtin)
+	<case IX86_BUILTIN_GATHER3ALTDIV8SF>: Check for VECTOR_MODE_P
+	rather than non-VOIDmode.
+	* config/i386/sse.md (vec_pack_trunc_qi, vec_pack_trunc_<mode>):
+	Remove useless ()s around "register_operand", formatting fixes.
+	(vec_pack_sbool_trunc_qi, vec_unpacks_sbool_lo_qi,
+	vec_unpacks_sbool_hi_qi): New expanders.
+	* doc/md.texi (vec_pack_sbool_trunc_M, vec_unpacks_sbool_hi_M,
+	vec_unpacks_sbool_lo_M): Document.
+
 2018-12-18  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* combine.c (update_rsp_from_reg_equal): Only look for the nonzero bits
