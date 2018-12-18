@@ -1,3 +1,10 @@
+2018-12-18  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* combine.c (update_rsp_from_reg_equal): Only look for the nonzero bits
+	of src in nonzero_bits_mode if the mode of src is MODE_INT and
+	HWI_COMPUTABLE.
+	(reg_nonzero_bits_for_combine): Add clarification to comment.
+
 2018-12-18  Wei Xiao  <wei3.xiao@intel.com>
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): Detect cascadelake.

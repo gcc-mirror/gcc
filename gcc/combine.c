@@ -1698,9 +1698,13 @@ update_rsp_from_reg_equal (reg_stat_type *rsp, rtx_insn *insn, const_rtx set,
   /* Don't call nonzero_bits if it cannot change anything.  */
   if (rsp->nonzero_bits != HOST_WIDE_INT_M1U)
     {
-      bits = nonzero_bits (src, nonzero_bits_mode);
+      machine_mode mode = GET_MODE (x);
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && HWI_COMPUTABLE_MODE_P (mode))
+	mode = nonzero_bits_mode;
+      bits = nonzero_bits (src, mode);
       if (reg_equal && bits)
-	bits &= nonzero_bits (reg_equal, nonzero_bits_mode);
+	bits &= nonzero_bits (reg_equal, mode);
       rsp->nonzero_bits |= bits;
     }
 
@@ -10225,6 +10229,7 @@ simplify_and_const_int (rtx x, scalar_int_mode mode, rtx varop,
 
 /* Given a REG X of mode XMODE, compute which bits in X can be nonzero.
    We don't care about bits outside of those defined in MODE.
+   We DO care about all the bits in MODE, even if XMODE is smaller than MODE.
 
    For most X this is simply GET_MODE_MASK (GET_MODE (MODE)), but if X is
    a shift, AND, or zero_extract, we can do better.  */
