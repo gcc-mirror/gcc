@@ -1,3 +1,8 @@
+2018-12-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_usad_char):
+	Add non-SVE aarch64 to supported list.
+
 2018-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88513
