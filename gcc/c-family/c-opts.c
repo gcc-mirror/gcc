@@ -1125,7 +1125,8 @@ c_common_init (void)
 
   struct cpp_callbacks *cb = cpp_get_callbacks (parse_in);
   cb->user_deferred_macro = lang_hooks.preprocess_deferred_macro;
-  cb->undef = lang_hooks.preprocess_undef;
+  if (!cb->undef)
+    cb->undef = lang_hooks.preprocess_undef;
 
   if (flag_preprocess_only)
     {

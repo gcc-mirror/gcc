@@ -532,9 +532,10 @@ cb_define (cpp_reader *pfile, location_t line, cpp_hashnode *node)
 }
 
 static void
-cb_undef (cpp_reader *pfile ATTRIBUTE_UNUSED, location_t line,
-	  cpp_hashnode *node)
+cb_undef (cpp_reader *pfile, location_t line, cpp_hashnode *node)
 {
+  if (lang_hooks.preprocess_undef)
+    lang_hooks.preprocess_undef (pfile, line, node);
   maybe_print_line (line);
   fprintf (print.outf, "#undef %s\n", NODE_NAME (node));
   print.src_line++;

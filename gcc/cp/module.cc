@@ -12974,10 +12974,12 @@ module_cpp_undef (cpp_reader *reader, location_t loc, cpp_hashnode *node)
       /* Turn us off.  */
       struct cpp_callbacks *cb = cpp_get_callbacks (reader);
       if (cb->undef == lang_hooks.preprocess_undef)
-	cb->undef = NULL;
-      lang_hooks.preprocess_undef = NULL;
+	{
+	  cb->undef = NULL;
+	  lang_hooks.preprocess_undef = NULL;
+	}
     }
-  else
+  if (lang_hooks.preprocess_undef)
     module_state::undef_macro (reader, loc, node);
 }
 

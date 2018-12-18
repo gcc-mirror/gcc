@@ -1,5 +1,15 @@
 2018-12-18  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp
+	* module.cc (module_cpp_undef): Don't zap undef hook if we don't
+	own it.
+	gcc/c-family/
+	* c-opts.c (c_common_init): Don't unilaterally clobber undef
+	callback.
+	* c-ppoutput.c (cb_undef): Call lang_hook if non-null.
+	gcc/testsuite/
+	* g++.dg/modules/dir-only-1.C: New.
+
 	Merge trunk r267229.
 
 2018-12-17  Nathan Sidwell  <nathan@acm.org>
