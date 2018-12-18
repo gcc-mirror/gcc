@@ -1,3 +1,9 @@
+2018-12-18  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* doc/extend.texi (PowerPC Altivec/VSX Built-in Functions):
+	Describe when a typedef name can be used as the type specifier for
+	a vector type, and when it cannot.
+
 2018-12-18  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config/msp430/msp430.h: Define TARGET_VTABLE_ENTRY_ALIGN.
