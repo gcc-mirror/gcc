@@ -436,7 +436,7 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, int state)
 	  /* Load the legacy import.  */
 	  tree name = get_identifier_with_length
 	    ((const char *) tok->val.str.text, tok->val.str.len);
-	  if (module_state *mod = get_module (name, NULL))
+	  if (module_state *mod = get_module (name))
 	    import_module (mod, tok->src_loc, false, NULL, pfile);
 	}
       goto maybe_end;

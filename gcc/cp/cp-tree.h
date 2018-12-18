@@ -6787,7 +6787,7 @@ inline bool not_module_p () { return module_purview < 0; }
 inline bool module_exporting_p () { return module_export_depth != 0; }
 inline bool push_module_export () { return module_export_depth++; }
 inline void pop_module_export () { module_export_depth--; }
-extern module_state *get_module (tree name, module_state *parent);
+extern module_state *get_module (tree name, module_state *parent = NULL);
 extern bool module_may_redeclare (unsigned);
 extern tree get_module_owner (tree);
 extern void set_module_owner (tree);

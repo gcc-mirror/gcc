@@ -7346,7 +7346,7 @@ has_definition (tree decl)
   return false;
 }
 
-/* Lookup and maybe add a depset of CONTAINER and NAME.  */
+/* Lookup an maybe insert a slot for depset for KEY.  */
 
 depset **
 depset::hash::maybe_insert (const key_type &key, bool insert)
@@ -7617,7 +7617,7 @@ get_module (const char *ptr)
       size_t len = strlen (ptr);
       if (len < 3 || ptr[len-1] != (ptr[0] == '"' ? '"' : '>'))
 	return NULL;
-      return get_module (get_identifier_with_length (ptr, len), NULL);
+      return get_module (get_identifier_with_length (ptr, len));
      }
 
   module_state *parent = NULL;
@@ -13074,7 +13074,7 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
 	    }
 
 	  tree name = get_identifier (module_legacy_name);
-	  declare_module (get_module (name, NULL),
+	  declare_module (get_module (name),
 			  spans.main_start (), true, NULL, reader);
 
 	  /* Everything is exported.  */

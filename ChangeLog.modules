@@ -1,6 +1,12 @@
 2018-12-18  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (get_module): Default NULL parent.
+	* lex.c (module_preprocess_token): Adjust get_module call.
+	* module.cc (get_module, module_begin_main_file): Likewise.
+	* parser.c (cp_parser_module_name): Likewise.
+
+	gcc/cp/
 	* module.cc (trees_out::tree_decl): Remove some remaining
 	non-atomic template hacks.
 

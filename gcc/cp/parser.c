@@ -13053,7 +13053,7 @@ cp_parser_module_name (cp_parser *parser, bool for_module)
       cp_token *token = cp_lexer_consume_token (parser->lexer);
 
       if (!for_module)
-	return get_module (token->u.value, NULL);
+	return get_module (token->u.value);
 
       error_at (token->location,
 		"legacy module cannot be explicitly declared");
