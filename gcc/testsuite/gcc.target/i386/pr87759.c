@@ -1,5 +1,5 @@
 /* PR rtl-optimization/87759 */
-/* { dg-do compile } */
+/* { dg-do compile { target int128 } } */
 /* { dg-options "-O2 -w -fschedule-insns -fselective-scheduling -ftrapv -fno-dce -fno-expensive-optimizations -fno-ipa-ra -fno-tree-dce -fno-tree-ter" } */
 
 int cc;
