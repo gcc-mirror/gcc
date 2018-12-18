@@ -1,5 +1,8 @@
 2018-12-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/filesystem/std-dir.cc (filesystem::_Dir::advance): Move new
+	path instead of copying.
+
 	* src/filesystem/std-dir.cc (filesystem::_Dir::advance): Append
 	string to lvalue to avoid creating temporary path.
 
