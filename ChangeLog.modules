@@ -1,5 +1,8 @@
 2018-12-18  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (module_state::write): Sort dependency table.
+
 	gcc/cp
 	* module.cc (module_cpp_undef): Don't zap undef hook if we don't
 	own it.

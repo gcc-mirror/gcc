@@ -11616,8 +11616,6 @@ module_state::add_writables (depset::hash &table, tree ns)
 	  else
 	    {
 	      tree name = OVL_NAME (value);
-	      dump (dumper::DEPEND)
-		&& dump ("Writable bindings at %P", ns, name);
 	      table.add_binding (ns, name, value, type);
 	    }
 	}
@@ -12126,19 +12124,34 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   /* Find the SCCs. */
   auto_vec<depset *> sccs (table.size ());
-  depset::tarjan connector (sccs);
 
-  /* Iteration over the hash table is an unspecified ordering.  That's
-     good (for now) because it'll give us some random code coverage.
-     We may want to fill the worklist and sort it in future
-     though?  */
-  depset::hash::iterator end (table.end ());
-  for (depset::hash::iterator iter (table.begin ()); iter != end; ++iter)
-    {
-      depset *v = *iter;
-      if (!v->cluster)
-	connector.connect (v);
-    }
+  {
+    depset::tarjan connector (sccs);
+    auto_vec<depset *> deps (table.size ());
+    depset::hash::iterator end (table.end ());
+    for (depset::hash::iterator iter (table.begin ()); iter != end; ++iter)
+      deps.quick_push (*iter);
+
+    /* Iteration over the hash table is an unspecified ordering.
+       While that has advantages, it causes 2 problems.  Firstly
+       repeatable builds are tricky.  Secondly creating testcases that
+       check dependencies are correct by making sure a bad ordering
+       would happen if that was wrong.  We can use the same ordering
+       as that for clusters themselves.  */
+    deps.qsort (cluster_cmp);
+
+    while (deps.length ())
+      {
+	depset *v = deps.pop ();
+	dump (dumper::DEPEND) &&
+	  (v->is_binding ()
+	   ? dump ("Connecting binding %P", v->get_decl (), v->get_name ())
+	   : dump ("Connecting %C:%N",
+		   TREE_CODE (v->get_decl ()), v->get_decl ()));
+	if (!v->cluster)
+	  connector.connect (v);
+      }
+  }
 
   module_state_config config;
 
