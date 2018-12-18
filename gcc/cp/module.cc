@@ -1340,7 +1340,7 @@ public:
   const section *get_section (unsigned s) const
   {
     if (s * sizeof (section) < sectab.size)
-      return reinterpret_cast <const section *>
+      return reinterpret_cast<const section *>
 	(&sectab.buffer[s * sizeof (section)]);
     else
       return NULL;
@@ -1591,7 +1591,7 @@ elf_in::defrost (const char *name)
 #ifdef MAPPED_READING
       if (ok)
 	{
-	  char *mapping = reinterpret_cast <char *>
+	  char *mapping = reinterpret_cast<char *>
 	    (mmap (NULL, hdr.pos, PROT_READ, MAP_SHARED, fd, 0));
 	  if (mapping == MAP_FAILED)
 	    set_error (errno);
@@ -1660,7 +1660,7 @@ elf_in::find (const char *sname)
   for (unsigned pos = sectab.size; pos -= sizeof (section); )
     {
       const section *sec
-	= reinterpret_cast <const section *> (&sectab.buffer[pos]);
+	= reinterpret_cast<const section *> (&sectab.buffer[pos]);
 
       if (0 == strcmp (sname, name (sec->name)))
 	return pos / sizeof (section);
@@ -1706,7 +1706,7 @@ elf_in::begin (location_t loc)
 #endif
   hdr.pos = size; /* Record size of the file.  */
 
-  const header *h = reinterpret_cast <const header *> (hdr.buffer);
+  const header *h = reinterpret_cast<const header *> (hdr.buffer);
   if (!h)
     return false;
 
@@ -1996,7 +1996,7 @@ elf_out::add (unsigned type, unsigned name, unsigned off, unsigned size,
   gcc_checking_assert (!(off & (SECTION_ALIGN - 1)));
   if (sectab.pos + sizeof (section) > sectab.size)
     data::simple_memory.grow (sectab, sectab.pos + sizeof (section), false);
-  section *sec = reinterpret_cast <section *> (sectab.buffer + sectab.pos);
+  section *sec = reinterpret_cast<section *> (sectab.buffer + sectab.pos);
   memset (sec, 0, sizeof (section));
   sec->type = type;
   sec->flags = flags;
@@ -2101,7 +2101,7 @@ elf_out::begin ()
 
   /* Write an empty header.  */
   grow (hdr, sizeof (header), true);
-  header *h = reinterpret_cast <header *> (hdr.buffer);
+  header *h = reinterpret_cast<header *> (hdr.buffer);
   memset (h, 0, sizeof (header));
   hdr.pos = hdr.size;
   write (hdr);
@@ -2125,13 +2125,13 @@ elf_out::end ()
       /* Store escape values in section[0].  */
       if (strndx >= SHN_LORESERVE)
 	{
-	  reinterpret_cast <section *> (sectab.buffer)->link = strndx;
+	  reinterpret_cast<section *> (sectab.buffer)->link = strndx;
 	  strndx = SHN_XINDEX;
 	}
       unsigned shnum = sectab.pos / sizeof (section);
       if (shnum >= SHN_LORESERVE)
 	{
-	  reinterpret_cast <section *> (sectab.buffer)->size = shnum;
+	  reinterpret_cast<section *> (sectab.buffer)->size = shnum;
 	  shnum = SHN_XINDEX;
 	}
 
@@ -2154,7 +2154,7 @@ elf_out::end ()
       if (!get_error ())
 	{
 	  /* Write the correct header now.  */
-	  header *h = reinterpret_cast <header *> (hdr.buffer);
+	  header *h = reinterpret_cast<header *> (hdr.buffer);
 	  h->ident.magic[0] = 0x7f;
 	  h->ident.magic[1] = 'E';	/* Elrond */
 	  h->ident.magic[2] = 'L';	/* is an */
@@ -2862,9 +2862,10 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool exported_p : 1;	/* We are exported.  */
   bool imported_p : 1;	/* Import has been done.  */
   bool alias_p : 1;	/* Alias for other module.  */
+  bool partition_p : 1; /* A partition.  */
 
  public:
-  module_state (tree name, module_state *);
+  module_state (tree name, uintptr_t);
   ~module_state ();
 
  public:
@@ -2918,6 +2919,12 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   {
     return alias_p;
   }
+  bool is_partition () const
+  {
+    return partition_p;
+  }
+
+ public:
   module_state *resolve_alias ();
   bool check_not_purview (location_t loc);
 
@@ -3056,7 +3063,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
    simplification.  */
 
 struct module_state_hash : ggc_ptr_hash<module_state> {
-  typedef std::pair<tree,module_state *> compare_type; /* identifer/parent */
+  typedef std::pair<tree,uintptr_t> compare_type; /* identifer/parent */
 
   static inline hashval_t hash (const value_type m);
   static inline hashval_t hash (const compare_type &n);
@@ -3064,11 +3071,13 @@ struct module_state_hash : ggc_ptr_hash<module_state> {
 			    const compare_type &candidate);
 };
 
-module_state::module_state (tree name, module_state *parent)
+module_state::module_state (tree name, uintptr_t pp)
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
-    parent (parent), name (name), fullname (NULL), filename (NULL),
+    parent (reinterpret_cast<module_state *>(pp & ~uintptr_t (1))),
+    name (name), fullname (NULL), filename (NULL),
     loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
-    mod (MODULE_UNKNOWN), subst (0), crc (0)
+    mod (MODULE_UNKNOWN), subst (0), crc (0),
+    partition_p (bool (pp & 1))
 {
   u1.slurp = NULL;
   legacy_p = direct_p = interface_p = exported_p = imported_p = alias_p = false;
@@ -3088,7 +3097,9 @@ module_state::~module_state ()
 hashval_t
 module_state_hash::hash (const value_type m)
 {
-  hashval_t h = pointer_hash<module_state>::hash (m->parent);
+  hashval_t h = pointer_hash<void>::hash
+    (reinterpret_cast<void *> (reinterpret_cast<uintptr_t> (m->parent)
+			       | m->is_partition ()));
 
   return iterative_hash_hashval_t (h, IDENTIFIER_HASH_VALUE (m->name));
 }
@@ -3097,19 +3108,18 @@ module_state_hash::hash (const value_type m)
 hashval_t
 module_state_hash::hash (const compare_type &c)
 {
-  hashval_t h = pointer_hash<module_state>::hash (c.second);
+  hashval_t h = pointer_hash<void>::hash (reinterpret_cast<void *> (c.second));
 
   return iterative_hash_hashval_t (h, IDENTIFIER_HASH_VALUE (c.first));
 }
-
-/* Lookup by IDENTIFIER_NODE or TREE_LIST.  */
 
 bool
 module_state_hash::equal (const value_type existing,
 			  const compare_type &candidate)
 {
   return (existing->name == candidate.first
-	  && existing->parent == candidate.second);
+	  && ((reinterpret_cast<uintptr_t> (existing->parent)
+	       | existing->is_partition ()) == candidate.second));
 }
 
 /* Some flag values: */
@@ -3857,7 +3867,7 @@ trees_out::unmark_trees ()
   ptr_int_hash_map::iterator end (tree_map.end ());
   for (ptr_int_hash_map::iterator iter (tree_map.begin ()); iter != end; ++iter)
     {
-      tree node = reinterpret_cast <tree> ((*iter).first);
+      tree node = reinterpret_cast<tree> ((*iter).first);
       int ref = (*iter).second;
       gcc_checking_assert (TREE_VISITED (node) && ref && ref < gme_lwm);
       TREE_VISITED (node) = false;
@@ -7564,9 +7574,12 @@ module_state::mangle ()
     {
       if (parent)
 	parent->mangle ();
-      substs.safe_push (this);
-      subst = substs.length ();
-      mangle_identifier (name);
+      if (!is_partition ())
+	{
+	  substs.safe_push (this);
+	  subst = substs.length ();
+	  mangle_identifier (name);
+	}
     }
 }
 
@@ -7592,15 +7605,16 @@ mangle_module_fini ()
 /* Find or create module NAME & PARENT in the hash table.  */
 
 module_state *
-get_module (tree name, module_state *parent)
+get_module (tree name, module_state *parent, bool partition)
 {
-  module_state_hash::compare_type ct (name, parent);
+  module_state_hash::compare_type ct (name, uintptr_t (parent) | partition);
   hashval_t hv = module_state_hash::hash (ct);
   module_state **slot = modules_hash->find_slot_with_hash (ct, hv, INSERT);
   module_state *state = *slot;
   if (!state)
     {
-      state = new (ggc_alloc<module_state> ()) module_state (name, parent);
+      state = (new (ggc_alloc<module_state> ())
+	       module_state (ct.first, ct.second));
       *slot = state;
     }
   return state;
@@ -7621,14 +7635,18 @@ get_module (const char *ptr)
      }
 
   module_state *parent = NULL;
+  bool partition = false;
   for (const char *probe = ptr;; probe++)
-    if (!*probe || *probe == '.')
+    if (!*probe || *probe == '.' || *probe == ':')
       {
 	size_t len = probe - ptr;
 	if (!len)
 	  return NULL;
-	parent = get_module (get_identifier_with_length (ptr, len), parent);
+	parent = get_module (get_identifier_with_length (ptr, len),
+			     parent, partition);
 	ptr = probe;
+	if (*probe == ':')
+	  partition = true;
 	if (!*ptr++)
 	  break;
       }
@@ -7841,7 +7859,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
       if (option[len] == ' ')
 	spaces++;
       if (option[len] == '?' && !cookie)
-	cookie = const_cast <char *> (&option[len]);
+	cookie = const_cast<char *> (&option[len]);
     }
   char *writable = XNEWVEC (char, len + 1);
   memcpy (writable, option, len + 1);
@@ -8654,7 +8672,7 @@ int module_mapper::translate_include (cpp_reader *reader, line_maps *lmaps,
 	res[actual++] = angle ? '>' : '"';
       strcpy (res + actual, ";\n\n");
       actual += 3;
-      cpp_push_buffer (reader, reinterpret_cast <unsigned char *> (res),
+      cpp_push_buffer (reader, reinterpret_cast<unsigned char *> (res),
 		       actual, false);
     }
   return +1;  /* cpplib will delete the buffer.  */
@@ -10462,7 +10480,7 @@ module_state::write_locations (elf_out *to, unsigned max_rager, unsigned *crc_p)
 		     preprocessed input we could have multple
 		     instances of the same name, and we'd rather not
 		     percolate that.  */
-		  const_cast <line_map_ordinary *> (omap)->to_file = name;
+		  const_cast<line_map_ordinary *> (omap)->to_file = name;
 		  fname = NULL;
 		  break;
 		}
@@ -10671,7 +10689,7 @@ module_state::read_locations ()
     dump () && dump ("Ordinary maps:%u, range bits:%u, preserve:%x, zero:%u",
 		     num_ordinary, max_rager, low_bits, zero);
 
-    line_map_ordinary *maps = static_cast <line_map_ordinary *>
+    line_map_ordinary *maps = static_cast<line_map_ordinary *>
       (line_map_new_raw (line_table, false, num_ordinary));
 
     location_t offset = line_table->highest_location + 1;
@@ -11215,7 +11233,7 @@ maybe_add_macro (cpp_reader *, cpp_hashnode *node, void *data_)
     }
 
   if (exporting)
-    static_cast <auto_vec<cpp_hashnode *> *> (data_)->safe_push (node);
+    static_cast<auto_vec<cpp_hashnode *> *> (data_)->safe_push (node);
 
   return 1; /* Don't stop.  */
 }
@@ -12678,20 +12696,23 @@ module_state::attach (location_t from)
 	 spew it on demand when needed.  */
       auto_vec<tree,5> ids;
       size_t len = 0;
+      unsigned partition = 0;
       for (module_state *probe = this; probe; probe = probe->parent)
 	{
+	  if (probe->is_partition ())
+	    partition++;
 	  ids.safe_push (probe->name);
 	  len += IDENTIFIER_LENGTH (probe->name);
 	}
-      unsigned elts = ids.length ();
       fullname = XNEWVEC (char, ids.length () + len);
       len = 0;
-      for (unsigned ix = 0; ix != elts; ix++)
+      while (ids.length ())
 	{
-	  tree elt = ids.pop ();
 	  if (len)
-	    const_cast <char *> (fullname)[len++] = '.';
-	  memcpy (const_cast <char *> (fullname) + len,
+	    const_cast<char *> (fullname)[len++] =
+	      partition == ids.length () ? ':' : '.';
+	  tree elt = ids.pop ();
+	  memcpy (const_cast<char *> (fullname) + len,
 		  IDENTIFIER_POINTER (elt), IDENTIFIER_LENGTH (elt) + 1);
 	  len += IDENTIFIER_LENGTH (elt);
 	}
@@ -13198,7 +13219,7 @@ init_module_processing ()
 
   /* Create module for current TU.  */
   module_state *current
-    = new (ggc_alloc <module_state> ()) module_state (NULL, NULL);
+    = new (ggc_alloc<module_state> ()) module_state (NULL, 0);
   current->mod = MODULE_NONE;
   bitmap_set_bit (current->imports, MODULE_NONE);
   (*modules)[MODULE_NONE] = current;
@@ -13331,7 +13352,7 @@ finish_module_parse (cpp_reader *reader)
 	    }
 	  controlling_node = cpp_node (get_identifier (name));
 	  if (name != module_legacy_macro)
-	    XDELETEVEC (const_cast <char *> (name));
+	    XDELETEVEC (const_cast<char *> (name));
 
 	  if (cpp_user_macro_p (controlling_node))
 	    {

@@ -1,6 +1,12 @@
 2018-12-18  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (get_module): Add partition arg.
+	* module.cc (module_state): Add partition flag.
+	(module_state_hash): Hash & compare partition flag.
+	(module_state::mangle, get_module, attach): Add partition awareness.
+
+	gcc/cp/
 	* cp-tree.h (get_module): Default NULL parent.
 	* lex.c (module_preprocess_token): Adjust get_module call.
 	* module.cc (get_module, module_begin_main_file): Likewise.
