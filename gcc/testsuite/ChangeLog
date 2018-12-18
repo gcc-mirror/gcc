@@ -1,3 +1,8 @@
+2018-12-18  Wei Xiao  <wei3.xiao@intel.com>
+
+	* g++.target/i386/mv16.C: Handle new march.
+	* gcc.target/i386/builtin_target.c: Ditto.
+
 2018-12-17  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR target/87870

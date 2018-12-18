@@ -1,3 +1,8 @@
+2018-12-18  Wei Xiao  <wei3.xiao@intel.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect cascadelake.
+	* config/i386/i386.c (fold_builtin_cpu): Handle cascadelake.
+	* doc/extend.texi: Add cascadelake.
 2018-12-17  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR target/87870
