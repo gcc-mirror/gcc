@@ -508,6 +508,9 @@ package Osint is
    --  (i.e. Include_Dir_Default_Prefix). The text is sent to whatever Output
    --  is currently using (e.g. standard output or standard error).
 
+   procedure Dump_Command_Line_Source_File_Names;
+   --  Prints out the names of all source files on the command-line
+
    -------------------------------------------
    -- Representation of Library Information --
    -------------------------------------------

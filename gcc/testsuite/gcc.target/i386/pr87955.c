@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fopt-info-inline-missed" } */
+/* { dg-options "-O2 -msse2 -mfpmath=sse -fopt-info-inline-missed" } */
 
 float a;
 

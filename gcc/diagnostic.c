@@ -1217,6 +1217,20 @@ emit_diagnostic (diagnostic_t kind, location_t location, int opt,
   return ret;
 }
 
+/* As above, but for rich_location *.  */
+
+bool
+emit_diagnostic (diagnostic_t kind, rich_location *richloc, int opt,
+		 const char *gmsgid, ...)
+{
+  auto_diagnostic_group d;
+  va_list ap;
+  va_start (ap, gmsgid);
+  bool ret = diagnostic_impl (richloc, opt, gmsgid, &ap, kind);
+  va_end (ap);
+  return ret;
+}
+
 /* Wrapper around diagnostic_impl taking a va_list parameter.  */
 
 bool

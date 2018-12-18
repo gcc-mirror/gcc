@@ -1876,10 +1876,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	  break;
 	case 'w':
 	  if ((mask & OMP_CLAUSE_WAIT)
-	      && !c->wait
 	      && gfc_match ("wait") == MATCH_YES)
 	    {
-	      c->wait = true;
 	      match m = match_oacc_expr_list (" (", &c->wait_list, false);
 	      if (m == MATCH_ERROR)
 		{
@@ -4780,10 +4778,8 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
     resolve_positive_int_expr (omp_clauses->worker_expr, "WORKER");
   if (omp_clauses->vector_expr)
     resolve_positive_int_expr (omp_clauses->vector_expr, "VECTOR");
-  if (omp_clauses->wait)
-    if (omp_clauses->wait_list)
-      for (el = omp_clauses->wait_list; el; el = el->next)
-	resolve_scalar_int_expr (el->expr, "WAIT");
+  for (el = omp_clauses->wait_list; el; el = el->next)
+    resolve_scalar_int_expr (el->expr, "WAIT");
   if (omp_clauses->collapse && omp_clauses->tile_list)
     gfc_error ("Incompatible use of TILE and COLLAPSE at %L", &code->loc);
   if (omp_clauses->depend_source && code->op != EXEC_OMP_ORDERED)
@@ -5663,12 +5659,6 @@ oacc_is_parallel (gfc_code *code)
   return code->op == EXEC_OACC_PARALLEL || code->op == EXEC_OACC_PARALLEL_LOOP;
 }
 
-static bool
-oacc_is_kernels (gfc_code *code)
-{
-  return code->op == EXEC_OACC_KERNELS || code->op == EXEC_OACC_KERNELS_LOOP;
-}
-
 static gfc_statement
 omp_code_to_statement (gfc_code *code)
 {
@@ -5850,75 +5840,9 @@ resolve_oacc_params_in_parallel (gfc_code *code, const char *clause,
 static void
 resolve_oacc_loop_blocks (gfc_code *code)
 {
-  fortran_omp_context *c;
-
   if (!oacc_is_loop (code))
     return;
 
-  if (code->op == EXEC_OACC_LOOP)
-    for (c = omp_current_ctx; c; c = c->previous)
-      {
-	if (oacc_is_loop (c->code))
-	  {
-	    if (code->ext.omp_clauses->gang)
-	      {
-		if (c->code->ext.omp_clauses->gang)
-		  gfc_error ("Loop parallelized across gangs is not allowed "
-			     "inside another loop parallelized across gangs at %L",
-			     &code->loc);
-		if (c->code->ext.omp_clauses->worker)
-		  gfc_error ("Loop parallelized across gangs is not allowed "
-			     "inside loop parallelized across workers at %L",
-			     &code->loc);
-		if (c->code->ext.omp_clauses->vector)
-		  gfc_error ("Loop parallelized across gangs is not allowed "
-			     "inside loop parallelized across vectors at %L",
-			     &code->loc);
-	      }
-	    if (code->ext.omp_clauses->worker)
-	      {
-		if (c->code->ext.omp_clauses->worker)
-		  gfc_error ("Loop parallelized across workers is not allowed "
-			     "inside another loop parallelized across workers at %L",
-			     &code->loc);
-		if (c->code->ext.omp_clauses->vector)
-		  gfc_error ("Loop parallelized across workers is not allowed "
-			     "inside another loop parallelized across vectors at %L",
-			     &code->loc);
-	      }
-	    if (code->ext.omp_clauses->vector)
-	      if (c->code->ext.omp_clauses->vector)
-		gfc_error ("Loop parallelized across vectors is not allowed "
-			   "inside another loop parallelized across vectors at %L",
-			   &code->loc);
-	  }
-
-	if (oacc_is_parallel (c->code) || oacc_is_kernels (c->code))
-	  break;
-      }
-
-  if (code->ext.omp_clauses->seq)
-    {
-      if (code->ext.omp_clauses->independent)
-	gfc_error ("Clause SEQ conflicts with INDEPENDENT at %L", &code->loc);
-      if (code->ext.omp_clauses->gang)
-	gfc_error ("Clause SEQ conflicts with GANG at %L", &code->loc);
-      if (code->ext.omp_clauses->worker)
-	gfc_error ("Clause SEQ conflicts with WORKER at %L", &code->loc);
-      if (code->ext.omp_clauses->vector)
-	gfc_error ("Clause SEQ conflicts with VECTOR at %L", &code->loc);
-      if (code->ext.omp_clauses->par_auto)
-	gfc_error ("Clause SEQ conflicts with AUTO at %L", &code->loc);
-    }
-  if (code->ext.omp_clauses->par_auto)
-    {
-      if (code->ext.omp_clauses->gang)
-	gfc_error ("Clause AUTO conflicts with GANG at %L", &code->loc);
-      if (code->ext.omp_clauses->worker)
-	gfc_error ("Clause AUTO conflicts with WORKER at %L", &code->loc);
-      if (code->ext.omp_clauses->vector)
-	gfc_error ("Clause AUTO conflicts with VECTOR at %L", &code->loc);
-    }
   if (code->ext.omp_clauses->tile_list && code->ext.omp_clauses->gang
       && code->ext.omp_clauses->worker && code->ext.omp_clauses->vector)
     gfc_error ("Tiled loop cannot be parallelized across gangs, workers and "

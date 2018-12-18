@@ -1,3 +1,153 @@
+2018-12-14  Thomas Schwinge  <thomas@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* oacc-mem.c (acc_present_or_create): Remove definition and change
+	to alias of acc_create.
+	(acc_present_or_copyin): Remove definition and change to alias of
+	acc_copyin.
+	* oacc-parallel.c (GOACC_enter_exit_data): Call acc_create instead
+	of acc_present_or_create.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-1.c: Remove.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-5.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-6.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-7.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-8.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-1.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-3.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-4.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-5.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-6.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-7.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-8.f: Likewise.
+
+2018-12-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/88495
+	* plugin/plugin-nvptx.c (nvptx_wait_async): Don't refuse
+	"identical parameters".
+	* testsuite/libgomp.oacc-c-c++-common/asyncwait-nop-1.c: Update.
+	* testsuite/libgomp.oacc-c-c++-common/lib-80.c: Remove.
+
+	PR libgomp/88484
+	* oacc-parallel.c (GOACC_wait): Correct handling for "async >= 0".
+	* testsuite/libgomp.oacc-c-c++-common/asyncwait-nop-1.c: New file.
+
+	PR libgomp/88407
+	* plugin/plugin-nvptx.c (nvptx_async_test, nvptx_wait)
+	(nvptx_wait_async): Unseen async-argument is a no-op.
+	* testsuite/libgomp.oacc-c-c++-common/async_queue-1.c: Update.
+	* testsuite/libgomp.oacc-c-c++-common/data-2-lib.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-79.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-12.f90: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-71.c: Merge into...
+	* testsuite/libgomp.oacc-c-c++-common/lib-69.c: ... this.  Update.
+	* testsuite/libgomp.oacc-c-c++-common/lib-77.c: Merge into...
+	* testsuite/libgomp.oacc-c-c++-common/lib-74.c: ... this.  Update
+
+	* testsuite/libgomp.oacc-c-c++-common/data-2-lib.c: Revise.
+	* testsuite/libgomp.oacc-c-c++-common/data-2.c: Likewise.
+
+2018-12-14  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/data-2-lib.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/data-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-3.c: Likewise.
+
+2018-12-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/88370
+	* libgomp.texi (acc_get_current_cuda_context, acc_get_cuda_stream)
+	(acc_set_cuda_stream): Clarify.
+	* oacc-cuda.c (acc_get_cuda_stream, acc_set_cuda_stream): Use
+	"async_valid_p".
+	* plugin/plugin-nvptx.c (nvptx_set_cuda_stream): Refuse "async ==
+	acc_async_sync".
+	* testsuite/libgomp.oacc-c-c++-common/acc_set_cuda_stream-1.c: New file.
+	* testsuite/libgomp.oacc-c-c++-common/async_queue-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-84.c: Update.
+	* testsuite/libgomp.oacc-c-c++-common/lib-85.c: Likewise.
+
+2018-12-14  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.c-c++-common/function-not-offloaded-aux.c: New test.
+	* testsuite/libgomp.c-c++-common/function-not-offloaded.c: New test.
+	* testsuite/libgomp.c-c++-common/variable-not-offloaded.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/function-not-offloaded.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/variable-not-offloaded.c: New test.
+
+2018-12-13  Tom de Vries  <tdevries@suse.de>
+
+	* affinity-fmt.c (gomp_print_string): New function, factored out of ...
+	(omp_display_affinity, gomp_display_affinity_thread): ... here, and ...
+	* fortran.c (omp_display_affinity_): ... here.
+	* libgomp.h (gomp_print_string): Declare.
+	* config/nvptx/affinity-fmt.c: New file.  Include affinity-fmt.c,
+	undefining HAVE_GETPID and HAVE_GETHOSTNAME, and mapping fwrite to
+	write.
+
+2018-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/88460
+	* testsuite/libgomp.c++/for-24.C (results): Include it in
+	omp declare target region.
+	(main): Use map (always, tofrom: results) instead of
+	map (tofrom: results).
+
+2018-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/88463
+	* testsuite/libgomp.fortran/pr88463-1.f90: New test.
+	* testsuite/libgomp.fortran/pr88463-2.f90: New test.
+
+	* testsuite/libgomp.c-c++-common/for-16.c: New test.
+
+2018-12-12  Andreas Schwab  <schwab@suse.de>
+
+	* config/linux/ia64/futex.h (sys_futex0): Don't mark r12 as
+	clobbered.
+
+2018-12-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/88411
+	* testsuite/libgomp.fortran/async_io_8.f90: New test.
+
+2018-12-09  Thomas Schwinge  <thomas@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* target.c (gomp_map_vars): Call gomp_copy_host2dev instead of
+	devicep->host2dev_func.
+
+2018-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/87995
+	* testsuite/libgomp.c-c++-common/cancel-taskgroup-3.c: Require
+	tls_runtime effective target.
+	(t): New threadprivate variable.
+	(main): Set t in threads which execute iterations of the worksharing
+	loop.  Propagate that to the task after the loop and don't abort
+	if the current taskgroup hasn't been cancelled.
+
+2018-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/task-reduction-3.c: New test.
+
+	* testsuite/libgomp.c-c++-common/cancel-taskgroup-4.c: New test.
+
+2018-11-30  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR libgomp/88288
+	* oacc-parallel.c (GOACC_parallel_keyed): Add offset to devaddrs.
+	* testsuite/libgomp.oacc-c-c++-common/pr88288.c: New test.
+
+2018-11-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/lib-16-2.f90: New file.
+
 2018-10-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88182

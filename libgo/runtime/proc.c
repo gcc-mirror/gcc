@@ -59,6 +59,8 @@ uintptr runtime_stacks_sys;
 void gtraceback(G*)
   __asm__(GOSYM_PREFIX "runtime.gtraceback");
 
+static void gscanstack(G*);
+
 #ifdef __rtems__
 #define __thread
 #endif
@@ -340,6 +342,8 @@ runtime_mcall(FuncVal *fv)
 
 		if(gp->traceback != 0)
 			gtraceback(gp);
+		if(gp->scang != 0)
+			gscanstack(gp);
 	}
 	if (gp == nil || !gp->fromgogo) {
 #ifdef USING_SPLIT_STACK
@@ -469,6 +473,66 @@ gtraceback(G* gp)
 	runtime_gogo(traceback->gp);
 }
 
+void doscanstackswitch(G*, G*) __asm__(GOSYM_PREFIX "runtime.doscanstackswitch");
+
+// Switch to gp and let it scan its stack.
+// The first time gp->scang is set (to me). The second time here
+// gp is done scanning, and has unset gp->scang, so we just return.
+void
+doscanstackswitch(G* me, G* gp)
+{
+	__go_assert(me->entry == nil);
+	me->fromgogo = false;
+
+#ifdef USING_SPLIT_STACK
+	__splitstack_getcontext((void*)(&me->stackcontext[0]));
+#endif
+	getcontext(ucontext_arg(&me->context[0]));
+
+	if(me->entry != nil) {
+		// Got here from mcall.
+		// The stack scanning code may call systemstack, which calls
+		// mcall, which calls setcontext.
+		// Run the function, which at the end will switch back to gp.
+		FuncVal *fv = me->entry;
+		void (*pfn)(G*) = (void (*)(G*))fv->fn;
+		G* gp1 = (G*)me->param;
+		__go_assert(gp1 == gp);
+		me->entry = nil;
+		me->param = nil;
+		__builtin_call_with_static_chain(pfn(gp1), fv);
+		abort();
+	}
+
+	if (gp->scang != 0)
+		runtime_gogo(gp);
+}
+
+// Do a stack scan, then switch back to the g that triggers this scan.
+// We come here from doscanstackswitch.
+static void
+gscanstack(G *gp)
+{
+	G *oldg, *oldcurg;
+	M* holdm;
+
+	oldg = (G*)gp->scang;
+	oldcurg = oldg->m->curg;
+	holdm = gp->m;
+	if(holdm != nil && holdm != g->m)
+		runtime_throw("gscanstack: m is not nil");
+	oldg->m->curg = gp;
+	gp->m = oldg->m;
+	gp->scang = 0;
+
+	doscanstack(gp, (void*)gp->scangcw);
+
+	gp->scangcw = 0;
+	gp->m = holdm;
+	oldg->m->curg = oldcurg;
+	runtime_gogo(oldg);
+}
+
 // Called by pthread_create to start an M.
 void*
 runtime_mstart(void *arg)
@@ -516,6 +580,9 @@ runtime_mstart(void *arg)
 		// may always go to the getcontext call in mcall.
 		gtraceback(gp);
 	}
+	if(gp->scang != 0)
+		// Got here from doscanswitch. Should not happen.
+		runtime_throw("mstart with scang");
 
 	if(gp->entry != nil) {
 		// Got here from mcall.
@@ -630,7 +697,8 @@ runtime_entersyscall()
 {
 	// Save the registers in the g structure so that any pointers
 	// held in registers will be seen by the garbage collector.
-	getcontext(ucontext_arg(&g->gcregs[0]));
+	if (!runtime_usestackmaps)
+		getcontext(ucontext_arg(&g->gcregs[0]));
 
 	// Note that if this function does save any registers itself,
 	// we might store the wrong value in the call to getcontext.
@@ -676,7 +744,8 @@ runtime_entersyscallblock()
 {
 	// Save the registers in the g structure so that any pointers
 	// held in registers will be seen by the garbage collector.
-	getcontext(ucontext_arg(&g->gcregs[0]));
+	if (!runtime_usestackmaps)
+		getcontext(ucontext_arg(&g->gcregs[0]));
 
 	// See comment in runtime_entersyscall.
 	doentersyscallblock((uintptr)runtime_getcallerpc(),

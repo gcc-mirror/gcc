@@ -1016,18 +1016,21 @@ grokbitfield (const cp_declarator *declarator,
 
   if (value == error_mark_node)
     return NULL_TREE; /* friends went bad.  */
-  if (TREE_TYPE (value) == error_mark_node)
+
+  tree type = TREE_TYPE (value);
+  if (type == error_mark_node)
     return value;
 
   /* Pass friendly classes back.  */
   if (VOID_TYPE_P (value))
     return void_type_node;
 
-  if (!INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (value))
-      && (INDIRECT_TYPE_P (value)
-          || !dependent_type_p (TREE_TYPE (value))))
+  if (!INTEGRAL_OR_ENUMERATION_TYPE_P (type)
+      && (INDIRECT_TYPE_P (type) || !dependent_type_p (type)))
     {
-      error ("bit-field %qD with non-integral type", value);
+      error_at (DECL_SOURCE_LOCATION (value),
+		"bit-field %qD with non-integral type %qT",
+		value, type);
       return error_mark_node;
     }
 
@@ -1043,15 +1046,15 @@ grokbitfield (const cp_declarator *declarator,
      check here.  */
   if (TREE_CODE (value) == FUNCTION_DECL)
     {
-      error ("cannot declare bit-field %qD with function type",
-	     DECL_NAME (value));
+      error_at (DECL_SOURCE_LOCATION (value),
+		"cannot declare bit-field %qD with function type", value);
       return NULL_TREE;
     }
 
-  if (width && TYPE_WARN_IF_NOT_ALIGN (TREE_TYPE (value)))
+  if (TYPE_WARN_IF_NOT_ALIGN (type))
     {
-      error ("cannot declare bit-field %qD with %<warn_if_not_aligned%> type",
-	     DECL_NAME (value));
+      error_at (DECL_SOURCE_LOCATION (value), "cannot declare bit-field "
+		"%qD with %<warn_if_not_aligned%> type", value);
       return NULL_TREE;
     }
 
@@ -1064,7 +1067,8 @@ grokbitfield (const cp_declarator *declarator,
 
   if (TREE_STATIC (value))
     {
-      error ("static member %qD cannot be a bit-field", value);
+      error_at (DECL_SOURCE_LOCATION (value),
+		"static member %qD cannot be a bit-field", value);
       return NULL_TREE;
     }
 
@@ -4302,7 +4306,7 @@ decl_maybe_constant_var_p (tree decl)
   tree type = TREE_TYPE (decl);
   if (!VAR_P (decl))
     return false;
-  if (DECL_DECLARED_CONSTEXPR_P (decl))
+  if (DECL_DECLARED_CONSTEXPR_P (decl) && !TREE_THIS_VOLATILE (decl))
     return true;
   if (DECL_HAS_VALUE_EXPR_P (decl))
     /* A proxy isn't constant.  */
@@ -5181,14 +5185,37 @@ check_default_args (tree x)
 {
   tree arg = TYPE_ARG_TYPES (TREE_TYPE (x));
   bool saw_def = false;
+  bool noted_first_def = false;
+  int idx_of_first_default_arg = 0;
+  location_t loc_of_first_default_arg = UNKNOWN_LOCATION;
   int i = 0 - (TREE_CODE (TREE_TYPE (x)) == METHOD_TYPE);
+  tree fndecl = STRIP_TEMPLATE (x);
+  auto_diagnostic_group d;
   for (; arg && arg != void_list_node; arg = TREE_CHAIN (arg), ++i)
     {
       if (TREE_PURPOSE (arg))
-	saw_def = true;
+	{
+	  if (!saw_def)
+	    {
+	      saw_def = true;
+	      idx_of_first_default_arg = i;
+	      location_t loc = get_fndecl_argument_location (fndecl, i);
+	      if (loc != DECL_SOURCE_LOCATION (x))
+		loc_of_first_default_arg = loc;
+	    }
+	}
       else if (saw_def && !PACK_EXPANSION_P (TREE_VALUE (arg)))
 	{
-	  error ("default argument missing for parameter %P of %q+#D", i, x);
+	  error_at (get_fndecl_argument_location (fndecl, i),
+		    "default argument missing for parameter %P of %q#D", i, x);
+	  if (loc_of_first_default_arg != UNKNOWN_LOCATION
+	      && !noted_first_def)
+	    {
+	      inform (loc_of_first_default_arg,
+		      "...following parameter %P which has a default argument",
+		      idx_of_first_default_arg);
+	      noted_first_def = true;
+	    }
 	  TREE_PURPOSE (arg) = error_mark_node;
 	}
     }
@@ -5274,18 +5301,23 @@ cp_warn_deprecated_use (tree decl, tsubst_flags_t complain)
       && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
       && copy_fn_p (decl))
     {
-      auto_diagnostic_group d;
-      /* Don't warn about system library classes (c++/86342).  */
-      if (!DECL_IN_SYSTEM_HEADER (decl))
-	warned = warning (OPT_Wdeprecated_copy,
-			  "implicitly-declared %qD is deprecated", decl);
-      if (warned)
+      if (warn_deprecated_copy
+	  /* Don't warn about system library classes (c++/86342).  */
+	  && (!DECL_IN_SYSTEM_HEADER (decl)
+	      || global_dc->dc_warn_system_headers))
 	{
+	  auto_diagnostic_group d;
 	  tree ctx = DECL_CONTEXT (decl);
-	  tree other = classtype_has_user_copy_or_dtor (ctx);
-	  inform (DECL_SOURCE_LOCATION (other),
-		  "because %qT has user-provided %qD",
-		  ctx, other);
+	  tree other = classtype_has_depr_implicit_copy (ctx);
+	  int opt = (DECL_DESTRUCTOR_P (other)
+		     ? OPT_Wdeprecated_copy_dtor
+		     : OPT_Wdeprecated_copy);
+	  warned = warning (opt, "implicitly-declared %qD is deprecated",
+			    decl);
+	  if (warned)
+	    inform (DECL_SOURCE_LOCATION (other),
+		    "because %qT has user-provided %qD",
+		    ctx, other);
 	}
     }
   else

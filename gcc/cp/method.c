@@ -2381,7 +2381,7 @@ lazily_declare_fn (special_function_kind sfk, tree type)
     {
       if (classtype_has_move_assign_or_move_ctor_p (type, true))
 	DECL_DELETED_FN (fn) = true;
-      else if (classtype_has_user_copy_or_dtor (type))
+      else if (classtype_has_depr_implicit_copy (type))
 	/* The implicit definition of a copy constructor as defaulted is
 	   deprecated if the class has a user-declared copy assignment operator
 	   or a user-declared destructor. The implicit definition of a copy

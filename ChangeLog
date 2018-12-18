@@ -1,3 +1,19 @@
+2018-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* contrib/config-list.mk: Remove powerpc-eabispe and powerpc-linux_spe.
+
+2018-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.ac (NCN_STRICT_CHECK_TOOLS): Check otool.
+	(ACX_CHECK_INSTALLED_TARGET_TOOL): Likewise
+	(GCC_TARGET_TOOL): Likewise.
+	* Makefile.tpl (HOST_EXPORTS): Add OTOOL, OTOOL_FOR_TARGET.
+	(BASE_TARGET_EXPORTS): OTOOL, export OTOOL_FOR_TARGET.
+	OTOOL, OTOOL_FOR_TARGET: New substitutions. 
+	(EXTRA_HOST_FLAGS, EXTRA_TARGET_FLAGS): Add OTOOL.
+	* configure: Regenerate. 
+	* Makefile.in: Likewise.
+
 2018-11-28  Johannes Pfau  <johannespfau@gmail.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

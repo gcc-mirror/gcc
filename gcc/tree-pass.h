@@ -362,6 +362,7 @@ extern gimple_opt_pass *make_pass_fix_loops (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_tree_loop (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_tree_no_loop (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_tree_loop_init (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_loop_versioning (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_lim (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_linterchange (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_tree_unswitch (gcc::context *ctxt);
@@ -579,6 +580,7 @@ extern rtl_opt_pass *make_pass_clean_state (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_branch_prob (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_value_profile_transformations (gcc::context
 							      *ctxt);
+extern rtl_opt_pass *make_pass_postreload_jump (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_postreload_cse (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_gcse2 (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_split_after_reload (gcc::context *ctxt);

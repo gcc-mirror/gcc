@@ -149,7 +149,8 @@ gfc_omp_predetermined_sharing (tree decl)
      variables at all (they can't be redefined), but they can nevertheless appear
      in parallel/task regions and for default(none) purposes treat them as shared.
      For vtables likely the same handling is desirable.  */
-  if (VAR_P (decl) && TREE_READONLY (decl) && TREE_STATIC (decl))
+  if (VAR_P (decl) && TREE_READONLY (decl)
+      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
     return OMP_CLAUSE_DEFAULT_SHARED;
 
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
@@ -460,7 +461,8 @@ gfc_omp_clause_default_ctor (tree clause, tree decl, tree outer)
 
   if ((! GFC_DESCRIPTOR_TYPE_P (type)
        || GFC_TYPE_ARRAY_AKIND (type) != GFC_ARRAY_ALLOCATABLE)
-      && !GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause)))
+      && (!GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause))
+	  || !POINTER_TYPE_P (type)))
     {
       if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause)))
 	{
@@ -567,7 +569,8 @@ gfc_omp_clause_copy_ctor (tree clause, tree dest, tree src)
 
   if ((! GFC_DESCRIPTOR_TYPE_P (type)
        || GFC_TYPE_ARRAY_AKIND (type) != GFC_ARRAY_ALLOCATABLE)
-      && !GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause)))
+      && (!GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause))
+	  || !POINTER_TYPE_P (type)))
     {
       if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause)))
 	{
@@ -667,7 +670,8 @@ gfc_omp_clause_assign_op (tree clause, tree dest, tree src)
 
   if ((! GFC_DESCRIPTOR_TYPE_P (type)
        || GFC_TYPE_ARRAY_AKIND (type) != GFC_ARRAY_ALLOCATABLE)
-      && !GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause)))
+      && (!GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause))
+	  || !POINTER_TYPE_P (type)))
     {
       if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause)))
 	{
@@ -905,7 +909,8 @@ gfc_omp_clause_linear_ctor (tree clause, tree dest, tree src, tree add)
 
   if ((! GFC_DESCRIPTOR_TYPE_P (type)
        || GFC_TYPE_ARRAY_AKIND (type) != GFC_ARRAY_ALLOCATABLE)
-      && !GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause)))
+      && (!GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause))
+	  || !POINTER_TYPE_P (type)))
     {
       gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
       if (!TYPE_DOMAIN (type)
@@ -989,7 +994,8 @@ gfc_omp_clause_dtor (tree clause, tree decl)
 
   if ((! GFC_DESCRIPTOR_TYPE_P (type)
        || GFC_TYPE_ARRAY_AKIND (type) != GFC_ARRAY_ALLOCATABLE)
-      && !GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause)))
+      && (!GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause))
+	  || !POINTER_TYPE_P (type)))
     {
       if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause)))
 	return gfc_walk_alloc_comps (decl, NULL_TREE,
@@ -3873,6 +3879,7 @@ gfc_trans_oacc_combined_directive (gfc_code *code)
   gfc_omp_clauses construct_clauses, loop_clauses;
   tree stmt, oacc_clauses = NULL_TREE;
   enum tree_code construct_code;
+  location_t loc = input_location;
 
   switch (code->op)
     {
@@ -3934,12 +3941,12 @@ gfc_trans_oacc_combined_directive (gfc_code *code)
   else
     pushlevel ();
   stmt = gfc_trans_omp_do (code, EXEC_OACC_LOOP, pblock, &loop_clauses, NULL);
+  protected_set_expr_location (stmt, loc);
   if (TREE_CODE (stmt) != BIND_EXPR)
     stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
   else
     poplevel (0, 0);
-  stmt = build2_loc (input_location, construct_code, void_type_node, stmt,
-		     oacc_clauses);
+  stmt = build2_loc (loc, construct_code, void_type_node, stmt, oacc_clauses);
   gfc_add_expr_to_block (&block, stmt);
   return gfc_finish_block (&block);
 }

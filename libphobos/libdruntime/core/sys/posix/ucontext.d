@@ -23,6 +23,9 @@ extern (C):
 nothrow:
 @nogc:
 
+version (RISCV32) version = RISCV_Any;
+version (RISCV64) version = RISCV_Any;
+
 //
 // XOpen (XSI)
 //
@@ -542,6 +545,55 @@ version (CRuntime_Glibc)
             mcontext_t  uc_mcontext;
         }
     }
+    else version (RISCV_Any)
+    {
+        private
+        {
+            alias c_ulong[32] __riscv_mc_gp_state;
+
+            struct __riscv_mc_f_ext_state
+            {
+                uint[32] __f;
+                uint __fcsr;
+            }
+
+            struct __riscv_mc_d_ext_state
+            {
+                ulong[32] __f;
+                uint __fcsr;
+            }
+
+            struct __riscv_mc_q_ext_state
+            {
+                align(16) ulong[64] __f;
+                uint __fcsr;
+                uint[3] __reserved;
+            }
+
+            union __riscv_mc_fp_state
+            {
+                __riscv_mc_f_ext_state __f;
+                __riscv_mc_d_ext_state __d;
+                __riscv_mc_q_ext_state __q;
+            }
+        }
+
+        struct mcontext_t
+        {
+            __riscv_mc_gp_state __gregs;
+            __riscv_mc_fp_state __fpregs;
+        }
+
+        struct ucontext_t
+        {
+            c_ulong     __uc_flags;
+            ucontext_t* uc_link;
+            stack_t     uc_stack;
+            sigset_t    uc_sigmask;
+            char[1024 / 8 - sigset_t.sizeof] __reserved;
+            mcontext_t  uc_mcontext;
+        }
+    }
     else version (SPARC64)
     {
         enum MC_NGREG = 19;
@@ -937,7 +989,17 @@ else version (Solaris)
 {
     alias uint[4] upad128_t;
 
-    version (X86_64)
+    version (SPARC64)
+    {
+        enum _NGREG = 21;
+        alias long greg_t;
+    }
+    else version (SPARC)
+    {
+        enum _NGREG = 19;
+        alias int greg_t;
+    }
+    else version (X86_64)
     {
         enum _NGREG = 28;
         alias long greg_t;
@@ -947,10 +1009,81 @@ else version (Solaris)
         enum _NGREG = 19;
         alias int greg_t;
     }
+    else
+        static assert(0, "unimplemented");
 
     alias greg_t[_NGREG] gregset_t;
 
-    version (X86_64)
+    version (SPARC64)
+    {
+        private
+        {
+            struct _fpq
+            {
+                uint *fpq_addr;
+                uint fpq_instr;
+            }
+
+            struct fq
+            {
+                union
+                {
+                    double whole;
+                    _fpq fpq;
+                }
+            }
+        }
+
+        struct fpregset_t
+        {
+            union
+            {
+                uint[32]   fpu_regs;
+                double[32] fpu_dregs;
+                real[16]   fpu_qregs;
+            }
+            fq    *fpu_q;
+            ulong fpu_fsr;
+            ubyte fpu_qcnt;
+            ubyte fpu_q_entrysize;
+            ubyte fpu_en;
+        }
+    }
+    else version (SPARC)
+    {
+        private
+        {
+            struct _fpq
+            {
+                uint *fpq_addr;
+                uint fpq_instr;
+            }
+
+            struct fq
+            {
+                union
+                {
+                    double whole;
+                    _fpq fpq;
+                }
+            }
+        }
+
+        struct fpregset_t
+        {
+            union
+            {
+                uint[32]   fpu_regs;
+                double[16] fpu_dregs;
+            };
+            fq    *fpu_q;
+            uint  fpu_fsr;
+            ubyte fpu_qcnt;
+            ubyte fpu_q_entrysize;
+            ubyte fpu_en;
+        }
+    }
+    else version (X86_64)
     {
         union _u_st
         {
@@ -1011,6 +1144,9 @@ else version (Solaris)
         u_fp_reg_set fp_reg_set;
         }
     }
+    else
+        static assert(0, "unimplemented");
+
     struct mcontext_t
     {
         gregset_t   gregs;

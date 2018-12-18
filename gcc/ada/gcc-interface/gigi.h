@@ -439,9 +439,11 @@ enum inline_status_t
   /* Inlining is suppressed for the subprogram.  */
   is_suppressed,
   /* No inlining is requested for the subprogram.  */
-  is_disabled,
+  is_default,
   /* Inlining is requested for the subprogram.  */
-  is_enabled,
+  is_requested,
+  /* Inlining is strongly requested for the subprogram.  */
+  is_prescribed,
   /* Inlining is required for the subprogram.  */
   is_required
 };

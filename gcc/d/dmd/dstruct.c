@@ -46,7 +46,7 @@ FuncDeclaration *search_toString(StructDeclaration *sd)
         if (!tftostring)
         {
             tftostring = new TypeFunction(NULL, Type::tstring, 0, LINKd);
-            tftostring = (TypeFunction *)tftostring->merge();
+            tftostring = tftostring->merge()->toTypeFunction();
         }
 
         fd = fd->overloadExactMatch(tftostring);
@@ -92,6 +92,7 @@ void semanticTypeInfo(Scope *sc, Type *t)
         }
         void visit(TypeStruct *t)
         {
+            //printf("semanticTypeInfo::visit(TypeStruct = %s)\n", t->toChars());
             StructDeclaration *sd = t->sym;
 
             /* Step 1: create TypeInfoDeclaration

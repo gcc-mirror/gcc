@@ -246,10 +246,19 @@ package body Exp_Unst is
    -----------------------
 
    function Needs_Fat_Pointer (E : Entity_Id) return Boolean is
+      Typ : Entity_Id;
    begin
-      return Is_Formal (E)
-        and then Is_Array_Type (Etype (E))
-        and then not Is_Constrained (Etype (E));
+      if Is_Formal (E) then
+         Typ := Etype (E);
+         if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
+            Typ := Full_View (Typ);
+         end if;
+
+         return Is_Array_Type (Typ)
+           and then not Is_Constrained (Typ);
+      else
+         return False;
+      end if;
    end Needs_Fat_Pointer;
 
    ----------------
@@ -431,7 +440,7 @@ package body Exp_Unst is
       Urefs.Init;
 
       Build_Tables : declare
-         Current_Subprogram : Entity_Id;
+         Current_Subprogram : Entity_Id := Empty;
          --  When we scan a subprogram body, we set Current_Subprogram to the
          --  corresponding entity. This gets recursively saved and restored.
 
@@ -761,7 +770,8 @@ package body Exp_Unst is
                  ((Ent           => E,
                    Bod           => Bod,
                    Lev           => L,
-                   Reachable     => In_Synchronized_Unit (E),
+                   Reachable     => In_Synchronized_Unit (E)
+                                      or else Address_Taken (E),
                    Uplevel_Ref   => L,
                    Declares_AREC => False,
                    Uents         => No_Elist,
@@ -2165,6 +2175,21 @@ package body Exp_Unst is
                --  and inline.adb fail in unnesting mode.
 
                if No (STJR.ARECnF) then
+                  goto Continue;
+               end if;
+
+               --  If this is a reference to a global constant, use its value
+               --  rather than create a reference. It is more efficient and
+               --  furthermore indispensable if the context requires a
+               --  constant, such as a branch of a case statement.
+
+               if Ekind (UPJ.Ent) = E_Constant
+                 and then Is_True_Constant (UPJ.Ent)
+                 and then Present (Constant_Value (UPJ.Ent))
+                 and then Is_Static_Expression (Constant_Value (UPJ.Ent))
+               then
+                  Rewrite (UPJ.Ref,
+                    New_Copy_Tree (Constant_Value (UPJ.Ent)));
                   goto Continue;
                end if;
 

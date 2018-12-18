@@ -1698,9 +1698,13 @@ update_rsp_from_reg_equal (reg_stat_type *rsp, rtx_insn *insn, const_rtx set,
   /* Don't call nonzero_bits if it cannot change anything.  */
   if (rsp->nonzero_bits != HOST_WIDE_INT_M1U)
     {
-      bits = nonzero_bits (src, nonzero_bits_mode);
+      machine_mode mode = GET_MODE (x);
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && HWI_COMPUTABLE_MODE_P (mode))
+	mode = nonzero_bits_mode;
+      bits = nonzero_bits (src, mode);
       if (reg_equal && bits)
-	bits &= nonzero_bits (reg_equal, nonzero_bits_mode);
+	bits &= nonzero_bits (reg_equal, mode);
       rsp->nonzero_bits |= bits;
     }
 
@@ -4945,7 +4949,7 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 	}
 
       /* If we have a PLUS whose second operand is a constant and the
-	 address is not valid, perhaps will can split it up using
+	 address is not valid, perhaps we can split it up using
 	 the machine-specific way to split large constants.  We use
 	 the first pseudo-reg (one of the virtual regs) as a placeholder;
 	 it will not remain in the result.  */
@@ -4960,7 +4964,7 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 
 	  /* This should have produced two insns, each of which sets our
 	     placeholder.  If the source of the second is a valid address,
-	     we can make put both sources together and make a split point
+	     we can put both sources together and make a split point
 	     in the middle.  */
 
 	  if (seq
@@ -5001,14 +5005,51 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 		}
 	    }
 
+	  /* If that didn't work and we have a nested plus, like:
+	     ((REG1 * CONST1) + REG2) + CONST2 and (REG1 + REG2) + CONST2
+	     is valid address, try to split (REG1 * CONST1).  */
+	  if (GET_CODE (XEXP (XEXP (x, 0), 0)) == PLUS
+	      && !OBJECT_P (XEXP (XEXP (XEXP (x, 0), 0), 0))
+	      && OBJECT_P (XEXP (XEXP (XEXP (x, 0), 0), 1))
+	      && ! (GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == SUBREG
+		    && OBJECT_P (SUBREG_REG (XEXP (XEXP (XEXP (x, 0),
+							 0), 0)))))
+	    {
+	      rtx tem = XEXP (XEXP (XEXP (x, 0), 0), 0);
+	      XEXP (XEXP (XEXP (x, 0), 0), 0) = reg;
+	      if (memory_address_addr_space_p (GET_MODE (x), XEXP (x, 0),
+					       MEM_ADDR_SPACE (x)))
+		{
+		  XEXP (XEXP (XEXP (x, 0), 0), 0) = tem;
+		  return &XEXP (XEXP (XEXP (x, 0), 0), 0);
+		}
+	      XEXP (XEXP (XEXP (x, 0), 0), 0) = tem;
+	    }
+	  else if (GET_CODE (XEXP (XEXP (x, 0), 0)) == PLUS
+		   && OBJECT_P (XEXP (XEXP (XEXP (x, 0), 0), 0))
+		   && !OBJECT_P (XEXP (XEXP (XEXP (x, 0), 0), 1))
+		   && ! (GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1)) == SUBREG
+			 && OBJECT_P (SUBREG_REG (XEXP (XEXP (XEXP (x, 0),
+							      0), 1)))))
+	    {
+	      rtx tem = XEXP (XEXP (XEXP (x, 0), 0), 1);
+	      XEXP (XEXP (XEXP (x, 0), 0), 1) = reg;
+	      if (memory_address_addr_space_p (GET_MODE (x), XEXP (x, 0),
+					       MEM_ADDR_SPACE (x)))
+		{
+		  XEXP (XEXP (XEXP (x, 0), 0), 1) = tem;
+		  return &XEXP (XEXP (XEXP (x, 0), 0), 1);
+		}
+	      XEXP (XEXP (XEXP (x, 0), 0), 1) = tem;
+	    }
+
 	  /* If that didn't work, perhaps the first operand is complex and
 	     needs to be computed separately, so make a split point there.
 	     This will occur on machines that just support REG + CONST
 	     and have a constant moved through some previous computation.  */
-
-	  else if (!OBJECT_P (XEXP (XEXP (x, 0), 0))
-		   && ! (GET_CODE (XEXP (XEXP (x, 0), 0)) == SUBREG
-			 && OBJECT_P (SUBREG_REG (XEXP (XEXP (x, 0), 0)))))
+	  if (!OBJECT_P (XEXP (XEXP (x, 0), 0))
+	      && ! (GET_CODE (XEXP (XEXP (x, 0), 0)) == SUBREG
+		    && OBJECT_P (SUBREG_REG (XEXP (XEXP (x, 0), 0)))))
 	    return &XEXP (XEXP (x, 0), 0);
 	}
 
@@ -5941,8 +5982,9 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 	    && known_eq (subreg_lowpart_offset (int_mode, int_op0_mode),
 			 SUBREG_BYTE (x))
 	    && HWI_COMPUTABLE_MODE_P (int_op0_mode)
-	    && (nonzero_bits (SUBREG_REG (x), int_op0_mode)
-		& GET_MODE_MASK (int_mode)) == 0)
+	    && ((nonzero_bits (SUBREG_REG (x), int_op0_mode)
+		 & GET_MODE_MASK (int_mode)) == 0)
+	    && !side_effects_p (SUBREG_REG (x)))
 	  return CONST0_RTX (int_mode);
       }
 
@@ -10187,6 +10229,7 @@ simplify_and_const_int (rtx x, scalar_int_mode mode, rtx varop,
 
 /* Given a REG X of mode XMODE, compute which bits in X can be nonzero.
    We don't care about bits outside of those defined in MODE.
+   We DO care about all the bits in MODE, even if XMODE is smaller than MODE.
 
    For most X this is simply GET_MODE_MASK (GET_MODE (MODE)), but if X is
    a shift, AND, or zero_extract, we can do better.  */

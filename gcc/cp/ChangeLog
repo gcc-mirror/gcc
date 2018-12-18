@@ -1,3 +1,371 @@
+2018-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88410
+	* cp-gimplify.c (cp_fold) <case ADDR_EXPR>: For offsetof-like folding,
+	call maybe_constant_value on val to see if it is INTEGER_CST.
+
+2018-12-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/52321
+	* typeck.c (build_static_cast): Print a note when the destination
+	type or the operand is a pointer/reference to incomplete class type.
+
+2018-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88482
+	* except.c (verify_library_fn): New function.
+	(declare_library_fn): Use it.  Initialize TM even if the non-TM
+	library function has been user declared.
+	(do_end_catch): Don't set TREE_NOTHROW on error_mark_node.
+	(expand_start_catch_block): Don't call initialize_handler_parm
+	for error_mark_node.
+	(build_throw): Use verify_library_fn.  Initialize TM even if the
+	non-TM library function has been user declared.  Don't crash if
+	any library fn is error_mark_node.
+
+2018-12-14  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (tsubst_expr) [DECL_EXPR]: Ignore class-scope bindings when
+	looking up a capture proxy.
+
+2018-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84644
+	* decl.c (check_tag_decl): A decltype with no declarator
+	doesn't declare anything.
+
+2018-12-14  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/87814
+	* pt.c (tsubst_exception_specification): Handle
+	DEFERRED_NOEXCEPT with !defer_ok.
+
+2018-12-14  Jason Merrill <jason@redhat.com>
+
+	PR c++/86823
+	* parser.c (cp_parser_template_id): Rearrange deferred access
+	checks into the firewall.
+
+2018-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82294
+	PR c++/87436
+	* init.c (build_vec_init): Change num_initialized_elts type from int
+	to HOST_WIDE_INT.  Build a RANGE_EXPR if e needs to be repeated more
+	than once.
+
+2018-12-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88216 - ICE with class type in non-type template parameter.
+	* mangle.c (write_expression): Handle TARGET_EXPR and
+	VIEW_CONVERT_EXPR.
+	* pt.c (convert_nontype_argument): Don't call
+	get_template_parm_object for value-dependent expressions.
+
+2018-12-13  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/87531
+	* class.c (finish_struct): Set DECL_CONTEXT of template assign op.
+	* name-lookup.c (get_class_binding_direct): Don't strip using-decl
+	of overload here.
+	* parser.c (cp_parser_postfix_expression): Cope with using decl in
+	overload set.
+	* semantics.c (finish_id_expr): Likewise.
+
+2018-12-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Fix location of error message about
+	static data member definition.
+
+2018-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88446
+	* cp-tree.h (maybe_constant_value): Add manifestly_const_eval
+	argument.
+	* constexpr.c (struct constexpr_call): Rename pretend_const_required
+	member to manifestly_const_eval.
+	(struct constexpr_ctx): Likewise.
+	(constexpr_call_hasher::equal): Adjust users.
+	(cxx_eval_builtin_function_call): Likewise.  Formatting fix.
+	(cxx_eval_call_expression): Adjust users.
+	(cxx_eval_outermost_constant_expr, maybe_constant_init_1,
+	maybe_constant_init): Rename pretend_const_required argument to
+	manifestly_const_eval, adjust function comments.
+	(maybe_constant_value): Add manifestly_const_eval argument.  If true,
+	don't cache and call cxx_eval_outermost_constant_expr with true as
+	manifestly_const_eval.
+	* decl.c (compute_array_index_type_loc): Call maybe_constant_value
+	with true as manifestly_const_eval.
+
+	PR c++/88449
+	* constexpr.c (struct constexpr_call): Add pretend_const_required
+	member.
+	(constexpr_call_hasher::equal): Return false if pretend_const_required
+	members differ.
+	(cxx_eval_call_expression): Adjust new_call initialization.  Hash in
+	ctx->pretend_const_required.
+
+2018-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87861
+	* class.c (build_vtbl_initializer): For TARGET_VTABLE_USES_DESCRIPTORS
+	bump index for each added word.
+	* constexpr.c (find_array_ctor_elt): Add forward declaration.
+	(cxx_eval_call_expression): Handle TARGET_VTABLE_USES_DESCRIPTORS
+	vtable calls.
+	(cxx_eval_constant_expression) <case OBJ_TYPE_REF>: Divide token
+	by TARGET_VTABLE_USES_DESCRIPTORS if non-zero.
+
+2018-12-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86608 - reading constexpr volatile variable.
+	* constexpr.c (potential_constant_expression_1): Check want_rval
+	instead of checking if we have a decl.
+	* decl2.c (decl_maybe_constant_var_p): Don't consider volatile
+	constexpr variables as maybe constant.
+
+2018-12-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokvardecl): Add location_t parameter and use it
+	in build_lang_decl_loc and build_decl calls.
+	(grokdeclarator): Move up loc declaration and use it in the
+	grokvardecl call too.
+
+2018-12-09  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* parser.c (cp_parser_oacc_kernels_parallel): Adjust EXPR_LOCATION
+	on the combined acc loop.
+
+2018-12-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl2.c (grokbitfield): Use DECL_SOURCE_LOCATION in error messages
+	about bit-fields with function type, warn_if_not_aligned type, and
+	static bit-fields; avoid DECL_NAME for unnamed declarations.
+
+2018-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86669
+	* call.c (make_temporary_var_for_ref_to_temp): Call pushdecl even for
+	automatic vars.
+
+	PR c++/87506
+	* constexpr.c (adjust_temp_type): Handle EMPTY_CLASS_EXPR.
+
+2018-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* class.c (check_bitfield_decl): In error message about non-integral
+	type print the type itself too.
+	* decl.c (grokdeclarator): Do not ICE on unnamed bit-fields declared
+	friends; when calling build_decl for a FIELD_DECL possibly pass the
+	declarator->id_loc.
+
+2018-12-06  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/86747
+	* pt.c (tsubst_friend_class): Enter tsubsted class context.
+
+	PR c++/86397
+	* except.c (build_noexcept_spec): Resolve nondependent
+	expressions.
+
+2018-12-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88136 - -Wdeprecated-copy false positives
+	* class.c (classtype_has_depr_implicit_copy): Rename from
+	classtype_has_user_copy_or_dtor.
+	* method.c (lazily_declare_fn): Adjust.
+	* decl2.c (cp_warn_deprecated_use): Refer to -Wdeprecated-copy-dtor
+	if deprecation is due to a destructor.
+
+2018-12-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88373 - wrong parse error with ~.
+	* parser.c (cp_parser_template_name): Check tag_type for
+	none_type.
+
+2018-12-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* cp-tree.h (finish_asm_stmt): Update declaration.
+	* parser.c (cp_parser_asm_definition): Detect the inline keyword
+	after asm.  Pass a flag for it to finish_asm_stmt.
+	* pt.c (tsubst_expr): Pass the ASM_INLINE_P flag to finish_asm_stmt.
+	* semantics.c (finish_asm_stmt): Add inline_p parameter.  Use it to
+	set ASM_INLINE_P.
+
+2018-12-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR inline-asm/55681
+	* parser.c (cp_parser_asm_definition): Update grammar.  Allow any
+	combination of volatile and goto, in any order, without repetitions.
+
+2018-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85110
+	* call.c (conversion_null_warnings): Try to use the location of
+	the expression for the warnings.  Add notes showing the parameter
+	of the function decl, where available.
+	(get_fndecl_argument_location): For implicitly-declared functions,
+	use the fndecl location rather than that of the param.
+	(maybe_inform_about_fndecl_for_bogus_argument_init): New function.
+	(convert_like_real): Use it in various places to avoid repetition.
+	(complain_about_bad_argument): Likewise.
+	* cp-tree.h (maybe_inform_about_fndecl_for_bogus_argument_init):
+	New declaration.
+	* decl2.c (check_default_args): Put all diagnostics for the fndecl
+	into a diagnostic group.  Use the location of the parameter when
+	complaining about parameters with missing default arguments in
+	preference to that of the fndecl.  Attempt to record the location
+	of the first parameter with a default argument and emit a note
+	for the first parameter that's missing one.
+	* typeck.c (convert_arguments): When complaining about parameters
+	with incomplete types, attempt to use the location of the
+	argument.  Where available, add a note showing the pertinent
+	parameter in the fndecl.
+	(convert_for_assignment): When complaining about bad conversions
+	at function calls, use the location of the unstripped argument.
+	(convert_for_initialization): When checking for bogus references,
+	add an auto_diagnostic_group, and update the note to use the
+	location of the pertinent parameter, rather than just the callee.
+
+2018-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl2.c (grokbitfield): Use DECL_SOURCE_LOCATION in error message;
+	print the type too; fix thinko in INDIRECT_TYPE_P use.
+
+2018-12-05  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/85569
+	* constexpr.c (adjust_temp_type): Test for type equality with
+	same_type_p.
+	(constexpr_call_hasher::equal): Likewise.
+
+2018-12-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84636
+	* decl.c (grokdeclarator): Avoid crashing on an anonymous bit-field
+	with function type.
+
+2018-12-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88184 - ICE when treating name as template-name.
+	* pt.c (lookup_template_function): Always build the TEMPLATE_ID_EXPR
+	with unknown_type_node.
+
+2018-12-04  Julian Brown  <julian@codesourcery.com>
+
+	* parser.c (cp_parser_oacc_wait_list): Fix error message and avoid
+	duplicate diagnostic.
+
+2018-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88103
+	* typeck.c (build_class_member_access_expr): If unary_complex_lvalue
+	turned xvalue_p into non-xvalue_p, call move on it.
+
+2018-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88258
+	* parser.c (cp_parser_skip_to_closing_parenthesis_1,
+	cp_parser_skip_to_end_of_statement,
+	cp_parser_skip_to_end_of_block_or_statement,
+	cp_parser_skip_to_closing_brace,
+	cp_parser_skip_to_closing_square_bracket,
+	cp_parser_skip_balanced_tokens): Don't treat CPP_PRAGMA_EOL specially
+	if in_pragma is false.
+
+2018-12-01  Marek Polacek  <polacek@redhat.com>
+
+	Implement P0634R3, Down with typename!
+	* parser.c (CP_PARSER_FLAGS_TYPENAME_OPTIONAL): New enumerator.
+	(cp_parser_type_name): Remove declaration.
+	(cp_parser_postfix_expression): Pass CP_PARSER_FLAGS_TYPENAME_OPTIONAL
+	to cp_parser_type_id.
+	(cp_parser_new_type_id): Pass CP_PARSER_FLAGS_TYPENAME_OPTIONAL to
+	cp_parser_type_specifier_seq.
+	(cp_parser_lambda_declarator_opt): Pass
+	CP_PARSER_FLAGS_TYPENAME_OPTIONAL to
+	cp_parser_parameter_declaration_clause.
+	(cp_parser_condition): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_declarator.
+	(cp_parser_simple_declaration): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_init_declarator.
+	(cp_parser_conversion_type_id): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_type_specifier_seq.
+	(cp_parser_default_type_template_argument): Pass
+	CP_PARSER_FLAGS_TYPENAME_OPTIONAL to cp_parser_type_id.
+	(cp_parser_template_parameter): Pass CP_PARSER_FLAGS_TYPENAME_OPTIONAL
+	to cp_parser_parameter_declaration.
+	(cp_parser_explicit_instantiation): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_declarator.
+	(cp_parser_simple_type_specifier): Adjust call to cp_parser_type_name
+	to relay if we should treat the typename keyword as optional.  Maybe
+	call cp_parser_make_typename_type is parsing a template-id and it's
+	not a TYPE_DECL.
+	(cp_parser_type_name): Remove unused function.
+	(cp_parser_enum_specifier): Pass to CP_PARSER_FLAGS_NONE
+	cp_parser_type_specifier_seq.
+	(cp_parser_alias_declaration): Pass CP_PARSER_FLAGS_TYPENAME_OPTIONAL
+	to cp_parser_type_id.
+	(cp_parser_init_declarator): New parameter.  Pass it down to
+	cp_parser_declarator.
+	(cp_parser_declarator): New parameter.  Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_declarator.  Pass the new parameter to
+	cp_parser_direct_declarator.
+	(cp_parser_direct_declarator): New parameter.  Pass it to
+	cp_parser_parameter_declaration_clause and cp_parser_declarator.
+	(cp_parser_declarator_id):
+	(cp_parser_type_id_1): New parameter.  Pass it to
+	cp_parser_type_specifier_seq.  Adjust call to cp_parser_declarator.
+	(cp_parser_type_id): New parameter.  Pass it to cp_parser_type_id_1.
+	(cp_parser_template_type_arg): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_type_id_1.
+	(cp_parser_trailing_type_id): Pass CP_PARSER_FLAGS_TYPENAME_OPTIONAL
+	to cp_parser_type_id_1.
+	(cp_parser_type_specifier_seq): New parameter.
+	(function_being_declared_is_template_p):
+	(cp_parser_parameter_declaration_clause): New parameter.  Pass it to
+	cp_parser_parameter_declaration_list.
+	(cp_parser_parameter_declaration_list): New parameter.  Pass it to
+	cp_parser_parameter_declaration.
+	(cp_parser_parameter_declaration): New parameter.  Pass it to
+	cp_parser_decl_specifier_seq.  Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_declarator.
+	(cp_parser_member_declaration): Adjust call to
+	cp_parser_decl_specifier_seq to also include
+	CP_PARSER_FLAGS_TYPENAME_OPTIONAL.  Pass
+	CP_PARSER_FLAGS_TYPENAME_OPTIONAL to cp_parser_declarator.
+	(cp_parser_exception_declaration): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_type_specifier_seq and cp_parser_declarator.
+	(cp_parser_requirement_parameter_list): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_parameter_declaration_clause.
+	(cp_parser_constructor_declarator_p): Resolve the TYPENAME_TYPE.
+	(cp_parser_single_declaration): Pass CP_PARSER_FLAGS_TYPENAME_OPTIONAL
+	to cp_parser_decl_specifier_seq and cp_parser_init_declarator.
+	(cp_parser_cache_defarg): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_declarator and cp_parser_parameter_declaration_list.
+	(cp_parser_objc_method_tail_params_opt): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_parameter_declaration.
+	(cp_parser_objc_class_ivars): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_declarator.
+	(cp_parser_objc_try_catch_finally_statement): Pass CP_PARSER_FLAGS_NONE
+	to cp_parser_parameter_declaration
+	(cp_parser_objc_struct_declaration): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_declarator.
+	(cp_parser_omp_for_loop_init): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_declarator and cp_parser_type_specifier_seq.
+
+2018-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* typeck2.c: Include "gcc-rich-location.h".
+	(cxx_incomplete_type_diagnostic): When complaining about possibly
+	missing parens, add a fix-it hint if the member function takes no
+	additional params.
+
+2018-11-30  James Norris  <jnorris@codesourcery.com>
+
+	* parser.c (cp_parser_oacc_enter_exit_data): Use existing local
+	variable.
+
 2018-11-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (compute_array_index_type_loc): New, like the current
@@ -323,7 +691,7 @@
 	if it is true.
 	(cp_parser_omp_clause_name): Handle nontemporal, in_reduction and
 	task_reduction clauses.
-        (cp_parser_omp_var_list_no_open): Handle
+	(cp_parser_omp_var_list_no_open): Handle
 	OMP_CLAUSE_{IN,TASK}_REDUCTION.  For OMP_CLAUSE_DEPEND, parse clause
 	operands as either an array section, or lvalue assignment expression.
 	(cp_parser_omp_clause_if): Handle cancel and simd modifiers.
@@ -551,7 +919,7 @@
 	PR ipa/81277
 	* cp-tree.h (DECL_FNAME_P): New macro.
 	* decl.c (cp_make_fname_decl): Set DECL_DECLARED_CONSTEXPR_P,
-        DECL_VALUE_EXPR, DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P.
+	DECL_VALUE_EXPR, DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P.
 	(cp_finish_decl):
 	* lambda.c (is_capture_proxy): Use DECL_FNAME_P.
 	* pt.c (tsubst_expr): Handle DECL_PRETTY_FUNCTION_P.
@@ -676,9 +1044,9 @@
 2018-10-29  Joseph Myers  <joseph@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 
-        PR c++/66053
-        * semantics.c (handle_omp_array_sections_1): Allow array
-        sections with "this" pointer for OpenACC.
+	PR c++/66053
+	* semantics.c (handle_omp_array_sections_1): Allow array
+	sections with "this" pointer for OpenACC.
 
 2018-10-25  Jason Merrill  <jason@redhat.com>
 
@@ -836,7 +1204,7 @@
 	* name-lookup.c (check_local_shadow): Do not test DECL_FROM_INLINE.
 
 2018-09-28  Eric Botcazou  <ebotcazou@adacore.com>
-            Pierre-Marie de Rodat  <derodat@adacore.com>
+	    Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* method.c (use_thunk): Adjust call to cgraph_node::create_thunk.
 
@@ -982,7 +1350,7 @@
 	case into complain_about_bad_argument.
 
 2018-09-09  Cesar Philippidis  <cesar@codesourcery.com>
-            Julian Brown  <julian@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
 
 	PR middle-end/86336
 	* semantics.c (finish_omp_clauses): Treat C++ references the same in
@@ -1791,8 +2159,8 @@
 	information in a few additional error messages.
 	(grokdeclarator): Update calls.
 
-2018-06-20  Chung-Lin Tang <cltang@codesourcery.com>
-	    Thomas Schwinge <thomas@codesourcery.com>
+2018-06-20  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
 	* parser.c (cp_parser_omp_clause_name): Add support for finalize
@@ -2715,7 +3083,7 @@
 	* cp-gimplify.c (cp_fold) <case ADDR_EXPR>: ... here.  Only use it
 	if INDIRECT_REF's operand is INTEGER_CST cast to pointer type.
 
-2018-04-18  Alexandre Oliva <aoliva@redhat.com>
+2018-04-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/80290
 	* cp-tree.h (struct tinst_level): Split decl into tldcl and
@@ -2757,7 +3125,7 @@
 	for refcount.  Release pending_template to freelist.
 	(instantiating_current_function_p): Use new accessors.
 
-2018-04-16  Alexandre Oliva <aoliva@redhat.com>
+2018-04-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/85039
 	* parser.c (cp_parser_builtin_offset): Reject type definitions.
@@ -2999,7 +3367,7 @@
 	* pt.c (extract_locals_r): Don't record the local specs of variables
 	declared within the pattern.
 
-2018-04-05  Alexandre Oliva <aoliva@redhat.com>
+2018-04-05  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/84979
 	* pt.c (check_auto_in_tmpl_args): New.
@@ -3081,7 +3449,7 @@
 	* decl.c (grokfndecl): Handle standard UDL diagnostics here..
 	* parser.c (cp_parser_unqualified_id): ..not here.
 
-2018-04-04  Alexandre Oliva <aoliva@redhat.com>
+2018-04-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/84943
 	* typeck.c (cp_build_addr_expr_1): Mark FUNCTION_DECL as
@@ -3142,7 +3510,7 @@
 	into packs here.
 	(cp_parser_parameter_declaration_list): Not here.
 
-2018-03-31  Alexandre Oliva <aoliva@redhat.com>
+2018-03-31  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/85027
 	* class.c (instantiate_type): Peel off SAVE_EXPR before
@@ -3196,7 +3564,7 @@
 	* pt.c (tsubst_default_argument): Early return if the type of the
 	parameter is erroneous.
 
-2018-03-28  Alexandre Oliva <aoliva@redhat.com>
+2018-03-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/84973
 	* decl2.c (note_vague_linkage_fn): Don't defer uninstantiated
@@ -3285,7 +3653,7 @@
 	PR c++/85033
 	* semantics.c (finish_offsetof): Don't allow CONST_DECLs.
 
-2018-03-23  Alexandre Oliva <aoliva@redhat.com>
+2018-03-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/71251
 	* parser.c (cp_parser_alias_declaration): Call
@@ -3326,7 +3694,7 @@
 	(build_special_member_call): Only do C++17 copy elision here if the
 	argument is already the right type.
 
-2018-03-21  Alexandre Oliva <aoliva@redhat.com>
+2018-03-21  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/71965
 	* init.c (build_vec_init): Silence error, former sorry,
@@ -3694,7 +4062,7 @@
 	* constexpr.c (cxx_bind_parameters_in_call): Unshare evaluated
 	arguments.
 
-2018-03-06  Alexandre Oliva <aoliva@redhat.com>
+2018-03-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/84231
 	* tree.c (lvalue_kind): Use presence/absence of REFERENCE_TYPE
@@ -3846,7 +4214,7 @@
 	require_potential_rvalue_constant_expression.
 
 2018-03-01  Jason Merrill  <jason@redhat.com>
-	    Alexandre Oliva <aoliva@redhat.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/71569 - ICE with redundant args on member variable template.
 	* decl.c (start_decl): Handle partial specialization of member

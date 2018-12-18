@@ -1,3 +1,13 @@
+2018-12-11  Nick Clifton  <nickc@redhat.com>
+
+	PR 88409
+	* demangle.h (DEMANGLE_RECURSION_LIMIT): Increase to 2048.
+
+2018-12-07  Nick Clifton  <nickc@redhat.com>
+
+	* demangle.h (DMGL_NO_RECURSE_LIMIT): Define.
+        (DEMANGLE_RECURSION_LIMIT): Define
+
 2018-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* gomp-constants.h (GOMP_TASK_FLAG_REDUCTION,

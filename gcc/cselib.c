@@ -2619,6 +2619,7 @@ cselib_record_sets (rtx_insn *insn)
 	  && cselib_record_sets_hook
 	  && REG_P (dest)
 	  && HARD_REGISTER_P (dest)
+	  && sets[i].src_elt
 	  && is_a <scalar_int_mode> (GET_MODE (dest), &mode)
 	  && n_sets + n_strict_low_parts < MAX_SETS)
 	{

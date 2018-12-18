@@ -14,12 +14,24 @@
 #include CHECK_H
 
 #include <mmintrin.h>
+#include <xmmintrin.h>
 
 static __m64
 __attribute__((noinline, unused))
 test (__m64 s1, __m64 s2)
 {
   return _mm_packs_pi16 (s1, s2);
+}
+
+static signed char
+saturate (signed short val)
+{
+  if (val > 127)
+    return 127;
+  else if (val < -128)
+    return -128;
+  else
+    return val;
 }
 
 static void
@@ -34,25 +46,25 @@ TEST (void)
   s2.as_m64 = _mm_set_pi16 (41124, 234, 2344, 2354);
   u.as_m64 = test (s1.as_m64, s2.as_m64);
 
-  for (i = 0; i < 4; i++)
-    {
-      if (s1.as_short[i] > 127)
-        e.as_char[i] = 127;
-      else if (s1.as_short[i] < -128)
-        e.as_char[i] = -128;
-      else
-        e.as_char[i] = s1.as_short[i];
-    }
-  
-  for (i = 0; i < 4; i++)
-   {
-      if (s2.as_short[i] > 127)
-        e.as_char[i+4] = 127;
-      else if (s2.as_short[i] < -128)
-        e.as_char[i+4] = -128;
-      else
-        e.as_char[i+4] = s2.as_short[i];
-    }
+#ifdef __LITTLE_ENDIAN__
+  e.as_m64 = _mm_set_pi8 (saturate (_mm_extract_pi16 (s2.as_m64, 3)),
+                          saturate (_mm_extract_pi16 (s2.as_m64, 2)),
+                          saturate (_mm_extract_pi16 (s2.as_m64, 1)),
+                          saturate (_mm_extract_pi16 (s2.as_m64, 0)),
+                          saturate (_mm_extract_pi16 (s1.as_m64, 3)),
+                          saturate (_mm_extract_pi16 (s1.as_m64, 2)),
+                          saturate (_mm_extract_pi16 (s1.as_m64, 1)),
+                          saturate (_mm_extract_pi16 (s1.as_m64, 0)));
+#else
+  e.as_m64 = _mm_set_pi8 (saturate (_mm_extract_pi16 (s1.as_m64, 3)),
+                          saturate (_mm_extract_pi16 (s1.as_m64, 2)),
+                          saturate (_mm_extract_pi16 (s1.as_m64, 1)),
+                          saturate (_mm_extract_pi16 (s1.as_m64, 0)),
+                          saturate (_mm_extract_pi16 (s2.as_m64, 3)),
+                          saturate (_mm_extract_pi16 (s2.as_m64, 2)),
+                          saturate (_mm_extract_pi16 (s2.as_m64, 1)),
+                          saturate (_mm_extract_pi16 (s2.as_m64, 0)));
+#endif
 
   if (u.as_m64 != e.as_m64)
     abort ();

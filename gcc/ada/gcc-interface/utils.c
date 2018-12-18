@@ -3235,12 +3235,9 @@ create_subprog_decl (tree name, tree asm_name, tree type, tree param_decl_list,
 
   DECL_ARTIFICIAL (subprog_decl) = artificial_p;
   DECL_EXTERNAL (subprog_decl) = extern_flag;
+  DECL_FUNCTION_IS_DEF (subprog_decl) = definition;
+  DECL_IGNORED_P (subprog_decl) = !debug_info_p;
   TREE_PUBLIC (subprog_decl) = public_flag;
-
-  if (!debug_info_p)
-    DECL_IGNORED_P (subprog_decl) = 1;
-  if (definition)
-    DECL_FUNCTION_IS_DEF (subprog_decl) = 1;
 
   switch (inline_status)
     {
@@ -3248,7 +3245,7 @@ create_subprog_decl (tree name, tree asm_name, tree type, tree param_decl_list,
       DECL_UNINLINABLE (subprog_decl) = 1;
       break;
 
-    case is_disabled:
+    case is_default:
       break;
 
     case is_required:
@@ -3269,9 +3266,15 @@ create_subprog_decl (tree name, tree asm_name, tree type, tree param_decl_list,
 
       /* ... fall through ... */
 
-    case is_enabled:
+    case is_prescribed:
+      DECL_DISREGARD_INLINE_LIMITS (subprog_decl) = 1;
+
+      /* ... fall through ... */
+
+    case is_requested:
       DECL_DECLARED_INLINE_P (subprog_decl) = 1;
-      DECL_NO_INLINE_WARNING_P (subprog_decl) = artificial_p;
+      if (!Debug_Generated_Code)
+	DECL_NO_INLINE_WARNING_P (subprog_decl) = artificial_p;
       break;
 
     default:
@@ -4358,12 +4361,13 @@ convert (tree type, tree expr)
 						TYPE_MIN_VALUE (etype))));
 
   /* If the input is a justified modular type, we need to extract the actual
-     object before converting it to any other type with the exceptions of an
-     unconstrained array or of a mere type variant.  It is useful to avoid the
-     extraction and conversion in the type variant case because it could end
-     up replacing a VAR_DECL expr by a constructor and we might be about the
-     take the address of the result.  */
+     object before converting it to an other type with the exceptions of an
+     [unconstrained] array or a mere type variant.  It is useful to avoid
+     the extraction and conversion in these cases because it could end up
+     replacing a VAR_DECL by a constructor and we might be about the take
+     the address of the result.  */
   if (ecode == RECORD_TYPE && TYPE_JUSTIFIED_MODULAR_P (etype)
+      && code != ARRAY_TYPE
       && code != UNCONSTRAINED_ARRAY_TYPE
       && TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (etype))
     return

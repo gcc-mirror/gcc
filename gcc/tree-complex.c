@@ -698,12 +698,11 @@ update_complex_components_on_edge (edge e, tree lhs, tree r, tree i)
 static void
 update_complex_assignment (gimple_stmt_iterator *gsi, tree r, tree i)
 {
-  gimple *stmt;
-
+  gimple *old_stmt = gsi_stmt (*gsi);
   gimple_assign_set_rhs_with_ops (gsi, COMPLEX_EXPR, r, i);
-  stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
   update_stmt (stmt);
-  if (maybe_clean_eh_stmt (stmt))
+  if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))
     bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
 
   update_complex_components (gsi, gsi_stmt (*gsi), r, i);

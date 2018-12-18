@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++17 -lstdc++fs" }
-// { dg-do run { target c++17 } }
+// { dg-options "-DUSE_FILESYSTEM_TS -lstdc++fs" }
+// { dg-do run { target c++11 } }
 // { dg-require-filesystem-ts "" }
 
 // Copyright (C) 2018 Free Software Foundation, Inc.
@@ -21,15 +21,15 @@
 
 // 8.4.9 path decomposition [path.decompose]
 
-#include <filesystem>
+#include <experimental/filesystem>
 #include <testsuite_hooks.h>
 
-using std::filesystem::path;
+using std::experimental::filesystem::path;
 
 void
 test01()
 {
-  #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
   const bool is_posix = false;
 #else
   const bool is_posix = true;

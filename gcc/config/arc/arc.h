@@ -491,6 +491,7 @@ enum reg_class
   "R0R1_CD_REGS",	  \
   "R0R3_CD_REGS",	  \
   "ARCOMPACT16_REGS",	  \
+  "SIBCALL_REGS",	  \
   "AC16_H_REGS",	  \
   "DOUBLE_REGS",	  \
   "GENERAL_REGS",	  \

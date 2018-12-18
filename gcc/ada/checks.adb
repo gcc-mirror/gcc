@@ -50,6 +50,7 @@ with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
+with Sem_Mech; use Sem_Mech;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
@@ -4574,7 +4575,6 @@ package body Checks is
             Typ := Actual_Subtype (Entity (N));
          end if;
 
-         null;
       else
          Typ := Underlying_Type (Base_Type (Typ));
       end if;
@@ -6072,7 +6072,8 @@ package body Checks is
 
       --  An annoying special case. If this is an out parameter of a scalar
       --  type, then the value is not going to be accessed, therefore it is
-      --  inappropriate to do any validity check at the call site.
+      --  inappropriate to do any validity check at the call site. Likewise
+      --  if the parameter is passed by reference.
 
       else
          --  Only need to worry about scalar types
@@ -6098,25 +6099,20 @@ package body Checks is
                   P := Parent (N);
                end if;
 
-               --  Only need to worry if we are argument of a procedure call
-               --  since functions don't have out parameters. If this is an
-               --  indirect or dispatching call, get signature from the
-               --  subprogram type.
+               --  If this is an indirect or dispatching call, get signature
+               --  from the subprogram type.
 
-               if Nkind (P) = N_Procedure_Call_Statement then
+               if Nkind_In (P, N_Entry_Call_Statement,
+                               N_Function_Call,
+                               N_Procedure_Call_Statement)
+               then
+                  E := Get_Called_Entity (P);
                   L := Parameter_Associations (P);
 
-                  if Is_Entity_Name (Name (P)) then
-                     E := Entity (Name (P));
-                  else
-                     pragma Assert (Nkind (Name (P)) = N_Explicit_Dereference);
-                     E := Etype (Name (P));
-                  end if;
-
                   --  Only need to worry if there are indeed actuals, and if
-                  --  this could be a procedure call, otherwise we cannot get a
-                  --  match (either we are not an argument, or the mode of the
-                  --  formal is not OUT). This test also filters out the
+                  --  this could be a subprogram call, otherwise we cannot get
+                  --  a match (either we are not an argument, or the mode of
+                  --  the formal is not OUT). This test also filters out the
                   --  generic case.
 
                   if Is_Non_Empty_List (L) and then Is_Subprogram (E) then
@@ -6127,7 +6123,10 @@ package body Checks is
                      F := First_Formal (E);
                      A := First (L);
                      while Present (F) loop
-                        if Ekind (F) = E_Out_Parameter and then A = N then
+                        if A = N
+                          and then (Ekind (F) = E_Out_Parameter
+                                     or else Mechanism (F) = By_Reference)
+                        then
                            return;
                         end if;
 

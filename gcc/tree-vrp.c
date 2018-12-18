@@ -1173,15 +1173,14 @@ value_inside_range (tree val, tree min, tree max)
 }
 
 
-/* Return TRUE if *VR includes the value zero.  */
+/* Return TRUE if *VR includes the value X.  */
 
 bool
-range_includes_zero_p (const value_range_base *vr)
+range_includes_p (const value_range_base *vr, HOST_WIDE_INT x)
 {
   if (vr->varying_p () || vr->undefined_p ())
     return true;
-  tree zero = build_int_cst (vr->type (), 0);
-  return vr->may_contain_p (zero);
+  return vr->may_contain_p (build_int_cst (vr->type (), x));
 }
 
 /* If *VR has a value range that is a single constant value return that,
@@ -1673,9 +1672,26 @@ extract_range_from_binary_expr (value_range_base *vr,
       else if (code == POINTER_PLUS_EXPR)
 	{
 	  /* For pointer types, we are really only interested in asserting
-	     whether the expression evaluates to non-NULL.  */
-	  if (!range_includes_zero_p (&vr0)
-	      || !range_includes_zero_p (&vr1))
+	     whether the expression evaluates to non-NULL.
+	     With -fno-delete-null-pointer-checks we need to be more
+	     conservative.  As some object might reside at address 0,
+	     then some offset could be added to it and the same offset
+	     subtracted again and the result would be NULL.
+	     E.g.
+	     static int a[12]; where &a[0] is NULL and
+	     ptr = &a[6];
+	     ptr -= 6;
+	     ptr will be NULL here, even when there is POINTER_PLUS_EXPR
+	     where the first range doesn't include zero and the second one
+	     doesn't either.  As the second operand is sizetype (unsigned),
+	     consider all ranges where the MSB could be set as possible
+	     subtractions where the result might be NULL.  */
+	  if ((!range_includes_zero_p (&vr0)
+	       || !range_includes_zero_p (&vr1))
+	      && !TYPE_OVERFLOW_WRAPS (expr_type)
+	      && (flag_delete_null_pointer_checks
+		  || (range_int_cst_p (&vr1)
+		      && !tree_int_cst_sign_bit (vr1.max ()))))
 	    vr->set_nonnull (expr_type);
 	  else if (range_is_null (&vr0) && range_is_null (&vr1))
 	    vr->set_null (expr_type);
@@ -2877,6 +2893,7 @@ register_edge_assert_for_2 (tree name, edge e,
 	{
 	  name2 = gimple_assign_rhs1 (def_stmt);
 	  if (CONVERT_EXPR_CODE_P (rhs_code)
+	      && TREE_CODE (name2) == SSA_NAME
 	      && INTEGRAL_TYPE_P (TREE_TYPE (name2))
 	      && TYPE_UNSIGNED (TREE_TYPE (name2))
 	      && prec == TYPE_PRECISION (TREE_TYPE (name2))
@@ -2966,6 +2983,39 @@ register_edge_assert_for_2 (tree name, edge e,
 	    add_assert_info (asserts, name2, tmp, new_comp_code, new_val);
 	}
 
+      /* If we have a conversion that doesn't change the value of the source
+         simply register the same assert for it.  */
+      if (CONVERT_EXPR_CODE_P (rhs_code))
+	{
+	  wide_int rmin, rmax;
+	  tree rhs1 = gimple_assign_rhs1 (def_stmt);
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
+	      && TREE_CODE (rhs1) == SSA_NAME
+	      /* Make sure the relation preserves the upper/lower boundary of
+	         the range conservatively.  */
+	      && (comp_code == NE_EXPR
+		  || comp_code == EQ_EXPR
+		  || (TYPE_SIGN (TREE_TYPE (name))
+		      == TYPE_SIGN (TREE_TYPE (rhs1)))
+		  || ((comp_code == LE_EXPR
+		       || comp_code == LT_EXPR)
+		      && !TYPE_UNSIGNED (TREE_TYPE (rhs1)))
+		  || ((comp_code == GE_EXPR
+		       || comp_code == GT_EXPR)
+		      && TYPE_UNSIGNED (TREE_TYPE (rhs1))))
+	      /* And the conversion does not alter the value we compare
+	         against and all values in rhs1 can be represented in
+		 the converted to type.  */
+	      && int_fits_type_p (val, TREE_TYPE (rhs1))
+	      && ((TYPE_PRECISION (TREE_TYPE (name))
+		   > TYPE_PRECISION (TREE_TYPE (rhs1)))
+		  || (get_range_info (rhs1, &rmin, &rmax) == VR_RANGE
+		      && wi::fits_to_tree_p (rmin, TREE_TYPE (name))
+		      && wi::fits_to_tree_p (rmax, TREE_TYPE (name)))))
+	    add_assert_info (asserts, rhs1, rhs1,
+		 	     comp_code, fold_convert (TREE_TYPE (rhs1), val));
+	}
+
       /* Add asserts for NAME cmp CST and NAME being defined as
 	 NAME = NAME2 & CST2.
 
@@ -3005,6 +3055,7 @@ register_edge_assert_for_2 (tree name, edge e,
 		{
 		  names[1] = gimple_assign_rhs1 (def_stmt2);
 		  if (!CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt2))
+		      || TREE_CODE (names[1]) != SSA_NAME
 		      || !INTEGRAL_TYPE_P (TREE_TYPE (names[1]))
 		      || (TYPE_PRECISION (TREE_TYPE (name2))
 			  != TYPE_PRECISION (TREE_TYPE (names[1]))))

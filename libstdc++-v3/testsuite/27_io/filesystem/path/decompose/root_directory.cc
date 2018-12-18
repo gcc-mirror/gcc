@@ -35,7 +35,11 @@ test01()
   path p2 = "/foo/bar";
   VERIFY( p2.root_directory() == path("/") );
   path p3 = "//foo";
+#ifdef __CYGWIN__
+  VERIFY( p3.root_directory() == path() );
+#else
   VERIFY( p3.root_directory() == path("/") );
+#endif
   path p4 = "///foo";
   VERIFY( p4.root_directory() == path("/") );
 }

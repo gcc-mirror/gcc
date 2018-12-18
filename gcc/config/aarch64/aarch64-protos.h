@@ -252,6 +252,10 @@ struct tune_params
   const struct cpu_vector_cost *vec_costs;
   const struct cpu_branch_cost *branch_costs;
   const struct cpu_approx_modes *approx_modes;
+  /* Width of the SVE registers or SVE_NOT_IMPLEMENTED if not applicable.
+     Only used for tuning decisions, does not disable VLA
+     vectorization.  */
+  enum aarch64_sve_vector_bits_enum sve_width;
   int memmov_cost;
   int issue_rate;
   unsigned int fusible_ops;
@@ -467,6 +471,7 @@ bool aarch64_split_dimode_const_store (rtx, rtx);
 bool aarch64_symbolic_address_p (rtx);
 bool aarch64_uimm12_shift (HOST_WIDE_INT);
 bool aarch64_use_return_insn_p (void);
+bool aarch64_use_simple_return_insn_p (void);
 const char *aarch64_mangle_builtin_type (const_tree);
 const char *aarch64_output_casesi (rtx *);
 
@@ -551,6 +556,8 @@ void aarch64_split_simd_move (rtx, rtx);
 
 /* Check for a legitimate floating point constant for FMOV.  */
 bool aarch64_float_const_representable_p (rtx);
+
+extern int aarch64_epilogue_uses (int);
 
 #if defined (RTX_CODE)
 void aarch64_gen_unlikely_cbranch (enum rtx_code, machine_mode cc_mode,

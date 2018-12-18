@@ -1,3 +1,157 @@
+2018-12-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71044
+	* src/filesystem/std-path.cc (path::_M_append): Fix off-by-one error
+	that caused a component to be lost from the iteration sequence.
+	(path::_M_concat): Likewise.
+	* testsuite/27_io/filesystem/path/append/source.cc: Test appending
+	long strings.
+	* testsuite/27_io/filesystem/path/concat/strings.cc: Test
+	concatenating long strings.
+	* testsuite/27_io/filesystem/path/construct/string_view.cc: Test
+	construction from long string.
+
+2018-12-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/filesystem/std-path.cc (SLASHSLASH_IS_ROOT_NAME): New macro to
+	control whether interpret paths with two slashes as a root-name.
+	(path::operator/=(const path&)) [SLASHSLASH_IS_ROOT_NAME]: Add a
+	root-directory when appending to a root-name.
+	(path::_M_append(basic_string_view<value_type>))
+	[SLASHSLASH_IS_ROOT_NAME]: Likewise.
+	(path::operator/=(const path&)) [SLASHSLASH_IS_ROOT_NAME]: Likewise.
+	(path::_M_concat(basic_string_view<value_type>))
+	[SLASHSLASH_IS_ROOT_NAME]: Likewise.
+	(path::lexically_normal()) [SLASHSLASH_IS_ROOT_NAME]: Use += instead
+	of /= to add a root-directory to the result.
+	* testsuite/27_io/filesystem/path/decompose/root_directory.cc: Fix
+	expected result for Cygwin.
+
+	PR libstdc++/71044
+	* include/bits/fs_path.h (path::path(path&&)): Add noexcept when
+	appropriate. Move _M_cmpts instead of reparsing the native pathname.
+	(path::operator=(const path&)): Do not define as defaulted.
+	(path::operator/=, path::append): Call _M_append.
+	(path::concat): Call _M_concat.
+	(path::path(string_type, _Type): Change type of first parameter to
+	basic_string_view<value_type>.
+	(path::_M_append(basic_string_view<value_type>)): New member function.
+	(path::_M_concat(basic_string_view<value_type>)): New member function.
+	(_S_convert(value_type*, __null_terminated)): Return string view.
+	(_S_convert(const value_type*, __null_terminated)): Return string view.
+	(_S_convert(value_type*, value_type*))
+	(_S_convert(const value_type*, const value_type*)): Add overloads for
+	pairs of pointers.
+	(_S_convert(_InputIterator, __null_terminated)): Construct string_type
+	explicitly, for cases where _S_convert returns a string view.
+	(path::_S_is_dir_sep): Replace with non-member is_dir_sep.
+	(path::_M_trim, path::_M_add_root_name, path::_M_add_root_dir)
+	(path::_M_add_filename): Remove.
+	(path::_M_type()): New member function to replace _M_type data member.
+	(path::_List): Define new struct type instead of using std::vector.
+	(path::_Cmpt::_Cmpt(string_type, _Type, size_t)): Change type of
+	first parameter to basic_string_view<value_type>.
+	(path::operator+=(const path&)): Do not define inline.
+	(path::operator+=(const string_type&)): Call _M_concat.
+	(path::operator+=(const value_type*)): Likewise.
+	(path::operator+=(value_type)): Likewise.
+	(path::operator+=(basic_string_view<value_type>)): Likewise.
+	(path::operator/=(const path&)): Do not define inline.
+	(path::_M_append(path)): Remove.
+	* python/libstdcxx/v6/printers.py (StdPathPrinter): New printer that
+	understands the new path::_List type.
+	* src/filesystem/std-path.cc (is_dir_sep): New function to replace
+	path::_S_is_dir_sep.
+	(path::_Parser): New helper class to parse strings as paths.
+	(path::_List::_Impl): Define container type for path components.
+	(path::_List): Define members.
+	(path::operator=(const path&)): Define explicitly, to provide the
+	strong exception safety guarantee.
+	(path::operator/=(const path&)): Implement manually by processing
+	each component of the argument, rather than using _M_split_cmpts
+	to parse the entire string again.
+	(path::_M_append(string_type)): Likewise.
+	(path::operator+=(const path&)): Likewise.
+	(path::_M_concat(string_type)): Likewise.
+	(path::remove_filename()): Perform trim directly instead of calling
+	_M_trim().
+	(path::_M_split_cmpts()): Rewrite in terms of _Parser class.
+	(path::_M_trim, path::_M_add_root_name, path::_M_add_root_dir)
+	(path::_M_add_filename): Remove.
+	* testsuite/27_io/filesystem/path/append/source.cc: Test appending a
+	string view that aliases the path.
+	testsuite/27_io/filesystem/path/concat/strings.cc: Test concatenating
+	a string view that aliases the path.
+
+	* testsuite/27_io/filesystem/path/generation/proximate.cc: Use
+	preferred directory separators for normalized paths.
+	* testsuite/27_io/filesystem/path/generation/relative.cc: Likewise.
+
+	* testsuite/27_io/filesystem/path/itr/traversal.cc: Fix test for
+	mingw.
+
+	* testsuite/27_io/filesystem/path/construct/80762.cc: Skip test if
+	the Filesystem TS support is not configured.
+	* testsuite/experimental/filesystem/path/construct/80762.cc: Likewise.
+
+2018-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71044 (partial)
+	* include/bits/fs_path.h (__path_iter_distance, __path_iter_advance):
+	New friend functions to implement std::distance and std::advance more
+	efficiently.
+	(distance, advance): Add overloads for path::iterator.
+	* testsuite/27_io/filesystem/path/itr/components.cc: Test new
+	overload.
+
+	PR libstdc++/80762
+	* include/bits/fs_path.h (path::_Path): Use remove_cv_t and is_void.
+	* include/experimental/bits/fs_path.h (path::_Path): Likewise.
+	* testsuite/27_io/filesystem/path/construct/80762.cc: New test.
+	* testsuite/experimental/filesystem/path/construct/80762.cc: New test.
+
+2018-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	P0595R2 - is_constant_evaluated
+	* include/bits/c++config (_GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED):
+	Define if __builtin_is_constant_evaluated is available.
+	* include/std/type_traits (std::is_constant_evaluated): New constexpr
+	inline function.
+	* testsuite/20_util/is_constant_evaluated/1.cc: New test.
+	* testsuite/20_util/is_constant_evaluated/noexcept.cc: New test.
+
+2018-12-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/documentation_hacking.xml: Update reference
+	to epubcheck.
+
+2018-12-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/filesystem/path/query/is_absolute.cc: Fix
+	test to use TS, not C++17.
+
+2018-12-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* scripts/make_exports.pl (check names): Don’t try to export
+	construction vtable symbols.
+
+2018-12-06  Jonathan Wakely  <jwakely@redhat.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR libstdc++/64883
+	* testsuite/17_intro/headers/c++1998/all_attributes.cc: Don't test
+	always_inline on Darwin.
+	* testsuite/17_intro/headers/c++2011/all_attributes.cc: Likewise.
+	* testsuite/17_intro/headers/c++2014/all_attributes.cc: Likewise.
+	* testsuite/17_intro/headers/c++2017/all_attributes.cc: Likewise.
+	* testsuite/17_intro/headers/c++2020/all_attributes.cc: Likewise.
+
+2018-12-03  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/88341 - Complex norm doesn't compile with C++11
+	* include/std/complex (_S_do_it): Make C++20 constexpr.
+	* testsuite/26_numerics/complex/value_operations/pr88341.cc: New test.
+
 2018-11-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement P0457R2 String Prefix and Suffix Checking.

@@ -7122,7 +7122,8 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
     {
       /* Replace the argument with a reference to the corresponding template
 	 parameter object.  */
-      expr = get_template_parm_object (expr, complain);
+      if (!value_dependent_expression_p (expr))
+	expr = get_template_parm_object (expr, complain);
       if (expr == error_mark_node)
 	return NULL_TREE;
     }
@@ -9067,8 +9068,6 @@ add_pending_template (tree d)
 tree
 lookup_template_function (tree fns, tree arglist)
 {
-  tree type;
-
   if (fns == error_mark_node || arglist == error_mark_node)
     return error_mark_node;
 
@@ -9089,11 +9088,7 @@ lookup_template_function (tree fns, tree arglist)
       return fns;
     }
 
-  type = TREE_TYPE (fns);
-  if (TREE_CODE (fns) == OVERLOAD || !type)
-    type = unknown_type_node;
-
-  return build2 (TEMPLATE_ID_EXPR, type, fns, arglist);
+  return build2 (TEMPLATE_ID_EXPR, unknown_type_node, fns, arglist);
 }
 
 /* Within the scope of a template class S<T>, the name S gets bound
@@ -10564,7 +10559,10 @@ tsubst_friend_class (tree friend_tmpl, tree args)
   if (TREE_CODE (context) == NAMESPACE_DECL)
     push_nested_namespace (context);
   else
-    push_nested_class (context);
+    {
+      context = tsubst (context, args, tf_error, NULL_TREE);
+      push_nested_class (context);
+    }
 
   tmpl = lookup_name_real (DECL_NAME (friend_tmpl), /*prefer_type=*/false,
 			   /*non_class=*/false, /*block_p=*/false,
@@ -14153,9 +14151,17 @@ tsubst_exception_specification (tree fntype,
 	    }
 	}
       else
-	new_specs = tsubst_copy_and_build
-	  (expr, args, complain, in_decl, /*function_p=*/false,
-	   /*integral_constant_expression_p=*/true);
+	{
+	  if (DEFERRED_NOEXCEPT_SPEC_P (specs))
+	    {
+	      args = add_to_template_args (DEFERRED_NOEXCEPT_ARGS (expr),
+					   args);
+	      expr = DEFERRED_NOEXCEPT_PATTERN (expr);
+	    }
+	  new_specs = tsubst_copy_and_build
+	    (expr, args, complain, in_decl, /*function_p=*/false,
+	     /*integral_constant_expression_p=*/true);
+	}
       new_specs = build_noexcept_spec (new_specs, complain);
     }
   else if (specs)
@@ -16905,8 +16911,9 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	    tree inst;
 	    if (!DECL_PACK_P (decl))
 	      {
-		inst = lookup_name_real (DECL_NAME (decl), 0, 0,
-					 /*block_p=*/true, 0, LOOKUP_HIDDEN);
+		inst = lookup_name_real (DECL_NAME (decl), /*prefer_type*/0,
+					 /*nonclass*/1, /*block_p=*/true,
+					 /*ns_only*/0, LOOKUP_HIDDEN);
 		gcc_assert (inst != decl && is_capture_proxy (inst));
 	      }
 	    else if (is_normal_capture_proxy (decl))
@@ -17226,7 +17233,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	tree labels = tsubst_copy_asm_operands (ASM_LABELS (t), args,
 						complain, in_decl);
 	tmp = finish_asm_stmt (ASM_VOLATILE_P (t), string, outputs, inputs,
-			       clobbers, labels);
+			       clobbers, labels, ASM_INLINE_P (t));
 	tree asm_expr = tmp;
 	if (TREE_CODE (asm_expr) == CLEANUP_POINT_EXPR)
 	  asm_expr = TREE_OPERAND (asm_expr, 0);

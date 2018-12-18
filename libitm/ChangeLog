@@ -1,3 +1,17 @@
+2018-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88482
+	* eh_cpp.cc (__cxa_throw): Change DEST argument type from
+	void * to void (*) (void *).
+	(_ITM_cxa_throw): Likewise.
+	* libitm.h (_ITM_cxa_throw): Likewise.
+	* libitm.texi (_ITM_cxa_throw): Likewise.
+
+2018-12-13  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/powerpc/target.h (htm_available):  Add support for
+	PPC_FEATURE2_HTM_NO_SUSPEND.  Use __builtin_cpu_supports if available.
+
 2018-10-31  Joseph Myers  <joseph@codesourcery.com>
 
 	PR bootstrap/82856

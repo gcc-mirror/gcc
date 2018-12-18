@@ -111,28 +111,6 @@ func Reboot(how int) (err error) {
 //sys	Fchownat(dirfd int, path string, uid int, gid int, flags int) (err error)
 //fchownat(dirfd _C_int, path *byte, owner Uid_t, group Gid_t, flags _C_int) _C_int
 
-// On AIX, there is no flock() system call, we emulate it.
-func Flock(fd int, op int) (err error) {
-	lk := &Flock_t{}
-	if (op & LOCK_UN) != 0 {
-		lk.Type = F_UNLCK
-	} else if (op & LOCK_EX) != 0 {
-		lk.Type = F_WRLCK
-	} else if (op & LOCK_SH) != 0 {
-		lk.Type = F_RDLCK
-	} else {
-		return nil
-	}
-	if (op & LOCK_NB) != 0 {
-		err = FcntlFlock(uintptr(fd), F_SETLK, lk)
-		if err != nil && (err == EAGAIN || err == EACCES) {
-			return EWOULDBLOCK
-		}
-		return err
-	}
-	return FcntlFlock(uintptr(fd), F_SETLKW, lk)
-}
-
 //sys	Fstatfs(fd int, buf *Statfs_t) (err error)
 //fstatfs64(fd _C_int, buf *Statfs_t) _C_int
 

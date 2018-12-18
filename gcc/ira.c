@@ -1573,11 +1573,17 @@ ira_init_register_move_cost (machine_mode mode)
 {
   static unsigned short last_move_cost[N_REG_CLASSES][N_REG_CLASSES];
   bool all_match = true;
-  unsigned int cl1, cl2;
+  unsigned int i, cl1, cl2;
+  HARD_REG_SET ok_regs;
 
   ira_assert (ira_register_move_cost[mode] == NULL
 	      && ira_may_move_in_cost[mode] == NULL
 	      && ira_may_move_out_cost[mode] == NULL);
+  CLEAR_HARD_REG_SET (ok_regs);
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    if (targetm.hard_regno_mode_ok (i, mode))
+      SET_HARD_REG_BIT (ok_regs, i);
+
   /* Note that we might be asked about the move costs of modes that
      cannot be stored in any hard register, for example if an inline
      asm tries to create a register operand with an impossible mode.
@@ -1586,8 +1592,8 @@ ira_init_register_move_cost (machine_mode mode)
     for (cl2 = 0; cl2 < N_REG_CLASSES; cl2++)
       {
 	int cost;
-	if (!contains_reg_of_mode[cl1][mode]
-	    || !contains_reg_of_mode[cl2][mode])
+	if (!hard_reg_set_intersect_p (ok_regs, reg_class_contents[cl1])
+	    || !hard_reg_set_intersect_p (ok_regs, reg_class_contents[cl2]))
 	  {
 	    if ((ira_reg_class_max_nregs[cl1][mode]
 		 > ira_class_hard_regs_num[cl1])
@@ -5417,7 +5423,7 @@ ira (FILE *f)
 	    = ((struct ira_spilled_reg_stack_slot *)
 	       ira_allocate (max_regno
 			     * sizeof (struct ira_spilled_reg_stack_slot)));
-	  memset (ira_spilled_reg_stack_slots, 0,
+	  memset ((void *)ira_spilled_reg_stack_slots, 0,
 		  max_regno * sizeof (struct ira_spilled_reg_stack_slot));
 	}
     }

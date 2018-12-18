@@ -1,3 +1,634 @@
+2018-12-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (rm_size): Take into account the padding in
+	the case of a record type containing a template.
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Size>: Likewise.
+	Do not subtract the padded size for Max_Size_In_Storage_Elements.
+	<Attr_Descriptor_Size>: Tweak comment.
+
+2018-12-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (choices_to_gnu): Directly use a naked boolean
+	discriminant if the value is the boolean true.
+
+2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/88429
+	* gcc-interface/Makefile.in (./stamp-gnatlib1-$(RTSDIR)): Also pass
+	MULTISUBDIR to sub-make and add quotes around $(THREAD_KIND).
+	(gnatlib-shared-dual): Also pass PICFLAG_FOR_TARGET to sub-make.
+	(gnatlib-sjlj): Also pass MULTISUBDIR to sub-make, but do not pass
+	PICFLAG_FOR_TARGET.
+	(gnatlib-zcx): Likewise.
+
+2018-12-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/a-calend.ads: Add "Global => null" contract to pure routines.
+
+2018-12-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Check_Pragma_Thread_Local_Storage): Use the
+	violating set to diagnose detect an illegal initialization,
+	rather than the complement of the OK set.
+	(Freeze_Object_Declaration): Factorize code in
+	Has_Default_Initialization.
+	(Has_Default_Initialization, Has_Incompatible_Initialization):
+	New routines.
+
+2018-12-11  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/g-socket.ads (Family_Type): Add new enumerated value
+	Family_Unspec to be able to use it in Get_Address_Info parameter
+	and find IPv4 together with IPv6 addresses.
+	(Inet_Addr_Bytes_Length): Zero length for Family_Unspec.  New
+	IPv6 predefined constant addresses.
+	(IPv4_To_IPv6_Prefix): IPv4 mapped to IPv6 address prefix.
+	(Is_IPv4_Address): Rename from Is_IP_Address and published.
+	(Is_IPv6_Address): New routine.
+	(Image of Inet_Addr_Type): Fix description about IPv6 address
+	text representation.
+	(Level_Type): New propocol level IP_Protocol_For_IPv6_Level.
+	(Add_Membership_V4): New socket option equal to Add_Membership.
+	(Drop_Membership_V4): New socket option equal to
+	Drop_Membership.
+	(Multicast_If_V4): New socket option equal to Multicast_If.
+	(Multicast_Loop_V4, Add_Membership_V6, Drop_Membership_V6,
+	Multicast_If_V6, Multicast_Loop_V6, Multicast_Hops, IPv6_Only):
+	New socket option for IPv6.
+	(Address_Info): New record to keep address info.
+	(Address_Info_Array): Array to keep address info records.
+	(Get_Address_Info): Routine to get address info records by host
+	and service names.
+	(Host_Service): Record to keep host and service names.
+	(Get_Name_Info): New routine to get host and service names by
+	address.
+	(Create_Socket): Add Level parameter, IP_Protocol_For_IP_Level
+	default.
+	(Name_Array, Inet_Addr_Array): Change array index to Positive.
+	* libgnat/g-socket.adb (IPV6_Mreq): New record definition for
+	IPv6.
+	(Hex_To_Char): Remove.
+	(Short_To_Network, Network_To_Short): Move to package
+	GNAT.Sockets.Thin_Common.
+	(Is_IP_Address): Remove.
+	(To_In_Addr, To_Inet_Addr): Move to package
+	GNAT.Sockets.Thin_Common.
+	(Get_Socket_Option): Get value of Multicast_Loop option as
+	integer boolean, process IPv6 options. Don't try to get
+	Add_Membership_V4, Add_Membership_V6, Drop_Membership_V4, and
+	Drop_Membership_V6 as not supported by the socket API.
+	(Set_Socket_Option): Set value of Multicast_Loop option as
+	integer boolean, process IPv6 options.
+	* gsocket.h
+	(IPV6_ADD_MEMBERSHIP): Define from IPV6_JOIN_GROUP if necessary
+	for VxWorks.
+	(IPV6_DROP_MEMBERSHIP): Define from IPV6_LEAVE_GROUP if
+	necessary for VxWorks
+	(HAVE_INET_NTOP): New definition.
+	(HAVE_INET_PTON): Includes VxWorks now.
+	* socket.c (__gnat_getaddrinfo, __gnat_getnameinfo,
+	__gnat_freeaddrinfo, __gnat_gai_strerror, __gnat_inet_ntop): New
+	routines.
+	* libgnat/g-sothco.ads, libgnat/g-sothco.adb
+	(socklen_t, In6_Addr, To_In6_Addr): New.
+	(To_In_Addr, To_Inet_Addr): Move from package body GNAT.Sockets.
+	(To_Inet_Addr): New overload with In6_Addr type parmeter.
+	(In_Addr_Access_Array): Remove.
+	(Sockaddr): Unchecked_Union instead of Sockaddr_In and old
+	defined generic Sockaddr.
+	(Set_Address): Use it to set family, port and address into
+	Sockaddr.
+	(Get_Address): New routine to get Socket_Addr_Type from
+	Sockaddr.
+	(Addrinfo): Structure to use with getaddrinfo.
+	(C_Getaddrinfo, C_Freeaddrinfo, C_Getnameinfo, C_GAI_Strerror,
+	Inet_Ntop): New routine import.
+	(Short_To_Network, Network_To_Short): Move from package body
+	GNAT.Sockets.
+	* libgnat/g-stsifd__sockets.adb: Use Sockaddr instead of
+	Sockaddr_In.
+	* s-oscons-tmplt.c (AF_UNSPEC, EAI_SYSTEM, SOCK_RAW,
+	IPPROTO_IPV6, IP_RECVERR, SIZEOF_socklen_t, IF_NAMESIZE): New
+	constants.
+	(AI_xxxx_OFFSET): Constants to consider platform differences in
+	field positions and sizes for addrinfo structure.
+	(AI_xxxxx): Flags for getaddrinfo.
+	(NI_xxxxx): Flags for getnameinfo.
+	(IPV6_xxxxx): Socket options for IPv6.
+	(Inet_Ntop_Linkname): New routine.
+
+2018-12-11  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Deactivate
+	expansion in ignored ghost subprogram body.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Deactivate
+	expansion in ignored ghost package body.
+
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Register_Subprogram): A subprogram whose address
+	is taken (through attribute Address or Access) is reachable and
+	cannot be eliminated, even if there is no explicit call to it:
+	the address may be used in an indirect call or in some
+	address-related operation.
+
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Get_Actual_Subtype): Function can return type
+	mark.
+	(Get_Cursor_Type): Improve recovery and error message on a
+	misplaced First aspect for an iterable type.
+
+2018-12-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb: Add with and use clauses for Sem_Mech.
+	(Ensure_Valid): Update the "annoying special case" to include
+	entry and function calls. Use Get_Called_Entity to obtain the
+	entry or subprogram being invoked, rather than retrieving it
+	manually. Parameters passed by reference do not need a validity
+	check.
+
+2018-12-11  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Global_Item): Refine error message.
+
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch7.adb (Check_Unnesting_In_Declarations): Extend
+	subprogram so that it is usable for visible and private
+	declarations of a package declaration, not just for declarations
+	in the pakage body.
+	* exp_ch13.adb (Expand_Freeze_Entity): Handle properly the
+	freezing of a finalizer routine generated for a controlled objet
+	declaration. Special processing already applies to finalizers
+	because they are usually displaced into another construct.
+
+2018-12-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_unst.adb (Unnest_Subprogram): Ensure Current_Subprogram is
+	always initialized.
+
+2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Add
+	gnat_annotate_type local variable initialized to Empty.
+	<E_Record_Subtype>: Set it to the Cloned_Subtype, if any.  For
+	types, back-annotate alignment and size values earlier and only
+	if the DECL was created here; otherwise, if gnat_annotate_type
+	is present, take the values from it.
+	(gnat_to_gnu_field): Add gnat_clause local variable.  If a
+	component clause is present, call validate_size only once on the
+	Esize of the component.  Otherwise, in the packed case, do not
+	call validate_size again on the type of the component but
+	retrieve directly its RM size.
+	(components_to_record): Minor tweak.
+	(set_rm_size): Remove useless test.
+	* gcc-interface/trans.c (gnat_to_gnu): Do not wrap the instance of
+	a boolean discriminant attached to a variant part.
+
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Array_Aggr_Subtype. Resolve_Aggr_Expr): Indicate
+	that aggregate subtype has a predicate if the component type has
+	a predicate; do not rely on exisatence of predicate function for
+	component, in case component is a type no yet frozen, for which
+	predicate function has not been created yet.
+
+2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Packed_Array_Aggregate_Handled): Bail out for
+	any non-scalar type as component type of the array.
+
+2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Is_Bit_Packed_Array): Fix values of component size.
+	(Is_Packed): Likewise.
+	* gcc-interface/utils.c (convert): Do not extract the value of a
+	justified modular type if the destination type is a regular
+	array.
+	* gcc-interface/decl.c (gnat_to_gnu_component_type): Pass
+	TYPE_DECL to validate_size wherever the array has packed
+	components.
+
+2018-12-11  Bob Duff  <duff@adacore.com>
+
+	* gnat1drv.adb (gnat1drv): Pass the correct Object value when
+	calling Write_ALI in the case of -gnatQ.
+	* gnatbind.adb (Gnatbind): Avoid silent failure; give an error
+	message.
+
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Needs_Fat_Pointer): A fat pointer is required if
+	the entity has a private type whose full view is an
+	unconstrained array type.
+	(Rewrite_One_Ref): If the reference is to a static constant, use
+	its value rather than create a reference through the activation
+	record. This is more efficient, and furthermore indispensable if
+	the context requires a static constant, such as in a branch of a
+	case statement.
+
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Apply
+	Dynamic_Predicate check to an object of an array type
+	initialized with an aggregate.
+
+2018-12-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Add_To_Result): Move the ignored Ghost-specific
+	handling of freeze nodes to...
+	(Freeze_Entity): ...here. This ensures that the freeze nodes of
+	constructs that have recursive freezing are preserved when the
+	context is ignored Ghost, and the top level construct being
+	frozen is non-Ghost.
+
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* uintp.ads, uintp.adb (UI_From_Integral): New generic function,
+	to simplify construction of Universal_Integer representations
+	from any Integer type. If type is small enough the code is
+	equivalent to a call to UI_To_Int with appropriate conversions;
+	otherwise the routine uses the existing mechanism of building a
+	vector of suitable integer values and calling Vector_To_Uint.
+	The routine must not be applied to a biased type.
+
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Itype_Reference): Handle properly an itype
+	reference created for a function that is a compilation unit, for
+	example if the function builds in place an object of a limited
+	type.
+
+2018-12-11  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/g-socket.ads, libgnat/g-socket.adb: Fix duration
+	computations to be compatible with the type for socket timeouts
+	on Windows.
+
+2018-12-11  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_util.ads: Use preferred U.S. spelling of "honored".
+	* sem_spark.adb: Remove extra whitespace.
+
+2018-12-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Insert_Action): Add new formal parameter
+	Spec_Expr_OK.
+	(Insert_Actions): Add new formal parameter Spec_Expr_OK. Update
+	all calls to Insert_Actions where relevant. Honour an insertion
+	from a spec expression context when requested by the caller.
+	* exp_util.ads (Insert_Action): Add new formal parameter
+	Spec_Expr_OK.
+	(Insert_Actions): Add new formal parameter Spec_Expr_OK.
+	* freeze.adb (Add_To_Result): Force the insertion of the freeze
+	node even when the context is a spec expression.
+
+2018-12-11  Jerome Lambourg  <lambourg@adacore.com>
+
+	* vxaddr2line.adb, vxlink-bind.adb, vxlink-bind.ads,
+	vxlink-link.adb, vxlink-link.ads, vxlink-main.adb, vxlink.adb,
+	vxlink.ads: Remove.
+	* gcc-interface/Make-lang.in, gcc-interface/Makefile.in: Remove
+	bits for vxaddr2line.
+
+2018-12-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_aggr.adb, exp_ch7.adb, gnat1drv.adb, sem_ch10.adb,
+	sem_ch13.adb, sem_ch6.adb, sem_ch7.adb, sem_util.adb: Minor
+	reformatting.
+
+2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fe.h (Is_Atomic_Object): Declare.
+	(Is_Volatile_Object): Likewise.
+	* gcc-interface/trans.c (atomic_or_volatile_copy_required_p): New.
+	(Call_to_gnu): Generate a copy for an actual parameter passed by
+	reference if the conditions set forth by RM C.6(19) are met and
+	specificially deal with an atomic actual parameter.
+
+2018-12-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Is_Subprogram_Stub_Without_Prior_Declaration):
+	Return False on stubs that complete a generic subprogram.
+	* sem_util.ads: Update corresponding comment.
+
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Allocator): In GNATprove mode build a
+	subtype declaration if the allocator has a subtype indication
+	with a constraint. This allows additional proofs to be applied
+	to allocators that designate uninitialized constrained objects.
+
+2018-12-11  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Has_Full_Default_Initialization): Consider
+	access types as having full default initialization.
+
+2018-12-11  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Issue specific error message in
+	GNATprove mode when multiple file names on the command line.
+	* osint.adb, osint.ads (Dump_Command_Line_Source_File_Names):
+	New procedure to print file names on the command line.
+
+2018-12-11  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (Convert_To_Assignments): When gnerating C, do
+	not declare a temporary to initialize an aggregate assigned to
+	Out or In_Out parameters whose type has no discriminants. This
+	avoids stack overflow errors at runtime.
+
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch7.adb (Check_Unnesting_Elaboration_Code): Extend
+	algorithm to cover subprograms generated in nested loops and in
+	exception handlers, in order to build an explicit elaboration
+	procedure in more complex cases.
+
+2018-12-11  Jerome Lambourg  <lambourg@adacore.com>
+
+	* Makefile.rtl, gcc-interface/Makefile.in: Remove crtbe bits for
+	VxWorks.
+	* libgnat/system-vxworks-arm-rtp-smp.ads,
+	libgnat/system-vxworks-arm-rtp.ads,
+	libgnat/system-vxworks-arm.ads,
+	libgnat/system-vxworks-e500-kernel.ads,
+	libgnat/system-vxworks-e500-rtp-smp.ads,
+	libgnat/system-vxworks-e500-rtp.ads,
+	libgnat/system-vxworks-ppc-kernel.ads,
+	libgnat/system-vxworks-ppc-rtp-smp.ads,
+	libgnat/system-vxworks-ppc-rtp.ads,
+	libgnat/system-vxworks-ppc.ads,
+	libgnat/system-vxworks-x86-kernel.ads,
+	libgnat/system-vxworks-x86-rtp-smp.ads,
+	libgnat/system-vxworks-x86-rtp.ads,
+	libgnat/system-vxworks7-aarch64-rtp-smp.ads,
+	libgnat/system-vxworks7-aarch64.ads,
+	libgnat/system-vxworks7-arm-rtp-smp.ads,
+	libgnat/system-vxworks7-e500-kernel.ads,
+	libgnat/system-vxworks7-e500-rtp-smp.ads,
+	libgnat/system-vxworks7-e500-rtp.ads,
+	libgnat/system-vxworks7-ppc-kernel.ads,
+	libgnat/system-vxworks7-ppc-rtp-smp.ads,
+	libgnat/system-vxworks7-ppc-rtp.ads,
+	libgnat/system-vxworks7-ppc64-kernel.ads,
+	libgnat/system-vxworks7-ppc64-rtp-smp.ads,
+	libgnat/system-vxworks7-x86-kernel.ads,
+	libgnat/system-vxworks7-x86-rtp-smp.ads,
+	libgnat/system-vxworks7-x86-rtp.ads,
+	libgnat/system-vxworks7-x86_64-kernel.ads,
+	libgnat/system-vxworks7-x86_64-rtp-smp.ads: Remove pragma
+	Linker_Options for --specs.
+	* vx_crtbegin.c, vx_crtbegin.inc, vx_crtbegin_array.c,
+	vx_crtbegin_attr.c, vx_crtend.c, vxworks-gnat-crtbe-link.spec:
+	Remove.
+
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Check_Aspect_At_End_Of_Declarations,
+	Freeze_Entity_Checks): Process aspect Predicate in the same
+	fashion as aspect Dynamic_Predicate.
+
+2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (elaborate_all_entities_for_package):
+	Skip aliasing subprograms.
+
+2018-12-11  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Update gnatmetric
+	documentation for the Libadalang-based version.
+
+2018-12-11  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (In_Object_Declaration): Removed.
+	(Is_CCG_Supported_Aggregate): New subprogram that replaces
+	In_Object_Declaration extending its functionality to indicate if
+	an aggregate is in a context supported by the CCG backend.
+
+2018-12-11  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Update gnatstub
+	documentation for the Libadalang-based version.
+	* gnat_ugn.texi: Regenerate.
+
+2018-12-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Push_Type, Pop_Type): New procedures, used for
+	analysis of aspect expressions for record types, whose
+	components (not only discriminants) may be referenced in aspect
+	expressions.
+	(Analyze_Aspect_Specifications, Analyze_Aspects_At_Freeze_Point,
+	Analyze_Aspect_At_End-Of_Declarations,
+	Resolve_Aspect_Expressions): Use the new subprograms.
+	(Check_Aspect_At_End_Of_Declarations): Improve error message.
+	(Build_Predicate_Functions): Do not build their bodies in a
+	generic unit.
+	(Is_Derived_Type_With_Constraint): New subprogram to uncover and
+	reject aspect specificationss on types that appear after the
+	type is frozen.
+	* sem_ch13.ads (Push_Scope_And_Install_Discriminants,
+	Uninstall_Discriminants_And_Pop_Scope): Remove.
+	* sem_ch6.adb, sem_ch6.ads (Fully_Conformant_Expressions):
+	Additional parameter to improve error message on illegal aspect
+	specifications whose resolution differ between aspect
+	specification and freeze point.
+	* freeze.adb: Remove references to
+	Install/Uninstall_Discriminants.
+
+2018-12-11  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Document the -fgnat-encodings switch.
+	* gnat_ugn.texi: Regenerate.
+
+2018-12-11  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch10.adb (Analyze_Subunit): Modify conditional to fully
+	remove parent contexts from library-level subprogram bodies in
+	addition to package bodies.
+
+2018-12-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Initial_Condition): Do not
+	generate an Initial_Condition procedure and a call to it when
+	the associated pragma is ignored.
+	* sem_ch10.adb (Analyze_Compilation_Unit): Minor cleanup.
+
+2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fe.h (Debug_Generated_Code): Declare.
+	* gcc-interface/gigi.h (enum inline_status_t): Rename
+	is_disabled to is_default, is_enabled to is_requested and add
+	is_prescribed.
+	* gcc-interface/decl.c (inline_status_for_subprog): New function.
+	(gnat_to_gnu_entity) <E_Subprogram_Type>: Use it to get the
+	inlining status of the subprogram.
+	* gcc-interface/trans.c (gigi): Adjust to above renaming.
+	(build_raise_check): Likewise.
+	(Compilation_Unit_to_gnu): Likewise.
+	(gnat_to_gnu): Likewise.
+	* gcc-interface/utils.c (create_subprog_decl): Likewise.  Deal
+	with is_prescribed status by setting
+	DECL_DISREGARD_INLINE_LIMITS.  Do not set the
+	DECL_NO_INLINE_WARNING_P flag if Debug_Generated_Code is true.
+
+2018-12-03  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_aux.adb (Object_Type_Has_Constrained_Partial_View): Return
+	True for an untagged discriminated formal derived type when
+	referenced within a generic body (augments existing test for
+	formal private types).
+	* sem_util.adb (Is_Dependent_Component_Of_Mutable_Type): If the
+	prefix of the name is a qualified expression, retrieve the
+	operand of that. Add a test of whether the (possible)
+	dereference prefix is a variable, and also test whether that
+	prefix might just be of an access type (occurs in some implicit
+	dereference cases) rather than being an explicit dereference.
+	Retrieve the Original_Node of the object name's main prefix and
+	handle the possibility of that being a qualified expression.
+	Remove special-case code for explicit dereferences that don't
+	come from source. Add test for the renaming not being within a
+	generic body for proper determination of whether a formal access
+	type is known to be constrained (it is within a generic spec,
+	but not in the body).  Fix an existing incorrect test for
+	renaming of a discriminant-dependent component of a untagged
+	generic formal type being within a generic body, adding test of
+	taggedness and calling In_Generic_Body (now properly checks for
+	cases where the renaming is in a nongeneric body nested within a
+	generic).  Return False in cases where the selector is not a
+	component (or discriminant), which can occur for
+	prefixed-notation calls.
+
+2018-12-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Apply_Check): For array types, apply a length
+	check rather than a qualification, to avoid spurious errors when
+	the value of a dependend expression has a matching length but
+	different bounds from those of the type of the contect.
+
+2018-12-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* libgnat/a-calend.adb: Update the number of leap seconds. Add
+	the hard time values for year 2015 and 2016.
+
+2018-12-03  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch3.adb, libgnarl/s-taasde.adb, libgnarl/s-taenca.adb,
+	libgnarl/s-tarest.adb, libgnarl/s-tasini.adb,
+	libgnarl/s-taskin.ads, libgnarl/s-tasren.adb,
+	libgnarl/s-tassta.adb, libgnarl/s-tasuti.adb: Spelling fixes and
+	minor reformatting.
+
+2018-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Convert_To_Positional): Use
+	Static_Array_Aggregate to decide whether to set
+	Compile_Time_Known_Aggregate on an already flat aggregate.
+	(Expand_Array_Aggregate): Remove test on
+	Compile_Time_Known_Aggregate that turns out to be dead and
+	simplify.
+	(Is_Static_Component): New predicate extracted from...
+	(Static_Array_Aggregate): ...here.  Test neither Is_Tagged_Type
+	nor Is_Controlled for the type, but test whether the component
+	type has discriminants.  Use the Is_Static_Component predicate
+	consistently for the positional and named cases.
+
+2018-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Do not freeze the partial view of
+	a private subtype if its base type is also private with delayed
+	freeze before the full type declaration of the base type has
+	been seen.
+	* sem_ch7.adb (Preserve_Full_Attributes): Add assertion on
+	freeze node.
+
+2018-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Build_Record_Init_Proc): Inherit an
+	initialization procedure if it is present, even if it is null.
+
+2018-12-03  Patrick Bernardi  <bernardi@adacore.com>
+
+	* libgnarl/s-taskin.ads (ATC_Level_Base): Redefine to span from
+	-1 to Max_ATC_Nesting so that 0 represents no ATC nesting and -1
+	represented a completed task. To increase readability, new
+	constants are introduced to represent key ATC nesting levels.
+	Consequently, Level_No_Pending_Abort replaces
+	ATC_Level_Infinity.  ATC_Level related definitions now
+	documented.
+	(Ada_Task_Control_Block): The default initialization of
+	components ATC_Nesting_Level and Pending_ATC_Level now use new
+	ATC_Level_Base constants.  Comments improved
+	* libgnarl/s-taskin.adb (Initialize): Improve the initialisation
+	of the first element of the Entry_Calls array to facilitate
+	better maintenance.
+	* libgnarl/s-taasde.ads: Update comment.
+	* libgnarl/s-taasde.adb, libgnarl/s-taenca.adb,
+	libgnarl/s-tasren.adb, libgnarl/s-tassta.adb,
+	libgnarl/s-tasuti.ads, libgnarl/s-tasuti.adb: Use new
+	ATC_Level_Base constants.
+	* libgnarl/s-tarest.adb (Create_Restricted_Task): Improve the
+	initialisation of the first element of the task's Entry_Calls
+	array to facilitate better maintenance.
+	* libgnarl/s-tasini.ads (Locked_Abort_To_Level): Update
+	signature to accept ATC_Level_Base.
+	* libgnarl/s-tasini.adb (Locked_Abort_To_Level): Update
+	signature to accept ATC_Level_Base.  Use new ATC_Level_Base
+	constants and only modify the aborting task's Entry_Calls array
+	if any entry call is happening.
+	* libgnarl/s-tposen.adb (Protected_Single_Entry_Call): Reference
+	the first element of the task's Entry_Calls array via 'First
+	attribute to facilitate better maintenance.
+
+2018-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.adb (Write_Entity_Info): Don't take Scope of Standard
+	package.
+	* sem_ch4.adb (Remove_Abstract_Operations): Add missing blank
+	lines to -gnatdv output.
+	* sem_type.adb (Write_Overloads): Take Entity of entity names
+	only.
+
+2018-12-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb, exp_aggr.adb, exp_attr.adb, exp_ch3.adb,
+	exp_util.adb, exp_util.ads, repinfo.adb, sem_attr.adb,
+	sem_ch3.adb, sem_res.adb, sem_util.adb: Minor reformatting.
+
+2018-12-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Complete_Private_Subtype): Enhance comment.
+
+2018-12-03  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/lang.opt (fopenacc): New option for Ada.
+	* gcc-interface/misc.c (gnat_handle_option): Handle it.
+	* gcc-interface/trans.c (struct loop_info_d): Add OMP
+	attributes.
+	(Iterate_Acc_Clause_Arg, Acc_gnat_to_gnu): New functions,
+	helpers for OpenACC pragmas processing in Pragma_to_gnu.
+	(Acc_Var_to_gnu, Acc_Reduc_Var_to_gnu, Acc_Reduc_to_gnu):
+	Likewise.
+	(Acc_Size_Expr_to_gnu, Acc_Size_List_to_gnu): Likewise.
+	(Pragma_Acc_Data_to_gnu): Likewise.
+	(Pragma_to_gnu): Handle Pragma_Acc_Loop, Pragma_Acc_Data,
+	Pragma_Acc_Kernels and Pragma_Acc_Parallel.
+	(Acc_Loop_to_gnu, Regular_Loop_to_gnu): New functions. Helpers
+	for ...
+	(Loop_Statement_to_gnu): Rework to handle OpenACC loops.
+
+2018-12-03  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/targtyps.c (MALLOC_OBSERVABLE_ALIGNMENT): Set to
+	2 * POINTER_SIZE.
+
+2018-12-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Set_Slice_Subtype): The index type of a slice is
+	constrained.
+
 2018-11-26  Matthias Klose <doko@ubuntu.com>
 
 	PR ada/88191

@@ -114,10 +114,9 @@ FUNC_START(__trampoline_setup)
 	addi	r30,r30,_GLOBAL_OFFSET_TABLE_-1b@l
 #endif
 	bl	JUMP_TARGET(abort)
+#endif
 	.cfi_endproc
 FUNC_END(__trampoline_setup)
-
-#endif
 
 #elif _CALL_ELF == 2
 	.type	trampoline_initial,@object

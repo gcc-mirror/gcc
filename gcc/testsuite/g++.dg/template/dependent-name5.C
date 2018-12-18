@@ -17,13 +17,15 @@ struct A
   typedef Bar          type1;
   typedef A::Bar       type2;
   typedef A<T>::Bar    type3;
-  typedef A<T*>::Bar    type4;  // { dg-error "" }
+  typedef A<T*>::Bar    type4;  // { dg-error "" "" { target c++17_down } }
   typedef typename A<T*>::Bar type5;
 
   typedef N<int>       type6;
   typedef A::N<int>    type7;
+// { dg-error "" "" { target c++2a } .-1 }
   typedef A<T>::N<int> type8;
-  typedef A<T*>::template N<int> type9;  // { dg-error "" }
+// { dg-error "" "" { target c++2a } .-1 }
+  typedef A<T*>::template N<int> type9;  // { dg-error "" "" { target c++17_down } }
   typedef typename A<T*>::template N<int> type10;
 
   typedef D Bar2;
@@ -36,7 +38,7 @@ struct A
 
   typedef A::N2 type12;
   typedef typename type12::K k2;
-  typedef type12::K k1;  // { dg-error "" }
+  typedef type12::K k1;  // { dg-error "" "" { target c++17_down } }
 
   // Check that A::Bar2 is not considered dependent even if we use
   // the typename keyword.

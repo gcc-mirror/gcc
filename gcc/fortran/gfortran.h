@@ -1345,7 +1345,7 @@ typedef struct gfc_omp_clauses
   gfc_expr_list *wait_list;
   gfc_expr_list *tile_list;
   unsigned async:1, gang:1, worker:1, vector:1, seq:1, independent:1;
-  unsigned wait:1, par_auto:1, gang_static:1;
+  unsigned par_auto:1, gang_static:1;
   unsigned if_present:1, finalize:1;
   locus loc;
 
@@ -3395,7 +3395,7 @@ bool gfc_resolve_open (gfc_open *);
 void gfc_free_close (gfc_close *);
 bool gfc_resolve_close (gfc_close *);
 void gfc_free_filepos (gfc_filepos *);
-bool gfc_resolve_filepos (gfc_filepos *);
+bool gfc_resolve_filepos (gfc_filepos *, locus *);
 void gfc_free_inquire (gfc_inquire *);
 bool gfc_resolve_inquire (gfc_inquire *);
 void gfc_free_dt (gfc_dt *);

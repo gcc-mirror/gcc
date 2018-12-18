@@ -1190,6 +1190,8 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
       switch (OMP_CLAUSE_CODE (clause))
 	{
 	case OMP_CLAUSE_REDUCTION:
+	case OMP_CLAUSE_IN_REDUCTION:
+	case OMP_CLAUSE_TASK_REDUCTION:
 	  if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (clause))
 	    need_stmts = true;
 	  goto do_decl_clause;
@@ -1369,6 +1371,7 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE__REDUCTEMP_:
 	case OMP_CLAUSE__SIMDUID_:
 	case OMP_CLAUSE__GRIDDIM_:
+	case OMP_CLAUSE__SIMT_:
 	  /* Anything else.  */
 	default:
 	  gcc_unreachable ();
@@ -1382,6 +1385,8 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
       switch (OMP_CLAUSE_CODE (clause))
 	{
 	case OMP_CLAUSE_REDUCTION:
+	case OMP_CLAUSE_IN_REDUCTION:
+	case OMP_CLAUSE_TASK_REDUCTION:
 	  if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (clause))
 	    {
 	      tree old_context
@@ -1548,6 +1553,14 @@ convert_nonlocal_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       info->suppress_expansion = save_suppress;
       break;
 
+    case GIMPLE_OMP_TASKGROUP:
+      save_suppress = info->suppress_expansion;
+      convert_nonlocal_omp_clauses (gimple_omp_taskgroup_clauses_ptr (stmt), wi);
+      walk_body (convert_nonlocal_reference_stmt, convert_nonlocal_reference_op,
+		 info, gimple_omp_body_ptr (stmt));
+      info->suppress_expansion = save_suppress;
+      break;
+
     case GIMPLE_OMP_TARGET:
       if (!is_gimple_omp_offloaded (stmt))
 	{
@@ -1598,7 +1611,6 @@ convert_nonlocal_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_MASTER:
-    case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_ORDERED:
       walk_body (convert_nonlocal_reference_stmt, convert_nonlocal_reference_op,
 	         info, gimple_omp_body_ptr (stmt));
@@ -1633,6 +1645,21 @@ convert_nonlocal_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
     case GIMPLE_COND:
       wi->val_only = true;
       wi->is_lhs = false;
+      *handled_ops_p = false;
+      return NULL_TREE;
+
+    case GIMPLE_ASSIGN:
+      if (gimple_clobber_p (stmt))
+	{
+	  tree lhs = gimple_assign_lhs (stmt);
+	  if (DECL_P (lhs)
+	      && !(TREE_STATIC (lhs) || DECL_EXTERNAL (lhs))
+	      && decl_function_context (lhs) != info->context)
+	    {
+	      gsi_replace (gsi, gimple_build_nop (), true);
+	      break;
+	    }
+	}
       *handled_ops_p = false;
       return NULL_TREE;
 
@@ -1873,6 +1900,8 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
       switch (OMP_CLAUSE_CODE (clause))
 	{
 	case OMP_CLAUSE_REDUCTION:
+	case OMP_CLAUSE_IN_REDUCTION:
+	case OMP_CLAUSE_TASK_REDUCTION:
 	  if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (clause))
 	    need_stmts = true;
 	  goto do_decl_clause;
@@ -2063,6 +2092,7 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE__REDUCTEMP_:
 	case OMP_CLAUSE__SIMDUID_:
 	case OMP_CLAUSE__GRIDDIM_:
+	case OMP_CLAUSE__SIMT_:
 	  /* Anything else.  */
 	default:
 	  gcc_unreachable ();
@@ -2076,6 +2106,8 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
       switch (OMP_CLAUSE_CODE (clause))
 	{
 	case OMP_CLAUSE_REDUCTION:
+	case OMP_CLAUSE_IN_REDUCTION:
+	case OMP_CLAUSE_TASK_REDUCTION:
 	  if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (clause))
 	    {
 	      tree old_context
@@ -2206,6 +2238,14 @@ convert_local_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       info->suppress_expansion = save_suppress;
       break;
 
+    case GIMPLE_OMP_TASKGROUP:
+      save_suppress = info->suppress_expansion;
+      convert_local_omp_clauses (gimple_omp_taskgroup_clauses_ptr (stmt), wi);
+      walk_body (convert_local_reference_stmt, convert_local_reference_op,
+		 info, gimple_omp_body_ptr (stmt));
+      info->suppress_expansion = save_suppress;
+      break;
+
     case GIMPLE_OMP_TARGET:
       if (!is_gimple_omp_offloaded (stmt))
 	{
@@ -2269,7 +2309,6 @@ convert_local_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_MASTER:
-    case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_ORDERED:
       walk_body (convert_local_reference_stmt, convert_local_reference_op,
 		 info, gimple_omp_body_ptr (stmt));
@@ -2285,7 +2324,8 @@ convert_local_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       if (gimple_clobber_p (stmt))
 	{
 	  tree lhs = gimple_assign_lhs (stmt);
-	  if (!use_pointer_in_frame (lhs)
+	  if (DECL_P (lhs)
+	      && !use_pointer_in_frame (lhs)
 	      && lookup_field_for_decl (info, lhs, NO_INSERT))
 	    {
 	      gsi_replace (gsi, gimple_build_nop (), true);

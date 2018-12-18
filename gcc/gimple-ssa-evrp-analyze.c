@@ -42,7 +42,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "vr-values.h"
 #include "gimple-ssa-evrp-analyze.h"
 
-evrp_range_analyzer::evrp_range_analyzer () : stack (10)
+evrp_range_analyzer::evrp_range_analyzer (bool update_global_ranges)
+  : stack (10), m_update_global_ranges (update_global_ranges)
 {
   edge e;
   edge_iterator ei;
@@ -107,6 +108,8 @@ evrp_range_analyzer::try_find_new_range (tree name,
 void
 evrp_range_analyzer::set_ssa_range_info (tree lhs, value_range *vr)
 {
+  gcc_assert (m_update_global_ranges);
+
   /* Set the SSA with the value range.  */
   if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
     {
@@ -213,6 +216,7 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 		continue;
 	      push_value_range (vrs[i].first, vrs[i].second);
 	      if (is_fallthru
+		  && m_update_global_ranges
 		  && all_uses_feed_or_dominated_by_stmt (vrs[i].first, stmt))
 		{
 		  set_ssa_range_info (vrs[i].first, vrs[i].second);
@@ -267,7 +271,8 @@ evrp_range_analyzer::record_ranges_from_phis (basic_block bb)
       vr_values->update_value_range (lhs, &vr_result);
 
       /* Set the SSA with the value range.  */
-      set_ssa_range_info (lhs, &vr_result);
+      if (m_update_global_ranges)
+	set_ssa_range_info (lhs, &vr_result);
     }
 }
 
@@ -309,7 +314,8 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt, bool temporary)
 	      /* Case one.  We can just update the underlying range
 		 information as well as the global information.  */
 	      vr_values->update_value_range (output, &vr);
-	      set_ssa_range_info (output, &vr);
+	      if (m_update_global_ranges)
+		set_ssa_range_info (output, &vr);
 	    }
 	  else
 	    {

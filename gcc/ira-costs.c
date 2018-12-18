@@ -1314,28 +1314,32 @@ record_operand_costs (rtx_insn *insn, enum reg_class *pref)
 	  machine_mode mode = GET_MODE (SET_SRC (set));
 	  cost_classes_t cost_classes_ptr = regno_cost_classes[regno];
 	  enum reg_class *cost_classes = cost_classes_ptr->classes;
-	  reg_class_t rclass, hard_reg_class, pref_class;
+	  reg_class_t rclass, hard_reg_class, pref_class, bigger_hard_reg_class;
 	  int cost, k;
+	  move_table *move_costs;
 	  bool dead_p = find_regno_note (insn, REG_DEAD, REGNO (src));
 
 	  ira_init_register_move_cost_if_necessary (mode);
+	  move_costs = ira_register_move_cost[mode];
 	  hard_reg_class = REGNO_REG_CLASS (other_regno);
+	  bigger_hard_reg_class = ira_pressure_class_translate[hard_reg_class];
 	  /* Target code may return any cost for mode which does not
 	     fit the the hard reg class (e.g. DImode for AREG on
 	     i386).  Check this and use a bigger class to get the
 	     right cost.  */
-	  if (! ira_hard_reg_in_set_p (other_regno, mode,
-				       reg_class_contents[hard_reg_class]))
-	    hard_reg_class = ira_pressure_class_translate[hard_reg_class];
+	  if (bigger_hard_reg_class != NO_REGS
+	      && ! ira_hard_reg_in_set_p (other_regno, mode,
+					  reg_class_contents[hard_reg_class]))
+	    hard_reg_class = bigger_hard_reg_class;
 	  i = regno == (int) REGNO (src) ? 1 : 0;
 	  for (k = cost_classes_ptr->num - 1; k >= 0; k--)
 	    {
 	      rclass = cost_classes[k];
-	      cost = ((i == 0
-		       ? ira_register_move_cost[mode][hard_reg_class][rclass]
-		       : ira_register_move_cost[mode][rclass][hard_reg_class])
-		      * frequency);
-	      op_costs[i]->cost[k] = cost;
+	      cost = (i == 0
+		      ? move_costs[hard_reg_class][rclass]
+		      : move_costs[rclass][hard_reg_class]);
+	      
+	      op_costs[i]->cost[k] = cost * frequency;
 	      /* If we have assigned a class to this allocno in our
 		 first pass, add a cost to this alternative
 		 corresponding to what we would add if this allocno
@@ -1350,7 +1354,7 @@ record_operand_costs (rtx_insn *insn, enum reg_class *pref)
 		  else if (ira_reg_class_intersect[pref_class][rclass]
 			   == NO_REGS)
 		    op_costs[i]->cost[k]
-		      += (ira_register_move_cost[mode][pref_class][rclass]
+		      += (move_costs[pref_class][rclass]
 			  * frequency);
 		}
 	      /* If this insn is a single set copying operand 1 to

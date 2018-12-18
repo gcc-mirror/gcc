@@ -1360,6 +1360,24 @@ DEFPARAM(PARAM_AVOID_FMA_MAX_BITS,
 	 "Maximum number of bits for which we avoid creating FMAs.",
 	 0, 0, 512)
 
+DEFPARAM(PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT,
+	 "logical-op-non-short-circuit",
+	 "True if a non-short-circuit operation is optimal.",
+	 -1, -1, 1)
+
+DEFPARAM(PARAM_LOOP_VERSIONING_MAX_INNER_INSNS,
+	 "loop-versioning-max-inner-insns",
+	 "The maximum number of instructions in an inner loop that is being"
+	 " considered for versioning.",
+	 200, 0, 0)
+
+DEFPARAM(PARAM_LOOP_VERSIONING_MAX_OUTER_INSNS,
+	 "loop-versioning-max-outer-insns",
+	 "The maximum number of instructions in an outer loop that is being"
+	 " considered for versioning, on top of the instructions in inner"
+	 " loops.",
+	 100, 0, 0)
+
 DEFPARAM(PARAM_LAZY_MODULES,
 	 "lazy-modules",
 	 "Maximum number of concurrently open module files when lazy loading",

@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-pg -mfentry -minstrument-return=call" } */
 /* { dg-final { scan-assembler-not "call.*__return__" } } */
 

@@ -41,6 +41,9 @@ do {									\
     return t;								\
  } while (0)
 
+static HOST_WIDE_INT find_array_ctor_elt (tree ary, tree dindex,
+					  bool insert = false);
+
 /* Returns true iff FUN is an instantiation of a constexpr function
    template or a defaulted constexpr function.  */
 
@@ -989,6 +992,8 @@ struct GTY((for_user)) constexpr_call {
   /* The hash of this call; we remember it here to avoid having to
      recalculate it when expanding the hash table.  */
   hashval_t hash;
+  /* Whether __builtin_is_constant_evaluated() should evaluate to true.  */
+  bool manifestly_const_eval;
 };
 
 struct constexpr_call_hasher : ggc_ptr_hash<constexpr_call>
@@ -1036,7 +1041,7 @@ struct constexpr_ctx {
      trying harder to get a constant value.  */
   bool strict;
   /* Whether __builtin_is_constant_evaluated () should be true.  */
-  bool pretend_const_required;
+  bool manifestly_const_eval;
 };
 
 /* A table of all constexpr calls that have been evaluated by the
@@ -1068,6 +1073,8 @@ constexpr_call_hasher::equal (constexpr_call *lhs, constexpr_call *rhs)
     return true;
   if (lhs->hash != rhs->hash)
     return false;
+  if (lhs->manifestly_const_eval != rhs->manifestly_const_eval)
+    return false;
   if (!constexpr_fundef_hasher::equal (lhs->fundef, rhs->fundef))
     return false;
   lhs_bindings = lhs->bindings;
@@ -1076,7 +1083,7 @@ constexpr_call_hasher::equal (constexpr_call *lhs, constexpr_call *rhs)
     {
       tree lhs_arg = TREE_VALUE (lhs_bindings);
       tree rhs_arg = TREE_VALUE (rhs_bindings);
-      gcc_assert (TREE_TYPE (lhs_arg) == TREE_TYPE (rhs_arg));
+      gcc_assert (same_type_p (TREE_TYPE (lhs_arg), TREE_TYPE (rhs_arg)));
       if (!cp_tree_equal (lhs_arg, rhs_arg))
         return false;
       lhs_bindings = TREE_CHAIN (lhs_bindings);
@@ -1215,11 +1222,11 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
     }
 
   /* For __builtin_is_constant_evaluated, defer it if not
-     ctx->pretend_const_required, otherwise fold it to true.  */
+     ctx->manifestly_const_eval, otherwise fold it to true.  */
   if (fndecl_built_in_p (fun, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
-		       BUILT_IN_FRONTEND))
+			 BUILT_IN_FRONTEND))
     {
-      if (!ctx->pretend_const_required)
+      if (!ctx->manifestly_const_eval)
 	{
 	  *non_constant_p = true;
 	  return t;
@@ -1292,11 +1299,13 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
 static tree
 adjust_temp_type (tree type, tree temp)
 {
-  if (TREE_TYPE (temp) == type)
+  if (same_type_p (TREE_TYPE (temp), type))
     return temp;
   /* Avoid wrapping an aggregate value in a NOP_EXPR.  */
   if (TREE_CODE (temp) == CONSTRUCTOR)
     return build_constructor (type, CONSTRUCTOR_ELTS (temp));
+  if (TREE_CODE (temp) == EMPTY_CLASS_EXPR)
+    return build0 (EMPTY_CLASS_EXPR, type);
   gcc_assert (scalarish_type_p (type));
   return cp_fold_convert (type, temp);
 }
@@ -1514,7 +1523,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 {
   location_t loc = cp_expr_loc_or_loc (t, input_location);
   tree fun = get_function_named_in_call (t);
-  constexpr_call new_call = { NULL, NULL, NULL, 0 };
+  constexpr_call new_call
+    = { NULL, NULL, NULL, 0, ctx->manifestly_const_eval };
   bool depth_ok;
 
   if (fun == NULL_TREE)
@@ -1530,6 +1540,36 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       STRIP_NOPS (fun);
       if (TREE_CODE (fun) == ADDR_EXPR)
 	fun = TREE_OPERAND (fun, 0);
+      /* For TARGET_VTABLE_USES_DESCRIPTORS targets, there is no
+	 indirection, the called expression is a pointer into the
+	 virtual table which should contain FDESC_EXPR.  Extract the
+	 FUNCTION_DECL from there.  */
+      else if (TARGET_VTABLE_USES_DESCRIPTORS
+	       && TREE_CODE (fun) == POINTER_PLUS_EXPR
+	       && TREE_CODE (TREE_OPERAND (fun, 0)) == ADDR_EXPR
+	       && TREE_CODE (TREE_OPERAND (fun, 1)) == INTEGER_CST)
+	{
+	  tree d = TREE_OPERAND (TREE_OPERAND (fun, 0), 0);
+	  if (VAR_P (d)
+	      && DECL_VTABLE_OR_VTT_P (d)
+	      && TREE_CODE (TREE_TYPE (d)) == ARRAY_TYPE
+	      && TREE_TYPE (TREE_TYPE (d)) == vtable_entry_type
+	      && DECL_INITIAL (d)
+	      && TREE_CODE (DECL_INITIAL (d)) == CONSTRUCTOR)
+	    {
+	      tree i = int_const_binop (TRUNC_DIV_EXPR, TREE_OPERAND (fun, 1),
+					TYPE_SIZE_UNIT (vtable_entry_type));
+	      HOST_WIDE_INT idx = find_array_ctor_elt (DECL_INITIAL (d), i);
+	      if (idx >= 0)
+		{
+		  tree fdesc
+		    = (*CONSTRUCTOR_ELTS (DECL_INITIAL (d)))[idx].value;
+		  if (TREE_CODE (fdesc) == FDESC_EXPR
+		      && integer_zerop (TREE_OPERAND (fdesc, 1)))
+		    fun = TREE_OPERAND (fdesc, 0);
+		}
+	    }
+	}
     }
   if (TREE_CODE (fun) != FUNCTION_DECL)
     {
@@ -1656,8 +1696,11 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
   constexpr_call *entry = NULL;
   if (depth_ok && !non_constant_args && ctx->strict)
     {
-      new_call.hash = iterative_hash_template_arg
-	(new_call.bindings, constexpr_fundef_hasher::hash (new_call.fundef));
+      new_call.hash = constexpr_fundef_hasher::hash (new_call.fundef);
+      new_call.hash
+	= iterative_hash_template_arg (new_call.bindings, new_call.hash);
+      new_call.hash
+	= iterative_hash_object (ctx->manifestly_const_eval, new_call.hash);
 
       /* If we have seen this call before, we are done.  */
       maybe_initialize_constexpr_call_table ();
@@ -2254,7 +2297,7 @@ array_index_cmp (tree key, tree index)
    if none.  If INSERT is true, insert a matching element rather than fail.  */
 
 static HOST_WIDE_INT
-find_array_ctor_elt (tree ary, tree dindex, bool insert = false)
+find_array_ctor_elt (tree ary, tree dindex, bool insert)
 {
   if (tree_int_cst_sgn (dindex) < 0)
     return -1;
@@ -4848,6 +4891,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	/* Find the function decl in the virtual functions list.  TOKEN is
 	   the DECL_VINDEX that says which function we're looking for.  */
 	tree virtuals = BINFO_VIRTUALS (TYPE_BINFO (objtype));
+	if (TARGET_VTABLE_USES_DESCRIPTORS)
+	  token /= MAX (TARGET_VTABLE_USES_DESCRIPTORS, 1);
 	r = TREE_VALUE (chain_index (token, virtuals));
 	break;
       }
@@ -4993,13 +5038,13 @@ instantiate_constexpr_fns (tree t)
    STRICT has the same sense as for constant_value_1: true if we only allow
    conforming C++ constant expressions, or false if we want a constant value
    even if it doesn't conform.
-   PRETEND_CONST_REQUIRED is true if T is required to be const-evaluated as
+   MANIFESTLY_CONST_EVAL is true if T is manifestly const-evaluated as
    per P0595 even when ALLOW_NON_CONSTANT is true.  */
 
 static tree
 cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 				  bool strict = true,
-				  bool pretend_const_required = false,
+				  bool manifestly_const_eval = false,
 				  tree object = NULL_TREE)
 {
   auto_timevar time (TV_CONSTEXPR);
@@ -5010,7 +5055,7 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 
   constexpr_ctx ctx = { NULL, &map, NULL, NULL, NULL, NULL,
 			allow_non_constant, strict,
-			pretend_const_required || !allow_non_constant };
+			manifestly_const_eval || !allow_non_constant };
 
   tree type = initialized_type (t);
   tree r = t;
@@ -5102,7 +5147,7 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
       /* If __builtin_is_constant_evaluated () was evaluated to true
 	 and the result is not a valid constant expression, we need to
 	 punt.  */
-      if (pretend_const_required)
+      if (manifestly_const_eval)
 	return cxx_eval_outermost_constant_expr (t, true, strict,
 						 false, object);
       /* This isn't actually constant, so unset TREE_CONSTANT.
@@ -5245,12 +5290,14 @@ fold_simple (tree t)
 
 /* If T is a constant expression, returns its reduced value.
    Otherwise, if T does not have TREE_CONSTANT set, returns T.
-   Otherwise, returns a version of T without TREE_CONSTANT.  */
+   Otherwise, returns a version of T without TREE_CONSTANT.
+   MANIFESTLY_CONST_EVAL is true if T is manifestly const-evaluated
+   as per P0595.  */
 
 static GTY((deletable)) hash_map<tree, tree> *cv_cache;
 
 tree
-maybe_constant_value (tree t, tree decl)
+maybe_constant_value (tree t, tree decl, bool manifestly_const_eval)
 {
   tree r;
 
@@ -5266,6 +5313,9 @@ maybe_constant_value (tree t, tree decl)
   else if (CONSTANT_CLASS_P (t))
     /* No caching or evaluation needed.  */
     return t;
+
+  if (manifestly_const_eval)
+    return cxx_eval_outermost_constant_expr (t, true, true, true, decl);
 
   if (cv_cache == NULL)
     cv_cache = hash_map<tree, tree>::create_ggc (101);
@@ -5370,12 +5420,12 @@ fold_non_dependent_expr (tree t,
 /* Like maybe_constant_value, but returns a CONSTRUCTOR directly, rather
    than wrapped in a TARGET_EXPR.
    ALLOW_NON_CONSTANT is false if T is required to be a constant expression.
-   PRETEND_CONST_REQUIRED is true if T is required to be const-evaluated as
+   MANIFESTLY_CONST_EVAL is true if T is manifestly const-evaluated as
    per P0595 even when ALLOW_NON_CONSTANT is true.  */
 
 static tree
 maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant,
-		       bool pretend_const_required)
+		       bool manifestly_const_eval)
 {
   if (!t)
     return t;
@@ -5395,7 +5445,7 @@ maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant,
   else
     t = cxx_eval_outermost_constant_expr (t, allow_non_constant,
 					  /*strict*/false,
-					  pretend_const_required, decl);
+					  manifestly_const_eval, decl);
   if (TREE_CODE (t) == TARGET_EXPR)
     {
       tree init = TARGET_EXPR_INITIAL (t);
@@ -5408,9 +5458,9 @@ maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant,
 /* Wrapper for maybe_constant_init_1 which permits non constants.  */
 
 tree
-maybe_constant_init (tree t, tree decl, bool pretend_const_required)
+maybe_constant_init (tree t, tree decl, bool manifestly_const_eval)
 {
-  return maybe_constant_init_1 (t, decl, true, pretend_const_required);
+  return maybe_constant_init_1 (t, decl, true, manifestly_const_eval);
 }
 
 /* Wrapper for maybe_constant_init_1 which does not permit non constants.  */
@@ -5490,10 +5540,11 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
        available, so we don't bother with switch tracking.  */
     return true;
 
-  if (TREE_THIS_VOLATILE (t) && !DECL_P (t))
+  if (TREE_THIS_VOLATILE (t) && want_rval)
     {
       if (flags & tf_error)
-        error_at (loc, "expression %qE has side-effects", t);
+	error_at (loc, "lvalue-to-rvalue conversion of a volatile lvalue "
+		  "%qE with type %qT", t, TREE_TYPE (t));
       return false;
     }
   if (CONSTANT_CLASS_P (t))

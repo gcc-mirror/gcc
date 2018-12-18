@@ -112,6 +112,49 @@ test04()
 #endif
 }
 
+void
+test05()
+{
+  std::basic_string_view<path::value_type> s;
+
+  path p = "0/1/2/3/4/5/6";
+  // The string_view aliases the path's internal string:
+  s = p.native();
+  // Append that string_view, which must work correctly even though the
+  // internal string will be reallocated during the operation:
+  p /= s;
+  VERIFY( p.string() == "0/1/2/3/4/5/6/0/1/2/3/4/5/6" );
+
+  // Same again with a trailing slash:
+  path p2 = "0/1/2/3/4/5/";
+  s = p2.native();
+  p2 /= s;
+  VERIFY( p2.string() == "0/1/2/3/4/5/0/1/2/3/4/5/" );
+
+  // And aliasing one of the components of the path:
+  path p3 = "0/123456789/a";
+  path::iterator second = std::next(p3.begin());
+  s = second->native();
+  p3 /= s;
+  VERIFY( p3.string() == "0/123456789/a/123456789" );
+  }
+
+void
+test06()
+{
+  const std::string s0 = "a/b/c";
+  path p = s0;
+  std::string s;
+  for (int i = 0; i < 10; ++i)
+    s += "0/1/2/3/4/5/6/7/8/9/";
+  // append a long string with many components
+  test(p, s.c_str());
+
+  // Same again but with a trailing slash on the left operand:
+  path p2 = s0 + '/';
+  test(p2, s.c_str());
+}
+
 int
 main()
 {
@@ -119,4 +162,6 @@ main()
   test02();
   test03();
   test04();
+  test05();
+  test06();
 }

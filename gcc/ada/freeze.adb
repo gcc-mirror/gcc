@@ -1938,12 +1938,6 @@ package body Freeze is
             --  for a description of how we handle aspect visibility).
 
             elsif Has_Delayed_Aspects (E) then
-
-               --  Retrieve the visibility to the discriminants in order to
-               --  analyze properly the aspects.
-
-               Push_Scope_And_Install_Discriminants (E);
-
                declare
                   Ritem : Node_Id;
 
@@ -1960,8 +1954,6 @@ package body Freeze is
                      Ritem := Next_Rep_Item (Ritem);
                   end loop;
                end;
-
-               Uninstall_Discriminants_And_Pop_Scope (E);
             end if;
 
             --  If an incomplete type is still not frozen, this may be a
@@ -2249,23 +2241,7 @@ package body Freeze is
 
       procedure Add_To_Result (Fnod : Node_Id) is
       begin
-         --  The Ghost mode of the enclosing context is ignored, while the
-         --  entity being frozen is living. Insert the freezing action prior
-         --  to the start of the enclosing ignored Ghost region. As a result
-         --  the freezeing action will be preserved when the ignored Ghost
-         --  context is eliminated.
-
-         if Saved_GM = Ignore
-           and then Ghost_Mode /= Ignore
-           and then Present (Ignored_Ghost_Region)
-         then
-            Insert_Action (Ignored_Ghost_Region, Fnod);
-
-         --  Otherwise add the freezing action to the result list
-
-         else
-            Append_New_To (Result, Fnod);
-         end if;
+         Append_New_To (Result, Fnod);
       end Add_To_Result;
 
       ----------------------------
@@ -3211,8 +3187,13 @@ package body Freeze is
          --  length of the array, or its corresponding attribute.
 
          procedure Check_Pragma_Thread_Local_Storage (Var_Id : Entity_Id);
-         --  Ensure that the initialization state of variable Var_Id subject to
-         --  pragma Thread_Local_Storage satisfies the semantics of the pragma.
+         --  Ensure that the initialization state of variable Var_Id subject
+         --  to pragma Thread_Local_Storage agrees with the semantics of the
+         --  pragma.
+
+         function Has_Default_Initialization
+           (Obj_Id : Entity_Id) return Boolean;
+         --  Determine whether object Obj_Id default initialized
 
          -------------------------------
          -- Check_Large_Modular_Array --
@@ -3298,52 +3279,116 @@ package body Freeze is
          ---------------------------------------
 
          procedure Check_Pragma_Thread_Local_Storage (Var_Id : Entity_Id) is
-            Decl : constant Node_Id := Declaration_Node (Var_Id);
-            Expr : constant Node_Id := Expression (Decl);
+            function Has_Incompatible_Initialization
+              (Var_Decl : Node_Id) return Boolean;
+            --  Determine whether variable Var_Id with declaration Var_Decl is
+            --  initialized with a value that violates the semantics of pragma
+            --  Thread_Local_Storage.
+
+            -------------------------------------
+            -- Has_Incompatible_Initialization --
+            -------------------------------------
+
+            function Has_Incompatible_Initialization
+              (Var_Decl : Node_Id) return Boolean
+            is
+               Init_Expr : constant Node_Id := Expression (Var_Decl);
+
+            begin
+               --  The variable is default-initialized. This directly violates
+               --  the semantics of the pragma.
+
+               if Has_Default_Initialization (Var_Id) then
+                  return True;
+
+               --  The variable has explicit initialization. In this case only
+               --  a handful of values satisfy the semantics of the pragma.
+
+               elsif Has_Init_Expression (Var_Decl)
+                 and then Present (Init_Expr)
+               then
+                  --  "null" is a legal form of initialization
+
+                  if Nkind (Init_Expr) = N_Null then
+                     return False;
+
+                  --  A static expression is a legal form of initialization
+
+                  elsif Is_Static_Expression (Init_Expr) then
+                     return False;
+
+                  --  A static aggregate is a legal form of initialization
+
+                  elsif Nkind (Init_Expr) = N_Aggregate
+                    and then Compile_Time_Known_Aggregate (Init_Expr)
+                  then
+                     return False;
+
+                  --  All other initialization expressions violate the semantic
+                  --  of the pragma.
+
+                  else
+                     return True;
+                  end if;
+
+               --  The variable lacks any kind of initialization, which agrees
+               --  with the semantics of the pragma.
+
+               else
+                  return False;
+               end if;
+            end Has_Incompatible_Initialization;
+
+            --  Local declarations
+
+            Var_Decl : constant Node_Id := Declaration_Node (Var_Id);
+
+         --  Start of processing for Check_Pragma_Thread_Local_Storage
 
          begin
-            --  A variable whose initialization is suppressed lacks default
+            --  A variable whose initialization is suppressed lacks any kind of
             --  initialization.
 
             if Suppress_Initialization (Var_Id) then
                null;
 
-            --  The variable has some form of initialization. Check whether it
-            --  is compatible with the semantics of the pragma.
+            --  The variable has default initialization, or is explicitly
+            --  initialized to a value other than null, static expression,
+            --  or a static aggregate.
 
-            elsif Has_Init_Expression (Decl)
-              and then Present (Expr)
-              and then
-
-               --  The variable is initialized with "null"
-
-                (Nkind (Expr) = N_Null
-                   or else
-
-               --  The variable is initialized with a static constant
-
-                 Is_OK_Static_Expression (Expr)
-                   or else
-
-               --  The variable is initialized with a static aggregate
-
-                (Nkind (Expr) = N_Aggregate
-                   and then Compile_Time_Known_Aggregate (Expr)))
-            then
-               null;
-
-            --  Otherwise the initialization of the variable violates the
-            --  semantics of pragma Thread_Local_Storage.
-
-            else
+            elsif Has_Incompatible_Initialization (Var_Decl) then
                Error_Msg_NE
                  ("Thread_Local_Storage variable& is improperly initialized",
-                  Decl, Var_Id);
+                  Var_Decl, Var_Id);
                Error_Msg_NE
                  ("\only allowed initialization is explicit NULL, static "
-                  & "expression or static aggregate", Decl, Var_Id);
+                  & "expression or static aggregate", Var_Decl, Var_Id);
             end if;
          end Check_Pragma_Thread_Local_Storage;
+
+         --------------------------------
+         -- Has_Default_Initialization --
+         --------------------------------
+
+         function Has_Default_Initialization
+           (Obj_Id : Entity_Id) return Boolean
+         is
+            Obj_Decl : constant Node_Id   := Declaration_Node (Obj_Id);
+            Obj_Typ  : constant Entity_Id := Etype (Obj_Id);
+
+         begin
+            return
+              Comes_From_Source (Obj_Id)
+                and then not Is_Imported (Obj_Id)
+                and then not Has_Init_Expression (Obj_Decl)
+                and then
+                  ((Has_Non_Null_Base_Init_Proc (Obj_Typ)
+                     and then not No_Initialization (Obj_Decl)
+                     and then not Initialization_Suppressed (Obj_Typ))
+                   or else
+                     (Needs_Simple_Initialization (Obj_Typ)
+                       and then not Is_Internal (Obj_Id)));
+         end Has_Default_Initialization;
 
          --  Local variables
 
@@ -3462,17 +3507,7 @@ package body Freeze is
          if Ekind (E) = E_Constant and then Present (Full_View (E)) then
             null;
 
-         elsif Comes_From_Source (E)
-           and then not Is_Imported (E)
-           and then not Has_Init_Expression (Declaration_Node (E))
-           and then
-             ((Has_Non_Null_Base_Init_Proc (Typ)
-                and then not No_Initialization (Declaration_Node (E))
-                and then not Initialization_Suppressed (Typ))
-              or else
-                (Needs_Simple_Initialization (Typ)
-                  and then not Is_Internal (E)))
-         then
+         elsif Has_Default_Initialization (E) then
             Check_Restriction
               (No_Default_Initialization, Declaration_Node (E));
          end if;
@@ -5303,6 +5338,7 @@ package body Freeze is
 
       if Is_Itype (E) and then Is_Record_Type (Scope (E)) then
          Test_E := Scope (E);
+
       elsif Is_Itype (E) and then Present (Underlying_Type (Scope (E)))
         and then Is_Record_Type (Underlying_Type (Scope (E)))
       then
@@ -5584,8 +5620,8 @@ package body Freeze is
          --  Here for other than a subprogram or type
 
          else
-            --  If entity has a type, and it is not a generic unit, then
-            --  freeze it first (RM 13.14(10)).
+            --  If entity has a type, and it is not a generic unit, then freeze
+            --  it first (RM 13.14(10)).
 
             if Present (Etype (E))
               and then Ekind (E) /= E_Generic_Function
@@ -5605,7 +5641,7 @@ package body Freeze is
                  and then Has_Delayed_Aspects (E)
                then
                   Set_Has_Delayed_Aspects (E, False);
-                  Set_Has_Delayed_Freeze (E, False);
+                  Set_Has_Delayed_Freeze  (E, False);
                   Set_Freeze_Node (E, Empty);
                end if;
             end if;
@@ -6239,13 +6275,34 @@ package body Freeze is
 
                goto Leave;
 
-            --  Case of no full view present. If entity is derived or subtype,
+            --  Case of no full view present. If entity is subtype or derived,
             --  it is safe to freeze, correctness depends on the frozen status
             --  of parent. Otherwise it is either premature usage, or a Taft
             --  amendment type, so diagnosis is at the point of use and the
             --  type might be frozen later.
 
-            elsif E /= Base_Type (E) or else Is_Derived_Type (E) then
+            elsif E /= Base_Type (E) then
+               declare
+                  Btyp : constant Entity_Id := Base_Type (E);
+
+               begin
+                  --  However, if the base type is itself private and has no
+                  --  (underlying) full view either, wait until the full type
+                  --  declaration is seen and all the full views are created.
+
+                  if Is_Private_Type (Btyp)
+                    and then No (Full_View (Btyp))
+                    and then No (Underlying_Full_View (Btyp))
+                    and then Has_Delayed_Freeze (Btyp)
+                    and then No (Freeze_Node (Btyp))
+                  then
+                     Set_Is_Frozen (E, False);
+                     Result := No_List;
+                     goto Leave;
+                  end if;
+               end;
+
+            elsif Is_Derived_Type (E) then
                null;
 
             else
@@ -6897,18 +6954,35 @@ package body Freeze is
 
       Check_Debug_Info_Needed (E);
 
-      --  Special handling for subprograms
+      --  If subprogram has address clause then reset Is_Public flag, since we
+      --  do not want the backend to generate external references.
 
-      if Is_Subprogram (E) then
+      if Is_Subprogram (E)
+        and then Present (Address_Clause (E))
+        and then not Is_Library_Level_Entity (E)
+      then
+         Set_Is_Public (E, False);
+      end if;
 
-         --  If subprogram has address clause then reset Is_Public flag, since
-         --  we do not want the backend to generate external references.
+      --  The Ghost mode of the enclosing context is ignored, while the
+      --  entity being frozen is living. Insert the freezing action prior
+      --  to the start of the enclosing ignored Ghost region. As a result
+      --  the freezeing action will be preserved when the ignored Ghost
+      --  context is eliminated. The insertion must take place even when
+      --  the context is a spec expression, otherwise "Handling of Default
+      --  and Per-Object Expressions" will suppress the insertion, and the
+      --  freeze node will be dropped on the floor.
 
-         if Present (Address_Clause (E))
-           and then not Is_Library_Level_Entity (E)
-         then
-            Set_Is_Public (E, False);
-         end if;
+      if Saved_GM = Ignore
+        and then Ghost_Mode /= Ignore
+        and then Present (Ignored_Ghost_Region)
+      then
+         Insert_Actions
+           (Assoc_Node   => Ignored_Ghost_Region,
+            Ins_Actions  => Result,
+            Spec_Expr_OK => True);
+
+         Result := No_List;
       end if;
 
    <<Leave>>

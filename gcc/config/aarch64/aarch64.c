@@ -681,6 +681,7 @@ static const struct tune_params generic_tunings =
   &generic_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost  */
   2, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC), /* fusible_ops  */
@@ -706,6 +707,7 @@ static const struct tune_params cortexa35_tunings =
   &generic_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost  */
   1, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
@@ -732,6 +734,7 @@ static const struct tune_params cortexa53_tunings =
   &generic_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost  */
   2, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
@@ -758,6 +761,7 @@ static const struct tune_params cortexa57_tunings =
   &cortexa57_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost  */
   3, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
@@ -784,6 +788,7 @@ static const struct tune_params cortexa72_tunings =
   &cortexa57_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost  */
   3, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
@@ -810,6 +815,7 @@ static const struct tune_params cortexa73_tunings =
   &cortexa57_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost.  */
   2, /* issue_rate.  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
@@ -838,6 +844,7 @@ static const struct tune_params exynosm1_tunings =
   &exynosm1_vector_cost,
   &generic_branch_cost,
   &exynosm1_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   4,	/* memmov_cost  */
   3,	/* issue_rate  */
   (AARCH64_FUSE_AES_AESMC), /* fusible_ops  */
@@ -863,6 +870,7 @@ static const struct tune_params thunderxt88_tunings =
   &thunderx_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   6, /* memmov_cost  */
   2, /* issue_rate  */
   AARCH64_FUSE_CMP_BRANCH, /* fusible_ops  */
@@ -888,6 +896,7 @@ static const struct tune_params thunderx_tunings =
   &thunderx_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   6, /* memmov_cost  */
   2, /* issue_rate  */
   AARCH64_FUSE_CMP_BRANCH, /* fusible_ops  */
@@ -914,6 +923,7 @@ static const struct tune_params tsv110_tunings =
   &tsv110_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   4,    /* memmov_cost  */
   4,    /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH
@@ -940,6 +950,7 @@ static const struct tune_params xgene1_tunings =
   &xgene1_vector_cost,
   &generic_branch_cost,
   &xgene1_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   6, /* memmov_cost  */
   4, /* issue_rate  */
   AARCH64_FUSE_NOTHING, /* fusible_ops  */
@@ -965,6 +976,7 @@ static const struct tune_params emag_tunings =
   &xgene1_vector_cost,
   &generic_branch_cost,
   &xgene1_approx_modes,
+  SVE_NOT_IMPLEMENTED,
   6, /* memmov_cost  */
   4, /* issue_rate  */
   AARCH64_FUSE_NOTHING, /* fusible_ops  */
@@ -990,6 +1002,7 @@ static const struct tune_params qdf24xx_tunings =
   &qdf24xx_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost  */
   4, /* issue_rate  */
   (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
@@ -1018,6 +1031,7 @@ static const struct tune_params saphira_tunings =
   &generic_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost  */
   4, /* issue_rate  */
   (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
@@ -1044,6 +1058,7 @@ static const struct tune_params thunderx2t99_tunings =
   &thunderx2t99_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost.  */
   4, /* issue_rate.  */
   (AARCH64_FUSE_CMP_BRANCH | AARCH64_FUSE_AES_AESMC
@@ -1071,12 +1086,14 @@ struct aarch64_tuning_override_function
 
 static void aarch64_parse_fuse_string (const char*, struct tune_params*);
 static void aarch64_parse_tune_string (const char*, struct tune_params*);
+static void aarch64_parse_sve_width_string (const char*, struct tune_params*);
 
 static const struct aarch64_tuning_override_function
 aarch64_tuning_override_functions[] =
 {
   { "fuse", aarch64_parse_fuse_string },
   { "tune", aarch64_parse_tune_string },
+  { "sve_width", aarch64_parse_sve_width_string },
   { NULL, NULL }
 };
 
@@ -1123,6 +1140,15 @@ static const struct processor *selected_tune;
 
 /* The current tuning set.  */
 struct tune_params aarch64_tune_params = generic_tunings;
+
+/* Table of machine attributes.  */
+static const struct attribute_spec aarch64_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "aarch64_vector_pcs", 0, 0, false, true,  true,  false, NULL, NULL },
+  { NULL,                 0, 0, false, false, false, false, NULL, NULL }
+};
 
 #define AARCH64_CPU_DEFAULT_FLAGS ((selected_cpu) ? selected_cpu->flags : 0)
 
@@ -1504,6 +1530,39 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
     }
 
   return false;
+}
+
+/* Return true if this is a definition of a vectorized simd function.  */
+
+static bool
+aarch64_simd_decl_p (tree fndecl)
+{
+  tree fntype;
+
+  if (fndecl == NULL)
+    return false;
+  fntype = TREE_TYPE (fndecl);
+  if (fntype == NULL)
+    return false;
+
+  /* Functions with the aarch64_vector_pcs attribute use the simd ABI.  */
+  if (lookup_attribute ("aarch64_vector_pcs", TYPE_ATTRIBUTES (fntype)) != NULL)
+    return true;
+
+  return false;
+}
+
+/* Return the mode a register save/restore should use.  DImode for integer
+   registers, DFmode for FP registers in non-SIMD functions (they only save
+   the bottom half of a 128 bit register), or TFmode for FP registers in
+   SIMD functions.  */
+
+static machine_mode
+aarch64_reg_save_mode (tree fndecl, unsigned regno)
+{
+  return GP_REGNUM_P (regno)
+	   ? E_DImode
+	   : (aarch64_simd_decl_p (fndecl) ? E_TFmode : E_DFmode);
 }
 
 /* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  The callee only saves
@@ -3332,7 +3391,9 @@ static bool
 aarch64_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
 				 tree exp ATTRIBUTE_UNUSED)
 {
-  /* Currently, always true.  */
+  if (aarch64_simd_decl_p (cfun->decl) != aarch64_simd_decl_p (decl))
+    return false;
+
   return true;
 }
 
@@ -3896,8 +3957,8 @@ aarch64_libgcc_cmp_return_mode (void)
 #endif
 
 /* The pair of scratch registers used for stack probing.  */
-#define PROBE_STACK_FIRST_REG  9
-#define PROBE_STACK_SECOND_REG 10
+#define PROBE_STACK_FIRST_REG  R9_REGNUM
+#define PROBE_STACK_SECOND_REG R10_REGNUM
 
 /* Emit code to probe a range of stack addresses from FIRST to FIRST+POLY_SIZE,
    inclusive.  These are offsets from the current stack pointer.  */
@@ -4193,6 +4254,7 @@ aarch64_layout_frame (void)
 {
   HOST_WIDE_INT offset = 0;
   int regno, last_fp_reg = INVALID_REGNUM;
+  bool simd_function = aarch64_simd_decl_p (cfun->decl);
 
   cfun->machine->frame.emit_frame_chain = aarch64_needs_frame_chain ();
 
@@ -4205,6 +4267,17 @@ aarch64_layout_frame (void)
 
   cfun->machine->frame.wb_candidate1 = INVALID_REGNUM;
   cfun->machine->frame.wb_candidate2 = INVALID_REGNUM;
+
+  /* If this is a non-leaf simd function with calls we assume that
+     at least one of those calls is to a non-simd function and thus
+     we must save V8 to V23 in the prologue.  */
+
+  if (simd_function && !crtl->is_leaf)
+    {
+      for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
+	if (FP_SIMD_SAVED_REGNUM_P (regno))
+ 	  df_set_regs_ever_live (regno, true);
+    }
 
   /* First mark all the registers that really need to be saved...  */
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
@@ -4228,7 +4301,8 @@ aarch64_layout_frame (void)
 
   for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
     if (df_regs_ever_live_p (regno)
-	&& !call_used_regs[regno])
+	&& (!call_used_regs[regno]
+	    || (simd_function && FP_SIMD_SAVED_REGNUM_P (regno))))
       {
 	cfun->machine->frame.reg_offset[regno] = SLOT_REQUIRED;
 	last_fp_reg = regno;
@@ -4270,7 +4344,10 @@ aarch64_layout_frame (void)
       {
 	/* If there is an alignment gap between integer and fp callee-saves,
 	   allocate the last fp register to it if possible.  */
-	if (regno == last_fp_reg && has_align_gap && (offset & 8) == 0)
+	if (regno == last_fp_reg
+	    && has_align_gap
+	    && !simd_function
+	    && (offset & 8) == 0)
 	  {
 	    cfun->machine->frame.reg_offset[regno] = max_int_offset;
 	    break;
@@ -4282,7 +4359,7 @@ aarch64_layout_frame (void)
 	else if (cfun->machine->frame.wb_candidate2 == INVALID_REGNUM
 		 && cfun->machine->frame.wb_candidate1 >= V0_REGNUM)
 	  cfun->machine->frame.wb_candidate2 = regno;
-	offset += UNITS_PER_WORD;
+	offset += simd_function ? UNITS_PER_VREG : UNITS_PER_WORD;
       }
 
   offset = ROUND_UP (offset, STACK_BOUNDARY / BITS_PER_UNIT);
@@ -4425,6 +4502,10 @@ aarch64_gen_storewb_pair (machine_mode mode, rtx base, rtx reg, rtx reg2,
       return gen_storewb_pairdf_di (base, base, reg, reg2,
 				    GEN_INT (-adjustment),
 				    GEN_INT (UNITS_PER_WORD - adjustment));
+    case E_TFmode:
+      return gen_storewb_pairtf_di (base, base, reg, reg2,
+				    GEN_INT (-adjustment),
+				    GEN_INT (UNITS_PER_VREG - adjustment));
     default:
       gcc_unreachable ();
     }
@@ -4437,7 +4518,7 @@ static void
 aarch64_push_regs (unsigned regno1, unsigned regno2, HOST_WIDE_INT adjustment)
 {
   rtx_insn *insn;
-  machine_mode mode = (regno1 <= R30_REGNUM) ? E_DImode : E_DFmode;
+  machine_mode mode = aarch64_reg_save_mode (cfun->decl, regno1);
 
   if (regno2 == INVALID_REGNUM)
     return aarch64_pushwb_single_reg (mode, regno1, adjustment);
@@ -4467,6 +4548,9 @@ aarch64_gen_loadwb_pair (machine_mode mode, rtx base, rtx reg, rtx reg2,
     case E_DFmode:
       return gen_loadwb_pairdf_di (base, base, reg, reg2, GEN_INT (adjustment),
 				   GEN_INT (UNITS_PER_WORD));
+    case E_TFmode:
+      return gen_loadwb_pairtf_di (base, base, reg, reg2, GEN_INT (adjustment),
+				   GEN_INT (UNITS_PER_VREG));
     default:
       gcc_unreachable ();
     }
@@ -4480,7 +4564,7 @@ static void
 aarch64_pop_regs (unsigned regno1, unsigned regno2, HOST_WIDE_INT adjustment,
 		  rtx *cfi_ops)
 {
-  machine_mode mode = (regno1 <= R30_REGNUM) ? E_DImode : E_DFmode;
+  machine_mode mode = aarch64_reg_save_mode (cfun->decl, regno1);
   rtx reg1 = gen_rtx_REG (mode, regno1);
 
   *cfi_ops = alloc_reg_note (REG_CFA_RESTORE, reg1, *cfi_ops);
@@ -4515,6 +4599,9 @@ aarch64_gen_store_pair (machine_mode mode, rtx mem1, rtx reg1, rtx mem2,
     case E_DFmode:
       return gen_store_pair_dw_dfdf (mem1, reg1, mem2, reg2);
 
+    case E_TFmode:
+      return gen_store_pair_dw_tftf (mem1, reg1, mem2, reg2);
+
     default:
       gcc_unreachable ();
     }
@@ -4534,6 +4621,9 @@ aarch64_gen_load_pair (machine_mode mode, rtx reg1, rtx mem1, rtx reg2,
 
     case E_DFmode:
       return gen_load_pair_dw_dfdf (reg1, mem1, reg2, mem2);
+
+    case E_TFmode:
+      return gen_load_pair_dw_tftf (reg1, mem1, reg2, mem2);
 
     default:
       gcc_unreachable ();
@@ -4574,6 +4664,7 @@ aarch64_save_callee_saves (machine_mode mode, poly_int64 start_offset,
     {
       rtx reg, mem;
       poly_int64 offset;
+      int offset_diff;
 
       if (skip_wb
 	  && (regno == cfun->machine->frame.wb_candidate1
@@ -4589,12 +4680,12 @@ aarch64_save_callee_saves (machine_mode mode, poly_int64 start_offset,
 						offset));
 
       regno2 = aarch64_next_callee_save (regno + 1, limit);
+      offset_diff = cfun->machine->frame.reg_offset[regno2]
+		    - cfun->machine->frame.reg_offset[regno];
 
       if (regno2 <= limit
 	  && !cfun->machine->reg_is_wrapped_separately[regno2]
-	  && ((cfun->machine->frame.reg_offset[regno] + UNITS_PER_WORD)
-	      == cfun->machine->frame.reg_offset[regno2]))
-
+	  && known_eq (GET_MODE_SIZE (mode), offset_diff))
 	{
 	  rtx reg2 = gen_rtx_REG (mode, regno2);
 	  rtx mem2;
@@ -4642,6 +4733,7 @@ aarch64_restore_callee_saves (machine_mode mode,
        continue;
 
       rtx reg, mem;
+      int offset_diff;
 
       if (skip_wb
 	  && (regno == cfun->machine->frame.wb_candidate1
@@ -4653,11 +4745,12 @@ aarch64_restore_callee_saves (machine_mode mode,
       mem = gen_frame_mem (mode, plus_constant (Pmode, base_rtx, offset));
 
       regno2 = aarch64_next_callee_save (regno + 1, limit);
+      offset_diff = cfun->machine->frame.reg_offset[regno2]
+		    - cfun->machine->frame.reg_offset[regno];
 
       if (regno2 <= limit
 	  && !cfun->machine->reg_is_wrapped_separately[regno2]
-	  && ((cfun->machine->frame.reg_offset[regno] + UNITS_PER_WORD)
-	      == cfun->machine->frame.reg_offset[regno2]))
+	  && known_eq (GET_MODE_SIZE (mode), offset_diff))
 	{
 	  rtx reg2 = gen_rtx_REG (mode, regno2);
 	  rtx mem2;
@@ -4791,13 +4884,15 @@ aarch64_components_for_bb (basic_block bb)
   bitmap in = DF_LIVE_IN (bb);
   bitmap gen = &DF_LIVE_BB_INFO (bb)->gen;
   bitmap kill = &DF_LIVE_BB_INFO (bb)->kill;
+  bool simd_function = aarch64_simd_decl_p (cfun->decl);
 
   sbitmap components = sbitmap_alloc (LAST_SAVED_REGNUM + 1);
   bitmap_clear (components);
 
   /* GPRs are used in a bb if they are in the IN, GEN, or KILL sets.  */
   for (unsigned regno = 0; regno <= LAST_SAVED_REGNUM; regno++)
-    if ((!call_used_regs[regno])
+    if ((!call_used_regs[regno]
+	|| (simd_function && FP_SIMD_SAVED_REGNUM_P (regno)))
        && (bitmap_bit_p (in, regno)
 	   || bitmap_bit_p (gen, regno)
 	   || bitmap_bit_p (kill, regno)))
@@ -4868,9 +4963,11 @@ aarch64_process_components (sbitmap components, bool prologue_p)
 
   while (regno != last_regno)
     {
-      /* AAPCS64 section 5.1.2 requires only the bottom 64 bits to be saved
-	 so DFmode for the vector registers is enough.  */
-      machine_mode mode = GP_REGNUM_P (regno) ? E_DImode : E_DFmode;
+      /* AAPCS64 section 5.1.2 requires only the low 64 bits to be saved
+	 so DFmode for the vector registers is enough.  For simd functions
+	 we want to save the low 128 bits.  */
+      machine_mode mode = aarch64_reg_save_mode (cfun->decl, regno);
+      
       rtx reg = gen_rtx_REG (mode, regno);
       poly_int64 offset = cfun->machine->frame.reg_offset[regno];
       if (!frame_pointer_needed)
@@ -4899,6 +4996,7 @@ aarch64_process_components (sbitmap components, bool prologue_p)
 	 mergeable with the current one into a pair.  */
       if (!satisfies_constraint_Ump (mem)
 	  || GP_REGNUM_P (regno) != GP_REGNUM_P (regno2)
+	  || (aarch64_simd_decl_p (cfun->decl) && FP_REGNUM_P (regno))
 	  || maybe_ne ((offset2 - cfun->machine->frame.reg_offset[regno]),
 		       GET_MODE_SIZE (mode)))
 	{
@@ -5214,6 +5312,28 @@ aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
     }
 }
 
+/* Return 1 if the register is used by the epilogue.  We need to say the
+   return register is used, but only after epilogue generation is complete.
+   Note that in the case of sibcalls, the values "used by the epilogue" are
+   considered live at the start of the called function.
+
+   For SIMD functions we need to return 1 for FP registers that are saved and
+   restored by a function but are not zero in call_used_regs.  If we do not do 
+   this optimizations may remove the restore of the register.  */
+
+int
+aarch64_epilogue_uses (int regno)
+{
+  if (epilogue_completed)
+    {
+      if (regno == LR_REGNUM)
+	return 1;
+      if (aarch64_simd_decl_p (cfun->decl) && FP_SIMD_SAVED_REGNUM_P (regno))
+	return 1;
+    }
+  return 0;
+}
+
 /* Add a REG_CFA_EXPRESSION note to INSN to say that register REG
    is saved at BASE + OFFSET.  */
 
@@ -5388,8 +5508,12 @@ aarch64_expand_prologue (void)
 
   aarch64_save_callee_saves (DImode, callee_offset, R0_REGNUM, R30_REGNUM,
 			     callee_adjust != 0 || emit_frame_chain);
-  aarch64_save_callee_saves (DFmode, callee_offset, V0_REGNUM, V31_REGNUM,
-			     callee_adjust != 0 || emit_frame_chain);
+  if (aarch64_simd_decl_p (cfun->decl))
+    aarch64_save_callee_saves (TFmode, callee_offset, V0_REGNUM, V31_REGNUM,
+			       callee_adjust != 0 || emit_frame_chain);
+  else
+    aarch64_save_callee_saves (DFmode, callee_offset, V0_REGNUM, V31_REGNUM,
+			       callee_adjust != 0 || emit_frame_chain);
 
   /* We may need to probe the final adjustment if it is larger than the guard
      that is assumed by the called.  */
@@ -5413,6 +5537,19 @@ aarch64_use_return_insn_p (void)
     return false;
 
   return known_eq (cfun->machine->frame.frame_size, 0);
+}
+
+/* Return false for non-leaf SIMD functions in order to avoid
+   shrink-wrapping them.  Doing this will lose the necessary
+   save/restore of FP registers.  */
+
+bool
+aarch64_use_simple_return_insn_p (void)
+{
+  if (aarch64_simd_decl_p (cfun->decl) && !crtl->is_leaf)
+    return false;
+
+  return true;
 }
 
 /* Generate the epilogue instructions for returning from a function.
@@ -5483,8 +5620,12 @@ aarch64_expand_epilogue (bool for_sibcall)
 
   aarch64_restore_callee_saves (DImode, callee_offset, R0_REGNUM, R30_REGNUM,
 				callee_adjust != 0, &cfi_ops);
-  aarch64_restore_callee_saves (DFmode, callee_offset, V0_REGNUM, V31_REGNUM,
-				callee_adjust != 0, &cfi_ops);
+  if (aarch64_simd_decl_p (cfun->decl))
+    aarch64_restore_callee_saves (TFmode, callee_offset, V0_REGNUM, V31_REGNUM,
+				  callee_adjust != 0, &cfi_ops);
+  else
+    aarch64_restore_callee_saves (DFmode, callee_offset, V0_REGNUM, V31_REGNUM,
+				  callee_adjust != 0, &cfi_ops);
 
   if (need_barrier_p)
     emit_insn (gen_stack_tie (stack_pointer_rtx, stack_pointer_rtx));
@@ -7635,8 +7776,13 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x,
   unsigned int size;
 
   /* Check all addresses are Pmode - including ILP32.  */
-  if (GET_MODE (x) != Pmode)
-    output_operand_lossage ("invalid address mode");
+  if (GET_MODE (x) != Pmode
+      && (!CONST_INT_P (x)
+	  || trunc_int_for_mode (INTVAL (x), Pmode) != INTVAL (x)))
+    {
+      output_operand_lossage ("invalid address mode");
+      return false;
+    }
 
   if (aarch64_classify_address (&addr, x, mode, true, type))
     switch (addr.type)
@@ -10814,6 +10960,37 @@ aarch64_parse_tune_string (const char *tune_string,
 				     "tune=");
 }
 
+/* Parse the sve_width tuning moverride string in TUNE_STRING.
+   Accept the valid SVE vector widths allowed by
+   aarch64_sve_vector_bits_enum and use it to override sve_width
+   in TUNE.  */
+
+static void
+aarch64_parse_sve_width_string (const char *tune_string,
+				struct tune_params *tune)
+{
+  int width = -1;
+
+  int n = sscanf (tune_string, "%d", &width);
+  if (n == EOF)
+    {
+      error ("invalid format for sve_width");
+      return;
+    }
+  switch (width)
+    {
+    case SVE_128:
+    case SVE_256:
+    case SVE_512:
+    case SVE_1024:
+    case SVE_2048:
+      break;
+    default:
+      error ("invalid sve_width value: %d", width);
+    }
+  tune->sve_width = (enum aarch64_sve_vector_bits_enum) width;
+}
+
 /* Parse TOKEN, which has length LENGTH to see if it is a tuning option
    we understand.  If it is, extract the option string and handoff to
    the appropriate function.  */
@@ -11354,6 +11531,10 @@ aarch64_override_options (void)
 
   if (aarch64_tune_string)
     valid_tune = aarch64_validate_mtune (aarch64_tune_string, &selected_tune);
+
+#ifdef SUBTARGET_OVERRIDE_OPTIONS
+  SUBTARGET_OVERRIDE_OPTIONS;
+#endif
 
   /* If the user did not specify a processor, choose the default
      one for them.  This will be the CPU set during configuration using
@@ -17864,6 +18045,25 @@ aarch64_speculation_safe_value (machine_mode mode,
   return result;
 }
 
+/* Implement TARGET_ESTIMATED_POLY_VALUE.
+   Look into the tuning structure for an estimate.
+   VAL.coeffs[1] is multiplied by the number of VQ chunks over the initial
+   Advanced SIMD 128 bits.  */
+
+static HOST_WIDE_INT
+aarch64_estimated_poly_value (poly_int64 val)
+{
+  enum aarch64_sve_vector_bits_enum width_source
+    = aarch64_tune_params.sve_width;
+
+  /* If we still don't have an estimate, use the default.  */
+  if (width_source == SVE_SCALABLE)
+    return default_estimated_poly_value (val);
+
+  HOST_WIDE_INT over_128 = width_source - 128;
+  return val.coeffs[0] + val.coeffs[1] * over_128 / 128;
+}
+
 /* Target-specific selftests.  */
 
 #if CHECKING_P
@@ -18342,6 +18542,12 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_SPECULATION_SAFE_VALUE
 #define TARGET_SPECULATION_SAFE_VALUE aarch64_speculation_safe_value
+
+#undef TARGET_ESTIMATED_POLY_VALUE
+#define TARGET_ESTIMATED_POLY_VALUE aarch64_estimated_poly_value
+
+#undef TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE aarch64_attribute_table
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

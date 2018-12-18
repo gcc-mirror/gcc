@@ -2422,7 +2422,13 @@ build_class_member_access_expr (cp_expr object, tree member,
   {
     tree temp = unary_complex_lvalue (ADDR_EXPR, object);
     if (temp)
-      object = cp_build_fold_indirect_ref (temp);
+      {
+	temp = cp_build_fold_indirect_ref (temp);
+	if (xvalue_p (object) && !xvalue_p (temp))
+	  /* Preserve xvalue kind.  */
+	  temp = move (temp);
+	object = temp;
+      }
   }
 
   /* In [expr.ref], there is an explicit list of the valid choices for
@@ -4007,11 +4013,19 @@ convert_arguments (tree typelist, vec<tree, va_gc> **values, tree fndecl,
 	    {
               if (complain & tf_error)
                 {
+		  location_t loc = EXPR_LOC_OR_LOC (val, input_location);
                   if (fndecl)
-                    error ("parameter %P of %qD has incomplete type %qT",
-                           i, fndecl, type);
+		    {
+		      auto_diagnostic_group d;
+		      error_at (loc,
+				"parameter %P of %qD has incomplete type %qT",
+				i, fndecl, type);
+		      inform (get_fndecl_argument_location (fndecl, i),
+			      "  declared here");
+		    }
                   else
-                    error ("parameter %P has incomplete type %qT", i, type);
+		    error_at (loc, "parameter %P has incomplete type %qT", i,
+			      type);
                 }
 	      parmval = error_mark_node;
 	    }
@@ -7334,8 +7348,21 @@ build_static_cast (tree type, tree oexpr, tsubst_flags_t complain)
     }
 
   if (complain & tf_error)
-    error ("invalid static_cast from type %qT to type %qT",
-           TREE_TYPE (expr), type);
+    {
+      error ("invalid static_cast from type %qT to type %qT",
+	     TREE_TYPE (expr), type);
+      if ((TYPE_PTR_P (type) || TYPE_REF_P (type))
+	  && CLASS_TYPE_P (TREE_TYPE (type))
+	    && !COMPLETE_TYPE_P (TREE_TYPE (type)))
+	inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (TREE_TYPE (type))),
+		"class type %qT is incomplete", TREE_TYPE (type));
+      tree expr_type = TREE_TYPE (expr);
+      if (TYPE_PTR_P (expr_type))
+	expr_type = TREE_TYPE (expr_type);
+      if (CLASS_TYPE_P (expr_type) && !COMPLETE_TYPE_P (expr_type))
+	inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (expr_type)),
+		"class type %qT is incomplete", expr_type);
+    }
   return error_mark_node;
 }
 
@@ -8795,6 +8822,8 @@ convert_for_assignment (tree type, tree rhs,
   tree rhstype;
   enum tree_code coder;
 
+  location_t rhs_loc = EXPR_LOC_OR_LOC (rhs, input_location);
+
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
   if (TREE_CODE (rhs) == NON_LVALUE_EXPR)
     rhs = TREE_OPERAND (rhs, 0);
@@ -8901,7 +8930,7 @@ convert_for_assignment (tree type, tree rhs,
 						   parmnum, complain, flags);
 		}
 	      else if (fndecl)
-		complain_about_bad_argument (cp_expr_location (rhs),
+		complain_about_bad_argument (rhs_loc,
 					     rhstype, type,
 					     fndecl, parmnum);
 	      else
@@ -9068,6 +9097,7 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
 
   if (codel == REFERENCE_TYPE)
     {
+      auto_diagnostic_group d;
       /* This should eventually happen in convert_arguments.  */
       int savew = 0, savee = 0;
 
@@ -9077,9 +9107,8 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
 
       if (fndecl
 	  && (warningcount + werrorcount > savew || errorcount > savee))
-	inform (DECL_SOURCE_LOCATION (fndecl),
+	inform (get_fndecl_argument_location (fndecl, parmnum),
 		"in passing argument %P of %qD", parmnum, fndecl);
-
       return rhs;
     }
 

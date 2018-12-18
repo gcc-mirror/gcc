@@ -1143,8 +1143,11 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
 	  emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
 	  emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
 
-	  emit_move_insn (hard_frame_pointer_rtx, fp);
+	  /* Restore the frame pointer and stack pointer.  We must use a
+	     temporary since the setjmp buffer may be a local.  */
+	  fp = copy_to_reg (fp);
 	  emit_stack_restore (SAVE_NONLOCAL, stack);
+	  emit_move_insn (hard_frame_pointer_rtx, fp);
 
 	  emit_use (hard_frame_pointer_rtx);
 	  emit_use (stack_pointer_rtx);
@@ -1287,9 +1290,11 @@ expand_builtin_nonlocal_goto (tree exp)
       emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
       emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
 
-      /* Restore frame pointer for containing function.  */
-      emit_move_insn (hard_frame_pointer_rtx, r_fp);
+      /* Restore the frame pointer and stack pointer.  We must use a
+	 temporary since the setjmp buffer may be a local.  */
+      r_fp = copy_to_reg (r_fp);
       emit_stack_restore (SAVE_NONLOCAL, r_sp);
+      emit_move_insn (hard_frame_pointer_rtx, r_fp);
 
       /* USE of hard_frame_pointer_rtx added for consistency;
 	 not clear if really needed.  */

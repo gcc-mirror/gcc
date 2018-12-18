@@ -1,3 +1,35 @@
+2018-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/88426
+	* c-convert.c (convert): Call c_fully_fold before calling
+	ubsan_instrument_float_cast.
+
+2018-12-08  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* c-parser (c_parser_asm_statement) [RID_INLINE]: Delete stray line
+	setting "quals".
+
+2018-12-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* c-parser.c (c_parser_asm_statement): Detect the inline keyword
+	after asm.  Pass a flag for it to build_asm_expr.
+	* c-tree.h (build_asm_expr): Update declaration.
+	* c-typeck.c (build_asm_stmt): Add is_inline parameter.  Use it to
+	set ASM_INLINE_P.
+
+2018-12-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR inline-asm/55681
+	* c-parser.c (c_parser_asm_statement): Update grammar.  Allow any
+	combination of volatile and goto, in any order, without repetitions.
+
+2018-12-04  James Norris  <jnorris@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* c-parser.c (c_parser_oacc_wait_list): Remove dead diagnostic
+	code.
+
 2018-11-30  Richard Biener  <rguenther@suse.de>
 
 	* gimple-parser.c (c_parser_gimple_postfix_expression): Parse

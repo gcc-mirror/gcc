@@ -1539,9 +1539,8 @@ nvptx_async_test (int async)
   struct ptx_stream *s;
 
   s = select_stream_for_async (async, pthread_self (), false, NULL);
-
   if (!s)
-    GOMP_PLUGIN_fatal ("unknown async %d", async);
+    return 1;
 
   r = CUDA_CALL_NOCHECK (cuStreamQuery, s->stream);
   if (r == CUDA_SUCCESS)
@@ -1596,7 +1595,7 @@ nvptx_wait (int async)
 
   s = select_stream_for_async (async, pthread_self (), false, NULL);
   if (!s)
-    GOMP_PLUGIN_fatal ("unknown async %d", async);
+    return;
 
   CUDA_CALL_ASSERT (cuStreamSynchronize, s->stream);
 
@@ -1610,16 +1609,17 @@ nvptx_wait_async (int async1, int async2)
   struct ptx_stream *s1, *s2;
   pthread_t self = pthread_self ();
 
+  s1 = select_stream_for_async (async1, self, false, NULL);
+  if (!s1)
+    return;
+
   /* The stream that is waiting (rather than being waited for) doesn't
      necessarily have to exist already.  */
   s2 = select_stream_for_async (async2, self, true, NULL);
 
-  s1 = select_stream_for_async (async1, self, false, NULL);
-  if (!s1)
-    GOMP_PLUGIN_fatal ("invalid async 1\n");
-
+  /* A stream is always synchronized with itself.  */
   if (s1 == s2)
-    GOMP_PLUGIN_fatal ("identical parameters");
+    return;
 
   e = (CUevent *) GOMP_PLUGIN_malloc (sizeof (CUevent));
 
@@ -1753,8 +1753,14 @@ nvptx_set_cuda_stream (int async, void *stream)
   pthread_t self = pthread_self ();
   struct nvptx_thread *nvthd = nvptx_thread ();
 
-  if (async < 0)
-    GOMP_PLUGIN_fatal ("bad async %d", async);
+  /* Due to the "null_stream" usage for "acc_async_sync", this cannot be used
+     to change the stream handle associated with "acc_async_sync".  */
+  if (async == acc_async_sync)
+    {
+      GOMP_PLUGIN_debug (0, "Refusing request to set CUDA stream associated"
+			 " with \"acc_async_sync\"\n");
+      return 0;
+    }
 
   pthread_mutex_lock (&nvthd->ptx_dev->stream_lock);
 

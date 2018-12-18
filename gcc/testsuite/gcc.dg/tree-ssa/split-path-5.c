@@ -1,16 +1,16 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fsplit-paths -fdump-tree-split-paths-details -w" } */
 
-const extern char *__ctype_ptr__;
+const extern signed char *__ctype_ptr__;
 typedef unsigned char uchar;
 static int patlen;
 static int skip[(0x7f * 2 + 1) + 1];
 static uchar *pat = ((void *) 0);
 void
-bmhi_init (const char *pattern)
+bmhi_init (const signed char *pattern)
 {
   int i, lastpatchar;
-  patlen = strlen (pattern);
+  patlen = __builtin_strlen (pattern);
   for (i = 0; i < patlen; i++)
     pat[i] = (
 	       {
@@ -41,4 +41,4 @@ bmhi_init (const char *pattern)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "Duplicating join block" 1 "split-paths" } } */
+/* { dg-final { scan-tree-dump-times "join point for if-convertable half-diamond" 1 "split-paths" } } */

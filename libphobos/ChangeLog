@@ -1,3 +1,12 @@
+2018-12-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/std/internal/digest: Remove empty directory.
+
+2018-12-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.am (AM_MAKEFLAGS): Pass CCASFLAGS, GDCFLAGS.
+	* Makefile.in: Regenerate.
+
 2018-11-28  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* Makefile.in: Rebuild.

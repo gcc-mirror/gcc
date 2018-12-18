@@ -30,6 +30,8 @@ version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
 version (PPC64)   version = PPC_Any;
+version (RISCV32) version = RISCV_Any;
+version (RISCV64) version = RISCV_Any;
 version (S390)    version = IBMZ_Any;
 version (SPARC)   version = SPARC_Any;
 version (SPARC64) version = SPARC_Any;
@@ -153,6 +155,13 @@ else version (CRuntime_Glibc)
         enum int FP_ILOGBNAN      = int.max;
     }
     else version (PPC_Any)
+    {
+        ///
+        enum int FP_ILOGB0        = -int.max;
+        ///
+        enum int FP_ILOGBNAN      = int.max;
+    }
+    else version (RISCV_Any)
     {
         ///
         enum int FP_ILOGB0        = -int.max;

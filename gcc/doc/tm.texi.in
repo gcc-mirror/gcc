@@ -6429,6 +6429,8 @@ If this macro is not defined, nothing special is output at the end of
 the jump-table.
 @end defmac
 
+@hook TARGET_ASM_POST_CFI_STARTPROC
+
 @hook TARGET_ASM_EMIT_UNWIND_LABEL
 
 @hook TARGET_ASM_EMIT_EXCEPT_TABLE_LABEL

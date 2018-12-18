@@ -172,8 +172,13 @@ _mm_packs_pi16 (__m64 __m1, __m64 __m2)
   __vector signed short vm1;
   __vector signed char vresult;
 
-  vm1 = (__vector signed short) (__vector unsigned long long) { __m2, __m1 };
-  vresult = vec_vpkshss (vm1, vm1);
+  vm1 = (__vector signed short) (__vector unsigned long long)
+#ifdef __LITTLE_ENDIAN__
+        { __m1, __m2 };
+#else
+        { __m2, __m1 };
+#endif
+  vresult = vec_packs (vm1, vm1);
   return (__m64) ((__vector long long) vresult)[0];
 }
 
@@ -192,8 +197,13 @@ _mm_packs_pi32 (__m64 __m1, __m64 __m2)
   __vector signed int vm1;
   __vector signed short vresult;
 
-  vm1 = (__vector signed int) (__vector unsigned long long) { __m2, __m1 };
-  vresult = vec_vpkswss (vm1, vm1);
+  vm1 = (__vector signed int) (__vector unsigned long long)
+#ifdef __LITTLE_ENDIAN__
+        { __m1, __m2 };
+#else
+        { __m2, __m1 };
+#endif
+  vresult = vec_packs (vm1, vm1);
   return (__m64) ((__vector long long) vresult)[0];
 }
 
@@ -209,12 +219,19 @@ _m_packssdw (__m64 __m1, __m64 __m2)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_packs_pu16 (__m64 __m1, __m64 __m2)
 {
-  __vector signed short vm1;
-  __vector unsigned char vresult;
-
-  vm1 = (__vector signed short) (__vector unsigned long long) { __m2, __m1 };
-  vresult = vec_vpkshus (vm1, vm1);
-  return (__m64) ((__vector long long) vresult)[0];
+  __vector unsigned char r;
+  __vector signed short vm1 = (__vector signed short) (__vector long long)
+#ifdef __LITTLE_ENDIAN__
+        { __m1, __m2 };
+#else
+        { __m2, __m1 };
+#endif
+  const __vector signed short __zero = { 0 };
+  __vector __bool short __select = vec_cmplt (vm1, __zero);
+  r = vec_packs ((__vector unsigned short) vm1, (__vector unsigned short) vm1);
+  __vector __bool char packsel = vec_pack (__select, __select);
+  r = vec_sel (r, (const __vector unsigned char) __zero, packsel);
+  return (__m64) ((__vector long long) r)[0];
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -235,7 +252,7 @@ _mm_unpackhi_pi8 (__m64 __m1, __m64 __m2)
   a = (__vector unsigned char)vec_splats (__m1);
   b = (__vector unsigned char)vec_splats (__m2);
   c = vec_mergel (a, b);
-  return (__m64) ((__vector long long) c)[0];
+  return (__m64) ((__vector long long) c)[1];
 #else
   __m64_union m1, m2, res;
 
@@ -316,7 +333,7 @@ _mm_unpacklo_pi8 (__m64 __m1, __m64 __m2)
   a = (__vector unsigned char)vec_splats (__m1);
   b = (__vector unsigned char)vec_splats (__m2);
   c = vec_mergel (a, b);
-  return (__m64) ((__vector long long) c)[1];
+  return (__m64) ((__vector long long) c)[0];
 #else
   __m64_union m1, m2, res;
 
@@ -710,7 +727,7 @@ _mm_setzero_si64 (void)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cmpeq_pi8 (__m64 __m1, __m64 __m2)
 {
-#ifdef _ARCH_PWR6
+#if defined(_ARCH_PWR6) && defined(__powerpc64__)
   __m64 res;
   __asm__(
       "cmpb %0,%1,%2;\n"
@@ -1084,8 +1101,13 @@ _mm_mulhi_pi16 (__m64 __m1, __m64 __m2)
   __vector signed short c;
   __vector signed int w0, w1;
   __vector unsigned char xform1 = {
+#ifdef __LITTLE_ENDIAN__
       0x02, 0x03, 0x12, 0x13,  0x06, 0x07, 0x16, 0x17,
       0x0A, 0x0B, 0x1A, 0x1B,  0x0E, 0x0F, 0x1E, 0x1F
+#else
+      0x00, 0x01, 0x10, 0x11,  0x04, 0x05, 0x14, 0x15,
+      0x00, 0x01, 0x10, 0x11,  0x04, 0x05, 0x14, 0x15
+#endif
     };
 
   a = (__vector signed short)vec_splats (__m1);

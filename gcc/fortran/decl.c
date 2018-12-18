@@ -281,6 +281,14 @@ var_element (gfc_data_variable *new_var)
   if (m != MATCH_YES)
     return m;
 
+  if (new_var->expr->expr_type == EXPR_CONSTANT
+      && new_var->expr->symtree == NULL)
+    {
+      gfc_error ("Inquiry parameter cannot appear in a "
+		 "data-stmt-object-list at %C");
+      return MATCH_ERROR;
+    }
+
   sym = new_var->expr->symtree->n.sym;
 
   /* Symbol should already have an associated type.  */
@@ -391,6 +399,14 @@ match_data_constant (gfc_expr **result)
     }
   else if (m == MATCH_YES)
     {
+      /* If a parameter inquiry ends up here, symtree is NULL but **result
+	 contains the right constant expression.  Check here.  */
+      if ((*result)->symtree == NULL
+	  && (*result)->expr_type == EXPR_CONSTANT
+	  && ((*result)->ts.type == BT_INTEGER 
+	      || (*result)->ts.type == BT_REAL))
+	return m;
+
       /* F2018:R845 data-stmt-constant is initial-data-target.
 	 A data-stmt-constant shall be ... initial-data-target if and
 	 only if the corresponding data-stmt-object has the POINTER
@@ -2775,6 +2791,22 @@ variable_decl (int elem)
       else if (param && initializer)
 	param->value = gfc_copy_expr (initializer);
     }
+
+  /* Before adding a possible initilizer, do a simple check for compatibility
+     of lhs and rhs types.  Assigning a REAL value to a derived type is not a
+     good thing.  */
+  if (current_ts.type == BT_DERIVED && initializer
+      && (gfc_numeric_ts (&initializer->ts)
+	  || initializer->ts.type == BT_LOGICAL
+	  || initializer->ts.type == BT_CHARACTER))
+    {
+      gfc_error ("Incompatible initialization between a derived type "
+		 "entity and an entity with %qs type at %C",
+		  gfc_typename (&initializer->ts));
+      m = MATCH_ERROR;
+      goto cleanup;
+    }
+
 
   /* Add the initializer.  Note that it is fine if initializer is
      NULL here, because we sometimes also need to check if a

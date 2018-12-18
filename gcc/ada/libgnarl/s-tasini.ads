@@ -171,7 +171,7 @@ package System.Tasking.Initialization is
    procedure Locked_Abort_To_Level
      (Self_ID : Task_Id;
       T       : Task_Id;
-      L       : ATC_Level);
+      L       : ATC_Level_Base);
    pragma Inline (Locked_Abort_To_Level);
    --  Abort a task to a specified ATC level. Call this only with T locked
 

@@ -669,6 +669,7 @@ package body Sem_Ch7 is
 
       Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
       Saved_IGR  : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_EA   : constant Boolean         := Expander_Active;
       Saved_ISMP : constant Boolean         :=
                      Ignore_SPARK_Mode_Pragmas_In_Instance;
       --  Save the Ghost and SPARK mode-related data to restore on exit
@@ -779,6 +780,18 @@ package body Sem_Ch7 is
       --  expansion are properly flagged as ignored Ghost.
 
       Mark_And_Set_Ghost_Body (N, Spec_Id);
+
+      --  Deactivate expansion inside the body of ignored Ghost entities,
+      --  as this code will ultimately be ignored. This avoids requiring the
+      --  presence of run-time units which are not needed. Only do this for
+      --  user entities, as internally generated entitities might still need
+      --  to be expanded (e.g. those generated for types).
+
+      if Present (Ignored_Ghost_Region)
+        and then Comes_From_Source (Body_Id)
+      then
+         Expander_Active := False;
+      end if;
 
       --  If the body completes the initial declaration of a compilation unit
       --  which is subject to pragma Elaboration_Checks, set the model of the
@@ -1073,6 +1086,10 @@ package body Sem_Ch7 is
          then
             Qualify_Entity_Names (N);
          end if;
+      end if;
+
+      if Present (Ignored_Ghost_Region) then
+         Expander_Active := Saved_EA;
       end if;
 
       Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
@@ -2732,6 +2749,16 @@ package body Sem_Ch7 is
 
             Propagate_Concurrent_Flags (Priv, Base_Type (Full));
          end if;
+
+         --  As explained in Freeze_Entity, private types are required to point
+         --  to the same freeze node as their corresponding full view, if any.
+         --  But we ought not to overwrite a node already inserted in the tree.
+
+         pragma Assert
+           (Serious_Errors_Detected /= 0
+             or else No (Freeze_Node (Priv))
+             or else No (Parent (Freeze_Node (Priv)))
+             or else Freeze_Node (Priv) = Freeze_Node (Full));
 
          Set_Freeze_Node (Priv, Freeze_Node (Full));
 

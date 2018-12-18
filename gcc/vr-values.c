@@ -297,14 +297,48 @@ vr_values::vrp_stmt_computes_nonzero (gimple *stmt)
       && gimple_assign_rhs_code (stmt) == ADDR_EXPR)
     {
       tree expr = gimple_assign_rhs1 (stmt);
-      tree base = get_base_address (TREE_OPERAND (expr, 0));
+      poly_int64 bitsize, bitpos;
+      tree offset;
+      machine_mode mode;
+      int unsignedp, reversep, volatilep;
+      tree base = get_inner_reference (TREE_OPERAND (expr, 0), &bitsize,
+				       &bitpos, &offset, &mode, &unsignedp,
+				       &reversep, &volatilep);
 
       if (base != NULL_TREE
 	  && TREE_CODE (base) == MEM_REF
 	  && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
 	{
-	  value_range *vr = get_value_range (TREE_OPERAND (base, 0));
-	  if (!range_includes_zero_p (vr))
+	  poly_offset_int off = 0;
+	  bool off_cst = false;
+	  if (offset == NULL_TREE || TREE_CODE (offset) == INTEGER_CST)
+	    {
+	      off = mem_ref_offset (base);
+	      if (offset)
+		off += poly_offset_int::from (wi::to_poly_wide (offset),
+					      SIGNED);
+	      off <<= LOG2_BITS_PER_UNIT;
+	      off += bitpos;
+	      off_cst = true;
+	    }
+	  /* If &X->a is equal to X and X is ~[0, 0], the result is too.
+	     For -fdelete-null-pointer-checks -fno-wrapv-pointer we don't
+	     allow going from non-NULL pointer to NULL.  */
+	  if ((off_cst && known_eq (off, 0))
+	      || (flag_delete_null_pointer_checks
+		  && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (expr))))
+	    {
+	      value_range *vr = get_value_range (TREE_OPERAND (base, 0));
+	      if (!range_includes_zero_p (vr))
+		return true;
+	    }
+	  /* If MEM_REF has a "positive" offset, consider it non-NULL
+	     always, for -fdelete-null-pointer-checks also "negative"
+	     ones.  Punt for unknown offsets (e.g. variable ones).  */
+	  if (!TYPE_OVERFLOW_WRAPS (TREE_TYPE (expr))
+	      && off_cst
+	      && known_ne (off, 0)
+	      && (flag_delete_null_pointer_checks || known_gt (off, 0)))
 	    return true;
 	}
     }
@@ -2857,8 +2891,9 @@ vr_values::extract_range_from_phi_node (gphi *phi, value_range *vr_result)
       if (cmp_min < 0)
 	new_min = lhs_vr->min ();
       else if (cmp_min > 0
-	       && tree_int_cst_lt (vrp_val_min (vr_result->type ()),
-				   vr_result->min ()))
+	       && (TREE_CODE (vr_result->min ()) != INTEGER_CST
+		   || tree_int_cst_lt (vrp_val_min (vr_result->type ()),
+				       vr_result->min ())))
 	new_min = int_const_binop (PLUS_EXPR,
 				   vrp_val_min (vr_result->type ()),
 				   build_int_cst (vr_result->type (), 1));
@@ -2867,8 +2902,9 @@ vr_values::extract_range_from_phi_node (gphi *phi, value_range *vr_result)
       if (cmp_max > 0)
 	new_max = lhs_vr->max ();
       else if (cmp_max < 0
-	       && tree_int_cst_lt (vr_result->max (),
-				   vrp_val_max (vr_result->type ())))
+	       && (TREE_CODE (vr_result->max ()) != INTEGER_CST
+		   || tree_int_cst_lt (vr_result->max (),
+				       vrp_val_max (vr_result->type ()))))
 	new_max = int_const_binop (MINUS_EXPR,
 				   vrp_val_max (vr_result->type ()),
 				   build_int_cst (vr_result->type (), 1));

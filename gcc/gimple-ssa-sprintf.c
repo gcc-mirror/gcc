@@ -121,7 +121,9 @@ struct format_result;
 class sprintf_dom_walker : public dom_walker
 {
  public:
-  sprintf_dom_walker () : dom_walker (CDI_DOMINATORS) {}
+  sprintf_dom_walker ()
+    : dom_walker (CDI_DOMINATORS),
+      evrp_range_analyzer (false) {}
   ~sprintf_dom_walker () {}
 
   edge before_dom_children (basic_block) FINAL OVERRIDE;
@@ -3988,6 +3990,7 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
   /* True when the destination size is constant as opposed to the lower
      or upper bound of a range.  */
   bool dstsize_cst_p = true;
+  bool posunder4k = true;
 
   if (idx_dstsize == UINT_MAX)
     {
@@ -4020,11 +4023,20 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
 			    "specified bound %wu exceeds maximum object size "
 			    "%wu",
 			    dstsize, target_size_max () / 2);
+	      /* POSIX requires snprintf to fail if DSTSIZE is greater
+		 than INT_MAX.  Even though not all POSIX implementations
+		 conform to the requirement, avoid folding in this case.  */
+	      posunder4k = false;
 	    }
 	  else if (dstsize > target_int_max ())
-	    warning_at (gimple_location (info.callstmt), info.warnopt (),
-			"specified bound %wu exceeds %<INT_MAX%>",
-			dstsize);
+	    {
+	      warning_at (gimple_location (info.callstmt), info.warnopt (),
+			  "specified bound %wu exceeds %<INT_MAX%>",
+			  dstsize);
+	      /* POSIX requires snprintf to fail if DSTSIZE is greater
+		 than INT_MAX.  Avoid folding in that case.  */
+	      posunder4k = false;
+	    }
 	}
       else if (TREE_CODE (size) == SSA_NAME)
 	{
@@ -4033,9 +4045,29 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
 	     of them at level 2.  */
 	  value_range *vr = evrp_range_analyzer.get_value_range (size);
 	  if (range_int_cst_p (vr))
-	    dstsize = (warn_level < 2
-		       ? TREE_INT_CST_LOW (vr->max ())
-		       : TREE_INT_CST_LOW (vr->min ()));
+	    {
+	      unsigned HOST_WIDE_INT minsize = TREE_INT_CST_LOW (vr->min ());
+	      unsigned HOST_WIDE_INT maxsize = TREE_INT_CST_LOW (vr->max ());
+	      dstsize = warn_level < 2 ? maxsize : minsize;
+
+	      if (minsize > target_int_max ())
+		warning_at (gimple_location (info.callstmt), info.warnopt (),
+			    "specified bound range [%wu, %wu] exceeds "
+			    "%<INT_MAX%>",
+			    minsize, maxsize);
+
+	      /* POSIX requires snprintf to fail if DSTSIZE is greater
+		 than INT_MAX.  Avoid folding if that's possible.  */
+	      if (maxsize > target_int_max ())
+		posunder4k = false;
+	    }
+	  else if (vr->varying_p ())
+	    {
+	      /* POSIX requires snprintf to fail if DSTSIZE is greater
+		 than INT_MAX.  Since SIZE's range is unknown, avoid
+		 folding.  */
+	      posunder4k = false;
+	    }
 
 	  /* The destination size is not constant.  If the function is
 	     bounded (e.g., snprintf) a lower bound of zero doesn't
@@ -4120,7 +4152,7 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
      directive.  Clear POSUNDER4K for the former set of functions and set
      it to true for the latter (it can only be cleared later, but it is
      never set to true again).  */
-  res.posunder4k = dstptr;
+  res.posunder4k = posunder4k && dstptr;
 
   bool success = compute_format_length (info, &res);
   if (res.warned)

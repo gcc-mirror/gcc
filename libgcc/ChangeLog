@@ -1,3 +1,17 @@
+2018-12-18  Wei Xiao  <wei3.xiao@intel.com>
+
+	* config/i386/cpuinfo.c (get_intel_cpu): Handle cascadelake.
+	* config/i386/cpuinfo.h: Add INTEL_COREI7_CASCADELAKE.
+
+2018-12-12  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config/rs6000/tramp.S (__trampoline_setup): Also emit .size
+	and .cfi_endproc directives for VxWorks targets.
+
+2018-12-05  Paul Koning  <ni1d@arrl.net>
+
+	* udivmodhi4.c (__udivmodhi4): Fix loop end check.
+
 2018-11-27  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/morestack.S (__stack_split_initialize),

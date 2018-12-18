@@ -81,6 +81,11 @@
 #define WORKAROUND_PTXJIT_BUG_2 1
 #define WORKAROUND_PTXJIT_BUG_3 1
 
+#define PTX_WARP_SIZE 32
+#define PTX_VECTOR_LENGTH 32
+#define PTX_WORKER_LENGTH 32
+#define PTX_DEFAULT_RUNTIME_DIM 0 /* Defer to runtime.  */
+
 /* The various PTX memory areas an object might reside in.  */
 enum nvptx_data_area
 {
@@ -4224,7 +4229,7 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
 	    pred = gen_reg_rtx (BImode);
 	    cfun->machine->axis_predicate[mode - GOMP_DIM_WORKER] = pred;
 	  }
-	
+
 	rtx br;
 	if (mode == GOMP_DIM_VECTOR)
 	  br = gen_br_true (pred, label);
@@ -4554,7 +4559,7 @@ nvptx_neuter_pars (parallel *par, unsigned modes, unsigned outer)
     }
 
   if (skip_mask)
-      nvptx_skip_par (skip_mask, par);
+    nvptx_skip_par (skip_mask, par);
   
   if (par->next)
     nvptx_neuter_pars (par->next, modes, outer);
@@ -5164,18 +5169,13 @@ nvptx_expand_builtin (tree exp, rtx target, rtx ARG_UNUSED (subtarget),
     default: gcc_unreachable ();
     }
 }
-
-/* Define dimension sizes for known hardware.  */
-#define PTX_VECTOR_LENGTH 32
-#define PTX_WORKER_LENGTH 32
-#define PTX_DEFAULT_RUNTIME_DIM 0 /* Defer to runtime.  */
 
 /* Implement TARGET_SIMT_VF target hook: number of threads in a warp.  */
 
 static int
 nvptx_simt_vf ()
 {
-  return PTX_VECTOR_LENGTH;
+  return PTX_WARP_SIZE;
 }
 
 /* Validate compute dimensions of an OpenACC offload or routine, fill
@@ -5187,13 +5187,75 @@ static bool
 nvptx_goacc_validate_dims (tree decl, int dims[], int fn_level)
 {
   bool changed = false;
+  bool oacc_default_dims_p = false;
+  bool oacc_min_dims_p = false;
+  bool offload_region_p = false;
+  bool routine_p = false;
+  bool routine_seq_p = false;
+
+  if (decl == NULL_TREE)
+    {
+      if (fn_level == -1)
+	oacc_default_dims_p = true;
+      else if (fn_level == -2)
+	oacc_min_dims_p = true;
+      else
+	gcc_unreachable ();
+    }
+  else if (fn_level == -1)
+    offload_region_p = true;
+  else if (0 <= fn_level && fn_level <= GOMP_DIM_MAX)
+    {
+      routine_p = true;
+      routine_seq_p = fn_level == GOMP_DIM_MAX;
+    }
+  else
+    gcc_unreachable ();
+
+  if (routine_p)
+    {
+      /* OpenACC routines in C arrive here with the following attributes
+	 (omitting the 'omp declare target'):
+	 seq   : __attribute__((oacc function (0 1, 0 1, 0 1)))
+	 vector: __attribute__((oacc function (0 1, 0 1, 1 0)))
+	 worker: __attribute__((oacc function (0 1, 1 0, 1 0)))
+	 gang  : __attribute__((oacc function (1 0, 1 0, 1 0)))
+
+	 If we take f.i. the oacc function attribute of the worker routine
+	 (0 1, 1 0, 1 0), then:
+	 - the slice (0, 1, 1) is interpreted by oacc_fn_attrib_level as
+	   meaning: worker routine, that is:
+	   - can't contain gang loop (0),
+	   - can contain worker loop (1),
+	   - can contain vector loop (1).
+	 - the slice (1, 0, 0) is interpreted by oacc_validate_dims as the
+	 dimensions: gang: 1, worker: 0, vector: 0.
+
+	 OTOH, routines in Fortran arrive here with these attributes:
+	 seq   : __attribute__((oacc function (0 0, 0 0, 0 0)))
+	 vector: __attribute__((oacc function (0 0, 0 0, 1 0)))
+	 worker: __attribute__((oacc function (0 0, 1 0, 1 0)))
+	 gang  : __attribute__((oacc function (1 0, 1 0, 1 0)))
+	 that is, the same as for C but with the dimensions set to 0.
+
+	 This is due to a bug in the Fortran front-end: PR72741.  Work around
+	 this bug by forcing the dimensions to be the same in Fortran as for C,
+	 to be able to handle C and Fortran routines uniformly in this
+	 function.  */
+      dims[GOMP_DIM_VECTOR] = fn_level > GOMP_DIM_VECTOR ? 1 : 0;
+      dims[GOMP_DIM_WORKER] = fn_level > GOMP_DIM_WORKER ? 1 : 0;
+      dims[GOMP_DIM_GANG] = fn_level > GOMP_DIM_GANG ? 1 : 0;
+      changed = true;
+    }
 
   /* The vector size must be 32, unless this is a SEQ routine.  */
-  if (fn_level <= GOMP_DIM_VECTOR && fn_level >= -1
+  if ((offload_region_p || oacc_default_dims_p
+       || (routine_p && !routine_seq_p))
       && dims[GOMP_DIM_VECTOR] >= 0
       && dims[GOMP_DIM_VECTOR] != PTX_VECTOR_LENGTH)
     {
-      if (fn_level < 0 && dims[GOMP_DIM_VECTOR] >= 0)
+      if ((offload_region_p || oacc_default_dims_p)
+	  && dims[GOMP_DIM_VECTOR] >= 0)
 	warning_at (decl ? DECL_SOURCE_LOCATION (decl) : UNKNOWN_LOCATION, 0,
 		    dims[GOMP_DIM_VECTOR]
 		    ? G_("using vector_length (%d), ignoring %d")
@@ -5213,7 +5275,7 @@ nvptx_goacc_validate_dims (tree decl, int dims[], int fn_level)
       changed = true;
     }
 
-  if (!decl)
+  if (oacc_default_dims_p || oacc_min_dims_p)
     {
       dims[GOMP_DIM_VECTOR] = PTX_VECTOR_LENGTH;
       if (dims[GOMP_DIM_WORKER] < 0)

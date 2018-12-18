@@ -1,3 +1,9 @@
+2018-12-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* runtime/offload.h (omp_target_is_present, omp_target_memcpy)
+	(omp_target_memcpy_rect, omp_target_associate_ptr)
+	(omp_target_disassociate_ptr): Adjust to libgomp changes.
+
 2018-10-31  Joseph Myers  <joseph@codesourcery.com>
 
 	PR bootstrap/82856

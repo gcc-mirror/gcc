@@ -603,6 +603,7 @@ WINDRES_FOR_TARGET
 STRIP_FOR_TARGET
 READELF_FOR_TARGET
 RANLIB_FOR_TARGET
+OTOOL_FOR_TARGET
 OBJDUMP_FOR_TARGET
 OBJCOPY_FOR_TARGET
 NM_FOR_TARGET
@@ -618,6 +619,7 @@ GCC_FOR_TARGET
 CXX_FOR_TARGET
 CC_FOR_TARGET
 READELF
+OTOOL
 OBJDUMP
 OBJCOPY
 WINDMC
@@ -857,6 +859,7 @@ WINDRES
 WINDMC
 OBJCOPY
 OBJDUMP
+OTOOL
 READELF
 CC_FOR_TARGET
 CXX_FOR_TARGET
@@ -872,6 +875,7 @@ LIPO_FOR_TARGET
 NM_FOR_TARGET
 OBJCOPY_FOR_TARGET
 OBJDUMP_FOR_TARGET
+OTOOL_FOR_TARGET
 RANLIB_FOR_TARGET
 READELF_FOR_TARGET
 STRIP_FOR_TARGET
@@ -1635,6 +1639,7 @@ Some influential environment variables:
   WINDMC      WINDMC for the host
   OBJCOPY     OBJCOPY for the host
   OBJDUMP     OBJDUMP for the host
+  OTOOL       OTOOL for the host
   READELF     READELF for the host
   CC_FOR_TARGET
               CC for the target
@@ -1664,6 +1669,8 @@ Some influential environment variables:
               OBJCOPY for the target
   OBJDUMP_FOR_TARGET
               OBJDUMP for the target
+  OTOOL_FOR_TARGET
+              OTOOL for the target
   RANLIB_FOR_TARGET
               RANLIB for the target
   READELF_FOR_TARGET
@@ -9844,6 +9851,147 @@ fi
 
 
 
+if test -n "$OTOOL"; then
+  ac_cv_prog_OTOOL=$OTOOL
+elif test -n "$ac_cv_prog_OTOOL"; then
+  OTOOL=$ac_cv_prog_OTOOL
+fi
+
+if test -n "$ac_cv_prog_OTOOL"; then
+  for ncn_progname in otool; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_OTOOL+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$OTOOL"; then
+  ac_cv_prog_OTOOL="$OTOOL" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_OTOOL="${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+OTOOL=$ac_cv_prog_OTOOL
+if test -n "$OTOOL"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OTOOL" >&5
+$as_echo "$OTOOL" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  done
+fi
+
+for ncn_progname in otool; do
+  if test -n "$ncn_tool_prefix"; then
+    # Extract the first word of "${ncn_tool_prefix}${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_tool_prefix}${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_OTOOL+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$OTOOL"; then
+  ac_cv_prog_OTOOL="$OTOOL" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_OTOOL="${ncn_tool_prefix}${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+OTOOL=$ac_cv_prog_OTOOL
+if test -n "$OTOOL"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OTOOL" >&5
+$as_echo "$OTOOL" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  fi
+  if test -z "$ac_cv_prog_OTOOL" && test $build = $host ; then
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_OTOOL+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$OTOOL"; then
+  ac_cv_prog_OTOOL="$OTOOL" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_OTOOL="${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+OTOOL=$ac_cv_prog_OTOOL
+if test -n "$OTOOL"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OTOOL" >&5
+$as_echo "$OTOOL" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  fi
+  test -n "$ac_cv_prog_OTOOL" && break
+done
+
+if test -z "$ac_cv_prog_OTOOL" ; then
+  set dummy otool
+  if test $build = $host ; then
+    OTOOL="$2"
+  else
+    OTOOL="${ncn_tool_prefix}$2"
+  fi
+fi
+
+
+
 if test -n "$READELF"; then
   ac_cv_prog_READELF=$READELF
 elif test -n "$ac_cv_prog_READELF"; then
@@ -12824,6 +12972,236 @@ fi
 
 
 
+if test -z "$ac_cv_path_OTOOL_FOR_TARGET" ; then
+  if test -n "$with_build_time_tools"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for otool in $with_build_time_tools" >&5
+$as_echo_n "checking for otool in $with_build_time_tools... " >&6; }
+    if test -x $with_build_time_tools/otool; then
+      OTOOL_FOR_TARGET=`cd $with_build_time_tools && pwd`/otool
+      ac_cv_path_OTOOL_FOR_TARGET=$OTOOL_FOR_TARGET
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_path_OTOOL_FOR_TARGET" >&5
+$as_echo "$ac_cv_path_OTOOL_FOR_TARGET" >&6; }
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    fi
+  elif test $build != $host && test $have_gcc_for_target = yes; then
+    OTOOL_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=otool`
+    test $OTOOL_FOR_TARGET = otool && OTOOL_FOR_TARGET=
+    test -n "$OTOOL_FOR_TARGET" && ac_cv_path_OTOOL_FOR_TARGET=$OTOOL_FOR_TARGET
+  fi
+fi
+if test -z "$ac_cv_path_OTOOL_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
+  # Extract the first word of "otool", so it can be a program name with args.
+set dummy otool; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_OTOOL_FOR_TARGET+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $OTOOL_FOR_TARGET in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_OTOOL_FOR_TARGET="$OTOOL_FOR_TARGET" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $gcc_cv_tool_dirs
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_OTOOL_FOR_TARGET="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+OTOOL_FOR_TARGET=$ac_cv_path_OTOOL_FOR_TARGET
+if test -n "$OTOOL_FOR_TARGET"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OTOOL_FOR_TARGET" >&5
+$as_echo "$OTOOL_FOR_TARGET" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_OTOOL_FOR_TARGET" ; then
+
+
+if test -n "$OTOOL_FOR_TARGET"; then
+  ac_cv_prog_OTOOL_FOR_TARGET=$OTOOL_FOR_TARGET
+elif test -n "$ac_cv_prog_OTOOL_FOR_TARGET"; then
+  OTOOL_FOR_TARGET=$ac_cv_prog_OTOOL_FOR_TARGET
+fi
+
+if test -n "$ac_cv_prog_OTOOL_FOR_TARGET"; then
+  for ncn_progname in otool; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_OTOOL_FOR_TARGET+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$OTOOL_FOR_TARGET"; then
+  ac_cv_prog_OTOOL_FOR_TARGET="$OTOOL_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_OTOOL_FOR_TARGET="${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+OTOOL_FOR_TARGET=$ac_cv_prog_OTOOL_FOR_TARGET
+if test -n "$OTOOL_FOR_TARGET"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OTOOL_FOR_TARGET" >&5
+$as_echo "$OTOOL_FOR_TARGET" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  done
+fi
+
+if test -z "$ac_cv_prog_OTOOL_FOR_TARGET" && test -n "$with_build_time_tools"; then
+  for ncn_progname in otool; do
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${ncn_progname} in $with_build_time_tools" >&5
+$as_echo_n "checking for ${ncn_progname} in $with_build_time_tools... " >&6; }
+    if test -x $with_build_time_tools/${ncn_progname}; then
+      ac_cv_prog_OTOOL_FOR_TARGET=$with_build_time_tools/${ncn_progname}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+      break
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    fi
+  done
+fi
+
+if test -z "$ac_cv_prog_OTOOL_FOR_TARGET"; then
+  for ncn_progname in otool; do
+    if test -n "$ncn_target_tool_prefix"; then
+      # Extract the first word of "${ncn_target_tool_prefix}${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_target_tool_prefix}${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_OTOOL_FOR_TARGET+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$OTOOL_FOR_TARGET"; then
+  ac_cv_prog_OTOOL_FOR_TARGET="$OTOOL_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_OTOOL_FOR_TARGET="${ncn_target_tool_prefix}${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+OTOOL_FOR_TARGET=$ac_cv_prog_OTOOL_FOR_TARGET
+if test -n "$OTOOL_FOR_TARGET"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OTOOL_FOR_TARGET" >&5
+$as_echo "$OTOOL_FOR_TARGET" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+    fi
+    if test -z "$ac_cv_prog_OTOOL_FOR_TARGET" && test $build = $target ; then
+      # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_OTOOL_FOR_TARGET+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$OTOOL_FOR_TARGET"; then
+  ac_cv_prog_OTOOL_FOR_TARGET="$OTOOL_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_OTOOL_FOR_TARGET="${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+OTOOL_FOR_TARGET=$ac_cv_prog_OTOOL_FOR_TARGET
+if test -n "$OTOOL_FOR_TARGET"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OTOOL_FOR_TARGET" >&5
+$as_echo "$OTOOL_FOR_TARGET" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+    fi
+    test -n "$ac_cv_prog_OTOOL_FOR_TARGET" && break
+  done
+fi
+
+if test -z "$ac_cv_prog_OTOOL_FOR_TARGET" ; then
+  set dummy otool
+  if test $build = $target ; then
+    OTOOL_FOR_TARGET="$2"
+  else
+    OTOOL_FOR_TARGET="${ncn_target_tool_prefix}$2"
+  fi
+else
+  OTOOL_FOR_TARGET="$ac_cv_prog_OTOOL_FOR_TARGET"
+fi
+
+else
+  OTOOL_FOR_TARGET=$ac_cv_path_OTOOL_FOR_TARGET
+fi
+
+
+
+
 if test -z "$ac_cv_path_RANLIB_FOR_TARGET" ; then
   if test -n "$with_build_time_tools"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ranlib in $with_build_time_tools" >&5
@@ -14599,6 +14977,37 @@ $as_echo "pre-installed in $ac_dir" >&6; }
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     OBJDUMP_FOR_TARGET='$(OBJDUMP)'
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: host tool" >&5
+$as_echo "host tool" >&6; }
+  else
+    # We need a cross tool
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed" >&5
+$as_echo "pre-installed" >&6; }
+  fi
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking where to find the target otool" >&5
+$as_echo_n "checking where to find the target otool... " >&6; }
+if test "x${build}" != "x${host}" ; then
+  if expr "x$OTOOL_FOR_TARGET" : "x/" > /dev/null; then
+    # We already found the complete path
+    ac_dir=`dirname $OTOOL_FOR_TARGET`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed in $ac_dir" >&5
+$as_echo "pre-installed in $ac_dir" >&6; }
+  else
+    # Canadian cross, just use what we found
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed" >&5
+$as_echo "pre-installed" >&6; }
+  fi
+else
+  if expr "x$OTOOL_FOR_TARGET" : "x/" > /dev/null; then
+    # We already found the complete path
+    ac_dir=`dirname $OTOOL_FOR_TARGET`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed in $ac_dir" >&5
+$as_echo "pre-installed in $ac_dir" >&6; }
+  elif test "x$target" = "x$host"; then
+    # We can use an host tool
+    OTOOL_FOR_TARGET='$(OTOOL)'
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: host tool" >&5
 $as_echo "host tool" >&6; }
   else

@@ -511,11 +511,6 @@ extern GTY(()) int darwin_ms_struct;
    links to, so there's no need for weak-ness for that.  */
 #define GTHREAD_USE_WEAK 0
 
-/* The Darwin linker doesn't want coalesced symbols to appear in
-   a static archive's table of contents. */
-#undef TARGET_WEAK_NOT_IN_ARCHIVE_TOC
-#define TARGET_WEAK_NOT_IN_ARCHIVE_TOC 1
-
 /* On Darwin, we don't (at the time of writing) have linkonce sections
    with names, so it's safe to make the class data not comdat.  */
 #define TARGET_CXX_CLASS_DATA_ALWAYS_COMDAT hook_bool_void_false

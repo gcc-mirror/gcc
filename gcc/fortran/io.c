@@ -2150,33 +2150,6 @@ gfc_match_open (void)
 
   warn = (open->err || open->iostat) ? true : false;
 
-  /* Checks on NEWUNIT specifier.  */
-  if (open->newunit)
-    {
-      if (open->unit)
-	{
-	  gfc_error ("UNIT specifier not allowed with NEWUNIT at %C");
-	  goto cleanup;
-	}
-
-      if (!open->file && open->status)
-        {
-	  if (open->status->expr_type == EXPR_CONSTANT
-	     && gfc_wide_strncasecmp (open->status->value.character.string,
-				       "scratch", 7) != 0)
-	   {
-	     gfc_error ("NEWUNIT specifier must have FILE= "
-			"or STATUS='scratch' at %C");
-	     goto cleanup;
-	   }
-	}
-    }
-  else if (!open->unit)
-    {
-      gfc_error ("OPEN statement at %C must have UNIT or NEWUNIT specified");
-      goto cleanup;
-    }
-
   /* Checks on the ACCESS specifier.  */
   if (open->access && open->access->expr_type == EXPR_CONSTANT)
     {
@@ -2231,6 +2204,21 @@ gfc_match_open (void)
 
       if (!is_char_type ("ASYNCHRONOUS", open->asynchronous))
 	goto cleanup;
+
+      if (open->asynchronous->ts.kind != 1)
+	{
+	  gfc_error ("ASYNCHRONOUS= specifier at %L must be of default "
+		     "CHARACTER kind", &open->asynchronous->where);
+	  return MATCH_ERROR;
+	}
+
+      if (open->asynchronous->expr_type == EXPR_ARRAY
+	  || open->asynchronous->expr_type == EXPR_STRUCTURE)
+	{
+	  gfc_error ("ASYNCHRONOUS= specifier at %L must be scalar",
+		     &open->asynchronous->where);
+	  return MATCH_ERROR;
+	}
 
       if (open->asynchronous->expr_type == EXPR_CONSTANT)
 	{
@@ -2499,6 +2487,33 @@ gfc_match_open (void)
 			 "cannot have the value SCRATCH if a FILE specifier "
 			 "is present");
 	}
+    }
+
+  /* Checks on NEWUNIT specifier.  */
+  if (open->newunit)
+    {
+      if (open->unit)
+	{
+	  gfc_error ("UNIT specifier not allowed with NEWUNIT at %C");
+	  goto cleanup;
+	}
+
+      if (!open->file && open->status)
+        {
+	  if (open->status->expr_type == EXPR_CONSTANT
+	     && gfc_wide_strncasecmp (open->status->value.character.string,
+				       "scratch", 7) != 0)
+	   {
+	     gfc_error ("NEWUNIT specifier must have FILE= "
+			"or STATUS='scratch' at %C");
+	     goto cleanup;
+	   }
+	}
+    }
+  else if (!open->unit)
+    {
+      gfc_error ("OPEN statement at %C must have UNIT or NEWUNIT specified");
+      goto cleanup;
     }
 
   /* Things that are not allowed for unformatted I/O.  */
@@ -2834,21 +2849,20 @@ cleanup:
 
 
 bool
-gfc_resolve_filepos (gfc_filepos *fp)
+gfc_resolve_filepos (gfc_filepos *fp, locus *where)
 {
   RESOLVE_TAG (&tag_unit, fp->unit);
   RESOLVE_TAG (&tag_iostat, fp->iostat);
   RESOLVE_TAG (&tag_iomsg, fp->iomsg);
-  if (!gfc_reference_st_label (fp->err, ST_LABEL_TARGET))
-    return false;
 
-  if (!fp->unit && (fp->iostat || fp->iomsg))
+  if (!fp->unit && (fp->iostat || fp->iomsg || fp->err))
     {
-      locus where;
-      where = fp->iostat ? fp->iostat->where : fp->iomsg->where;
-      gfc_error ("UNIT number missing in statement at %L", &where);
+      gfc_error ("UNIT number missing in statement at %L", where);
       return false;
     }
+
+  if (!gfc_reference_st_label (fp->err, ST_LABEL_TARGET))
+    return false;
 
   if (fp->unit->expr_type == EXPR_CONSTANT
       && fp->unit->ts.type == BT_INTEGER
@@ -3678,10 +3692,13 @@ static match
 check_io_constraints (io_kind k, gfc_dt *dt, gfc_code *io_code,
 		      locus *spec_end)
 {
-#define io_constraint(condition,msg,arg)\
+#define io_constraint(condition, msg, arg)\
 if (condition) \
   {\
-    gfc_error(msg,arg);\
+    if ((arg)->lb != NULL)\
+      gfc_error ((msg), (arg));\
+    else\
+      gfc_error ((msg), &gfc_current_locus);\
     m = MATCH_ERROR;\
   }
 
@@ -3741,11 +3758,14 @@ if (condition) \
   if (expr && expr->ts.type != BT_CHARACTER)
     {
 
-      io_constraint (gfc_pure (NULL) && (k == M_READ || k == M_WRITE),
-		     "IO UNIT in %s statement at %C must be "
+      if (gfc_pure (NULL) && (k == M_READ || k == M_WRITE))
+	{
+	  gfc_error ("IO UNIT in %s statement at %C must be "
 		     "an internal file in a PURE procedure",
 		     io_kind_name (k));
-
+	  return MATCH_ERROR;
+	}
+	  
       if (k == M_READ || k == M_WRITE)
 	gfc_unset_implicit_pure (NULL);
     }
@@ -3792,6 +3812,21 @@ if (condition) \
 
       if (!is_char_type ("ASYNCHRONOUS", dt->asynchronous))
 	return MATCH_ERROR;
+
+      if (dt->asynchronous->ts.kind != 1)
+	{
+	  gfc_error ("ASYNCHRONOUS= specifier at %L must be of default "
+		     "CHARACTER kind", &dt->asynchronous->where);
+	  return MATCH_ERROR;
+	}
+
+      if (dt->asynchronous->expr_type == EXPR_ARRAY
+	  || dt->asynchronous->expr_type == EXPR_STRUCTURE)
+	{
+	  gfc_error ("ASYNCHRONOUS= specifier at %L must be scalar",
+		     &dt->asynchronous->where);
+	  return MATCH_ERROR;
+	}
 
       if (!compare_to_allowed_values
 		("ASYNCHRONOUS", asynchronous, NULL, NULL,

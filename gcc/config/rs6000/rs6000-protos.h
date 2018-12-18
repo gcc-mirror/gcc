@@ -199,6 +199,8 @@ extern void rs6000_call_aix (rtx, rtx, rtx, rtx);
 extern void rs6000_sibcall_aix (rtx, rtx, rtx, rtx);
 extern void rs6000_call_sysv (rtx, rtx, rtx, rtx);
 extern void rs6000_sibcall_sysv (rtx, rtx, rtx, rtx);
+extern void rs6000_call_darwin (rtx, rtx, rtx, rtx);
+extern void rs6000_sibcall_darwin (rtx, rtx, rtx, rtx);
 extern void rs6000_aix_asm_output_dwarf_table_ref (char *);
 extern void get_ppc476_thunk_name (char name[32]);
 extern bool rs6000_overloaded_builtin_p (enum rs6000_builtins);
@@ -225,10 +227,6 @@ extern void (*rs6000_target_modify_macros_ptr) (bool, HOST_WIDE_INT,
 
 /* Declare functions in rs6000-d.c  */
 extern void rs6000_d_target_versions (void);
-
-#if TARGET_MACHO
-char *macho_call_template (rtx_insn *, rtx *, int, int);
-#endif
 
 #ifdef NO_DOLLAR_IN_LABEL
 const char * rs6000_xcoff_strip_dollar (const char *);

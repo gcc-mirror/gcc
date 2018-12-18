@@ -148,8 +148,9 @@ const struct processor_costs *ix86_cost = NULL;
 #define m_CANNONLAKE (HOST_WIDE_INT_1U<<PROCESSOR_CANNONLAKE)
 #define m_ICELAKE_CLIENT (HOST_WIDE_INT_1U<<PROCESSOR_ICELAKE_CLIENT)
 #define m_ICELAKE_SERVER (HOST_WIDE_INT_1U<<PROCESSOR_ICELAKE_SERVER)
+#define m_CASCADELAKE (HOST_WIDE_INT_1U<<PROCESSOR_CASCADELAKE)
 #define m_CORE_AVX512 (m_SKYLAKE_AVX512 | m_CANNONLAKE \
-		       | m_ICELAKE_CLIENT | m_ICELAKE_SERVER)
+		       | m_ICELAKE_CLIENT | m_ICELAKE_SERVER | m_CASCADELAKE)
 #define m_CORE_AVX2 (m_HASWELL | m_SKYLAKE | m_CORE_AVX512)
 #define m_CORE_ALL (m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE | m_CORE_AVX2)
 #define m_GOLDMONT (HOST_WIDE_INT_1U<<PROCESSOR_GOLDMONT)
@@ -893,6 +894,7 @@ static const struct processor_costs *processor_cost_table[] =
   &slm_cost,
   &slm_cost,
   &slm_cost,
+  &skylake_cost,
   &skylake_cost,
   &skylake_cost,
   &skylake_cost,
@@ -2638,6 +2640,9 @@ rest_of_insert_endbranch (void)
 
   if (!lookup_attribute ("nocf_check",
 			 TYPE_ATTRIBUTES (TREE_TYPE (cfun->decl)))
+      && (!flag_manual_endbr
+	  || lookup_attribute ("cf_check",
+			       DECL_ATTRIBUTES (cfun->decl)))
       && !cgraph_node::get (cfun->decl)->only_called_directly_p ())
     {
       /* Queue ENDBR insertion to x86_function_profiler.  */
@@ -11202,10 +11207,16 @@ ix86_compute_frame_layout (void)
   /* 64-bit MS ABI seem to require stack alignment to be always 16,
      except for function prologues, leaf functions and when the defult
      incoming stack boundary is overriden at command line or via
-     force_align_arg_pointer attribute.  */
-  if ((TARGET_64BIT_MS_ABI && crtl->preferred_stack_boundary < 128)
+     force_align_arg_pointer attribute.
+
+     Darwin's ABI specifies 128b alignment for both 32 and  64 bit variants
+     at call sites, including profile function calls.
+ */
+  if (((TARGET_64BIT_MS_ABI || TARGET_MACHO)
+        && crtl->preferred_stack_boundary < 128)
       && (!crtl->is_leaf || cfun->calls_alloca != 0
 	  || ix86_current_function_calls_tls_descriptor
+	  || (TARGET_MACHO && crtl->profile)
 	  || ix86_incoming_stack_boundary < 128))
     {
       crtl->preferred_stack_boundary = 128;
@@ -23477,7 +23488,7 @@ ix86_expand_sse_fp_minmax (rtx dest, enum rtx_code code, rtx cmp_op0,
   return true;
 }
 
-/* Expand an sse vector comparison.  Return the register with the result.  */
+/* Expand an SSE comparison.  Return the register with the result.  */
 
 static rtx
 ix86_expand_sse_cmp (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1,
@@ -23502,9 +23513,12 @@ ix86_expand_sse_cmp (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1,
   else
     cmp_mode = cmp_ops_mode;
 
-
   cmp_op0 = force_reg (cmp_ops_mode, cmp_op0);
-  if (!nonimmediate_operand (cmp_op1, cmp_ops_mode))
+
+  int (*op1_predicate)(rtx, machine_mode)
+    = VECTOR_MODE_P (cmp_ops_mode) ? vector_operand : nonimmediate_operand;
+
+  if (!op1_predicate (cmp_op1, cmp_ops_mode))
     cmp_op1 = force_reg (cmp_ops_mode, cmp_op1);
 
   if (optimize
@@ -23621,7 +23635,7 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
       rtx (*gen) (rtx, rtx, rtx, rtx) = NULL;
       rtx d = dest;
 
-      if (!nonimmediate_operand (op_true, mode))
+      if (!vector_operand (op_true, mode))
 	op_true = force_reg (mode, op_true);
 
       op_false = force_reg (mode, op_false);
@@ -31635,6 +31649,10 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      arg_str = "icelake-server";
 	      priority = P_PROC_AVX512F;
 	      break;
+	    case PROCESSOR_CASCADELAKE:
+	      arg_str = "cascadelake";
+	      priority = P_PROC_AVX512F;
+	      break;
 	    case PROCESSOR_BONNELL:
 	      arg_str = "bonnell";
 	      priority = P_PROC_SSSE3;
@@ -32375,7 +32393,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
     M_INTEL_COREI7_CANNONLAKE,
     M_INTEL_COREI7_ICELAKE_CLIENT,
     M_INTEL_COREI7_ICELAKE_SERVER,
-    M_AMDFAM17H_ZNVER2
+    M_AMDFAM17H_ZNVER2,
+    M_INTEL_COREI7_CASCADELAKE
   };
 
   static struct _arch_names_table
@@ -32402,6 +32421,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"cannonlake", M_INTEL_COREI7_CANNONLAKE},
       {"icelake-client", M_INTEL_COREI7_ICELAKE_CLIENT},
       {"icelake-server", M_INTEL_COREI7_ICELAKE_SERVER},
+      {"cascadelake", M_INTEL_COREI7_CASCADELAKE},
       {"bonnell", M_INTEL_BONNELL},
       {"silvermont", M_INTEL_SILVERMONT},
       {"goldmont", M_INTEL_GOLDMONT},
@@ -37590,13 +37610,7 @@ rdseed_step:
 	    op0 = copy_to_mode_reg (GET_MODE (op0), op0);
 	  emit_insn (gen (half, op0));
 	  op0 = half;
-	  if (GET_MODE (op3) != VOIDmode)
-	    {
-	      if (!nonimmediate_operand (op3, GET_MODE (op3)))
-		op3 = copy_to_mode_reg (GET_MODE (op3), op3);
-	      emit_insn (gen (half, op3));
-	      op3 = half;
-	    }
+	  op3 = lowpart_subreg (QImode, op3, HImode);
 	  break;
 	case IX86_BUILTIN_GATHER3ALTDIV8SF:
 	case IX86_BUILTIN_GATHER3ALTDIV8SI:
@@ -37611,8 +37625,9 @@ rdseed_step:
 	    op0 = copy_to_mode_reg (GET_MODE (op0), op0);
 	  emit_insn (gen (half, op0));
 	  op0 = half;
-	  if (GET_MODE (op3) != VOIDmode)
+	  if (VECTOR_MODE_P (GET_MODE (op3)))
 	    {
+	      half = gen_reg_rtx (mode0);
 	      if (!nonimmediate_operand (op3, GET_MODE (op3)))
 		op3 = copy_to_mode_reg (GET_MODE (op3), op3);
 	      emit_insn (gen (half, op3));
@@ -39598,15 +39613,13 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass, int in)
 	  return MAX (ix86_cost->int_load[1], ix86_cost->int_store[1]);
 	return in ? ix86_cost->int_load[1] : ix86_cost->int_store[1];
       default:
-	/* Compute number of 32bit moves needed.  TFmode is moved as XFmode.  */
-	if (mode == TFmode)
-	  mode = XFmode;
 	if (in == 2)
 	  cost = MAX (ix86_cost->int_load[2], ix86_cost->int_store[2]);
 	else if (in)
 	  cost = ix86_cost->int_load[2];
 	else
 	  cost = ix86_cost->int_store[2];
+	/* Multiply with the number of GPR moves needed.  */
 	return cost * CEIL ((int) GET_MODE_SIZE (mode), UNITS_PER_WORD);
     }
 }
@@ -44043,6 +44056,135 @@ ix86_emit_fp_unordered_jump (rtx label)
   JUMP_LABEL (insn) = label;
 }
 
+/* Output code to perform an asinh XFmode calculation.  */
+
+void ix86_emit_i387_asinh (rtx op0, rtx op1)
+{
+  rtx e1 = gen_reg_rtx (XFmode);
+  rtx e2 = gen_reg_rtx (XFmode);
+  rtx scratch = gen_reg_rtx (HImode);
+  rtx flags = gen_rtx_REG (CCNOmode, FLAGS_REG);
+  rtx cst1, tmp;
+  rtx_code_label *jump_label = gen_label_rtx ();
+  rtx_insn *insn;
+
+  /* e2 = sqrt (op1^2 + 1.0) + 1.0 */
+  emit_insn (gen_mulxf3 (e1, op1, op1));
+  cst1 = force_reg (XFmode, CONST1_RTX (XFmode));
+  emit_insn (gen_addxf3 (e2, e1, cst1));
+  emit_insn (gen_sqrtxf2 (e2, e2));
+  emit_insn (gen_addxf3 (e2, e2, cst1));
+
+  /* e1 = e1 / e2 */
+  emit_insn (gen_divxf3 (e1, e1, e2));
+
+  /* scratch = fxam (op1) */
+  emit_insn (gen_fxamxf2_i387 (scratch, op1));
+
+  /* e1 = e1 + |op1| */
+  emit_insn (gen_absxf2 (e2, op1));
+  emit_insn (gen_addxf3 (e1, e1, e2));
+
+  /* e2 = log1p (e1) */
+  ix86_emit_i387_log1p (e2, e1);
+
+  /* flags = signbit (op1) */
+  emit_insn (gen_testqi_ext_1_ccno (scratch, GEN_INT (0x02)));
+
+  /* if (flags) then e2 = -e2 */
+  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode,
+			      gen_rtx_EQ (VOIDmode, flags, const0_rtx),
+			      gen_rtx_LABEL_REF (VOIDmode, jump_label),
+			      pc_rtx);
+  insn = emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
+  predict_jump (REG_BR_PROB_BASE * 50 / 100);
+  JUMP_LABEL (insn) = jump_label;
+
+  emit_insn (gen_negxf2 (e2, e2));
+
+  emit_label (jump_label);
+  LABEL_NUSES (jump_label) = 1;
+
+  emit_move_insn (op0, e2);
+}
+
+/* Output code to perform an acosh XFmode calculation.  */
+
+void ix86_emit_i387_acosh (rtx op0, rtx op1)
+{
+  rtx e1 = gen_reg_rtx (XFmode);
+  rtx e2 = gen_reg_rtx (XFmode);
+  rtx cst1 = force_reg (XFmode, CONST1_RTX (XFmode));
+
+  /* e2 = sqrt (op1 + 1.0) */
+  emit_insn (gen_addxf3 (e2, op1, cst1));
+  emit_insn (gen_sqrtxf2 (e2, e2));
+
+  /* e1 = sqrt (op1 - 1.0) */
+  emit_insn (gen_subxf3 (e1, op1, cst1));
+  emit_insn (gen_sqrtxf2 (e1, e1));
+
+  /* e1 = e1 * e2 */
+  emit_insn (gen_mulxf3 (e1, e1, e2));
+
+  /* e1 = e1 + op1 */
+  emit_insn (gen_addxf3 (e1, e1, op1));
+
+  /* op0 = log (e1) */
+  emit_insn (gen_logxf2 (op0, e1));
+}
+
+/* Output code to perform an atanh XFmode calculation.  */
+
+void ix86_emit_i387_atanh (rtx op0, rtx op1)
+{
+  rtx e1 = gen_reg_rtx (XFmode);
+  rtx e2 = gen_reg_rtx (XFmode);
+  rtx scratch = gen_reg_rtx (HImode);
+  rtx flags = gen_rtx_REG (CCNOmode, FLAGS_REG);
+  rtx half = const_double_from_real_value (dconsthalf, XFmode);
+  rtx cst1, tmp;
+  rtx_code_label *jump_label = gen_label_rtx ();
+  rtx_insn *insn;
+
+  /* scratch = fxam (op1) */
+  emit_insn (gen_fxamxf2_i387 (scratch, op1));
+
+  /* e2 = |op1| */
+  emit_insn (gen_absxf2 (e2, op1));
+
+  /* e1 = -(e2 + e2) / (e2 + 1.0) */
+  cst1 = force_reg (XFmode, CONST1_RTX (XFmode));
+  emit_insn (gen_addxf3 (e1, e2, cst1));
+  emit_insn (gen_addxf3 (e2, e2, e2));
+  emit_insn (gen_negxf2 (e2, e2));
+  emit_insn (gen_divxf3 (e1, e2, e1));
+
+  /* e2 = log1p (e1) */
+  ix86_emit_i387_log1p (e2, e1);
+
+  /* flags = signbit (op1) */
+  emit_insn (gen_testqi_ext_1_ccno (scratch, GEN_INT (0x02)));
+
+  /* if (!flags) then e2 = -e2 */
+  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode,
+			      gen_rtx_NE (VOIDmode, flags, const0_rtx),
+			      gen_rtx_LABEL_REF (VOIDmode, jump_label),
+			      pc_rtx);
+  insn = emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
+  predict_jump (REG_BR_PROB_BASE * 50 / 100);
+  JUMP_LABEL (insn) = jump_label;
+
+  emit_insn (gen_negxf2 (e2, e2));
+
+  emit_label (jump_label);
+  LABEL_NUSES (jump_label) = 1;
+
+  /* op0 = 0.5 * e2) */
+  half = force_reg (XFmode, half);
+  emit_insn (gen_mulxf3 (op0, e2, half));
+}
+
 /* Output code to perform a log1p XFmode calculation.  */
 
 void ix86_emit_i387_log1p (rtx op0, rtx op1)
@@ -45248,6 +45390,9 @@ static const struct attribute_spec ix86_attribute_table[] =
     ix86_handle_fentry_name, NULL },
   { "fentry_section", 1, 1, true, false, false, false,
     ix86_handle_fentry_name, NULL },
+  { "cf_check", 0, 0, true, false, false, false,
+    ix86_handle_fndecl_attribute, NULL },
+
   /* End element.  */
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };

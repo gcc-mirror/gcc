@@ -1165,6 +1165,7 @@ asan_clear_shadow (rtx shadow_mem, HOST_WIDE_INT len)
   rtx_code_label *top_label;
   rtx end, addr, tmp;
 
+  gcc_assert ((len & 3) == 0);
   start_sequence ();
   clear_storage (shadow_mem, GEN_INT (len), BLOCK_OP_NORMAL);
   insns = get_insns ();
@@ -1178,7 +1179,6 @@ asan_clear_shadow (rtx shadow_mem, HOST_WIDE_INT len)
       return;
     }
 
-  gcc_assert ((len & 3) == 0);
   top_label = gen_label_rtx ();
   addr = copy_to_mode_reg (Pmode, XEXP (shadow_mem, 0));
   shadow_mem = adjust_automodify_address (shadow_mem, SImode, addr, 0);
@@ -1326,7 +1326,7 @@ asan_redzone_buffer::flush_redzone_payload (void)
   for (unsigned i = 0; i < RZ_BUFFER_SIZE; i++)
     {
       unsigned char v
-	= m_shadow_bytes[BYTES_BIG_ENDIAN ? RZ_BUFFER_SIZE - i : i];
+	= m_shadow_bytes[BYTES_BIG_ENDIAN ? RZ_BUFFER_SIZE - i - 1 : i];
       val |= (unsigned HOST_WIDE_INT)v << (BITS_PER_UNIT * i);
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "%02x ", v);
@@ -1375,7 +1375,7 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
   HOST_WIDE_INT base_offset = offsets[length - 1];
   HOST_WIDE_INT base_align_bias = 0, offset, prev_offset;
   HOST_WIDE_INT asan_frame_size = offsets[0] - base_offset;
-  HOST_WIDE_INT last_offset, last_size;
+  HOST_WIDE_INT last_offset, last_size, last_size_aligned;
   int l;
   unsigned char cur_shadow_byte = ASAN_STACK_MAGIC_LEFT;
   tree str_cst, decl, id;
@@ -1628,20 +1628,23 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
   prev_offset = base_offset;
   last_offset = base_offset;
   last_size = 0;
+  last_size_aligned = 0;
   for (l = length; l; l -= 2)
     {
       offset = base_offset + ((offsets[l - 1] - base_offset)
-			     & ~(ASAN_MIN_RED_ZONE_SIZE - HOST_WIDE_INT_1));
-      if (last_offset + last_size != offset)
+			      & ~(ASAN_RED_ZONE_SIZE - HOST_WIDE_INT_1));
+      if (last_offset + last_size_aligned < offset)
 	{
 	  shadow_mem = adjust_address (shadow_mem, VOIDmode,
 				       (last_offset - prev_offset)
 				       >> ASAN_SHADOW_SHIFT);
 	  prev_offset = last_offset;
-	  asan_clear_shadow (shadow_mem, last_size >> ASAN_SHADOW_SHIFT);
+	  asan_clear_shadow (shadow_mem, last_size_aligned >> ASAN_SHADOW_SHIFT);
 	  last_offset = offset;
 	  last_size = 0;
 	}
+      else
+	last_size = offset - last_offset;
       last_size += base_offset + ((offsets[l - 2] - base_offset)
 				  & ~(ASAN_MIN_RED_ZONE_SIZE - HOST_WIDE_INT_1))
 		   - offset;
@@ -1667,13 +1670,16 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
 		last_size += size & ~(ASAN_MIN_RED_ZONE_SIZE - HOST_WIDE_INT_1);
 	    }
 	}
+      last_size_aligned
+	= ((last_size + (ASAN_RED_ZONE_SIZE - HOST_WIDE_INT_1))
+	   & ~(ASAN_RED_ZONE_SIZE - HOST_WIDE_INT_1));
     }
-  if (last_size)
+  if (last_size_aligned)
     {
       shadow_mem = adjust_address (shadow_mem, VOIDmode,
 				   (last_offset - prev_offset)
 				   >> ASAN_SHADOW_SHIFT);
-      asan_clear_shadow (shadow_mem, last_size >> ASAN_SHADOW_SHIFT);
+      asan_clear_shadow (shadow_mem, last_size_aligned >> ASAN_SHADOW_SHIFT);
     }
 
   /* Clean-up set with instrumented stack variables.  */

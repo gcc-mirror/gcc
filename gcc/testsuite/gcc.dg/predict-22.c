@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target freorder } } */
 /* { dg-options "-O2 -fdump-tree-optimized-details-blocks -fdump-rtl-bbpart-details-blocks -freorder-blocks-and-partition" } */
 volatile int v;
 void bar (void) __attribute__((leaf, cold));
@@ -55,5 +55,5 @@ foo (int x, int y, int z)
   baz (&f);
 }
 /* { dg-final { scan-tree-dump-times "Invalid sum" 0 "optimized"} } */
-/* { dg-final { scan-tree-dump-times "count 0," 1 "optimized"} } */
+/* { dg-final { scan-tree-dump-times "count 0 .precise.," 1 "optimized"} } */
 /* { dg-final { scan-rtl-dump-times "COLD_PARTITION" 1 "bbpart"} } */

@@ -34,6 +34,8 @@ version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
 version (PPC64)   version = PPC_Any;
+version (RISCV32) version = RISCV_Any;
+version (RISCV64) version = RISCV_Any;
 version (S390)    version = IBMZ_Any;
 version (SPARC)   version = SPARC_Any;
 version (SPARC64) version = SPARC_Any;
@@ -126,6 +128,12 @@ version (GNUFP)
     else version (PPC_Any)
     {
         alias fenv_t = double;
+        alias fexcept_t = uint;
+    }
+    // https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/riscv/bits/fenv.h
+    else version (RISCV_Any)
+    {
+        alias fenv_t = uint;
         alias fexcept_t = uint;
     }
     // https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/sparc/fpu/bits/fenv.h
@@ -449,6 +457,54 @@ version (CRuntime_Microsoft)
         FE_TOWARDZERO   = 0x300, ///
     }
 }
+else version (Solaris)
+{
+    version (SPARC_Any)
+    {
+        enum
+        {
+            FE_TONEAREST    = 0,
+            FE_TOWARDZERO   = 1,
+            FE_UPWARD       = 2,
+            FE_DOWNWARD     = 3,
+        }
+
+        enum
+        {
+            FE_INEXACT      = 0x01,
+            FE_DIVBYZERO    = 0x02,
+            FE_UNDERFLOW    = 0x04,
+            FE_OVERFLOW     = 0x08,
+            FE_INVALID      = 0x10,
+            FE_ALL_EXCEPT   = 0x1f,
+        }
+
+    }
+    else version (X86_Any)
+    {
+        enum
+        {
+            FE_TONEAREST    = 0,
+            FE_DOWNWARD     = 1,
+            FE_UPWARD       = 2,
+            FE_TOWARDZERO   = 3,
+        }
+
+        enum
+        {
+            FE_INVALID      = 0x01,
+            FE_DIVBYZERO    = 0x04,
+            FE_OVERFLOW     = 0x08,
+            FE_UNDERFLOW    = 0x10,
+            FE_INEXACT      = 0x20,
+            FE_ALL_EXCEPT   = 0x3d,
+        }
+    }
+    else
+    {
+        static assert(0, "Unimplemented architecture");
+    }
+}
 else
 {
     version (X86)
@@ -571,6 +627,28 @@ else
             FE_TOWARDZERO   = 1, ///
             FE_UPWARD       = 2, ///
             FE_DOWNWARD     = 3, ///
+        }
+    }
+    else version (RISCV_Any)
+    {
+        // Define bits representing exceptions in the FPSR status word.
+        enum
+        {
+            FE_INEXACT      = 0x01, ///
+            FE_UNDERFLOW    = 0x02, ///
+            FE_OVERFLOW     = 0x04, ///
+            FE_DIVBYZERO    = 0x08, ///
+            FE_INVALID      = 0x10, ///
+            FE_ALL_EXCEPT   = 0x1f, ///
+        }
+
+        // Define bits representing rounding modes in the FPCR Rmode field.
+        enum
+        {
+            FE_TONEAREST    = 0x0, ///
+            FE_TOWARDZERO   = 0x1, ///
+            FE_DOWNWARD     = 0x2, ///
+            FE_UPWARD       = 0x3, ///
         }
     }
     else version (SPARC_Any)

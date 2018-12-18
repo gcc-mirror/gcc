@@ -32,6 +32,10 @@ proc gdc-dg-test { prog do_what extra_tool_flags } {
 	}
     }
 
+    # Strip gdc.test prefix off test names to avoid pathname failures in
+    # some tests.
+    set prog [dg-trim-dirname gdc.test $prog]
+
     set result \
         [gcc-dg-test-1 gdc_target_compile $prog $do_what $extra_tool_flags]
 

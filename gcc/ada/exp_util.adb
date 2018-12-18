@@ -6702,20 +6702,34 @@ package body Exp_Util is
    -- Insert_Action --
    -------------------
 
-   procedure Insert_Action (Assoc_Node : Node_Id; Ins_Action : Node_Id) is
+   procedure Insert_Action
+     (Assoc_Node   : Node_Id;
+      Ins_Action   : Node_Id;
+      Spec_Expr_OK : Boolean := False)
+   is
    begin
       if Present (Ins_Action) then
-         Insert_Actions (Assoc_Node, New_List (Ins_Action));
+         Insert_Actions
+           (Assoc_Node   => Assoc_Node,
+            Ins_Actions  => New_List (Ins_Action),
+            Spec_Expr_OK => Spec_Expr_OK);
       end if;
    end Insert_Action;
 
    --  Version with check(s) suppressed
 
    procedure Insert_Action
-     (Assoc_Node : Node_Id; Ins_Action : Node_Id; Suppress : Check_Id)
+     (Assoc_Node   : Node_Id;
+      Ins_Action   : Node_Id;
+      Suppress     : Check_Id;
+      Spec_Expr_OK : Boolean := False)
    is
    begin
-      Insert_Actions (Assoc_Node, New_List (Ins_Action), Suppress);
+      Insert_Actions
+        (Assoc_Node   => Assoc_Node,
+         Ins_Actions  => New_List (Ins_Action),
+         Suppress     => Suppress,
+         Spec_Expr_OK => Spec_Expr_OK);
    end Insert_Action;
 
    -------------------------
@@ -6734,7 +6748,11 @@ package body Exp_Util is
    -- Insert_Actions --
    --------------------
 
-   procedure Insert_Actions (Assoc_Node : Node_Id; Ins_Actions : List_Id) is
+   procedure Insert_Actions
+     (Assoc_Node   : Node_Id;
+      Ins_Actions  : List_Id;
+      Spec_Expr_OK : Boolean := False)
+   is
       N : Node_Id;
       P : Node_Id;
 
@@ -6745,14 +6763,20 @@ package body Exp_Util is
          return;
       end if;
 
+      --  Insert the action when the context is "Handling of Default and Per-
+      --  Object Expressions" only when requested by the caller.
+
+      if Spec_Expr_OK then
+         null;
+
       --  Ignore insert of actions from inside default expression (or other
       --  similar "spec expression") in the special spec-expression analyze
       --  mode. Any insertions at this point have no relevance, since we are
       --  only doing the analyze to freeze the types of any static expressions.
-      --  See section "Handling of Default Expressions" in the spec of package
-      --  Sem for further details.
+      --  See section "Handling of Default and Per-Object Expressions" in the
+      --  spec of package Sem for further details.
 
-      if In_Spec_Expression then
+      elsif In_Spec_Expression then
          return;
       end if;
 
@@ -7429,9 +7453,10 @@ package body Exp_Util is
    --  Version with check(s) suppressed
 
    procedure Insert_Actions
-     (Assoc_Node  : Node_Id;
-      Ins_Actions : List_Id;
-      Suppress    : Check_Id)
+     (Assoc_Node   : Node_Id;
+      Ins_Actions  : List_Id;
+      Suppress     : Check_Id;
+      Spec_Expr_OK : Boolean := False)
    is
    begin
       if Suppress = All_Checks then
@@ -7439,7 +7464,7 @@ package body Exp_Util is
             Sva : constant Suppress_Array := Scope_Suppress.Suppress;
          begin
             Scope_Suppress.Suppress := (others => True);
-            Insert_Actions (Assoc_Node, Ins_Actions);
+            Insert_Actions (Assoc_Node, Ins_Actions, Spec_Expr_OK);
             Scope_Suppress.Suppress := Sva;
          end;
 
@@ -7448,7 +7473,7 @@ package body Exp_Util is
             Svg : constant Boolean := Scope_Suppress.Suppress (Suppress);
          begin
             Scope_Suppress.Suppress (Suppress) := True;
-            Insert_Actions (Assoc_Node, Ins_Actions);
+            Insert_Actions (Assoc_Node, Ins_Actions, Spec_Expr_OK);
             Scope_Suppress.Suppress (Suppress) := Svg;
          end;
       end if;
@@ -13414,7 +13439,10 @@ package body Exp_Util is
    --  See also Silly_Boolean_Array_Not_Test
 
    procedure Silly_Boolean_Array_Xor_Test
-     (N : Node_Id; R : Node_Id;  T : Entity_Id) is
+     (N : Node_Id;
+      R : Node_Id;
+      T : Entity_Id)
+   is
       Loc : constant Source_Ptr := Sloc (N);
       CT  : constant Entity_Id  := Component_Type (T);
 
@@ -13435,9 +13463,9 @@ package body Exp_Util is
         Make_Raise_Constraint_Error (Loc,
           Condition =>
             Make_And_Then (Loc,
-              Left_Opnd =>
+              Left_Opnd  =>
                 Make_And_Then (Loc,
-                  Left_Opnd =>
+                  Left_Opnd  =>
                     Convert_To (Standard_Boolean,
                       Make_Attribute_Reference (Loc,
                         Prefix         => New_Occurrence_Of (CT, Loc),
@@ -13450,7 +13478,7 @@ package body Exp_Util is
                         Attribute_Name => Name_Last))),
 
               Right_Opnd => Make_Non_Empty_Check (Loc, R)),
-          Reason => CE_Range_Check_Failed));
+          Reason    => CE_Range_Check_Failed));
    end Silly_Boolean_Array_Xor_Test;
 
    --------------------------

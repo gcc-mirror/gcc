@@ -103,6 +103,13 @@ main (int argc, char **argv)
       abort ();
     }
 
+  /* Test unseen async-argument.  */
+  if (acc_async_test (1) != 1)
+    {
+      fprintf (stderr, "acc_async_test failed on unseen async-argument\n");
+      abort ();
+    }
+
   sleep (1);
 
   if (acc_async_test (0) != 1)

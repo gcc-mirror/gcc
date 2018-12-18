@@ -90,8 +90,9 @@ package body Exp_Aggr is
    --  N is an aggregate (record or array). Checks the presence of default
    --  initialization (<>) in any component (Ada 2005: AI-287).
 
-   function In_Object_Declaration (N : Node_Id) return Boolean;
-   --  Return True if N is part of an object declaration, False otherwise
+   function Is_CCG_Supported_Aggregate (N : Node_Id) return Boolean;
+   --  Return True if aggregate N is located in a context supported by the
+   --  CCG backend; False otherwise.
 
    function Is_Static_Dispatch_Table_Aggregate (N : Node_Id) return Boolean;
    --  Returns true if N is an aggregate used to initialize the components
@@ -4244,6 +4245,22 @@ package body Exp_Aggr is
            Build_Record_Aggr_Code (N, Typ, Target_Expr));
          Rewrite (Parent (N), Make_Null_Statement (Loc));
 
+      --  Generating C, do not declare a temporary to initialize an aggregate
+      --  assigned to Out or In_Out parameters whose type has no discriminants.
+      --  This avoids stack overflow errors at run time.
+
+      elsif Modify_Tree_For_C
+        and then Nkind (Parent (N)) = N_Assignment_Statement
+        and then Nkind (Name (Parent (N))) = N_Identifier
+        and then Ekind_In (Entity (Name (Parent (N))), E_Out_Parameter,
+                                                       E_In_Out_Parameter)
+        and then not Has_Discriminants (Etype (Entity (Name (Parent (N)))))
+      then
+         Target_Expr := New_Copy_Tree (Name (Parent (N)));
+         Insert_Actions (Parent (N),
+           Build_Record_Aggr_Code (N, Typ, Target_Expr));
+         Rewrite (Parent (N), Make_Null_Statement (Loc));
+
       else
          Temp := Make_Temporary (Loc, 'A', N);
 
@@ -4541,7 +4558,7 @@ package body Exp_Aggr is
 
                            declare
                               P : constant Entity_Id :=
-                                Cunit_Entity (Current_Sem_Unit);
+                                    Cunit_Entity (Current_Sem_Unit);
 
                            begin
                               --  Check if duplication is always OK and, if so,
@@ -4741,7 +4758,7 @@ package body Exp_Aggr is
       --  object declaration, this is the only case where aggregates are
       --  supported in C.
 
-      if Modify_Tree_For_C and then not In_Object_Declaration (N) then
+      if Modify_Tree_For_C and then not Is_CCG_Supported_Aggregate (N) then
          return;
       end if;
 
@@ -4759,17 +4776,8 @@ package body Exp_Aggr is
       --  initial value of a thread-local variable.
 
       if Is_Flat (N, Number_Dimensions (Typ)) then
-         Check_Static_Components;
-         if Static_Components then
-            if Is_Packed (Etype (N))
-              or else
-                (Is_Record_Type (Component_Type (Etype (N)))
-                  and then Has_Discriminants (Component_Type (Etype (N))))
-            then
-               null;
-            else
-               Set_Compile_Time_Known_Aggregate (N);
-            end if;
+         if Static_Array_Aggregate (N) then
+            Set_Compile_Time_Known_Aggregate (N);
          end if;
 
          return;
@@ -6205,15 +6213,8 @@ package body Exp_Aggr is
         or else (Parent_Kind = N_Assignment_Statement
                   and then Inside_Init_Proc)
       then
-         if Static_Array_Aggregate (N)
-           or else Compile_Time_Known_Aggregate (N)
-         then
-            Set_Expansion_Delayed (N, False);
-            return;
-         else
-            Set_Expansion_Delayed (N);
-            return;
-         end if;
+         Set_Expansion_Delayed (N, not Static_Array_Aggregate (N));
+         return;
       end if;
 
       --  STEP 4
@@ -7569,7 +7570,7 @@ package body Exp_Aggr is
       --  When generating C, only generate an aggregate when declaring objects
       --  since C does not support aggregates in e.g. assignment statements.
 
-      elsif Modify_Tree_For_C and then not In_Object_Declaration (N) then
+      elsif Modify_Tree_For_C and then not Is_CCG_Supported_Aggregate (N) then
          Convert_To_Assignments (N, Typ);
 
       --  In all other cases, build a proper aggregate to be handled by gigi
@@ -7677,23 +7678,41 @@ package body Exp_Aggr is
       end if;
    end Is_Delayed_Aggregate;
 
-   ---------------------------
-   -- In_Object_Declaration --
-   ---------------------------
+   --------------------------------
+   -- Is_CCG_Supported_Aggregate --
+   --------------------------------
 
-   function In_Object_Declaration (N : Node_Id) return Boolean is
-      P : Node_Id := Parent (N);
+   function Is_CCG_Supported_Aggregate
+     (N : Node_Id) return Boolean
+   is
+      In_Obj_Decl : Boolean := False;
+      P           : Node_Id := Parent (N);
+
    begin
       while Present (P) loop
          if Nkind (P) = N_Object_Declaration then
-            return True;
+            In_Obj_Decl := True;
          end if;
 
          P := Parent (P);
       end loop;
 
+      --  Cases where aggregates are supported by the CCG backend
+
+      if In_Obj_Decl then
+         if Nkind (Parent (N)) = N_Object_Declaration then
+            return True;
+
+         elsif Nkind (Parent (N)) = N_Qualified_Expression
+            and then Nkind_In (Parent (Parent (N)), N_Allocator,
+                                                    N_Object_Declaration)
+         then
+            return True;
+         end if;
+      end if;
+
       return False;
-   end In_Object_Declaration;
+   end Is_CCG_Supported_Aggregate;
 
    ----------------------------------------
    -- Is_Static_Dispatch_Table_Aggregate --
@@ -7874,9 +7893,7 @@ package body Exp_Aggr is
          return False;
       end if;
 
-      if not Is_Scalar_Type (Component_Type (Typ))
-        and then Has_Non_Standard_Rep (Component_Type (Typ))
-      then
+      if not Is_Scalar_Type (Ctyp) then
          return False;
       end if;
 
@@ -8506,20 +8523,49 @@ package body Exp_Aggr is
    ----------------------------
 
    function Static_Array_Aggregate (N : Node_Id) return Boolean is
-      Bounds : constant Node_Id := Aggregate_Bounds (N);
+      function Is_Static_Component (Nod : Node_Id) return Boolean;
+      --  Return True if Nod has a compile-time known value and can be passed
+      --  as is to the back-end without further expansion.
 
-      Typ       : constant Entity_Id := Etype (N);
-      Comp_Type : constant Entity_Id := Component_Type (Typ);
-      Agg       : Node_Id;
-      Expr      : Node_Id;
-      Lo        : Node_Id;
-      Hi        : Node_Id;
+      ---------------------------
+      --  Is_Static_Component  --
+      ---------------------------
+
+      function Is_Static_Component (Nod : Node_Id) return Boolean is
+      begin
+         if Nkind_In (Nod, N_Integer_Literal, N_Real_Literal) then
+            return True;
+
+         elsif Is_Entity_Name (Nod)
+           and then Present (Entity (Nod))
+           and then Ekind (Entity (Nod)) = E_Enumeration_Literal
+         then
+            return True;
+
+         elsif Nkind (Nod) = N_Aggregate
+           and then Compile_Time_Known_Aggregate (Nod)
+         then
+            return True;
+
+         else
+            return False;
+         end if;
+      end Is_Static_Component;
+
+      --  Local variables
+
+      Bounds : constant Node_Id   := Aggregate_Bounds (N);
+      Typ    : constant Entity_Id := Etype (N);
+
+      Agg  : Node_Id;
+      Expr : Node_Id;
+      Lo   : Node_Id;
+      Hi   : Node_Id;
+
+   --  Start of processing for Static_Array_Aggregate
 
    begin
-      if Is_Tagged_Type (Typ)
-        or else Is_Controlled (Typ)
-        or else Is_Packed (Typ)
-      then
+      if Is_Packed (Typ) or else Has_Discriminants (Component_Type (Typ)) then
          return False;
       end if;
 
@@ -8533,11 +8579,11 @@ package body Exp_Aggr is
 
          if No (Component_Associations (N)) then
 
-            --  Verify that all components are static integers
+            --  Verify that all components are static
 
             Expr := First (Expressions (N));
             while Present (Expr) loop
-               if Nkind (Expr) /= N_Integer_Literal then
+               if not Is_Static_Component (Expr) then
                   return False;
                end if;
 
@@ -8567,17 +8613,7 @@ package body Exp_Aggr is
                --  component type. We also limit the size of a static aggregate
                --  to prevent runaway static expressions.
 
-               if Is_Array_Type (Comp_Type)
-                 or else Is_Record_Type (Comp_Type)
-               then
-                  if Nkind (Expression (Expr)) /= N_Aggregate
-                    or else
-                      not Compile_Time_Known_Aggregate (Expression (Expr))
-                  then
-                     return False;
-                  end if;
-
-               elsif Nkind (Expression (Expr)) /= N_Integer_Literal then
+               if not Is_Static_Component (Expression (Expr)) then
                   return False;
                end if;
 

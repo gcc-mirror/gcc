@@ -60,7 +60,7 @@ package body Signalling_Fds is
       L_Sock, R_Sock, W_Sock : C.int := Failure;
       --  Listening socket, read socket and write socket
 
-      Sin : aliased Sockaddr_In;
+      Sin : aliased Sockaddr;
       Len : aliased C.int;
       --  Address of listening socket
 

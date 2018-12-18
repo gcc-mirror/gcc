@@ -341,7 +341,8 @@ package body System.Tasking.Protected_Objects.Single_Entry is
       Uninterpreted_Data : System.Address)
    is
       Self_Id    : constant Task_Id := STPO.Self;
-      Entry_Call : Entry_Call_Record renames Self_Id.Entry_Calls (1);
+      Entry_Call : Entry_Call_Record renames
+        Self_Id.Entry_Calls (Self_Id.Entry_Calls'First);
    begin
       --  If pragma Detect_Blocking is active then Program_Error must be
       --  raised if this potentially blocking operation is called from a

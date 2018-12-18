@@ -1,3 +1,20 @@
+2018-12-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/88411
+	* io/transfer.c (dta_transfer_init): Do not treat as an
+	asynchronous statement unless the statement has
+	ASYNCHRONOUS="YES".
+	(st_write_done): Likewise.
+	(st_read_done): Do not perform async_wait for synchronous I/O
+	on an async unit.
+	(st_read_done): Likewise.
+
+2018-12-02  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/88137
+	* runtime/backtrace.c (show_backtrace): Use atomic load/store to
+	access the static lbstate pointer.
+
 2018-11-30  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/88137

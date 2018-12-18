@@ -9049,6 +9049,13 @@ package body Sem_Util is
 
          else
             Decl := Build_Actual_Subtype (Typ, N);
+
+            --  The call may yield a declaration, or just return the entity
+
+            if Decl = Typ then
+               return Typ;
+            end if;
+
             Atyp := Defining_Identifier (Decl);
 
             --  If Build_Actual_Subtype generated a new declaration then use it
@@ -9162,6 +9169,9 @@ package body Sem_Util is
       if First_Op = Any_Id then
          Error_Msg_N ("aspect Iterable must specify First operation", Aspect);
          return Any_Type;
+
+      elsif not Analyzed (First_Op) then
+         Analyze (First_Op);
       end if;
 
       Cursor := Any_Type;
@@ -9195,7 +9205,8 @@ package body Sem_Util is
 
       if Cursor = Any_Type then
          Error_Msg_N
-           ("No legal primitive operation First for Iterable type", Aspect);
+           ("primitive operation for Iterable type must appear "
+             & "in the same list of declarations as the type", Aspect);
       end if;
 
       return Cursor;
@@ -10879,6 +10890,11 @@ package body Sem_Util is
 
       if Is_Scalar_Type (Typ) then
          return Has_Default_Aspect (Typ);
+
+      --  An access type is fully default initialized by default
+
+      elsif Is_Access_Type (Typ) then
+         return True;
 
       --  An array type is fully default initialized if its element type is
       --  scalar and the array type carries aspect Default_Component_Value or
@@ -14123,19 +14139,56 @@ package body Sem_Util is
          Deref := Prefix (Deref);
       end loop;
 
-      --  Ada 2005: If we have a component or slice of a dereference,
-      --  something like X.all.Y (2), and the type of X is access-to-constant,
-      --  Is_Variable will return False, because it is indeed a constant
-      --  view. But it might be a view of a variable object, so we want the
-      --  following condition to be True in that case.
+      --  If the prefix is a qualified expression of a variable, then function
+      --  Is_Variable will return False for that because a qualified expression
+      --  denotes a constant view, so we need to get the name being qualified
+      --  so we can test below whether that's a variable (or a dereference).
+
+      if Nkind (Deref) = N_Qualified_Expression then
+         Deref := Expression (Deref);
+      end if;
+
+      --  Ada 2005: If we have a component or slice of a dereference, something
+      --  like X.all.Y (2) and the type of X is access-to-constant, Is_Variable
+      --  will return False, because it is indeed a constant view. But it might
+      --  be a view of a variable object, so we want the following condition to
+      --  be True in that case.
 
       if Is_Variable (Object)
+        or else Is_Variable (Deref)
         or else (Ada_Version >= Ada_2005
-                  and then Nkind (Deref) = N_Explicit_Dereference)
+                  and then (Nkind (Deref) = N_Explicit_Dereference
+                             or else Is_Access_Type (Etype (Deref))))
       then
          if Nkind (Object) = N_Selected_Component then
-            P := Prefix (Object);
+
+            --  If the selector is not a component, then we definitely return
+            --  False (it could be a function selector in a prefix form call
+            --  occurring in an iterator specification).
+
+            if not Ekind_In (Entity (Selector_Name (Object)), E_Component,
+                                                              E_Discriminant)
+            then
+               return False;
+            end if;
+
+            --  Get the original node of the prefix in case it has been
+            --  rewritten, which can occur, for example, in qualified
+            --  expression cases. Also, a discriminant check on a selected
+            --  component may be expanded into a dereference when removing
+            --  side effects, and the subtype of the original node may be
+            --  unconstrained.
+
+            P := Original_Node (Prefix (Object));
             Prefix_Type := Etype (P);
+
+            --  If the prefix is a qualified expression, we want to look at its
+            --  operand.
+
+            if Nkind (P) = N_Qualified_Expression then
+               P := Expression (P);
+               Prefix_Type := Etype (P);
+            end if;
 
             if Is_Entity_Name (P) then
                if Ekind (Entity (P)) = E_Generic_In_Out_Parameter then
@@ -14146,21 +14199,19 @@ package body Sem_Util is
                   P_Aliased := True;
                end if;
 
-            --  A discriminant check on a selected component may be expanded
-            --  into a dereference when removing side effects. Recover the
-            --  original node and its type, which may be unconstrained.
+            --  For explicit dereferences we get the access prefix so we can
+            --  treat this similarly to implicit dereferences and examine the
+            --  kind of the access type and its designated subtype further
+            --  below.
 
-            elsif Nkind (P) = N_Explicit_Dereference
-              and then not (Comes_From_Source (P))
-            then
-               P := Original_Node (P);
+            elsif Nkind (P) = N_Explicit_Dereference then
+               P := Prefix (P);
                Prefix_Type := Etype (P);
 
             else
                --  Check for prefix being an aliased component???
 
                null;
-
             end if;
 
             --  A heap object is constrained by its initial value
@@ -14187,12 +14238,23 @@ package body Sem_Util is
 
             else pragma Assert (Ada_Version >= Ada_2005);
                if Is_Access_Type (Prefix_Type) then
+                  --  We need to make sure we have the base subtype, in case
+                  --  this is actually an access subtype (whose Ekind will be
+                  --  E_Access_Subtype).
+
+                  Prefix_Type := Etype (Prefix_Type);
 
                   --  If the access type is pool-specific, and there is no
                   --  constrained partial view of the designated type, then the
-                  --  designated object is known to be constrained.
+                  --  designated object is known to be constrained. If it's a
+                  --  formal access type and the renaming is in the generic
+                  --  spec, we also treat it as pool-specific (known to be
+                  --  constrained), but assume the worst if in the generic body
+                  --  (see RM 3.3(23.3/3)).
 
                   if Ekind (Prefix_Type) = E_Access_Type
+                    and then (not Is_Generic_Type (Prefix_Type)
+                               or else not In_Generic_Body (Current_Scope))
                     and then not Object_Type_Has_Constrained_Partial_View
                                    (Typ  => Designated_Type (Prefix_Type),
                                     Scop => Current_Scope)
@@ -14213,16 +14275,17 @@ package body Sem_Util is
               Original_Record_Component (Entity (Selector_Name (Object)));
 
             --  As per AI-0017, the renaming is illegal in a generic body, even
-            --  if the subtype is indefinite.
+            --  if the subtype is indefinite (only applies to prefixes of an
+            --  untagged formal type, see RM 3.3 (23.11/3)).
 
             --  Ada 2005 (AI-363): In Ada 2005 an aliased object can be mutable
 
             if not Is_Constrained (Prefix_Type)
               and then (Is_Definite_Subtype (Prefix_Type)
                          or else
-                           (Is_Generic_Type (Prefix_Type)
-                             and then Ekind (Current_Scope) = E_Generic_Package
-                             and then In_Package_Body (Current_Scope)))
+                           (not Is_Tagged_Type (Prefix_Type)
+                             and then Is_Generic_Type (Prefix_Type)
+                             and then In_Generic_Body (Current_Scope)))
 
               and then (Is_Declared_Within_Variant (Comp)
                          or else Has_Discriminant_Dependent_Constraint (Comp))
@@ -17418,12 +17481,30 @@ package body Sem_Util is
      (N : Node_Id) return Boolean
    is
    begin
-      --  A subprogram stub without prior declaration serves as declaration for
-      --  the actual subprogram body. As such, it has an attached defining
-      --  entity of E_[Generic_]Function or E_[Generic_]Procedure.
+      pragma Assert (Nkind (N) = N_Subprogram_Body_Stub);
 
-      return Nkind (N) = N_Subprogram_Body_Stub
-        and then Ekind (Defining_Entity (N)) /= E_Subprogram_Body;
+      case Ekind (Defining_Entity (N)) is
+
+         --  A subprogram stub without prior declaration serves as declaration
+         --  for the actual subprogram body. As such, it has an attached
+         --  defining entity of E_Function or E_Procedure.
+
+         when E_Function
+            | E_Procedure
+         =>
+            return True;
+
+         --  Otherwise, it is completes a [generic] subprogram declaration
+
+         when E_Generic_Function
+            | E_Generic_Procedure
+            | E_Subprogram_Body
+         =>
+            return False;
+
+         when others =>
+            raise Program_Error;
+      end case;
    end Is_Subprogram_Stub_Without_Prior_Declaration;
 
    ---------------------------

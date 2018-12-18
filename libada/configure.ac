@@ -129,7 +129,7 @@ AC_PROG_LN_S
 if test ${enable_shared} = yes; then
   default_gnatlib_target="gnatlib-shared"
 else
-  default_gnatlib_target="gnatlib-plain"
+  default_gnatlib_target="gnatlib"
 fi
 AC_SUBST([default_gnatlib_target])
 

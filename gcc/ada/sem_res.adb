@@ -8457,38 +8457,51 @@ package body Sem_Res is
    ---------------------------
 
    procedure Resolve_If_Expression (N : Node_Id; Typ : Entity_Id) is
-      Condition : constant Node_Id := First (Expressions (N));
-      Then_Expr : Node_Id;
-      Else_Expr : Node_Id;
-
       procedure Apply_Check (Expr : Node_Id);
-      --  When a dependent expression is of a subtype different from the
-      --  context subtype, then insert a qualification  to ensure the
-      --  generation of a constraint check. This was previously done only
-      --  for scalar types.
+      --  When a dependent expression is of a subtype different from
+      --  the context subtype, then insert a qualification to ensure
+      --  the generation of a constraint check. This was previously
+      --  for scalar types. For array types apply a length check, given
+      --  that the context in general allows sliding, while a qualified
+      --  expression forces equality of bounds.
 
       -----------------
       -- Apply_Check --
       -----------------
 
       procedure Apply_Check (Expr : Node_Id) is
-         Loc       : constant Source_Ptr := Sloc (Expr);
-         Expr_Type : constant Entity_Id := Etype (Expr);
-      begin
+         Expr_Typ : constant Entity_Id  := Etype (Expr);
+         Loc      : constant Source_Ptr := Sloc (Expr);
 
-         if Expr_Type /= Typ
-            and then not Is_Tagged_Type (Typ)
-            and then not Is_Access_Type (Typ)
-            and then Is_Constrained (Typ)
-            and then not Inside_A_Generic
+      begin
+         if Expr_Typ = Typ
+           or else Is_Tagged_Type (Typ)
+           or else Is_Access_Type (Typ)
+           or else not Is_Constrained (Typ)
+           or else Inside_A_Generic
          then
+            null;
+
+         elsif Is_Array_Type (Typ) then
+            Apply_Length_Check (Expr, Typ);
+
+         else
             Rewrite (Expr,
-                 Make_Qualified_Expression (Loc,
-                   Subtype_Mark => New_Occurrence_Of (Typ, Loc),
-                   Expression   => Relocate_Node (Expr)));
+              Make_Qualified_Expression (Loc,
+                Subtype_Mark => New_Occurrence_Of (Typ, Loc),
+                Expression   => Relocate_Node (Expr)));
+
             Analyze_And_Resolve (Expr, Typ);
          end if;
       end Apply_Check;
+
+      --  Local variables
+
+      Condition : constant Node_Id := First (Expressions (N));
+      Else_Expr : Node_Id;
+      Then_Expr : Node_Id;
+
+   --  Start of processing for Resolve_If_Expression
 
    begin
       --  Defend against malformed expressions
@@ -11855,11 +11868,12 @@ package body Sem_Res is
          --  for the subtype, but not in the context of a loop iteration
          --  scheme).
 
-         Set_Scalar_Range (Index_Subtype, New_Copy_Tree (Drange));
-         Set_Parent       (Scalar_Range (Index_Subtype), Index_Subtype);
-         Set_Etype        (Index_Subtype, Index_Type);
-         Set_Size_Info    (Index_Subtype, Index_Type);
-         Set_RM_Size      (Index_Subtype, RM_Size (Index_Type));
+         Set_Scalar_Range   (Index_Subtype, New_Copy_Tree (Drange));
+         Set_Parent         (Scalar_Range (Index_Subtype), Index_Subtype);
+         Set_Etype          (Index_Subtype, Index_Type);
+         Set_Size_Info      (Index_Subtype, Index_Type);
+         Set_RM_Size        (Index_Subtype, RM_Size (Index_Type));
+         Set_Is_Constrained (Index_Subtype);
       end if;
 
       Slice_Subtype := Create_Itype (E_Array_Subtype, N);

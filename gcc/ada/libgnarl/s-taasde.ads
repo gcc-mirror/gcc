@@ -120,8 +120,8 @@ private
       Level : ATC_Level_Base;
       --  Normally Level is the ATC nesting level of the asynchronous select
       --  statement to which this delay belongs, but after a call has been
-      --  dequeued we set it to ATC_Level_Infinity so that the Cancel operation
-      --  can detect repeated calls, and act idempotently.
+      --  dequeued we set it to Level_No_Pending_Abort so that the Cancel
+      --  operation can detect repeated calls, and act idempotently.
 
       Resume_Time : Duration;
       --  The absolute wake up time, represented as Duration

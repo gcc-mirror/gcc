@@ -4278,21 +4278,19 @@ package body Sem_Ch3 is
            and then Nkind (E) = N_Aggregate
            and then
              ((Present (Following_Address_Clause (N))
-                            and then not Ignore_Rep_Clauses)
+                 and then not Ignore_Rep_Clauses)
               or else Delayed_Aspect_Present)
          then
             Set_Etype (E, T);
 
-            --  If the aggregate is limited it will be built in place,
-            --  and its expansion is deferred until the object declaration
-            --  is expanded.
+            --  If the aggregate is limited it will be built in place, and its
+            --  expansion is deferred until the object declaration is expanded.
 
             if Is_Limited_Type (T) then
                Set_Expansion_Delayed (E);
             end if;
 
          else
-
             --  If the expression is a formal that is a "subprogram pointer"
             --  this is illegal in accessibility terms (see RM 3.10.2 (13.1/2)
             --  and AARM 3.10.2 (13.b/2)). Add an explicit conversion to force
@@ -4365,9 +4363,7 @@ package body Sem_Ch3 is
                Set_Current_Value (Id, E);
             end if;
 
-         elsif Is_Scalar_Type (T)
-            and then Is_OK_Static_Expression (E)
-         then
+         elsif Is_Scalar_Type (T) and then Is_OK_Static_Expression (E) then
             Set_Is_Known_Valid (Id);
 
          --  If it is a constant initialized with a valid nonstatic entity,
@@ -4458,11 +4454,16 @@ package body Sem_Ch3 is
       --  default initialization when we have at least one case of an explicit
       --  default initial value and then this is not an internal declaration
       --  whose initialization comes later (as for an aggregate expansion).
+      --  If expression is an aggregate it may be expanded into assignments
+      --  and the declaration itself is marked with No_Initialization, but
+      --  the predicate still applies.
 
       if not Suppress_Assignment_Checks (N)
         and then Present (Predicate_Function (T))
         and then not Predicates_Ignored (T)
-        and then not No_Initialization (N)
+        and then
+          (not No_Initialization (N)
+            or else (Present (E) and then Nkind (E) = N_Aggregate))
         and then
           (Present (E)
             or else
@@ -10372,12 +10373,13 @@ package body Sem_Ch3 is
          --  If Nod is a library unit entity, then Insert_After won't work,
          --  because Nod is not a member of any list. Therefore, we use
          --  Add_Global_Declaration in this case. This can happen if we have a
-         --  build-in-place library function.
+         --  build-in-place library function, child unit or not.
 
          if (Nkind (Nod) in N_Entity and then Is_Compilation_Unit (Nod))
            or else
-             (Nkind (Nod) = N_Defining_Program_Unit_Name
-               and then Is_Compilation_Unit (Defining_Identifier (Nod)))
+             (Nkind_In (Nod,
+                N_Defining_Program_Unit_Name, N_Subprogram_Declaration)
+               and then Is_Compilation_Unit (Defining_Entity (Nod)))
          then
             Add_Global_Declaration (IR);
          else
@@ -12328,6 +12330,9 @@ package body Sem_Ch3 is
       --  Note that the type of the full view is the same entity as the type
       --  of the partial view. In this fashion, the subtype has access to the
       --  correct view of the parent.
+      --  The list below included access types, but this leads to several
+      --  regressions. How should the base type of the full view be
+      --  set consistently for subtypes completed by access types?
 
       Save_Next_Entity := Next_Entity (Full);
       Save_Homonym     := Homonym (Priv);

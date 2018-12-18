@@ -154,15 +154,15 @@ TEST_IMM_ALL (DEF_VCOND_IMM)
 /* { dg-final { scan-assembler {\tcmpgt\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #15\n} } } */
 /* { dg-final { scan-assembler {\tcmpgt\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #15\n} } } */
 
-/* { dg-final { scan-assembler {\tcmplt\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #15\n} } } */
-/* { dg-final { scan-assembler {\tcmplt\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #15\n} } } */
-/* { dg-final { scan-assembler {\tcmplt\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #15\n} } } */
-/* { dg-final { scan-assembler {\tcmplt\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #15\n} } } */
+/* { dg-final { scan-assembler {\tcmple\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #14\n} } } */
+/* { dg-final { scan-assembler {\tcmple\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #14\n} } } */
+/* { dg-final { scan-assembler {\tcmple\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #14\n} } } */
+/* { dg-final { scan-assembler {\tcmple\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #14\n} } } */
 
-/* { dg-final { scan-assembler {\tcmpge\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #15\n} } } */
-/* { dg-final { scan-assembler {\tcmpge\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #15\n} } } */
-/* { dg-final { scan-assembler {\tcmpge\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #15\n} } } */
-/* { dg-final { scan-assembler {\tcmpge\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #15\n} } } */
+/* { dg-final { scan-assembler {\tcmpgt\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #14\n} } } */
+/* { dg-final { scan-assembler {\tcmpgt\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #14\n} } } */
+/* { dg-final { scan-assembler {\tcmpgt\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #14\n} } } */
+/* { dg-final { scan-assembler {\tcmpgt\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #14\n} } } */
 
 /* { dg-final { scan-assembler {\tcmple\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #15\n} } } */
 /* { dg-final { scan-assembler {\tcmple\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #15\n} } } */
@@ -179,10 +179,10 @@ TEST_IMM_ALL (DEF_VCOND_IMM)
 /* { dg-final { scan-assembler {\tcmpne\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #15\n} } } */
 /* { dg-final { scan-assembler {\tcmpne\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #15\n} } } */
 
-/* { dg-final { scan-assembler {\tcmpgt\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #-16\n} } } */
-/* { dg-final { scan-assembler {\tcmpgt\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #-16\n} } } */
-/* { dg-final { scan-assembler {\tcmpgt\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #-16\n} } } */
-/* { dg-final { scan-assembler {\tcmpgt\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #-16\n} } } */
+/* { dg-final { scan-assembler {\tcmpge\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #-15\n} } } */
+/* { dg-final { scan-assembler {\tcmpge\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #-15\n} } } */
+/* { dg-final { scan-assembler {\tcmpge\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #-15\n} } } */
+/* { dg-final { scan-assembler {\tcmpge\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #-15\n} } } */
 
 /* { dg-final { scan-assembler {\tcmplt\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #-16\n} } } */
 /* { dg-final { scan-assembler {\tcmplt\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #-16\n} } } */
@@ -194,10 +194,10 @@ TEST_IMM_ALL (DEF_VCOND_IMM)
 /* { dg-final { scan-assembler {\tcmpge\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #-16\n} } } */
 /* { dg-final { scan-assembler {\tcmpge\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #-16\n} } } */
 
-/* { dg-final { scan-assembler {\tcmple\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #-16\n} } } */
-/* { dg-final { scan-assembler {\tcmple\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #-16\n} } } */
-/* { dg-final { scan-assembler {\tcmple\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #-16\n} } } */
-/* { dg-final { scan-assembler {\tcmple\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #-16\n} } } */
+/* { dg-final { scan-assembler {\tcmplt\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #-15\n} } } */
+/* { dg-final { scan-assembler {\tcmplt\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #-15\n} } } */
+/* { dg-final { scan-assembler {\tcmplt\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #-15\n} } } */
+/* { dg-final { scan-assembler {\tcmplt\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #-15\n} } } */
 
 /* { dg-final { scan-assembler {\tcmpeq\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #-16\n} } } */
 /* { dg-final { scan-assembler {\tcmpeq\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #-16\n} } } */
@@ -211,15 +211,15 @@ TEST_IMM_ALL (DEF_VCOND_IMM)
 
 
 
-/* { dg-final { scan-assembler {\tcmphi\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #0\n} } } */
-/* { dg-final { scan-assembler {\tcmphi\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #0\n} } } */
-/* { dg-final { scan-assembler {\tcmphi\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #0\n} } } */
-/* { dg-final { scan-assembler {\tcmphi\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #0\n} } } */
+/* { dg-final { scan-assembler {\tcmpne\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #0\n} } } */
+/* { dg-final { scan-assembler {\tcmpne\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #0\n} } } */
+/* { dg-final { scan-assembler {\tcmpne\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #0\n} } } */
+/* { dg-final { scan-assembler {\tcmpne\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #0\n} } } */
 
-/* { dg-final { scan-assembler {\tcmpls\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #0\n} } } */
-/* { dg-final { scan-assembler {\tcmpls\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #0\n} } } */
-/* { dg-final { scan-assembler {\tcmpls\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #0\n} } } */
-/* { dg-final { scan-assembler {\tcmpls\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #0\n} } } */
+/* { dg-final { scan-assembler {\tcmpeq\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #0\n} } } */
+/* { dg-final { scan-assembler {\tcmpeq\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #0\n} } } */
+/* { dg-final { scan-assembler {\tcmpeq\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #0\n} } } */
+/* { dg-final { scan-assembler {\tcmpeq\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #0\n} } } */
 
 
 /* { dg-final { scan-assembler {\tcmphi\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #31\n} } } */
@@ -227,15 +227,15 @@ TEST_IMM_ALL (DEF_VCOND_IMM)
 /* { dg-final { scan-assembler {\tcmphi\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #31\n} } } */
 /* { dg-final { scan-assembler {\tcmphi\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #31\n} } } */
 
-/* { dg-final { scan-assembler {\tcmplo\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #31\n} } } */
-/* { dg-final { scan-assembler {\tcmplo\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #31\n} } } */
-/* { dg-final { scan-assembler {\tcmplo\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #31\n} } } */
-/* { dg-final { scan-assembler {\tcmplo\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #31\n} } } */
+/* { dg-final { scan-assembler {\tcmpls\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #30\n} } } */
+/* { dg-final { scan-assembler {\tcmpls\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #30\n} } } */
+/* { dg-final { scan-assembler {\tcmpls\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #30\n} } } */
+/* { dg-final { scan-assembler {\tcmpls\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #30\n} } } */
 
-/* { dg-final { scan-assembler {\tcmphs\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #31\n} } } */
-/* { dg-final { scan-assembler {\tcmphs\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #31\n} } } */
-/* { dg-final { scan-assembler {\tcmphs\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #31\n} } } */
-/* { dg-final { scan-assembler {\tcmphs\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #31\n} } } */
+/* { dg-final { scan-assembler {\tcmphi\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #30\n} } } */
+/* { dg-final { scan-assembler {\tcmphi\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #30\n} } } */
+/* { dg-final { scan-assembler {\tcmphi\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #30\n} } } */
+/* { dg-final { scan-assembler {\tcmphi\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #30\n} } } */
 
 /* { dg-final { scan-assembler {\tcmpls\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #31\n} } } */
 /* { dg-final { scan-assembler {\tcmpls\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #31\n} } } */

@@ -133,6 +133,25 @@ bool isCVariadicParameter(Dsymbols *a, const utf8_t *p, size_t len)
     return false;
 }
 
+/****************************************************
+ */
+static Parameter *isFunctionParameter(Dsymbol *s, const utf8_t *p, size_t len)
+{
+    TypeFunction *tf = isTypeFunction(s);
+    if (tf && tf->parameters)
+    {
+        for (size_t k = 0; k < tf->parameters->dim; k++)
+        {
+            Parameter *fparam = (*tf->parameters)[k];
+            if (fparam->ident && cmp(fparam->ident->toChars(), p, len) == 0)
+            {
+                return fparam;
+            }
+        }
+    }
+    return NULL;
+}
+
 static Dsymbol *getEponymousMember(TemplateDeclaration *td)
 {
     if (!td->onemember)
@@ -147,6 +166,54 @@ static Dsymbol *getEponymousMember(TemplateDeclaration *td)
     if (VarDeclaration *vd = td->onemember->isVarDeclaration())
         return td->constraint ? NULL : vd;
 
+    return NULL;
+}
+
+/****************************************************
+ */
+static Parameter *isEponymousFunctionParameter(Dsymbols *a, const utf8_t *p, size_t len)
+{
+    for (size_t i = 0; i < a->dim; i++)
+    {
+        TemplateDeclaration *td = (*a)[i]->isTemplateDeclaration();
+        if (td && td->onemember)
+        {
+            /* Case 1: we refer to a template declaration inside the template
+
+               /// ...ddoc...
+               template case1(T) {
+                 void case1(R)() {}
+               }
+             */
+            td = td->onemember->isTemplateDeclaration();
+        }
+        if (!td)
+        {
+            /* Case 2: we're an alias to a template declaration
+
+               /// ...ddoc...
+               alias case2 = case1!int;
+             */
+            AliasDeclaration *ad = (*a)[i]->isAliasDeclaration();
+            if (ad && ad->aliassym)
+            {
+                td = ad->aliassym->isTemplateDeclaration();
+            }
+        }
+        while (td)
+        {
+            Dsymbol *sym = getEponymousMember(td);
+            if (sym)
+            {
+                Parameter *fparam = isFunctionParameter(sym, p, len);
+                if (fparam)
+                {
+                    return fparam;
+                }
+            }
+            td = td->overnext;
+        }
+    }
     return NULL;
 }
 
@@ -1590,6 +1657,12 @@ void ParamSection::write(Loc loc, DocComment *, Scope *sc, Dsymbols *a, OutBuffe
                 {
                     size_t o = buf->offset;
                     Parameter *fparam = isFunctionParameter(a, namestart, namelen);
+                    if (!fparam)
+                    {
+                        // Comments on a template might refer to function parameters within.
+                        // Search the parameters of nested eponymous functions (with the same name.)
+                        fparam = isEponymousFunctionParameter(a, namestart, namelen);
+                    }
                     bool isCVariadic = isCVariadicParameter(a, namestart, namelen);
                     if (isCVariadic)
                     {
@@ -2085,17 +2158,10 @@ Parameter *isFunctionParameter(Dsymbols *a, const utf8_t *p, size_t len)
 {
     for (size_t i = 0; i < a->dim; i++)
     {
-        TypeFunction *tf = isTypeFunction((*a)[i]);
-        if (tf && tf->parameters)
+        Parameter *fparam = isFunctionParameter((*a)[i], p, len);
+        if (fparam)
         {
-            for (size_t k = 0; k < tf->parameters->dim; k++)
-            {
-                Parameter *fparam = (*tf->parameters)[k];
-                if (fparam->ident && cmp(fparam->ident->toChars(), p, len) == 0)
-                {
-                    return fparam;
-                }
-            }
+            return fparam;
         }
     }
     return NULL;
@@ -2108,7 +2174,10 @@ TemplateParameter *isTemplateParameter(Dsymbols *a, const utf8_t *p, size_t len)
 {
     for (size_t i = 0; i < a->dim; i++)
     {
-        TemplateDeclaration *td = getEponymousParent((*a)[i]);
+        TemplateDeclaration *td = (*a)[i]->isTemplateDeclaration();
+        // Check for the parent, if the current symbol is not a template declaration.
+        if (!td)
+            td = getEponymousParent((*a)[i]);
         if (td && td->origParameters)
         {
             for (size_t k = 0; k < td->origParameters->dim; k++)

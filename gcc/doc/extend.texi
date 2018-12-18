@@ -27,6 +27,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Local Labels::        Labels local to a block.
 * Labels as Values::    Getting pointers to labels, and computed gotos.
 * Nested Functions::    Nested function in GNU C.
+* Nonlocal Gotos::      Nonlocal gotos.
 * Constructing Calls::  Dispatching a call to another function.
 * Typeof::              @code{typeof}: referring to the type of an expression.
 * Conditionals::        Omitting the middle operand of a @samp{?:} expression.
@@ -519,6 +520,61 @@ bar (int *array, int offset, int size)
   /* @r{@dots{}} */
 @}
 @end smallexample
+
+@node Nonlocal Gotos
+@section Nonlocal Gotos
+@cindex nonlocal gotos
+
+GCC provides the built-in functions @code{__builtin_setjmp} and
+@code{__builtin_longjmp} which are similar to, but not interchangeable
+with, the C library functions @code{setjmp} and @code{longjmp}.  
+The built-in versions are used internally by GCC's libraries
+to implement exception handling on some targets.  You should use the 
+standard C library functions declared in @code{<setjmp.h>} in user code
+instead of the builtins.
+
+The built-in versions of these functions use GCC's normal
+mechanisms to save and restore registers using the stack on function
+entry and exit.  The jump buffer argument @var{buf} holds only the
+information needed to restore the stack frame, rather than the entire 
+set of saved register values.  
+
+An important caveat is that GCC arranges to save and restore only
+those registers known to the specific architecture variant being
+compiled for.  This can make @code{__builtin_setjmp} and
+@code{__builtin_longjmp} more efficient than their library
+counterparts in some cases, but it can also cause incorrect and
+mysterious behavior when mixing with code that uses the full register
+set.
+
+You should declare the jump buffer argument @var{buf} to the
+built-in functions as:
+
+@smallexample
+#include <stdint.h>
+intptr_t @var{buf}[5];
+@end smallexample
+
+@deftypefn {Built-in Function} {int} __builtin_setjmp (intptr_t *@var{buf})
+This function saves the current stack context in @var{buf}.  
+@code{__builtin_setjmp} returns 0 when returning directly,
+and 1 when returning from @code{__builtin_longjmp} using the same
+@var{buf}.
+@end deftypefn
+
+@deftypefn {Built-in Function} {void} __builtin_longjmp (intptr_t *@var{buf}, int @var{val})
+This function restores the stack context in @var{buf}, 
+saved by a previous call to @code{__builtin_setjmp}.  After
+@code{__builtin_longjmp} is finished, the program resumes execution as
+if the matching @code{__builtin_setjmp} returns the value @var{val},
+which must be 1.
+
+Because @code{__builtin_longjmp} depends on the function return
+mechanism to restore the stack context, it cannot be called
+from the same function calling @code{__builtin_setjmp} to
+initialize @var{buf}.  It can only be called from a function called
+(directly or indirectly) from the function calling @code{__builtin_setjmp}.
+@end deftypefn
 
 @node Constructing Calls
 @section Constructing Function Calls
@@ -2276,30 +2332,46 @@ the enclosing block.
 @cindex @code{volatile} applied to function
 @cindex @code{const} applied to function
 
-In GNU C, you can use function attributes to declare certain things
-about functions called in your program which help the compiler
-optimize calls and check your code more carefully.  For example, you
-can use attributes to declare that a function never returns
-(@code{noreturn}), returns a value depending only on its arguments
-(@code{pure}), or has @code{printf}-style arguments (@code{format}).
+In GNU C and C++, you can use function attributes to specify certain
+function properties that may help the compiler optimize calls or
+check code more carefully for correctness.  For example, you
+can use attributes to specify that a function never returns
+(@code{noreturn}), returns a value depending only on the values of
+its arguments (@code{const}), or has @code{printf}-style arguments
+(@code{format}).
 
 You can also use attributes to control memory placement, code
 generation options or call/return conventions within the function
 being annotated.  Many of these attributes are target-specific.  For
 example, many targets support attributes for defining interrupt
 handler functions, which typically must follow special register usage
-and return conventions.
+and return conventions.  Such attributes are described in the subsection
+for each target.  However, a considerable number of attributes are
+supported by most, if not all targets.  Those are described in
+the @ref{Common Function Attributes} section.
 
 Function attributes are introduced by the @code{__attribute__} keyword
-on a declaration, followed by an attribute specification inside double
-parentheses.  You can specify multiple attributes in a declaration by
-separating them by commas within the double parentheses or by
-immediately following an attribute declaration with another attribute
-declaration.  @xref{Attribute Syntax}, for the exact rules on attribute
-syntax and placement.  Compatible attribute specifications on distinct
-declarations of the same function are merged.  An attribute specification
-that is not compatible with attributes already applied to a declaration
-of the same function is ignored with a warning.
+in the declaration of a function, followed by an attribute specification
+enclosed in double parentheses.  You can specify multiple attributes in
+a declaration by separating them by commas within the double parentheses
+or by immediately following one attribute specification with another.
+@xref{Attribute Syntax}, for the exact rules on attribute syntax and
+placement.  Compatible attribute specifications on distinct declarations
+of the same function are merged.  An attribute specification that is not
+compatible with attributes already applied to a declaration of the same
+function is ignored with a warning.
+
+Some function attributes take one or more arguments that refer to
+the function's parameters by their positions within the function parameter
+list.  Such attribute arguments are referred to as @dfn{positional arguments}.
+Unless specified otherwise, positional arguments that specify properties
+of parameters with pointer types can also specify the same properties of
+the implicit C++ @code{this} argument in non-static member functions, and
+of parameters of reference to a pointer type.  For ordinary functions,
+position one refers to the first parameter on the list.  In C++ non-static
+member functions, position one refers to the implicit @code{this} pointer.
+The same restrictions and effects apply to function attributes used with
+ordinary functions or C++ member functions.
 
 GCC also supports attributes on
 variable declarations (@pxref{Variable Attributes}),
@@ -2386,16 +2458,20 @@ and may not be available on all targets.
 @itemx aligned (@var{alignment})
 @cindex @code{aligned} function attribute
 The @code{aligned} attribute specifies a minimum alignment for
-the function, measured in bytes.  When specified, @var{alignment} must
-be an integer constant power of 2.  Specifying no @var{alignment} argument
-implies the maximum alignment for the target, which is often, but by no
-means always, 8 or 16 bytes.
+the first instruction of the function, measured in bytes.  When specified,
+@var{alignment} must be an integer constant power of 2.  Specifying no
+@var{alignment} argument implies the ideal alignment for the target.
+The @code{__alignof__} operator can be used to determine what that is
+(@pxref{Alignment}).  The attribute has no effect when a definition for
+the function is not provided in the same translation unit.
 
-You cannot use this attribute to decrease the alignment of a function,
-only to increase it.  However, when you explicitly specify a function
-alignment this overrides the effect of the
-@option{-falign-functions} (@pxref{Optimize Options}) option for this
-function.
+The attribute cannot be used to decrease the alignment of a function
+previously declared with a more restrictive alignment; only to increase
+it.  Attempts to do otherwise are diagnosed.  Some targets specify
+a minimum default alignment for functions that is greater than 1.  On
+such targets, specifying a less restrictive alignment is silently ignored.
+Using the attribute overrides the effect of the @option{-falign-functions}
+(@pxref{Optimize Options}) option for this function.
 
 Note that the effectiveness of @code{aligned} attributes may be
 limited by inherent limitations in the system linker 
@@ -2446,7 +2522,7 @@ The function parameter(s) denoting the allocated size are specified by
 one or two integer arguments supplied to the attribute.  The allocated size
 is either the value of the single function argument specified or the product
 of the two function arguments specified.  Argument numbering starts at
-one.
+one for ordinary functions, and at two for C++ non-static member functions.
 
 For instance,
 
@@ -2518,25 +2594,45 @@ are automatically detected and this attribute is ignored.
 @item const
 @cindex @code{const} function attribute
 @cindex functions that have no side effects
-Many functions do not examine any values except their arguments, and
-have no effects except to return a value.  Calls to such functions lend
-themselves to optimization such as common subexpression elimination.
-The presence of the @code{const} attribute on a function declaration 
-allows GCC to emit more efficient code for some calls to the function.  
+Calls to functions whose return value is not affected by changes to
+the observable state of the program and that have no observable effects
+on such state other than to return a value may lend themselves to
+optimizations such as common subexpression elimination.  Declaring such
+functions with the @code{const} attribute allows GCC to avoid emitting
+some calls in repeated invocations of the function with the same argument
+values.
+
+For example,
+
+@smallexample
+int square (int) __attribute__ ((const));
+@end smallexample
+
+@noindent
+tells GCC that subsequent calls to function @code{square} with the same
+argument value can be replaced by the result of the first call regardless
+of the statements in between.
+
+The @code{const} attribute prohibits a function from reading objects
+that affect its return value between successive invocations.  However,
+functions declared with the attribute can safely read objects that do
+not change their return value, such as non-volatile constants.
 
 The @code{const} attribute imposes greater restrictions on a function's
-definition than the similar @code{pure} attribute below because it
-additionally prohibits the function from reading memory except for
-constant global variables.  Decorating the same function with
-both the @code{const} and the @code{pure} attribute is diagnosed.
+definition than the similar @code{pure} attribute.  Declaring the same
+function with both the @code{const} and the @code{pure} attribute is
+diagnosed.  Because a const function cannot have any observable side
+effects it does not make sense for it to return @code{void}.  Declaring
+such a function is diagnosed.
 
 @cindex pointer arguments
 Note that a function that has pointer arguments and examines the data
-pointed to must @emph{not} be declared @code{const}.  Likewise, a
-function that calls a non-@code{const} function usually must not be
-@code{const}.  Because a @code{const} function cannot have any side
-effects it does not make sense for such a function to return @code{void}.
-Declaring such a function is diagnosed.
+pointed to must @emph{not} be declared @code{const} if the pointed-to
+data might change between successive invocations of the function.  In
+general, since a function cannot distinguish data that might change
+from data that cannot, const functions should never take pointer or,
+in C++, reference arguments. Likewise, a function that calls a non-const
+function usually must not be const itself.
 
 @item constructor
 @itemx destructor
@@ -2582,15 +2678,15 @@ to specify the same set of attributes as their targets.  The @code{copy}
 attribute can be used with functions, variables, or types.  However,
 the kind of symbol to which the attribute is applied (either function
 or variable) must match the kind of symbol to which the argument refers.
-The @code{copy} attribute copies only syntaxtic and semantic attributes
-but attributes that affect a symbol's linkage or visibility such as
+The @code{copy} attribute copies only syntactic and semantic attributes
+but not attributes that affect a symbol's linkage or visibility such as
 @code{alias}, @code{visibility}, or @code{weak}.  The @code{deprecated}
 attribute is also not copied.  @xref{Common Type Attributes}.
 @xref{Common Variable Attributes}.
 
 For example, the @var{StrongAlias} macro below makes use of the @code{alias}
 and @code{copy} attributes to define an alias named @var{alloc} for function
-@var{allocate} declated with attributes @var{alloc_size}, @var{malloc}, and
+@var{allocate} declared with attributes @var{alloc_size}, @var{malloc}, and
 @var{nothrow}.  Thanks to the @code{__typeof__} operator the alias has
 the same type as the target function.  As a result of the @code{copy}
 attribute the alias also shares the same attributes as the target.
@@ -3301,34 +3397,52 @@ to prevent recursion.
 @item pure
 @cindex @code{pure} function attribute
 @cindex functions that have no side effects
-Many functions have no effects except the return value and their
-return value depends only on the parameters and/or global variables.
-Calls to such functions can be subject
-to common subexpression elimination and loop optimization just as an
-arithmetic operator would be.  These functions should be declared
-with the attribute @code{pure}.  For example,
+
+Calls to functions that have no observable effects on the state of
+the program other than to return a value may lend themselves to optimizations
+such as common subexpression elimination.  Declaring such functions with
+the @code{pure} attribute allows GCC to avoid emitting some calls in repeated
+invocations of the function with the same argument values.
+
+The @code{pure} attribute prohibits a function from modifying the state
+of the program that is observable by means other than inspecting
+the function's return value.  However, functions declared with the @code{pure}
+attribute can safely read any non-volatile objects, and modify the value of
+objects in a way that does not affect their return value or the observable
+state of the program.
+
+For example,
 
 @smallexample
-int square (int) __attribute__ ((pure));
+int hash (char *) __attribute__ ((pure));
 @end smallexample
 
 @noindent
-says that the hypothetical function @code{square} is safe to call
-fewer times than the program says.
+tells GCC that subsequent calls to the function @code{hash} with the same
+string can be replaced by the result of the first call provided the state
+of the program observable by @code{hash}, including the contents of the array
+itself, does not change in between.  Even though @code{hash} takes a non-const
+pointer argument it must not modify the array it points to, or any other object
+whose value the rest of the program may depend on.  However, the caller may
+safely change the contents of the array between successive calls to
+the function (doing so disables the optimization).  The restriction also
+applies to member objects referenced by the @code{this} pointer in C++
+non-static member functions.
 
 Some common examples of pure functions are @code{strlen} or @code{memcmp}.
 Interesting non-pure functions are functions with infinite loops or those
 depending on volatile memory or other system resource, that may change between
-two consecutive calls (such as @code{feof} in a multithreading environment).
+consecutive calls (such as the standard C @code{feof} function in
+a multithreading environment).
 
 The @code{pure} attribute imposes similar but looser restrictions on
 a function's definition than the @code{const} attribute: @code{pure}
-allows the function to read any non-volatile memory, not just
-constant global variables.  Decorating the same function with
-both the @code{pure} and the @code{const} attribute is diagnosed.
-Because a @code{pure} function cannot have any side effects it does not
-make sense for such a function to return @code{void}.  Declaring such
-a function is diagnosed.
+allows the function to read any non-volatile memory, even if it changes
+in between successive invocations of the function.  Declaring the same
+function with both the @code{pure} and the @code{const} attribute is
+diagnosed.  Because a pure function cannot have any observable side
+effects it does not make sense for such a function to return @code{void}.
+Declaring such a function is diagnosed.
 
 @item returns_nonnull
 @cindex @code{returns_nonnull} function attribute
@@ -6019,6 +6133,13 @@ foo (void)
 @}
 @end smallexample
 
+@item cf_check
+@cindex @code{cf_check} function attribute, x86
+
+The @code{cf_check} attribute on a function is used to inform the
+compiler that ENDBR instruction should be placed at the function
+entry when @option{-fcf-protection=branch} is enabled.
+
 @item indirect_return
 @cindex @code{indirect_return} function attribute, x86
 
@@ -6067,13 +6188,13 @@ when this attribute is present.
 @cindex attribute of variables
 @cindex variable attributes
 
-The keyword @code{__attribute__} allows you to specify special
-attributes of variables or structure fields.  This keyword is followed
-by an attribute specification inside double parentheses.  Some
-attributes are currently defined generically for variables.
-Other attributes are defined for variables on particular target
-systems.  Other attributes are available for functions
-(@pxref{Function Attributes}), labels (@pxref{Label Attributes}),
+The keyword @code{__attribute__} allows you to specify special properties
+of variables, function parameters, or structure, union, and, in C++, class
+members.  This @code{__attribute__} keyword is followed by an attribute
+specification enclosed in double parentheses.  Some attributes are currently
+defined generically for variables.  Other attributes are defined for
+variables on particular target systems.  Other attributes are available
+for functions (@pxref{Function Attributes}), labels (@pxref{Label Attributes}),
 enumerators (@pxref{Enumerator Attributes}), statements
 (@pxref{Statement Attributes}), and for types (@pxref{Type Attributes}).
 Other front ends might define more attributes
@@ -6222,6 +6343,34 @@ This warning can be disabled by @option{-Wno-if-not-aligned}.
 The @code{warn_if_not_aligned} attribute can also be used for types
 (@pxref{Common Type Attributes}.)
 
+@item alloc_size (@var{position})
+@itemx alloc_size (@var{position-1}, @var{position-2})
+@cindex @code{alloc_size} variable attribute
+The @code{alloc_size} variable attribute may be applied to the declaration
+of a pointer to a function that returns a pointer and takes at least one
+argument of an integer type.  It indicates that the returned pointer points
+to an object whose size is given by the function argument at @var{position-1},
+or by the product of the arguments at @var{position-1} and @var{position-2}.
+Meaningful sizes are positive values less than @code{PTRDIFF_MAX}.  Other
+sizes are disagnosed when detected.  GCC uses this information to improve
+the results of @code{__builtin_object_size}.
+
+For instance, the following declarations
+
+@smallexample
+typedef __attribute__ ((alloc_size (1, 2))) void*
+  (*calloc_ptr) (size_t, size_t);
+typedef __attribute__ ((alloc_size (1))) void*
+  (*malloc_ptr) (size_t);
+@end smallexample
+
+@noindent
+specify that @code{calloc_ptr} is a pointer of a function that, like
+the standard C function @code{calloc}, returns an object whose size
+is given by the product of arguments 1 and 2, and similarly, that
+@code{malloc_ptr}, like the standard C function @code{malloc},
+returns an object whose size is given by argument 1 to the function.
+
 @item cleanup (@var{cleanup_function})
 @cindex @code{cleanup} variable attribute
 The @code{cleanup} attribute runs a function when the variable goes
@@ -6262,8 +6411,8 @@ set of attributes as the aliased symbols.  The @code{copy} attribute
 can be used with variables, functions or types.  However, the kind
 of symbol to which the attribute is applied (either varible or
 function) must match the kind of symbol to which the argument refers.
-The @code{copy} attribute copies only syntaxtic and semantic attributes
-but attributes that affect a symbol's linkage or visibility such as
+The @code{copy} attribute copies only syntactic and semantic attributes
+but not attributes that affect a symbol's linkage or visibility such as
 @code{alias}, @code{visibility}, or @code{weak}.  The @code{deprecated}
 attribute is also not copied.  @xref{Common Function Attributes}.
 @xref{Common Type Attributes}.
@@ -7026,17 +7175,21 @@ placed in either the @code{.bss_below100} section or the
 @cindex attribute of types
 @cindex type attributes
 
-The keyword @code{__attribute__} allows you to specify special
-attributes of types.  Some type attributes apply only to @code{struct}
-and @code{union} types, while others can apply to any type defined
-via a @code{typedef} declaration.  Other attributes are defined for
-functions (@pxref{Function Attributes}), labels (@pxref{Label 
-Attributes}), enumerators (@pxref{Enumerator Attributes}), 
-statements (@pxref{Statement Attributes}), and for
-variables (@pxref{Variable Attributes}).
+The keyword @code{__attribute__} allows you to specify various special
+properties of types.  Some type attributes apply only to structure and
+union types, and in C++, also class types, while others can apply to
+any type defined via a @code{typedef} declaration.  Unless otherwise
+specified, the same restrictions and effects apply to attributes regardless
+of whether a type is a trivial structure or a C++ class with user-defined
+constructors, destructors, or a copy assignment.
+
+Other attributes are defined for functions (@pxref{Function Attributes}),
+labels (@pxref{Label  Attributes}), enumerators (@pxref{Enumerator
+Attributes}), statements (@pxref{Statement Attributes}), and for variables
+(@pxref{Variable Attributes}).
 
 The @code{__attribute__} keyword is followed by an attribute specification
-inside double parentheses.  
+enclosed in double parentheses.
 
 You may specify type attributes in an enum, struct or union type
 declaration or definition by placing them immediately after the
@@ -7203,6 +7356,34 @@ struct __attribute__ ((aligned (8))) foo
 
 This warning can be disabled by @option{-Wno-if-not-aligned}.
 
+@item alloc_size (@var{position})
+@itemx alloc_size (@var{position-1}, @var{position-2})
+@cindex @code{alloc_size} type attribute
+The @code{alloc_size} type attribute may be applied to the definition
+of a type of a function that returns a pointer and takes at least one
+argument of an integer type.  It indicates that the returned pointer
+points to an object whose size is given by the function argument at
+@var{position-1}, or by the product of the arguments at @var{position-1}
+and @var{position-2}.  Meaningful sizes are positive values less than
+@code{PTRDIFF_MAX}.  Other sizes are disagnosed when detected.  GCC uses
+this information to improve the results of @code{__builtin_object_size}.
+
+For instance, the following declarations
+
+@smallexample
+typedef __attribute__ ((alloc_size (1, 2))) void*
+  calloc_type (size_t, size_t);
+typedef __attribute__ ((alloc_size (1))) void*
+  malloc_type (size_t);
+@end smallexample
+
+@noindent
+specify that @code{calloc_type} is a type of a function that, like
+the standard C function @code{calloc}, returns an object whose size
+is given by the product of arguments 1 and 2, and that
+@code{malloc_type}, like the standard C function @code{malloc},
+returns an object whose size is given by argument 1 to the function.
+
 @item copy
 @itemx copy (@var{expression})
 @cindex @code{copy} type attribute
@@ -7215,14 +7396,14 @@ The @code{copy} attribute can be used with types, variables, or
 functions.  However, the kind of symbol to which the attribute is
 applied (either varible or function) must match the kind of symbol
 to which the argument refers.
-The @code{copy} attribute copies only syntaxtic and semantic attributes
-but attributes that affect a symbol's linkage or visibility such as
+The @code{copy} attribute copies only syntactic and semantic attributes
+but not attributes that affect a symbol's linkage or visibility such as
 @code{alias}, @code{visibility}, or @code{weak}.  The @code{deprecated}
 attribute is also not copied.  @xref{Common Function Attributes}.
 @xref{Common Variable Attributes}.
 
 For example, suppose @code{struct A} below is defined in some third
-partly library header to have the alignment requirement @code{N} and
+party library header to have the alignment requirement @code{N} and
 to force a warning whenever a variable of the type is not so aligned
 due to attribute @code{packed}.  Specifying the @code{copy} attribute
 on the definition on the unrelated @code{struct B} has the effect of
@@ -8387,7 +8568,7 @@ for a C symbol, or to place a C variable in a specific register.
 A basic @code{asm} statement has the following syntax:
 
 @example
-asm @r{[} volatile @r{]} ( @var{AssemblerInstructions} )
+asm @var{asm-qualifiers} ( @var{AssemblerInstructions} )
 @end example
 
 The @code{asm} keyword is a GNU extension.
@@ -8400,6 +8581,11 @@ various @option{-std} options, use @code{__asm__} instead of
 @item volatile
 The optional @code{volatile} qualifier has no effect. 
 All basic @code{asm} blocks are implicitly volatile.
+
+@item inline
+If you use the @code{inline} qualifier, then for inlining purposes the size
+of the @code{asm} statement is taken as the smallest size possible (@pxref{Size
+of an asm}).
 @end table
 
 @subsubheading Parameters
@@ -8515,17 +8701,19 @@ Extended @code{asm} syntax uses colons (@samp{:}) to delimit
 the operand parameters after the assembler template:
 
 @example
-asm @r{[}volatile@r{]} ( @var{AssemblerTemplate} 
+asm @var{asm-qualifiers} ( @var{AssemblerTemplate} 
                  : @var{OutputOperands} 
                  @r{[} : @var{InputOperands}
                  @r{[} : @var{Clobbers} @r{]} @r{]})
 
-asm @r{[}volatile@r{]} goto ( @var{AssemblerTemplate} 
+asm @var{asm-qualifiers} ( @var{AssemblerTemplate} 
                       : 
                       : @var{InputOperands}
                       : @var{Clobbers}
                       : @var{GotoLabels})
 @end example
+where in the last form, @var{asm-qualifiers} contains @code{goto} (and in the
+first form, not).
 
 The @code{asm} keyword is a GNU extension.
 When writing code that can be compiled with @option{-ansi} and the
@@ -8540,6 +8728,11 @@ The typical use of extended @code{asm} statements is to manipulate input
 values to produce output values. However, your @code{asm} statements may 
 also produce side effects. If so, you may need to use the @code{volatile} 
 qualifier to disable certain optimizations. @xref{Volatile}.
+
+@item inline
+If you use the @code{inline} qualifier, then for inlining purposes the size
+of the @code{asm} statement is taken as the smallest size possible
+(@pxref{Size of an asm}).
 
 @item goto
 This qualifier informs the compiler that the @code{asm} statement may 
@@ -8651,7 +8844,7 @@ void DoCheck(uint32_t dwSomeValue)
 The next example shows a case where the optimizers can recognize that the input 
 (@code{dwSomeValue}) never changes during the execution of the function and can 
 therefore move the @code{asm} outside the loop to produce more efficient code. 
-Again, using @code{volatile} disables this type of optimization.
+Again, using the @code{volatile} qualifier disables this type of optimization.
 
 @example
 void do_print(uint32_t dwSomeValue)
@@ -8707,20 +8900,21 @@ GCC's optimizers do not treat this code like the non-volatile code in the
 earlier examples. They do not move it out of loops or omit it on the 
 assumption that the result from a previous call is still valid.
 
-Note that the compiler can move even volatile @code{asm} instructions relative 
+Note that the compiler can move even @code{volatile asm} instructions relative
 to other code, including across jump instructions. For example, on many 
 targets there is a system register that controls the rounding mode of 
-floating-point operations. Setting it with a volatile @code{asm}, as in the 
-following PowerPC example, does not work reliably.
+floating-point operations. Setting it with a @code{volatile asm} statement,
+as in the following PowerPC example, does not work reliably.
 
 @example
 asm volatile("mtfsf 255, %0" : : "f" (fpenv));
 sum = x + y;
 @end example
 
-The compiler may move the addition back before the volatile @code{asm}. To 
-make it work as expected, add an artificial dependency to the @code{asm} by 
-referencing a variable in the subsequent code, for example: 
+The compiler may move the addition back before the @code{volatile asm}
+statement. To make it work as expected, add an artificial dependency to
+the @code{asm} by referencing a variable in the subsequent code, for
+example:
 
 @example
 asm volatile ("mtfsf 255,%1" : "=X" (sum) : "f" (fpenv));
@@ -8729,7 +8923,7 @@ sum = x + y;
 
 Under certain circumstances, GCC may duplicate (or remove duplicates of) your 
 assembly code when optimizing. This can lead to unexpected duplicate symbol 
-errors during compilation if your asm code defines symbols or labels. 
+errors during compilation if your @code{asm} code defines symbols or labels. 
 Using @samp{%=} 
 (@pxref{AssemblerTemplate}) may help resolve this problem.
 
@@ -8758,7 +8952,7 @@ that some assembler dialects use semicolons to start a comment.
 Do not expect a sequence of @code{asm} statements to remain perfectly 
 consecutive after compilation, even when you are using the @code{volatile} 
 qualifier. If certain instructions need to remain consecutive in the output, 
-put them in a single multi-instruction asm statement.
+put them in a single multi-instruction @code{asm} statement.
 
 Accessing data from C programs without using input/output operands (such as 
 by using global symbols directly from the assembler template) may not work as 
@@ -8951,7 +9145,8 @@ The code generated by GCC to access the memory address in @var{b} can contain
 registers which @emph{might} be shared by @var{a}, and GCC considers those 
 registers to be inputs to the asm. As above, GCC assumes that such input
 registers are consumed before any outputs are written. This assumption may 
-result in incorrect behavior if the asm writes to @var{a} before using 
+result in incorrect behavior if the @code{asm} statement writes to @var{a}
+before using
 @var{b}. Combining the @samp{&} modifier with the register constraint on @var{a}
 ensures that modifying @var{a} does not affect the address referenced by 
 @var{b}. Otherwise, the location of @var{b} 
@@ -9033,8 +9228,8 @@ for @code{d} by specifying both constraints.
 
 Some targets have a special register that holds the ``flags'' for the
 result of an operation or comparison.  Normally, the contents of that
-register are either unmodifed by the asm, or the asm is considered to
-clobber the contents.
+register are either unmodifed by the asm, or the @code{asm} statement is
+considered to clobber the contents.
 
 On some targets, a special form of output operand exists by which
 conditions in the flags register may be outputs of the asm.  The set of
@@ -9999,7 +10194,7 @@ does this by counting the number of instructions in the pattern of the
 @code{asm} and multiplying that by the length of the longest
 instruction supported by that processor.  (When working out the number
 of instructions, it assumes that any occurrence of a newline or of
-whatever statement separator character is supported by the assembler --
+whatever statement separator character is supported by the assembler ---
 typically @samp{;} --- indicates the end of an instruction.)
 
 Normally, GCC's estimate is adequate to ensure that correct
@@ -10009,6 +10204,11 @@ instructions, or if you use assembler directives that expand to more
 space in the object file than is needed for a single instruction.
 If this happens then the assembler may produce a diagnostic saying that
 a label is unreachable.
+
+@cindex @code{asm inline}
+This size is also used for inlining decisions.  If you use @code{asm inline}
+instead of just @code{asm}, then for inlining purposes the size of the asm
+is taken as the minimum size, ignoring how many instructions GCC thinks it is.
 
 @node Alternate Keywords
 @section Alternate Keywords
@@ -10535,7 +10735,7 @@ That is, if the current
 value of @code{*@var{ptr}} is @var{oldval}, then write @var{newval} into
 @code{*@var{ptr}}.
 
-The ``bool'' version returns true if the comparison is successful and
+The ``bool'' version returns @code{true} if the comparison is successful and
 @var{newval} is written.  The ``val'' version returns the contents
 of @code{*@var{ptr}} before the operation.
 
@@ -10736,18 +10936,18 @@ This compares the contents of @code{*@var{ptr}} with the contents of
 @code{*@var{expected}}. If equal, the operation is a @emph{read-modify-write}
 operation that writes @var{desired} into @code{*@var{ptr}}.  If they are not
 equal, the operation is a @emph{read} and the current contents of
-@code{*@var{ptr}} are written into @code{*@var{expected}}.  @var{weak} is true
-for weak compare_exchange, which may fail spuriously, and false for
+@code{*@var{ptr}} are written into @code{*@var{expected}}.  @var{weak} is @code{true}
+for weak compare_exchange, which may fail spuriously, and @code{false} for
 the strong variation, which never fails spuriously.  Many targets
 only offer the strong variation and ignore the parameter.  When in doubt, use
 the strong variation.
 
-If @var{desired} is written into @code{*@var{ptr}} then true is returned
+If @var{desired} is written into @code{*@var{ptr}} then @code{true} is returned
 and memory is affected according to the
 memory order specified by @var{success_memorder}.  There are no
 restrictions on what memory order can be used here.
 
-Otherwise, false is returned and memory is affected according
+Otherwise, @code{false} is returned and memory is affected according
 to @var{failure_memorder}. This memory order cannot be
 @code{__ATOMIC_RELEASE} nor @code{__ATOMIC_ACQ_REL}.  It also cannot be a
 stronger order than that specified by @var{success_memorder}.
@@ -10851,7 +11051,7 @@ All memory orders are valid.
 
 @deftypefn {Built-in Function} bool __atomic_always_lock_free (size_t size,  void *ptr)
 
-This built-in function returns true if objects of @var{size} bytes always
+This built-in function returns @code{true} if objects of @var{size} bytes always
 generate lock-free atomic instructions for the target architecture.
 @var{size} must resolve to a compile-time constant and the result also
 resolves to a compile-time constant.
@@ -10868,7 +11068,7 @@ if (__atomic_always_lock_free (sizeof (long long), 0))
 
 @deftypefn {Built-in Function} bool __atomic_is_lock_free (size_t size, void *ptr)
 
-This built-in function returns true if objects of @var{size} bytes always
+This built-in function returns @code{true} if objects of @var{size} bytes always
 generate lock-free atomic instructions for the target architecture.  If
 the built-in function is not known to be lock-free, a call is made to a
 runtime routine named @code{__atomic_is_lock_free}.
@@ -10896,7 +11096,7 @@ These built-in functions promote the first two operands into infinite precision 
 type and perform addition on those promoted operands.  The result is then
 cast to the type the third pointer argument points to and stored there.
 If the stored result is equal to the infinite precision result, the built-in
-functions return false, otherwise they return true.  As the addition is
+functions return @code{false}, otherwise they return @code{true}.  As the addition is
 performed in infinite signed precision, these built-in functions have fully defined
 behavior for all argument values.
 
@@ -10953,7 +11153,7 @@ than enumerated or boolean type.
 The built-in functions promote the first two operands into infinite precision signed type
 and perform addition on those promoted operands. The result is then
 cast to the type of the third argument.  If the cast result is equal to the infinite
-precision result, the built-in functions return false, otherwise they return true.
+precision result, the built-in functions return @code{false}, otherwise they return @code{true}.
 The value of the third argument is ignored, just the side effects in the third argument
 are evaluated, and no integral argument promotions are performed on the last argument.
 If the third argument is a bit-field, the type used for the result cast has the
@@ -11049,7 +11249,10 @@ a limited extent, they can be used without optimization as well.
 @deftypefn {Built-in Function} {size_t} __builtin_object_size (const void * @var{ptr}, int @var{type})
 is a built-in construct that returns a constant number of bytes from
 @var{ptr} to the end of the object @var{ptr} pointer points to
-(if known at compile time).  @code{__builtin_object_size} never evaluates
+(if known at compile time).  To determine the sizes of dynamically allocated
+objects the function relies on the allocation functions called to obtain
+the storage to be declared with the @code{alloc_size} attribute (@xref{Common
+Function Attributes}).  @code{__builtin_object_size} never evaluates
 its arguments for side effects.  If there are any side effects in them, it
 returns @code{(size_t) -1} for @var{type} 0 or 1 and @code{(size_t) 0}
 for @var{type} 2 or 3.  If there are multiple objects @var{ptr} can
@@ -11174,6 +11377,7 @@ is called and the @var{flag} argument passed to it.
 @findex __builtin_islessequal
 @findex __builtin_islessgreater
 @findex __builtin_isunordered
+@findex __builtin_object_size
 @findex __builtin_powi
 @findex __builtin_powif
 @findex __builtin_powil
@@ -11832,7 +12036,7 @@ restrictions as the argument to @code{typeof} (@pxref{Typeof}).  The
 @var{attribute} argument is an attribute name optionally followed by
 a comma-separated list of arguments enclosed in parentheses.  Both forms
 of attribute names---with and without double leading and trailing
-underscores---are recognized.  See @xref{Attribute Syntax} for details.
+underscores---are recognized.  @xref{Attribute Syntax} for details.
 When no attribute arguments are specified for an attribute that expects
 one or more arguments the function returns @code{true} if
 @var{type-or-expression} has been declared with the attribute regardless
@@ -12025,7 +12229,7 @@ integer constant expression, is nonzero.  Otherwise it returns @var{exp2}.
 This built-in function is analogous to the @samp{? :} operator in C,
 except that the expression returned has its type unaltered by promotion
 rules.  Also, the built-in function does not evaluate the expression
-that is not chosen.  For example, if @var{const_exp} evaluates to true,
+that is not chosen.  For example, if @var{const_exp} evaluates to @code{true},
 @var{exp2} is not evaluated even if it has side effects.
 
 This built-in function can return an lvalue if the chosen argument is an
@@ -12211,7 +12415,7 @@ if (__builtin_expect (ptr != NULL, 1))
 when testing pointer or floating-point values.
 
 For the purposes of branch prediction optimizations, the probability that
-a @code{__builtin_expect} expression is true is controlled by GCC's
+a @code{__builtin_expect} expression is @code{true} is controlled by GCC's
 @code{builtin-expect-probability} parameter, which defaults to 90%.  
 You can also use @code{__builtin_expect_with_probability} to explicitly 
 assign a probability value to individual expressions.
@@ -12415,6 +12619,10 @@ address, but evaluation faults if @code{p} is not a valid address.
 If the target does not support data prefetch, the address expression
 is evaluated if it includes side effects but no other code is generated
 and GCC does not issue a warning.
+@end deftypefn
+
+@deftypefn {Built-in Function}{size_t} __builtin_object_size (const void * @var{ptr}, int @var{type})
+Returns the size of an object pointed to by @var{ptr}.  @xref{Object Size Checking} for a detailed description of the function.
 @end deftypefn
 
 @deftypefn {Built-in Function} double __builtin_huge_val (void)
@@ -14839,8 +15047,8 @@ Comparison of two paired-single values
 @code{bc1any2t}/@code{bc1any2f}).
 
 These functions compare @var{a} and @var{b} using @code{c.@var{cond}.ps}
-or @code{cabs.@var{cond}.ps}.  The @code{any} forms return true if either
-result is true and the @code{all} forms return true if both results are true.
+or @code{cabs.@var{cond}.ps}.  The @code{any} forms return @code{true} if either
+result is @code{true} and the @code{all} forms return @code{true} if both results are @code{true}.
 For example:
 
 @smallexample
@@ -14866,8 +15074,8 @@ Comparison of four paired-single values
 
 These functions use @code{c.@var{cond}.ps} or @code{cabs.@var{cond}.ps}
 to compare @var{a} with @var{b} and to compare @var{c} with @var{d}.
-The @code{any} forms return true if any of the four results are true
-and the @code{all} forms return true if all four results are true.
+The @code{any} forms return @code{true} if any of the four results are @code{true}
+and the @code{all} forms return @code{true} if all four results are @code{true}.
 For example:
 
 @smallexample
@@ -16031,7 +16239,8 @@ add 32.  Hence these instructions only modify the FPSCR[32:63] bits by
 changing the specified bit to a zero or one respectively.  The
 @code{__builtin_set_fpscr_rn} builtin allows changing both of the floating
 point rounding mode bits.  The argument is a 2-bit value.  The argument can
-either be a const int or stored in a variable. The builtin uses the ISA 3.0
+either be a @code{const int} or stored in a variable. The builtin uses
+the ISA 3.0
 instruction @code{mffscrn} if available, otherwise it reads the FPSCR, masks
 the current rounding mode bits out and OR's in the new value.
 
@@ -16087,7 +16296,8 @@ unsigned long long __builtin_unpack_dec128 (_Decimal128, int);
 
 The @code{__builtin_set_fpscr_drn} builtin allows changing the three decimal
 floating point rounding mode bits.  The argument is a 3-bit value.  The
-argument can either be a const int or the value can be stored in a variable.
+argument can either be a @code{const int} or the value can be stored in
+a variable.
 The builtin uses the ISA 3.0 instruction @code{mffscdrn} if available.
 Otherwise the builtin reads the FPSCR, masks the current decimal rounding
 mode bits out and OR's in the new value.
@@ -19478,7 +19688,7 @@ The HTM builtins (with the exception of @code{__builtin_tbegin}) return
 the full 4-bit condition register value set by their associated hardware
 instruction.  The header file @code{htmintrin.h} defines some macros that can
 be used to decipher the return value.  The @code{__builtin_tbegin} builtin
-returns a simple true or false value depending on whether a transaction was
+returns a simple @code{true} or @code{false} value depending on whether a transaction was
 successfully started or not.  The arguments of the builtins match exactly the
 type and order of the associated hardware instruction's operands, except for
 the @code{__builtin_tcheck} builtin, which does not take any input arguments.
@@ -20557,6 +20767,9 @@ Intel Core i7 Ice Lake Client CPU.
 
 @item icelake-server
 Intel Core i7 Ice Lake Server CPU.
+
+@item cascadelake
+Intel Core i7 Cascadelake CPU.
 
 @item bonnell
 Intel Atom Bonnell CPU.
@@ -22438,15 +22651,15 @@ This pragma gives the C function @var{oldname} the assembly symbol
 is defined if this pragma is available (currently on all platforms).
 @end table
 
-This pragma and the asm labels extension interact in a complicated
+This pragma and the @code{asm} labels extension interact in a complicated
 manner.  Here are some corner cases you may want to be aware of:
 
 @enumerate
 @item This pragma silently applies only to declarations with external
-linkage.  Asm labels do not have this restriction.
+linkage.  The @code{asm} label feature does not have this restriction.
 
 @item In C++, this pragma silently applies only to declarations with
-``C'' linkage.  Again, asm labels do not have this restriction.
+``C'' linkage.  Again, @code{asm} labels do not have this restriction.
 
 @item If either of the ways of changing the assembly name of a
 declaration are applied to a declaration whose assembly name has
@@ -23829,130 +24042,143 @@ pair of types).
 
 @table @code
 @item __has_nothrow_assign (type)
-If @code{type} is const qualified or is a reference type then the trait is
-false.  Otherwise if @code{__has_trivial_assign (type)} is true then the trait
-is true, else if @code{type} is a cv class or union type with copy assignment
-operators that are known not to throw an exception then the trait is true,
-else it is false.  Requires: @code{type} shall be a complete type,
-(possibly cv-qualified) @code{void}, or an array of unknown bound.
+If @code{type} is @code{const}-qualified or is a reference type then
+the trait is @code{false}.  Otherwise if @code{__has_trivial_assign (type)}
+is @code{true} then the trait is @code{true}, else if @code{type} is
+a cv-qualified class or union type with copy assignment operators that are
+known not to throw an exception then the trait is @code{true}, else it is
+@code{false}.
+Requires: @code{type} shall be a complete type, (possibly cv-qualified)
+@code{void}, or an array of unknown bound.
 
 @item __has_nothrow_copy (type)
-If @code{__has_trivial_copy (type)} is true then the trait is true, else if
-@code{type} is a cv class or union type with copy constructors that
-are known not to throw an exception then the trait is true, else it is false.
+If @code{__has_trivial_copy (type)} is @code{true} then the trait is
+@code{true}, else if @code{type} is a cv-qualified class or union type
+with copy constructors that are known not to throw an exception then
+the trait is @code{true}, else it is @code{false}.
 Requires: @code{type} shall be a complete type, (possibly cv-qualified)
 @code{void}, or an array of unknown bound.
 
 @item __has_nothrow_constructor (type)
-If @code{__has_trivial_constructor (type)} is true then the trait is
-true, else if @code{type} is a cv class or union type (or array
+If @code{__has_trivial_constructor (type)} is @code{true} then the trait
+is @code{true}, else if @code{type} is a cv class or union type (or array
 thereof) with a default constructor that is known not to throw an
-exception then the trait is true, else it is false.  Requires:
-@code{type} shall be a complete type, (possibly cv-qualified)
+exception then the trait is @code{true}, else it is @code{false}.
+Requires: @code{type} shall be a complete type, (possibly cv-qualified)
 @code{void}, or an array of unknown bound.
 
 @item __has_trivial_assign (type)
-If @code{type} is const qualified or is a reference type then the trait is
-false.  Otherwise if @code{__is_pod (type)} is true then the trait is
-true, else if @code{type} is a cv class or union type with a trivial
-copy assignment ([class.copy]) then the trait is true, else it is
-false.  Requires: @code{type} shall be a complete type, (possibly
-cv-qualified) @code{void}, or an array of unknown bound.
+If @code{type} is @code{const}- qualified or is a reference type then
+the trait is @code{false}.  Otherwise if @code{__is_pod (type)} is
+@code{true} then the trait is @code{true}, else if @code{type} is
+a cv-qualified class or union type with a trivial copy assignment
+([class.copy]) then the trait is @code{true}, else it is @code{false}.
+Requires: @code{type} shall be a complete type, (possibly cv-qualified)
+@code{void}, or an array of unknown bound.
 
 @item __has_trivial_copy (type)
-If @code{__is_pod (type)} is true or @code{type} is a reference type
-then the trait is true, else if @code{type} is a cv class or union type
-with a trivial copy constructor ([class.copy]) then the trait
-is true, else it is false.  Requires: @code{type} shall be a complete
-type, (possibly cv-qualified) @code{void}, or an array of unknown bound.
+If @code{__is_pod (type)} is @code{true} or @code{type} is a reference
+type then the trait is @code{true}, else if @code{type} is a cv class
+or union type with a trivial copy constructor ([class.copy]) then the trait
+is @code{true}, else it is @code{false}.  Requires: @code{type} shall be
+a complete type, (possibly cv-qualified) @code{void}, or an array of unknown
+bound.
 
 @item __has_trivial_constructor (type)
-If @code{__is_pod (type)} is true then the trait is true, else if
-@code{type} is a cv class or union type (or array thereof) with a
-trivial default constructor ([class.ctor]) then the trait is true,
-else it is false.  Requires: @code{type} shall be a complete
-type, (possibly cv-qualified) @code{void}, or an array of unknown bound.
+If @code{__is_pod (type)} is @code{true} then the trait is @code{true},
+else if @code{type} is a cv-qualified class or union type (or array thereof)
+with a trivial default constructor ([class.ctor]) then the trait is @code{true},
+else it is @code{false}.
+Requires: @code{type} shall be a complete type, (possibly cv-qualified)
+@code{void}, or an array of unknown bound.
 
 @item __has_trivial_destructor (type)
-If @code{__is_pod (type)} is true or @code{type} is a reference type then
-the trait is true, else if @code{type} is a cv class or union type (or
-array thereof) with a trivial destructor ([class.dtor]) then the trait
-is true, else it is false.  Requires: @code{type} shall be a complete
-type, (possibly cv-qualified) @code{void}, or an array of unknown bound.
+If @code{__is_pod (type)} is @code{true} or @code{type} is a reference type
+then the trait is @code{true}, else if @code{type} is a cv class or union
+type (or array thereof) with a trivial destructor ([class.dtor]) then
+the trait is @code{true}, else it is @code{false}.
+Requires: @code{type} shall be a complete type, (possibly cv-qualified)
+@code{void}, or an array of unknown bound.
 
 @item __has_virtual_destructor (type)
 If @code{type} is a class type with a virtual destructor
-([class.dtor]) then the trait is true, else it is false.  Requires:
-@code{type} shall be a complete type, (possibly cv-qualified)
+([class.dtor]) then the trait is @code{true}, else it is @code{false}.
+Requires: @code{type} shall be a complete type, (possibly cv-qualified)
 @code{void}, or an array of unknown bound.
 
 @item __is_abstract (type)
 If @code{type} is an abstract class ([class.abstract]) then the trait
-is true, else it is false.  Requires: @code{type} shall be a complete
-type, (possibly cv-qualified) @code{void}, or an array of unknown bound.
+is @code{true}, else it is @code{false}.
+Requires: @code{type} shall be a complete type, (possibly cv-qualified)
+@code{void}, or an array of unknown bound.
 
 @item __is_base_of (base_type, derived_type)
 If @code{base_type} is a base class of @code{derived_type}
-([class.derived]) then the trait is true, otherwise it is false.
-Top-level cv qualifications of @code{base_type} and
+([class.derived]) then the trait is @code{true}, otherwise it is @code{false}.
+Top-level cv-qualifications of @code{base_type} and
 @code{derived_type} are ignored.  For the purposes of this trait, a
-class type is considered is own base.  Requires: if @code{__is_class
-(base_type)} and @code{__is_class (derived_type)} are true and
-@code{base_type} and @code{derived_type} are not the same type
-(disregarding cv-qualifiers), @code{derived_type} shall be a complete
+class type is considered is own base.
+Requires: if @code{__is_class (base_type)} and @code{__is_class (derived_type)}
+are @code{true} and @code{base_type} and @code{derived_type} are not the same
+type (disregarding cv-qualifiers), @code{derived_type} shall be a complete
 type.  A diagnostic is produced if this requirement is not met.
 
 @item __is_class (type)
-If @code{type} is a cv class type, and not a union type
-([basic.compound]) the trait is true, else it is false.
+If @code{type} is a cv-qualified class type, and not a union type
+([basic.compound]) the trait is @code{true}, else it is @code{false}.
 
 @item __is_empty (type)
-If @code{__is_class (type)} is false then the trait is false.
+If @code{__is_class (type)} is @code{false} then the trait is @code{false}.
 Otherwise @code{type} is considered empty if and only if: @code{type}
 has no non-static data members, or all non-static data members, if
 any, are bit-fields of length 0, and @code{type} has no virtual
 members, and @code{type} has no virtual base classes, and @code{type}
 has no base classes @code{base_type} for which
-@code{__is_empty (base_type)} is false.  Requires: @code{type} shall
-be a complete type, (possibly cv-qualified) @code{void}, or an array
-of unknown bound.
+@code{__is_empty (base_type)} is @code{false}.
+Requires: @code{type} shall be a complete type, (possibly cv-qualified)
+@code{void}, or an array of unknown bound.
 
 @item __is_enum (type)
 If @code{type} is a cv enumeration type ([basic.compound]) the trait is
-true, else it is false.
+@code{true}, else it is @code{false}.
 
 @item __is_literal_type (type)
 If @code{type} is a literal type ([basic.types]) the trait is
-true, else it is false.  Requires: @code{type} shall be a complete type,
-(possibly cv-qualified) @code{void}, or an array of unknown bound.
+@code{true}, else it is @code{false}.
+Requires: @code{type} shall be a complete type, (possibly cv-qualified)
+@code{void}, or an array of unknown bound.
 
 @item __is_pod (type)
-If @code{type} is a cv POD type ([basic.types]) then the trait is true,
-else it is false.  Requires: @code{type} shall be a complete type,
-(possibly cv-qualified) @code{void}, or an array of unknown bound.
+If @code{type} is a cv POD type ([basic.types]) then the trait is @code{true},
+else it is @code{false}.
+Requires: @code{type} shall be a complete type, (possibly cv-qualified)
+@code{void}, or an array of unknown bound.
 
 @item __is_polymorphic (type)
 If @code{type} is a polymorphic class ([class.virtual]) then the trait
-is true, else it is false.  Requires: @code{type} shall be a complete
-type, (possibly cv-qualified) @code{void}, or an array of unknown bound.
+is @code{true}, else it is @code{false}.
+Requires: @code{type} shall be a complete type, (possibly cv-qualified)
+@code{void}, or an array of unknown bound.
 
 @item __is_standard_layout (type)
 If @code{type} is a standard-layout type ([basic.types]) the trait is
-true, else it is false.  Requires: @code{type} shall be a complete
-type, (possibly cv-qualified) @code{void}, or an array of unknown bound.
+@code{true}, else it is @code{false}.
+Requires: @code{type} shall be a complete type, (possibly cv-qualified)
+@code{void}, or an array of unknown bound.
 
 @item __is_trivial (type)
 If @code{type} is a trivial type ([basic.types]) the trait is
-true, else it is false.  Requires: @code{type} shall be a complete
-type, (possibly cv-qualified) @code{void}, or an array of unknown bound.
+@code{true}, else it is @code{false}.
+Requires: @code{type} shall be a complete type, (possibly cv-qualified)
+@code{void}, or an array of unknown bound.
 
 @item __is_union (type)
 If @code{type} is a cv union type ([basic.compound]) the trait is
-true, else it is false.
+@code{true}, else it is @code{false}.
 
 @item __underlying_type (type)
-The underlying type of @code{type}.  Requires: @code{type} shall be
-an enumeration type ([dcl.enum]).
+The underlying type of @code{type}.
+Requires: @code{type} shall be an enumeration type ([dcl.enum]).
 
 @item __integer_pack (length)
 When used as the pattern of a pack expansion within a template
@@ -24003,7 +24229,7 @@ likely to be removed in the future.
 
 @table @code
 @item __is_same (type1, type2)
-A binary type trait: true whenever the type arguments are the same.
+A binary type trait: @code{true} whenever the type arguments are the same.
 
 @end table
 

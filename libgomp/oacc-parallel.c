@@ -232,7 +232,8 @@ GOACC_parallel_keyed (int device, void (*fn) (void *),
   devaddrs = gomp_alloca (sizeof (void *) * mapnum);
   for (i = 0; i < mapnum; i++)
     devaddrs[i] = (void *) (tgt->list[i].key->tgt->tgt_start
-			    + tgt->list[i].key->tgt_offset);
+			    + tgt->list[i].key->tgt_offset
+			    + tgt->list[i].offset);
 
   acc_dev->openacc.exec_func (tgt_fn, mapnum, hostaddrs, devaddrs,
 			      async, dims, tgt);
@@ -424,14 +425,10 @@ GOACC_enter_exit_data (int device, size_t mapnum,
 	      switch (kind)
 		{
 		case GOMP_MAP_ALLOC:
-		  acc_present_or_create (hostaddrs[i], sizes[i]);
-		  break;
 		case GOMP_MAP_FORCE_ALLOC:
 		  acc_create (hostaddrs[i], sizes[i]);
 		  break;
 		case GOMP_MAP_TO:
-		  acc_present_or_copyin (hostaddrs[i], sizes[i]);
-		  break;
 		case GOMP_MAP_FORCE_TO:
 		  acc_copyin (hostaddrs[i], sizes[i]);
 		  break;
@@ -629,8 +626,8 @@ GOACC_wait (int async, int num_waits, ...)
     }
   else if (async == acc_async_sync)
     acc_wait_all ();
-  else if (async == acc_async_noval)
-    goacc_thread ()->dev->openacc.async_wait_all_async_func (acc_async_noval);
+  else
+    acc_wait_all_async (async);
 }
 
 int

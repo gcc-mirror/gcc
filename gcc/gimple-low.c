@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-low.h"
 #include "predict.h"
 #include "gimple-predict.h"
+#include "gimple-fold.h"
 
 /* The differences between High GIMPLE and Low GIMPLE are the
    following:
@@ -378,6 +379,12 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
 	    gsi_next (gsi);
 	    return;
 	  }
+
+	/* We delay folding of built calls from gimplification to
+	   here so the IL is in consistent state for the diagnostic
+	   machineries job.  */
+	if (gimple_call_builtin_p (stmt))
+	  fold_stmt (gsi);
       }
       break;
 

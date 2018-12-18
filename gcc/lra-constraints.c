@@ -359,14 +359,20 @@ address_eliminator::address_eliminator (struct address_info *ad)
   if (m_base_loc != NULL)
     {
       m_base_reg = *m_base_loc;
-      lra_eliminate_reg_if_possible (m_base_loc);
+      /* If we have non-legitimate address which is decomposed not in
+	 the way we expected, don't do elimination here.  In such case
+	 the address will be reloaded and elimination will be done in
+	 reload insn finally.  */
+      if (REG_P (m_base_reg))
+	lra_eliminate_reg_if_possible (m_base_loc);
       if (m_ad->base_term2 != NULL)
 	*m_ad->base_term2 = *m_ad->base_term;
     }
   if (m_index_loc != NULL)
     {
       m_index_reg = *m_index_loc;
-      lra_eliminate_reg_if_possible (m_index_loc);
+      if (REG_P (m_index_reg))
+	lra_eliminate_reg_if_possible (m_index_loc);
     }
 }
 
@@ -3934,6 +3940,7 @@ curr_insn_transform (bool check_only_p)
 	fatal_insn ("unable to generate reloads for:", curr_insn);
       error_for_asm (curr_insn,
 		     "inconsistent operand constraints in an %<asm%>");
+      lra_asm_error_p = true;
       /* Avoid further trouble with this insn.  Don't generate use
 	 pattern here as we could use the insn SP offset.  */
       lra_set_insn_deleted (curr_insn);
@@ -5490,7 +5497,9 @@ lra_copy_reg_equiv (unsigned int new_regno, unsigned int original_regno)
    ORIGINAL_REGNO.  NEXT_USAGE_INSNS specifies which instruction in
    the EBB next uses ORIGINAL_REGNO; it has the same form as the
    "insns" field of usage_insns.  If TO is not NULL, we don't use
-   usage_insns, we put restore insns after TO insn.
+   usage_insns, we put restore insns after TO insn.  It is a case when
+   we call it from lra_split_hard_reg_for, outside the inheritance
+   pass.
 
    The transformations look like:
 
@@ -5646,16 +5655,18 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
       && mode == PSEUDO_REGNO_MODE (original_regno))
     lra_copy_reg_equiv (new_regno, original_regno);
   lra_reg_info[new_regno].restore_rtx = regno_reg_rtx[original_regno];
-  bitmap_set_bit (&check_only_regs, new_regno);
-  bitmap_set_bit (&check_only_regs, original_regno);
   bitmap_set_bit (&lra_split_regs, new_regno);
   if (to != NULL)
     {
+      lra_assert (next_usage_insns == NULL);
       usage_insn = to;
       after_p = TRUE;
     }
   else
     {
+      /* We need check_only_regs only inside the inheritance pass.  */
+      bitmap_set_bit (&check_only_regs, new_regno);
+      bitmap_set_bit (&check_only_regs, original_regno);
       after_p = usage_insns[original_regno].after_p;
       for (;;)
 	{
@@ -6641,11 +6652,11 @@ lra_inheritance (void)
 	   inherit_in_ebb.  */
 	update_ebb_live_info (BB_HEAD (start_bb), BB_END (bb));
     }
-  bitmap_clear (&ebb_global_regs);
-  bitmap_clear (&temp_bitmap);
-  bitmap_clear (&live_regs);
-  bitmap_clear (&invalid_invariant_regs);
-  bitmap_clear (&check_only_regs);
+  bitmap_release (&ebb_global_regs);
+  bitmap_release (&temp_bitmap);
+  bitmap_release (&live_regs);
+  bitmap_release (&invalid_invariant_regs);
+  bitmap_release (&check_only_regs);
   free (usage_insns);
 
   timevar_pop (TV_LRA_INHERITANCE);

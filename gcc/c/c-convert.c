@@ -115,6 +115,7 @@ convert (tree type, tree expr)
 	  && COMPLETE_TYPE_P (type))
 	{
 	  expr = save_expr (expr);
+	  expr = c_fully_fold (expr, false, NULL);
 	  tree check = ubsan_instrument_float_cast (loc, type, expr);
 	  expr = fold_build1 (FIX_TRUNC_EXPR, type, expr);
 	  if (check == NULL_TREE)

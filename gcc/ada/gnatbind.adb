@@ -790,6 +790,7 @@ begin
       --  Quit if some file needs compiling
 
       if No_Object_Specified then
+         Error_Msg ("no object specified");
          raise Unrecoverable_Error;
       end if;
 

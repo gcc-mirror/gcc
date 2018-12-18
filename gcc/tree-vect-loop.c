@@ -4100,12 +4100,8 @@ get_initial_defs_for_reduction (slp_tree slp_node,
   unsigned HOST_WIDE_INT nunits;
   unsigned j, number_of_places_left_in_vector;
   tree vector_type;
-  tree vop;
-  int group_size = stmts.length ();
-  unsigned int vec_num, i;
-  unsigned number_of_copies = 1;
-  vec<tree> voprnds;
-  voprnds.create (number_of_vectors);
+  unsigned int group_size = stmts.length ();
+  unsigned int i;
   struct loop *loop;
   auto_vec<tree, 16> permute_results;
 
@@ -4138,115 +4134,78 @@ get_initial_defs_for_reduction (slp_tree slp_node,
   if (!TYPE_VECTOR_SUBPARTS (vector_type).is_constant (&nunits))
     nunits = group_size;
 
-  number_of_copies = nunits * number_of_vectors / group_size;
-
   number_of_places_left_in_vector = nunits;
   bool constant_p = true;
   tree_vector_builder elts (vector_type, nunits, 1);
   elts.quick_grow (nunits);
-  for (j = 0; j < number_of_copies; j++)
+  for (j = 0; j < nunits * number_of_vectors; ++j)
     {
-      for (i = group_size - 1; stmts.iterate (i, &stmt_vinfo); i--)
-        {
-	  tree op;
-	  /* Get the def before the loop.  In reduction chain we have only
-	     one initial value.  */
-	  if ((j != (number_of_copies - 1)
-	       || (reduc_chain && i != 0))
-	      && neutral_op)
-	    op = neutral_op;
-	  else
-	    op = PHI_ARG_DEF_FROM_EDGE (stmt_vinfo->stmt, pe);
+      tree op;
+      i = j % group_size;
+      stmt_vinfo = stmts[i];
 
-          /* Create 'vect_ = {op0,op1,...,opn}'.  */
-          number_of_places_left_in_vector--;
-	  elts[number_of_places_left_in_vector] = op;
-	  if (!CONSTANT_CLASS_P (op))
-	    constant_p = false;
-
-          if (number_of_places_left_in_vector == 0)
-            {
-	      gimple_seq ctor_seq = NULL;
-	      tree init;
-	      if (constant_p && !neutral_op
-		  ? multiple_p (TYPE_VECTOR_SUBPARTS (vector_type), nunits)
-		  : known_eq (TYPE_VECTOR_SUBPARTS (vector_type), nunits))
-		/* Build the vector directly from ELTS.  */
-		init = gimple_build_vector (&ctor_seq, &elts);
-	      else if (neutral_op)
-		{
-		  /* Build a vector of the neutral value and shift the
-		     other elements into place.  */
-		  init = gimple_build_vector_from_val (&ctor_seq, vector_type,
-						       neutral_op);
-		  int k = nunits;
-		  while (k > 0 && elts[k - 1] == neutral_op)
-		    k -= 1;
-		  while (k > 0)
-		    {
-		      k -= 1;
-		      init = gimple_build (&ctor_seq, CFN_VEC_SHL_INSERT,
-					   vector_type, init, elts[k]);
-		    }
-		}
-	      else
-		{
-		  /* First time round, duplicate ELTS to fill the
-		     required number of vectors, then cherry pick the
-		     appropriate result for each iteration.  */
-		  if (vec_oprnds->is_empty ())
-		    duplicate_and_interleave (&ctor_seq, vector_type, elts,
-					      number_of_vectors,
-					      permute_results);
-		  init = permute_results[number_of_vectors - j - 1];
-		}
-	      if (ctor_seq != NULL)
-		gsi_insert_seq_on_edge_immediate (pe, ctor_seq);
-	      voprnds.quick_push (init);
-
-              number_of_places_left_in_vector = nunits;
-	      elts.new_vector (vector_type, nunits, 1);
-	      elts.quick_grow (nunits);
-	      constant_p = true;
-            }
-        }
-    }
-
-  /* Since the vectors are created in the reverse order, we should invert
-     them.  */
-  vec_num = voprnds.length ();
-  for (j = vec_num; j != 0; j--)
-    {
-      vop = voprnds[j - 1];
-      vec_oprnds->quick_push (vop);
-    }
-
-  voprnds.release ();
-
-  /* In case that VF is greater than the unrolling factor needed for the SLP
-     group of stmts, NUMBER_OF_VECTORS to be created is greater than
-     NUMBER_OF_SCALARS/NUNITS or NUNITS/NUMBER_OF_SCALARS, and hence we have
-     to replicate the vectors.  */
-  tree neutral_vec = NULL;
-  while (number_of_vectors > vec_oprnds->length ())
-    {
-      if (neutral_op)
-        {
-          if (!neutral_vec)
-	    {
-	      gimple_seq ctor_seq = NULL;
-	      neutral_vec = gimple_build_vector_from_val
-		(&ctor_seq, vector_type, neutral_op);
-	      if (ctor_seq != NULL)
-		gsi_insert_seq_on_edge_immediate (pe, ctor_seq);
-	    }
-          vec_oprnds->quick_push (neutral_vec);
-        }
+      /* Get the def before the loop.  In reduction chain we have only
+	 one initial value.  Else we have as many as PHIs in the group.  */
+      if (reduc_chain)
+	op = j != 0 ? neutral_op : PHI_ARG_DEF_FROM_EDGE (stmt_vinfo->stmt, pe);
+      else if (((vec_oprnds->length () + 1) * nunits
+		- number_of_places_left_in_vector >= group_size)
+	       && neutral_op)
+	op = neutral_op;
       else
-        {
-          for (i = 0; vec_oprnds->iterate (i, &vop) && i < vec_num; i++)
-            vec_oprnds->quick_push (vop);
-        }
+	op = PHI_ARG_DEF_FROM_EDGE (stmt_vinfo->stmt, pe);
+
+      /* Create 'vect_ = {op0,op1,...,opn}'.  */
+      number_of_places_left_in_vector--;
+      elts[nunits - number_of_places_left_in_vector - 1] = op;
+      if (!CONSTANT_CLASS_P (op))
+	constant_p = false;
+
+      if (number_of_places_left_in_vector == 0)
+	{
+	  gimple_seq ctor_seq = NULL;
+	  tree init;
+	  if (constant_p && !neutral_op
+	      ? multiple_p (TYPE_VECTOR_SUBPARTS (vector_type), nunits)
+	      : known_eq (TYPE_VECTOR_SUBPARTS (vector_type), nunits))
+	    /* Build the vector directly from ELTS.  */
+	    init = gimple_build_vector (&ctor_seq, &elts);
+	  else if (neutral_op)
+	    {
+	      /* Build a vector of the neutral value and shift the
+		 other elements into place.  */
+	      init = gimple_build_vector_from_val (&ctor_seq, vector_type,
+						   neutral_op);
+	      int k = nunits;
+	      while (k > 0 && elts[k - 1] == neutral_op)
+		k -= 1;
+	      while (k > 0)
+		{
+		  k -= 1;
+		  init = gimple_build (&ctor_seq, CFN_VEC_SHL_INSERT,
+				       vector_type, init, elts[k]);
+		}
+	    }
+	  else
+	    {
+	      /* First time round, duplicate ELTS to fill the
+		 required number of vectors, then cherry pick the
+		 appropriate result for each iteration.  */
+	      if (vec_oprnds->is_empty ())
+		duplicate_and_interleave (&ctor_seq, vector_type, elts,
+					  number_of_vectors,
+					  permute_results);
+	      init = permute_results[number_of_vectors - j - 1];
+	    }
+	  if (ctor_seq != NULL)
+	    gsi_insert_seq_on_edge_immediate (pe, ctor_seq);
+	  vec_oprnds->quick_push (init);
+
+	  number_of_places_left_in_vector = nunits;
+	  elts.new_vector (vector_type, nunits, 1);
+	  elts.quick_grow (nunits);
+	  constant_p = true;
+	}
     }
 }
 
@@ -8542,15 +8501,18 @@ vect_transform_loop (loop_vec_info loop_vinfo)
       targetm.vectorize.autovectorize_vector_sizes (&vector_sizes);
       unsigned int next_size = 0;
 
+      /* Note LOOP_VINFO_NITERS_KNOWN_P and LOOP_VINFO_INT_NITERS work
+         on niters already ajusted for the iterations of the prologue.  */
       if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-	  && LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) >= 0
 	  && known_eq (vf, lowest_vf))
 	{
-	  unsigned int eiters
+	  unsigned HOST_WIDE_INT eiters
 	    = (LOOP_VINFO_INT_NITERS (loop_vinfo)
-	       - LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo));
-	  eiters = eiters % lowest_vf;
+	       - LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo));
+	  eiters
+	    = eiters % lowest_vf + LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo);
 	  epilogue->nb_iterations_upper_bound = eiters - 1;
+	  epilogue->any_upper_bound = true;
 
 	  unsigned int ratio;
 	  while (next_size < vector_sizes.length ()

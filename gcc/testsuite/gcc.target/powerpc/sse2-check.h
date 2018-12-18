@@ -9,8 +9,6 @@
 /* define DEBUG replace abort with printf on error.  */
 //#define DEBUG 1
 
-#if 1
-
 #define TEST sse2_test
 
 static void sse2_test (void);
@@ -25,28 +23,9 @@ do_test (void)
 int
 main ()
   {
-#ifdef __BUILTIN_CPU_SUPPORTS__
-    /* Most SSE2 (vector double) intrinsic operations require VSX
-       instructions, but some operations may need only VMX
-       instructions.  This also true for SSE2 scalar doubles as they
-       imply that "other half" of the vector remains unchanged or set
-       to zeros.  The VSX scalar operations leave ther "other half"
-       undefined, and require additional merge operations.
-       Some conversions (to/from integer) need the  direct register
-       transfer instructions from POWER8 for best performance.
-       So we test for arch_2_07.  */
-    if ( __builtin_cpu_supports ("arch_2_07") )
-      {
-	do_test ();
+    do_test ();
 #ifdef DEBUG
-	printf ("PASSED\n");
+    printf ("PASSED\n");
 #endif
-      }
-#ifdef DEBUG
-    else
-    printf ("SKIPPED\n");
-#endif
-#endif /* __BUILTIN_CPU_SUPPORTS__ */
     return 0;
   }
-#endif

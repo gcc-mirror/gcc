@@ -1163,3 +1163,27 @@ optimize_pow_to_exp (tree arg0, tree arg1)
     return false;
   return true;
 }
+
+/* Return true if a division INNER_DIV / DIVISOR where INNER_DIV
+   is another division can be optimized.  Don't optimize if INNER_DIV
+   is used in a TRUNC_MOD_EXPR with DIVISOR as second operand.  */
+
+static bool
+optimize_successive_divisions_p (tree divisor, tree inner_div)
+{
+  if (!gimple_in_ssa_p (cfun))
+    return false;
+
+  imm_use_iterator imm_iter;
+  use_operand_p use_p;
+  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, inner_div)
+    {
+      gimple *use_stmt = USE_STMT (use_p);
+      if (!is_gimple_assign (use_stmt)
+	  || gimple_assign_rhs_code (use_stmt) != TRUNC_MOD_EXPR
+	  || !operand_equal_p (gimple_assign_rhs2 (use_stmt), divisor, 0))
+	continue;
+      return false;
+    }
+  return true;
+}

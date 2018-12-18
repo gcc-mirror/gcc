@@ -420,11 +420,6 @@ do {						\
 #define BIGGEST_FIELD_ALIGNMENT 64
 #endif
 
-/* A bit-field declared as `int' forces `int' alignment for the struct.  */
-#undef PCC_BITFIELD_TYPE_MATTERS
-#define PCC_BITFIELD_TYPE_MATTERS 1
-#define GROUP_BITFIELDS_BY_ALIGN TYPE_NATIVE(rec)
-
 /* Enable alias attribute support.  */
 #ifndef SET_ASM_OP
 #define SET_ASM_OP "\t.set\t"

@@ -3370,6 +3370,7 @@ package body Sem_Ch6 is
 
       Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
       Saved_IGR  : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_EA   : constant Boolean         := Expander_Active;
       Saved_ISMP : constant Boolean         :=
                      Ignore_SPARK_Mode_Pragmas_In_Instance;
       --  Save the Ghost and SPARK mode-related data to restore on exit
@@ -3608,6 +3609,18 @@ package body Sem_Ch6 is
 
             Install_Elaboration_Model (Spec_Id);
          end if;
+      end if;
+
+      --  Deactivate expansion inside the body of ignored Ghost entities,
+      --  as this code will ultimately be ignored. This avoids requiring the
+      --  presence of run-time units which are not needed. Only do this for
+      --  user entities, as internally generated entitities might still need
+      --  to be expanded (e.g. those generated for types).
+
+      if Present (Ignored_Ghost_Region)
+        and then Comes_From_Source (Body_Id)
+      then
+         Expander_Active := False;
       end if;
 
       --  Previously we scanned the body to look for nested subprograms, and
@@ -4588,6 +4601,10 @@ package body Sem_Ch6 is
       end if;
 
    <<Leave>>
+      if Present (Ignored_Ghost_Region) then
+         Expander_Active := Saved_EA;
+      end if;
+
       Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
       Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Analyze_Subprogram_Body_Helper;
@@ -8823,7 +8840,8 @@ package body Sem_Ch6 is
 
    function Fully_Conformant_Expressions
      (Given_E1 : Node_Id;
-      Given_E2 : Node_Id) return Boolean
+      Given_E2 : Node_Id;
+      Report   : Boolean := False) return Boolean
    is
       E1 : constant Node_Id := Original_Node (Given_E1);
       E2 : constant Node_Id := Original_Node (Given_E2);
@@ -8831,23 +8849,33 @@ package body Sem_Ch6 is
       --  for analysis and/or expansion to make things look as though they
       --  conform when they do not, e.g. by converting 1+2 into 3.
 
-      function FCE (Given_E1, Given_E2 : Node_Id) return Boolean
-        renames Fully_Conformant_Expressions;
+      function FCE (Given_E1 : Node_Id; Given_E2 : Node_Id) return Boolean;
+      --  ???
 
-      function FCL (L1, L2 : List_Id) return Boolean;
+      function FCL (L1 : List_Id; L2 : List_Id) return Boolean;
       --  Compare elements of two lists for conformance. Elements have to be
       --  conformant, and actuals inserted as default parameters do not match
       --  explicit actuals with the same value.
 
-      function FCO (Op_Node, Call_Node : Node_Id) return Boolean;
+      function FCO (Op_Node : Node_Id; Call_Node : Node_Id) return Boolean;
       --  Compare an operator node with a function call
+
+      ---------
+      -- FCE --
+      ---------
+
+      function FCE (Given_E1 : Node_Id; Given_E2 : Node_Id) return Boolean is
+      begin
+         return Fully_Conformant_Expressions (Given_E1, Given_E2, Report);
+      end FCE;
 
       ---------
       -- FCL --
       ---------
 
-      function FCL (L1, L2 : List_Id) return Boolean is
-         N1, N2 : Node_Id;
+      function FCL (L1 : List_Id; L2 : List_Id) return Boolean is
+         N1 : Node_Id;
+         N2 : Node_Id;
 
       begin
          if L1 = No_List then
@@ -8887,7 +8915,7 @@ package body Sem_Ch6 is
       -- FCO --
       ---------
 
-      function FCO (Op_Node, Call_Node : Node_Id) return Boolean is
+      function FCO (Op_Node : Node_Id; Call_Node : Node_Id) return Boolean is
          Actuals : constant List_Id := Parameter_Associations (Call_Node);
          Act     : Node_Id;
 
@@ -8914,9 +8942,15 @@ package body Sem_Ch6 is
          end if;
       end FCO;
 
+      --  Local variables
+
+      Result : Boolean;
+
    --  Start of processing for Fully_Conformant_Expressions
 
    begin
+      Result := True;
+
       --  Nonconformant if paren count does not match. Note: if some idiot
       --  complains that we don't do this right for more than 3 levels of
       --  parentheses, they will be treated with the respect they deserve.
@@ -8929,7 +8963,7 @@ package body Sem_Ch6 is
 
       elsif Is_Entity_Name (E1) and then Is_Entity_Name (E2) then
          if Present (Entity (E1)) then
-            return Entity (E1) = Entity (E2)
+            Result := Entity (E1) = Entity (E2)
 
               --  One may be a discriminant that has been replaced by the
               --  corresponding discriminal.
@@ -8968,6 +9002,14 @@ package body Sem_Ch6 is
                    and then Is_Intrinsic_Subprogram (Entity (E1))
                    and then Is_Generic_Instance (Entity (E1))
                    and then Entity (E2) = Alias (Entity (E1)));
+            if Report and not Result then
+               Error_Msg_Sloc :=
+                 Text_Ptr'Max (Sloc (Entity (E1)), Sloc (Entity (E2)));
+               Error_Msg_NE
+                 ("Meaning of& differs because of declaration#", E1, E2);
+            end if;
+
+            return Result;
 
          elsif Nkind (E1) = N_Expanded_Name
            and then Nkind (E2) = N_Expanded_Name

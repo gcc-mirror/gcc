@@ -1592,10 +1592,13 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
   if (crtl->shrink_wrapped
       && single_succ_p (bb1)
       && single_succ (bb1) == EXIT_BLOCK_PTR_FOR_FN (cfun)
-      && !JUMP_P (BB_END (bb1))
+      && (!JUMP_P (BB_END (bb1))
+	  /* Punt if the only successor is a fake edge to exit, the jump
+	     must be some weird one.  */
+	  || (single_succ_edge (bb1)->flags & EDGE_FAKE) != 0)
       && !(CALL_P (BB_END (bb1)) && SIBLING_CALL_P (BB_END (bb1))))
     return false;
-  
+
   /* If BB1 has only one successor, we may be looking at either an
      unconditional jump, or a fake edge to exit.  */
   if (single_succ_p (bb1)
@@ -3257,6 +3260,48 @@ make_pass_jump (gcc::context *ctxt)
   return new pass_jump (ctxt);
 }
 
+namespace {
+
+const pass_data pass_data_postreload_jump =
+{
+  RTL_PASS, /* type */
+  "postreload_jump", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_JUMP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_postreload_jump : public rtl_opt_pass
+{
+public:
+  pass_postreload_jump (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_postreload_jump, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual unsigned int execute (function *);
+
+}; // class pass_postreload_jump
+
+unsigned int
+pass_postreload_jump::execute (function *)
+{
+  cleanup_cfg (flag_thread_jumps ? CLEANUP_THREADING : 0);
+  return 0;
+}
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_postreload_jump (gcc::context *ctxt)
+{
+  return new pass_postreload_jump (ctxt);
+}
+
 namespace {
 
 const pass_data pass_data_jump2 =

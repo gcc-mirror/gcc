@@ -248,7 +248,6 @@ md_file=
 # Obsolete configurations.
 case ${target} in
   *-*-solaris2.10*			\
-  | powerpc*-*-*spe*			\
   | tile*-*-*				\
  )
     if test "x$enable_obsolete" != xyes; then
@@ -278,6 +277,8 @@ case ${target} in
  | m68k-*-uclinuxoldabi*		\
  | mips64orion*-*-rtems*		\
  | pdp11-*-bsd				\
+ | powerpc*-*-linux*paired*		\
+ | powerpc*-*-*spe*			\
  | sparc-hal-solaris2*			\
  | thumb-*-*				\
  | *-*-freebsd[12] | *-*-freebsd[1234].* \
@@ -487,16 +488,6 @@ nvptx-*-*)
 or1k*-*-*)
 	cpu_type=or1k
 	;;
-powerpc*-*-*spe*)
-	cpu_type=powerpcspe
-	extra_headers="ppc-asm.h altivec.h spe.h ppu_intrinsics.h paired.h spu2vmx.h vec_types.h si2vmx.h htmintrin.h htmxlintrin.h"
-	case x$with_cpu in
-	    xpowerpc64|xdefault64|x6[23]0|x970|xG5|xpower[3456789]|xpower6x|xrs64a|xcell|xa2|xe500mc64|xe5500|xe6500)
-		cpu_is_64bit=yes
-		;;
-	esac
-	extra_options="${extra_options} g.opt fused-madd.opt powerpcspe/powerpcspe-tables.opt"
-	;;
 powerpc*-*-*)
 	cpu_type=rs6000
 	extra_objs="rs6000-string.o rs6000-p8swap.o"
@@ -504,7 +495,7 @@ powerpc*-*-*)
 	extra_headers="${extra_headers} bmi2intrin.h bmiintrin.h"
 	extra_headers="${extra_headers} xmmintrin.h mm_malloc.h emmintrin.h"
 	extra_headers="${extra_headers} mmintrin.h x86intrin.h"
-	extra_headers="${extra_headers} pmmintrin.h tmmintrin.h"
+	extra_headers="${extra_headers} pmmintrin.h tmmintrin.h smmintrin.h"
 	extra_headers="${extra_headers} ppu_intrinsics.h spu2vmx.h vec_types.h si2vmx.h"
 	extra_headers="${extra_headers} amo.h"
 	case x$with_cpu in
@@ -671,7 +662,7 @@ bdver3 bdver4 znver1 znver2 btver1 btver2 k8 k8-sse3 opteron \
 opteron-sse3 nocona core2 corei7 corei7-avx core-avx-i core-avx2 atom \
 slm nehalem westmere sandybridge ivybridge haswell broadwell bonnell \
 silvermont knl knm skylake-avx512 cannonlake icelake-client icelake-server \
-skylake goldmont goldmont-plus tremont x86-64 native"
+skylake goldmont goldmont-plus tremont cascadelake x86-64 native"
 
 # Additional x86 processors supported by --with-cpu=.  Each processor
 # MUST be separated by exactly one space.
@@ -1355,6 +1346,9 @@ csky-*-*)
 		case ${target} in
 		    csky-*-linux-gnu*)
 			tm_defines="$tm_defines DEFAULT_LIBC=LIBC_GLIBC"
+			# Force .init_array support.  The configure script cannot always
+			# automatically detect that GAS supports it, yet we require it.
+			gcc_cv_initfini_array=yes
 			;;
 		    csky-*-linux-uclibc*)
 			tm_defines="$tm_defines DEFAULT_LIBC=LIBC_UCLIBC"
@@ -1447,7 +1441,8 @@ hppa*-*-linux*)
 	target_cpu_default="MASK_PA_11|MASK_NO_SPACE_REGS|MASK_CALLER_COPIES"
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h pa/pa-linux.h \
 		 pa/pa32-regs.h pa/pa32-linux.h"
-	tmake_file="${tmake_file} pa/t-linux"
+	tmake_file="${tmake_file} pa/t-pa pa/t-linux"
+	d_target_objs="${d_target_objs} pa-d.o"
 	;;
 hppa*-*-openbsd*)
 	target_cpu_default="MASK_PA_11"
@@ -2587,12 +2582,6 @@ powerpc-*-netbsd*)
 	tmake_file="${tmake_file} rs6000/t-netbsd"
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	;;
-powerpc-*-eabispe*)
-	tm_file="${tm_file} dbxelf.h elfos.h freebsd-spec.h newlib-stdint.h ${cpu_type}/sysv4.h ${cpu_type}/eabi.h ${cpu_type}/e500.h ${cpu_type}/eabispe.h"
-	extra_options="${extra_options} ${cpu_type}/sysv4.opt"
-	tmake_file="${cpu_type}/t-spe ${cpu_type}/t-ppccomm"
-	use_gcc_stdint=wrap
-	;;
 powerpc-*-eabisimaltivec*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/eabi.h rs6000/eabisim.h rs6000/eabialtivec.h"
 	extra_options="${extra_options} rs6000/sysv4.opt"
@@ -2622,25 +2611,10 @@ powerpc-*-eabi*)
 	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
 	use_gcc_stdint=wrap
 	;;
-powerpc-*-rtems*spe*)
-	tm_file="${tm_file} dbxelf.h elfos.h freebsd-spec.h newlib-stdint.h powerpcspe/sysv4.h powerpcspe/eabi.h powerpcspe/e500.h powerpcspe/rtems.h rtems.h"
-	extra_options="${extra_options} powerpcspe/sysv4.opt"
-	tmake_file="${tmake_file} powerpcspe/t-fprules powerpcspe/t-rtems powerpcspe/t-ppccomm"
-	;;
 powerpc-*-rtems*)
 	tm_file="rs6000/biarch64.h ${tm_file} dbxelf.h elfos.h gnu-user.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/rtems.h rtems.h"
 	extra_options="${extra_options} rs6000/sysv4.opt rs6000/linux64.opt"
 	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-rtems rs6000/t-ppccomm"
-	;;
-powerpc*-*-linux*spe*)
-	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h freebsd-spec.h powerpcspe/sysv4.h"
-	extra_options="${extra_options} powerpcspe/sysv4.opt"
-	tmake_file="${tmake_file} powerpcspe/t-fprules powerpcspe/t-ppccomm"
-	extra_objs="$extra_objs powerpcspe-linux.o"
-	maybe_biarch=
-	tm_file="${tm_file} powerpcspe/linux.h glibc-stdint.h"
-	tmake_file="${tmake_file} powerpcspe/t-ppcos powerpcspe/t-linux"
-	tm_file="${tm_file} powerpcspe/linuxspe.h powerpcspe/e500.h"
 	;;
 powerpc*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h freebsd-spec.h rs6000/sysv4.h"
@@ -2658,15 +2632,6 @@ powerpc*-*-linux*)
 	case ${enable_targets} in
 	    *powerpc64*) maybe_biarch=yes ;;
 	    all) maybe_biarch=yes ;;
-	esac
-	case ${target} in
-	    powerpc64*-*-linux*spe* | powerpc*-*-linux*paired*)
-		echo "*** Configuration ${target} not supported" 1>&2
-		exit 1
-		;;
-	    powerpc*-*-linux*spe*)
-		maybe_biarch=
-		;;
 	esac
 	case ${target}:${enable_targets}:${maybe_biarch} in
 	    powerpc64-* | powerpc-*:*:yes | *:*powerpc64-*:yes | *:all:yes \
@@ -2708,8 +2673,6 @@ powerpc*-*-linux*)
 		extra_options="${extra_options} rs6000/476.opt" ;;
 	    powerpc*-*-linux*altivec*)
 		tm_file="${tm_file} rs6000/linuxaltivec.h" ;;
-	    powerpc*-*-linux*spe*)
-		tm_file="${tm_file} ${cpu_type}/linuxspe.h ${cpu_type}/e500.h" ;;
 	esac
 	case ${target} in
 	    *-linux*-musl*)
@@ -2718,13 +2681,6 @@ powerpc*-*-linux*)
 	if test x${enable_secureplt} = xyes; then
 		tm_file="rs6000/secureplt.h ${tm_file}"
 	fi
-	;;
-powerpc-wrs-vxworks*spe)
-	tm_file="${tm_file} elfos.h freebsd-spec.h powerpcspe/sysv4.h"
-	tmake_file="${tmake_file} powerpcspe/t-fprules powerpcspe/t-ppccomm powerpcspe/t-vxworks"
-	extra_options="${extra_options} powerpcspe/sysv4.opt"
-	extra_headers=ppc-asm.h
-	tm_file="${tm_file} vx-common.h vxworks.h powerpcspe/vxworks.h powerpcspe/e500.h"
 	;;
 powerpc-wrs-vxworks*)
 	tm_file="${tm_file} elfos.h gnu-user.h freebsd-spec.h rs6000/sysv4.h"
@@ -2778,7 +2734,6 @@ rs6000-ibm-aix6.* | powerpc-ibm-aix6.*)
 	use_collect2=yes
 	thread_file='aix'
 	use_gcc_stdint=wrap
-	extra_headers=altivec.h
 	default_use_cxa_atexit=yes
 	;;
 rs6000-ibm-aix7.1.* | powerpc-ibm-aix7.1.*)
@@ -2788,7 +2743,6 @@ rs6000-ibm-aix7.1.* | powerpc-ibm-aix7.1.*)
 	use_collect2=yes
 	thread_file='aix'
 	use_gcc_stdint=wrap
-	extra_headers="altivec.h amo.h"
 	default_use_cxa_atexit=yes
 	;;
 rs6000-ibm-aix[789].* | powerpc-ibm-aix[789].*)
@@ -2798,7 +2752,6 @@ rs6000-ibm-aix[789].* | powerpc-ibm-aix[789].*)
 	use_collect2=yes
 	thread_file='aix'
 	use_gcc_stdint=wrap
-	extra_headers="altivec.h amo.h"
 	default_use_cxa_atexit=yes
 	;;
 rl78-*-elf*)
@@ -3612,20 +3565,6 @@ if test x$with_cpu = x ; then
 	"" | "m68k")
 	  with_cpu=m${default_m68k_cpu}
 	  ;;
-      esac
-      ;;
-    powerpc*-*-*spe*)
-      # For SPE, start with 8540, then upgrade to 8548 if
-      # --enable-e500-double was requested explicitly or if we were
-      # configured for e500v2.
-      with_cpu=8540
-      if test x$enable_e500_double = xyes; then
-        with_cpu=8548
-      fi
-      case ${target_noncanonical} in
-        e500v2*)
-          with_cpu=8548
-          ;;
       esac
       ;;
     sparc*-*-*)

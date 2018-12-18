@@ -6610,15 +6610,20 @@ package body Exp_Attr is
       --  also needs to be static, because we do some legality checks (e.g.
       --  for Thread_Local_Storage) after this transformation.
 
-      when Attribute_Ref | Attribute_To_Address => To_Address : declare
-         Is_Static : constant Boolean := Is_Static_Expression (N);
-      begin
-         Rewrite (N,
-           Unchecked_Convert_To (RTE (RE_Address),
-             Relocate_Node (First (Exprs))));
-         Set_Is_Static_Expression (N, Is_Static);
-         Analyze_And_Resolve (N, RTE (RE_Address));
-      end To_Address;
+      when Attribute_Ref
+         | Attribute_To_Address
+      =>
+         To_Address : declare
+            Is_Static : constant Boolean := Is_Static_Expression (N);
+
+         begin
+            Rewrite (N,
+              Unchecked_Convert_To (RTE (RE_Address),
+                Relocate_Node (First (Exprs))));
+            Set_Is_Static_Expression (N, Is_Static);
+
+            Analyze_And_Resolve (N, RTE (RE_Address));
+         end To_Address;
 
       ------------
       -- To_Any --

@@ -4004,7 +4004,7 @@ resolve_operator (gfc_expr *e)
 	  if (op2->ts.type != e->ts.type || op2->ts.kind != e->ts.kind)
 	    gfc_convert_type (op2, &e->ts, 1);
 	  e = logical_to_bitwise (e);
-	  return resolve_function (e);
+	  break;
 	}
 
       sprintf (msg, _("Operands of logical operator %%<%s%%> at %%L are %s/%s"),
@@ -4020,7 +4020,7 @@ resolve_operator (gfc_expr *e)
 	  e->ts.type = BT_INTEGER;
 	  e->ts.kind = op1->ts.kind;
 	  e = logical_to_bitwise (e);
-	  return resolve_function (e);
+	  break;
 	}
 
       if (op1->ts.type == BT_LOGICAL)
@@ -8715,7 +8715,8 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
     {
       /* target's rank is 0, but the type of the sym is still array valued,
 	 which has to be corrected.  */
-      if (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->as)
+      if (sym->ts.type == BT_CLASS
+	  && CLASS_DATA (sym) && CLASS_DATA (sym)->as)
 	{
 	  gfc_array_spec *as;
 	  symbol_attribute attr;
@@ -9385,10 +9386,7 @@ resolve_transfer (gfc_code *code)
   if (dt && dt->dt_io_kind->value.iokind != M_INQUIRE
       && (ts->type == BT_DERIVED || ts->type == BT_CLASS))
     {
-      if (ts->type == BT_DERIVED || ts->type == BT_CLASS)
-	derived = ts->u.derived;
-      else
-	derived = ts->u.derived->components->ts.u.derived;
+      derived = ts->u.derived;
 
       /* Determine when to use the formatted DTIO procedure.  */
       if (dt && (dt->format_expr || dt->format_label))
@@ -11544,7 +11542,7 @@ start:
 	case EXEC_ENDFILE:
 	case EXEC_REWIND:
 	case EXEC_FLUSH:
-	  if (!gfc_resolve_filepos (code->ext.filepos))
+	  if (!gfc_resolve_filepos (code->ext.filepos, &code->loc))
 	    break;
 
 	  resolve_branch (code->ext.filepos->err, code);
@@ -15492,7 +15490,10 @@ check_data_variable (gfc_data_variable *var, locus *where)
     e = e->value.function.actual->expr;
 
   if (e->expr_type != EXPR_VARIABLE)
-    gfc_internal_error ("check_data_variable(): Bad expression");
+    {
+      gfc_error ("Expecting definable entity near %L", where);
+      return false;
+    }
 
   sym = e->symtree->n.sym;
 
@@ -15500,6 +15501,7 @@ check_data_variable (gfc_data_variable *var, locus *where)
     {
       gfc_error ("BLOCK DATA element %qs at %L must be in COMMON",
 		 sym->name, &sym->declared_at);
+      return false;
     }
 
   if (e->ref == NULL && sym->as)

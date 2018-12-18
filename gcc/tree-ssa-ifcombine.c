@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify-me.h"
 #include "tree-cfg.h"
 #include "tree-ssa.h"
+#include "params.h"
 
 #ifndef LOGICAL_OP_NON_SHORT_CIRCUIT
 #define LOGICAL_OP_NON_SHORT_CIRCUIT \
@@ -563,7 +564,11 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 	{
 	  tree t1, t2;
 	  gimple_stmt_iterator gsi;
-	  if (!LOGICAL_OP_NON_SHORT_CIRCUIT || flag_sanitize_coverage)
+	  bool logical_op_non_short_circuit = LOGICAL_OP_NON_SHORT_CIRCUIT;
+	  if (PARAM_VALUE (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT) != -1)
+	    logical_op_non_short_circuit
+	      = PARAM_VALUE (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT);
+	  if (!logical_op_non_short_circuit || flag_sanitize_coverage)
 	    return false;
 	  /* Only do this optimization if the inner bb contains only the conditional. */
 	  if (!gsi_one_before_end_p (gsi_start_nondebug_after_labels_bb (inner_cond_bb)))

@@ -3192,6 +3192,10 @@ maybe_fold_stmt (gimple_stmt_iterator *gsi)
       return false;
     else if ((ctx->region_type & ORT_HOST_TEAMS) == ORT_HOST_TEAMS)
       return false;
+  /* Delay folding of builtins until the IL is in consistent state
+     so the diagnostic machinery can do a better job.  */
+  if (gimple_call_builtin_p (gsi_stmt (*gsi)))
+    return false;
   return fold_stmt (gsi);
 }
 
@@ -4774,7 +4778,15 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       {
 	struct gimplify_init_ctor_preeval_data preeval_data;
 	HOST_WIDE_INT num_ctor_elements, num_nonzero_elements;
+	HOST_WIDE_INT num_unique_nonzero_elements;
 	bool cleared, complete_p, valid_const_initializer;
+	/* Use readonly data for initializers of this or smaller size
+	   regardless of the num_nonzero_elements / num_unique_nonzero_elements
+	   ratio.  */
+	const HOST_WIDE_INT min_unique_size = 64;
+	/* If num_nonzero_elements / num_unique_nonzero_elements ratio
+	   is smaller than this, use readonly data.  */
+	const int unique_nonzero_ratio = 8;
 
 	/* Aggregate types must lower constructors to initialization of
 	   individual elements.  The exception is that a CONSTRUCTOR node
@@ -4791,6 +4803,7 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	   can only do so if it known to be a valid constant initializer.  */
 	valid_const_initializer
 	  = categorize_ctor_elements (ctor, &num_nonzero_elements,
+				      &num_unique_nonzero_elements,
 				      &num_ctor_elements, &complete_p);
 
 	/* If a const aggregate variable is being initialized, then it
@@ -4799,7 +4812,15 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    && num_nonzero_elements > 1
 	    && TREE_READONLY (object)
 	    && VAR_P (object)
-	    && (flag_merge_constants >= 2 || !TREE_ADDRESSABLE (object)))
+	    && (flag_merge_constants >= 2 || !TREE_ADDRESSABLE (object))
+	    /* For ctors that have many repeated nonzero elements
+	       represented through RANGE_EXPRs, prefer initializing
+	       those through runtime loops over copies of large amounts
+	       of data from readonly data section.  */
+	    && (num_unique_nonzero_elements
+		> num_nonzero_elements / unique_nonzero_ratio
+		|| ((unsigned HOST_WIDE_INT) int_size_in_bytes (type)
+		    <= (unsigned HOST_WIDE_INT) min_unique_size)))
 	  {
 	    if (notify_temp_creation)
 	      return GS_ERROR;
@@ -4892,6 +4913,13 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	       is so large as to make individual moves inefficient.  */
 	    if (size > 0
 		&& num_nonzero_elements > 1
+		/* For ctors that have many repeated nonzero elements
+		   represented through RANGE_EXPRs, prefer initializing
+		   those through runtime loops over copies of large amounts
+		   of data from readonly data section.  */
+		&& (num_unique_nonzero_elements
+		    > num_nonzero_elements / unique_nonzero_ratio
+		    || size <= min_unique_size)
 		&& (size < num_nonzero_elements
 		    || !can_move_by_pieces (size, align)))
 	      {
@@ -6357,6 +6385,7 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
       gimple_asm_set_volatile (stmt, ASM_VOLATILE_P (expr) || noutputs == 0);
       gimple_asm_set_input (stmt, ASM_INPUT_P (expr));
+      gimple_asm_set_inline (stmt, ASM_INLINE_P (expr));
 
       gimplify_seq_add_stmt (pre_p, stmt);
     }

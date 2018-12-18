@@ -1193,6 +1193,9 @@ struct GTY(()) tree_base {
        OMP_CLAUSE_LINEAR_VARIABLE_STRIDE in
 	   OMP_CLAUSE_LINEAR
 
+       ASM_INLINE_P in
+	   ASM_EXPR
+
    side_effects_flag:
 
        TREE_SIDE_EFFECTS in

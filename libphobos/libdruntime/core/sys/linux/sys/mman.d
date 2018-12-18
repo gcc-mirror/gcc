@@ -17,6 +17,8 @@ version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
 version (PPC64)   version = PPC_Any;
+version (RISCV32) version = RISCV_Any;
+version (RISCV64) version = RISCV_Any;
 version (S390)    version = IBMZ_Any;
 version (SPARC)   version = SPARC_Any;
 version (SPARC64) version = SPARC_Any;
@@ -44,6 +46,31 @@ version (PPC_Any)
         MAP_NONBLOCK = 0x10000,
         MAP_STACK = 0x20000,
         MAP_HUGETLB = 0x40000,
+    }
+
+    // in core.sys.posix.sys.mman
+    // enum
+    // {
+    //     MCL_CURRENT = 0x2000,
+    //     MCL_FUTURE = 0x4000,
+    // }
+}
+// https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/riscv/bits/mman.h
+else version (RISCV_Any)
+{
+    static if (__USE_MISC) enum
+    {
+        MAP_GROWSDOWN = 0x00100,
+        MAP_DENYWRITE = 0x00800,
+        MAP_EXECUTABLE = 0x01000,
+        MAP_LOCKED = 0x02000,
+        MAP_NORESERVE = 0x04000,
+        MAP_POPULATE = 0x08000,
+        MAP_NONBLOCK = 0x10000,
+        MAP_STACK = 0x20000,
+        MAP_HUGETLB = 0x40000,
+        MAP_SYNC = 0x80000,
+        MAP_FIXED_NOREPLACE = 0x100000,
     }
 
     // in core.sys.posix.sys.mman

@@ -15,6 +15,8 @@ version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
 version (PPC64)   version = PPC_Any;
+version (RISCV32) version = RISCV_Any;
+version (RISCV64) version = RISCV_Any;
 version (SPARC)   version = SPARC_Any;
 version (SPARC64) version = SPARC_Any;
 version (X86)     version = X86_Any;
@@ -45,6 +47,12 @@ else version (PPC_Any)
     alias uint32_t Elf_Symndx;
 }
 else version (ARM_Any)
+{
+    // http://sourceware.org/git/?p=glibc.git;a=blob;f=bits/elfclass.h
+    alias __WORDSIZE __ELF_NATIVE_CLASS;
+    alias uint32_t Elf_Symndx;
+}
+else version (RISCV_Any)
 {
     // http://sourceware.org/git/?p=glibc.git;a=blob;f=bits/elfclass.h
     alias __WORDSIZE __ELF_NATIVE_CLASS;

@@ -5831,6 +5831,11 @@
     case 1:
     case 2:
       return \"#\";
+    case 3:
+      /* Cannot load it directly, split to load it via MOV / MOVT.  */
+      if (!MEM_P (operands[1]) && arm_disable_literal_pool)
+	return \"#\";
+      /* Fall through.  */
     default:
       return output_move_double (operands, true, NULL);
     }
@@ -6940,6 +6945,20 @@
 	     operands[1] = force_reg (SFmode, operands[1]);
         }
     }
+
+  /* Cannot load it directly, generate a load with clobber so that it can be
+     loaded via GPR with MOV / MOVT.  */
+  if (arm_disable_literal_pool
+      && (REG_P (operands[0]) || SUBREG_P (operands[0]))
+      && CONST_DOUBLE_P (operands[1])
+      && TARGET_HARD_FLOAT
+      && !vfp3_const_double_rtx (operands[1]))
+    {
+      rtx clobreg = gen_reg_rtx (SFmode);
+      emit_insn (gen_no_literal_pool_sf_immediate (operands[0], operands[1],
+						   clobreg));
+      DONE;
+    }
   "
 )
 
@@ -6967,16 +6986,40 @@
    && TARGET_SOFT_FLOAT
    && (!MEM_P (operands[0])
        || register_operand (operands[1], SFmode))"
-  "@
-   mov%?\\t%0, %1
-   ldr%?\\t%0, %1\\t%@ float
-   str%?\\t%1, %0\\t%@ float"
+{
+  switch (which_alternative)
+    {
+    case 0: return \"mov%?\\t%0, %1\";
+    case 1:
+      /* Cannot load it directly, split to load it via MOV / MOVT.  */
+      if (!MEM_P (operands[1]) && arm_disable_literal_pool)
+	return \"#\";
+      return \"ldr%?\\t%0, %1\\t%@ float\";
+    case 2: return \"str%?\\t%1, %0\\t%@ float\";
+    default: gcc_unreachable ();
+    }
+}
   [(set_attr "predicable" "yes")
    (set_attr "type" "mov_reg,load_4,store_4")
    (set_attr "arm_pool_range" "*,4096,*")
    (set_attr "thumb2_pool_range" "*,4094,*")
    (set_attr "arm_neg_pool_range" "*,4084,*")
    (set_attr "thumb2_neg_pool_range" "*,0,*")]
+)
+
+;; Splitter for the above.
+(define_split
+  [(set (match_operand:SF 0 "s_register_operand")
+	(match_operand:SF 1 "const_double_operand"))]
+  "arm_disable_literal_pool && TARGET_SOFT_FLOAT"
+  [(const_int 0)]
+{
+  long buf;
+  real_to_target (&buf, CONST_DOUBLE_REAL_VALUE (operands[1]), SFmode);
+  rtx cst = gen_int_mode (buf, SImode);
+  emit_move_insn (simplify_gen_subreg (SImode, operands[0], SFmode, 0), cst);
+  DONE;
+}
 )
 
 (define_expand "movdf"
@@ -6996,6 +7039,21 @@
           if (!REG_P (operands[0]))
 	    operands[1] = force_reg (DFmode, operands[1]);
         }
+    }
+
+  /* Cannot load it directly, generate a load with clobber so that it can be
+     loaded via GPR with MOV / MOVT.  */
+  if (arm_disable_literal_pool
+      && (REG_P (operands[0]) || SUBREG_P (operands[0]))
+      && CONSTANT_P (operands[1])
+      && TARGET_HARD_FLOAT
+      && !arm_const_double_rtx (operands[1])
+      && !(TARGET_VFP_DOUBLE && vfp3_const_double_rtx (operands[1])))
+    {
+      rtx clobreg = gen_reg_rtx (DFmode);
+      emit_insn (gen_no_literal_pool_df_immediate (operands[0], operands[1],
+						   clobreg));
+      DONE;
     }
   "
 )
@@ -7056,6 +7114,11 @@
     case 1:
     case 2:
       return \"#\";
+    case 3:
+      /* Cannot load it directly, split to load it via MOV / MOVT.  */
+      if (!MEM_P (operands[1]) && arm_disable_literal_pool)
+	return \"#\";
+      /* Fall through.  */
     default:
       return output_move_double (operands, true, NULL);
     }
@@ -7066,6 +7129,24 @@
    (set_attr "thumb2_pool_range" "*,*,*,1018,*")
    (set_attr "arm_neg_pool_range" "*,*,*,1004,*")
    (set_attr "thumb2_neg_pool_range" "*,*,*,0,*")]
+)
+
+;; Splitter for the above.
+(define_split
+  [(set (match_operand:DF 0 "s_register_operand")
+	(match_operand:DF 1 "const_double_operand"))]
+  "arm_disable_literal_pool && TARGET_SOFT_FLOAT"
+  [(const_int 0)]
+{
+  long buf[2];
+  int order = BYTES_BIG_ENDIAN ? 1 : 0;
+  real_to_target (buf, CONST_DOUBLE_REAL_VALUE (operands[1]), DFmode);
+  unsigned HOST_WIDE_INT ival = zext_hwi (buf[order], 32);
+  ival |= (zext_hwi (buf[1 - order], 32) << 32);
+  rtx cst = gen_int_mode (ival, DImode);
+  emit_move_insn (simplify_gen_subreg (DImode, operands[0], DFmode, 0), cst);
+  DONE;
+}
 )
 
 

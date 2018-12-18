@@ -1615,7 +1615,10 @@ lra_assign (bool &fails_p)
   bitmap_initialize (&all_spilled_pseudos, &reg_obstack);
   create_live_range_start_chains ();
   setup_live_pseudos_and_spill_after_risky_transforms (&all_spilled_pseudos);
-  if (flag_checking && !flag_ipa_ra)
+  if (! lra_asm_error_p && flag_checking && !flag_ipa_ra)
+    /* Check correctness of allocation for call-crossed pseudos but
+       only when there are no asm errors as in the case of errors the
+       asm is removed and it can result in incorrect allocation.  */
     for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
       if (lra_reg_info[i].nrefs != 0 && reg_renumber[i] >= 0
 	  && lra_reg_info[i].call_p
@@ -1783,7 +1786,7 @@ lra_split_hard_reg_for (void)
       insn = lra_insn_recog_data[u]->insn;
       if (asm_noperands (PATTERN (insn)) >= 0)
 	{
-	  asm_p = true;
+	  lra_asm_error_p = asm_p = true;
 	  error_for_asm (insn,
 			 "%<asm%> operand has impossible constraints");
 	  /* Avoid further trouble with this insn.
