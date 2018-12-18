@@ -1,3 +1,23 @@
+2018-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/88464
+	* gcc.target/i386/avx512f-pr88464-5.c: New test.
+	* gcc.target/i386/avx512f-pr88464-6.c: New test.
+	* gcc.target/i386/avx512f-pr88464-7.c: New test.
+	* gcc.target/i386/avx512f-pr88464-8.c: New test.
+	* gcc.target/i386/avx512vl-pr88464-5.c: New test.
+	* gcc.target/i386/avx512vl-pr88464-6.c: New test.
+	* gcc.target/i386/avx512vl-pr88464-7.c: New test.
+	* gcc.target/i386/avx512vl-pr88464-8.c: New test.
+	* gcc.target/i386/avx512vl-pr88464-9.c: New test.
+	* gcc.target/i386/avx512vl-pr88464-10.c: New test.
+	* gcc.target/i386/avx512vl-pr88464-11.c: New test.
+	* gcc.target/i386/avx512vl-pr88464-12.c: New test.
+	* gcc.target/i386/avx512vl-pr88464-13.c: New test.
+	* gcc.target/i386/avx512vl-pr88464-14.c: New test.
+	* gcc.target/i386/avx512vl-pr88464-15.c: New test.
+	* gcc.target/i386/avx512vl-pr88464-16.c: New test.
+
 2018-12-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_usad_char):
