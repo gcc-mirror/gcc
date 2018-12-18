@@ -300,6 +300,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     friend class directory_iterator;
     friend class recursive_directory_iterator;
 
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 3171. LWG 2989 breaks directory_entry stream insertion
+    template<typename _CharT, typename _Traits>
+      friend basic_ostream<_CharT, _Traits>&
+      operator<<(basic_ostream<_CharT, _Traits>& __os,
+		 const directory_entry& __d)
+      { return __os << __d.path(); }
+
     directory_entry(const filesystem::path& __p, file_type __t)
     : _M_path(__p), _M_type(__t)
     { }
