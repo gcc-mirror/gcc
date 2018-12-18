@@ -389,14 +389,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus > 201703L
       constexpr bool
       starts_with(basic_string_view __x) const noexcept
-      {
-	return this->size() >= __x.size()
-	    && this->compare(0, __x.size(), __x) == 0;
-      }
+      { return this->substr(0, __x.size()) == __x; }
 
       constexpr bool
       starts_with(_CharT __x) const noexcept
-      { return this->starts_with(basic_string_view(&__x, 1)); }
+      { return !this->empty() && traits_type::eq(this->front(), __x); }
 
       constexpr bool
       starts_with(const _CharT* __x) const noexcept
@@ -411,7 +408,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr bool
       ends_with(_CharT __x) const noexcept
-      { return this->ends_with(basic_string_view(&__x, 1)); }
+      { return !this->empty() && traits_type::eq(this->back(), __x); }
 
       constexpr bool
       ends_with(const _CharT* __x) const noexcept
