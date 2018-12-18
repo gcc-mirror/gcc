@@ -1,5 +1,24 @@
 2018-12-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/fs_path.h (path::compare(const string_type&))
+	(path::compare(const value_type*)): Add noexcept and construct a
+	string view to compare to instead of a path.
+	(path::compare(basic_string_view<value_type>)): Add noexcept. Remove
+	inline definition.
+	* src/filesystem/std-path.cc (path::_Parser): Track last type read
+	from input.
+	(path::_Parser::next()): Return a final empty component when the
+	input ends in a non-root directory separator.
+	(path::_M_append(basic_string_view<value_type>)): Remove special cases
+	for trailing non-root directory separator.
+	(path::_M_concat(basic_string_view<value_type>)): Likewise.
+	(path::compare(const path&)): Implement LWG 2936.
+	(path::compare(basic_string_view<value_type>)): Define in terms of
+	components returned by parser, consistent with LWG 2936.
+	* testsuite/27_io/filesystem/path/compare/lwg2936.cc: New.
+	* testsuite/27_io/filesystem/path/compare/path.cc: Test more cases.
+	* testsuite/27_io/filesystem/path/compare/strings.cc: Likewise.
+
 	* include/std/string_view [__cplusplus > 201703L]
 	(basic_string_view::starts_with(basic_string_view)): Implement
 	proposed resolution of LWG 3040 to avoid redundant length check.

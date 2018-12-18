@@ -27,36 +27,54 @@
 
 using std::filesystem::path;
 
-void
-test01()
+int norm(int i)
 {
-  const path p0 = "/a/a/b/b";
-  for (const path& p : __gnu_test::test_paths)
-  {
-    VERIFY( p.compare(p) == 0 );
-    int cmp = p.compare(p0);
-    if (cmp == 0)
-      VERIFY( p0.compare(p) == 0 );
-    else if (cmp < 0)
-      VERIFY( p0.compare(p) > 0 );
-    else if (cmp > 0)
-      VERIFY( p0.compare(p) < 0 );
-  }
+  if (i < 0)
+    return -1;
+  else if (i > 0)
+    return +1;
+  else
+    return 0;
 }
 
 void
-test02()
+check(const path& lhs, const path& rhs, int sense)
 {
-  VERIFY( path("/").compare(path("////")) == 0 );
-  VERIFY( path("/a").compare(path("/")) > 0 );
-  VERIFY( path("/").compare(path("/a")) < 0 );
-  VERIFY( path("/ab").compare(path("/a")) > 0 );
-  VERIFY( path("/ab").compare(path("/a/b")) > 0 );
+  VERIFY( lhs.compare(lhs) == 0 );
+  VERIFY( rhs.compare(rhs) == 0 );
+
+  VERIFY( norm(lhs.compare(rhs)) == sense );
+  VERIFY( norm(lhs.compare(rhs.c_str())) == sense );
+
+  VERIFY( norm(rhs.compare(lhs)) == -sense );
+  VERIFY( norm(rhs.compare(lhs.c_str())) == -sense );
+}
+
+void
+test01()
+{
+  check("", "", 0);
+
+  // These are root names on Windows (just relative paths elsewhere)
+  check("", "c:", -1);
+  check("c:", "d:", -1);
+  check("c:", "c:/", -1);
+  check("d:", "c:/", +1);
+  check("c:/a/b", "c:a/b", -1);
+
+  // These are root names on Cygwin (just relative paths elsewhere)
+  check("", "//c", -1);
+  check("//c", "//d", -1);
+  check("//c", "//c/", -1);
+  check("//d", "//c/", +1);
+
+  check("/a", "/b", -1);
+  check("a", "/b", -1);
+  check("/b", "b", +1);
 }
 
 int
 main()
 {
   test01();
-  test02();
 }

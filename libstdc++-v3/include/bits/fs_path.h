@@ -341,9 +341,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     // compare
 
     int compare(const path& __p) const noexcept;
-    int compare(const string_type& __s) const;
-    int compare(const value_type* __s) const;
-    int compare(const basic_string_view<value_type> __s) const;
+    int compare(const string_type& __s) const noexcept;
+    int compare(const value_type* __s) const noexcept;
+    int compare(basic_string_view<value_type> __s) const noexcept;
 
     // decomposition
 
@@ -1067,14 +1067,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   { return generic_string<char32_t>(); }
 
   inline int
-  path::compare(const string_type& __s) const { return compare(path(__s)); }
+  path::compare(const string_type& __s) const noexcept
+  { return compare(basic_string_view<value_type>(__s)); }
 
   inline int
-  path::compare(const value_type* __s) const { return compare(path(__s)); }
-
-  inline int
-  path::compare(basic_string_view<value_type> __s) const
-  { return compare(path(__s)); }
+  path::compare(const value_type* __s) const noexcept
+  { return compare(basic_string_view<value_type>(__s)); }
 
   inline path
   path::filename() const

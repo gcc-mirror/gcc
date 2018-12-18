@@ -62,6 +62,7 @@ struct path::_Parser
   string_view_type input;
   string_view_type::size_type pos = 0;
   size_t origin;
+  _Type last_type = _Type::_Multi;
 
   _Parser(string_view_type s, size_t o = 0) : input(s), origin(o) { }
 
@@ -129,6 +130,12 @@ struct path::_Parser
 	pos = input.find_first_not_of(L"/\\", 2);
       }
 #endif
+
+    if (root.second.valid())
+      last_type = root.second.type;
+    else
+      last_type = root.first.type;
+
     return root;
   }
 
@@ -140,15 +147,30 @@ struct path::_Parser
     char sep = '/';
 #endif
 
+    const int last_pos = pos;
+
     cmpt f;
-    pos = input.find_first_not_of(sep, pos);
     if (pos != input.npos)
       {
-	const auto end = input.find_first_of(sep, pos);
-	f.str = input.substr(pos, end - pos);
-	f.type = _Type::_Filename;
-	pos = end;
+	pos = input.find_first_not_of(sep, pos);
+	if (pos != input.npos)
+	  {
+	    const auto end = input.find_first_of(sep, pos);
+	    f.str = input.substr(pos, end - pos);
+	    f.type = _Type::_Filename;
+	    pos = end;
+	  }
+	else if (last_type == _Type::_Filename
+	    || (last_pos == 0 && !input.empty()))
+	  {
+	    // [fs.path.itr]/4 An empty element, if trailing non-root
+	    // directory-separator present.
+	    __glibcxx_assert(is_dir_sep(input.back()));
+	    f.str = input.substr(input.length(), 0);
+	    f.type = _Type::_Filename;
+	  }
       }
+    last_type = f.type;
     return f;
   }
 
@@ -733,9 +755,6 @@ path::_M_append(basic_string_view<value_type> s)
 	  while (parser2.next().valid())
 	    ++capacity;
 	}
-
-      if (s.back() == '/')
-	++capacity;
     }
   else if (!sep.empty())
     ++capacity;
@@ -786,12 +805,6 @@ path::_M_append(basic_string_view<value_type> s)
 	      ::new(output++) _Cmpt(cmpt.str, cmpt.type, parser.offset(cmpt));
 	      ++_M_cmpts._M_impl->_M_size;
 	      cmpt = parser.next();
-	    }
-
-	  if (s.back() == '/')
-	    {
-	      ::new(output++) _Cmpt({}, _Type::_Filename, _M_pathname.length());
-	      ++_M_cmpts._M_impl->_M_size;
 	    }
 	}
       else if (!sep.empty())
@@ -1107,8 +1120,6 @@ path::_M_concat(basic_string_view<value_type> s)
       while (parser2.next().valid())
 	++capacity;
     }
-  if (is_dir_sep(s.back()))
-    ++capacity;
 
 #if SLASHSLASH_IS_ROOTNAME
   if (orig_type == _Type::_Root_name)
@@ -1164,13 +1175,6 @@ path::_M_concat(basic_string_view<value_type> s)
 	      ++_M_cmpts._M_impl->_M_size;
 	      cmpt = parser.next();
 	    }
-	}
-
-      if (is_dir_sep(s.back()))
-	{
-	  // Empty filename at the end:
-	  ::new(output++) _Cmpt({}, _Type::_Filename, _M_pathname.length());
-	  ++_M_cmpts._M_impl->_M_size;
 	}
     }
   __catch (...)
@@ -1266,58 +1270,168 @@ path::replace_extension(const path& replacement)
   return *this;
 }
 
-namespace
-{
-  template<typename Iter1, typename Iter2>
-    int do_compare(Iter1 begin1, Iter1 end1, Iter2 begin2, Iter2 end2)
-    {
-      int cmpt = 1;
-      while (begin1 != end1 && begin2 != end2)
-	{
-	  if (begin1->native() < begin2->native())
-	    return -cmpt;
-	  if (begin1->native() > begin2->native())
-	    return +cmpt;
-	  ++begin1;
-	  ++begin2;
-	  ++cmpt;
-	}
-      if (begin1 == end1)
-	{
-	  if (begin2 == end2)
-	    return 0;
-	  return -cmpt;
-	}
-      return +cmpt;
-    }
-}
-
 int
 path::compare(const path& p) const noexcept
 {
-  struct CmptRef
-  {
-    const path* ptr;
-    const string_type& native() const noexcept { return ptr->native(); }
-  };
-
-  if (empty() && p.empty())
+  if (_M_pathname == p._M_pathname)
     return 0;
-  else if (_M_type() == _Type::_Multi && p._M_type() == _Type::_Multi)
-    return do_compare(_M_cmpts.begin(), _M_cmpts.end(),
-		      p._M_cmpts.begin(), p._M_cmpts.end());
-  else if (_M_type() == _Type::_Multi)
+
+  basic_string_view<value_type> lroot, rroot;
+  if (_M_type() == _Type::_Root_name)
+    lroot = _M_pathname;
+  else if (_M_type() == _Type::_Multi
+      && _M_cmpts.front()._M_type() == _Type::_Root_name)
+    lroot = _M_cmpts.front()._M_pathname;
+  if (p._M_type() == _Type::_Root_name)
+    rroot = p._M_pathname;
+  else if (p._M_type() == _Type::_Multi
+      && p._M_cmpts.front()._M_type() == _Type::_Root_name)
+    rroot = p._M_cmpts.front()._M_pathname;
+  if (int rootNameComparison = lroot.compare(rroot))
+    return rootNameComparison;
+
+  if (!this->has_root_directory() && p.has_root_directory())
+    return -1;
+  else if (this->has_root_directory() && !p.has_root_directory())
+    return +1;
+
+  using Iterator = const _Cmpt*;
+  Iterator begin1, end1, begin2, end2;
+  if (_M_type() == _Type::_Multi)
     {
-      CmptRef c[1] = { { &p } };
-      return do_compare(_M_cmpts.begin(), _M_cmpts.end(), c, c+1);
-    }
-  else if (p._M_type() == _Type::_Multi)
-    {
-      CmptRef c[1] = { { this } };
-      return do_compare(c, c+1, p._M_cmpts.begin(), p._M_cmpts.end());
+      begin1 = _M_cmpts.begin();
+      end1 = _M_cmpts.end();
+      // Find start of this->relative_path()
+      while (begin1 != end1 && begin1->_M_type() != _Type::_Filename)
+	++begin1;
     }
   else
-    return _M_pathname.compare(p._M_pathname);
+    begin1 = end1 = nullptr;
+
+  if (p._M_type() == _Type::_Multi)
+    {
+      begin2 = p._M_cmpts.begin();
+      end2 = p._M_cmpts.end();
+      // Find start of p.relative_path()
+      while (begin2 != end2 && begin2->_M_type() != _Type::_Filename)
+	++begin2;
+    }
+  else
+    begin2 = end2 = nullptr;
+
+  if (_M_type() == _Type::_Filename)
+    {
+      if (p._M_type() == _Type::_Filename)
+	return native().compare(p.native());
+      else if (begin2 != end2)
+	{
+	  if (int ret = native().compare(begin2->native()))
+	    return ret;
+	  else
+	    return ++begin2 == end2 ? 0 : -1;
+	}
+      else
+	return +1;
+    }
+  else if (p._M_type() == _Type::_Filename)
+    {
+      if (begin1 != end1)
+	{
+	  if (int ret = begin1->native().compare(p.native()))
+	    return ret;
+	  else
+	    return ++begin1 == end1 ? 0 : +1;
+	}
+      else
+	return -1;
+    }
+
+  int count = 1;
+  while (begin1 != end1 && begin2 != end2)
+    {
+      if (int i = begin1->native().compare(begin2->native()))
+	return i;
+      ++begin1;
+      ++begin2;
+      ++count;
+    }
+  if (begin1 == end1)
+    {
+      if (begin2 == end2)
+	return 0;
+      return -count;
+    }
+  return count;
+}
+
+int
+path::compare(basic_string_view<value_type> s) const noexcept
+{
+  if (_M_pathname == s)
+    return 0;
+
+  _Parser parser(s);
+
+  basic_string_view<value_type> lroot, rroot;
+  if (_M_type() == _Type::_Root_name)
+    lroot = _M_pathname;
+  else if (_M_type() == _Type::_Multi
+      && _M_cmpts.front()._M_type() == _Type::_Root_name)
+    lroot = _M_cmpts.front()._M_pathname;
+  auto root_path = parser.root_path();
+  if (root_path.first.type == _Type::_Root_name)
+    rroot = root_path.first.str;
+  if (int rootNameComparison = lroot.compare(rroot))
+    return rootNameComparison;
+
+  const bool has_root_dir = root_path.first.type == _Type::_Root_dir
+    || root_path.second.type == _Type::_Root_dir;
+  if (!this->has_root_directory() && has_root_dir)
+    return -1;
+  else if (this->has_root_directory() && !has_root_dir)
+    return +1;
+
+  using Iterator = const _Cmpt*;
+  Iterator begin1, end1;
+  if (_M_type() == _Type::_Filename)
+    {
+      auto cmpt = parser.next();
+      if (cmpt.valid())
+	{
+	  if (int ret = this->native().compare(cmpt.str))
+	    return ret;
+	  return parser.next().valid() ? -1 : 0;
+	}
+      else
+	return +1;
+    }
+  else if (_M_type() == _Type::_Multi)
+    {
+      begin1 = _M_cmpts.begin();
+      end1 = _M_cmpts.end();
+      while (begin1 != end1 && begin1->_M_type() != _Type::_Filename)
+	++begin1;
+    }
+  else
+    begin1 = end1 = nullptr;
+
+  int count = 1;
+  auto cmpt = parser.next();
+  while (begin1 != end1 && cmpt.valid())
+    {
+      if (int i = begin1->native().compare(cmpt.str))
+	return i;
+      ++begin1;
+      cmpt = parser.next();
+      ++count;
+    }
+  if (begin1 == end1)
+    {
+      if (!cmpt.valid())
+	return 0;
+      return -count;
+    }
+  return +count;
 }
 
 path
@@ -1718,12 +1832,9 @@ path::_M_split_cmpts()
 	*next++ = root_path.second;
     }
 
-  bool got_at_least_one_filename = false;
-
   auto cmpt = parser.next();
   while (cmpt.valid())
     {
-      got_at_least_one_filename = true;
       do
 	{
 	  *next++ = cmpt;
@@ -1744,15 +1855,6 @@ path::_M_split_cmpts()
 	    }
 	  next = buf.begin();
 	}
-    }
-
-  // [fs.path.itr]/4
-  // An empty element, if trailing non-root directory-separator present.
-  if (got_at_least_one_filename && is_dir_sep(_M_pathname.back()))
-    {
-      next->str = { _M_pathname.data() + _M_pathname.length(), 0 };
-      next->type = _Type::_Filename;
-      ++next;
     }
 
   if (auto n = next - buf.begin())
