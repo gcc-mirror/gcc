@@ -1,3 +1,9 @@
+2018-12-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/88213
+	* config/rs6000/vsx.md (*vsx_extract_<P:mode>_<VSX_D:mode>_load):
+	Require TARGET_POWERPC64.
+
 2018-12-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88533
