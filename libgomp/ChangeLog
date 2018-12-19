@@ -1,5 +1,11 @@
 2018-12-19  Tom de Vries  <tdevries@suse.de>
 
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-3.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-4.c: New test.
+
+2018-12-19  Tom de Vries  <tdevries@suse.de>
+
 	* testsuite/lib/libgomp.exp: Add load_lib of scanoffloadrtl.exp.
 	* testsuite/libgomp.oacc-c-c++-common/nvptx-merged-loop.c: Move from
 	gcc/testsuite/gcc.dg/goacc.
