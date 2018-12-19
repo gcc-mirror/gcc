@@ -1,3 +1,13 @@
+2018-12-19  Nathan Sidwell  <nathan@acm.org>
+
+	Partition parsing.  Don't get excited!
+	gcc/cp/
+	* module.cc (get_module): Attach current module for null
+	partition.
+	* parser.c (cp_parser_module_name): Parse partitions
+	gcc/testsuite/
+	* g++.dg/modules/part-1_[ab].C: New.
+
 2018-12-18  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

@@ -13048,9 +13048,10 @@ cp_parser_already_scoped_statement (cp_parser* parser, bool *if_p,
 static module_state *
 cp_parser_module_name (cp_parser *parser, bool for_module)
 {
-  if (cp_lexer_peek_token (parser->lexer)->type == CPP_HEADER_NAME)
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+  if (token->type == CPP_HEADER_NAME)
     {
-      cp_token *token = cp_lexer_consume_token (parser->lexer);
+      cp_lexer_consume_token (parser->lexer);
 
       if (!for_module)
 	return get_module (token->u.value);
@@ -13060,19 +13061,33 @@ cp_parser_module_name (cp_parser *parser, bool for_module)
       return NULL;
     }
 
-  for (module_state *parent = NULL;; cp_lexer_consume_token (parser->lexer))
+  module_state *parent = NULL;
+  bool partitioned = false;
+  if (!for_module && token->type == CPP_COLON && module_purview_p ())
+    {
+      partitioned = true;
+      cp_lexer_consume_token (parser->lexer);
+    }
+
+  for (;;)
     {
       if (cp_lexer_peek_token (parser->lexer)->type != CPP_NAME)
 	{
 	  cp_parser_error (parser, "expected module-name");
-	  return parent;
+	  break;
 	}
 
       tree name = cp_lexer_consume_token (parser->lexer)->u.value;
-      parent = get_module (name, parent);
-      if (cp_lexer_peek_token (parser->lexer)->type != CPP_DOT)
-	return parent;
-    }
+      parent = get_module (name, parent, partitioned);
+      if (for_module && !partitioned
+	  && cp_lexer_peek_token (parser->lexer)->type == CPP_COLON)
+	partitioned = true;
+      else if (cp_lexer_peek_token (parser->lexer)->type != CPP_DOT)
+	break;
+      cp_lexer_consume_token (parser->lexer);
+   }
+
+  return parent;
 }
 
 /* Named module-declaration

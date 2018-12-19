@@ -2852,7 +2852,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   location_t from_loc;  /* Location module was imported at.  */
 
   unsigned short mod;		/* Module owner number.  */
-  unsigned short subst;		/* subst number if !0.  */
+  unsigned short subst;		/* Mangle subst if !0.  */
   unsigned crc;		/* CRC we saw reading it in. */
 
   bool legacy_p : 1;	/* Is a legacy import.  */
@@ -7607,6 +7607,13 @@ mangle_module_fini ()
 module_state *
 get_module (tree name, module_state *parent, bool partition)
 {
+  if (partition && !parent)
+    {
+      parent = (*modules)[MODULE_PURVIEW];
+      while (parent->is_partition ())
+	parent = parent->parent;
+    }
+
   module_state_hash::compare_type ct (name, uintptr_t (parent) | partition);
   hashval_t hv = module_state_hash::hash (ct);
   module_state **slot = modules_hash->find_slot_with_hash (ct, hv, INSERT);
