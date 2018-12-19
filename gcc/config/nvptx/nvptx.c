@@ -3974,7 +3974,7 @@ nvptx_wpropagate (bool pre_p, bool is_call, basic_block block, rtx_insn *insn)
 static rtx
 nvptx_wsync (bool after)
 {
-  return gen_nvptx_barsync (GEN_INT (after));
+  return gen_nvptx_barsync (GEN_INT (after), GEN_INT (0));
 }
 
 #if WORKAROUND_PTXJIT_BUG
