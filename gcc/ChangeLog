@@ -1,5 +1,21 @@
 2018-12-19  Tom de Vries  <tdevries@suse.de>
 
+	* config/nvptx/nvptx.c (worker_bcast_size): Rename as
+	oacc_bcast_size.
+	(worker_bcast_align): Rename as oacc_bcast_align.
+	(worker_bcast_sym): Rename as oacc_bcast_sym.
+	(nvptx_option_override): Update usage of oacc_bcast_*.
+	(struct wcast_data_t): Rename as broadcast_data_t.
+	(nvptx_gen_wcast): Update type of data argument and usage of
+	oacc_bcast_align.
+	(wprop_gen): Update type of data_ and usage of oacc_bcast_align.
+	(nvptx_wpropagate): Update type of data and usage of
+	oacc_bcast_{sym,size}.
+	(nvptx_single): Update type of data and usage of oacc_bcast_size.
+	(nvptx_file_end): Update usage of oacc_bcast_{sym,align,size}.
+
+2018-12-19  Tom de Vries  <tdevries@suse.de>
+
 	* config/nvptx/nvptx.md (nvptx_barsync): Add and handle operand.
 	* config/nvptx/nvptx.c (nvptx_wsync): Update call to gen_nvptx_barsync.
 
