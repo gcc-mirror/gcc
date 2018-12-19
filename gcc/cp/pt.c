@@ -6196,6 +6196,7 @@ convert_nontype_argument_function (tree type, tree expr,
      -- the address of an object or function with external [C++11: or
         internal] linkage.  */
 
+  STRIP_ANY_LOCATION_WRAPPER (fn_no_ptr);
   if (TREE_CODE (fn_no_ptr) != FUNCTION_DECL)
     {
       if (complain & tf_error)
@@ -12756,13 +12757,13 @@ tsubst_default_argument (tree fn, int parmnum, tree type, tree arg,
 
   finish_lambda_scope ();
 
+  /* Make sure the default argument is reasonable.  */
+  arg = check_default_argument (type, arg, complain);
+
   if (errorcount+sorrycount > errs
       && (complain & tf_warning_or_error))
     inform (input_location,
 	    "  when instantiating default argument for call to %qD", fn);
-
-  /* Make sure the default argument is reasonable.  */
-  arg = check_default_argument (type, arg, complain);
 
   pop_access_scope (fn);
   pop_from_top_level ();
@@ -27224,7 +27225,8 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 					 complain);
   else if (AUTO_IS_DECLTYPE (auto_node))
     {
-      bool id = (DECL_P (init)
+      tree stripped_init = tree_strip_any_location_wrapper (init);
+      bool id = (DECL_P (stripped_init)
 		 || ((TREE_CODE (init) == COMPONENT_REF
 		      || TREE_CODE (init) == SCOPE_REF)
 		     && !REF_PARENTHESIZED_P (init)));

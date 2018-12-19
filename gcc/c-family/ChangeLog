@@ -1,3 +1,27 @@
+2018-12-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/43064
+	PR c++/43486
+	* c-common.c (unsafe_conversion_p): Fold any location wrapper.
+	(verify_tree): Handle location wrappers.
+	(c_common_truthvalue_conversion): Strip any location wrapper.
+	Handle CONST_DECL.
+	(fold_offsetof): Strip any location wrapper.
+	(complete_array_type): Likewise for initial_value.
+	(convert_vector_to_array_for_subscript): Call fold_for_warn on the
+	index before checking for INTEGER_CST.
+	* c-pretty-print.c (c_pretty_printer::primary_expression): Don't
+	print parentheses around location wrappers.
+	* c-warn.c (warn_logical_operator): Call fold_for_warn on op_right
+	before checking for INTEGER_CST.
+	(warn_tautological_bitwise_comparison): Call
+	tree_strip_any_location_wrapper on lhs, rhs, and bitop's operand
+	before checking for INTEGER_CST.
+	(readonly_error): Strip any location wrapper.
+	(warn_array_subscript_with_type_char): Strip location wrappers
+	before checking for INTEGER_CST.  Use the location of the index if
+	available.
+
 2018-12-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/88136 - -Wdeprecated-copy false positives

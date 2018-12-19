@@ -263,6 +263,8 @@ mark_discarded_use (tree expr)
   if (expr == NULL_TREE)
     return expr;
 
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+
   switch (TREE_CODE (expr))
     {
     case COND_EXPR:

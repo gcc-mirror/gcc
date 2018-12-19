@@ -1,3 +1,12 @@
+2018-12-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/43064
+	PR c++/43486
+	* objc-act.c (objc_maybe_build_component_ref): Strip any location
+	wrapper before checking for UOBJC_SUPER_decl and self_decl.
+	(objc_finish_message_expr): Strip any location wrapper.
+	(gen_declaration): Strip location wrappers from "w".
+
 2018-10-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* Make-lang.in (selftest-objc): New.

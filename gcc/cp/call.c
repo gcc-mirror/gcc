@@ -5347,9 +5347,12 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
       if (TREE_CODE (arg2_type) == ENUMERAL_TYPE
 	  && TREE_CODE (arg3_type) == ENUMERAL_TYPE)
         {
-	  if (TREE_CODE (orig_arg2) == CONST_DECL
-	      && TREE_CODE (orig_arg3) == CONST_DECL
-	      && DECL_CONTEXT (orig_arg2) == DECL_CONTEXT (orig_arg3))
+	  tree stripped_orig_arg2 = tree_strip_any_location_wrapper (orig_arg2);
+	  tree stripped_orig_arg3 = tree_strip_any_location_wrapper (orig_arg3);
+	  if (TREE_CODE (stripped_orig_arg2) == CONST_DECL
+	      && TREE_CODE (stripped_orig_arg3) == CONST_DECL
+	      && (DECL_CONTEXT (stripped_orig_arg2)
+		  == DECL_CONTEXT (stripped_orig_arg3)))
 	    /* Two enumerators from the same enumeration can have different
 	       types when the enumeration is still being defined.  */;
           else if (complain & tf_warning)

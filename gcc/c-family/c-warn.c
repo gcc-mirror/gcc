@@ -208,19 +208,22 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
   if (!truth_value_p (code_left)
       && INTEGRAL_TYPE_P (TREE_TYPE (op_left))
       && !CONSTANT_CLASS_P (op_left)
-      && !TREE_NO_WARNING (op_left)
-      && TREE_CODE (op_right) == INTEGER_CST
-      && !integer_zerop (op_right)
-      && !integer_onep (op_right))
+      && !TREE_NO_WARNING (op_left))
     {
-      if (or_op)
-	warning_at (location, OPT_Wlogical_op, "logical %<or%>"
-		    " applied to non-boolean constant");
-      else
-	warning_at (location, OPT_Wlogical_op, "logical %<and%>"
-		    " applied to non-boolean constant");
-      TREE_NO_WARNING (op_left) = true;
-      return;
+      tree folded_op_right = fold_for_warn (op_right);
+      if (TREE_CODE (folded_op_right) == INTEGER_CST
+	  && !integer_zerop (folded_op_right)
+	  && !integer_onep (folded_op_right))
+	{
+	  if (or_op)
+	    warning_at (location, OPT_Wlogical_op, "logical %<or%>"
+			" applied to non-boolean constant");
+	  else
+	    warning_at (location, OPT_Wlogical_op, "logical %<and%>"
+			" applied to non-boolean constant");
+	  TREE_NO_WARNING (op_left) = true;
+	  return;
+	}
     }
 
   /* We do not warn for constants because they are typical of macro
@@ -340,24 +343,30 @@ warn_tautological_bitwise_comparison (location_t loc, tree_code code,
   /* Extract the operands from e.g. (x & 8) == 4.  */
   tree bitop;
   tree cst;
+  tree stripped_lhs = tree_strip_any_location_wrapper (lhs);
+  tree stripped_rhs = tree_strip_any_location_wrapper (rhs);
   if ((TREE_CODE (lhs) == BIT_AND_EXPR
        || TREE_CODE (lhs) == BIT_IOR_EXPR)
-      && TREE_CODE (rhs) == INTEGER_CST)
-    bitop = lhs, cst = rhs;
+      && TREE_CODE (stripped_rhs) == INTEGER_CST)
+    bitop = lhs, cst = stripped_rhs;
   else if ((TREE_CODE (rhs) == BIT_AND_EXPR
 	    || TREE_CODE (rhs) == BIT_IOR_EXPR)
-	   && TREE_CODE (lhs) == INTEGER_CST)
-    bitop = rhs, cst = lhs;
+	   && TREE_CODE (stripped_lhs) == INTEGER_CST)
+    bitop = rhs, cst = stripped_lhs;
   else
     return;
 
   tree bitopcst;
-  if (TREE_CODE (TREE_OPERAND (bitop, 0)) == INTEGER_CST)
-    bitopcst = TREE_OPERAND (bitop, 0);
-  else if (TREE_CODE (TREE_OPERAND (bitop, 1)) == INTEGER_CST)
-    bitopcst = TREE_OPERAND (bitop, 1);
-  else
-    return;
+  tree bitop_op0 = fold_for_warn (TREE_OPERAND (bitop, 0));
+  if (TREE_CODE (bitop_op0) == INTEGER_CST)
+    bitopcst = bitop_op0;
+  else {
+    tree bitop_op1 = fold_for_warn (TREE_OPERAND (bitop, 1));
+    if (TREE_CODE (bitop_op1) == INTEGER_CST)
+      bitopcst = bitop_op1;
+    else
+      return;
+  }
 
   /* Note that the two operands are from before the usual integer
      conversions, so their types might not be the same.
@@ -1529,6 +1538,7 @@ readonly_error (location_t loc, tree arg, enum lvalue_use use)
 {
   gcc_assert (use == lv_assign || use == lv_increment || use == lv_decrement
 	      || use == lv_asm);
+  STRIP_ANY_LOCATION_WRAPPER (arg);
   /* Using this macro rather than (for example) arrays of messages
      ensures that all the format strings are checked at compile
      time.  */
@@ -1669,15 +1679,22 @@ invalid_indirection_error (location_t loc, tree type, ref_operator errstring)
    warn for unsigned char since that type is safe.  Don't warn for
    signed char because anyone who uses that must have done so
    deliberately. Furthermore, we reduce the false positive load by
-   warning only for non-constant value of type char.  */
+   warning only for non-constant value of type char.
+   LOC is the location of the subscripting expression.  */
 
 void
 warn_array_subscript_with_type_char (location_t loc, tree index)
 {
-  if (TYPE_MAIN_VARIANT (TREE_TYPE (index)) == char_type_node
-      && TREE_CODE (index) != INTEGER_CST)
-    warning_at (loc, OPT_Wchar_subscripts,
-		"array subscript has type %<char%>");
+  if (TYPE_MAIN_VARIANT (TREE_TYPE (index)) == char_type_node)
+    {
+      /* If INDEX has a location, use it; otherwise use LOC (the location
+	 of the subscripting expression as a whole).  */
+      loc = EXPR_LOC_OR_LOC (index, loc);
+      STRIP_ANY_LOCATION_WRAPPER (index);
+      if (TREE_CODE (index) != INTEGER_CST)
+	warning_at (loc, OPT_Wchar_subscripts,
+		    "array subscript has type %<char%>");
+    }
 }
 
 /* Implement -Wparentheses for the unexpected C precedence rules, to

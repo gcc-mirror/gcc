@@ -131,6 +131,12 @@ as_internal_fn (combined_fn code)
 #define CONSTANT_CLASS_P(NODE)\
 	(TREE_CODE_CLASS (TREE_CODE (NODE)) == tcc_constant)
 
+/* Nonzero if NODE represents a constant, or is a location wrapper
+   around such a node.  */
+
+#define CONSTANT_CLASS_OR_WRAPPER_P(NODE)\
+	(CONSTANT_CLASS_P (tree_strip_any_location_wrapper (NODE)))
+
 /* Nonzero if NODE represents a type.  */
 
 #define TYPE_P(NODE)\
@@ -1174,6 +1180,19 @@ get_expr_source_range (tree expr)
 extern void protected_set_expr_location (tree, location_t);
 
 extern tree maybe_wrap_with_location (tree, location_t);
+
+extern int suppress_location_wrappers;
+
+/* A class for suppressing the creation of location wrappers.
+   Location wrappers will not be created during the lifetime
+   of an instance of this class.  */
+
+class auto_suppress_location_wrappers
+{
+ public:
+  auto_suppress_location_wrappers () { ++suppress_location_wrappers; }
+  ~auto_suppress_location_wrappers () { --suppress_location_wrappers; }
+};
 
 /* In a TARGET_EXPR node.  */
 #define TARGET_EXPR_SLOT(NODE) TREE_OPERAND_CHECK_CODE (NODE, TARGET_EXPR, 0)

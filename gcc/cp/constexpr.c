@@ -5762,13 +5762,18 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	 may change to something more specific to type-punning (DR 1312).  */
       {
         tree from = TREE_OPERAND (t, 0);
-	if (INDIRECT_TYPE_P (TREE_TYPE (t))
-	    && TREE_CODE (from) == INTEGER_CST
-	    && !integer_zerop (from))
+	if (location_wrapper_p (t))
+	  return (RECUR (from, want_rval));
+	if (INDIRECT_TYPE_P (TREE_TYPE (t)))
 	  {
-	    if (flags & tf_error)
-	      error_at (loc, "reinterpret_cast from integer to pointer");
-	    return false;
+	    STRIP_ANY_LOCATION_WRAPPER (from);
+	    if (TREE_CODE (from) == INTEGER_CST
+		&& !integer_zerop (from))
+	      {
+		if (flags & tf_error)
+		  error_at (loc, "reinterpret_cast from integer to pointer");
+		return false;
+	      }
 	  }
         return (RECUR (from, TREE_CODE (t) != VIEW_CONVERT_EXPR));
       }

@@ -5232,7 +5232,8 @@ cp_parser_primary_expression (cp_parser *parser,
 	  if (!cast_p)
 	    cp_parser_non_integral_constant_expression (parser, NIC_FLOAT);
 	}
-      return cp_expr (token->u.value, token->location);
+      return (cp_expr (token->u.value, token->location)
+	      .maybe_add_location_wrapper ());
 
     case CPP_CHAR_USERDEF:
     case CPP_CHAR16_USERDEF:
@@ -5254,9 +5255,10 @@ cp_parser_primary_expression (cp_parser *parser,
       /* ??? Should wide strings be allowed when parser->translate_strings_p
 	 is false (i.e. in attributes)?  If not, we can kill the third
 	 argument to cp_parser_string_literal.  */
-      return cp_parser_string_literal (parser,
-				       parser->translate_strings_p,
-				       true);
+      return (cp_parser_string_literal (parser,
+					parser->translate_strings_p,
+					true)
+	      .maybe_add_location_wrapper ());
 
     case CPP_OPEN_PAREN:
       /* If we see `( { ' then we are looking at the beginning of
@@ -7169,8 +7171,10 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 
             is_member_access = false;
 
+	    tree stripped_expression
+	      = tree_strip_any_location_wrapper (postfix_expression);
 	    is_builtin_constant_p
-	      = DECL_IS_BUILTIN_CONSTANT_P (postfix_expression);
+	      = DECL_IS_BUILTIN_CONSTANT_P (stripped_expression);
 	    if (is_builtin_constant_p)
 	      {
 		/* The whole point of __builtin_constant_p is to allow
@@ -8363,18 +8367,22 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	case NEGATE_EXPR:
 	  /* Immediately fold negation of a constant, unless the constant is 0
 	     (since -0 == 0) or it would overflow.  */
-	  if (unary_operator == NEGATE_EXPR && op_ttype == CPP_NUMBER
-	      && CONSTANT_CLASS_P (cast_expression)
-	      && !integer_zerop (cast_expression)
-	      && !TREE_OVERFLOW (cast_expression))
+	  if (unary_operator == NEGATE_EXPR && op_ttype == CPP_NUMBER)
 	    {
-	      tree folded = fold_build1 (unary_operator,
-					 TREE_TYPE (cast_expression),
-					 cast_expression);
-	      if (CONSTANT_CLASS_P (folded) && !TREE_OVERFLOW (folded))
+	      tree stripped_expr
+		= tree_strip_any_location_wrapper (cast_expression);
+	      if (CONSTANT_CLASS_P (stripped_expr)
+		  && !integer_zerop (stripped_expr)
+		  && !TREE_OVERFLOW (stripped_expr))
 		{
-		  expression = cp_expr (folded, loc);
-		  break;
+		  tree folded = fold_build1 (unary_operator,
+					     TREE_TYPE (stripped_expr),
+					     stripped_expr);
+		  if (CONSTANT_CLASS_P (folded) && !TREE_OVERFLOW (folded))
+		    {
+		      expression = maybe_wrap_with_location (folded, loc);
+		      break;
+		    }
 		}
 	    }
 	  /* Fall through.  */
@@ -8488,6 +8496,8 @@ cp_parser_has_attribute_expression (cp_parser *parser)
      looking at the unary-expression production.  */
   if (!oper || oper == error_mark_node)
     oper = cp_parser_unary_expression (parser);
+
+  STRIP_ANY_LOCATION_WRAPPER (oper);
 
   /* Go back to evaluating expressions.  */
   --cp_unevaluated_operand;
@@ -9508,7 +9518,7 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 		      || (TREE_CODE (TREE_TYPE (TREE_OPERAND (current.lhs, 0)))
 			  != BOOLEAN_TYPE))))
 	  /* Avoid warning for !!b == y where b is boolean.  */
-	  && (!DECL_P (current.lhs)
+	  && (!DECL_P (tree_strip_any_location_wrapper (current.lhs))
 	      || TREE_TYPE (current.lhs) == NULL_TREE
 	      || TREE_CODE (TREE_TYPE (current.lhs)) != BOOLEAN_TYPE))
 	warn_logical_not_parentheses (current.loc, current.tree_type,
@@ -14546,6 +14556,7 @@ cp_parser_decltype (cp_parser *parser)
       ++c_inhibit_evaluation_warnings;
 
       expr = cp_parser_decltype_expr (parser, id_expression_or_member_access_p);
+      STRIP_ANY_LOCATION_WRAPPER (expr);
 
       /* Go back to evaluating expressions.  */
       --cp_unevaluated_operand;
@@ -14923,7 +14934,9 @@ cp_parser_mem_initializer (cp_parser* parser)
       vec = cp_parser_parenthesized_expression_list (parser, non_attr,
 						     /*cast_p=*/false,
 						     /*allow_expansion_p=*/true,
-						     /*non_constant_p=*/NULL);
+						     /*non_constant_p=*/NULL,
+						     /*close_paren_loc=*/NULL,
+						     /*wrap_locations_p=*/true);
       if (vec == NULL)
 	return error_mark_node;
       expression_list = build_tree_list_vec (vec);
@@ -15463,6 +15476,11 @@ static tree
 cp_parser_template_parameter_list (cp_parser* parser)
 {
   tree parameter_list = NULL_TREE;
+
+  /* Don't create wrapper nodes within a template-parameter-list,
+     since we don't want to have different types based on the
+     spelling location of constants and decls within them.  */
+  auto_suppress_location_wrappers sentinel;
 
   begin_template_parm_list ();
 
@@ -16635,6 +16653,9 @@ cp_parser_template_argument_list (cp_parser* parser)
   bool saved_in_template_argument_list_p;
   bool saved_ice_p;
   bool saved_non_ice_p;
+
+  /* Don't create location wrapper nodes within a template-argument-list.  */
+  auto_suppress_location_wrappers sentinel;
 
   saved_in_template_argument_list_p = parser->in_template_argument_list_p;
   parser->in_template_argument_list_p = true;
@@ -22313,6 +22334,9 @@ cp_parser_parameter_declaration (cp_parser *parser,
   else
     default_argument = NULL_TREE;
 
+  if (default_argument)
+    STRIP_ANY_LOCATION_WRAPPER (default_argument);
+
   /* Generate a location for the parameter, ranging from the start of the
      initial token to the end of the final token (using input_location for
      the latter, set up by cp_lexer_set_source_position_from_token when
@@ -25661,6 +25685,10 @@ cp_parser_gnu_attribute_list (cp_parser* parser, bool exactly_one /* = false */)
   tree attribute_list = NULL_TREE;
   bool save_translate_strings_p = parser->translate_strings_p;
 
+  /* Don't create wrapper nodes within attributes: the
+     handlers don't know how to handle them.  */
+  auto_suppress_location_wrappers sentinel;
+
   parser->translate_strings_p = false;
   while (true)
     {
@@ -26105,6 +26133,10 @@ cp_parser_std_attribute_spec_seq (cp_parser *parser)
 {
   tree attr_specs = NULL_TREE;
   tree attr_last = NULL_TREE;
+
+  /* Don't create wrapper nodes within attributes: the
+     handlers don't know how to handle them.  */
+  auto_suppress_location_wrappers sentinel;
 
   while (true)
     {
@@ -34880,6 +34912,9 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
   bool first = true;
   cp_token *token = NULL;
 
+  /* Don't create location wrapper nodes within OpenMP clauses.  */
+  auto_suppress_location_wrappers sentinel;
+
   while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL))
     {
       pragma_omp_clause c_kind;
@@ -36596,6 +36631,10 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 	  return NULL;
 	}
       loc = cp_lexer_consume_token (parser->lexer)->location;
+
+      /* Don't create location wrapper nodes within an OpenMP "for"
+	 statement.  */
+      auto_suppress_location_wrappers sentinel;
 
       matching_parens parens;
       if (!parens.require_open (parser))
@@ -39168,6 +39207,8 @@ cp_parser_omp_declare_reduction_exprs (tree fndecl, cp_parser *parser)
       else
 	{
 	  cp_parser_parse_tentatively (parser);
+	  /* Don't create location wrapper nodes here.  */
+	  auto_suppress_location_wrappers sentinel;
 	  tree fn_name = cp_parser_id_expression (parser, /*template_p=*/false,
 						  /*check_dependency_p=*/true,
 						  /*template_p=*/NULL,

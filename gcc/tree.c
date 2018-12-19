@@ -2208,6 +2208,9 @@ build_string (int len, const char *str)
 tree
 build_complex (tree type, tree real, tree imag)
 {
+  gcc_assert (CONSTANT_CLASS_P (real));
+  gcc_assert (CONSTANT_CLASS_P (imag));
+
   tree t = make_node (COMPLEX_CST);
 
   TREE_REALPART (t) = real;
@@ -2506,11 +2509,13 @@ zerop (const_tree expr)
 }
 
 /* Return 1 if EXPR is the integer constant zero or a complex constant
-   of zero.  */
+   of zero, or a location wrapper for such a constant.  */
 
 bool
 integer_zerop (const_tree expr)
 {
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+
   switch (TREE_CODE (expr))
     {
     case INTEGER_CST:
@@ -2528,11 +2533,13 @@ integer_zerop (const_tree expr)
 }
 
 /* Return 1 if EXPR is the integer constant one or the corresponding
-   complex constant.  */
+   complex constant, or a location wrapper for such a constant.  */
 
 bool
 integer_onep (const_tree expr)
 {
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+
   switch (TREE_CODE (expr))
     {
     case INTEGER_CST:
@@ -2550,11 +2557,14 @@ integer_onep (const_tree expr)
 }
 
 /* Return 1 if EXPR is the integer constant one.  For complex and vector,
-   return 1 if every piece is the integer constant one.  */
+   return 1 if every piece is the integer constant one.
+   Also return 1 for location wrappers for such a constant.  */
 
 bool
 integer_each_onep (const_tree expr)
 {
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+
   if (TREE_CODE (expr) == COMPLEX_CST)
     return (integer_onep (TREE_REALPART (expr))
 	    && integer_onep (TREE_IMAGPART (expr)));
@@ -2563,11 +2573,14 @@ integer_each_onep (const_tree expr)
 }
 
 /* Return 1 if EXPR is an integer containing all 1's in as much precision as
-   it contains, or a complex or vector whose subparts are such integers.  */
+   it contains, or a complex or vector whose subparts are such integers,
+   or a location wrapper for such a constant.  */
 
 bool
 integer_all_onesp (const_tree expr)
 {
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+
   if (TREE_CODE (expr) == COMPLEX_CST
       && integer_all_onesp (TREE_REALPART (expr))
       && integer_all_onesp (TREE_IMAGPART (expr)))
@@ -2585,11 +2598,14 @@ integer_all_onesp (const_tree expr)
 	  == wi::to_wide (expr));
 }
 
-/* Return 1 if EXPR is the integer constant minus one.  */
+/* Return 1 if EXPR is the integer constant minus one, or a location wrapper
+   for such a constant.  */
 
 bool
 integer_minus_onep (const_tree expr)
 {
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+
   if (TREE_CODE (expr) == COMPLEX_CST)
     return (integer_all_onesp (TREE_REALPART (expr))
 	    && integer_zerop (TREE_IMAGPART (expr)));
@@ -2598,11 +2614,13 @@ integer_minus_onep (const_tree expr)
 }
 
 /* Return 1 if EXPR is an integer constant that is a power of 2 (i.e., has only
-   one bit on).  */
+   one bit on), or a location wrapper for such a constant.  */
 
 bool
 integer_pow2p (const_tree expr)
 {
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+
   if (TREE_CODE (expr) == COMPLEX_CST
       && integer_pow2p (TREE_REALPART (expr))
       && integer_zerop (TREE_IMAGPART (expr)))
@@ -2615,11 +2633,14 @@ integer_pow2p (const_tree expr)
 }
 
 /* Return 1 if EXPR is an integer constant other than zero or a
-   complex constant other than zero.  */
+   complex constant other than zero, or a location wrapper for such a
+   constant.  */
 
 bool
 integer_nonzerop (const_tree expr)
 {
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+
   return ((TREE_CODE (expr) == INTEGER_CST
 	   && wi::to_wide (expr) != 0)
 	  || (TREE_CODE (expr) == COMPLEX_CST
@@ -2629,21 +2650,27 @@ integer_nonzerop (const_tree expr)
 
 /* Return 1 if EXPR is the integer constant one.  For vector,
    return 1 if every piece is the integer constant minus one
-   (representing the value TRUE).  */
+   (representing the value TRUE).
+   Also return 1 for location wrappers for such a constant.  */
 
 bool
 integer_truep (const_tree expr)
 {
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+
   if (TREE_CODE (expr) == VECTOR_CST)
     return integer_all_onesp (expr);
   return integer_onep (expr);
 }
 
-/* Return 1 if EXPR is the fixed-point constant zero.  */
+/* Return 1 if EXPR is the fixed-point constant zero, or a location wrapper
+   for such a constant.  */
 
 bool
 fixed_zerop (const_tree expr)
 {
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+
   return (TREE_CODE (expr) == FIXED_CST
 	  && TREE_FIXED_CST (expr).data.is_zero ());
 }
@@ -2784,11 +2811,14 @@ tree_ctz (const_tree expr)
 }
 
 /* Return 1 if EXPR is the real constant zero.  Trailing zeroes matter for
-   decimal float constants, so don't return 1 for them.  */
+   decimal float constants, so don't return 1 for them.
+   Also return 1 for location wrappers around such a constant.  */
 
 bool
 real_zerop (const_tree expr)
 {
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+
   switch (TREE_CODE (expr))
     {
     case REAL_CST:
@@ -2814,11 +2844,14 @@ real_zerop (const_tree expr)
 
 /* Return 1 if EXPR is the real constant one in real or complex form.
    Trailing zeroes matter for decimal float constants, so don't return
-   1 for them.  */
+   1 for them.
+   Also return 1 for location wrappers around such a constant.  */
 
 bool
 real_onep (const_tree expr)
 {
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+
   switch (TREE_CODE (expr))
     {
     case REAL_CST:
@@ -2837,11 +2870,14 @@ real_onep (const_tree expr)
 }
 
 /* Return 1 if EXPR is the real constant minus one.  Trailing zeroes
-   matter for decimal float constants, so don't return 1 for them.  */
+   matter for decimal float constants, so don't return 1 for them.
+   Also return 1 for location wrappers around such a constant.  */
 
 bool
 real_minus_onep (const_tree expr)
 {
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+
   switch (TREE_CODE (expr))
     {
     case REAL_CST:
@@ -7106,6 +7142,9 @@ tree_int_cst_equal (const_tree t1, const_tree t2)
   if (t1 == 0 || t2 == 0)
     return 0;
 
+  STRIP_ANY_LOCATION_WRAPPER (t1);
+  STRIP_ANY_LOCATION_WRAPPER (t2);
+
   if (TREE_CODE (t1) == INTEGER_CST
       && TREE_CODE (t2) == INTEGER_CST
       && wi::to_widest (t1) == wi::to_widest (t2))
@@ -7265,6 +7304,15 @@ simple_cst_equal (const_tree t1, const_tree t2)
     return 1;
   if (t1 == 0 || t2 == 0)
     return 0;
+
+  /* For location wrappers to be the same, they must be at the same
+     source location (and wrap the same thing).  */
+  if (location_wrapper_p (t1) && location_wrapper_p (t2))
+    {
+      if (EXPR_LOCATION (t1) != EXPR_LOCATION (t2))
+	return 0;
+      return simple_cst_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
+    }
 
   code1 = TREE_CODE (t1);
   code2 = TREE_CODE (t2);
@@ -11226,11 +11274,14 @@ uniform_vector_p (const_tree vec)
 
 /* If the argument is INTEGER_CST, return it.  If the argument is vector
    with all elements the same INTEGER_CST, return that INTEGER_CST.  Otherwise
-   return NULL_TREE.  */
+   return NULL_TREE.
+   Look through location wrappers. */
 
 tree
 uniform_integer_cst_p (tree t)
 {
+  STRIP_ANY_LOCATION_WRAPPER (t);
+
   if (TREE_CODE (t) == INTEGER_CST)
     return t;
 
@@ -14646,6 +14697,11 @@ maybe_wrap_with_location (tree expr, location_t loc)
   if (EXCEPTIONAL_CLASS_P (expr))
     return expr;
 
+  /* If any auto_suppress_location_wrappers are active, don't create
+     wrappers.  */
+  if (suppress_location_wrappers > 0)
+    return expr;
+
   tree_code code
     = (((CONSTANT_CLASS_P (expr) && TREE_CODE (expr) != STRING_CST)
 	|| (TREE_CODE (expr) == CONST_DECL && !TREE_STATIC (expr)))
@@ -14655,6 +14711,8 @@ maybe_wrap_with_location (tree expr, location_t loc)
   EXPR_LOCATION_WRAPPER_P (wrapper) = 1;
   return wrapper;
 }
+
+int suppress_location_wrappers;
 
 /* Return the name of combined function FN, for debugging purposes.  */
 
@@ -15146,6 +15204,323 @@ test_location_wrappers ()
   check_strip_nops (wrapped_int_var, int_var);
 }
 
+/* Test various tree predicates.  Verify that location wrappers don't
+   affect the results.  */
+
+static void
+test_predicates ()
+{
+  /* Build various constants and wrappers around them.  */
+
+  location_t loc = BUILTINS_LOCATION;
+
+  tree i_0 = build_int_cst (integer_type_node, 0);
+  tree wr_i_0 = maybe_wrap_with_location (i_0, loc);
+
+  tree i_1 = build_int_cst (integer_type_node, 1);
+  tree wr_i_1 = maybe_wrap_with_location (i_1, loc);
+
+  tree i_m1 = build_int_cst (integer_type_node, -1);
+  tree wr_i_m1 = maybe_wrap_with_location (i_m1, loc);
+
+  tree f_0 = build_real_from_int_cst (float_type_node, i_0);
+  tree wr_f_0 = maybe_wrap_with_location (f_0, loc);
+  tree f_1 = build_real_from_int_cst (float_type_node, i_1);
+  tree wr_f_1 = maybe_wrap_with_location (f_1, loc);
+  tree f_m1 = build_real_from_int_cst (float_type_node, i_m1);
+  tree wr_f_m1 = maybe_wrap_with_location (f_m1, loc);
+
+  tree c_i_0 = build_complex (NULL_TREE, i_0, i_0);
+  tree c_i_1 = build_complex (NULL_TREE, i_1, i_0);
+  tree c_i_m1 = build_complex (NULL_TREE, i_m1, i_0);
+
+  tree c_f_0 = build_complex (NULL_TREE, f_0, f_0);
+  tree c_f_1 = build_complex (NULL_TREE, f_1, f_0);
+  tree c_f_m1 = build_complex (NULL_TREE, f_m1, f_0);
+
+  /* TODO: vector constants.  */
+
+  /* Test integer_onep.  */
+  ASSERT_FALSE (integer_onep (i_0));
+  ASSERT_FALSE (integer_onep (wr_i_0));
+  ASSERT_TRUE (integer_onep (i_1));
+  ASSERT_TRUE (integer_onep (wr_i_1));
+  ASSERT_FALSE (integer_onep (i_m1));
+  ASSERT_FALSE (integer_onep (wr_i_m1));
+  ASSERT_FALSE (integer_onep (f_0));
+  ASSERT_FALSE (integer_onep (wr_f_0));
+  ASSERT_FALSE (integer_onep (f_1));
+  ASSERT_FALSE (integer_onep (wr_f_1));
+  ASSERT_FALSE (integer_onep (f_m1));
+  ASSERT_FALSE (integer_onep (wr_f_m1));
+  ASSERT_FALSE (integer_onep (c_i_0));
+  ASSERT_TRUE (integer_onep (c_i_1));
+  ASSERT_FALSE (integer_onep (c_i_m1));
+  ASSERT_FALSE (integer_onep (c_f_0));
+  ASSERT_FALSE (integer_onep (c_f_1));
+  ASSERT_FALSE (integer_onep (c_f_m1));
+
+  /* Test integer_zerop.  */
+  ASSERT_TRUE (integer_zerop (i_0));
+  ASSERT_TRUE (integer_zerop (wr_i_0));
+  ASSERT_FALSE (integer_zerop (i_1));
+  ASSERT_FALSE (integer_zerop (wr_i_1));
+  ASSERT_FALSE (integer_zerop (i_m1));
+  ASSERT_FALSE (integer_zerop (wr_i_m1));
+  ASSERT_FALSE (integer_zerop (f_0));
+  ASSERT_FALSE (integer_zerop (wr_f_0));
+  ASSERT_FALSE (integer_zerop (f_1));
+  ASSERT_FALSE (integer_zerop (wr_f_1));
+  ASSERT_FALSE (integer_zerop (f_m1));
+  ASSERT_FALSE (integer_zerop (wr_f_m1));
+  ASSERT_TRUE (integer_zerop (c_i_0));
+  ASSERT_FALSE (integer_zerop (c_i_1));
+  ASSERT_FALSE (integer_zerop (c_i_m1));
+  ASSERT_FALSE (integer_zerop (c_f_0));
+  ASSERT_FALSE (integer_zerop (c_f_1));
+  ASSERT_FALSE (integer_zerop (c_f_m1));
+
+  /* Test integer_all_onesp.  */
+  ASSERT_FALSE (integer_all_onesp (i_0));
+  ASSERT_FALSE (integer_all_onesp (wr_i_0));
+  ASSERT_FALSE (integer_all_onesp (i_1));
+  ASSERT_FALSE (integer_all_onesp (wr_i_1));
+  ASSERT_TRUE (integer_all_onesp (i_m1));
+  ASSERT_TRUE (integer_all_onesp (wr_i_m1));
+  ASSERT_FALSE (integer_all_onesp (f_0));
+  ASSERT_FALSE (integer_all_onesp (wr_f_0));
+  ASSERT_FALSE (integer_all_onesp (f_1));
+  ASSERT_FALSE (integer_all_onesp (wr_f_1));
+  ASSERT_FALSE (integer_all_onesp (f_m1));
+  ASSERT_FALSE (integer_all_onesp (wr_f_m1));
+  ASSERT_FALSE (integer_all_onesp (c_i_0));
+  ASSERT_FALSE (integer_all_onesp (c_i_1));
+  ASSERT_FALSE (integer_all_onesp (c_i_m1));
+  ASSERT_FALSE (integer_all_onesp (c_f_0));
+  ASSERT_FALSE (integer_all_onesp (c_f_1));
+  ASSERT_FALSE (integer_all_onesp (c_f_m1));
+
+  /* Test integer_minus_onep.  */
+  ASSERT_FALSE (integer_minus_onep (i_0));
+  ASSERT_FALSE (integer_minus_onep (wr_i_0));
+  ASSERT_FALSE (integer_minus_onep (i_1));
+  ASSERT_FALSE (integer_minus_onep (wr_i_1));
+  ASSERT_TRUE (integer_minus_onep (i_m1));
+  ASSERT_TRUE (integer_minus_onep (wr_i_m1));
+  ASSERT_FALSE (integer_minus_onep (f_0));
+  ASSERT_FALSE (integer_minus_onep (wr_f_0));
+  ASSERT_FALSE (integer_minus_onep (f_1));
+  ASSERT_FALSE (integer_minus_onep (wr_f_1));
+  ASSERT_FALSE (integer_minus_onep (f_m1));
+  ASSERT_FALSE (integer_minus_onep (wr_f_m1));
+  ASSERT_FALSE (integer_minus_onep (c_i_0));
+  ASSERT_FALSE (integer_minus_onep (c_i_1));
+  ASSERT_TRUE (integer_minus_onep (c_i_m1));
+  ASSERT_FALSE (integer_minus_onep (c_f_0));
+  ASSERT_FALSE (integer_minus_onep (c_f_1));
+  ASSERT_FALSE (integer_minus_onep (c_f_m1));
+
+  /* Test integer_each_onep.  */
+  ASSERT_FALSE (integer_each_onep (i_0));
+  ASSERT_FALSE (integer_each_onep (wr_i_0));
+  ASSERT_TRUE (integer_each_onep (i_1));
+  ASSERT_TRUE (integer_each_onep (wr_i_1));
+  ASSERT_FALSE (integer_each_onep (i_m1));
+  ASSERT_FALSE (integer_each_onep (wr_i_m1));
+  ASSERT_FALSE (integer_each_onep (f_0));
+  ASSERT_FALSE (integer_each_onep (wr_f_0));
+  ASSERT_FALSE (integer_each_onep (f_1));
+  ASSERT_FALSE (integer_each_onep (wr_f_1));
+  ASSERT_FALSE (integer_each_onep (f_m1));
+  ASSERT_FALSE (integer_each_onep (wr_f_m1));
+  ASSERT_FALSE (integer_each_onep (c_i_0));
+  ASSERT_FALSE (integer_each_onep (c_i_1));
+  ASSERT_FALSE (integer_each_onep (c_i_m1));
+  ASSERT_FALSE (integer_each_onep (c_f_0));
+  ASSERT_FALSE (integer_each_onep (c_f_1));
+  ASSERT_FALSE (integer_each_onep (c_f_m1));
+
+  /* Test integer_truep.  */
+  ASSERT_FALSE (integer_truep (i_0));
+  ASSERT_FALSE (integer_truep (wr_i_0));
+  ASSERT_TRUE (integer_truep (i_1));
+  ASSERT_TRUE (integer_truep (wr_i_1));
+  ASSERT_FALSE (integer_truep (i_m1));
+  ASSERT_FALSE (integer_truep (wr_i_m1));
+  ASSERT_FALSE (integer_truep (f_0));
+  ASSERT_FALSE (integer_truep (wr_f_0));
+  ASSERT_FALSE (integer_truep (f_1));
+  ASSERT_FALSE (integer_truep (wr_f_1));
+  ASSERT_FALSE (integer_truep (f_m1));
+  ASSERT_FALSE (integer_truep (wr_f_m1));
+  ASSERT_FALSE (integer_truep (c_i_0));
+  ASSERT_TRUE (integer_truep (c_i_1));
+  ASSERT_FALSE (integer_truep (c_i_m1));
+  ASSERT_FALSE (integer_truep (c_f_0));
+  ASSERT_FALSE (integer_truep (c_f_1));
+  ASSERT_FALSE (integer_truep (c_f_m1));
+
+  /* Test integer_nonzerop.  */
+  ASSERT_FALSE (integer_nonzerop (i_0));
+  ASSERT_FALSE (integer_nonzerop (wr_i_0));
+  ASSERT_TRUE (integer_nonzerop (i_1));
+  ASSERT_TRUE (integer_nonzerop (wr_i_1));
+  ASSERT_TRUE (integer_nonzerop (i_m1));
+  ASSERT_TRUE (integer_nonzerop (wr_i_m1));
+  ASSERT_FALSE (integer_nonzerop (f_0));
+  ASSERT_FALSE (integer_nonzerop (wr_f_0));
+  ASSERT_FALSE (integer_nonzerop (f_1));
+  ASSERT_FALSE (integer_nonzerop (wr_f_1));
+  ASSERT_FALSE (integer_nonzerop (f_m1));
+  ASSERT_FALSE (integer_nonzerop (wr_f_m1));
+  ASSERT_FALSE (integer_nonzerop (c_i_0));
+  ASSERT_TRUE (integer_nonzerop (c_i_1));
+  ASSERT_TRUE (integer_nonzerop (c_i_m1));
+  ASSERT_FALSE (integer_nonzerop (c_f_0));
+  ASSERT_FALSE (integer_nonzerop (c_f_1));
+  ASSERT_FALSE (integer_nonzerop (c_f_m1));
+
+  /* Test real_zerop.  */
+  ASSERT_FALSE (real_zerop (i_0));
+  ASSERT_FALSE (real_zerop (wr_i_0));
+  ASSERT_FALSE (real_zerop (i_1));
+  ASSERT_FALSE (real_zerop (wr_i_1));
+  ASSERT_FALSE (real_zerop (i_m1));
+  ASSERT_FALSE (real_zerop (wr_i_m1));
+  ASSERT_TRUE (real_zerop (f_0));
+  ASSERT_TRUE (real_zerop (wr_f_0));
+  ASSERT_FALSE (real_zerop (f_1));
+  ASSERT_FALSE (real_zerop (wr_f_1));
+  ASSERT_FALSE (real_zerop (f_m1));
+  ASSERT_FALSE (real_zerop (wr_f_m1));
+  ASSERT_FALSE (real_zerop (c_i_0));
+  ASSERT_FALSE (real_zerop (c_i_1));
+  ASSERT_FALSE (real_zerop (c_i_m1));
+  ASSERT_TRUE (real_zerop (c_f_0));
+  ASSERT_FALSE (real_zerop (c_f_1));
+  ASSERT_FALSE (real_zerop (c_f_m1));
+
+  /* Test real_onep.  */
+  ASSERT_FALSE (real_onep (i_0));
+  ASSERT_FALSE (real_onep (wr_i_0));
+  ASSERT_FALSE (real_onep (i_1));
+  ASSERT_FALSE (real_onep (wr_i_1));
+  ASSERT_FALSE (real_onep (i_m1));
+  ASSERT_FALSE (real_onep (wr_i_m1));
+  ASSERT_FALSE (real_onep (f_0));
+  ASSERT_FALSE (real_onep (wr_f_0));
+  ASSERT_TRUE (real_onep (f_1));
+  ASSERT_TRUE (real_onep (wr_f_1));
+  ASSERT_FALSE (real_onep (f_m1));
+  ASSERT_FALSE (real_onep (wr_f_m1));
+  ASSERT_FALSE (real_onep (c_i_0));
+  ASSERT_FALSE (real_onep (c_i_1));
+  ASSERT_FALSE (real_onep (c_i_m1));
+  ASSERT_FALSE (real_onep (c_f_0));
+  ASSERT_TRUE (real_onep (c_f_1));
+  ASSERT_FALSE (real_onep (c_f_m1));
+
+  /* Test real_minus_onep.  */
+  ASSERT_FALSE (real_minus_onep (i_0));
+  ASSERT_FALSE (real_minus_onep (wr_i_0));
+  ASSERT_FALSE (real_minus_onep (i_1));
+  ASSERT_FALSE (real_minus_onep (wr_i_1));
+  ASSERT_FALSE (real_minus_onep (i_m1));
+  ASSERT_FALSE (real_minus_onep (wr_i_m1));
+  ASSERT_FALSE (real_minus_onep (f_0));
+  ASSERT_FALSE (real_minus_onep (wr_f_0));
+  ASSERT_FALSE (real_minus_onep (f_1));
+  ASSERT_FALSE (real_minus_onep (wr_f_1));
+  ASSERT_TRUE (real_minus_onep (f_m1));
+  ASSERT_TRUE (real_minus_onep (wr_f_m1));
+  ASSERT_FALSE (real_minus_onep (c_i_0));
+  ASSERT_FALSE (real_minus_onep (c_i_1));
+  ASSERT_FALSE (real_minus_onep (c_i_m1));
+  ASSERT_FALSE (real_minus_onep (c_f_0));
+  ASSERT_FALSE (real_minus_onep (c_f_1));
+  ASSERT_TRUE (real_minus_onep (c_f_m1));
+
+  /* Test zerop.  */
+  ASSERT_TRUE (zerop (i_0));
+  ASSERT_TRUE (zerop (wr_i_0));
+  ASSERT_FALSE (zerop (i_1));
+  ASSERT_FALSE (zerop (wr_i_1));
+  ASSERT_FALSE (zerop (i_m1));
+  ASSERT_FALSE (zerop (wr_i_m1));
+  ASSERT_TRUE (zerop (f_0));
+  ASSERT_TRUE (zerop (wr_f_0));
+  ASSERT_FALSE (zerop (f_1));
+  ASSERT_FALSE (zerop (wr_f_1));
+  ASSERT_FALSE (zerop (f_m1));
+  ASSERT_FALSE (zerop (wr_f_m1));
+  ASSERT_TRUE (zerop (c_i_0));
+  ASSERT_FALSE (zerop (c_i_1));
+  ASSERT_FALSE (zerop (c_i_m1));
+  ASSERT_TRUE (zerop (c_f_0));
+  ASSERT_FALSE (zerop (c_f_1));
+  ASSERT_FALSE (zerop (c_f_m1));
+
+  /* Test tree_expr_nonnegative_p.  */
+  ASSERT_TRUE (tree_expr_nonnegative_p (i_0));
+  ASSERT_TRUE (tree_expr_nonnegative_p (wr_i_0));
+  ASSERT_TRUE (tree_expr_nonnegative_p (i_1));
+  ASSERT_TRUE (tree_expr_nonnegative_p (wr_i_1));
+  ASSERT_FALSE (tree_expr_nonnegative_p (i_m1));
+  ASSERT_FALSE (tree_expr_nonnegative_p (wr_i_m1));
+  ASSERT_TRUE (tree_expr_nonnegative_p (f_0));
+  ASSERT_TRUE (tree_expr_nonnegative_p (wr_f_0));
+  ASSERT_TRUE (tree_expr_nonnegative_p (f_1));
+  ASSERT_TRUE (tree_expr_nonnegative_p (wr_f_1));
+  ASSERT_FALSE (tree_expr_nonnegative_p (f_m1));
+  ASSERT_FALSE (tree_expr_nonnegative_p (wr_f_m1));
+  ASSERT_FALSE (tree_expr_nonnegative_p (c_i_0));
+  ASSERT_FALSE (tree_expr_nonnegative_p (c_i_1));
+  ASSERT_FALSE (tree_expr_nonnegative_p (c_i_m1));
+  ASSERT_FALSE (tree_expr_nonnegative_p (c_f_0));
+  ASSERT_FALSE (tree_expr_nonnegative_p (c_f_1));
+  ASSERT_FALSE (tree_expr_nonnegative_p (c_f_m1));
+
+  /* Test tree_expr_nonzero_p.  */
+  ASSERT_FALSE (tree_expr_nonzero_p (i_0));
+  ASSERT_FALSE (tree_expr_nonzero_p (wr_i_0));
+  ASSERT_TRUE (tree_expr_nonzero_p (i_1));
+  ASSERT_TRUE (tree_expr_nonzero_p (wr_i_1));
+  ASSERT_TRUE (tree_expr_nonzero_p (i_m1));
+  ASSERT_TRUE (tree_expr_nonzero_p (wr_i_m1));
+
+  /* Test integer_valued_real_p.  */
+  ASSERT_FALSE (integer_valued_real_p (i_0));
+  ASSERT_TRUE (integer_valued_real_p (f_0));
+  ASSERT_TRUE (integer_valued_real_p (wr_f_0));
+  ASSERT_TRUE (integer_valued_real_p (f_1));
+  ASSERT_TRUE (integer_valued_real_p (wr_f_1));
+
+  /* Test integer_pow2p.  */
+  ASSERT_FALSE (integer_pow2p (i_0));
+  ASSERT_TRUE (integer_pow2p (i_1));
+  ASSERT_TRUE (integer_pow2p (wr_i_1));
+
+  /* Test uniform_integer_cst_p.  */
+  ASSERT_TRUE (uniform_integer_cst_p (i_0));
+  ASSERT_TRUE (uniform_integer_cst_p (wr_i_0));
+  ASSERT_TRUE (uniform_integer_cst_p (i_1));
+  ASSERT_TRUE (uniform_integer_cst_p (wr_i_1));
+  ASSERT_TRUE (uniform_integer_cst_p (i_m1));
+  ASSERT_TRUE (uniform_integer_cst_p (wr_i_m1));
+  ASSERT_FALSE (uniform_integer_cst_p (f_0));
+  ASSERT_FALSE (uniform_integer_cst_p (wr_f_0));
+  ASSERT_FALSE (uniform_integer_cst_p (f_1));
+  ASSERT_FALSE (uniform_integer_cst_p (wr_f_1));
+  ASSERT_FALSE (uniform_integer_cst_p (f_m1));
+  ASSERT_FALSE (uniform_integer_cst_p (wr_f_m1));
+  ASSERT_FALSE (uniform_integer_cst_p (c_i_0));
+  ASSERT_FALSE (uniform_integer_cst_p (c_i_1));
+  ASSERT_FALSE (uniform_integer_cst_p (c_i_m1));
+  ASSERT_FALSE (uniform_integer_cst_p (c_f_0));
+  ASSERT_FALSE (uniform_integer_cst_p (c_f_1));
+  ASSERT_FALSE (uniform_integer_cst_p (c_f_m1));
+}
+
 /* Check that string escaping works correctly.  */
 
 static void
@@ -15199,6 +15574,7 @@ tree_c_tests ()
   test_labels ();
   test_vector_cst_patterns ();
   test_location_wrappers ();
+  test_predicates ();
   test_escaped_strings ();
 }
 

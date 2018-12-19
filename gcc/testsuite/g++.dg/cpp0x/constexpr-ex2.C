@@ -19,4 +19,4 @@ constexpr A a = 42;
 X<a> x;	    // OK: unique conversion to int
 int ar[X<a>::i]; // also OK
 int ary[a]; // { dg-error "could not convert" } ambiguous conversion
-// { dg-error "5:size of array .ary. has non-integral" "" { target c++11 } .-1 }
+// { dg-error "9:size of array .ary. has non-integral" "" { target c++11 } .-1 }

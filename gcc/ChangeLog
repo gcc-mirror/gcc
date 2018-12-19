@@ -1,3 +1,53 @@
+2018-12-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/43064
+	PR c++/43486
+	* convert.c: Include "selftest.h".
+	(preserve_any_location_wrapper): New function.
+	(convert_to_pointer_maybe_fold): Update to handle location
+	wrappers.
+	(convert_to_real_maybe_fold): Likewise.
+	(convert_to_integer_1): Strip expr when using TREE_OVERFLOW.
+	Handle location wrappers when checking for INTEGER_CST.
+	(convert_to_integer_maybe_fold): Update to handle location
+	wrappers.
+	(convert_to_complex_maybe_fold): Likewise.
+	(selftest::test_convert_to_integer_maybe_fold): New functions.
+	(selftest::convert_c_tests): New function.
+	* convert.h (preserve_any_location_wrapper): New decl.
+	* fold-const.c (size_binop_loc): Strip location wrappers when
+	using TREE_OVERFLOW.
+	(operand_equal_p): Strip any location wrappers.
+	(integer_valued_real_p): Strip any location wrapper.
+	* selftest-run-tests.c (selftest::run_tests): Call
+	selftest::convert_c_tests.
+	* selftest.h (selftest::convert_c_tests): New decl.
+	* tree.c (build_complex): Assert that REAL and IMAG are constants.
+	(integer_zerop): Look through location wrappers.
+	(integer_onep): Likewise.
+	(integer_each_onep): Likewise.
+	(integer_all_onesp): Likewise.
+	(integer_minus_onep): Likewise.
+	(integer_pow2p): Likewise.
+	(integer_nonzerop): Likewise.
+	(integer_truep): Likewise.
+	(fixed_zerop): Likewise.
+	(real_zerop): Likewise.
+	(real_onep): Likewise.
+	(real_minus_onep): Likewise.
+	(tree_int_cst_equal): Likewise.
+	(simple_cst_equal): Treat location wrappers with non-equal source
+	locations as being unequal.
+	(uniform_integer_cst_p): Look through location wrappers.
+	(maybe_wrap_with_location): Don't create wrappers if any
+	auto_suppress_location_wrappers are active.
+	(suppress_location_wrappers): New variable.
+	(selftest::test_predicates): New test.
+	(selftest::tree_c_tests): Call it.
+	* tree.h (CONSTANT_CLASS_OR_WRAPPER_P): New macro.
+	(suppress_location_wrappers): New decl.
+	(class auto_suppress_location_wrappers): New class.
+
 2018-12-19  Paul A. Clarke  <pc@us.ibm.com>
 
 	* config/rs6000/tmmintrin.h (_mm_hadds_epi16): Vector lanes swapped.

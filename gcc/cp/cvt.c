@@ -582,15 +582,20 @@ force_rvalue (tree expr, tsubst_flags_t complain)
 static tree
 ignore_overflows (tree expr, tree orig)
 {
-  if (TREE_CODE (expr) == INTEGER_CST
-      && TREE_CODE (orig) == INTEGER_CST
-      && TREE_OVERFLOW (expr) != TREE_OVERFLOW (orig))
+  tree stripped_expr = tree_strip_any_location_wrapper (expr);
+  tree stripped_orig = tree_strip_any_location_wrapper (orig);
+
+  if (TREE_CODE (stripped_expr) == INTEGER_CST
+      && TREE_CODE (stripped_orig) == INTEGER_CST
+      && TREE_OVERFLOW (stripped_expr) != TREE_OVERFLOW (stripped_orig))
     {
-      gcc_assert (!TREE_OVERFLOW (orig));
+      gcc_assert (!TREE_OVERFLOW (stripped_orig));
       /* Ensure constant sharing.  */
-      expr = wide_int_to_tree (TREE_TYPE (expr), wi::to_wide (expr));
+      stripped_expr = wide_int_to_tree (TREE_TYPE (stripped_expr),
+					wi::to_wide (stripped_expr));
     }
-  return expr;
+
+  return preserve_any_location_wrapper (stripped_expr, expr);
 }
 
 /* Fold away simple conversions, but make sure TREE_OVERFLOW is set
@@ -800,10 +805,11 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	     the original value is within the range of the enumeration
 	     values. Otherwise, the resulting enumeration value is
 	     unspecified.  */
+	  tree val = fold_for_warn (e);
 	  if ((complain & tf_warning)
-	      && TREE_CODE (e) == INTEGER_CST
+	      && TREE_CODE (val) == INTEGER_CST
 	      && ENUM_UNDERLYING_TYPE (type)
-	      && !int_fits_type_p (e, ENUM_UNDERLYING_TYPE (type)))
+	      && !int_fits_type_p (val, ENUM_UNDERLYING_TYPE (type)))
 	    warning_at (loc, OPT_Wconversion, 
 			"the result of the conversion is unspecified because "
 			"%qE is outside the range of type %qT",
