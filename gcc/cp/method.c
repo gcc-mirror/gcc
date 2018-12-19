@@ -675,12 +675,9 @@ do_build_copy_constructor (tree fndecl)
     }
   else
     {
-      tree fields = TYPE_FIELDS (current_class_type);
       tree member_init_list = NULL_TREE;
-      int cvquals = cp_type_quals (TREE_TYPE (parm));
       int i;
       tree binfo, base_binfo;
-      tree init;
       vec<tree, va_gc> *vbases;
 
       /* Initialize all the base-classes with the parameter converted
@@ -704,53 +701,58 @@ do_build_copy_constructor (tree fndecl)
 						inh, member_init_list);
 	}
 
-      for (; fields; fields = DECL_CHAIN (fields))
+      if (!inh)
 	{
-	  tree field = fields;
-	  tree expr_type;
+	  int cvquals = cp_type_quals (TREE_TYPE (parm));
 
-	  if (TREE_CODE (field) != FIELD_DECL)
-	    continue;
-	  if (inh)
-	    continue;
-
-	  expr_type = TREE_TYPE (field);
-	  if (DECL_NAME (field))
+	  for (tree fields = TYPE_FIELDS (current_class_type);
+	       fields; fields = DECL_CHAIN (fields))
 	    {
-	      if (VFIELD_NAME_P (DECL_NAME (field)))
+	      tree field = fields;
+	      tree expr_type;
+
+	      if (TREE_CODE (field) != FIELD_DECL)
 		continue;
+
+	      expr_type = TREE_TYPE (field);
+	      if (DECL_NAME (field))
+		{
+		  if (VFIELD_NAME_P (DECL_NAME (field)))
+		    continue;
+		}
+	      else if (ANON_AGGR_TYPE_P (expr_type) && TYPE_FIELDS (expr_type))
+		/* Just use the field; anonymous types can't have
+		   nontrivial copy ctors or assignment ops or this
+		   function would be deleted.  */;
+	      else
+		continue;
+
+	      /* Compute the type of "init->field".  If the copy-constructor
+		 parameter is, for example, "const S&", and the type of
+		 the field is "T", then the type will usually be "const
+		 T".  (There are no cv-qualified variants of reference
+		 types.)  */
+	      if (!TYPE_REF_P (expr_type))
+		{
+		  int quals = cvquals;
+
+		  if (DECL_MUTABLE_P (field))
+		    quals &= ~TYPE_QUAL_CONST;
+		  quals |= cp_type_quals (expr_type);
+		  expr_type = cp_build_qualified_type (expr_type, quals);
+		}
+
+	      tree init = build3 (COMPONENT_REF, expr_type, parm, field, NULL_TREE);
+	      if (move_p && !TYPE_REF_P (expr_type)
+		  /* 'move' breaks bit-fields, and has no effect for scalars.  */
+		  && !scalarish_type_p (expr_type))
+		init = move (init);
+	      init = build_tree_list (NULL_TREE, init);
+
+	      member_init_list = tree_cons (field, init, member_init_list);
 	    }
-	  else if (ANON_AGGR_TYPE_P (expr_type) && TYPE_FIELDS (expr_type))
-	    /* Just use the field; anonymous types can't have
-	       nontrivial copy ctors or assignment ops or this
-	       function would be deleted.  */;
-	  else
-	    continue;
-
-	  /* Compute the type of "init->field".  If the copy-constructor
-	     parameter is, for example, "const S&", and the type of
-	     the field is "T", then the type will usually be "const
-	     T".  (There are no cv-qualified variants of reference
-	     types.)  */
-	  if (!TYPE_REF_P (expr_type))
-	    {
-	      int quals = cvquals;
-
-	      if (DECL_MUTABLE_P (field))
-		quals &= ~TYPE_QUAL_CONST;
-	      quals |= cp_type_quals (expr_type);
-	      expr_type = cp_build_qualified_type (expr_type, quals);
-	    }
-
-	  init = build3 (COMPONENT_REF, expr_type, parm, field, NULL_TREE);
-	  if (move_p && !TYPE_REF_P (expr_type)
-	      /* 'move' breaks bit-fields, and has no effect for scalars.  */
-	      && !scalarish_type_p (expr_type))
-	    init = move (init);
-	  init = build_tree_list (NULL_TREE, init);
-
-	  member_init_list = tree_cons (field, init, member_init_list);
 	}
+
       finish_mem_initializers (member_init_list);
     }
 }
@@ -891,8 +893,9 @@ synthesize_method (tree fndecl)
 
   /* Reset the source location, we might have been previously
      deferred, and thus have saved where we were first needed.  */
-  DECL_SOURCE_LOCATION (fndecl)
-    = DECL_SOURCE_LOCATION (TYPE_NAME (DECL_CONTEXT (fndecl)));
+  if (!DECL_INHERITED_CTOR (fndecl))
+    DECL_SOURCE_LOCATION (fndecl)
+      = DECL_SOURCE_LOCATION (TYPE_NAME (DECL_CONTEXT (fndecl)));
 
   /* If we've been asked to synthesize a clone, just synthesize the
      cloned function instead.  Doing so will automatically fill in the
