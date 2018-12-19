@@ -19,65 +19,55 @@
 #ifndef __AVX__
 /* Test the 64-bit form */
 static void
-ssse3_test_pshufb (int *i1, int *i2, int *r)
+ssse3_test_pshufb (__m64 *i1, __m64 *i2, __m64 *r)
 {
-  __m64 t1 = *(__m64 *) i1;
-  __m64 t2 = *(__m64 *) i2;
-  *(__m64 *)r = _mm_shuffle_pi8 (t1, t2);
+  *r = _mm_shuffle_pi8 (*i1, *i2);
   _mm_empty ();
 }
 #endif
 
 /* Test the 128-bit form */
 static void
-ssse3_test_pshufb128 (int *i1, int *i2, int *r)
+ssse3_test_pshufb128 (__m128i *i1, __m128i *i2, __m128i *r)
 {
   /* Assumes incoming pointers are 16-byte aligned */
-  __m128i t1 = *(__m128i *) i1;
-  __m128i t2 = *(__m128i *) i2;
-  *(__m128i *)r = _mm_shuffle_epi8 (t1, t2);
+  *r = _mm_shuffle_epi8 (*i1, *i2);
 }
 
 #ifndef __AVX__
 /* Routine to manually compute the results */
 static void
-compute_correct_result_64 (int *i1, int *i2, int *r)
+compute_correct_result_64 (signed char *i1, signed char *i2, signed char *r)
 {
-  char *b1 = (char *) i1;
-  char *b2 = (char *) i2;
-  char *bout = (char *) r;
   int i;
   char select;
 
   for (i = 0; i < 16; i++)
     {
-      select = b2[i];
+      select = i2[i];
       if (select & 0x80)
-	bout[i] = 0;
+	r[i] = 0;
       else if (i < 8)
-	bout[i] = b1[select & 0x7];
+	r[i] = i1[select & 0x7];
       else
-	bout[i] = b1[8 + (select & 0x7)];
+	r[i] = i1[8 + (select & 0x7)];
     }
 }
 #endif
 
 static void
-compute_correct_result_128 (int *i1, int *i2, int *r)
+compute_correct_result_128 (signed char *i1, signed char *i2, signed char *r)
 {
-  char *b1 = (char *) i1;
-  char *b2 = (char *) i2;
-  char *bout = (char *) r;
   int i;
   char select;
 
   for (i = 0; i < 16; i++)
     {
-      select = b2[i];
+      select = i2[i];
       if (select & 0x80)
-	bout[i] = 0;
+	r[i] = 0;
       else
-	bout[i] = b1[select & 0xf];
+	r[i] = i1[select & 0xf];
     }
 }
 
@@ -85,28 +75,28 @@ static void
 TEST (void)
 {
   int i;
-  int r [4] __attribute__ ((aligned(16)));
-  int ck [4];
+  union data r __attribute__ ((aligned(16)));
+  union data ck;
   int fail = 0;
 
-  for (i = 0; i < 256; i += 8)
+  for (i = 0; i < ARRAY_SIZE (vals) - 1; i++)
     {
 #ifndef __AVX__
       /* Manually compute the result */
-      compute_correct_result_64 (&vals[i + 0], &vals[i + 4], ck);
+      compute_correct_result_64 (&vals[i + 0].b[0], &vals[i + 1].b[0], &ck.b[0]);
 
       /* Run the 64-bit tests */
-      ssse3_test_pshufb (&vals[i + 0], &vals[i + 4], &r[0]);
-      ssse3_test_pshufb (&vals[i + 2], &vals[i + 6], &r[2]);
-      fail += chk_128 (ck, r);
+      ssse3_test_pshufb (&vals[i + 0].ll[0], &vals[i + 1].ll[0], &r.ll[0]);
+      ssse3_test_pshufb (&vals[i + 0].ll[1], &vals[i + 1].ll[1], &r.ll[1]);
+      fail += chk_128 (ck.m[0], r.m[0]);
 #endif
 
       /* Recompute the result for 128-bits */
-      compute_correct_result_128 (&vals[i + 0], &vals[i + 4], ck);
+      compute_correct_result_128 (&vals[i + 0].b[0], &vals[i + 1].b[0], &ck.b[0]);
 
       /* Run the 128-bit tests */
-      ssse3_test_pshufb128 (&vals[i + 0], &vals[i + 4], r);
-      fail += chk_128 (ck, r);
+      ssse3_test_pshufb128 (&vals[i + 0].m[0], &vals[i + 1].m[0], &r.m[0]);
+      fail += chk_128 (ck.m[0], r.m[0]);
     }
 
   if (fail != 0)
