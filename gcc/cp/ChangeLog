@@ -1,5 +1,9 @@
 2018-12-19  Alexandre Oliva <aoliva@redhat.com>
 
+	PR c++/87012
+	* pt.c (convert_template_argument): Canonicalize type after
+	tsubst/deduce.
+
 	PR c++/88146
 	* method.c (do_build_copy_constructor): Guard cvquals init and
 	loop over fields to run for non-inherited ctors only.
