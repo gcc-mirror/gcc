@@ -1,3 +1,21 @@
+2018-12-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88533
+	Revert
+	2018-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/28364
+	PR tree-optimization/85275
+	* tree-ssa-loop-ch.c (ch_base::copy_headers): Stop after
+	copying first exit test.
+
+	* tree-ssa-loop-ch.c: Include tree-phinodes.h and
+	ssa-iterators.h.
+	(should_duplicate_loop_header_p): Track whether stmt compute
+	loop invariants or values based on IVs.  Apart from the
+	original loop header only duplicate blocks with exit tests
+	that are based on IVs or invariants.
+
 2018-12-19  Tom de Vries  <tdevries@suse.de>
 
 	* config/nvptx/nvptx.c (nvptx_gen_shared_bcast, shared_prop_gen)

@@ -2,7 +2,7 @@
 /* { dg-options "-O2 -fdump-tree-thread1-stats -fdump-tree-thread2-stats -fdump-tree-dom2-stats -fdump-tree-thread3-stats -fdump-tree-dom3-stats -fdump-tree-vrp2-stats -fno-guess-branch-probability" } */
 /* { dg-final { scan-tree-dump "Jumps threaded: 16"  "thread1" } } */
 /* { dg-final { scan-tree-dump "Jumps threaded: 9" "thread2" } } */
-/* { dg-final { scan-tree-dump "Jumps threaded: 1"  "dom2" } } */
+/* { dg-final { scan-tree-dump-not "Jumps threaded"  "dom2" } } */
 /* aarch64 has the highest CASE_VALUES_THRESHOLD in GCC.  It's high enough
    to change decisions in switch expansion which in turn can expose new
    jump threading opportunities.  Skip the later tests on aarch64.  */
