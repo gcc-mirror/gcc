@@ -1,3 +1,31 @@
+2018-12-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/43064
+	PR c++/43486
+	* c-c++-common/pr51712.c (valid2): Mark xfail as passing on C++.
+	* g++.dg/cpp0x/constexpr-47969.C: Update column of expected error.
+	* g++.dg/cpp0x/constexpr-ex2.C: Likewise.
+	* g++.dg/cpp0x/scoped_enum2.C: Likewise.
+	* g++.dg/cpp1z/decomp48.C: Update expected location of warning
+	for named local variables to use that of the local variable.
+	* g++.dg/ext/vla1.C: Update column.
+	* g++.dg/init/array43.C: Update expected column to be that of the
+	initializer.
+	* g++.dg/init/initializer-string-too-long.C: New test.
+	* g++.dg/init/new44.C: Add "-ftrack-macro-expansion=0".
+	* g++.dg/init/pr43064-1.C: New test.
+	* g++.dg/init/pr43064-2.C: New test.
+	* g++.dg/init/pr43064-3.C: New test.
+	* g++.dg/other/fold1.C: Update column of expected error.
+	* g++.dg/parse/crash36.C: Likewise.
+	* g++.dg/plugin/diagnostic-test-expressions-1.C: Add negative
+	integer and float expressions.
+	* g++.dg/template/defarg6.C: Move expected error to the default
+	argument; add expected message about where instantiated.
+	* g++.dg/wrappers/Wparentheses.C: New test.
+	* g++.old-deja/g++.bugs/900402_02.C: Update column of expected
+	error.
+
 2018-12-19  Paul A. Clarke  <pc@us.ibm.com>
 
 	* gcc.target/powerpc/ssse3-check.h: Enable tests to run.

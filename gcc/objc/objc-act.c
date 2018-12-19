@@ -1455,6 +1455,8 @@ objc_maybe_build_component_ref (tree object, tree property_ident)
 		 || TREE_CODE (t) == COMPONENT_REF)
 	    t = TREE_OPERAND (t, 0);
 
+	  STRIP_ANY_LOCATION_WRAPPER (t);
+
 	  if (t == UOBJC_SUPER_decl)
 	    interface_type = lookup_interface (CLASS_SUPER_NAME (implementation_template));
 	  else if (t == self_decl)
@@ -5339,6 +5341,8 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params,
   tree retval, class_tree;
   int self, super, have_cast;
 
+  STRIP_ANY_LOCATION_WRAPPER (receiver);
+
   /* We have used the receiver, so mark it as read.  */
   mark_exp_read (receiver);
 
@@ -8906,9 +8910,13 @@ gen_declaration (tree decl)
 #else
       tree w = DECL_INITIAL (decl);
 #endif
-      if (w && TREE_CODE (w) == INTEGER_CST)
-	sprintf (errbuf + strlen (errbuf), ": " HOST_WIDE_INT_PRINT_DEC,
-		 TREE_INT_CST_LOW (w));
+      if (w)
+	{
+	  STRIP_ANY_LOCATION_WRAPPER (w);
+	  if (TREE_CODE (w) == INTEGER_CST)
+	    sprintf (errbuf + strlen (errbuf), ": " HOST_WIDE_INT_PRINT_DEC,
+		     TREE_INT_CST_LOW (w));
+	}
     }
 
   return errbuf;

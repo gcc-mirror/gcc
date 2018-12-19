@@ -460,14 +460,19 @@ cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
   if (TREE_CODE (type) == ERROR_MARK)
     return;
 
-  if (value != 0 && (VAR_P (value)
-		     || TREE_CODE (value) == PARM_DECL
-		     || TREE_CODE (value) == FIELD_DECL))
+  if (value)
     {
-      complained = emit_diagnostic (diag_kind, DECL_SOURCE_LOCATION (value), 0,
-				    "%qD has incomplete type", value);
-      is_decl = true;
-    } 
+      STRIP_ANY_LOCATION_WRAPPER (value);
+
+      if (VAR_P (value)
+	  || TREE_CODE (value) == PARM_DECL
+	  || TREE_CODE (value) == FIELD_DECL)
+	{
+	  complained = emit_diagnostic (diag_kind, DECL_SOURCE_LOCATION (value), 0,
+					"%qD has incomplete type", value);
+	  is_decl = true;
+	}
+    }
  retry:
   /* We must print an error message.  Be clever about what it says.  */
 
@@ -1052,6 +1057,8 @@ digest_init_r (tree type, tree init, int nested, int flags,
 
   location_t loc = cp_expr_loc_or_loc (init, input_location);
 
+  tree stripped_init = tree_strip_any_location_wrapper (init);
+
   /* Initialization of an array of chars from a string constant. The initializer
      can be optionally enclosed in braces, but reshape_init has already removed
      them if they were present.  */
@@ -1065,7 +1072,7 @@ digest_init_r (tree type, tree init, int nested, int flags,
       tree typ1 = TYPE_MAIN_VARIANT (TREE_TYPE (type));
       if (char_type_p (typ1)
 	  /*&& init */
-	  && TREE_CODE (init) == STRING_CST)
+	  && TREE_CODE (stripped_init) == STRING_CST)
 	{
 	  tree char_type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (init)));
 
@@ -1113,6 +1120,14 @@ digest_init_r (tree type, tree init, int nested, int flags,
 	    {
 	      init = copy_node (init);
 	      TREE_TYPE (init) = type;
+	      /* If we have a location wrapper, then also copy the wrapped
+		 node, and update the copy's type.  */
+	      if (location_wrapper_p (init))
+		{
+		  stripped_init = copy_node (stripped_init);
+		  TREE_OPERAND (init, 0) = stripped_init;
+		  TREE_TYPE (stripped_init) = type;
+		}
 	    }
 	  if (TYPE_DOMAIN (type) && TREE_CONSTANT (TYPE_SIZE (type)))
 	    {
@@ -1123,12 +1138,13 @@ digest_init_r (tree type, tree init, int nested, int flags,
 		 because it's ok to ignore the terminating null char that is
 		 counted in the length of the constant, but in C++ this would
 		 be invalid.  */
-	      if (size < TREE_STRING_LENGTH (init))
+	      if (size < TREE_STRING_LENGTH (stripped_init))
 		{
 		  permerror (loc, "initializer-string for array "
 			     "of chars is too long");
 
-		  init = build_string (size, TREE_STRING_POINTER (init));
+		  init = build_string (size,
+				       TREE_STRING_POINTER (stripped_init));
 		  TREE_TYPE (init) = type;
 		}
 	    }
@@ -1137,7 +1153,7 @@ digest_init_r (tree type, tree init, int nested, int flags,
     }
 
   /* Handle scalar types (including conversions) and references.  */
-  if ((code != COMPLEX_TYPE || BRACE_ENCLOSED_INITIALIZER_P (init))
+  if ((code != COMPLEX_TYPE || BRACE_ENCLOSED_INITIALIZER_P (stripped_init))
       && (SCALAR_TYPE_P (type) || code == REFERENCE_TYPE))
     {
       if (nested)
@@ -1162,23 +1178,23 @@ digest_init_r (tree type, tree init, int nested, int flags,
      the object is initialized from that element."  */
   if (flag_checking
       && cxx_dialect >= cxx11
-      && BRACE_ENCLOSED_INITIALIZER_P (init)
-      && CONSTRUCTOR_NELTS (init) == 1
+      && BRACE_ENCLOSED_INITIALIZER_P (stripped_init)
+      && CONSTRUCTOR_NELTS (stripped_init) == 1
       && ((CLASS_TYPE_P (type) && !CLASSTYPE_NON_AGGREGATE (type))
 	  || VECTOR_TYPE_P (type)))
     {
-      tree elt = CONSTRUCTOR_ELT (init, 0)->value;
+      tree elt = CONSTRUCTOR_ELT (stripped_init, 0)->value;
       if (reference_related_p (type, TREE_TYPE (elt)))
 	/* We should have fixed this in reshape_init.  */
 	gcc_unreachable ();
     }
 
-  if (BRACE_ENCLOSED_INITIALIZER_P (init)
+  if (BRACE_ENCLOSED_INITIALIZER_P (stripped_init)
       && !TYPE_NON_AGGREGATE_CLASS (type))
-    return process_init_constructor (type, init, nested, complain);
+    return process_init_constructor (type, stripped_init, nested, complain);
   else
     {
-      if (COMPOUND_LITERAL_P (init) && code == ARRAY_TYPE)
+      if (COMPOUND_LITERAL_P (stripped_init) && code == ARRAY_TYPE)
 	{
 	  if (complain & tf_error)
 	    error_at (loc, "cannot initialize aggregate of type %qT with "
@@ -1188,12 +1204,12 @@ digest_init_r (tree type, tree init, int nested, int flags,
 	}
 
       if (code == ARRAY_TYPE
-	  && !BRACE_ENCLOSED_INITIALIZER_P (init))
+	  && !BRACE_ENCLOSED_INITIALIZER_P (stripped_init))
 	{
 	  /* Allow the result of build_array_copy and of
 	     build_value_init_noctor.  */
-	  if ((TREE_CODE (init) == VEC_INIT_EXPR
-	       || TREE_CODE (init) == CONSTRUCTOR)
+	  if ((TREE_CODE (stripped_init) == VEC_INIT_EXPR
+	       || TREE_CODE (stripped_init) == CONSTRUCTOR)
 	      && (same_type_ignoring_top_level_qualifiers_p
 		  (type, TREE_TYPE (init))))
 	    return init;

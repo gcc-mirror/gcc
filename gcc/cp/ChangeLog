@@ -1,3 +1,98 @@
+2018-12-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/43064
+	PR c++/43486
+	* call.c (build_conditional_expr_1): Strip location wrappers when
+	checking for CONST_DECL.
+	(conversion_null_warnings): Use location of "expr" if available.
+	* class.c (fixed_type_or_null): Handle location wrappers.
+	* constexpr.c (potential_constant_expression_1): Likewise.
+	* cvt.c (ignore_overflows): Strip location wrappers when
+	checking for INTEGER_CST, and re-wrap the result if present.
+	(ocp_convert): Call fold_for_warn before checking for INTEGER_CST.
+	* decl.c (reshape_init_r): Strip any location wrapper.
+	(undeduced_auto_decl): Likewise.
+	* expr.c (mark_discarded_use): Likewise for expr.
+	* init.c (build_aggr_init): Likewise before checking init for
+	DECL_P.
+	(warn_placement_new_too_small): Call fold_for_warn on adj before
+	checking for CONSTANT_CLASS_P, and on nelts.  Strip any location
+	wrapper from op0 and on oper before checking for VAR_P.
+	* parser.c (cp_parser_primary_expression): Call
+	maybe_add_location_wrapper on numeric and string literals.
+	(cp_parser_postfix_expression): Strip any location wrapper when
+	checking for DECL_IS_BUILTIN_CONSTANT_P.
+	(cp_parser_unary_expression): Ensure that folding of NEGATE_EXPR
+	around a constant happens in the presence of location wrappers and
+	returns a wrapped result.
+	(cp_parser_has_attribute_expression): Strip any location wrapper
+	from "oper".
+	(cp_parser_binary_expression): Strip any location wrapper when
+	checking for DECL_P on the lhs.
+	(cp_parser_decltype): Strip any location wrapper from result of
+	cp_parser_decltype_expr.
+	(cp_parser_mem_initializer): Add location wrappers to the
+	parenthesized expression list.
+	(cp_parser_template_parameter_list): Don't create wrapper nodes
+	within a template-parameter-list.
+	(cp_parser_template_argument_list): Don't create wrapper nodes
+	within a template-argument-list.
+	(cp_parser_parameter_declaration): Strip location wrappers from
+	default arguments.
+	(cp_parser_gnu_attribute_list): Don't create wrapper nodes.
+	(cp_parser_std_attribute_spec_seq): Likewise.
+	(cp_parser_omp_all_clauses): Don't create wrapper nodes within
+	OpenMP clauses.
+	(cp_parser_omp_for_loop): Likewise.
+	(cp_parser_omp_declare_reduction_exprs): Likewise.
+	* pt.c (convert_nontype_argument_function): Strip location
+	wrappers from fn_no_ptr before checking for FUNCTION_DECL.
+	(tsubst_default_argument): Move note about which callsite led to
+	instantiation to after the check_default_argument call.
+	(do_auto_deduction): Likewise from init before checking for
+	DECL_P.
+	* semantics.c (force_paren_expr): Likewise from expr before
+	checking for DECL_P.
+	(finish_parenthesized_expr): Likewise from expr before
+	checking for STRING_CST.
+	(perform_koenig_lookup): Likewise from fn.
+	(finish_call_expr): Likewise.
+	(finish_id_expression): Rename to...
+	(finish_id_expression_1): ...this, calling
+	maybe_add_location_wrapper on the result.
+	(capture_decltype): Use lookup_name_real rather than value_member
+	when looking up decl within the capture-list.
+	* tree.c (cp_stabilize_reference): Strip any location wrapper.
+	(builtin_valid_in_constant_expr_p): Likewise.
+	(strip_typedefs_expr): Strip any location wrapper before checking
+	for decls or constants.
+	(is_overloaded_fn): Likewise.
+	(maybe_get_fns): Likewise.
+	(selftest::test_lvalue_kind): Verify lvalue_p.
+	* typeck.c (cxx_sizeof_expr): Strip any location wrapper.
+	(cxx_alignof_expr): Likewise.
+	(is_bitfield_expr_with_lowered_type): Handle location wrappers.
+	(cp_build_array_ref): Call maybe_constant_value on "idx".
+	(cp_build_binary_op): Strip location wrapper from first_arg before
+	checking for PARM_DECL.  Likewise for op1 before checking for
+	INTEGER_CST in two places.  Likewise for orig_op0 and orig_op1
+	when checking for STRING_CST.
+	(cp_build_addr_expr_1): Likewise for arg when checking for
+	FUNCTION_DECL.
+	(cp_build_modify_expr): Likewise for newrhs when checking for
+	STRING_CST.
+	(convert_for_assignment): Don't strip location wrappers when
+	stripping NON_LVALUE_EXPR.
+	(maybe_warn_about_returning_address_of_local): Strip location
+	wrapper from whats_returned before checking for DECL_P.
+	(can_do_nrvo_p): Strip location wrapper from retval.
+	(treat_lvalue_as_rvalue_p): Likewise.
+	(check_return_expr): Likewise.
+	* typeck2.c (cxx_incomplete_type_diagnostic): Strip location
+	wrapper from value before checking for VAR_P or PARM_DECL.
+	(digest_init_r): Strip location wrapper from init.  When
+	copying "init", also copy the wrapped node.
+
 2018-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/87934
