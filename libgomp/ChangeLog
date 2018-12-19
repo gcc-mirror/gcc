@@ -1,3 +1,10 @@
+2018-12-19  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/lib/libgomp.exp: Add load_lib of scanoffloadrtl.exp.
+	* testsuite/libgomp.oacc-c-c++-common/nvptx-merged-loop.c: Move from
+	gcc/testsuite/gcc.dg/goacc.
+	* testsuite/libgomp.oacc-c-c++-common/nvptx-sese-1.c: Same.
+
 2018-12-14  Thomas Schwinge  <thomas@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 

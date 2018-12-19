@@ -1,3 +1,9 @@
+2018-12-19  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/goacc/nvptx-merged-loop.c: Move to
+	libgomp/testsuite/libgomp.oacc-c-c++-common.
+	* gcc.dg/goacc/nvptx-sese-1.c: Same.
+
 2018-12-19  Tom de Vries  <tom@codesourcery.com>
 
 	* lib/scanoffloadrtl.exp: New file.
