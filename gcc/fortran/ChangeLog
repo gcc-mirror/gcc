@@ -1,3 +1,8 @@
+2018-12-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/87992
+	* resolve.c (resolve_fl_variable): Avoid a NULL pointer.
+
 2018-12-16  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* resolve.c (resolve_transfer): Remove dead code.
