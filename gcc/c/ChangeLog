@@ -1,5 +1,14 @@
 2018-12-19  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* c-parser.c (c_parser_asm_statement): Keep track of the location each
+	asm qualifier is first seen; use that to give nicer "duplicate asm
+	qualifier" messages.  Delete 'quals" variable, instead pass the
+	"is_volatile_ flag to build_asm_stmt directly.
+	* c-tree.h (build_asm_stmt): Make the first arg bool instead of tree.
+	* c-typeck.c (build_asm_stmt): Ditto; adjust.
+
+2018-12-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* c-parser.c (c_parser_asm_statement): Rewrite the loop to work without
 	"done" boolean variable.
 

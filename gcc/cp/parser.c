@@ -19680,12 +19680,9 @@ cp_parser_asm_definition (cp_parser* parser)
   tree clobbers = NULL_TREE;
   tree labels = NULL_TREE;
   tree asm_stmt;
-  bool volatile_p = false;
   bool extended_p = false;
   bool invalid_inputs_p = false;
   bool invalid_outputs_p = false;
-  bool inline_p = false;
-  bool goto_p = false;
   required_token missing = RT_NONE;
 
   /* Look for the `asm' keyword.  */
@@ -19699,29 +19696,50 @@ cp_parser_asm_definition (cp_parser* parser)
     }
 
   /* Handle the asm-qualifier-list.  */
+  location_t volatile_loc = UNKNOWN_LOCATION;
+  location_t inline_loc = UNKNOWN_LOCATION;
+  location_t goto_loc = UNKNOWN_LOCATION;
   if (cp_parser_allow_gnu_extensions_p (parser))
     for (;;)
       {
+	cp_token *token = cp_lexer_peek_token (parser->lexer);
+	location_t loc = token->location;
 	switch (cp_lexer_peek_token (parser->lexer)->keyword)
 	  {
 	  case RID_VOLATILE:
-	    if (volatile_p)
-	      break;
-	    volatile_p = true;
+	    if (volatile_loc)
+	      {
+		error_at (loc, "duplicate asm qualifier %qT", token->u.value);
+		inform (volatile_loc, "first seen here");
+	      }
+	    else
+	      volatile_loc = loc;
 	    cp_lexer_consume_token (parser->lexer);
 	    continue;
 
 	  case RID_INLINE:
-	    if (inline_p || !parser->in_function_body)
+	    if (!parser->in_function_body)
 	      break;
-	    inline_p = true;
+	    if (inline_loc)
+	      {
+		error_at (loc, "duplicate asm qualifier %qT", token->u.value);
+		inform (inline_loc, "first seen here");
+	      }
+	    else
+	      inline_loc = loc;
 	    cp_lexer_consume_token (parser->lexer);
 	    continue;
 
 	  case RID_GOTO:
-	    if (goto_p || !parser->in_function_body)
+	    if (!parser->in_function_body)
 	      break;
-	    goto_p = true;
+	    if (goto_loc)
+	      {
+		error_at (loc, "duplicate asm qualifier %qT", token->u.value);
+		inform (goto_loc, "first seen here");
+	      }
+	    else
+	      goto_loc = loc;
 	    cp_lexer_consume_token (parser->lexer);
 	    continue;
 
@@ -19730,6 +19748,10 @@ cp_parser_asm_definition (cp_parser* parser)
 	  }
 	break;
       }
+
+  bool volatile_p = (volatile_loc != UNKNOWN_LOCATION);
+  bool inline_p = (inline_loc != UNKNOWN_LOCATION);
+  bool goto_p = (goto_loc != UNKNOWN_LOCATION);
 
   /* Look for the opening `('.  */
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
@@ -19822,8 +19844,7 @@ cp_parser_asm_definition (cp_parser* parser)
 					     CPP_CLOSE_PAREN))
 	    clobbers = cp_parser_asm_clobber_list (parser);
 	}
-      else if (goto_p
-	       && cp_lexer_next_token_is (parser->lexer, CPP_SCOPE))
+      else if (goto_p && cp_lexer_next_token_is (parser->lexer, CPP_SCOPE))
 	/* The labels are coming next.  */
 	labels_p = true;
 

@@ -10316,9 +10316,9 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
    (guaranteed to be 'volatile' or null) and ARGS (represented using
    an ASM_EXPR node).  */
 tree
-build_asm_stmt (tree cv_qualifier, tree args)
+build_asm_stmt (bool is_volatile, tree args)
 {
-  if (!ASM_VOLATILE_P (args) && cv_qualifier)
+  if (is_volatile)
     ASM_VOLATILE_P (args) = 1;
   return add_stmt (args);
 }

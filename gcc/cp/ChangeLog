@@ -2,6 +2,14 @@
 
 	* parser.c (cp_parser_asm_definition): Rewrite the loop to work without
 	"done" boolean variable.
+	* parser.c (cp_parser_asm_definition): Keep track of the location each
+	asm qualifier is first seen; use that to give nicer "duplicate asm
+	qualifier" messages.
+
+2018-12-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* parser.c (cp_parser_asm_definition): Rewrite the loop to work without
+	"done" boolean variable.
 
 2018-12-19  David Malcolm  <dmalcolm@redhat.com>
 
