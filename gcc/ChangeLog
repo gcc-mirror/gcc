@@ -1,3 +1,8 @@
+2018-12-19  Shaokun Zhang  <zhangshaokun@hisilicon.com>
+
+	* config/aarch64/aarch64-cores.def (tsv110): Fix architecture.  This
+	part is really Armv8.2 with some permitted Armv8.4 extensions.
+
 2018-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88541
