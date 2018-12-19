@@ -19698,47 +19698,38 @@ cp_parser_asm_definition (cp_parser* parser)
       cp_function_chain->invalid_constexpr = true;
     }
 
-  /* See if the next token is `volatile'.  */
+  /* Handle the asm-qualifier-list.  */
   if (cp_parser_allow_gnu_extensions_p (parser))
-    for (bool done = false; !done ; )
-      switch (cp_lexer_peek_token (parser->lexer)->keyword)
-	{
-	case RID_VOLATILE:
-	  if (!volatile_p)
-	    {
-	      /* Remember that we saw the `volatile' keyword.  */
-	      volatile_p = true;
-	      /* Consume the token.  */
-	      cp_lexer_consume_token (parser->lexer);
-	    }
-	  else
-	    done = true;
-	  break;
-	case RID_INLINE:
-	  if (!inline_p && parser->in_function_body)
-	    {
-	      /* Remember that we saw the `inline' keyword.  */
-	      inline_p = true;
-	      /* Consume the token.  */
-	      cp_lexer_consume_token (parser->lexer);
-	    }
-	  else
-	    done = true;
-	  break;
-	case RID_GOTO:
-	  if (!goto_p && parser->in_function_body)
-	    {
-	      /* Remember that we saw the `goto' keyword.  */
-	      goto_p = true;
-	      /* Consume the token.  */
-	      cp_lexer_consume_token (parser->lexer);
-	    }
-	  else
-	    done = true;
-	  break;
-	default:
-	  done = true;
-	}
+    for (;;)
+      {
+	switch (cp_lexer_peek_token (parser->lexer)->keyword)
+	  {
+	  case RID_VOLATILE:
+	    if (volatile_p)
+	      break;
+	    volatile_p = true;
+	    cp_lexer_consume_token (parser->lexer);
+	    continue;
+
+	  case RID_INLINE:
+	    if (inline_p || !parser->in_function_body)
+	      break;
+	    inline_p = true;
+	    cp_lexer_consume_token (parser->lexer);
+	    continue;
+
+	  case RID_GOTO:
+	    if (goto_p || !parser->in_function_body)
+	      break;
+	    goto_p = true;
+	    cp_lexer_consume_token (parser->lexer);
+	    continue;
+
+	  default:
+	    break;
+	  }
+	break;
+      }
 
   /* Look for the opening `('.  */
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
