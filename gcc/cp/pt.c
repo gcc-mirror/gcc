@@ -8019,6 +8019,9 @@ convert_template_argument (tree parm,
       if (invalid_nontype_parm_type_p (t, complain))
 	return error_mark_node;
 
+      if (t != TREE_TYPE (parm))
+	t = canonicalize_type_argument (t, complain);
+
       if (!type_dependent_expression_p (orig_arg)
 	  && !uses_template_parms (t))
 	/* We used to call digest_init here.  However, digest_init
