@@ -2336,6 +2336,39 @@ vr_values::vrp_evaluate_conditional_warnv_with_ops (enum tree_code code,
 	  op1 = wide_int_to_tree (TREE_TYPE (op0), 0);
 	  code = (code == GT_EXPR || code == GE_EXPR) ? EQ_EXPR : NE_EXPR;
 	}
+      else
+	{
+	  value_range vro, vri;
+	  if (code == GT_EXPR || code == GE_EXPR)
+	    {
+	      vro.set (VR_ANTI_RANGE, TYPE_MIN_VALUE (TREE_TYPE (op0)), x);
+	      vri.set (VR_RANGE, TYPE_MIN_VALUE (TREE_TYPE (op0)), x);
+	    }
+	  else if (code == LT_EXPR || code == LE_EXPR)
+	    {
+	      vro.set (VR_RANGE, TYPE_MIN_VALUE (TREE_TYPE (op0)), x);
+	      vri.set (VR_ANTI_RANGE, TYPE_MIN_VALUE (TREE_TYPE (op0)), x);
+	    }
+	  else
+	    gcc_unreachable ();
+	  value_range *vr0 = get_value_range (op0);
+	  /* If vro, the range for OP0 to pass the overflow test, has
+	     no intersection with *vr0, OP0's known range, then the
+	     overflow test can't pass, so return the node for false.
+	     If it is the inverted range, vri, that has no
+	     intersection, then the overflow test must pass, so return
+	     the node for true.  In other cases, we could proceed with
+	     a simplified condition comparing OP0 and X, with LE_EXPR
+	     for previously LE_ or LT_EXPR and GT_EXPR otherwise, but
+	     the comments next to the enclosing if suggest it's not
+	     generally profitable to do so.  */
+	  vro.intersect (vr0);
+	  if (vro.undefined_p ())
+	    return boolean_false_node;
+	  vri.intersect (vr0);
+	  if (vri.undefined_p ())
+	    return boolean_true_node;
+	}
     }
 
   if ((ret = vrp_evaluate_conditional_warnv_with_ops_using_ranges
