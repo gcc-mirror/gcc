@@ -1,3 +1,9 @@
+2018-12-19  Tom de Vries  <tom@codesourcery.com>
+
+	* lib/scanoffloadrtl.exp: New file.
+	* gcc.dg-selftests/dg-final.exp (dg_final_directive_check_num_args): Add
+	offload-rtl.
+
 2018-12-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88533
