@@ -1,3 +1,17 @@
+2018-12-19  Tony Wang  <tony.wang@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@linaro.org>
+
+	* lib/lto.exp (lto-execute): Define output_file and testname_with_flags
+	to same value as execname.
+	(scan-symbol): Move and rename to ...
+	* lib/gcc-dg.exp (scan-symbol-common): This.  Adapt into a
+	helper function returning true or false if a symbol is present.
+	(scan-symbol): New procedure.
+	(scan-symbol-not): Likewise.
+	* gcc.target/arm/size-optimization-ieee-1.c: New testcase.
+	* gcc.target/arm/size-optimization-ieee-2.c: Likewise.
+	* gcc.target/arm/size-optimization-ieee-3.c: Likewise.
+
 2018-12-19  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* g++.dg/asm-qual-3.C: New testcase.

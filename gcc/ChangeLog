@@ -1,3 +1,13 @@
+2018-12-19  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
+
+	* config/arm/elf.h: Update comment about condition that need to
+	match with libgcc/config/arm/lib1funcs.S to also include
+	libgcc/config/arm/t-arm.
+	* doc/sourcebuild.texi (output-exists, output-exists-not): Rename
+	subsubsection these directives are in to "Check for output files".
+	Move scan-symbol to that section and add to it new scan-symbol-not
+	directive.
+
 2018-12-19  Tom de Vries  <tdevries@suse.de>
 
 	* config/nvptx/nvptx.c (PTX_CTA_SIZE): Define.

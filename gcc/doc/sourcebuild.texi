@@ -2668,7 +2668,7 @@ Passes if @var{regex} does not match demangled text in the dump file with
 suffix @var{suffix}.
 @end table
 
-@subsubsection Verify that an output files exists or not
+@subsubsection Check for output files
 
 @table @code
 @item output-exists [@{ target/xfail @var{selector} @}]
@@ -2676,13 +2676,12 @@ Passes if compiler output file exists.
 
 @item output-exists-not [@{ target/xfail @var{selector} @}]
 Passes if compiler output file does not exist.
-@end table
 
-@subsubsection Check for LTO tests
-
-@table @code
 @item scan-symbol @var{regexp} [@{ target/xfail @var{selector} @}]
 Passes if the pattern is present in the final executable.
+
+@item scan-symbol-not @var{regexp} [@{ target/xfail @var{selector} @}]
+Passes if the pattern is absent from the final executable.
 @end table
 
 @subsubsection Checks for @command{gcov} tests

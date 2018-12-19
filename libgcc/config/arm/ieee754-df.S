@@ -617,7 +617,18 @@ ARM_FUNC_ALIAS aeabi_l2d floatdidf
 
 #endif /* L_addsubdf3 */
 
-#ifdef L_arm_muldivdf3
+#if defined(L_arm_muldf3) || defined(L_arm_muldivdf3)
+
+@ Define multiplication as weak in _arm_muldf3.o so that it can be overriden
+@ by the global definition in _arm_muldivdf3.o.  This allows a program only
+@ using multiplication to take the weak definition which does not contain the
+@ division code. Programs using only division or both division and
+@ multiplication will pull _arm_muldivdf3.o from which both the multiplication
+@ and division are taken thanks to the override.
+#ifdef L_arm_muldf3
+WEAK muldf3
+WEAK aeabi_dmul
+#endif
 
 ARM_FUNC_START muldf3
 ARM_FUNC_ALIAS aeabi_dmul muldf3
@@ -870,6 +881,8 @@ LSYM(Lml_n):
 	FUNC_END aeabi_dmul
 	FUNC_END muldf3
 
+#ifdef L_arm_muldivdf3
+
 ARM_FUNC_START divdf3
 ARM_FUNC_ALIAS aeabi_ddiv divdf3
 	CFI_START_FUNCTION
@@ -1067,6 +1080,7 @@ LSYM(Ldv_s):
 	FUNC_END divdf3
 
 #endif /* L_muldivdf3 */
+#endif /* L_arm_muldf3 || L_arm_muldivdf3 */
 
 #ifdef L_arm_cmpdf2
 
