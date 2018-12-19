@@ -1,3 +1,22 @@
+2018-12-19  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/ssse3-check.h: Enable tests to run.
+	* gcc.target/powerpc/ssse3-pabsb.c: Code fixes for strict aliasing
+	issues.
+	* gcc.target/powerpc/ssse3-pabsd.c: Likewise.
+	* gcc.target/powerpc/ssse3-palignr.c: Likewise.
+	* gcc.target/powerpc/ssse3-phaddd.c: Likewise.
+	* gcc.target/powerpc/ssse3-phaddsw.c: Likewise.
+	* gcc.target/powerpc/ssse3-phaddw.c: Likewise.
+	* gcc.target/powerpc/ssse3-phsubd.c: Likewise.
+	* gcc.target/powerpc/ssse3-phsubw.c: Likewise.
+	* gcc.target/powerpc/ssse3-pmulhrsw.c: Likewise.
+	* gcc.target/powerpc/ssse3-pshufb.c: Likewise.
+	* gcc.target/powerpc/ssse3-psignb.c: Likewise.
+	* gcc.target/powerpc/ssse3-psignd.c: Likewise.
+	* gcc.target/powerpc/ssse3-psignw.c: Likewise.
+	* gcc.target/powerpc/ssse3-vals.h: Provide input data as a union.
+
 2018-12-19  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
 
 	* gcc.target/arm/cmse/baseline/softfp.c: Force an FPU.
