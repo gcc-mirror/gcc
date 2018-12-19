@@ -11313,38 +11313,6 @@ build_vec_cmp (tree_code code, tree type,
   return build3 (VEC_COND_EXPR, type, cmp, minus_one_vec, zero_vec);
 }
 
-/* Subclass of range_label for labelling the type of EXPR when reporting
-   a type mismatch between EXPR and OTHER_EXPR.
-   Either or both of EXPR and OTHER_EXPR could be NULL.  */
-
-class maybe_range_label_for_tree_type_mismatch : public range_label
-{
- public:
-  maybe_range_label_for_tree_type_mismatch (tree expr, tree other_expr)
-  : m_expr (expr), m_other_expr (other_expr)
-  {
-  }
-
-  label_text get_text (unsigned range_idx) const FINAL OVERRIDE
-  {
-    if (m_expr == NULL_TREE
-	|| !EXPR_P (m_expr))
-      return label_text (NULL, false);
-    tree expr_type = TREE_TYPE (m_expr);
-
-    tree other_type = NULL_TREE;
-    if (m_other_expr && EXPR_P (m_other_expr))
-      other_type = TREE_TYPE (m_other_expr);
-
-   range_label_for_type_mismatch inner (expr_type, other_type);
-   return inner.get_text (range_idx);
-  }
-
- private:
-  tree m_expr;
-  tree m_other_expr;
-};
-
 /* Build a binary-operation expression without default conversions.
    CODE is the kind of expression to build.
    LOCATION is the operator's location.
@@ -12475,12 +12443,9 @@ build_binary_op (location_t location, enum tree_code code,
 
   if (!result_type)
     {
-      gcc_rich_location richloc (location);
-      maybe_range_label_for_tree_type_mismatch
-	label_for_op0 (orig_op0, orig_op1),
-	label_for_op1 (orig_op1, orig_op0);
-      richloc.maybe_add_expr (orig_op0, &label_for_op0);
-      richloc.maybe_add_expr (orig_op1, &label_for_op1);
+      /* Favor showing any expression locations that are available. */
+      op_location_t oploc (location, UNKNOWN_LOCATION);
+      binary_op_rich_location richloc (oploc, orig_op0, orig_op1, true);
       binary_op_error (&richloc, code, TREE_TYPE (op0), TREE_TYPE (op1));
       return error_mark_node;
     }

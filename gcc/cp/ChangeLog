@@ -1,5 +1,29 @@
 2018-12-19  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c++/87504
+	* call.c (op_error): Convert 1st param from location_t to
+	const op_location_t &.  Use binary_op_rich_location for binary
+	ops.
+	(build_conditional_expr_1): Convert 1st param from location_t to
+	const op_location_t &.
+	(build_conditional_expr): Likewise.
+	(build_new_op_1): Likewise.
+	(build_new_op): Likewise.
+	* cp-tree.h (build_conditional_expr): Likewise.
+	(build_new_op): Likewise.
+	(build_x_binary_op): Likewise.
+	(cp_build_binary_op): Likewise.
+	* parser.c (cp_parser_primary_expression): Build a location
+	for id-expression nodes.
+	(cp_parser_binary_expression): Use an op_location_t when
+	calling build_x_binary_op.
+	(cp_parser_operator): Build a location for user-defined literals.
+	* typeck.c (build_x_binary_op): Convert 1st param from location_t
+	to const op_location_t &.
+	(cp_build_binary_op): Likewise.  Use binary_op_rich_location.
+
+2018-12-19  David Malcolm  <dmalcolm@redhat.com>
+
 	PR c++/43064
 	PR c++/43486
 	* call.c (build_conditional_expr_1): Strip location wrappers when

@@ -166,8 +166,8 @@ static tree build_over_call (struct z_candidate *, int, tsubst_flags_t);
 		     /*c_cast_p=*/false, (COMPLAIN))
 static tree convert_like_real (conversion *, tree, tree, int, bool,
 			       bool, tsubst_flags_t);
-static void op_error (location_t, enum tree_code, enum tree_code, tree,
-		      tree, tree, bool);
+static void op_error (const op_location_t &, enum tree_code, enum tree_code,
+		      tree, tree, tree, bool);
 static struct z_candidate *build_user_type_conversion_1 (tree, tree, int,
 							 tsubst_flags_t);
 static void print_z_candidate (location_t, const char *, struct z_candidate *);
@@ -4713,7 +4713,8 @@ op_error_string (const char *errmsg, int ntypes, bool match)
 }
 
 static void
-op_error (location_t loc, enum tree_code code, enum tree_code code2,
+op_error (const op_location_t &loc,
+	  enum tree_code code, enum tree_code code2,
 	  tree arg1, tree arg2, tree arg3, bool match)
 {
   bool assop = code == MODIFY_EXPR;
@@ -4767,8 +4768,12 @@ op_error (location_t loc, enum tree_code code, enum tree_code code2,
     default:
       if (arg2)
 	if (flag_diagnostics_show_caret)
-	  error_at (loc, op_error_string (G_("%<operator%s%>"), 2, match),
-		    opname, TREE_TYPE (arg1), TREE_TYPE (arg2));
+	  {
+	    binary_op_rich_location richloc (loc, arg1, arg2, true);
+	    error_at (&richloc,
+		      op_error_string (G_("%<operator%s%>"), 2, match),
+		      opname, TREE_TYPE (arg1), TREE_TYPE (arg2));
+	  }
 	else
 	  error_at (loc, op_error_string (G_("%<operator%s%> in %<%E %s %E%>"),
 					  2, match),
@@ -4867,7 +4872,8 @@ conditional_conversion (tree e1, tree e2, tsubst_flags_t complain)
    arguments to the conditional expression.  */
 
 static tree
-build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
+build_conditional_expr_1 (const op_location_t &loc,
+			  tree arg1, tree arg2, tree arg3,
                           tsubst_flags_t complain)
 {
   tree arg2_type;
@@ -5461,7 +5467,8 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 /* Wrapper for above.  */
 
 tree
-build_conditional_expr (location_t loc, tree arg1, tree arg2, tree arg3,
+build_conditional_expr (const op_location_t &loc,
+			tree arg1, tree arg2, tree arg3,
                         tsubst_flags_t complain)
 {
   tree ret;
@@ -5650,8 +5657,9 @@ op_is_ordered (tree_code code)
 }
 
 static tree
-build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
-		tree arg2, tree arg3, tree *overload, tsubst_flags_t complain)
+build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
+		tree arg1, tree arg2, tree arg3, tree *overload,
+		tsubst_flags_t complain)
 {
   struct z_candidate *candidates = 0, *cand;
   vec<tree, va_gc> *arglist;
@@ -6130,7 +6138,7 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
 /* Wrapper for above.  */
 
 tree
-build_new_op (location_t loc, enum tree_code code, int flags,
+build_new_op (const op_location_t &loc, enum tree_code code, int flags,
 	      tree arg1, tree arg2, tree arg3,
 	      tree *overload, tsubst_flags_t complain)
 {

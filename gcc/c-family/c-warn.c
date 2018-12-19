@@ -322,7 +322,8 @@ find_array_ref_with_const_idx_r (tree *expr_p, int *, void *)
 
   if ((TREE_CODE (expr) == ARRAY_REF
        || TREE_CODE (expr) == ARRAY_RANGE_REF)
-      && TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST)
+      && (TREE_CODE (fold_for_warn (TREE_OPERAND (expr, 1)))
+	  == INTEGER_CST))
     return integer_type_node;
 
   return NULL_TREE;
@@ -334,7 +335,7 @@ find_array_ref_with_const_idx_r (tree *expr_p, int *, void *)
    of this comparison.  */
 
 static void
-warn_tautological_bitwise_comparison (location_t loc, tree_code code,
+warn_tautological_bitwise_comparison (const op_location_t &loc, tree_code code,
 				      tree lhs, tree rhs)
 {
   if (code != EQ_EXPR && code != NE_EXPR)
@@ -389,12 +390,36 @@ warn_tautological_bitwise_comparison (location_t loc, tree_code code,
   if (res == cstw)
     return;
 
+  binary_op_rich_location richloc (loc, lhs, rhs, false);
   if (code == EQ_EXPR)
-    warning_at (loc, OPT_Wtautological_compare,
+    warning_at (&richloc, OPT_Wtautological_compare,
 		"bitwise comparison always evaluates to false");
   else
-    warning_at (loc, OPT_Wtautological_compare,
+    warning_at (&richloc, OPT_Wtautological_compare,
 		"bitwise comparison always evaluates to true");
+}
+
+/* Given LOC_A and LOC_B from macro expansions, return true if
+   they are "spelled the same" i.e. if they are both directly from
+   expansion of the same non-function-like macro.  */
+
+static bool
+spelled_the_same_p (location_t loc_a, location_t loc_b)
+{
+  gcc_assert (from_macro_expansion_at (loc_a));
+  gcc_assert (from_macro_expansion_at (loc_b));
+
+  const line_map_macro *map_a
+    = linemap_check_macro (linemap_lookup (line_table, loc_a));
+
+  const line_map_macro *map_b
+    = linemap_check_macro (linemap_lookup (line_table, loc_b));
+
+  if (map_a->macro == map_b->macro)
+    if (!cpp_fun_like_macro_p (map_a->macro))
+      return true;
+
+  return false;
 }
 
 /* Warn if a self-comparison always evaluates to true or false.  LOC
@@ -402,16 +427,27 @@ warn_tautological_bitwise_comparison (location_t loc, tree_code code,
    operands of the comparison.  */
 
 void
-warn_tautological_cmp (location_t loc, enum tree_code code, tree lhs, tree rhs)
+warn_tautological_cmp (const op_location_t &loc, enum tree_code code,
+		       tree lhs, tree rhs)
 {
   if (TREE_CODE_CLASS (code) != tcc_comparison)
     return;
 
   /* Don't warn for various macro expansions.  */
-  if (from_macro_expansion_at (loc)
-      || from_macro_expansion_at (EXPR_LOCATION (lhs))
-      || from_macro_expansion_at (EXPR_LOCATION (rhs)))
+  if (from_macro_expansion_at (loc))
     return;
+  bool lhs_in_macro = from_macro_expansion_at (EXPR_LOCATION (lhs));
+  bool rhs_in_macro = from_macro_expansion_at (EXPR_LOCATION (rhs));
+  if (lhs_in_macro || rhs_in_macro)
+    {
+      /* Don't warn if exactly one is from a macro.  */
+      if (!(lhs_in_macro && rhs_in_macro))
+	return;
+
+      /* If both are in a macro, only warn if they're spelled the same.  */
+      if (!spelled_the_same_p (EXPR_LOCATION (lhs), EXPR_LOCATION (rhs)))
+	return;
+    }
 
   warn_tautological_bitwise_comparison (loc, code, lhs, rhs);
 
@@ -446,11 +482,12 @@ warn_tautological_cmp (location_t loc, enum tree_code code, tree lhs, tree rhs)
       const bool always_true = (code == EQ_EXPR || code == LE_EXPR
 				|| code == GE_EXPR || code == UNLE_EXPR
 				|| code == UNGE_EXPR || code == UNEQ_EXPR);
+      binary_op_rich_location richloc (loc, lhs, rhs, false);
       if (always_true)
-	warning_at (loc, OPT_Wtautological_compare,
+	warning_at (&richloc, OPT_Wtautological_compare,
 		    "self-comparison always evaluates to true");
       else
-	warning_at (loc, OPT_Wtautological_compare,
+	warning_at (&richloc, OPT_Wtautological_compare,
 		    "self-comparison always evaluates to false");
     }
 }
