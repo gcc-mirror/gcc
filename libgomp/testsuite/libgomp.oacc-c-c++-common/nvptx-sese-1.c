@@ -1,6 +1,6 @@
-/* { dg-do link } */
-/* { dg-require-effective-target offload_nvptx } */
-/* { dg-options "-fopenacc -O2 -foffload=-fdump-rtl-mach\\ -dumpbase\\ nvptx-sese-1.c\\ -Wa,--no-verify" } */
+/* { dg-do run { target openacc_nvidia_accel_selected } } */
+/* { dg-options "-foffload=-fdump-rtl-mach" } */
+/* { dg-skip-if "" { *-*-* } { "*" } { "-O2" } } */
 
 #pragma acc routine  seq
 int __attribute__((noinline)) foo (int x)
@@ -32,4 +32,4 @@ int main ()
 }
 
 /* Match {N->N(.N)+} */
-/* { dg-final { scan-rtl-dump "SESE regions:.* \[0-9\]+{\[0-9\]+->\[0-9\]+(\\.\[0-9\]+)+}" "mach" } } */
+/* { dg-final { scan-offload-rtl-dump "SESE regions:.* \[0-9\]+{\[0-9\]+->\[0-9\]+(\\.\[0-9\]+)+}" "mach" } } */
