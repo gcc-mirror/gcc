@@ -573,6 +573,13 @@ oacc_xform_tile (gcall *call)
 static int oacc_default_dims[GOMP_DIM_MAX];
 static int oacc_min_dims[GOMP_DIM_MAX];
 
+int
+oacc_get_default_dim (int dim)
+{
+  gcc_assert (0 <= dim && dim < GOMP_DIM_MAX);
+  return oacc_default_dims[dim];
+}
+
 /* Parse the default dimension parameter.  This is a set of
    :-separated optional compute dimensions.  Each specified dimension
    is a positive integer.  When device type support is added, it is

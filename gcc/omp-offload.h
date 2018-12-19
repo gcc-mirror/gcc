@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_OMP_DEVICE_H
 #define GCC_OMP_DEVICE_H
 
+extern int oacc_get_default_dim (int dim);
+
 extern GTY(()) vec<tree, va_gc> *offload_funcs;
 extern GTY(()) vec<tree, va_gc> *offload_vars;
 
