@@ -1,5 +1,11 @@
 2018-12-19  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c++/88375
+	* g++.dg/init/pr88375-2.C: New test.
+	* g++.dg/init/pr88375.C: New test.
+
+2018-12-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* c-c++-common/Wtautological-compare-ranges.c: New test.
 	* g++.dg/cpp0x/pr51420.C: Add -fdiagnostics-show-caret and update
 	expected output.
