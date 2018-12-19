@@ -1,3 +1,10 @@
+2018-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87934
+	* constexpr.c (cxx_eval_constant_expression) <case CONSTRUCTOR>: Do
+	re-process TREE_CONSTANT CONSTRUCTORs if they aren't reduced constant
+	expressions.
+
 2018-12-19  Alexandre Oliva <aoliva@redhat.com>
 
 	PR c++/87012
