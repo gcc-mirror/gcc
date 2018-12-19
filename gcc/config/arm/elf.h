@@ -137,7 +137,7 @@
 
 /* Horrible hack: We want to prevent some libgcc routines being included
    for some multilibs.  The condition should match the one in
-   libgcc/config/arm/lib1funcs.S.  */
+   libgcc/config/arm/lib1funcs.S and libgcc/config/arm/t-elf.  */
 #if __ARM_ARCH_ISA_ARM || __ARM_ARCH_ISA_THUMB != 1
 #undef L_fixdfsi
 #undef L_fixunsdfsi

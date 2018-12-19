@@ -359,12 +359,8 @@ SYM (\name):
 #define THUMB_SYNTAX
 #endif
 
-.macro FUNC_START name sp_section=
-  .ifc \sp_section, function_section
-	.section	.text.__\name,"ax",%progbits
-  .else
+.macro FUNC_START name
 	.text
-  .endif
 	.globl SYM (__\name)
 	TYPE (__\name)
 	.align 0
@@ -390,8 +386,8 @@ SYM (\name):
 #if defined(__thumb2__)
 
 /* For Thumb-2 we build everything in thumb mode.  */
-.macro ARM_FUNC_START name sp_section=
-       FUNC_START \name \sp_section
+.macro ARM_FUNC_START name
+       FUNC_START \name
        .syntax unified
 .endm
 #define EQUIV .thumb_set
@@ -422,12 +418,8 @@ _L__\name:
 #ifdef NOT_ISA_TARGET_32BIT
 #define EQUIV .thumb_set
 #else
-.macro	ARM_FUNC_START name sp_section=
-  .ifc \sp_section, function_section
-	.section	.text.__\name,"ax",%progbits
-  .else
+.macro	ARM_FUNC_START name
 	.text
-  .endif
 	.globl SYM (__\name)
 	TYPE (__\name)
 	.align 0
@@ -2169,7 +2161,8 @@ LSYM(Lchange_\register):
 .endm
 
 #ifndef __symbian__
-/* The condition here must match the one in gcc/config/arm/elf.h.  */
+/* The condition here must match the one in gcc/config/arm/elf.h and
+   libgcc/config/arm/t-elf.  */
 #ifndef NOT_ISA_TARGET_32BIT
 #include "ieee754-df.S"
 #include "ieee754-sf.S"

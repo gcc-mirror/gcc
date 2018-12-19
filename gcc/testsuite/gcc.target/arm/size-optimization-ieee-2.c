@@ -1,0 +1,31 @@
+/* { dg-do link { target arm_soft_ok } } */
+/* { dg-options "-mfloat-abi=soft" } */
+
+int
+foo (void)
+{
+  volatile float a;
+  volatile float b;
+  volatile float c = a / b;
+  return 0;
+}
+
+int
+bar (void)
+{
+  volatile double a;
+  volatile double b;
+  volatile double c = a / b;
+  return 0;
+}
+
+int
+main (void)
+{
+  foo ();
+  bar ();
+  return 0;
+}
+
+/* { dg-final { scan-symbol "__aeabi_fdiv" } } */
+/* { dg-final { scan-symbol "__aeabi_ddiv" } } */
