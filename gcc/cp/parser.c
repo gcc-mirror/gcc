@@ -19699,7 +19699,8 @@ cp_parser_asm_definition (cp_parser* parser)
   location_t volatile_loc = UNKNOWN_LOCATION;
   location_t inline_loc = UNKNOWN_LOCATION;
   location_t goto_loc = UNKNOWN_LOCATION;
-  if (cp_parser_allow_gnu_extensions_p (parser))
+
+  if (cp_parser_allow_gnu_extensions_p (parser) && parser->in_function_body)
     for (;;)
       {
 	cp_token *token = cp_lexer_peek_token (parser->lexer);
@@ -19718,8 +19719,6 @@ cp_parser_asm_definition (cp_parser* parser)
 	    continue;
 
 	  case RID_INLINE:
-	    if (!parser->in_function_body)
-	      break;
 	    if (inline_loc)
 	      {
 		error_at (loc, "duplicate asm qualifier %qT", token->u.value);
@@ -19731,8 +19730,6 @@ cp_parser_asm_definition (cp_parser* parser)
 	    continue;
 
 	  case RID_GOTO:
-	    if (!parser->in_function_body)
-	      break;
 	    if (goto_loc)
 	      {
 		error_at (loc, "duplicate asm qualifier %qT", token->u.value);

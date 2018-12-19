@@ -1,5 +1,10 @@
 2018-12-19  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* g++.dg/asm-qual-3.C: New testcase.
+	* gcc.dg/asm-qual-3.c: New testcase.
+
+2018-12-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* g++.dg/asm-qual-1.C: New testcase.
 	* g++.dg/asm-qual-2.C: New testcase.
 	* gcc.dg/asm-qual-1.c: Update.

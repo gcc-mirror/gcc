@@ -1,5 +1,10 @@
 2018-12-19  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* parser.c (cp_parser_asm_definition): Do not allow any asm qualifiers
+	on top-level asm.
+
+2018-12-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* parser.c (cp_parser_asm_definition) <RID_CONST, RID_RESTRICT>: Give
 	a more specific error message (instead of just falling through).
 
