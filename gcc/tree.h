@@ -5962,4 +5962,53 @@ fndecl_built_in_p (const_tree node, built_in_function name)
 	  && DECL_FUNCTION_CODE (node) == name);
 }
 
+/* A struct for encapsulating location information about an operator
+   and the operation built from it.
+
+   m_operator_loc is the location of the operator
+   m_combined_loc is the location of the compound expression.
+
+   For example, given "a && b" the, operator location is:
+      a && b
+        ^~
+   and the combined location is:
+      a && b
+      ~~^~~~
+   Capturing this information allows for class binary_op_rich_location
+   to provide detailed information about e.g. type mismatches in binary
+   operations where enough location information is available:
+
+     arg_0 op arg_1
+     ~~~~~ ^~ ~~~~~
+       |        |
+       |        arg1 type
+       arg0 type
+
+   falling back to just showing the combined location:
+
+     arg_0 op arg_1
+     ~~~~~~^~~~~~~~
+
+   where it is not.  */
+
+struct op_location_t
+{
+  location_t m_operator_loc;
+  location_t m_combined_loc;
+
+  /* 1-argument ctor, for constructing from a combined location.  */
+  op_location_t (location_t combined_loc)
+  : m_operator_loc (UNKNOWN_LOCATION), m_combined_loc (combined_loc)
+  {}
+
+  /* 2-argument ctor, for distinguishing between the operator's location
+     and the combined location.  */
+  op_location_t (location_t operator_loc, location_t combined_loc)
+  : m_operator_loc (operator_loc), m_combined_loc (combined_loc)
+  {}
+
+  /* Implicitly convert back to a location_t, using the combined location.  */
+  operator location_t () const { return m_combined_loc; }
+};
+
 #endif  /* GCC_TREE_H  */

@@ -5710,8 +5710,21 @@ cp_parser_primary_expression (cp_parser *parser,
 		 id_expression.get_location ()));
 	if (error_msg)
 	  cp_parser_error (parser, error_msg);
-	decl.set_location (id_expression.get_location ());
-	decl.set_range (id_expr_token->location, id_expression.get_finish ());
+	/* Build a location for an id-expression of the form:
+	     ::ns::id
+             ~~~~~~^~
+	  or:
+	     id
+	     ^~
+	   i.e. from the start of the first token to the end of the final
+	   token, with the caret at the start of the unqualified-id.  */
+	location_t caret_loc = get_pure_location (id_expression.get_location ());
+	location_t start_loc = get_start (id_expr_token->location);
+	location_t finish_loc = get_finish (id_expression.get_location ());
+	location_t combined_loc
+	  = make_location (caret_loc, start_loc, finish_loc);
+
+	decl.set_location (combined_loc);
 	return decl;
       }
 
@@ -9556,7 +9569,8 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	}
       else
         {
-          current.lhs = build_x_binary_op (combined_loc, current.tree_type,
+	  op_location_t op_loc (current.loc, combined_loc);
+	  current.lhs = build_x_binary_op (op_loc, current.tree_type,
                                            current.lhs, current.lhs_type,
                                            rhs, rhs_type, &overload,
                                            complain_flags (decltype_p));
@@ -15391,8 +15405,16 @@ cp_parser_operator (cp_parser* parser, location_t start_loc)
 	    const char *name = IDENTIFIER_POINTER (id);
 	    id = cp_literal_operator_id (name);
 	  }
-	start_loc = make_location (start_loc, start_loc, get_finish (end_loc));
-	return cp_expr (id, start_loc);
+	/* Generate a location of the form:
+	     "" _suffix_identifier
+	     ^~~~~~~~~~~~~~~~~~~~~
+	   with caret == start at the start token, finish at the end of the
+	   suffix identifier.  */
+	location_t finish_loc
+	  = get_finish (cp_lexer_previous_token (parser->lexer)->location);
+	location_t combined_loc
+	  = make_location (start_loc, start_loc, finish_loc);
+	return cp_expr (id, combined_loc);
       }
 
     default:

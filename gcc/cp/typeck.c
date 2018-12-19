@@ -4128,7 +4128,7 @@ convert_arguments (tree typelist, vec<tree, va_gc> **values, tree fndecl,
    ARG2_CODE as ERROR_MARK.  */
 
 tree
-build_x_binary_op (location_t loc, enum tree_code code, tree arg1,
+build_x_binary_op (const op_location_t &loc, enum tree_code code, tree arg1,
 		   enum tree_code arg1_code, tree arg2,
 		   enum tree_code arg2_code, tree *overload_p,
 		   tsubst_flags_t complain)
@@ -4317,7 +4317,7 @@ warn_for_null_address (location_t location, tree op, tsubst_flags_t complain)
    multiple inheritance, and deal with pointer to member functions.  */
 
 tree
-cp_build_binary_op (location_t location,
+cp_build_binary_op (const op_location_t &location,
 		    enum tree_code code, tree orig_op0, tree orig_op1,
 		    tsubst_flags_t complain)
 {
@@ -5314,9 +5314,13 @@ cp_build_binary_op (location_t location,
   if (!result_type)
     {
       if (complain & tf_error)
-	error_at (location,
-		  "invalid operands of types %qT and %qT to binary %qO",
-		  TREE_TYPE (orig_op0), TREE_TYPE (orig_op1), code);
+	{
+	  binary_op_rich_location richloc (location,
+					   orig_op0, orig_op1, true);
+	  error_at (&richloc,
+		    "invalid operands of types %qT and %qT to binary %qO",
+		    TREE_TYPE (orig_op0), TREE_TYPE (orig_op1), code);
+	}
       return error_mark_node;
     }
 

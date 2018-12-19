@@ -1,3 +1,11 @@
+2018-12-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/87504
+	* c-typeck.c (class maybe_range_label_for_tree_type_mismatch):
+	Move from here to gcc-rich-location.h and gcc-rich-location.c.
+	(build_binary_op): Use struct op_location_t and
+	class binary_op_rich_location.
+
 2018-12-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/88426

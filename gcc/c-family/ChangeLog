@@ -1,5 +1,20 @@
 2018-12-19  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c++/87504
+	* c-common.h (warn_tautological_cmp): Convert 1st param from
+	location_t to const op_location_t &.
+	* c-warn.c (find_array_ref_with_const_idx_r): Call fold_for_warn
+	when testing for INTEGER_CST.
+	(warn_tautological_bitwise_comparison): Convert 1st param from
+	location_t to const op_location_t &; use it to build a
+	binary_op_rich_location, and use this.
+	(spelled_the_same_p): New function.
+	(warn_tautological_cmp): Convert 1st param from location_t to
+	const op_location_t &.  Warn for macro expansions if
+	spelled_the_same_p.  Use binary_op_rich_location.
+
+2018-12-19  David Malcolm  <dmalcolm@redhat.com>
+
 	PR c++/43064
 	PR c++/43486
 	* c-common.c (unsafe_conversion_p): Fold any location wrapper.

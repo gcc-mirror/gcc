@@ -6097,7 +6097,8 @@ extern int raw_dump_id;
 extern bool check_dtor_name			(tree, tree);
 int magic_varargs_p				(tree);
 
-extern tree build_conditional_expr		(location_t, tree, tree, tree, 
+extern tree build_conditional_expr		(const op_location_t &,
+						 tree, tree, tree,
                                                  tsubst_flags_t);
 extern tree build_addr_func			(tree, tsubst_flags_t);
 extern void set_flags_from_callee		(tree);
@@ -6122,7 +6123,8 @@ extern tree build_new_method_call		(tree, tree,
 extern tree build_special_member_call		(tree, tree,
 						 vec<tree, va_gc> **,
 						 tree, int, tsubst_flags_t);
-extern tree build_new_op			(location_t, enum tree_code,
+extern tree build_new_op			(const op_location_t &,
+						 enum tree_code,
 						 int, tree, tree, tree, tree *,
 						 tsubst_flags_t);
 extern tree build_op_call			(tree, vec<tree, va_gc> **,
@@ -7339,7 +7341,7 @@ extern tree cp_build_function_call_nary         (tree, tsubst_flags_t, ...)
 						ATTRIBUTE_SENTINEL;
 extern tree cp_build_function_call_vec		(tree, vec<tree, va_gc> **,
 						 tsubst_flags_t);
-extern tree build_x_binary_op			(location_t,
+extern tree build_x_binary_op			(const op_location_t &,
 						 enum tree_code, tree,
 						 enum tree_code, tree,
 						 enum tree_code, tree *,
@@ -7406,7 +7408,7 @@ extern tree composite_pointer_type		(tree, tree, tree, tree,
 extern tree merge_types				(tree, tree);
 extern tree strip_array_domain			(tree);
 extern tree check_return_expr			(tree, bool *);
-extern tree cp_build_binary_op                  (location_t,
+extern tree cp_build_binary_op                  (const op_location_t &,
 						 enum tree_code, tree, tree,
 						 tsubst_flags_t);
 extern tree build_x_vec_perm_expr               (location_t,

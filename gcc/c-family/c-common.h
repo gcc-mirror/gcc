@@ -1268,7 +1268,8 @@ extern void constant_expression_error (tree);
 extern void overflow_warning (location_t, tree, tree = NULL_TREE);
 extern void warn_logical_operator (location_t, enum tree_code, tree,
 				   enum tree_code, tree, enum tree_code, tree);
-extern void warn_tautological_cmp (location_t, enum tree_code, tree, tree);
+extern void warn_tautological_cmp (const op_location_t &, enum tree_code,
+				   tree, tree);
 extern void warn_logical_not_parentheses (location_t, enum tree_code, tree,
 					  tree);
 extern bool warn_if_unused_value (const_tree, location_t);

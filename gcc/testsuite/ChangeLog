@@ -1,5 +1,15 @@
 2018-12-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* c-c++-common/Wtautological-compare-ranges.c: New test.
+	* g++.dg/cpp0x/pr51420.C: Add -fdiagnostics-show-caret and update
+	expected output.
+	* g++.dg/diagnostic/bad-binary-ops.C: Update expected output from
+	1-location form to 3-location form, with labelling of ranges with
+	types.  Add examples of id-expression nodes with namespaces.
+	* g++.dg/diagnostic/param-type-mismatch-2.C: Likewise.
+
+2018-12-19  David Malcolm  <dmalcolm@redhat.com>
+
 	PR c++/43064
 	PR c++/43486
 	* c-c++-common/pr51712.c (valid2): Mark xfail as passing on C++.

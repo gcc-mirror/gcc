@@ -1,5 +1,20 @@
 2018-12-19  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c++/87504
+	* gcc-rich-location.c
+	(maybe_range_label_for_tree_type_mismatch::get_text): Move here from
+	c/c-typeck.c.
+	(binary_op_rich_location::binary_op_rich_location): New ctor.
+	(binary_op_rich_location::use_operator_loc_p): New function.
+	* gcc-rich-location.h
+	(class maybe_range_label_for_tree_type_mismatch)): Move here from
+	c/c-typeck.c.
+	(struct op_location_t): New forward decl.
+	(class binary_op_rich_location): New class.
+	* tree.h (struct op_location_t): New struct.
+
+2018-12-19  David Malcolm  <dmalcolm@redhat.com>
+
 	PR c++/43064
 	PR c++/43486
 	* convert.c: Include "selftest.h".
