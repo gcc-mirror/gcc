@@ -4681,7 +4681,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       break;
 
     case CONSTRUCTOR:
-      if (TREE_CONSTANT (t))
+      if (TREE_CONSTANT (t) && reduced_constant_expression_p (t))
 	{
 	  /* Don't re-process a constant CONSTRUCTOR, but do fold it to
 	     VECTOR_CST if applicable.  */
