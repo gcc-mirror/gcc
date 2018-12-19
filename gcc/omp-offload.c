@@ -88,7 +88,7 @@ vec<tree, va_gc> *offload_funcs, *offload_vars;
 /* Return level at which oacc routine may spawn a partitioned loop, or
    -1 if it is not a routine (i.e. is an offload fn).  */
 
-static int
+int
 oacc_fn_attrib_level (tree attr)
 {
   tree pos = TREE_VALUE (attr);
