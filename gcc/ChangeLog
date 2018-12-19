@@ -1,5 +1,35 @@
 2018-12-19  Tom de Vries  <tdevries@suse.de>
 
+	* config/nvptx/nvptx.c (nvptx_gen_wcast): Rename as
+	nvptx_gen_warp_bcast.
+	(nvptx_gen_wcast): Rename to nvptx_gen_shared_bcast, add bool
+	vector argument, and update call to nvptx_gen_shared_bcast.
+	(propagator_fn): Add bool argument.
+	(nvptx_propagate): New bool argument, pass bool argument to fn.
+	(vprop_gen): Rename to warp_prop_gen, update call to
+	nvptx_gen_warp_bcast.
+	(nvptx_vpropagate): Rename to nvptx_warp_propagate, update call to
+	nvptx_propagate.
+	(wprop_gen): Rename to shared_prop_gen, update call to
+	nvptx_gen_shared_bcast.
+	(nvptx_wpropagate): Rename to nvptx_shared_propagate, update call
+	to nvptx_propagate.
+	(nvptx_wsync): Rename to nvptx_cta_sync.
+	(nvptx_single): Update calls to nvptx_gen_warp_bcast,
+	nvptx_gen_shared_bcast and nvptx_cta_sync.
+	(nvptx_process_pars): Likewise.
+	(write_worker_buffer): Rename as write_shared_buffer.
+	(nvptx_file_end): Update calls to write_shared_buffer.
+	(nvptx_expand_worker_addr): Rename as nvptx_expand_shared_addr.
+	(nvptx_expand_builtin): Update call to nvptx_expand_shared_addr.
+	(nvptx_get_worker_red_addr): Rename as nvptx_get_shared_red_addr.
+	(nvptx_goacc_reduction_setup): Update call to
+	nvptx_get_shared_red_addr.
+	(nvptx_goacc_reduction_fini): Likewise.
+	(nvptx_goacc_reduction_teardown): Likewise.
+
+2018-12-19  Tom de Vries  <tdevries@suse.de>
+
 	* config/nvptx/nvptx.c (worker_bcast_size): Rename as
 	oacc_bcast_size.
 	(worker_bcast_align): Rename as oacc_bcast_align.
