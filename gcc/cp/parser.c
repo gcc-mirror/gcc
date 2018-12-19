@@ -19743,6 +19743,12 @@ cp_parser_asm_definition (cp_parser* parser)
 	    cp_lexer_consume_token (parser->lexer);
 	    continue;
 
+	  case RID_CONST:
+	  case RID_RESTRICT:
+	    error_at (loc, "%qT is not an asm qualifier", token->u.value);
+	    cp_lexer_consume_token (parser->lexer);
+	    continue;
+
 	  default:
 	    break;
 	  }

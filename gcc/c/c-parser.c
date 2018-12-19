@@ -6411,6 +6411,12 @@ c_parser_asm_statement (c_parser *parser)
 	  c_parser_consume_token (parser);
 	  continue;
 
+	case RID_CONST:
+	case RID_RESTRICT:
+	  error_at (loc, "%qE is not an asm qualifier", token->value);
+	  c_parser_consume_token (parser);
+	  continue;
+
 	default:
 	  break;
 	}
