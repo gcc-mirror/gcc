@@ -1,3 +1,8 @@
+2018-12-19  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config.gcc: Enable TARGET_DEFAULT_ASYNC_UNWIND_TABLES on
+	aarch64*-*-freebsd*
+
 2018-12-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (SWI1248_AVX512BWDQ_64): Rename from
