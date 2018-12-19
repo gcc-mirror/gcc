@@ -1,5 +1,15 @@
 2018-12-19  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c++/88375
+	* typeck.c (convert_for_assignment): Capture location of rhs
+	before stripping, and if available.  Use the location when
+	complaining about bad conversions, labelling it with the
+	rhstype if the location was present.
+	* typeck2.c (digest_init_r): Capture location of init before
+	stripping.
+
+2018-12-19  David Malcolm  <dmalcolm@redhat.com>
+
 	PR c++/87504
 	* call.c (op_error): Convert 1st param from location_t to
 	const op_location_t &.  Use binary_op_rich_location for binary

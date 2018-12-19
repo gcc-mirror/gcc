@@ -1050,14 +1050,16 @@ digest_init_r (tree type, tree init, int nested, int flags,
 					complain))
     return error_mark_node;
 
+  location_t loc = cp_expr_loc_or_loc (init, input_location);
+
+  tree stripped_init = init;
+
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue
      (g++.old-deja/g++.law/casts2.C).  */
   if (TREE_CODE (init) == NON_LVALUE_EXPR)
-    init = TREE_OPERAND (init, 0);
+    stripped_init = TREE_OPERAND (init, 0);
 
-  location_t loc = cp_expr_loc_or_loc (init, input_location);
-
-  tree stripped_init = tree_strip_any_location_wrapper (init);
+  stripped_init = tree_strip_any_location_wrapper (stripped_init);
 
   /* Initialization of an array of chars from a string constant. The initializer
      can be optionally enclosed in braces, but reshape_init has already removed

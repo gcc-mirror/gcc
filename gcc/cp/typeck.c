@@ -8852,6 +8852,7 @@ convert_for_assignment (tree type, tree rhs,
   enum tree_code coder;
 
   location_t rhs_loc = EXPR_LOC_OR_LOC (rhs, input_location);
+  bool has_loc = EXPR_LOCATION (rhs) != UNKNOWN_LOCATION;
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue,
      but preserve location wrappers.  */
   if (TREE_CODE (rhs) == NON_LVALUE_EXPR
@@ -8892,7 +8893,7 @@ convert_for_assignment (tree type, tree rhs,
   if (coder == VOID_TYPE)
     {
       if (complain & tf_error)
-	error ("void value not ignored as it ought to be");
+	error_at (rhs_loc, "void value not ignored as it ought to be");
       return error_mark_node;
     }
 
@@ -8964,35 +8965,43 @@ convert_for_assignment (tree type, tree rhs,
 					     rhstype, type,
 					     fndecl, parmnum);
 	      else
-		switch (errtype)
-		  {
+		{
+		  range_label_for_type_mismatch label (rhstype, type);
+		  gcc_rich_location richloc (rhs_loc, has_loc ? &label : NULL);
+		  switch (errtype)
+		    {
 		    case ICR_DEFAULT_ARGUMENT:
-		      error ("cannot convert %qH to %qI in default argument",
-			     rhstype, type);
+		      error_at (&richloc,
+				"cannot convert %qH to %qI in default argument",
+				rhstype, type);
 		      break;
 		    case ICR_ARGPASS:
-		      error ("cannot convert %qH to %qI in argument passing",
-			     rhstype, type);
+		      error_at (&richloc,
+				"cannot convert %qH to %qI in argument passing",
+				rhstype, type);
 		      break;
 		    case ICR_CONVERTING:
-		      error ("cannot convert %qH to %qI",
-			     rhstype, type);
+		      error_at (&richloc, "cannot convert %qH to %qI",
+				rhstype, type);
 		      break;
 		    case ICR_INIT:
-		      error ("cannot convert %qH to %qI in initialization",
-			     rhstype, type);
+		      error_at (&richloc,
+				"cannot convert %qH to %qI in initialization",
+				rhstype, type);
 		      break;
 		    case ICR_RETURN:
-		      error ("cannot convert %qH to %qI in return",
-			     rhstype, type);
+		      error_at (&richloc, "cannot convert %qH to %qI in return",
+				rhstype, type);
 		      break;
 		    case ICR_ASSIGN:
-		      error ("cannot convert %qH to %qI in assignment",
-			     rhstype, type);
+		      error_at (&richloc,
+				"cannot convert %qH to %qI in assignment",
+				rhstype, type);
 		      break;
 		    default:
 		      gcc_unreachable();
 		  }
+		}
 	      if (TYPE_PTR_P (rhstype)
 		  && TYPE_PTR_P (type)
 		  && CLASS_TYPE_P (TREE_TYPE (rhstype))
@@ -9059,9 +9068,7 @@ convert_for_assignment (tree type, tree rhs,
       && TREE_CODE (TREE_TYPE (rhs)) != BOOLEAN_TYPE
       && (complain & tf_warning))
     {
-      location_t loc = cp_expr_loc_or_loc (rhs, input_location);
-
-      warning_at (loc, OPT_Wparentheses,
+      warning_at (rhs_loc, OPT_Wparentheses,
 		  "suggest parentheses around assignment used as truth value");
       TREE_NO_WARNING (rhs) = 1;
     }
