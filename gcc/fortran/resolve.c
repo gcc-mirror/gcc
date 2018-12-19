@@ -12310,7 +12310,11 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
     {
       /* Make sure that character string variables with assumed length are
 	 dummy arguments.  */
-      e = sym->ts.u.cl->length;
+      if (sym->ts.u.cl)
+	e = sym->ts.u.cl->length;
+      else
+	return false;
+
       if (e == NULL && !sym->attr.dummy && !sym->attr.result
 	  && !sym->ts.deferred && !sym->attr.select_type_temporary
 	  && !sym->attr.omp_udr_artificial_var)
