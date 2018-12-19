@@ -1,3 +1,7 @@
+2018-12-19  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
+
+	* gcc.target/arm/cmse/baseline/softfp.c: Force an FPU.
+
 2018-12-19  Tom de Vries  <tdevries@suse.de>
 
 	* gcc.dg/goacc/nvptx-merged-loop.c: Move to

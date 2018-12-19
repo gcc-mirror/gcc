@@ -1,3 +1,10 @@
+2018-12-19  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
+
+	* config/arm/arm.h (TARGET_HARD_FLOAT): Restrict to TARGET_32BIT
+	targets.
+	* config/arm/arm.c (output_return_instruction): Only check
+	TARGET_HARD_FLOAT to decide whether FP instructions are available.
+
 2018-12-19  Tom de Vries  <tom@codesourcery.com>
 
 	* doc/sourcebuild.texi (Commands for use in dg-final, Scan optimization
