@@ -1,3 +1,11 @@
+2018-12-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (SWI1248_AVX512BWDQ_64): Rename from
+	SWI1248_AVX512BWDQ2_64.  Unconditionally enable HImode.
+	(*cmp<mode>_ccz_1): Emit kortest instead of ktest insn.
+	Use SWI1248_AVX512BWDQ_64 mode iterator and enable only for
+	TARGET_AVX512F.
+
 2018-12-19  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
 
 	* config/arm/elf.h: Update comment about condition that need to
