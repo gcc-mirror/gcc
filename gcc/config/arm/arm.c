@@ -19872,7 +19872,7 @@ output_return_instruction (rtx operand, bool really_return, bool reverse,
 			  "msr%s\tAPSR_nzcvq, %%|lr", conditional);
 
 	      output_asm_insn (instr, & operand);
-	      if (TARGET_HARD_FLOAT && !TARGET_THUMB1)
+	      if (TARGET_HARD_FLOAT)
 		{
 		  /* Clear the cumulative exception-status bits (0-4,7) and the
 		     condition code bits (28-31) of the FPSCR.  We need to
