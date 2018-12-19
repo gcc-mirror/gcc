@@ -1,9 +1,12 @@
 2018-12-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/88541
+	* gcc.target/i386/avx-vpclmulqdq-1.c: New test.
+
 	PR c++/87934
 	* g++.dg/cpp0x/constexpr-87934.C: New test.
 
-2018-12-19  Alexandre Oliva <aoliva@redhat.com>
+2018-12-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR testsuite/86153
 	PR middle-end/83239
@@ -216,7 +219,7 @@
 	PR tree-optimization/87096
 	* gcc.dg/tree-ssa/builtin-snprintf-4.c: New test.
 
-2018-12-14  Alexandre Oliva <aoliva@redhat.com>
+2018-12-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/87814
 	* g++.dg/cpp1z/pr87814.C: New.
@@ -247,7 +250,7 @@
 	* gfortran.dg/goacc/classify-routine.f95: Likewise.
 	* gfortran.dg/goacc/kernels-loop-inner.f95: Likewise.
 
-2018-12-14  Alexandre Oliva <aoliva@redhat.com>
+2018-12-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/86823
 	* g++.dg/pr86823.C: New.
@@ -873,7 +876,7 @@
 	PR sanitizer/88333
 	* c-c++-common/asan/pr88333.c: New test.
 
-2018-12-05  Alexandre Oliva <aoliva@redhat.com>
+2018-12-05  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/85569
 	* g++.dg/cpp1z/pr85569.C: New.
@@ -983,7 +986,7 @@
 	gnat.dg/overload2_q.ads: New testcase.
 
 2018-12-03  Fritz Reese  <fritzoreese@gmail.com>
-            Mark Eggleston <mark.eggleston@codethink.co.uk>
+            Mark Eggleston  <mark.eggleston@codethink.co.uk>
 
 	PR fortran/87919
 	* gfortran.dg/array_temporaries_5.f90: New test.
@@ -2529,7 +2532,7 @@
 	PR tree-optimization/87621
 	* g++.dg/vect/pr87621.cc: New testcase.
 
-2018-11-09  Alexandre Oliva <aoliva@redhat.com>
+2018-11-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/86438
 	* gcc.dg/torture/pr86438.c: New.
@@ -2890,7 +2893,7 @@
 	* g++.dg/lto/pr87906_0.C: New testcase.
 	* g++.dg/lto/pr87906_1.C: Likewise.
 
-2018-11-07  Alexandre Oliva <aoliva@redhat.com>
+2018-11-07  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/87874
 	* gcc.dg/pr87874.c: New.
@@ -4472,7 +4475,7 @@
 	PR fortran/87597
 	* gfortran.dg/inline_matmul_24.f90: New.
 
-2018-10-12  Tobias Burnus <burnus@net-b.de>
+2018-10-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/58787
 	* gfortran.dg/goacc/pr77765.f90: Modify dg-error.
@@ -4545,10 +4548,10 @@
 	* gcc.target/powerpc/fold-vec-mergeeo-int.c: New.
 	* gcc.target/powerpc/fold-vec-mergeeo-longlong.c: New.
 
-2018-10-11  Tobias Burnus <burnus@net-b.de>
+2018-10-11  Tobias Burnus  <burnus@net-b.de>
 
 	Revert:
-	2018-10-09  Tobias Burnus <burnus@net-b.de>
+	2018-10-09  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/83522
 	* gfortran.dg/actual_array_substr_1.f90: Add dg-error,
@@ -4691,7 +4694,7 @@
 	* gcc.target/powerpc/sse3-movddup.c: New file.
 	* gcc.target/powerpc/pr37191.c: New file.
 
-2018-10-09  Tobias Burnus <burnus@net-b.de>
+2018-10-09  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/83522
 	* gfortran.dg/actual_array_substr_1.f90: Add dg-error,
@@ -5041,7 +5044,7 @@
 	* gcc.target/aarch64/sve/struct_vect_24_run.c: New test.
 
 2018-10-01  Jeff Law  <law@redhat.com>
-	    Richard Sandiford <richard.sandiford@linaro.org>
+	    Richard Sandiford  <richard.sandiford@linaro.org>
 	    Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/86486
@@ -5155,7 +5158,7 @@
 	check_effective_target_got32x_reloc,
 	check_effective_target_tls_get_addr_via_got): Use new caching.
 
-2018-10-01  MCC CS <deswurstes@users.noreply.github.com>
+2018-10-01  MCC CS  <deswurstes@users.noreply.github.com>
 
 	PR tree-optimization/87261
 	* gcc.dg/pr87261.c: New test.
@@ -5426,7 +5429,7 @@
 	* gcc.dg/warn-stpcpy-no-nul.c: Drop unnecessary xfails.
 	* gcc.dg/warn-stplen-no-nul.c: Likewise.
 
-2018-09-25  Alexandre Oliva <oliva@adacore.com>
+2018-09-25  Alexandre Oliva  <oliva@adacore.com>
 
 	* gnat.dg/dinst.adb: Adjust for locviews.
 
@@ -5530,7 +5533,7 @@
 	PR sanitizer/85774
 	* g++.dg/asan/pr85774.C: New test.
 
-2018-09-24  Alexandre Oliva <oliva@adacore.com>
+2018-09-24  Alexandre Oliva  <oliva@adacore.com>
 
 	PR middle-end/87054
 	* gcc.dg/pr87054.c: Adjust for no __int128 on x86.
@@ -5624,7 +5627,7 @@
 	* gfortran.dg/lto/20091016-1_0.f90: Likewise.
 	* gfortran.dg/lto/pr79108_0.f90: Likewise.
 
-2018-09-20  Alexandre Oliva <oliva@adacore.com>
+2018-09-20  Alexandre Oliva  <oliva@adacore.com>
 
 	PR middle-end/87054
 	* gcc.dg/pr87054.c: New.
@@ -5736,7 +5739,7 @@
 	functions.
 
 2018-09-17  Cesar Philippidis  <cesar@codesourcery.com>
-	    Bernd Schmidt <bernds_cb1@t-online.de>
+	    Bernd Schmidt  <bernds_cb1@t-online.de>
 
 	* gcc.target/nvptx/atomic-fetch-2.c: Rename to ...
 	* gcc.target/nvptx/atomic_fetch-2.c: ... this.
@@ -6622,7 +6625,7 @@
 	* gfortran.dg/nan_1.f90: Remove tests that test MAX/MIN with NaNs.
 
 2018-08-21  Nicolas Koenig  <koenigni@gcc.gnu.org>
-	Thomas Koenig <tkoenig@gcc.gnu.org>
+	Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/25829
 	* gfortran.dg/f2003_inquire_1.f03: Add write statement.
@@ -6905,18 +6908,18 @@
 
 	* gcc.target/aarch64/imm_choice_comparison.c: New test.
 
-2018-08-16  Iain Sandoe <iain@sandoe.co.uk>
+2018-08-16  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.dg/memcmp-1.c (lib_memcmp): Apply __USER_LABEL_PREFIX__.
 	(lib_strncmp): Likewise.
 
-2018-08-16  Iain Sandoe <iain@sandoe.co.uk>
+2018-08-16  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* c-c++-common/asan/pointer-subtract-3.c: Skip for Darwin.
 	* c-c++-common/asan/pointer-subtract-4.c: Likewise.
 	* g++.dg/torture/pr44295.C : Likewise.
 
-2018-08-16  Iain Sandoe <iain@sandoe.co.uk>
+2018-08-16  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR testsuite/78544
 	* gcc.dg/tree-prof/section-attr-1.c: Add Darwin-specific section
@@ -6985,7 +6988,7 @@
 	* lib/multiline.exp (proc _build_multiline_regex): Remove
 	special-case handling of lines with trailing '|'.
 
-2018-08-15  Qing Zhao <qing.zhao@oracle.com>
+2018-08-15  Qing Zhao  <qing.zhao@oracle.com>
 
 	PR testsuite/86519
 	* gcc.dg/strcmpopt_6.c: Scan the assembly file instead of
@@ -7012,7 +7015,7 @@
 
 	* g++.dg/init/goto3.C: Adjust for error instead of permerror.
 
-2018-08-14  Allan Sandfeld Jensen <allan.jensen@qt.io>
+2018-08-14  Allan Sandfeld Jensen  <allan.jensen@qt.io>
 
 	* gcc.target/i386/sse2-movs.c: New test.
 
@@ -7561,7 +7564,7 @@
 
 	Revert 'AsyncI/O patch committed'
 	2018-07-25  Nicolas Koenig  <koenigni@gcc.gnu.org>
-		Thomas Koenig <tkoenig@gcc.gnu.org>
+		    Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/25829
 	* gfortran.dg/f2003_inquire_1.f03: Add write statement.
@@ -7612,7 +7615,7 @@
 	ignored by the test harness.
 
 2018-07-25  Nicolas Koenig  <koenigni@gcc.gnu.org>
-	Thomas Koenig <tkoenig@gcc.gnu.org>
+	    Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/25829
 	* gfortran.dg/f2003_inquire_1.f03: Add write statement.
@@ -7720,7 +7723,7 @@
 	* gcc.dg/Warray-bounds-32.c: New test.
 
 2018-07-19  Michael Collison  <michael.collison@arm.com>
-	    Richard Henderson <rth@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
 
 	* gcc.target/aarch64/builtin_sadd_128.c: New testcase.
 	* gcc.target/aarch64/builtin_saddl.c: New testcase.
@@ -7857,7 +7860,7 @@
 	* gcc.dg/cpp/pr61854-4.c (foo): Likewise.
 	* gcc.dg/cpp/pr61854-8.c: New test.
 
-2018-07-17  David Edelsohn <dje.gcc@gmail.com>
+2018-07-17  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.target/powerpc/pr85456.c: Require longdouble128.
 
@@ -7874,7 +7877,7 @@
 	* gcc.target/powerpc/fold-vec-unpack-pixel.c: New.
 	* gcc.target/powerpc/fold-vec-unpack-short.c: New.
 
-2018-07-17  David Edelsohn <dje.gcc@gmail.com>
+2018-07-17  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.target/powerpc/pr57150.c: Require longdouble128.
 	* gcc.target/powerpc/pr79916.c: Require dfp.
@@ -8941,7 +8944,7 @@
 	PR middle-end/86271
 	* gcc.dg/pr86271.c: New testcase.
 
-2018-06-26  Alexandre Oliva <aoliva@redhat.com>
+2018-06-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/86064
 	* gcc.dg/pr86064.c: New.
@@ -9169,8 +9172,8 @@
 	* g++.dg/concepts/decl-diagnose.C: Likewise.
 	* g++.dg/warn/main-2.C: Update.
 
-2018-06-20  Chung-Lin Tang <cltang@codesourcery.com>
-	    Thomas Schwinge <thomas@codesourcery.com>
+2018-06-20  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
 	* c-c++-common/goacc/declare-1.c: Update test case to utilize OpenACC
@@ -10462,7 +10465,7 @@
 	PR ipa/85960
 	* gcc.dg/ipa/ipa-pta-19.c: New testcase.
 
-2018-05-31  Qing Zhao <qing.zhao@oracle.com>
+2018-05-31  Qing Zhao  <qing.zhao@oracle.com>
 
 	PR middle-end/78809
 	* gcc.dg/strcmpopt_2.c: New test.
@@ -12281,7 +12284,7 @@
 	* gcc.target/i386/pr85044.c (dg-options): Remove -mibt.
 	* gcc.target/i386/sse-26.c (dg-options): Remove -mno-ibt.
 
-2018-04-20  Richard Biener <rguenther@suse.de>
+2018-04-20  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/85475
 	* gcc.dg/torture/pr85475.c: New testcase.
@@ -12520,7 +12523,7 @@
 	* g++.dg/ext/pr85329.C: New test.
 	* gcc.target/i386/mvc12.c: New test.
 
-2018-04-16  Alexandre Oliva <aoliva@redhat.com>
+2018-04-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/85039
 	* g++.dg/pr85039-1.C: New.
@@ -12987,7 +12990,7 @@
 	PR target/85193
 	* gcc.target/i386/pr85193.c: New test.
 
-2018-04-05  Alexandre Oliva <aoliva@redhat.com>
+2018-04-05  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/84979
 	* g++.dg/concepts/pr84979.C: New.
@@ -13056,7 +13059,7 @@
 	PR tree-optimization/85168
 	* gcc.dg/torture/pr85168.c: New testcase.
 
-2018-04-04  Alexandre Oliva <aoliva@redhat.com>
+2018-04-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/84943
 	* g++.dg/pr84943.C: New.
@@ -13409,15 +13412,15 @@
 	* gfortran.dg/parameter_array_format.f90: New test.
 
 2018-03-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
-	Neil Carlson <neil.n.carlson@gmail.com>
+	    Neil Carlson  <neil.n.carlson@gmail.com>
 
 	PR fortran/84381
 	* gfortran.dg/literal_character_constant_1.inc: Replace
 	call abort by STOP n.
 	* gfortran.dg/overload_1.f90: Likewise.
 
-2018-03-25  Seth Johnson <johnsonsr@ornl.gov>
-	Dominique d'Humieres  <dominiq@gcc.gnu.org>
+2018-03-25  Seth Johnson  <johnsonsr@ornl.gov>
+	    Dominique d'Humieres  <dominiq@gcc.gnu.org>
 
 	PR fortran/84924
 	* gfortran.dg/scalar_pointer_1.f90: New test.
@@ -14626,7 +14629,7 @@
 	PR c++/84434
 	* g++.dg/template/pr84434.C: New.
 
-2018-03-01  Thomas Preud'homme  <thomas.preudhomme@arm.com
+2018-03-01  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.target/arm/copysign_softfloat_1.c: Remove dg-add-options and add
 	-mthumb to the command-line.
