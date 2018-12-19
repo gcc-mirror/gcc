@@ -1,3 +1,11 @@
+2018-12-19  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* auto-profile.c (afdo_indirect_call): Skip generating histogram
+	value if we can't find cgraph_node for then indirected callee.  Save
+	profile_id of the cgraph_node in histogram value's first counter.
+	* value-prof.c (gimple_value_profile_transformations): Don't skip
+	for flag_auto_profile.
+
 2018-12-18  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/87759
