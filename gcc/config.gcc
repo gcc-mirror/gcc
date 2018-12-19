@@ -1012,6 +1012,7 @@ aarch64*-*-freebsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h ${fbsd_tm_file}"
 	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-freebsd.h"
 	tmake_file="${tmake_file} aarch64/t-aarch64 aarch64/t-aarch64-freebsd"
+	tm_defines="${tm_defines}  TARGET_DEFAULT_ASYNC_UNWIND_TABLES=1"
 	;;
 aarch64*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h"
