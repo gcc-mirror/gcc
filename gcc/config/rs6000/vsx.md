@@ -3273,7 +3273,7 @@
 	 (match_operand:VSX_D 1 "memory_operand" "m,m")
 	 (parallel [(match_operand:QI 2 "const_0_to_1_operand" "n,n")])))
    (clobber (match_scratch:P 3 "=&b,&b"))]
-  "VECTOR_MEM_VSX_P (<VSX_D:MODE>mode)"
+  "TARGET_POWERPC64 && VECTOR_MEM_VSX_P (<VSX_D:MODE>mode)"
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (match_dup 4))]
