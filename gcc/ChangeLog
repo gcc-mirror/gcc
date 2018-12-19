@@ -1,3 +1,9 @@
+2018-12-19  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.c (nvptx_previous_fndecl): Declare.
+	(nvptx_set_current_function): New function.
+	(TARGET_SET_CURRENT_FUNCTION): Define.
+
 2018-12-19  Shaokun Zhang  <zhangshaokun@hisilicon.com>
 
 	* config/aarch64/aarch64-cores.def (tsv110): Fix architecture.  This
