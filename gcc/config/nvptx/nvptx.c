@@ -1810,9 +1810,8 @@ nvptx_gen_shared_bcast (rtx reg, propagate_mask pm, unsigned rep,
 	  {
 	    unsigned align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
 
-	    if (align > oacc_bcast_align)
-	      oacc_bcast_align = align;
-	    data->offset = (data->offset + align - 1) & ~(align - 1);
+	    oacc_bcast_align = MAX (oacc_bcast_align, align);
+	    data->offset = ROUND_UP (data->offset, align);
 	    addr = data->base;
 	    gcc_assert (data->base != NULL);
 	    if (data->offset)
@@ -1934,8 +1933,7 @@ nvptx_assemble_value (unsigned HOST_WIDE_INT val, unsigned size)
     {
       val >>= part * BITS_PER_UNIT;
       part = init_frag.size - init_frag.offset;
-      if (part > size)
-	part = size;
+      part = MIN (part, size);
 
       unsigned HOST_WIDE_INT partial
 	= val << (init_frag.offset * BITS_PER_UNIT);
@@ -1998,8 +1996,7 @@ nvptx_output_skip (FILE *, unsigned HOST_WIDE_INT size)
   if (init_frag.offset)
     {
       unsigned part = init_frag.size - init_frag.offset;
-      if (part > size)
-	part = (unsigned) size;
+      part = MIN (part, (unsigned)size);
       size -= part;
       nvptx_assemble_value (0, part);
     }
@@ -3927,9 +3924,8 @@ shared_prop_gen (rtx reg, propagate_mask pm, unsigned rep, void *data_,
       /* Starting a loop, initialize pointer.    */
       unsigned align = GET_MODE_ALIGNMENT (GET_MODE (reg)) / BITS_PER_UNIT;
 
-      if (align > oacc_bcast_align)
-	oacc_bcast_align = align;
-      data->offset = (data->offset + align - 1) & ~(align - 1);
+      oacc_bcast_align = MAX (oacc_bcast_align, align);
+      data->offset = ROUND_UP (data->offset, align);
 
       data->ptr = gen_reg_rtx (Pmode);
 
@@ -3970,8 +3966,7 @@ nvptx_shared_propagate (bool pre_p, bool is_call, basic_block block,
       rtx init = gen_rtx_SET (data.base, oacc_bcast_sym);
       emit_insn_after (init, insn);
 
-      if (oacc_bcast_size < data.offset)
-	oacc_bcast_size = data.offset;
+      oacc_bcast_size = MAX (oacc_bcast_size, data.offset);
     }
   return empty;
 }
@@ -4346,8 +4341,7 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
 	  data.base = oacc_bcast_sym;
 	  data.ptr = 0;
 
-	  if (oacc_bcast_size < GET_MODE_SIZE (SImode))
-	    oacc_bcast_size = GET_MODE_SIZE (SImode);
+	  oacc_bcast_size = MAX (oacc_bcast_size, GET_MODE_SIZE (SImode));
 
 	  data.offset = 0;
 	  emit_insn_before (nvptx_gen_shared_bcast (pvar, PM_read, 0, &data,
@@ -5044,13 +5038,11 @@ nvptx_expand_shared_addr (tree exp, rtx target,
     return target;
 
   unsigned align = TREE_INT_CST_LOW (CALL_EXPR_ARG (exp, 2));
-  if (align > worker_red_align)
-    worker_red_align = align;
+  worker_red_align = MAX (worker_red_align, align);
 
   unsigned offset = TREE_INT_CST_LOW (CALL_EXPR_ARG (exp, 0));
   unsigned size = TREE_INT_CST_LOW (CALL_EXPR_ARG (exp, 1));
-  if (size + offset > worker_red_size)
-    worker_red_size = size + offset;
+  worker_red_size = MAX (worker_red_size, size + offset);
 
   rtx addr = worker_red_sym;
   if (offset)

@@ -1,5 +1,13 @@
 2018-12-19  Tom de Vries  <tdevries@suse.de>
 
+	* config/nvptx/nvptx.c (nvptx_gen_shared_bcast, shared_prop_gen)
+	(nvptx_goacc_expand_accel_var): Use MAX and ROUND_UP.
+	(nvptx_assemble_value, nvptx_output_skip): Use MIN.
+	(nvptx_shared_propagate, nvptx_single, nvptx_expand_shared_addr): Use
+	MAX.
+
+2018-12-19  Tom de Vries  <tdevries@suse.de>
+
 	* config/nvptx/nvptx.c (nvptx_gen_wcast): Rename as
 	nvptx_gen_warp_bcast.
 	(nvptx_gen_wcast): Rename to nvptx_gen_shared_bcast, add bool
