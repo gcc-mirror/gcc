@@ -6372,40 +6372,37 @@ c_parser_asm_statement (c_parser *parser)
   is_volatile = false;
   is_inline = false;
   is_goto = false;
-  for (bool done = false; !done; )
-    switch (c_parser_peek_token (parser)->keyword)
-      {
-      case RID_VOLATILE:
-	if (!is_volatile)
-	  {
-	    is_volatile = true;
-	    quals = c_parser_peek_token (parser)->value;
-	    c_parser_consume_token (parser);
-	  }
-	else
-	  done = true;
-	break;
-      case RID_INLINE:
-	if (!is_inline)
-	  {
-	    is_inline = true;
-	    c_parser_consume_token (parser);
-	  }
-	else
-	  done = true;
-	break;
-      case RID_GOTO:
-	if (!is_goto)
-	  {
-	    is_goto = true;
-	    c_parser_consume_token (parser);
-	  }
-	else
-	  done = true;
-	break;
-      default:
-	done = true;
-      }
+  for (;;)
+    {
+      switch (c_parser_peek_token (parser)->keyword)
+	{
+	case RID_VOLATILE:
+	  if (is_volatile)
+	    break;
+	  is_volatile = true;
+	  quals = c_parser_peek_token (parser)->value;
+	  c_parser_consume_token (parser);
+	  continue;
+
+	case RID_INLINE:
+	  if (is_inline)
+	    break;
+	  is_inline = true;
+	  c_parser_consume_token (parser);
+	  continue;
+
+	case RID_GOTO:
+	  if (is_goto)
+	    break;
+	  is_goto = true;
+	  c_parser_consume_token (parser);
+	  continue;
+
+	default:
+	  break;
+	}
+      break;
+    }
 
   /* ??? Follow the C++ parser rather than using the
      lex_untranslated_string kludge.  */
