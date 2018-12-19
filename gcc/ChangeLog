@@ -1,3 +1,12 @@
+2018-12-19  Alexandre Oliva <aoliva@redhat.com>
+
+	PR testsuite/86153
+	PR middle-end/83239
+	* vr-values.c
+	(vr_values::vrp_evaluate_conditional_warnv_with_ops): Extend
+	simplification of overflow tests to cover cases in which we
+	can determine the result of the comparison.
+
 2018-12-19  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	* auto-profile.c (afdo_indirect_call): Skip generating histogram
