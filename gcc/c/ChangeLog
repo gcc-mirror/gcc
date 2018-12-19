@@ -1,5 +1,10 @@
 2018-12-19  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* c-parser.c (c_parser_asm_statement) <RID_CONST, RID_RESTRICT>: Give
+	a more specific error message (instead of just falling through).
+
+2018-12-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* c-parser.c (c_parser_asm_statement): Keep track of the location each
 	asm qualifier is first seen; use that to give nicer "duplicate asm
 	qualifier" messages.  Delete 'quals" variable, instead pass the
