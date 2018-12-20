@@ -1,3 +1,7 @@
+2018-12-20  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/sysv4.h (GNU_USER_DYNAMIC_LINKER): Define.
+
 2018-12-19  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config.gcc: Enable TARGET_DEFAULT_ASYNC_UNWIND_TABLES on
