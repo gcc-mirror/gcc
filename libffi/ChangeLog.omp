@@ -1,0 +1,8 @@
+2018-12-20  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* configure.ac: Disable AC_PROG_CXX.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* man/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
