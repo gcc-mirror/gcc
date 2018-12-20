@@ -18,17 +18,6 @@ int foo (int N)
 
   #pragma acc parallel
   {
-    #pragma acc loop reduction(+:b)
-    for (int i = 0; i < N; i++)
-      {
-        #pragma acc loop
-	for (int j = 0; j < N; j++)
-	  b += 1;
-      }
-  }
-
-  #pragma acc parallel
-  {
     #pragma acc loop reduction(+:c)
     for (int i = 0; i < N; i++)
       {

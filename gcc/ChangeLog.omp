@@ -1,3 +1,12 @@
+2018-12-20  Gergö Barany  <gergo@codesourcery.com>
+
+	* omp-low.c (struct omp_context): New fields
+	local_reduction_clauses, outer_reduction_clauses.
+	(new_omp_context): Initialize these.
+	(scan_sharing_clauses): Record reduction clauses on OpenACC
+	constructs.
+	(scan_omp_for): Check reduction clauses for incorrect nesting.
+
 2019-01-31  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* omp-low.c (lower_omp_target): For use_device clauses, generate

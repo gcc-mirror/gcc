@@ -1,3 +1,14 @@
+2018-12-20  Gergö Barany  <gergo@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/par-loop-comb-reduction-1.c:
+	Add missing reduction clauses.
+	* testsuite/libgomp.oacc-c-c++-common/par-loop-comb-reduction-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/par-loop-comb-reduction-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/par-loop-comb-reduction-4.c:
+	Likewise.
+
 2019-01-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/optional-cache.f95

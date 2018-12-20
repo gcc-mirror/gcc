@@ -138,6 +138,12 @@ struct omp_context
   /* Hash map of dynamic arrays in this context.  */
   hash_map<tree_operand_hash, tree> *dynamic_arrays;
 
+  /* A tree_list of the reduction clauses in this context.  */
+  tree local_reduction_clauses;
+
+  /* A tree_list of the reduction clauses in outer contexts.  */
+  tree outer_reduction_clauses;
+
   /* The number of levels of OpenACC partitioning invoked in this context.  */
   unsigned oacc_partitioning_levels;
 
@@ -1001,6 +1007,8 @@ new_omp_context (gimple *stmt, omp_context *outer_ctx)
       ctx->cb = outer_ctx->cb;
       ctx->cb.block = NULL;
       ctx->depth = outer_ctx->depth + 1;
+      ctx->local_reduction_clauses = NULL;
+      ctx->outer_reduction_clauses = ctx->outer_reduction_clauses;
     }
   else
     {
@@ -1016,6 +1024,8 @@ new_omp_context (gimple *stmt, omp_context *outer_ctx)
       ctx->cb.adjust_array_error_bounds = true;
       ctx->cb.dont_remap_vla_if_no_change = true;
       ctx->depth = 1;
+      ctx->local_reduction_clauses = NULL;
+      ctx->outer_reduction_clauses = NULL;
     }
 
   ctx->cb.decl_map = new hash_map<tree, tree>;
@@ -1236,6 +1246,9 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 
 	case OMP_CLAUSE_REDUCTION:
 	case OMP_CLAUSE_IN_REDUCTION:
+          if (is_oacc_parallel (ctx) || is_oacc_kernels (ctx))
+            ctx->local_reduction_clauses
+	      = tree_cons (NULL, c, ctx->local_reduction_clauses);
 	  decl = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (decl) == MEM_REF)
 	    {
@@ -2534,6 +2547,98 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
 	  gimple_omp_for_set_clauses (stmt, clauses);
 	  check_oacc_kernel_gwv (stmt, ctx);
 	}
+
+      /* Collect all variables named in reductions on this loop.  Ensure
+         that, if this loop has a reduction on some variable v, and there is
+         a reduction on v somewhere in an outer context, then there is a
+         reduction on v on all intervening loops as well.  */
+      tree local_reduction_clauses = NULL;
+      for (tree c = gimple_omp_for_clauses (stmt); c; c = OMP_CLAUSE_CHAIN (c))
+        {
+          if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION)
+            local_reduction_clauses
+	      = tree_cons (NULL, c, local_reduction_clauses);
+        }
+      if (ctx->outer_reduction_clauses == NULL && ctx->outer != NULL)
+        ctx->outer_reduction_clauses
+	  = chainon (unshare_expr (ctx->outer->local_reduction_clauses),
+		     ctx->outer->outer_reduction_clauses);
+      tree outer_reduction_clauses = ctx->outer_reduction_clauses;
+      tree local_iter = local_reduction_clauses;
+      for (; local_iter; local_iter = TREE_CHAIN (local_iter))
+        {
+          tree local_clause = TREE_VALUE (local_iter);
+          tree local_var = OMP_CLAUSE_DECL (local_clause);
+          tree_code local_op = OMP_CLAUSE_REDUCTION_CODE (local_clause);
+          bool have_outer_reduction = false;
+          tree ctx_iter = outer_reduction_clauses;
+          for (; ctx_iter; ctx_iter = TREE_CHAIN (ctx_iter))
+            {
+              tree outer_clause = TREE_VALUE (ctx_iter);
+              tree outer_var = OMP_CLAUSE_DECL (outer_clause);
+              tree_code outer_op = OMP_CLAUSE_REDUCTION_CODE (outer_clause);
+              if (outer_var == local_var && outer_op != local_op)
+                {
+                  error_at (gimple_location (stmt),
+                            "conflicting reduction operations for %qE",
+                            local_var);
+                  inform (OMP_CLAUSE_LOCATION (outer_clause),
+                          "location of the previous reduction for %qE",
+                          outer_var);
+                  /* Change this operation to be equal to the outer one.
+                     This is meant to suppress spurious errors; for example,
+                     in nested +, -, + reductions, we would generate errors
+                     for both the change from + to - and from - to +.  */
+                  OMP_CLAUSE_REDUCTION_CODE (local_clause) = outer_op;
+                  /* Also change the location so that in nested +, -, -
+                     reductions, the second error message also refers to the
+                     outermost + reduction.  */
+                  OMP_CLAUSE_LOCATION (local_clause)
+		    = OMP_CLAUSE_LOCATION (outer_clause);
+                }
+              if (outer_var == local_var)
+                {
+                  have_outer_reduction = true;
+                  break;
+                }
+            }
+          if (have_outer_reduction)
+            {
+              /* There is a reduction on outer_var both on this loop and on
+                 some enclosing loop.  Walk up the context tree until such a
+                 loop with a reduction on outer_var is found, and complain
+                 about all intervening loops that do not have such a
+                 reduction.  */
+              struct omp_context *curr_loop = ctx->outer;
+              bool found = false;
+              while (curr_loop != NULL)
+                {
+                  tree curr_iter = curr_loop->local_reduction_clauses;
+                  for (; curr_iter; curr_iter = TREE_CHAIN (curr_iter))
+                    {
+                      tree curr_clause = TREE_VALUE (curr_iter);
+                      tree curr_var = OMP_CLAUSE_DECL (curr_clause);
+                      if (curr_var == local_var)
+                        {
+                          found = true;
+                          break;
+                        }
+                    }
+                  if (!found)
+                    error_at (gimple_location (curr_loop->stmt),
+                              "nested loop in reduction needs "
+                              "reduction clause for %qE",
+                              local_var);
+                  else
+                    break;
+                  curr_loop = curr_loop->outer;
+                }
+            }
+        }
+      ctx->local_reduction_clauses = local_reduction_clauses;
+      ctx->outer_reduction_clauses
+	= chainon (unshare_expr (ctx->local_reduction_clauses),
+		   ctx->outer_reduction_clauses);
     }
 
   scan_sharing_clauses (clauses, ctx);
