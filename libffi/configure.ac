@@ -41,7 +41,10 @@ m4_rename([_AC_ARG_VAR_PRECIOUS],[real_PRECIOUS])
 m4_define([_AC_ARG_VAR_PRECIOUS],[])
 save_CFLAGS=$CFLAGS
 AC_PROG_CC
-AC_PROG_CXX
+dnl Disable libstdc++ dependency for libffi as it's only needed for
+dnl the library's test suite and it can cause a dependency loop when
+dnl libgomp, needed by libstdc++, uses libffi.
+dnl AC_PROG_CXX
 CFLAGS=$save_CFLAGS
 m4_undefine([_AC_ARG_VAR_PRECIOUS])
 m4_rename_force([real_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
