@@ -23167,7 +23167,7 @@ cp_parser_class_specifier_1 (cp_parser* parser)
   cp_ensure_no_oacc_routine (parser);
 
   /* Issue an error message if type-definitions are forbidden here.  */
-  cp_parser_check_type_definition (parser);
+  bool type_definition_ok_p = cp_parser_check_type_definition (parser);
   /* Remember that we are defining one more class.  */
   ++parser->num_classes_being_defined;
   /* Inside the class, surrounding template-parameter-lists do not
@@ -23362,7 +23362,7 @@ cp_parser_class_specifier_1 (cp_parser* parser)
       cp_default_arg_entry *e;
       tree save_ccp, save_ccr;
 
-      if (any_erroneous_template_args_p (type))
+      if (!type_definition_ok_p || any_erroneous_template_args_p (type))
 	{
 	  /* Skip default arguments, NSDMIs, etc, in order to improve
 	     error recovery (c++/71169, c++/71832).  */
