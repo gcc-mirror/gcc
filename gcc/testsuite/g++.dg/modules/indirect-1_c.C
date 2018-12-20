@@ -4,12 +4,12 @@ import bar;
 
 int main ()
 {
-  if (bar::frob ())
+  if (bar::frob ()) // { dg-bogus "during lazy loading" }
     return 1;
-  if (bar::quux ())
+  if (bar::quux ()) // { dg-bogus "during lazy loading" }
     return 2;
 
-  if (bar::Z (1, 2).frob () != 3)
+  if (bar::Z (1, 2).frob () != 3) // { dg-bogus "during lazy loading" }
     return 3;
 
   static_assert (bar::Plain_One (true) == 1);

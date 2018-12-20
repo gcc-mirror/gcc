@@ -12513,7 +12513,7 @@ module_state::check_read (unsigned diag_count, tree ns, tree id)
 	slurped ();
     }
 
-  if (id && diag_count <= unsigned (errorcount + warningcount)
+  if (id && diag_count && diag_count <= unsigned (errorcount + warningcount)
       && flag_module_lazy)
     inform (input_location,
 	    is_legacy () ? G_("during lazy loading of %<%E%s%E%>")

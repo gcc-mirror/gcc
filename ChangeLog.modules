@@ -1,6 +1,11 @@
 2018-12-20  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::check_read): Fix bogus note.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-1_c.C: Add bogus note test.
+
+	gcc/cp/
 	* module.cc (module_state::remap): New member var.
 	(module_state::remap_partitions): New.
 	(module_state::write_imports): Skip partitions.
