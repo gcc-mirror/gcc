@@ -215,9 +215,23 @@ enum gomp_map_kind
 #define GOMP_DEVICE_NVIDIA_PTX		5
 #define GOMP_DEVICE_INTEL_MIC		6
 #define GOMP_DEVICE_HSA			7
+#define GOMP_DEVICE_CURRENT		8
 
 #define GOMP_DEVICE_ICV			-1
 #define GOMP_DEVICE_HOST_FALLBACK	-2
+
+/* Device property codes.  Keep in sync with
+   libgomp/{openacc.h,openacc.f90,openacc_lib.h}:acc_device_property_t
+   as well as libgomp/libgomp-plugin.h.  */
+/* Start from 1 to catch uninitialized use.  */
+#define GOMP_DEVICE_PROPERTY_MEMORY		1
+#define GOMP_DEVICE_PROPERTY_FREE_MEMORY	2
+#define GOMP_DEVICE_PROPERTY_NAME		0x10001
+#define GOMP_DEVICE_PROPERTY_VENDOR		0x10002
+#define GOMP_DEVICE_PROPERTY_DRIVER		0x10003
+
+/* Internal property mask to tell numeric and string values apart.  */
+#define GOMP_DEVICE_PROPERTY_STRING_MASK	0x10000
 
 /* GOMP_task/GOMP_taskloop* flags argument.  */
 #define GOMP_TASK_FLAG_UNTIED		(1 << 0)

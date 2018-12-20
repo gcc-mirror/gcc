@@ -1,3 +1,47 @@
+2018-12-20  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* libgomp.h (gomp_device_descr): Add `get_property_func' member.
+	* libgomp-plugin.h (gomp_device_property_value): New union.
+	(gomp_device_property_value): New prototype.
+	* openacc.h (acc_device_t): Add `acc_device_current' enumeration
+	constant.
+	(acc_device_property_t): New enum.
+	(acc_get_property, acc_get_property_string): New prototypes.
+	* oacc-init.c (acc_get_device_type): Also assert on
+	`!acc_device_current' result.
+	(get_property_any, acc_get_property, acc_get_property_string):
+	New functions.
+	* openacc.f90 (openacc_kinds): From `iso_fortran_env' also
+	import `int64'.  Add `acc_device_current' and
+	`acc_property_memory', `acc_property_free_memory',
+	`acc_property_name', `acc_property_vendor' and
+	`acc_property_driver' constants.  Add `acc_device_property' data
+	type.
+	(openacc_internal): Add `acc_get_property' and
+	`acc_get_property_string' interfaces.  Add `acc_get_property_h',
+	`acc_get_property_string_h', `acc_get_property_l' and
+	`acc_get_property_string_l'.
+	(openacc_c_string): New module.
+	* oacc-host.c (host_get_property): New function.
+	(host_dispatch): Wire it.
+	* target.c (gomp_load_plugin_for_device): Handle `get_property'.
+	* libgomp.map (OACC_2.6): Add `acc_get_property',
+	`acc_get_property_h_', `acc_get_property_string' and
+	`acc_get_property_string_h_' symbols.
+	* libgomp.texi (OpenACC Runtime Library Routines): Add
+	`acc_get_property'.
+	(acc_get_property): New node.
+
+	* plugin/plugin-hsa.c (GOMP_OFFLOAD_get_property): New function.
+	* plugin/plugin-nvptx.c (CUDA_CALLS): Add `cuDeviceGetName',
+	`cuDeviceTotalMem', `cuDriverGetVersion' and `cuMemGetInfo'
+	calls.
+	(GOMP_OFFLOAD_get_property): New function.
+
+	* testsuite/libgomp.oacc-c-c++-common/acc-get-property.c: New
+	test.
+	* testsuite/libgomp.oacc-fortran/acc-get-property.f: New test.
+
 2018-12-19  Julian Brown  <julian@codesourcery.com>
             Maciej W. Rozycki  <macro@codesourcery.com>
 

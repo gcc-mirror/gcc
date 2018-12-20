@@ -597,7 +597,8 @@ acc_get_device_type (void)
     }
 
   assert (res != acc_device_default
-	  && res != acc_device_not_host);
+	  && res != acc_device_not_host
+	  && res != acc_device_current);
 
   return res;
 }
@@ -670,6 +671,78 @@ acc_set_device_num (int ord, acc_device_t d)
 }
 
 ialias (acc_set_device_num)
+
+static union gomp_device_property_value
+get_property_any (int ord, acc_device_t d, acc_device_property_t prop)
+{
+  union gomp_device_property_value propval;
+  struct gomp_device_descr *dev;
+  struct goacc_thread *thr;
+
+  if (d == acc_device_none)
+    return (union gomp_device_property_value) { .val = 0 };
+
+  goacc_lazy_initialize ();
+  thr = goacc_thread ();
+
+  if (d == acc_device_current && (!thr || !thr->dev))
+    return (union gomp_device_property_value) { .val = 0 };
+
+  if (d == acc_device_current)
+    {
+      dev = thr->dev;
+    }
+  else
+    {
+      int num_devices;
+
+      gomp_mutex_lock (&acc_device_lock);
+
+      dev = resolve_device (d, false);
+
+      num_devices = dev->get_num_devices_func ();
+
+      if (num_devices <= 0 || ord >= num_devices)
+        acc_dev_num_out_of_range (d, ord, num_devices);
+
+      dev += ord;
+
+      gomp_mutex_lock (&dev->lock);
+      if (dev->state == GOMP_DEVICE_UNINITIALIZED)
+        gomp_init_device (dev);
+      gomp_mutex_unlock (&dev->lock);
+
+      gomp_mutex_unlock (&acc_device_lock);
+    }
+
+  assert (dev);
+
+  propval = dev->get_property_func (dev->target_id, prop);
+
+  return propval;
+}
+
+size_t
+acc_get_property (int ord, acc_device_t d, acc_device_property_t prop)
+{
+  if (prop & GOMP_DEVICE_PROPERTY_STRING_MASK)
+    return 0;
+  else
+    return get_property_any (ord, d, prop).val;
+}
+
+ialias (acc_get_property)
+
+const char *
+acc_get_property_string (int ord, acc_device_t d, acc_device_property_t prop)
+{
+  if (prop & GOMP_DEVICE_PROPERTY_STRING_MASK)
+    return get_property_any (ord, d, prop).ptr;
+  else
+    return NULL;
+}
+
+ialias (acc_get_property_string)
 
 /* For -O and higher, the compiler always attempts to expand acc_on_device, but
    if the user disables the builtin, or calls it via a pointer, we'll need this

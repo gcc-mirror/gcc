@@ -3614,6 +3614,7 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
   DLSYM (get_caps);
   DLSYM (get_type);
   DLSYM (get_num_devices);
+  DLSYM (get_property);
   DLSYM (init_device);
   DLSYM (fini_device);
   DLSYM (load_image);

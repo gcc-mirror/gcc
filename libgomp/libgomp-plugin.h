@@ -53,6 +53,13 @@ enum offload_target_type
   OFFLOAD_TARGET_TYPE_HSA = 7
 };
 
+/* Container type for passing device properties.  */
+union gomp_device_property_value
+{
+  void *ptr;
+  uintmax_t val;
+};
+
 /* Opaque type to represent plugin-dependent implementation of an
    OpenACC asynchronous queue.  */
 struct goacc_asyncqueue;
@@ -93,6 +100,7 @@ extern const char *GOMP_OFFLOAD_get_name (void);
 extern unsigned int GOMP_OFFLOAD_get_caps (void);
 extern int GOMP_OFFLOAD_get_type (void);
 extern int GOMP_OFFLOAD_get_num_devices (void);
+extern union gomp_device_property_value GOMP_OFFLOAD_get_property (int, int);
 extern bool GOMP_OFFLOAD_init_device (int);
 extern bool GOMP_OFFLOAD_fini_device (int);
 extern unsigned GOMP_OFFLOAD_version (void);

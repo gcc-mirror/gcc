@@ -478,6 +478,10 @@ OACC_2.5 {
 
 OACC_2.6 {
   global:
+	acc_get_property;
+	acc_get_property_h_;
+	acc_get_property_string;
+	acc_get_property_string_h_;
 	acc_attach;
 	acc_attach_async;
 	acc_detach;

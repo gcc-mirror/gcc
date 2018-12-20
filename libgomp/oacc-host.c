@@ -60,6 +60,27 @@ host_get_num_devices (void)
   return 1;
 }
 
+static union gomp_device_property_value
+host_get_property (int n, int prop)
+{
+  union gomp_device_property_value nullval = { .val = 0 };
+
+  if (n >= host_get_num_devices ())
+    return nullval;
+
+  switch (prop)
+    {
+    case GOMP_DEVICE_PROPERTY_NAME:
+      return (union gomp_device_property_value) { .ptr = "GOMP" };
+    case GOMP_DEVICE_PROPERTY_VENDOR:
+      return (union gomp_device_property_value) { .ptr = "GNU" };
+    case GOMP_DEVICE_PROPERTY_DRIVER:
+      return (union gomp_device_property_value) { .ptr = VERSION };
+    default:
+      return nullval;
+    }
+}
+
 static bool
 host_init_device (int n __attribute__ ((unused)))
 {
@@ -273,6 +294,7 @@ static struct gomp_device_descr host_dispatch =
     .get_caps_func = host_get_caps,
     .get_type_func = host_get_type,
     .get_num_devices_func = host_get_num_devices,
+    .get_property_func = host_get_property,
     .init_device_func = host_init_device,
     .fini_device_func = host_fini_device,
     .version_func = host_version,

@@ -1,3 +1,11 @@
+2018-12-20  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* gomp-constants.h (GOMP_DEVICE_CURRENT): New macro.
+	(GOMP_DEVICE_PROPERTY_MEMORY, GOMP_DEVICE_PROPERTY_FREE_MEMORY)
+	(GOMP_DEVICE_PROPERTY_NAME, GOMP_DEVICE_PROPERTY_VENDOR)
+	(GOMP_DEVICE_PROPERTY_DRIVER): Likewise.
+	(GOMP_DEVICE_PROPERTY_STRING_MASK): Likewise.
+
 2018-12-19  Julian Brown  <julian@codesourcery.com>
             Maciej W. Rozycki  <macro@codesourcery.com>
 

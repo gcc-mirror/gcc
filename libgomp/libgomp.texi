@@ -1848,6 +1848,7 @@ acceleration device.
 * acc_get_device_type::         Get type of device accelerator to be used.
 * acc_set_device_num::          Set device number to use.
 * acc_get_device_num::          Get device number to be used.
+* acc_get_property::            Get device property.
 * acc_async_test::              Tests for completion of a specific asynchronous
                                 operation.
 * acc_async_test_all::          Tests for completion of all asychronous
@@ -2026,6 +2027,44 @@ region.
 @item @emph{Reference}:
 @uref{https://www.openacc.org, OpenACC specification v2.0}, section
 3.2.5.
+@end table
+
+
+
+@node acc_get_property
+@section @code{acc_get_property} -- Get device property.
+@cindex acc_get_property
+@cindex acc_get_property_string
+@table @asis
+@item @emph{Description}
+These routines return the value of the specified @var{property} for the
+device being queried according to @var{devicenum} and @var{devicetype}.
+Integer-valued and string-valued properties are returned by
+@code{acc_get_property} and @code{acc_get_property_string} respectively.
+The Fortran @code{acc_get_property_string} subroutine returns the string
+retrieved in its fourth argument while the remaining entry points are
+functions, which pass the return value as their result.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{size_t acc_get_property(int devicenum, acc_device_t devicetype, acc_device_property_t property);}
+@item @emph{Prototype}: @tab @code{const char *acc_get_property_string(int devicenum, acc_device_t devicetype, acc_device_property_t property);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{function acc_get_property(devicenum, devicetype, property)}
+@item @emph{Interface}: @tab @code{subroutine acc_get_property_string(devicenum, devicetype, property, string)}
+@item                   @tab @code{integer devicenum}
+@item                   @tab @code{integer(kind=acc_device_kind) devicetype}
+@item                   @tab @code{integer(kind=acc_device_property) property}
+@item                   @tab @code{integer(kind=acc_device_property) acc_get_property}
+@item                   @tab @code{character(*) string}
+@end multitable
+
+@item @emph{Reference}:
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.6.
 @end table
 
 

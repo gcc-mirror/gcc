@@ -689,6 +689,32 @@ GOMP_OFFLOAD_get_num_devices (void)
   return hsa_context.agent_count;
 }
 
+/* Part of the libgomp plugin interface.  Return the value of property
+   PROP of agent number N.  */
+
+union gomp_device_property_value
+GOMP_OFFLOAD_get_property (int n, int prop)
+{
+  union gomp_device_property_value nullval = { .val = 0 };
+
+  if (!init_hsa_context ())
+    return nullval;
+  if (n >= hsa_context.agent_count)
+    {
+      GOMP_PLUGIN_error
+	("Request for a property of a non-existing HSA device %i", n);
+      return nullval;
+    }
+
+  switch (prop)
+    {
+    case GOMP_DEVICE_PROPERTY_VENDOR:
+      return (union gomp_device_property_value) { .ptr = "AMD" };
+    default:
+      return nullval;
+    }
+}
+
 /* Part of the libgomp plugin interface.  Initialize agent number N so that it
    can be used for computation.  Return TRUE on success.  */
 

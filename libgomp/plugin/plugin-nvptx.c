@@ -1001,6 +1001,93 @@ GOMP_OFFLOAD_get_num_devices (void)
   return nvptx_get_num_devices ();
 }
 
+union gomp_device_property_value
+GOMP_OFFLOAD_get_property (int n, int prop)
+{
+  union gomp_device_property_value propval = { .val = 0 };
+
+  pthread_mutex_lock (&ptx_dev_lock);
+
+  if (!nvptx_init () || n >= nvptx_get_num_devices ())
+    {
+      pthread_mutex_unlock (&ptx_dev_lock);
+      return propval;
+    }
+
+  switch (prop)
+    {
+    case GOMP_DEVICE_PROPERTY_MEMORY:
+      {
+	size_t total_mem;
+	CUdevice dev;
+
+	CUDA_CALL_ERET (propval, cuDeviceGet, &dev, n);
+	CUDA_CALL_ERET (propval, cuDeviceTotalMem, &total_mem, dev);
+	propval.val = total_mem;
+      }
+      break;
+    case GOMP_DEVICE_PROPERTY_FREE_MEMORY:
+      {
+	size_t total_mem;
+	size_t free_mem;
+	CUdevice ctxdev;
+	CUdevice dev;
+
+	CUDA_CALL_ERET (propval, cuCtxGetDevice, &ctxdev);
+	CUDA_CALL_ERET (propval, cuDeviceGet, &dev, n);
+	if (dev == ctxdev)
+	  CUDA_CALL_ERET (propval, cuMemGetInfo, &free_mem, &total_mem);
+	else if (ptx_devices[n])
+	  {
+	    CUcontext old_ctx;
+
+	    CUDA_CALL_ERET (propval, cuCtxPushCurrent, ptx_devices[n]->ctx);
+	    CUDA_CALL_ERET (propval, cuMemGetInfo, &free_mem, &total_mem);
+	    CUDA_CALL_ASSERT (cuCtxPopCurrent, &old_ctx);
+	  }
+	else
+	  {
+	    CUcontext new_ctx;
+
+	    CUDA_CALL_ERET (propval, cuCtxCreate, &new_ctx, CU_CTX_SCHED_AUTO,
+			    dev);
+	    CUDA_CALL_ERET (propval, cuMemGetInfo, &free_mem, &total_mem);
+	    CUDA_CALL_ASSERT (cuCtxDestroy, new_ctx);
+	  }
+	propval.val = free_mem;
+      }
+      break;
+    case GOMP_DEVICE_PROPERTY_NAME:
+      {
+	static char name[256];
+	CUdevice dev;
+
+	CUDA_CALL_ERET (propval, cuDeviceGet, &dev, n);
+	CUDA_CALL_ERET (propval, cuDeviceGetName, name, sizeof (name), dev);
+	propval.ptr = name;
+      }
+      break;
+    case GOMP_DEVICE_PROPERTY_VENDOR:
+      propval.ptr = "Nvidia";
+      break;
+    case GOMP_DEVICE_PROPERTY_DRIVER:
+      {
+	static char ver[11];
+	int v;
+
+	CUDA_CALL_ERET (propval, cuDriverGetVersion, &v);
+	snprintf (ver, sizeof (ver) - 1, "%u.%u", v / 1000, v % 1000 / 10);
+	propval.ptr = ver;
+      }
+      break;
+    default:
+      break;
+    }
+
+  pthread_mutex_unlock (&ptx_dev_lock);
+  return propval;
+}
+
 bool
 GOMP_OFFLOAD_init_device (int n)
 {
