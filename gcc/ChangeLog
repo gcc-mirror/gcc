@@ -1,3 +1,10 @@
+2018-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/88547
+	* config/i386/i386.c (ix86_expand_sse_movcc): For maskcmp, try to
+	emit vpmovm2? instruction perhaps after knot?.  Reorganize code
+	so that it doesn't have to test !maskcmp in almost every conditional.
+
 2018-12-20  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/sysv4.h (GNU_USER_DYNAMIC_LINKER): Define.
