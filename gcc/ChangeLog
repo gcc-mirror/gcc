@@ -1,3 +1,9 @@
+2018-12-20  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/88214
+	* tree-ssa-alias.c (ao_ref_init_from_ptr_and_size): Assert that
+	ptr is a pointer.
+
 2018-12-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84362
