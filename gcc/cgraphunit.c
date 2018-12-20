@@ -95,7 +95,7 @@ along with GCC; see the file COPYING3.  If not see
 	      both reduce linking times and linktime memory usage by	
 	      not having to represent whole program in memory.
 
-	   d) LTO sreaming.  When doing LTO, everything important gets
+	   d) LTO streaming.  When doing LTO, everything important gets
 	      streamed into the object file.
 
        Compile time and or linktime analysis stage (WPA):
