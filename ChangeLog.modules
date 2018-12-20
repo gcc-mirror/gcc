@@ -1,5 +1,14 @@
 2018-12-20  Nathan Sidwell  <nathan@acm.org>
 
+	MODULE_VEC has alloc field too.
+	gcc/cp/
+	* cp-tree.h (MODULE_VECTOR_ALLOC_CLUSTERS): New.
+	(MODULE_VECTOR_NUM_CLUSTERS): Adjust.
+	(struct tree_module_vec): Adjust.
+	* tree.c (make_module_vec): Adjust.
+	* name-lookup.c (module_binding_slot): Extend vector if it fits.
+	* ptree.c (cxx_print_xnode): Cope with lazy module-vector slots.
+
 	gcc/cp/
 	* module.cc (module_state::check_read): Fix bogus note.
 	gcc/testsuite/

@@ -933,8 +933,10 @@ struct GTY(()) module_cluster
   mc_slot slots[MODULE_VECTOR_SLOTS_PER_CLUSTER];
 };
 
+#define MODULE_VECTOR_ALLOC_CLUSTERS(NODE) \
+  (MODULE_VECTOR_CHECK (NODE)->base.u.dependence_info.clique)
 #define MODULE_VECTOR_NUM_CLUSTERS(NODE) \
-  (MODULE_VECTOR_CHECK (NODE)->base.u.length)
+  (MODULE_VECTOR_CHECK (NODE)->base.u.dependence_info.base)
 #define MODULE_VECTOR_CLUSTER_BASE(NODE) \
   (((tree_module_vec *)MODULE_VECTOR_CHECK (NODE))->vec)
 #define MODULE_VECTOR_CLUSTER_LAST(NODE) \
@@ -945,7 +947,7 @@ struct GTY(()) module_cluster
 struct GTY(()) tree_module_vec {
   struct tree_base base;
   tree name;
-  module_cluster GTY((length ("%h.base.u.length"))) vec[1];
+  module_cluster GTY((length ("%h.base.u.dependence_info.base"))) vec[1];
 };
 
 /* The name of a module vector.  */

@@ -259,7 +259,8 @@ cxx_print_xnode (FILE *file, tree node, int indent)
       {
 	unsigned len = MODULE_VECTOR_NUM_CLUSTERS (node);
 	print_node (file, "name", MODULE_VECTOR_NAME (node), indent + 4);
-	fprintf (file, " clusters %u", len);
+	fprintf (file, " clusters %u, alloc %u", len,
+		 MODULE_VECTOR_ALLOC_CLUSTERS (node));
 	for (unsigned ix = 0; ix != len; ix++)
 	  {
 	    module_cluster *cluster = &MODULE_VECTOR_CLUSTER (node, ix);
@@ -272,8 +273,14 @@ cxx_print_xnode (FILE *file, tree node, int indent)
 		    len
 		      += sprintf (&pfx[len], "(+%u)", cluster->indices[jx].span);
 		  len += sprintf (&pfx[len], " cluster:%u", ix);
-		  if (cluster->slots[jx])
-		    print_node (file, pfx, cluster->slots[jx], indent + 4);
+		  mc_slot &slot = cluster->slots[jx];
+		  if (slot.is_lazy ())
+		    {
+		      indent_to (file, indent + 4);
+		      fprintf (file, "%s lazy:%u", pfx, slot.get_lazy ());
+		    }
+		  else if (slot)
+		    print_node (file, pfx, slot, indent + 4);
 		  else
 		    {
 		      indent_to (file, indent + 4);

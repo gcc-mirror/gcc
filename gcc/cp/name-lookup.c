@@ -180,37 +180,54 @@ module_binding_slot (tree *slot, tree name, unsigned ix, bool create)
   else if (ix == MODULE_SLOT_CURRENT)
     /* The current TU can just use slot directly.  But make it look
        like an mc_slot.  */
-    return reinterpret_cast <mc_slot *> (slot);
+    return reinterpret_cast<mc_slot *> (slot);
   else if (!create)
     return NULL;
 
   if (!offset)
     {
       /* Extend the vector.  */
-      bool one_more = (!clusters
-		       && MODULE_IMPORT_BASE == MODULE_VECTOR_SLOTS_PER_CLUSTER
-		       && ix >= MODULE_IMPORT_BASE);
-      tree new_vec = make_module_vec (name, clusters + 1 + int (one_more));
-      cluster = MODULE_VECTOR_CLUSTER_BASE (new_vec);
-      if (clusters)
-	memcpy (cluster, MODULE_VECTOR_CLUSTER_BASE (*slot),
-		clusters * sizeof (module_cluster));
-      else
+      if (!clusters
+	  || (MODULE_VECTOR_NUM_CLUSTERS (*slot)
+	      == MODULE_VECTOR_ALLOC_CLUSTERS (*slot)))
 	{
-	  /* Initialize the fixed slots.  */
-	  for (unsigned jx = MODULE_IMPORT_BASE; jx--;)
+	  /* Allocate a new vector.  */
+	  unsigned want = (clusters ? (clusters * 3 + 1) / 2
+			   : (MODULE_IMPORT_BASE
+			      == MODULE_VECTOR_SLOTS_PER_CLUSTER
+			      && ix >= MODULE_IMPORT_BASE) ? 2 : 1);
+	  if (want > (unsigned short)~0)
 	    {
-	      cluster->indices[jx].base = jx;
-	      cluster->indices[jx].span = 1;
-	      cluster->slots[jx] = NULL_TREE;
+	      want = (unsigned short)~0;
+	      gcc_assert (want > clusters);
 	    }
-	  cluster->slots[MODULE_SLOT_CURRENT] = *slot;
+	  tree new_vec = make_module_vec (name, want);
+	  cluster = MODULE_VECTOR_CLUSTER_BASE (new_vec);
+	  if (clusters)
+	    {
+	      memcpy (cluster, MODULE_VECTOR_CLUSTER_BASE (*slot),
+		      clusters * sizeof (module_cluster));
+	      MODULE_VECTOR_NUM_CLUSTERS (new_vec) = clusters;
+	    }
+	  else
+	    {
+	      /* Initialize the fixed slots.  */
+	      for (unsigned jx = MODULE_IMPORT_BASE; jx--;)
+		{
+		  cluster->indices[jx].base = jx;
+		  cluster->indices[jx].span = 1;
+		  cluster->slots[jx] = NULL_TREE;
+		}
+	      cluster->slots[MODULE_SLOT_CURRENT] = *slot;
 
-	  /* Propagate a non-internal namespace to the global slot.  */
-	  if (*slot && TREE_PUBLIC (*slot)
-	      && TREE_CODE (*slot) == NAMESPACE_DECL
-	      && !DECL_NAMESPACE_ALIAS (*slot))
-	    cluster->slots[MODULE_SLOT_GLOBAL] = *slot;
+	      /* Propagate a non-internal namespace to the global slot.  */
+	      if (*slot && TREE_PUBLIC (*slot)
+		  && TREE_CODE (*slot) == NAMESPACE_DECL
+		  && !DECL_NAMESPACE_ALIAS (*slot))
+		cluster->slots[MODULE_SLOT_GLOBAL] = *slot;
+
+	      MODULE_VECTOR_NUM_CLUSTERS (new_vec) = 1;
+	    }
 
 	  if (ix < MODULE_IMPORT_BASE)
 	    offset = ix;
@@ -220,12 +237,16 @@ module_binding_slot (tree *slot, tree name, unsigned ix, bool create)
 	      if (offset == MODULE_VECTOR_SLOTS_PER_CLUSTER)
 		{
 		  /* Move to the next cluster.  */
-		  clusters++;
+		  MODULE_VECTOR_NUM_CLUSTERS (new_vec) += 1;
+		  if (!clusters)
+		    clusters = 1;
 		  offset = 0;
 		}
 	    }
+	  *slot = new_vec;
 	}
-      *slot = new_vec;
+      else
+	MODULE_VECTOR_NUM_CLUSTERS (*slot) += 1;
       cluster += clusters;
     }
 
@@ -233,6 +254,7 @@ module_binding_slot (tree *slot, tree name, unsigned ix, bool create)
   cluster->indices[offset].base = ix;
   cluster->indices[offset].span = 1;
   cluster->slots[offset] = NULL_TREE;
+
   return &cluster->slots[offset];
 }
 
