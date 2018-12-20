@@ -1,3 +1,8 @@
+2018-12-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/88457
+	* gcc.target/powerpc/pr88457.c: New.
+
 2018-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88180

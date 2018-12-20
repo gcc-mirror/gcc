@@ -4852,7 +4852,8 @@ color (void)
 static void
 fast_allocation (void)
 {
-  int i, j, k, num, class_size, hard_regno;
+  int i, j, k, num, class_size, hard_regno, best_hard_regno, cost, min_cost;
+  int *costs;
 #ifdef STACK_REGS
   bool no_stack_reg_p;
 #endif
@@ -4903,6 +4904,9 @@ fast_allocation (void)
       no_stack_reg_p = ALLOCNO_NO_STACK_REG_P (a);
 #endif
       class_size = ira_class_hard_regs_num[aclass];
+      costs = ALLOCNO_HARD_REG_COSTS (a);
+      min_cost = INT_MAX;
+      best_hard_regno = -1;
       for (j = 0; j < class_size; j++)
 	{
 	  hard_regno = ira_class_hard_regs[aclass][j];
@@ -4915,16 +4919,28 @@ fast_allocation (void)
 	      || (TEST_HARD_REG_BIT
 		  (ira_prohibited_class_mode_regs[aclass][mode], hard_regno)))
 	    continue;
-	  ALLOCNO_HARD_REGNO (a) = hard_regno;
-	  for (l = 0; l < nr; l++)
+	  if (costs == NULL)
 	    {
-	      ira_object_t obj = ALLOCNO_OBJECT (a, l);
-	      for (r = OBJECT_LIVE_RANGES (obj); r != NULL; r = r->next)
-		for (k = r->start; k <= r->finish; k++)
-		  IOR_HARD_REG_SET (used_hard_regs[k],
-				    ira_reg_mode_hard_regset[hard_regno][mode]);
+	      best_hard_regno = hard_regno;
+	      break;
 	    }
-	  break;
+	  cost = costs[j];
+	  if (min_cost > cost)
+	    {
+	      min_cost = cost;
+	      best_hard_regno = hard_regno;
+	    }
+	}
+      if (best_hard_regno < 0)
+	continue;
+      ALLOCNO_HARD_REGNO (a) = hard_regno = best_hard_regno;
+      for (l = 0; l < nr; l++)
+	{
+	  ira_object_t obj = ALLOCNO_OBJECT (a, l);
+	  for (r = OBJECT_LIVE_RANGES (obj); r != NULL; r = r->next)
+	    for (k = r->start; k <= r->finish; k++)
+	      IOR_HARD_REG_SET (used_hard_regs[k],
+				ira_reg_mode_hard_regset[hard_regno][mode]);
 	}
     }
   ira_free (sorted_allocnos);
