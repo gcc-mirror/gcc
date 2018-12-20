@@ -1,3 +1,8 @@
+2018-12-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/fmla_2.c: New test.
+	* gcc.target/aarch64/sve/fmla_2_run.c: Likewise
+
 2018-12-20  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/84053
