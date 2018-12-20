@@ -1,5 +1,13 @@
 2018-12-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/pr64946.c: Force nosve.
+	* gcc.target/aarch64/ssadv16qi.c: Likewise.
+	* gcc.target/aarch64/usadv16qi.c: Likewise.
+	* gcc.target/aarch64/vect-abs-compile.c: Likewise.
+	* gcc.target/aarch64/sve/abs_1.c: New test.
+
+2018-12-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/fmla_2.c: New test.
 	* gcc.target/aarch64/sve/fmla_2_run.c: Likewise
 

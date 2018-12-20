@@ -1209,10 +1209,10 @@
 (define_code_iterator FAC_COMPARISONS [lt le ge gt])
 
 ;; SVE integer unary operations.
-(define_code_iterator SVE_INT_UNARY [neg not popcount])
+(define_code_iterator SVE_INT_UNARY [abs neg not popcount])
 
 ;; SVE floating-point unary operations.
-(define_code_iterator SVE_FP_UNARY [neg abs sqrt])
+(define_code_iterator SVE_FP_UNARY [abs neg sqrt])
 
 ;; SVE integer binary operations.
 (define_code_iterator SVE_INT_BINARY [plus minus mult smax umax smin umin
@@ -1401,6 +1401,7 @@
 			      (mult "mul")
 			      (div "sdiv")
 			      (udiv "udiv")
+			      (abs "abs")
 			      (neg "neg")
 			      (smin "smin")
 			      (smax "smax")
