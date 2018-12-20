@@ -2106,6 +2106,8 @@ trans_code (gfc_code * code, tree cond)
 	case EXEC_OACC_KERNELS_LOOP:
 	case EXEC_OACC_PARALLEL:
 	case EXEC_OACC_PARALLEL_LOOP:
+	case EXEC_OACC_SERIAL:
+	case EXEC_OACC_SERIAL_LOOP:
 	case EXEC_OACC_ENTER_DATA:
 	case EXEC_OACC_EXIT_DATA:
 	case EXEC_OACC_ATOMIC:

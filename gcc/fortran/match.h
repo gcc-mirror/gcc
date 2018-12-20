@@ -145,6 +145,8 @@ match gfc_match_oacc_kernels_loop (void);
 match gfc_match_oacc_parallel (void);
 match gfc_match_oacc_parallel_loop (void);
 match gfc_match_oacc_enter_data (void);
+match gfc_match_oacc_serial (void);
+match gfc_match_oacc_serial_loop (void);
 match gfc_match_oacc_exit_data (void);
 match gfc_match_oacc_routine (void);
 

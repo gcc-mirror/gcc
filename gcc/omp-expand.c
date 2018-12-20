@@ -7316,6 +7316,7 @@ expand_omp_target (struct omp_region *region)
   switch (gimple_omp_target_kind (entry_stmt))
     {
     case GF_OMP_TARGET_KIND_OACC_PARALLEL:
+    case GF_OMP_TARGET_KIND_OACC_SERIAL:
       oacc_parallel = true;
       gcc_fallthrough ();
     case GF_OMP_TARGET_KIND_REGION:
@@ -7353,16 +7354,28 @@ expand_omp_target (struct omp_region *region)
   entry_bb = region->entry;
   exit_bb = region->exit;
 
-  if (gimple_omp_target_kind (entry_stmt) == GF_OMP_TARGET_KIND_OACC_KERNELS)
+  switch (gimple_omp_target_kind (entry_stmt))
     {
+    case GF_OMP_TARGET_KIND_OACC_KERNELS:
       mark_loops_in_oacc_kernels_region (region->entry, region->exit);
 
-      /* Further down, both OpenACC kernels and OpenACC parallel constructs
-	 will be mappted to BUILT_IN_GOACC_PARALLEL, and to distinguish the
-	 two, there is an "oacc kernels" attribute set for OpenACC kernels.  */
+      /* Further down, all OpenACC compute constructs will be mapped to
+	 BUILT_IN_GOACC_PARALLEL, and to distinguish between them, there
+	 is an "oacc kernels" attribute set for OpenACC kernels.  */
       DECL_ATTRIBUTES (child_fn)
 	= tree_cons (get_identifier ("oacc kernels"),
 		     NULL_TREE, DECL_ATTRIBUTES (child_fn));
+      break;
+    case GF_OMP_TARGET_KIND_OACC_SERIAL:
+      /* Further down, all OpenACC compute constructs will be mapped to
+	 BUILT_IN_GOACC_PARALLEL, and to distinguish between them, there
+	 is an "oacc serial" attribute set for OpenACC serial.  */
+      DECL_ATTRIBUTES (child_fn)
+	= tree_cons (get_identifier ("oacc serial"),
+		     NULL_TREE, DECL_ATTRIBUTES (child_fn));
+      break;
+    default:
+      break;
     }
 
   if (offloaded)
@@ -7567,6 +7580,7 @@ expand_omp_target (struct omp_region *region)
       break;
     case GF_OMP_TARGET_KIND_OACC_KERNELS:
     case GF_OMP_TARGET_KIND_OACC_PARALLEL:
+    case GF_OMP_TARGET_KIND_OACC_SERIAL:
       start_ix = BUILT_IN_GOACC_PARALLEL;
       break;
     case GF_OMP_TARGET_KIND_OACC_DATA:
@@ -7776,7 +7790,18 @@ expand_omp_target (struct omp_region *region)
 	args.quick_push (get_target_arguments (&gsi, entry_stmt));
       break;
     case BUILT_IN_GOACC_PARALLEL:
-      oacc_set_fn_attrib (child_fn, clauses, &args);
+      if (lookup_attribute ("oacc serial", DECL_ATTRIBUTES (child_fn)) != NULL)
+	{
+	  tree dims = NULL_TREE;
+	  unsigned int ix;
+
+	  /* For serial constructs we set all dimensions to 1.  */
+	  for (ix = GOMP_DIM_MAX; ix--;)
+	    dims = tree_cons (NULL_TREE, integer_one_node, dims);
+	  oacc_replace_fn_attrib (child_fn, dims);
+	}
+      else
+	oacc_set_fn_attrib (child_fn, clauses, &args);
       tagging = true;
       /* FALLTHRU */
     case BUILT_IN_GOACC_ENTER_EXIT_DATA:
@@ -8349,6 +8374,7 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
 		case GF_OMP_TARGET_KIND_DATA:
 		case GF_OMP_TARGET_KIND_OACC_PARALLEL:
 		case GF_OMP_TARGET_KIND_OACC_KERNELS:
+		case GF_OMP_TARGET_KIND_OACC_SERIAL:
 		case GF_OMP_TARGET_KIND_OACC_DATA:
 		case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
 		  break;
@@ -8603,6 +8629,7 @@ omp_make_gimple_edges (basic_block bb, struct omp_region **region,
 	case GF_OMP_TARGET_KIND_DATA:
 	case GF_OMP_TARGET_KIND_OACC_PARALLEL:
 	case GF_OMP_TARGET_KIND_OACC_KERNELS:
+	case GF_OMP_TARGET_KIND_OACC_SERIAL:
 	case GF_OMP_TARGET_KIND_OACC_DATA:
 	case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
 	  break;

@@ -1,3 +1,41 @@
+2018-12-20  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* gimple.h (gf_mask): Add GF_OMP_TARGET_KIND_OACC_SERIAL
+	enumeration constant.
+	(is_gimple_omp_oacc): Handle GF_OMP_TARGET_KIND_OACC_SERIAL.
+	(is_gimple_omp_offloaded): Likewise.
+	* gimplify.c (omp_region_type): Add ORT_ACC_SERIAL enumeration
+	constant.  Adjust the value of ORT_NONE accordingly.
+	(is_gimple_stmt): Handle OACC_SERIAL.
+	(oacc_default_clause): Handle ORT_ACC_SERIAL.
+	(gomp_needs_data_present): Likewise.
+	(gimplify_adjust_omp_clauses): Likewise.
+	(gimplify_omp_workshare): Handle OACC_SERIAL.
+	(gimplify_expr): Likewise.
+	* omp-expand.c (expand_omp_target): Handle
+	GF_OMP_TARGET_KIND_OACC_SERIAL.
+	(build_omp_regions_1, omp_make_gimple_edges): Likewise.
+	* omp-low.c (is_oacc_parallel): Rename function to...
+	(is_oacc_parallel_or_serial): ... this.  Handle
+	GF_OMP_TARGET_KIND_OACC_SERIAL.
+	(build_receiver_ref): Adjust accordingly.
+	(build_sender_ref): Likewise.
+	(scan_sharing_clauses): Likewise.
+	(create_omp_child_function): Likewise.
+	(scan_omp_for): Likewise.
+	(scan_omp_target): Likewise.
+	(lower_oacc_head_mark): Likewise.
+	(convert_from_firstprivate_int): Likewise.
+	(lower_omp_target): Likewise.
+	(check_omp_nesting_restrictions): Handle
+	GF_OMP_TARGET_KIND_OACC_SERIAL.
+	(lower_oacc_reductions): Likewise.
+	(lower_omp_target): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Handle OACC_SERIAL.
+	* tree.def (OACC_SERIAL): New tree code.
+
+	* doc/generic.texi (OpenACC): Document OACC_SERIAL.
+
 2017-12-21  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* omp-low.c (install_parm_decl): Don't extract identifiers from

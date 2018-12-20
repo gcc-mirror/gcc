@@ -1,3 +1,7 @@
+2018-12-20  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* c-c++-common/goacc/serial-dims.c: New test.
+
 2017-12-21  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* c-c++-common/goacc/large_array.c: New test.

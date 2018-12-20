@@ -1,3 +1,46 @@
+2018-12-20  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* gfortran.h (gfc_statement): Add ST_OACC_SERIAL_LOOP,
+	ST_OACC_END_SERIAL_LOOP, ST_OACC_SERIAL and ST_OACC_END_SERIAL
+	enumeration constants.
+	(gfc_exec_op): Add EXEC_OACC_SERIAL_LOOP and EXEC_OACC_SERIAL
+	enumeration constants.
+	* match.h (gfc_match_oacc_serial): New prototype.
+	(gfc_match_oacc_serial_loop): Likewise.
+	* dump-parse-tree.c (show_omp_node, show_code_node): Handle
+	EXEC_OACC_SERIAL_LOOP and EXEC_OACC_SERIAL.
+	* match.c (match_exit_cycle): Handle EXEC_OACC_SERIAL_LOOP.
+	* openmp.c (OACC_SERIAL_CLAUSES): New macro.
+	(OACC_SERIAL_CLAUSE_DEVICE_TYPE_MASK): Likewise.
+	(gfc_match_oacc_serial_loop): New function.
+	(gfc_match_oacc_serial): Likewise.
+	(oacc_is_loop): Handle EXEC_OACC_SERIAL_LOOP.
+	(resolve_omp_clauses): Handle EXEC_OACC_SERIAL.
+	(oacc_is_serial): New function.
+	(oacc_code_to_statement): Handle EXEC_OACC_SERIAL and
+	EXEC_OACC_SERIAL_LOOP.
+	(gfc_resolve_oacc_directive): Likewise.
+	* parse.c (decode_oacc_directive) <'s'>: Add case for "serial"
+	and "serial loop".
+	(next_statement): Handle ST_OACC_SERIAL_LOOP and ST_OACC_SERIAL.
+	(gfc_ascii_statement): Likewise.  Handle ST_OACC_END_SERIAL_LOOP
+	and ST_OACC_END_SERIAL.
+	(parse_oacc_structured_block): Handle ST_OACC_SERIAL.
+	(parse_oacc_loop): Handle ST_OACC_SERIAL_LOOP and
+	ST_OACC_END_SERIAL_LOOP.
+	(parse_executable): Handle ST_OACC_SERIAL_LOOP and
+	ST_OACC_SERIAL.
+	(is_oacc): Handle EXEC_OACC_SERIAL_LOOP and EXEC_OACC_SERIAL.
+	* resolve.c (gfc_resolve_blocks, gfc_resolve_code): Likewise.
+	* st.c (gfc_free_statement): Likewise.
+	* trans-openmp.c (gfc_trans_oacc_construct): Handle
+	EXEC_OACC_SERIAL.
+	(gfc_trans_oacc_combined_directive): Handle
+	EXEC_OACC_SERIAL_LOOP.
+	(gfc_trans_oacc_directive): Handle EXEC_OACC_SERIAL_LOOP and
+	EXEC_OACC_SERIAL.
+	* trans.c (trans_code): Likewise.
+
 2017-12-21  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* types.def: (BF_FN_VOID_INT_INT_OMPFN_SIZE_PTR_PTR_PTR_VAR):

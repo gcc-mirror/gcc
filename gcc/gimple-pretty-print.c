@@ -1614,6 +1614,9 @@ dump_gimple_omp_target (pretty_printer *buffer, gomp_target *gs,
     case GF_OMP_TARGET_KIND_OACC_PARALLEL:
       kind = " oacc_parallel";
       break;
+    case GF_OMP_TARGET_KIND_OACC_SERIAL:
+      kind = " oacc_serial";
+      break;
     case GF_OMP_TARGET_KIND_OACC_DATA:
       kind = " oacc_data";
       break;

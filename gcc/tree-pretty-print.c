@@ -3126,6 +3126,10 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       pp_string (pp, "#pragma acc kernels");
       goto dump_omp_clauses_body;
 
+    case OACC_SERIAL:
+      pp_string (pp, "#pragma acc serial");
+      goto dump_omp_clauses_body;
+
     case OACC_DATA:
       pp_string (pp, "#pragma acc data");
       dump_omp_clauses (pp, OACC_DATA_CLAUSES (node), spc, flags);

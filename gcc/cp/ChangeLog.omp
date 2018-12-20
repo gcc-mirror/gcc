@@ -1,3 +1,16 @@
+2018-12-20  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* constexpr.c (potential_constant_expression_1): Handle
+	OACC_SERIAL.
+	* parser.c (OACC_SERIAL_CLAUSE_MASK): New macro.
+	(OACC_SERIAL_CLAUSE_DEVICE_TYPE_MASK): Likewise.
+	(cp_parser_oacc_kernels_parallel): Rename function to...
+	(cp_parser_oacc_compute): ... this.  Handle PRAGMA_OACC_SERIAL.
+	(cp_parser_omp_construct): Update accordingly.
+	(cp_parser_pragma): Handle PRAGMA_OACC_SERIAL.  Fix alphabetic
+	order.
+	* pt.c (tsubst_expr): Handle OACC_SERIAL.
+
 2018-12-21  Gergö Barany  <gergo@codesourcery.com>
 
 	* parser.c (OACC_HOST_DATA_CLAUSE_MASK): Likewise.

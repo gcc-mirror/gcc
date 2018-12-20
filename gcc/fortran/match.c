@@ -2837,7 +2837,8 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
       && o != NULL
       && o->state == COMP_OMP_STRUCTURED_BLOCK
       && (o->head->op == EXEC_OACC_LOOP
-	  || o->head->op == EXEC_OACC_PARALLEL_LOOP))
+	  || o->head->op == EXEC_OACC_PARALLEL_LOOP
+	  || o->head->op == EXEC_OACC_SERIAL_LOOP))
     {
       int collapse = 1;
       gcc_assert (o->head->next != NULL

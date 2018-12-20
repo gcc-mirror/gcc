@@ -3264,7 +3264,7 @@ gfc_trans_omp_code (gfc_code *code, bool force_empty)
 }
 
 /* Trans OpenACC directives. */
-/* parallel, kernels, data and host_data. */
+/* parallel, serial, kernels, data and host_data. */
 static tree
 gfc_trans_oacc_construct (gfc_code *code)
 {
@@ -3279,6 +3279,9 @@ gfc_trans_oacc_construct (gfc_code *code)
 	break;
       case EXEC_OACC_KERNELS:
 	construct_code = OACC_KERNELS;
+	break;
+      case EXEC_OACC_SERIAL:
+	construct_code = OACC_SERIAL;
 	break;
       case EXEC_OACC_DATA:
 	construct_code = OACC_DATA;
@@ -4088,7 +4091,8 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
   return gfc_finish_block (&block);
 }
 
-/* parallel loop and kernels loop. */
+/* Combined OpenACC parallel loop, kernels loop and serial loop. */
+
 static tree
 gfc_trans_oacc_combined_directive (gfc_code *code)
 {
@@ -4105,6 +4109,9 @@ gfc_trans_oacc_combined_directive (gfc_code *code)
 	break;
       case EXEC_OACC_KERNELS_LOOP:
 	construct_code = OACC_KERNELS;
+	break;
+      case EXEC_OACC_SERIAL_LOOP:
+	construct_code = OACC_SERIAL;
 	break;
       default:
 	gcc_unreachable ();
@@ -5373,9 +5380,11 @@ gfc_trans_oacc_directive (gfc_code *code)
     {
     case EXEC_OACC_PARALLEL_LOOP:
     case EXEC_OACC_KERNELS_LOOP:
+    case EXEC_OACC_SERIAL_LOOP:
       return gfc_trans_oacc_combined_directive (code);
     case EXEC_OACC_PARALLEL:
     case EXEC_OACC_KERNELS:
+    case EXEC_OACC_SERIAL:
     case EXEC_OACC_DATA:
     case EXEC_OACC_HOST_DATA:
       return gfc_trans_oacc_construct (code);

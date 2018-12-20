@@ -1084,6 +1084,12 @@ DEFTREECODE (OACC_PARALLEL, "oacc_parallel", tcc_statement, 2)
 
 DEFTREECODE (OACC_KERNELS, "oacc_kernels", tcc_statement, 2)
 
+/* OpenACC - #pragma acc serial [clause1 ... clauseN]
+   Operand 0: OMP_BODY: Code to be executed sequentially.
+   Operand 1: OMP_CLAUSES: List of clauses.  */
+
+DEFTREECODE (OACC_SERIAL, "oacc_serial", tcc_statement, 2)
+
 /* OpenACC - #pragma acc data [clause1 ... clauseN]
    Operand 0: OACC_DATA_BODY: Data construct body.
    Operand 1: OACC_DATA_CLAUSES: List of clauses.  */

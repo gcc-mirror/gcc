@@ -2384,6 +2384,7 @@ compilation.
 @tindex OACC_KERNELS
 @tindex OACC_LOOP
 @tindex OACC_PARALLEL
+@tindex OACC_SERIAL
 @tindex OACC_UPDATE
 
 All the statements starting with @code{OACC_} represent directives and
@@ -2427,6 +2428,10 @@ See the description of the @code{OMP_FOR} code.
 @item OACC_PARALLEL
 
 Represents @code{#pragma acc parallel [clause1 @dots{} clauseN]}.
+
+@item OACC_SERIAL
+
+Represents @code{#pragma acc serial [clause1 @dots{} clauseN]}.
 
 @item OACC_UPDATE
 
