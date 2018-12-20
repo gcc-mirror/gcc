@@ -1,0 +1,5 @@
+2018-12-20  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* Makefile.def (lang_env_dependencies): Disable `cxx' dependency
+	for `libffi'.
+	* Makefile.in: Regenerate.

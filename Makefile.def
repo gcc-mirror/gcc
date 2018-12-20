@@ -608,7 +608,10 @@ dependencies = { module=all-m4; on=all-build-texinfo; };
 // environment (e.g. on libstdc++).  By default target modules depend
 // on libgcc and newlib/libgloss.
 lang_env_dependencies = { module=libitm; cxx=true; };
-lang_env_dependencies = { module=libffi; cxx=true; };
+// Disable libstdc++ dependency for libffi as it's only needed for
+// the library's test suite and it can cause a dependency loop when
+// libgomp, needed by libstdc++, uses libffi.
+// lang_env_dependencies = { module=libffi; cxx=true; };
 lang_env_dependencies = { module=newlib; no_c=true; };
 lang_env_dependencies = { module=libgloss; no_c=true; };
 lang_env_dependencies = { module=libgcc; no_gcc=true; no_c=true; };

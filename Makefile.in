@@ -66683,7 +66683,6 @@ configure-target-winsup: maybe-all-target-newlib maybe-all-target-libgloss
 
 
 configure-target-libffi: maybe-all-target-newlib maybe-all-target-libgloss
-configure-target-libffi: maybe-all-target-libstdc++-v3
 
 configure-target-zlib: maybe-all-target-newlib maybe-all-target-libgloss
 
