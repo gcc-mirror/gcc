@@ -1,3 +1,8 @@
+2018-12-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/directory_entry/lwg3171.cc: New test
+	(missed from previous commit).
+
 2018-12-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/abi.xml: Add missing word.
