@@ -1,3 +1,8 @@
+2018-12-19  Julian Brown  <julian@codesourcery.com>
+            Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* gomp-constants.h (gomp_map_kind): Support GOMP_MAP_NO_ALLOC.
+
 2018-12-21  Gergö Barany  <gergo@codesourcery.com>
 
 	* gomp-constants.h (GOACC_FLAG_HOST_DATA_IF_PRESENT): New constant.

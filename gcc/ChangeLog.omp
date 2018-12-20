@@ -1,3 +1,9 @@
+2018-12-19  Julian Brown  <julian@codesourcery.com>
+            Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* omp-low.c (lower_omp_target): Support GOMP_MAP_NO_ALLOC.
+	* tree-pretty-print.c (dump_omp_clause): Likewise.
+
 2018-12-20  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* gimple.h (gf_mask): Add GF_OMP_TARGET_KIND_OACC_SERIAL

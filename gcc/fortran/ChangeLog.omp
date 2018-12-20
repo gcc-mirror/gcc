@@ -1,3 +1,15 @@
+2018-12-19  Julian Brown  <julian@codesourcery.com>
+            Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* gfortran.h (gfc_omp_map_op): Add OMP_MAP_NO_ALLOC.
+	* openmp.c (omp_mask2): Add OMP_CLAUSE_NO_CREATE.
+	(gfc_match_omp_clauses): Support no_create.
+	(OACC_PARALLEL_CLAUSES, OACC_KERNELS_CLAUSES)
+	(OACC_SERIAL_CLAUSES, OACC_DATA_CLAUSES): Add
+	OMP_CLAUSE_NO_CREATE.
+	* trans-openmp.c (gfc_trans_omp_clauses_1): Support
+	OMP_MAP_NO_ALLOC.
+
 2018-12-20  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* gfortran.h (gfc_statement): Add ST_OACC_SERIAL_LOOP,

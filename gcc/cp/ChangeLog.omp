@@ -1,3 +1,14 @@
+2018-12-19  Julian Brown  <julian@codesourcery.com>
+            Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* parser.c (cp_parser_omp_clause_name): Support no_create.
+	(cp_parser_oacc_data_clause): Likewise.
+	(cp_parser_oacc_all_clauses): Likewise.
+	(OACC_DATA_CLAUSE_MASK, OACC_KERNELS_CLAUSE_MASK)
+	(OACC_PARALLEL_CLAUSE_MASK, OACC_SERIAL_CLAUSE_MASK): Add
+	PRAGMA_OACC_CLAUSE_NO_CREATE.
+	* semantics.c (handle_omp_array_sections): Support no_create.
+
 2018-12-20  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* constexpr.c (potential_constant_expression_1): Handle

@@ -1,3 +1,9 @@
+2018-12-19  Julian Brown  <julian@codesourcery.com>
+            Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* c-pragma.h (pragma_omp_clause): Add
+	PRAGMA_OACC_CLAUSE_NO_CREATE.
+
 2018-12-20  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* c-pragma.h (pragma_kind): Add PRAGMA_OACC_SERIAL enumeration

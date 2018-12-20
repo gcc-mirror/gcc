@@ -1,3 +1,15 @@
+2018-12-19  Julian Brown  <julian@codesourcery.com>
+            Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* target.c (gomp_map_vars_async): Support GOMP_MAP_NO_ALLOC.
+
+	* testsuite/libgomp.oacc-c-c++-common/nocreate-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/nocreate-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/nocreate-3.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/nocreate-4.c: New test.
+	* testsuite/libgomp.oacc-fortran/nocreate-1.f90: New test.
+	* testsuite/libgomp.oacc-fortran/nocreate-2.f90: New test.
+
 2018-12-20  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/serial-dims.c: New test.

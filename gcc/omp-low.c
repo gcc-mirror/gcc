@@ -9944,6 +9944,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case GOMP_MAP_STRUCT:
 	  case GOMP_MAP_ALWAYS_POINTER:
 	    break;
+	  case GOMP_MAP_NO_ALLOC:
 	  case GOMP_MAP_FORCE_ALLOC:
 	  case GOMP_MAP_FORCE_TO:
 	  case GOMP_MAP_FORCE_FROM:
@@ -10431,6 +10432,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		  switch (tkind)
 		    {
 		    case GOMP_MAP_ALLOC:
+		    case GOMP_MAP_NO_ALLOC:
 		    case GOMP_MAP_TO:
 		    case GOMP_MAP_FROM:
 		    case GOMP_MAP_TOFROM:

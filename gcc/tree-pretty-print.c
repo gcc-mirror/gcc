@@ -765,6 +765,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	case GOMP_MAP_POINTER:
 	  pp_string (pp, "alloc");
 	  break;
+	case GOMP_MAP_NO_ALLOC:
+	  pp_string (pp, "no_alloc");
+	  break;
 	case GOMP_MAP_TO:
 	case GOMP_MAP_TO_PSET:
 	  pp_string (pp, "to");

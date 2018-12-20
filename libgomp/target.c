@@ -1180,6 +1180,12 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	  has_firstprivate = true;
 	  continue;
 	}
+      else if ((kind & typemask) == GOMP_MAP_NO_ALLOC)
+        {
+	  tgt->list[i].key = NULL;
+	  tgt->list[i].offset = 0;
+	  continue;
+	}
       cur_node.host_start = (uintptr_t) hostaddrs[i];
       if (!GOMP_MAP_POINTER_P (kind & typemask)
           && (kind & typemask) != GOMP_MAP_ATTACH)
@@ -1466,6 +1472,53 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		  gomp_attach_pointer (devicep, aq, mem_map, n,
 				       (uintptr_t) hostaddrs[i], sizes[i],
 				       cbufp);
+		  continue;
+		}
+	      case GOMP_MAP_NO_ALLOC:
+		{
+		  cur_node.host_start = (uintptr_t) hostaddrs[i];
+		  cur_node.host_end = cur_node.host_start + sizes[i];
+		  splay_tree_key n = splay_tree_lookup (mem_map, &cur_node);
+		  if (n != NULL)
+		    {
+		      tgt->list[i].key = n;
+		      tgt->list[i].offset = cur_node.host_start - n->host_start;
+		      tgt->list[i].length = n->host_end - n->host_start;
+		      tgt->list[i].copy_from = false;
+		      tgt->list[i].always_copy_from = false;
+		      tgt->list[i].do_detach = false;
+		      n->refcount++;
+		    }
+		  else
+		    {
+		      tgt->list[i].key = NULL;
+		      tgt->list[i].offset = OFFSET_INLINED;
+		      tgt->list[i].length = sizes[i];
+		      tgt->list[i].copy_from = false;
+		      tgt->list[i].always_copy_from = false;
+		      tgt->list[i].do_detach = false;
+		      if (i + 1 < mapnum)
+			{
+			  int kind2 = get_kind (short_mapkind, kinds, i + 1);
+			  switch (kind2 & typemask)
+			    {
+			    case GOMP_MAP_ATTACH:
+			    case GOMP_MAP_POINTER:
+			      /* The data is not present but we have an attach
+				 or pointer clause next.  Skip over it.  */
+			      i++;
+			      tgt->list[i].key = NULL;
+			      tgt->list[i].offset = OFFSET_INLINED;
+			      tgt->list[i].length = sizes[i];
+			      tgt->list[i].copy_from = false;
+			      tgt->list[i].always_copy_from = false;
+			      tgt->list[i].do_detach = false;
+			      break;
+			    default:
+			      break;
+			    }
+			}
+		    }
 		  continue;
 		}
 	      default:

@@ -1,3 +1,15 @@
+2018-12-19  Julian Brown  <julian@codesourcery.com>
+            Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Support no_create.
+	(c_parser_oacc_data_clause): Likewise.
+	(c_parser_oacc_all_clauses): Likewise.
+	(OACC_DATA_CLAUSE_MASK, OACC_KERNELS_CLAUSE_MASK)
+	(OACC_PARALLEL_CLAUSE_MASK, OACC_SERIAL_CLAUSE_MASK): Add
+	PRAGMA_OACC_CLAUSE_NO_CREATE.
+	* c-typeck.c (handle_omp_array_sections): Support
+	GOMP_MAP_NO_ALLOC.
+
 2018-12-20  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* c-parser.c (OACC_SERIAL_CLAUSE_MASK): New macro.
