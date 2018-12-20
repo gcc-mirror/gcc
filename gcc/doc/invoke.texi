@@ -281,7 +281,8 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @gccoptlist{-fsyntax-only  -fmax-errors=@var{n}  -Wpedantic @gol
 -pedantic-errors @gol
--w  -Wextra  -Wall  -Waddress  -Waggregate-return  -Waligned-new @gol
+-w  -Wextra  -Wall  -Waddress  -Waddress-of-packed-member @gol
+-Waggregate-return  -Waligned-new @gol
 -Walloc-zero  -Walloc-size-larger-than=@var{byte-size} @gol
 -Walloca  -Walloca-larger-than=@var{byte-size} @gol
 -Wno-aggressive-loop-optimizations  -Warray-bounds  -Warray-bounds=@var{n} @gol
@@ -310,7 +311,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wformat-y2k  -Wframe-address @gol
 -Wframe-larger-than=@var{byte-size}  -Wno-free-nonheap-object @gol
 -Wjump-misses-init @gol
--Wif-not-aligned @gol
+-Whsa  -Wif-not-aligned @gol
 -Wignored-qualifiers  -Wignored-attributes  -Wincompatible-pointer-types @gol
 -Wimplicit  -Wimplicit-fallthrough  -Wimplicit-fallthrough=@var{n} @gol
 -Wimplicit-function-declaration  -Wimplicit-int @gol
@@ -358,7 +359,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wuseless-cast  -Wvariadic-macros  -Wvector-operation-performance @gol
 -Wvla  -Wvla-larger-than=@var{byte-size}  -Wvolatile-register-var @gol
 -Wwrite-strings @gol
--Wzero-as-null-pointer-constant  -Whsa}
+-Wzero-as-null-pointer-constant}
 
 @item C and Objective-C-only Warning Options
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations @gol
@@ -6980,6 +6981,13 @@ call; and comparisons against string literals result in unspecified
 behavior and are not portable in C, so they usually indicate that the
 programmer intended to use @code{strcmp}.  This warning is enabled by
 @option{-Wall}.
+
+@item -Waddress-of-packed-member
+@opindex Waddress-of-packed-member
+@opindex Wno-address-of-packed-member
+Warn when the address of packed member of struct or union is taken,
+which usually results in an unaligned pointer value.  This is
+enabled by default.
 
 @item -Wlogical-op
 @opindex Wlogical-op

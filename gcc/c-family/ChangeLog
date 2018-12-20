@@ -1,3 +1,13 @@
+2018-12-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/51628
+	* c-common.h (warn_for_address_or_pointer_of_packed_member): New.
+	* c-warn.c (check_alignment_of_packed_member): New function.
+	(check_address_of_packed_member): Likewise.
+	(check_and_warn_address_of_packed_member): Likewise.
+	(warn_for_address_or_pointer_of_packed_member): Likewise.
+	* c.opt: Add -Wno-address-of-packed-member.
+
 2018-12-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/87504

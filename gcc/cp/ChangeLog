@@ -1,3 +1,10 @@
+2018-12-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/51628
+	* call.c (convert_for_arg_passing): Call
+	warn_for_address_or_pointer_of_packed_member.
+	* typeck.c (convert_for_assignment): Likewise.
+
 2018-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88180

@@ -1,3 +1,8 @@
+2018-12-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* unwind-pe.h (read_encoded_value_with_base): Add GCC pragma
+	to ignore -Waddress-of-packed-member.
+
 2018-12-19  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
 
 	* /config/arm/lib1funcs.S (FUNC_START): Remove unused sp_section

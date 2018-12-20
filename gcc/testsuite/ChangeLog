@@ -1,3 +1,54 @@
+2018-12-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/51628
+	* c-c++-common/pr51628-1.c: New test.
+	* c-c++-common/pr51628-2.c: Likewise.
+	* c-c++-common/pr51628-3.c: Likewise.
+	* c-c++-common/pr51628-4.c: Likewise.
+	* c-c++-common/pr51628-5.c: Likewise.
+	* c-c++-common/pr51628-6.c: Likewise.
+	* c-c++-common/pr51628-7.c: Likewise.
+	* c-c++-common/pr51628-8.c: Likewise.
+	* c-c++-common/pr51628-9.c: Likewise.
+	* c-c++-common/pr51628-10.c: Likewise.
+	* c-c++-common/pr51628-11.c: Likewise.
+	* c-c++-common/pr51628-12.c: Likewise.
+	* c-c++-common/pr51628-13.c: Likewise.
+	* c-c++-common/pr51628-14.c: Likewise.
+	* c-c++-common/pr51628-15.c: Likewise.
+	* c-c++-common/pr51628-26.c: Likewise.
+	* c-c++-common/pr51628-27.c: Likewise.
+	* c-c++-common/pr51628-28.c: Likewise.
+	* c-c++-common/pr51628-29.c: Likewise.
+	* c-c++-common/pr51628-30.c: Likewise.
+	* c-c++-common/pr51628-31.c: Likewise.
+	* c-c++-common/pr51628-32.c: Likewise.
+	* gcc.dg/pr51628-17.c: Likewise.
+	* gcc.dg/pr51628-18.c: Likewise.
+	* gcc.dg/pr51628-19.c: Likewise.
+	* gcc.dg/pr51628-20.c: Likewise.
+	* gcc.dg/pr51628-21.c: Likewise.
+	* gcc.dg/pr51628-22.c: Likewise.
+	* gcc.dg/pr51628-23.c: Likewise.
+	* gcc.dg/pr51628-24.c: Likewise.
+	* gcc.dg/pr51628-25.c: Likewise.
+	* c-c++-common/asan/misalign-1.c: Add
+	-Wno-address-of-packed-member.
+	* c-c++-common/asan/misalign-2.c: Likewise.
+	* c-c++-common/ubsan/align-2.c: Likewise.
+	* c-c++-common/ubsan/align-4.c: Likewise.
+	* c-c++-common/ubsan/align-6.c: Likewise.
+	* c-c++-common/ubsan/align-7.c: Likewise.
+	* c-c++-common/ubsan/align-8.c: Likewise.
+	* c-c++-common/ubsan/align-10.c: Likewise.
+	* g++.dg/ubsan/align-2.C: Likewise.
+	* gcc.target/i386/avx512bw-vmovdqu16-2.c: Likewise.
+	* gcc.target/i386/avx512f-vmovdqu32-2.c: Likewise.
+	* gcc.target/i386/avx512f-vmovdqu64-2.c: Likewise.
+	* gcc.target/i386/avx512vl-vmovdqu16-2.c: Likewise.
+	* gcc.target/i386/avx512vl-vmovdqu32-2.c: Likewise.
+	* gcc.target/i386/avx512vl-vmovdqu64-2.c: Likewise.
+
 2018-12-20  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/88457
