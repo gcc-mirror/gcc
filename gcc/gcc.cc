@@ -580,6 +580,7 @@ or with constant text in a single argument.
  %l     process LINK_SPEC as a spec.
  %L     process LIB_SPEC as a spec.
  %M     Output multilib_os_dir.
+ %P	Output a RUNPATH_OPTION for each directory in startfile_prefixes.
  %G     process LIBGCC_SPEC as a spec.
  %R     Output the concatenation of target_system_root and
         target_sysroot_suffix.
@@ -1181,6 +1182,10 @@ proper position among the other output files.  */
 
 #ifndef SYSROOT_HEADERS_SUFFIX_SPEC
 # define SYSROOT_HEADERS_SUFFIX_SPEC ""
+#endif
+
+#ifndef RUNPATH_OPTION
+# define RUNPATH_OPTION "-rpath"
 #endif
 
 static const char *asm_debug = ASM_DEBUG_SPEC;
@@ -5929,6 +5934,7 @@ struct spec_path_info {
   size_t append_len;
   bool omit_relative;
   bool separate_options;
+  bool realpaths;
 };
 
 static void *
@@ -5937,6 +5943,16 @@ spec_path (char *path, void *data)
   struct spec_path_info *info = (struct spec_path_info *) data;
   size_t len = 0;
   char save = 0;
+
+  /* The path must exist; we want to resolve it to the realpath so that this
+     can be embedded as a runpath.  */
+  if (info->realpaths)
+     path = lrealpath (path);
+
+  /* However, if we failed to resolve it - perhaps because there was a bogus
+     -B option on the command line, then punt on this entry.  */
+  if (!path)
+    return NULL;
 
   if (info->omit_relative && !IS_ABSOLUTE_PATH (path))
     return NULL;
@@ -6169,6 +6185,22 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      info.omit_relative = false;
 #endif
 	      info.separate_options = false;
+	      info.realpaths = false;
+
+	      for_each_path (&startfile_prefixes, true, 0, spec_path, &info);
+	    }
+	    break;
+
+	  case 'P':
+	    {
+	      struct spec_path_info info;
+
+	      info.option = RUNPATH_OPTION;
+	      info.append_len = 0;
+	      info.omit_relative = false;
+	      info.separate_options = true;
+	      /* We want to embed the actual paths that have the libraries.  */
+	      info.realpaths = true;
 
 	      for_each_path (&startfile_prefixes, true, 0, spec_path, &info);
 	    }
@@ -6495,6 +6527,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      info.append_len = strlen (info.append);
 	      info.omit_relative = false;
 	      info.separate_options = true;
+	      info.realpaths = false;
 
 	      for_each_path (&include_prefixes, false, info.append_len,
 			     spec_path, &info);
