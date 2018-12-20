@@ -1,3 +1,18 @@
+2018-12-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84362
+	* tree-ssa-loop-im.c: Include alias.h, builtins.h and tree-dfa.h.
+	(struct im_mem_ref): add ref_canonical flag.
+	(struct mem_ref_hasher): Use ao_ref as compare_type.
+	(mem_ref_hasher::equal): Adjust and add variant comparing ao_ref
+	parts.
+	(mem_ref_alloc): Take ao_ref parameter, initialize ref_canonical
+	member.
+	(gather_mem_refs_stmt): Set up ao_ref early and do the lookup
+	using it.  If we have non-equal refs canonicalize the one
+	in the hashtable used for insertion.
+	(tree_ssa_lim_initialize): Adjust.
+
 2018-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88547
