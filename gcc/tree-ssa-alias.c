@@ -710,6 +710,7 @@ ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
     }
   else
     {
+      gcc_assert (POINTER_TYPE_P (TREE_TYPE (ptr)));
       ref->base = build2 (MEM_REF, char_type_node,
 			  ptr, null_pointer_node);
       ref->offset = 0;
