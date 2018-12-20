@@ -1,3 +1,11 @@
+2018-12-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/87504
+	* c-warn.c (get_outermost_macro_expansion): New function.
+	(spelled_the_same_p): Use it to unwind the macro expansions, and
+	compare the outermost macro in each nested expansion, rather than
+	the innermost.
+
 2018-12-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/87504
