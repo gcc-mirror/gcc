@@ -1,3 +1,10 @@
+2018-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (cp_fully_fold_init): Declare.
+	* cp-gimplify.c (cp_fully_fold_init): New function.
+	* typeck2.c (split_nonconstant_init, store_init_value): Use it
+	instead of cp_fully_fold.
+
 2018-12-19  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* parser.c (cp_parser_asm_definition): Do not allow any asm qualifiers
