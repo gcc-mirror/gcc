@@ -7629,6 +7629,9 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
 	}
       maybe_warn_parm_abi (type, cp_expr_loc_or_loc (val, input_location));
     }
+
+  warn_for_address_or_pointer_of_packed_member (false, type, val);
+
   return val;
 }
 
