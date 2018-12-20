@@ -2171,6 +2171,20 @@ cp_fully_fold (tree x)
   return cp_fold_rvalue (x);
 }
 
+/* Likewise, but also fold recursively, which cp_fully_fold doesn't perform
+   in some cases.  */
+
+tree
+cp_fully_fold_init (tree x)
+{
+  if (processing_template_decl)
+    return x;
+  x = cp_fully_fold (x);
+  hash_set<tree> pset;
+  cp_walk_tree (&x, cp_fold_r, &pset, NULL);
+  return x;
+}
+
 /* c-common interface to cp_fold.  If IN_INIT, this is in a static initializer
    and certain changes are made to the folding done.  Or should be (FIXME).  We
    never touch maybe_const, as it is only used for the C front-end

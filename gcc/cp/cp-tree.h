@@ -7544,6 +7544,7 @@ extern bool cxx_omp_privatize_by_reference	(const_tree);
 extern bool cxx_omp_disregard_value_expr	(tree, bool);
 extern void cp_fold_function			(tree);
 extern tree cp_fully_fold			(tree);
+extern tree cp_fully_fold_init			(tree);
 extern void clear_fold_cache			(void);
 extern tree lookup_hotness_attribute		(tree);
 extern tree process_stmt_hotness_attribute	(tree);
