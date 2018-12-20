@@ -1,5 +1,10 @@
 2018-12-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/88180
+	* parser.c (cp_parser_class_specifier_1): If
+	cp_parser_check_type_definition fails, skip default arguments, NSDMIs,
+	etc. like for erroneous template args.
+
 	* cp-tree.h (cp_fully_fold_init): Declare.
 	* cp-gimplify.c (cp_fully_fold_init): New function.
 	* typeck2.c (split_nonconstant_init, store_init_value): Use it
