@@ -399,6 +399,25 @@ warn_tautological_bitwise_comparison (const op_location_t &loc, tree_code code,
 		"bitwise comparison always evaluates to true");
 }
 
+/* Given LOC from a macro expansion, return the map for the outermost
+   macro in the nest of expansions.  */
+
+static const line_map_macro *
+get_outermost_macro_expansion (location_t loc)
+{
+  gcc_assert (from_macro_expansion_at (loc));
+
+  const line_map *map = linemap_lookup (line_table, loc);
+  const line_map_macro *macro_map;
+  do
+    {
+      macro_map = linemap_check_macro (map);
+      loc = linemap_unwind_toward_expansion (line_table, loc, &map);
+    } while (linemap_macro_expansion_map_p (map));
+
+  return macro_map;
+}
+
 /* Given LOC_A and LOC_B from macro expansions, return true if
    they are "spelled the same" i.e. if they are both directly from
    expansion of the same non-function-like macro.  */
@@ -409,11 +428,8 @@ spelled_the_same_p (location_t loc_a, location_t loc_b)
   gcc_assert (from_macro_expansion_at (loc_a));
   gcc_assert (from_macro_expansion_at (loc_b));
 
-  const line_map_macro *map_a
-    = linemap_check_macro (linemap_lookup (line_table, loc_a));
-
-  const line_map_macro *map_b
-    = linemap_check_macro (linemap_lookup (line_table, loc_b));
+  const line_map_macro *map_a = get_outermost_macro_expansion (loc_a);
+  const line_map_macro *map_b = get_outermost_macro_expansion (loc_b);
 
   if (map_a->macro == map_b->macro)
     if (!cpp_fun_like_macro_p (map_a->macro))

@@ -1,3 +1,8 @@
+2018-12-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/87504
+	* c-c++-common/Wtautological-compare-8.c: New test.
+
 2018-12-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84362
