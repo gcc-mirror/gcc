@@ -120,24 +120,31 @@ test05()
   path p = "0/1/2/3/4/5/6";
   // The string_view aliases the path's internal string:
   s = p.native();
+  path::string_type expected(s);
+  expected += path::preferred_separator;
+  expected += s;
   // Append that string_view, which must work correctly even though the
   // internal string will be reallocated during the operation:
   p /= s;
-  VERIFY( p.string() == "0/1/2/3/4/5/6/0/1/2/3/4/5/6" );
+  compare_paths(p, expected);
 
   // Same again with a trailing slash:
   path p2 = "0/1/2/3/4/5/";
   s = p2.native();
+  expected = s;
+  expected += s;
   p2 /= s;
-  VERIFY( p2.string() == "0/1/2/3/4/5/0/1/2/3/4/5/" );
+  compare_paths(p2, expected);
 
   // And aliasing one of the components of the path:
   path p3 = "0/123456789/a";
   path::iterator second = std::next(p3.begin());
   s = second->native();
+  expected = p3.native() + path::preferred_separator;
+  expected += s;
   p3 /= s;
-  VERIFY( p3.string() == "0/123456789/a/123456789" );
-  }
+  compare_paths(p3, expected);
+}
 
 void
 test06()

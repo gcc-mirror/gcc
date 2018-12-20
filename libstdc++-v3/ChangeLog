@@ -1,5 +1,10 @@
 2018-12-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/27_io/filesystem/operations/proximate.cc: Fix test for
+	MinGW.
+	* testsuite/27_io/filesystem/path/append/source.cc: Likewise.
+	* testsuite/27_io/filesystem/path/compare/lwg2936.cc: Likewise.
+
 	* testsuite/27_io/filesystem/directory_entry/lwg3171.cc: New test
 	(missed from previous commit).
 

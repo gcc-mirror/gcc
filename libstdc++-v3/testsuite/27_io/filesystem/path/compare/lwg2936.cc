@@ -60,7 +60,11 @@ test01()
   check("c:", "d:", -1);
   check("c:", "c:/", -1);
   check("d:", "c:/", +1);
+#if defined(__MING32__) || defined(__MINGW64__)
+  check("c:/a/b", "c:a/b", +1);
+#else
   check("c:/a/b", "c:a/b", -1);
+#endif
 
   // These are root names on Cygwin (just relative paths elsewhere)
   check("", "//c", -1);
@@ -68,6 +72,7 @@ test01()
   check("//c", "//c/", -1);
   check("//d", "//c/", +1);
 
+  check("a", "/", -1);
   check("/a", "/b", -1);
   check("a", "/b", -1);
   check("/b", "b", +1);
