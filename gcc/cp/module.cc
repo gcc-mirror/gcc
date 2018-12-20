@@ -1093,51 +1093,49 @@ bytes_out::printf (const char *format, ...)
 class elf {
 protected:
   /* Constants used within the format.  */
-  enum private_constants
-    {
-      /* File kind. */
-      ET_NONE = 0,
-      EM_NONE = 0,
-      OSABI_NONE = 0,
+  enum private_constants {
+    /* File kind. */
+    ET_NONE = 0,
+    EM_NONE = 0,
+    OSABI_NONE = 0,
 
-      /* File format. */
-      EV_CURRENT = 1,
-      CLASS32 = 1,
-      DATA2LSB = 1,
-      DATA2MSB = 2,
+    /* File format. */
+    EV_CURRENT = 1,
+    CLASS32 = 1,
+    DATA2LSB = 1,
+    DATA2MSB = 2,
 
-      /* Section numbering.  */
-      SHN_UNDEF = 0,
-      SHN_LORESERVE = 0xff00,
-      SHN_XINDEX = 0xffff,
+    /* Section numbering.  */
+    SHN_UNDEF = 0,
+    SHN_LORESERVE = 0xff00,
+    SHN_XINDEX = 0xffff,
 
-      /* Section types.  */
-      SHT_NONE = 0,	/* No contents.  */
-      SHT_PROGBITS = 1, /* Random bytes.  */
-      SHT_STRTAB = 3,	/* A string table.  */
+    /* Section types.  */
+    SHT_NONE = 0,	/* No contents.  */
+    SHT_PROGBITS = 1, /* Random bytes.  */
+    SHT_STRTAB = 3,	/* A string table.  */
 
-      /* Section flags.  */
-      SHF_NONE = 0x00,	/* Nothing.  */
-      SHF_STRINGS = 0x20,  /* NUL-Terminated strings.  */
+    /* Section flags.  */
+    SHF_NONE = 0x00,	/* Nothing.  */
+    SHF_STRINGS = 0x20,  /* NUL-Terminated strings.  */
 
-      /* I really hope we do not get BMI files larger than 4GB.  */
-      MY_CLASS = CLASS32,
-      /* It is host endianness that is relevant.  */
-      MY_ENDIAN = DATA2LSB
+    /* I really hope we do not get BMI files larger than 4GB.  */
+    MY_CLASS = CLASS32,
+    /* It is host endianness that is relevant.  */
+    MY_ENDIAN = DATA2LSB
 #ifdef WORDS_BIGENDIAN
-		  ^ DATA2LSB ^ DATA2MSB
+    ^ DATA2LSB ^ DATA2MSB
 #endif
-    };
+  };
 
 public:
   /* Constants visible to users.  */
-  enum public_constants
-    {
-      /* Special error codes.  Breaking layering a bit.  */
-      E_BAD_DATA = -1,  /* Random unexpected data errors.  */
-      E_BAD_LAZY = -2,  /* Badly ordered laziness.  */
-      E_BAD_IMPORT = -3 /* A nested import failed.  */
-    };
+  enum public_constants {
+    /* Special error codes.  Breaking layering a bit.  */
+    E_BAD_DATA = -1,  /* Random unexpected data errors.  */
+    E_BAD_LAZY = -2,  /* Badly ordered laziness.  */
+    E_BAD_IMPORT = -3 /* A nested import failed.  */
+  };
 
 protected:
   /* File identification.  On-disk representation.  */
@@ -2571,13 +2569,12 @@ private:
 
 public:
   static const int gme_lwm = 1024;
-  enum walk_kind
-    {
-     WK_none,   /* No walk to do (a backref).  */
-     WK_normal, /* Normal walk (by-name if possible).  */
-     WK_body,   /* By-value walk.  */
-     WK_gme     /* By-value global module entity walk.  */
-    };
+  enum walk_kind {
+    WK_none,   /* No walk to do (a backref).  */
+    WK_normal, /* Normal walk (by-name if possible).  */
+    WK_body,   /* By-value walk.  */
+    WK_gme     /* By-value global module entity walk.  */
+  };
 
 public:
   int insert (tree, walk_kind = WK_normal);
@@ -2705,11 +2702,12 @@ public:
 
 public:
   enum {
-	SPAN_RESERVED = 0,
-	SPAN_CMD_LINE = 1,
-	SPAN_FORCED = 2,
-	SPAN_MAIN = 3
+    SPAN_RESERVED = 0,
+    SPAN_CMD_LINE = 1,
+    SPAN_FORCED = 2,
+    SPAN_MAIN = 3
   };
+
 public:
   location_t main_start () const
   {
@@ -2826,6 +2824,9 @@ slurping::~slurping ()
   close ();
 }
 
+/* Cannot be module_state member, because GTY.  */
+typedef vec<unsigned,va_heap,vl_embed> partition_vec;
+
 /* State of a particular module. */
 
 class GTY((chain_next ("%h.parent"), for_user)) module_state {
@@ -2855,6 +2856,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   unsigned short subst;		/* Mangle subst if !0.  */
   unsigned crc;		/* CRC we saw reading it in. */
 
+  unsigned short remap;		/* Remapping during writing.  */
   bool legacy_p : 1;	/* Is a legacy import.  */
   bool direct_p : 1;	/* A direct import of TU (includes interface
 			   of implementation).  */
@@ -2959,6 +2961,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   /* The README, for human consumption.  */
   void write_readme (elf_out *to, const char *opts, cpp_hashnode *node);
 
+ private:
   /* Import tables. */
   void write_imports (bytes_out &cfg, bool direct_p);
   unsigned read_imports (bytes_in &cfg, cpp_reader *, line_maps *maps);
@@ -3032,6 +3035,9 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool read_macros ();
   void install_macros ();
 
+ private:
+  partition_vec *remap_partitions ();
+
  public:
   void import_macros ();
 
@@ -3076,7 +3082,7 @@ module_state::module_state (tree name, uintptr_t pp)
     parent (reinterpret_cast<module_state *>(pp & ~uintptr_t (1))),
     name (name), fullname (NULL), filename (NULL),
     loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
-    mod (MODULE_UNKNOWN), subst (0), crc (0),
+    mod (MODULE_UNKNOWN), subst (0), crc (0), remap (0),
     partition_p (bool (pp & 1))
 {
   u1.slurp = NULL;
@@ -3308,12 +3314,13 @@ module_mapper *module_mapper::mapper;
 class dumper {
 public:
   enum {
-	LOCATION = TDF_LINENO,  /* -lineno:Source location streaming.  */
-	DEPEND = TDF_GRAPH,	/* -graph:Dependency graph construction.  */
-	TREE = TDF_UID, 	/* -uid:Tree streaming.  */
-	GM = TDF_ALIAS,		/* -alias:Global Module.  */
-	ELF = TDF_BLOCKS	/* -blocks:Elf data.  */
+    LOCATION = TDF_LINENO,  /* -lineno:Source location streaming.  */
+    DEPEND = TDF_GRAPH,	/* -graph:Dependency graph construction.  */
+    TREE = TDF_UID, 	/* -uid:Tree streaming.  */
+    GM = TDF_ALIAS,		/* -alias:Global Module.  */
+    ELF = TDF_BLOCKS	/* -blocks:Elf data.  */
   };
+
 private:
   struct impl {
     typedef vec<module_state *, va_heap, vl_embed> stack_t;
@@ -8747,6 +8754,9 @@ module_state::write_imports (bytes_out &sec, bool direct)
   for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
     {
       module_state *state = (*modules)[ix];
+      if (!is_partition () && state->is_partition ())
+	/* Skip partitions imported by main interface.  */
+	continue;
       if (state->is_direct () == direct)
 	{
 	  dump () && dump ("Writing %simport:%u %M (crc=%x)",
@@ -12107,6 +12117,33 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
   return cfg.end (from ());
 }
 
+/* Determine remap numbers eliding partitions we've imported.
+   Return vector of partitions.  */
+
+partition_vec *
+module_state::remap_partitions ()
+{
+  if (is_partition ())
+    return NULL;
+  partition_vec *partitions = NULL;
+  vec_safe_reserve (partitions, modules->length ());
+
+  unsigned next = MODULE_IMPORT_BASE;
+  for (unsigned ix = MODULE_IMPORT_BASE; ix != modules->length (); ix++)
+    {
+      module_state *m = (*modules)[ix];
+      if (m->is_partition ())
+	{
+	  partitions->quick_push (ix);
+	  m->remap = MODULE_PURVIEW;
+	}
+      else
+	m->remap = next++;
+    }
+
+  return partitions;
+}
+
 /* Use ELROND format to record the following sections:
      qualified-names	    : binding value(s)
      MOD_SNAME_PFX.README   : human readable, stunningly STRTAB-like
@@ -12123,6 +12160,7 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
 void
 module_state::write (elf_out *to, cpp_reader *reader)
 {
+  partition_vec *partitions = remap_partitions ();
   unsigned crc = 0;
   depset::hash table (200);
 
@@ -12276,6 +12314,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   trees_out::instrument ();
   dump () && dump ("Wrote %u sections", to->get_section_limit ());
+
+  vec_free (partitions);
 }
 
 /* Read a BMI from FD.  E is errno from its fopen.  Reading will
@@ -12324,7 +12364,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
       if (is_legacy ())
 	bitmap_set_bit (slurp ()->legacies, ix);
     }
-  mod = ix;
+  mod = remap = ix;
 
   (*slurp ()->remap)[MODULE_PURVIEW] = mod;
   dump () && dump ("Assigning %s module number %u", fullname, mod);

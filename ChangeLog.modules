@@ -1,3 +1,11 @@
+2018-12-20  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (module_state::remap): New member var.
+	(module_state::remap_partitions): New.
+	(module_state::write_imports): Skip partitions.
+	(module_state::write): Remap partitions.
+
 2018-12-19  Nathan Sidwell  <nathan@acm.org>
 
 	Partition parsing.  Don't get excited!
