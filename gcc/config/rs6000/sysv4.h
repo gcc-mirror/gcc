@@ -761,6 +761,10 @@ GNU_USER_TARGET_CC1_SPEC
 #define MUSL_DYNAMIC_LINKER \
   "/lib/ld-musl-powerpc" MUSL_DYNAMIC_LINKER_E "%{msoft-float:-sf}.so.1"
 
+#ifndef GNU_USER_DYNAMIC_LINKER
+#define GNU_USER_DYNAMIC_LINKER GLIBC_DYNAMIC_LINKER
+#endif
+
 #define LINK_OS_LINUX_SPEC "-m elf32ppclinux %{!shared: %{!static: \
   %{rdynamic:-export-dynamic} \
   -dynamic-linker " GNU_USER_DYNAMIC_LINKER "}}"
