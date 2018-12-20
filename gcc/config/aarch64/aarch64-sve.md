@@ -3021,7 +3021,7 @@
   "TARGET_SVE"
   "@
    <sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
-   movprfx\t%0, %4\;<sve_fmad_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>"
+   movprfx\t%0, %4\;<sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>"
   [(set_attr "movprfx" "*,yes")]
 )
 
