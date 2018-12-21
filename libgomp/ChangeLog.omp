@@ -1,3 +1,13 @@
+2018-12-21  Gergö Barany  <gergo@codesourcery.com>
+
+	* libgomp.h (enum gomp_map_vars_kind): Add
+	GOMP_MAP_VARS_OPENACC_IF_PRESENT.
+	* oacc-parallel.c (GOACC_data_start): Handle
+	GOACC_FLAG_HOST_DATA_IF_PRESENT flag.
+	* target.c (gomp_map_vars_async): Handle
+	GOMP_MAP_VARS_OPENACC_IF_PRESENT mapping kind.
+	* testsuite/libgomp.oacc-c-c++-common/host_data-6.c: New test.
+
 2018-12-20  Gergö Barany  <gergo@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/par-loop-comb-reduction-1.c:

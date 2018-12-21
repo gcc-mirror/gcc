@@ -1,3 +1,9 @@
+2018-12-21  Gergö Barany  <gergo@codesourcery.com>
+
+	* c-c++-common/goacc/host_data-1.c: Add tests of if and if_present
+	clauses on host_data.
+	* gfortran.dg/goacc/host_data-tree.f95: Likewise.
+
 2018-12-20  Gergö Barany  <gergo@codesourcery.com>
 
 	* c-c++-common/goacc/nested-reductions-fail.c: New test.

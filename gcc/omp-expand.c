@@ -7591,7 +7591,17 @@ expand_omp_target (struct omp_region *region)
   if (is_gimple_omp_oacc (entry_stmt))
     {
       /* By default, no GOACC_FLAGs are set.  */
-      goacc_flags = integer_zero_node;
+      int goacc_flags_i = 0;
+
+      if (start_ix != BUILT_IN_GOACC_UPDATE
+	  && omp_find_clause (clauses, OMP_CLAUSE_IF_PRESENT))
+	{
+	  gcc_checking_assert (gimple_omp_target_kind (entry_stmt)
+			       == GF_OMP_TARGET_KIND_OACC_HOST_DATA);
+	  goacc_flags_i |= GOACC_FLAG_HOST_DATA_IF_PRESENT;
+	}
+
+      goacc_flags = build_int_cst (integer_type_node, goacc_flags_i);
     }
   else
     {

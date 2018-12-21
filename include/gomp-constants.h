@@ -240,6 +240,8 @@ enum gomp_map_kind
 
 /* Force host fallback execution.  */
 #define GOACC_FLAG_HOST_FALLBACK	(1 << 0)
+/* "if_present" semantics for OpenACC "host_data" constructs.  */
+#define GOACC_FLAG_HOST_DATA_IF_PRESENT	(1 << 1)
 
 /* For legacy reasons, in the ABI, the GOACC_FLAGs are encoded as an inverted
    bitmask.  */

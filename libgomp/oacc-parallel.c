@@ -331,12 +331,17 @@ GOACC_data_start (int flags_m, size_t mapnum,
 
   handle_ftn_pointers (mapnum, hostaddrs, sizes, kinds);
 
+  enum gomp_map_vars_kind pragma_kind;
+  if (flags & GOACC_FLAG_HOST_DATA_IF_PRESENT)
+    pragma_kind = GOMP_MAP_VARS_OPENACC_IF_PRESENT;
+  else
+    pragma_kind = GOMP_MAP_VARS_OPENACC;
+
   /* Host fallback or 'do nothing'.  */
   if ((acc_dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
       || (flags & GOACC_FLAG_HOST_FALLBACK))
     {
-      tgt = gomp_map_vars (NULL, 0, NULL, NULL, NULL, NULL, true,
-			   GOMP_MAP_VARS_OPENACC);
+      tgt = gomp_map_vars (NULL, 0, NULL, NULL, NULL, NULL, true, pragma_kind);
       tgt->prev = thr->mapped_data;
       thr->mapped_data = tgt;
 
@@ -345,7 +350,7 @@ GOACC_data_start (int flags_m, size_t mapnum,
 
   gomp_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
   tgt = gomp_map_vars (acc_dev, mapnum, hostaddrs, NULL, sizes, kinds, true,
-		       GOMP_MAP_VARS_OPENACC);
+		       pragma_kind);
   gomp_debug (0, "  %s: mappings prepared\n", __FUNCTION__);
   tgt->prev = thr->mapped_data;
   thr->mapped_data = tgt;

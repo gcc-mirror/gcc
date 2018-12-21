@@ -1,3 +1,8 @@
+2018-12-21  Gergö Barany  <gergo@codesourcery.com>
+
+	* c-parser.c (OACC_HOST_DATA_CLAUSE_MASK): Add PRAGMA_OACC_CLAUSE_IF
+	and PRAGMA_OACC_CLAUSE_IF_PRESENT.
+
 2018-12-13  Cesar Philippidis  <cesar@codesourcery.com>
             Nathan Sidwell  <nathan@acm.org>
             Julian Brown  <julian@codesourcery.com>

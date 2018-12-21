@@ -1,3 +1,8 @@
+2018-12-21  Gergö Barany  <gergo@codesourcery.com>
+
+	* omp-expand.c (expand_omp_target): Handle if_present flag on
+	OpenACC host_data construct.
+
 2018-12-20  Gergö Barany  <gergo@codesourcery.com>
 
 	* omp-low.c (struct omp_context): New fields

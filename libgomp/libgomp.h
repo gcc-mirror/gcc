@@ -1082,6 +1082,9 @@ struct gomp_device_descr
 enum gomp_map_vars_kind
 {
   GOMP_MAP_VARS_OPENACC,
+  /* Like "GOMP_MAP_VARS_OPENACC", but with "GOACC_FLAG_HOST_DATA_IF_PRESENT"
+     semantics.  */
+  GOMP_MAP_VARS_OPENACC_IF_PRESENT,
   GOMP_MAP_VARS_OPENACC_ENTER_DATA,
   GOMP_MAP_VARS_TARGET,
   GOMP_MAP_VARS_DATA,

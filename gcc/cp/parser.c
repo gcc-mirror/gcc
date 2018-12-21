@@ -38767,7 +38767,9 @@ cp_parser_oacc_data (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
   structured-block  */
 
 #define OACC_HOST_DATA_CLAUSE_MASK					\
-  ( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_USE_DEVICE) )
+  ( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_USE_DEVICE)                \
+  | (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF)                        \
+  | (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF_PRESENT) )
 
 static tree
 cp_parser_oacc_host_data (cp_parser *parser, cp_token *pragma_tok, bool *if_p)

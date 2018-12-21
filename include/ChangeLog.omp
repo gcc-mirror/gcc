@@ -1,3 +1,7 @@
+2018-12-21  Gergö Barany  <gergo@codesourcery.com>
+
+	* gomp-constants.h (GOACC_FLAG_HOST_DATA_IF_PRESENT): New constant.
+
 2018-10-04  Cesar Philippidis  <cesar@codesourcery.com>
             Julian Brown  <julian@codesourcery.com>
 

@@ -15616,7 +15616,9 @@ c_parser_oacc_enter_exit_data (c_parser *parser, bool enter)
 */
 
 #define OACC_HOST_DATA_CLAUSE_MASK					\
-	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_USE_DEVICE) )
+        ( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_USE_DEVICE)          \
+        | (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF)                  \
+        | (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF_PRESENT) )
 
 static tree
 c_parser_oacc_host_data (location_t loc, c_parser *parser, bool *if_p)
