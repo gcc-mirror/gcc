@@ -1,5 +1,17 @@
 2018-12-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/88522
+	* config/i386/sse.md (*avx512pf_gatherpf<mode>sf_mask,
+	*avx512pf_gatherpf<mode>df_mask, *avx512pf_scatterpf<mode>sf_mask,
+	*avx512pf_scatterpf<mode>df_mask): Use %X5 instead of %5 for
+	-masm=intel.
+	(gatherq_mode): Remove mode iterator.
+	(*avx512f_gathersi<mode>, *avx512f_gathersi<mode>_2): Use X instead
+	of <xtg_mode>.
+	(*avx512f_gatherdi<mode>): Use X instead of <gatherq_mode>.
+	(*avx512f_gatherdi<mode>_2, *avx512f_scattersi<mode>,
+	*avx512f_scatterdi<mode>): Use %X5 for -masm=intel.
+
 	PR rtl-optimization/88563
 	* expr.c (expand_expr_real_2) <case WIDEN_MULT_EXPR>: Swap innermode
 	and mode arguments to convert_modes.  Likewise swap mode and word_mode
