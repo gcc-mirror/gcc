@@ -6775,7 +6775,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
      to a null value, but otherwise still need to be of a specific form.  */
   if (cxx_dialect >= cxx11)
     {
-      if (TREE_CODE (expr) == PTRMEM_CST)
+      if (TREE_CODE (expr) == PTRMEM_CST && TYPE_PTRMEM_P (type))
 	/* A PTRMEM_CST is already constant, and a valid template
 	   argument for a parameter of pointer to member type, we just want
 	   to leave it in that form rather than lower it to a

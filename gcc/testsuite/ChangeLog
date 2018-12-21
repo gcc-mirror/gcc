@@ -1,3 +1,10 @@
+2018-12-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88196 - ICE with class non-type template parameter.
+	* g++.dg/cpp0x/ptrmem-cst-arg1.C: Tweak dg-error.
+	* g++.dg/cpp2a/nontype-class10.C: New test.
+	* g++.dg/template/pr54858.C: Tweak dg-error.
+
 2018-12-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c/51628
