@@ -9225,7 +9225,8 @@ finish_static_assert (tree condition, tree message, location_t location,
   /* Fold the expression and convert it to a boolean value. */
   condition = perform_implicit_conversion_flags (boolean_type_node, condition,
 						 complain, LOOKUP_NORMAL);
-  condition = fold_non_dependent_expr (condition, complain);
+  condition = fold_non_dependent_expr (condition, complain,
+				       /*manifestly_const_eval=*/true);
 
   if (TREE_CODE (condition) == INTEGER_CST && !integer_zerop (condition))
     /* Do nothing; the condition is satisfied. */

@@ -1,3 +1,21 @@
+2018-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86524
+	PR c++/88446
+	* cp-tree.h (cp_fold_maybe_rvalue, cp_fold_rvalue): Declare.
+	(fold_non_dependent_expr): Add manifestly_const_eval argument.
+	* constexpr.c (cxx_eval_builtin_function_call): Evaluate
+	__builtin_constant_p if ctx->manifestly_const_eval even in constexpr
+	functions.  Don't reuse dummy{1,2} vars between different arguments.
+	Use cp_fold_rvalue instead of cp_fully_fold.  Fix comment typo.
+	(fold_non_dependent_expr): Add manifestly_const_eval argument, pass
+	it through to cxx_eval_outermost_constant_expr and
+	maybe_constant_value.
+	* cp-gimplify.c (cp_fold_maybe_rvalue, cp_fold_rvalue): No longer
+	static.
+	* semantics.c (finish_static_assert): Call fold_non_dependent_expr
+	with true as manifestly_const_eval.
+
 2018-12-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88196 - ICE with class non-type template parameter.
