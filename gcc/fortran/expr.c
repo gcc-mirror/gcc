@@ -1975,7 +1975,7 @@ simplify_ref_chain (gfc_ref *ref, int type, gfc_expr **p)
 	  gfc_replace_expr (*p, newp);
 	  gfc_free_ref_list ((*p)->ref);
 	  (*p)->ref = NULL;
-	  return true;;
+	  return true;
 
 	default:
 	  break;
