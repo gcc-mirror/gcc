@@ -1078,18 +1078,41 @@ values and meaning for each target is given below.
 
 @table @code
 @item arm*-*-*
-@var{list} is a comma separated list of @code{aprofile} and @code{rmprofile}
-to build multilibs for A or R and M architecture profiles respectively.  Note
-that, due to some limitation of the current multilib framework, using the
-combined @code{aprofile,rmprofile} multilibs selects in some cases a less
-optimal multilib than when using the multilib profile for the architecture
-targetted.  The special value @code{default} is also accepted and is equivalent
-to omitting the option, ie. only the default run-time library will be enabled.
+@var{list} is a comma separated list of @code{aprofile} and
+@code{rmprofile} to build multilibs for A or R and M architecture
+profiles respectively.  Note that, due to some limitation of the current
+multilib framework, using the combined @code{aprofile,rmprofile}
+multilibs selects in some cases a less optimal multilib than when using
+the multilib profile for the architecture targetted.  The special value
+@code{default} is also accepted and is equivalent to omitting the
+option, i.e., only the default run-time library will be enabled.
+
+@var{list} may instead contain @code{@@name}, to use the multilib
+configuration Makefile fragment @file{name} in @file{gcc/config/arm} in
+the source tree (it is part of the corresponding sources, after all).
+It is recommended, but not required, that files used for this purpose to
+be named starting with @file{t-ml-}, to make their intended purpose
+self-evident, in line with GCC conventions.  Such files enable custom,
+user-chosen multilib lists to be configured.  Whether multiple such
+files can be used together depends on the contents of the supplied
+files.  See @file{gcc/config/arm/t-multilib} and its supplementary
+@file{gcc/config/arm/t-*profile} files for an example of what such
+Makefile fragments might look like for this version of GCC.  The macros
+expected to be defined in these fragments are not stable across GCC
+releases, so make sure they define the @code{MULTILIB}-related macros
+expected by the version of GCC you are building.
+@ifnothtml
+@xref{Target Fragment,, Target Makefile Fragments, gccint, GNU Compiler
+Collection (GCC) Internals}.
+@end ifnothtml
+@ifhtml
+See ``Target Makefile Fragments'' in the internals manual.
+@end ifhtml
 
 The table below gives the combination of ISAs, architectures, FPUs and
-floating-point ABIs for which multilibs are built for each accepted value.
-The union of these options is considered when specifying both @code{aprofile}
-and @code{rmprofile}.
+floating-point ABIs for which multilibs are built for each predefined
+profile.  The union of these options is considered when specifying both
+@code{aprofile} and @code{rmprofile}.
 
 @multitable @columnfractions .15 .28 .30
 @item Option @tab aprofile @tab rmprofile

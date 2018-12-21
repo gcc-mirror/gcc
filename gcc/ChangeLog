@@ -1,3 +1,9 @@
+2018-12-21  Alexandre Oliva <oliva@adacore.com>
+
+	* config.gcc (tmake_file): Add name to tmake_file for
+	each @name in --with-multilib-list on arm-*-* targets.
+	* doc/install.texi (with-multilib-list): Document it.
+
 2018-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Use
