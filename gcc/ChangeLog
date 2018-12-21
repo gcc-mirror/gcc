@@ -1,3 +1,9 @@
+2018-12-21  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/vector.md ("floatv2div2df2", "floatunsv2div2df2")
+	("fix_truncv2dfv2di2", "fixuns_truncv2dfv2di2"): New pattern
+	definitions.
+
 2018-12-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/87727
