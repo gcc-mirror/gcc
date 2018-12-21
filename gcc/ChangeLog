@@ -1,3 +1,11 @@
+2018-12-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/87727
+	* combine.c (cant_combine_insn_p): On a LEAF_REGISTERS target, combine
+	again moves from leaf hard registers.
+
+	* final.c (final_scan_insn_1) <NOTE_INSN_INLINE_ENTRY>: Minor tweak.
+
 2018-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88522

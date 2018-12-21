@@ -2430,10 +2430,9 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 
 	case NOTE_INSN_INLINE_ENTRY:
 	  gcc_checking_assert (cfun->debug_nonbind_markers);
-	  if (!DECL_IGNORED_P (current_function_decl))
+	  if (!DECL_IGNORED_P (current_function_decl)
+	      && notice_source_line (insn, NULL))
 	    {
-	      if (!notice_source_line (insn, NULL))
-		break;
 	      (*debug_hooks->inline_entry) (LOCATION_BLOCK
 					    (NOTE_MARKER_LOCATION (insn)));
 	      goto output_source_line;
