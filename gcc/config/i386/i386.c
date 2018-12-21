@@ -24126,6 +24126,104 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	    }
 	}
 
+      rtx optrue = op_true ? op_true : CONSTM1_RTX (data_mode);
+      rtx opfalse = op_false ? op_false : CONST0_RTX (data_mode);
+      if (*negate)
+	std::swap (optrue, opfalse);
+
+      /* Transform x > y ? 0 : -1 (i.e. x <= y ? -1 : 0 or x <= y) when
+	 not using integer masks into min (x, y) == x ? -1 : 0 (i.e.
+	 min (x, y) == x).  While we add one instruction (the minimum),
+	 we remove the need for two instructions in the negation, as the
+	 result is done this way.
+	 When using masks, do it for SI/DImode element types, as it is shorter
+	 than the two subtractions.  */
+      if ((code != EQ
+	   && GET_MODE_SIZE (mode) != 64
+	   && vector_all_ones_operand (opfalse, data_mode)
+	   && optrue == CONST0_RTX (data_mode))
+	  || (code == GTU
+	      && GET_MODE_SIZE (GET_MODE_INNER (mode)) >= 4
+	      /* Don't do it if not using integer masks and we'd end up with
+		 the right values in the registers though.  */
+	      && (GET_MODE_SIZE (mode) == 64
+		  || !vector_all_ones_operand (optrue, data_mode)
+		  || opfalse != CONST0_RTX (data_mode))))
+	{
+	  rtx (*gen) (rtx, rtx, rtx) = NULL;
+
+	  switch (mode)
+	    {
+	    case E_V16SImode:
+	      gen = (code == GTU) ? gen_uminv16si3 : gen_sminv16si3;
+	      break;
+	    case E_V8DImode:
+	      gen = (code == GTU) ? gen_uminv8di3 : gen_sminv8di3;
+	      cop0 = force_reg (mode, cop0);
+	      cop1 = force_reg (mode, cop1);
+	      break;
+	    case E_V32QImode:
+	      if (TARGET_AVX2)
+		gen = (code == GTU) ? gen_uminv32qi3 : gen_sminv32qi3;
+	      break;
+	    case E_V16HImode:
+	      if (TARGET_AVX2)
+		gen = (code == GTU) ? gen_uminv16hi3 : gen_sminv16hi3;
+	      break;
+	    case E_V8SImode:
+	      if (TARGET_AVX2)
+		gen = (code == GTU) ? gen_uminv8si3 : gen_sminv8si3;
+	      break;
+	    case E_V4DImode:
+	      if (TARGET_AVX512VL)
+		{
+		  gen = (code == GTU) ? gen_uminv4di3 : gen_sminv4di3;
+		  cop0 = force_reg (mode, cop0);
+		  cop1 = force_reg (mode, cop1);
+		}
+	      break;
+	    case E_V16QImode:
+	      if (code == GTU && TARGET_SSE2)
+		gen = gen_uminv16qi3;
+	      else if (code == GT && TARGET_SSE4_1)
+		gen = gen_sminv16qi3;
+	      break;
+	    case E_V8HImode:
+	      if (code == GTU && TARGET_SSE4_1)
+		gen = gen_uminv8hi3;
+	      else if (code == GT && TARGET_SSE2)
+		gen = gen_sminv8hi3;
+	      break;
+	    case E_V4SImode:
+	      if (TARGET_SSE4_1)
+		gen = (code == GTU) ? gen_uminv4si3 : gen_sminv4si3;
+	      break;
+	    case E_V2DImode:
+	      if (TARGET_AVX512VL)
+		{
+		  gen = (code == GTU) ? gen_uminv2di3 : gen_sminv2di3;
+		  cop0 = force_reg (mode, cop0);
+		  cop1 = force_reg (mode, cop1);
+		}
+	      break;
+	    default:
+	      break;
+	    }
+
+	  if (gen)
+	    {
+	      rtx tem = gen_reg_rtx (mode);
+	      if (!vector_operand (cop0, mode))
+		cop0 = force_reg (mode, cop0);
+	      if (!vector_operand (cop1, mode))
+		cop1 = force_reg (mode, cop1);
+	      *negate = !*negate;
+	      emit_insn (gen (tem, cop0, cop1));
+	      cop1 = tem;
+	      code = EQ;
+	    }
+	}
+
       /* Unsigned parallel compare is not supported by the hardware.
 	 Play some tricks to turn this into a signed comparison
 	 against 0.  */

@@ -6,10 +6,14 @@
 /* { dg-final { scan-assembler-times "vpmovm2w\[\t  ]" 4 } } */
 /* { dg-final { scan-assembler-times "vpmovm2d\[\t  ]" 4 } } */
 /* { dg-final { scan-assembler-times "vpmovm2q\[\t  ]" 4 } } */
-/* { dg-final { scan-assembler-times "knotb\[\t  ]" 4 } } */
-/* { dg-final { scan-assembler-times "knotw\[\t  ]" 4 } } */
+/* { dg-final { scan-assembler-times "knotb\[\t  ]" 2 } } */
+/* { dg-final { scan-assembler-times "knotw\[\t  ]" 2 } } */
 /* { dg-final { scan-assembler-times "knotd\[\t  ]" 2 } } */
 /* { dg-final { scan-assembler-times "knotq\[\t  ]" 2 } } */
+/* { dg-final { scan-assembler-times "vpminud\[\t  ]" 2 } } */
+/* { dg-final { scan-assembler-times "vpminuq\[\t  ]" 2 } } */
+/* { dg-final { scan-assembler-not "vpsubd\[\t  ]" } } */
+/* { dg-final { scan-assembler-not "vpsubq\[\t  ]" } } */
 
 typedef signed char v64qi __attribute__((vector_size(64)));
 typedef unsigned char v64uqi __attribute__((vector_size(64)));
