@@ -2353,7 +2353,12 @@ cant_combine_insn_p (rtx_insn *insn)
     dest = SUBREG_REG (dest);
   if (REG_P (src) && REG_P (dest)
       && ((HARD_REGISTER_P (src)
-	   && ! TEST_HARD_REG_BIT (fixed_reg_set, REGNO (src)))
+	   && ! TEST_HARD_REG_BIT (fixed_reg_set, REGNO (src))
+#ifdef LEAF_REGISTERS
+	   && ! LEAF_REGISTERS [REGNO (src)])
+#else
+	   )
+#endif
 	  || (HARD_REGISTER_P (dest)
 	      && ! TEST_HARD_REG_BIT (fixed_reg_set, REGNO (dest))
 	      && targetm.class_likely_spilled_p (REGNO_REG_CLASS (REGNO (dest))))))
