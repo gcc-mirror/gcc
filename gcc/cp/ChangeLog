@@ -1,3 +1,9 @@
+2018-12-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88196 - ICE with class non-type template parameter.
+	* pt.c (convert_nontype_argument): If the expr is a PTRMEM_CST, also
+	check if the type we're converting it to is TYPE_PTRMEM_P.
+
 2018-12-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c/51628
