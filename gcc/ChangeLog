@@ -1,3 +1,11 @@
+2018-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/88563
+	* expr.c (expand_expr_real_2) <case WIDEN_MULT_EXPR>: Swap innermode
+	and mode arguments to convert_modes.  Likewise swap mode and word_mode
+	arguments.  Handle both arguments with VOIDmode before convert_modes
+	of one of them.  Formatting fixes.
+
 2018-12-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/88556
