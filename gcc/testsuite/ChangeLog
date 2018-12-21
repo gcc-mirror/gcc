@@ -1,3 +1,10 @@
+2018-12-21  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
+
+	* gcc.target/arm/size-optimization-ieee-1.c: Skip if passing
+	-mfloat-abi=softfp or -mfloat-abi=hard.
+	* gcc.target/arm/size-optimization-ieee-2.c: Likewise.
+	* gcc.target/arm/size-optimization-ieee-3.c: Likewise.
+
 2018-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88547
