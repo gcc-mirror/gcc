@@ -1,6 +1,11 @@
+2018-12-21  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/69121
+	* ieee/ieee_arithmetic.F90: Provide missing interfaces for IEEE_SCALB.
+
 2018-12-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
-	* libgfortran/ieee/ieee_arithmetic.F90: Re-organize file to 
+	* ieee/ieee_arithmetic.F90: Re-organize file to 
 	eliminate #ifdef ... #endif.  No functional change.
 
 2018-12-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
