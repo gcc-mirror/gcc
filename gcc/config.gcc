@@ -3976,12 +3976,22 @@ case "${target}" in
 
 		# Add extra multilibs
 		if test "x$with_multilib_list" != x; then
+			ml=
 			arm_multilibs=`echo $with_multilib_list | sed -e 's/,/ /g'`
 			if test "x${arm_multilibs}" != xdefault ; then
 				for arm_multilib in ${arm_multilibs}; do
 					case ${arm_multilib} in
 					aprofile|rmprofile)
 						tmake_profile_file="arm/t-multilib"
+						;;
+					@*)
+						ml=`echo "X$arm_multilib" | sed '1s,^X@,,'`
+						if test -f "${srcdir}/config/arm/${ml}"; then
+							tmake_file="${tmake_file} arm/${ml}"
+						else
+							echo "Error: ${ml} does not exist in ${srcdir}/config/arm" >&2
+							exit 1
+						fi
 						;;
 					*)
 						echo "Error: --with-multilib-list=${with_multilib_list} not supported." 1>&2
@@ -4002,6 +4012,9 @@ case "${target}" in
 				    || test "x$with_fpu" != x \
 				    || test "x$with_mode" != x ; then
 				    echo "Error: You cannot use any of --with-arch/cpu/fpu/float/mode with --with-multilib-list=${with_multilib_list}" 1>&2
+				    exit 1
+				elif test "x$ml" != x ; then
+				    echo "Error: You cannot use builtin multilib profiles along with custom ones" 1>&2
 				    exit 1
 				fi
 				# But pass the default value for float-abi
