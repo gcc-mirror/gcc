@@ -1,3 +1,22 @@
+2018-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/88547
+	* gcc.target/i386/pr88547-1.c: Expect only 2 knotb and 2 knotw
+	insns instead of 4, check for vpminud, vpminuq and no vpsubd or
+	vpsubq.
+	* gcc.target/i386/sse2-pr88547-1.c: New test.
+	* gcc.target/i386/sse2-pr88547-2.c: New test.
+	* gcc.target/i386/sse4_1-pr88547-1.c: New test.
+	* gcc.target/i386/sse4_1-pr88547-2.c: New test.
+	* gcc.target/i386/avx2-pr88547-1.c: New test.
+	* gcc.target/i386/avx2-pr88547-2.c: New test.
+	* gcc.target/i386/avx512f-pr88547-2.c: New test.
+	* gcc.target/i386/avx512vl-pr88547-1.c: New test.
+	* gcc.target/i386/avx512vl-pr88547-2.c: New test.
+	* gcc.target/i386/avx512vl-pr88547-3.c: New test.
+	* gcc.target/i386/avx512f_cond_move.c (y): Change from unsigned int
+	array to int array.
+
 2018-12-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88196 - ICE with class non-type template parameter.
