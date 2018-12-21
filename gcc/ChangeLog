@@ -1,3 +1,8 @@
+2018-12-21  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/sse.md (vaesdec_<mode>, vaesdeclast_<mode>): Allow
+	memory input.
+
 2018-12-21  Alexandre Oliva <oliva@adacore.com>
 
 	* config.gcc (tmake_file): Add name to tmake_file for
