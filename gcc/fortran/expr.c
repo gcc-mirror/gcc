@@ -1730,56 +1730,61 @@ find_inquiry_ref (gfc_expr *p, gfc_expr **newp)
 
   gfc_resolve_expr (tmp);
 
-  switch (inquiry->u.i)
+  /* In principle there can be more than one inquiry reference.  */
+  for (; inquiry; inquiry = inquiry->next)
     {
-    case INQUIRY_LEN:
-      if (tmp->ts.type != BT_CHARACTER)
-	goto cleanup;
+      switch (inquiry->u.i)
+	{
+	case INQUIRY_LEN:
+	  if (tmp->ts.type != BT_CHARACTER)
+	    goto cleanup;
 
-      if (!gfc_notify_std (GFC_STD_F2003, "LEN part_ref at %C"))
-	goto cleanup;
+	  if (!gfc_notify_std (GFC_STD_F2003, "LEN part_ref at %C"))
+	    goto cleanup;
 
-      if (!tmp->ts.u.cl->length
-	  || tmp->ts.u.cl->length->expr_type != EXPR_CONSTANT)
-	goto cleanup;
+	  if (!tmp->ts.u.cl->length
+	      || tmp->ts.u.cl->length->expr_type != EXPR_CONSTANT)
+	    goto cleanup;
 
-      *newp = gfc_copy_expr (tmp->ts.u.cl->length);
-      break;
+	  *newp = gfc_copy_expr (tmp->ts.u.cl->length);
+	  break;
 
-    case INQUIRY_KIND:
-      if (tmp->ts.type == BT_DERIVED || tmp->ts.type == BT_CLASS)
-	goto cleanup;
+	case INQUIRY_KIND:
+	  if (tmp->ts.type == BT_DERIVED || tmp->ts.type == BT_CLASS)
+	    goto cleanup;
 
-      if (!gfc_notify_std (GFC_STD_F2003, "KIND part_ref at %C"))
-	goto cleanup;
+	  if (!gfc_notify_std (GFC_STD_F2003, "KIND part_ref at %C"))
+	    goto cleanup;
 
-      *newp = gfc_get_int_expr (gfc_default_integer_kind,
-				NULL, tmp->ts.kind);
-      break;
+	  *newp = gfc_get_int_expr (gfc_default_integer_kind,
+				    NULL, tmp->ts.kind);
+	  break;
 
-    case INQUIRY_RE:
-      if (tmp->ts.type != BT_COMPLEX || tmp->expr_type != EXPR_CONSTANT)
-	goto cleanup;
+	case INQUIRY_RE:
+	  if (tmp->ts.type != BT_COMPLEX || tmp->expr_type != EXPR_CONSTANT)
+	    goto cleanup;
 
-      if (!gfc_notify_std (GFC_STD_F2008, "RE part_ref at %C"))
-	goto cleanup;
+	  if (!gfc_notify_std (GFC_STD_F2008, "RE part_ref at %C"))
+	    goto cleanup;
 
-      *newp = gfc_get_constant_expr (BT_REAL, tmp->ts.kind, &tmp->where);
-      mpfr_set ((*newp)->value.real,
-		mpc_realref (p->value.complex), GFC_RND_MODE);
-      break;
+	  *newp = gfc_get_constant_expr (BT_REAL, tmp->ts.kind, &tmp->where);
+	  mpfr_set ((*newp)->value.real,
+		    mpc_realref (p->value.complex), GFC_RND_MODE);
+	  break;
 
-    case INQUIRY_IM:
-      if (tmp->ts.type != BT_COMPLEX || tmp->expr_type != EXPR_CONSTANT)
-	goto cleanup;
+	case INQUIRY_IM:
+	  if (tmp->ts.type != BT_COMPLEX || tmp->expr_type != EXPR_CONSTANT)
+	    goto cleanup;
 
-      if (!gfc_notify_std (GFC_STD_F2008, "IM part_ref at %C"))
-	goto cleanup;
+	  if (!gfc_notify_std (GFC_STD_F2008, "IM part_ref at %C"))
+	    goto cleanup;
 
-      *newp = gfc_get_constant_expr (BT_REAL, tmp->ts.kind, &tmp->where);
-      mpfr_set ((*newp)->value.real,
-		mpc_imagref (p->value.complex), GFC_RND_MODE);
-      break;
+	  *newp = gfc_get_constant_expr (BT_REAL, tmp->ts.kind, &tmp->where);
+	  mpfr_set ((*newp)->value.real,
+		    mpc_imagref (p->value.complex), GFC_RND_MODE);
+	  break;
+	}
+      tmp = gfc_copy_expr (*newp);
     }
 
   if (!(*newp))
@@ -1970,7 +1975,7 @@ simplify_ref_chain (gfc_ref *ref, int type, gfc_expr **p)
 	  gfc_replace_expr (*p, newp);
 	  gfc_free_ref_list ((*p)->ref);
 	  (*p)->ref = NULL;
-	  break;
+	  return true;;
 
 	default:
 	  break;
