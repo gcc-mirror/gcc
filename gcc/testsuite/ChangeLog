@@ -1,5 +1,12 @@
 2018-12-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/86524
+	PR c++/88446
+	* g++.dg/cpp1y/constexpr-86524.C: New test.
+	* g++.dg/cpp2a/is-constant-evaluated4.C: New test.
+	* g++.dg/cpp2a/is-constant-evaluated5.C: New test.
+	* g++.dg/cpp2a/is-constant-evaluated6.C: New test.
+
 	PR middle-end/85594
 	PR middle-end/88553
 	* gcc.dg/gomp/pr85594.c: New test.

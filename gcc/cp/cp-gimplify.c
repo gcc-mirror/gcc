@@ -2118,7 +2118,7 @@ cxx_omp_disregard_value_expr (tree decl, bool shared)
 
 /* Fold expression X which is used as an rvalue if RVAL is true.  */
 
-static tree
+tree
 cp_fold_maybe_rvalue (tree x, bool rval)
 {
   while (true)
@@ -2141,7 +2141,7 @@ cp_fold_maybe_rvalue (tree x, bool rval)
 
 /* Fold expression X which is used as an rvalue.  */
 
-static tree
+tree
 cp_fold_rvalue (tree x)
 {
   return cp_fold_maybe_rvalue (x, true);

@@ -7543,6 +7543,8 @@ extern void cxx_omp_finish_clause		(tree, gimple_seq *);
 extern bool cxx_omp_privatize_by_reference	(const_tree);
 extern bool cxx_omp_disregard_value_expr	(tree, bool);
 extern void cp_fold_function			(tree);
+extern tree cp_fold_maybe_rvalue		(tree, bool);
+extern tree cp_fold_rvalue			(tree);
 extern tree cp_fully_fold			(tree);
 extern tree cp_fully_fold_init			(tree);
 extern void clear_fold_cache			(void);
@@ -7668,7 +7670,9 @@ extern tree cxx_constant_value			(tree, tree = NULL_TREE);
 extern tree cxx_constant_init			(tree, tree = NULL_TREE);
 extern tree maybe_constant_value		(tree, tree = NULL_TREE, bool = false);
 extern tree maybe_constant_init			(tree, tree = NULL_TREE, bool = false);
-extern tree fold_non_dependent_expr		(tree, tsubst_flags_t = tf_warning_or_error);
+extern tree fold_non_dependent_expr		(tree,
+						 tsubst_flags_t = tf_warning_or_error,
+						 bool = false);
 extern tree fold_simple				(tree);
 extern bool is_sub_constant_expr                (tree);
 extern bool reduced_constant_expression_p       (tree);
