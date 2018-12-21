@@ -21659,7 +21659,7 @@
   [(set (match_operand:VI1_AVX512VL_F 0 "register_operand" "=v")
 	(unspec:VI1_AVX512VL_F
 	  [(match_operand:VI1_AVX512VL_F 1 "register_operand" "v")
-	   (match_operand:VI1_AVX512VL_F 2 "vector_operand" "v")]
+	   (match_operand:VI1_AVX512VL_F 2 "vector_operand" "vm")]
 	  UNSPEC_VAESDEC))]
   "TARGET_VAES"
   "vaesdec\t{%2, %1, %0|%0, %1, %2}"
@@ -21669,7 +21669,7 @@
   [(set (match_operand:VI1_AVX512VL_F 0 "register_operand" "=v")
 	(unspec:VI1_AVX512VL_F
 	  [(match_operand:VI1_AVX512VL_F 1 "register_operand" "v")
-	   (match_operand:VI1_AVX512VL_F 2 "vector_operand" "v")]
+	   (match_operand:VI1_AVX512VL_F 2 "vector_operand" "vm")]
 	  UNSPEC_VAESDECLAST))]
   "TARGET_VAES"
   "vaesdeclast\t{%2, %1, %0|%0, %1, %2}"
