@@ -1,3 +1,10 @@
+2018-12-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87359
+	* trans-array.c (gfc_is_reallocatable_lhs): Correct the problem
+	introduced by r264358, which prevented components of associate
+	names from being reallocated on assignment.
+
 2018-12-16  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88116
@@ -15,7 +22,7 @@
 	PR fortran/88138
 	* decl.c (variable_decl): Check that a derived isn't being assigned
 	an incompatible entity in an initialization.
- 
+
 2018-12-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88155
