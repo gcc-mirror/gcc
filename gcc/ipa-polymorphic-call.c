@@ -995,8 +995,21 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 	{
 	  outer_type
 	     = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (base_pointer)));
+	  cgraph_node *node = cgraph_node::get (current_function_decl);
 	  gcc_assert (TREE_CODE (outer_type) == RECORD_TYPE
 		      || TREE_CODE (outer_type) == UNION_TYPE);
+
+	  /* Handle the case we inlined into a thunk.  In this case
+	     thunk has THIS pointer of type bar, but it really receives
+	     address to its base type foo which sits in bar at 
+	     0-thunk.fixed_offset.  It starts with code that adds
+	     think.fixed_offset to the pointer to compensate for this.
+
+	     Because we walked all the way to the begining of thunk, we now
+	     see pointer &bar-thunk.fixed_offset and need to compensate
+	     for it.  */
+	  if (node->thunk.fixed_offset)
+	    offset -= node->thunk.fixed_offset * BITS_PER_UNIT;
 
 	  /* Dynamic casting has possibly upcasted the type
 	     in the hiearchy.  In this case outer type is less
@@ -1005,7 +1018,11 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 	  if ((otr_type
 	       && !contains_type_p (outer_type, offset,
 				    otr_type))
-	      || !contains_polymorphic_type_p (outer_type))
+	      || !contains_polymorphic_type_p (outer_type)
+	      /* If we compile thunk with virtual offset, the THIS pointer
+		 is adjusted by unknown value.  We can't thus use outer info
+		 at all.  */
+	      || node->thunk.virtual_offset_p)
 	    {
 	      outer_type = NULL;
 	      if (instance)
@@ -1030,7 +1047,15 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 	      maybe_in_construction = false;
 	    }
 	  if (instance)
-	    *instance = base_pointer;
+	    {
+	      /* If method is expanded thunk, we need to apply thunk offset
+		 to instance pointer.  */
+	      if (node->thunk.virtual_offset_p
+		  || node->thunk.fixed_offset)
+		*instance = NULL;
+	      else
+	        *instance = base_pointer;
+	    }
 	  return;
 	}
       /* Non-PODs passed by value are really passed by invisible
@@ -1546,6 +1571,9 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
      This is because we do not update INSTANCE when walking inwards.  */
   HOST_WIDE_INT instance_offset = offset;
   tree instance_outer_type = outer_type;
+
+  if (!instance)
+    return false;
 
   if (otr_type)
     otr_type = TYPE_MAIN_VARIANT (otr_type);

@@ -1,3 +1,13 @@
+2018-12-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/88561
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::ipa_polymorphic_call_context): Handle
+	arguments of thunks correctly.
+	(ipa_polymorphic_call_context::get_dynamic_context): Be ready for
+	NULL instance pinter.
+	* lto-cgraph.c (lto_output_node): Always stream thunk info.
+
 2018-12-21  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/vector.md ("floatv2div2df2", "floatunsv2div2df2")
