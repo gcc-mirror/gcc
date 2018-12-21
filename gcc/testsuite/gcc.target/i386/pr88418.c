@@ -1,6 +1,6 @@
 /* PR target/88418 */
 /* { dg-do compile } */
-/* { dg-options "-O1 -fpack-struct -msse4.1" } */
+/* { dg-options "-O1 -fpack-struct -msse4.1 -mno-avx" } */
 
 typedef long long v2di __attribute__ ((__vector_size__ (16)));
 

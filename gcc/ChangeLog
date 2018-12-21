@@ -9,7 +9,6 @@
 	(ix86_expand_sse_movcc): For vector modes, check op_true with
 	vector_operand, not nonimmediate_operand.
 
-
 2018-12-19  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	Backport from mainline
