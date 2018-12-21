@@ -2163,12 +2163,12 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	      /* Forcing alignment in the first iteration is no good if
 		 we don't keep it across iterations.  For now, just disable
 		 versioning in this case.
-		 ?? We could actually unroll the loop to archive the required
-		 overall step alignemnt, and forcing the alignment could be
+		 ?? We could actually unroll the loop to achieve the required
+		 overall step alignment, and forcing the alignment could be
 		 done by doing some iterations of the non-vectorized loop.  */
 	      if (!multiple_p (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
 			       * DR_STEP_ALIGNMENT (dr),
-			       DR_TARGET_ALIGNMENT (dr)))
+			       DR_TARGET_ALIGNMENT (dr_info)))
 		{
 		  do_versioning = false;
 		  break;

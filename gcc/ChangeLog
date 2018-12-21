@@ -1,3 +1,8 @@
+2018-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Use
+	DR_TARGET_ALIGNMENT on dr_info rather than dr.  Spelling fixes.
+
 2018-12-20  Joern Rennecke  <joern.rennecke@riscy-ip.com>
 
 	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Don't do
