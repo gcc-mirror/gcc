@@ -532,37 +532,170 @@ REM_MACRO(4,4,4)
   ! IEEE_SCALB
 
   interface
-    elemental real(kind=4) function _gfortran_ieee_scalb_4 (X, I)
-      real(kind=4), intent(in) :: X
-      integer, intent(in) :: I
-    end function
-    elemental real(kind=8) function _gfortran_ieee_scalb_8 (X, I)
-      real(kind=8), intent(in) :: X
-      integer, intent(in) :: I
-    end function
-#ifdef HAVE_GFC_REAL_10
-    elemental real(kind=10) function _gfortran_ieee_scalb_10 (X, I)
-      real(kind=10), intent(in) :: X
-      integer, intent(in) :: I
+#ifdef HAVE_GFC_INTEGER_16
+#ifdef HAVE_GFC_REAL_16
+    elemental real(kind=16) function _gfortran_ieee_scalb_16_16 (X, I)
+      real(kind=16), intent(in) :: X
+      integer(kind=16), intent(in) :: I
     end function
 #endif
+#ifdef HAVE_GFC_REAL_10
+    elemental real(kind=10) function _gfortran_ieee_scalb_10_16 (X, I)
+      real(kind=10), intent(in) :: X
+      integer(kind=16), intent(in) :: I
+    end function
+#endif
+    elemental real(kind=8) function _gfortran_ieee_scalb_8_16 (X, I)
+      real(kind=8), intent(in) :: X
+      integer(kind=16), intent(in) :: I
+    end function
+    elemental real(kind=4) function _gfortran_ieee_scalb_4_16 (X, I)
+      real(kind=4), intent(in) :: X
+      integer(kind=16), intent(in) :: I
+    end function
+#endif
+
+#ifdef HAVE_GFC_INTEGER_8
 #ifdef HAVE_GFC_REAL_16
-    elemental real(kind=16) function _gfortran_ieee_scalb_16 (X, I)
+    elemental real(kind=16) function _gfortran_ieee_scalb_16_8 (X, I)
+      real(kind=16), intent(in) :: X
+      integer(kind=8), intent(in) :: I
+    end function
+#endif
+#ifdef HAVE_GFC_REAL_10
+    elemental real(kind=10) function _gfortran_ieee_scalb_10_8 (X, I)
+      real(kind=10), intent(in) :: X
+      integer(kind=8), intent(in) :: I
+    end function
+#endif
+    elemental real(kind=8) function _gfortran_ieee_scalb_8_8 (X, I)
+      real(kind=8), intent(in) :: X
+      integer(kind=8), intent(in) :: I
+    end function
+    elemental real(kind=4) function _gfortran_ieee_scalb_4_8 (X, I)
+      real(kind=4), intent(in) :: X
+      integer(kind=8), intent(in) :: I
+    end function
+#endif
+
+#ifdef HAVE_GFC_INTEGER_2
+#ifdef HAVE_GFC_REAL_16
+    elemental real(kind=16) function _gfortran_ieee_scalb_16_2 (X, I)
+      real(kind=16), intent(in) :: X
+      integer(kind=2), intent(in) :: I
+    end function
+#endif
+#ifdef HAVE_GFC_REAL_10
+    elemental real(kind=10) function _gfortran_ieee_scalb_10_2 (X, I)
+      real(kind=10), intent(in) :: X
+      integer(kind=2), intent(in) :: I
+    end function
+#endif
+    elemental real(kind=8) function _gfortran_ieee_scalb_8_2 (X, I)
+      real(kind=8), intent(in) :: X
+      integer(kind=2), intent(in) :: I
+    end function
+    elemental real(kind=4) function _gfortran_ieee_scalb_4_2 (X, I)
+      real(kind=4), intent(in) :: X
+      integer(kind=2), intent(in) :: I
+    end function
+#endif
+
+#ifdef HAVE_GFC_INTEGER_1
+#ifdef HAVE_GFC_REAL_16
+    elemental real(kind=16) function _gfortran_ieee_scalb_16_1 (X, I)
+      real(kind=16), intent(in) :: X
+      integer(kind=1), intent(in) :: I
+    end function
+#endif
+#ifdef HAVE_GFC_REAL_10
+    elemental real(kind=10) function _gfortran_ieee_scalb_10_1 (X, I)
+      real(kind=10), intent(in) :: X
+      integer(kind=1), intent(in) :: I
+    end function
+#endif
+    elemental real(kind=8) function _gfortran_ieee_scalb_8_1 (X, I)
+      real(kind=8), intent(in) :: X
+      integer(kind=1), intent(in) :: I
+    end function
+    elemental real(kind=4) function _gfortran_ieee_scalb_4_1 (X, I)
+      real(kind=4), intent(in) :: X
+      integer(kind=1), intent(in) :: I
+    end function
+#endif
+
+#ifdef HAVE_GFC_REAL_16
+    elemental real(kind=16) function _gfortran_ieee_scalb_16_4 (X, I)
       real(kind=16), intent(in) :: X
       integer, intent(in) :: I
     end function
 #endif
+#ifdef HAVE_GFC_REAL_10
+    elemental real(kind=10) function _gfortran_ieee_scalb_10_4 (X, I)
+      real(kind=10), intent(in) :: X
+      integer, intent(in) :: I
+    end function
+#endif
+    elemental real(kind=8) function _gfortran_ieee_scalb_8_4 (X, I)
+      real(kind=8), intent(in) :: X
+      integer, intent(in) :: I
+    end function
+    elemental real(kind=4) function _gfortran_ieee_scalb_4_4 (X, I)
+      real(kind=4), intent(in) :: X
+      integer, intent(in) :: I
+    end function
   end interface
 
   interface IEEE_SCALB
     procedure &
+#ifdef HAVE_GFC_INTEGER_16
 #ifdef HAVE_GFC_REAL_16
-      _gfortran_ieee_scalb_16, &
+    _gfortran_ieee_scalb_16_16, &
 #endif
 #ifdef HAVE_GFC_REAL_10
-      _gfortran_ieee_scalb_10, &
+    _gfortran_ieee_scalb_10_16, &
 #endif
-      _gfortran_ieee_scalb_8, _gfortran_ieee_scalb_4
+    _gfortran_ieee_scalb_8_16, &
+    _gfortran_ieee_scalb_4_16, &
+#endif
+#ifdef HAVE_GFC_INTEGER_8
+#ifdef HAVE_GFC_REAL_16
+    _gfortran_ieee_scalb_16_8, &
+#endif
+#ifdef HAVE_GFC_REAL_10
+    _gfortran_ieee_scalb_10_8, &
+#endif
+    _gfortran_ieee_scalb_8_8, &
+    _gfortran_ieee_scalb_4_8, &
+#endif
+#ifdef HAVE_GFC_INTEGER_2
+#ifdef HAVE_GFC_REAL_16
+    _gfortran_ieee_scalb_16_2, &
+#endif
+#ifdef HAVE_GFC_REAL_10
+    _gfortran_ieee_scalb_10_2, &
+#endif
+    _gfortran_ieee_scalb_8_2, &
+    _gfortran_ieee_scalb_4_2, &
+#endif
+#ifdef HAVE_GFC_INTEGER_1
+#ifdef HAVE_GFC_REAL_16
+    _gfortran_ieee_scalb_16_1, &
+#endif
+#ifdef HAVE_GFC_REAL_10
+    _gfortran_ieee_scalb_10_1, &
+#endif
+    _gfortran_ieee_scalb_8_1, &
+    _gfortran_ieee_scalb_4_1, &
+#endif
+#ifdef HAVE_GFC_REAL_16
+    _gfortran_ieee_scalb_16_4, &
+#endif
+#ifdef HAVE_GFC_REAL_10
+    _gfortran_ieee_scalb_10_4, &
+#endif
+      _gfortran_ieee_scalb_8_4, &
+      _gfortran_ieee_scalb_4_4
   end interface
   public :: IEEE_SCALB
 
