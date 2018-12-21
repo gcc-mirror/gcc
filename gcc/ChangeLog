@@ -1,3 +1,25 @@
+2018-12-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/88556
+	* internal-fn.def (COSH): New.
+	(SINH): Ditto.
+	(TANH): Ditto.
+	* optabs.def (cosh_optab): New.
+	(sinh_optab): Ditto.
+	(tanh_optab): Ditto.
+	* config/i386/i386-protos.h (ix86_emit_i387_sinh): New prototype.
+	(ix86_emit_i387_cosh): Ditto.
+	(ix86_emit_i387_tanh): Ditto.
+	* config/i386/i386.c (ix86_emit_i387_sinh): New function.
+	(ix86_emit_i387_cosh): Ditto.
+	(ix86_emit_i387_tanh): Ditto.
+	* config/i386/i386.md (sinhxf2): New expander.
+	(sinh<mode>2):	Ditto.
+	(coshxf2): Ditto.
+	(cosh<mode>2): Ditto.
+	(tanhxf2): Ditto.
+	(tanh<mode>2): Ditto.
+
 2018-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88547
