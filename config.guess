@@ -1345,6 +1345,9 @@ EOF
     NSX-*:NONSTOP_KERNEL:*:*)
 	echo nsx-tandem-nsk"$UNAME_RELEASE"
 	exit ;;
+    NSV-?:NONSTOP_KERNEL:*:*)
+	echo nsv-tandem-nsk${UNAME_RELEASE}
+	exit ;;
     *:NonStop-UX:*:*)
 	echo mips-compaq-nonstopux
 	exit ;;

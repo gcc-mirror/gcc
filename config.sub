@@ -1033,6 +1033,12 @@ case $basic_machine in
 	nse-tandem)
 		basic_machine=nse-tandem
 		;;
+	nsx-tandem)
+		basic_machine=nsx-tandem
+		;;
+	nsv-tandem)
+		basic_machine=nsv-tandem
+		;;
 	nsr-tandem)
 		basic_machine=nsr-tandem
 		;;
