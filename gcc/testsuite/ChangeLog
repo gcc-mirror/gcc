@@ -1,3 +1,8 @@
+2018-12-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87881
+	* gfortran.dg/inquiry_part_ref_4.f90: New test.
+
 2018-12-21  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* gcc.target/s390/vector/fp-signedint-convert-1.c: New test.

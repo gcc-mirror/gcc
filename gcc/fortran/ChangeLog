@@ -1,3 +1,11 @@
+2018-12-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87881
+	* expr.c (find_inquiry_ref): Loop through the inquiry refs in
+	case there are two of them.
+	(simplify_ref_chain): Return true after a successful call to
+	find_inquiry_ref.
+
 2018-12-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/87992
@@ -125,7 +133,7 @@
 2018-12-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88357
-	* class.c (insert_component_ref): Check for NULL pointer and 
+	* class.c (insert_component_ref): Check for NULL pointer and
 	previous error message issued.
 	* parse.c (parse_associate): Check for NULL pointer.
 	* resolve.c (resolve_assoc_var): Check for NULL pointer.
@@ -2848,7 +2856,7 @@ notice and this notice are preserved.
 2018-12-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88357
-	* class.c (insert_component_ref): Check for NULL pointer and 
+	* class.c (insert_component_ref): Check for NULL pointer and
 	previous error message issued.
 	* parse.c (parse_associate): Check for NULL pointer.
 	* resolve.c (resolve_assoc_var): Check for NULL pointer.
