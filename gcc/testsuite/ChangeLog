@@ -1,3 +1,11 @@
+2018-12-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2018-12-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/88418
+	* gcc.target/i386/pr88418.c: New test.
+
 2018-12-17  Senthil Kumar Selvaraj  <senthilkumar.selvaraj@microchip.com>
 
 	Backport from trunk

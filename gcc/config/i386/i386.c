@@ -24118,7 +24118,7 @@ ix86_expand_sse_fp_minmax (rtx dest, enum rtx_code code, rtx cmp_op0,
   return true;
 }
 
-/* Expand an sse vector comparison.  Return the register with the result.  */
+/* Expand an SSE comparison.  Return the register with the result.  */
 
 static rtx
 ix86_expand_sse_cmp (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1,
@@ -24144,9 +24144,12 @@ ix86_expand_sse_cmp (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1,
   else
     cmp_mode = cmp_ops_mode;
 
-
   cmp_op0 = force_reg (cmp_ops_mode, cmp_op0);
-  if (!nonimmediate_operand (cmp_op1, cmp_ops_mode))
+
+  int (*op1_predicate)(rtx, machine_mode)
+    = VECTOR_MODE_P (cmp_ops_mode) ? vector_operand : nonimmediate_operand;
+
+  if (!op1_predicate (cmp_op1, cmp_ops_mode))
     cmp_op1 = force_reg (cmp_ops_mode, cmp_op1);
 
   if (optimize
@@ -24266,7 +24269,7 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
       rtx (*gen) (rtx, rtx, rtx, rtx) = NULL;
       rtx d = dest;
 
-      if (!nonimmediate_operand (op_true, mode))
+      if (!vector_operand (op_true, mode))
 	op_true = force_reg (mode, op_true);
 
       op_false = force_reg (mode, op_false);
