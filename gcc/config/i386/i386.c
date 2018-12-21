@@ -44380,6 +44380,122 @@ ix86_emit_fp_unordered_jump (rtx label)
   JUMP_LABEL (insn) = label;
 }
 
+/* Output code to perform an sinh XFmode calculation.  */
+
+void ix86_emit_i387_sinh (rtx op0, rtx op1)
+{
+  rtx e1 = gen_reg_rtx (XFmode);
+  rtx e2 = gen_reg_rtx (XFmode);
+  rtx scratch = gen_reg_rtx (HImode);
+  rtx flags = gen_rtx_REG (CCNOmode, FLAGS_REG);
+  rtx half = const_double_from_real_value (dconsthalf, XFmode);
+  rtx cst1, tmp;
+  rtx_code_label *jump_label = gen_label_rtx ();
+  rtx_insn *insn;
+
+  /* scratch = fxam (op1) */
+  emit_insn (gen_fxamxf2_i387 (scratch, op1));
+
+  /* e1 = expm1 (|op1|) */
+  emit_insn (gen_absxf2 (e2, op1));
+  emit_insn (gen_expm1xf2 (e1, e2));
+
+  /* e2 = e1 / (e1 + 1.0) + e1 */
+  cst1 = force_reg (XFmode, CONST1_RTX (XFmode));
+  emit_insn (gen_addxf3 (e2, e1, cst1));
+  emit_insn (gen_divxf3 (e2, e1, e2));
+  emit_insn (gen_addxf3 (e2, e2, e1));
+
+  /* flags = signbit (op1) */
+  emit_insn (gen_testqi_ext_1_ccno (scratch, GEN_INT (0x02)));
+
+  /* if (flags) then e2 = -e2 */
+  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode,
+			      gen_rtx_EQ (VOIDmode, flags, const0_rtx),
+			      gen_rtx_LABEL_REF (VOIDmode, jump_label),
+			      pc_rtx);
+  insn = emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
+  predict_jump (REG_BR_PROB_BASE * 50 / 100);
+  JUMP_LABEL (insn) = jump_label;
+
+  emit_insn (gen_negxf2 (e2, e2));
+
+  emit_label (jump_label);
+  LABEL_NUSES (jump_label) = 1;
+
+  /* op0 = 0.5 * e2 */
+  half = force_reg (XFmode, half);
+  emit_insn (gen_mulxf3 (op0, e2, half));
+}
+
+/* Output code to perform an cosh XFmode calculation.  */
+
+void ix86_emit_i387_cosh (rtx op0, rtx op1)
+{
+  rtx e1 = gen_reg_rtx (XFmode);
+  rtx e2 = gen_reg_rtx (XFmode);
+  rtx half = const_double_from_real_value (dconsthalf, XFmode);
+  rtx cst1;
+
+  /* e1 = exp (op1) */
+  emit_insn (gen_expxf2 (e1, op1));
+
+  /* e2 = e1 + 1.0 / e1 */
+  cst1 = force_reg (XFmode, CONST1_RTX (XFmode));
+  emit_insn (gen_divxf3 (e2, cst1, e1));
+  emit_insn (gen_addxf3 (e2, e1, e2));
+
+  /* op0 = 0.5 * e2 */
+  half = force_reg (XFmode, half);
+  emit_insn (gen_mulxf3 (op0, e2, half));
+}
+
+/* Output code to perform an tanh XFmode calculation.  */
+
+void ix86_emit_i387_tanh (rtx op0, rtx op1)
+{
+  rtx e1 = gen_reg_rtx (XFmode);
+  rtx e2 = gen_reg_rtx (XFmode);
+  rtx scratch = gen_reg_rtx (HImode);
+  rtx flags = gen_rtx_REG (CCNOmode, FLAGS_REG);
+  rtx cst2, tmp;
+  rtx_code_label *jump_label = gen_label_rtx ();
+  rtx_insn *insn;
+
+  /* scratch = fxam (op1) */
+  emit_insn (gen_fxamxf2_i387 (scratch, op1));
+
+  /* e1 = expm1 (-|2 * op1|) */
+  emit_insn (gen_addxf3 (e2, op1, op1));
+  emit_insn (gen_absxf2 (e2, e2));
+  emit_insn (gen_negxf2 (e2, e2));
+  emit_insn (gen_expm1xf2 (e1, e2));
+
+  /* e2 = e1 / (e1 + 2.0) */
+  cst2 = force_reg (XFmode, CONST2_RTX (XFmode));
+  emit_insn (gen_addxf3 (e2, e1, cst2));
+  emit_insn (gen_divxf3 (e2, e1, e2));
+
+  /* flags = signbit (op1) */
+  emit_insn (gen_testqi_ext_1_ccno (scratch, GEN_INT (0x02)));
+
+  /* if (!flags) then e2 = -e2 */
+  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode,
+			      gen_rtx_NE (VOIDmode, flags, const0_rtx),
+			      gen_rtx_LABEL_REF (VOIDmode, jump_label),
+			      pc_rtx);
+  insn = emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
+  predict_jump (REG_BR_PROB_BASE * 50 / 100);
+  JUMP_LABEL (insn) = jump_label;
+
+  emit_insn (gen_negxf2 (e2, e2));
+
+  emit_label (jump_label);
+  LABEL_NUSES (jump_label) = 1;
+
+  emit_move_insn (op0, e2);
+}
+
 /* Output code to perform an asinh XFmode calculation.  */
 
 void ix86_emit_i387_asinh (rtx op0, rtx op1)
@@ -44504,7 +44620,7 @@ void ix86_emit_i387_atanh (rtx op0, rtx op1)
   emit_label (jump_label);
   LABEL_NUSES (jump_label) = 1;
 
-  /* op0 = 0.5 * e2) */
+  /* op0 = 0.5 * e2 */
   half = force_reg (XFmode, half);
   emit_insn (gen_mulxf3 (op0, e2, half));
 }
