@@ -1,3 +1,9 @@
+2018-12-21  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88169
+	* module.c (mio_namelist): Remove an error condition/message that
+	is contrary to the Fortran standard.
+
 2018-12-15  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88138
