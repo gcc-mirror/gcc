@@ -643,7 +643,9 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	}
       if (!preserve_body)
         src->release_body ();
-      ipa_update_overall_fn_summary (dst);
+      /* Update summary.  */
+      symtab->call_cgraph_removal_hooks (dst);
+      symtab->call_cgraph_insertion_hooks (dst);
     }
   /* TODO: if there is no match, we can scale up.  */
   src->decl = oldsrcdecl;
