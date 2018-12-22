@@ -12838,25 +12838,6 @@ virtual_method_call_p (const_tree target)
   return true;
 }
 
-/* REF is OBJ_TYPE_REF, return the class the ref corresponds to.  */
-
-tree
-obj_type_ref_class (const_tree ref)
-{
-  gcc_checking_assert (TREE_CODE (ref) == OBJ_TYPE_REF);
-  ref = TREE_TYPE (ref);
-  gcc_checking_assert (TREE_CODE (ref) == POINTER_TYPE);
-  ref = TREE_TYPE (ref);
-  /* We look for type THIS points to.  ObjC also builds
-     OBJ_TYPE_REF with non-method calls, Their first parameter
-     ID however also corresponds to class type. */
-  gcc_checking_assert (TREE_CODE (ref) == METHOD_TYPE
-		       || TREE_CODE (ref) == FUNCTION_TYPE);
-  ref = TREE_VALUE (TYPE_ARG_TYPES (ref));
-  gcc_checking_assert (TREE_CODE (ref) == POINTER_TYPE);
-  return TREE_TYPE (ref);
-}
-
 /* Lookup sub-BINFO of BINFO of TYPE at offset POS.  */
 
 static tree

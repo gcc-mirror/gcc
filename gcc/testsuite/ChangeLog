@@ -1,3 +1,20 @@
+2018-12-21  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/ipa/devirt-30.C: Add dg-do.
+	* g++.dg/lto/devirt-1_0.C: New testcase.
+	* g++.dg/lto/devirt-2_0.C: New testcase.
+	* g++.dg/lto/devirt-3_0.C: New testcase.
+	* g++.dg/lto/devirt-4_0.C: New testcase.
+	* g++.dg/lto/devirt-5_0.C: New testcase.
+	* g++.dg/lto/devirt-6_0.C: New testcase.
+	* g++.dg/lto/devirt-13_0.C: New testcase.
+	* g++.dg/lto/devirt-14_0.C: New testcase.
+	* g++.dg/lto/devirt-19_0.C: New testcase.
+	* g++.dg/lto/devirt-22_0.C: New testcase.
+	* g++.dg/lto/devirt-23_0.C: New testcase.
+	* g++.dg/lto/devirt-30_0.C: New testcase.
+	* g++.dg/lto/devirt-34_0.C: New testcase.
+
 2018-12-26  Steven G . Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85798

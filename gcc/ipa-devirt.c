@@ -1985,6 +1985,30 @@ add_type_duplicate (odr_type val, tree type)
   return build_bases;
 }
 
+/* REF is OBJ_TYPE_REF, return the class the ref corresponds to.  */
+
+tree
+obj_type_ref_class (const_tree ref)
+{
+  gcc_checking_assert (TREE_CODE (ref) == OBJ_TYPE_REF);
+  ref = TREE_TYPE (ref);
+  gcc_checking_assert (TREE_CODE (ref) == POINTER_TYPE);
+  ref = TREE_TYPE (ref);
+  /* We look for type THIS points to.  ObjC also builds
+     OBJ_TYPE_REF with non-method calls, Their first parameter
+     ID however also corresponds to class type. */
+  gcc_checking_assert (TREE_CODE (ref) == METHOD_TYPE
+		       || TREE_CODE (ref) == FUNCTION_TYPE);
+  ref = TREE_VALUE (TYPE_ARG_TYPES (ref));
+  gcc_checking_assert (TREE_CODE (ref) == POINTER_TYPE);
+  tree ret = TREE_TYPE (ref);
+  if (!in_lto_p)
+    ret = TYPE_CANONICAL (ret);
+  else
+    ret = get_odr_type (ret)->type;
+  return ret;
+}
+
 /* Get ODR type hash entry for TYPE.  If INSERT is true, create
    possibly new entry.  */
 
@@ -2000,6 +2024,8 @@ get_odr_type (tree type, bool insert)
   int base_id = -1;
 
   type = TYPE_MAIN_VARIANT (type);
+  if (!in_lto_p)
+    type = TYPE_CANONICAL (type);
 
   gcc_checking_assert (can_be_name_hashed_p (type)
 		       || can_be_vtable_hashed_p (type));
