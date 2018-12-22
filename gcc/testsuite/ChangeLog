@@ -1,3 +1,8 @@
+2018-12-22  Steven G . Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85798
+	* gfortran.dg/pr85798.f90: New test.
+
 2018-12-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
