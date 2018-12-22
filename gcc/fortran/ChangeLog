@@ -1,3 +1,10 @@
+2018-12-22  Steven G . Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85798
+	* decl.c (gfc_match_data): If a component of a derived type entity
+	appears in data statement, check that does not have the allocatable
+	attribute.
+ 
 2018-12-22  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88169
