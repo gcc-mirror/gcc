@@ -1,3 +1,14 @@
+2018-12-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2018-08-16  Iain Sandoe <iain@sandoe.co.uk>
+ 
+	* c-c++-common/asan/pointer-subtract-3.c: Skip for Darwin.
+	* c-c++-common/asan/pointer-subtract-4.c: Likewise.
+	* g++.dg/torture/pr44295.C : Likewise.
+
+2018-12-22  Iain Sandoe  <iain@sandoe.co.uk>
+
 	Backport from mainline
 	2018-08-22  Iain Sandoe  <iain@sandoe.co.uk>
 
