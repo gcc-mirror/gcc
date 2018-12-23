@@ -2015,12 +2015,12 @@ get_string_length (tree str, unsigned eltsize)
     }
   else if (!slen
 	   && data.decl
-	   && data.len
-	   && TREE_CODE (data.len) == INTEGER_CST)
+	   && data.minlen
+	   && TREE_CODE (data.minlen) == INTEGER_CST)
     {
       /* STR was not properly NUL terminated, but we have
 	 length information about the unterminated string.  */
-      fmtresult res (tree_to_shwi (data.len));
+      fmtresult res (tree_to_shwi (data.minlen));
       res.nonstr = data.decl;
       return res;
     }

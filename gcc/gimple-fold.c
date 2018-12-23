@@ -1343,8 +1343,8 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 	  if (!val && lendata.decl)
 	    {
 	      *nonstr = lendata.decl;
-	      *minlen = lendata.len;
-	      *maxlen = lendata.len;
+	      *minlen = lendata.minlen;
+	      *maxlen = lendata.minlen;
 	      return type == 0 ? false : true;
 	    }
 	}
