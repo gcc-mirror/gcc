@@ -981,13 +981,14 @@ main (int argc, char **argv)
   object = CONST_CAST2 (const char **, char **, object_lst);
 
 #ifdef DEBUG
-  debug = 1;
+  debug = true;
 #endif
 
-  /* Parse command line early for instances of -debug.  This allows
-     the debug flag to be set before functions like find_a_file()
-     are called.  We also look for the -flto or -flto-partition=none flag to know
-     what LTO mode we are in.  */
+  save_temps = false;
+  verbose = false;
+  /* Parse command line / environment for flags we want early.
+     This allows the debug flag to be set before functions like find_a_file()
+     are called. */
   {
     bool no_partition = false;
 
@@ -995,8 +996,6 @@ main (int argc, char **argv)
       {
 	if (! strcmp (argv[i], "-debug"))
 	  debug = true;
-        else if (! strcmp (argv[i], "-flto-partition=none"))
-	  no_partition = true;
 	else if (!strncmp (argv[i], "-fno-lto", 8))
 	  lto_mode = LTO_MODE_NONE;
         else if (! strcmp (argv[i], "-plugin"))
@@ -1031,13 +1030,6 @@ main (int argc, char **argv)
 	    aixlazy_flag = 1;
 #endif
       }
-    verbose = debug;
-    find_file_set_debug (debug);
-    if (use_plugin)
-      lto_mode = LTO_MODE_NONE;
-    if (no_partition && lto_mode == LTO_MODE_WHOPR)
-      lto_mode = LTO_MODE_LTO;
-  }
 
 #ifndef DEFAULT_A_OUT_NAME
   output_file = "a.out";
@@ -1045,20 +1037,37 @@ main (int argc, char **argv)
   output_file = DEFAULT_A_OUT_NAME;
 #endif
 
-  obstack_begin (&temporary_obstack, 0);
-  temporary_firstobj = (char *) obstack_alloc (&temporary_obstack, 0);
+    obstack_begin (&temporary_obstack, 0);
+    temporary_firstobj = (char *) obstack_alloc (&temporary_obstack, 0);
 
 #ifndef HAVE_LD_DEMANGLE
   current_demangling_style = auto_demangling;
 #endif
-  p = getenv ("COLLECT_GCC_OPTIONS");
-  while (p && *p)
-    {
-      const char *q = extract_string (&p);
-      if (*q == '-' && (q[1] == 'm' || q[1] == 'f'))
-	num_c_args++;
+
+    /* Now pick up any flags we want early from COLLECT_GCC_OPTIONS
+       The LTO options are passed here as are other options that might
+       be unsuitable for ld (e.g. -save-temps).  */
+    p = getenv ("COLLECT_GCC_OPTIONS");
+    while (p && *p)
+      {
+	const char *q = extract_string (&p);
+	if (*q == '-' && (q[1] == 'm' || q[1] == 'f'))
+	  num_c_args++;
+	if (strncmp (q, "-flto-partition=none", 20) == 0)
+	  no_partition = true;
+	else if (strncmp (q, "-fno-lto", 8) == 0)
+	  lto_mode = LTO_MODE_NONE;
     }
-  obstack_free (&temporary_obstack, temporary_firstobj);
+    obstack_free (&temporary_obstack, temporary_firstobj);
+
+    verbose = verbose || debug;
+    save_temps = save_temps || debug;
+    find_file_set_debug (debug);
+    if (use_plugin)
+      lto_mode = LTO_MODE_NONE;
+    if (no_partition && lto_mode == LTO_MODE_WHOPR)
+      lto_mode = LTO_MODE_LTO;
+  }
 
   /* -fno-profile-arcs -fno-test-coverage -fno-branch-probabilities
      -fno-exceptions -w -fno-whole-program */
