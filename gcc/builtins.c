@@ -577,11 +577,11 @@ unterminated_array (tree exp, tree *size /* = NULL */, bool *exact /* = NULL */)
      structure if EXP references a unterminated array.  */
   c_strlen_data lendata = { };
   tree len = c_strlen (exp, 1, &lendata);
-  if (len == NULL_TREE && lendata.len && lendata.decl)
+  if (len == NULL_TREE && lendata.minlen && lendata.decl)
      {
        if (size)
 	{
-	  len = lendata.len;
+	  len = lendata.minlen;
 	  if (lendata.off)
 	    {
 	      /* Constant offsets are already accounted for in LENDATA.MINLEN,
@@ -720,7 +720,7 @@ c_strlen (tree src, int only_value, c_strlen_data *data, unsigned eltsize)
 	{
 	  data->decl = decl;
 	  data->off = byteoff;
-	  data->len = ssize_int (len);
+	  data->minlen = ssize_int (len);
 	  return NULL_TREE;
 	}
 
@@ -794,7 +794,7 @@ c_strlen (tree src, int only_value, c_strlen_data *data, unsigned eltsize)
     {
       data->decl = decl;
       data->off = byteoff;
-      data->len = ssize_int (len);
+      data->minlen = ssize_int (len);
       return NULL_TREE;
     }
 
