@@ -1,10 +1,22 @@
+2018-12-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/77325
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): If the
+	rhs has a charlen expression, convert that and use it.
+	* trans-expr.c (gfc_trans_assignment_1): The rse.pre for the
+	assignment of deferred character array vars to a realocatable
+	lhs should not be added to the exterior block since vector
+	indices, for example, generate temporaries indexed within the
+	loop.
+
 2018-12-22  Steven G . Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85798
 	* decl.c (gfc_match_data): If a component of a derived type entity
 	appears in data statement, check that does not have the allocatable
 	attribute.
- 
+
 2018-12-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk

@@ -1,3 +1,9 @@
+2018-12-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/77325
+	* gfortran.dg/deferred_character_22.f90 : New test.
+
 2018-12-22  Steven G . Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85798
@@ -35,7 +41,7 @@
 	(test_noreturn): Likewise.
 
 	2018-08-16  Iain Sandoe <iain@sandoe.co.uk>
- 
+
 	* gcc.dg/memcmp-1.c (lib_memcmp): Apply __USER_LABEL_PREFIX__.
 	(lib_strncmp): Likewise.
 
