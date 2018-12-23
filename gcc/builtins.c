@@ -575,8 +575,7 @@ unterminated_array (tree exp, tree *size /* = NULL */, bool *exact /* = NULL */)
 {
   /* C_STRLEN will return NULL and set DECL in the info
      structure if EXP references a unterminated array.  */
-  c_strlen_data data;
-  memset (&data, 0, sizeof (c_strlen_data));
+  c_strlen_data data = { };
   tree len = c_strlen (exp, 1, &data);
   if (len == NULL_TREE && data.len && data.decl)
      {
@@ -647,8 +646,7 @@ c_strlen (tree src, int only_value, c_strlen_data *data, unsigned eltsize)
   /* If we were not passed a DATA pointer, then get one to a local
      structure.  That avoids having to check DATA for NULL before
      each time we want to use it.  */
-  c_strlen_data local_strlen_data;
-  memset (&local_strlen_data, 0, sizeof (c_strlen_data));
+  c_strlen_data local_strlen_data = { };
   if (!data)
     data = &local_strlen_data;
 
@@ -3085,8 +3083,7 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
 
   /* FIXME: Change c_strlen() to return sizetype instead of ssizetype
      so these conversions aren't necessary.  */
-  c_strlen_data data;
-  memset (&data, 0, sizeof (c_strlen_data));
+  c_strlen_data data { };
   tree len = c_strlen (src, 0, &data, 1);
   if (len)
     len = fold_convert_loc (loc, TREE_TYPE (bound), len);
@@ -4086,8 +4083,7 @@ expand_builtin_stpcpy_1 (tree exp, rtx target, machine_mode mode)
 	 compile-time, not an expression containing a string.  This is
 	 because the latter will potentially produce pessimized code
 	 when used to produce the return value.  */
-      c_strlen_data data;
-      memset (&data, 0, sizeof (c_strlen_data));
+      c_strlen_data data = { };
       if (!c_getstr (src, NULL)
 	  || !(len = c_strlen (src, 0, &data, 1)))
 	return expand_movstr (dst, src, target,
@@ -8571,8 +8567,7 @@ fold_builtin_strlen (location_t loc, tree type, tree arg)
     return NULL_TREE;
   else
     {
-      c_strlen_data data;
-      memset (&data, 0, sizeof (c_strlen_data));
+      c_strlen_data data = { };
       tree len = c_strlen (arg, 0, &data);
 
       if (len)

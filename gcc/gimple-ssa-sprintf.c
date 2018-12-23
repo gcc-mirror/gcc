@@ -2003,8 +2003,7 @@ get_string_length (tree str, unsigned eltsize)
   if (!str)
     return fmtresult ();
 
-  c_strlen_data data;
-  memset (&data, 0, sizeof (c_strlen_data));
+  c_strlen_data data = { };
   tree slen = c_strlen (str, 1, &data, eltsize);
   if (slen && TREE_CODE (slen) == INTEGER_CST)
     {
