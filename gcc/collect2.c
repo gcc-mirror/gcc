@@ -203,8 +203,8 @@ bool helpflag;			/* true if --help */
 static int shared_obj;			/* true if -shared */
 static int static_obj;			/* true if -static */
 
-static const char *c_file;		/* <xxx>.c for constructor/destructor list.  */
-static const char *o_file;		/* <xxx>.o for constructor/destructor list.  */
+static char *c_file;		/* <xxx>.c for constructor/destructor list.  */
+static char *o_file;		/* <xxx>.o for constructor/destructor list.  */
 #ifdef COLLECT_EXPORT_LIST
 static const char *export_file;		/* <xxx>.x for AIX export list.  */
 #endif
@@ -986,6 +986,13 @@ main (int argc, char **argv)
 
   save_temps = false;
   verbose = false;
+
+#ifndef DEFAULT_A_OUT_NAME
+  output_file = "a.out";
+#else
+  output_file = DEFAULT_A_OUT_NAME;
+#endif
+
   /* Parse command line / environment for flags we want early.
      This allows the debug flag to be set before functions like find_a_file()
      are called. */
@@ -1008,8 +1015,17 @@ main (int argc, char **argv)
 	  selected_linker = USE_BFD_LD;
 	else if (strcmp (argv[i], "-fuse-ld=gold") == 0)
 	  selected_linker = USE_GOLD_LD;
-  else if (strcmp (argv[i], "-fuse-ld=lld") == 0)
-    selected_linker = USE_LLD_LD;
+	else if (strcmp (argv[i], "-fuse-ld=lld") == 0)
+	  selected_linker = USE_LLD_LD;
+	else if (strncmp (argv[i], "-o", 2) == 0)
+	  {
+	    /* Parse the output filename if it's given so that we can make
+	       meaningful temp filenames.  */
+	    if (argv[i][2] == '\0')
+	      output_file = argv[i+1];
+	    else
+	      output_file = &argv[i][2];
+	  }
 
 #ifdef COLLECT_EXPORT_LIST
 	/* These flags are position independent, although their order
@@ -1031,12 +1047,6 @@ main (int argc, char **argv)
 #endif
       }
 
-#ifndef DEFAULT_A_OUT_NAME
-  output_file = "a.out";
-#else
-  output_file = DEFAULT_A_OUT_NAME;
-#endif
-
     obstack_begin (&temporary_obstack, 0);
     temporary_firstobj = (char *) obstack_alloc (&temporary_obstack, 0);
 
@@ -1057,6 +1067,9 @@ main (int argc, char **argv)
 	  no_partition = true;
 	else if (strncmp (q, "-fno-lto", 8) == 0)
 	  lto_mode = LTO_MODE_NONE;
+	else if (strncmp (q, "-save-temps", 11) == 0)
+	  /* FIXME: Honour =obj.  */
+	  save_temps = true;
     }
     obstack_free (&temporary_obstack, temporary_firstobj);
 
@@ -1217,8 +1230,22 @@ main (int argc, char **argv)
   *ld1++ = *ld2++ = ld_file_name;
 
   /* Make temp file names.  */
-  c_file = make_temp_file (".c");
-  o_file = make_temp_file (".o");
+  if (save_temps)
+    {
+      c_file = (char *) xmalloc (strlen (output_file)
+				  + sizeof (".cdtor.c") + 1);
+      strcpy (c_file, output_file);
+      strcat (c_file, ".cdtor.c");
+      o_file = (char *) xmalloc (strlen (output_file)
+				  + sizeof (".cdtor.o") + 1);
+      strcpy (o_file, output_file);
+      strcat (o_file, ".cdtor.o");
+    }
+  else
+    {
+      c_file = make_temp_file (".cdtor.c");
+      o_file = make_temp_file (".cdtor.o");
+    }
 #ifdef COLLECT_EXPORT_LIST
   export_file = make_temp_file (".x");
 #endif
@@ -1227,6 +1254,7 @@ main (int argc, char **argv)
       ldout = make_temp_file (".ld");
       lderrout = make_temp_file (".le");
     }
+  /* Build the command line to compile the ctor/dtor list.  */
   *c_ptr++ = c_file_name;
   *c_ptr++ = "-x";
   *c_ptr++ = "c";
@@ -1684,8 +1712,6 @@ main (int argc, char **argv)
 	else
 	  post_ld_pass (false);
 
-	maybe_unlink (c_file);
-	maybe_unlink (o_file);
 	return 0;
       }
   }
@@ -1873,9 +1899,10 @@ main (int argc, char **argv)
 void
 maybe_unlink (const char *file)
 {
-  if (debug)
+  if (save_temps && file_exists (file))
     {
-      notice ("[Leaving %s]\n", file);
+      if (verbose)
+	notice ("[Leaving %s]\n", file);
       return;
     }
 
