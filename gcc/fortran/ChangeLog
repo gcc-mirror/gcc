@@ -1,6 +1,13 @@
 2018-12-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
+	PR fortran/77703
+	* resolve.c (get_temp_from_expr): Use the string length of
+	constant character expressions.
+
+2018-12-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
 	PR fortran/77325
 	* trans-array.c (gfc_alloc_allocatable_for_assignment): If the
 	rhs has a charlen expression, convert that and use it.
