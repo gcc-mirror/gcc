@@ -1,3 +1,8 @@
+2018-12-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* adaint.c [__APPLE__] (__gnat_lwp_self): Ensure that the system
+	interface used is available on the target.
+
 2018-12-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (rm_size): Take into account the padding in
