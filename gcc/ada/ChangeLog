@@ -1,3 +1,8 @@
+2018-12-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* adaint.c [__APPLE__] (__gnat_lwp_self): Ensure that the system
+	interface used is available on the target.
+
 2018-11-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/misc.c (gnat_init_gcc_eh): Do not override the switch
