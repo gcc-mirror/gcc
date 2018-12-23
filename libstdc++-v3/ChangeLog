@@ -1,5 +1,9 @@
 2018-12-23  François Dumont  <fdumont@gcc.gnu.org>
 
+	* libstdc++-v3/testsuite/util/testsuite_allocator.h
+	(CustomPointerAlloc<>::allocate(size_t, pointer)): Replace by...
+	(CustomPointerAlloc<>::allocate(size_t, const_void_pointer)): ...this.
+
 	Respect pointer_traits on node deallocation in _ReuseOrAllocNode
 	parenthesis operator.
 
