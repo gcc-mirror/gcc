@@ -1335,16 +1335,16 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 	}
       else
 	{
-	  c_strlen_data data = { };
-	  val = c_strlen (arg, 1, &data, eltsize);
+	  c_strlen_data lendata = { };
+	  val = c_strlen (arg, 1, &lendata, eltsize);
 
 	  /* If we potentially had a non-terminated string, then
 	     bubble that information up to the caller.  */
-	  if (!val && data.decl)
+	  if (!val && lendata.decl)
 	    {
-	      *nonstr = data.decl;
-	      *minlen = data.len;
-	      *maxlen = data.len;
+	      *nonstr = lendata.decl;
+	      *minlen = lendata.len;
+	      *maxlen = lendata.len;
 	      return type == 0 ? false : true;
 	    }
 	}
@@ -1358,20 +1358,21 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 
 	  if (TREE_CODE (arg) == ARRAY_REF)
 	    {
-	      tree type = TREE_TYPE (TREE_OPERAND (arg, 0));
+	      tree optype = TREE_TYPE (TREE_OPERAND (arg, 0));
 
 	      /* Determine the "innermost" array type.  */
-	      while (TREE_CODE (type) == ARRAY_TYPE
-		     && TREE_CODE (TREE_TYPE (type)) == ARRAY_TYPE)
-		type = TREE_TYPE (type);
+	      while (TREE_CODE (optype) == ARRAY_TYPE
+		     && TREE_CODE (TREE_TYPE (optype)) == ARRAY_TYPE)
+		optype = TREE_TYPE (optype);
 
 	      /* Avoid arrays of pointers.  */
-	      tree eltype = TREE_TYPE (type);
-	      if (TREE_CODE (type) != ARRAY_TYPE
+	      tree eltype = TREE_TYPE (optype);
+	      if (TREE_CODE (optype) != ARRAY_TYPE
 		  || !INTEGRAL_TYPE_P (eltype))
 		return false;
 
-	      val = TYPE_SIZE_UNIT (type);
+	      /* Fail when the array bound is unknown or zero.  */
+	      val = TYPE_SIZE_UNIT (optype);
 	      if (!val || integer_zerop (val))
 		return false;
 
@@ -1382,7 +1383,7 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 	      *minlen = ssize_int (0);
 
 	      if (TREE_CODE (TREE_OPERAND (arg, 0)) == COMPONENT_REF
-		  && type == TREE_TYPE (TREE_OPERAND (arg, 0))
+		  && optype == TREE_TYPE (TREE_OPERAND (arg, 0))
 		  && array_at_struct_end_p (TREE_OPERAND (arg, 0)))
 		*flexp = true;
 	    }
@@ -1401,16 +1402,17 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 	      if (array_at_struct_end_p (arg))
 		*flexp = true;
 
-	      arg = TREE_OPERAND (arg, 1);
+	      tree fld = TREE_OPERAND (arg, 1);
 
-	      tree type = TREE_TYPE (arg);
+	      tree optype = TREE_TYPE (fld);
 
-	      while (TREE_CODE (type) == ARRAY_TYPE
-		     && TREE_CODE (TREE_TYPE (type)) == ARRAY_TYPE)
-		type = TREE_TYPE (type);
+	      /* Determine the "innermost" array type.  */
+	      while (TREE_CODE (optype) == ARRAY_TYPE
+		     && TREE_CODE (TREE_TYPE (optype)) == ARRAY_TYPE)
+		optype = TREE_TYPE (optype);
 
 	      /* Fail when the array bound is unknown or zero.  */
-	      val = TYPE_SIZE_UNIT (type);
+	      val = TYPE_SIZE_UNIT (optype);
 	      if (!val || integer_zerop (val))
 		return false;
 	      val = fold_build2 (MINUS_EXPR, TREE_TYPE (val), val,

@@ -1,6 +1,13 @@
 2018-12-23  Martin Sebor  <msebor@redhat.com>
 	    Jeff Law  <law@redhat.com>
 
+	* builtins.c (unterminated_array): Rename "data" to "lendata".  Fix
+	a few comments.
+	(expand_builtin_strnlen, expand_builtin_stpcpy_1): Likewise.
+	(fold_builtin_strlen): Likewise.
+	* gimple-fold.c (get_range_strlen): Likewise.  Also rename a couple
+	instances of "type" to "optype" and "arg" to "fld".
+
 	* builtins.c (unterminated_array): Use empty brace initialization
 	for c_strlen_data.
 	(c_strlen, expand_builtin_strnlen): Likewise.
