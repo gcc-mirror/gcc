@@ -1,3 +1,13 @@
+2018-12-23  François Dumont  <fdumont@gcc.gnu.org>
+
+	Respect pointer_traits on node deallocation in _ReuseOrAllocNode
+	parenthesis operator.
+
+	* include/bits/hashtable_policy.h
+	(_Hashtable_alloc<>::_M_deallocate_node_ptr(__node_type*)): New.
+	(_Hashtable_alloc<>::_M_deallocate_node(__node_type*)): Use latter.
+	(_ReuseOrAllocNode<>::operator<_Arg>()(_Arg&&)): Likewise.
+
 2018-12-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* /config/os/bsd/darwin/ppc-extra.ver: Append long double symbols.
