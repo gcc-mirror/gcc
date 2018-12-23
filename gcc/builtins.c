@@ -575,25 +575,25 @@ unterminated_array (tree exp, tree *size /* = NULL */, bool *exact /* = NULL */)
 {
   /* C_STRLEN will return NULL and set DECL in the info
      structure if EXP references a unterminated array.  */
-  c_strlen_data data = { };
-  tree len = c_strlen (exp, 1, &data);
-  if (len == NULL_TREE && data.len && data.decl)
+  c_strlen_data lendata = { };
+  tree len = c_strlen (exp, 1, &lendata);
+  if (len == NULL_TREE && lendata.len && lendata.decl)
      {
        if (size)
 	{
-	  len = data.len;
-	  if (data.off)
+	  len = lendata.len;
+	  if (lendata.off)
 	    {
-	      /* Constant offsets are already accounted for in data.len, but
-		 not in a SSA_NAME + CST expression.  */
-	      if (TREE_CODE (data.off) == INTEGER_CST)
+	      /* Constant offsets are already accounted for in LENDATA.MINLEN,
+		 but not in a SSA_NAME + CST expression.  */
+	      if (TREE_CODE (lendata.off) == INTEGER_CST)
 		*exact = true;
-	      else if (TREE_CODE (data.off) == PLUS_EXPR
-		       && TREE_CODE (TREE_OPERAND (data.off, 1)) == INTEGER_CST)
+	      else if (TREE_CODE (lendata.off) == PLUS_EXPR
+		       && TREE_CODE (TREE_OPERAND (lendata.off, 1)) == INTEGER_CST)
 		{
 		  /* Subtract the offset from the size of the array.  */
 		  *exact = false;
-		  tree temp = TREE_OPERAND (data.off, 1);
+		  tree temp = TREE_OPERAND (lendata.off, 1);
 		  temp = fold_convert (ssizetype, temp);
 		  len = fold_build2 (MINUS_EXPR, ssizetype, len, temp);
 		}
@@ -605,7 +605,7 @@ unterminated_array (tree exp, tree *size /* = NULL */, bool *exact /* = NULL */)
 
 	  *size = len;
 	}
-       return data.decl;
+       return lendata.decl;
      }
 
   return NULL_TREE;
@@ -3083,8 +3083,8 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
 
   /* FIXME: Change c_strlen() to return sizetype instead of ssizetype
      so these conversions aren't necessary.  */
-  c_strlen_data data { };
-  tree len = c_strlen (src, 0, &data, 1);
+  c_strlen_data lendata = { };
+  tree len = c_strlen (src, 0, &lendata, 1);
   if (len)
     len = fold_convert_loc (loc, TREE_TYPE (bound), len);
 
@@ -3106,12 +3106,12 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
 	       strnlen (&a[i], sizeof a)
 	     where the value of i is unknown.  Unless i's value is
 	     zero, the call is unsafe because the bound is greater. */
-	  data.decl = unterminated_array (src, &len, &exact);
-	  if (!data.decl)
+	  lendata.decl = unterminated_array (src, &len, &exact);
+	  if (!lendata.decl)
 	    return NULL_RTX;
 	}
 
-      if (data.decl
+      if (lendata.decl
 	  && !TREE_NO_WARNING (exp)
 	  && ((tree_int_cst_lt (len, bound))
 	      || !exact))
@@ -3127,7 +3127,7 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
 			       "of at most %E of unterminated array"),
 			  exp, func, bound, len))
 	    {
-	      inform (DECL_SOURCE_LOCATION (data.decl),
+	      inform (DECL_SOURCE_LOCATION (lendata.decl),
 		      "referenced argument declared here");
 	      TREE_NO_WARNING (exp) = true;
 	      return NULL_RTX;
@@ -3160,12 +3160,12 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
   bool exact = true;
   if (!len || TREE_CODE (len) != INTEGER_CST)
     {
-      data.decl = unterminated_array (src, &len, &exact);
-      if (!data.decl)
+      lendata.decl = unterminated_array (src, &len, &exact);
+      if (!lendata.decl)
 	return NULL_RTX;
     }
 
-  if (data.decl
+  if (lendata.decl
       && !TREE_NO_WARNING (exp)
       && (wi::ltu_p (wi::to_wide (len), min)
 	  || !exact))
@@ -3181,13 +3181,13 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
 			   "the size of at most %E of unterminated array"),
 		      exp, func, min.to_uhwi (), max.to_uhwi (), len))
 	{
-	  inform (DECL_SOURCE_LOCATION (data.decl),
+	  inform (DECL_SOURCE_LOCATION (lendata.decl),
 		  "referenced argument declared here");
 	  TREE_NO_WARNING (exp) = true;
 	}
     }
 
-  if (data.decl)
+  if (lendata.decl)
     return NULL_RTX;
 
   if (wi::gtu_p (min, wi::to_wide (len)))
@@ -4083,14 +4083,14 @@ expand_builtin_stpcpy_1 (tree exp, rtx target, machine_mode mode)
 	 compile-time, not an expression containing a string.  This is
 	 because the latter will potentially produce pessimized code
 	 when used to produce the return value.  */
-      c_strlen_data data = { };
+      c_strlen_data lendata = { };
       if (!c_getstr (src, NULL)
-	  || !(len = c_strlen (src, 0, &data, 1)))
+	  || !(len = c_strlen (src, 0, &lendata, 1)))
 	return expand_movstr (dst, src, target,
 			      /*retmode=*/ RETURN_END_MINUS_ONE);
 
-      if (data.decl && !TREE_NO_WARNING (exp))
-	warn_string_no_nul (EXPR_LOCATION (exp), "stpcpy", src, data.decl);
+      if (lendata.decl && !TREE_NO_WARNING (exp))
+	warn_string_no_nul (EXPR_LOCATION (exp), "stpcpy", src, lendata.decl);
 
       lenp1 = size_binop_loc (loc, PLUS_EXPR, len, ssize_int (1));
       ret = expand_builtin_mempcpy_args (dst, src, lenp1,
@@ -8567,22 +8567,22 @@ fold_builtin_strlen (location_t loc, tree type, tree arg)
     return NULL_TREE;
   else
     {
-      c_strlen_data data = { };
-      tree len = c_strlen (arg, 0, &data);
+      c_strlen_data lendata = { };
+      tree len = c_strlen (arg, 0, &lendata);
 
       if (len)
 	return fold_convert_loc (loc, type, len);
 
-      if (!data.decl)
-	c_strlen (arg, 1, &data);
+      if (!lendata.decl)
+	c_strlen (arg, 1, &lendata);
 
-      if (data.decl)
+      if (lendata.decl)
 	{
 	  if (EXPR_HAS_LOCATION (arg))
 	    loc = EXPR_LOCATION (arg);
 	  else if (loc == UNKNOWN_LOCATION)
 	    loc = input_location;
-	  warn_string_no_nul (loc, "strlen", arg, data.decl);
+	  warn_string_no_nul (loc, "strlen", arg, lendata.decl);
 	}
 
       return NULL_TREE;
