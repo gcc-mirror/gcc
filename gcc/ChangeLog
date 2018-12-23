@@ -1,5 +1,14 @@
 2018-12-23  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* collect2.c (maybe_run_lto_and_relink): Don’t say we have a temp file
+	unless we actually did some LTO.
+	(has_lto_section, is_lto_object_file): New.
+	(maybe_lto_object_file): Remove.
+	(scan_prog_file): Use is_lto_object_file() instead of scanning the
+	output of nm.
+
+2018-12-23  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* collect2.c (main): Parse the output file early so we can make nicer
 	temp names.  Respond to “-save-temps” in the GCC OPTIONS.
 	(maybe_unlink): Don’t print “[Leaving…”] for files we never created
