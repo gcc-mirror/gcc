@@ -1,3 +1,13 @@
+2018-12-23  Alan Modra  <amodra@gmail.com>
+
+	PR 88346
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Correct %e message.  Handle
+	-mcpu=rs64, not -mcpu=rs64a.  Handle -mcpu=powerpc64 and -mcpu=titan.
+	* config/rs6000/driver-rs6000.c (asm_names): Similarly.
+	* config/rs6000/aix71.h (ASM_CPU_SPEC): Delete %e message.  Handle
+	-mcpu=rs64, not -mcpu=rs64a.
+	* config/rs6000/aix72.h (ASM_CPU_SPEC): Likewise.
+
 2018-12-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* lto-wrapper.c (tool_cleanup): Don’t report ficticious temp files.
