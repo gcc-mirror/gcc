@@ -1,5 +1,12 @@
 2018-12-23  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* collect2.c (main): Parse the output file early so we can make nicer
+	temp names.  Respond to “-save-temps” in the GCC OPTIONS.
+	(maybe_unlink): Don’t print “[Leaving…”] for files we never created
+	and don’t exist.
+
+2018-12-23  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* collect2.c (main): Combine flags from both the command line and
 	COLLECT_GCC_OPTIONS to determine the set in force
 
