@@ -1,3 +1,9 @@
+2018-12-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/77703
+	* resolve.c (get_temp_from_expr): Use the string length of
+	constant character expressions.
+
 2018-12-22  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88328
@@ -11,7 +17,7 @@
 	* decl.c (gfc_match_data): If a component of a derived type entity
 	appears in data statement, check that does not have the allocatable
 	attribute.
- 
+
 2018-12-22  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88169
