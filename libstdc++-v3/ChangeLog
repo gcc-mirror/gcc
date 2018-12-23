@@ -1,3 +1,11 @@
+2018-12-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2018-12-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* scripts/make_exports.pl (check names): Don’t try to export
+	construction vtable symbols.
+
 2018-12-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline
