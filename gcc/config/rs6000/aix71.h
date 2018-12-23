@@ -77,7 +77,7 @@ do {									\
   mcpu=power4: -mpwr4; \
   mcpu=power3: -m620; \
   mcpu=powerpc: -mppc; \
-  mcpu=rs64a: -mppc; \
+  mcpu=rs64: -mppc; \
   mcpu=603: -m603; \
   mcpu=603e: -m603; \
   mcpu=604: -m604; \
@@ -88,8 +88,7 @@ do {									\
   !mcpu*: %{mvsx: -mpwr6; \
 	    maltivec: -m970; \
 	    maix64|mpowerpc64: -mppc64; \
-	    : %(asm_default)}; \
-  :%eMissing -mcpu option in ASM_SPEC_CPU?\n} \
+	    : %(asm_default)}} \
 -many"
 
 #undef	ASM_DEFAULT_SPEC
