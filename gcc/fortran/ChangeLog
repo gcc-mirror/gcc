@@ -1,3 +1,10 @@
+2018-12-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88328
+	* io.c (resolve_tag_format): Add error for zero-sized array.
+	(gfc_resolve_dt): Manipulate gfc_current_locus to get sensible error
+	message locus.
+
 2018-12-22  Steven G . Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85798
