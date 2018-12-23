@@ -1,5 +1,9 @@
 2018-12-23  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* config/i386/darwin.h (TARGET_ASM_OUTPUT_IDENT): New.
+
+2018-12-23  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* collect2.c (maybe_run_lto_and_relink): Don’t say we have a temp file
 	unless we actually did some LTO.
 	(has_lto_section, is_lto_object_file): New.

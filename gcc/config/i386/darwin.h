@@ -219,6 +219,11 @@ extern int darwin_emit_branch_islands;
         }				\
     } while (0)
 
+/* Darwin x86 assemblers support the .ident directive.  */
+
+#undef TARGET_ASM_OUTPUT_IDENT
+#define TARGET_ASM_OUTPUT_IDENT default_asm_output_ident_directive
+
 /* Darwin profiling -- call mcount.  */
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)				\
