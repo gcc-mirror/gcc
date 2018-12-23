@@ -135,8 +135,7 @@ namespace __detail
 		}
 	      __catch(...)
 		{
-		  __node->~__node_type();
-		  __node_alloc_traits::deallocate(__a, __node, 1);
+		  _M_h._M_deallocate_node_ptr(__node);
 		  __throw_exception_again;
 		}
 	      return __node;
@@ -2047,6 +2046,9 @@ namespace __detail
       void
       _M_deallocate_node(__node_type* __n);
 
+      void
+      _M_deallocate_node_ptr(__node_type* __n);
+
       // Deallocate the linked list of nodes pointed to by __n
       void
       _M_deallocate_nodes(__node_type* __n);
@@ -2086,9 +2088,16 @@ namespace __detail
     void
     _Hashtable_alloc<_NodeAlloc>::_M_deallocate_node(__node_type* __n)
     {
+      __node_alloc_traits::destroy(_M_node_allocator(), __n->_M_valptr());
+      _M_deallocate_node_ptr(__n);
+    }
+
+  template<typename _NodeAlloc>
+    void
+    _Hashtable_alloc<_NodeAlloc>::_M_deallocate_node_ptr(__node_type* __n)
+    {
       typedef typename __node_alloc_traits::pointer _Ptr;
       auto __ptr = std::pointer_traits<_Ptr>::pointer_to(*__n);
-      __node_alloc_traits::destroy(_M_node_allocator(), __n->_M_valptr());
       __n->~__node_type();
       __node_alloc_traits::deallocate(_M_node_allocator(), __ptr, 1);
     }
