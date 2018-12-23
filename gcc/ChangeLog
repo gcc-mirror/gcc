@@ -1,3 +1,14 @@
+2018-12-23  Martin Sebor  <msebor@redhat.com>
+	    Jeff Law  <law@redhat.com>
+
+	* builtins.c (unterminated_array): Use empty brace initialization
+	for c_strlen_data.
+	(c_strlen, expand_builtin_strnlen): Likewise.
+	(expand_builtin_stpcpy_1, fold_builtin_strlen): Likewise.
+	* gimple-fold.c (get_range_strlen): Likewise.
+	(gimple_fold_builtin_stpcpy): Likewise.
+	* gimple-ssa-sprintf.c (get_string_length): Likewise.
+
 2018-12-23  Alan Modra  <amodra@gmail.com>
 
 	PR 88346

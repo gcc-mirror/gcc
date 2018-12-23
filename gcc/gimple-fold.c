@@ -1335,8 +1335,7 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 	}
       else
 	{
-	  c_strlen_data data;
-	  memset (&data, 0, sizeof (c_strlen_data));
+	  c_strlen_data data = { };
 	  val = c_strlen (arg, 1, &data, eltsize);
 
 	  /* If we potentially had a non-terminated string, then
@@ -2824,8 +2823,7 @@ gimple_fold_builtin_stpcpy (gimple_stmt_iterator *gsi)
     }
 
   /* Set to non-null if ARG refers to an unterminated array.  */
-  c_strlen_data data;
-  memset (&data, 0, sizeof (c_strlen_data));
+  c_strlen_data data = { };
   tree len = c_strlen (src, 1, &data, 1);
   if (!len
       || TREE_CODE (len) != INTEGER_CST)
