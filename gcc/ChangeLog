@@ -1,5 +1,12 @@
 2018-12-23  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* lto-wrapper.c (tool_cleanup): Don’t report ficticious temp files.
+	(debug_objcopy): Improve temp filenames.  Append the early
+	debug objects to the outfiles.  Remove the phase prelinking the
+	early debug. Emit the early debug filenames for ld.
+
+2018-12-23  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* config/i386/darwin.h (TARGET_ASM_OUTPUT_IDENT): New.
 
 2018-12-23  Iain Sandoe  <iain@sandoe.co.uk>
