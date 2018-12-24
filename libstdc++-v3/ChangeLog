@@ -1,6 +1,20 @@
 2018-12-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline
+	2018-12-06  Jonathan Wakely  <jwakely@redhat.com>
+		    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR libstdc++/64883
+	* testsuite/17_intro/headers/c++1998/all_attributes.cc: Don't test
+	always_inline on Darwin.
+	* testsuite/17_intro/headers/c++2011/all_attributes.cc: Likewise.
+	* testsuite/17_intro/headers/c++2014/all_attributes.cc: Likewise.
+	* testsuite/17_intro/headers/c++2017/all_attributes.cc: Likewise.
+	* testsuite/17_intro/headers/c++2020/all_attributes.cc: Likewise.
+
+2018-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
 	2018-08-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR libstdc++/70694
