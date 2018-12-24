@@ -4926,6 +4926,10 @@ if test x"$insn" != x; then
    && $gcc_cv_objdump -h conftest.o 2> /dev/null \
       | grep debug_line > /dev/null 2>&1; then
      gcc_cv_as_dwarf2_debug_line=yes
+   elif test x$gcc_cv_otool != x \
+   && $gcc_cv_otool -l conftest.o 2> /dev/null \
+      | grep debug_line > /dev/null 2>&1; then
+     gcc_cv_as_dwarf2_debug_line=yes
    fi])
 
 # The .debug_line file table must be in the exact order that
