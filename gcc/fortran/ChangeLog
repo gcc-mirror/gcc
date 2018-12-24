@@ -1,3 +1,122 @@
+2018-12-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/77703
+	* resolve.c (get_temp_from_expr): Use the string length of
+	constant character expressions.
+
+2018-12-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88328
+	* io.c (resolve_tag_format): Add error for zero-sized array.
+	(gfc_resolve_dt): Manipulate gfc_current_locus to get sensible error
+	message locus.
+
+2018-12-22  Steven G . Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85798
+	* decl.c (gfc_match_data): If a component of a derived type entity
+	appears in data statement, check that does not have the allocatable
+	attribute.
+
+2018-12-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88169
+	* module.c (mio_namelist): Remove an error condition/message that
+	is contrary to the Fortran standard.
+
+2018-12-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85544
+	* frontend-passes.c (optimize_power): Remove.
+	(optimize_op): Remove call to optimize_power.
+	* trans-expr.c (gfc_conv_power_op): Handle cases of 1**integer,
+	(2|4|8|16) ** integer and (-1) ** integer.
+
+2018-12-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87881
+	* expr.c (find_inquiry_ref): Loop through the inquiry refs in
+	case there are two of them.
+	(simplify_ref_chain): Return true after a successful call to
+	find_inquiry_ref.
+
+2018-12-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/87992
+	* resolve.c (resolve_fl_variable): Avoid a NULL pointer.
+
+2018-12-16  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* resolve.c (resolve_transfer): Remove dead code.
+
+2018-12-16  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88116
+	PR fortran/88467
+	* array.c (gfc_match_array_constructor): Check return value of
+	gfc_convert_type().  Skip constructor elements with BT_UNKNOWN,
+	which need to go through resolution.
+	* intrinsic.c (gfc_convert_type_warn): Return early if the types
+	match (i.e., no conversion is required).
+	* simplify.c (gfc_convert_constant): Remove a gfc_internal_error,
+	and return gfc_bad_expr.
+
+2018-12-16  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* decl.c (variable_decl): Typo fixes in comment and error messsage.
+
+2018-12-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PF fortran/88364
+	* trans-expr.c (gfc_conv_expr_reference): Do not add clobber if
+	the expression contains a reference.
+
+2018-12-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/87944
+	* decl.c (match_data_constant): Allow inquiry parameter as data
+	constant in data statement.
+
+2018-12-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88138
+	* decl.c (variable_decl): Check that a derived isn't being assigned
+	an incompatible entity in an initialization.
+
+2018-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/88463
+	* trans-openmp.c (gfc_omp_predetermined_sharing): Handle TREE_READONLY
+	VAR_DECLs with DECL_EXTERNAL like those with TREE_STATIC.
+
+2018-12-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88155
+	* primary.c (gfc_match_structure_constructor):  Set the locus of
+	an expression to avoid a NULL pointer dereference.
+
+2018-12-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88249
+	* gfortran.h: Update prototype for gfc_resolve_filepos().
+	* io.c (gfc_resolve_filepos): Check for UNIT number if ERR= is present.
+	Use passed in locus for error message.
+	* resolve.c (gfc_resolve_code): Pass locus in gfc_resolve_filepos()
+	call.
+
+2018-12-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/97922
+	* io.c (gfc_match_open): Additional checks on ASYNCHRONOUS.
+
+2018-12-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88269
+	* io.c (io_constraint): Update macro. If locus line buffer is NULL,
+	use gfc_current_locus in error messages.
+	(check_io_constraints): Catch missing IO UNIT in write and read
+	statements.  io_constraint macro is incompatible here.
+
 2018-12-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88205
@@ -48,7 +167,7 @@
 2018-12-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88357
-	* class.c (insert_component_ref): Check for NULL pointer and 
+	* class.c (insert_component_ref): Check for NULL pointer and
 	previous error message issued.
 	* parse.c (parse_associate): Check for NULL pointer.
 	* resolve.c (resolve_assoc_var): Check for NULL pointer.
@@ -2771,7 +2890,7 @@ notice and this notice are preserved.
 2018-12-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88357
-	* class.c (insert_component_ref): Check for NULL pointer and 
+	* class.c (insert_component_ref): Check for NULL pointer and
 	previous error message issued.
 	* parse.c (parse_associate): Check for NULL pointer.
 	* resolve.c (resolve_assoc_var): Check for NULL pointer.

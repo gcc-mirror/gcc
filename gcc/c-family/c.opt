@@ -625,6 +625,10 @@ Wincompatible-pointer-types
 C ObjC Var(warn_incompatible_pointer_types) Init(1) Warning
 Warn when there is a conversion between pointers that have incompatible types.
 
+Waddress-of-packed-member
+C ObjC C++ ObjC++ Var(warn_address_of_packed_member) Init(1) Warning
+Warn when the address of packed member of struct or union is taken.
+
 Winit-self
 C ObjC C++ ObjC++ Var(warn_init_self) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about variables which are initialized to themselves.

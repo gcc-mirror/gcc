@@ -399,6 +399,14 @@ match_data_constant (gfc_expr **result)
     }
   else if (m == MATCH_YES)
     {
+      /* If a parameter inquiry ends up here, symtree is NULL but **result
+	 contains the right constant expression.  Check here.  */
+      if ((*result)->symtree == NULL
+	  && (*result)->expr_type == EXPR_CONSTANT
+	  && ((*result)->ts.type == BT_INTEGER 
+	      || (*result)->ts.type == BT_REAL))
+	return m;
+
       /* F2018:R845 data-stmt-constant is initial-data-target.
 	 A data-stmt-constant shall be ... initial-data-target if and
 	 only if the corresponding data-stmt-object has the POINTER
@@ -588,6 +596,7 @@ match
 gfc_match_data (void)
 {
   gfc_data *new_data;
+  gfc_expr *e;
   match m;
 
   /* Before parsing the rest of a DATA statement, check F2008:c1206.  */
@@ -622,6 +631,30 @@ gfc_match_data (void)
 	  gfc_error ("Invalid substring in data-implied-do at %L in DATA "
 		     "statement", &new_data->var->list->expr->where);
 	  goto cleanup;
+	}
+
+      /* Check for an entity with an allocatable component, which is not
+	 allowed.  */
+      e = new_data->var->expr;
+      if (e)
+	{
+	  bool invalid;
+
+	  invalid = false;
+	  for (gfc_ref *ref = e->ref; ref; ref = ref->next)
+	    if ((ref->type == REF_COMPONENT
+		 && ref->u.c.component->attr.allocatable)
+		|| (ref->type == REF_ARRAY
+		    && e->symtree->n.sym->attr.pointer != 1
+		    && ref->u.ar.as && ref->u.ar.as->type == AS_DEFERRED))
+	      invalid = true;
+
+	  if (invalid)
+	    {
+	      gfc_error ("Allocatable component or deferred-shaped array "
+			 "near %C in DATA statement");
+	      goto cleanup;
+	    }
 	}
 
       m = top_val_list (new_data);
@@ -2783,6 +2816,22 @@ variable_decl (int elem)
       else if (param && initializer)
 	param->value = gfc_copy_expr (initializer);
     }
+
+  /* Before adding a possible initilizer, do a simple check for compatibility
+     of lhs and rhs types.  Assigning a REAL value to a derived type is not a
+     good thing.  */
+  if (current_ts.type == BT_DERIVED && initializer
+      && (gfc_numeric_ts (&initializer->ts)
+	  || initializer->ts.type == BT_LOGICAL
+	  || initializer->ts.type == BT_CHARACTER))
+    {
+      gfc_error ("Incompatible initialization between a derived type "
+		 "entity and an entity with %qs type at %C",
+		  gfc_typename (&initializer->ts));
+      m = MATCH_ERROR;
+      goto cleanup;
+    }
+
 
   /* Add the initializer.  Note that it is fine if initializer is
      NULL here, because we sometimes also need to check if a

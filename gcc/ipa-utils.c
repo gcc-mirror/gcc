@@ -392,6 +392,7 @@ ipa_merge_profiles (struct cgraph_node *dst,
   if (!src->definition
       || !dst->definition)
     return;
+
   if (src->frequency < dst->frequency)
     src->frequency = dst->frequency;
 
@@ -401,6 +402,10 @@ ipa_merge_profiles (struct cgraph_node *dst,
 
   if (src->profile_id && !dst->profile_id)
     dst->profile_id = src->profile_id;
+
+  /* Merging zero profile to dst is no-op.  */
+  if (src->count.ipa () == profile_count::zero ())
+    return;
 
   /* FIXME when we merge in unknown profile, we ought to set counts as
      unsafe.  */
@@ -412,6 +417,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
       fprintf (symtab->dump_file, "Merging profiles of %s to %s\n",
 	       src->dump_name (), dst->dump_name ());
     }
+  profile_count orig_count = dst->count;
+
   if (dst->count.initialized_p () && dst->count.ipa () == dst->count)
     dst->count += src->count.ipa ();
   else 
@@ -639,9 +646,22 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	}
       if (!preserve_body)
         src->release_body ();
-      ipa_update_overall_fn_summary (dst);
+      /* Update summary.  */
+      compute_fn_summary (dst, 0);
     }
-  /* TODO: if there is no match, we can scale up.  */
+  /* We can't update CFG profile, but we can scale IPA profile. CFG
+     will be scaled according to dst->count after IPA passes.  */
+  else
+    {
+      profile_count to = dst->count;
+      profile_count::adjust_for_ipa_scaling (&to, &orig_count);
+      struct cgraph_edge *e;
+      
+      for (e = dst->callees; e; e = e->next_callee)
+	e->count = e->count.apply_scale (to, orig_count);
+      for (e = dst->indirect_calls; e; e = e->next_callee)
+	e->count = e->count.apply_scale (to, orig_count);
+    }
   src->decl = oldsrcdecl;
 }
 

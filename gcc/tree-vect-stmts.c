@@ -2647,9 +2647,15 @@ vect_build_gather_load_calls (stmt_vec_info stmt_info,
   tree idxtype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
   tree masktype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
   tree scaletype = TREE_VALUE (arglist);
+  tree real_masktype = masktype;
   gcc_checking_assert (types_compatible_p (srctype, rettype)
-		       && (!mask || types_compatible_p (srctype, masktype)));
+		       && (!mask
+			   || TREE_CODE (masktype) == INTEGER_TYPE
+			   || types_compatible_p (srctype, masktype)));
+  if (mask && TREE_CODE (masktype) == INTEGER_TYPE)
+    masktype = build_same_sized_truth_vector_type (srctype);
 
+  tree mask_halftype = masktype;
   tree perm_mask = NULL_TREE;
   tree mask_perm_mask = NULL_TREE;
   if (known_eq (nunits, gather_off_nunits))
@@ -2685,13 +2691,16 @@ vect_build_gather_load_calls (stmt_vec_info stmt_info,
 
       ncopies *= 2;
 
-      if (mask)
+      if (mask && masktype == real_masktype)
 	{
 	  for (int i = 0; i < count; ++i)
 	    sel[i] = i | (count / 2);
 	  indices.new_vector (sel, 2, count);
 	  mask_perm_mask = vect_gen_perm_mask_checked (masktype, indices);
 	}
+      else if (mask)
+	mask_halftype
+	  = build_same_sized_truth_vector_type (gs_info->offset_vectype);
     }
   else
     gcc_unreachable ();
@@ -2756,16 +2765,16 @@ vect_build_gather_load_calls (stmt_vec_info stmt_info,
 	    {
 	      if (j == 0)
 		vec_mask = vect_get_vec_def_for_operand (mask, stmt_info);
-	      else
+	      else if (modifier != NARROW || (j & 1) == 0)
 		vec_mask = vect_get_vec_def_for_stmt_copy (loop_vinfo,
 							   vec_mask);
 
 	      mask_op = vec_mask;
 	      if (!useless_type_conversion_p (masktype, TREE_TYPE (vec_mask)))
 		{
-		  gcc_assert
-		    (known_eq (TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask_op)),
-			       TYPE_VECTOR_SUBPARTS (masktype)));
+		  poly_uint64 sub1 = TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask_op));
+		  poly_uint64 sub2 = TYPE_VECTOR_SUBPARTS (masktype);
+		  gcc_assert (known_eq (sub1, sub2));
 		  var = vect_get_new_ssa_name (masktype, vect_simple_var);
 		  mask_op = build1 (VIEW_CONVERT_EXPR, masktype, mask_op);
 		  gassign *new_stmt
@@ -2774,11 +2783,46 @@ vect_build_gather_load_calls (stmt_vec_info stmt_info,
 		  mask_op = var;
 		}
 	    }
+	  if (modifier == NARROW && masktype != real_masktype)
+	    {
+	      var = vect_get_new_ssa_name (mask_halftype, vect_simple_var);
+	      gassign *new_stmt
+		= gimple_build_assign (var, (j & 1) ? VEC_UNPACK_HI_EXPR
+						    : VEC_UNPACK_LO_EXPR,
+				       mask_op);
+	      vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
+	      mask_op = var;
+	    }
 	  src_op = mask_op;
 	}
 
+      tree mask_arg = mask_op;
+      if (masktype != real_masktype)
+	{
+	  tree utype, optype = TREE_TYPE (mask_op);
+	  if (TYPE_MODE (real_masktype) == TYPE_MODE (optype))
+	    utype = real_masktype;
+	  else
+	    utype = lang_hooks.types.type_for_mode (TYPE_MODE (optype), 1);
+	  var = vect_get_new_ssa_name (utype, vect_scalar_var);
+	  mask_arg = build1 (VIEW_CONVERT_EXPR, utype, mask_op);
+	  gassign *new_stmt
+	    = gimple_build_assign (var, VIEW_CONVERT_EXPR, mask_arg);
+	  vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
+	  mask_arg = var;
+	  if (!useless_type_conversion_p (real_masktype, utype))
+	    {
+	      gcc_assert (TYPE_PRECISION (utype)
+			  <= TYPE_PRECISION (real_masktype));
+	      var = vect_get_new_ssa_name (real_masktype, vect_scalar_var);
+	      new_stmt = gimple_build_assign (var, NOP_EXPR, mask_arg);
+	      vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
+	      mask_arg = var;
+	    }
+	  src_op = build_zero_cst (srctype);
+	}
       gcall *new_call = gimple_build_call (gs_info->decl, 5, src_op, ptr, op,
-					   mask_op, scale);
+					   mask_arg, scale);
 
       stmt_vec_info new_stmt_info;
       if (!useless_type_conversion_p (vectype, rettype))
@@ -6331,7 +6375,8 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	    return false;
 	}
       else if (memory_access_type != VMAT_LOAD_STORE_LANES
-	       && (memory_access_type != VMAT_GATHER_SCATTER || gs_info.decl))
+	       && (memory_access_type != VMAT_GATHER_SCATTER
+		   || (gs_info.decl && !VECTOR_BOOLEAN_TYPE_P (mask_vectype))))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6389,7 +6434,9 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       tree vec_oprnd0 = NULL_TREE, vec_oprnd1 = NULL_TREE, src;
       tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gs_info.decl));
       tree rettype, srctype, ptrtype, idxtype, masktype, scaletype;
-      tree ptr, mask, var, scale, perm_mask = NULL_TREE;
+      tree ptr, var, scale, vec_mask;
+      tree mask_arg = NULL_TREE, mask_op = NULL_TREE, perm_mask = NULL_TREE;
+      tree mask_halfvectype = mask_vectype;
       edge pe = loop_preheader_edge (loop);
       gimple_seq seq;
       basic_block new_bb;
@@ -6430,6 +6477,10 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  perm_mask = vect_gen_perm_mask_checked (vectype, indices);
 	  gcc_assert (perm_mask != NULL_TREE);
 	  ncopies *= 2;
+
+	  if (mask)
+	    mask_halfvectype
+	      = build_same_sized_truth_vector_type (gs_info.offset_vectype);
 	}
       else
 	gcc_unreachable ();
@@ -6452,10 +6503,11 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  gcc_assert (!new_bb);
 	}
 
-      /* Currently we support only unconditional scatter stores,
-	 so mask should be all ones.  */
-      mask = build_int_cst (masktype, -1);
-      mask = vect_init_vector (stmt_info, mask, masktype, NULL);
+      if (mask == NULL_TREE)
+	{
+	  mask_arg = build_int_cst (masktype, -1);
+	  mask_arg = vect_init_vector (stmt_info, mask_arg, masktype, NULL);
+	}
 
       scale = build_int_cst (scaletype, gs_info.scale);
 
@@ -6464,36 +6516,46 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	{
 	  if (j == 0)
 	    {
-	      src = vec_oprnd1
-		= vect_get_vec_def_for_operand (op, stmt_info);
-	      op = vec_oprnd0
-		= vect_get_vec_def_for_operand (gs_info.offset, stmt_info);
+	      src = vec_oprnd1 = vect_get_vec_def_for_operand (op, stmt_info);
+	      op = vec_oprnd0 = vect_get_vec_def_for_operand (gs_info.offset,
+							      stmt_info);
+	      if (mask)
+		mask_op = vec_mask = vect_get_vec_def_for_operand (mask,
+								   stmt_info);
 	    }
 	  else if (modifier != NONE && (j & 1))
 	    {
 	      if (modifier == WIDEN)
 		{
-		  src = vec_oprnd1
-		    = vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnd1);
+		  src
+		    = vec_oprnd1 = vect_get_vec_def_for_stmt_copy (vinfo,
+								   vec_oprnd1);
 		  op = permute_vec_elements (vec_oprnd0, vec_oprnd0, perm_mask,
 					     stmt_info, gsi);
+		  if (mask)
+		    mask_op
+		      = vec_mask = vect_get_vec_def_for_stmt_copy (vinfo,
+								   vec_mask);
 		}
 	      else if (modifier == NARROW)
 		{
 		  src = permute_vec_elements (vec_oprnd1, vec_oprnd1, perm_mask,
 					      stmt_info, gsi);
-		  op = vec_oprnd0
-		    = vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnd0);
+		  op = vec_oprnd0 = vect_get_vec_def_for_stmt_copy (vinfo,
+								    vec_oprnd0);
 		}
 	      else
 		gcc_unreachable ();
 	    }
 	  else
 	    {
-	      src = vec_oprnd1
-		= vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnd1);
-	      op = vec_oprnd0
-		= vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnd0);
+	      src = vec_oprnd1 = vect_get_vec_def_for_stmt_copy (vinfo,
+								 vec_oprnd1);
+	      op = vec_oprnd0 = vect_get_vec_def_for_stmt_copy (vinfo,
+								vec_oprnd0);
+	      if (mask)
+		mask_op = vec_mask = vect_get_vec_def_for_stmt_copy (vinfo,
+								     vec_mask);
 	    }
 
 	  if (!useless_type_conversion_p (srctype, TREE_TYPE (src)))
@@ -6520,8 +6582,45 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      op = var;
 	    }
 
+	  if (mask)
+	    {
+	      tree utype;
+	      mask_arg = mask_op;
+	      if (modifier == NARROW)
+		{
+		  var = vect_get_new_ssa_name (mask_halfvectype,
+					       vect_simple_var);
+		  gassign *new_stmt
+		    = gimple_build_assign (var, (j & 1) ? VEC_UNPACK_HI_EXPR
+							: VEC_UNPACK_LO_EXPR,
+					   mask_op);
+		  vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
+		  mask_arg = var;
+		}
+	      tree optype = TREE_TYPE (mask_arg);
+	      if (TYPE_MODE (masktype) == TYPE_MODE (optype))
+		utype = masktype;
+	      else
+		utype = lang_hooks.types.type_for_mode (TYPE_MODE (optype), 1);
+	      var = vect_get_new_ssa_name (utype, vect_scalar_var);
+	      mask_arg = build1 (VIEW_CONVERT_EXPR, utype, mask_arg);
+	      gassign *new_stmt
+		= gimple_build_assign (var, VIEW_CONVERT_EXPR, mask_arg);
+	      vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
+	      mask_arg = var;
+	      if (!useless_type_conversion_p (masktype, utype))
+		{
+		  gcc_assert (TYPE_PRECISION (utype)
+			      <= TYPE_PRECISION (masktype));
+		  var = vect_get_new_ssa_name (masktype, vect_scalar_var);
+		  new_stmt = gimple_build_assign (var, NOP_EXPR, mask_arg);
+		  vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
+		  mask_arg = var;
+		}
+	    }
+
 	  gcall *new_stmt
-	    = gimple_build_call (gs_info.decl, 5, ptr, mask, op, src, scale);
+	    = gimple_build_call (gs_info.decl, 5, ptr, mask_arg, op, src, scale);
 	  stmt_vec_info new_stmt_info
 	    = vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
 
@@ -7254,7 +7353,7 @@ permute_vec_elements (tree x, tree y, tree mask_vec, stmt_vec_info stmt_info,
   gimple *perm_stmt;
 
   tree scalar_dest = gimple_get_lhs (stmt_info->stmt);
-  if (TREE_CODE (scalar_dest) == SSA_NAME)
+  if (scalar_dest && TREE_CODE (scalar_dest) == SSA_NAME)
     perm_dest = vect_create_destination_var (scalar_dest, vectype);
   else
     perm_dest = vect_get_new_vect_var (vectype, vect_simple_var, NULL);
@@ -7554,20 +7653,6 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      || !can_vec_mask_load_store_p (vec_mode,
 					     TYPE_MODE (mask_vectype), true))
 	    return false;
-	}
-      else if (memory_access_type == VMAT_GATHER_SCATTER && gs_info.decl)
-	{
-	  tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gs_info.decl));
-	  tree masktype
-	    = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (arglist))));
-	  if (TREE_CODE (masktype) == INTEGER_TYPE)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "masked gather with integer mask not"
-				 " supported.");
-	      return false;
-	    }
 	}
       else if (memory_access_type != VMAT_LOAD_STORE_LANES
 	       && memory_access_type != VMAT_GATHER_SCATTER)
@@ -10228,6 +10313,17 @@ supportable_widening_operation (enum tree_code code, stmt_vec_info stmt_info,
       optab1 = optab_for_tree_code (c1, vectype_out, optab_default);
       optab2 = optab_for_tree_code (c2, vectype_out, optab_default);
     }
+  else if (CONVERT_EXPR_CODE_P (code)
+	   && VECTOR_BOOLEAN_TYPE_P (wide_vectype)
+	   && VECTOR_BOOLEAN_TYPE_P (vectype)
+	   && TYPE_MODE (wide_vectype) == TYPE_MODE (vectype)
+	   && SCALAR_INT_MODE_P (TYPE_MODE (vectype)))
+    {
+      /* If the input and result modes are the same, a different optab
+	 is needed where we pass in the number of units in vectype.  */
+      optab1 = vec_unpacks_sbool_lo_optab;
+      optab2 = vec_unpacks_sbool_hi_optab;
+    }
   else
     {
       optab1 = optab_for_tree_code (c1, vectype, optab_default);
@@ -10247,12 +10343,16 @@ supportable_widening_operation (enum tree_code code, stmt_vec_info stmt_info,
 
   if (insn_data[icode1].operand[0].mode == TYPE_MODE (wide_vectype)
       && insn_data[icode2].operand[0].mode == TYPE_MODE (wide_vectype))
+    {
+      if (!VECTOR_BOOLEAN_TYPE_P (vectype))
+	return true;
       /* For scalar masks we may have different boolean
 	 vector types having the same QImode.  Thus we
 	 add additional check for elements number.  */
-    return (!VECTOR_BOOLEAN_TYPE_P (vectype)
-	    || known_eq (TYPE_VECTOR_SUBPARTS (vectype),
-			 TYPE_VECTOR_SUBPARTS (wide_vectype) * 2));
+      if (known_eq (TYPE_VECTOR_SUBPARTS (vectype),
+		    TYPE_VECTOR_SUBPARTS (wide_vectype) * 2))
+	return true;
+    }
 
   /* Check if it's a multi-step conversion that can be done using intermediate
      types.  */
@@ -10282,8 +10382,21 @@ supportable_widening_operation (enum tree_code code, stmt_vec_info stmt_info,
 	  = lang_hooks.types.type_for_mode (intermediate_mode,
 					    TYPE_UNSIGNED (prev_type));
 
-      optab3 = optab_for_tree_code (c1, intermediate_type, optab_default);
-      optab4 = optab_for_tree_code (c2, intermediate_type, optab_default);
+      if (VECTOR_BOOLEAN_TYPE_P (intermediate_type)
+	  && VECTOR_BOOLEAN_TYPE_P (prev_type)
+	  && intermediate_mode == prev_mode
+	  && SCALAR_INT_MODE_P (prev_mode))
+	{
+	  /* If the input and result modes are the same, a different optab
+	     is needed where we pass in the number of units in vectype.  */
+	  optab3 = vec_unpacks_sbool_lo_optab;
+	  optab4 = vec_unpacks_sbool_hi_optab;
+	}
+      else
+	{
+	  optab3 = optab_for_tree_code (c1, intermediate_type, optab_default);
+	  optab4 = optab_for_tree_code (c2, intermediate_type, optab_default);
+	}
 
       if (!optab3 || !optab4
           || (icode1 = optab_handler (optab1, prev_mode)) == CODE_FOR_nothing
@@ -10301,9 +10414,13 @@ supportable_widening_operation (enum tree_code code, stmt_vec_info stmt_info,
 
       if (insn_data[icode1].operand[0].mode == TYPE_MODE (wide_vectype)
 	  && insn_data[icode2].operand[0].mode == TYPE_MODE (wide_vectype))
-	return (!VECTOR_BOOLEAN_TYPE_P (vectype)
-		|| known_eq (TYPE_VECTOR_SUBPARTS (intermediate_type),
-			     TYPE_VECTOR_SUBPARTS (wide_vectype) * 2));
+	{
+	  if (!VECTOR_BOOLEAN_TYPE_P (vectype))
+	    return true;
+	  if (known_eq (TYPE_VECTOR_SUBPARTS (intermediate_type),
+			TYPE_VECTOR_SUBPARTS (wide_vectype) * 2))
+	    return true;
+	}
 
       prev_type = intermediate_type;
       prev_mode = intermediate_mode;
@@ -10356,25 +10473,29 @@ supportable_narrowing_operation (enum tree_code code,
     {
     CASE_CONVERT:
       c1 = VEC_PACK_TRUNC_EXPR;
+      if (VECTOR_BOOLEAN_TYPE_P (narrow_vectype)
+	  && VECTOR_BOOLEAN_TYPE_P (vectype)
+	  && TYPE_MODE (narrow_vectype) == TYPE_MODE (vectype)
+	  && SCALAR_INT_MODE_P (TYPE_MODE (vectype)))
+	optab1 = vec_pack_sbool_trunc_optab;
+      else
+	optab1 = optab_for_tree_code (c1, vectype, optab_default);
       break;
 
     case FIX_TRUNC_EXPR:
       c1 = VEC_PACK_FIX_TRUNC_EXPR;
+      /* The signedness is determined from output operand.  */
+      optab1 = optab_for_tree_code (c1, vectype_out, optab_default);
       break;
 
     case FLOAT_EXPR:
       c1 = VEC_PACK_FLOAT_EXPR;
+      optab1 = optab_for_tree_code (c1, vectype, optab_default);
       break;
 
     default:
       gcc_unreachable ();
     }
-
-  if (code == FIX_TRUNC_EXPR)
-    /* The signedness is determined from output operand.  */
-    optab1 = optab_for_tree_code (c1, vectype_out, optab_default);
-  else
-    optab1 = optab_for_tree_code (c1, vectype, optab_default);
 
   if (!optab1)
     return false;
@@ -10386,12 +10507,16 @@ supportable_narrowing_operation (enum tree_code code,
   *code1 = c1;
 
   if (insn_data[icode1].operand[0].mode == TYPE_MODE (narrow_vectype))
-    /* For scalar masks we may have different boolean
-       vector types having the same QImode.  Thus we
-       add additional check for elements number.  */
-    return (!VECTOR_BOOLEAN_TYPE_P (vectype)
-	    || known_eq (TYPE_VECTOR_SUBPARTS (vectype) * 2,
-			 TYPE_VECTOR_SUBPARTS (narrow_vectype)));
+    {
+      if (!VECTOR_BOOLEAN_TYPE_P (vectype))
+	return true;
+      /* For scalar masks we may have different boolean
+	 vector types having the same QImode.  Thus we
+	 add additional check for elements number.  */
+      if (known_eq (TYPE_VECTOR_SUBPARTS (vectype) * 2,
+		    TYPE_VECTOR_SUBPARTS (narrow_vectype)))
+	return true;
+    }
 
   if (code == FLOAT_EXPR)
     return false;
@@ -10443,9 +10568,15 @@ supportable_narrowing_operation (enum tree_code code,
       else
 	intermediate_type
 	  = lang_hooks.types.type_for_mode (intermediate_mode, uns);
-      interm_optab
-	= optab_for_tree_code (VEC_PACK_TRUNC_EXPR, intermediate_type,
-			       optab_default);
+      if (VECTOR_BOOLEAN_TYPE_P (intermediate_type)
+	  && VECTOR_BOOLEAN_TYPE_P (prev_type)
+	  && intermediate_mode == prev_mode
+	  && SCALAR_INT_MODE_P (prev_mode))
+	interm_optab = vec_pack_sbool_trunc_optab;
+      else
+	interm_optab
+	  = optab_for_tree_code (VEC_PACK_TRUNC_EXPR, intermediate_type,
+				 optab_default);
       if (!interm_optab
 	  || ((icode1 = optab_handler (optab1, prev_mode)) == CODE_FOR_nothing)
 	  || insn_data[icode1].operand[0].mode != intermediate_mode
@@ -10457,9 +10588,13 @@ supportable_narrowing_operation (enum tree_code code,
       (*multi_step_cvt)++;
 
       if (insn_data[icode1].operand[0].mode == TYPE_MODE (narrow_vectype))
-	return (!VECTOR_BOOLEAN_TYPE_P (vectype)
-		|| known_eq (TYPE_VECTOR_SUBPARTS (intermediate_type) * 2,
-			     TYPE_VECTOR_SUBPARTS (narrow_vectype)));
+	{
+	  if (!VECTOR_BOOLEAN_TYPE_P (vectype))
+	    return true;
+	  if (known_eq (TYPE_VECTOR_SUBPARTS (intermediate_type) * 2,
+			TYPE_VECTOR_SUBPARTS (narrow_vectype)))
+	    return true;
+	}
 
       prev_mode = intermediate_mode;
       prev_type = intermediate_type;

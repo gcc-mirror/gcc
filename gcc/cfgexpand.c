@@ -2850,6 +2850,38 @@ tree_conflicts_with_clobbers_p (tree t, HARD_REG_SET *clobbered_regs)
   return false;
 }
 
+/* Check that the given REGNO spanning NREGS is a valid
+   asm clobber operand.  Some HW registers cannot be
+   saved/restored, hence they should not be clobbered by
+   asm statements.  */
+static bool
+asm_clobber_reg_is_valid (int regno, int nregs, const char *regname)
+{
+  bool is_valid = true;
+  HARD_REG_SET regset;
+
+  CLEAR_HARD_REG_SET (regset);
+
+  add_range_to_hard_reg_set (&regset, regno, nregs);
+
+  /* Clobbering the PIC register is an error.  */
+  if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM
+      && overlaps_hard_reg_set_p (regset, Pmode, PIC_OFFSET_TABLE_REGNUM))
+    {
+      /* ??? Diagnose during gimplification?  */
+      error ("PIC register clobbered by %qs in %<asm%>", regname);
+      is_valid = false;
+    }
+  /* Clobbering the STACK POINTER register is an error.  */
+  if (overlaps_hard_reg_set_p (regset, Pmode, STACK_POINTER_REGNUM))
+    {
+      error ("Stack Pointer register clobbered by %qs in %<asm%>", regname);
+      is_valid = false;
+    }
+
+  return is_valid;
+}
+
 /* Generate RTL for an asm statement with arguments.
    STRING is the instruction template.
    OUTPUTS is a list of output arguments (lvalues); INPUTS a list of inputs.
@@ -2982,14 +3014,8 @@ expand_asm_stmt (gasm *stmt)
 	  else
 	    for (int reg = j; reg < j + nregs; reg++)
 	      {
-		/* Clobbering the PIC register is an error.  */
-		if (reg == (int) PIC_OFFSET_TABLE_REGNUM)
-		  {
-		    /* ??? Diagnose during gimplification?  */
-		    error ("PIC register clobbered by %qs in %<asm%>",
-			   regname);
-		    return;
-		  }
+		if (!asm_clobber_reg_is_valid (reg, nregs, regname))
+		  return;
 
 	        SET_HARD_REG_BIT (clobbered_regs, reg);
 	        rtx x = gen_rtx_REG (reg_raw_mode[reg], reg);

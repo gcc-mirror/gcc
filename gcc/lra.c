@@ -2026,6 +2026,7 @@ struct sloc
 {
   rtx_insn *insn; /* Insn where the scratch was.  */
   int nop;  /* Number of the operand which was a scratch.  */
+  int icode;  /* Original icode from which scratch was removed.  */
 };
 
 typedef struct sloc *sloc_t;
@@ -2057,7 +2058,7 @@ lra_former_scratch_operand_p (rtx_insn *insn, int nop)
 /* Register operand NOP in INSN as a former scratch.  It will be
    changed to scratch back, if it is necessary, at the LRA end.  */
 void
-lra_register_new_scratch_op (rtx_insn *insn, int nop)
+lra_register_new_scratch_op (rtx_insn *insn, int nop, int icode)
 {
   lra_insn_recog_data_t id = lra_get_insn_recog_data (insn);
   rtx op = *id->operand_loc[nop];
@@ -2065,6 +2066,7 @@ lra_register_new_scratch_op (rtx_insn *insn, int nop)
   lra_assert (REG_P (op));
   loc->insn = insn;
   loc->nop = nop;
+  loc->icode = icode;
   scratches.safe_push (loc);
   bitmap_set_bit (&scratch_bitmap, REGNO (op));
   bitmap_set_bit (&scratch_operand_bitmap,
@@ -2102,7 +2104,7 @@ remove_scratches (void)
 	      *id->operand_loc[i] = reg
 		= lra_create_new_reg (static_id->operand[i].mode,
 				      *id->operand_loc[i], ALL_REGS, NULL);
-	      lra_register_new_scratch_op (insn, i);
+	      lra_register_new_scratch_op (insn, i, id->icode);
 	      if (lra_dump_file != NULL)
 		fprintf (lra_dump_file,
 			 "Removing SCRATCH in insn #%u (nop %d)\n",
@@ -2135,6 +2137,12 @@ restore_scratches (void)
 	{
 	  last = loc->insn;
 	  id = lra_get_insn_recog_data (last);
+	}
+      if (loc->icode != id->icode)
+	{
+	  /* The icode doesn't match, which means the insn has been modified
+	     (e.g. register elimination).  The scratch cannot be restored.  */
+	  continue;
 	}
       if (REG_P (*id->operand_loc[loc->nop])
 	  && ((regno = REGNO (*id->operand_loc[loc->nop]))
@@ -2334,6 +2342,9 @@ bitmap_head lra_subreg_reload_pseudos;
 /* File used for output of LRA debug information.  */
 FILE *lra_dump_file;
 
+/* True if we found an asm error.  */
+bool lra_asm_error_p;
+
 /* True if we should try spill into registers of different classes
    instead of memory.  */
 bool lra_reg_spill_p;
@@ -2371,7 +2382,8 @@ lra (FILE *f)
   bool live_p, inserted_p;
 
   lra_dump_file = f;
-
+  lra_asm_error_p = false;
+  
   timevar_push (TV_LRA);
 
   /* Make sure that the last insn is a note.  Some subsequent passes

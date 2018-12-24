@@ -170,6 +170,12 @@ extern void x86_function_profiler (FILE *, int);
 extern void x86_emit_floatuns (rtx [2]);
 extern void ix86_emit_fp_unordered_jump (rtx);
 
+extern void ix86_emit_i387_sinh (rtx, rtx);
+extern void ix86_emit_i387_cosh (rtx, rtx);
+extern void ix86_emit_i387_tanh (rtx, rtx);
+extern void ix86_emit_i387_asinh (rtx, rtx);
+extern void ix86_emit_i387_acosh (rtx, rtx);
+extern void ix86_emit_i387_atanh (rtx, rtx);
 extern void ix86_emit_i387_log1p (rtx, rtx);
 extern void ix86_emit_i387_round (rtx, rtx);
 extern void ix86_emit_swdivsf (rtx, rtx, rtx, machine_mode);

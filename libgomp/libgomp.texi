@@ -2768,7 +2768,7 @@ as used by the CUDA Runtime or Driver API's.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{acc_get_current_cuda_context(void);}
+@item @emph{Prototype}: @tab @code{void *acc_get_current_cuda_context(void);}
 @end multitable
 
 @item @emph{Reference}:
@@ -2782,12 +2782,12 @@ A.2.1.2.
 @section @code{acc_get_cuda_stream} -- Get CUDA stream handle.
 @table @asis
 @item @emph{Description}
-This function returns the CUDA stream handle. This handle is the same
-as used by the CUDA Runtime or Driver API's.
+This function returns the CUDA stream handle for the queue @var{async}.
+This handle is the same as used by the CUDA Runtime or Driver API's.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{acc_get_cuda_stream(void);}
+@item @emph{Prototype}: @tab @code{void *acc_get_cuda_stream(int async);}
 @end multitable
 
 @item @emph{Reference}:
@@ -2802,11 +2802,16 @@ A.2.1.3.
 @table @asis
 @item @emph{Description}
 This function associates the stream handle specified by @var{stream} with
-the asynchronous value specified by @var{async}.
+the queue @var{async}.
+
+This cannot be used to change the stream handle associated with
+@code{acc_async_sync}.
+
+The return value is not specified.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{acc_set_cuda_stream(int async void *stream);}
+@item @emph{Prototype}: @tab @code{int acc_set_cuda_stream(int async, void *stream);}
 @end multitable
 
 @item @emph{Reference}:

@@ -243,7 +243,7 @@ struct assert_info
 extern void register_edge_assert_for (tree, edge, enum tree_code,
 				      tree, tree, vec<assert_info> &);
 extern bool stmt_interesting_for_vrp (gimple *);
-extern bool range_includes_zero_p (const value_range_base *);
+extern bool range_includes_p (const value_range_base *, HOST_WIDE_INT);
 extern bool infer_value_range (gimple *, tree, tree_code *, tree *);
 
 extern bool vrp_bitmap_equal_p (const_bitmap, const_bitmap);
@@ -284,5 +284,13 @@ extern bool overflow_comparison_p (tree_code, tree, tree, bool, tree *);
 extern tree get_single_symbol (tree, bool *, tree *);
 extern void maybe_set_nonzero_bits (edge, tree);
 extern value_range_kind determine_value_range (tree, wide_int *, wide_int *);
+
+/* Return TRUE if *VR includes the value zero.  */
+
+inline bool
+range_includes_zero_p (const value_range_base *vr)
+{
+  return range_includes_p (vr, 0);
+}
 
 #endif /* GCC_TREE_VRP_H */

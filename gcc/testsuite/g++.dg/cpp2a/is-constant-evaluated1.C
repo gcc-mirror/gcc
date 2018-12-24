@@ -1,5 +1,5 @@
 // P0595R1
-// { dg-do compile { target c++14 } }
+// { dg-do run { target c++14 } }
 
 template<int N> struct X { int v = N; };
 X<__builtin_is_constant_evaluated ()> x; // type X<true>
@@ -8,7 +8,7 @@ int a = __builtin_is_constant_evaluated () ? y : 1; // initializes a to 1
 int b = __builtin_is_constant_evaluated () ? 2 : y; // initializes b to 2
 int c = y + (__builtin_is_constant_evaluated () ? 2 : y); // initializes c to 2*y
 int d = __builtin_is_constant_evaluated (); // initializes d to 1
-int e = d + __builtin_is_constant_evaluated (); // initializes e to 0
+int e = d + __builtin_is_constant_evaluated (); // initializes e to 1 + 0
 
 struct false_type { static constexpr bool value = false; };
 struct true_type { static constexpr bool value = true; };
@@ -50,7 +50,7 @@ static_assert (is_same<decltype (x), X<true> >::value, "x's type");
 int
 main ()
 {
-  if (a != 1 || b != 2 || c != 8 || d != 1 || e != 0 || p != 26 || q != 56)
+  if (a != 1 || b != 2 || c != 8 || d != 1 || e != 1 || p != 26 || q != 56)
     __builtin_abort ();
   if (s.a != 3 || s.b != 4 || t.a != 2 || t.b != 4)
     __builtin_abort ();

@@ -1,4 +1,5 @@
 ! { dg-lto-do link }
+! { dg-require-effective-target lto_incremental }
 ! { dg-lto-options {{ -Ofast -flto --param ggc-min-expand=0 --param ggc-min-heapsize=0 }} }
 ! { dg-extra-ld-options "-r" }
 

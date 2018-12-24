@@ -1321,6 +1321,7 @@ OBJS = \
 	gimple-laddress.o \
 	gimple-loop-interchange.o \
 	gimple-loop-jam.o \
+	gimple-loop-versioning.o \
 	gimple-low.o \
 	gimple-pretty-print.o \
 	gimple-ssa-backprop.o \

@@ -377,6 +377,7 @@ bitfield_p (const_tree ref)
 tree
 cp_stabilize_reference (tree ref)
 {
+  STRIP_ANY_LOCATION_WRAPPER (ref);
   switch (TREE_CODE (ref))
     {
     case NON_DEPENDENT_EXPR:
@@ -421,6 +422,7 @@ cp_stabilize_reference (tree ref)
 bool
 builtin_valid_in_constant_expr_p (const_tree decl)
 {
+  STRIP_ANY_LOCATION_WRAPPER (decl);
   if (TREE_CODE (decl) != FUNCTION_DECL)
     /* Not a function.  */
     return false;
@@ -1715,6 +1717,8 @@ strip_typedefs_expr (tree t, bool *remove_attributes)
   if (t == NULL_TREE || t == error_mark_node)
     return t;
 
+  STRIP_ANY_LOCATION_WRAPPER (t);
+
   if (DECL_P (t) || CONSTANT_CLASS_P (t))
     return t;
 
@@ -2369,6 +2373,8 @@ lookup_maybe_add (tree fns, tree lookup, bool deduping)
 int
 is_overloaded_fn (tree x)
 {
+  STRIP_ANY_LOCATION_WRAPPER (x);
+
   /* A baselink is also considered an overloaded function.  */
   if (TREE_CODE (x) == OFFSET_REF
       || TREE_CODE (x) == COMPONENT_REF)
@@ -2417,6 +2423,8 @@ really_overloaded_fn (tree x)
 tree
 maybe_get_fns (tree from)
 {
+  STRIP_ANY_LOCATION_WRAPPER (from);
+
   /* A baselink is also considered an overloaded function.  */
   if (TREE_CODE (from) == OFFSET_REF
       || TREE_CODE (from) == COMPONENT_REF)
@@ -5527,6 +5535,14 @@ test_lvalue_kind ()
   ASSERT_EQ (clk_rvalueref, lvalue_kind (rvalue_ref_of_parm));
   tree rvalue_ref_of_wrapped_parm = move (wrapped_parm);
   ASSERT_EQ (clk_rvalueref, lvalue_kind (rvalue_ref_of_wrapped_parm));
+
+  /* Verify lvalue_p.  */
+  ASSERT_FALSE (lvalue_p (int_cst));
+  ASSERT_FALSE (lvalue_p (wrapped_int_cst));
+  ASSERT_TRUE (lvalue_p (parm));
+  ASSERT_TRUE (lvalue_p (wrapped_parm));
+  ASSERT_FALSE (lvalue_p (rvalue_ref_of_parm));
+  ASSERT_FALSE (lvalue_p (rvalue_ref_of_wrapped_parm));
 }
 
 /* Run all of the selftests within this file.  */

@@ -1756,7 +1756,8 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
 	{
 	  from_array = 1;
 	  init = mark_rvalue_use (init);
-	  if (init && DECL_P (init)
+	  if (init
+	      && DECL_P (tree_strip_any_location_wrapper (init))
 	      && !(flags & LOOKUP_ONLYCONVERTING))
 	    {
 	      /* Wrap the initializer in a CONSTRUCTOR so that build_vec_init
@@ -2604,6 +2605,7 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 	 Otherwise, use the size of the entire array as an optimistic
 	 estimate (this may lead to false negatives).  */
       tree adj = TREE_OPERAND (oper, 1);
+      adj = fold_for_warn (adj);
       if (CONSTANT_CLASS_P (adj))
 	adjust += wi::to_offset (convert (ssizetype, adj));
       else
@@ -2667,11 +2669,13 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 
       tree op0 = oper;
       while (TREE_CODE (op0 = TREE_OPERAND (op0, 0)) == COMPONENT_REF);
+      STRIP_ANY_LOCATION_WRAPPER (op0);
       if (VAR_P (op0))
 	var_decl = op0;
       oper = TREE_OPERAND (oper, 1);
     }
 
+  STRIP_ANY_LOCATION_WRAPPER (oper);
   tree opertype = TREE_TYPE (oper);
   if ((addr_expr || !INDIRECT_TYPE_P (opertype))
       && (VAR_P (oper)
@@ -2761,6 +2765,9 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 	 placement new invocation for some undersize buffers but not
 	 others.  */
       offset_int bytes_need;
+
+      if (nelts)
+	nelts = fold_for_warn (nelts);
 
       if (CONSTANT_CLASS_P (size))
 	bytes_need = wi::to_offset (size);
@@ -4104,7 +4111,7 @@ build_vec_init (tree base, tree maxindex, tree init,
   tree compound_stmt;
   int destroy_temps;
   tree try_block = NULL_TREE;
-  int num_initialized_elts = 0;
+  HOST_WIDE_INT num_initialized_elts = 0;
   bool is_global;
   tree obase = base;
   bool xvalue = false;
@@ -4539,10 +4546,13 @@ build_vec_init (tree base, tree maxindex, tree init,
 
 	  if (e)
 	    {
-	      int max = tree_to_shwi (maxindex)+1;
-	      for (; num_initialized_elts < max; ++num_initialized_elts)
+	      HOST_WIDE_INT last = tree_to_shwi (maxindex);
+	      if (num_initialized_elts <= last)
 		{
 		  tree field = size_int (num_initialized_elts);
+		  if (num_initialized_elts != last)
+		    field = build2 (RANGE_EXPR, sizetype, field,
+				    size_int (last));
 		  CONSTRUCTOR_APPEND_ELT (const_vec, field, e);
 		}
 	    }

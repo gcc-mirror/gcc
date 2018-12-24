@@ -1173,15 +1173,14 @@ value_inside_range (tree val, tree min, tree max)
 }
 
 
-/* Return TRUE if *VR includes the value zero.  */
+/* Return TRUE if *VR includes the value X.  */
 
 bool
-range_includes_zero_p (const value_range_base *vr)
+range_includes_p (const value_range_base *vr, HOST_WIDE_INT x)
 {
   if (vr->varying_p () || vr->undefined_p ())
     return true;
-  tree zero = build_int_cst (vr->type (), 0);
-  return vr->may_contain_p (zero);
+  return vr->may_contain_p (build_int_cst (vr->type (), x));
 }
 
 /* If *VR has a value range that is a single constant value return that,
@@ -2894,6 +2893,7 @@ register_edge_assert_for_2 (tree name, edge e,
 	{
 	  name2 = gimple_assign_rhs1 (def_stmt);
 	  if (CONVERT_EXPR_CODE_P (rhs_code)
+	      && TREE_CODE (name2) == SSA_NAME
 	      && INTEGRAL_TYPE_P (TREE_TYPE (name2))
 	      && TYPE_UNSIGNED (TREE_TYPE (name2))
 	      && prec == TYPE_PRECISION (TREE_TYPE (name2))
@@ -2990,6 +2990,7 @@ register_edge_assert_for_2 (tree name, edge e,
 	  wide_int rmin, rmax;
 	  tree rhs1 = gimple_assign_rhs1 (def_stmt);
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
+	      && TREE_CODE (rhs1) == SSA_NAME
 	      /* Make sure the relation preserves the upper/lower boundary of
 	         the range conservatively.  */
 	      && (comp_code == NE_EXPR
@@ -3054,6 +3055,7 @@ register_edge_assert_for_2 (tree name, edge e,
 		{
 		  names[1] = gimple_assign_rhs1 (def_stmt2);
 		  if (!CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt2))
+		      || TREE_CODE (names[1]) != SSA_NAME
 		      || !INTEGRAL_TYPE_P (TREE_TYPE (names[1]))
 		      || (TYPE_PRECISION (TREE_TYPE (name2))
 			  != TYPE_PRECISION (TREE_TYPE (names[1]))))

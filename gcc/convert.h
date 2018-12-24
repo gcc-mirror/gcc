@@ -40,4 +40,6 @@ extern inline tree convert_to_real_nofold (tree t, tree x)
 extern inline tree convert_to_complex_nofold (tree t, tree x)
 { return convert_to_complex_maybe_fold (t, x, false); }
 
+extern tree preserve_any_location_wrapper (tree result, tree orig_expr);
+
 #endif /* GCC_CONVERT_H */

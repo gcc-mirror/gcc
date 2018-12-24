@@ -3056,6 +3056,83 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
     if (gfc_conv_cst_int_power (se, lse.expr, rse.expr))
       return;
 
+  if (INTEGER_CST_P (lse.expr)
+      && TREE_CODE (TREE_TYPE (rse.expr)) == INTEGER_TYPE)
+    {
+      wi::tree_to_wide_ref wlhs = wi::to_wide (lse.expr);
+      HOST_WIDE_INT v;
+      v = wlhs.to_shwi ();
+      if (v == 1)
+	{
+	  /* 1**something is always 1.  */
+	  se->expr = build_int_cst (TREE_TYPE (lse.expr), 1);
+	  return;
+	}
+      else if (v == 2 || v == 4 || v == 8 || v == 16)
+	{
+	  /* 2**n = 1<<n, 4**n = 1<<(n+n), 8**n = 1 <<(3*n), 16**n =
+	   1<<(4*n), but we have to make sure to return zero if the
+	   number of bits is too large. */
+	  tree lshift;
+	  tree type;
+	  tree shift;
+	  tree ge;
+	  tree cond;
+	  tree num_bits;
+	  tree cond2;
+
+	  type = TREE_TYPE (lse.expr);
+
+	  if (v == 2)
+	    shift = rse.expr;
+	  else if (v == 4)
+	    shift = fold_build2_loc (input_location, PLUS_EXPR,
+				     TREE_TYPE (rse.expr),
+				       rse.expr, rse.expr);
+	  else if (v == 8)
+	    shift = fold_build2_loc (input_location, MULT_EXPR,
+				     TREE_TYPE (rse.expr),
+				     build_int_cst (TREE_TYPE (rse.expr), 3),
+				     rse.expr);
+	  else if (v == 16)
+	    shift = fold_build2_loc (input_location, MULT_EXPR,
+				     TREE_TYPE (rse.expr),
+				     build_int_cst (TREE_TYPE (rse.expr), 4),
+				     rse.expr);
+	  else
+	    gcc_unreachable ();
+
+	  lshift = fold_build2_loc (input_location, LSHIFT_EXPR, type,
+				    build_int_cst (type, 1), shift);
+	  ge = fold_build2_loc (input_location, GE_EXPR, logical_type_node,
+				rse.expr, build_int_cst (type, 0));
+	  cond = fold_build3_loc (input_location, COND_EXPR, type, ge, lshift,
+				 build_int_cst (type, 0));
+	  num_bits = build_int_cst (TREE_TYPE (rse.expr), TYPE_PRECISION (type));
+	  cond2 = fold_build2_loc (input_location, GE_EXPR, logical_type_node,
+				   rse.expr, num_bits);
+	  se->expr = fold_build3_loc (input_location, COND_EXPR, type, cond2,
+				      build_int_cst (type, 0), cond);
+	  return;
+	}
+      else if (v == -1)
+	{
+	  /* (-1)**n is 1 - ((n & 1) << 1) */
+	  tree type;
+	  tree tmp;
+
+	  type = TREE_TYPE (lse.expr);
+	  tmp = fold_build2_loc (input_location, BIT_AND_EXPR, type,
+				 rse.expr, build_int_cst (type, 1));
+	  tmp = fold_build2_loc (input_location, LSHIFT_EXPR, type,
+				 tmp, build_int_cst (type, 1));
+	  tmp = fold_build2_loc (input_location, MINUS_EXPR, type,
+				 build_int_cst (type, 1), tmp);
+	  se->expr = tmp;
+	  return;
+	}
+    }
+
   gfc_int4_type_node = gfc_get_int_type (4);
 
   /* In case of integer operands with kinds 1 or 2, we call the integer kind 4
@@ -8152,7 +8229,7 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr, bool add_clobber)
 	  gfc_add_block_to_block (&se->pre, &se->post);
 	  se->expr = var;
 	}
-      else if (add_clobber)
+      else if (add_clobber && expr->ref == NULL)
 	{
 	  tree clobber;
 	  tree var;

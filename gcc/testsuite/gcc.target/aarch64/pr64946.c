@@ -1,6 +1,7 @@
-
 /* { dg-do compile } */
 /* { dg-options "-O3" } */
+
+#pragma GCC target "+nosve"
 
 signed char a[100],b[100];
 void absolute_s8 (void)

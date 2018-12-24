@@ -7158,6 +7158,7 @@ finish_struct (tree t, tree attributes)
 	 time.  */
       tree ass_op = build_lang_decl (USING_DECL, assign_op_identifier,
 				     NULL_TREE);
+      DECL_CONTEXT (ass_op) = t;
       USING_DECL_SCOPE (ass_op) = t;
       DECL_DEPENDENT_P (ass_op) = true;
       DECL_ARTIFICIAL (ass_op) = true;
@@ -7386,6 +7387,14 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
 	    }
 	}
       return NULL_TREE;
+
+    case VIEW_CONVERT_EXPR:
+      if (location_wrapper_p (instance))
+	return RECUR (TREE_OPERAND (instance, 0));
+      else
+	/* TODO: Recursion may be correct for some non-location-wrapper
+	   uses of VIEW_CONVERT_EXPR.  */
+	return NULL_TREE;
 
     default:
       return NULL_TREE;
@@ -9351,7 +9360,6 @@ build_vtbl_initializer (tree binfo,
       tree vcall_index;
       tree fn, fn_original;
       tree init = NULL_TREE;
-      tree idx = size_int (jx++);
 
       fn = BV_FN (v);
       fn_original = fn;
@@ -9455,7 +9463,7 @@ build_vtbl_initializer (tree binfo,
 	  int i;
 	  if (init == size_zero_node)
 	    for (i = 0; i < TARGET_VTABLE_USES_DESCRIPTORS; ++i)
-	      CONSTRUCTOR_APPEND_ELT (*inits, idx, init);
+	      CONSTRUCTOR_APPEND_ELT (*inits, size_int (jx++), init);
 	  else
 	    for (i = 0; i < TARGET_VTABLE_USES_DESCRIPTORS; ++i)
 	      {
@@ -9463,11 +9471,11 @@ build_vtbl_initializer (tree binfo,
 				     fn, build_int_cst (NULL_TREE, i));
 		TREE_CONSTANT (fdesc) = 1;
 
-		CONSTRUCTOR_APPEND_ELT (*inits, idx, fdesc);
+		CONSTRUCTOR_APPEND_ELT (*inits, size_int (jx++), fdesc);
 	      }
 	}
       else
-	CONSTRUCTOR_APPEND_ELT (*inits, idx, init);
+	CONSTRUCTOR_APPEND_ELT (*inits, size_int (jx++), init);
     }
 }
 

@@ -45,6 +45,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "tree-scalar-evolution.h"
 #include "tree-ssa-loop-niter.h"
+#include "alias.h"
+#include "builtins.h"
+#include "tree-dfa.h"
 
 /* TODO:  Support for predicated code motion.  I.e.
 
@@ -112,8 +115,9 @@ struct mem_ref_loc
 
 struct im_mem_ref
 {
-  unsigned id;			/* ID assigned to the memory reference
+  unsigned id : 31;		/* ID assigned to the memory reference
 				   (its index in memory_accesses.refs_list)  */
+  unsigned ref_canonical : 1;   /* Whether mem.ref was canonicalized.  */
   hashval_t hash;		/* Its hash value.  */
 
   /* The memory access itself and associated caching of alias-oracle
@@ -149,9 +153,9 @@ struct im_mem_ref
 
 struct mem_ref_hasher : nofree_ptr_hash <im_mem_ref>
 {
-  typedef tree_node *compare_type;
+  typedef ao_ref *compare_type;
   static inline hashval_t hash (const im_mem_ref *);
-  static inline bool equal (const im_mem_ref *, const tree_node *);
+  static inline bool equal (const im_mem_ref *, const ao_ref *);
 };
 
 /* A hash function for struct im_mem_ref object OBJ.  */
@@ -166,9 +170,19 @@ mem_ref_hasher::hash (const im_mem_ref *mem)
    memory reference OBJ2.  */
 
 inline bool
-mem_ref_hasher::equal (const im_mem_ref *mem1, const tree_node *obj2)
+mem_ref_hasher::equal (const im_mem_ref *mem1, const ao_ref *obj2)
 {
-  return operand_equal_p (mem1->mem.ref, (const_tree) obj2, 0);
+  if (obj2->max_size_known_p ())
+    return (operand_equal_p (mem1->mem.base, obj2->base, 0)
+	    && known_eq (mem1->mem.offset, obj2->offset)
+	    && known_eq (mem1->mem.size, obj2->size)
+	    && known_eq (mem1->mem.max_size, obj2->max_size)
+	    && mem1->mem.volatile_p == obj2->volatile_p
+	    && mem1->mem.ref_alias_set == obj2->ref_alias_set
+	    && types_compatible_p (TREE_TYPE (mem1->mem.ref),
+				   TREE_TYPE (obj2->ref)));
+  else
+    return operand_equal_p (mem1->mem.ref, obj2->ref, 0);
 }
 
 
@@ -1356,11 +1370,15 @@ memref_free (struct im_mem_ref *mem)
    value is HASH and id is ID.  */
 
 static im_mem_ref *
-mem_ref_alloc (tree mem, unsigned hash, unsigned id)
+mem_ref_alloc (ao_ref *mem, unsigned hash, unsigned id)
 {
   im_mem_ref *ref = XOBNEW (&mem_ref_obstack, struct im_mem_ref);
-  ao_ref_init (&ref->mem, mem);
+  if (mem)
+    ref->mem = *mem;
+  else
+    ao_ref_init (&ref->mem, error_mark_node);
   ref->id = id;
+  ref->ref_canonical = false;
   ref->hash = hash;
   ref->stored = NULL;
   bitmap_initialize (&ref->indep_loop, &lim_bitmap_obstack);
@@ -1436,17 +1454,79 @@ gather_mem_refs_stmt (struct loop *loop, gimple *stmt)
     }
   else
     {
-      hash = iterative_hash_expr (*mem, 0);
-      slot = memory_accesses.refs->find_slot_with_hash (*mem, hash, INSERT);
+      /* We are looking for equal refs that might differ in structure
+         such as a.b vs. MEM[&a + 4].  So we key off the ao_ref but
+	 make sure we can canonicalize the ref in the hashtable if
+	 non-operand_equal_p refs are found.  For the lookup we mark
+	 the case we want strict equality with aor.max_size == -1.  */
+      ao_ref aor;
+      ao_ref_init (&aor, *mem);
+      ao_ref_base (&aor);
+      ao_ref_alias_set (&aor);
+      HOST_WIDE_INT offset, size, max_size;
+      poly_int64 saved_maxsize = aor.max_size, mem_off;
+      tree mem_base;
+      if (aor.max_size_known_p ()
+	  && aor.offset.is_constant (&offset)
+	  && aor.offset.is_constant (&size)
+	  && aor.offset.is_constant (&max_size)
+	  && size == max_size
+	  && (mem_base = get_addr_base_and_unit_offset (aor.ref, &mem_off)))
+	{
+	  hash = iterative_hash_expr (ao_ref_base (&aor), 0);
+	  hash = iterative_hash_host_wide_int (offset, hash);
+	  hash = iterative_hash_host_wide_int (size, hash);
+	}
+      else
+	{
+	  hash = iterative_hash_expr (aor.ref, 0);
+	  aor.max_size = -1;
+	}
+      slot = memory_accesses.refs->find_slot_with_hash (&aor, hash, INSERT);
+      aor.max_size = saved_maxsize;
       if (*slot)
 	{
+	  if (!(*slot)->ref_canonical 
+	      && !operand_equal_p (*mem, (*slot)->mem.ref, 0))
+	    {
+	      /* If we didn't yet canonicalize the hashtable ref (which
+	         we'll end up using for code insertion) and hit a second
+		 equal ref that is not structurally equivalent create
+		 a canonical ref which is a bare MEM_REF.  */
+	      if (TREE_CODE (*mem) == MEM_REF
+		  || TREE_CODE (*mem) == TARGET_MEM_REF)
+		{
+		  (*slot)->mem.ref = *mem;
+		  (*slot)->mem.base_alias_set = ao_ref_base_alias_set (&aor);
+		}
+	      else
+		{
+		  tree ref_alias_type = reference_alias_ptr_type (*mem);
+		  unsigned int ref_align = get_object_alignment (*mem);
+		  tree ref_type = TREE_TYPE (*mem);
+		  tree tmp = build_fold_addr_expr (unshare_expr (mem_base));
+		  if (TYPE_ALIGN (ref_type) != ref_align)
+		    ref_type = build_aligned_type (ref_type, ref_align);
+		  (*slot)->mem.ref
+		    = fold_build2 (MEM_REF, ref_type, tmp,
+				   build_int_cst (ref_alias_type, mem_off));
+		  if ((*slot)->mem.volatile_p)
+		    TREE_THIS_VOLATILE ((*slot)->mem.ref) = 1;
+		  gcc_checking_assert (TREE_CODE ((*slot)->mem.ref) == MEM_REF
+				       && is_gimple_mem_ref_addr
+				            (TREE_OPERAND ((*slot)->mem.ref,
+							   0)));
+		  (*slot)->mem.base_alias_set = (*slot)->mem.ref_alias_set;
+		}
+	      (*slot)->ref_canonical = true;
+	    }
 	  ref = *slot;
 	  id = ref->id;
 	}
       else
 	{
 	  id = memory_accesses.refs_list.length ();
-	  ref = mem_ref_alloc (*mem, hash, id);
+	  ref = mem_ref_alloc (&aor, hash, id);
 	  memory_accesses.refs_list.safe_push (ref);
 	  *slot = ref;
 
@@ -2472,7 +2552,7 @@ tree_ssa_lim_initialize (void)
   memory_accesses.refs_list.create (100);
   /* Allocate a special, unanalyzable mem-ref with ID zero.  */
   memory_accesses.refs_list.quick_push
-    (mem_ref_alloc (error_mark_node, 0, UNANALYZABLE_MEM_ID));
+    (mem_ref_alloc (NULL, 0, UNANALYZABLE_MEM_ID));
 
   memory_accesses.refs_in_loop.create (number_of_loops (cfun));
   memory_accesses.refs_in_loop.quick_grow (number_of_loops (cfun));

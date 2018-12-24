@@ -44,8 +44,19 @@ test01()
   }
 }
 
+void
+test02()
+{
+  VERIFY( path("/").compare(path("////")) == 0 );
+  VERIFY( path("/a").compare(path("/")) > 0 );
+  VERIFY( path("/").compare(path("/a")) < 0 );
+  VERIFY( path("/ab").compare(path("/a")) > 0 );
+  VERIFY( path("/ab").compare(path("/a/b")) > 0 );
+}
+
 int
 main()
 {
   test01();
+  test02();
 }

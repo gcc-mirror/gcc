@@ -68,7 +68,7 @@ static int decl_jump_unsafe (tree);
 static void require_complete_types_for_parms (tree);
 static tree grok_reference_init (tree, tree, tree, int);
 static tree grokvardecl (tree, tree, tree, const cp_decl_specifier_seq *,
-			 int, int, int, bool, int, tree);
+			 int, int, int, bool, int, tree, location_t);
 static void check_static_variable_definition (tree, tree);
 static void record_unknown_type (tree, const char *);
 static tree builtin_function_1 (tree, tree, bool);
@@ -4803,15 +4803,20 @@ check_tag_decl (cp_decl_specifier_seq *declspecs,
     declared_type = declspecs->type;
   else if (declspecs->type == error_mark_node)
     error_p = true;
-  if (declared_type == NULL_TREE && ! saw_friend && !error_p)
-    permerror (input_location, "declaration does not declare anything");
-  else if (declared_type != NULL_TREE && type_uses_auto (declared_type))
+
+  if (type_uses_auto (declared_type))
     {
       error_at (declspecs->locations[ds_type_spec],
 		"%<auto%> can only be specified for variables "
 		"or function declarations");
       return error_mark_node;
     }
+
+  if (declared_type && !OVERLOAD_TYPE_P (declared_type))
+    declared_type = NULL_TREE;
+
+  if (!declared_type && !saw_friend && !error_p)
+    permerror (input_location, "declaration does not declare anything");
   /* Check for an anonymous union.  */
   else if (declared_type && RECORD_OR_UNION_CODE_P (TREE_CODE (declared_type))
 	   && TYPE_UNNAMED_P (declared_type))
@@ -6005,14 +6010,16 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
       && has_designator_problem (d, complain))
     return error_mark_node;
 
+  tree stripped_init = tree_strip_any_location_wrapper (init);
+
   if (TREE_CODE (type) == COMPLEX_TYPE)
     {
       /* A complex type can be initialized from one or two initializers,
 	 but braces are not elided.  */
       d->cur++;
-      if (BRACE_ENCLOSED_INITIALIZER_P (init))
+      if (BRACE_ENCLOSED_INITIALIZER_P (stripped_init))
 	{
-	  if (CONSTRUCTOR_NELTS (init) > 2)
+	  if (CONSTRUCTOR_NELTS (stripped_init) > 2)
 	    {
 	      if (complain & tf_error)
 		error ("too many initializers for %qT", type);
@@ -6042,16 +6049,16 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
 	 We need to check for BRACE_ENCLOSED_INITIALIZER_P here because
 	 of g++.old-deja/g++.mike/p7626.C: a pointer-to-member constant is
 	 a CONSTRUCTOR (with a record type).  */
-      if (TREE_CODE (init) == CONSTRUCTOR
+      if (TREE_CODE (stripped_init) == CONSTRUCTOR
 	  /* Don't complain about a capture-init.  */
-	  && !CONSTRUCTOR_IS_DIRECT_INIT (init)
-	  && BRACE_ENCLOSED_INITIALIZER_P (init))  /* p7626.C */
+	  && !CONSTRUCTOR_IS_DIRECT_INIT (stripped_init)
+	  && BRACE_ENCLOSED_INITIALIZER_P (stripped_init))  /* p7626.C */
 	{
 	  if (SCALAR_TYPE_P (type))
 	    {
 	      if (cxx_dialect < cxx11
 		  /* Isn't value-initialization.  */
-		  || CONSTRUCTOR_NELTS (init) > 0)
+		  || CONSTRUCTOR_NELTS (stripped_init) > 0)
 		{
 		  if (complain & tf_error)
 		    error ("braces around scalar initializer for type %qT",
@@ -6111,20 +6118,22 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
       && char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (type))))
     {
       tree str_init = init;
+      tree stripped_str_init = stripped_init;
 
       /* Strip one level of braces if and only if they enclose a single
 	 element (as allowed by [dcl.init.string]).  */
       if (!first_initializer_p
-	  && TREE_CODE (str_init) == CONSTRUCTOR
-	  && CONSTRUCTOR_NELTS (str_init) == 1)
+	  && TREE_CODE (stripped_str_init) == CONSTRUCTOR
+	  && CONSTRUCTOR_NELTS (stripped_str_init) == 1)
 	{
-	  str_init = (*CONSTRUCTOR_ELTS (str_init))[0].value;
+	  str_init = (*CONSTRUCTOR_ELTS (stripped_str_init))[0].value;
+	  stripped_str_init = tree_strip_any_location_wrapper (str_init);
 	}
 
       /* If it's a string literal, then it's the initializer for the array
 	 as a whole. Otherwise, continue with normal initialization for
 	 array types (one value per array element).  */
-      if (TREE_CODE (str_init) == STRING_CST)
+      if (TREE_CODE (stripped_str_init) == STRING_CST)
 	{
 	  if (has_designator_problem (d, complain))
 	    return error_mark_node;
@@ -6139,24 +6148,24 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
      which reshape_init exists).  */
   if (!first_initializer_p)
     {
-      if (TREE_CODE (init) == CONSTRUCTOR)
+      if (TREE_CODE (stripped_init) == CONSTRUCTOR)
 	{
 	  if (TREE_TYPE (init) && TYPE_PTRMEMFUNC_P (TREE_TYPE (init)))
 	    /* There is no need to reshape pointer-to-member function
 	       initializers, as they are always constructed correctly
 	       by the front end.  */
            ;
-	  else if (COMPOUND_LITERAL_P (init))
+	  else if (COMPOUND_LITERAL_P (stripped_init))
 	  /* For a nested compound literal, there is no need to reshape since
 	     brace elision is not allowed. Even if we decided to allow it,
 	     we should add a call to reshape_init in finish_compound_literal,
 	     before calling digest_init, so changing this code would still
 	     not be necessary.  */
-	    gcc_assert (!BRACE_ENCLOSED_INITIALIZER_P (init));
+	    gcc_assert (!BRACE_ENCLOSED_INITIALIZER_P (stripped_init));
 	  else
 	    {
 	      ++d->cur;
-	      gcc_assert (BRACE_ENCLOSED_INITIALIZER_P (init));
+	      gcc_assert (BRACE_ENCLOSED_INITIALIZER_P (stripped_init));
 	      return reshape_init (type, init, complain);
 	    }
 	}
@@ -9282,7 +9291,8 @@ grokvardecl (tree type,
 	     int inlinep,
 	     bool conceptp,
 	     int template_count,
-	     tree scope)
+	     tree scope,
+	     location_t location)
 {
   tree decl;
   tree explicit_scope;
@@ -9318,9 +9328,9 @@ grokvardecl (tree type,
 	  /* Similarly for explicit specializations.  */
 	  || (orig_declarator
 	      && TREE_CODE (orig_declarator) == TEMPLATE_ID_EXPR)))
-    decl = build_lang_decl (VAR_DECL, name, type);
+    decl = build_lang_decl_loc (location, VAR_DECL, name, type);
   else
-    decl = build_decl (input_location, VAR_DECL, name, type);
+    decl = build_decl (location, VAR_DECL, name, type);
 
   if (explicit_scope && TREE_CODE (explicit_scope) == NAMESPACE_DECL)
     set_decl_namespace (decl, explicit_scope, 0);
@@ -9645,7 +9655,11 @@ compute_array_index_type_loc (location_t name_loc, tree name, tree size,
 	{
 	  size = instantiate_non_dependent_expr_sfinae (size, complain);
 	  size = build_converted_constant_expr (size_type_node, size, complain);
-	  size = maybe_constant_value (size);
+	  /* Pedantically a constant expression is required here and so
+	     __builtin_is_constant_evaluated () should fold to true if it
+	     is successfully folded into a constant.  */
+	  size = maybe_constant_value (size, NULL_TREE,
+				       /*manifestly_const_eval=*/true);
 
 	  if (!TREE_CONSTANT (size))
 	    size = osize;
@@ -12200,6 +12214,7 @@ grokdeclarator (const cp_declarator *declarator,
 
   {
     tree decl = NULL_TREE;
+    location_t loc = declarator ? declarator->id_loc : input_location;
 
     if (decl_context == PARM)
       {
@@ -12216,13 +12231,13 @@ grokdeclarator (const cp_declarator *declarator,
 	if (!staticp && !friendp && TREE_CODE (type) != METHOD_TYPE)
 	  if (tree auto_node = type_uses_auto (type))
 	    {
-	      location_t loc = declspecs->locations[ds_type_spec];
+	      location_t tloc = declspecs->locations[ds_type_spec];
 	      if (CLASS_PLACEHOLDER_TEMPLATE (auto_node))
-		error_at (loc, "invalid use of template-name %qE without an "
+		error_at (tloc, "invalid use of template-name %qE without an "
 			  "argument list",
 			  CLASS_PLACEHOLDER_TEMPLATE (auto_node));
 	      else
-		error_at (loc, "non-static data member declared with "
+		error_at (tloc, "non-static data member declared with "
 			  "placeholder %qT", auto_node);
 	      type = error_mark_node;
 	    }
@@ -12487,7 +12502,6 @@ grokdeclarator (const cp_declarator *declarator,
 
 	if (decl == NULL_TREE)
 	  {
-	    location_t loc = declarator ? declarator->id_loc : input_location;
 	    if (staticp)
 	      {
 		/* C++ allows static class members.  All other work
@@ -12704,7 +12718,8 @@ grokdeclarator (const cp_declarator *declarator,
 			    inlinep,
 			    concept_p,
 			    template_count,
-			    ctype ? ctype : in_namespace);
+			    ctype ? ctype : in_namespace,
+			    loc);
 	if (decl == NULL_TREE)
 	  return error_mark_node;
 
@@ -12718,7 +12733,8 @@ grokdeclarator (const cp_declarator *declarator,
 	    DECL_CONTEXT (decl) = ctype;
 	    if (staticp == 1)
 	      {
-		permerror (input_location, "%<static%> may not be used when defining "
+		permerror (declspecs->locations[ds_storage_class],
+			   "%<static%> may not be used when defining "
 			   "(as opposed to declaring) a static data member");
 		staticp = 0;
 		storage_class = sc_none;
@@ -16595,6 +16611,7 @@ undeduced_auto_decl (tree decl)
 {
   if (cxx_dialect < cxx11)
     return false;
+  STRIP_ANY_LOCATION_WRAPPER (decl);
   return ((VAR_OR_FUNCTION_DECL_P (decl)
 	   || TREE_CODE (decl) == TEMPLATE_DECL)
 	  && type_uses_auto (TREE_TYPE (decl)));

@@ -49,15 +49,15 @@ For exception handling, either or both of two models are supplied:
 Most programs should experience a substantial speed improvement by
 being compiled with a ZCX run-time.
 This is especially true for
-tasking applications or applications with many exception handlers.}
+tasking applications or applications with many exception handlers.
+Note however that the ZCX run-time does not support asynchronous abort
+of tasks (``abort`` and ``select-then-abort`` constructs) and will instead
+implement abort by polling points in the runtime. You can also add additional
+polling points explicitly if needed in your application via ``pragma
+Abort_Defer``.
 
 This section summarizes which combinations of threads and exception support
 are supplied on various GNAT platforms.
-It then shows how to select a particular library either
-permanently or temporarily,
-explains the properties of (and tradeoffs among) the various threads
-libraries, and provides some additional
-information about several specific platforms.
 
 .. _Summary_of_Run-Time_Configurations:
 

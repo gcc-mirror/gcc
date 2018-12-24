@@ -9422,6 +9422,15 @@ If this macro is not defined, nothing special is output at the end of
 the jump-table.
 @end defmac
 
+@deftypefn {Target Hook} void TARGET_ASM_POST_CFI_STARTPROC (FILE *@var{}, @var{tree})
+This target hook is used to emit assembly strings required by the target
+after the .cfi_startproc directive.  The first argument is the file stream to
+write the strings to and the second argument is the function's declaration.  The
+expected use is to add more .cfi_* directives.
+
+The default is to not output any assembly strings.
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_ASM_EMIT_UNWIND_LABEL (FILE *@var{stream}, tree @var{decl}, int @var{for_eh}, int @var{empty})
 This target hook emits a label at the beginning of each FDE@.  It
 should be defined on targets where FDEs need special labels, and it

@@ -1,3 +1,18 @@
+2018-12-14  Tom de Vries  <tdevries@suse.de>
+
+	PR testsuite/88491
+	* allocfail.sh: Remove "set -o pipefail".
+
+2018-12-12  Tom de Vries  <tdevries@suse.de>
+
+	* Makefile.am (TESTS): Add allocfail.sh.
+	(check_PROGRAMS): Add allocfail.
+	* Makefile.in: Regenerate.
+	* instrumented_alloc.c: New file.  Redefine malloc and realloc.
+	Include alloc.c.
+	* allocfail.c: New file.
+	* allocfail.sh: New file.
+
 2018-11-30  Tom de Vries  <tdevries@suse.de>
 
 	* Makefile.am (check_PROGRAMS): Add test_elf, test_xcoff_32,

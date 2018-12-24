@@ -425,14 +425,10 @@ GOACC_enter_exit_data (int device, size_t mapnum,
 	      switch (kind)
 		{
 		case GOMP_MAP_ALLOC:
-		  acc_present_or_create (hostaddrs[i], sizes[i]);
-		  break;
 		case GOMP_MAP_FORCE_ALLOC:
 		  acc_create (hostaddrs[i], sizes[i]);
 		  break;
 		case GOMP_MAP_TO:
-		  acc_present_or_copyin (hostaddrs[i], sizes[i]);
-		  break;
 		case GOMP_MAP_FORCE_TO:
 		  acc_copyin (hostaddrs[i], sizes[i]);
 		  break;
@@ -630,8 +626,8 @@ GOACC_wait (int async, int num_waits, ...)
     }
   else if (async == acc_async_sync)
     acc_wait_all ();
-  else if (async == acc_async_noval)
-    goacc_thread ()->dev->openacc.async_wait_all_async_func (acc_async_noval);
+  else
+    acc_wait_all_async (async);
 }
 
 int

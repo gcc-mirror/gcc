@@ -228,38 +228,28 @@ module IEEE_ARITHMETIC
   end function
 
   interface
-COPYSIGN_MACRO(4,4)
-COPYSIGN_MACRO(4,8)
-#ifdef HAVE_GFC_REAL_10
-COPYSIGN_MACRO(4,10)
-#endif
 #ifdef HAVE_GFC_REAL_16
-COPYSIGN_MACRO(4,16)
-#endif
-COPYSIGN_MACRO(8,4)
-COPYSIGN_MACRO(8,8)
-#ifdef HAVE_GFC_REAL_10
-COPYSIGN_MACRO(8,10)
-#endif
-#ifdef HAVE_GFC_REAL_16
-COPYSIGN_MACRO(8,16)
-#endif
-#ifdef HAVE_GFC_REAL_10
-COPYSIGN_MACRO(10,4)
-COPYSIGN_MACRO(10,8)
-COPYSIGN_MACRO(10,10)
-#ifdef HAVE_GFC_REAL_16
-COPYSIGN_MACRO(10,16)
-#endif
-#endif
-#ifdef HAVE_GFC_REAL_16
-COPYSIGN_MACRO(16,4)
-COPYSIGN_MACRO(16,8)
+COPYSIGN_MACRO(16,16)
 #ifdef HAVE_GFC_REAL_10
 COPYSIGN_MACRO(16,10)
+COPYSIGN_MACRO(10,16)
 #endif
-COPYSIGN_MACRO(16,16)
+COPYSIGN_MACRO(16,8)
+COPYSIGN_MACRO(16,4)
+COPYSIGN_MACRO(8,16)
+COPYSIGN_MACRO(4,16)
 #endif
+#ifdef HAVE_GFC_REAL_10
+COPYSIGN_MACRO(10,10)
+COPYSIGN_MACRO(10,8)
+COPYSIGN_MACRO(10,4)
+COPYSIGN_MACRO(8,10)
+COPYSIGN_MACRO(4,10)
+#endif
+COPYSIGN_MACRO(8,8)
+COPYSIGN_MACRO(8,4)
+COPYSIGN_MACRO(4,8)
+COPYSIGN_MACRO(4,4)
   end interface
 
   interface IEEE_COPY_SIGN
@@ -268,32 +258,22 @@ COPYSIGN_MACRO(16,16)
               _gfortran_ieee_copy_sign_16_16, &
 #ifdef HAVE_GFC_REAL_10
               _gfortran_ieee_copy_sign_16_10, &
+              _gfortran_ieee_copy_sign_10_16, &
 #endif
               _gfortran_ieee_copy_sign_16_8, &
               _gfortran_ieee_copy_sign_16_4, &
-#endif
-#ifdef HAVE_GFC_REAL_10
-#ifdef HAVE_GFC_REAL_16
-              _gfortran_ieee_copy_sign_10_16, &
-#endif
-              _gfortran_ieee_copy_sign_10_10, &
-              _gfortran_ieee_copy_sign_10_8, &
-              _gfortran_ieee_copy_sign_10_4, &
-#endif
-#ifdef HAVE_GFC_REAL_16
               _gfortran_ieee_copy_sign_8_16, &
-#endif
-#ifdef HAVE_GFC_REAL_10
-              _gfortran_ieee_copy_sign_8_10, &
-#endif
-              _gfortran_ieee_copy_sign_8_8, &
-              _gfortran_ieee_copy_sign_8_4, &
-#ifdef HAVE_GFC_REAL_16
               _gfortran_ieee_copy_sign_4_16, &
 #endif
 #ifdef HAVE_GFC_REAL_10
+              _gfortran_ieee_copy_sign_10_10, &
+              _gfortran_ieee_copy_sign_10_8, &
+              _gfortran_ieee_copy_sign_10_4, &
+              _gfortran_ieee_copy_sign_8_10, &
               _gfortran_ieee_copy_sign_4_10, &
 #endif
+              _gfortran_ieee_copy_sign_8_8, &
+              _gfortran_ieee_copy_sign_8_4, &
               _gfortran_ieee_copy_sign_4_8, &
               _gfortran_ieee_copy_sign_4_4
   end interface
@@ -309,38 +289,28 @@ COPYSIGN_MACRO(16,16)
   end function
 
   interface
-UNORDERED_MACRO(4,4)
-UNORDERED_MACRO(4,8)
-#ifdef HAVE_GFC_REAL_10
-UNORDERED_MACRO(4,10)
-#endif
 #ifdef HAVE_GFC_REAL_16
-UNORDERED_MACRO(4,16)
-#endif
-UNORDERED_MACRO(8,4)
-UNORDERED_MACRO(8,8)
-#ifdef HAVE_GFC_REAL_10
-UNORDERED_MACRO(8,10)
-#endif
-#ifdef HAVE_GFC_REAL_16
-UNORDERED_MACRO(8,16)
-#endif
-#ifdef HAVE_GFC_REAL_10
-UNORDERED_MACRO(10,4)
-UNORDERED_MACRO(10,8)
-UNORDERED_MACRO(10,10)
-#ifdef HAVE_GFC_REAL_16
-UNORDERED_MACRO(10,16)
-#endif
-#endif
-#ifdef HAVE_GFC_REAL_16
-UNORDERED_MACRO(16,4)
-UNORDERED_MACRO(16,8)
+UNORDERED_MACRO(16,16)
 #ifdef HAVE_GFC_REAL_10
 UNORDERED_MACRO(16,10)
+UNORDERED_MACRO(10,16)
 #endif
-UNORDERED_MACRO(16,16)
+UNORDERED_MACRO(16,8)
+UNORDERED_MACRO(16,4)
+UNORDERED_MACRO(8,16)
+UNORDERED_MACRO(4,16)
 #endif
+#ifdef HAVE_GFC_REAL_10
+UNORDERED_MACRO(10,10)
+UNORDERED_MACRO(10,8)
+UNORDERED_MACRO(10,4)
+UNORDERED_MACRO(8,10)
+UNORDERED_MACRO(4,10)
+#endif
+UNORDERED_MACRO(8,8)
+UNORDERED_MACRO(8,4)
+UNORDERED_MACRO(4,8)
+UNORDERED_MACRO(4,4)
   end interface
 
   interface IEEE_UNORDERED
@@ -349,32 +319,22 @@ UNORDERED_MACRO(16,16)
               _gfortran_ieee_unordered_16_16, &
 #ifdef HAVE_GFC_REAL_10
               _gfortran_ieee_unordered_16_10, &
+              _gfortran_ieee_unordered_10_16, &
 #endif
               _gfortran_ieee_unordered_16_8, &
               _gfortran_ieee_unordered_16_4, &
-#endif
-#ifdef HAVE_GFC_REAL_10
-#ifdef HAVE_GFC_REAL_16
-              _gfortran_ieee_unordered_10_16, &
-#endif
-              _gfortran_ieee_unordered_10_10, &
-              _gfortran_ieee_unordered_10_8, &
-              _gfortran_ieee_unordered_10_4, &
-#endif
-#ifdef HAVE_GFC_REAL_16
               _gfortran_ieee_unordered_8_16, &
-#endif
-#ifdef HAVE_GFC_REAL_10
-              _gfortran_ieee_unordered_8_10, &
-#endif
-              _gfortran_ieee_unordered_8_8, &
-              _gfortran_ieee_unordered_8_4, &
-#ifdef HAVE_GFC_REAL_16
               _gfortran_ieee_unordered_4_16, &
 #endif
 #ifdef HAVE_GFC_REAL_10
+              _gfortran_ieee_unordered_10_10, &
+              _gfortran_ieee_unordered_10_8, &
+              _gfortran_ieee_unordered_10_4, &
+              _gfortran_ieee_unordered_8_10, &
               _gfortran_ieee_unordered_4_10, &
 #endif
+              _gfortran_ieee_unordered_8_8, &
+              _gfortran_ieee_unordered_8_4, &
               _gfortran_ieee_unordered_4_8, &
               _gfortran_ieee_unordered_4_4
   end interface
@@ -424,38 +384,28 @@ UNORDERED_MACRO(16,16)
   end function
 
   interface
-NEXT_AFTER_MACRO(4,4)
-NEXT_AFTER_MACRO(4,8)
-#ifdef HAVE_GFC_REAL_10
-NEXT_AFTER_MACRO(4,10)
-#endif
 #ifdef HAVE_GFC_REAL_16
-NEXT_AFTER_MACRO(4,16)
-#endif
-NEXT_AFTER_MACRO(8,4)
-NEXT_AFTER_MACRO(8,8)
-#ifdef HAVE_GFC_REAL_10
-NEXT_AFTER_MACRO(8,10)
-#endif
-#ifdef HAVE_GFC_REAL_16
-NEXT_AFTER_MACRO(8,16)
-#endif
-#ifdef HAVE_GFC_REAL_10
-NEXT_AFTER_MACRO(10,4)
-NEXT_AFTER_MACRO(10,8)
-NEXT_AFTER_MACRO(10,10)
-#ifdef HAVE_GFC_REAL_16
-NEXT_AFTER_MACRO(10,16)
-#endif
-#endif
-#ifdef HAVE_GFC_REAL_16
-NEXT_AFTER_MACRO(16,4)
-NEXT_AFTER_MACRO(16,8)
+NEXT_AFTER_MACRO(16,16)
 #ifdef HAVE_GFC_REAL_10
 NEXT_AFTER_MACRO(16,10)
+NEXT_AFTER_MACRO(10,16)
 #endif
-NEXT_AFTER_MACRO(16,16)
+NEXT_AFTER_MACRO(16,8)
+NEXT_AFTER_MACRO(16,4)
+NEXT_AFTER_MACRO(8,16)
+NEXT_AFTER_MACRO(4,16)
 #endif
+#ifdef HAVE_GFC_REAL_10
+NEXT_AFTER_MACRO(10,10)
+NEXT_AFTER_MACRO(10,8)
+NEXT_AFTER_MACRO(10,4)
+NEXT_AFTER_MACRO(8,10)
+NEXT_AFTER_MACRO(4,10)
+#endif
+NEXT_AFTER_MACRO(8,8)
+NEXT_AFTER_MACRO(8,4)
+NEXT_AFTER_MACRO(4,8)
+NEXT_AFTER_MACRO(4,4)
   end interface
 
   interface IEEE_NEXT_AFTER
@@ -464,32 +414,22 @@ NEXT_AFTER_MACRO(16,16)
       _gfortran_ieee_next_after_16_16, &
 #ifdef HAVE_GFC_REAL_10
       _gfortran_ieee_next_after_16_10, &
+      _gfortran_ieee_next_after_10_16, &
 #endif
       _gfortran_ieee_next_after_16_8, &
       _gfortran_ieee_next_after_16_4, &
-#endif
-#ifdef HAVE_GFC_REAL_10
-#ifdef HAVE_GFC_REAL_16
-      _gfortran_ieee_next_after_10_16, &
-#endif
-      _gfortran_ieee_next_after_10_10, &
-      _gfortran_ieee_next_after_10_8, &
-      _gfortran_ieee_next_after_10_4, &
-#endif
-#ifdef HAVE_GFC_REAL_16
       _gfortran_ieee_next_after_8_16, &
-#endif
-#ifdef HAVE_GFC_REAL_10
-      _gfortran_ieee_next_after_8_10, &
-#endif
-      _gfortran_ieee_next_after_8_8, &
-      _gfortran_ieee_next_after_8_4, &
-#ifdef HAVE_GFC_REAL_16
       _gfortran_ieee_next_after_4_16, &
 #endif
 #ifdef HAVE_GFC_REAL_10
+      _gfortran_ieee_next_after_10_10, &
+      _gfortran_ieee_next_after_10_8, &
+      _gfortran_ieee_next_after_10_4, &
+      _gfortran_ieee_next_after_8_10, &
       _gfortran_ieee_next_after_4_10, &
 #endif
+      _gfortran_ieee_next_after_8_8, &
+      _gfortran_ieee_next_after_8_4, &
       _gfortran_ieee_next_after_4_8, &
       _gfortran_ieee_next_after_4_4
   end interface
@@ -505,38 +445,28 @@ NEXT_AFTER_MACRO(16,16)
   end function
 
   interface
-REM_MACRO(4,4,4)
-REM_MACRO(8,4,8)
-#ifdef HAVE_GFC_REAL_10
-REM_MACRO(10,4,10)
-#endif
 #ifdef HAVE_GFC_REAL_16
-REM_MACRO(16,4,16)
-#endif
-REM_MACRO(8,8,4)
-REM_MACRO(8,8,8)
-#ifdef HAVE_GFC_REAL_10
-REM_MACRO(10,8,10)
-#endif
-#ifdef HAVE_GFC_REAL_16
-REM_MACRO(16,8,16)
-#endif
-#ifdef HAVE_GFC_REAL_10
-REM_MACRO(10,10,4)
-REM_MACRO(10,10,8)
-REM_MACRO(10,10,10)
-#ifdef HAVE_GFC_REAL_16
-REM_MACRO(16,10,16)
-#endif
-#endif
-#ifdef HAVE_GFC_REAL_16
-REM_MACRO(16,16,4)
-REM_MACRO(16,16,8)
+REM_MACRO(16,16,16)
 #ifdef HAVE_GFC_REAL_10
 REM_MACRO(16,16,10)
+REM_MACRO(16,10,16)
 #endif
-REM_MACRO(16,16,16)
+REM_MACRO(16,16,8)
+REM_MACRO(16,16,4)
+REM_MACRO(16,8,16)
+REM_MACRO(16,4,16)
 #endif
+#ifdef HAVE_GFC_REAL_10
+REM_MACRO(10,10,10)
+REM_MACRO(10,10,8)
+REM_MACRO(10,10,4)
+REM_MACRO(10,8,10)
+REM_MACRO(10,4,10)
+#endif
+REM_MACRO(8,8,8)
+REM_MACRO(8,8,4)
+REM_MACRO(8,4,8)
+REM_MACRO(4,4,4)
   end interface
 
   interface IEEE_REM
@@ -545,32 +475,22 @@ REM_MACRO(16,16,16)
       _gfortran_ieee_rem_16_16, &
 #ifdef HAVE_GFC_REAL_10
       _gfortran_ieee_rem_16_10, &
+      _gfortran_ieee_rem_10_16, &
 #endif
       _gfortran_ieee_rem_16_8, &
       _gfortran_ieee_rem_16_4, &
-#endif
-#ifdef HAVE_GFC_REAL_10
-#ifdef HAVE_GFC_REAL_16
-      _gfortran_ieee_rem_10_16, &
-#endif
-      _gfortran_ieee_rem_10_10, &
-      _gfortran_ieee_rem_10_8, &
-      _gfortran_ieee_rem_10_4, &
-#endif
-#ifdef HAVE_GFC_REAL_16
       _gfortran_ieee_rem_8_16, &
-#endif
-#ifdef HAVE_GFC_REAL_10
-      _gfortran_ieee_rem_8_10, &
-#endif
-      _gfortran_ieee_rem_8_8, &
-      _gfortran_ieee_rem_8_4, &
-#ifdef HAVE_GFC_REAL_16
       _gfortran_ieee_rem_4_16, &
 #endif
 #ifdef HAVE_GFC_REAL_10
+      _gfortran_ieee_rem_10_10, &
+      _gfortran_ieee_rem_10_8, &
+      _gfortran_ieee_rem_10_4, &
+      _gfortran_ieee_rem_8_10, &
       _gfortran_ieee_rem_4_10, &
 #endif
+      _gfortran_ieee_rem_8_8, &
+      _gfortran_ieee_rem_8_4, &
       _gfortran_ieee_rem_4_8, &
       _gfortran_ieee_rem_4_4
   end interface
@@ -612,37 +532,170 @@ REM_MACRO(16,16,16)
   ! IEEE_SCALB
 
   interface
-    elemental real(kind=4) function _gfortran_ieee_scalb_4 (X, I)
-      real(kind=4), intent(in) :: X
-      integer, intent(in) :: I
-    end function
-    elemental real(kind=8) function _gfortran_ieee_scalb_8 (X, I)
-      real(kind=8), intent(in) :: X
-      integer, intent(in) :: I
-    end function
-#ifdef HAVE_GFC_REAL_10
-    elemental real(kind=10) function _gfortran_ieee_scalb_10 (X, I)
-      real(kind=10), intent(in) :: X
-      integer, intent(in) :: I
+#ifdef HAVE_GFC_INTEGER_16
+#ifdef HAVE_GFC_REAL_16
+    elemental real(kind=16) function _gfortran_ieee_scalb_16_16 (X, I)
+      real(kind=16), intent(in) :: X
+      integer(kind=16), intent(in) :: I
     end function
 #endif
+#ifdef HAVE_GFC_REAL_10
+    elemental real(kind=10) function _gfortran_ieee_scalb_10_16 (X, I)
+      real(kind=10), intent(in) :: X
+      integer(kind=16), intent(in) :: I
+    end function
+#endif
+    elemental real(kind=8) function _gfortran_ieee_scalb_8_16 (X, I)
+      real(kind=8), intent(in) :: X
+      integer(kind=16), intent(in) :: I
+    end function
+    elemental real(kind=4) function _gfortran_ieee_scalb_4_16 (X, I)
+      real(kind=4), intent(in) :: X
+      integer(kind=16), intent(in) :: I
+    end function
+#endif
+
+#ifdef HAVE_GFC_INTEGER_8
 #ifdef HAVE_GFC_REAL_16
-    elemental real(kind=16) function _gfortran_ieee_scalb_16 (X, I)
+    elemental real(kind=16) function _gfortran_ieee_scalb_16_8 (X, I)
+      real(kind=16), intent(in) :: X
+      integer(kind=8), intent(in) :: I
+    end function
+#endif
+#ifdef HAVE_GFC_REAL_10
+    elemental real(kind=10) function _gfortran_ieee_scalb_10_8 (X, I)
+      real(kind=10), intent(in) :: X
+      integer(kind=8), intent(in) :: I
+    end function
+#endif
+    elemental real(kind=8) function _gfortran_ieee_scalb_8_8 (X, I)
+      real(kind=8), intent(in) :: X
+      integer(kind=8), intent(in) :: I
+    end function
+    elemental real(kind=4) function _gfortran_ieee_scalb_4_8 (X, I)
+      real(kind=4), intent(in) :: X
+      integer(kind=8), intent(in) :: I
+    end function
+#endif
+
+#ifdef HAVE_GFC_INTEGER_2
+#ifdef HAVE_GFC_REAL_16
+    elemental real(kind=16) function _gfortran_ieee_scalb_16_2 (X, I)
+      real(kind=16), intent(in) :: X
+      integer(kind=2), intent(in) :: I
+    end function
+#endif
+#ifdef HAVE_GFC_REAL_10
+    elemental real(kind=10) function _gfortran_ieee_scalb_10_2 (X, I)
+      real(kind=10), intent(in) :: X
+      integer(kind=2), intent(in) :: I
+    end function
+#endif
+    elemental real(kind=8) function _gfortran_ieee_scalb_8_2 (X, I)
+      real(kind=8), intent(in) :: X
+      integer(kind=2), intent(in) :: I
+    end function
+    elemental real(kind=4) function _gfortran_ieee_scalb_4_2 (X, I)
+      real(kind=4), intent(in) :: X
+      integer(kind=2), intent(in) :: I
+    end function
+#endif
+
+#ifdef HAVE_GFC_INTEGER_1
+#ifdef HAVE_GFC_REAL_16
+    elemental real(kind=16) function _gfortran_ieee_scalb_16_1 (X, I)
+      real(kind=16), intent(in) :: X
+      integer(kind=1), intent(in) :: I
+    end function
+#endif
+#ifdef HAVE_GFC_REAL_10
+    elemental real(kind=10) function _gfortran_ieee_scalb_10_1 (X, I)
+      real(kind=10), intent(in) :: X
+      integer(kind=1), intent(in) :: I
+    end function
+#endif
+    elemental real(kind=8) function _gfortran_ieee_scalb_8_1 (X, I)
+      real(kind=8), intent(in) :: X
+      integer(kind=1), intent(in) :: I
+    end function
+    elemental real(kind=4) function _gfortran_ieee_scalb_4_1 (X, I)
+      real(kind=4), intent(in) :: X
+      integer(kind=1), intent(in) :: I
+    end function
+#endif
+
+#ifdef HAVE_GFC_REAL_16
+    elemental real(kind=16) function _gfortran_ieee_scalb_16_4 (X, I)
       real(kind=16), intent(in) :: X
       integer, intent(in) :: I
     end function
 #endif
+#ifdef HAVE_GFC_REAL_10
+    elemental real(kind=10) function _gfortran_ieee_scalb_10_4 (X, I)
+      real(kind=10), intent(in) :: X
+      integer, intent(in) :: I
+    end function
+#endif
+    elemental real(kind=8) function _gfortran_ieee_scalb_8_4 (X, I)
+      real(kind=8), intent(in) :: X
+      integer, intent(in) :: I
+    end function
+    elemental real(kind=4) function _gfortran_ieee_scalb_4_4 (X, I)
+      real(kind=4), intent(in) :: X
+      integer, intent(in) :: I
+    end function
   end interface
 
   interface IEEE_SCALB
     procedure &
+#ifdef HAVE_GFC_INTEGER_16
 #ifdef HAVE_GFC_REAL_16
-      _gfortran_ieee_scalb_16, &
+    _gfortran_ieee_scalb_16_16, &
 #endif
 #ifdef HAVE_GFC_REAL_10
-      _gfortran_ieee_scalb_10, &
+    _gfortran_ieee_scalb_10_16, &
 #endif
-      _gfortran_ieee_scalb_8, _gfortran_ieee_scalb_4
+    _gfortran_ieee_scalb_8_16, &
+    _gfortran_ieee_scalb_4_16, &
+#endif
+#ifdef HAVE_GFC_INTEGER_8
+#ifdef HAVE_GFC_REAL_16
+    _gfortran_ieee_scalb_16_8, &
+#endif
+#ifdef HAVE_GFC_REAL_10
+    _gfortran_ieee_scalb_10_8, &
+#endif
+    _gfortran_ieee_scalb_8_8, &
+    _gfortran_ieee_scalb_4_8, &
+#endif
+#ifdef HAVE_GFC_INTEGER_2
+#ifdef HAVE_GFC_REAL_16
+    _gfortran_ieee_scalb_16_2, &
+#endif
+#ifdef HAVE_GFC_REAL_10
+    _gfortran_ieee_scalb_10_2, &
+#endif
+    _gfortran_ieee_scalb_8_2, &
+    _gfortran_ieee_scalb_4_2, &
+#endif
+#ifdef HAVE_GFC_INTEGER_1
+#ifdef HAVE_GFC_REAL_16
+    _gfortran_ieee_scalb_16_1, &
+#endif
+#ifdef HAVE_GFC_REAL_10
+    _gfortran_ieee_scalb_10_1, &
+#endif
+    _gfortran_ieee_scalb_8_1, &
+    _gfortran_ieee_scalb_4_1, &
+#endif
+#ifdef HAVE_GFC_REAL_16
+    _gfortran_ieee_scalb_16_4, &
+#endif
+#ifdef HAVE_GFC_REAL_10
+    _gfortran_ieee_scalb_10_4, &
+#endif
+      _gfortran_ieee_scalb_8_4, &
+      _gfortran_ieee_scalb_4_4
   end interface
   public :: IEEE_SCALB
 

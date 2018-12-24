@@ -409,13 +409,7 @@ extern unsigned aarch64_architecture_version;
     V_ALIASES(28), V_ALIASES(29), V_ALIASES(30), V_ALIASES(31)  \
   }
 
-/* Say that the return address register is used by the epilogue, but only after
-   epilogue generation is complete.  Note that in the case of sibcalls, the
-   values "used by the epilogue" are considered live at the start of the called
-   function.  */
-
-#define EPILOGUE_USES(REGNO) \
-  (epilogue_completed && (REGNO) == LR_REGNUM)
+#define EPILOGUE_USES(REGNO) (aarch64_epilogue_uses (REGNO))
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  This is only true if the function
@@ -523,6 +517,8 @@ extern unsigned aarch64_architecture_version;
 #define PR_LO_REGNUM_P(REGNO)\
   (((unsigned) (REGNO - P0_REGNUM)) <= (P7_REGNUM - P0_REGNUM))
 
+#define FP_SIMD_SAVED_REGNUM_P(REGNO)			\
+  (((unsigned) (REGNO - V8_REGNUM)) <= (V23_REGNUM - V8_REGNUM))
 
 /* Register and constant classes.  */
 

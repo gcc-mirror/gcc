@@ -9386,10 +9386,7 @@ resolve_transfer (gfc_code *code)
   if (dt && dt->dt_io_kind->value.iokind != M_INQUIRE
       && (ts->type == BT_DERIVED || ts->type == BT_CLASS))
     {
-      if (ts->type == BT_DERIVED || ts->type == BT_CLASS)
-	derived = ts->u.derived;
-      else
-	derived = ts->u.derived->components->ts.u.derived;
+      derived = ts->u.derived;
 
       /* Determine when to use the formatted DTIO procedure.  */
       if (dt && (dt->format_expr || dt->format_label))
@@ -10640,6 +10637,11 @@ get_temp_from_expr (gfc_expr *e, gfc_namespace *ns)
   gfc_get_sym_tree (name, ns, &tmp, false);
   gfc_add_type (tmp->n.sym, &e->ts, NULL);
 
+  if (e->expr_type == EXPR_CONSTANT && e->ts.type == BT_CHARACTER)
+    tmp->n.sym->ts.u.cl->length = gfc_get_int_expr (gfc_charlen_int_kind,
+						    NULL,
+						    e->value.character.length);
+
   as = NULL;
   ref = NULL;
   aref = NULL;
@@ -11545,7 +11547,7 @@ start:
 	case EXEC_ENDFILE:
 	case EXEC_REWIND:
 	case EXEC_FLUSH:
-	  if (!gfc_resolve_filepos (code->ext.filepos))
+	  if (!gfc_resolve_filepos (code->ext.filepos, &code->loc))
 	    break;
 
 	  resolve_branch (code->ext.filepos->err, code);
@@ -12313,7 +12315,11 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
     {
       /* Make sure that character string variables with assumed length are
 	 dummy arguments.  */
-      e = sym->ts.u.cl->length;
+      if (sym->ts.u.cl)
+	e = sym->ts.u.cl->length;
+      else
+	return false;
+
       if (e == NULL && !sym->attr.dummy && !sym->attr.result
 	  && !sym->ts.deferred && !sym->attr.select_type_temporary
 	  && !sym->attr.omp_udr_artificial_var)

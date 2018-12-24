@@ -1729,16 +1729,15 @@ gimple_assign_set_rhs_with_ops (gimple_stmt_iterator *gsi, enum tree_code code,
 {
   unsigned new_rhs_ops = get_gimple_rhs_num_ops (code);
   gimple *stmt = gsi_stmt (*gsi);
+  gimple *old_stmt = stmt;
 
   /* If the new CODE needs more operands, allocate a new statement.  */
   if (gimple_num_ops (stmt) < new_rhs_ops + 1)
     {
-      tree lhs = gimple_assign_lhs (stmt);
-      gimple *new_stmt = gimple_alloc (gimple_code (stmt), new_rhs_ops + 1);
-      memcpy (new_stmt, stmt, gimple_size (gimple_code (stmt)));
-      gimple_init_singleton (new_stmt);
-      gsi_replace (gsi, new_stmt, false);
-      stmt = new_stmt;
+      tree lhs = gimple_assign_lhs (old_stmt);
+      stmt = gimple_alloc (gimple_code (old_stmt), new_rhs_ops + 1);
+      memcpy (stmt, old_stmt, gimple_size (gimple_code (old_stmt)));
+      gimple_init_singleton (stmt);
 
       /* The LHS needs to be reset as this also changes the SSA name
 	 on the LHS.  */
@@ -1752,6 +1751,8 @@ gimple_assign_set_rhs_with_ops (gimple_stmt_iterator *gsi, enum tree_code code,
     gimple_assign_set_rhs2 (stmt, op2);
   if (new_rhs_ops > 2)
     gimple_assign_set_rhs3 (stmt, op3);
+  if (stmt != old_stmt)
+    gsi_replace (gsi, stmt, false);
 }
 
 

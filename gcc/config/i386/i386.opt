@@ -1028,6 +1028,11 @@ Target Report Undocumented Var(flag_cet_switch) Init(0)
 Turn on CET instrumentation for switch statements that use a jump table and
 an indirect jump.
 
+mmanual-endbr
+Target Report Var(flag_manual_endbr) Init(0)
+Insert ENDBR instruction at function entry only via cf_check attribute
+for CET instrumentation.
+
 mforce-indirect-call
 Target Report Var(flag_force_indirect_call) Init(0)
 Make all function calls indirect.

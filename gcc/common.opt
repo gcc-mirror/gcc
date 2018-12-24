@@ -2775,6 +2775,10 @@ fsplit-loops
 Common Report Var(flag_split_loops) Optimization
 Perform loop splitting.
 
+fversion-loops-for-strides
+Common Report Var(flag_version_loops_for_strides) Optimization
+Version loops based on whether indices have a stride of one.
+
 funwind-tables
 Common Report Var(flag_unwind_tables) Optimization
 Just generate unwind tables for exception handling.

@@ -1244,6 +1244,77 @@ class StdExpPathPrinter:
     def children(self):
         return self._iterator(self.val['_M_cmpts'])
 
+class StdPathPrinter:
+    "Print a std::filesystem::path"
+
+    def __init__ (self, typename, val):
+        self.val = val
+        self.typename = typename
+        impl = self.val['_M_cmpts']['_M_impl']['_M_t']['_M_t']['_M_head_impl']
+        self.type = impl.cast(gdb.lookup_type('uintptr_t')) & 3
+        if self.type == 0:
+            self.impl = impl
+        else:
+            self.impl = None
+
+    def _path_type(self):
+        t = str(self.type.cast(gdb.lookup_type(self.typename + '::_Type')))
+        if t[-9:] == '_Root_dir':
+            return "root-directory"
+        if t[-10:] == '_Root_name':
+            return "root-name"
+        return None
+
+    def to_string (self):
+        path = "%s" % self.val ['_M_pathname']
+        if self.type != 0:
+            t = self._path_type()
+            if t:
+                path = '%s [%s]' % (path, t)
+        return "filesystem::path %s" % path
+
+    class _iterator(Iterator):
+        def __init__(self, impl, pathtype):
+            if impl:
+                # We can't access _Impl::_M_size because _Impl is incomplete
+                # so cast to int* to access the _M_size member at offset zero,
+                int_type = gdb.lookup_type('int')
+                cmpt_type = gdb.lookup_type(pathtype+'::_Cmpt')
+                char_type = gdb.lookup_type('char')
+                impl = impl.cast(int_type.pointer())
+                size = impl.dereference()
+                #self.capacity = (impl + 1).dereference()
+                if hasattr(gdb.Type, 'alignof'):
+                    sizeof_Impl = max(2 * int_type.sizeof, cmpt_type.alignof)
+                else:
+                    sizeof_Impl = 2 * int_type.sizeof
+                begin = impl.cast(char_type.pointer()) + sizeof_Impl
+                self.item = begin.cast(cmpt_type.pointer())
+                self.finish = self.item + size
+                self.count = 0
+            else:
+                self.item = None
+                self.finish = None
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            if self.item == self.finish:
+                raise StopIteration
+            item = self.item.dereference()
+            count = self.count
+            self.count = self.count + 1
+            self.item = self.item + 1
+            path = item['_M_pathname']
+            t = StdPathPrinter(item.type.name, item)._path_type()
+            if not t:
+                t = count
+            return ('[%s]' % t, path)
+
+    def children(self):
+        return self._iterator(self.impl, self.typename)
+
 
 class StdPairPrinter:
     "Print a std::pair object, with 'first' and 'second' as children"
@@ -1759,9 +1830,9 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add_version('std::experimental::filesystem::v1::__cxx11::',
                                   'path', StdExpPathPrinter)
     libstdcxx_printer.add_version('std::filesystem::',
-                                  'path', StdExpPathPrinter)
+                                  'path', StdPathPrinter)
     libstdcxx_printer.add_version('std::filesystem::__cxx11::',
-                                  'path', StdExpPathPrinter)
+                                  'path', StdPathPrinter)
 
     # C++17 components
     libstdcxx_printer.add_version('std::',

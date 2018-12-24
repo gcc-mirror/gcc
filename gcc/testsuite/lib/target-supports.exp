@@ -5925,7 +5925,10 @@ proc check_effective_target_vect_udot_hi { } {
 
 proc check_effective_target_vect_usad_char { } {
     return [check_cached_effective_target_indexed vect_usad_char {
-      expr { [istarget i?86-*-*] || [istarget x86_64-*-*] }}]
+      expr { [istarget i?86-*-*]
+	      || [istarget x86_64-*-*]
+	      || ([istarget aarch64*-*-*]
+		  && ![check_effective_target_aarch64_sve])}}]
 }
 
 # Return 1 if the target plus current options supports both signed
@@ -8012,6 +8015,18 @@ proc check_effective_target_lto { } {
     return [check_no_compiler_messages lto object {
 	void foo (void) { }
     } "-flto"]
+}
+
+# Return 1 if the compiler and linker support incremental link-time
+# optimization.
+
+proc check_effective_target_lto_incremental { } {
+    if ![check_effective_target_lto] {
+	return 0
+    }
+    return [check_no_compiler_messages lto_incremental executable {
+	int main () { return 0; }
+    } "-flto -r -nostdlib"]
 }
 
 # Return 1 if -mx32 -maddress-mode=short can compile, 0 otherwise.

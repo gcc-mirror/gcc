@@ -318,6 +318,8 @@ value_size (uint8_t encoding)
       case DW_EH_PE_sdata8:
       case DW_EH_PE_udata8:
         return 8;
+      case DW_EH_PE_absptr:
+        return sizeof(uintptr);
       default:
         break;
     }
@@ -390,6 +392,12 @@ parse_lsda_header (struct _Unwind_Context *context, const unsigned char *p,
   while (0)
 #else
 #define CONTINUE_UNWINDING return _URC_CONTINUE_UNWIND
+#endif
+
+#ifdef __ARM_EABI_UNWINDER__
+#define STOP_UNWINDING _URC_FAILURE
+#else
+#define STOP_UNWINDING _URC_NORMAL_STOP
 #endif
 
 #ifdef __USING_SJLJ_EXCEPTIONS__
@@ -751,7 +759,7 @@ scanstackwithmap_callback (struct _Unwind_Context *context, void *arg)
               // TODO: print gp, pc, sp
               runtime_throw ("no stack map");
             }
-          return _URC_NORMAL_STOP;
+          return STOP_UNWINDING;
         }
       case FOUND:
         break;
@@ -799,7 +807,7 @@ probestackmaps_callback (struct _Unwind_Context *context,
 
   // Found a stack map. No need to keep unwinding.
   runtime_usestackmaps = true;
-  return _URC_NORMAL_STOP;
+  return STOP_UNWINDING;
 }
 
 // Try to find a stack map, store the result in global variable runtime_usestackmaps.

@@ -3711,7 +3711,6 @@ static void
 mio_namelist (gfc_symbol *sym)
 {
   gfc_namelist *n, *m;
-  const char *check_name;
 
   mio_lparen ();
 
@@ -3722,17 +3721,6 @@ mio_namelist (gfc_symbol *sym)
     }
   else
     {
-      /* This departure from the standard is flagged as an error.
-	 It does, in fact, work correctly. TODO: Allow it
-	 conditionally?  */
-      if (sym->attr.flavor == FL_NAMELIST)
-	{
-	  check_name = find_use_name (sym->name, false);
-	  if (check_name && strcmp (check_name, sym->name) != 0)
-	    gfc_error ("Namelist %s cannot be renamed by USE "
-		       "association to %s", sym->name, check_name);
-	}
-
       m = NULL;
       while (peek_atom () != ATOM_RPAREN)
 	{

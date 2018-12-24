@@ -222,6 +222,7 @@
     UNSPEC_FADDA
     UNSPEC_REV_SUBREG
     UNSPEC_SPECULATION_TRACKER
+    UNSPEC_COPYSIGN
 ])
 
 (define_c_enum "unspecv" [
@@ -726,7 +727,7 @@
 
 (define_insn "simple_return"
   [(simple_return)]
-  ""
+  "aarch64_use_simple_return_insn_p ()"
   "ret"
   [(set_attr "type" "branch")]
 )
@@ -1386,6 +1387,21 @@
    (set_attr "arch" "*,fp")]
 )
 
+(define_insn "load_pair_dw_tftf"
+  [(set (match_operand:TF 0 "register_operand" "=w")
+	(match_operand:TF 1 "aarch64_mem_pair_operand" "Ump"))
+   (set (match_operand:TF 2 "register_operand" "=w")
+	(match_operand:TF 3 "memory_operand" "m"))]
+   "TARGET_SIMD
+    && rtx_equal_p (XEXP (operands[3], 0),
+		    plus_constant (Pmode,
+				   XEXP (operands[1], 0),
+				   GET_MODE_SIZE (TFmode)))"
+  "ldp\\t%q0, %q2, %1"
+  [(set_attr "type" "neon_ldp_q")
+   (set_attr "fp" "yes")]
+)
+
 ;; Operands 0 and 2 are tied together by the final condition; so we allow
 ;; fairly lax checking on the second memory operation.
 (define_insn "store_pair_sw_<SX:mode><SX2:mode>"
@@ -1421,6 +1437,21 @@
    (set_attr "arch" "*,fp")]
 )
 
+(define_insn "store_pair_dw_tftf"
+  [(set (match_operand:TF 0 "aarch64_mem_pair_operand" "=Ump")
+	(match_operand:TF 1 "register_operand" "w"))
+   (set (match_operand:TF 2 "memory_operand" "=m")
+	(match_operand:TF 3 "register_operand" "w"))]
+   "TARGET_SIMD &&
+    rtx_equal_p (XEXP (operands[2], 0),
+		 plus_constant (Pmode,
+				XEXP (operands[0], 0),
+				GET_MODE_SIZE (TFmode)))"
+  "stp\\t%q1, %q3, %0"
+  [(set_attr "type" "neon_stp_q")
+   (set_attr "fp" "yes")]
+)
+
 ;; Load pair with post-index writeback.  This is primarily used in function
 ;; epilogues.
 (define_insn "loadwb_pair<GPI:mode>_<P:mode>"
@@ -1451,6 +1482,21 @@
   "INTVAL (operands[5]) == GET_MODE_SIZE (<GPF:MODE>mode)"
   "ldp\\t%<w>2, %<w>3, [%1], %4"
   [(set_attr "type" "neon_load1_2reg")]
+)
+
+(define_insn "loadwb_pair<TX:mode>_<P:mode>"
+  [(parallel
+    [(set (match_operand:P 0 "register_operand" "=k")
+          (plus:P (match_operand:P 1 "register_operand" "0")
+                  (match_operand:P 4 "aarch64_mem_pair_offset" "n")))
+     (set (match_operand:TX 2 "register_operand" "=w")
+          (mem:TX (match_dup 1)))
+     (set (match_operand:TX 3 "register_operand" "=w")
+          (mem:TX (plus:P (match_dup 1)
+			  (match_operand:P 5 "const_int_operand" "n"))))])]
+  "TARGET_SIMD && INTVAL (operands[5]) == GET_MODE_SIZE (<TX:MODE>mode)"
+  "ldp\\t%q2, %q3, [%1], %4"
+  [(set_attr "type" "neon_ldp_q")]
 )
 
 ;; Store pair with pre-index writeback.  This is primarily used in function
@@ -1485,6 +1531,24 @@
   "INTVAL (operands[5]) == INTVAL (operands[4]) + GET_MODE_SIZE (<GPF:MODE>mode)"
   "stp\\t%<w>2, %<w>3, [%0, %4]!"
   [(set_attr "type" "neon_store1_2reg<q>")]
+)
+
+(define_insn "storewb_pair<TX:mode>_<P:mode>"
+  [(parallel
+    [(set (match_operand:P 0 "register_operand" "=&k")
+          (plus:P (match_operand:P 1 "register_operand" "0")
+                  (match_operand:P 4 "aarch64_mem_pair_offset" "n")))
+     (set (mem:TX (plus:P (match_dup 0)
+			  (match_dup 4)))
+          (match_operand:TX 2 "register_operand" "w"))
+     (set (mem:TX (plus:P (match_dup 0)
+			  (match_operand:P 5 "const_int_operand" "n")))
+          (match_operand:TX 3 "register_operand" "w"))])]
+  "TARGET_SIMD
+   && INTVAL (operands[5])
+      == INTVAL (operands[4]) + GET_MODE_SIZE (<TX:MODE>mode)"
+  "stp\\t%q2, %q3, [%0, %4]!"
+  [(set_attr "type" "neon_stp_q")]
 )
 
 ;; -------------------------------------------------------------------
@@ -5987,48 +6051,46 @@
 ;;   LDR d2, #(1 << 63)
 ;;   BSL v2.8b, [y], [x]
 ;;
-;; or another, equivalent, sequence using one of BSL/BIT/BIF.
-;; aarch64_simd_bsldf will select the best suited of these instructions
-;; to generate based on register allocation, and knows how to partially
-;; constant fold based on the values of X and Y, so expand through that.
+;; or another, equivalent, sequence using one of BSL/BIT/BIF.  Because
+;; we expect these operations to nearly always operate on
+;; floating-point values, we do not want the operation to be
+;; simplified into a bit-field insert operation that operates on the
+;; integer side, since typically that would involve three inter-bank
+;; register copies.  As we do not expect copysign to be followed by
+;; other logical operations on the result, it seems preferable to keep
+;; this as an unspec operation, rather than exposing the underlying
+;; logic to the compiler.
 
-(define_expand "copysigndf3"
-  [(match_operand:DF 0 "register_operand")
-   (match_operand:DF 1 "register_operand")
-   (match_operand:DF 2 "register_operand")]
+(define_expand "copysign<GPF:mode>3"
+  [(match_operand:GPF 0 "register_operand")
+   (match_operand:GPF 1 "register_operand")
+   (match_operand:GPF 2 "register_operand")]
   "TARGET_FLOAT && TARGET_SIMD"
 {
-  rtx mask = gen_reg_rtx (DImode);
-  emit_move_insn (mask, GEN_INT (HOST_WIDE_INT_1U << 63));
-  emit_insn (gen_aarch64_simd_bsldf (operands[0], mask,
-				     operands[2], operands[1]));
+  rtx bitmask = gen_reg_rtx (<V_INT_EQUIV>mode);
+  emit_move_insn (bitmask, GEN_INT (HOST_WIDE_INT_M1U
+				    << (GET_MODE_BITSIZE (<MODE>mode) - 1)));
+  emit_insn (gen_copysign<mode>3_insn (operands[0], operands[1], operands[2],
+				       bitmask));
   DONE;
 }
 )
 
-;; As above, but we must first get to a 64-bit value if we wish to use
-;; aarch64_simd_bslv2sf.
-
-(define_expand "copysignsf3"
-  [(match_operand:SF 0 "register_operand")
-   (match_operand:SF 1 "register_operand")
-   (match_operand:SF 2 "register_operand")]
+(define_insn "copysign<GPF:mode>3_insn"
+  [(set (match_operand:GPF 0 "register_operand" "=w,w,w,r")
+	(unspec:GPF [(match_operand:GPF 1 "register_operand" "w,0,w,r")
+		     (match_operand:GPF 2 "register_operand" "w,w,0,0")
+		     (match_operand:<V_INT_EQUIV> 3 "register_operand" "0,w,w,X")]
+	 UNSPEC_COPYSIGN))]
   "TARGET_FLOAT && TARGET_SIMD"
-{
-  rtx v_bitmask = gen_reg_rtx (V2SImode);
-
-  /* Juggle modes to get us in to a vector mode for BSL.  */
-  rtx op1 = lowpart_subreg (DImode, operands[1], SFmode);
-  rtx op2 = lowpart_subreg (V2SFmode, operands[2], SFmode);
-  rtx tmp = gen_reg_rtx (V2SFmode);
-  emit_move_insn (v_bitmask,
-		  aarch64_simd_gen_const_vector_dup (V2SImode,
-						     HOST_WIDE_INT_M1U << 31));
-  emit_insn (gen_aarch64_simd_bslv2sf (tmp, v_bitmask, op2, op1));
-  emit_move_insn (operands[0], lowpart_subreg (SFmode, tmp, V2SFmode));
-  DONE;
-}
+  "@
+   bsl\\t%0.<Vbtype>, %2.<Vbtype>, %1.<Vbtype>
+   bit\\t%0.<Vbtype>, %2.<Vbtype>, %3.<Vbtype>
+   bif\\t%0.<Vbtype>, %1.<Vbtype>, %3.<Vbtype>
+   bfxil\\t%<w1>0, %<w1>1, #0, <sizem1>"
+  [(set_attr "type" "neon_bsl<q>,neon_bsl<q>,neon_bsl<q>,bfm")]
 )
+
 
 ;; For xorsign (x, y), we want to generate:
 ;;

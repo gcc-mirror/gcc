@@ -183,6 +183,18 @@
 			 (TF	"??r")
 			 (TI	"r")])
 
+;; A mode attribute used for 128-bit constant values.
+(define_mode_attr nW	[(V16QI	"W")
+			 (V8HI	"W")
+			 (V4SI	"W")
+			 (V4SF	"W")
+			 (V2DI	"W")
+			 (V2DF	"W")
+			 (V1TI	"W")
+			 (KF	"W")
+			 (TF	"W")
+			 (TI	"n")])
+
 ;; Same size integer type for floating point data
 (define_mode_attr VSi [(V4SF  "v4si")
 		       (V2DF  "v2di")
@@ -1193,17 +1205,17 @@
 
 ;;              VSX store  VSX load   VSX move  VSX->GPR   GPR->VSX    LQ (GPR)
 ;;              STQ (GPR)  GPR load   GPR store GPR move   XXSPLTIB    VSPLTISW
-;;              VSX 0/-1   GPR 0/-1   VMX const GPR const  LVX (VMX)   STVX (VMX)
+;;              VSX 0/-1   VMX const  GPR const LVX (VMX)  STVX (VMX)
 (define_insn "vsx_mov<mode>_64bit"
   [(set (match_operand:VSX_M 0 "nonimmediate_operand"
                "=ZwO,      <VSa>,     <VSa>,     r,         we,        ?wQ,
                 ?&r,       ??r,       ??Y,       <??r>,     wo,        v,
-                ?<VSa>,    *r,        v,         ??r,       wZ,        v")
+                ?<VSa>,    v,         <??r>,     wZ,        v")
 
 	(match_operand:VSX_M 1 "input_operand" 
                "<VSa>,     ZwO,       <VSa>,     we,        r,         r,
                 wQ,        Y,         r,         r,         wE,        jwM,
-                ?jwM,      jwM,       W,         W,         v,         wZ"))]
+                ?jwM,      W,         <nW>,      v,         wZ"))]
 
   "TARGET_POWERPC64 && VECTOR_MEM_VSX_P (<MODE>mode)
    && (register_operand (operands[0], <MODE>mode) 
@@ -1214,25 +1226,25 @@
   [(set_attr "type"
                "vecstore,  vecload,   vecsimple, mffgpr,    mftgpr,    load,
                 store,     load,      store,     *,         vecsimple, vecsimple,
-                vecsimple, *,         *,         *,         vecstore,  vecload")
+                vecsimple, *,         *,         vecstore,  vecload")
 
    (set_attr "length"
                "4,         4,         4,         8,         4,         8,
                 8,         8,         8,         8,         4,         4,
-                4,         8,         20,        20,        4,         4")])
+                4,         20,        8,         4,         4")])
 
 ;;              VSX store  VSX load   VSX move   GPR load   GPR store  GPR move
-;;              XXSPLTIB   VSPLTISW   VSX 0/-1   GPR 0/-1   VMX const  GPR const
+;;              XXSPLTIB   VSPLTISW   VSX 0/-1   VMX const  GPR const
 ;;              LVX (VMX)  STVX (VMX)
 (define_insn "*vsx_mov<mode>_32bit"
   [(set (match_operand:VSX_M 0 "nonimmediate_operand"
                "=ZwO,      <VSa>,     <VSa>,     ??r,       ??Y,       <??r>,
-                wo,        v,         ?<VSa>,    *r,        v,         ??r,
+                wo,        v,         ?<VSa>,    v,         <??r>,
                 wZ,        v")
 
 	(match_operand:VSX_M 1 "input_operand" 
                "<VSa>,     ZwO,       <VSa>,     Y,         r,         r,
-                wE,        jwM,       ?jwM,      jwM,       W,         W,
+                wE,        jwM,       ?jwM,      W,         <nW>,
                 v,         wZ"))]
 
   "!TARGET_POWERPC64 && VECTOR_MEM_VSX_P (<MODE>mode)
@@ -1243,12 +1255,12 @@
 }
   [(set_attr "type"
                "vecstore,  vecload,   vecsimple, load,      store,    *,
-                vecsimple, vecsimple, vecsimple, *,         *,        *,
+                vecsimple, vecsimple, vecsimple, *,         *,
                 vecstore,  vecload")
 
    (set_attr "length"
                "4,         4,         4,         16,        16,        16,
-                4,         4,         4,         16,        20,        32,
+                4,         4,         4,         20,        16,
                 4,         4")])
 
 ;; Explicit  load/store expanders for the builtin functions
@@ -3245,7 +3257,7 @@
 	 (match_operand:VSX_D 1 "memory_operand" "m,m")
 	 (parallel [(match_operand:QI 2 "const_0_to_1_operand" "n,n")])))
    (clobber (match_scratch:P 3 "=&b,&b"))]
-  "VECTOR_MEM_VSX_P (<VSX_D:MODE>mode)"
+  "TARGET_POWERPC64 && VECTOR_MEM_VSX_P (<VSX_D:MODE>mode)"
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (match_dup 4))]

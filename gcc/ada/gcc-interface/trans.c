@@ -412,7 +412,7 @@ gigi (Node_Id gnat_root,
     = create_subprog_decl (get_identifier ("__gnat_malloc"), NULL_TREE,
 			   build_function_type_list (ptr_type_node, sizetype,
 						     NULL_TREE),
-			   NULL_TREE, is_disabled, true, true, true, false,
+			   NULL_TREE, is_default, true, true, true, false,
 			   false, NULL, Empty);
   DECL_IS_MALLOC (malloc_decl) = 1;
 
@@ -420,7 +420,7 @@ gigi (Node_Id gnat_root,
     = create_subprog_decl (get_identifier ("__gnat_free"), NULL_TREE,
 			   build_function_type_list (void_type_node,
 						     ptr_type_node, NULL_TREE),
-			   NULL_TREE, is_disabled, true, true, true, false,
+			   NULL_TREE, is_default, true, true, true, false,
 			   false, NULL, Empty);
 
   realloc_decl
@@ -428,7 +428,7 @@ gigi (Node_Id gnat_root,
 			   build_function_type_list (ptr_type_node,
 						     ptr_type_node, sizetype,
 						     NULL_TREE),
-			   NULL_TREE, is_disabled, true, true, true, false,
+			   NULL_TREE, is_default, true, true, true, false,
 			   false, NULL, Empty);
 
   /* This is used for 64-bit multiplication with overflow checking.  */
@@ -437,7 +437,7 @@ gigi (Node_Id gnat_root,
     = create_subprog_decl (get_identifier ("__gnat_mulv64"), NULL_TREE,
 			   build_function_type_list (int64_type, int64_type,
 						     int64_type, NULL_TREE),
-			   NULL_TREE, is_disabled, true, true, true, false,
+			   NULL_TREE, is_default, true, true, true, false,
 			   false, NULL, Empty);
 
   /* Name of the _Parent field in tagged record types.  */
@@ -461,21 +461,21 @@ gigi (Node_Id gnat_root,
     = create_subprog_decl
       (get_identifier ("system__soft_links__get_jmpbuf_address_soft"),
        NULL_TREE, build_function_type_list (jmpbuf_ptr_type, NULL_TREE),
-       NULL_TREE, is_disabled, true, true, true, false, false, NULL, Empty);
+       NULL_TREE, is_default, true, true, true, false, false, NULL, Empty);
 
   set_jmpbuf_decl
     = create_subprog_decl
       (get_identifier ("system__soft_links__set_jmpbuf_address_soft"),
        NULL_TREE, build_function_type_list (void_type_node, jmpbuf_ptr_type,
 					    NULL_TREE),
-       NULL_TREE, is_disabled, true, true, true, false, false, NULL, Empty);
+       NULL_TREE, is_default, true, true, true, false, false, NULL, Empty);
 
   get_excptr_decl
     = create_subprog_decl
       (get_identifier ("system__soft_links__get_gnat_exception"), NULL_TREE,
        build_function_type_list (build_pointer_type (except_type_node),
 				 NULL_TREE),
-       NULL_TREE, is_disabled, true, true, true, false, false, NULL, Empty);
+       NULL_TREE, is_default, true, true, true, false, false, NULL, Empty);
 
   not_handled_by_others_decl = get_identifier ("not_handled_by_others");
   for (t = TYPE_FIELDS (except_type_node); t; t = DECL_CHAIN (t))
@@ -493,7 +493,7 @@ gigi (Node_Id gnat_root,
       (get_identifier ("__builtin_setjmp"), NULL_TREE,
        build_function_type_list (integer_type_node, jmpbuf_ptr_type,
 				 NULL_TREE),
-       NULL_TREE, is_disabled, true, true, true, false, false, NULL, Empty);
+       NULL_TREE, is_default, true, true, true, false, false, NULL, Empty);
   DECL_BUILT_IN_CLASS (setjmp_decl) = BUILT_IN_NORMAL;
   DECL_FUNCTION_CODE (setjmp_decl) = BUILT_IN_SETJMP;
 
@@ -503,7 +503,7 @@ gigi (Node_Id gnat_root,
     = create_subprog_decl
       (get_identifier ("__builtin_update_setjmp_buf"), NULL_TREE,
        build_function_type_list (void_type_node, jmpbuf_ptr_type, NULL_TREE),
-       NULL_TREE, is_disabled, true, true, true, false, false, NULL, Empty);
+       NULL_TREE, is_default, true, true, true, false, false, NULL, Empty);
   DECL_BUILT_IN_CLASS (update_setjmp_buf_decl) = BUILT_IN_NORMAL;
   DECL_FUNCTION_CODE (update_setjmp_buf_decl) = BUILT_IN_UPDATE_SETJMP_BUF;
 
@@ -515,14 +515,14 @@ gigi (Node_Id gnat_root,
   raise_nodefer_decl
     = create_subprog_decl
       (get_identifier ("__gnat_raise_nodefer_with_msg"), NULL_TREE, ftype,
-       NULL_TREE, is_disabled, true, true, true, false, false, NULL, Empty);
+       NULL_TREE, is_default, true, true, true, false, false, NULL, Empty);
 
   set_exception_parameter_decl
     = create_subprog_decl
       (get_identifier ("__gnat_set_exception_parameter"), NULL_TREE,
        build_function_type_list (void_type_node, ptr_type_node, ptr_type_node,
 				 NULL_TREE),
-       NULL_TREE, is_disabled, true, true, true, false, false, NULL, Empty);
+       NULL_TREE, is_default, true, true, true, false, false, NULL, Empty);
 
   /* Hooks to call when entering/leaving an exception handler.  */
   ftype = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
@@ -530,7 +530,7 @@ gigi (Node_Id gnat_root,
   begin_handler_decl
     = create_subprog_decl (get_identifier ("__gnat_begin_handler"), NULL_TREE,
 			   ftype, NULL_TREE,
-			   is_disabled, true, true, true, false, false, NULL,
+			   is_default, true, true, true, false, false, NULL,
 			   Empty);
   /* __gnat_begin_handler is a dummy procedure.  */
   TREE_NOTHROW (begin_handler_decl) = 1;
@@ -538,13 +538,13 @@ gigi (Node_Id gnat_root,
   end_handler_decl
     = create_subprog_decl (get_identifier ("__gnat_end_handler"), NULL_TREE,
 			   ftype, NULL_TREE,
-			   is_disabled, true, true, true, false, false, NULL,
+			   is_default, true, true, true, false, false, NULL,
 			   Empty);
 
   unhandled_except_decl
     = create_subprog_decl (get_identifier ("__gnat_unhandled_except_handler"),
 			   NULL_TREE, ftype, NULL_TREE,
-			   is_disabled, true, true, true, false, false, NULL,
+			   is_default, true, true, true, false, false, NULL,
 			   Empty);
 
   /* Indicate that it never returns.  */
@@ -552,7 +552,7 @@ gigi (Node_Id gnat_root,
   reraise_zcx_decl
     = create_subprog_decl (get_identifier ("__gnat_reraise_zcx"), NULL_TREE,
 			   ftype, NULL_TREE,
-			   is_disabled, true, true, true, false, false, NULL,
+			   is_default, true, true, true, false, false, NULL,
 			   Empty);
 
   /* Dummy objects to materialize "others" and "all others" in the exception
@@ -592,7 +592,7 @@ gigi (Node_Id gnat_root,
       tree decl
 	= create_subprog_decl
 	  (get_identifier ("__gnat_last_chance_handler"), NULL_TREE, ftype,
-	   NULL_TREE, is_disabled, true, true, true, false, false, NULL,
+	   NULL_TREE, is_default, true, true, true, false, false, NULL,
 	   Empty);
       for (i = 0; i < (int) ARRAY_SIZE (gnat_raise_decls); i++)
 	gnat_raise_decls[i] = decl;
@@ -756,7 +756,7 @@ build_raise_check (int check, enum exception_info_kind kind)
   ftype = build_qualified_type (ftype, TYPE_QUAL_VOLATILE);
   result
     = create_subprog_decl (get_identifier (Name_Buffer), NULL_TREE, ftype,
-			   NULL_TREE, is_disabled, true, true, true, false,
+			   NULL_TREE, is_default, true, true, true, false,
 			   false, NULL, Empty);
 
   return result;
@@ -2308,10 +2308,8 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       gnu_type = TREE_TYPE (gnu_prefix);
 
       /* Replace an unconstrained array type with the type of the underlying
-	 array.  We can't do this with a call to maybe_unconstrained_array
-	 since we may have a TYPE_DECL.  For 'Max_Size_In_Storage_Elements,
-	 use the record type that will be used to allocate the object and its
-	 template.  */
+	 array, except for 'Max_Size_In_Storage_Elements because we need to
+	 return the (maximum) size requested for an allocator.  */
       if (TREE_CODE (gnu_type) == UNCONSTRAINED_ARRAY_TYPE)
 	{
 	  gnu_type = TYPE_OBJECT_RECORD_TYPE (gnu_type);
@@ -2375,11 +2373,15 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	    gnu_result = substitute_placeholder_in_expr (gnu_result, gnu_expr);
 	}
 
-      /* If the type contains a template, subtract its size.  */
+      /* If the type contains a template, subtract the padded size of the
+	 template, except for 'Max_Size_In_Storage_Elements because we need
+	 to return the (maximum) size requested for an allocator.  */
       if (TREE_CODE (gnu_type) == RECORD_TYPE
-	  && TYPE_CONTAINS_TEMPLATE_P (gnu_type))
-	gnu_result = size_binop (MINUS_EXPR, gnu_result,
-				 DECL_SIZE (TYPE_FIELDS (gnu_type)));
+	  && TYPE_CONTAINS_TEMPLATE_P (gnu_type)
+	  && attribute != Attr_Max_Size_In_Storage_Elements)
+	gnu_result
+	  = size_binop (MINUS_EXPR, gnu_result,
+			bit_position (DECL_CHAIN (TYPE_FIELDS (gnu_type))));
 
       /* For 'Max_Size_In_Storage_Elements, adjust the unit.  */
       if (attribute == Attr_Max_Size_In_Storage_Elements)
@@ -2856,8 +2858,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       gnu_type = TREE_TYPE (gnu_prefix);
       gcc_assert (TREE_CODE (gnu_type) == UNCONSTRAINED_ARRAY_TYPE);
 
-      /* What we want is the offset of the ARRAY field in the record
-	 that the thin pointer designates.  */
+      /* Return the padded size of the template in the object record type.  */
       gnu_type = TYPE_OBJECT_RECORD_TYPE (gnu_type);
       gnu_result = bit_position (DECL_CHAIN (TYPE_FIELDS (gnu_type)));
       gnu_result_type = get_unpadded_type (Etype (gnat_node));
@@ -4936,6 +4937,35 @@ create_init_temporary (const char *prefix, tree gnu_init, tree *gnu_init_stmt,
   return gnu_temp;
 }
 
+/* Return whether ACTUAL parameter corresponding to FORMAL_TYPE must be passed
+   by copy in a call as per RM C.6(19).  Note that we use the same predicates
+   as in the front-end for RM C.6(12) because it's purely a legality issue.  */
+
+static bool
+atomic_or_volatile_copy_required_p (Node_Id actual, Entity_Id formal_type)
+{
+  /* We should not have a scalar type here because such a type is passed
+     by copy.  But the Interlocked routines in System.Aux_DEC force some
+     of the their scalar parameters to be passed by reference so we need
+     to preserve that if we do not want to break the interface.  */
+  if (Is_Scalar_Type (formal_type))
+    return false;
+
+  if (Is_Atomic_Object (actual) && !Is_Atomic (formal_type))
+    {
+      post_error ("?atomic actual passed by copy (RM C.6(19))", actual);
+      return true;
+    }
+
+  if (Is_Volatile_Object (actual) && !Is_Volatile (formal_type))
+    {
+      post_error ("?volatile actual passed by copy (RM C.6(19))", actual);
+      return true;
+    }
+
+  return false;
+}
+
 /* Subroutine of gnat_to_gnu to translate gnat_node, either an N_Function_Call
    or an N_Procedure_Call_Statement, to a GCC tree, which is returned.
    GNU_RESULT_TYPE_P is a pointer to where we should place the result type.
@@ -5150,13 +5180,18 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	      = build_compound_expr (TREE_TYPE (gnu_name), init, gnu_name);
 	}
 
-      /* If we are passing a non-addressable parameter by reference, pass the
-	 address of a copy.  In the In Out or Out case, set up to copy back
-	 out after the call.  */
+      /* If we are passing a non-addressable actual parameter by reference,
+	 pass the address of a copy and, in the In Out or Out case, set up
+	 to copy back after the call.  We also need to do that if the actual
+	 parameter is atomic or volatile but the formal parameter is not.  */
       if (is_by_ref_formal_parm
 	  && (gnu_name_type = gnat_to_gnu_type (Etype (gnat_name)))
-	  && !addressable_p (gnu_name, gnu_name_type))
+	  && (!addressable_p (gnu_name, gnu_name_type)
+	      || (Comes_From_Source (gnat_node)
+		  && atomic_or_volatile_copy_required_p (gnat_actual,
+							 gnat_formal_type))))
 	{
+	  const bool atomic_p = atomic_access_required_p (gnat_actual, &sync);
 	  tree gnu_orig = gnu_name, gnu_temp, gnu_stmt;
 
 	  /* Do not issue warnings for CONSTRUCTORs since this is not a copy
@@ -5236,6 +5271,8 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	    }
 
 	  /* Create an explicit temporary holding the copy.  */
+	  if (atomic_p)
+	    gnu_name = build_atomic_load (gnu_name, sync);
 	  gnu_temp
 	    = create_init_temporary ("A", gnu_name, &gnu_stmt, gnat_actual);
 
@@ -5256,8 +5293,13 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 		     (TREE_OPERAND (TREE_OPERAND (gnu_orig, 1), 1)))
 		gnu_orig = TREE_OPERAND (gnu_orig, 2);
 
-	      gnu_stmt
-		= build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_orig, gnu_temp);
+	      if (atomic_p)
+		gnu_stmt
+		  = build_atomic_store (gnu_orig, gnu_temp, sync);
+	      else
+		gnu_stmt
+		  = build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_orig,
+				     gnu_temp);
 	      set_expr_location_from_node (gnu_stmt, gnat_node);
 
 	      append_to_statement_list (gnu_stmt, &gnu_after_list);
@@ -6134,7 +6176,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
     = create_subprog_decl
       (create_concat_name (gnat_unit_entity, body_p ? "elabb" : "elabs"),
        NULL_TREE, void_ftype, NULL_TREE,
-       is_disabled, true, false, true, true, false, NULL, gnat_unit);
+       is_default, true, false, true, true, false, NULL, gnat_unit);
   struct elab_info *info;
 
   vec_safe_push (gnu_elab_proc_stack, gnu_elab_proc_decl);
@@ -7144,7 +7186,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	    create_subprog_decl (create_concat_name
 				 (Entity (Prefix (gnat_node)),
 				  attr == Attr_Elab_Body ? "elabb" : "elabs"),
-				 NULL_TREE, void_ftype, NULL_TREE, is_disabled,
+				 NULL_TREE, void_ftype, NULL_TREE, is_default,
 				 true, true, true, true, false, NULL,
 				 gnat_node);
 
@@ -8526,7 +8568,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	  || kind == N_Indexed_Component
 	  || kind == N_Selected_Component)
       && TREE_CODE (get_base_type (gnu_result_type)) == BOOLEAN_TYPE
-      && !lvalue_required_p (gnat_node, gnu_result_type, false, false))
+      && !lvalue_required_p (gnat_node, gnu_result_type, false, false)
+      && Nkind (Parent (gnat_node)) != N_Variant_Part)
     {
       gnu_result
 	= build_binary_op (NE_EXPR, gnu_result_type,
@@ -9278,7 +9321,9 @@ elaborate_all_entities_for_package (Entity_Id gnat_package)
 	continue;
       if (kind == E_Operator)
 	continue;
-      if (IN (kind, Subprogram_Kind) && Is_Intrinsic_Subprogram (gnat_entity))
+      if (IN (kind, Subprogram_Kind)
+	  && (Present (Alias (gnat_entity))
+	      || Is_Intrinsic_Subprogram (gnat_entity)))
 	continue;
       if (Is_Itype (gnat_entity))
 	continue;

@@ -1615,7 +1615,10 @@ lra_assign (bool &fails_p)
   bitmap_initialize (&all_spilled_pseudos, &reg_obstack);
   create_live_range_start_chains ();
   setup_live_pseudos_and_spill_after_risky_transforms (&all_spilled_pseudos);
-  if (flag_checking && !flag_ipa_ra)
+  if (! lra_asm_error_p && flag_checking && !flag_ipa_ra)
+    /* Check correctness of allocation for call-crossed pseudos but
+       only when there are no asm errors as in the case of errors the
+       asm is removed and it can result in incorrect allocation.  */
     for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
       if (lra_reg_info[i].nrefs != 0 && reg_renumber[i] >= 0
 	  && lra_reg_info[i].call_p
@@ -1755,6 +1758,10 @@ lra_split_hard_reg_for (void)
 	     "\n****** Splitting a hard reg after assignment #%d: ******\n\n",
 	     lra_assignment_iter);
   bitmap_initialize (&failed_reload_pseudos, &reg_obstack);
+  bitmap_initialize (&non_reload_pseudos, &reg_obstack);
+  bitmap_ior (&non_reload_pseudos, &lra_inheritance_pseudos, &lra_split_regs);
+  bitmap_ior_into (&non_reload_pseudos, &lra_subreg_reload_pseudos);
+  bitmap_ior_into (&non_reload_pseudos, &lra_optional_reload_pseudos);
   for (i = lra_constraint_new_regno_start; i < max_regno; i++)
     if (reg_renumber[i] < 0 && lra_reg_info[i].nrefs != 0
 	&& (rclass = lra_get_allocno_class (i)) != NO_REGS
@@ -1769,6 +1776,7 @@ lra_split_hard_reg_for (void)
 	  }
 	bitmap_set_bit (&failed_reload_pseudos, i);
       }
+  bitmap_clear (&non_reload_pseudos);
   bitmap_initialize (&failed_reload_insns, &reg_obstack);
   EXECUTE_IF_SET_IN_BITMAP (&failed_reload_pseudos, 0, u, bi)
     {
@@ -1783,7 +1791,7 @@ lra_split_hard_reg_for (void)
       insn = lra_insn_recog_data[u]->insn;
       if (asm_noperands (PATTERN (insn)) >= 0)
 	{
-	  asm_p = true;
+	  lra_asm_error_p = asm_p = true;
 	  error_for_asm (insn,
 			 "%<asm%> operand has impossible constraints");
 	  /* Avoid further trouble with this insn.

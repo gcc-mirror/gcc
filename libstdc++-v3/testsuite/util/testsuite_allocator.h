@@ -582,7 +582,7 @@ namespace __gnu_test
       typedef Ptr<void>		void_pointer;
       typedef Ptr<const void>	const_void_pointer;
 
-      pointer allocate(std::size_t n, pointer = {})
+      pointer allocate(std::size_t n, const_void_pointer = {})
       { return pointer(std::allocator<Tp>::allocate(n)); }
 
       void deallocate(pointer p, std::size_t n)

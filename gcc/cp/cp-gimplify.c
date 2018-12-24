@@ -2118,7 +2118,7 @@ cxx_omp_disregard_value_expr (tree decl, bool shared)
 
 /* Fold expression X which is used as an rvalue if RVAL is true.  */
 
-static tree
+tree
 cp_fold_maybe_rvalue (tree x, bool rval)
 {
   while (true)
@@ -2141,7 +2141,7 @@ cp_fold_maybe_rvalue (tree x, bool rval)
 
 /* Fold expression X which is used as an rvalue.  */
 
-static tree
+tree
 cp_fold_rvalue (tree x)
 {
   return cp_fold_maybe_rvalue (x, true);
@@ -2169,6 +2169,20 @@ cp_fully_fold (tree x)
 	x = TREE_OPERAND (x, 0);
     }
   return cp_fold_rvalue (x);
+}
+
+/* Likewise, but also fold recursively, which cp_fully_fold doesn't perform
+   in some cases.  */
+
+tree
+cp_fully_fold_init (tree x)
+{
+  if (processing_template_decl)
+    return x;
+  x = cp_fully_fold (x);
+  hash_set<tree> pset;
+  cp_walk_tree (&x, cp_fold_r, &pset, NULL);
+  return x;
 }
 
 /* c-common interface to cp_fold.  If IN_INIT, this is in a static initializer
@@ -2317,6 +2331,7 @@ cp_fold (tree x)
 	    {
 	      val = TREE_OPERAND (val, 0);
 	      STRIP_NOPS (val);
+	      val = maybe_constant_value (val);
 	      if (TREE_CODE (val) == INTEGER_CST)
 		return fold_offsetof (op0, TREE_TYPE (x));
 	    }

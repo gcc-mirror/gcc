@@ -411,8 +411,8 @@ static bool canInferAttributes(FuncDeclaration *fd, Scope *sc)
  */
 static void initInferAttributes(FuncDeclaration *fd)
 {
-    assert(fd->type->ty == Tfunction);
-    TypeFunction *tf = (TypeFunction *)fd->type;
+    //printf("initInferAttributes() for %s\n", toPrettyChars());
+    TypeFunction *tf = fd->type->toTypeFunction();
     if (tf->purity == PUREimpure) // purity not specified
         fd->flags |= FUNCFLAGpurityInprocess;
 
@@ -495,7 +495,7 @@ void FuncDeclaration::semantic(Scope *sc)
             fld->tok = TOKfunction;
         else
             assert(0);
-        linkage = ((TypeFunction *)treq->nextOf())->linkage;
+        linkage = treq->nextOf()->toTypeFunction()->linkage;
     }
     else
         linkage = sc->linkage;
@@ -505,11 +505,21 @@ void FuncDeclaration::semantic(Scope *sc)
 
     if (!originalType)
         originalType = type->syntaxCopy();
+    if (type->ty != Tfunction)
+    {
+        if (type->ty != Terror)
+        {
+            error("%s must be a function instead of %s", toChars(), type->toChars());
+            type = Type::terror;
+        }
+        errors = true;
+        return;
+    }
     if (!type->deco)
     {
         sc = sc->push();
         sc->stc |= storage_class & (STCdisable | STCdeprecated);  // forward to function type
-        TypeFunction *tf = (TypeFunction *)type;
+        TypeFunction *tf = type->toTypeFunction();
 
         if (sc->func)
         {
@@ -678,8 +688,8 @@ void FuncDeclaration::semantic(Scope *sc)
     {
         // Merge back function attributes into 'originalType'.
         // It's used for mangling, ddoc, and json output.
-        TypeFunction *tfo = (TypeFunction *)originalType;
-        TypeFunction *tfx = (TypeFunction *)type;
+        TypeFunction *tfo = originalType->toTypeFunction();
+        TypeFunction *tfx = type->toTypeFunction();
         tfo->mod        = tfx->mod;
         tfo->isscope    = tfx->isscope;
         tfo->isscopeinferred = tfx->isscopeinferred;
@@ -1132,8 +1142,7 @@ void FuncDeclaration::semantic(Scope *sc)
         error("override only applies to class member functions");
 
     // Reflect this->type to f because it could be changed by findVtblIndex
-    assert(type->ty == Tfunction);
-    f = (TypeFunction *)type;
+    f = type->toTypeFunction();
 
     /* Do not allow template instances to add virtual functions
      * to a class.
@@ -2560,8 +2569,7 @@ void FuncDeclaration::buildResultVar(Scope *sc, Type *tret)
 
     if (sc && vresult->semanticRun == PASSinit)
     {
-        assert(type->ty == Tfunction);
-        TypeFunction *tf = (TypeFunction *)type;
+        TypeFunction *tf = type->toTypeFunction();
         if (tf->isref)
             vresult->storage_class |= STCref;
         vresult->type = tret;
@@ -3135,7 +3143,7 @@ FuncDeclaration *FuncDeclaration::overloadModMatch(Loc loc, Type *tthis, bool &h
             return 0;
 
         m->anyf = f;
-        TypeFunction *tf = (TypeFunction *)f->type;
+        TypeFunction *tf = f->type->toTypeFunction();
         //printf("tf = %s\n", tf->toChars());
 
         MATCH match;
@@ -3205,7 +3213,7 @@ FuncDeclaration *FuncDeclaration::overloadModMatch(Loc loc, Type *tthis, bool &h
     else                    // no match
     {
         hasOverloads = true;
-        TypeFunction *tf = (TypeFunction *)this->type;
+        TypeFunction *tf = this->type->toTypeFunction();
         assert(tthis);
         assert(!MODimplicitConv(tthis->mod, tf->mod));  // modifier mismatch
         {
@@ -3270,8 +3278,8 @@ MATCH FuncDeclaration::leastAsSpecialized(FuncDeclaration *g)
      * as g() is.
      */
 
-    TypeFunction *tf = (TypeFunction *)type;
-    TypeFunction *tg = (TypeFunction *)g->type;
+    TypeFunction *tf = type->toTypeFunction();
+    TypeFunction *tg = g->type->toTypeFunction();
     size_t nfparams = Parameter::dim(tf->parameters);
 
     /* If both functions have a 'this' pointer, and the mods are not
@@ -3524,7 +3532,7 @@ FuncDeclaration *resolveFuncCall(Loc loc, Scope *sc, Dsymbol *s,
             assert(fd);
 
             bool hasOverloads = fd->overnext != NULL;
-            TypeFunction *tf = (TypeFunction *)fd->type;
+            TypeFunction *tf = fd->type->toTypeFunction();
             if (tthis && !MODimplicitConv(tthis->mod, tf->mod)) // modifier mismatch
             {
                 OutBuffer thisBuf, funcBuf;
@@ -3562,8 +3570,8 @@ FuncDeclaration *resolveFuncCall(Loc loc, Scope *sc, Dsymbol *s,
     }
     else if (m.nextf)
     {
-        TypeFunction *tf1 = (TypeFunction *)m.lastf->type;
-        TypeFunction *tf2 = (TypeFunction *)m.nextf->type;
+        TypeFunction *tf1 = m.lastf->type->toTypeFunction();
+        TypeFunction *tf2 = m.nextf->type->toTypeFunction();
         const char *lastprms = parametersTypeToChars(tf1->parameters, tf1->varargs);
         const char *nextprms = parametersTypeToChars(tf2->parameters, tf2->varargs);
         ::error(loc, "%s.%s called with argument types %s matches both:\n"
@@ -3679,7 +3687,7 @@ const char *FuncDeclaration::toPrettyChars(bool QualifyTypes)
 const char *FuncDeclaration::toFullSignature()
 {
     OutBuffer buf;
-    functionToBufferWithIdent((TypeFunction *)type, &buf, toChars());
+    functionToBufferWithIdent(type->toTypeFunction(), &buf, toChars());
     return buf.extractString();
 }
 
@@ -3776,8 +3784,7 @@ bool FuncDeclaration::isOverloadable()
 PURE FuncDeclaration::isPure()
 {
     //printf("FuncDeclaration::isPure() '%s'\n", toChars());
-    assert(type->ty == Tfunction);
-    TypeFunction *tf = (TypeFunction *)type;
+    TypeFunction *tf = type->toTypeFunction();
     if (flags & FUNCFLAGpurityInprocess)
         setImpure();
     if (tf->purity == PUREfwdref)
@@ -3829,10 +3836,9 @@ bool FuncDeclaration::setImpure()
 
 bool FuncDeclaration::isSafe()
 {
-    assert(type->ty == Tfunction);
     if (flags & FUNCFLAGsafetyInprocess)
         setUnsafe();
-    return ((TypeFunction *)type)->trust == TRUSTsafe;
+    return type->toTypeFunction()->trust == TRUSTsafe;
 }
 
 bool FuncDeclaration::isSafeBypassingInference()
@@ -3842,10 +3848,9 @@ bool FuncDeclaration::isSafeBypassingInference()
 
 bool FuncDeclaration::isTrusted()
 {
-    assert(type->ty == Tfunction);
     if (flags & FUNCFLAGsafetyInprocess)
         setUnsafe();
-    return ((TypeFunction *)type)->trust == TRUSTtrusted;
+    return type->toTypeFunction()->trust == TRUSTtrusted;
 }
 
 /**************************************
@@ -3858,7 +3863,7 @@ bool FuncDeclaration::setUnsafe()
     if (flags & FUNCFLAGsafetyInprocess)
     {
         flags &= ~FUNCFLAGsafetyInprocess;
-        ((TypeFunction *)type)->trust = TRUSTsystem;
+        type->toTypeFunction()->trust = TRUSTsystem;
         if (fes)
             fes->func->setUnsafe();
     }
@@ -3869,10 +3874,9 @@ bool FuncDeclaration::setUnsafe()
 
 bool FuncDeclaration::isNogc()
 {
-    assert(type->ty == Tfunction);
     if (flags & FUNCFLAGnogcInprocess)
         setGC();
-    return ((TypeFunction *)type)->isnogc;
+    return type->toTypeFunction()->isnogc;
 }
 
 bool FuncDeclaration::isNogcBypassingInference()
@@ -3891,7 +3895,7 @@ bool FuncDeclaration::setGC()
     if (flags & FUNCFLAGnogcInprocess)
     {
         flags &= ~FUNCFLAGnogcInprocess;
-        ((TypeFunction *)type)->isnogc = false;
+        type->toTypeFunction()->isnogc = false;
         if (fes)
             fes->func->setGC();
     }
@@ -4000,8 +4004,7 @@ bool traverseIndirections(Type *ta, Type *tb, void *p = NULL, bool reversePass =
 
 bool FuncDeclaration::isolateReturn()
 {
-    assert(type->ty == Tfunction);
-    TypeFunction *tf = (TypeFunction *)type;
+    TypeFunction *tf = type->toTypeFunction();
     assert(tf->next);
 
     Type *treti = tf->next;
@@ -4022,8 +4025,7 @@ bool FuncDeclaration::parametersIntersect(Type *t)
     if (!isPureBypassingInference() || isNested())
         return false;
 
-    assert(type->ty == Tfunction);
-    TypeFunction *tf = (TypeFunction *)type;
+    TypeFunction *tf = type->toTypeFunction();
 
     //printf("parametersIntersect(%s) t = %s\n", tf->toChars(), t->toChars());
 
@@ -4229,7 +4231,7 @@ FuncDeclaration *FuncDeclaration::genCfunc(Parameters *fparams, Type *treturn, I
  */
 void FuncDeclaration::checkDmain()
 {
-    TypeFunction *tf = (TypeFunction *)type;
+    TypeFunction *tf = type->toTypeFunction();
     const size_t nparams = Parameter::dim(tf->parameters);
     bool argerr = false;
     if (nparams == 1)
@@ -4608,8 +4610,7 @@ Parameters *FuncDeclaration::getParameters(int *pvarargs)
 
     if (type)
     {
-        assert(type->ty == Tfunction);
-        TypeFunction *fdtype = (TypeFunction *)type;
+        TypeFunction *fdtype = type->toTypeFunction();
         fparameters = fdtype->parameters;
         fvarargs = fdtype->varargs;
     }
@@ -4752,7 +4753,7 @@ void FuncLiteralDeclaration::modifyReturns(Scope *sc, Type *tret)
     // This is required so the code generator does not try to cast the
     // modified returns back to the original type.
     if (inferRetType && type->nextOf() != tret)
-        ((TypeFunction *)type)->next = tret;
+        type->toTypeFunction()->next = tret;
 }
 
 const char *FuncLiteralDeclaration::kind() const
@@ -4820,8 +4821,7 @@ void CtorDeclaration::semantic(Scope *sc)
     if (errors)
         return;
 
-    TypeFunction *tf = (TypeFunction *)type;
-    assert(tf && tf->ty == Tfunction);
+    TypeFunction *tf = type->toTypeFunction();
 
     /* See if it's the default constructor
      * But, template constructor should not become a default constructor.
@@ -5502,10 +5502,9 @@ void NewDeclaration::semantic(Scope *sc)
         type = new TypeFunction(parameters, tret, varargs, LINKd, storage_class);
 
     type = type->semantic(loc, sc);
-    assert(type->ty == Tfunction);
 
     // Check that there is at least one argument of type size_t
-    TypeFunction *tf = (TypeFunction *)type;
+    TypeFunction *tf = type->toTypeFunction();
     if (Parameter::dim(tf->parameters) < 1)
     {
         error("at least one argument of type size_t expected");
@@ -5581,10 +5580,9 @@ void DeleteDeclaration::semantic(Scope *sc)
         type = new TypeFunction(parameters, Type::tvoid, 0, LINKd, storage_class);
 
     type = type->semantic(loc, sc);
-    assert(type->ty == Tfunction);
 
     // Check that there is only one argument of type void*
-    TypeFunction *tf = (TypeFunction *)type;
+    TypeFunction *tf = type->toTypeFunction();
     if (Parameter::dim(tf->parameters) != 1)
     {
         error("one argument of type void* expected");

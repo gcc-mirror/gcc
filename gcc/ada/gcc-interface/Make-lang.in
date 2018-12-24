@@ -675,12 +675,10 @@ regnattools:
 cross-gnattools: force
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools1-re
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
-	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools4
 
 canadian-gnattools: force
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools1-re
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
-	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools4
 
 gnatlib gnatlib-sjlj gnatlib-zcx gnatlib-shared: force
 	$(MAKE) -C ada $(COMMON_FLAGS_TO_PASS)  \
@@ -811,8 +809,6 @@ doc/gnat-style.pdf: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
 # gnatlink, gnatls, gnatmake, gnatname, gnatprep, gnatxref, gnatfind,
 # gnatclean).
 # gnatdll is only used on Windows.
-# vxaddr2line is only used for cross VxWorks ports (it calls the underlying
-# cross addr2line).
 ada.install-common:
 	$(MKDIR) $(DESTDIR)$(bindir)
 	-if [ -f gnat1$(exeext) ] ; \
@@ -829,11 +825,6 @@ ada.install-common:
 	  done; \
 	  $(RM) $(DESTDIR)$(bindir)/gnatdll$(exeext); \
 	  $(INSTALL_PROGRAM) gnatdll$(exeext) $(DESTDIR)$(bindir)/gnatdll$(exeext); \
-	  if [ -f vxaddr2line$(exeext) ] ; \
-	  then \
-	    $(RM) $(DESTDIR)$(bindir)/vxaddr2line$(exeext); \
-	    $(INSTALL_PROGRAM) vxaddr2line$(exeext) $(DESTDIR)$(bindir)/vxaddr2line$(exeext); \
-	  fi ; \
 	fi
 
 #
@@ -859,7 +850,6 @@ ada.uninstall:
 	  -$(RM) $(DESTDIR)$(bindir)/$$install_name; \
 	done
 	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatdll$(exeext)
-	-$(RM) $(DESTDIR)$(tooldir)/bin/vxaddr2line$(exeext)
 
 # Clean hooks:
 # A lot of the ancillary files are deleted by the main makefile.

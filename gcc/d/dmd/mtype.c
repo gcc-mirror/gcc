@@ -2345,6 +2345,12 @@ TypeBasic *Type::isTypeBasic()
     return NULL;
 }
 
+TypeFunction *Type::toTypeFunction()
+{
+    if (ty != Tfunction)
+        assert(0);
+    return (TypeFunction *)this;
+}
 
 /***************************************
  * Resolve 'this' type to either type, symbol, or expression.
@@ -4808,14 +4814,14 @@ Expression *TypeAArray::dotExp(Scope *sc, Expression *e, Identifier *ident, int 
             Parameters *fparams = new Parameters();
             fparams->push(new Parameter(STCin, this, NULL, NULL));
             fd_aaLen = FuncDeclaration::genCfunc(fparams, Type::tsize_t, Id::aaLen);
-            TypeFunction *tf = (TypeFunction *)fd_aaLen->type;
+            TypeFunction *tf = fd_aaLen->type->toTypeFunction();
             tf->purity = PUREconst;
             tf->isnothrow = true;
             tf->isnogc = false;
         }
         Expression *ev = new VarExp(e->loc, fd_aaLen, false);
         e = new CallExp(e->loc, ev, e);
-        e->type = ((TypeFunction *)fd_aaLen->type)->next;
+        e->type = fd_aaLen->type->toTypeFunction()->next;
     }
     else
         e = Type::dotExp(sc, e, ident, flag);
@@ -5425,7 +5431,7 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
      * This can produce redundant copies if inferring return type,
      * as semantic() will get called again on this.
      */
-    TypeFunction *tf = (TypeFunction *)copy();
+    TypeFunction *tf = copy()->toTypeFunction();
     if (parameters)
     {
         tf->parameters = parameters->copy();
@@ -6283,7 +6289,7 @@ Expression *TypeFunction::defaultInit(Loc loc)
 Type *TypeFunction::addStorageClass(StorageClass stc)
 {
     //printf("addStorageClass(%llx) %d\n", stc, (stc & STCscope) != 0);
-    TypeFunction *t = (TypeFunction *)Type::addStorageClass(stc);
+    TypeFunction *t = Type::addStorageClass(stc)->toTypeFunction();
     if ((stc & STCpure && !t->purity) ||
         (stc & STCnothrow && !t->isnothrow) ||
         (stc & STCnogc && !t->isnogc) ||
@@ -9181,7 +9187,7 @@ Type *Parameter::isLazyArray()
         if (tel->ty == Tdelegate)
         {
             TypeDelegate *td = (TypeDelegate *)tel;
-            TypeFunction *tf = (TypeFunction *)td->next;
+            TypeFunction *tf = td->next->toTypeFunction();
 
             if (!tf->varargs && Parameter::dim(tf->parameters) == 0)
             {

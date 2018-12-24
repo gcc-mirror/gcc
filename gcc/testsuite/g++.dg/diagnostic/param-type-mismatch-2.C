@@ -204,7 +204,9 @@ int test_10 ()
   return v10_a - v10_b; // { dg-error "no match for" }
   /* { dg-begin-multiline-output "" }
    return v10_a - v10_b;
-          ~~~~~~^~~~~~~
+          ~~~~~ ^ ~~~~~
+          |       |
+          s10     s10
      { dg-end-multiline-output "" } */
   // { dg-message "candidate" "" { target *-*-* } s10_operator }
   /* { dg-begin-multiline-output "" }

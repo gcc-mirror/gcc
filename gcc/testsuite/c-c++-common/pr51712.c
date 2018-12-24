@@ -15,5 +15,5 @@ int valid(enum test_enum arg)
 
 int valid2(unsigned int arg2)
 {
-  return arg2 >= FOO && arg2 <= BAR; /* { dg-bogus "comparison of unsigned expression" "" { xfail *-*-* } } */
+  return arg2 >= FOO && arg2 <= BAR; /* { dg-bogus "comparison of unsigned expression" "" { xfail c } } */
 }

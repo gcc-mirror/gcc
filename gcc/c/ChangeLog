@@ -1,3 +1,42 @@
+2018-12-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/51628
+	* c-typeck.c (convert_for_assignment): Call
+	warn_for_address_or_pointer_of_packed_member.
+
+2018-12-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* c-parser.c (c_parser_asm_statement) <RID_CONST, RID_RESTRICT>: Give
+	a more specific error message (instead of just falling through).
+
+2018-12-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* c-parser.c (c_parser_asm_statement): Keep track of the location each
+	asm qualifier is first seen; use that to give nicer "duplicate asm
+	qualifier" messages.  Delete 'quals" variable, instead pass the
+	"is_volatile_ flag to build_asm_stmt directly.
+	* c-tree.h (build_asm_stmt): Make the first arg bool instead of tree.
+	* c-typeck.c (build_asm_stmt): Ditto; adjust.
+
+2018-12-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* c-parser.c (c_parser_asm_statement): Rewrite the loop to work without
+	"done" boolean variable.
+
+2018-12-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/87504
+	* c-typeck.c (class maybe_range_label_for_tree_type_mismatch):
+	Move from here to gcc-rich-location.h and gcc-rich-location.c.
+	(build_binary_op): Use struct op_location_t and
+	class binary_op_rich_location.
+
+2018-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/88426
+	* c-convert.c (convert): Call c_fully_fold before calling
+	ubsan_instrument_float_cast.
+
 2018-12-08  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* c-parser (c_parser_asm_statement) [RID_INLINE]: Delete stray line

@@ -1,4 +1,5 @@
 // { dg-lto-do link }
+// { dg-require-effective-target lto_incremental }
 // { dg-lto-options { { -flto -O2 } } }
 // { dg-extra-ld-options "-r -nostdlib -flto -flto-partition=none -O2" }
 namespace xercesc_3_1 {

@@ -9049,6 +9049,13 @@ package body Sem_Util is
 
          else
             Decl := Build_Actual_Subtype (Typ, N);
+
+            --  The call may yield a declaration, or just return the entity
+
+            if Decl = Typ then
+               return Typ;
+            end if;
+
             Atyp := Defining_Identifier (Decl);
 
             --  If Build_Actual_Subtype generated a new declaration then use it
@@ -9162,6 +9169,9 @@ package body Sem_Util is
       if First_Op = Any_Id then
          Error_Msg_N ("aspect Iterable must specify First operation", Aspect);
          return Any_Type;
+
+      elsif not Analyzed (First_Op) then
+         Analyze (First_Op);
       end if;
 
       Cursor := Any_Type;
@@ -9195,7 +9205,8 @@ package body Sem_Util is
 
       if Cursor = Any_Type then
          Error_Msg_N
-           ("No legal primitive operation First for Iterable type", Aspect);
+           ("primitive operation for Iterable type must appear "
+             & "in the same list of declarations as the type", Aspect);
       end if;
 
       return Cursor;
@@ -10879,6 +10890,11 @@ package body Sem_Util is
 
       if Is_Scalar_Type (Typ) then
          return Has_Default_Aspect (Typ);
+
+      --  An access type is fully default initialized by default
+
+      elsif Is_Access_Type (Typ) then
+         return True;
 
       --  An array type is fully default initialized if its element type is
       --  scalar and the array type carries aspect Default_Component_Value or
@@ -14132,11 +14148,11 @@ package body Sem_Util is
          Deref := Expression (Deref);
       end if;
 
-      --  Ada 2005: If we have a component or slice of a dereference,
-      --  something like X.all.Y (2), and the type of X is access-to-constant,
-      --  Is_Variable will return False, because it is indeed a constant
-      --  view. But it might be a view of a variable object, so we want the
-      --  following condition to be True in that case.
+      --  Ada 2005: If we have a component or slice of a dereference, something
+      --  like X.all.Y (2) and the type of X is access-to-constant, Is_Variable
+      --  will return False, because it is indeed a constant view. But it might
+      --  be a view of a variable object, so we want the following condition to
+      --  be True in that case.
 
       if Is_Variable (Object)
         or else Is_Variable (Deref)
@@ -14150,9 +14166,8 @@ package body Sem_Util is
             --  False (it could be a function selector in a prefix form call
             --  occurring in an iterator specification).
 
-            if not
-              Ekind_In
-                (Entity (Selector_Name (Object)), E_Component, E_Discriminant)
+            if not Ekind_In (Entity (Selector_Name (Object)), E_Component,
+                                                              E_Discriminant)
             then
                return False;
             end if;
@@ -14167,8 +14182,8 @@ package body Sem_Util is
             P := Original_Node (Prefix (Object));
             Prefix_Type := Etype (P);
 
-            --  If the prefix is a qualified expression, we want to look at
-            --  its operand.
+            --  If the prefix is a qualified expression, we want to look at its
+            --  operand.
 
             if Nkind (P) = N_Qualified_Expression then
                P := Expression (P);
@@ -17466,12 +17481,30 @@ package body Sem_Util is
      (N : Node_Id) return Boolean
    is
    begin
-      --  A subprogram stub without prior declaration serves as declaration for
-      --  the actual subprogram body. As such, it has an attached defining
-      --  entity of E_[Generic_]Function or E_[Generic_]Procedure.
+      pragma Assert (Nkind (N) = N_Subprogram_Body_Stub);
 
-      return Nkind (N) = N_Subprogram_Body_Stub
-        and then Ekind (Defining_Entity (N)) /= E_Subprogram_Body;
+      case Ekind (Defining_Entity (N)) is
+
+         --  A subprogram stub without prior declaration serves as declaration
+         --  for the actual subprogram body. As such, it has an attached
+         --  defining entity of E_Function or E_Procedure.
+
+         when E_Function
+            | E_Procedure
+         =>
+            return True;
+
+         --  Otherwise, it is completes a [generic] subprogram declaration
+
+         when E_Generic_Function
+            | E_Generic_Procedure
+            | E_Subprogram_Body
+         =>
+            return False;
+
+         when others =>
+            raise Program_Error;
+      end case;
    end Is_Subprogram_Stub_Without_Prior_Declaration;
 
    ---------------------------

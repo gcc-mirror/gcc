@@ -56,8 +56,6 @@ static rtx
 cleanup_auto_inc_dec (rtx src, machine_mode mem_mode ATTRIBUTE_UNUSED)
 {
   rtx x = src;
-  if (!AUTO_INC_DEC)
-    return copy_rtx (x);
 
   const RTX_CODE code = GET_CODE (x);
   int i;

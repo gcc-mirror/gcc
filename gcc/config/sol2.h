@@ -397,7 +397,7 @@ along with GCC; see the file COPYING3.  If not see
 #define SYSROOT_SPEC "-z sysroot=%R"
 #endif
 
-#ifndef USE_GLD
+#if !defined(USE_GLD) && defined(ENABLE_SHARED_LIBGCC)
 /* With Sun ld, use mapfile to enforce direct binding to libgcc_s unwinder.  */
 #define LINK_LIBGCC_MAPFILE_SPEC \
   "%{shared|shared-libgcc:-M %slibgcc-unwind.map}"

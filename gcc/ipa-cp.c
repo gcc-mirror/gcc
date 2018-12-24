@@ -191,7 +191,7 @@ public:
   /* Depth first search number and low link for topological sorting of
      values.  */
   int dfs, low_link;
-  /* True if this valye is currently on the topo-sort stack.  */
+  /* True if this value is currently on the topo-sort stack.  */
   bool on_stack;
 
   ipcp_value()
@@ -542,6 +542,9 @@ print_all_lattices (FILE * f, bool dump_sources, bool dump_benefits)
       struct ipa_node_params *info;
 
       info = IPA_NODE_REF (node);
+      /* Skip constprop clones since we don't make lattices for them.  */
+      if (info->ipcp_orig_node)
+	continue;
       fprintf (f, "  Node: %s:\n", node->dump_name ());
       count = ipa_get_param_count (info);
       for (i = 0; i < count; i++)
@@ -880,7 +883,7 @@ ipcp_lattice<valtype>::set_contains_variable ()
   return ret;
 }
 
-/* Set all aggegate lattices in PLATS to bottom and return true if they were
+/* Set all aggregate lattices in PLATS to bottom and return true if they were
    not previously set as such.  */
 
 static inline bool
@@ -891,7 +894,7 @@ set_agg_lats_to_bottom (struct ipcp_param_lattices *plats)
   return ret;
 }
 
-/* Mark all aggegate lattices in PLATS as containing an unknown value and
+/* Mark all aggregate lattices in PLATS as containing an unknown value and
    return true if they were not previously marked as such.  */
 
 static inline bool
@@ -908,7 +911,7 @@ ipcp_vr_lattice::meet_with (const ipcp_vr_lattice &other)
   return meet_with_1 (&other.m_vr);
 }
 
-/* Meet the current value of the lattice with value ranfge described by VR
+/* Meet the current value of the lattice with value range described by VR
    lattice.  */
 
 bool
@@ -1330,7 +1333,7 @@ ipa_value_from_jfunc (struct ipa_node_params *info, struct ipa_jump_func *jfunc,
     return NULL_TREE;
 }
 
-/* Determie whether JFUNC evaluates to single known polymorphic context, given
+/* Determine whether JFUNC evaluates to single known polymorphic context, given
    that INFO describes the caller node or the one it is inlined to, CS is the
    call graph edge corresponding to JFUNC and CSIDX index of the described
    parameter.  */
@@ -2379,7 +2382,7 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 
   t = NULL;
 
-  /* Try to work out value of virtual table pointer value in replacemnets.  */
+  /* Try to work out value of virtual table pointer value in replacements.  */
   if (!t && agg_reps && !ie->indirect_info->by_ref)
     {
       while (agg_reps)
@@ -4602,7 +4605,7 @@ ipcp_val_agg_replacement_ok_p (ipa_agg_replacement_value *aggvals,
   return false;
 }
 
-/* Return true if offset is minus one because source of a polymorphic contect
+/* Return true if offset is minus one because source of a polymorphic context
    cannot be an aggregate value.  */
 
 DEBUG_FUNCTION bool
@@ -4613,7 +4616,7 @@ ipcp_val_agg_replacement_ok_p (ipa_agg_replacement_value *,
   return offset == -1;
 }
 
-/* Decide wheter to create a special version of NODE for value VAL of parameter
+/* Decide whether to create a special version of NODE for value VAL of parameter
    at the given INDEX.  If OFFSET is -1, the value is for the parameter itself,
    otherwise it is stored at the given OFFSET of the parameter.  KNOWN_CSTS,
    KNOWN_CONTEXTS and KNOWN_AGGS describe the other already known values.  */

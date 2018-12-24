@@ -2076,6 +2076,11 @@ extract_omp_for_update_vars (struct omp_for_data *fd, basic_block cont_bb,
 	  t = fold_build2 (fd->loops[i].cond_code, boolean_type_node, v, t);
 	  stmt = gimple_build_cond_empty (t);
 	  gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
+	  if (walk_tree (gimple_cond_lhs_ptr (as_a <gcond *> (stmt)),
+			 expand_omp_regimplify_p, NULL, NULL)
+	      || walk_tree (gimple_cond_rhs_ptr (as_a <gcond *> (stmt)),
+			    expand_omp_regimplify_p, NULL, NULL))
+	    gimple_regimplify_operands (stmt, &gsi);
 	  e = make_edge (bb, body_bb, EDGE_TRUE_VALUE);
 	  e->probability = profile_probability::guessed_always ().apply_scale (7, 8);
 	}
@@ -3209,20 +3214,21 @@ expand_omp_for_generic (struct omp_region *region,
 
 	  if (fd->ordered && counts[fd->collapse - 1] == NULL_TREE)
 	    {
+	      tree tem;
 	      if (fd->collapse > 1)
-		t = fd->loop.v;
+		tem = fd->loop.v;
 	      else
 		{
-		  t = fold_build2 (MINUS_EXPR, TREE_TYPE (fd->loops[0].v),
-				   fd->loops[0].v, fd->loops[0].n1);
-		  t = fold_convert (fd->iter_type, t);
+		  tem = fold_build2 (MINUS_EXPR, TREE_TYPE (fd->loops[0].v),
+				     fd->loops[0].v, fd->loops[0].n1);
+		  tem = fold_convert (fd->iter_type, tem);
 		}
 	      tree aref = build4 (ARRAY_REF, fd->iter_type,
 				  counts[fd->ordered], size_zero_node,
 				  NULL_TREE, NULL_TREE);
-	      t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
-					    true, GSI_SAME_STMT);
-	      expand_omp_build_assign (&gsi, aref, t);
+	      tem = force_gimple_operand_gsi (&gsi, tem, true, NULL_TREE,
+					      true, GSI_SAME_STMT);
+	      expand_omp_build_assign (&gsi, aref, tem);
 	    }
 
 	  t = build2 (fd->loop.cond_code, boolean_type_node,

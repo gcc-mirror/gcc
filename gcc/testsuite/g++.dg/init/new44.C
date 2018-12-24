@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-options "-ftrack-macro-expansion=0" }
 
 // Test for PR c++/67927 - array new expression with excessive number
 // of elements not diagnosed.
