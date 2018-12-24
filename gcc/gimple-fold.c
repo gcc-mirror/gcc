@@ -66,6 +66,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vector-builder.h"
 #include "tree-ssa-strlen.h"
 
+static bool get_range_strlen (tree, tree[2], bitmap *, int,
+		  int, bool *, unsigned, tree *);
+
 /* Return true when DECL can be referenced from current unit.
    FROM_DECL (if non-null) specify constructor of variable DECL was taken from.
    We can get declarations that are not possible to reference for various
@@ -1258,6 +1261,211 @@ gimple_fold_builtin_memset (gimple_stmt_iterator *gsi, tree c, tree len)
   return true;
 }
 
+/* Helper of get_range_strlen for ARG that is not an SSA_NAME.  */
+
+static bool
+get_range_strlen_tree (tree arg, tree length[2], bitmap *visited, int type,
+		       int fuzzy, bool *flexp, unsigned eltsize, tree *nonstr)
+{
+  gcc_assert (TREE_CODE (arg) != SSA_NAME);
+ 
+  /* The minimum and maximum length.  */
+  tree *const minlen = length;
+  tree *const maxlen = length + 1;
+
+  /* The length computed by this invocation of the function.  */
+  tree val = NULL_TREE;
+
+  /* We can end up with &(*iftmp_1)[0] here as well, so handle it.  */
+  if (TREE_CODE (arg) == ADDR_EXPR
+      && TREE_CODE (TREE_OPERAND (arg, 0)) == ARRAY_REF)
+    {
+      tree op = TREE_OPERAND (arg, 0);
+      if (integer_zerop (TREE_OPERAND (op, 1)))
+	{
+	  tree aop0 = TREE_OPERAND (op, 0);
+	  if (TREE_CODE (aop0) == INDIRECT_REF
+	      && TREE_CODE (TREE_OPERAND (aop0, 0)) == SSA_NAME)
+	    return get_range_strlen (TREE_OPERAND (aop0, 0), length,
+				     visited, type, fuzzy, flexp,
+				     eltsize, nonstr);
+	}
+      else if (TREE_CODE (TREE_OPERAND (op, 0)) == COMPONENT_REF && fuzzy)
+	{
+	  /* Fail if an array is the last member of a struct object
+	     since it could be treated as a (fake) flexible array
+	     member.  */
+	  tree idx = TREE_OPERAND (op, 1);
+
+	  arg = TREE_OPERAND (op, 0);
+	  tree optype = TREE_TYPE (arg);
+	  if (tree dom = TYPE_DOMAIN (optype))
+	    if (tree bound = TYPE_MAX_VALUE (dom))
+	      if (TREE_CODE (bound) == INTEGER_CST
+		  && TREE_CODE (idx) == INTEGER_CST
+		  && tree_int_cst_lt (bound, idx))
+		return false;
+	}
+    }
+
+  if (type == 2)
+    {
+      /* We are computing the maximum value (not string length).  */
+      val = arg;
+      if (TREE_CODE (val) != INTEGER_CST
+	  || tree_int_cst_sgn (val) < 0)
+	return false;
+    }
+  else
+    {
+      c_strlen_data lendata = { };
+      val = c_strlen (arg, 1, &lendata, eltsize);
+
+      /* If we potentially had a non-terminated string, then
+	 bubble that information up to the caller.  */
+      if (!val && lendata.decl)
+	{
+	  *nonstr = lendata.decl;
+	  *minlen = lendata.minlen;
+	  *maxlen = lendata.minlen;
+	  return type == 0 ? false : true;
+	}
+    }
+
+  if (!val && fuzzy)
+    {
+      if (TREE_CODE (arg) == ADDR_EXPR)
+	return get_range_strlen (TREE_OPERAND (arg, 0), length,
+				 visited, type, fuzzy, flexp,
+				 eltsize, nonstr);
+
+      if (TREE_CODE (arg) == ARRAY_REF)
+	{
+	  tree optype = TREE_TYPE (TREE_OPERAND (arg, 0));
+
+	  /* Determine the "innermost" array type.  */
+	  while (TREE_CODE (optype) == ARRAY_TYPE
+		 && TREE_CODE (TREE_TYPE (optype)) == ARRAY_TYPE)
+	    optype = TREE_TYPE (optype);
+
+	  /* Avoid arrays of pointers.  */
+	  tree eltype = TREE_TYPE (optype);
+	  if (TREE_CODE (optype) != ARRAY_TYPE
+	      || !INTEGRAL_TYPE_P (eltype))
+	    return false;
+
+	  /* Fail when the array bound is unknown or zero.  */
+	  val = TYPE_SIZE_UNIT (optype);
+	  if (!val || integer_zerop (val))
+	    return false;
+
+	  val = fold_build2 (MINUS_EXPR, TREE_TYPE (val), val,
+			      integer_one_node);
+
+	  /* Set the minimum size to zero since the string in
+	     the array could have zero length.  */
+	  *minlen = ssize_int (0);
+
+	  if (TREE_CODE (TREE_OPERAND (arg, 0)) == COMPONENT_REF
+	      && optype == TREE_TYPE (TREE_OPERAND (arg, 0))
+	      && array_at_struct_end_p (TREE_OPERAND (arg, 0)))
+	    *flexp = true;
+	}
+      else if (TREE_CODE (arg) == COMPONENT_REF
+	       && (TREE_CODE (TREE_TYPE (TREE_OPERAND (arg, 1)))
+		   == ARRAY_TYPE))
+	{
+	  /* Use the type of the member array to determine the upper
+	     bound on the length of the array.  This may be overly
+	     optimistic if the array itself isn't NUL-terminated and
+	     the caller relies on the subsequent member to contain
+	     the NUL but that would only be considered valid if
+	     the array were the last member of a struct.
+	      Set *FLEXP to true if the array whose bound is being
+	     used is at the end of a struct.  */
+	  if (array_at_struct_end_p (arg))
+	    *flexp = true;
+
+	  tree fld = TREE_OPERAND (arg, 1);
+
+	  tree optype = TREE_TYPE (fld);
+
+	  /* Determine the "innermost" array type.  */
+	  while (TREE_CODE (optype) == ARRAY_TYPE
+		 && TREE_CODE (TREE_TYPE (optype)) == ARRAY_TYPE)
+	    optype = TREE_TYPE (optype);
+
+	  /* Fail when the array bound is unknown or zero.  */
+	  val = TYPE_SIZE_UNIT (optype);
+	  if (!val || integer_zerop (val))
+	    return false;
+	  val = fold_build2 (MINUS_EXPR, TREE_TYPE (val), val,
+			     integer_one_node);
+
+	  /* Set the minimum size to zero since the string in
+	     the array could have zero length.  */
+	  *minlen = ssize_int (0);
+	}
+
+      if (VAR_P (arg))
+	{
+	  tree type = TREE_TYPE (arg);
+	  if (POINTER_TYPE_P (type))
+	    type = TREE_TYPE (type);
+
+	  if (TREE_CODE (type) == ARRAY_TYPE)
+	    {
+	      val = TYPE_SIZE_UNIT (type);
+	      if (!val
+		  || TREE_CODE (val) != INTEGER_CST
+		  || integer_zerop (val))
+		return false;
+	      val = wide_int_to_tree (TREE_TYPE (val),
+				      wi::sub (wi::to_wide (val), 1));
+
+	      /* Set the minimum size to zero since the string in
+		 the array could have zero length.  */
+	      *minlen = ssize_int (0);
+	    }
+	}
+    }
+
+  if (!val)
+    return false;
+
+  /* Adjust the lower bound on the string length as necessary.  */
+  if (!*minlen
+      || (type > 0
+	  && TREE_CODE (*minlen) == INTEGER_CST
+	  && TREE_CODE (val) == INTEGER_CST
+	  && tree_int_cst_lt (val, *minlen)))
+    *minlen = val;
+
+  if (*maxlen)
+    {
+      /* Adjust the more conservative bound if possible/necessary
+	 and fail otherwise.  */
+      if (type > 0)
+	{
+	  if (TREE_CODE (*maxlen) != INTEGER_CST
+	      || TREE_CODE (val) != INTEGER_CST)
+	    return false;
+
+	  if (tree_int_cst_lt (*maxlen, val))
+	    *maxlen = val;
+	  return true;
+	}
+      else if (simple_cst_equal (val, *maxlen) != 1)
+	{
+	  /* Fail if the length of this ARG is different from that
+	     previously determined from another ARG.  */
+	  return false;
+	}
+    }
+
+  *maxlen = val;
+  return true;
+}
 
 /* Obtain the minimum and maximum string length or minimum and maximum
    value of ARG in LENGTH[0] and LENGTH[1], respectively.
@@ -1285,194 +1493,10 @@ static bool
 get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 		  int fuzzy, bool *flexp, unsigned eltsize, tree *nonstr)
 {
-  tree var, val = NULL_TREE;
-  gimple *def_stmt;
-
-  /* The minimum and maximum length.  */
-  tree *const minlen = length;
-  tree *const maxlen = length + 1;
 
   if (TREE_CODE (arg) != SSA_NAME)
-    {
-      /* We can end up with &(*iftmp_1)[0] here as well, so handle it.  */
-      if (TREE_CODE (arg) == ADDR_EXPR
-	  && TREE_CODE (TREE_OPERAND (arg, 0)) == ARRAY_REF)
-	{
-	  tree op = TREE_OPERAND (arg, 0);
-	  if (integer_zerop (TREE_OPERAND (op, 1)))
-	    {
-	      tree aop0 = TREE_OPERAND (op, 0);
-	      if (TREE_CODE (aop0) == INDIRECT_REF
-		  && TREE_CODE (TREE_OPERAND (aop0, 0)) == SSA_NAME)
-		return get_range_strlen (TREE_OPERAND (aop0, 0), length,
-					 visited, type, fuzzy, flexp,
-					 eltsize, nonstr);
-	    }
-	  else if (TREE_CODE (TREE_OPERAND (op, 0)) == COMPONENT_REF && fuzzy)
-	    {
-	      /* Fail if an array is the last member of a struct object
-		 since it could be treated as a (fake) flexible array
-		 member.  */
-	      tree idx = TREE_OPERAND (op, 1);
-
-	      arg = TREE_OPERAND (op, 0);
-	      tree optype = TREE_TYPE (arg);
-	      if (tree dom = TYPE_DOMAIN (optype))
-		if (tree bound = TYPE_MAX_VALUE (dom))
-		  if (TREE_CODE (bound) == INTEGER_CST
-		      && TREE_CODE (idx) == INTEGER_CST
-		      && tree_int_cst_lt (bound, idx))
-		    return false;
-	    }
-	}
-
-      if (type == 2)
-	{
-	  val = arg;
-	  if (TREE_CODE (val) != INTEGER_CST
-	      || tree_int_cst_sgn (val) < 0)
-	    return false;
-	}
-      else
-	{
-	  c_strlen_data lendata = { };
-	  val = c_strlen (arg, 1, &lendata, eltsize);
-
-	  /* If we potentially had a non-terminated string, then
-	     bubble that information up to the caller.  */
-	  if (!val && lendata.decl)
-	    {
-	      *nonstr = lendata.decl;
-	      *minlen = lendata.minlen;
-	      *maxlen = lendata.minlen;
-	      return type == 0 ? false : true;
-	    }
-	}
-
-      if (!val && fuzzy)
-	{
-	  if (TREE_CODE (arg) == ADDR_EXPR)
-	    return get_range_strlen (TREE_OPERAND (arg, 0), length,
-				     visited, type, fuzzy, flexp,
-				     eltsize, nonstr);
-
-	  if (TREE_CODE (arg) == ARRAY_REF)
-	    {
-	      tree optype = TREE_TYPE (TREE_OPERAND (arg, 0));
-
-	      /* Determine the "innermost" array type.  */
-	      while (TREE_CODE (optype) == ARRAY_TYPE
-		     && TREE_CODE (TREE_TYPE (optype)) == ARRAY_TYPE)
-		optype = TREE_TYPE (optype);
-
-	      /* Avoid arrays of pointers.  */
-	      tree eltype = TREE_TYPE (optype);
-	      if (TREE_CODE (optype) != ARRAY_TYPE
-		  || !INTEGRAL_TYPE_P (eltype))
-		return false;
-
-	      /* Fail when the array bound is unknown or zero.  */
-	      val = TYPE_SIZE_UNIT (optype);
-	      if (!val || integer_zerop (val))
-		return false;
-
-	      val = fold_build2 (MINUS_EXPR, TREE_TYPE (val), val,
-				 integer_one_node);
-	      /* Set the minimum size to zero since the string in
-		 the array could have zero length.  */
-	      *minlen = ssize_int (0);
-
-	      if (TREE_CODE (TREE_OPERAND (arg, 0)) == COMPONENT_REF
-		  && optype == TREE_TYPE (TREE_OPERAND (arg, 0))
-		  && array_at_struct_end_p (TREE_OPERAND (arg, 0)))
-		*flexp = true;
-	    }
-	  else if (TREE_CODE (arg) == COMPONENT_REF
-		   && (TREE_CODE (TREE_TYPE (TREE_OPERAND (arg, 1)))
-		       == ARRAY_TYPE))
-	    {
-	      /* Use the type of the member array to determine the upper
-		 bound on the length of the array.  This may be overly
-		 optimistic if the array itself isn't NUL-terminated and
-		 the caller relies on the subsequent member to contain
-		 the NUL but that would only be considered valid if
-		 the array were the last member of a struct.
-		 Set *FLEXP to true if the array whose bound is being
-		 used is at the end of a struct.  */
-	      if (array_at_struct_end_p (arg))
-		*flexp = true;
-
-	      tree fld = TREE_OPERAND (arg, 1);
-
-	      tree optype = TREE_TYPE (fld);
-
-	      /* Determine the "innermost" array type.  */
-	      while (TREE_CODE (optype) == ARRAY_TYPE
-		     && TREE_CODE (TREE_TYPE (optype)) == ARRAY_TYPE)
-		optype = TREE_TYPE (optype);
-
-	      /* Fail when the array bound is unknown or zero.  */
-	      val = TYPE_SIZE_UNIT (optype);
-	      if (!val || integer_zerop (val))
-		return false;
-	      val = fold_build2 (MINUS_EXPR, TREE_TYPE (val), val,
-				 integer_one_node);
-	      /* Set the minimum size to zero since the string in
-		 the array could have zero length.  */
-	      *minlen = ssize_int (0);
-	    }
-
-	  if (VAR_P (arg))
-	    {
-	      tree type = TREE_TYPE (arg);
-	      if (POINTER_TYPE_P (type))
-		type = TREE_TYPE (type);
-
-	      if (TREE_CODE (type) == ARRAY_TYPE)
-		{
-		  val = TYPE_SIZE_UNIT (type);
-		  if (!val
-		      || TREE_CODE (val) != INTEGER_CST
-		      || integer_zerop (val))
-		    return false;
-		  val = wide_int_to_tree (TREE_TYPE (val),
-					  wi::sub (wi::to_wide (val), 1));
-		  /* Set the minimum size to zero since the string in
-		     the array could have zero length.  */
-		  *minlen = ssize_int (0);
-		}
-	    }
-	}
-
-      if (!val)
-	return false;
-
-      if (!*minlen
-	  || (type > 0
-	      && TREE_CODE (*minlen) == INTEGER_CST
-	      && TREE_CODE (val) == INTEGER_CST
-	      && tree_int_cst_lt (val, *minlen)))
-	*minlen = val;
-
-      if (*maxlen)
-	{
-	  if (type > 0)
-	    {
-	      if (TREE_CODE (*maxlen) != INTEGER_CST
-		  || TREE_CODE (val) != INTEGER_CST)
-		return false;
-
-	      if (tree_int_cst_lt (*maxlen, val))
-		*maxlen = val;
-	      return true;
-	    }
-	  else if (simple_cst_equal (val, *maxlen) != 1)
-	    return false;
-	}
-
-      *maxlen = val;
-      return true;
-    }
+    return get_range_strlen_tree (arg, length, visited, type, fuzzy, flexp,
+				  eltsize, nonstr);
 
   /* If ARG is registered for SSA update we cannot look at its defining
      statement.  */
@@ -1485,8 +1509,11 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
   if (!bitmap_set_bit (*visited, SSA_NAME_VERSION (arg)))
     return true;
 
-  var = arg;
-  def_stmt = SSA_NAME_DEF_STMT (var);
+  tree var = arg;
+  gimple *def_stmt = SSA_NAME_DEF_STMT (var);
+
+  /* The minimum and maximum length.  */
+  tree *const maxlen = length + 1;
 
   switch (gimple_code (def_stmt))
     {
@@ -1550,7 +1577,6 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
         return false;
     }
 }
-
 /* Determine the minimum and maximum value or string length that ARG
    refers to and store each in the first two elements of MINMAXLEN.
    For expressions that point to strings of unknown lengths that are
