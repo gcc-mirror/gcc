@@ -1,3 +1,8 @@
+2018-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/67974
+	* gcc.target/x86_64/abi/avx/asm-support-darwin.s: New.
+
 2018-12-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
