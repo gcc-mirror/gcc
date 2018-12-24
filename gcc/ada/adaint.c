@@ -3174,9 +3174,13 @@ __gnat_lwp_self (void)
 #endif
 
 #if defined (__APPLE__)
-#include <mach/thread_info.h>
-#include <mach/mach_init.h>
-#include <mach/thread_act.h>
+# if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1060
+#  include <mach/thread_info.h>
+#  include <mach/mach_init.h>
+#  include <mach/thread_act.h>
+# else
+#  include <pthread.h>
+# endif
 
 /* System-wide thread identifier.  Note it could be truncated on 32 bit
    hosts.
@@ -3184,6 +3188,7 @@ __gnat_lwp_self (void)
 void *
 __gnat_lwp_self (void)
 {
+#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1060
   thread_identifier_info_data_t data;
   mach_msg_type_number_t count = THREAD_IDENTIFIER_INFO_COUNT;
   kern_return_t kret;
@@ -3194,6 +3199,9 @@ __gnat_lwp_self (void)
     return (void *)(uintptr_t)data.thread_id;
   else
     return 0;
+#else
+  return (void *)pthread_mach_thread_np (pthread_self ());
+#endif
 }
 #endif
 
