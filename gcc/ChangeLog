@@ -1,3 +1,10 @@
+2018-12-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-symtab.c (lto_symtab_merge_decls_2): Do not report ODR violations
+	for method whose basetype was already reported.
+	* ipa-devirt.c (odr_type_violation_reported_p): New.
+	* ipa-utils.h (odr_type_violation_reported_p): Declare.
+
 2018-12-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* configure.ac (dwarf2_debug_line): Check for the debug_line
