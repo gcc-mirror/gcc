@@ -1,3 +1,20 @@
+2018-12-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/45513
+	PR fortran/81509
+	* check.c: Rename function gfc_check_iand to gfc_check_iand_ieor_ior.
+	* check.c (boz_args_check): New function.  Check I and J not both BOZ.
+	(gfc_check_dshift,gfc_check_iand_ieor_ior, gfc_check_ishft,
+	 gfc_check_and, gfc_check_merge_bits): Use it.
+	* check.c (gfc_check_iand_ieor_ior): Force conversion of BOZ to kind
+	type of other agrument.  Remove silly GNU extension.
+	(gfc_check_ieor, gfc_check_ior): Delete now unused functions.
+	* intrinsic.c (add_functions): Use gfc_check_iand_ieor_ior. Wrap long
+	line.
+	* intrinsic.h: Rename gfc_check_iand to gfc_check_iand_ieor_ior.
+	Delete prototype for bool gfc_check_ieor and gfc_check_ior
+	* intrinsic.texi: Update documentation for boz-literal-constant.
+
 2018-12-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/77703
