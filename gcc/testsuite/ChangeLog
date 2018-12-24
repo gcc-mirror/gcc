@@ -1,5 +1,10 @@
 2018-12-24  Iain Sandoe  <iain@sandoe.co.uk>
 
+	PR testsuite/67974
+	* gcc.target/x86_64/abi/avx/asm-support-darwin.s: New.
+
+2018-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* c-c++-common/ident-0a.c: Skip for powerpc-darwin.
 	* c-c++-common/ident-0b.c: Likewise.
 	* c-c++-common/ident-1a.c: Likewise.
