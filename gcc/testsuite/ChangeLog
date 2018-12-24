@@ -1,3 +1,12 @@
+2018-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-c++-common/ident-0a.c: Skip for powerpc-darwin.
+	* c-c++-common/ident-0b.c: Likewise.
+	* c-c++-common/ident-1a.c: Likewise.
+	* c-c++-common/ident-1b.c: Likewise.
+	* c-c++-common/ident-2a.c: Likewise.
+	* c-c++-common/ident-2b.c: Likewise.
+
 2018-12-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/77703
