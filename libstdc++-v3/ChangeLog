@@ -1,3 +1,12 @@
+2018-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2018-08-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR libstdc++/70694
+	* configure.host (OPT_LDFLAGS): Don't append
+	-fvisibility-inlines-hidden for newer Darwin.
+
 2018-12-06  Release Manager
 
 	* GCC 7.4.0 released.
