@@ -1,3 +1,9 @@
+2018-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.ac (dwarf2_debug_line): Check for the debug_line
+	section using otool when there’s no objdump available.
+	* configure: Regenerate.
+
 2018-12-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-utils.c (ipa_merge_profiles): Fix updating of fnsummary;
