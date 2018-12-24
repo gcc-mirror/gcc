@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { xfail arm*-*-gnueabi arm*-*-gnueabihf } }
 program foo
    use ieee_arithmetic
    use iso_fortran_env
