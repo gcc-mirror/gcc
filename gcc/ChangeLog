@@ -1,3 +1,11 @@
+2018-12-24  Martin Sebor  <msebor@redhat.com>
+
+	* gimple-fold.c (get_range_strlen_tree): Factored out of
+	get_range_strlen.  Minor comment updates/additions.  Assert
+	argument is not a simple SSA_NAME.
+	(get_range_strlen): Call get_range_strlen_tree as appropriate.
+	Minor comment updates/additions.
+
 2018-12-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-devirt.c (dump_targets): Cap number of targets printed.
