@@ -1,3 +1,9 @@
+2018-12-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-utils.c (ipa_merge_profiles): Fix updating of fnsummary;
+	also handle rescaling of mismatched profiles.
+	* ipa-fnsummary.c (analyze_function): Handle speculative edges.
+
 2018-12-23  Martin Sebor  <msebor@redhat.com>
 	    Jeff Law  <law@redhat.com>
 
