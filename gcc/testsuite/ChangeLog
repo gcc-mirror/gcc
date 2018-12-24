@@ -1,6 +1,24 @@
 2018-12-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline
+	2018-08-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/lto/pr85248_0.c (test_alias):
+	Stringify __USER_LABEL_PREFIX__.
+	(test_noreturn): Likewise.
+
+	2018-08-16  Iain Sandoe <iain@sandoe.co.uk>
+ 
+	* gcc.dg/memcmp-1.c (lib_memcmp): Apply __USER_LABEL_PREFIX__.
+	(lib_strncmp): Likewise.
+
+	2018-08-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/asan/pr81923.c: Stringify __USER_LABEL_PREFIX__.
+
+2018-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
 	2018-08-16  Iain Sandoe <iain@sandoe.co.uk>
 
 	PR testsuite/78544
