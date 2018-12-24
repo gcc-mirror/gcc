@@ -1,4 +1,12 @@
 2018-12-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c (dump_targets): Cap number of targets printed.
+	(dump_possible_polymorphic_call_targets): Add verbose parameter.
+	(ipa_devirt): Use it.
+	* ipa-utils.h (dump_possible_polymorphic_call_targets): Add verbose
+	parametrs.
+
+2018-12-24  Jan Hubicka  <hubicka@ucw.cz>
 	
 	PR lto/88140
 	* tree.c (fld_simplified_type): Temporarily disable array
