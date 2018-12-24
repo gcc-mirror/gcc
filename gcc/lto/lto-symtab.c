@@ -697,10 +697,21 @@ lto_symtab_merge_decls_2 (symtab_node *first, bool diagnosed_p)
 	{
 	  bool diag = false;
 	  if (level & 2)
-	    diag = warning_at (DECL_SOURCE_LOCATION (decl),
-			       OPT_Wodr,
-			       "%qD violates the C++ One Definition Rule",
-			       decl);
+	    {
+	      /* Silence warning for method and variables which belong
+	         to types which already have ODR violation reported.  Complaining
+		 once is enough.  */
+	      if (TREE_CODE (decl) != FUNCTION_DECL
+		  || TREE_CODE (TREE_TYPE (decl)) != METHOD_TYPE
+		  || !TYPE_METHOD_BASETYPE (TREE_TYPE (decl))
+		  || !odr_type_p (TYPE_METHOD_BASETYPE (TREE_TYPE (decl)))
+		  || !odr_type_violation_reported_p 
+			(TYPE_METHOD_BASETYPE (TREE_TYPE (decl))))
+		diag = warning_at (DECL_SOURCE_LOCATION (decl),
+				   OPT_Wodr,
+				   "%qD violates the C++ One Definition Rule",
+				   decl);
+	    }
 	  if (!diag && (level & 1))
 	    diag = warning_at (DECL_SOURCE_LOCATION (decl),
 			       OPT_Wlto_type_mismatch,

@@ -2152,6 +2152,12 @@ get_odr_type (tree type, bool insert)
   return val;
 }
 
+bool
+odr_type_violation_reported_p (tree type)
+{
+  return get_odr_type (type, false)->odr_violated;
+}
+
 /* Add TYPE od ODR type hash.  */
 
 void
