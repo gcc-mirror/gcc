@@ -1007,7 +1007,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define VALID_AVX512F_SCALAR_MODE(MODE)					\
   ((MODE) == DImode || (MODE) == DFmode || (MODE) == SImode		\
-   || (MODE) == SFmode)
+   || (MODE) == SFmode							\
+   || (TARGET_AVX512FP16 && ((MODE) == HImode || (MODE) == HFmode)))
 
 #define VALID_AVX512F_REG_MODE(MODE)					\
   ((MODE) == V8DImode || (MODE) == V8DFmode || (MODE) == V64QImode	\
@@ -1046,7 +1047,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define VALID_FP_MODE_P(MODE)						\
   ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode		\
-   || (MODE) == SCmode || (MODE) == DCmode || (MODE) == XCmode)		\
+   || (MODE) == SCmode || (MODE) == DCmode || (MODE) == XCmode)
 
 #define VALID_INT_MODE_P(MODE)						\
   ((MODE) == QImode || (MODE) == HImode					\
@@ -1078,6 +1079,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define SSE_FLOAT_MODE_P(MODE) \
   ((TARGET_SSE && (MODE) == SFmode) || (TARGET_SSE2 && (MODE) == DFmode))
+
+#define SSE_FLOAT_MODE_SSEMATH_OR_HF_P(MODE)				\
+  ((SSE_FLOAT_MODE_P (MODE) && TARGET_SSE_MATH)				\
+   || (TARGET_AVX512FP16 && (MODE) == HFmode))
 
 #define FMA4_VEC_FLOAT_MODE_P(MODE) \
   (TARGET_FMA4 && ((MODE) == V4SFmode || (MODE) == V2DFmode \
@@ -2295,7 +2300,7 @@ constexpr wide_int_bitmask PTA_TIGERLAKE = PTA_ICELAKE_CLIENT | PTA_MOVDIRI
 constexpr wide_int_bitmask PTA_SAPPHIRERAPIDS = PTA_COOPERLAKE | PTA_MOVDIRI
   | PTA_MOVDIR64B | PTA_AVX512VP2INTERSECT | PTA_ENQCMD | PTA_CLDEMOTE
   | PTA_PTWRITE | PTA_WAITPKG | PTA_SERIALIZE | PTA_TSXLDTRK | PTA_AMX_TILE
-  | PTA_AMX_INT8 | PTA_AMX_BF16 | PTA_UINTR | PTA_AVXVNNI;
+  | PTA_AMX_INT8 | PTA_AMX_BF16 | PTA_UINTR | PTA_AVXVNNI | PTA_AVX512FP16;
 constexpr wide_int_bitmask PTA_KNL = PTA_BROADWELL | PTA_AVX512PF
   | PTA_AVX512ER | PTA_AVX512F | PTA_AVX512CD | PTA_PREFETCHWT1;
 constexpr wide_int_bitmask PTA_BONNELL = PTA_CORE2 | PTA_MOVBE;

@@ -125,6 +125,7 @@ BDESC_VERIFYS (IX86_BUILTIN_MAX,
 /* Table for the ix86 builtin non-function types.  */
 static GTY(()) tree ix86_builtin_type_tab[(int) IX86_BT_LAST_CPTR + 1];
 
+tree ix86_float16_type_node = NULL_TREE;
 /* Retrieve an element from the above table, building some of
    the types lazily.  */
 
@@ -1344,6 +1345,26 @@ ix86_init_builtins_va_builtins_abi (void)
 }
 
 static void
+ix86_register_float16_builtin_type (void)
+{
+  /* Provide the _Float16 type and float16_type_node if needed so that
+     it can be used in AVX512FP16 intrinsics and builtins.  */
+  if (!float16_type_node)
+    {
+      ix86_float16_type_node = make_node (REAL_TYPE);
+      TYPE_PRECISION (ix86_float16_type_node) = 16;
+      SET_TYPE_MODE (ix86_float16_type_node, HFmode);
+      layout_type (ix86_float16_type_node);
+    }
+  else
+    ix86_float16_type_node = float16_type_node;
+
+  if (!maybe_get_identifier ("_Float16") && TARGET_SSE2)
+    lang_hooks.types.register_builtin_type (ix86_float16_type_node,
+					    "_Float16");
+}
+
+static void
 ix86_init_builtin_types (void)
 {
   tree float80_type_node, const_string_type_node;
@@ -1370,6 +1391,8 @@ ix86_init_builtin_types (void)
      _Float128, so we only need to register the __float128 name for
      it.  */
   lang_hooks.types.register_builtin_type (float128_type_node, "__float128");
+
+  ix86_register_float16_builtin_type ();
 
   const_string_type_node
     = build_pointer_type (build_qualified_type

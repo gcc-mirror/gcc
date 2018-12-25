@@ -1163,6 +1163,14 @@ as 32-bit precision. This may lead to inconsistent behavior between software
 emulation and AVX512-FP16 instructions. Using @option{-fexcess-precision=16}
 will force round back after each operation.
 
+Using @option{-mavx512fp16} will generate AVX512-FP16 instructions instead of
+software emulation. The default behavior of @code{FLT_EVAL_METHOD} is to round
+after each operation. The same is true with @option{-fexcess-precision=standard}
+and @option{-mfpmath=sse}. If there is no @option{-mfpmath=sse},
+@option{-fexcess-precision=standard} alone does the same thing as before,
+It is useful for code that does not have @code{_Float16} and runs on the x87
+FPU.
+
 @node Decimal Float
 @section Decimal Floating Types
 @cindex decimal floating types
