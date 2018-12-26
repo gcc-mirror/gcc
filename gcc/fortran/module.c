@@ -5180,7 +5180,13 @@ read_module (void)
 	      if (p->u.pointer == NULL)
 		associate_integer_pointer (p, c);
 	      mio_pool_string (&comp_name);
-	      gcc_assert (comp_name == c->name);
+	      if (comp_name != c->name)
+		{
+		  gfc_fatal_error ("Mismatch in components of derived type "
+				   "%qs from %qs at %C: expecting %qs, "
+				   "but got %qs", sym->name, sym->module,
+				   c->name, comp_name);
+		}
 	      skip_list (1); /* component end.  */
 	    }
 	  mio_rparen (); /* component list closing.  */
