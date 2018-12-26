@@ -1,3 +1,9 @@
+2018-12-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85407
+	* module.c (read_module): Convert assert to fatal error to give a
+	sensible error message.
+
 2018-12-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/45513
