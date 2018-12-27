@@ -646,6 +646,17 @@ findstackmaps (struct _Unwind_Context *context, _Unwind_Ptr *ip, _Unwind_Ptr *sp
   _sleb128_t index;
   int size;
 
+#ifdef __ARM_EABI_UNWINDER__
+  {
+    _Unwind_Control_Block *ucbp;
+    ucbp = (_Unwind_Control_Block *) _Unwind_GetGR (context, 12);
+    if (*ucbp->pr_cache.ehtp & (1u << 31))
+      // The "compact" model is used, with one of the predefined
+      // personality functions. It doesn't have standard LSDA.
+      return NOTFOUND_OK;
+  }
+#endif
+
   language_specific_data = (const unsigned char *)
     _Unwind_GetLanguageSpecificData (context);
 
