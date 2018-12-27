@@ -2869,9 +2869,16 @@ gfc_check_init_expr (gfc_expr *e)
 		break;
 
 	      case AS_DEFERRED:
-		gfc_error ("Deferred array %qs at %L is not permitted "
-			   "in an initialization expression",
-			   e->symtree->n.sym->name, &e->where);
+		if (!e->symtree->n.sym->attr.allocatable
+		    && !e->symtree->n.sym->attr.pointer
+		    && e->symtree->n.sym->attr.dummy)
+		  gfc_error ("Assumed-shape array %qs at %L is not permitted "
+			     "in an initialization expression",
+			     e->symtree->n.sym->name, &e->where);
+		else
+		  gfc_error ("Deferred array %qs at %L is not permitted "
+			     "in an initialization expression",
+			     e->symtree->n.sym->name, &e->where);
 		break;
 
 	      case AS_EXPLICIT:
