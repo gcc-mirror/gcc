@@ -1,3 +1,10 @@
+2018-12-27  Martin Liska  <mliska@suse.cz>
+
+  PR sanitizer/86229
+	* asan/asan_errors.cc (ErrorAllocTypeMismatch::Print): Cherry
+	pick rL350085.
+	* asan/asan_errors.h (struct ErrorAllocTypeMismatch): Likewise.
+
 2018-11-09  Martin Liska  <mliska@suse.cz>
 
 	* LOCAL_PATCHES: Include one local patch.
