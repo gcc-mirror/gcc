@@ -1,3 +1,12 @@
+2018-12-27  Martin Liska  <mliska@suse.cz>
+
+	PR c++/88263
+	* decl2.c (get_local_tls_init_fn): Add location_t argument and
+	use it.
+	(get_tls_init_fn): Call it with location of variable for which
+	we'll need to create tls_init function.
+	(handle_tls_init): Likewise.
+
 2018-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/86524
