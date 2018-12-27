@@ -1,5 +1,21 @@
 2018-12-27  Martin Liska  <mliska@suse.cz>
 
+	PR gcov-profile/88225
+	* gcov.c(source_info::get_functions_at_location):
+	Use newly added line_to_function_map.
+	(source_info::add_function): New.
+	(output_json_intermediate_file): Use a pointer return
+	type for get_functions_at_location.
+	(process_all_functions): Use add_function instead
+	of direct push to a s->functions container.
+	(release_structures): Release ident_to_fn.
+	(read_graph_file): Register function into ident_to_fn.
+	(read_count_file): Use the map.
+	(output_lines): Handle pointer return type of
+	get_functions_at_location.
+
+2018-12-27  Martin Liska  <mliska@suse.cz>
+
 	* builtins.c (expand_movstr): Compare with RETURN_BEGIN.
 	* expr.c (move_by_pieces): Likewise.
 	(store_by_pieces): Likewise.
