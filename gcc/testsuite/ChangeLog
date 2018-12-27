@@ -1,3 +1,7 @@
+2018-12-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/devirt-53.C: New testcase.
+
 2018-12-27  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/81027

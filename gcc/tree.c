@@ -6191,7 +6191,12 @@ free_lang_data (void)
   /* If we are the LTO frontend we have freed lang-specific data already.  */
   if (in_lto_p
       || (!flag_generate_lto && !flag_generate_offload))
-    return 0;
+    {
+      /* Rebuild type inheritance graph even when not doing LTO to get
+	 consistent profile data.  */
+      rebuild_type_inheritance_graph ();
+      return 0;
+    }
 
   fld_incomplete_types = new hash_map<tree, tree>;
   fld_simplified_types = new hash_map<tree, tree>;
