@@ -1,3 +1,12 @@
+2018-12-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c (polymorphic_call_target_d): Add n_odr_types.
+	(polymorphic_call_target_hasher::hash): Hash it.
+	(polymorphic_call_target_hasher::equal): Compare it.
+	(possible_polymorphic_call_targets): Set it.
+	* tree.c (free_lang_data): Rebuild type inheritance graph even on
+	non-LTO path.
+
 2018-12-27  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/88225
