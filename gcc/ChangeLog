@@ -1,3 +1,10 @@
+2018-12-27  Martin Liska  <mliska@suse.cz>
+
+	* builtins.c (expand_movstr): Compare with RETURN_BEGIN.
+	* expr.c (move_by_pieces): Likewise.
+	(store_by_pieces): Likewise.
+	(store_expr): Fix GNU coding style.
+
 2018-12-26  Andrew Pinski  <apinski@marvell.com>
 
 	* config/aarch64/aarch64-cores.def (octeontx): New.

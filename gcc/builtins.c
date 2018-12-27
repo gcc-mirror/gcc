@@ -3939,7 +3939,8 @@ expand_movstr (tree dest, tree src, rtx target, memop_ret retmode)
       dest_mem = replace_equiv_address (dest_mem, target);
     }
 
-  create_output_operand (&ops[0], retmode ? target : NULL_RTX, Pmode);
+  create_output_operand (&ops[0],
+			 retmode != RETURN_BEGIN ? target : NULL_RTX, Pmode);
   create_fixed_operand (&ops[1], dest_mem);
   create_fixed_operand (&ops[2], src_mem);
   if (!maybe_expand_insn (targetm.code_for_movstr, 3, ops))
