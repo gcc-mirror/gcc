@@ -444,6 +444,9 @@ PERSONALITY_FUNCTION (int version,
   switch (state & _US_ACTION_MASK)
     {
     case _US_VIRTUAL_UNWIND_FRAME:
+      if (state & _UA_FORCE_UNWIND)
+        /* We are called from _Unwind_Backtrace.  No handler to run.  */
+        CONTINUE_UNWINDING;
       actions = _UA_SEARCH_PHASE;
       break;
 
