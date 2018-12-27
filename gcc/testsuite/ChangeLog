@@ -1,3 +1,8 @@
+2018-12-27  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* libgomp.fortran/aligned1.f03: Fix invalid code that now causes
+	an error after r267415.
+
 2018-12-27  Martin Liska  <mliska@suse.cz>
 
 	PR c++/88263
