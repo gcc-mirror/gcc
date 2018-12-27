@@ -1,3 +1,12 @@
+2018-12-26  Andrew Pinski  <apinski@marvell.com>
+
+	* config/aarch64/aarch64-cores.def (octeontx): New.
+	(octeontx81): Likewise.
+	(octeontx83): Likewise.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi (AArch64 Options) [mtune]: Add octeontx, octeontx81
+	and octeontx83.
+
 2018-12-24  Martin Sebor  <msebor@redhat.com>
 
 	* gimple-fold.c (get_range_strlen_tree): Factored out of
