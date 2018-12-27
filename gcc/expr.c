@@ -1220,7 +1220,7 @@ move_by_pieces (rtx to, rtx from, unsigned HOST_WIDE_INT len,
 
   data.run ();
 
-  if (retmode)
+  if (retmode != RETURN_BEGIN)
     return data.finish_retmode (retmode);
   else
     return to;
@@ -1388,7 +1388,7 @@ store_by_pieces (rtx to, unsigned HOST_WIDE_INT len,
   store_by_pieces_d data (to, constfun, constfundata, len, align);
   data.run ();
 
-  if (retmode)
+  if (retmode != RETURN_BEGIN)
     return data.finish_retmode (retmode);
   else
     return to;
@@ -5609,13 +5609,13 @@ store_expr (tree exp, rtx target, int call_param_p,
 
       dest_mem = target;
 
+      memop_ret retmode = exp_len > str_copy_len ? RETURN_END : RETURN_BEGIN;
       dest_mem = store_by_pieces (dest_mem,
 				  str_copy_len, builtin_strncpy_read_str,
 				  CONST_CAST (char *,
 					      TREE_STRING_POINTER (str)),
 				  MEM_ALIGN (target), false,
-				  (exp_len > str_copy_len ? RETURN_END :
-				   RETURN_BEGIN));
+				  retmode);
       if (exp_len > str_copy_len)
 	clear_storage (adjust_address (dest_mem, BLKmode, 0),
 		       GEN_INT (exp_len - str_copy_len),
