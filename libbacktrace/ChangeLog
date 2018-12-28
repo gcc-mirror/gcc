@@ -1,3 +1,8 @@
+2018-12-28  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (build_address_map): Simplify by removing local variable
+	abbrevs.
+
 2018-12-28  Ian Lance Taylor  <iant@golang.org>
 	    Tom de Vries  <tdevries@suse.de>
 
