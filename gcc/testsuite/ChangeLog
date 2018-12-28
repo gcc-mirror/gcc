@@ -1,3 +1,8 @@
+2018-12-28  David Edelsohn  <dje.gcc@gmail.com>
+
+	* c-c++-common/ident-1b.c: XFAIL AIX and Darwin.
+	* c-c++-common/ident-2b.c: Likewise.
+
 2018-12-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/x86_64/abi/asm-support-darwin.s: Remove .file
