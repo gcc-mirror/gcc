@@ -1,3 +1,9 @@
+2018-12-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/x86_64/abi/asm-support-darwin.s: Remove .file
+	directive.
+	* gcc.target/x86_64/abi/asm-support.S: Likewise.
+
 2018-12-27  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/ipa/devirt-53.C: New testcase.
