@@ -1,4 +1,9 @@
 2018-12-28  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-expand.c (expand_omp_target): Restructure OpenACC vs. OpenMP
+	code paths.  Update for libgomp OpenACC entry points change.
+
+2018-12-28  Thomas Schwinge  <thomas@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 
 	* gimplify.c (gimplify_scan_omp_clauses): Fix known_eq typo/bug.

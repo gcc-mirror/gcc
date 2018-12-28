@@ -197,6 +197,18 @@ enum gomp_map_kind
 /* Internal to libgomp.  */
 #define GOMP_TARGET_FLAG_UPDATE		(1U << 31)
 
+
+/* OpenACC construct flags.  */
+
+/* Force host fallback execution.  */
+#define GOACC_FLAG_HOST_FALLBACK	(1 << 0)
+
+/* For legacy reasons, in the ABI, the GOACC_FLAGs are encoded as an inverted
+   bitmask.  */
+#define GOACC_FLAGS_MARSHAL_OP		BIT_NOT_EXPR
+#define GOACC_FLAGS_UNMARSHAL(X)	(~(X))
+
+
 /* Versions of libgomp and device-specific plugins.  GOMP_VERSION
    should be incremented whenever an ABI-incompatible change is introduced
    to the plugin interface defined in libgomp/libgomp.h.  */
