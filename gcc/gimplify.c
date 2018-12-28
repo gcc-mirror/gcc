@@ -8719,7 +8719,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			      o2 = 0;
 			    o2 += bits_to_bytes_round_down (bitpos2);
 			    if (maybe_lt (o1, o2)
-				|| (known_eq (o1, 2)
+				|| (known_eq (o1, o2)
 				    && maybe_lt (bitpos, bitpos2)))
 			      {
 				if (ptr)
