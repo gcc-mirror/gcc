@@ -3,6 +3,9 @@
 	* gcc.target/x86_64/abi/asm-support-darwin.s: Remove .file
 	directive.
 	* gcc.target/x86_64/abi/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx/asm-support-darwin.s: Likewise.
+	* gcc.target/x86_64/abi/avx/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx512f/asm-support.S: Likewise.
 
 2018-12-27  Jan Hubicka  <hubicka@ucw.cz>
 
