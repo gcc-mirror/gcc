@@ -1,4 +1,10 @@
 2018-12-28  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-parallel.c (GOACC_parallel_keyed, GOACC_parallel)
+	(GOACC_data_start, GOACC_enter_exit_data, GOACC_update)
+	(GOACC_declare): Redefine the "device" argument to "flags".
+
+2018-12-28  Thomas Schwinge  <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
 	* target.c (struct gomp_coalesce_chunk): New structure.
