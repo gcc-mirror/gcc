@@ -1,3 +1,7 @@
+2018-12-28  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (build_address_map): Free addrs vector upon failure.
+
 2018-12-14  Tom de Vries  <tdevries@suse.de>
 
 	PR testsuite/88491

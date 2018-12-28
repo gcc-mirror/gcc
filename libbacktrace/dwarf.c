@@ -1552,6 +1552,11 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
  fail:
   free_abbrevs (state, &abbrevs, error_callback, data);
   free_unit_addrs_vector (state, addrs, error_callback, data);
+  if (addrs->count > 0)
+    {
+      backtrace_vector_free (state, &addrs->vec, error_callback, data);
+      addrs->count = 0;
+    }
   return 0;
 }
 
