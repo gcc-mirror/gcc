@@ -1,3 +1,8 @@
+2018-12-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/81984
+	* intrinsics/string_intrinsics_inc.c: Placate the sanitizer.
+
 2018-12-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/69121
