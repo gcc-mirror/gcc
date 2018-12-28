@@ -923,21 +923,6 @@ add_unit_addr (struct backtrace_state *state, uintptr_t base_address,
   return 1;
 }
 
-/* Free a unit address vector.  */
-
-static void
-free_unit_addrs_vector (struct backtrace_state *state,
-			struct unit_addrs_vector *vec,
-			backtrace_error_callback error_callback, void *data)
-{
-  struct unit_addrs *addrs;
-  size_t i;
-
-  addrs = (struct unit_addrs *) vec->vec.base;
-  for (i = 0; i < vec->count; ++i)
-    free_abbrevs (state, &addrs[i].u->abbrevs, error_callback, data);
-}
-
 /* Compare unit_addrs for qsort.  When ranges are nested, make the
    smallest one sort last.  */
 
@@ -1448,6 +1433,10 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
 {
   struct dwarf_buf info;
   struct abbrevs abbrevs;
+  struct backtrace_vector units;
+  size_t units_count;
+  size_t i;
+  struct unit **pu;
 
   memset (&addrs->vec, 0, sizeof addrs->vec);
   addrs->count = 0;
@@ -1464,6 +1453,9 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
   info.error_callback = error_callback;
   info.data = data;
   info.reported_underflow = 0;
+
+  memset (&units, 0, sizeof units);
+  units_count = 0;
 
   memset (&abbrevs, 0, sizeof abbrevs);
   while (info.left > 0)
@@ -1503,10 +1495,20 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
 
       addrsize = read_byte (&unit_buf);
 
+      pu = ((struct unit **)
+	    backtrace_vector_grow (state, sizeof (struct unit *),
+				   error_callback, data, &units));
+      if (pu == NULL)
+	  goto fail;
+
       u = ((struct unit *)
 	   backtrace_alloc (state, sizeof *u, error_callback, data));
       if (u == NULL)
 	goto fail;
+
+      *pu = u;
+      ++units_count;
+
       u->unit_data = unit_buf.buf;
       u->unit_data_len = unit_buf.left;
       u->unit_data_offset = unit_buf.buf - unit_data_start;
@@ -1531,27 +1533,33 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
 				dwarf_ranges, dwarf_ranges_size,
 				is_bigendian, error_callback, data,
 				u, addrs))
-	{
-	  free_abbrevs (state, &u->abbrevs, error_callback, data);
-	  backtrace_free (state, u, sizeof *u, error_callback, data);
-	  goto fail;
-	}
+	goto fail;
 
       if (unit_buf.reported_underflow)
-	{
-	  free_abbrevs (state, &u->abbrevs, error_callback, data);
-	  backtrace_free (state, u, sizeof *u, error_callback, data);
-	  goto fail;
-	}
+	goto fail;
     }
   if (info.reported_underflow)
     goto fail;
 
+  // We only kept the list of units to free them on failure.  On
+  // success the units are retained, pointed to by the entries in
+  // addrs.
+  backtrace_vector_free (state, &units, error_callback, data);
+
   return 1;
 
  fail:
+  if (units_count > 0)
+    {
+      pu = (struct unit **) units.base;
+      for (i = 0; i < units_count; i++)
+	{
+	  free_abbrevs (state, &pu[i]->abbrevs, error_callback, data);
+	  backtrace_free (state, pu[i], sizeof **pu, error_callback, data);
+	}
+      backtrace_vector_free (state, &units, error_callback, data);
+    }
   free_abbrevs (state, &abbrevs, error_callback, data);
-  free_unit_addrs_vector (state, addrs, error_callback, data);
   if (addrs->count > 0)
     {
       backtrace_vector_free (state, &addrs->vec, error_callback, data);
