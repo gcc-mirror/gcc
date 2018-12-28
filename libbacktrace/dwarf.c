@@ -1436,9 +1436,11 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
   size_t units_count;
   size_t i;
   struct unit **pu;
+  size_t prev_addrs_count;
 
   memset (&addrs->vec, 0, sizeof addrs->vec);
   addrs->count = 0;
+  prev_addrs_count = 0;
 
   /* Read through the .debug_info section.  FIXME: Should we use the
      .debug_aranges section?  gdb and addr2line don't use it, but I'm
@@ -1534,6 +1536,18 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
 
       if (unit_buf.reported_underflow)
 	goto fail;
+
+      if (addrs->count > prev_addrs_count)
+	prev_addrs_count = addrs->count;
+      else
+	{
+	  /* Unit was not used; remove it from the vector.  */
+	  --units_count;
+	  units.size -= sizeof (u);
+	  units.alc += sizeof (u);
+	  free_abbrevs (state, &u->abbrevs, error_callback, data);
+	  backtrace_free (state, u, sizeof *u, error_callback, data);
+	}
     }
   if (info.reported_underflow)
     goto fail;
