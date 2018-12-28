@@ -87,6 +87,14 @@ compare_string (gfc_charlen_type len1, const CHARTYPE *s1,
   gfc_charlen_type len;
   int res;
 
+  /* Placate the sanitizer.  */
+  if (!s1 && !s2)
+    return 0;
+  if (!s1)
+    return -1;
+  if (!s2)
+    return 1;
+
   res = MEMCMP (s1, s2, ((len1 < len2) ? len1 : len2));
   if (res != 0)
     return res;
