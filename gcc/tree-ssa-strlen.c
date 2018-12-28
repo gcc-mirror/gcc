@@ -2114,6 +2114,13 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
       if (wi::to_wide (dstsize) != cntrange[1])
 	return false;
 
+      /* Avoid warning for strncpy(a, b, N) calls where the following
+	 equalities hold:
+	   N == sizeof a && N == sizeof b */
+      if (tree srcsize = compute_objsize (src, 1))
+	if (wi::to_wide (srcsize) == cntrange[1])
+	  return false;
+
       if (cntrange[0] == cntrange[1])
 	return warning_at (callloc, OPT_Wstringop_truncation,
 			   "%G%qD specified bound %E equals destination size",
