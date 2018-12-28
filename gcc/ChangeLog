@@ -1,3 +1,8 @@
+2018-12-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (ADDITIONAL_REGISTER_NAMES): Add
+	sil, dil, bpl and spl aliases.
+
 2018-12-28  Martin Sebor  <msebor@redhat.com>
 
 	* tree-ssa-strlen.c (maybe_diag_stxncpy_trunc): Avoid
@@ -71,7 +76,7 @@
 	parametrs.
 
 2018-12-24  Jan Hubicka  <hubicka@ucw.cz>
-	
+
 	PR lto/88140
 	* tree.c (fld_simplified_type): Temporarily disable array
 	simplification.
