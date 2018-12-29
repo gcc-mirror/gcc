@@ -1,3 +1,11 @@
+2018-12-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/82550
+	* trans_decl.c (gfc_get_symbol_decl): Procedure symbols that
+	have the 'used_in_submodule' attribute should be processed by
+	'gfc_get_extern_function_decl'.
+
 2018-12-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
