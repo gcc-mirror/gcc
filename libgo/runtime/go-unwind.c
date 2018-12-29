@@ -792,7 +792,9 @@ bool
 scanstackwithmap (void *gcw)
 {
   _Unwind_Reason_Code code;
+  runtime_xadd (&__go_runtime_in_callers, 1);
   code = _Unwind_Backtrace (scanstackwithmap_callback, gcw);
+  runtime_xadd (&__go_runtime_in_callers, -1);
   return code == _URC_END_OF_STACK;
 }
 

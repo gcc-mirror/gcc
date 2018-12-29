@@ -515,3 +515,9 @@ bool runtime_usestackmaps;
 
 bool probestackmaps(void)
   __asm__("runtime.probestackmaps");
+
+// This is set to non-zero when calling backtrace_full.  This is used
+// to avoid getting hanging on a recursive lock in dl_iterate_phdr on
+// older versions of glibc when a SIGPROF signal arrives while
+// collecting a backtrace.
+extern uint32 __go_runtime_in_callers;
