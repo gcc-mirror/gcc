@@ -1,3 +1,12 @@
+2018-12-29  John David Anglin  <danglin@gcc.gnu.org>
+
+        * config.gcc (hppa*64*-*-linux*): Add pa/t-pa to tmake_file.  Define
+        d_target_objs.
+	(hppa*-*-openbsd*): Likewise.
+	(hppa[12]*-*-hpux10*): Likewise.
+	(hppa*64*-*-hpux11*): Likewise.
+	(hppa[12]*-*-hpux11*): Likewise.
+
 2018-12-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/88586
