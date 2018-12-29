@@ -1,4 +1,12 @@
 2018-12-29  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.map: Expose subnormal functions in dynamic library.
+	* ieee/ieee_arithmetic.F90: Add support for IEEE_SUBNORMAL,
+	IEEE_POSITIVE_SUBNORMAL, and IEEE_NEGATIVE_SUBNORMAL.
+	* ieee/ieee_helper.c: Ditto.
+	* ieee/ieee_features.F90:  Add IEEE_SUBNORMAL.
+
+2018-12-29  Steven G. Kargl  <kargl@gcc.gnu.org>
       
 	PR fortran/88342
 	* ieee/ieee_arithmetic.F90: Prevent exceptions in IEEE_VALUE if

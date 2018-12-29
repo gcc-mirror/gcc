@@ -1,5 +1,10 @@
 2018-12-29  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	* expr.c (external_spec_function): Add ieee_support_subnormal to list
+	of IEEE inquiry functions.
+
+2018-12-29  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	* cpp.c (gfc_cpp_init):  Add pre-defined macros for INTEGER(1)
 	INTEGER(2), INTEGER(8) and INTEGER(16) if supported.  Add pre-defined
 	macros for REAL(10) and REAL(16) if available.
