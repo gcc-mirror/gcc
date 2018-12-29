@@ -1,3 +1,7 @@
+2018-12-29  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/critical-interrupt.c: New test.
+
 2018-12-29  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88342

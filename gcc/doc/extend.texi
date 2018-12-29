@@ -4978,8 +4978,12 @@ These function attributes are supported by the MSP430 back end:
 @cindex @code{critical} function attribute, MSP430
 Critical functions disable interrupts upon entry and restore the
 previous interrupt state upon exit.  Critical functions cannot also
-have the @code{naked} or @code{reentrant} attributes.  They can have
-the @code{interrupt} attribute.
+have the @code{naked}, @code{reentrant} or @code{interrupt} attributes.
+
+The MSP430 hardware ensures that interrupts are disabled on entry to
+@code{interrupt} functions, and restores the previous interrupt state
+on exit. The @code{critical} attribute is therefore redundant on
+@code{interrupt} functions.
 
 @item interrupt
 @cindex @code{interrupt} function attribute, MSP430
