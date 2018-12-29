@@ -1,7 +1,13 @@
+2018-12-29  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_attr): Warn when the critical and
+	interrupt function attributes are used together.
+	* gcc/doc/extend.texi: Update documentation on the critical attribute.
+
 2018-12-29  John David Anglin  <danglin@gcc.gnu.org>
 
-        * config.gcc (hppa*64*-*-linux*): Add pa/t-pa to tmake_file.  Define
-        d_target_objs.
+	* config.gcc (hppa*64*-*-linux*): Add pa/t-pa to tmake_file.  Define
+	d_target_objs.
 	(hppa*-*-openbsd*): Likewise.
 	(hppa[12]*-*-hpux10*): Likewise.
 	(hppa*64*-*-hpux11*): Likewise.
