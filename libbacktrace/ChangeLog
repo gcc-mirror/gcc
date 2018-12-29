@@ -1,3 +1,9 @@
+2018-12-29  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* Makefile.am (xcoff_%.c): Use an actual newline instead of \n
+	in sed pattern.
+	* Makefile.in: Regenerate.
+
 2018-12-28  Tom de Vries  <tdevries@suse.de>
 
 	* dwarf.c (build_address_map): Reuse unused units.

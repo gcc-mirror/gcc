@@ -1733,7 +1733,8 @@ uninstall-am:
 
 @NATIVE_TRUE@xcoff_%.c: xcoff.c
 @NATIVE_TRUE@	SEARCH='#error "Unknown BACKTRACE_XCOFF_SIZE"'; \
-@NATIVE_TRUE@	REPLACE='#undef BACKTRACE_XCOFF_SIZE\n#define BACKTRACE_XCOFF_SIZE'; \
+@NATIVE_TRUE@	REPLACE='#undef BACKTRACE_XCOFF_SIZE\
+@NATIVE_TRUE@	#define BACKTRACE_XCOFF_SIZE'; \
 @NATIVE_TRUE@	$(SED) "s/^$$SEARCH\$$/$$REPLACE $*/" \
 @NATIVE_TRUE@		$(srcdir)/xcoff.c \
 @NATIVE_TRUE@		> $@

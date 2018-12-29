@@ -105,7 +105,8 @@ libbacktrace_noformat_la_DEPENDENCIES = $(libbacktrace_noformat_la_LIBADD)
 
 xcoff_%.c: xcoff.c
 	SEARCH='#error "Unknown BACKTRACE_XCOFF_SIZE"'; \
-	REPLACE='#undef BACKTRACE_XCOFF_SIZE\n#define BACKTRACE_XCOFF_SIZE'; \
+	REPLACE='#undef BACKTRACE_XCOFF_SIZE\
+	#define BACKTRACE_XCOFF_SIZE'; \
 	$(SED) "s/^$$SEARCH\$$/$$REPLACE $*/" \
 		$(srcdir)/xcoff.c \
 		> $@
