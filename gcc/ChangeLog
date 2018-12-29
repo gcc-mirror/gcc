@@ -1,3 +1,10 @@
+2018-12-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/88586
+	* omp-low.c (lower_omp_task_reductions): Set DECL_CONTEXT on field
+	and ifield.  Update TYPE_ALIGN from alignment of field, ifield or
+	bfield.
+
 2018-12-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (ADDITIONAL_REGISTER_NAMES): Add
