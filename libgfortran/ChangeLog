@@ -1,3 +1,9 @@
+2018-12-29  Steven G. Kargl  <kargl@gcc.gnu.org>
+      
+	PR fortran/88342
+	* ieee/ieee_arithmetic.F90: Prevent exceptions in IEEE_VALUE if
+	-ffpe-trap=invalid or -ffpe-trap=overflow is used.
+
 2018-12-28  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/81984

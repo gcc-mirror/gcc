@@ -914,17 +914,39 @@ contains
 
     real(kind=4), intent(in) :: X
     type(IEEE_CLASS_TYPE), intent(in) :: CLASS
+    logical flag
 
     select case (CLASS%hidden)
       case (1)     ! IEEE_SIGNALING_NAN
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_get_halting_mode(ieee_invalid, flag)
+           call ieee_set_halting_mode(ieee_invalid, .false.)
+        end if
         res = -1
         res = sqrt(res)
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_set_halting_mode(ieee_invalid, flag)
+        end if
       case (2)     ! IEEE_QUIET_NAN
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_get_halting_mode(ieee_invalid, flag)
+           call ieee_set_halting_mode(ieee_invalid, .false.)
+        end if
         res = -1
         res = sqrt(res)
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_set_halting_mode(ieee_invalid, flag)
+        end if
       case (3)     ! IEEE_NEGATIVE_INF
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_get_halting_mode(ieee_overflow, flag)
+           call ieee_set_halting_mode(ieee_overflow, .false.)
+        end if
         res = huge(res)
         res = (-res) * res
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_set_halting_mode(ieee_overflow, flag)
+        end if
       case (4)     ! IEEE_NEGATIVE_NORMAL
         res = -42
       case (5)     ! IEEE_NEGATIVE_DENORMAL
@@ -941,8 +963,15 @@ contains
       case (9)     ! IEEE_POSITIVE_NORMAL
         res = 42
       case (10)    ! IEEE_POSITIVE_INF
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_get_halting_mode(ieee_overflow, flag)
+           call ieee_set_halting_mode(ieee_overflow, .false.)
+        end if
         res = huge(res)
         res = res * res
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_set_halting_mode(ieee_overflow, flag)
+        end if
       case default ! IEEE_OTHER_VALUE, should not happen
         res = 0
      end select
@@ -952,17 +981,39 @@ contains
 
     real(kind=8), intent(in) :: X
     type(IEEE_CLASS_TYPE), intent(in) :: CLASS
+    logical flag
 
     select case (CLASS%hidden)
       case (1)     ! IEEE_SIGNALING_NAN
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_get_halting_mode(ieee_invalid, flag)
+           call ieee_set_halting_mode(ieee_invalid, .false.)
+        end if
         res = -1
         res = sqrt(res)
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_set_halting_mode(ieee_invalid, flag)
+        end if
       case (2)     ! IEEE_QUIET_NAN
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_get_halting_mode(ieee_invalid, flag)
+           call ieee_set_halting_mode(ieee_invalid, .false.)
+        end if
         res = -1
         res = sqrt(res)
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_set_halting_mode(ieee_invalid, flag)
+        end if
       case (3)     ! IEEE_NEGATIVE_INF
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_get_halting_mode(ieee_overflow, flag)
+           call ieee_set_halting_mode(ieee_overflow, .false.)
+        end if
         res = huge(res)
         res = (-res) * res
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_set_halting_mode(ieee_overflow, flag)
+        end if
       case (4)     ! IEEE_NEGATIVE_NORMAL
         res = -42
       case (5)     ! IEEE_NEGATIVE_DENORMAL
@@ -979,8 +1030,15 @@ contains
       case (9)     ! IEEE_POSITIVE_NORMAL
         res = 42
       case (10)    ! IEEE_POSITIVE_INF
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_get_halting_mode(ieee_overflow, flag)
+           call ieee_set_halting_mode(ieee_overflow, .false.)
+        end if
         res = huge(res)
         res = res * res
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_set_halting_mode(ieee_overflow, flag)
+        end if
       case default ! IEEE_OTHER_VALUE, should not happen
         res = 0
      end select
@@ -991,17 +1049,39 @@ contains
 
     real(kind=10), intent(in) :: X
     type(IEEE_CLASS_TYPE), intent(in) :: CLASS
+    logical flag
 
     select case (CLASS%hidden)
       case (1)     ! IEEE_SIGNALING_NAN
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_get_halting_mode(ieee_invalid, flag)
+           call ieee_set_halting_mode(ieee_invalid, .false.)
+        end if
         res = -1
         res = sqrt(res)
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_set_halting_mode(ieee_invalid, flag)
+        end if
       case (2)     ! IEEE_QUIET_NAN
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_get_halting_mode(ieee_invalid, flag)
+           call ieee_set_halting_mode(ieee_invalid, .false.)
+        end if
         res = -1
         res = sqrt(res)
-      case (3)     ! IEEE_NEGATIVE_INF
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_set_halting_mode(ieee_invalid, flag)
+        end if
+     case (3)     ! IEEE_NEGATIVE_INF
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_get_halting_mode(ieee_overflow, flag)
+           call ieee_set_halting_mode(ieee_overflow, .false.)
+        end if
         res = huge(res)
         res = (-res) * res
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_set_halting_mode(ieee_overflow, flag)
+        end if
       case (4)     ! IEEE_NEGATIVE_NORMAL
         res = -42
       case (5)     ! IEEE_NEGATIVE_DENORMAL
@@ -1018,8 +1098,15 @@ contains
       case (9)     ! IEEE_POSITIVE_NORMAL
         res = 42
       case (10)    ! IEEE_POSITIVE_INF
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_get_halting_mode(ieee_overflow, flag)
+           call ieee_set_halting_mode(ieee_overflow, .false.)
+        end if
         res = huge(res)
         res = res * res
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_set_halting_mode(ieee_overflow, flag)
+        end if
       case default ! IEEE_OTHER_VALUE, should not happen
         res = 0
      end select
@@ -1032,17 +1119,39 @@ contains
 
     real(kind=16), intent(in) :: X
     type(IEEE_CLASS_TYPE), intent(in) :: CLASS
+    logical flag
 
     select case (CLASS%hidden)
       case (1)     ! IEEE_SIGNALING_NAN
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_get_halting_mode(ieee_invalid, flag)
+           call ieee_set_halting_mode(ieee_invalid, .false.)
+        end if
         res = -1
         res = sqrt(res)
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_set_halting_mode(ieee_invalid, flag)
+        end if
       case (2)     ! IEEE_QUIET_NAN
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_get_halting_mode(ieee_invalid, flag)
+           call ieee_set_halting_mode(ieee_invalid, .false.)
+        end if
         res = -1
         res = sqrt(res)
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_set_halting_mode(ieee_invalid, flag)
+        end if
       case (3)     ! IEEE_NEGATIVE_INF
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_get_halting_mode(ieee_overflow, flag)
+           call ieee_set_halting_mode(ieee_overflow, .false.)
+        end if
         res = huge(res)
         res = (-res) * res
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_set_halting_mode(ieee_overflow, flag)
+        end if
       case (4)     ! IEEE_NEGATIVE_NORMAL
         res = -42
       case (5)     ! IEEE_NEGATIVE_DENORMAL
@@ -1059,8 +1168,15 @@ contains
       case (9)     ! IEEE_POSITIVE_NORMAL
         res = 42
       case (10)    ! IEEE_POSITIVE_INF
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_get_halting_mode(ieee_overflow, flag)
+           call ieee_set_halting_mode(ieee_overflow, .false.)
+        end if
         res = huge(res)
         res = res * res
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_set_halting_mode(ieee_overflow, flag)
+        end if
       case default ! IEEE_OTHER_VALUE, should not happen
         res = 0
      end select
