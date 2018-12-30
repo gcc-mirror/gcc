@@ -1,5 +1,8 @@
 ! { dg-do run }
-! { dg-options "-ffpe-trap=overflow,invalid" }
+! { dg-additional-options "-ffpe-trap=overflow,invalid" }
+!
+! Use dg-additional-options rather than dg-options to avoid overwriting the
+! default IEEE options which are passed by ieee.exp and necessary.
 program foo
 
    use ieee_arithmetic
