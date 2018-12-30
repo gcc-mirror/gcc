@@ -1,5 +1,9 @@
 2018-12-30  Dominique d'Humieres  <dominiq@gcc.gnu.org>
 
+	* g++.dg/abi/key2.C: Silence the [-Wreturn-type] warning.
+
+2018-12-30  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
 	PR tree-optimization/68356
 	PR target/81210
 	PR target/81693
