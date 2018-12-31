@@ -1,6 +1,9 @@
 2018-12-30  Martin Sebor  <msebor@redhat.com>
 	    Jeff Law  <law@redhat.com>
 
+	* gimple-fold.c (get_range_strlen): Minor logic cleanup.  Add comments
+	on code's intent.
+
 	* gimple-fold.c (strlen_range_kind): New enum.
 	(get_range_strlen): Update signature to use strlen_range_kind
 	instead of type+fuzzy.
