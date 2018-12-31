@@ -57,7 +57,7 @@ findloc0_r4 (gfc_array_index_type * const restrict retarray,
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank-1, 1);
       retarray->dtype.rank = 1;
       retarray->offset = 0;
-      retarray->base_addr = xmallocarray (rank, sizeof (GFC_INTEGER_4));
+      retarray->base_addr = xmallocarray (rank, sizeof (index_type));
     }
   else
     {
@@ -196,7 +196,7 @@ mfindloc0_r4 (gfc_array_index_type * const restrict retarray,
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank-1, 1);
       retarray->dtype.rank = 1;
       retarray->offset = 0;
-      retarray->base_addr = xmallocarray (rank, sizeof (GFC_INTEGER_4));
+      retarray->base_addr = xmallocarray (rank, sizeof (index_type));
     }
   else
     {
@@ -342,7 +342,7 @@ sfindloc0_r4 (gfc_array_index_type * const restrict retarray,
   index_type * restrict dest;
   index_type n;
 
-  if (*mask)
+  if (mask == NULL || *mask)
     {
       findloc0_r4 (retarray, array, value, back);
       return;
@@ -358,7 +358,7 @@ sfindloc0_r4 (gfc_array_index_type * const restrict retarray,
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank-1, 1);
       retarray->dtype.rank = 1;
       retarray->offset = 0;
-      retarray->base_addr = xmallocarray (rank, sizeof (GFC_INTEGER_4));
+      retarray->base_addr = xmallocarray (rank, sizeof (index_type));
     }
   else if (unlikely (compile_options.bounds_check))
     {

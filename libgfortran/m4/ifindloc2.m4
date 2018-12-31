@@ -117,7 +117,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 }
 'header3`'`
 {
-  if (*mask)
+  if (mask == NULL || *mask)
     {
       return findloc2_'atype_code` (array, value, back, len_array, len_value);
     }

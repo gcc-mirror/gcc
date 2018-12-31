@@ -220,6 +220,16 @@ mproduct_c4 (gfc_array_c4 * const restrict retarray,
   index_type mdelta;
   int mask_kind;
 
+  if (mask == NULL)
+    {
+#ifdef HAVE_BACK_ARG
+      product_c4 (retarray, array, pdim, back);
+#else
+      product_c4 (retarray, array, pdim);
+#endif
+      return;
+    }
+
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
@@ -399,7 +409,7 @@ sproduct_c4 (gfc_array_c4 * const restrict retarray,
   index_type dim;
 
 
-  if (*mask)
+  if (mask == NULL || *mask)
     {
 #ifdef HAVE_BACK_ARG
       product_c4 (retarray, array, pdim, back);

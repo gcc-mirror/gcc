@@ -239,6 +239,12 @@ mminval1_s4 (gfc_array_s4 * const restrict retarray,
   index_type mdelta;
   int mask_kind;
 
+  if (mask == NULL)
+    {
+      minval1_s4 (retarray, xlen, array, pdim, string_len);
+      return;
+    }
+
   assert (xlen == string_len);
 
   dim = (*pdim) - 1;
@@ -436,7 +442,7 @@ sminval1_s4 (gfc_array_s4 * const restrict retarray,
   index_type dim;
 
 
-  if (*mask)
+  if (mask == NULL || *mask)
     {
       minval1_s4 (retarray, xlen, array, pdim, string_len);
       return;

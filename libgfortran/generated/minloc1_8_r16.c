@@ -258,6 +258,16 @@ mminloc1_8_r16 (gfc_array_i8 * const restrict retarray,
   index_type mdelta;
   int mask_kind;
 
+  if (mask == NULL)
+    {
+#ifdef HAVE_BACK_ARG
+      minloc1_8_r16 (retarray, array, pdim, back);
+#else
+      minloc1_8_r16 (retarray, array, pdim);
+#endif
+      return;
+    }
+
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
@@ -480,7 +490,7 @@ sminloc1_8_r16 (gfc_array_i8 * const restrict retarray,
   index_type dim;
 
 
-  if (*mask)
+  if (mask == NULL || *mask)
     {
 #ifdef HAVE_BACK_ARG
       minloc1_8_r16 (retarray, array, pdim, back);

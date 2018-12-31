@@ -145,7 +145,7 @@ sfindloc2_s4 (gfc_array_s4 * const restrict array,
 			   GFC_LOGICAL_4 back, gfc_charlen_type len_array,
 			   gfc_charlen_type len_value)
 {
-  if (*mask)
+  if (mask == NULL || *mask)
     {
       return findloc2_s4 (array, value, back, len_array, len_value);
     }
