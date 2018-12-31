@@ -220,6 +220,16 @@ msum_r8 (gfc_array_r8 * const restrict retarray,
   index_type mdelta;
   int mask_kind;
 
+  if (mask == NULL)
+    {
+#ifdef HAVE_BACK_ARG
+      sum_r8 (retarray, array, pdim, back);
+#else
+      sum_r8 (retarray, array, pdim);
+#endif
+      return;
+    }
+
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
@@ -399,7 +409,7 @@ ssum_r8 (gfc_array_r8 * const restrict retarray,
   index_type dim;
 
 
-  if (*mask)
+  if (mask == NULL || *mask)
     {
 #ifdef HAVE_BACK_ARG
       sum_r8 (retarray, array, pdim, back);

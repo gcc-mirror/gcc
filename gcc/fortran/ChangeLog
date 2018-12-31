@@ -1,3 +1,16 @@
+2018-12-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/82995
+	* trans-expr.c (gfc_conv_procedure_call):  Pass NULL pointer
+	for missing optional dummy arguments for library routines.
+	* trans-intinsic.c (conv_mask_condition): New function.
+	(gfc_conv_intrinsic_arith): Detect and handle optional mask.
+	(gfc_conv_intrinsic_minmaxloc): Likewise.
+	(gfc_conv_intrinsic_findloc): Likewise.
+	(gfc_conv_intrinsic_minmaxval): Likewise.
+	(gfc_inline_intrinsic_function_p): Do not inline for rank > 1 if
+	an optional mask is present.
+
 2018-12-29  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* expr.c (external_spec_function): Add ieee_support_subnormal to list

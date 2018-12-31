@@ -150,6 +150,12 @@ mminval0_s4 (GFC_UINTEGER_4 * const restrict ret,
   index_type n;
   int mask_kind;
 
+  if (mask == NULL)
+    {
+      minval0_s4 (ret, xlen, array, len);
+      return;
+    }
+
   rank = GFC_DESCRIPTOR_RANK (array);
   if (rank <= 0)
     runtime_error ("Rank of array needs to be > 0");
@@ -247,7 +253,7 @@ sminval0_s4 (GFC_UINTEGER_4 * restrict ret,
 	GFC_LOGICAL_4 *mask, gfc_charlen_type len)
 	
 {
-  if (*mask)
+  if (mask == NULL || *mask)
     {
       minval0_s4 (ret, xlen, array, len);
       return;

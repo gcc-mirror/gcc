@@ -198,6 +198,13 @@ mmaxloc0_16_i4 (gfc_array_i16 * const restrict retarray,
   index_type n;
   int mask_kind;
 
+
+  if (mask == NULL)
+    {
+      maxloc0_16_i4 (retarray, array, back);
+      return;
+    }
+
   rank = GFC_DESCRIPTOR_RANK (array);
   if (rank <= 0)
     runtime_error ("Rank of array needs to be > 0");
@@ -369,7 +376,7 @@ smaxloc0_16_i4 (gfc_array_i16 * const restrict retarray,
   index_type n;
   GFC_INTEGER_16 *dest;
 
-  if (*mask)
+  if (mask == NULL || *mask)
     {
       maxloc0_16_i4 (retarray, array, back);
       return;
