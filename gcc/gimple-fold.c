@@ -1548,10 +1548,17 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited,
 	      if (!get_range_strlen (ops[i], length, visited, rkind,
 				     flexp, eltsize, nonstr))
 		{
-		  if (rkind == SRK_LENRANGE_2)
-		    *maxlen = build_all_ones_cst (size_type_node);
-		  else
+		  if (rkind != SRK_LENRANGE_2)
 		    return false;
+		  /* Set the upper bound to the maximum to prevent
+		     it from being adjusted in the next iteration but
+		     leave MINLEN and the more conservative MAXBOUND
+		     determined so far alone (or leave them null if
+		     they haven't been set yet).  That the MINLEN is
+		     in fact zero can be determined from MAXLEN being
+		     unbounded but the discovered minimum is used for
+		     diagnostics.  */
+		  *maxlen = build_all_ones_cst (size_type_node);
 		}
 	    return true;
 	  }
@@ -1576,10 +1583,17 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited,
 	    if (!get_range_strlen (arg, length, visited, rkind, flexp,
 				   eltsize, nonstr))
 	      {
-		if (rkind == SRK_LENRANGE_2)
-		  *maxlen = build_all_ones_cst (size_type_node);
-		else
+		if (rkind != SRK_LENRANGE_2)
 		  return false;
+		/* Set the upper bound to the maximum to prevent
+		   it from being adjusted in the next iteration but
+		   leave MINLEN and the more conservative MAXBOUND
+		   determined so far alone (or leave them null if
+		   they haven't been set yet).  That the MINLEN is
+		   in fact zero can be determined from MAXLEN being
+		   unbounded but the discovered minimum is used for
+		   diagnostics.  */
+		*maxlen = build_all_ones_cst (size_type_node);
 	      }
           }
         return true;
