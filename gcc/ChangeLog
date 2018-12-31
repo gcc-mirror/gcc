@@ -1,3 +1,25 @@
+2018-12-30  Martin Sebor  <msebor@redhat.com>
+	    Jeff Law  <law@redhat.com>
+
+	* gimple-fold.c (strlen_range_kind): New enum.
+	(get_range_strlen): Update signature to use strlen_range_kind
+	instead of type+fuzzy.
+	(get_range_strlen_tree): Update signature to use
+	strlen_range_kind instead of type+fuzzy.  Pass rkind down to
+	get_range_strlen.  Check the rkind enum value instead of
+	type+fuzzy.
+	(get_range_strlen): Similarly.
+	(get_maxval_strlen): Update signature to make NONSTR argument have
+	a default value and make static.  Add asserts to ensure sanity of
+	arguments.  Update calls to get_range_strlen.
+	(gimple_fold_builtin_strcpy): Update calls to get_maxval_strlen.
+	(gimple_fold_builtin_strcat, gimple_fold_builtin_fputs): Similarly.
+	(gimple_fold_builtin_memory_chk): Similarly.
+	(gimple_fold_builtin_stxcpy_chk): Similarly.
+	(gimple_fold_builtin_snprintf_chk): Similarly.
+	(gimple_fold_builtin_sprintf, gimple_fold_builtin_snprintf): Similarly.
+	* gimple-fold.h (get_maxval_strlen): Delete prototype.
+
 2018-12-29  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config/msp430/msp430.c (msp430_attr): Warn when the critical and

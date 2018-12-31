@@ -27,7 +27,6 @@ extern tree canonicalize_constructor_val (tree, tree);
 extern tree get_symbol_constant_value (tree);
 extern bool get_range_strlen (tree, tree[2], unsigned = 1,
 			      bool = false, tree * = NULL);
-extern tree get_maxval_strlen (tree, int, tree * = NULL);
 extern void gimplify_and_update_call_from_tree (gimple_stmt_iterator *, tree);
 extern bool fold_stmt (gimple_stmt_iterator *);
 extern bool fold_stmt (gimple_stmt_iterator *, tree (*) (tree));
