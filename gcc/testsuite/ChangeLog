@@ -1,3 +1,10 @@
+2018-12-31  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/predict-2.C: New test.
+	* g++.dg/predict-3.C: New test.
+	* g++.dg/predict-4.C: New test.
+	* gcc.dg/tree-ssa/attr-hotcold-2.c: Adjust test-case.
+
 2018-12-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/88639

@@ -1,3 +1,13 @@
+2018-12-31  Martin Liska  <mliska@suse.cz>
+
+	* predict.c (set_even_probabilities): Include also
+	unlikely_count in calculation.
+	(combine_predictions_for_bb): Consider also HOT and
+	COLD labels predictions.
+	* predict.def (PRED_HOT_LABEL): Move it just after
+	__builtin_expect_with_probability predictor.
+	(PRED_COLD_LABEL): Likewise.
+
 2018-12-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* x86-tune.def: Enable inter_unit_moves_to_vec for generic.
