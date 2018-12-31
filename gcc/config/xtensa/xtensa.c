@@ -331,6 +331,9 @@ static unsigned HOST_WIDE_INT xtensa_asan_shadow_offset (void);
 #undef TARGET_ASAN_SHADOW_OFFSET
 #define TARGET_ASAN_SHADOW_OFFSET xtensa_asan_shadow_offset
 
+#undef TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 
