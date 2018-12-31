@@ -1,3 +1,7 @@
+2018-12-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* x86-tune.def: Enable inter_unit_moves_to_vec for generic.
+
 2018-12-30  Martin Sebor  <msebor@redhat.com>
 	    Jeff Law  <law@redhat.com>
 
