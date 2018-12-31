@@ -1,5 +1,9 @@
 2018-12-31  Martin Liska  <mliska@suse.cz>
 
+	* g++.dg/tree-prof/devirt.C: Fix scan pattern and test options.
+
+2018-12-31  Martin Liska  <mliska@suse.cz>
+
 	* g++.dg/predict-2.C: New test.
 	* g++.dg/predict-3.C: New test.
 	* g++.dg/predict-4.C: New test.

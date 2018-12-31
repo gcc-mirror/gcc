@@ -1,4 +1,4 @@
-/* { dg-options "-O3 -fdump-tree-dom3" } */
+/* { dg-options "-O3 -fdump-tree-dom3-details" } */
 struct nsISupports
 {
   virtual int QueryInterface (const int &aIID, void **aInstancePtr) = 0;
@@ -119,5 +119,5 @@ main ()
     __builtin_abort ();
 }
 
-/* { dg-final-use-not-autofdo { scan-ipa-dump-times 3 "folding virtual function call to virtual unsigned int mozPersonalDictionary::_ZThn16" "dom3" } } */
-/* { dg-final-use-not-autofdo { scan-ipa-dump-times 3 "folding virtual function call to virtual unsigned int mozPersonalDictionary::AddRef" "dom3" } } */
+/* { dg-final-use-not-autofdo { scan-tree-dump-times "folding virtual function call to virtual unsigned int mozPersonalDictionary::_ZThn16" 3 "dom3" } } */
+/* { dg-final-use-not-autofdo { scan-tree-dump-times "folding virtual function call to virtual unsigned int mozPersonalDictionary::AddRef" 3 "dom3" } } */
