@@ -1,3 +1,13 @@
+2019-01-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* coverage.c (get_coverage_counts): Use current_function_decl.
+	* profile.c (read_thunk_profile): New function.
+	(branch_prob): Add THUNK parameter.
+	* tree-profile.c (tree_profiling): Handle thunks.
+	* value-prof.c (init_node_map): Handle thunks.
+	* value-prof.h (branch_prob): Upate prototype.
+	(read_thunk_profile): Declare.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
