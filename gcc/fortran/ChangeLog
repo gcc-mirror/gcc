@@ -1,3 +1,10 @@
+2019-01-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/82743
+	* primary.c (gfc_convert_to_structure_constructor): If a character
+	in a constructor is too long, add a  warning with
+	-Wcharacter-truncation.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
