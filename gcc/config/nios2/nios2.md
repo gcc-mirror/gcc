@@ -1,5 +1,5 @@
 ;; Machine Description for Altera Nios II.
-;; Copyright (C) 2012-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2019 Free Software Foundation, Inc.
 ;; Contributed by Jonah Graham (jgraham@altera.com) and 
 ;; Will Reece (wreece@altera.com).
 ;; Contributed by Mentor Graphics, Inc.
