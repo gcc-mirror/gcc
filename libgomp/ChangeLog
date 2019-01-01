@@ -1,5 +1,9 @@
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
+	Update copyright years.
+
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
 	* libgomp.texi: Bump @copying's copyright year.
 
 2018-12-28  Thomas Schwinge  <thomas@codesourcery.com>
@@ -10852,7 +10856,7 @@
 
 	Initial implementation and checkin.
 
-Copyright (C) 2005-2018 Free Software Foundation, Inc.
+Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

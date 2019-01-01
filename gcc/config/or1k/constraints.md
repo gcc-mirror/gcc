@@ -1,5 +1,5 @@
 ;; Constraint definitions for OpenRISC
-;; Copyright (C) 2018 Free Software Foundation, Inc.
+;; Copyright (C) 2018-2019 Free Software Foundation, Inc.
 ;; Contributed by Stafford Horne
 
 ;; This file is part of GCC.

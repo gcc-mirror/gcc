@@ -1,5 +1,5 @@
 ;; Cavium ThunderX 2 CN99xx pipeline description
-;; Copyright (C) 2016-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2016-2019 Free Software Foundation, Inc.
 ;;
 ;; Contributed by Cavium, Broadcom and Mentor Embedded.
 
