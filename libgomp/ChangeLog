@@ -1,3 +1,7 @@
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi: Bump @copying's copyright year.
+
 2018-12-28  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* oacc-parallel.c (GOACC_parallel_keyed, GOACC_parallel)
