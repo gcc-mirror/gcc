@@ -1,3 +1,15 @@
+2019-01-01  Martin Sebor  <msebor@redhat.com>
+            Jeff Law  <law@redhat.com>
+
+	* gimple-fold.c (get_range_strlen): Update prototype.
+	(get_range_strlen_tree): Update prototype.  Drop minlen/maxlen
+	local variables.  Use pdata to return information to caller.
+	Update calls to get_range_strlen.  Update pdata->maxbound.
+	(get_range_strlen -- static version): Similarly.
+	(get_range_strlen -- extern version): Update for internal
+	get_range_strlen API change.  Convert to external data format.
+	(get_maxval_strlen): Similarly.
+
 2019-01-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* coverage.c (get_coverage_counts): Use current_function_decl.
