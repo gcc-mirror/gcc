@@ -119,5 +119,5 @@ main ()
     __builtin_abort ();
 }
 
-/* { dg-final-use-not-autofdo { scan-tree-dump-times "folding virtual function call to virtual unsigned int mozPersonalDictionary::_ZThn16" 3 "dom3" } } */
-/* { dg-final-use-not-autofdo { scan-tree-dump-times "folding virtual function call to virtual unsigned int mozPersonalDictionary::AddRef" 3 "dom3" } } */
+/* { dg-final-use-not-autofdo { scan-tree-dump-times "folding virtual function call to virtual unsigned int mozPersonalDictionary::_ZThn16" 1 "dom3" } } */
+/* { dg-final-use-not-autofdo { scan-tree-dump-times "folding virtual function call to virtual unsigned int mozPersonalDictionary::AddRef" 1 "dom3" } } */
