@@ -55,4 +55,4 @@ void fn1() {
   q(new f::L).s(v);
 }
 /* Check that f::d appears as possible target.  */
-/* { dg-final { scan-tree-dump "f::d" "fre"  } } */
+/* { dg-final { scan-tree-dump "f::d" "fre1"  } } */
