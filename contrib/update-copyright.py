@@ -686,6 +686,7 @@ class GCCCopyright (Copyright):
         self.add_external_author ('Cavium Networks.')
         self.add_external_author ('Faraday Technology Corp.')
         self.add_external_author ('Florida State University')
+        self.add_external_author ('Gerard Jungman')
         self.add_external_author ('Greg Colvin and Beman Dawes.')
         self.add_external_author ('Hewlett-Packard Company')
         self.add_external_author ('Intel Corporation')
