@@ -1,5 +1,10 @@
 2019-01-01  Jan Hubicka  <hubicka@ucw.cz>
 
+	* g++.dg/ipa/devirt-36.C: Add dg-do-compile.
+	* g++.dg/ipa/devirt-53.C: Fix scan template.
+
+2019-01-01  Jan Hubicka  <hubicka@ucw.cz>
+
 	* g++.dg/lto/devirt-13_0.C: Drop broken scan of ssa dump.
 	* g++.dg/lto/devirt-14_0.C: Drop broken scan of ssa dump.
 	* g++.dg/lto/devirt-23_0.C: Add -fdump-ipa-cp.
