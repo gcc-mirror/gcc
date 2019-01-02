@@ -1,3 +1,8 @@
+2019-01-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86875
+	* g++.dg/cpp1y/lambda-generic-86875.C: New test.
+
 2019-01-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/48543
