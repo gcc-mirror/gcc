@@ -6,6 +6,10 @@
 	PR c++/88631 - CTAD failing for value-initialization.
 	* g++.dg/cpp1z/class-deduction59.C: New test.
 
+	PR c++/81486 - CTAD failing with ().
+	* g++.dg/cpp1z/class-deduction60.C: New test.
+	* g++.dg/cpp1z/class-deduction61.C: New test.
+	
 2019-01-02  Martin Sebor  <msebor@redhat.com>
             Jeff Law  <law@redhat.com>
 
