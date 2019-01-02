@@ -4,6 +4,10 @@
 	* call.c (convert_for_arg_passing): Only give warnings with tf_warning.
 	* typeck.c (convert_for_assignment): Likewise.
 
+	PR c++/88631 - CTAD failing for value-initialization.
+	* typeck2.c (build_functional_cast): Try deducing the template
+	arguments even if there are no arguments to deduce from.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
