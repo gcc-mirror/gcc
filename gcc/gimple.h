@@ -136,6 +136,7 @@ enum gimple_rhs_class
 enum gf_mask {
     GF_ASM_INPUT		= 1 << 0,
     GF_ASM_VOLATILE		= 1 << 1,
+    GF_ASM_INLINE		= 1 << 2,
     GF_CALL_FROM_THUNK		= 1 << 0,
     GF_CALL_RETURN_SLOT_OPT	= 1 << 1,
     GF_CALL_TAILCALL		= 1 << 2,
@@ -3909,7 +3910,7 @@ gimple_asm_string (const gasm *asm_stmt)
 }
 
 
-/* Return true ASM_STMT ASM_STMT is an asm statement marked volatile.  */
+/* Return true if ASM_STMT is marked volatile.  */
 
 static inline bool
 gimple_asm_volatile_p (const gasm *asm_stmt)
@@ -3918,7 +3919,7 @@ gimple_asm_volatile_p (const gasm *asm_stmt)
 }
 
 
-/* If VOLATLE_P is true, mark asm statement ASM_STMT as volatile.  */
+/* If VOLATILE_P is true, mark asm statement ASM_STMT as volatile.  */
 
 static inline void
 gimple_asm_set_volatile (gasm *asm_stmt, bool volatile_p)
@@ -3927,6 +3928,27 @@ gimple_asm_set_volatile (gasm *asm_stmt, bool volatile_p)
     asm_stmt->subcode |= GF_ASM_VOLATILE;
   else
     asm_stmt->subcode &= ~GF_ASM_VOLATILE;
+}
+
+
+/* Return true if ASM_STMT is marked inline.  */
+
+static inline bool
+gimple_asm_inline_p (const gasm *asm_stmt)
+{
+  return (asm_stmt->subcode & GF_ASM_INLINE) != 0;
+}
+
+
+/* If INLINE_P is true, mark asm statement ASM_STMT as inline.  */
+
+static inline void
+gimple_asm_set_inline (gasm *asm_stmt, bool inline_p)
+{
+  if (inline_p)
+    asm_stmt->subcode |= GF_ASM_INLINE;
+  else
+    asm_stmt->subcode &= ~GF_ASM_INLINE;
 }
 
 

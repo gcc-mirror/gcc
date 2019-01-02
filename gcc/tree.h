@@ -1231,6 +1231,9 @@ extern void protected_set_expr_location (tree, location_t);
    ASM_OPERAND with no operands.  */
 #define ASM_INPUT_P(NODE) (ASM_EXPR_CHECK (NODE)->base.static_flag)
 #define ASM_VOLATILE_P(NODE) (ASM_EXPR_CHECK (NODE)->base.public_flag)
+/* Nonzero if we want to consider this asm as minimum length and cost
+   for inlining decisions.  */
+#define ASM_INLINE_P(NODE) (ASM_EXPR_CHECK (NODE)->base.protected_flag)
 
 /* COND_EXPR accessors.  */
 #define COND_EXPR_COND(NODE)	(TREE_OPERAND (COND_EXPR_CHECK (NODE), 0))

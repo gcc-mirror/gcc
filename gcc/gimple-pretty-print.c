@@ -1989,6 +1989,8 @@ dump_gimple_asm (pretty_printer *buffer, gasm *gs, int spc, int flags)
       pp_string (buffer, "__asm__");
       if (gimple_asm_volatile_p (gs))
 	pp_string (buffer, " __volatile__");
+      if (gimple_asm_inline_p (gs))
+	pp_string (buffer, " __inline__");
       if (gimple_asm_nlabels (gs))
 	pp_string (buffer, " goto");
       pp_string (buffer, "(\"");

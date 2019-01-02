@@ -1,3 +1,32 @@
+2019-01-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from trunk
+	2018-12-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR inline-asm/55681
+	* doc/extend.texi (Basic Asm): Update grammar.
+	(Extended Asm): Update grammar.
+
+	Backport from trunk
+	2018-12-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* doc/extend.texi (Using Assembly Language with C): Document asm inline.
+	(Size of an asm): Fix typo.  Document asm inline.
+	* gimple-pretty-print.c (dump_gimple_asm): Handle asm inline.
+	* gimple.h (enum gf_mask): Add GF_ASM_INLINE.
+	(gimple_asm_set_volatile): Fix typo.
+	(gimple_asm_inline_p): New.
+	(gimple_asm_set_inline): New.
+	* gimplify.c (gimplify_asm_expr): Propagate the asm inline flag from
+	tree to gimple.
+	* ipa-icf-gimple.c (func_checker::compare_gimple_asm): Compare the
+	gimple_asm_inline_p flag, too.
+	* tree-core.h (tree_base): Document that protected_flag is ASM_INLINE_P
+	in an ASM_EXPR.
+	* tree-inline.c (estimate_num_insns): If gimple_asm_inline_p return
+	a minimum size for an asm.
+	* tree.h (ASM_INLINE_P): New.
+
 2018-12-30  Iain Sandoe  <iain@sandoe.co.uk>
 
 	backport from mainline.

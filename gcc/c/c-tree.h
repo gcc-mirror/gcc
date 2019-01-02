@@ -659,8 +659,9 @@ extern tree build_compound_literal (location_t, tree, tree, bool);
 extern void check_compound_literal_type (location_t, struct c_type_name *);
 extern tree c_start_case (location_t, location_t, tree, bool);
 extern void c_finish_case (tree, tree);
-extern tree build_asm_expr (location_t, tree, tree, tree, tree, tree, bool);
-extern tree build_asm_stmt (tree, tree);
+extern tree build_asm_expr (location_t, tree, tree, tree, tree, tree, bool,
+			    bool);
+extern tree build_asm_stmt (bool, tree);
 extern int c_types_compatible_p (tree, tree);
 extern tree c_begin_compound_stmt (bool);
 extern tree c_end_compound_stmt (location_t, tree, bool);
