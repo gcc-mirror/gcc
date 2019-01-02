@@ -1,6 +1,10 @@
 2019-01-01  Martin Sebor  <msebor@redhat.com>
             Jeff Law  <law@redhat.com>
 
+	* gcc.dg/strlenopt-40.c: Update 
+	* gcc.dg/strlenopt-51.c: Likewise. 
+	* gcc.dg/tree-ssa/pr79376.c: Likewise.
+
 	* gcc.dg/strlenopt-40.c: Disable a couple tests.
 	* gcc.dg/strlenopt-48.c: Twiddle test slightly.
 	* gcc.dg/strlenopt-59.c: New test.
