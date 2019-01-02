@@ -10,6 +10,6 @@ module gfcbug29_import
 end module gfcbug29_import
 
 subroutine FOO
-    X :: I ! { dg-error "Unclassifiable statement" }
+    X :: I
     equivalence (I,I)
 end
