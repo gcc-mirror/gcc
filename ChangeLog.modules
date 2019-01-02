@@ -1,5 +1,8 @@
 2019-01-02  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cxx-mapper.cc (server): Workaround PR c++/88664.
+
 	Merge trunk r267509.
 	* module.cc, cxx-mapper.cc: Update copyright years.
 

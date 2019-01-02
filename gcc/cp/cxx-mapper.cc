@@ -1305,8 +1305,11 @@ server (bool ip6, int sock_fd, const char *cookie)
 	    {
 #ifdef HAVE_EPOLL
 	      if (epoll_fd >= 0)
-		actionable
-		  = static_cast <client *> (events[--event_count].data.ptr);
+		{
+		  /* See PR c++/88664 for why a temporary is used.  */
+		  void *data = events[--event_count].data.ptr;
+		  actionable = static_cast <client *> (data);
+		}
 #endif
 #if defined (HAVE_PSELECT) || defined (HAVE_SELECT)
 	      if (epoll_fd < 0)
