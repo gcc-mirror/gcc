@@ -77,8 +77,6 @@ enum strlen_range_kind {
      or element of.  Also determine the size of the largest character
      array the string may refer to.  */
   SRK_LENRANGE,
-  /* Temporary until the rest of Martin's strlen range work is integrated.  */
-  SRK_LENRANGE_2,
   /* Determine the integer value of the argument (not string length).  */
   SRK_INT_VALUE
 };
@@ -1309,7 +1307,7 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
 				     pdata, eltsize);
 	}
       else if (TREE_CODE (TREE_OPERAND (op, 0)) == COMPONENT_REF
-	       && (rkind == SRK_LENRANGE || rkind == SRK_LENRANGE_2))
+	       && rkind == SRK_LENRANGE)
 	{
 	  /* Fail if an array is the last member of a struct object
 	     since it could be treated as a (fake) flexible array
@@ -1349,7 +1347,7 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
 	}
     }
 
-  if (!val && (rkind == SRK_LENRANGE || rkind == SRK_LENRANGE_2))
+  if (!val && rkind == SRK_LENRANGE)
     {
       if (TREE_CODE (arg) == ADDR_EXPR)
 	return get_range_strlen (TREE_OPERAND (arg, 0), visited, rkind,
@@ -1484,7 +1482,7 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
 	 on the length of the string based on the referenced object's
 	 or subobject's type.  Determine the conservative upper bound
 	 based on the enclosing object's size if possible.  */
-      if (rkind == SRK_LENRANGE || rkind == SRK_LENRANGE_2)
+      if (rkind == SRK_LENRANGE)
 	{
 	  poly_int64 offset;
 	  tree base = get_addr_base_and_unit_offset (arg, &offset);
@@ -1538,7 +1536,7 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
     }
 
   pdata->maxlen = val;
-  return rkind == SRK_LENRANGE || rkind == SRK_LENRANGE_2 || !integer_all_onesp (val);
+  return rkind == SRK_LENRANGE || !integer_all_onesp (val);
 }
 
 /* For an ARG referencing one or more strings, try to obtain the range
@@ -1600,7 +1598,7 @@ get_range_strlen (tree arg, bitmap *visited,
 	    for (unsigned int i = 0; i < 2; i++)
 	      if (!get_range_strlen (ops[i], visited, rkind, pdata, eltsize))
 		{
-		  if (rkind != SRK_LENRANGE_2)
+		  if (rkind != SRK_LENRANGE)
 		    return false;
 		  /* Set the upper bound to the maximum to prevent
 		     it from being adjusted in the next iteration but
@@ -1634,7 +1632,7 @@ get_range_strlen (tree arg, bitmap *visited,
 
 	    if (!get_range_strlen (arg, visited, rkind, pdata, eltsize))
 	      {
-		if (rkind != SRK_LENRANGE_2)
+		if (rkind != SRK_LENRANGE)
 		  return false;
 		/* Set the upper bound to the maximum to prevent
 		   it from being adjusted in the next iteration but
@@ -1680,12 +1678,11 @@ get_range_strlen (tree arg, bitmap *visited,
    4 for wide characer strings.  ELTSIZE is by default 1.  */
 
 bool
-get_range_strlen (tree arg, c_strlen_data *pdata, unsigned eltsize, bool strict)
+get_range_strlen (tree arg, c_strlen_data *pdata, unsigned eltsize)
 {
   bitmap visited = NULL;
 
-  if (!get_range_strlen (arg, &visited, strict ? SRK_LENRANGE : SRK_LENRANGE_2,
-			 pdata, eltsize))
+  if (!get_range_strlen (arg, &visited, SRK_LENRANGE, pdata, eltsize))
     {
       /* On failure extend the length range to an impossible maximum
 	 (a valid MAXLEN must be less than PTRDIFF_MAX - 1).  Other

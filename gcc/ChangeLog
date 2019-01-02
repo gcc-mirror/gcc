@@ -1,6 +1,10 @@
 2019-01-02  Martin Sebor  <msebor@redhat.com>
             Jeff Law  <law@redhat.com>
 
+	* gimple-fold.c (strlen_range_kind): Remove SRK_LENRANGE_2.
+	(get_range_strlen_tree): Update appropriately.
+	(get_range_strlen)
+	* gimple-fold.h (get_range_strlen): Drop unused last argument.
 
 	* gimple-fold.c (gimple_fold_builtin_strlen): Use set_strlen_range
 	rather than set_range_info.
