@@ -1,5 +1,11 @@
 2019-01-02  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/88621
+	* tree-ssa-loop-im.c (gather_mem_refs_stmt): Fix pastos, avoid
+	bitfields when canoncalizing.
+
+2019-01-02  Richard Biener  <rguenther@suse.de>
+
 	PR target/87545
 	* config/i386/x86-tune-costs.h (intel_cost): Adjust
 	cost of cheap SSE instruction.
