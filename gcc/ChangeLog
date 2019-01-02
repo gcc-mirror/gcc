@@ -1,5 +1,11 @@
 2019-01-02  Richard Biener  <rguenther@suse.de>
 
+	PR target/87545
+	* config/i386/x86-tune-costs.h (intel_cost): Adjust
+	cost of cheap SSE instruction.
+
+2019-01-02  Richard Biener  <rguenther@suse.de>
+
 	PR ipa/85574
 	* ipa-icf.h (sem_item_optimizer::sort_congruence_split): Declare.
 	* ipa-icf.c (sem_item_optimizer::sort_congruence_split): New
