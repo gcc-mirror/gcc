@@ -1,3 +1,37 @@
+2018-01-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from trunk
+	2018-12-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR inline-asm/55681
+	* gcc.dg/asm-qual-1.c: Test that "const" and "restrict" are refused.
+	* gcc.dg/asm-qual-2.c: New test, test that asm-qualifiers are allowed
+	in any order, but that duplicates are not allowed.
+
+	Backport from trunk
+	2018-12-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* c-c++-common/torture/asm-inline.c: New testcase.
+	* gcc.dg/asm-qual-2.c: Test asm inline, too.
+
+	Backport from trunk
+	2018-12-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* g++.dg/asm-qual-1.C: New testcase.
+	* g++.dg/asm-qual-2.C: New testcase.
+	* gcc.dg/asm-qual-1.c: Update.
+
+	Backport from trunk
+	2018-12-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* g++.dg/asm-qual-3.C: New testcase.
+	* gcc.dg/asm-qual-3.c: New testcase.
+
+	And extra for the backport
+	2019-01-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.dg/asm-qual-1.c: Adjust.
+
 2018-12-30  Dominique d'Humieres  <dominiq@gcc.gnu.org>
 
 	PR tree-optimization/68356
