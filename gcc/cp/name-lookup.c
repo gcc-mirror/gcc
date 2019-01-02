@@ -136,11 +136,11 @@ module_binding_slot (tree *slot, tree name, bool fixed, unsigned ix, bool create
       clusters = MODULE_VECTOR_NUM_CLUSTERS (*slot);
       cluster = MODULE_VECTOR_CLUSTER_BASE (*slot);
 
-      if (ix < MODULE_IMPORT_BASE)
+      if (fixed)
 	{
 	  /* There must always be slots for these indices  */
 	  gcc_assert (cluster->indices[ix].span == 1
-		      && cluster->indices[ix].base == ix);
+		      && !cluster->indices[ix].base);
 
 	  return &cluster->slots[ix];
 	}
@@ -213,7 +213,7 @@ module_binding_slot (tree *slot, tree name, bool fixed, unsigned ix, bool create
 	      /* Initialize the fixed slots.  */
 	      for (unsigned jx = MODULE_IMPORT_BASE; jx--;)
 		{
-		  cluster->indices[jx].base = jx;
+		  cluster->indices[jx].base = 0;
 		  cluster->indices[jx].span = 1;
 		  cluster->slots[jx] = NULL_TREE;
 		}
@@ -228,7 +228,7 @@ module_binding_slot (tree *slot, tree name, bool fixed, unsigned ix, bool create
 	      MODULE_VECTOR_NUM_CLUSTERS (new_vec) = 1;
 	    }
 
-	  if (ix < MODULE_IMPORT_BASE)
+	  if (fixed)
 	    offset = ix;
 	  else
 	    {
@@ -249,10 +249,13 @@ module_binding_slot (tree *slot, tree name, bool fixed, unsigned ix, bool create
       cluster += clusters;
     }
 
-  /* Fill the free slot of the cluster.  */
-  cluster->indices[offset].base = ix;
-  cluster->indices[offset].span = 1;
-  cluster->slots[offset] = NULL_TREE;
+  if (!fixed)
+    {
+      /* Fill the free slot of the cluster.  */
+      cluster->indices[offset].base = ix;
+      cluster->indices[offset].span = 1;
+      cluster->slots[offset] = NULL_TREE;
+    }
 
   return &cluster->slots[offset];
 }

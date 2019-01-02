@@ -1,6 +1,9 @@
 2019-01-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.c (module_binding_slot): Use FIXED parm.
+
+	gcc/cp/
 	* name-lookup.c (module_binding_slot): Add FIXED parm, adjust all
 	callers.
 
