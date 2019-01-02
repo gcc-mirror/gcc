@@ -1502,11 +1502,14 @@ get_range_strlen_tree (tree arg, bitmap *visited,
   return true;
 }
 
-/* Obtain the minimum and maximum string length or minimum and maximum
-   value of ARG in LENGTH[0] and LENGTH[1], respectively.
-   If ARG is an SSA name variable, follow its use-def chains.  When
-   TYPE == 0, if LENGTH[1] is not equal to the length we determine or
-   if we are unable to determine the length or value, return false.
+/* For an ARG referencing one or more strings, try to obtain the range
+   of their lengths, or the size of the largest array ARG referes to if
+   the range of lengths cannot be determined, and store all in *PDATA.
+   For an integer ARG (when RKIND == SRK_INT_VALUE), try to determine
+   the maximum constant value.
+   If ARG is an SSA_NAME, follow its use-def chains.  When RKIND ==
+   SRK_STRLEN, then if PDATA->MAXLEN is not equal to the determined
+   length or if we are unable to determine the length, return false.
    VISITED is a bitmap of visited variables.
    RKIND determines the kind of value or range to obtain (see
    strlen_range_kind).
@@ -1516,8 +1519,7 @@ get_range_strlen_tree (tree arg, bitmap *visited,
    Return true if *PDATA was successfully populated and false otherwise.  */
 
 static bool
-get_range_strlen (tree arg, bitmap *visited,
-		  strlen_range_kind rkind,
+get_range_strlen (tree arg, bitmap *visited, strlen_range_kind rkind,
 		  c_strlen_data *pdata, bool *flexp, unsigned eltsize)
 {
 
@@ -1612,6 +1614,7 @@ get_range_strlen (tree arg, bitmap *visited,
         return false;
     }
 }
+
 /* Determine the minimum and maximum value or string length that ARG
    refers to and store each in the first two elements of MINMAXLEN.
    For expressions that point to strings of unknown lengths that are
@@ -1638,47 +1641,39 @@ get_range_strlen (tree arg, bitmap *visited,
    4 for wide characer strings.  ELTSIZE is by default 1.  */
 
 bool
-get_range_strlen (tree arg, tree minmaxlen[2], unsigned eltsize,
-		  bool strict, tree *nonstr /* = NULL */)
+get_range_strlen (tree arg, c_strlen_data *pdata, unsigned eltsize, bool strict)
 {
   bitmap visited = NULL;
 
-  minmaxlen[0] = NULL_TREE;
-  minmaxlen[1] = NULL_TREE;
-
-  tree nonstrbuf;
-  if (!nonstr)
-    nonstr = &nonstrbuf;
-  *nonstr = NULL_TREE;
-
   bool flexarray = false;
-  c_strlen_data lendata = { };
-  if (!get_range_strlen (arg, &visited,
-			 strict ? SRK_LENRANGE : SRK_LENRANGE_2,
-			 &lendata, &flexarray, eltsize))
+  if (!get_range_strlen (arg, &visited, strict ? SRK_LENRANGE : SRK_LENRANGE_2, pdata, &flexarray, eltsize))
     {
-      minmaxlen[0] = NULL_TREE;
-      minmaxlen[1] = NULL_TREE;
+      /* On failure extend the length range to an impossible maximum
+	 (a valid MAXLEN must be less than PTRDIFF_MAX - 1).  Other
+	 members can stay unchanged regardless.  */
+      pdata->minlen = ssize_int (0);
+      pdata->maxlen = build_all_ones_cst (size_type_node);
     }
-  else
-    {
-      minmaxlen[0] = lendata.minlen;
-      minmaxlen[1] = lendata.maxlen;
-    }
+  else if (!pdata->minlen)
+    pdata->minlen = ssize_int (0);
 
-  *nonstr = lendata.decl;
+  /* Unless its null, leave the more conservative MAXBOUND unchanged.  */
+  if (!pdata->maxbound)
+    pdata->maxbound = pdata->maxlen;
+
   if (visited)
     BITMAP_FREE (visited);
 
   return flexarray;
 }
 
-/* Return the maximum string length for ARG, counting by TYPE
-   (1, 2 or 4 for normal or wide chars).  NONSTR indicates
-   if the caller is prepared to handle unterminated strings.
+/* Return the maximum value for ARG given RKIND (see strlen_range_kind).
+   For ARG of pointer types, NONSTR indicates if the caller is prepared
+   to handle unterminated strings.   For integer ARG and when RKIND ==
+   SRK_INT_VALUE, NONSTR must be null.
 
-   If an unterminated string is discovered and our caller handles
-   unterminated strings, then bubble up the offending DECL and
+   If an unterminated array is discovered and our caller handles
+   unterminated arrays, then bubble up the offending DECL and
    return the maximum size.  Otherwise return NULL.  */
 
 static tree
@@ -1692,10 +1687,15 @@ get_maxval_strlen (tree arg, strlen_range_kind rkind, tree *nonstr = NULL)
 
   bitmap visited = NULL;
 
-  bool dummy;
+  /* Reset DATA.MAXLEN if the call fails or when DATA.MAXLEN
+     is unbounded.  */
   c_strlen_data lendata = { };
+  bool dummy;
   if (!get_range_strlen (arg, &visited, rkind, &lendata, &dummy, 1))
     lendata.maxlen = NULL_TREE;
+  else if (lendata.maxlen && integer_all_onesp (lendata.maxlen))
+    lendata.maxlen = NULL_TREE;
+
   if (visited)
     BITMAP_FREE (visited);
 
@@ -3668,21 +3668,19 @@ gimple_fold_builtin_strlen (gimple_stmt_iterator *gsi)
   wide_int minlen;
   wide_int maxlen;
 
-  /* Set to non-null if ARG refers to an unterminated array.  */
-  tree nonstr;
-  tree lenrange[2];
-  if (!get_range_strlen (arg, lenrange, 1, true, &nonstr)
-      && !nonstr
-      && lenrange[0] && TREE_CODE (lenrange[0]) == INTEGER_CST
-      && lenrange[1] && TREE_CODE (lenrange[1]) == INTEGER_CST)
+  c_strlen_data lendata = { };
+  if (!get_range_strlen (arg, &lendata, /* eltsize = */ 1)
+      && !lendata.decl
+      && lendata.minlen && TREE_CODE (lendata.minlen) == INTEGER_CST
+      && lendata.maxlen && TREE_CODE (lendata.maxlen) == INTEGER_CST)
     {
       /* The range of lengths refers to either a single constant
 	 string or to the longest and shortest constant string
 	 referenced by the argument of the strlen() call, or to
 	 the strings that can possibly be stored in the arrays
 	 the argument refers to.  */
-      minlen = wi::to_wide (lenrange[0]);
-      maxlen = wi::to_wide (lenrange[1]);
+      minlen = wi::to_wide (lendata.minlen);
+      maxlen = wi::to_wide (lendata.maxlen);
     }
   else
     {
@@ -3694,9 +3692,12 @@ gimple_fold_builtin_strlen (gimple_stmt_iterator *gsi)
 
   if (minlen == maxlen)
     {
-      lenrange[0] = force_gimple_operand_gsi (gsi, lenrange[0], true, NULL,
-					      true, GSI_SAME_STMT);
-      replace_call_with_value (gsi, lenrange[0]);
+      /* Fold the strlen call to a constant.  */
+      tree type = TREE_TYPE (lendata.minlen);
+      tree len = force_gimple_operand_gsi (gsi,
+					   wide_int_to_tree (type, minlen),
+					   true, NULL, true, GSI_SAME_STMT);
+      replace_call_with_value (gsi, len);
       return true;
     }
 

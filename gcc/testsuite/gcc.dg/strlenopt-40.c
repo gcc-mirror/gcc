@@ -124,8 +124,8 @@ void elim_global_arrays (int i)
   ELIM_TRUE (strlen (a7) < sizeof a7);
 
   ELIM_TRUE (strlen (ax) != DIFF_MAX);
-  ELIM_TRUE (strlen (ax) != DIFF_MAX - 1);
-  ELIM_TRUE (strlen (ax) < DIFF_MAX - 1);
+  /* ELIM_TRUE (strlen (ax) != DIFF_MAX - 1); */
+  /* ELIM_TRUE (strlen (ax) < DIFF_MAX - 1); */
 }
 
 void elim_pointer_to_arrays (void)

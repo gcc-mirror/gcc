@@ -1,3 +1,12 @@
+2019-01-01  Martin Sebor  <msebor@redhat.com>
+            Jeff Law  <law@redhat.com>
+
+	* gcc.dg/strlenopt-40.c: Disable a couple tests.
+	* gcc.dg/strlenopt-48.c: Twiddle test slightly.
+	* gcc.dg/strlenopt-59.c: New test.
+	* gcc.dg/tree-ssa/builtin-snprintf-5.c: New test.
+	* g++.dg/init/strlen.C: New test.
+
 2019-01-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/82743

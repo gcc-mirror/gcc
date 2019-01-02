@@ -1,6 +1,27 @@
 2019-01-01  Martin Sebor  <msebor@redhat.com>
             Jeff Law  <law@redhat.com>
 
+	* gimple-fold.h (get_range_strlen): Update prototype.
+	* builtins.c (check_access): Update call to get_range_strlen to use
+	c_strlen_data pointer.   Change various variable accesses to instead
+	pull data from the c_strlen_data structure.
+	(check_strncat_sizes, expand_builtin_strncat): Likewise.
+	* calls.c (maybe_warn_nonstring_arg): Likewise.
+	* tree-ssa-strlen.c (maybe_diag_stxncpy_trunc): Likewise.  Reset
+	minimum length if maximum lengh is unknown.
+	* gimple-ssa-sprintf.c (get_string_length): Likewise.  Drop code
+	that used c_strlen, it's no longer needed.  Restructure slightly.
+	(format_string): Set unlikely range appropriately.
+	* gimple-fold.c (get_range_strlen): Update comments.  Fix minor
+	formatting issues.
+	(get_range_strlen):  Accept c_strlen_data pointer for external
+	call sites as well.  Pass through to call to internal get_range_strlen.
+	Adjust minlen, maxlen and maxbound as needed.
+	(get_maxval_strlen): Update comments.
+	(gimple_fold_builtin_strlen):  Update call to get_range_strlen
+	to use c_strlen_data pointer.  Change variable accesses to instead
+	use c_strlen_data data members.
+
 	* gimple-fold.c (get_range_strlen): Update prototype.
 	(get_range_strlen_tree): Update prototype.  Drop minlen/maxlen
 	local variables.  Use pdata to return information to caller.

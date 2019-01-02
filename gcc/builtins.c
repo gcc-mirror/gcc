@@ -3341,7 +3341,10 @@ check_access (tree exp, tree, tree, tree dstwrite,
 	     the upper bound given by MAXREAD add one to it for
 	     the terminating nul.  Otherwise, set it to one for
 	     the same reason, or to MAXREAD as appropriate.  */
-	  get_range_strlen (srcstr, range);
+	  c_strlen_data lendata = { };
+	  get_range_strlen (srcstr, &lendata, /* eltsize = */ 1);
+	  range[0] = lendata.minlen;
+	  range[1] = lendata.maxbound;
 	  if (range[0] && (!maxread || TREE_CODE (maxread) == INTEGER_CST))
 	    {
 	      if (maxread && tree_int_cst_le (maxread, range[0]))
@@ -4209,8 +4212,8 @@ check_strncat_sizes (tree exp, tree objsize)
 
   /* Try to determine the range of lengths that the source expression
      refers to.  */
-  tree lenrange[2];
-  get_range_strlen (src, lenrange);
+  c_strlen_data lendata = { };
+  get_range_strlen (src, &lendata, /* eltsize = */ 1);
 
   /* Try to verify that the destination is big enough for the shortest
      string.  */
@@ -4224,8 +4227,8 @@ check_strncat_sizes (tree exp, tree objsize)
     }
 
   /* Add one for the terminating nul.  */
-  tree srclen = (lenrange[0]
-		 ? fold_build2 (PLUS_EXPR, size_type_node, lenrange[0],
+  tree srclen = (lendata.minlen
+		 ? fold_build2 (PLUS_EXPR, size_type_node, lendata.minlen,
 				size_one_node)
 		 : NULL_TREE);
 
@@ -4277,12 +4280,15 @@ expand_builtin_strncat (tree exp, rtx)
   tree slen = c_strlen (src, 1);
 
   /* Try to determine the range of lengths that the source expression
-     refers to.  */
-  tree lenrange[2];
-  if (slen)
-    lenrange[0] = lenrange[1] = slen;
-  else
-    get_range_strlen (src, lenrange);
+     refers to.  Since the lengths are only used for warning and not
+     for code generation disable strict mode below.  */
+  tree maxlen = slen;
+  if (!maxlen)
+    {
+      c_strlen_data lendata = { };
+      get_range_strlen (src, &lendata, /* eltsize = */ 1);
+      maxlen = lendata.maxbound;
+    }
 
   /* Try to verify that the destination is big enough for the shortest
      string.  First try to determine the size of the destination object
@@ -4290,8 +4296,8 @@ expand_builtin_strncat (tree exp, rtx)
   tree destsize = compute_objsize (dest, warn_stringop_overflow - 1);
 
   /* Add one for the terminating nul.  */
-  tree srclen = (lenrange[0]
-		 ? fold_build2 (PLUS_EXPR, size_type_node, lenrange[0],
+  tree srclen = (maxlen
+		 ? fold_build2 (PLUS_EXPR, size_type_node, maxlen,
 				size_one_node)
 		 : NULL_TREE);
 
