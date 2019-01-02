@@ -1,3 +1,8 @@
+2019-01-02  Joel Brobecker  <brobecker@adacore.com>
+
+	* testsuite/21_strings/basic_string_view/element_access/char/empty.cc:
+	Fix year range in copyright header.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
