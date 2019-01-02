@@ -1,3 +1,21 @@
+2019-01-02  Martin Sebor  <msebor@redhat.com>
+            Jeff Law  <law@redhat.com>
+
+	PR middle-end/88663
+	* gimple-fold.c (get_range_strlen): Update prototype to no longer
+	need the flexp argument.
+	(get_range_strlen_tree): Drop flexp argument.  Drop flexp argument
+	from calls to get_range_strlen.  Update comments.  Just update
+	VAL for an unterminated const char array and let the reset of the
+	code handle it normally.  No longer try to set *flexp.  Adjust
+	return value.
+	(get_range_strlen): Update for the new get_range_strlen API.
+	(get_maxval_strlen): Similarly.
+	(gimple_fold_builtin_strlen): Handle update meaning of return value
+	from get_range_strlen.
+	* gimple-ssa-sprintf.c (get_string_length): Update for the new
+	get_range_strlen API.
+	
 2019-01-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/88130
