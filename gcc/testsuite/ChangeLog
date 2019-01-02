@@ -1,3 +1,8 @@
+2019-01-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88612 - ICE with -Waddress-of-packed-member.
+	* g++.dg/warn/Waddress-of-packed-member1.C: New test.
+
 2019-01-02  Martin Sebor  <msebor@redhat.com>
             Jeff Law  <law@redhat.com>
 
