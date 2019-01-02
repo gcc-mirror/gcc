@@ -26,7 +26,7 @@ extern tree create_tmp_reg_or_ssa_name (tree, gimple *stmt = NULL);
 extern tree canonicalize_constructor_val (tree, tree);
 extern tree get_symbol_constant_value (tree);
 struct c_strlen_data;
-extern bool get_range_strlen (tree, c_strlen_data *, unsigned eltsize, bool = false);
+extern bool get_range_strlen (tree, c_strlen_data *, unsigned eltsize);
 extern void gimplify_and_update_call_from_tree (gimple_stmt_iterator *, tree);
 extern bool fold_stmt (gimple_stmt_iterator *);
 extern bool fold_stmt (gimple_stmt_iterator *, tree (*) (tree));
