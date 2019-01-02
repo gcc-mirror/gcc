@@ -2009,7 +2009,7 @@ get_string_length (tree str, unsigned eltsize)
      aren't known to point any such arrays result in LENDATA.MAXLEN
      set to SIZE_MAX.  */
   c_strlen_data lendata = { };
-  bool flexarray = get_range_strlen (str, &lendata, eltsize);
+  get_range_strlen (str, &lendata, eltsize);
 
   /* Return the default result when nothing is known about the string. */
   if (integer_all_onesp (lendata.maxbound)
@@ -2026,7 +2026,7 @@ get_string_length (tree str, unsigned eltsize)
        ? tree_to_uhwi (lendata.maxbound)
        : HOST_WIDE_INT_M1U);
 
-  const bool unbounded = flexarray || integer_all_onesp (lendata.maxlen);
+  const bool unbounded = integer_all_onesp (lendata.maxlen);
 
   /* Set the max/likely counters to unbounded when a minimum is known
      but the maximum length isn't bounded.  This implies that STR is

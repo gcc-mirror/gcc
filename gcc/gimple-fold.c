@@ -83,8 +83,8 @@ enum strlen_range_kind {
   SRK_INT_VALUE
 };
 
-static bool get_range_strlen (tree, bitmap *, strlen_range_kind,
-		  c_strlen_data *, bool *, unsigned);
+static bool
+get_range_strlen (tree, bitmap *, strlen_range_kind, c_strlen_data *, unsigned);
 
 /* Return true when DECL can be referenced from current unit.
    FROM_DECL (if non-null) specify constructor of variable DECL was taken from.
@@ -1281,10 +1281,8 @@ gimple_fold_builtin_memset (gimple_stmt_iterator *gsi, tree c, tree len)
 /* Helper of get_range_strlen for ARG that is not an SSA_NAME.  */
 
 static bool
-get_range_strlen_tree (tree arg, bitmap *visited,
-		       strlen_range_kind rkind,
-		       c_strlen_data *pdata,
-		       bool *flexp, unsigned eltsize)
+get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
+		       c_strlen_data *pdata, unsigned eltsize)
 {
   gcc_assert (TREE_CODE (arg) != SSA_NAME);
  
@@ -1307,8 +1305,8 @@ get_range_strlen_tree (tree arg, bitmap *visited,
 	  tree aop0 = TREE_OPERAND (op, 0);
 	  if (TREE_CODE (aop0) == INDIRECT_REF
 	      && TREE_CODE (TREE_OPERAND (aop0, 0)) == SSA_NAME)
-	    return get_range_strlen (TREE_OPERAND (aop0, 0), visited,
-				     rkind, pdata, flexp, eltsize);
+	    return get_range_strlen (TREE_OPERAND (aop0, 0), visited, rkind,
+				     pdata, eltsize);
 	}
       else if (TREE_CODE (TREE_OPERAND (op, 0)) == COMPONENT_REF
 	       && (rkind == SRK_LENRANGE || rkind == SRK_LENRANGE_2))
@@ -1342,14 +1340,12 @@ get_range_strlen_tree (tree arg, bitmap *visited,
       c_strlen_data lendata = { };
       val = c_strlen (arg, 1, &lendata, eltsize);
 
-      /* If we potentially had a non-terminated string, then
-	 bubble that information up to the caller.  */
       if (!val && lendata.decl)
 	{
+	  /* ARG refers to an unterminated const character array.
+	     DATA.DECL with size DATA.LEN.  */
+	  val = lendata.minlen;
 	  pdata->decl = lendata.decl;
-	  pdata->minlen = lendata.minlen;
-	  pdata->maxlen = lendata.minlen;
-	  return rkind == SRK_STRLEN ? false : true;
 	}
     }
 
@@ -1357,7 +1353,7 @@ get_range_strlen_tree (tree arg, bitmap *visited,
     {
       if (TREE_CODE (arg) == ADDR_EXPR)
 	return get_range_strlen (TREE_OPERAND (arg, 0), visited, rkind,
-				 pdata, flexp, eltsize);
+				 pdata, eltsize);
 
       if (TREE_CODE (arg) == ARRAY_REF)
 	{
@@ -1386,10 +1382,6 @@ get_range_strlen_tree (tree arg, bitmap *visited,
 	     the array could have zero length.  */
 	  pdata->minlen = ssize_int (0);
 
-	  if (TREE_CODE (TREE_OPERAND (arg, 0)) == COMPONENT_REF
-	      && optype == TREE_TYPE (TREE_OPERAND (arg, 0))
-	      && array_at_struct_end_p (TREE_OPERAND (arg, 0)))
-	    *flexp = true;
 	  tight_bound = true;
 	}
       else if (TREE_CODE (arg) == COMPONENT_REF
@@ -1401,11 +1393,7 @@ get_range_strlen_tree (tree arg, bitmap *visited,
 	     optimistic if the array itself isn't NUL-terminated and
 	     the caller relies on the subsequent member to contain
 	     the NUL but that would only be considered valid if
-	     the array were the last member of a struct.
-	      Set *FLEXP to true if the array whose bound is being
-	     used is at the end of a struct.  */
-	  if (array_at_struct_end_p (arg))
-	    *flexp = true;
+	     the array were the last member of a struct.  */
 
 	  tree fld = TREE_OPERAND (arg, 1);
 
@@ -1550,7 +1538,7 @@ get_range_strlen_tree (tree arg, bitmap *visited,
     }
 
   pdata->maxlen = val;
-  return true;
+  return rkind == SRK_LENRANGE || rkind == SRK_LENRANGE_2 || !integer_all_onesp (val);
 }
 
 /* For an ARG referencing one or more strings, try to obtain the range
@@ -1570,12 +1558,13 @@ get_range_strlen_tree (tree arg, bitmap *visited,
    Return true if *PDATA was successfully populated and false otherwise.  */
 
 static bool
-get_range_strlen (tree arg, bitmap *visited, strlen_range_kind rkind,
-		  c_strlen_data *pdata, bool *flexp, unsigned eltsize)
+get_range_strlen (tree arg, bitmap *visited,
+		  strlen_range_kind rkind,
+		  c_strlen_data *pdata, unsigned eltsize)
 {
 
   if (TREE_CODE (arg) != SSA_NAME)
-    return get_range_strlen_tree (arg, visited, rkind, pdata, flexp, eltsize);
+    return get_range_strlen_tree (arg, visited, rkind, pdata, eltsize);
 
   /* If ARG is registered for SSA update we cannot look at its defining
      statement.  */
@@ -1601,7 +1590,7 @@ get_range_strlen (tree arg, bitmap *visited, strlen_range_kind rkind,
             || gimple_assign_unary_nop_p (def_stmt))
           {
 	    tree rhs = gimple_assign_rhs1 (def_stmt);
-	    return get_range_strlen (rhs, visited, rkind, pdata, flexp, eltsize);
+	    return get_range_strlen (rhs, visited, rkind, pdata, eltsize);
           }
 	else if (gimple_assign_rhs_code (def_stmt) == COND_EXPR)
 	  {
@@ -1609,8 +1598,7 @@ get_range_strlen (tree arg, bitmap *visited, strlen_range_kind rkind,
 			    gimple_assign_rhs3 (def_stmt) };
 
 	    for (unsigned int i = 0; i < 2; i++)
-	      if (!get_range_strlen (ops[i], visited, rkind, pdata,
-				     flexp, eltsize))
+	      if (!get_range_strlen (ops[i], visited, rkind, pdata, eltsize))
 		{
 		  if (rkind != SRK_LENRANGE_2)
 		    return false;
@@ -1644,7 +1632,7 @@ get_range_strlen (tree arg, bitmap *visited, strlen_range_kind rkind,
             if (arg == gimple_phi_result (def_stmt))
               continue;
 
-	    if (!get_range_strlen (arg, visited, rkind, pdata, flexp, eltsize))
+	    if (!get_range_strlen (arg, visited, rkind, pdata, eltsize))
 	      {
 		if (rkind != SRK_LENRANGE_2)
 		  return false;
@@ -1696,8 +1684,8 @@ get_range_strlen (tree arg, c_strlen_data *pdata, unsigned eltsize, bool strict)
 {
   bitmap visited = NULL;
 
-  bool flexarray = false;
-  if (!get_range_strlen (arg, &visited, strict ? SRK_LENRANGE : SRK_LENRANGE_2, pdata, &flexarray, eltsize))
+  if (!get_range_strlen (arg, &visited, strict ? SRK_LENRANGE : SRK_LENRANGE_2,
+			 pdata, eltsize))
     {
       /* On failure extend the length range to an impossible maximum
 	 (a valid MAXLEN must be less than PTRDIFF_MAX - 1).  Other
@@ -1715,7 +1703,7 @@ get_range_strlen (tree arg, c_strlen_data *pdata, unsigned eltsize, bool strict)
   if (visited)
     BITMAP_FREE (visited);
 
-  return flexarray;
+  return !integer_all_onesp (pdata->maxlen);
 }
 
 /* Return the maximum value for ARG given RKIND (see strlen_range_kind).
@@ -1741,8 +1729,7 @@ get_maxval_strlen (tree arg, strlen_range_kind rkind, tree *nonstr = NULL)
   /* Reset DATA.MAXLEN if the call fails or when DATA.MAXLEN
      is unbounded.  */
   c_strlen_data lendata = { };
-  bool dummy;
-  if (!get_range_strlen (arg, &visited, rkind, &lendata, &dummy, 1))
+  if (!get_range_strlen (arg, &visited, rkind, &lendata, /* eltsize = */1))
     lendata.maxlen = NULL_TREE;
   else if (lendata.maxlen && integer_all_onesp (lendata.maxlen))
     lendata.maxlen = NULL_TREE;
@@ -3720,7 +3707,7 @@ gimple_fold_builtin_strlen (gimple_stmt_iterator *gsi)
   wide_int maxlen;
 
   c_strlen_data lendata = { };
-  if (!get_range_strlen (arg, &lendata, /* eltsize = */ 1)
+  if (get_range_strlen (arg, &lendata, /* eltsize = */ 1)
       && !lendata.decl
       && lendata.minlen && TREE_CODE (lendata.minlen) == INTEGER_CST
       && lendata.maxlen && TREE_CODE (lendata.maxlen) == INTEGER_CST)
