@@ -1,3 +1,8 @@
+2019-01-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/48543
+	* gfortran.dg/const_chararacter_merge.f90: New test.
+
 2019-01-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/88130
