@@ -4,7 +4,7 @@
 
 #include <sstream>
 
-namespace log {
+namespace logging {
 
 class Logstream {
 public:
@@ -16,7 +16,7 @@ private:
 
 }
 
-namespace log {
+namespace logging {
 
 thread_local std::ostringstream Logstream::os_;
 

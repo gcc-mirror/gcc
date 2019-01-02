@@ -1,3 +1,7 @@
+2019-01-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/gcov/pr88263.C: Rename namespace log to logging.
+
 2019-01-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88621
@@ -12,8 +16,8 @@
 2019-01-01  Martin Sebor  <msebor@redhat.com>
             Jeff Law  <law@redhat.com>
 
-	* gcc.dg/strlenopt-40.c: Update 
-	* gcc.dg/strlenopt-51.c: Likewise. 
+	* gcc.dg/strlenopt-40.c: Update.
+	* gcc.dg/strlenopt-51.c: Likewise.
 	* gcc.dg/tree-ssa/pr79376.c: Likewise.
 
 	* gcc.dg/strlenopt-40.c: Disable a couple tests.
