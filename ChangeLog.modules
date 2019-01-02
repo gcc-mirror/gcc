@@ -1,5 +1,8 @@
 2019-01-02  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/modules/legacy-8_[abcde].[CH]: New.
+
 	gcc/cp/
 	* cxx-mapper.cc (server): Workaround PR c++/88664.
 

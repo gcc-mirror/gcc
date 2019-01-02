@@ -1642,15 +1642,18 @@ check_constraint_info (tree t)
 
 /* Module defines.  */
 
-/* Module ownder numbers.   */
+/* Module owner numbers.   */
 #define MODULE_NONE 0		/* The global module.  */
 #define MODULE_PURVIEW 1	/* Current TU purview.  */
 #define MODULE_IMPORT_BASE 2	/* An import.  */
 #define MODULE_LIMIT (1 << MODULE_BITS)
 
-/* Slots in MODULE_VEC.   These differ from module owner numbers.  */
+/* Slots in MODULE_VEC.   See module.cc for how slots and module
+   numbers are related.  */
 #define MODULE_SLOT_CURRENT 0	/* Slot for current TU.  */
 #define MODULE_SLOT_GLOBAL 1	/* Slot for merged global module. */
+#define MODUE_SLOTS_FIXED 2	/* Number of always-allocated slots.  */
+#define MODULE_SLOT_PARTITION 2 /* Slot for merged partition entities.  */
 
 /* The owning module of a DECL.  */
 #define DECL_MODULE_OWNER(N) \
