@@ -1,5 +1,11 @@
 2019-01-02  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/88651
+	* tree-data-ref.c (analyze_subscript_affine_affine): Use
+	widest_ints when mangling max_stmt_execution results.
+
+2019-01-02  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/88621
 	* tree-ssa-loop-im.c (gather_mem_refs_stmt): Fix pastos, avoid
 	bitfields when canoncalizing.
