@@ -1291,6 +1291,12 @@ get_range_strlen_tree (tree arg, bitmap *visited,
   /* The length computed by this invocation of the function.  */
   tree val = NULL_TREE;
 
+  /* True if VAL is an optimistic (tight) bound determined from
+     the size of the character array in which the string may be
+     stored.  In that case, the computed VAL is used to set
+     PDATA->MAXBOUND.  */
+  bool tight_bound = false;
+
   /* We can end up with &(*iftmp_1)[0] here as well, so handle it.  */
   if (TREE_CODE (arg) == ADDR_EXPR
       && TREE_CODE (TREE_OPERAND (arg, 0)) == ARRAY_REF)
@@ -1384,6 +1390,7 @@ get_range_strlen_tree (tree arg, bitmap *visited,
 	      && optype == TREE_TYPE (TREE_OPERAND (arg, 0))
 	      && array_at_struct_end_p (TREE_OPERAND (arg, 0)))
 	    *flexp = true;
+	  tight_bound = true;
 	}
       else if (TREE_CODE (arg) == COMPONENT_REF
 	       && (TREE_CODE (TREE_TYPE (TREE_OPERAND (arg, 1)))
@@ -1419,17 +1426,24 @@ get_range_strlen_tree (tree arg, bitmap *visited,
 	  /* Set the minimum size to zero since the string in
 	     the array could have zero length.  */
 	  pdata->minlen = ssize_int (0);
+
+	  /* The array size determined above is an optimistic bound
+	     on the length.  If the array isn't nul-terminated the
+	     length computed by the library function would be greater.
+	     Even though using strlen to cross the subobject boundary
+	     is undefined, avoid drawing conclusions from the member
+	     type about the length here.  */
+	  tight_bound = true;
 	}
-
-      if (VAR_P (arg))
+      else if (VAR_P (arg))
 	{
-	  tree type = TREE_TYPE (arg);
-	  if (POINTER_TYPE_P (type))
-	    type = TREE_TYPE (type);
-
-	  if (TREE_CODE (type) == ARRAY_TYPE)
+	  /* Avoid handling pointers to arrays.  GCC might misuse
+	     a pointer to an array of one bound to point to an array
+	     object of a greater bound.  */
+	  tree argtype = TREE_TYPE (arg);
+	  if (TREE_CODE (argtype) == ARRAY_TYPE)
 	    {
-	      val = TYPE_SIZE_UNIT (type);
+	      val = TYPE_SIZE_UNIT (argtype);
 	      if (!val
 		  || TREE_CODE (val) != INTEGER_CST
 		  || integer_zerop (val))
@@ -1475,6 +1489,43 @@ get_range_strlen_tree (tree arg, bitmap *visited,
     }
   else
     pdata->maxbound = val;
+
+  if (tight_bound)
+    {
+      /* VAL computed above represents an optimistically tight bound
+	 on the length of the string based on the referenced object's
+	 or subobject's type.  Determine the conservative upper bound
+	 based on the enclosing object's size if possible.  */
+      if (rkind == SRK_LENRANGE || rkind == SRK_LENRANGE_2)
+	{
+	  poly_int64 offset;
+	  tree base = get_addr_base_and_unit_offset (arg, &offset);
+	  if (!base)
+	    {
+	      /* When the call above fails due to a non-constant offset
+		 assume the offset is zero and use the size of the whole
+		 enclosing object instead.  */
+	      base = get_base_address (arg);
+	      offset = 0;
+	    }
+	  /* If the base object is a pointer no upper bound on the length
+	     can be determined.  Otherwise the maximum length is equal to
+	     the size of the enclosing object minus the offset of
+	     the referenced subobject minus 1 (for the terminating nul).  */
+	  tree type = TREE_TYPE (base);
+	  if (TREE_CODE (type) == POINTER_TYPE
+	      || !VAR_P (base) || !(val = DECL_SIZE_UNIT (base)))
+	    val = build_all_ones_cst (size_type_node);
+	  else
+	    {
+	      val = DECL_SIZE_UNIT (base);
+	      val = fold_build2 (MINUS_EXPR, TREE_TYPE (val), val,
+				 size_int (offset + 1));
+	    }
+	}
+      else
+	return false;
+    }
 
   if (pdata->maxlen)
     {

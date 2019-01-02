@@ -1,6 +1,10 @@
 2019-01-01  Martin Sebor  <msebor@redhat.com>
             Jeff Law  <law@redhat.com>
 
+	* gimple-fold.c (get_range_strlen_tree): Record if the computed
+	length is optimistic.  If it is, then arrange to compute the
+	conservative length as well.
+
 	* gimple-fold.h (get_range_strlen): Update prototype.
 	* builtins.c (check_access): Update call to get_range_strlen to use
 	c_strlen_data pointer.   Change various variable accesses to instead
