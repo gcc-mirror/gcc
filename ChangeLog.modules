@@ -1,6 +1,9 @@
 2019-01-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc: Rename gme -> mme, because partitions.
+
+	gcc/cp/
 	* cp-tree.h (DECL_MODULE_PURVIEW_P): Delete.
 	(MAYBE_DECL_MODULE_PURVIEW_P): Delete.
 	* mangle.c (maybe_write_module): Adjust.
