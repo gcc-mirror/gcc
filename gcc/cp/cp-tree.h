@@ -1659,10 +1659,6 @@ check_constraint_info (tree t)
 #define DECL_MODULE_OWNER(N) \
   (DECL_LANG_SPECIFIC (N)->u.base.module_owner)
 
-/* In module purview.  */
-#define DECL_MODULE_PURVIEW_P(N) \
-  (DECL_MODULE_OWNER (N) != MODULE_NONE)
-
 /* Whether this is an exported DECL.  */
 #define DECL_MODULE_EXPORT_P(NODE) \
   TREE_LANG_FLAG_3 (DECL_CHECK (NODE))
@@ -1670,11 +1666,6 @@ check_constraint_info (tree t)
 /* Any namespace-scope decl lacking lang-specific is in no module.  */
 #define MAYBE_DECL_MODULE_OWNER(N)				\
   (DECL_LANG_SPECIFIC (N) ? DECL_MODULE_OWNER (N) : MODULE_NONE)
-
-/* Any namespace-scope decl lacking lang-specific is not in the
-   purview of a module.  */
-#define MAYBE_DECL_MODULE_PURVIEW_P(N)				\
-  (DECL_LANG_SPECIFIC (N) ? DECL_MODULE_PURVIEW_P (N) : false)
 
 
 enum cp_tree_node_structure_enum {

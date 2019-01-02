@@ -877,7 +877,6 @@ mangle_identifier (tree id)
    to regular back-references is tricky.  Namespaces cannot have
    moduleness, but classes can.  However, both are mangled the same,
    so the demangler doesn't have a clue. 
-   FIXME: Augment with back references.
 */
 
 static void
@@ -888,7 +887,9 @@ maybe_write_module (tree decl)
   if (DECL_MODULE_EXPORT_P (owner))
     return;
 
-  if (!MAYBE_DECL_MODULE_PURVIEW_P (owner))
+  /* Legacy modules have an owner, but everything from them is
+     exported so we never get here in that case.  */
+  if (MAYBE_DECL_MODULE_OWNER (owner) == MODULE_NONE)
     return;
 
   G.mod = true;
