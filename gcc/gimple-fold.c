@@ -3739,10 +3739,9 @@ gimple_fold_builtin_strlen (gimple_stmt_iterator *gsi)
       return true;
     }
 
+  /* Set the strlen() range to [0, MAXLEN].  */
   if (tree lhs = gimple_call_lhs (stmt))
-    if (TREE_CODE (lhs) == SSA_NAME
-	&& INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
-      set_range_info (lhs, VR_RANGE, minlen, maxlen);
+    set_strlen_range (lhs, maxlen);
 
   return false;
 }
