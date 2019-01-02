@@ -1,6 +1,10 @@
 2019-01-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.c (module_binding_slot): Add FIXED parm, adjust all
+	callers.
+
+	gcc/cp/
 	* module.cc: Rename gme -> mme, because partitions.
 
 	gcc/cp/
