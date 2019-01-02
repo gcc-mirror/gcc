@@ -1,3 +1,9 @@
+2019-01-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88612 - ICE with -Waddress-of-packed-member.
+	* call.c (convert_for_arg_passing): Only give warnings with tf_warning.
+	* typeck.c (convert_for_assignment): Likewise.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
