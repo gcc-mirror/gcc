@@ -1,3 +1,8 @@
+2019-01-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* parse.c (decode_statement):  Suppress "Unclassifiable statement"
+	error if previous error messages were emittes.
+
 2019-01-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/82743
