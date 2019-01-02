@@ -2003,90 +2003,73 @@ get_string_length (tree str, unsigned eltsize)
   if (!str)
     return fmtresult ();
 
-  c_strlen_data data = { };
-  tree slen = c_strlen (str, 1, &data, eltsize);
-  if (slen && TREE_CODE (slen) == INTEGER_CST)
-    {
-      /* The string is properly terminated and
-	 we know its length.  */
-      fmtresult res (tree_to_shwi (slen));
-      res.nonstr = NULL_TREE;
-      return res;
-    }
-  else if (!slen
-	   && data.decl
-	   && data.minlen
-	   && TREE_CODE (data.minlen) == INTEGER_CST)
-    {
-      /* STR was not properly NUL terminated, but we have
-	 length information about the unterminated string.  */
-      fmtresult res (tree_to_shwi (data.minlen));
-      res.nonstr = data.decl;
-      return res;
-    }
-
   /* Determine the length of the shortest and longest string referenced
      by STR.  Strings of unknown lengths are bounded by the sizes of
      arrays that subexpressions of STR may refer to.  Pointers that
-     aren't known to point any such arrays result in LENRANGE[1] set
-     to SIZE_MAX.  NONSTR is set to the declaration of the constant
-     array that is known not to be nul-terminated.  */
-  tree lenrange[2];
-  tree nonstr;
-  bool flexarray = get_range_strlen (str, lenrange, eltsize, false, &nonstr);
+     aren't known to point any such arrays result in LENDATA.MAXLEN
+     set to SIZE_MAX.  */
+  c_strlen_data lendata = { };
+  bool flexarray = get_range_strlen (str, &lendata, eltsize);
 
-  if (lenrange [0] || lenrange [1])
+  /* Return the default result when nothing is known about the string. */
+  if (integer_all_onesp (lendata.maxbound)
+      && integer_all_onesp (lendata.maxlen))
+    return fmtresult ();
+
+  HOST_WIDE_INT min
+    = (tree_fits_uhwi_p (lendata.minlen)
+       ? tree_to_uhwi (lendata.minlen)
+       : 0);
+
+  HOST_WIDE_INT max
+    = (tree_fits_uhwi_p (lendata.maxbound)
+       ? tree_to_uhwi (lendata.maxbound)
+       : HOST_WIDE_INT_M1U);
+
+  const bool unbounded = flexarray || integer_all_onesp (lendata.maxlen);
+
+  /* Set the max/likely counters to unbounded when a minimum is known
+     but the maximum length isn't bounded.  This implies that STR is
+     a conditional expression involving a string of known length and
+     and an expression of unknown/unbounded length.  */
+  if (min
+      && (unsigned HOST_WIDE_INT)min < HOST_WIDE_INT_M1U
+      && unbounded)
+    max = HOST_WIDE_INT_M1U;
+
+  /* get_range_strlen() returns the target value of SIZE_MAX for
+     strings of unknown length.  Bump it up to HOST_WIDE_INT_M1U
+     which may be bigger.  */
+  if ((unsigned HOST_WIDE_INT)min == target_size_max ())
+    min = HOST_WIDE_INT_M1U;
+  if ((unsigned HOST_WIDE_INT)max == target_size_max ())
+    max = HOST_WIDE_INT_M1U;
+
+  fmtresult res (min, max);
+  res.nonstr = lendata.decl;
+
+  /* Set RES.KNOWNRANGE to true if and only if all strings referenced
+     by STR are known to be bounded (though not necessarily by their
+     actual length but perhaps by their maximum possible length).  */
+  if (res.range.max < target_int_max ())
     {
-      HOST_WIDE_INT min
-	= (tree_fits_uhwi_p (lenrange[0])
-	   ? tree_to_uhwi (lenrange[0])
-	   : 0);
-
-      HOST_WIDE_INT max
-	= (tree_fits_uhwi_p (lenrange[1])
-	   ? tree_to_uhwi (lenrange[1])
-	   : HOST_WIDE_INT_M1U);
-
-      /* get_range_strlen() returns the target value of SIZE_MAX for
-	 strings of unknown length.  Bump it up to HOST_WIDE_INT_M1U
-	 which may be bigger.  */
-      if ((unsigned HOST_WIDE_INT)min == target_size_max ())
-	min = HOST_WIDE_INT_M1U;
-      if ((unsigned HOST_WIDE_INT)max == target_size_max ())
-	max = HOST_WIDE_INT_M1U;
-
-      fmtresult res (min, max);
-      res.nonstr = nonstr;
-
-      /* Set RES.KNOWNRANGE to true if and only if all strings referenced
-	 by STR are known to be bounded (though not necessarily by their
-	 actual length but perhaps by their maximum possible length).  */
-      if (res.range.max < target_int_max ())
-	{
-	  res.knownrange = true;
-	  /* When the the length of the longest string is known and not
-	     excessive use it as the likely length of the string(s).  */
-	  res.range.likely = res.range.max;
-	}
-      else
-	{
-	  /* When the upper bound is unknown (it can be zero or excessive)
-	     set the likely length to the greater of 1 and the length of
-	     the shortest string and reset the lower bound to zero.  */
-	  res.range.likely = res.range.min ? res.range.min : warn_level > 1;
-	  res.range.min = 0;
-	}
-
-      /* If the range of string length has been estimated from the size
-	 of an array at the end of a struct assume that it's longer than
-	 the array bound says it is in case it's used as a poor man's
-	 flexible array member, such as in struct S { char a[4]; };  */
-      res.range.unlikely = flexarray ? HOST_WIDE_INT_MAX : res.range.max;
-
-      return res;
+      res.knownrange = true;
+      /* When the the length of the longest string is known and not
+	 excessive use it as the likely length of the string(s).  */
+      res.range.likely = res.range.max;
+    }
+  else
+    {
+      /* When the upper bound is unknown (it can be zero or excessive)
+	 set the likely length to the greater of 1 and the length of
+	 the shortest string and reset the lower bound to zero.  */
+      res.range.likely = res.range.min ? res.range.min : warn_level > 1;
+      res.range.min = 0;
     }
 
-  return fmtresult ();
+  res.range.unlikely = unbounded ? HOST_WIDE_INT_MAX : res.range.max;
+
+  return res;
 }
 
 /* Return the minimum and maximum number of characters formatted
@@ -2326,6 +2309,8 @@ format_string (const directive &dir, tree arg, vr_values *)
 	  if ((unsigned HOST_WIDE_INT)dir.prec[1] < slen.range.max)
 	    res.range.max = dir.prec[1];
 	  res.range.likely = dir.prec[1] ? warn_level > 1 : 0;
+	  if ((unsigned HOST_WIDE_INT)dir.prec[1] < slen.range.unlikely)
+	    res.range.unlikely = dir.prec[1];
 	}
       else if (slen.range.min >= target_int_max ())
 	{
@@ -2335,6 +2320,7 @@ format_string (const directive &dir, tree arg, vr_values *)
 	     empty, while at level 1 they are assumed to be one byte
 	     long.  */
 	  res.range.likely = warn_level > 1;
+	  res.range.unlikely = HOST_WIDE_INT_MAX;
 	}
       else
 	{
@@ -2344,8 +2330,6 @@ format_string (const directive &dir, tree arg, vr_values *)
 	  if (res.range.likely >= target_int_max ())
 	    res.range.likely = warn_level > 1;
 	}
-
-      res.range.unlikely = res.range.max;
     }
 
   /* If the argument isn't a nul-terminated string and the number
