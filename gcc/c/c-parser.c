@@ -6261,60 +6261,103 @@ c_parser_for_statement (c_parser *parser, bool ivdep, unsigned short unroll,
 }
 
 /* Parse an asm statement, a GNU extension.  This is a full-blown asm
-   statement with inputs, outputs, clobbers, and volatile tag
-   allowed.
+   statement with inputs, outputs, clobbers, and volatile, inline, and goto
+   tags allowed.
+
+   asm-qualifier:
+     volatile
+     inline
+     goto
+
+   asm-qualifier-list:
+     asm-qualifier-list asm-qualifier
+     asm-qualifier
 
    asm-statement:
-     asm type-qualifier[opt] ( asm-argument ) ;
-     asm type-qualifier[opt] goto ( asm-goto-argument ) ;
+     asm asm-qualifier-list[opt] ( asm-argument ) ;
 
    asm-argument:
      asm-string-literal
      asm-string-literal : asm-operands[opt]
      asm-string-literal : asm-operands[opt] : asm-operands[opt]
-     asm-string-literal : asm-operands[opt] : asm-operands[opt] : asm-clobbers[opt]
-
-   asm-goto-argument:
+     asm-string-literal : asm-operands[opt] : asm-operands[opt] \
+       : asm-clobbers[opt]
      asm-string-literal : : asm-operands[opt] : asm-clobbers[opt] \
        : asm-goto-operands
 
-   Qualifiers other than volatile are accepted in the syntax but
-   warned for.  */
+   The form with asm-goto-operands is valid if and only if the
+   asm-qualifier-list contains goto, and is the only allowed form in that case.
+   Duplicate asm-qualifiers are not allowed.  */
 
 static tree
 c_parser_asm_statement (c_parser *parser)
 {
-  tree quals, str, outputs, inputs, clobbers, labels, ret;
-  bool simple, is_goto;
+  tree str, outputs, inputs, clobbers, labels, ret;
+  bool simple;
   location_t asm_loc = c_parser_peek_token (parser)->location;
   int section, nsections;
 
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_ASM));
   c_parser_consume_token (parser);
-  if (c_parser_next_token_is_keyword (parser, RID_VOLATILE))
-    {
-      quals = c_parser_peek_token (parser)->value;
-      c_parser_consume_token (parser);
-    }
-  else if (c_parser_next_token_is_keyword (parser, RID_CONST)
-	   || c_parser_next_token_is_keyword (parser, RID_RESTRICT))
-    {
-      warning_at (c_parser_peek_token (parser)->location,
-		  0,
-		  "%E qualifier ignored on asm",
-		  c_parser_peek_token (parser)->value);
-      quals = NULL_TREE;
-      c_parser_consume_token (parser);
-    }
-  else
-    quals = NULL_TREE;
 
-  is_goto = false;
-  if (c_parser_next_token_is_keyword (parser, RID_GOTO))
+  /* Handle the asm-qualifier-list.  */
+  location_t volatile_loc = UNKNOWN_LOCATION;
+  location_t inline_loc = UNKNOWN_LOCATION;
+  location_t goto_loc = UNKNOWN_LOCATION;
+  for (;;)
     {
-      c_parser_consume_token (parser);
-      is_goto = true;
+      c_token *token = c_parser_peek_token (parser);
+      location_t loc = token->location;
+      switch (token->keyword)
+	{
+	case RID_VOLATILE:
+	  if (volatile_loc)
+	    {
+	      error_at (loc, "duplicate asm qualifier %qE", token->value);
+	      inform (volatile_loc, "first seen here");
+	    }
+	  else
+	    volatile_loc = loc;
+	  c_parser_consume_token (parser);
+	  continue;
+
+	case RID_INLINE:
+	  if (inline_loc)
+	    {
+	      error_at (loc, "duplicate asm qualifier %qE", token->value);
+	      inform (inline_loc, "first seen here");
+	    }
+	  else
+	    inline_loc = loc;
+	  c_parser_consume_token (parser);
+	  continue;
+
+	case RID_GOTO:
+	  if (goto_loc)
+	    {
+	      error_at (loc, "duplicate asm qualifier %qE", token->value);
+	      inform (goto_loc, "first seen here");
+	    }
+	  else
+	    goto_loc = loc;
+	  c_parser_consume_token (parser);
+	  continue;
+
+	case RID_CONST:
+	case RID_RESTRICT:
+	  warning_at (loc, 0, "%qE is not an asm qualifier", token->value);
+	  c_parser_consume_token (parser);
+	  continue;
+
+	default:
+	  break;
+	}
+      break;
     }
+
+  bool is_volatile = (volatile_loc != UNKNOWN_LOCATION);
+  bool is_inline = (inline_loc != UNKNOWN_LOCATION);
+  bool is_goto = (goto_loc != UNKNOWN_LOCATION);
 
   /* ??? Follow the C++ parser rather than using the
      lex_untranslated_string kludge.  */
@@ -6390,8 +6433,9 @@ c_parser_asm_statement (c_parser *parser)
   if (!c_parser_require (parser, CPP_SEMICOLON, "expected %<;%>"))
     c_parser_skip_to_end_of_block_or_statement (parser);
 
-  ret = build_asm_stmt (quals, build_asm_expr (asm_loc, str, outputs, inputs,
-					       clobbers, labels, simple));
+  ret = build_asm_stmt (is_volatile,
+			build_asm_expr (asm_loc, str, outputs, inputs,
+					clobbers, labels, simple, is_inline));
 
  error:
   parser->lex_untranslated_string = false;

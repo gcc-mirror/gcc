@@ -1,3 +1,55 @@
+2018-01-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from trunk
+	2018-12-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR inline-asm/55681
+	* c-parser.c (c_parser_asm_statement): Update grammar.  Allow any
+	combination of volatile and goto, in any order, without repetitions.
+
+	Backport from trunk
+	2018-12-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* c-parser.c (c_parser_asm_statement): Detect the inline keyword
+	after asm.  Pass a flag for it to build_asm_expr.
+	* c-tree.h (build_asm_expr): Update declaration.
+	* c-typeck.c (build_asm_stmt): Add is_inline parameter.  Use it to
+	set ASM_INLINE_P.
+
+	Backport from trunk
+	2018-12-08  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* c-parser (c_parser_asm_statement) [RID_INLINE]: Delete stray line
+	setting "quals".
+
+	Backport from trunk
+	2018-12-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* c-parser.c (c_parser_asm_statement): Rewrite the loop to work without
+	"done" boolean variable.
+
+	Backport from trunk
+	2018-12-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* c-parser.c (c_parser_asm_statement): Keep track of the location each
+	asm qualifier is first seen; use that to give nicer "duplicate asm
+	qualifier" messages.  Delete 'quals" variable, instead pass the
+	"is_volatile_ flag to build_asm_stmt directly.
+	* c-tree.h (build_asm_stmt): Make the first arg bool instead of tree.
+	* c-typeck.c (build_asm_stmt): Ditto; adjust.
+
+	Backport from trunk
+	2018-12-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* c-parser.c (c_parser_asm_statement) <RID_CONST, RID_RESTRICT>: Give
+	a more specific error message (instead of just falling through).
+
+	And extra for the backport
+	2019-01-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* c-parser.c (c_parser_asm_statement): Output a warning instead of an
+	error for const and restrict.
+
 2018-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/85704

@@ -8147,7 +8147,7 @@ for a C symbol, or to place a C variable in a specific register.
 A basic @code{asm} statement has the following syntax:
 
 @example
-asm @r{[} volatile @r{]} ( @var{AssemblerInstructions} )
+asm @var{asm-qualifiers} ( @var{AssemblerInstructions} )
 @end example
 
 The @code{asm} keyword is a GNU extension.
@@ -8160,6 +8160,10 @@ various @option{-std} options, use @code{__asm__} instead of
 @item volatile
 The optional @code{volatile} qualifier has no effect. 
 All basic @code{asm} blocks are implicitly volatile.
+
+@item inline
+If you use the @code{inline} qualifier, then for inlining purposes the size
+of the asm is taken as the smallest size possible (@pxref{Size of an asm}).
 @end table
 
 @subsubheading Parameters
@@ -8275,17 +8279,19 @@ Extended @code{asm} syntax uses colons (@samp{:}) to delimit
 the operand parameters after the assembler template:
 
 @example
-asm @r{[}volatile@r{]} ( @var{AssemblerTemplate} 
+asm @var{asm-qualifiers} ( @var{AssemblerTemplate} 
                  : @var{OutputOperands} 
                  @r{[} : @var{InputOperands}
                  @r{[} : @var{Clobbers} @r{]} @r{]})
 
-asm @r{[}volatile@r{]} goto ( @var{AssemblerTemplate} 
+asm @var{asm-qualifiers} ( @var{AssemblerTemplate} 
                       : 
                       : @var{InputOperands}
                       : @var{Clobbers}
                       : @var{GotoLabels})
 @end example
+where in the last form, @var{asm-qualifiers} contains @code{goto} (and in the
+first form, not).
 
 The @code{asm} keyword is a GNU extension.
 When writing code that can be compiled with @option{-ansi} and the
@@ -8300,6 +8306,10 @@ The typical use of extended @code{asm} statements is to manipulate input
 values to produce output values. However, your @code{asm} statements may 
 also produce side effects. If so, you may need to use the @code{volatile} 
 qualifier to disable certain optimizations. @xref{Volatile}.
+
+@item inline
+If you use the @code{inline} qualifier, then for inlining purposes the size
+of the asm is taken as the smallest size possible (@pxref{Size of an asm}).
 
 @item goto
 This qualifier informs the compiler that the @code{asm} statement may 
@@ -9712,7 +9722,7 @@ does this by counting the number of instructions in the pattern of the
 @code{asm} and multiplying that by the length of the longest
 instruction supported by that processor.  (When working out the number
 of instructions, it assumes that any occurrence of a newline or of
-whatever statement separator character is supported by the assembler --
+whatever statement separator character is supported by the assembler ---
 typically @samp{;} --- indicates the end of an instruction.)
 
 Normally, GCC's estimate is adequate to ensure that correct
@@ -9722,6 +9732,11 @@ instructions, or if you use assembler directives that expand to more
 space in the object file than is needed for a single instruction.
 If this happens then the assembler may produce a diagnostic saying that
 a label is unreachable.
+
+@cindex @code{asm inline}
+This size is also used for inlining decisions.  If you use @code{asm inline}
+instead of just @code{asm}, then for inlining purposes the size of the asm
+is taken as the minimum size, ignoring how many instructions GCC thinks it is.
 
 @node Alternate Keywords
 @section Alternate Keywords

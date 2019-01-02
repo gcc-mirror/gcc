@@ -1461,11 +1461,11 @@ finish_compound_stmt (tree stmt)
 /* Finish an asm-statement, whose components are a STRING, some
    OUTPUT_OPERANDS, some INPUT_OPERANDS, some CLOBBERS and some
    LABELS.  Also note whether the asm-statement should be
-   considered volatile.  */
+   considered volatile, and whether it is asm inline.  */
 
 tree
 finish_asm_stmt (int volatile_p, tree string, tree output_operands,
-		 tree input_operands, tree clobbers, tree labels)
+		 tree input_operands, tree clobbers, tree labels, bool inline_p)
 {
   tree r;
   tree t;
@@ -1619,6 +1619,7 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 		  output_operands, input_operands,
 		  clobbers, labels);
   ASM_VOLATILE_P (r) = volatile_p || noutputs == 0;
+  ASM_INLINE_P (r) = inline_p;
   r = maybe_cleanup_point_expr_void (r);
   return add_stmt (r);
 }

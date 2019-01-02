@@ -4149,6 +4149,9 @@ estimate_num_insns (gimple *stmt, eni_weights *weights)
 	   with very long asm statements.  */
 	if (count > 1000)
 	  count = 1000;
+	/* If this asm is asm inline, count anything as minimum size.  */
+	if (gimple_asm_inline_p (as_a <gasm *> (stmt)))
+	  count = MIN (1, count);
 	return MAX (1, count);
       }
 
