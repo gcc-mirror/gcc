@@ -1,4 +1,4 @@
-/* Copyright (C) 2013-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2013-2019 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -180,16 +180,22 @@ gomp_device_copy (struct gomp_device_descr *devicep,
 /* Infrastructure for coalescing adjacent or nearly adjacent (in device addresses)
    host to device memory transfers.  */
 
+struct gomp_coalesce_chunk
+{
+  /* The starting and ending point of a coalesced chunk of memory.  */
+  size_t start, end;
+};
+
 struct gomp_coalesce_buf
 {
   /* Buffer into which gomp_copy_host2dev will memcpy data and from which
      it will be copied to the device.  */
   void *buf;
   struct target_mem_desc *tgt;
-  /* Array with offsets, chunks[2 * i] is the starting offset and
-     chunks[2 * i + 1] ending offset relative to tgt->tgt_start device address
+  /* Array with offsets, chunks[i].start is the starting offset and
+     chunks[i].end ending offset relative to tgt->tgt_start device address
      of chunks which are to be copied to buf and later copied to device.  */
-  size_t *chunks;
+  struct gomp_coalesce_chunk *chunks;
   /* Number of chunks in chunks array, or -1 if coalesce buffering should not
      be performed.  */
   long chunk_cnt;
@@ -222,14 +228,14 @@ gomp_coalesce_buf_add (struct gomp_coalesce_buf *cbuf, size_t start, size_t len)
     {
       if (cbuf->chunk_cnt < 0)
 	return;
-      if (start < cbuf->chunks[2 * cbuf->chunk_cnt - 1])
+      if (start < cbuf->chunks[cbuf->chunk_cnt - 1].end)
 	{
 	  cbuf->chunk_cnt = -1;
 	  return;
 	}
-      if (start < cbuf->chunks[2 * cbuf->chunk_cnt - 1] + MAX_COALESCE_BUF_GAP)
+      if (start < cbuf->chunks[cbuf->chunk_cnt - 1].end + MAX_COALESCE_BUF_GAP)
 	{
-	  cbuf->chunks[2 * cbuf->chunk_cnt - 1] = start + len;
+	  cbuf->chunks[cbuf->chunk_cnt - 1].end = start + len;
 	  cbuf->use_cnt++;
 	  return;
 	}
@@ -239,8 +245,8 @@ gomp_coalesce_buf_add (struct gomp_coalesce_buf *cbuf, size_t start, size_t len)
       if (cbuf->use_cnt == 1)
 	cbuf->chunk_cnt--;
     }
-  cbuf->chunks[2 * cbuf->chunk_cnt] = start;
-  cbuf->chunks[2 * cbuf->chunk_cnt + 1] = start + len;
+  cbuf->chunks[cbuf->chunk_cnt].start = start;
+  cbuf->chunks[cbuf->chunk_cnt].end = start + len;
   cbuf->chunk_cnt++;
   cbuf->use_cnt = 1;
 }
@@ -271,20 +277,20 @@ gomp_copy_host2dev (struct gomp_device_descr *devicep,
   if (cbuf)
     {
       uintptr_t doff = (uintptr_t) d - cbuf->tgt->tgt_start;
-      if (doff < cbuf->chunks[2 * cbuf->chunk_cnt - 1])
+      if (doff < cbuf->chunks[cbuf->chunk_cnt - 1].end)
 	{
 	  long first = 0;
 	  long last = cbuf->chunk_cnt - 1;
 	  while (first <= last)
 	    {
 	      long middle = (first + last) >> 1;
-	      if (cbuf->chunks[2 * middle + 1] <= doff)
+	      if (cbuf->chunks[middle].end <= doff)
 		first = middle + 1;
-	      else if (cbuf->chunks[2 * middle] <= doff)
+	      else if (cbuf->chunks[middle].start <= doff)
 		{
-		  if (doff + sz > cbuf->chunks[2 * middle + 1])
+		  if (doff + sz > cbuf->chunks[middle].end)
 		    gomp_fatal ("internal libgomp cbuf error");
-		  memcpy ((char *) cbuf->buf + (doff - cbuf->chunks[0]),
+		  memcpy ((char *) cbuf->buf + (doff - cbuf->chunks[0].start),
 			  h, sz);
 		  return;
 		}
@@ -510,8 +516,8 @@ gomp_map_vars (struct gomp_device_descr *devicep, size_t mapnum,
   cbuf.buf = NULL;
   if (mapnum > 1 || pragma_kind == GOMP_MAP_VARS_TARGET)
     {
-      cbuf.chunks
-	= (size_t *) gomp_alloca ((2 * mapnum + 2) * sizeof (size_t));
+      size_t chunks_size = (mapnum + 1) * sizeof (struct gomp_coalesce_chunk);
+      cbuf.chunks = (struct gomp_coalesce_chunk *) gomp_alloca (chunks_size);
       cbuf.chunk_cnt = 0;
     }
   if (pragma_kind == GOMP_MAP_VARS_TARGET)
@@ -521,8 +527,8 @@ gomp_map_vars (struct gomp_device_descr *devicep, size_t mapnum,
       tgt_size = mapnum * sizeof (void *);
       cbuf.chunk_cnt = 1;
       cbuf.use_cnt = 1 + (mapnum > 1);
-      cbuf.chunks[0] = 0;
-      cbuf.chunks[1] = tgt_size;
+      cbuf.chunks[0].start = 0;
+      cbuf.chunks[0].end = tgt_size;
     }
 
   gomp_mutex_lock (&devicep->lock);
@@ -707,7 +713,7 @@ gomp_map_vars (struct gomp_device_descr *devicep, size_t mapnum,
       if (cbuf.chunk_cnt > 0)
 	{
 	  cbuf.buf
-	    = malloc (cbuf.chunks[2 * cbuf.chunk_cnt - 1] - cbuf.chunks[0]);
+	    = malloc (cbuf.chunks[cbuf.chunk_cnt - 1].end - cbuf.chunks[0].start);
 	  if (cbuf.buf)
 	    {
 	      cbuf.tgt = tgt;
@@ -983,10 +989,14 @@ gomp_map_vars (struct gomp_device_descr *devicep, size_t mapnum,
     {
       long c = 0;
       for (c = 0; c < cbuf.chunk_cnt; ++c)
-	gomp_copy_host2dev (devicep, (void *) (tgt->tgt_start + cbuf.chunks[2 * c]),
-			    (char *) cbuf.buf + (cbuf.chunks[2 * c] - cbuf.chunks[0]),
-			    cbuf.chunks[2 * c + 1] - cbuf.chunks[2 * c], NULL);
+	gomp_copy_host2dev (devicep,
+			    (void *) (tgt->tgt_start + cbuf.chunks[c].start),
+			    (char *) cbuf.buf + (cbuf.chunks[c].start
+						 - cbuf.chunks[0].start),
+			    cbuf.chunks[c].end - cbuf.chunks[c].start, NULL);
       free (cbuf.buf);
+      cbuf.buf = NULL;
+      cbufp = NULL;
     }
 
   /* If the variable from "omp target enter data" map-list was already mapped,

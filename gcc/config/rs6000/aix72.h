@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX V7.2.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@gnu.org).
 
    This file is part of GCC.
@@ -77,7 +77,7 @@ do {									\
   mcpu=power4: -mpwr4; \
   mcpu=power3: -m620; \
   mcpu=powerpc: -mppc; \
-  mcpu=rs64a: -mppc; \
+  mcpu=rs64: -mppc; \
   mcpu=603: -m603; \
   mcpu=603e: -m603; \
   mcpu=604: -m604; \
@@ -88,8 +88,7 @@ do {									\
   !mcpu*: %{mvsx: -mpwr6; \
 	    maltivec: -m970; \
 	    maix64|mpowerpc64: -mppc64; \
-	    : %(asm_default)}; \
-  :%eMissing -mcpu option in ASM_SPEC_CPU?\n} \
+	    : %(asm_default)}} \
 -many"
 
 #undef	ASM_DEFAULT_SPEC

@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C++ compiler.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -1682,6 +1682,8 @@ cxx_sizeof_expr (tree e, tsubst_flags_t complain)
       return e;
     }
 
+  STRIP_ANY_LOCATION_WRAPPER (e);
+
   /* To get the size of a static data member declared as an array of
      unknown bound, we need to instantiate it.  */
   if (VAR_P (e)
@@ -1753,6 +1755,8 @@ cxx_alignof_expr (tree e, tsubst_flags_t complain)
 
       return e;
     }
+
+  STRIP_ANY_LOCATION_WRAPPER (e);
 
   e = mark_type_use (e);
 
@@ -1943,6 +1947,12 @@ is_bitfield_expr_with_lowered_type (const_tree exp)
 	return is_bitfield_expr_with_lowered_type (DECL_VALUE_EXPR
 						   (CONST_CAST_TREE (exp)));
       return NULL_TREE;
+
+    case VIEW_CONVERT_EXPR:
+      if (location_wrapper_p (exp))
+	return is_bitfield_expr_with_lowered_type (TREE_OPERAND (exp, 0));
+      else
+	return NULL_TREE;
 
     CASE_CONVERT:
       if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (exp, 0)))
@@ -3415,6 +3425,8 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
 	 pointer arithmetic.)  */
       idx = cp_perform_integral_promotions (idx, complain);
 
+      idx = maybe_constant_value (idx);
+
       /* An array that is indexed by a non-constant
 	 cannot be stored in a register; we must be able to do
 	 address arithmetic on its address.
@@ -4116,7 +4128,7 @@ convert_arguments (tree typelist, vec<tree, va_gc> **values, tree fndecl,
    ARG2_CODE as ERROR_MARK.  */
 
 tree
-build_x_binary_op (location_t loc, enum tree_code code, tree arg1,
+build_x_binary_op (const op_location_t &loc, enum tree_code code, tree arg1,
 		   enum tree_code arg1_code, tree arg2,
 		   enum tree_code arg2_code, tree *overload_p,
 		   tsubst_flags_t complain)
@@ -4305,7 +4317,7 @@ warn_for_null_address (location_t location, tree op, tsubst_flags_t complain)
    multiple inheritance, and deal with pointer to member functions.  */
 
 tree
-cp_build_binary_op (location_t location,
+cp_build_binary_op (const op_location_t &location,
 		    enum tree_code code, tree orig_op0, tree orig_op1,
 		    tsubst_flags_t complain)
 {
@@ -4561,20 +4573,23 @@ cp_build_binary_op (location_t location,
 	    type0 = TREE_TYPE (type0);
 	  if (!TYPE_P (type1))
 	    type1 = TREE_TYPE (type1);
-	  if (INDIRECT_TYPE_P (type0) && same_type_p (TREE_TYPE (type0), type1)
-	      && !(TREE_CODE (first_arg) == PARM_DECL
-		   && DECL_ARRAY_PARAMETER_P (first_arg)
-		   && warn_sizeof_array_argument)
-	      && (complain & tf_warning))
+	  if (INDIRECT_TYPE_P (type0) && same_type_p (TREE_TYPE (type0), type1))
 	    {
-	      auto_diagnostic_group d;
-	      if (warning_at (location, OPT_Wsizeof_pointer_div,
-				"division %<sizeof (%T) / sizeof (%T)%> does "
-				"not compute the number of array elements",
-			    type0, type1))
-		if (DECL_P (first_arg))
-		  inform (DECL_SOURCE_LOCATION (first_arg),
-			    "first %<sizeof%> operand was declared here");
+	      STRIP_ANY_LOCATION_WRAPPER (first_arg);
+	      if (!(TREE_CODE (first_arg) == PARM_DECL
+		    && DECL_ARRAY_PARAMETER_P (first_arg)
+		    && warn_sizeof_array_argument)
+		  && (complain & tf_warning))
+		{
+		  auto_diagnostic_group d;
+		  if (warning_at (location, OPT_Wsizeof_pointer_div,
+				  "division %<sizeof (%T) / sizeof (%T)%> does "
+				  "not compute the number of array elements",
+				  type0, type1))
+		    if (DECL_P (first_arg))
+		      inform (DECL_SOURCE_LOCATION (first_arg),
+			      "first %<sizeof%> operand was declared here");
+		}
 	    }
 	}
 
@@ -4596,15 +4611,18 @@ cp_build_binary_op (location_t location,
 	  if (!(tcode0 == INTEGER_TYPE && tcode1 == INTEGER_TYPE))
 	    resultcode = RDIV_EXPR;
 	  else
-	    /* When dividing two signed integers, we have to promote to int.
-	       unless we divide by a constant != -1.  Note that default
-	       conversion will have been performed on the operands at this
-	       point, so we have to dig out the original type to find out if
-	       it was unsigned.  */
-	    shorten = ((TREE_CODE (op0) == NOP_EXPR
-			&& TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op0, 0))))
-		       || (TREE_CODE (op1) == INTEGER_CST
-			   && ! integer_all_onesp (op1)));
+	    {
+	      /* When dividing two signed integers, we have to promote to int.
+		 unless we divide by a constant != -1.  Note that default
+		 conversion will have been performed on the operands at this
+		 point, so we have to dig out the original type to find out if
+		 it was unsigned.  */
+	      tree stripped_op1 = tree_strip_any_location_wrapper (op1);
+	      shorten = ((TREE_CODE (op0) == NOP_EXPR
+			  && TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op0, 0))))
+			 || (TREE_CODE (stripped_op1) == INTEGER_CST
+			     && ! integer_all_onesp (stripped_op1)));
+	    }
 
 	  common = 1;
 	}
@@ -4638,10 +4656,11 @@ cp_build_binary_op (location_t location,
 	     on some targets, since the modulo instruction is undefined if the
 	     quotient can't be represented in the computation mode.  We shorten
 	     only if unsigned or if dividing by something we know != -1.  */
+	  tree stripped_op1 = tree_strip_any_location_wrapper (op1);
 	  shorten = ((TREE_CODE (op0) == NOP_EXPR
 		      && TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op0, 0))))
-		     || (TREE_CODE (op1) == INTEGER_CST
-			 && ! integer_all_onesp (op1)));
+		     || (TREE_CODE (stripped_op1) == INTEGER_CST
+			 && ! integer_all_onesp (stripped_op1)));
 	  common = 1;
 	}
       break;
@@ -4842,13 +4861,17 @@ cp_build_binary_op (location_t location,
 	  && (FLOAT_TYPE_P (type0) || FLOAT_TYPE_P (type1)))
 	warning (OPT_Wfloat_equal,
 		 "comparing floating point with == or != is unsafe");
-      if ((complain & tf_warning)
-	  && ((TREE_CODE (orig_op0) == STRING_CST
+      if (complain & tf_warning)
+	{
+	  tree stripped_orig_op0 = tree_strip_any_location_wrapper (orig_op0);
+	  tree stripped_orig_op1 = tree_strip_any_location_wrapper (orig_op1);
+	  if ((TREE_CODE (stripped_orig_op0) == STRING_CST
 	       && !integer_zerop (cp_fully_fold (op1)))
-	      || (TREE_CODE (orig_op1) == STRING_CST
-		  && !integer_zerop (cp_fully_fold (op0)))))
-	warning (OPT_Waddress, "comparison with string literal results "
-			       "in unspecified behavior");
+	      || (TREE_CODE (stripped_orig_op1) == STRING_CST
+		  && !integer_zerop (cp_fully_fold (op0))))
+	    warning (OPT_Waddress, "comparison with string literal results "
+		     "in unspecified behavior");
+	}
 
       build_type = boolean_type_node;
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
@@ -5291,9 +5314,13 @@ cp_build_binary_op (location_t location,
   if (!result_type)
     {
       if (complain & tf_error)
-	error_at (location,
-		  "invalid operands of types %qT and %qT to binary %qO",
-		  TREE_TYPE (orig_op0), TREE_TYPE (orig_op1), code);
+	{
+	  binary_op_rich_location richloc (location,
+					   orig_op0, orig_op1, true);
+	  error_at (&richloc,
+		    "invalid operands of types %qT and %qT to binary %qO",
+		    TREE_TYPE (orig_op0), TREE_TYPE (orig_op1), code);
+	}
       return error_mark_node;
     }
 
@@ -6080,8 +6107,9 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
      so we can just form an ADDR_EXPR with the correct type.  */
   if (processing_template_decl || TREE_CODE (arg) != COMPONENT_REF)
     {
-      if (TREE_CODE (arg) == FUNCTION_DECL
-	  && !mark_used (arg, complain) && !(complain & tf_error))
+      tree stripped_arg = tree_strip_any_location_wrapper (arg);
+      if (TREE_CODE (stripped_arg) == FUNCTION_DECL
+	  && !mark_used (stripped_arg, complain) && !(complain & tf_error))
 	return error_mark_node;
       val = build_address (arg);
       if (TREE_CODE (arg) == OFFSET_REF)
@@ -8304,7 +8332,8 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
       /* C++11 8.5/17: "If the destination type is an array of characters,
 	 an array of char16_t, an array of char32_t, or an array of wchar_t,
 	 and the initializer is a string literal...".  */
-      else if (TREE_CODE (newrhs) == STRING_CST
+      else if ((TREE_CODE (tree_strip_any_location_wrapper (newrhs))
+		== STRING_CST)
 	       && char_type_p (TREE_TYPE (TYPE_MAIN_VARIANT (lhstype)))
 	       && modifycode == INIT_EXPR)
 	{
@@ -8823,9 +8852,11 @@ convert_for_assignment (tree type, tree rhs,
   enum tree_code coder;
 
   location_t rhs_loc = EXPR_LOC_OR_LOC (rhs, input_location);
-
-  /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
-  if (TREE_CODE (rhs) == NON_LVALUE_EXPR)
+  bool has_loc = EXPR_LOCATION (rhs) != UNKNOWN_LOCATION;
+  /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue,
+     but preserve location wrappers.  */
+  if (TREE_CODE (rhs) == NON_LVALUE_EXPR
+      && !location_wrapper_p (rhs))
     rhs = TREE_OPERAND (rhs, 0);
 
   /* Handle [dcl.init.list] direct-list-initialization from
@@ -8862,7 +8893,7 @@ convert_for_assignment (tree type, tree rhs,
   if (coder == VOID_TYPE)
     {
       if (complain & tf_error)
-	error ("void value not ignored as it ought to be");
+	error_at (rhs_loc, "void value not ignored as it ought to be");
       return error_mark_node;
     }
 
@@ -8934,35 +8965,43 @@ convert_for_assignment (tree type, tree rhs,
 					     rhstype, type,
 					     fndecl, parmnum);
 	      else
-		switch (errtype)
-		  {
+		{
+		  range_label_for_type_mismatch label (rhstype, type);
+		  gcc_rich_location richloc (rhs_loc, has_loc ? &label : NULL);
+		  switch (errtype)
+		    {
 		    case ICR_DEFAULT_ARGUMENT:
-		      error ("cannot convert %qH to %qI in default argument",
-			     rhstype, type);
+		      error_at (&richloc,
+				"cannot convert %qH to %qI in default argument",
+				rhstype, type);
 		      break;
 		    case ICR_ARGPASS:
-		      error ("cannot convert %qH to %qI in argument passing",
-			     rhstype, type);
+		      error_at (&richloc,
+				"cannot convert %qH to %qI in argument passing",
+				rhstype, type);
 		      break;
 		    case ICR_CONVERTING:
-		      error ("cannot convert %qH to %qI",
-			     rhstype, type);
+		      error_at (&richloc, "cannot convert %qH to %qI",
+				rhstype, type);
 		      break;
 		    case ICR_INIT:
-		      error ("cannot convert %qH to %qI in initialization",
-			     rhstype, type);
+		      error_at (&richloc,
+				"cannot convert %qH to %qI in initialization",
+				rhstype, type);
 		      break;
 		    case ICR_RETURN:
-		      error ("cannot convert %qH to %qI in return",
-			     rhstype, type);
+		      error_at (&richloc, "cannot convert %qH to %qI in return",
+				rhstype, type);
 		      break;
 		    case ICR_ASSIGN:
-		      error ("cannot convert %qH to %qI in assignment",
-			     rhstype, type);
+		      error_at (&richloc,
+				"cannot convert %qH to %qI in assignment",
+				rhstype, type);
 		      break;
 		    default:
 		      gcc_unreachable();
 		  }
+		}
 	      if (TYPE_PTR_P (rhstype)
 		  && TYPE_PTR_P (type)
 		  && CLASS_TYPE_P (TREE_TYPE (rhstype))
@@ -9029,12 +9068,12 @@ convert_for_assignment (tree type, tree rhs,
       && TREE_CODE (TREE_TYPE (rhs)) != BOOLEAN_TYPE
       && (complain & tf_warning))
     {
-      location_t loc = cp_expr_loc_or_loc (rhs, input_location);
-
-      warning_at (loc, OPT_Wparentheses,
+      warning_at (rhs_loc, OPT_Wparentheses,
 		  "suggest parentheses around assignment used as truth value");
       TREE_NO_WARNING (rhs) = 1;
     }
+
+  warn_for_address_or_pointer_of_packed_member (false, type, rhs);
 
   return perform_implicit_conversion_flags (strip_top_quals (type), rhs,
 					    complain, flags);
@@ -9199,6 +9238,8 @@ maybe_warn_about_returning_address_of_local (tree retval)
       return true;
     }
 
+  STRIP_ANY_LOCATION_WRAPPER (whats_returned);
+
   if (DECL_P (whats_returned)
       && DECL_NAME (whats_returned)
       && DECL_FUNCTION_SCOPE_P (whats_returned)
@@ -9300,6 +9341,8 @@ is_std_move_p (tree fn)
 static bool
 can_do_nrvo_p (tree retval, tree functype)
 {
+  if (retval)
+    STRIP_ANY_LOCATION_WRAPPER (retval);
   tree result = DECL_RESULT (current_function_decl);
   return (retval != NULL_TREE
 	  && !processing_template_decl
@@ -9326,6 +9369,7 @@ can_do_nrvo_p (tree retval, tree functype)
 bool
 treat_lvalue_as_rvalue_p (tree retval, bool parm_ok)
 {
+  STRIP_ANY_LOCATION_WRAPPER (retval);
   return ((cxx_dialect != cxx98)
 	  && ((VAR_P (retval) && !DECL_HAS_VALUE_EXPR_P (retval))
 	      || (parm_ok && TREE_CODE (retval) == PARM_DECL))
@@ -9619,6 +9663,8 @@ check_return_expr (tree retval, bool *no_warning)
      this restriction, anyway.  (jason 2000-11-19)
 
      See finish_function and finalize_nrv for the rest of this optimization.  */
+  if (retval)
+    STRIP_ANY_LOCATION_WRAPPER (retval);
 
   bool named_return_value_okay_p = can_do_nrvo_p (retval, functype);
   if (fn_returns_value_p && flag_elide_constructors)

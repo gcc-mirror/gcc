@@ -1,6 +1,6 @@
-/* { dg-do link } */
-/* { dg-require-effective-target offload_nvptx } */
-/* { dg-options "-fopenacc -O2 -foffload=-fdump-rtl-mach\\ -dumpbase\\ nvptx-merged-loop.c\\ -Wa,--no-verify" } */
+/* { dg-do run { target openacc_nvidia_accel_selected } } */
+/* { dg-options "-foffload=-fdump-rtl-mach" } */
+/* { dg-skip-if "" { *-*-* } { "*" } { "-O2" } } */
 
 #define N (32*32*32+17)
 void __attribute__ ((noinline)) Foo (int *ary)
@@ -27,4 +27,4 @@ int main ()
   return 0;
 }   
 
-/* { dg-final { scan-rtl-dump "Merging loop .* into " "mach" } } */
+/* { dg-final { scan-offload-rtl-dump "Merging loop .* into " "mach" } } */

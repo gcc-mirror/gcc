@@ -1,4 +1,4 @@
-#   Copyright (C) 1999-2018 Free Software Foundation, Inc.
+#   Copyright (C) 1999-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -5925,7 +5925,10 @@ proc check_effective_target_vect_udot_hi { } {
 
 proc check_effective_target_vect_usad_char { } {
     return [check_cached_effective_target_indexed vect_usad_char {
-      expr { [istarget i?86-*-*] || [istarget x86_64-*-*] }}]
+      expr { [istarget i?86-*-*]
+	      || [istarget x86_64-*-*]
+	      || ([istarget aarch64*-*-*]
+		  && ![check_effective_target_aarch64_sve])}}]
 }
 
 # Return 1 if the target plus current options supports both signed

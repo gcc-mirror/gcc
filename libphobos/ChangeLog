@@ -1,3 +1,7 @@
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2018-12-14  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* src/std/internal/digest: Remove empty directory.
@@ -111,7 +115,7 @@
 	* testsuite/testsuite_flags.in: New file.
 
 
-Copyright (C) 2018 Free Software Foundation, Inc.
+Copyright (C) 2018-2019 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

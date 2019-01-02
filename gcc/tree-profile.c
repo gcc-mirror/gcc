@@ -1,5 +1,5 @@
 /* Calculate branch probabilities, and basic block execution counts.
-   Copyright (C) 1990-2018 Free Software Foundation, Inc.
+   Copyright (C) 1990-2019 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -739,7 +739,8 @@ tree_profiling (void)
 
   FOR_EACH_DEFINED_FUNCTION (node)
     {
-      if (!gimple_has_body_p (node->decl))
+      bool thunk = false;
+      if (!gimple_has_body_p (node->decl) && !node->thunk.thunk_p)
 	continue;
 
       /* Don't profile functions produced for builtin stuff.  */
@@ -760,22 +761,43 @@ tree_profiling (void)
       if (!include_source_file_for_profile (file))
 	continue;
 
+      if (node->thunk.thunk_p)
+	{
+	  /* We can not expand variadic thunks to Gimple.  */
+	  if (stdarg_p (TREE_TYPE (node->decl)))
+	    continue;
+	  thunk = true;
+	  /* When generate profile, expand thunk to gimple so it can be
+	     instrumented same way as other functions.  */
+	  if (profile_arc_flag)
+	    node->expand_thunk (false, true);
+	  /* Read cgraph profile but keep function as thunk at profile-use
+	     time.  */
+	  else
+	    {
+	      read_thunk_profile (node);
+	      continue;
+	    }
+	}
+
       push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 
       if (dump_file)
 	dump_function_header (dump_file, cfun->decl, dump_flags);
 
       /* Local pure-const may imply need to fixup the cfg.  */
-      if (execute_fixup_cfg () & TODO_cleanup_cfg)
+      if (gimple_has_body_p (node->decl)
+	  && (execute_fixup_cfg () & TODO_cleanup_cfg))
 	cleanup_tree_cfg ();
 
-      branch_prob ();
+      branch_prob (thunk);
 
       if (! flag_branch_probabilities
 	  && flag_profile_values)
 	gimple_gen_ic_func_profiler ();
 
       if (flag_branch_probabilities
+	  && !thunk
 	  && flag_profile_values
 	  && flag_value_profile_transformations)
 	gimple_value_profile_transformations ();

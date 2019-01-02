@@ -1,5 +1,5 @@
 /* Deal with I/O statements & related stuff.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1636,6 +1636,12 @@ resolve_tag_format (gfc_expr *e)
 	  gfc_expr *r;
 	  gfc_char_t *dest, *src;
 
+	  if (e->value.constructor == NULL)
+	   {
+	     gfc_error ("FORMAT tag at %C cannot be a zero-sized array");
+	     return false;
+	   }
+
 	  n = 0;
 	  c = gfc_constructor_first (e->value.constructor);
 	  len = c->expr->value.character.length;
@@ -3245,12 +3251,21 @@ gfc_resolve_dt (gfc_dt *dt, locus *loc)
 {
   gfc_expr *e;
   io_kind k;
+  locus tmp;
 
   /* This is set in any case.  */
   gcc_assert (dt->dt_io_kind);
   k = dt->dt_io_kind->value.iokind;
 
-  RESOLVE_TAG (&tag_format, dt->format_expr);
+  tmp = gfc_current_locus;
+  gfc_current_locus = *loc;
+  if (!resolve_tag (&tag_format, dt->format_expr))
+    {
+      gfc_current_locus = tmp;
+      return false;
+    }
+  gfc_current_locus = tmp;
+
   RESOLVE_TAG (&tag_rec, dt->rec);
   RESOLVE_TAG (&tag_spos, dt->pos);
   RESOLVE_TAG (&tag_advance, dt->advance);

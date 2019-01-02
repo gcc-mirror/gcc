@@ -31,6 +31,7 @@ load_gcc_lib scanrtl.exp
 load_gcc_lib scantree.exp
 load_gcc_lib scanltranstree.exp
 load_gcc_lib scanoffloadtree.exp
+load_gcc_lib scanoffloadrtl.exp
 load_gcc_lib scanipa.exp
 load_gcc_lib scanwpaipa.exp
 load_gcc_lib timeout-dg.exp

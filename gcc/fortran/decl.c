@@ -1,5 +1,5 @@
 /* Declaration statement matcher
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -596,6 +596,7 @@ match
 gfc_match_data (void)
 {
   gfc_data *new_data;
+  gfc_expr *e;
   match m;
 
   /* Before parsing the rest of a DATA statement, check F2008:c1206.  */
@@ -630,6 +631,30 @@ gfc_match_data (void)
 	  gfc_error ("Invalid substring in data-implied-do at %L in DATA "
 		     "statement", &new_data->var->list->expr->where);
 	  goto cleanup;
+	}
+
+      /* Check for an entity with an allocatable component, which is not
+	 allowed.  */
+      e = new_data->var->expr;
+      if (e)
+	{
+	  bool invalid;
+
+	  invalid = false;
+	  for (gfc_ref *ref = e->ref; ref; ref = ref->next)
+	    if ((ref->type == REF_COMPONENT
+		 && ref->u.c.component->attr.allocatable)
+		|| (ref->type == REF_ARRAY
+		    && e->symtree->n.sym->attr.pointer != 1
+		    && ref->u.ar.as && ref->u.ar.as->type == AS_DEFERRED))
+	      invalid = true;
+
+	  if (invalid)
+	    {
+	      gfc_error ("Allocatable component or deferred-shaped array "
+			 "near %C in DATA statement");
+	      goto cleanup;
+	    }
 	}
 
       m = top_val_list (new_data);

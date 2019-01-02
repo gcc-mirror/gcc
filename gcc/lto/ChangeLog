@@ -1,3 +1,12 @@
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2018-12-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-symtab.c (lto_symtab_merge_decls_2): Do not report ODR violations
+	for method whose basetype was already reported.
+
 2018-11-30  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
 
 	Minimize clone counter memory usage in LTO.
@@ -6022,7 +6031,7 @@
 	* lto-tree.h: Likewise.
 	* lto-lang.c: Likewise.
 
-Copyright (C) 2006-2018 Free Software Foundation, Inc.
+Copyright (C) 2006-2019 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

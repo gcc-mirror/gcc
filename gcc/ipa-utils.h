@@ -1,5 +1,5 @@
 /* Utilities for ipa analysis.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -67,7 +67,8 @@ odr_type get_odr_type (tree, bool insert = false);
 bool odr_type_p (const_tree);
 bool possible_polymorphic_call_target_p (tree ref, gimple *stmt, struct cgraph_node *n);
 void dump_possible_polymorphic_call_targets (FILE *, tree, HOST_WIDE_INT,
-					     const ipa_polymorphic_call_context &);
+					     const ipa_polymorphic_call_context &,
+					     bool verbose = true);
 bool possible_polymorphic_call_target_p (tree, HOST_WIDE_INT,
 				         const ipa_polymorphic_call_context &,
 					 struct cgraph_node *);
@@ -90,6 +91,7 @@ void warn_types_mismatch (tree t1, tree t2, location_t loc1 = UNKNOWN_LOCATION,
 			  location_t loc2 = UNKNOWN_LOCATION);
 bool odr_or_derived_type_p (const_tree t);
 bool odr_types_equivalent_p (tree type1, tree type2);
+bool odr_type_violation_reported_p (tree type);
 
 /* Return vector containing possible targets of polymorphic call E.
    If COMPLETEP is non-NULL, store true if the list is complete. 
@@ -136,13 +138,14 @@ possible_polymorphic_call_targets (tree ref,
 /* Dump possible targets of a polymorphic call E into F.  */
 
 inline void
-dump_possible_polymorphic_call_targets (FILE *f, struct cgraph_edge *e)
+dump_possible_polymorphic_call_targets (FILE *f, struct cgraph_edge *e,
+					bool verbose = true)
 {
   ipa_polymorphic_call_context context(e);
 
   dump_possible_polymorphic_call_targets (f, e->indirect_info->otr_type,
 					  e->indirect_info->otr_token,
-					  context);
+					  context, verbose);
 }
 
 /* Return true if N can be possibly target of a polymorphic call of

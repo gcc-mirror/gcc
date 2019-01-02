@@ -1,3 +1,7 @@
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2018-11-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* libcc1plugin.cc: Replace "source_location" with "location_t".

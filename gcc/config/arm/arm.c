@@ -1,5 +1,5 @@
 /* Output routines for GCC for ARM.
-   Copyright (C) 1991-2018 Free Software Foundation, Inc.
+   Copyright (C) 1991-2019 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com).
@@ -19872,7 +19872,7 @@ output_return_instruction (rtx operand, bool really_return, bool reverse,
 			  "msr%s\tAPSR_nzcvq, %%|lr", conditional);
 
 	      output_asm_insn (instr, & operand);
-	      if (TARGET_HARD_FLOAT && !TARGET_THUMB1)
+	      if (TARGET_HARD_FLOAT)
 		{
 		  /* Clear the cumulative exception-status bits (0-4,7) and the
 		     condition code bits (28-31) of the FPSCR.  We need to

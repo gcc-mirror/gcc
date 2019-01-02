@@ -1,5 +1,5 @@
 /* Read and annotate call graph profile from the auto profile data file.
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
    Contributed by Dehao Chen (dehao@google.com)
 
 This file is part of GCC.
@@ -992,14 +992,6 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
       || gimple_call_fndecl (stmt) != NULL_TREE)
     return;
 
-  callee = gimple_call_fn (stmt);
-
-  histogram_value hist = gimple_alloc_histogram_value (
-      cfun, HIST_TYPE_INDIR_CALL, stmt, callee);
-  hist->n_counters = 3;
-  hist->hvalue.counters = XNEWVEC (gcov_type, hist->n_counters);
-  gimple_add_histogram_value (cfun, stmt, hist);
-
   gcov_type total = 0;
   icall_target_map::const_iterator max_iter = map.end ();
 
@@ -1010,9 +1002,20 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
       if (max_iter == map.end () || max_iter->second < iter->second)
         max_iter = iter;
     }
+  struct cgraph_node *direct_call = cgraph_node::get_for_asmname (
+      get_identifier (afdo_string_table->get_name (max_iter->first)));
+  if (direct_call == NULL || !direct_call->profile_id)
+    return;
 
-  hist->hvalue.counters[0]
-      = (unsigned long long)afdo_string_table->get_name (max_iter->first);
+  callee = gimple_call_fn (stmt);
+
+  histogram_value hist = gimple_alloc_histogram_value (
+      cfun, HIST_TYPE_INDIR_CALL, stmt, callee);
+  hist->n_counters = 3;
+  hist->hvalue.counters = XNEWVEC (gcov_type, hist->n_counters);
+  gimple_add_histogram_value (cfun, stmt, hist);
+
+  hist->hvalue.counters[0] = direct_call->profile_id;
   hist->hvalue.counters[1] = max_iter->second;
   hist->hvalue.counters[2] = total;
 
@@ -1021,8 +1024,6 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
 
   struct cgraph_edge *indirect_edge
       = cgraph_node::get (current_function_decl)->get_edge (stmt);
-  struct cgraph_node *direct_call = cgraph_node::get_for_asmname (
-      get_identifier ((const char *) hist->hvalue.counters[0]));
 
   if (dump_file)
     {

@@ -1,5 +1,5 @@
 # GCC target-specific configuration file.
-# Copyright (C) 1997-2018 Free Software Foundation, Inc.
+# Copyright (C) 1997-2019 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -1012,6 +1012,7 @@ aarch64*-*-freebsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h ${fbsd_tm_file}"
 	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-freebsd.h"
 	tmake_file="${tmake_file} aarch64/t-aarch64 aarch64/t-aarch64-freebsd"
+	tm_defines="${tm_defines}  TARGET_DEFAULT_ASYNC_UNWIND_TABLES=1"
 	;;
 aarch64*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h"
@@ -1435,6 +1436,8 @@ hppa*64*-*-linux*)
 	tm_file="pa/pa64-start.h ${tm_file} dbxelf.h elfos.h gnu-user.h linux.h \
 		 glibc-stdint.h pa/pa-linux.h pa/pa64-regs.h pa/pa-64.h \
 		 pa/pa64-linux.h"
+	tmake_file="${tmake_file} pa/t-pa pa/t-linux"
+	d_target_objs="${d_target_objs} pa-d.o"
 	gas=yes gnu_ld=yes
 	;;
 hppa*-*-linux*)
@@ -1449,6 +1452,8 @@ hppa*-*-openbsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h openbsd.h openbsd-stdint.h openbsd-libpthread.h \
 		 pa/pa-openbsd.h pa/pa32-regs.h pa/pa32-openbsd.h"
 	extra_options="${extra_options} openbsd.opt"
+	tmake_file="pa/t-pa"
+	d_target_objs="${d_target_objs} pa-d.o"
 	gas=yes
 	gnu_ld=yes
 	;;
@@ -1469,7 +1474,8 @@ hppa[12]*-*-hpux10*)
 	esac
 	use_gcc_stdint=provide
 	tm_file="${tm_file} hpux-stdint.h"
-	tmake_file="t-slibgcc"
+	tmake_file="pa/t-pa t-slibgcc"
+	d_target_objs="${d_target_objs} pa-d.o"
 	case ${enable_threads} in
 	  "")
 	    if test x$have_pthread_h = xyes ; then
@@ -1511,7 +1517,8 @@ hppa*64*-*-hpux11*)
 	esac
 	extra_options="${extra_options} pa/pa-hpux.opt \
 		       pa/pa-hpux1010.opt pa/pa64-hpux.opt hpux11.opt"
-	tmake_file="t-slibgcc"
+	tmake_file="pa/t-pa t-slibgcc"
+	d_target_objs="${d_target_objs} pa-d.o"
 	case x${enable_threads} in
 	x | xyes | xposix )
 		thread_file=posix
@@ -1549,7 +1556,8 @@ hppa[12]*-*-hpux11*)
 		extra_options="${extra_options} pa/pa-hpux1131.opt"
 		;;
 	esac
-	tmake_file="t-slibgcc"
+	tmake_file="pa/t-pa t-slibgcc"
+	d_target_objs="${d_target_objs} pa-d.o"
 	case x${enable_threads} in
 	x | xyes | xposix )
 		thread_file=posix
@@ -3975,12 +3983,22 @@ case "${target}" in
 
 		# Add extra multilibs
 		if test "x$with_multilib_list" != x; then
+			ml=
 			arm_multilibs=`echo $with_multilib_list | sed -e 's/,/ /g'`
 			if test "x${arm_multilibs}" != xdefault ; then
 				for arm_multilib in ${arm_multilibs}; do
 					case ${arm_multilib} in
 					aprofile|rmprofile)
 						tmake_profile_file="arm/t-multilib"
+						;;
+					@*)
+						ml=`echo "X$arm_multilib" | sed '1s,^X@,,'`
+						if test -f "${srcdir}/config/arm/${ml}"; then
+							tmake_file="${tmake_file} arm/${ml}"
+						else
+							echo "Error: ${ml} does not exist in ${srcdir}/config/arm" >&2
+							exit 1
+						fi
 						;;
 					*)
 						echo "Error: --with-multilib-list=${with_multilib_list} not supported." 1>&2
@@ -4001,6 +4019,9 @@ case "${target}" in
 				    || test "x$with_fpu" != x \
 				    || test "x$with_mode" != x ; then
 				    echo "Error: You cannot use any of --with-arch/cpu/fpu/float/mode with --with-multilib-list=${with_multilib_list}" 1>&2
+				    exit 1
+				elif test "x$ml" != x ; then
+				    echo "Error: You cannot use builtin multilib profiles along with custom ones" 1>&2
 				    exit 1
 				fi
 				# But pass the default value for float-abi

@@ -1,5 +1,5 @@
 /* Implementation of the FINDLOC intrinsic
-   Copyright (C) 2018 Free Software Foundation, Inc.
+   Copyright (C) 2018-2019 Free Software Foundation, Inc.
    Contributed by Thomas König <tk@tkoenig.net>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -145,7 +145,7 @@ sfindloc2_s1 (gfc_array_s1 * const restrict array,
 			   GFC_LOGICAL_4 back, gfc_charlen_type len_array,
 			   gfc_charlen_type len_value)
 {
-  if (*mask)
+  if (mask == NULL || *mask)
     {
       return findloc2_s1 (array, value, back, len_array, len_value);
     }

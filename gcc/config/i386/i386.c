@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IA-32.
-   Copyright (C) 1988-2018 Free Software Foundation, Inc.
+   Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23593,33 +23593,117 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
       cmp = gen_rtx_SUBREG (mode, cmp, 0);
     }
 
-  if (vector_all_ones_operand (op_true, mode)
-      && rtx_equal_p (op_false, CONST0_RTX (mode))
-      && !maskcmp)
+  if (maskcmp)
+    {
+      rtx (*gen) (rtx, rtx) = NULL;
+      if ((op_true == CONST0_RTX (mode)
+	   && vector_all_ones_operand (op_false, mode))
+	  || (op_false == CONST0_RTX (mode)
+	      && vector_all_ones_operand (op_true, mode)))
+	switch (mode)
+	  {
+	  case E_V64QImode:
+	    if (TARGET_AVX512BW)
+	      gen = gen_avx512bw_cvtmask2bv64qi;
+	    break;
+	  case E_V32QImode:
+	    if (TARGET_AVX512VL && TARGET_AVX512BW)
+	      gen = gen_avx512vl_cvtmask2bv32qi;
+	    break;
+	  case E_V16QImode:
+	    if (TARGET_AVX512VL && TARGET_AVX512BW)
+	      gen = gen_avx512vl_cvtmask2bv16qi;
+	    break;
+	  case E_V32HImode:
+	    if (TARGET_AVX512BW)
+	      gen = gen_avx512bw_cvtmask2wv32hi;
+	    break;
+	  case E_V16HImode:
+	    if (TARGET_AVX512VL && TARGET_AVX512BW)
+	      gen = gen_avx512vl_cvtmask2wv16hi;
+	    break;
+	  case E_V8HImode:
+	    if (TARGET_AVX512VL && TARGET_AVX512BW)
+	      gen = gen_avx512vl_cvtmask2wv8hi;
+	    break;
+	  case E_V16SImode:
+	    if (TARGET_AVX512DQ)
+	      gen = gen_avx512f_cvtmask2dv16si;
+	    break;
+	  case E_V8SImode:
+	    if (TARGET_AVX512VL && TARGET_AVX512DQ)
+	      gen = gen_avx512vl_cvtmask2dv8si;
+	    break;
+	  case E_V4SImode:
+	    if (TARGET_AVX512VL && TARGET_AVX512DQ)
+	      gen = gen_avx512vl_cvtmask2dv4si;
+	    break;
+	  case E_V8DImode:
+	    if (TARGET_AVX512DQ)
+	      gen = gen_avx512f_cvtmask2qv8di;
+	    break;
+	  case E_V4DImode:
+	    if (TARGET_AVX512VL && TARGET_AVX512DQ)
+	      gen = gen_avx512vl_cvtmask2qv4di;
+	    break;
+	  case E_V2DImode:
+	    if (TARGET_AVX512VL && TARGET_AVX512DQ)
+	      gen = gen_avx512vl_cvtmask2qv2di;
+	    break;
+	  default:
+	    break;
+	  }
+      if (gen && SCALAR_INT_MODE_P (cmpmode))
+	{
+	  cmp = force_reg (cmpmode, cmp);
+	  if (op_true == CONST0_RTX (mode))
+	    {
+	      rtx (*gen_not) (rtx, rtx);
+	      switch (cmpmode)
+		{
+		case E_QImode: gen_not = gen_knotqi; break;
+		case E_HImode: gen_not = gen_knothi; break;
+		case E_SImode: gen_not = gen_knotsi; break;
+		case E_DImode: gen_not = gen_knotdi; break;
+		default: gcc_unreachable ();
+		}
+	      rtx n = gen_reg_rtx (cmpmode);
+	      emit_insn (gen_not (n, cmp));
+	      cmp = n;
+	    }
+	  emit_insn (gen (dest, cmp));
+	  return;
+	}
+    }
+  else if (vector_all_ones_operand (op_true, mode)
+	   && op_false == CONST0_RTX (mode))
     {
       emit_insn (gen_rtx_SET (dest, cmp));
+      return;
     }
-  else if (op_false == CONST0_RTX (mode) && !maskcmp)
+  else if (op_false == CONST0_RTX (mode))
     {
       op_true = force_reg (mode, op_true);
       x = gen_rtx_AND (mode, cmp, op_true);
       emit_insn (gen_rtx_SET (dest, x));
+      return;
     }
-  else if (op_true == CONST0_RTX (mode) && !maskcmp)
+  else if (op_true == CONST0_RTX (mode))
     {
       op_false = force_reg (mode, op_false);
       x = gen_rtx_NOT (mode, cmp);
       x = gen_rtx_AND (mode, x, op_false);
       emit_insn (gen_rtx_SET (dest, x));
+      return;
     }
-  else if (INTEGRAL_MODE_P (mode) && op_true == CONSTM1_RTX (mode)
-	   && !maskcmp)
+  else if (INTEGRAL_MODE_P (mode) && op_true == CONSTM1_RTX (mode))
     {
       op_false = force_reg (mode, op_false);
       x = gen_rtx_IOR (mode, cmp, op_false);
       emit_insn (gen_rtx_SET (dest, x));
+      return;
     }
-  else if (TARGET_XOP && !maskcmp)
+  else if (TARGET_XOP)
     {
       op_true = force_reg (mode, op_true);
 
@@ -23629,127 +23713,126 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
       emit_insn (gen_rtx_SET (dest, gen_rtx_IF_THEN_ELSE (mode, cmp,
 							  op_true,
 							  op_false)));
+      return;
+    }
+
+  rtx (*gen) (rtx, rtx, rtx, rtx) = NULL;
+  rtx d = dest;
+
+  if (!vector_operand (op_true, mode))
+    op_true = force_reg (mode, op_true);
+
+  op_false = force_reg (mode, op_false);
+
+  switch (mode)
+    {
+    case E_V4SFmode:
+      if (TARGET_SSE4_1)
+	gen = gen_sse4_1_blendvps;
+      break;
+    case E_V2DFmode:
+      if (TARGET_SSE4_1)
+	gen = gen_sse4_1_blendvpd;
+      break;
+    case E_SFmode:
+      if (TARGET_SSE4_1)
+	{
+	  gen = gen_sse4_1_blendvss;
+	  op_true = force_reg (mode, op_true);
+	}
+      break;
+    case E_DFmode:
+      if (TARGET_SSE4_1)
+	{
+	  gen = gen_sse4_1_blendvsd;
+	  op_true = force_reg (mode, op_true);
+	}
+      break;
+    case E_V16QImode:
+    case E_V8HImode:
+    case E_V4SImode:
+    case E_V2DImode:
+      if (TARGET_SSE4_1)
+	{
+	  gen = gen_sse4_1_pblendvb;
+	  if (mode != V16QImode)
+	    d = gen_reg_rtx (V16QImode);
+	  op_false = gen_lowpart (V16QImode, op_false);
+	  op_true = gen_lowpart (V16QImode, op_true);
+	  cmp = gen_lowpart (V16QImode, cmp);
+	}
+      break;
+    case E_V8SFmode:
+      if (TARGET_AVX)
+	gen = gen_avx_blendvps256;
+      break;
+    case E_V4DFmode:
+      if (TARGET_AVX)
+	gen = gen_avx_blendvpd256;
+      break;
+    case E_V32QImode:
+    case E_V16HImode:
+    case E_V8SImode:
+    case E_V4DImode:
+      if (TARGET_AVX2)
+	{
+	  gen = gen_avx2_pblendvb;
+	  if (mode != V32QImode)
+	    d = gen_reg_rtx (V32QImode);
+	  op_false = gen_lowpart (V32QImode, op_false);
+	  op_true = gen_lowpart (V32QImode, op_true);
+	  cmp = gen_lowpart (V32QImode, cmp);
+	}
+      break;
+
+    case E_V64QImode:
+      gen = gen_avx512bw_blendmv64qi;
+      break;
+    case E_V32HImode:
+      gen = gen_avx512bw_blendmv32hi;
+      break;
+    case E_V16SImode:
+      gen = gen_avx512f_blendmv16si;
+      break;
+    case E_V8DImode:
+      gen = gen_avx512f_blendmv8di;
+      break;
+    case E_V8DFmode:
+      gen = gen_avx512f_blendmv8df;
+      break;
+    case E_V16SFmode:
+      gen = gen_avx512f_blendmv16sf;
+      break;
+
+    default:
+      break;
+    }
+
+  if (gen != NULL)
+    {
+      emit_insn (gen (d, op_false, op_true, cmp));
+      if (d != dest)
+	emit_move_insn (dest, gen_lowpart (GET_MODE (dest), d));
     }
   else
     {
-      rtx (*gen) (rtx, rtx, rtx, rtx) = NULL;
-      rtx d = dest;
+      op_true = force_reg (mode, op_true);
 
-      if (!vector_operand (op_true, mode))
-	op_true = force_reg (mode, op_true);
-
-      op_false = force_reg (mode, op_false);
-
-      switch (mode)
-	{
-	case E_V4SFmode:
-	  if (TARGET_SSE4_1)
-	    gen = gen_sse4_1_blendvps;
-	  break;
-	case E_V2DFmode:
-	  if (TARGET_SSE4_1)
-	    gen = gen_sse4_1_blendvpd;
-	  break;
-	case E_SFmode:
-	  if (TARGET_SSE4_1)
-	    {
-	      gen = gen_sse4_1_blendvss;
-	      op_true = force_reg (mode, op_true);
-	    }
-	  break;
-	case E_DFmode:
-	  if (TARGET_SSE4_1)
-	    {
-	      gen = gen_sse4_1_blendvsd;
-	      op_true = force_reg (mode, op_true);
-	    }
-	  break;
-	case E_V16QImode:
-	case E_V8HImode:
-	case E_V4SImode:
-	case E_V2DImode:
-	  if (TARGET_SSE4_1)
-	    {
-	      gen = gen_sse4_1_pblendvb;
-	      if (mode != V16QImode)
-		d = gen_reg_rtx (V16QImode);
-	      op_false = gen_lowpart (V16QImode, op_false);
-	      op_true = gen_lowpart (V16QImode, op_true);
-	      cmp = gen_lowpart (V16QImode, cmp);
-	    }
-	  break;
-	case E_V8SFmode:
-	  if (TARGET_AVX)
-	    gen = gen_avx_blendvps256;
-	  break;
-	case E_V4DFmode:
-	  if (TARGET_AVX)
-	    gen = gen_avx_blendvpd256;
-	  break;
-	case E_V32QImode:
-	case E_V16HImode:
-	case E_V8SImode:
-	case E_V4DImode:
-	  if (TARGET_AVX2)
-	    {
-	      gen = gen_avx2_pblendvb;
-	      if (mode != V32QImode)
-		d = gen_reg_rtx (V32QImode);
-	      op_false = gen_lowpart (V32QImode, op_false);
-	      op_true = gen_lowpart (V32QImode, op_true);
-	      cmp = gen_lowpart (V32QImode, cmp);
-	    }
-	  break;
-
-	case E_V64QImode:
-	  gen = gen_avx512bw_blendmv64qi;
-	  break;
-	case E_V32HImode:
-	  gen = gen_avx512bw_blendmv32hi;
-	  break;
-	case E_V16SImode:
-	  gen = gen_avx512f_blendmv16si;
-	  break;
-	case E_V8DImode:
-	  gen = gen_avx512f_blendmv8di;
-	  break;
-	case E_V8DFmode:
-	  gen = gen_avx512f_blendmv8df;
-	  break;
-	case E_V16SFmode:
-	  gen = gen_avx512f_blendmv16sf;
-	  break;
-
-	default:
-	  break;
-	}
-
-      if (gen != NULL)
-	{
-	  emit_insn (gen (d, op_false, op_true, cmp));
-	  if (d != dest)
-	    emit_move_insn (dest, gen_lowpart (GET_MODE (dest), d));
-	}
+      t2 = gen_reg_rtx (mode);
+      if (optimize)
+	t3 = gen_reg_rtx (mode);
       else
-	{
-	  op_true = force_reg (mode, op_true);
+	t3 = dest;
 
-	  t2 = gen_reg_rtx (mode);
-	  if (optimize)
-	    t3 = gen_reg_rtx (mode);
-	  else
-	    t3 = dest;
+      x = gen_rtx_AND (mode, op_true, cmp);
+      emit_insn (gen_rtx_SET (t2, x));
 
-	  x = gen_rtx_AND (mode, op_true, cmp);
-	  emit_insn (gen_rtx_SET (t2, x));
+      x = gen_rtx_NOT (mode, cmp);
+      x = gen_rtx_AND (mode, x, op_false);
+      emit_insn (gen_rtx_SET (t3, x));
 
-	  x = gen_rtx_NOT (mode, cmp);
-	  x = gen_rtx_AND (mode, x, op_false);
-	  emit_insn (gen_rtx_SET (t3, x));
-
-	  x = gen_rtx_IOR (mode, t3, t2);
-	  emit_insn (gen_rtx_SET (dest, x));
-	}
+      x = gen_rtx_IOR (mode, t3, t2);
+      emit_insn (gen_rtx_SET (dest, x));
     }
 }
 
@@ -24040,6 +24123,104 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 
 	    default:
 	      gcc_unreachable ();
+	    }
+	}
+
+      rtx optrue = op_true ? op_true : CONSTM1_RTX (data_mode);
+      rtx opfalse = op_false ? op_false : CONST0_RTX (data_mode);
+      if (*negate)
+	std::swap (optrue, opfalse);
+
+      /* Transform x > y ? 0 : -1 (i.e. x <= y ? -1 : 0 or x <= y) when
+	 not using integer masks into min (x, y) == x ? -1 : 0 (i.e.
+	 min (x, y) == x).  While we add one instruction (the minimum),
+	 we remove the need for two instructions in the negation, as the
+	 result is done this way.
+	 When using masks, do it for SI/DImode element types, as it is shorter
+	 than the two subtractions.  */
+      if ((code != EQ
+	   && GET_MODE_SIZE (mode) != 64
+	   && vector_all_ones_operand (opfalse, data_mode)
+	   && optrue == CONST0_RTX (data_mode))
+	  || (code == GTU
+	      && GET_MODE_SIZE (GET_MODE_INNER (mode)) >= 4
+	      /* Don't do it if not using integer masks and we'd end up with
+		 the right values in the registers though.  */
+	      && (GET_MODE_SIZE (mode) == 64
+		  || !vector_all_ones_operand (optrue, data_mode)
+		  || opfalse != CONST0_RTX (data_mode))))
+	{
+	  rtx (*gen) (rtx, rtx, rtx) = NULL;
+
+	  switch (mode)
+	    {
+	    case E_V16SImode:
+	      gen = (code == GTU) ? gen_uminv16si3 : gen_sminv16si3;
+	      break;
+	    case E_V8DImode:
+	      gen = (code == GTU) ? gen_uminv8di3 : gen_sminv8di3;
+	      cop0 = force_reg (mode, cop0);
+	      cop1 = force_reg (mode, cop1);
+	      break;
+	    case E_V32QImode:
+	      if (TARGET_AVX2)
+		gen = (code == GTU) ? gen_uminv32qi3 : gen_sminv32qi3;
+	      break;
+	    case E_V16HImode:
+	      if (TARGET_AVX2)
+		gen = (code == GTU) ? gen_uminv16hi3 : gen_sminv16hi3;
+	      break;
+	    case E_V8SImode:
+	      if (TARGET_AVX2)
+		gen = (code == GTU) ? gen_uminv8si3 : gen_sminv8si3;
+	      break;
+	    case E_V4DImode:
+	      if (TARGET_AVX512VL)
+		{
+		  gen = (code == GTU) ? gen_uminv4di3 : gen_sminv4di3;
+		  cop0 = force_reg (mode, cop0);
+		  cop1 = force_reg (mode, cop1);
+		}
+	      break;
+	    case E_V16QImode:
+	      if (code == GTU && TARGET_SSE2)
+		gen = gen_uminv16qi3;
+	      else if (code == GT && TARGET_SSE4_1)
+		gen = gen_sminv16qi3;
+	      break;
+	    case E_V8HImode:
+	      if (code == GTU && TARGET_SSE4_1)
+		gen = gen_uminv8hi3;
+	      else if (code == GT && TARGET_SSE2)
+		gen = gen_sminv8hi3;
+	      break;
+	    case E_V4SImode:
+	      if (TARGET_SSE4_1)
+		gen = (code == GTU) ? gen_uminv4si3 : gen_sminv4si3;
+	      break;
+	    case E_V2DImode:
+	      if (TARGET_AVX512VL)
+		{
+		  gen = (code == GTU) ? gen_uminv2di3 : gen_sminv2di3;
+		  cop0 = force_reg (mode, cop0);
+		  cop1 = force_reg (mode, cop1);
+		}
+	      break;
+	    default:
+	      break;
+	    }
+
+	  if (gen)
+	    {
+	      rtx tem = gen_reg_rtx (mode);
+	      if (!vector_operand (cop0, mode))
+		cop0 = force_reg (mode, cop0);
+	      if (!vector_operand (cop1, mode))
+		cop1 = force_reg (mode, cop1);
+	      *negate = !*negate;
+	      emit_insn (gen (tem, cop0, cop1));
+	      cop1 = tem;
+	      code = EQ;
 	    }
 	}
 
@@ -30072,6 +30253,14 @@ enum ix86_builtins
   IX86_BUILTIN_SCATTERALTDIV16SF,
   IX86_BUILTIN_SCATTERALTSIV8DI,
   IX86_BUILTIN_SCATTERALTDIV16SI,
+  IX86_BUILTIN_SCATTERALTSIV4DF,
+  IX86_BUILTIN_SCATTERALTDIV8SF,
+  IX86_BUILTIN_SCATTERALTSIV4DI,
+  IX86_BUILTIN_SCATTERALTDIV8SI,
+  IX86_BUILTIN_SCATTERALTSIV2DF,
+  IX86_BUILTIN_SCATTERALTDIV4SF,
+  IX86_BUILTIN_SCATTERALTSIV2DI,
+  IX86_BUILTIN_SCATTERALTDIV4SI,
   IX86_BUILTIN_SCATTERDIV16SF,
   IX86_BUILTIN_SCATTERDIV16SI,
   IX86_BUILTIN_SCATTERDIV8DF,
@@ -30879,7 +31068,7 @@ ix86_init_mmx_sse_builtins (void)
 		    V4DF_FTYPE_V4DF_PCDOUBLE_V8SI_V4DF_INT,
 		    IX86_BUILTIN_GATHERALTSIV4DF);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatheraltdiv4sf256 ",
+  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatheraltdiv8sf ",
 		    V8SF_FTYPE_V8SF_PCFLOAT_V4DI_V8SF_INT,
 		    IX86_BUILTIN_GATHERALTDIV8SF);
 
@@ -30887,7 +31076,7 @@ ix86_init_mmx_sse_builtins (void)
 		    V4DI_FTYPE_V4DI_PCINT64_V8SI_V4DI_INT,
 		    IX86_BUILTIN_GATHERALTSIV4DI);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatheraltdiv4si256 ",
+  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatheraltdiv8si ",
 		    V8SI_FTYPE_V8SI_PCINT_V4DI_V8SI_INT,
 		    IX86_BUILTIN_GATHERALTDIV8SI);
 
@@ -30924,19 +31113,19 @@ ix86_init_mmx_sse_builtins (void)
 		    V8DI_FTYPE_V8DI_PCVOID_V8DI_QI_INT,
 		    IX86_BUILTIN_GATHER3DIV8DI);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatheraltsiv8df ",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gather3altsiv8df ",
 		    V8DF_FTYPE_V8DF_PCDOUBLE_V16SI_QI_INT,
 		    IX86_BUILTIN_GATHER3ALTSIV8DF);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatheraltdiv8sf ",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gather3altdiv16sf ",
 		    V16SF_FTYPE_V16SF_PCFLOAT_V8DI_HI_INT,
 		    IX86_BUILTIN_GATHER3ALTDIV16SF);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatheraltsiv8di ",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gather3altsiv8di ",
 		    V8DI_FTYPE_V8DI_PCINT64_V16SI_QI_INT,
 		    IX86_BUILTIN_GATHER3ALTSIV8DI);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatheraltdiv8si ",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gather3altdiv16si ",
 		    V16SI_FTYPE_V16SI_PCINT_V8DI_HI_INT,
 		    IX86_BUILTIN_GATHER3ALTDIV16SI);
 
@@ -31116,11 +31305,12 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scatterdiv2di",
 	       VOID_FTYPE_PVOID_QI_V2DI_V2DI_INT,
 	       IX86_BUILTIN_SCATTERDIV2DI);
+
   def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_scatteraltsiv8df ",
 	       VOID_FTYPE_PDOUBLE_QI_V16SI_V8DF_INT,
 	       IX86_BUILTIN_SCATTERALTSIV8DF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_scatteraltdiv8sf ",
+  def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_scatteraltdiv16sf ",
 	       VOID_FTYPE_PFLOAT_HI_V8DI_V16SF_INT,
 	       IX86_BUILTIN_SCATTERALTDIV16SF);
 
@@ -31128,9 +31318,41 @@ ix86_init_mmx_sse_builtins (void)
 	       VOID_FTYPE_PLONGLONG_QI_V16SI_V8DI_INT,
 	       IX86_BUILTIN_SCATTERALTSIV8DI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_scatteraltdiv8si ",
+  def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_scatteraltdiv16si ",
 	       VOID_FTYPE_PINT_HI_V8DI_V16SI_INT,
 	       IX86_BUILTIN_SCATTERALTDIV16SI);
+
+  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scatteraltsiv4df ",
+	       VOID_FTYPE_PDOUBLE_QI_V8SI_V4DF_INT,
+	       IX86_BUILTIN_SCATTERALTSIV4DF);
+
+  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scatteraltdiv8sf ",
+	       VOID_FTYPE_PFLOAT_QI_V4DI_V8SF_INT,
+	       IX86_BUILTIN_SCATTERALTDIV8SF);
+
+  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scatteraltsiv4di ",
+	       VOID_FTYPE_PLONGLONG_QI_V8SI_V4DI_INT,
+	       IX86_BUILTIN_SCATTERALTSIV4DI);
+
+  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scatteraltdiv8si ",
+	       VOID_FTYPE_PINT_QI_V4DI_V8SI_INT,
+	       IX86_BUILTIN_SCATTERALTDIV8SI);
+
+  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scatteraltsiv2df ",
+	       VOID_FTYPE_PDOUBLE_QI_V4SI_V2DF_INT,
+	       IX86_BUILTIN_SCATTERALTSIV2DF);
+
+  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scatteraltdiv4sf ",
+	       VOID_FTYPE_PFLOAT_QI_V2DI_V4SF_INT,
+	       IX86_BUILTIN_SCATTERALTDIV4SF);
+
+  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scatteraltsiv2di ",
+	       VOID_FTYPE_PLONGLONG_QI_V4SI_V2DI_INT,
+	       IX86_BUILTIN_SCATTERALTSIV2DI);
+
+  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scatteraltdiv4si ",
+	       VOID_FTYPE_PINT_QI_V2DI_V4SI_INT,
+	       IX86_BUILTIN_SCATTERALTDIV4SI);
 
   /* AVX512PF */
   def_builtin (OPTION_MASK_ISA_AVX512PF, "__builtin_ia32_gatherpfdpd",
@@ -37529,6 +37751,30 @@ rdseed_step:
     case IX86_BUILTIN_SCATTERALTDIV16SI:
       icode = CODE_FOR_avx512f_scatterdiv16si;
       goto scatter_gen;
+    case IX86_BUILTIN_SCATTERALTSIV4DF:
+      icode = CODE_FOR_avx512vl_scattersiv4df;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERALTDIV8SF:
+      icode = CODE_FOR_avx512vl_scatterdiv8sf;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERALTSIV4DI:
+      icode = CODE_FOR_avx512vl_scattersiv4di;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERALTDIV8SI:
+      icode = CODE_FOR_avx512vl_scatterdiv8si;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERALTSIV2DF:
+      icode = CODE_FOR_avx512vl_scattersiv2df;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERALTDIV4SF:
+      icode = CODE_FOR_avx512vl_scatterdiv4sf;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERALTSIV2DI:
+      icode = CODE_FOR_avx512vl_scattersiv2di;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERALTDIV4SI:
+      icode = CODE_FOR_avx512vl_scatterdiv4si;
+      goto scatter_gen;
     case IX86_BUILTIN_GATHERPFDPS:
       icode = CODE_FOR_avx512pf_gatherpfv16sisf;
       goto vec_prefetch_gen;
@@ -37812,6 +38058,36 @@ rdseed_step:
 	    op3 = copy_to_mode_reg (GET_MODE (op3), op3);
 	  emit_insn (gen (half, op3));
 	  op3 = half;
+	  break;
+	case IX86_BUILTIN_SCATTERALTSIV4DF:
+	case IX86_BUILTIN_SCATTERALTSIV4DI:
+	  half = gen_reg_rtx (V4SImode);
+	  if (!nonimmediate_operand (op2, V8SImode))
+	    op2 = copy_to_mode_reg (V8SImode, op2);
+	  emit_insn (gen_vec_extract_lo_v8si (half, op2));
+	  op2 = half;
+	  break;
+	case IX86_BUILTIN_SCATTERALTDIV8SF:
+	case IX86_BUILTIN_SCATTERALTDIV8SI:
+	  half = gen_reg_rtx (mode3);
+	  if (mode3 == V4SFmode)
+	    gen = gen_vec_extract_lo_v8sf;
+	  else
+	    gen = gen_vec_extract_lo_v8si;
+	  if (!nonimmediate_operand (op3, GET_MODE (op3)))
+	    op3 = copy_to_mode_reg (GET_MODE (op3), op3);
+	  emit_insn (gen (half, op3));
+	  op3 = half;
+	  break;
+	case IX86_BUILTIN_SCATTERALTSIV2DF:
+	case IX86_BUILTIN_SCATTERALTSIV2DI:
+	  if (!nonimmediate_operand (op2, V4SImode))
+	    op2 = copy_to_mode_reg (V4SImode, op2);
+	  break;
+	case IX86_BUILTIN_SCATTERALTDIV4SF:
+	case IX86_BUILTIN_SCATTERALTDIV4SI:
+	  if (!nonimmediate_operand (op3, GET_MODE (op3)))
+	    op3 = copy_to_mode_reg (GET_MODE (op3), op3);
 	  break;
 	default:
 	  break;
@@ -38927,6 +39203,54 @@ ix86_vectorize_builtin_scatter (const_tree vectype,
       break;
     case E_V16SImode:
       code = si ? IX86_BUILTIN_SCATTERSIV16SI : IX86_BUILTIN_SCATTERALTDIV16SI;
+      break;
+    case E_V4DFmode:
+      if (TARGET_AVX512VL)
+	code = si ? IX86_BUILTIN_SCATTERALTSIV4DF : IX86_BUILTIN_SCATTERDIV4DF;
+      else
+	return NULL_TREE;
+      break;
+    case E_V4DImode:
+      if (TARGET_AVX512VL)
+	code = si ? IX86_BUILTIN_SCATTERALTSIV4DI : IX86_BUILTIN_SCATTERDIV4DI;
+      else
+	return NULL_TREE;
+      break;
+    case E_V8SFmode:
+      if (TARGET_AVX512VL)
+	code = si ? IX86_BUILTIN_SCATTERSIV8SF : IX86_BUILTIN_SCATTERALTDIV8SF;
+      else
+	return NULL_TREE;
+      break;
+    case E_V8SImode:
+      if (TARGET_AVX512VL)
+	code = si ? IX86_BUILTIN_SCATTERSIV8SI : IX86_BUILTIN_SCATTERALTDIV8SI;
+      else
+	return NULL_TREE;
+      break;
+    case E_V2DFmode:
+      if (TARGET_AVX512VL)
+	code = si ? IX86_BUILTIN_SCATTERALTSIV2DF : IX86_BUILTIN_SCATTERDIV2DF;
+      else
+	return NULL_TREE;
+      break;
+    case E_V2DImode:
+      if (TARGET_AVX512VL)
+	code = si ? IX86_BUILTIN_SCATTERALTSIV2DI : IX86_BUILTIN_SCATTERDIV2DI;
+      else
+	return NULL_TREE;
+      break;
+    case E_V4SFmode:
+      if (TARGET_AVX512VL)
+	code = si ? IX86_BUILTIN_SCATTERSIV4SF : IX86_BUILTIN_SCATTERALTDIV4SF;
+      else
+	return NULL_TREE;
+      break;
+    case E_V4SImode:
+      if (TARGET_AVX512VL)
+	code = si ? IX86_BUILTIN_SCATTERSIV4SI : IX86_BUILTIN_SCATTERALTDIV4SI;
+      else
+	return NULL_TREE;
       break;
     default:
       return NULL_TREE;
@@ -44056,6 +44380,122 @@ ix86_emit_fp_unordered_jump (rtx label)
   JUMP_LABEL (insn) = label;
 }
 
+/* Output code to perform an sinh XFmode calculation.  */
+
+void ix86_emit_i387_sinh (rtx op0, rtx op1)
+{
+  rtx e1 = gen_reg_rtx (XFmode);
+  rtx e2 = gen_reg_rtx (XFmode);
+  rtx scratch = gen_reg_rtx (HImode);
+  rtx flags = gen_rtx_REG (CCNOmode, FLAGS_REG);
+  rtx half = const_double_from_real_value (dconsthalf, XFmode);
+  rtx cst1, tmp;
+  rtx_code_label *jump_label = gen_label_rtx ();
+  rtx_insn *insn;
+
+  /* scratch = fxam (op1) */
+  emit_insn (gen_fxamxf2_i387 (scratch, op1));
+
+  /* e1 = expm1 (|op1|) */
+  emit_insn (gen_absxf2 (e2, op1));
+  emit_insn (gen_expm1xf2 (e1, e2));
+
+  /* e2 = e1 / (e1 + 1.0) + e1 */
+  cst1 = force_reg (XFmode, CONST1_RTX (XFmode));
+  emit_insn (gen_addxf3 (e2, e1, cst1));
+  emit_insn (gen_divxf3 (e2, e1, e2));
+  emit_insn (gen_addxf3 (e2, e2, e1));
+
+  /* flags = signbit (op1) */
+  emit_insn (gen_testqi_ext_1_ccno (scratch, GEN_INT (0x02)));
+
+  /* if (flags) then e2 = -e2 */
+  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode,
+			      gen_rtx_EQ (VOIDmode, flags, const0_rtx),
+			      gen_rtx_LABEL_REF (VOIDmode, jump_label),
+			      pc_rtx);
+  insn = emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
+  predict_jump (REG_BR_PROB_BASE * 50 / 100);
+  JUMP_LABEL (insn) = jump_label;
+
+  emit_insn (gen_negxf2 (e2, e2));
+
+  emit_label (jump_label);
+  LABEL_NUSES (jump_label) = 1;
+
+  /* op0 = 0.5 * e2 */
+  half = force_reg (XFmode, half);
+  emit_insn (gen_mulxf3 (op0, e2, half));
+}
+
+/* Output code to perform an cosh XFmode calculation.  */
+
+void ix86_emit_i387_cosh (rtx op0, rtx op1)
+{
+  rtx e1 = gen_reg_rtx (XFmode);
+  rtx e2 = gen_reg_rtx (XFmode);
+  rtx half = const_double_from_real_value (dconsthalf, XFmode);
+  rtx cst1;
+
+  /* e1 = exp (op1) */
+  emit_insn (gen_expxf2 (e1, op1));
+
+  /* e2 = e1 + 1.0 / e1 */
+  cst1 = force_reg (XFmode, CONST1_RTX (XFmode));
+  emit_insn (gen_divxf3 (e2, cst1, e1));
+  emit_insn (gen_addxf3 (e2, e1, e2));
+
+  /* op0 = 0.5 * e2 */
+  half = force_reg (XFmode, half);
+  emit_insn (gen_mulxf3 (op0, e2, half));
+}
+
+/* Output code to perform an tanh XFmode calculation.  */
+
+void ix86_emit_i387_tanh (rtx op0, rtx op1)
+{
+  rtx e1 = gen_reg_rtx (XFmode);
+  rtx e2 = gen_reg_rtx (XFmode);
+  rtx scratch = gen_reg_rtx (HImode);
+  rtx flags = gen_rtx_REG (CCNOmode, FLAGS_REG);
+  rtx cst2, tmp;
+  rtx_code_label *jump_label = gen_label_rtx ();
+  rtx_insn *insn;
+
+  /* scratch = fxam (op1) */
+  emit_insn (gen_fxamxf2_i387 (scratch, op1));
+
+  /* e1 = expm1 (-|2 * op1|) */
+  emit_insn (gen_addxf3 (e2, op1, op1));
+  emit_insn (gen_absxf2 (e2, e2));
+  emit_insn (gen_negxf2 (e2, e2));
+  emit_insn (gen_expm1xf2 (e1, e2));
+
+  /* e2 = e1 / (e1 + 2.0) */
+  cst2 = force_reg (XFmode, CONST2_RTX (XFmode));
+  emit_insn (gen_addxf3 (e2, e1, cst2));
+  emit_insn (gen_divxf3 (e2, e1, e2));
+
+  /* flags = signbit (op1) */
+  emit_insn (gen_testqi_ext_1_ccno (scratch, GEN_INT (0x02)));
+
+  /* if (!flags) then e2 = -e2 */
+  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode,
+			      gen_rtx_NE (VOIDmode, flags, const0_rtx),
+			      gen_rtx_LABEL_REF (VOIDmode, jump_label),
+			      pc_rtx);
+  insn = emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
+  predict_jump (REG_BR_PROB_BASE * 50 / 100);
+  JUMP_LABEL (insn) = jump_label;
+
+  emit_insn (gen_negxf2 (e2, e2));
+
+  emit_label (jump_label);
+  LABEL_NUSES (jump_label) = 1;
+
+  emit_move_insn (op0, e2);
+}
+
 /* Output code to perform an asinh XFmode calculation.  */
 
 void ix86_emit_i387_asinh (rtx op0, rtx op1)
@@ -44180,7 +44620,7 @@ void ix86_emit_i387_atanh (rtx op0, rtx op1)
   emit_label (jump_label);
   LABEL_NUSES (jump_label) = 1;
 
-  /* op0 = 0.5 * e2) */
+  /* op0 = 0.5 * e2 */
   half = force_reg (XFmode, half);
   emit_insn (gen_mulxf3 (op0, e2, half));
 }

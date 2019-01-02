@@ -1,5 +1,5 @@
 /* Implementation of the MAXLOC intrinsic
-   Copyright (C) 2017-2018 Free Software Foundation, Inc.
+   Copyright (C) 2017-2019 Free Software Foundation, Inc.
    Contributed by Thomas Koenig
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -150,6 +150,12 @@ mmaxval0_s4 (GFC_UINTEGER_4 * const restrict ret,
   index_type n;
   int mask_kind;
 
+  if (mask == NULL)
+    {
+      maxval0_s4 (ret, xlen, array, len);
+      return;
+    }
+
   rank = GFC_DESCRIPTOR_RANK (array);
   if (rank <= 0)
     runtime_error ("Rank of array needs to be > 0");
@@ -247,7 +253,7 @@ smaxval0_s4 (GFC_UINTEGER_4 * restrict ret,
 	GFC_LOGICAL_4 *mask, gfc_charlen_type len)
 	
 {
-  if (*mask)
+  if (mask == NULL || *mask)
     {
       maxval0_s4 (ret, xlen, array, len);
       return;

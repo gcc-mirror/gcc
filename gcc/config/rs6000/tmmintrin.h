@@ -1,4 +1,4 @@
-/* Copyright (C) 2003-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -228,7 +228,7 @@ _mm_hadds_epi16 (__m128i __A, __m128i __B)
   __v4si __C = { 0 }, __D = { 0 };
   __C = vec_sum4s ((__v8hi) __A, __C);
   __D = vec_sum4s ((__v8hi) __B, __D);
-  __C = (__v4si) vec_packs (__D, __C);
+  __C = (__v4si) vec_packs (__C, __D);
   return (__m128i) __C;
 }
 
@@ -264,8 +264,8 @@ _mm_hsub_epi32 (__m128i __A, __m128i __B)
     {  0,  1,  2,  3,  8,  9, 10, 11, 16, 17, 18, 19, 24, 25, 26, 27 };
   const __v16qu __Q =
     {  4,  5,  6,  7, 12, 13, 14, 15, 20, 21, 22, 23, 28, 29, 30, 31 };
-  __v4si __C = vec_perm ((__v4si) __B, (__v4si) __A, __P);
-  __v4si __D = vec_perm ((__v4si) __B, (__v4si) __A, __Q);
+  __v4si __C = vec_perm ((__v4si) __A, (__v4si) __B, __P);
+  __v4si __D = vec_perm ((__v4si) __A, (__v4si) __B, __Q);
   return (__m128i) vec_sub (__C, __D);
 }
 
@@ -332,7 +332,7 @@ __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_shuffle_epi8 (__m128i __A, __m128i __B)
 {
   const __v16qi __zero = { 0 };
-  __vector __bool char __select = vec_cmplt ((__v16qi) __A, __zero);
+  __vector __bool char __select = vec_cmplt ((__v16qi) __B, __zero);
   __v16qi __C = vec_perm ((__v16qi) __A, (__v16qi) __A, (__v16qu) __B);
   return (__m128i) vec_sel (__C, __zero, __select);
 }
@@ -344,7 +344,7 @@ _mm_shuffle_pi8 (__m64 __A, __m64 __B)
   const __v16qi __zero = { 0 };
   __v16qi __C = (__v16qi) (__v2du) { __A, __A };
   __v16qi __D = (__v16qi) (__v2du) { __B, __B };
-  __vector __bool char __select = vec_cmplt ((__v16qi) __C, __zero);
+  __vector __bool char __select = vec_cmplt ((__v16qi) __D, __zero);
   __C = vec_perm ((__v16qi) __C, (__v16qi) __C, (__v16qu) __D);
   __C = vec_sel (__C, __zero, __select);
   return (__m64) ((__v2du) (__C))[0];
@@ -423,11 +423,11 @@ extern __inline __m128i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_maddubs_epi16 (__m128i __A, __m128i __B)
 {
-  __v8hi __C = vec_unpackh ((__v16qi) __A);
-  __v8hi __D = vec_unpackl ((__v16qi) __A);
   __v8hi __unsigned = vec_splats ((signed short) 0x00ff);
-  __v8hi __E = vec_and (vec_unpackh ((__v16qi) __B), __unsigned);
-  __v8hi __F = vec_and (vec_unpackl ((__v16qi) __B), __unsigned);
+  __v8hi __C = vec_and (vec_unpackh ((__v16qi) __A), __unsigned);
+  __v8hi __D = vec_and (vec_unpackl ((__v16qi) __A), __unsigned);
+  __v8hi __E = vec_unpackh ((__v16qi) __B);
+  __v8hi __F = vec_unpackl ((__v16qi) __B);
   __C = vec_mul (__C, __E);
   __D = vec_mul (__D, __F);
   const __v16qu __odds  =
@@ -445,10 +445,10 @@ _mm_maddubs_pi16 (__m64 __A, __m64 __B)
 {
   __v8hi __C = (__v8hi) (__v2du) { __A, __A };
   __C = vec_unpackl ((__v16qi) __C);
+  const __v8hi __unsigned = vec_splats ((signed short) 0x00ff);
+  __C = vec_and (__C, __unsigned);
   __v8hi __D = (__v8hi) (__v2du) { __B, __B };
   __D = vec_unpackl ((__v16qi) __D);
-  const __v8hi __unsigned = vec_splats ((signed short) 0x00ff);
-  __D = vec_and (__D, __unsigned);
   __D = vec_mul (__C, __D);
   const __v16qu __odds  =
     {  0,  1,  4,  5,  8,  9, 12, 13, 16, 17, 20, 21, 24, 25, 28, 29 };

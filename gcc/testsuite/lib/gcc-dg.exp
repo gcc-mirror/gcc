@@ -1,4 +1,4 @@
-#   Copyright (C) 1997-2018 Free Software Foundation, Inc.
+#   Copyright (C) 1997-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -1242,6 +1242,82 @@ proc gdb-exists { args } {
 	return 1;
     }
     return 0;
+}
+
+# Helper function for scan-symbol and scan-symbol-not. It scans a symbol in
+# the final executable and return 1 if present, otherwise fail.
+#
+# Argument 0 is the regexp to match.
+# Argument 1 handles expected failures and the like
+proc scan-symbol-common { scan_directive args } {
+    global nm
+    global base_dir
+
+    # Access variable from gcc-dg-test-1 or lto-execute.
+    upvar 3 output_file output_file
+
+    if { [llength $args] >= 2 } {
+	switch [dg-process-target [lindex $args 1]] {
+	    "S" { }
+	    "N" { return }
+	    "F" { setup_xfail "*-*-*" }
+	    "P" { }
+	}
+    }
+
+    # Find nm like we find g++ in g++.exp.
+    if ![info exists nm]  {
+	set nm [findfile $base_dir/../../../binutils/nm \
+		$base_dir/../../../binutils/nm \
+	        [findfile $base_dir/../../nm $base_dir/../../nm \
+		      [findfile $base_dir/nm $base_dir/nm \
+		       [transform nm]]]]
+	verbose -log "nm is $nm"
+    }
+
+    set output_file "[glob -nocomplain $output_file]"
+    if { $output_file == "" } {
+	fail "$scan_directive $args: output file does not exist"
+	return
+    }
+
+    set fd [open "| $nm $output_file" r]
+    set text [read $fd]
+    close $fd
+
+    if [regexp -- [lindex $args 0] $text] {
+	return 1
+    } else {
+	return 0
+    }
+}
+
+# Utility for scanning a symbol in the final executable, invoked via dg-final.
+# Call pass if pattern is present, otherwise fail.
+#
+# Argument 0 is the regexp to match.
+# Argument 1 handles expected failures and the like
+proc scan-symbol { args } {
+    set testcase [testname-for-summary]
+    if { [scan-symbol-common "scan-symbol" $args]} {
+	pass "$testcase   scan-symbol $args"
+    } else {
+	fail "$testcase   scan-symbol $args"
+    }
+}
+
+# Utility for scanning a symbol in the final executable, invoked via dg-final.
+# Call pass if pattern is absent, otherwise fail.
+#
+# Argument 0 is the regexp to match.
+# Argument 1 handles expected failures and the like
+proc scan-symbol-not { args } {
+    set testcase [testname-for-summary]
+    if { [scan-symbol-common "scan-symbol-not" $args]} {
+	fail "$testcase   scan-symbol-not $args"
+    } else {
+	pass "$testcase   scan-symbol-not $args"
+    }
 }
 
 set additional_prunes ""

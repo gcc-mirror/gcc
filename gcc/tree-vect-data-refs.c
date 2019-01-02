@@ -1,5 +1,5 @@
 /* Data References Analysis and Manipulation Utilities for Vectorization.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
 
@@ -2155,6 +2155,20 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 		 a way of enforcing a power-of-two size.  */
 	      unsigned HOST_WIDE_INT size;
 	      if (!GET_MODE_SIZE (TYPE_MODE (vectype)).is_constant (&size))
+		{
+		  do_versioning = false;
+		  break;
+		}
+
+	      /* Forcing alignment in the first iteration is no good if
+		 we don't keep it across iterations.  For now, just disable
+		 versioning in this case.
+		 ?? We could actually unroll the loop to achieve the required
+		 overall step alignment, and forcing the alignment could be
+		 done by doing some iterations of the non-vectorized loop.  */
+	      if (!multiple_p (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
+			       * DR_STEP_ALIGNMENT (dr),
+			       DR_TARGET_ALIGNMENT (dr_info)))
 		{
 		  do_versioning = false;
 		  break;

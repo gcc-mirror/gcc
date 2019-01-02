@@ -3,7 +3,7 @@
    building RTL.  These routines are used both during actual parsing
    and during the instantiation of template functions.
 
-   Copyright (C) 1998-2018 Free Software Foundation, Inc.
+   Copyright (C) 1998-2019 Free Software Foundation, Inc.
    Written by Mark Mitchell (mmitchell@usa.net) based on code found
    formerly in parse.y and pt.c.
 
@@ -1742,7 +1742,8 @@ force_paren_expr (tree expr)
   if (cp_unevaluated_operand)
     return expr;
 
-  if (!DECL_P (expr) && TREE_CODE (expr) != COMPONENT_REF
+  if (!DECL_P (tree_strip_any_location_wrapper (expr))
+      && TREE_CODE (expr) != COMPONENT_REF
       && TREE_CODE (expr) != SCOPE_REF)
     return expr;
 
@@ -1805,8 +1806,9 @@ finish_parenthesized_expr (cp_expr expr)
        enclosed in parentheses.  */
     PTRMEM_OK_P (expr) = 0;
 
-  if (TREE_CODE (expr) == STRING_CST)
-    PAREN_STRING_LITERAL_P (expr) = 1;
+  tree stripped_expr = tree_strip_any_location_wrapper (expr);
+  if (TREE_CODE (stripped_expr) == STRING_CST)
+    PAREN_STRING_LITERAL_P (stripped_expr) = 1;
 
   expr = cp_expr (force_paren_expr (expr), expr.get_location ());
 
@@ -2299,19 +2301,22 @@ empty_expr_stmt_p (tree expr_stmt)
   return false;
 }
 
-/* Perform Koenig lookup.  FN is the postfix-expression representing
+/* Perform Koenig lookup.  FN_EXPR is the postfix-expression representing
    the function (or functions) to call; ARGS are the arguments to the
    call.  Returns the functions to be considered by overload resolution.  */
 
 cp_expr
-perform_koenig_lookup (cp_expr fn, vec<tree, va_gc> *args,
+perform_koenig_lookup (cp_expr fn_expr, vec<tree, va_gc> *args,
 		       tsubst_flags_t complain)
 {
   tree identifier = NULL_TREE;
   tree functions = NULL_TREE;
   tree tmpl_args = NULL_TREE;
   bool template_id = false;
-  location_t loc = fn.get_location ();
+  location_t loc = fn_expr.get_location ();
+  tree fn = fn_expr.get_value ();
+
+  STRIP_ANY_LOCATION_WRAPPER (fn);
 
   if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
     {
@@ -2351,7 +2356,7 @@ perform_koenig_lookup (cp_expr fn, vec<tree, va_gc> *args,
   if (fn && template_id && fn != error_mark_node)
     fn = build2 (TEMPLATE_ID_EXPR, unknown_type_node, fn, tmpl_args);
   
-  return fn;
+  return cp_expr (fn, loc);
 }
 
 /* Generate an expression for `FN (ARGS)'.  This may change the
@@ -2381,6 +2386,8 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
   /* If FN may be a FUNCTION_DECL obfuscated by force_paren_expr, undo
      it so that we can tell this is a call to a known function.  */
   fn = maybe_undo_parenthesized_ref (fn);
+
+  STRIP_ANY_LOCATION_WRAPPER (fn);
 
   orig_fn = fn;
 
@@ -3523,20 +3530,20 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
    the use of "this" explicit.
 
    Upon return, *IDK will be filled in appropriately.  */
-cp_expr
-finish_id_expression (tree id_expression,
-		      tree decl,
-		      tree scope,
-		      cp_id_kind *idk,
-		      bool integral_constant_expression_p,
-		      bool allow_non_integral_constant_expression_p,
-		      bool *non_integral_constant_expression_p,
-		      bool template_p,
-		      bool done,
-		      bool address_p,
-		      bool template_arg_p,
-		      const char **error_msg,
-		      location_t location)
+static cp_expr
+finish_id_expression_1 (tree id_expression,
+			tree decl,
+			tree scope,
+			cp_id_kind *idk,
+			bool integral_constant_expression_p,
+			bool allow_non_integral_constant_expression_p,
+			bool *non_integral_constant_expression_p,
+			bool template_p,
+			bool done,
+			bool address_p,
+			bool template_arg_p,
+			const char **error_msg,
+			location_t location)
 {
   decl = strip_using_decl (decl);
 
@@ -3839,6 +3846,34 @@ finish_id_expression (tree id_expression,
     }
 
   return cp_expr (decl, location);
+}
+
+/* As per finish_id_expression_1, but adding a wrapper node
+   around the result if needed to express LOCATION.  */
+
+cp_expr
+finish_id_expression (tree id_expression,
+		      tree decl,
+		      tree scope,
+		      cp_id_kind *idk,
+		      bool integral_constant_expression_p,
+		      bool allow_non_integral_constant_expression_p,
+		      bool *non_integral_constant_expression_p,
+		      bool template_p,
+		      bool done,
+		      bool address_p,
+		      bool template_arg_p,
+		      const char **error_msg,
+		      location_t location)
+{
+  cp_expr result
+    = finish_id_expression_1 (id_expression, decl, scope, idk,
+			      integral_constant_expression_p,
+			      allow_non_integral_constant_expression_p,
+			      non_integral_constant_expression_p,
+			      template_p, done, address_p, template_arg_p,
+			      error_msg, location);
+  return result.maybe_add_location_wrapper ();
 }
 
 /* Implement the __typeof keyword: Return the type of EXPR, suitable for
@@ -9191,7 +9226,8 @@ finish_static_assert (tree condition, tree message, location_t location,
   /* Fold the expression and convert it to a boolean value. */
   condition = perform_implicit_conversion_flags (boolean_type_node, condition,
 						 complain, LOOKUP_NORMAL);
-  condition = fold_non_dependent_expr (condition, complain);
+  condition = fold_non_dependent_expr (condition, complain,
+				       /*manifestly_const_eval=*/true);
 
   if (TREE_CODE (condition) == INTEGER_CST && !integer_zerop (condition))
     /* Do nothing; the condition is satisfied. */
@@ -9767,12 +9803,12 @@ static tree
 capture_decltype (tree decl)
 {
   tree lam = CLASSTYPE_LAMBDA_EXPR (DECL_CONTEXT (current_function_decl));
-  /* FIXME do lookup instead of list walk? */
-  tree cap = value_member (decl, LAMBDA_EXPR_CAPTURE_LIST (lam));
+  tree cap = lookup_name_real (DECL_NAME (decl), /*type*/0, /*nonclass*/1,
+			       /*block_p=*/true, /*ns*/0, LOOKUP_HIDDEN);
   tree type;
 
-  if (cap)
-    type = TREE_TYPE (TREE_PURPOSE (cap));
+  if (cap && is_capture_proxy (cap))
+    type = TREE_TYPE (cap);
   else
     switch (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lam))
       {

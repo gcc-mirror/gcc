@@ -1,5 +1,5 @@
 /* Implementation of the MAXVAL intrinsic
-   Copyright (C) 2017-2018 Free Software Foundation, Inc.
+   Copyright (C) 2017-2019 Free Software Foundation, Inc.
    Contributed by Thomas Koenig
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -239,6 +239,12 @@ mmaxval1_s1 (gfc_array_s1 * const restrict retarray,
   index_type mdelta;
   int mask_kind;
 
+  if (mask == NULL)
+    {
+      maxval1_s1 (retarray, xlen, array, pdim, string_len);
+      return;
+    }
+
   assert (xlen == string_len);
 
   dim = (*pdim) - 1;
@@ -436,7 +442,7 @@ smaxval1_s1 (gfc_array_s1 * const restrict retarray,
   index_type dim;
 
 
-  if (*mask)
+  if (mask == NULL || *mask)
     {
       maxval1_s1 (retarray, xlen, array, pdim, string_len);
       return;

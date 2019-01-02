@@ -1,5 +1,5 @@
 /* Functions related to building classes and their related objects.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -7399,6 +7399,14 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
 	    }
 	}
       return NULL_TREE;
+
+    case VIEW_CONVERT_EXPR:
+      if (location_wrapper_p (instance))
+	return RECUR (TREE_OPERAND (instance, 0));
+      else
+	/* TODO: Recursion may be correct for some non-location-wrapper
+	   uses of VIEW_CONVERT_EXPR.  */
+	return NULL_TREE;
 
     default:
       return NULL_TREE;

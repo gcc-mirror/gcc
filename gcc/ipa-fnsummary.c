@@ -1,5 +1,5 @@
 /* Function summary pass.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -2180,6 +2180,17 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	      es->call_stmt_time = this_time;
 	      es->loop_depth = bb_loop_depth (bb);
 	      edge_set_predicate (edge, &bb_predicate);
+	      if (edge->speculative)
+		{
+		  cgraph_edge *direct, *indirect;
+		  ipa_ref *ref;
+		  edge->speculative_call_info (direct, indirect, ref);
+		  gcc_assert (direct == edge);
+	          ipa_call_summary *es2
+			 = ipa_call_summaries->get_create (indirect);
+		  ipa_call_summaries->duplicate (edge, indirect,
+						 es, es2);
+		}
 	    }
 
 	  /* TODO: When conditional jump or swithc is known to be constant, but
@@ -2491,7 +2502,8 @@ compute_fn_summary (struct cgraph_node *node, bool early)
      ipa_update_overall_fn_summary but because computation happens in
      different order the roundoff errors result in slight changes.  */
   ipa_update_overall_fn_summary (node);
-  gcc_assert (info->size == info->self_size);
+  /* In LTO mode we may have speculative edges set.  */
+  gcc_assert (in_lto_p || info->size == info->self_size);
 }
 
 

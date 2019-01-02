@@ -1,5 +1,5 @@
 /* Exception handling and frame unwind runtime interface routines.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -177,6 +177,9 @@ read_sleb128 (const unsigned char *p, _sleb128_t *val)
    The function returns P incremented past the value.  BASE is as given
    by base_of_encoded_value for this encoding in the appropriate context.  */
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
+
 static const unsigned char *
 read_encoded_value_with_base (unsigned char encoding, _Unwind_Ptr base,
 			      const unsigned char *p, _Unwind_Ptr *val)
@@ -269,6 +272,8 @@ read_encoded_value_with_base (unsigned char encoding, _Unwind_Ptr base,
   *val = result;
   return p;
 }
+
+#pragma GCC diagnostic pop
 
 #ifndef NO_BASE_OF_ENCODED_VALUE
 

@@ -1,5 +1,5 @@
 /* -*- C++ -*- Parser.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
    This file is part of GCC.
@@ -5303,7 +5303,8 @@ cp_parser_primary_expression (cp_parser *parser,
 	  if (!cast_p)
 	    cp_parser_non_integral_constant_expression (parser, NIC_FLOAT);
 	}
-      return cp_expr (token->u.value, token->location);
+      return (cp_expr (token->u.value, token->location)
+	      .maybe_add_location_wrapper ());
 
     case CPP_CHAR_USERDEF:
     case CPP_CHAR16_USERDEF:
@@ -5325,9 +5326,10 @@ cp_parser_primary_expression (cp_parser *parser,
       /* ??? Should wide strings be allowed when parser->translate_strings_p
 	 is false (i.e. in attributes)?  If not, we can kill the third
 	 argument to cp_parser_string_literal.  */
-      return cp_parser_string_literal (parser,
-				       parser->translate_strings_p,
-				       true);
+      return (cp_parser_string_literal (parser,
+					parser->translate_strings_p,
+					true)
+	      .maybe_add_location_wrapper ());
 
     case CPP_OPEN_PAREN:
       /* If we see `( { ' then we are looking at the beginning of
@@ -5779,8 +5781,21 @@ cp_parser_primary_expression (cp_parser *parser,
 		 id_expression.get_location ()));
 	if (error_msg)
 	  cp_parser_error (parser, error_msg);
-	decl.set_location (id_expression.get_location ());
-	decl.set_range (id_expr_token->location, id_expression.get_finish ());
+	/* Build a location for an id-expression of the form:
+	     ::ns::id
+             ~~~~~~^~
+	  or:
+	     id
+	     ^~
+	   i.e. from the start of the first token to the end of the final
+	   token, with the caret at the start of the unqualified-id.  */
+	location_t caret_loc = get_pure_location (id_expression.get_location ());
+	location_t start_loc = get_start (id_expr_token->location);
+	location_t finish_loc = get_finish (id_expression.get_location ());
+	location_t combined_loc
+	  = make_location (caret_loc, start_loc, finish_loc);
+
+	decl.set_location (combined_loc);
 	return decl;
       }
 
@@ -7240,8 +7255,10 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 
             is_member_access = false;
 
+	    tree stripped_expression
+	      = tree_strip_any_location_wrapper (postfix_expression);
 	    is_builtin_constant_p
-	      = DECL_IS_BUILTIN_CONSTANT_P (postfix_expression);
+	      = DECL_IS_BUILTIN_CONSTANT_P (stripped_expression);
 	    if (is_builtin_constant_p)
 	      {
 		/* The whole point of __builtin_constant_p is to allow
@@ -8434,18 +8451,22 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	case NEGATE_EXPR:
 	  /* Immediately fold negation of a constant, unless the constant is 0
 	     (since -0 == 0) or it would overflow.  */
-	  if (unary_operator == NEGATE_EXPR && op_ttype == CPP_NUMBER
-	      && CONSTANT_CLASS_P (cast_expression)
-	      && !integer_zerop (cast_expression)
-	      && !TREE_OVERFLOW (cast_expression))
+	  if (unary_operator == NEGATE_EXPR && op_ttype == CPP_NUMBER)
 	    {
-	      tree folded = fold_build1 (unary_operator,
-					 TREE_TYPE (cast_expression),
-					 cast_expression);
-	      if (CONSTANT_CLASS_P (folded) && !TREE_OVERFLOW (folded))
+	      tree stripped_expr
+		= tree_strip_any_location_wrapper (cast_expression);
+	      if (CONSTANT_CLASS_P (stripped_expr)
+		  && !integer_zerop (stripped_expr)
+		  && !TREE_OVERFLOW (stripped_expr))
 		{
-		  expression = cp_expr (folded, loc);
-		  break;
+		  tree folded = fold_build1 (unary_operator,
+					     TREE_TYPE (stripped_expr),
+					     stripped_expr);
+		  if (CONSTANT_CLASS_P (folded) && !TREE_OVERFLOW (folded))
+		    {
+		      expression = maybe_wrap_with_location (folded, loc);
+		      break;
+		    }
 		}
 	    }
 	  /* Fall through.  */
@@ -8559,6 +8580,8 @@ cp_parser_has_attribute_expression (cp_parser *parser)
      looking at the unary-expression production.  */
   if (!oper || oper == error_mark_node)
     oper = cp_parser_unary_expression (parser);
+
+  STRIP_ANY_LOCATION_WRAPPER (oper);
 
   /* Go back to evaluating expressions.  */
   --cp_unevaluated_operand;
@@ -9579,7 +9602,7 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 		      || (TREE_CODE (TREE_TYPE (TREE_OPERAND (current.lhs, 0)))
 			  != BOOLEAN_TYPE))))
 	  /* Avoid warning for !!b == y where b is boolean.  */
-	  && (!DECL_P (current.lhs)
+	  && (!DECL_P (tree_strip_any_location_wrapper (current.lhs))
 	      || TREE_TYPE (current.lhs) == NULL_TREE
 	      || TREE_CODE (TREE_TYPE (current.lhs)) != BOOLEAN_TYPE))
 	warn_logical_not_parentheses (current.loc, current.tree_type,
@@ -9617,7 +9640,8 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	}
       else
         {
-          current.lhs = build_x_binary_op (combined_loc, current.tree_type,
+	  op_location_t op_loc (current.loc, combined_loc);
+	  current.lhs = build_x_binary_op (op_loc, current.tree_type,
                                            current.lhs, current.lhs_type,
                                            rhs, rhs_type, &overload,
                                            complain_flags (decltype_p));
@@ -14768,6 +14792,7 @@ cp_parser_decltype (cp_parser *parser)
       ++c_inhibit_evaluation_warnings;
 
       expr = cp_parser_decltype_expr (parser, id_expression_or_member_access_p);
+      STRIP_ANY_LOCATION_WRAPPER (expr);
 
       /* Go back to evaluating expressions.  */
       --cp_unevaluated_operand;
@@ -15145,7 +15170,9 @@ cp_parser_mem_initializer (cp_parser* parser)
       vec = cp_parser_parenthesized_expression_list (parser, non_attr,
 						     /*cast_p=*/false,
 						     /*allow_expansion_p=*/true,
-						     /*non_constant_p=*/NULL);
+						     /*non_constant_p=*/NULL,
+						     /*close_paren_loc=*/NULL,
+						     /*wrap_locations_p=*/true);
       if (vec == NULL)
 	return error_mark_node;
       expression_list = build_tree_list_vec (vec);
@@ -15600,8 +15627,16 @@ cp_parser_operator (cp_parser* parser, location_t start_loc)
 	    const char *name = IDENTIFIER_POINTER (id);
 	    id = cp_literal_operator_id (name);
 	  }
-	start_loc = make_location (start_loc, start_loc, get_finish (end_loc));
-	return cp_expr (id, start_loc);
+	/* Generate a location of the form:
+	     "" _suffix_identifier
+	     ^~~~~~~~~~~~~~~~~~~~~
+	   with caret == start at the start token, finish at the end of the
+	   suffix identifier.  */
+	location_t finish_loc
+	  = get_finish (cp_lexer_previous_token (parser->lexer)->location);
+	location_t combined_loc
+	  = make_location (start_loc, start_loc, finish_loc);
+	return cp_expr (id, combined_loc);
       }
 
     default:
@@ -15685,6 +15720,11 @@ static tree
 cp_parser_template_parameter_list (cp_parser* parser)
 {
   tree parameter_list = NULL_TREE;
+
+  /* Don't create wrapper nodes within a template-parameter-list,
+     since we don't want to have different types based on the
+     spelling location of constants and decls within them.  */
+  auto_suppress_location_wrappers sentinel;
 
   begin_template_parm_list ();
 
@@ -16857,6 +16897,9 @@ cp_parser_template_argument_list (cp_parser* parser)
   bool saved_in_template_argument_list_p;
   bool saved_ice_p;
   bool saved_non_ice_p;
+
+  /* Don't create location wrapper nodes within a template-argument-list.  */
+  auto_suppress_location_wrappers sentinel;
 
   saved_in_template_argument_list_p = parser->in_template_argument_list_p;
   parser->in_template_argument_list_p = true;
@@ -19859,12 +19902,9 @@ cp_parser_asm_definition (cp_parser* parser)
   tree clobbers = NULL_TREE;
   tree labels = NULL_TREE;
   tree asm_stmt;
-  bool volatile_p = false;
   bool extended_p = false;
   bool invalid_inputs_p = false;
   bool invalid_outputs_p = false;
-  bool inline_p = false;
-  bool goto_p = false;
   required_token missing = RT_NONE;
 
   /* Look for the `asm' keyword.  */
@@ -19877,47 +19917,66 @@ cp_parser_asm_definition (cp_parser* parser)
       cp_function_chain->invalid_constexpr = true;
     }
 
-  /* See if the next token is `volatile'.  */
-  if (cp_parser_allow_gnu_extensions_p (parser))
-    for (bool done = false; !done ; )
-      switch (cp_lexer_peek_token (parser->lexer)->keyword)
-	{
-	case RID_VOLATILE:
-	  if (!volatile_p)
-	    {
-	      /* Remember that we saw the `volatile' keyword.  */
-	      volatile_p = true;
-	      /* Consume the token.  */
-	      cp_lexer_consume_token (parser->lexer);
-	    }
-	  else
-	    done = true;
-	  break;
-	case RID_INLINE:
-	  if (!inline_p && parser->in_function_body)
-	    {
-	      /* Remember that we saw the `inline' keyword.  */
-	      inline_p = true;
-	      /* Consume the token.  */
-	      cp_lexer_consume_token (parser->lexer);
-	    }
-	  else
-	    done = true;
-	  break;
-	case RID_GOTO:
-	  if (!goto_p && parser->in_function_body)
-	    {
-	      /* Remember that we saw the `goto' keyword.  */
-	      goto_p = true;
-	      /* Consume the token.  */
-	      cp_lexer_consume_token (parser->lexer);
-	    }
-	  else
-	    done = true;
-	  break;
-	default:
-	  done = true;
-	}
+  /* Handle the asm-qualifier-list.  */
+  location_t volatile_loc = UNKNOWN_LOCATION;
+  location_t inline_loc = UNKNOWN_LOCATION;
+  location_t goto_loc = UNKNOWN_LOCATION;
+
+  if (cp_parser_allow_gnu_extensions_p (parser) && parser->in_function_body)
+    for (;;)
+      {
+	cp_token *token = cp_lexer_peek_token (parser->lexer);
+	location_t loc = token->location;
+	switch (cp_lexer_peek_token (parser->lexer)->keyword)
+	  {
+	  case RID_VOLATILE:
+	    if (volatile_loc)
+	      {
+		error_at (loc, "duplicate asm qualifier %qT", token->u.value);
+		inform (volatile_loc, "first seen here");
+	      }
+	    else
+	      volatile_loc = loc;
+	    cp_lexer_consume_token (parser->lexer);
+	    continue;
+
+	  case RID_INLINE:
+	    if (inline_loc)
+	      {
+		error_at (loc, "duplicate asm qualifier %qT", token->u.value);
+		inform (inline_loc, "first seen here");
+	      }
+	    else
+	      inline_loc = loc;
+	    cp_lexer_consume_token (parser->lexer);
+	    continue;
+
+	  case RID_GOTO:
+	    if (goto_loc)
+	      {
+		error_at (loc, "duplicate asm qualifier %qT", token->u.value);
+		inform (goto_loc, "first seen here");
+	      }
+	    else
+	      goto_loc = loc;
+	    cp_lexer_consume_token (parser->lexer);
+	    continue;
+
+	  case RID_CONST:
+	  case RID_RESTRICT:
+	    error_at (loc, "%qT is not an asm qualifier", token->u.value);
+	    cp_lexer_consume_token (parser->lexer);
+	    continue;
+
+	  default:
+	    break;
+	  }
+	break;
+      }
+
+  bool volatile_p = (volatile_loc != UNKNOWN_LOCATION);
+  bool inline_p = (inline_loc != UNKNOWN_LOCATION);
+  bool goto_p = (goto_loc != UNKNOWN_LOCATION);
 
   /* Look for the opening `('.  */
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
@@ -20010,8 +20069,7 @@ cp_parser_asm_definition (cp_parser* parser)
 					     CPP_CLOSE_PAREN))
 	    clobbers = cp_parser_asm_clobber_list (parser);
 	}
-      else if (goto_p
-	       && cp_lexer_next_token_is (parser->lexer, CPP_SCOPE))
+      else if (goto_p && cp_lexer_next_token_is (parser->lexer, CPP_SCOPE))
 	/* The labels are coming next.  */
 	labels_p = true;
 
@@ -22535,6 +22593,9 @@ cp_parser_parameter_declaration (cp_parser *parser,
   else
     default_argument = NULL_TREE;
 
+  if (default_argument)
+    STRIP_ANY_LOCATION_WRAPPER (default_argument);
+
   /* Generate a location for the parameter, ranging from the start of the
      initial token to the end of the final token (using input_location for
      the latter, set up by cp_lexer_set_source_position_from_token when
@@ -23328,7 +23389,7 @@ cp_parser_class_specifier_1 (cp_parser* parser)
   cp_ensure_no_oacc_routine (parser);
 
   /* Issue an error message if type-definitions are forbidden here.  */
-  cp_parser_check_type_definition (parser);
+  bool type_definition_ok_p = cp_parser_check_type_definition (parser);
   /* Remember that we are defining one more class.  */
   ++parser->num_classes_being_defined;
   /* Inside the class, surrounding template-parameter-lists do not
@@ -23523,7 +23584,7 @@ cp_parser_class_specifier_1 (cp_parser* parser)
       cp_default_arg_entry *e;
       tree save_ccp, save_ccr;
 
-      if (any_erroneous_template_args_p (type))
+      if (!type_definition_ok_p || any_erroneous_template_args_p (type))
 	{
 	  /* Skip default arguments, NSDMIs, etc, in order to improve
 	     error recovery (c++/71169, c++/71832).  */
@@ -25883,6 +25944,10 @@ cp_parser_gnu_attribute_list (cp_parser* parser, bool exactly_one /* = false */)
   tree attribute_list = NULL_TREE;
   bool save_translate_strings_p = parser->translate_strings_p;
 
+  /* Don't create wrapper nodes within attributes: the
+     handlers don't know how to handle them.  */
+  auto_suppress_location_wrappers sentinel;
+
   parser->translate_strings_p = false;
   while (true)
     {
@@ -26327,6 +26392,10 @@ cp_parser_std_attribute_spec_seq (cp_parser *parser)
 {
   tree attr_specs = NULL_TREE;
   tree attr_last = NULL_TREE;
+
+  /* Don't create wrapper nodes within attributes: the
+     handlers don't know how to handle them.  */
+  auto_suppress_location_wrappers sentinel;
 
   while (true)
     {
@@ -35097,6 +35166,9 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
   bool first = true;
   cp_token *token = NULL;
 
+  /* Don't create location wrapper nodes within OpenMP clauses.  */
+  auto_suppress_location_wrappers sentinel;
+
   while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL))
     {
       pragma_omp_clause c_kind;
@@ -36813,6 +36885,10 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 	  return NULL;
 	}
       loc = cp_lexer_consume_token (parser->lexer)->location;
+
+      /* Don't create location wrapper nodes within an OpenMP "for"
+	 statement.  */
+      auto_suppress_location_wrappers sentinel;
 
       matching_parens parens;
       if (!parens.require_open (parser))
@@ -39385,6 +39461,8 @@ cp_parser_omp_declare_reduction_exprs (tree fndecl, cp_parser *parser)
       else
 	{
 	  cp_parser_parse_tentatively (parser);
+	  /* Don't create location wrapper nodes here.  */
+	  auto_suppress_location_wrappers sentinel;
 	  tree fn_name = cp_parser_id_expression (parser, /*template_p=*/false,
 						  /*check_dependency_p=*/true,
 						  /*template_p=*/NULL,

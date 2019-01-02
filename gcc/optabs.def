@@ -1,5 +1,5 @@
 /* Definitions for operation tables, or "optabs".
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -282,6 +282,7 @@ OPTAB_D (atanh_optab, "atanh$a2")
 OPTAB_D (copysign_optab, "copysign$F$a3")
 OPTAB_D (xorsign_optab, "xorsign$F$a3")
 OPTAB_D (cos_optab, "cos$a2")
+OPTAB_D (cosh_optab, "cosh$a2")
 OPTAB_D (exp10_optab, "exp10$a2")
 OPTAB_D (exp2_optab, "exp2$a2")
 OPTAB_D (exp_optab, "exp$a2")
@@ -304,7 +305,9 @@ OPTAB_D (signbit_optab, "signbit$F$a2")
 OPTAB_D (significand_optab, "significand$a2")
 OPTAB_D (sin_optab, "sin$a2")
 OPTAB_D (sincos_optab, "sincos$a3")
+OPTAB_D (sinh_optab, "sinh$a2")
 OPTAB_D (tan_optab, "tan$a2")
+OPTAB_D (tanh_optab, "tanh$a2")
 
 /* C99 implementations of fmax/fmin.  */
 OPTAB_D (fmax_optab, "fmax$a3")

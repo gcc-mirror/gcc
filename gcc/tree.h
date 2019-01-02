@@ -1,5 +1,5 @@
 /* Definitions for the ubiquitous 'tree' type for GNU compilers.
-   Copyright (C) 1989-2018 Free Software Foundation, Inc.
+   Copyright (C) 1989-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -136,6 +136,12 @@ as_internal_fn (combined_fn code)
 
 #define CONSTANT_CLASS_P(NODE)\
 	(TREE_CODE_CLASS (TREE_CODE (NODE)) == tcc_constant)
+
+/* Nonzero if NODE represents a constant, or is a location wrapper
+   around such a node.  */
+
+#define CONSTANT_CLASS_OR_WRAPPER_P(NODE)\
+	(CONSTANT_CLASS_P (tree_strip_any_location_wrapper (NODE)))
 
 /* Nonzero if NODE represents a type.  */
 
@@ -1180,6 +1186,19 @@ get_expr_source_range (tree expr)
 extern void protected_set_expr_location (tree, location_t);
 
 extern tree maybe_wrap_with_location (tree, location_t);
+
+extern int suppress_location_wrappers;
+
+/* A class for suppressing the creation of location wrappers.
+   Location wrappers will not be created during the lifetime
+   of an instance of this class.  */
+
+class auto_suppress_location_wrappers
+{
+ public:
+  auto_suppress_location_wrappers () { ++suppress_location_wrappers; }
+  ~auto_suppress_location_wrappers () { --suppress_location_wrappers; }
+};
 
 /* In a TARGET_EXPR node.  */
 #define TARGET_EXPR_SLOT(NODE) TREE_OPERAND_CHECK_CODE (NODE, TARGET_EXPR, 0)
@@ -5948,5 +5967,54 @@ fndecl_built_in_p (const_tree node, built_in_function name)
   return (fndecl_built_in_p (node, BUILT_IN_NORMAL)
 	  && DECL_FUNCTION_CODE (node) == name);
 }
+
+/* A struct for encapsulating location information about an operator
+   and the operation built from it.
+
+   m_operator_loc is the location of the operator
+   m_combined_loc is the location of the compound expression.
+
+   For example, given "a && b" the, operator location is:
+      a && b
+        ^~
+   and the combined location is:
+      a && b
+      ~~^~~~
+   Capturing this information allows for class binary_op_rich_location
+   to provide detailed information about e.g. type mismatches in binary
+   operations where enough location information is available:
+
+     arg_0 op arg_1
+     ~~~~~ ^~ ~~~~~
+       |        |
+       |        arg1 type
+       arg0 type
+
+   falling back to just showing the combined location:
+
+     arg_0 op arg_1
+     ~~~~~~^~~~~~~~
+
+   where it is not.  */
+
+struct op_location_t
+{
+  location_t m_operator_loc;
+  location_t m_combined_loc;
+
+  /* 1-argument ctor, for constructing from a combined location.  */
+  op_location_t (location_t combined_loc)
+  : m_operator_loc (UNKNOWN_LOCATION), m_combined_loc (combined_loc)
+  {}
+
+  /* 2-argument ctor, for distinguishing between the operator's location
+     and the combined location.  */
+  op_location_t (location_t operator_loc, location_t combined_loc)
+  : m_operator_loc (operator_loc), m_combined_loc (combined_loc)
+  {}
+
+  /* Implicitly convert back to a location_t, using the combined location.  */
+  operator location_t () const { return m_combined_loc; }
+};
 
 #endif  /* GCC_TREE_H  */

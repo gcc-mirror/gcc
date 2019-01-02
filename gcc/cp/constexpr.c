@@ -2,7 +2,7 @@
    constexpr functions.  These routines are used both during actual parsing
    and during the instantiation of template functions.
 
-   Copyright (C) 1998-2018 Free Software Foundation, Inc.
+   Copyright (C) 1998-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1213,7 +1213,7 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
   /* If we aren't requiring a constant expression, defer __builtin_constant_p
      in a constexpr function until we have values for the parameters.  */
   if (bi_const_p
-      && ctx->quiet
+      && !ctx->manifestly_const_eval
       && current_function_decl
       && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
     {
@@ -1238,7 +1238,6 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
      return constant false for a non-constant argument.  */
   constexpr_ctx new_ctx = *ctx;
   new_ctx.quiet = true;
-  bool dummy1 = false, dummy2 = false;
   for (i = 0; i < nargs; ++i)
     {
       args[i] = CALL_EXPR_ARG (t, i);
@@ -1247,12 +1246,16 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
 	 of the builtin, verify it here.  */
       if (!builtin_valid_in_constant_expr_p (fun)
 	  || potential_constant_expression (args[i]))
-	args[i] = cxx_eval_constant_expression (&new_ctx, args[i], false,
-						&dummy1, &dummy2);
+	{
+	  bool dummy1 = false, dummy2 = false;
+	  args[i] = cxx_eval_constant_expression (&new_ctx, args[i], false,
+						  &dummy1, &dummy2);
+	}
+
       if (bi_const_p)
-	/* For __built_in_constant_p, fold all expressions with constant values
+	/* For __builtin_constant_p, fold all expressions with constant values
 	   even if they aren't C++ constant-expressions.  */
-	args[i] = cp_fully_fold (args[i]);
+	args[i] = cp_fold_rvalue (args[i]);
     }
 
   bool save_ffbcp = force_folding_builtin_constant_p;
@@ -4697,7 +4700,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       break;
 
     case CONSTRUCTOR:
-      if (TREE_CONSTANT (t))
+      if (TREE_CONSTANT (t) && reduced_constant_expression_p (t))
 	{
 	  /* Don't re-process a constant CONSTRUCTOR, but do fold it to
 	     VECTOR_CST if applicable.  */
@@ -5356,6 +5359,7 @@ clear_cv_and_fold_caches (void)
    (t, complain) followed by maybe_constant_value but is more efficient,
    because it calls instantiation_dependent_expression_p and
    potential_constant_expression at most once.
+   The manifestly_const_eval argument is passed to maybe_constant_value.
 
    Callers should generally pass their active complain, or if they are in a
    non-template, diagnosing context, they can use the default of
@@ -5366,7 +5370,8 @@ clear_cv_and_fold_caches (void)
 
 tree
 fold_non_dependent_expr (tree t,
-			 tsubst_flags_t complain /* = tf_warning_or_error */)
+			 tsubst_flags_t complain /* = tf_warning_or_error */,
+			 bool manifestly_const_eval /* = false */)
 {
   if (t == NULL_TREE)
     return NULL_TREE;
@@ -5396,7 +5401,8 @@ fold_non_dependent_expr (tree t,
 	      return t;
 	    }
 
-	  tree r = cxx_eval_outermost_constant_expr (t, true, true, false,
+	  tree r = cxx_eval_outermost_constant_expr (t, true, true,
+						     manifestly_const_eval,
 						     NULL_TREE);
 	  /* cp_tree_equal looks through NOPs, so allow them.  */
 	  gcc_checking_assert (r == t
@@ -5414,7 +5420,7 @@ fold_non_dependent_expr (tree t,
       return t;
     }
 
-  return maybe_constant_value (t);
+  return maybe_constant_value (t, NULL_TREE, manifestly_const_eval);
 }
 
 /* Like maybe_constant_value, but returns a CONSTRUCTOR directly, rather
@@ -5778,13 +5784,18 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	 may change to something more specific to type-punning (DR 1312).  */
       {
         tree from = TREE_OPERAND (t, 0);
-	if (INDIRECT_TYPE_P (TREE_TYPE (t))
-	    && TREE_CODE (from) == INTEGER_CST
-	    && !integer_zerop (from))
+	if (location_wrapper_p (t))
+	  return (RECUR (from, want_rval));
+	if (INDIRECT_TYPE_P (TREE_TYPE (t)))
 	  {
-	    if (flags & tf_error)
-	      error_at (loc, "reinterpret_cast from integer to pointer");
-	    return false;
+	    STRIP_ANY_LOCATION_WRAPPER (from);
+	    if (TREE_CODE (from) == INTEGER_CST
+		&& !integer_zerop (from))
+	      {
+		if (flags & tf_error)
+		  error_at (loc, "reinterpret_cast from integer to pointer");
+		return false;
+	      }
 	  }
         return (RECUR (from, TREE_CODE (t) != VIEW_CONVERT_EXPR));
       }

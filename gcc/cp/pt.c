@@ -1,5 +1,5 @@
 /* Handle parameterized types (templates) for GNU -*- C++ -*-.
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com) while at Watchmaker Computing.
    Rewritten by Jason Merrill (jason@cygnus.com).
 
@@ -6195,6 +6195,7 @@ convert_nontype_argument_function (tree type, tree expr,
      -- the address of an object or function with external [C++11: or
         internal] linkage.  */
 
+  STRIP_ANY_LOCATION_WRAPPER (fn_no_ptr);
   if (TREE_CODE (fn_no_ptr) != FUNCTION_DECL)
     {
       if (complain & tf_error)
@@ -6773,7 +6774,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
      to a null value, but otherwise still need to be of a specific form.  */
   if (cxx_dialect >= cxx11)
     {
-      if (TREE_CODE (expr) == PTRMEM_CST)
+      if (TREE_CODE (expr) == PTRMEM_CST && TYPE_PTRMEM_P (type))
 	/* A PTRMEM_CST is already constant, and a valid template
 	   argument for a parameter of pointer to member type, we just want
 	   to leave it in that form rather than lower it to a
@@ -8017,6 +8018,9 @@ convert_template_argument (tree parm,
 
       if (invalid_nontype_parm_type_p (t, complain))
 	return error_mark_node;
+
+      if (t != TREE_TYPE (parm))
+	t = canonicalize_type_argument (t, complain);
 
       if (!type_dependent_expression_p (orig_arg)
 	  && !uses_template_parms (t))
@@ -12753,13 +12757,13 @@ tsubst_default_argument (tree fn, int parmnum, tree type, tree arg,
 
   finish_lambda_scope ();
 
+  /* Make sure the default argument is reasonable.  */
+  arg = check_default_argument (type, arg, complain);
+
   if (errorcount+sorrycount > errs
       && (complain & tf_warning_or_error))
     inform (input_location,
 	    "  when instantiating default argument for call to %qD", fn);
-
-  /* Make sure the default argument is reasonable.  */
-  arg = check_default_argument (type, arg, complain);
 
   pop_access_scope (fn);
   pop_from_top_level ();
@@ -27225,7 +27229,8 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 					 complain);
   else if (AUTO_IS_DECLTYPE (auto_node))
     {
-      bool id = (DECL_P (init)
+      tree stripped_init = tree_strip_any_location_wrapper (init);
+      bool id = (DECL_P (stripped_init)
 		 || ((TREE_CODE (init) == COMPONENT_REF
 		      || TREE_CODE (init) == SCOPE_REF)
 		     && !REF_PARENTHESIZED_P (init)));

@@ -1,5 +1,5 @@
 ;; Machine description for NVPTX.
-;; Copyright (C) 2014-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2019 Free Software Foundation, Inc.
 ;; Contributed by Bernd Schmidt <bernds@codesourcery.com>
 ;;
 ;; This file is part of GCC.
@@ -1454,10 +1454,16 @@
   [(set_attr "atomic" "true")])
 
 (define_insn "nvptx_barsync"
-  [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "")]
+  [(unspec_volatile [(match_operand:SI 0 "nvptx_nonmemory_operand" "Ri")
+		     (match_operand:SI 1 "const_int_operand")]
 		    UNSPECV_BARSYNC)]
   ""
-  "\\tbar.sync\\t%0;"
+  {
+    if (INTVAL (operands[1]) == 0)
+      return "\\tbar.sync\\t%0;";
+    else
+      return "\\tbar.sync\\t%0, %1;";
+  }
   [(set_attr "predicable" "false")])
 
 (define_expand "memory_barrier"

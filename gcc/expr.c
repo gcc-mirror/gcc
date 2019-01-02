@@ -1,5 +1,5 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
-   Copyright (C) 1988-2018 Free Software Foundation, Inc.
+   Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1220,7 +1220,7 @@ move_by_pieces (rtx to, rtx from, unsigned HOST_WIDE_INT len,
 
   data.run ();
 
-  if (retmode)
+  if (retmode != RETURN_BEGIN)
     return data.finish_retmode (retmode);
   else
     return to;
@@ -1388,7 +1388,7 @@ store_by_pieces (rtx to, unsigned HOST_WIDE_INT len,
   store_by_pieces_d data (to, constfun, constfundata, len, align);
   data.run ();
 
-  if (retmode)
+  if (retmode != RETURN_BEGIN)
     return data.finish_retmode (retmode);
   else
     return to;
@@ -5609,13 +5609,13 @@ store_expr (tree exp, rtx target, int call_param_p,
 
       dest_mem = target;
 
+      memop_ret retmode = exp_len > str_copy_len ? RETURN_END : RETURN_BEGIN;
       dest_mem = store_by_pieces (dest_mem,
 				  str_copy_len, builtin_strncpy_read_str,
 				  CONST_CAST (char *,
 					      TREE_STRING_POINTER (str)),
 				  MEM_ALIGN (target), false,
-				  (exp_len > str_copy_len ? RETURN_END :
-				   RETURN_BEGIN));
+				  retmode);
       if (exp_len > str_copy_len)
 	clear_storage (adjust_address (dest_mem, BLKmode, 0),
 		       GEN_INT (exp_len - str_copy_len),
@@ -8775,8 +8775,8 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 		 != INTEGER_CST check.  Handle it.  */
 	      if (GET_MODE (op0) == VOIDmode && GET_MODE (op1) == VOIDmode)
 		{
-		  op0 = convert_modes (innermode, mode, op0, true);
-		  op1 = convert_modes (innermode, mode, op1, false);
+		  op0 = convert_modes (mode, innermode, op0, true);
+		  op1 = convert_modes (mode, innermode, op1, false);
 		  return REDUCE_BIT_FIELD (expand_mult (mode, op0, op1,
 							target, unsignedp));
 		}
@@ -8798,7 +8798,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	  if (TREE_CODE (treeop0) != INTEGER_CST)
 	    {
 	      if (find_widening_optab_handler (this_optab, mode, innermode)
-		    != CODE_FOR_nothing)
+		  != CODE_FOR_nothing)
 		{
 		  expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1,
 				   EXPAND_NORMAL);
@@ -8807,9 +8807,9 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 		  if (GET_MODE (op0) == VOIDmode && GET_MODE (op1) == VOIDmode)
 		    {
 		     widen_mult_const:
-		      op0 = convert_modes (innermode, mode, op0, zextend_p);
+		      op0 = convert_modes (mode, innermode, op0, zextend_p);
 		      op1
-			= convert_modes (innermode, mode, op1,
+			= convert_modes (mode, innermode, op1,
 					 TYPE_UNSIGNED (TREE_TYPE (treeop1)));
 		      return REDUCE_BIT_FIELD (expand_mult (mode, op0, op1,
 							    target,
@@ -8820,21 +8820,19 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 		  return REDUCE_BIT_FIELD (temp);
 		}
 	      if (find_widening_optab_handler (other_optab, mode, innermode)
-		    != CODE_FOR_nothing
+		  != CODE_FOR_nothing
 		  && innermode == word_mode)
 		{
 		  rtx htem, hipart;
 		  op0 = expand_normal (treeop0);
-		  if (TREE_CODE (treeop1) == INTEGER_CST)
-		    op1 = convert_modes (word_mode, mode,
-					 expand_normal (treeop1),
-					 TYPE_UNSIGNED (TREE_TYPE (treeop1)));
-		  else
-		    op1 = expand_normal (treeop1);
-		  /* op0 and op1 might still be constant, despite the above
+		  op1 = expand_normal (treeop1);
+		  /* op0 and op1 might be constants, despite the above
 		     != INTEGER_CST check.  Handle it.  */
 		  if (GET_MODE (op0) == VOIDmode && GET_MODE (op1) == VOIDmode)
 		    goto widen_mult_const;
+		  if (TREE_CODE (treeop1) == INTEGER_CST)
+		    op1 = convert_modes (mode, word_mode, op1,
+					 TYPE_UNSIGNED (TREE_TYPE (treeop1)));
 		  temp = expand_binop (mode, other_optab, op0, op1, target,
 				       unsignedp, OPTAB_LIB_WIDEN);
 		  hipart = gen_highpart (word_mode, temp);

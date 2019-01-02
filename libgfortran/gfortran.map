@@ -1573,4 +1573,9 @@ GFORTRAN_9 {
   _gfortran_sfindloc2_s1;
   _gfortran_sfindloc2_s4;
   _gfortran_st_wait_async;
+  __ieee_arithmetic_MOD_ieee_support_subnormal_10;
+  __ieee_arithmetic_MOD_ieee_support_subnormal_16;
+  __ieee_arithmetic_MOD_ieee_support_subnormal_4;
+  __ieee_arithmetic_MOD_ieee_support_subnormal_8;
+  __ieee_arithmetic_MOD_ieee_support_subnormal_noarg;
 };

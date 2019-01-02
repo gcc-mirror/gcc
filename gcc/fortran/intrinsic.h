@@ -1,6 +1,6 @@
 /* Header file for intrinsics check, resolve and simplify function
    prototypes.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -89,17 +89,15 @@ bool gfc_check_hostnm (gfc_expr *);
 bool gfc_check_huge (gfc_expr *);
 bool gfc_check_hypot (gfc_expr *, gfc_expr *);
 bool gfc_check_i (gfc_expr *);
-bool gfc_check_iand (gfc_expr *, gfc_expr *);
+bool gfc_check_iand_ieor_ior (gfc_expr *, gfc_expr *);
 bool gfc_check_and (gfc_expr *, gfc_expr *);
 bool gfc_check_ibits (gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_ichar_iachar (gfc_expr *, gfc_expr *);
 bool gfc_check_idnint (gfc_expr *);
-bool gfc_check_ieor (gfc_expr *, gfc_expr *);
 bool gfc_check_image_status (gfc_expr *, gfc_expr *);
 bool gfc_check_index (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_int (gfc_expr *, gfc_expr *);
 bool gfc_check_intconv (gfc_expr *);
-bool gfc_check_ior (gfc_expr *, gfc_expr *);
 bool gfc_check_irand (gfc_expr *);
 bool gfc_check_isatty (gfc_expr *);
 bool gfc_check_isnan (gfc_expr *);

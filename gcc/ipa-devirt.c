@@ -1,6 +1,6 @@
 /* Basic IPA utilities for type inheritance graph construction and
    devirtualization.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -1985,6 +1985,30 @@ add_type_duplicate (odr_type val, tree type)
   return build_bases;
 }
 
+/* REF is OBJ_TYPE_REF, return the class the ref corresponds to.  */
+
+tree
+obj_type_ref_class (const_tree ref)
+{
+  gcc_checking_assert (TREE_CODE (ref) == OBJ_TYPE_REF);
+  ref = TREE_TYPE (ref);
+  gcc_checking_assert (TREE_CODE (ref) == POINTER_TYPE);
+  ref = TREE_TYPE (ref);
+  /* We look for type THIS points to.  ObjC also builds
+     OBJ_TYPE_REF with non-method calls, Their first parameter
+     ID however also corresponds to class type. */
+  gcc_checking_assert (TREE_CODE (ref) == METHOD_TYPE
+		       || TREE_CODE (ref) == FUNCTION_TYPE);
+  ref = TREE_VALUE (TYPE_ARG_TYPES (ref));
+  gcc_checking_assert (TREE_CODE (ref) == POINTER_TYPE);
+  tree ret = TREE_TYPE (ref);
+  if (!in_lto_p)
+    ret = TYPE_CANONICAL (ret);
+  else
+    ret = get_odr_type (ret)->type;
+  return ret;
+}
+
 /* Get ODR type hash entry for TYPE.  If INSERT is true, create
    possibly new entry.  */
 
@@ -2000,6 +2024,8 @@ get_odr_type (tree type, bool insert)
   int base_id = -1;
 
   type = TYPE_MAIN_VARIANT (type);
+  if (!in_lto_p)
+    type = TYPE_CANONICAL (type);
 
   gcc_checking_assert (can_be_name_hashed_p (type)
 		       || can_be_vtable_hashed_p (type));
@@ -2124,6 +2150,12 @@ get_odr_type (tree type, bool insert)
       vec_safe_push (odr_types_ptr, val);
     }
   return val;
+}
+
+bool
+odr_type_violation_reported_p (tree type)
+{
+  return get_odr_type (type, false)->odr_violated;
 }
 
 /* Add TYPE od ODR type hash.  */
@@ -2727,6 +2759,7 @@ struct polymorphic_call_target_d
   vec <cgraph_node *> targets;
   tree decl_warning;
   int type_warning;
+  unsigned int n_odr_types;
   bool complete;
   bool speculative;
 };
@@ -2752,6 +2785,7 @@ polymorphic_call_target_hasher::hash (const polymorphic_call_target_d *odr_query
   hstate.add_hwi (odr_query->type->id);
   hstate.merge_hash (TYPE_UID (odr_query->context.outer_type));
   hstate.add_hwi (odr_query->context.offset);
+  hstate.add_hwi (odr_query->n_odr_types);
 
   if (odr_query->context.speculative_outer_type)
     {
@@ -2782,7 +2816,9 @@ polymorphic_call_target_hasher::equal (const polymorphic_call_target_d *t1,
 	      == t2->context.maybe_in_construction
 	  && t1->context.maybe_derived_type == t2->context.maybe_derived_type
 	  && (t1->context.speculative_maybe_derived_type
-	      == t2->context.speculative_maybe_derived_type));
+	      == t2->context.speculative_maybe_derived_type)
+	  /* Adding new type may affect outcome of target search.  */
+	  && t1->n_odr_types == t2->n_odr_types);
 }
 
 /* Remove entry in polymorphic call target cache hash.  */
@@ -3188,6 +3224,7 @@ possible_polymorphic_call_targets (tree otr_type,
   key.otr_token = otr_token;
   key.speculative = speculative;
   key.context = context;
+  key.n_odr_types = odr_types.length ();
   slot = polymorphic_call_target_hash->find_slot (&key, INSERT);
   if (cache_token)
    *cache_token = (void *)*slot;
@@ -3404,6 +3441,7 @@ possible_polymorphic_call_targets (tree otr_type,
 
   (*slot)->targets = nodes;
   (*slot)->complete = complete;
+  (*slot)->n_odr_types = odr_types.length ();
   if (completep)
     *completep = complete;
 
@@ -3422,7 +3460,7 @@ add_decl_warning (const tree &key ATTRIBUTE_UNUSED, const decl_warn_count &value
 /* Dump target list TARGETS into FILE.  */
 
 static void
-dump_targets (FILE *f, vec <cgraph_node *> targets)
+dump_targets (FILE *f, vec <cgraph_node *> targets, bool verbose)
 {
   unsigned int i;
 
@@ -3439,6 +3477,13 @@ dump_targets (FILE *f, vec <cgraph_node *> targets)
 	fprintf (f, " (no definition%s)",
 		 DECL_DECLARED_INLINE_P (targets[i]->decl)
 		 ? " inline" : "");
+      /* With many targets for every call polymorphic dumps are going to
+	 be quadratic in size.  */
+      if (i > 10 && !verbose)
+	{
+	  fprintf (f, " ... and %i more targets\n", targets.length () - i);
+	  return;
+	}
     }
   fprintf (f, "\n");
 }
@@ -3449,7 +3494,8 @@ void
 dump_possible_polymorphic_call_targets (FILE *f,
 					tree otr_type,
 					HOST_WIDE_INT otr_token,
-					const ipa_polymorphic_call_context &ctx)
+					const ipa_polymorphic_call_context &ctx,
+					bool verbose)
 {
   vec <cgraph_node *> targets;
   bool final;
@@ -3474,7 +3520,7 @@ dump_possible_polymorphic_call_targets (FILE *f,
 	   ctx.maybe_derived_type ? " (derived types included)" : "",
 	   ctx.speculative_maybe_derived_type ? " (speculative derived types included)" : "");
   len = targets.length ();
-  dump_targets (f, targets);
+  dump_targets (f, targets, verbose);
 
   targets = possible_polymorphic_call_targets (otr_type, otr_token,
 					       ctx,
@@ -3482,7 +3528,7 @@ dump_possible_polymorphic_call_targets (FILE *f,
   if (targets.length () != len)
     {
       fprintf (f, "  Speculative targets:");
-      dump_targets (f, targets);
+      dump_targets (f, targets, verbose);
     }
   /* Ugly: during callgraph construction the target cache may get populated
      before all targets are found.  While this is harmless (because all local
@@ -3736,7 +3782,7 @@ ipa_devirt (void)
 
 	    if (dump_file)
 	      dump_possible_polymorphic_call_targets 
-		(dump_file, e);
+		(dump_file, e, (dump_flags & TDF_DETAILS));
 
 	    npolymorphic++;
 

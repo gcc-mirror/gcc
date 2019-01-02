@@ -1,5 +1,5 @@
 ;; VSX patterns.
-;; Copyright (C) 2009-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2019 Free Software Foundation, Inc.
 ;; Contributed by Michael Meissner <meissner@linux.vnet.ibm.com>
 
 ;; This file is part of GCC.
@@ -3257,7 +3257,7 @@
 	 (match_operand:VSX_D 1 "memory_operand" "m,m")
 	 (parallel [(match_operand:QI 2 "const_0_to_1_operand" "n,n")])))
    (clobber (match_scratch:P 3 "=&b,&b"))]
-  "VECTOR_MEM_VSX_P (<VSX_D:MODE>mode)"
+  "TARGET_POWERPC64 && VECTOR_MEM_VSX_P (<VSX_D:MODE>mode)"
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (match_dup 4))]

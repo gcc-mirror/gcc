@@ -1,4 +1,4 @@
-# Copyright (C) 2009-2018 Free Software Foundation, Inc.
+# Copyright (C) 2009-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -712,6 +712,17 @@ proc lto-execute { src1 sid } {
 
 	# There's a unique name for each executable we generate.
 	set execname "${execbase}-${count}1.exe"
+
+	# The LTO tests don't use dg-test, so testname_with_flags and
+	# output_file need to be defined explicitly for each file.  scan-symbol
+	# directives rely on both of these to be defined to find the symbol to
+	# scan and for the text to print in the PASS/FAIL since they can also
+	# be called from dg-test.  testname_with_flags is also used via
+	# testname-for-summary when calling into generic function below to
+	# clean temporary files.
+	set output_file $execname
+	set testname_with_flags $execname
+
 	incr count
 
 	file_on_host delete $execname
@@ -774,11 +785,7 @@ proc lto-execute { src1 sid } {
 	    }
 	}
 
-	# Clean up after -save-temps.  The LTO tests don't use dg-test, so
-	# testname-for-summary needs to be defined explicitly for each
-	# file that needs to be removed.
-	set testname_with_flags $execname
-
+	# Clean up after -save-temps.
 	eval "cleanup-saved-temps"
 
 	for {set i 0} {$i < $num_srcs} {incr i} {
@@ -798,52 +805,6 @@ proc lto-execute { src1 sid } {
 	if {$sid eq "f_lto"} {
 	    cleanup-modules ""
 	}
-    }
-}
-
-# Utility for scanning a symbol in the final executable, invoked via dg-final.
-# Call pass if pattern is present, otherwise fail.
-#
-# Argument 0 is the regexp to match.
-# Argument 1 handles expected failures and the like
-proc scan-symbol { args } {
-    global nm
-    global base_dir
-    upvar 2 execname execname
-
-    if { [llength $args] >= 2 } {
-	switch [dg-process-target [lindex $args 1]] {
-	    "S" { }
-	    "N" { return }
-	    "F" { setup_xfail "*-*-*" }
-	    "P" { }
-	}
-    }
-
-    # Find nm like we find g++ in g++.exp.
-    if ![info exists nm]  {
-	set nm [findfile $base_dir/../../../binutils/nm \
-		$base_dir/../../../binutils/nm \
-	        [findfile $base_dir/../../nm $base_dir/../../nm \
-		      [findfile $base_dir/nm $base_dir/nm \
-		       [transform nm]]]]
-	verbose -log "nm is $nm"
-    }
-
-    set output_file "[glob -nocomplain $execname]"
-    if { $output_file == "" } {
-	fail "scan-symbol $args: dump file does not exist"
-	return
-    }
-
-    set fd [open "| $nm $output_file" r]
-    set text [read $fd]
-    close $fd
-
-    if [regexp -- [lindex $args 0] $text] {
-	pass "scan-symbol $args"
-    } else {
-	fail "scan-symbol $args"
     }
 }
 

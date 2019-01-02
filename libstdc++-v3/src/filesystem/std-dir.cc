@@ -1,6 +1,6 @@
 // Class filesystem::directory_entry etc. -*- C++ -*-
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -61,7 +61,9 @@ struct fs::_Dir : _Dir_base
   {
     if (const auto entp = _Dir_base::advance(skip_permission_denied, ec))
       {
-	entry = fs::directory_entry{path / entp->d_name, get_file_type(*entp)};
+	auto name = path;
+	name /= entp->d_name;
+	entry = fs::directory_entry{std::move(name), get_file_type(*entp)};
 	return true;
       }
     else if (!ec)

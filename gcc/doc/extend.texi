@@ -1,4 +1,4 @@
-c Copyright (C) 1988-2018 Free Software Foundation, Inc.
+c Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -4978,8 +4978,12 @@ These function attributes are supported by the MSP430 back end:
 @cindex @code{critical} function attribute, MSP430
 Critical functions disable interrupts upon entry and restore the
 previous interrupt state upon exit.  Critical functions cannot also
-have the @code{naked} or @code{reentrant} attributes.  They can have
-the @code{interrupt} attribute.
+have the @code{naked}, @code{reentrant} or @code{interrupt} attributes.
+
+The MSP430 hardware ensures that interrupts are disabled on entry to
+@code{interrupt} functions, and restores the previous interrupt state
+on exit. The @code{critical} attribute is therefore redundant on
+@code{interrupt} functions.
 
 @item interrupt
 @cindex @code{interrupt} function attribute, MSP430
@@ -16616,7 +16620,30 @@ disabled.  To use them, you must include @code{<altivec.h>} instead.
 
 @item
 GCC allows using a @code{typedef} name as the type specifier for a
-vector type.
+vector type, but only under the following circumstances:
+
+@itemize @bullet
+
+@item
+When using @code{__vector} instead of @code{vector}; for example,
+
+@smallexample
+typedef signed short int16;
+__vector int16 data;
+@end smallexample
+
+@item
+When using @code{vector} in keyword-and-predefine mode; for example,
+
+@smallexample
+typedef signed short int16;
+vector int16 data;
+@end smallexample
+
+Note that keyword-and-predefine mode is enabled by disabling GNU
+extensions (e.g., by using @code{-std=c11}) and including
+@code{<altivec.h>}.
+@end itemize
 
 @item
 For C, overloaded functions are implemented with macros so the following

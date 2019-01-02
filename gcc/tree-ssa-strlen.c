@@ -1,5 +1,5 @@
 /* String length optimization
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
 This file is part of GCC.
@@ -1989,15 +1989,18 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
     lenrange[0] = lenrange[1] = wi::shwi (~sidx, prec);
   else
     {
-      tree range[2];
-      get_range_strlen (src, range);
-      if (range[0] != NULL_TREE
-	  && TREE_CODE (range[0]) == INTEGER_CST
-	  && range[1] != NULL_TREE
-	  && TREE_CODE (range[1]) == INTEGER_CST)
+      c_strlen_data lendata = { };
+      get_range_strlen (src, &lendata, /* eltsize = */1);
+      if (TREE_CODE (lendata.minlen) == INTEGER_CST
+	  && TREE_CODE (lendata.maxbound) == INTEGER_CST)
 	{
-	  lenrange[0] = wi::to_wide (range[0], prec);
-	  lenrange[1] = wi::to_wide (range[1], prec);
+	  /* When LENDATA.MAXLEN is unknown, reset LENDATA.MINLEN
+	     which stores the length of the shortest known string.  */
+	  if (integer_all_onesp (lendata.maxlen))
+	    lenrange[0] = wi::shwi (0, prec);
+	  else
+	    lenrange[0] = wi::to_wide (lendata.minlen, prec);
+	  lenrange[1] = wi::to_wide (lendata.maxbound, prec);
 	}
       else
 	{
@@ -2113,6 +2116,13 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 
       if (wi::to_wide (dstsize) != cntrange[1])
 	return false;
+
+      /* Avoid warning for strncpy(a, b, N) calls where the following
+	 equalities hold:
+	   N == sizeof a && N == sizeof b */
+      if (tree srcsize = compute_objsize (src, 1))
+	if (wi::to_wide (srcsize) == cntrange[1])
+	  return false;
 
       if (cntrange[0] == cntrange[1])
 	return warning_at (callloc, OPT_Wstringop_truncation,

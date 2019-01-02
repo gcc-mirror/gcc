@@ -1,7 +1,7 @@
 /* Bits of OpenMP and OpenACC handling that is specific to device offloading
    and a lowering pass for OpenACC device directives.
 
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -88,7 +88,7 @@ vec<tree, va_gc> *offload_funcs, *offload_vars;
 /* Return level at which oacc routine may spawn a partitioned loop, or
    -1 if it is not a routine (i.e. is an offload fn).  */
 
-static int
+int
 oacc_fn_attrib_level (tree attr)
 {
   tree pos = TREE_VALUE (attr);
@@ -572,6 +572,13 @@ oacc_xform_tile (gcall *call)
 
 static int oacc_default_dims[GOMP_DIM_MAX];
 static int oacc_min_dims[GOMP_DIM_MAX];
+
+int
+oacc_get_default_dim (int dim)
+{
+  gcc_assert (0 <= dim && dim < GOMP_DIM_MAX);
+  return oacc_default_dims[dim];
+}
 
 /* Parse the default dimension parameter.  This is a set of
    :-separated optional compute dimensions.  Each specified dimension

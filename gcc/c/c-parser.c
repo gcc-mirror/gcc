@@ -1,5 +1,5 @@
 /* Parser for C and Objective-C.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
    Parser actions based on the old Bison parser; structure somewhat
    influenced by and fragments based on the C++ parser.
@@ -6360,52 +6360,72 @@ c_parser_for_statement (c_parser *parser, bool ivdep, unsigned short unroll,
 static tree
 c_parser_asm_statement (c_parser *parser)
 {
-  tree quals, str, outputs, inputs, clobbers, labels, ret;
-  bool simple, is_volatile, is_inline, is_goto;
+  tree str, outputs, inputs, clobbers, labels, ret;
+  bool simple;
   location_t asm_loc = c_parser_peek_token (parser)->location;
   int section, nsections;
 
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_ASM));
   c_parser_consume_token (parser);
 
-  quals = NULL_TREE;
-  is_volatile = false;
-  is_inline = false;
-  is_goto = false;
-  for (bool done = false; !done; )
-    switch (c_parser_peek_token (parser)->keyword)
-      {
-      case RID_VOLATILE:
-	if (!is_volatile)
-	  {
-	    is_volatile = true;
-	    quals = c_parser_peek_token (parser)->value;
-	    c_parser_consume_token (parser);
-	  }
-	else
-	  done = true;
-	break;
-      case RID_INLINE:
-	if (!is_inline)
-	  {
-	    is_inline = true;
-	    c_parser_consume_token (parser);
-	  }
-	else
-	  done = true;
-	break;
-      case RID_GOTO:
-	if (!is_goto)
-	  {
-	    is_goto = true;
-	    c_parser_consume_token (parser);
-	  }
-	else
-	  done = true;
-	break;
-      default:
-	done = true;
-      }
+  /* Handle the asm-qualifier-list.  */
+  location_t volatile_loc = UNKNOWN_LOCATION;
+  location_t inline_loc = UNKNOWN_LOCATION;
+  location_t goto_loc = UNKNOWN_LOCATION;
+  for (;;)
+    {
+      c_token *token = c_parser_peek_token (parser);
+      location_t loc = token->location;
+      switch (token->keyword)
+	{
+	case RID_VOLATILE:
+	  if (volatile_loc)
+	    {
+	      error_at (loc, "duplicate asm qualifier %qE", token->value);
+	      inform (volatile_loc, "first seen here");
+	    }
+	  else
+	    volatile_loc = loc;
+	  c_parser_consume_token (parser);
+	  continue;
+
+	case RID_INLINE:
+	  if (inline_loc)
+	    {
+	      error_at (loc, "duplicate asm qualifier %qE", token->value);
+	      inform (inline_loc, "first seen here");
+	    }
+	  else
+	    inline_loc = loc;
+	  c_parser_consume_token (parser);
+	  continue;
+
+	case RID_GOTO:
+	  if (goto_loc)
+	    {
+	      error_at (loc, "duplicate asm qualifier %qE", token->value);
+	      inform (goto_loc, "first seen here");
+	    }
+	  else
+	    goto_loc = loc;
+	  c_parser_consume_token (parser);
+	  continue;
+
+	case RID_CONST:
+	case RID_RESTRICT:
+	  error_at (loc, "%qE is not an asm qualifier", token->value);
+	  c_parser_consume_token (parser);
+	  continue;
+
+	default:
+	  break;
+	}
+      break;
+    }
+
+  bool is_volatile = (volatile_loc != UNKNOWN_LOCATION);
+  bool is_inline = (inline_loc != UNKNOWN_LOCATION);
+  bool is_goto = (goto_loc != UNKNOWN_LOCATION);
 
   /* ??? Follow the C++ parser rather than using the
      lex_untranslated_string kludge.  */
@@ -6481,9 +6501,9 @@ c_parser_asm_statement (c_parser *parser)
   if (!c_parser_require (parser, CPP_SEMICOLON, "expected %<;%>"))
     c_parser_skip_to_end_of_block_or_statement (parser);
 
-  ret = build_asm_stmt (quals, build_asm_expr (asm_loc, str, outputs, inputs,
-					       clobbers, labels, simple,
-					       is_inline));
+  ret = build_asm_stmt (is_volatile,
+			build_asm_expr (asm_loc, str, outputs, inputs,
+					clobbers, labels, simple, is_inline));
 
  error:
   parser->lex_untranslated_string = false;

@@ -1,6 +1,6 @@
 /* Gcov.c: prepend line execution counts and branch probabilities to a
    source file.
-   Copyright (C) 1990-2018 Free Software Foundation, Inc.
+   Copyright (C) 1990-2019 Free Software Foundation, Inc.
    Contributed by James E. Wilson of Cygnus Support.
    Mangled by Bob Manson of Cygnus Support.
    Mangled further by Nathan Sidwell <nathan@codesourcery.com>
@@ -358,7 +358,10 @@ struct source_info
   /* Default constructor.  */
   source_info ();
 
-  vector<function_info *> get_functions_at_location (unsigned line_num) const;
+  vector<function_info *> *get_functions_at_location (unsigned line_num) const;
+
+  /* Register a new function.  */
+  void add_function (function_info *fn);
 
   /* Index of the source_info in sources vector.  */
   unsigned index;
@@ -377,7 +380,10 @@ struct source_info
 
   /* Functions in this source file.  These are in ascending line
      number order.  */
-  vector <function_info *> functions;
+  vector<function_info *> functions;
+
+  /* Line number to functions map.  */
+  vector<vector<function_info *> *> line_to_function_map;
 };
 
 source_info::source_info (): index (0), name (NULL), file_time (),
@@ -385,21 +391,33 @@ source_info::source_info (): index (0), name (NULL), file_time (),
 {
 }
 
-vector<function_info *>
+/* Register a new function.  */
+void
+source_info::add_function (function_info *fn)
+{
+  functions.push_back (fn);
+
+  if (fn->start_line >= line_to_function_map.size ())
+    line_to_function_map.resize (fn->start_line + 1);
+
+  vector<function_info *> **slot = &line_to_function_map[fn->start_line];
+  if (*slot == NULL)
+    *slot = new vector<function_info *> ();
+
+  (*slot)->push_back (fn);
+}
+
+vector<function_info *> *
 source_info::get_functions_at_location (unsigned line_num) const
 {
-  vector<function_info *> r;
+  if (line_num >= line_to_function_map.size ())
+    return NULL;
 
-  for (vector<function_info *>::const_iterator it = functions.begin ();
-       it != functions.end (); it++)
-    {
-      if ((*it)->start_line == line_num && (*it)->src == index)
-	r.push_back (*it);
-    }
+  vector<function_info *> *slot = line_to_function_map[line_num];
+  if (slot != NULL)
+    std::sort (slot->begin (), slot->end (), function_line_start_cmp ());
 
-  std::sort (r.begin (), r.end (), function_line_start_cmp ());
-
-  return r;
+  return slot;
 }
 
 class name_map
@@ -437,6 +455,9 @@ public:
 
 /* Vector of all functions.  */
 static vector<function_info *> functions;
+
+/* Function ident to function_info * map.  */
+static map<unsigned, function_info *> ident_to_fn;
 
 /* Vector of source files.  */
 static vector<source_info> sources;
@@ -893,7 +914,7 @@ static void
 print_version (void)
 {
   fnotice (stdout, "gcov %s%s\n", pkgversion_string, version_string);
-  fprintf (stdout, "Copyright %s 2018 Free Software Foundation, Inc.\n",
+  fprintf (stdout, "Copyright %s 2019 Free Software Foundation, Inc.\n",
 	   _("(C)"));
   fnotice (stdout,
 	   _("This is free software; see the source for copying conditions.\n"
@@ -1121,19 +1142,20 @@ output_json_intermediate_file (json::array *json_files, source_info *src)
 
   for (unsigned line_num = 1; line_num <= src->lines.size (); line_num++)
     {
-      vector<function_info *> fns = src->get_functions_at_location (line_num);
+      vector<function_info *> *fns = src->get_functions_at_location (line_num);
 
-      /* Print first group functions that begin on the line.  */
-      for (vector<function_info *>::iterator it2 = fns.begin ();
-	   it2 != fns.end (); it2++)
-	{
-	  vector<line_info> &lines = (*it2)->lines;
-	  for (unsigned i = 0; i < lines.size (); i++)
-	    {
-	      line_info *line = &lines[i];
-	      output_intermediate_json_line (lineso, line, line_num + i);
-	    }
-	}
+      if (fns != NULL)
+	/* Print first group functions that begin on the line.  */
+	for (vector<function_info *>::iterator it2 = fns->begin ();
+	     it2 != fns->end (); it2++)
+	  {
+	    vector<line_info> &lines = (*it2)->lines;
+	    for (unsigned i = 0; i < lines.size (); i++)
+	      {
+		line_info *line = &lines[i];
+		output_intermediate_json_line (lineso, line, line_num + i);
+	      }
+	  }
 
       /* Follow with lines associated with the source file.  */
       if (line_num < src->lines.size ())
@@ -1256,7 +1278,7 @@ process_all_functions (void)
       if (!fn->counts.empty () || no_data_file)
 	{
 	  source_info *s = &sources[src];
-	  s->functions.push_back (fn);
+	  s->add_function (fn);
 
 	  /* Mark last line in files touched by function.  */
 	  for (unsigned block_no = 0; block_no != fn->blocks.size ();
@@ -1475,6 +1497,7 @@ release_structures (void)
   sources.resize (0);
   names.resize (0);
   functions.resize (0);
+  ident_to_fn.clear ();
 }
 
 /* Generate the names of the graph and data files.  If OBJECT_DIRECTORY
@@ -1693,6 +1716,8 @@ read_graph_file (void)
 
 	  fn = new function_info ();
 	  functions.push_back (fn);
+	  ident_to_fn[ident] = fn;
+
 	  fn->m_name = function_name;
 	  fn->ident = ident;
 	  fn->lineno_checksum = lineno_checksum;
@@ -1843,6 +1868,7 @@ read_count_file (void)
   unsigned tag;
   function_info *fn = NULL;
   int error = 0;
+  map<unsigned, function_info *>::iterator it;
 
   if (!gcov_open (da_file_name, 1))
     {
@@ -1892,21 +1918,11 @@ read_count_file (void)
       else if (tag == GCOV_TAG_FUNCTION && length == GCOV_TAG_FUNCTION_LENGTH)
 	{
 	  unsigned ident;
-
-	  /* Try to find the function in the list.  To speed up the
-	     search, first start from the last function found.  */
 	  ident = gcov_read_unsigned ();
-
 	  fn = NULL;
-	  for (vector<function_info *>::reverse_iterator it
-	       = functions.rbegin (); it != functions.rend (); it++)
-	    {
-	      if ((*it)->ident == ident)
-		{
-		  fn = *it;
-		  break;
-		}
-	    }
+	  it = ident_to_fn.find (ident);
+	  if (it != ident_to_fn.end ())
+	    fn = it->second;
 
 	  if (!fn)
 	    ;
@@ -3023,7 +3039,7 @@ output_lines (FILE *gcov_file, const source_info *src)
       source_lines.push_back (xstrdup (retval));
 
   unsigned line_start_group = 0;
-  vector<function_info *> fns;
+  vector<function_info *> *fns;
 
   for (unsigned line_num = 1; line_num <= source_lines.size (); line_num++)
     {
@@ -3039,18 +3055,18 @@ output_lines (FILE *gcov_file, const source_info *src)
       if (line_start_group == 0)
 	{
 	  fns = src->get_functions_at_location (line_num);
-	  if (fns.size () > 1)
+	  if (fns != NULL && fns->size () > 1)
 	    {
 	      /* It's possible to have functions that partially overlap,
 		 thus take the maximum end_line of functions starting
 		 at LINE_NUM.  */
-	      for (unsigned i = 0; i < fns.size (); i++)
-		if (fns[i]->end_line > line_start_group)
-		  line_start_group = fns[i]->end_line;
+	      for (unsigned i = 0; i < fns->size (); i++)
+		if ((*fns)[i]->end_line > line_start_group)
+		  line_start_group = (*fns)[i]->end_line;
 	    }
-	  else if (fns.size () == 1)
+	  else if (fns != NULL && fns->size () == 1)
 	    {
-	      function_info *fn = fns[0];
+	      function_info *fn = (*fns)[0];
 	      output_function_details (gcov_file, fn);
 	    }
 	}
@@ -3070,8 +3086,8 @@ output_lines (FILE *gcov_file, const source_info *src)
 
       if (line_start_group == line_num)
 	{
-	  for (vector<function_info *>::iterator it = fns.begin ();
-	       it != fns.end (); it++)
+	  for (vector<function_info *>::iterator it = fns->begin ();
+	       it != fns->end (); it++)
 	    {
 	      function_info *fn = *it;
 	      vector<line_info> &lines = fn->lines;

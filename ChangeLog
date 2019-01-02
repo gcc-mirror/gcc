@@ -1,3 +1,11 @@
+2018-12-21  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
+
+	* MAINTAINERS (Write After Approval): Update my maintainer address.
+
+2018-12-21  Gergö Barany  <gergo@codesourcery.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2018-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* contrib/config-list.mk: Remove powerpc-eabispe and powerpc-linux_spe.

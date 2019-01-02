@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -87,9 +87,10 @@
   mcpu=power4: -mpower4; \
   mcpu=power3: -mppc64; \
   mcpu=powerpc: -mppc; \
+  mcpu=powerpc64: -mppc64; \
   mcpu=a2: -ma2; \
   mcpu=cell: -mcell; \
-  mcpu=rs64a: -mppc64; \
+  mcpu=rs64: -mppc64; \
   mcpu=401: -mppc; \
   mcpu=403: -m403; \
   mcpu=405: -m405; \
@@ -130,11 +131,12 @@
   mcpu=e500mc64: -me500mc64; \
   mcpu=e5500: -me5500; \
   mcpu=e6500: -me6500; \
+  mcpu=titan: -mtitan; \
   !mcpu*: %{mpower9-vector: -mpower9; \
 	    mpower8-vector|mcrypto|mdirect-move|mhtm: -mpower8; \
 	    mvsx: -mpower7; \
 	    mpowerpc64: -mppc64;: %(asm_default)}; \
-  :%eMissing -mcpu option in ASM_SPEC_CPU?\n} \
+  :%eMissing -mcpu option in ASM_CPU_SPEC?\n} \
 %{mvsx: -mvsx -maltivec; maltivec: -maltivec} \
 -many"
 

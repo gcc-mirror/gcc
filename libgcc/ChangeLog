@@ -1,3 +1,27 @@
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2018-12-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* unwind-pe.h (read_encoded_value_with_base): Add GCC pragma
+	to ignore -Waddress-of-packed-member.
+
+2018-12-19  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
+
+	* /config/arm/lib1funcs.S (FUNC_START): Remove unused sp_section
+	parameter and corresponding code.
+	(ARM_FUNC_START): Likewise in both definitions.
+	Also update footer comment about condition that need to match with
+	gcc/config/arm/elf.h to also include libgcc/config/arm/t-arm.
+	* config/arm/ieee754-df.S (muldf3): Also build it if L_arm_muldf3 is
+	defined.  Weakly define it in this case.
+	* config/arm/ieee754-sf.S (mulsf3): Likewise with L_arm_mulsf3.
+	* config/arm/t-elf (LIB1ASMFUNCS): Build _arm_muldf3.o and
+	_arm_mulsf3.o before muldiv versions if targeting Thumb-1 only. Add
+	comment to keep condition in sync with the one in
+	libgcc/config/arm/lib1funcs.S and gcc/config/arm/elf.h.
+
 2018-12-18  Wei Xiao  <wei3.xiao@intel.com>
 
 	* config/i386/cpuinfo.c (get_intel_cpu): Handle cascadelake.
@@ -9662,7 +9686,7 @@
 	shared-object.mk, siditi-object.mk, static-object.mk: New files.
 	* configure: Generated.
 
-Copyright (C) 2007-2018 Free Software Foundation, Inc.
+Copyright (C) 2007-2019 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

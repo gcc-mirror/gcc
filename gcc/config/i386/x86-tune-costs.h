@@ -1,5 +1,5 @@
 /* Costs of operations of individual x86 CPUs.
-   Copyright (C) 1988-2018 Free Software Foundation, Inc.
+   Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2115,7 +2115,7 @@ struct processor_costs intel_cost = {
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
 
-  COSTS_N_INSNS (8),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
   COSTS_N_INSNS (8),			/* cost of ADDSS/SD SUBSS/SD insns.  */
   COSTS_N_INSNS (8),			/* cost of MULSS instruction.  */
   COSTS_N_INSNS (8),			/* cost of MULSD instruction.  */

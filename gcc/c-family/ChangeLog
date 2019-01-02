@@ -1,3 +1,64 @@
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2018-12-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/51628
+	* c-common.h (warn_for_address_or_pointer_of_packed_member): New.
+	* c-warn.c (check_alignment_of_packed_member): New function.
+	(check_address_of_packed_member): Likewise.
+	(check_and_warn_address_of_packed_member): Likewise.
+	(warn_for_address_or_pointer_of_packed_member): Likewise.
+	* c.opt: Add -Wno-address-of-packed-member.
+
+2018-12-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/87504
+	* c-warn.c (get_outermost_macro_expansion): New function.
+	(spelled_the_same_p): Use it to unwind the macro expansions, and
+	compare the outermost macro in each nested expansion, rather than
+	the innermost.
+
+2018-12-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/87504
+	* c-common.h (warn_tautological_cmp): Convert 1st param from
+	location_t to const op_location_t &.
+	* c-warn.c (find_array_ref_with_const_idx_r): Call fold_for_warn
+	when testing for INTEGER_CST.
+	(warn_tautological_bitwise_comparison): Convert 1st param from
+	location_t to const op_location_t &; use it to build a
+	binary_op_rich_location, and use this.
+	(spelled_the_same_p): New function.
+	(warn_tautological_cmp): Convert 1st param from location_t to
+	const op_location_t &.  Warn for macro expansions if
+	spelled_the_same_p.  Use binary_op_rich_location.
+
+2018-12-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/43064
+	PR c++/43486
+	* c-common.c (unsafe_conversion_p): Fold any location wrapper.
+	(verify_tree): Handle location wrappers.
+	(c_common_truthvalue_conversion): Strip any location wrapper.
+	Handle CONST_DECL.
+	(fold_offsetof): Strip any location wrapper.
+	(complete_array_type): Likewise for initial_value.
+	(convert_vector_to_array_for_subscript): Call fold_for_warn on the
+	index before checking for INTEGER_CST.
+	* c-pretty-print.c (c_pretty_printer::primary_expression): Don't
+	print parentheses around location wrappers.
+	* c-warn.c (warn_logical_operator): Call fold_for_warn on op_right
+	before checking for INTEGER_CST.
+	(warn_tautological_bitwise_comparison): Call
+	tree_strip_any_location_wrapper on lhs, rhs, and bitop's operand
+	before checking for INTEGER_CST.
+	(readonly_error): Strip any location wrapper.
+	(warn_array_subscript_with_type_char): Strip location wrappers
+	before checking for INTEGER_CST.  Use the location of the index if
+	available.
+
 2018-12-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/88136 - -Wdeprecated-copy false positives
@@ -9678,7 +9739,7 @@
 	* c-common.c: Include gt-c-family-c-common.h.
 	* c-pragma.c: Include gt-c-family-c-pragma.h.
 
-Copyright (C) 2010-2018 Free Software Foundation, Inc.
+Copyright (C) 2010-2019 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

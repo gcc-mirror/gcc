@@ -1,5 +1,5 @@
 /* Check functions
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -2168,6 +2168,21 @@ gfc_check_dprod (gfc_expr *x, gfc_expr *y)
 }
 
 
+static bool
+boz_args_check(gfc_expr *i, gfc_expr *j)
+{
+  if (i->is_boz && j->is_boz)
+    {
+      gfc_error ("Arguments of %qs at %L and %L cannot both be BOZ "
+		 "literal constants", gfc_current_intrinsic, &i->where,
+		 &j->where);
+      return false;
+
+    }
+  return true;
+}
+
+
 bool
 gfc_check_dshift (gfc_expr *i, gfc_expr *j, gfc_expr *shift)
 {
@@ -2177,12 +2192,8 @@ gfc_check_dshift (gfc_expr *i, gfc_expr *j, gfc_expr *shift)
   if (!type_check (j, 1, BT_INTEGER))
     return false;
 
-  if (i->is_boz && j->is_boz)
-    {
-      gfc_error ("%<I%> at %L and %<J%>' at %L cannot both be BOZ literal "
-		   "constants", &i->where, &j->where);
-      return false;
-    }
+  if (!boz_args_check (i, j))
+    return false;
 
   if (!i->is_boz && !j->is_boz && !same_type_check (i, 0, j, 1))
     return false;
@@ -2482,7 +2493,7 @@ gfc_check_i (gfc_expr *i)
 
 
 bool
-gfc_check_iand (gfc_expr *i, gfc_expr *j)
+gfc_check_iand_ieor_ior (gfc_expr *i, gfc_expr *j)
 {
   if (!type_check (i, 0, BT_INTEGER))
     return false;
@@ -2490,10 +2501,16 @@ gfc_check_iand (gfc_expr *i, gfc_expr *j)
   if (!type_check (j, 1, BT_INTEGER))
     return false;
 
+  if (!boz_args_check (i, j))
+    return false;
+
+  if (i->is_boz) i->ts.kind = j->ts.kind;
+  if (j->is_boz) j->ts.kind = i->ts.kind;
+
   if (i->ts.kind != j->ts.kind)
     {
-      if (!gfc_notify_std (GFC_STD_GNU, "Different type kinds at %L",
-			   &i->where))
+      gfc_error ("Arguments of %qs have different kind type parameters "
+		 "at %L", gfc_current_intrinsic, &i->where);
 	return false;
     }
 
@@ -2608,26 +2625,6 @@ gfc_check_idnint (gfc_expr *a)
 
 
 bool
-gfc_check_ieor (gfc_expr *i, gfc_expr *j)
-{
-  if (!type_check (i, 0, BT_INTEGER))
-    return false;
-
-  if (!type_check (j, 1, BT_INTEGER))
-    return false;
-
-  if (i->ts.kind != j->ts.kind)
-    {
-      if (!gfc_notify_std (GFC_STD_GNU, "Different type kinds at %L",
-			   &i->where))
-	return false;
-    }
-
-  return true;
-}
-
-
-bool
 gfc_check_index (gfc_expr *string, gfc_expr *substring, gfc_expr *back,
 		 gfc_expr *kind)
 {
@@ -2679,27 +2676,6 @@ gfc_check_intconv (gfc_expr *x)
 
   return true;
 }
-
-
-bool
-gfc_check_ior (gfc_expr *i, gfc_expr *j)
-{
-  if (!type_check (i, 0, BT_INTEGER))
-    return false;
-
-  if (!type_check (j, 1, BT_INTEGER))
-    return false;
-
-  if (i->ts.kind != j->ts.kind)
-    {
-      if (!gfc_notify_std (GFC_STD_GNU, "Different type kinds at %L",
-			   &i->where))
-	return false;
-    }
-
-  return true;
-}
-
 
 bool
 gfc_check_ishft (gfc_expr *i, gfc_expr *shift)
@@ -3584,6 +3560,12 @@ gfc_check_merge_bits (gfc_expr *i, gfc_expr *j, gfc_expr *mask)
   if (!type_check (j, 1, BT_INTEGER))
     return false;
 
+  if (!boz_args_check (i, j))
+    return false;
+
+  if (i->is_boz) i->ts.kind = j->ts.kind;
+  if (j->is_boz) j->ts.kind = i->ts.kind;
+
   if (!type_check (mask, 2, BT_INTEGER))
     return false;
 
@@ -3592,6 +3574,8 @@ gfc_check_merge_bits (gfc_expr *i, gfc_expr *j, gfc_expr *mask)
 
   if (!same_type_check (i, 0, mask, 2))
     return false;
+
+  if (mask->is_boz) mask->ts.kind = i->ts.kind;
 
   return true;
 }
@@ -6718,6 +6702,12 @@ gfc_check_and (gfc_expr *i, gfc_expr *j)
 
   if (!scalar_check (j, 1))
     return false;
+
+  if (!boz_args_check (i, j))
+    return false;
+
+  if (i->is_boz) i->ts.kind = j->ts.kind;
+  if (j->is_boz) j->ts.kind = i->ts.kind;
 
   return true;
 }

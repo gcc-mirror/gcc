@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC for IA-32.
-   Copyright (C) 1988-2018 Free Software Foundation, Inc.
+   Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2041,6 +2041,12 @@ do {							\
 
 #define REGISTER_NAMES HI_REGISTER_NAMES
 
+#define QI_REGISTER_NAMES \
+{"al", "dl", "cl", "bl", "sil", "dil", "bpl", "spl"}
+
+#define QI_HIGH_REGISTER_NAMES \
+{"ah", "dh", "ch", "bh"}
+
 /* Table of additional register names to use in user input.  */
 
 #define ADDITIONAL_REGISTER_NAMES						\
@@ -2050,6 +2056,7 @@ do {							\
   { "rax", AX_REG }, { "rdx", DX_REG }, { "rcx", CX_REG }, { "rbx", BX_REG },	\
   { "rsi", SI_REG }, { "rdi", DI_REG }, { "rbp", BP_REG }, { "rsp", SP_REG },	\
   { "al", AX_REG }, { "dl", DX_REG }, { "cl", CX_REG }, { "bl", BX_REG },	\
+  { "sil", SI_REG }, { "dil", DI_REG }, { "bpl", BP_REG }, { "spl", SP_REG },	\
   { "ah", AX_REG }, { "dh", DX_REG }, { "ch", CX_REG }, { "bh", BX_REG },	\
   { "ymm0", XMM0_REG }, { "ymm1", XMM1_REG }, { "ymm2", XMM2_REG }, { "ymm3", XMM3_REG }, \
   { "ymm4", XMM4_REG }, { "ymm5", XMM5_REG }, { "ymm6", XMM6_REG }, { "ymm7", XMM7_REG }, \
@@ -2068,20 +2075,6 @@ do {							\
   { "zmm24", XMM24_REG }, { "zmm25", XMM25_REG }, { "zmm26", XMM26_REG }, { "zmm27", XMM27_REG }, \
   { "zmm28", XMM28_REG }, { "zmm29", XMM29_REG }, { "zmm30", XMM30_REG }, { "zmm31", XMM31_REG }  \
 }
-
-/* Note we are omitting these since currently I don't know how
-to get gcc to use these, since they want the same but different
-number as al, and ax.
-*/
-
-#define QI_REGISTER_NAMES \
-{"al", "dl", "cl", "bl", "sil", "dil", "bpl", "spl",}
-
-/* These parallel the array above, and can be used to access bits 8:15
-   of regs 0 through 3.  */
-
-#define QI_HIGH_REGISTER_NAMES \
-{"ah", "dh", "ch", "bh", }
 
 /* How to renumber registers for dbx and gdb.  */
 

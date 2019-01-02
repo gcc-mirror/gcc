@@ -1,5 +1,5 @@
 # Makefile.am -- Backtrace Makefile.
-# Copyright (C) 2012-2018 Free Software Foundation, Inc.
+# Copyright (C) 2012-2019 Free Software Foundation, Inc.
 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -105,7 +105,8 @@ libbacktrace_noformat_la_DEPENDENCIES = $(libbacktrace_noformat_la_LIBADD)
 
 xcoff_%.c: xcoff.c
 	SEARCH='#error "Unknown BACKTRACE_XCOFF_SIZE"'; \
-	REPLACE='#undef BACKTRACE_XCOFF_SIZE\n#define BACKTRACE_XCOFF_SIZE'; \
+	REPLACE='#undef BACKTRACE_XCOFF_SIZE\
+	#define BACKTRACE_XCOFF_SIZE'; \
 	$(SED) "s/^$$SEARCH\$$/$$REPLACE $*/" \
 		$(srcdir)/xcoff.c \
 		> $@

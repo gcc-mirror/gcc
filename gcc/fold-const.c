@@ -1,5 +1,5 @@
 /* Fold a constant sub-tree into a single node for C-compiler
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1911,19 +1911,23 @@ size_binop_loc (location_t loc, enum tree_code code, tree arg0, tree arg1)
       /* And some specific cases even faster than that.  */
       if (code == PLUS_EXPR)
 	{
-	  if (integer_zerop (arg0) && !TREE_OVERFLOW (arg0))
+	  if (integer_zerop (arg0)
+	      && !TREE_OVERFLOW (tree_strip_any_location_wrapper (arg0)))
 	    return arg1;
-	  if (integer_zerop (arg1) && !TREE_OVERFLOW (arg1))
+	  if (integer_zerop (arg1)
+	      && !TREE_OVERFLOW (tree_strip_any_location_wrapper (arg1)))
 	    return arg0;
 	}
       else if (code == MINUS_EXPR)
 	{
-	  if (integer_zerop (arg1) && !TREE_OVERFLOW (arg1))
+	  if (integer_zerop (arg1)
+	      && !TREE_OVERFLOW (tree_strip_any_location_wrapper (arg1)))
 	    return arg0;
 	}
       else if (code == MULT_EXPR)
 	{
-	  if (integer_onep (arg0) && !TREE_OVERFLOW (arg0))
+	  if (integer_onep (arg0)
+	      && !TREE_OVERFLOW (tree_strip_any_location_wrapper (arg0)))
 	    return arg1;
 	}
 
@@ -2938,6 +2942,9 @@ combine_comparisons (location_t loc,
 int
 operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 {
+  STRIP_ANY_LOCATION_WRAPPER (arg0);
+  STRIP_ANY_LOCATION_WRAPPER (arg1);
+
   /* When checking, verify at the outermost operand_equal_p call that
      if operand_equal_p returns non-zero then ARG0 and ARG1 has the same
      hash value.  */
@@ -13680,6 +13687,8 @@ integer_valued_real_p (tree t, int depth)
 {
   if (t == error_mark_node)
     return false;
+
+  STRIP_ANY_LOCATION_WRAPPER (t);
 
   tree_code code = TREE_CODE (t);
   switch (TREE_CODE_CLASS (code))
