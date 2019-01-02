@@ -1,3 +1,12 @@
+2019-01-02  Martin Sebor  <msebor@redhat.com>
+            Jeff Law  <law@redhat.com>
+
+	* gcc.dg/strlenopt-36.c: Update.
+	* gcc.dg/strlenopt-45.c: Update.
+	* gcc.c-torture/execute/strlen-5.c: New test.
+	* gcc.c-torture/execute/strlen-6.c: New test.
+	* gcc.c-torture/execute/strlen-7.c: New test.
+
 2019-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/87304

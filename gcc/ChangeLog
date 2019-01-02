@@ -1,6 +1,16 @@
 2019-01-02  Martin Sebor  <msebor@redhat.com>
             Jeff Law  <law@redhat.com>
 
+
+	* gimple-fold.c (gimple_fold_builtin_strlen): Use set_strlen_range
+	rather than set_range_info.
+	* tree-ssa-strlen.c (set_strlen_range): Extracted from
+	maybe_set_strlen_range.  Handle potentially boundary crossing
+	cases more conservatively.
+	(maybe_set_strlen_range): Parts refactored into set_strlen_range.
+	Call set_strlen_range.
+	* tree-ssa-strlen.h (set_strlen_range): Add prototype.
+	
 	PR middle-end/88663
 	* gimple-fold.c (get_range_strlen): Update prototype to no longer
 	need the flexp argument.
