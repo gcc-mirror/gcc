@@ -877,19 +877,21 @@ set_even_probabilities (basic_block bb,
 	    int p = prediction->ep_probability;
 	    profile_probability prob
 	      = profile_probability::from_reg_br_prob_base (p);
-	    profile_probability remainder = prob.invert ();
-	    remainder -= profile_probability::very_unlikely ()
-	      .apply_scale (unlikely_count, 1);
-	    int count = nedges - unlikely_count - 1;
-	    gcc_assert (count >= 0);
-	    profile_probability even = remainder.apply_scale (1, count);
 
 	    if (prediction->ep_edge == e)
 	      e->probability = prob;
 	    else if (unlikely_edges != NULL && unlikely_edges->contains (e))
 	      e->probability = profile_probability::very_unlikely ();
 	    else
-	      e->probability = even;
+	      {
+		profile_probability remainder = prob.invert ();
+		remainder -= profile_probability::very_unlikely ()
+		  .apply_scale (unlikely_count, 1);
+		int count = nedges - unlikely_count - 1;
+		gcc_assert (count >= 0);
+
+		e->probability = remainder.apply_scale (1, count);
+	      }
 	  }
 	else
 	  e->probability = profile_probability::never ();
