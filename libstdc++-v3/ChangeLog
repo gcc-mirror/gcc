@@ -1,5 +1,9 @@
 2019-01-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/23_containers/map/cons/deduction.cc: Test deduction from
+	initializer_list<value_type> and from input iterator ranges.
+	* testsuite/23_containers/multimap/cons/deduction.cc: Likewise.
+
 	* testsuite/experimental/string_view/element_access/char/empty.cc:
 	Fix year range in copyright header.
 
