@@ -1,3 +1,11 @@
+2019-01-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/85574
+	* tree-ssa-uncprop.c (struct equiv_hash_elt): Remove unused
+	structure.
+	(struct ssa_equip_hash_traits): Declare.
+	(val_ssa_equiv): Use custom hash traits using operand_equal_p.
+
 2019-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/88644
