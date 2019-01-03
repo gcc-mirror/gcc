@@ -5254,19 +5254,57 @@ nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level)
       dims[GOMP_DIM_GANG] = fn_level > GOMP_DIM_GANG ? 1 : 0;
     }
 
-  /* The vector size must be 32, unless this is a SEQ routine.  */
-  if ((offload_region_p || oacc_default_dims_p
-       || (routine_p && !routine_seq_p))
-      && dims[GOMP_DIM_VECTOR] >= 0
+  if (oacc_min_dims_p)
+    {
+      gcc_assert (dims[GOMP_DIM_VECTOR] == 1);
+      gcc_assert (dims[GOMP_DIM_WORKER] == 1);
+      gcc_assert (dims[GOMP_DIM_GANG] == 1);
+
+      dims[GOMP_DIM_VECTOR] = PTX_WARP_SIZE;
+      return;
+    }
+
+  if (routine_p)
+    {
+      if (!routine_seq_p)
+	dims[GOMP_DIM_VECTOR] = PTX_WARP_SIZE;
+
+      return;
+    }
+
+  if (oacc_default_dims_p)
+    {
+      /* -1  : not set
+	  0  : set at runtime, f.i. -fopenacc-dims=-
+         >= 1: set at compile time, f.i. -fopenacc-dims=1.  */
+      gcc_assert (dims[GOMP_DIM_VECTOR] >= -1);
+      gcc_assert (dims[GOMP_DIM_WORKER] >= -1);
+      gcc_assert (dims[GOMP_DIM_GANG] >= -1);
+
+      /* But -fopenacc-dims=- is not yet supported on trunk.  */
+      gcc_assert (dims[GOMP_DIM_VECTOR] != 0);
+      gcc_assert (dims[GOMP_DIM_WORKER] != 0);
+      gcc_assert (dims[GOMP_DIM_GANG] != 0);
+    }
+
+  if (offload_region_p)
+    {
+      /* -1   : not set
+	  0   : set using variable, f.i. num_gangs (n)
+	  >= 1: set using constant, f.i. num_gangs (1).  */
+      gcc_assert (dims[GOMP_DIM_VECTOR] >= -1);
+      gcc_assert (dims[GOMP_DIM_WORKER] >= -1);
+      gcc_assert (dims[GOMP_DIM_GANG] >= -1);
+    }
+
+  if (dims[GOMP_DIM_VECTOR] >= 0
       && dims[GOMP_DIM_VECTOR] != PTX_VECTOR_LENGTH)
     {
-      if ((offload_region_p || oacc_default_dims_p)
-	  && dims[GOMP_DIM_VECTOR] >= 0)
-	warning_at (decl ? DECL_SOURCE_LOCATION (decl) : UNKNOWN_LOCATION, 0,
-		    dims[GOMP_DIM_VECTOR]
-		    ? G_("using vector_length (%d), ignoring %d")
-		    : G_("using vector_length (%d), ignoring runtime setting"),
-		    PTX_VECTOR_LENGTH, dims[GOMP_DIM_VECTOR]);
+      warning_at (decl ? DECL_SOURCE_LOCATION (decl) : UNKNOWN_LOCATION, 0,
+		  dims[GOMP_DIM_VECTOR]
+		  ? G_("using vector_length (%d), ignoring %d")
+		  : G_("using vector_length (%d), ignoring runtime setting"),
+		  PTX_VECTOR_LENGTH, dims[GOMP_DIM_VECTOR]);
       dims[GOMP_DIM_VECTOR] = PTX_VECTOR_LENGTH;
     }
 
@@ -5279,7 +5317,7 @@ nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level)
       dims[GOMP_DIM_WORKER] = PTX_WORKER_LENGTH;
     }
 
-  if (oacc_default_dims_p || oacc_min_dims_p)
+  if (oacc_default_dims_p)
     {
       dims[GOMP_DIM_VECTOR] = PTX_VECTOR_LENGTH;
       if (dims[GOMP_DIM_WORKER] < 0)
