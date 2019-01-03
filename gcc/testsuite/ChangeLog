@@ -1,6 +1,15 @@
 2019-01-03  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2019-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/88561
+	* g++.dg/tree-prof/devirt.C: Expect _ZThn16 only for lp64 and llp64
+	targets and expect _ZThn8 for ilp32 targets.
+
+2019-01-03  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2019-01-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/tree-prof/devirt.C: Update testcase.
