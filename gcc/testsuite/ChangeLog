@@ -1,3 +1,7 @@
+2019-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp1z/nodiscard3.C: Test locations too.
+
 2019-01-03  Martin Liska  <mliska@suse.cz>
 
 	PR testsuite/88436
@@ -14,7 +18,7 @@
 	PR c++/81486 - CTAD failing with ().
 	* g++.dg/cpp1z/class-deduction60.C: New test.
 	* g++.dg/cpp1z/class-deduction61.C: New test.
-	
+
 2019-01-02  Martin Sebor  <msebor@redhat.com>
             Jeff Law  <law@redhat.com>
 
@@ -31,7 +35,7 @@
 	messages only on vect_hw_misalign targets.
 
 2019-01-02  Steven G. Kargl  <kargl@gcc.gnu.org>
- 
+
 	* gfortran.dg/argument_checking_7.f90: Remove run-on error message.
 	* gfortran.dg/dec_d_lines_3.f: Ditto.
 	* gfortran.dg/dec_structure_24.f90: Ditto.
