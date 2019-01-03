@@ -6776,8 +6776,8 @@ extern tree implicitly_declare_fn               (special_function_kind, tree,
 extern int module_export_depth;
 class module_state; /* Forward declare.  */
 inline bool modules_p () { return flag_modules != 0; }
-inline bool modules_legacy_p () { return flag_modules < 0; }
 extern int module_purview;
+inline bool module_legacy_p () { return flag_modules < 0; }
 inline bool module_purview_p () { return module_purview > 0; }
 inline bool module_interface_p () { return module_purview > 1; }
 inline bool module_gmf_p () { return !module_purview; }

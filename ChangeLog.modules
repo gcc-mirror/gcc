@@ -1,6 +1,15 @@
 2019-01-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.h (match_global_decl): Rename to ...
+	(match_mergeable_decl): ... this.  Add global/partition flag.
+	* name-lookup.c (match_global_decl): Rename to ...
+	(match_mergeable_decl): ... this.  Adjust.
+	* module.cc: Rename mme to mergeable.
+	(trees_{in,out}::tree_mergeable): Stream global/partition
+	indicator. Call match_mergeable_decl.
+
+	gcc/cp/
 	* name-lookup.c (module_binding_slot): Break apart to ...
 	(search_imported_binding_slot, get_fixed_binding_slot)
 	(append_imported_binding_slot): ... these.

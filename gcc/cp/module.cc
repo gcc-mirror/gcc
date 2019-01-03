@@ -2422,7 +2422,7 @@ enum tree_tag {
   tt_vtable,		/* A vtable.  */
   tt_template,
   tt_implicit_template,
-  tt_mme		/* Mergeable Module Entity.  */
+  tt_mergeable		/* Mergeable entity.  */
 };
 
 /* Tree stream reader.  Note that reading a stream doesn't mark the
@@ -2435,7 +2435,7 @@ class trees_in : public bytes_in {
 private:
   module_state *state;		/* Module being imported.  */
   auto_vec<tree> back_refs;	/* Back references.  */
-  auto_vec<tree> mmes;		/* Mergeable module decls.  */
+  auto_vec<tree> mergeables;	/* Mergeable decls.  */
   auto_vec<intptr_t> skip_defns; /* Definitions to skip.  */
   auto_vec<tree> post_decls;	/* Decls to post process.  */
 
@@ -2481,20 +2481,20 @@ public:
   tree tpl_parms ();
 
 public:
-  /* Read a global module entity.  We expect very few MMEs per
+  /* Read a global module entity.  We expect very few mergeables per
      cluster, usually at most one.  */
-  void tree_mme ();
-  void reserve_mmes (unsigned len)
+  void tree_mergeable ();
+  void reserve_mergeables (unsigned len)
   {
-    if (mmes.length ())
+    if (mergeables.length ())
       set_overrun ();
-    /* Up to 2 nodes per MME (template, decl).  */
-    mmes.reserve (len * 2);
+    /* Up to 2 nodes per mergeable (template, decl).  */
+    mergeables.reserve (len * 2);
   }
-  bool is_existing_mme (tree t)
+  bool is_existing_mergeable (tree t)
   {
-    for (unsigned ix = mmes.length (); ix--;)
-      if (mmes[ix] == t)
+    for (unsigned ix = mergeables.length (); ix--;)
+      if (mergeables[ix] == t)
 	return true;
     return false;
   }
@@ -2568,12 +2568,12 @@ private:
   }
 
 public:
-  static const int mme_lwm = 1024;
+  static const int mergeable_lwm = 1024;
   enum walk_kind {
     WK_none,   /* No walk to do (a backref).  */
     WK_normal, /* Normal walk (by-name if possible).  */
     WK_body,   /* By-value walk.  */
-    WK_mme     /* By-value mergeable module entity walk.  */
+    WK_mergeable /* By-value mergeable entity walk.  */
   };
 
 public:
@@ -2605,7 +2605,7 @@ public:
 public:
   /* Mark a node for special walking.  */
   void mark_node (tree);
-  void mark_mme (tree);
+  void mark_mergeable (tree);
   walk_kind ref_node (tree);
 
 public:
@@ -2613,7 +2613,7 @@ public:
   void tpl_parms (tree);
 
 public:
-  void tree_mme (tree);
+  void tree_mergeable (tree);
   void tree_value (tree, walk_kind ref);
 
 private:
@@ -3876,7 +3876,7 @@ trees_out::unmark_trees ()
     {
       tree node = reinterpret_cast<tree> ((*iter).first);
       int ref = (*iter).second;
-      gcc_checking_assert (TREE_VISITED (node) && ref && ref < mme_lwm);
+      gcc_checking_assert (TREE_VISITED (node) && ref && ref < mergeable_lwm);
       TREE_VISITED (node) = false;
     }
 }
@@ -3929,7 +3929,7 @@ trees_out::mark_node (tree decl)
 
   if (TREE_VISITED (decl))
     gcc_checking_assert (!*tree_map.get (decl)
-			 || *tree_map.get (decl) > mme_lwm);
+			 || *tree_map.get (decl) > mergeable_lwm);
   else
     {
       bool existed = tree_map.put (decl, 0);
@@ -3939,7 +3939,7 @@ trees_out::mark_node (tree decl)
 }
 
 void
-trees_out::mark_mme (tree t)
+trees_out::mark_mergeable (tree t)
 {
   int use_tpl = -1;
   if (tree ti = node_template_info (t, use_tpl))
@@ -3949,7 +3949,7 @@ trees_out::mark_mme (tree t)
   gcc_checking_assert (TREE_VISITED (t));
   int *val = tree_map.get (t);
   gcc_assert (val && *val);
-  *val = mme_lwm - *val;
+  *val = mergeable_lwm - *val;
 }
 
 /* Insert T into the map, return its back reference number.
@@ -3965,10 +3965,10 @@ trees_out::insert (tree t, walk_kind walk)
   bool existed;
   int &slot = tree_map.get_or_insert (t, &existed);
   gcc_checking_assert (walk == WK_body ? existed && !slot
-		       : walk == WK_mme ? existed && slot > mme_lwm
+		       : walk == WK_mergeable ? existed && slot > mergeable_lwm
 		       : !existed);
-  if (walk == WK_mme)
-    slot = mme_lwm - slot;
+  if (walk == WK_mergeable)
+    slot = mergeable_lwm - slot;
   else
     slot = --ref_num;
   return slot;
@@ -6045,7 +6045,7 @@ trees_out::ref_node (tree t)
 	      i (val);
 	      kind = "backref";
 	    }
-	  else if (val < mme_lwm)
+	  else if (val < mergeable_lwm)
 	    {
 	      /* Fixed reference -> tt_fixed */
 	      i (tt_fixed), u (val -= 1);
@@ -6053,17 +6053,17 @@ trees_out::ref_node (tree t)
 	    }
 	  else
 	    {
-	      val = mme_lwm - val;
-	      i (tt_mme), i (val);
-	      kind = "mme";
-	      walk = WK_mme;
+	      val = mergeable_lwm - val;
+	      i (tt_mergeable), i (val);
+	      kind = "mergeable";
+	      walk = WK_mergeable;
 	    }
 
 	  dump (dumper::TREE)
 	    && dump ("Wrote %s:%d %C:%N%S", kind, val, TREE_CODE (t), t, t);
 	}
       else
-	gcc_checking_assert (val < mme_lwm);
+	gcc_checking_assert (val < mergeable_lwm);
       return walk;
     }
 
@@ -6130,7 +6130,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
   gcc_checking_assert (DECL_P (decl)
 		       && TREE_CODE (decl) != NAMESPACE_DECL);
 
-  if (ref == WK_body || ref == WK_mme)
+  if (ref == WK_body || ref == WK_mergeable)
     {
       /* If we requested by-value, this better not be an import.  */
       gcc_assert (MAYBE_DECL_MODULE_OWNER (get_module_owner (decl))
@@ -6345,7 +6345,7 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
 	ref = ref_node (type);
 	if (ref == WK_none)
 	  return true;
-	gcc_assert (ref != WK_mme);
+	gcc_assert (ref != WK_mergeable);
       }
 
   return true;
@@ -6361,12 +6361,12 @@ trees_out::tree_value (tree t, walk_kind walk)
     {
       /* A new node -> tt_node.  */
       unique++;
-      if (walk != WK_mme)
+      if (walk != WK_mergeable)
 	i (tt_node);
       u (TREE_CODE (t));
-      if (walk != WK_mme)
+      if (walk != WK_mergeable)
 	start (t);
-      // FIXME:If MME, mark function parms etc as MME too
+      // FIXME:If mergeable, mark function parms etc as mergeable too
     }
 
   int tag = insert (t, walk);
@@ -6829,14 +6829,14 @@ trees_in::tree_node ()
       }
       break;
 
-    case tt_mme:
+    case tt_mergeable:
     case tt_node:
       {
 	/* A new node.  Stream it in.  */
-	bool is_mme = tag == tt_mme;
+	bool is_mergeable = tag == tt_mergeable;
 	tree existing = NULL_TREE;
 
-	if (is_mme)
+	if (is_mergeable)
 	  {
 	    /* A global module entity.  We've already deduped it, but
 	       need to read in the value here.  Either in-place, or as
@@ -6849,12 +6849,12 @@ trees_in::tree_node ()
 
 	    /* Determine if we had already known about this.  */
 	    unsigned c = u ();
-	    if (is_existing_mme (res))
+	    if (is_existing_mergeable (res))
 	      {
 		existing = res;
 		res = start (c);
 	      }
-	    // FIXME:Mark function parms as MME during this read in.
+	    // FIXME:Mark function parms as mergeable during this read in.
 	  }
 	else
 	  {
@@ -6870,10 +6870,10 @@ trees_in::tree_node ()
 	if (res)
 	  {
 	    dump (dumper::TREE)
-	      && dump ("Reading%s:%d %C", is_mme ? " mergeable" : "", tag,
+	      && dump ("Reading%s:%d %C", is_mergeable ? " mergeable" : "", tag,
 		       TREE_CODE (res));
 
-	    specific = tree_node_specific (res, is_mme && !existing);
+	    specific = tree_node_specific (res, is_mergeable && !existing);
 	    ok = tree_node_bools (res, specific);
 	  }
 
@@ -6885,12 +6885,13 @@ trees_in::tree_node ()
 	    tpl = res;
 	    t_specific = specific;
 	    unsigned c = u ();
-	    res = is_mme && !existing ? DECL_TEMPLATE_RESULT (tpl) : start (c);
-	    r_tag = insert (is_mme && existing
+	    res = is_mergeable && !existing
+	      ? DECL_TEMPLATE_RESULT (tpl) : start (c);
+	    r_tag = insert (is_mergeable && existing
 			    ? DECL_TEMPLATE_RESULT (existing) : res);
 	    dump (dumper::TREE)
 	      && dump ("Reading:%d %C", r_tag, TREE_CODE (res));
-	    specific = tree_node_specific (res, is_mme && !existing);
+	    specific = tree_node_specific (res, is_mergeable && !existing);
 	    tree_node_bools (res, specific);
 	  }
 
@@ -6899,11 +6900,12 @@ trees_in::tree_node ()
 	if (ok && DECL_IMPLICIT_TYPEDEF_P (res))
 	  {
 	    unsigned c = u ();
-	    type = is_mme && !existing ? TREE_TYPE (res) : start (c);
-	    t_tag = insert (is_mme && existing ? TREE_TYPE (existing) : type);
+	    type = is_mergeable && !existing ? TREE_TYPE (res) : start (c);
+	    t_tag = insert (is_mergeable && existing
+			    ? TREE_TYPE (existing) : type);
 	    dump (dumper::TREE)
 	      && dump ("Reading:%d %C", t_tag, TREE_CODE (type));
-	    bool specific = tree_node_specific (type, is_mme && !existing);
+	    bool specific = tree_node_specific (type, is_mergeable && !existing);
 	    tree_node_bools (type, specific);
 	    tree_node_vals (type, specific);
 	    if (!existing)
@@ -6932,7 +6934,7 @@ trees_in::tree_node ()
 	if (tpl)
 	  res = tpl;
 	// FIXME: Is this right for any 'existing'?  I think not now
-	// we have MME handling right
+	// we have mergeable handling right
 	if (!existing || !TYPE_P (res))
 	  {
 	    tree found = finish (res);
@@ -7076,14 +7078,18 @@ trees_in::tpl_parms ()
   return nreverse (parms);
 }
 
+/* DECL is a mergeable entity, write out information so we may locate
+   an existing declaration /before/ reading in this declaration.  */
+
 void
-trees_out::tree_mme (tree decl)
+trees_out::tree_mergeable (tree decl)
 {
   gcc_checking_assert (DECL_P (decl));
   tree inner = decl;
 
   tree_ctx (DECL_CONTEXT (inner), true, inner);
   tree_node (DECL_NAME (inner));
+  u (module_legacy_p () ? MODULE_NONE : MAYBE_DECL_MODULE_OWNER (decl));
   state->write_location (*this, DECL_SOURCE_LOCATION (inner));
 
  again:
@@ -7130,11 +7136,12 @@ trees_out::tree_mme (tree decl)
 }
 
 void
-trees_in::tree_mme ()
+trees_in::tree_mergeable ()
 {
   tree decl = NULL_TREE;
   tree ctx = tree_node ();
   tree name = tree_node ();
+  unsigned owner = u ();
   location_t loc = state->read_location (*this);
 
   tree tpl = NULL_TREE;
@@ -7188,20 +7195,24 @@ trees_in::tree_mme ()
 	}
     }
 
+  if (owner > MODULE_PURVIEW)
+    set_overrun ();
+
   if (!get_overrun ())
     {
       const char *kind = "new";
-      if (tree existing = match_global_decl (decl, tpl, ret, args))
+      if (tree existing = match_mergeable_decl (decl, owner != MODULE_NONE,
+						tpl, ret, args))
 	{
 	  decl = existing;
-	  mmes.quick_push (decl);
+	  mergeables.quick_push (decl);
 	  if (TREE_CODE (decl) == TEMPLATE_DECL)
-	    mmes.quick_push (DECL_TEMPLATE_RESULT (decl));
+	    mergeables.quick_push (DECL_TEMPLATE_RESULT (decl));
 	  kind = "matched";
 	}
       int tag = insert (decl);
       dump (dumper::GM)
-	&& dump ("Read:%d %s global decl %C:%N", tag, kind,
+	&& dump ("Read:%d %s mergeable decl %C:%N", tag, kind,
 		 TREE_CODE (decl), decl);
     }
 }
@@ -8917,7 +8928,7 @@ module_state::read_imports (cpp_reader *reader, line_maps *lmaps)
   return true;
 }
 
-/* DECL is a just streamed MME decl that should match EXISTING.  Check
+/* DECL is a just streamed mergeable decl that should match EXISTING.  Check
    it does and issue an appropriate diagnostic if not.  */
 
 bool
@@ -9651,7 +9662,7 @@ enum cluster_tag {
   ct_defn,	/* A defn.  */
   ct_bind,	/* A binding.  */
   ct_horcrux,	/* Preseed reference to unnamed decl.  */
-  ct_mme,	/* A mme identification.  */
+  ct_mergeable,	/* A set of mergeable decls.  */
   ct_hwm
 };
 
@@ -9670,7 +9681,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
   unsigned incoming_unnamed = unnamed;
   bool refs_unnamed_p = false;
-  auto_vec<tree> mmes;
+  auto_vec<tree> mergeables;
 
   /* Determine horcrux numbers for unnamed decls.  */
   for (unsigned ix = 0; ix != size; ix++)
@@ -9692,7 +9703,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	{
 	  if (TREE_PUBLIC (CP_DECL_CONTEXT (decl))
 	      && (is_legacy () || !MAYBE_DECL_MODULE_OWNER (decl)))
-	    mmes.safe_push (decl);
+	    mergeables.safe_push (decl);
 	}
     }
 
@@ -9725,21 +9736,21 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	    }
 	}
 
-  if (unsigned len = mmes.length ())
+  if (unsigned len = mergeables.length ())
     {
       // FIXME: When more than one, we'll have to order them using
       // tarjan too.  Don't forget about a nested type appearing in
       // the types of another member of this set.  Ugh!
       gcc_assert (len == 1);
 
-      sec.u (ct_mme);
+      sec.u (ct_mergeable);
       sec.u (len);
       for (unsigned ix = 0; ix != len; ix++)
-	sec.tree_mme (mmes[ix]);
+	sec.tree_mergeable (mergeables[ix]);
       /* Now re-mark so we know to process them by value when meeting
 	 them below.  */
       for (unsigned ix = 0; ix != len; ix++)
-	sec.mark_mme (mmes[ix]);
+	sec.mark_mergeable (mergeables[ix]);
     }
 
   /* Mark members for walking.  */
@@ -9896,12 +9907,12 @@ module_state::read_cluster (unsigned snum)
 	    if (!set_module_binding (ns, name, mod, is_interface (),
 				     decls, type, visible))
 	      sec.set_overrun ();
-	    if (type && !sec.is_existing_mme (type))
+	    if (type && !sec.is_existing_mergeable (type))
 	      add_module_decl (ns, name, type);
 	    for (ovl_iterator iter (decls); iter; ++iter)
 	      {
 		tree decl = *iter;
-		if (!sec.is_existing_mme (decl))
+		if (!sec.is_existing_mergeable (decl))
 		  add_module_decl (ns, name, decl);
 	      }
 	  }
@@ -9928,13 +9939,13 @@ module_state::read_cluster (unsigned snum)
 	  }
 	  break;
 
-	case ct_mme:
-	  /* Global module entities.  */
+	case ct_mergeable:
+	  /* Mergeable entities.  */
 	  {
 	    unsigned len = sec.u ();
-	    sec.reserve_mmes (len);
+	    sec.reserve_mergeables (len);
 	    for (unsigned ix = 0; !sec.get_overrun () && ix != len; ix++)
-	      sec.tree_mme ();
+	      sec.tree_mergeable ();
 	  }
 	  break;
 
@@ -12303,7 +12314,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
   /* Write the line maps.  */
   write_locations (to, range_bits, &crc);
 
-  config.any_macros = modules_legacy_p () && write_macros (to, reader, &crc);
+  config.any_macros = module_legacy_p () && write_macros (to, reader, &crc);
   config.controlling_node = controlling_node;
 
   /* And finish up.  */
@@ -12991,7 +13002,7 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
 
   from_loc = ordinary_loc_of (line_table, from_loc);
   gcc_assert (!(*modules)[MODULE_PURVIEW]);
-  gcc_assert (state->is_legacy () == modules_legacy_p ());
+  gcc_assert (state->is_legacy () == module_legacy_p ());
 
   if (!state->is_detached ())
     {
@@ -13036,7 +13047,7 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
 void
 module_cpp_undef (cpp_reader *reader, location_t loc, cpp_hashnode *node)
 {
-  if (!modules_legacy_p ())
+  if (!module_legacy_p ())
     {
       /* Turn us off.  */
       struct cpp_callbacks *cb = cpp_get_callbacks (reader);
@@ -13120,7 +13131,7 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
       unsigned n = dump.push (NULL);
       spans.init (map);
       dump.pop (n);
-      if (modules_legacy_p ())
+      if (module_legacy_p ())
 	{
 	  if (!module_legacy_name)
 	    {
@@ -13316,7 +13327,7 @@ init_module_processing ()
 	  dump () && dump ("+%u", v);
 	}
     }
-  gcc_assert (fixed_trees->length () < trees_out::mme_lwm);
+  gcc_assert (fixed_trees->length () < trees_out::mergeable_lwm);
   global_crc = crc32_unsigned (crc, fixed_trees->length ());
   dump ("") && dump ("Created %u unique globals, crc=%x",
 		     fixed_trees->length (), global_crc);
@@ -13358,7 +13369,7 @@ load_macros (cpp_reader *reader, cpp_hashnode *node, void *)
 void
 finish_module_parse (cpp_reader *reader)
 {
-  if (modules_legacy_p ())
+  if (module_legacy_p ())
     pop_module_export ();
 
   if (flag_module_macros)

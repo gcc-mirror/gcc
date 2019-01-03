@@ -189,8 +189,8 @@ get_fixed_binding_slot (tree *slot, tree name, unsigned ix, int create)
 	return NULL;
 
       /* The partition slot is not needed when we know we're not a
-	 module.  */
-      bool partition_slot = !not_module_p ();
+	 non-legacy module.  */
+      bool partition_slot = !not_module_p () && !module_legacy_p ();
       unsigned want = ((MODULE_SLOTS_FIXED + partition_slot + (create < 0)
 			+ MODULE_VECTOR_SLOTS_PER_CLUSTER - 1)
 		       / MODULE_VECTOR_SLOTS_PER_CLUSTER);
@@ -3615,10 +3615,11 @@ pushdecl (tree x, bool is_friend)
   return ret;
 }
 
-/* DECL is a yet-to-be-loaded Global Module Entity.  TPL, RET and ARGS
-   are its distinguishing features (some of which may be NULL).  Look
-   for an existing GME that matches and return that if found.
-   Otherwise add this DECL into the GME list.
+/* DECL is a yet-to-be-loaded mergeable entity.  PARTITiON is true if
+   it is from a module partition (otherwise it is a global module
+   entity), TPL, RET and ARGS are its distinguishing features (some of
+   which may be NULL).  Look for an existing GME that matches and
+   return that if found.  Otherwise add this DECL into the GME list.
 
    We're conservative with matches, so ambiguous decls will be
    registered as different, then lead to a lookup error if the two
@@ -3626,12 +3627,13 @@ pushdecl (tree x, bool is_friend)
    to duplicate decls to get ODR errors on loading?  */
 
 tree
-match_global_decl (tree decl, tree tpl, tree ret, tree args)
+match_mergeable_decl (tree decl, bool partition, tree tpl, tree ret, tree args)
 {
   tree *slot = find_namespace_slot (CP_DECL_CONTEXT (decl), DECL_NAME (decl),
 				    true);
   tree *gslot = get_fixed_binding_slot
-    (slot, DECL_NAME (decl), MODULE_SLOT_GLOBAL, true);
+    (slot, DECL_NAME (decl),
+     partition ? MODULE_SLOT_PARTITION : MODULE_SLOT_GLOBAL, true);
   for (ovl_iterator iter (*gslot); iter; ++iter)
     {
       gcc_assert (!iter.using_p ());
