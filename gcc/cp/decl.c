@@ -4536,11 +4536,9 @@ builtin_function_1 (tree decl, tree context, bool is_global)
     }
 
   if (is_global)
-    pushdecl_top_level (decl);
+    return pushdecl_top_level (decl);
   else
-    pushdecl (decl);
-
-  return decl;
+    return pushdecl (decl);
 }
 
 tree
