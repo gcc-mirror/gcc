@@ -5188,15 +5188,12 @@ nvptx_simt_vf ()
   return PTX_WARP_SIZE;
 }
 
-/* Validate compute dimensions of an OpenACC offload or routine, fill
-   in non-unity defaults.  FN_LEVEL indicates the level at which a
-   routine might spawn a loop.  It is negative for non-routines.  If
-   DECL is null, we are validating the default dimensions.  */
+/* As nvptx_goacc_validate_dims, but does not return bool to indicate whether
+   DIMS has changed.  */
 
-static bool
-nvptx_goacc_validate_dims (tree decl, int dims[], int fn_level)
+static void
+nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level)
 {
-  bool changed = false;
   bool oacc_default_dims_p = false;
   bool oacc_min_dims_p = false;
   bool offload_region_p = false;
@@ -5255,7 +5252,6 @@ nvptx_goacc_validate_dims (tree decl, int dims[], int fn_level)
       dims[GOMP_DIM_VECTOR] = fn_level > GOMP_DIM_VECTOR ? 1 : 0;
       dims[GOMP_DIM_WORKER] = fn_level > GOMP_DIM_WORKER ? 1 : 0;
       dims[GOMP_DIM_GANG] = fn_level > GOMP_DIM_GANG ? 1 : 0;
-      changed = true;
     }
 
   /* The vector size must be 32, unless this is a SEQ routine.  */
@@ -5272,7 +5268,6 @@ nvptx_goacc_validate_dims (tree decl, int dims[], int fn_level)
 		    : G_("using vector_length (%d), ignoring runtime setting"),
 		    PTX_VECTOR_LENGTH, dims[GOMP_DIM_VECTOR]);
       dims[GOMP_DIM_VECTOR] = PTX_VECTOR_LENGTH;
-      changed = true;
     }
 
   /* Check the num workers is not too large.  */
@@ -5282,7 +5277,6 @@ nvptx_goacc_validate_dims (tree decl, int dims[], int fn_level)
 		  "using num_workers (%d), ignoring %d",
 		  PTX_WORKER_LENGTH, dims[GOMP_DIM_WORKER]);
       dims[GOMP_DIM_WORKER] = PTX_WORKER_LENGTH;
-      changed = true;
     }
 
   if (oacc_default_dims_p || oacc_min_dims_p)
@@ -5292,10 +5286,30 @@ nvptx_goacc_validate_dims (tree decl, int dims[], int fn_level)
 	dims[GOMP_DIM_WORKER] = PTX_DEFAULT_RUNTIME_DIM;
       if (dims[GOMP_DIM_GANG] < 0)
 	dims[GOMP_DIM_GANG] = PTX_DEFAULT_RUNTIME_DIM;
-      changed = true;
     }
+}
 
-  return changed;
+/* Validate compute dimensions of an OpenACC offload or routine, fill
+   in non-unity defaults.  FN_LEVEL indicates the level at which a
+   routine might spawn a loop.  It is negative for non-routines.  If
+   DECL is null, we are validating the default dimensions.  */
+
+static bool
+nvptx_goacc_validate_dims (tree decl, int dims[], int fn_level)
+{
+  int old_dims[GOMP_DIM_MAX];
+  unsigned int i;
+
+  for (i = 0; i < GOMP_DIM_MAX; ++i)
+    old_dims[i] = dims[i];
+
+  nvptx_goacc_validate_dims_1 (decl, dims, fn_level);
+
+  for (i = 0; i < GOMP_DIM_MAX; ++i)
+    if (old_dims[i] != dims[i])
+      return true;
+
+  return false;
 }
 
 /* Return maximum dimension size, or zero for unbounded.  */
