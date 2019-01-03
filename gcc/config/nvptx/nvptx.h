@@ -218,6 +218,9 @@ struct GTY(()) machine_function
   int return_mode; /* Return mode of current fn.
 		      (machine_mode not defined yet.) */
   rtx axis_predicate[2]; /* Neutering predicates.  */
+  int axis_dim[2]; /* Maximum number of threads on each axis, dim[0] is
+		      vector_length, dim[1] is num_workers.  */
+  bool axis_dim_init_p;
   rtx unisimt_master; /* 'Master lane index' for -muniform-simt.  */
   rtx unisimt_predicate; /* Predicate for -muniform-simt.  */
   rtx unisimt_location; /* Mask location for -muniform-simt.  */

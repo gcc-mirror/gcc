@@ -1,5 +1,12 @@
 2019-01-03  Tom de Vries  <tdevries@suse.de>
 
+	* config/nvptx/nvptx.c (MACH_VECTOR_LENGTH, MACH_MAX_WORKERS): Define.
+	(init_axis_dim, nvptx_mach_max_workers, nvptx_mach_vector_length): New
+	function.
+	* config/nvptx/nvptx.h (struct machine_function): Add axis_dims.
+
+2019-01-03  Tom de Vries  <tdevries@suse.de>
+
 	* config/nvptx/nvptx.c (struct offload_attrs): New.
 	(populate_offload_attrs): New function.  Factor mask extraction out of
 	nvptx_reorg.  Add extraction of dimensions.
