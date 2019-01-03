@@ -1,5 +1,11 @@
 2019-01-03  Tom de Vries  <tdevries@suse.de>
 
+	* config/nvptx/nvptx.c (nvptx_goacc_validate_dims_1): Add early-out
+	cases for oacc_min_dims_p and routine_p.  Add asserts for
+	oacc_default_dims_p and offload_region_p.
+
+2019-01-03  Tom de Vries  <tdevries@suse.de>
+
 	* config/nvptx/nvptx.c (nvptx_goacc_validate_dims_1): New function,
 	factored out of ...
 	(nvptx_goacc_validate_dims): ... here.
