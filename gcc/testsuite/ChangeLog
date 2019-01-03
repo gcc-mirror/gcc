@@ -1,3 +1,8 @@
+2019-01-03  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/88436
+	* gcc.target/powerpc/pr54240.c: Scan phiopt2.
+
 2019-01-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88612 - ICE with -Waddress-of-packed-member.
