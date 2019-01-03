@@ -1,3 +1,9 @@
+2019-01-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/88535
+	* config.guess: Import upstream version 2019-01-03.
+	* config.sub: Import upstream version 2019-01-01.
+
 2018-12-21  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
 
 	* MAINTAINERS (Write After Approval): Update my maintainer address.
@@ -17,9 +23,9 @@
 	(GCC_TARGET_TOOL): Likewise.
 	* Makefile.tpl (HOST_EXPORTS): Add OTOOL, OTOOL_FOR_TARGET.
 	(BASE_TARGET_EXPORTS): OTOOL, export OTOOL_FOR_TARGET.
-	OTOOL, OTOOL_FOR_TARGET: New substitutions. 
+	OTOOL, OTOOL_FOR_TARGET: New substitutions.
 	(EXTRA_HOST_FLAGS, EXTRA_TARGET_FLAGS): Add OTOOL.
-	* configure: Regenerate. 
+	* configure: Regenerate.
 	* Makefile.in: Likewise.
 
 2018-11-28  Johannes Pfau  <johannespfau@gmail.com>
