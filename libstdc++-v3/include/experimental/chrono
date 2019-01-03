@@ -49,7 +49,7 @@ namespace experimental
 {
 inline namespace fundamentals_v1
 {
-// See C++14 §20.12.4, customization traits
+// See C++14 20.12.4, customization traits
 template <typename _Rep>
    constexpr bool treat_as_floating_point_v =
      treat_as_floating_point<_Rep>::value;

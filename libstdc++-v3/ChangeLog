@@ -1,5 +1,19 @@
 2019-01-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/88607
+	* include/bits/forward_list.h: Replace UTF-8 "ligature fi" character.
+	* include/debug/forward_list: Likewise.
+	* include/experimental/bits/shared_ptr.h: Remove UTF-8 "section sign"
+	character.
+	* include/experimental/chrono: Likewise.
+	* include/experimental/functional: Likewise.
+	* include/experimental/ratio: Likewise.
+	* include/experimental/system_error: Likewise.
+	* include/experimental/tuple: Likewise.
+	* include/experimental/type_traits: Likewise.
+	* include/parallel/workstealing.h: Replace UTF-8 "en dash" character.
+	* include/parallel/multiseq_selection.h: Likewise.
+
 	PR libstdc++/88681
 	* config/abi/pre/gnu.ver: Add missing exports.
 	* testsuite/22_locale/collate_byname/88681.cc: New test.

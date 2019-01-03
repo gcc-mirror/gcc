@@ -53,7 +53,7 @@ namespace experimental
 {
 inline namespace fundamentals_v1
 {
-  // See C++14 §20.9.9, Function object binders
+  // See C++14 20.9.9, Function object binders
 
   /// Variable template for std::is_bind_expression
   template<typename _Tp>
