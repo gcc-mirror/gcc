@@ -1,3 +1,8 @@
+2019-01-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-utils.c (scale_ipa_profile_for_fn): Break out from ...
+	(ipa_merge_profiles): ... here; do not ICE on thunks and aliases.
+
 2019-01-02  Martin Sebor  <msebor@redhat.com>
             Jeff Law  <law@redhat.com>
 
