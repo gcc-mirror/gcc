@@ -1,3 +1,8 @@
+2019-01-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/48543
+	* gfortran.dg/const_chararacter_merge.f90: Remove.
+
 2019-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/88644
