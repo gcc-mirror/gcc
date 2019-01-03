@@ -369,7 +369,7 @@ namespace __debug
 	return _Base::front();
       }
 
-      // modiﬁers:
+      // modifiers:
 
       using _Base::emplace_front;
       using _Base::push_front;

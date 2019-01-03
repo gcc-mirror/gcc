@@ -30,7 +30,7 @@
  *
  *  R. D. Blumofe and C. E. Leiserson.
  *  Scheduling multithreaded computations by work stealing.
- *  Journal of the ACM, 46(5):720–748, 1999.
+ *  Journal of the ACM, 46(5):720-748, 1999.
  *
  *  This file is a GNU parallel extension to the Standard C++ Library.
  */
