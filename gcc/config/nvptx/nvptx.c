@@ -2883,6 +2883,47 @@ struct offload_attrs
   int vector_length;
 };
 
+/* Define entries for cfun->machine->axis_dim.  */
+
+#define MACH_VECTOR_LENGTH 0
+#define MACH_MAX_WORKERS 1
+
+static void populate_offload_attrs (offload_attrs *oa);
+
+static void
+init_axis_dim (void)
+{
+  offload_attrs oa;
+  int max_workers;
+
+  populate_offload_attrs (&oa);
+
+  if (oa.num_workers == 0)
+    max_workers = PTX_CTA_SIZE / oa.vector_length;
+  else
+    max_workers = oa.num_workers;
+
+  cfun->machine->axis_dim[MACH_VECTOR_LENGTH] = oa.vector_length;
+  cfun->machine->axis_dim[MACH_MAX_WORKERS] = max_workers;
+  cfun->machine->axis_dim_init_p = true;
+}
+
+static int ATTRIBUTE_UNUSED
+nvptx_mach_max_workers ()
+{
+  if (!cfun->machine->axis_dim_init_p)
+    init_axis_dim ();
+  return cfun->machine->axis_dim[MACH_MAX_WORKERS];
+}
+
+static int ATTRIBUTE_UNUSED
+nvptx_mach_vector_length ()
+{
+  if (!cfun->machine->axis_dim_init_p)
+    init_axis_dim ();
+  return cfun->machine->axis_dim[MACH_VECTOR_LENGTH];
+}
+
 /* Loop structure of the function.  The entire function is described as
    a NULL loop.  */
 
