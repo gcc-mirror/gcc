@@ -368,7 +368,7 @@ get_coverage_counts (unsigned counter, unsigned expected,
   else
     {
       gcc_assert (coverage_node_map_initialized_p ());
-      elt.ident = cgraph_node::get (cfun->decl)->profile_id;
+      elt.ident = cgraph_node::get (current_function_decl)->profile_id;
     }
   elt.ctr = counter;
   entry = counts_hash->find (&elt);

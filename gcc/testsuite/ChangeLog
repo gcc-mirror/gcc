@@ -1,6 +1,13 @@
 2019-01-03  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2019-01-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/tree-prof/devirt.C: Update testcase.
+
+2019-01-03  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2018-12-31  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/tree-prof/devirt.C: Fix scan pattern and test options.
