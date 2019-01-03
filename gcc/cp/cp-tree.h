@@ -1653,7 +1653,7 @@ check_constraint_info (tree t)
 #define MODULE_SLOT_CURRENT 0	/* Slot for current TU.  */
 #define MODULE_SLOT_GLOBAL 1	/* Slot for merged global module. */
 #define MODULE_SLOT_PARTITION 2 /* Slot for merged partition entities.  */
-#define MODUE_SLOTS_FIXED 2	/* Number of always-allocated slots.  */
+#define MODULE_SLOTS_FIXED 2	/* Number of always-allocated slots.  */
 
 /* The owning module of a DECL.  */
 #define DECL_MODULE_OWNER(N) \

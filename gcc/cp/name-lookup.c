@@ -112,163 +112,182 @@ find_namespace_value (tree ns, tree name)
   return b ? MAYBE_STAT_DECL (*b) : NULL_TREE;
 }
 
-/* *SLOT is a namespace binding slot.  Find or create the
-   module-specific slot for IX.  IX is a module number if FIXED is
-   false, otherwise it is a slot number itself.  If CREATE is false,
-   we return NULL on not-found.  If CREATE is true we're creating a
-   slot.  By construction, one can only create new binding slots at
-   the end of the array.  */
+/* Look in *SLOT for a the binding of NAME in imported module IX.
+   Returns pointer to binding's slot, or NULL if not found.  Does a
+   binary search, as this is mainly used for random access duing
+   importing.  Do not use for the fixed slots.  */
 
 static mc_slot *
-module_binding_slot (tree *slot, tree name, bool fixed, unsigned ix, bool create)
+search_imported_binding_slot (tree *slot, unsigned ix)
 {
-  unsigned clusters = 0;
-  module_cluster *cluster = NULL;
-  unsigned offset = 0;
+  gcc_assert (ix >= MODULE_IMPORT_BASE);
 
-  gcc_assert (fixed ? ix <= MODULE_SLOT_PARTITION : ix >= MODULE_IMPORT_BASE);
-  /* An assumption is that the fixed slots all reside in one cluster.  */
-  gcc_checking_assert (MODULE_VECTOR_SLOTS_PER_CLUSTER
-		       >= MODULE_IMPORT_BASE);
+  if (!*slot)
+    return NULL;
 
-  if (*slot && TREE_CODE (*slot) == MODULE_VECTOR)
+  if (TREE_CODE (*slot) != MODULE_VECTOR)
+    return NULL;
+  
+  unsigned clusters = MODULE_VECTOR_NUM_CLUSTERS (*slot);
+  module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (*slot);
+
+  if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_SLOTS_FIXED)
     {
-      clusters = MODULE_VECTOR_NUM_CLUSTERS (*slot);
-      cluster = MODULE_VECTOR_CLUSTER_BASE (*slot);
+      clusters--;
+      cluster++;
+    }
 
-      if (fixed)
+  while (clusters > 1)
+    {
+      unsigned half = clusters / 2;
+      gcc_checking_assert (cluster[half].indices[0].span);
+      if (cluster[half].indices[0].base > ix)
+	clusters = half;
+      else
 	{
-	  /* There must always be slots for these indices  */
-	  gcc_assert (cluster->indices[ix].span == 1
-		      && !cluster->indices[ix].base);
-
-	  return &cluster->slots[ix];
+	  clusters -= half;
+	  cluster += half;
 	}
+    }
 
-      /* We do a linear search from the end because we don't expect
-	 this to be very populated, and this allows us to quickly
-	 determine the append case.  */
+  if (clusters)
+    /* Is it in this cluster?  */
+    for (unsigned off = 0; off != MODULE_VECTOR_SLOTS_PER_CLUSTER; off++)
+      {
+	if (!cluster->indices[off].span)
+	  break;
+	if (cluster->indices[off].base > ix)
+	  break;
 
-      unsigned probe = clusters;
-      for (cluster += clusters; cluster--, probe--;)
-	{
-	  /* The first slot must be allocated.  */
-	  gcc_checking_assert (cluster->indices[0].span);
-	  for (offset = MODULE_VECTOR_SLOTS_PER_CLUSTER; offset--;)
-	    if (cluster->indices[offset].span)
-	      {
-		if (cluster->indices[offset].base
-		    + cluster->indices[offset].span <= ix)
-		  goto not_found;
-		if (cluster->indices[offset].base <= ix)
-		  return &cluster->slots[offset];
-	      }
-	}
-    not_found:;
+	if (cluster->indices[off].base + cluster->indices[off].span > ix)
+	  return &cluster->slots[off];
+      }
+
+  return NULL;
+}
+
+/* Get the fixed binding slot IX.  Creating the vector if CREATE is
+   non-zero.  If CREATE is < 0, make sure there is at least 1 spare
+   slot for an import.  (It is an error for CREATE < 0 and the slot to
+   already exist.)  */
+
+static tree *
+get_fixed_binding_slot (tree *slot, tree name, unsigned ix, int create)
+{
+  gcc_checking_assert (ix <= MODULE_SLOT_PARTITION);
+
+  /* An assumption is that the fixed slots all reside in one cluster.  */
+  gcc_checking_assert (MODULE_VECTOR_SLOTS_PER_CLUSTER >= MODULE_IMPORT_BASE);
+
+  if (!*slot || TREE_CODE (*slot) != MODULE_VECTOR)
+    {
+      if (ix == MODULE_SLOT_CURRENT)
+	/* The current TU can just use slot directly.  */
+	return slot;
 
       if (!create)
 	return NULL;
 
-      /* If we're to insert, we must be at the end.  */
-      gcc_assert (probe + 1 == clusters
-		  && (offset + 1 == MODULE_VECTOR_SLOTS_PER_CLUSTER
-		      || !cluster->indices[offset+1].span));
+      /* The partition slot is not needed when we know we're not a
+	 module.  */
+      bool partition_slot = !not_module_p ();
+      unsigned want = ((MODULE_SLOTS_FIXED + partition_slot + (create < 0)
+			+ MODULE_VECTOR_SLOTS_PER_CLUSTER - 1)
+		       / MODULE_VECTOR_SLOTS_PER_CLUSTER);
+      tree new_vec = make_module_vec (name, want);
+      MODULE_VECTOR_NUM_CLUSTERS (new_vec) = want;
+      module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (new_vec);
 
-      offset = (offset + 1) & (MODULE_VECTOR_SLOTS_PER_CLUSTER - 1);
-    }
-  else if (ix == MODULE_SLOT_CURRENT)
-    /* The current TU can just use slot directly.  But make it look
-       like an mc_slot.  */
-    return reinterpret_cast<mc_slot *> (slot);
-  else if (!create)
-    return NULL;
-
-  if (!offset)
-    {
-      /* Extend the vector.  */
-      if (!clusters
-	  || (MODULE_VECTOR_NUM_CLUSTERS (*slot)
-	      == MODULE_VECTOR_ALLOC_CLUSTERS (*slot)))
+      /* Initialize the fixed slots.  */
+      for (unsigned jx = MODULE_IMPORT_BASE; jx--;)
 	{
-	  /* Allocate a new vector.  */
-	  unsigned want = (clusters ? (clusters * 3 + 1) / 2
-			   : (MODULE_IMPORT_BASE
-			      == MODULE_VECTOR_SLOTS_PER_CLUSTER
-			      && ix >= MODULE_IMPORT_BASE) ? 2 : 1);
-	  if (want > (unsigned short)~0)
-	    {
-	      want = (unsigned short)~0;
-	      gcc_assert (want > clusters);
-	    }
-	  tree new_vec = make_module_vec (name, want);
-	  cluster = MODULE_VECTOR_CLUSTER_BASE (new_vec);
-	  if (clusters)
-	    {
-	      memcpy (cluster, MODULE_VECTOR_CLUSTER_BASE (*slot),
-		      clusters * sizeof (module_cluster));
-	      MODULE_VECTOR_NUM_CLUSTERS (new_vec) = clusters;
-	    }
-	  else
-	    {
-	      /* Initialize the fixed slots.  */
-	      for (unsigned jx = MODULE_IMPORT_BASE; jx--;)
-		{
-		  cluster->indices[jx].base = 0;
-		  cluster->indices[jx].span = 1;
-		  cluster->slots[jx] = NULL_TREE;
-		}
-	      cluster->slots[MODULE_SLOT_CURRENT] = *slot;
-
-	      /* Propagate a non-internal namespace to the global slot.  */
-	      if (*slot && TREE_PUBLIC (*slot)
-		  && TREE_CODE (*slot) == NAMESPACE_DECL
-		  && !DECL_NAMESPACE_ALIAS (*slot))
-		cluster->slots[MODULE_SLOT_GLOBAL] = *slot;
-
-	      MODULE_VECTOR_NUM_CLUSTERS (new_vec) = 1;
-	    }
-
-	  if (fixed)
-	    offset = ix;
-	  else
-	    {
-	      offset = MODULE_IMPORT_BASE;
-	      if (offset == MODULE_VECTOR_SLOTS_PER_CLUSTER)
-		{
-		  /* Move to the next cluster.  */
-		  MODULE_VECTOR_NUM_CLUSTERS (new_vec) += 1;
-		  if (!clusters)
-		    clusters = 1;
-		  offset = 0;
-		}
-	    }
-	  *slot = new_vec;
+	  cluster[0].indices[jx].base = 0;
+	  cluster[0].indices[jx].span = 1;
+	  cluster[0].slots[jx] = NULL_TREE;
 	}
-      else
-	MODULE_VECTOR_NUM_CLUSTERS (*slot) += 1;
-      cluster += clusters;
-    }
 
-  if (!fixed)
-    {
-      /* Fill the free slot of the cluster.  */
-      cluster->indices[offset].base = ix;
-      cluster->indices[offset].span = 1;
-      cluster->slots[offset] = NULL_TREE;
-    }
+      /* Propagate a non-internal namespace to the global slot.  */
+      if (*slot && TREE_PUBLIC (*slot)
+	  && TREE_CODE (*slot) == NAMESPACE_DECL
+	  && !DECL_NAMESPACE_ALIAS (*slot))
+	cluster[0].slots[MODULE_SLOT_GLOBAL] = *slot;
 
-  return &cluster->slots[offset];
+      /* Propagate existing value to current slot.  */
+      cluster[0].slots[MODULE_SLOT_CURRENT] = *slot;
+
+      *slot = new_vec;
+
+      if (partition_slot)
+	{
+	  unsigned off = MODULE_SLOT_PARTITION % MODULE_VECTOR_SLOTS_PER_CLUSTER;
+	  unsigned ind = MODULE_SLOT_PARTITION / MODULE_VECTOR_SLOTS_PER_CLUSTER;
+	  cluster[ind].indices[off].base = 0;
+	  cluster[ind].indices[off].span = 1;
+	  cluster[ind].slots[off] = NULL_TREE;
+	}
+    }
+  else
+    gcc_checking_assert (create >= 0);
+
+  unsigned off = ix % MODULE_VECTOR_SLOTS_PER_CLUSTER;
+  module_cluster &cluster
+    = MODULE_VECTOR_CLUSTER (*slot, ix / MODULE_VECTOR_SLOTS_PER_CLUSTER);
+
+  /* There must always be slots for these indices  */
+  gcc_checking_assert (cluster.indices[off].span == 1
+		       && !cluster.indices[off].base
+		       && !cluster.slots[off].is_lazy ());
+
+  return reinterpret_cast<tree *> (&cluster.slots[off]);
 }
 
-static tree *
-fixed_module_binding_slot (tree *slot, tree name, bool global_p, bool create)
+/* *SLOT is a namespace binding slot.  Append a slot for imported
+   module IX.  */
+
+static mc_slot *
+append_imported_binding_slot (tree *slot, tree name, unsigned ix)
 {
-  mc_slot *mslot
-    = module_binding_slot (slot, name, true,
-			   global_p ? MODULE_SLOT_GLOBAL : MODULE_SLOT_CURRENT,
-			   create);
-  gcc_checking_assert (!mslot || !mslot->is_lazy ());
-  return reinterpret_cast<tree *> (mslot);
+  gcc_checking_assert (ix >= MODULE_IMPORT_BASE);
+
+  if (!*slot ||  TREE_CODE (*slot) != MODULE_VECTOR)
+    /* Make an initial module vector.  */
+    get_fixed_binding_slot (slot, name, MODULE_SLOT_GLOBAL, -1);
+  else if (!MODULE_VECTOR_CLUSTER_LAST (*slot)
+	   ->indices[MODULE_VECTOR_SLOTS_PER_CLUSTER - 1].span)
+    /* There is space in the last cluster.  */;
+  else if (MODULE_VECTOR_NUM_CLUSTERS (*slot)
+	   != MODULE_VECTOR_ALLOC_CLUSTERS (*slot))
+    /* There is space in the vector.  */
+    MODULE_VECTOR_NUM_CLUSTERS (*slot)++;
+  else
+    {
+      /* Extend the vector.  */
+      unsigned have = MODULE_VECTOR_NUM_CLUSTERS (*slot);
+      unsigned want = (have * 3 + 1) / 2;
+
+      if (want > (unsigned short)~0)
+	want = (unsigned short)~0;
+
+      tree new_vec = make_module_vec (name, want);
+      MODULE_VECTOR_NUM_CLUSTERS (new_vec) = have + 1;
+      memcpy (MODULE_VECTOR_CLUSTER_BASE (new_vec),
+	      MODULE_VECTOR_CLUSTER_BASE (*slot),
+	      have * sizeof (module_cluster));
+      *slot = new_vec;
+    }
+
+  module_cluster *last = MODULE_VECTOR_CLUSTER_LAST (*slot);
+  for (unsigned off = 0; off != MODULE_VECTOR_SLOTS_PER_CLUSTER; off++)
+    if (!last->indices[off].span)
+      {
+	/* Fill the free slot of the cluster.  */
+	last->indices[off].base = ix;
+	last->indices[off].span = 1;
+	last->slots[off] = NULL_TREE;
+	return &last->slots[off];
+      }
+
+  gcc_unreachable ();
 }
 
 /* Add DECL to the list of things declared in binding level B.  */
@@ -3441,8 +3460,8 @@ do_pushdecl (tree decl, bool is_friend)
 	  if (slot)
 	    {
 	      gcc_assert (current_module <= MODULE_IMPORT_BASE);
-	      mslot = fixed_module_binding_slot (slot, name, false,
-						 ns == current_namespace);
+	      mslot = get_fixed_binding_slot (slot, name, MODULE_SLOT_CURRENT,
+					      ns == current_namespace);
 	      old = MAYBE_STAT_DECL (*mslot);
 	    }
 	}
@@ -3557,7 +3576,7 @@ do_pushdecl (tree decl, bool is_friend)
 	{
 	  ns = current_namespace;
 	  slot = find_namespace_slot (ns, name, true);
-	  mslot = fixed_module_binding_slot (slot, name, false, true);
+	  mslot = get_fixed_binding_slot (slot, name, MODULE_SLOT_CURRENT, true);
 	  /* Update OLD to reflect the namespace we're going to be
 	     pushing into.  */
 	  old = MAYBE_STAT_DECL (*mslot);
@@ -3611,8 +3630,8 @@ match_global_decl (tree decl, tree tpl, tree ret, tree args)
 {
   tree *slot = find_namespace_slot (CP_DECL_CONTEXT (decl), DECL_NAME (decl),
 				    true);
-  tree *gslot = &(tree &)*module_binding_slot
-    (slot, DECL_NAME (decl), true, MODULE_SLOT_GLOBAL, true);
+  tree *gslot = get_fixed_binding_slot
+    (slot, DECL_NAME (decl), MODULE_SLOT_GLOBAL, true);
   for (ovl_iterator iter (*gslot); iter; ++iter)
     {
       gcc_assert (!iter.using_p ());
@@ -3691,9 +3710,8 @@ extract_module_binding (tree &binding, tree &type)
 bool
 import_module_binding  (tree ns, tree name, unsigned mod, unsigned snum)
 {
-  gcc_assert (mod >= MODULE_IMPORT_BASE);
   tree *slot = find_namespace_slot (ns, name, true);
-  mc_slot *mslot = module_binding_slot (slot, name, false, mod, true);
+  mc_slot *mslot = append_imported_binding_slot (slot, name, mod);
 
   if (mslot->is_lazy () || *mslot)
     /* Oops, something was already there.  */
@@ -3720,9 +3738,10 @@ set_module_binding (tree ns, tree name, unsigned mod, bool inter_p,
   gcc_checking_assert (mod >= MODULE_IMPORT_BASE);
 
   tree *slot = find_namespace_slot (ns, name, true);
-  mc_slot *mslot = module_binding_slot (slot, name, false, mod, false);
+  mc_slot *mslot = search_imported_binding_slot (slot, mod);
 
-  if (!mslot->is_lazy ())
+  if (!mslot || !mslot->is_lazy ())
+    /* Again, bogus BMI could give find to missing or already loaded slot.  */
     return false;
 
   tree bind = value;
@@ -3759,14 +3778,19 @@ get_binding_or_decl (tree ctx, tree name, unsigned mod)
       /* Although there must be a binding, we're dealing with
 	 untrustworthy data, so check for NULL.  */
       if (tree *slot = find_namespace_slot (ctx, name))
-	if (mc_slot *mslot = module_binding_slot
-	    (slot, name, mod == MODULE_PURVIEW,
-	     (mod == MODULE_PURVIEW ? MODULE_SLOT_CURRENT : mod), false))
-	  {
-	    if (mslot->is_lazy ())
-	      lazy_load_binding (mod, ctx, name, mslot, false);
-	    binding = *mslot;
-	  }
+	{
+	  if (mod == MODULE_PURVIEW)
+	    /* During stream out, we reference ourselves by name.  */
+	    binding = *get_fixed_binding_slot (slot, name,
+					       MODULE_SLOT_CURRENT, false);
+	  else if (mc_slot *mslot = search_imported_binding_slot (slot, mod))
+	    {
+	      /* During an import we reference a dependent import.  */
+	      if (mslot->is_lazy ())
+		lazy_load_binding (mod, ctx, name, mslot, false);
+	      binding = *mslot;
+	    }
+	}
       break;
 
     case RECORD_TYPE:
@@ -3864,18 +3888,28 @@ get_imported_namespace (tree ctx, tree name, unsigned mod)
   tree binding = NULL_TREE;
 
   if (tree *slot = find_namespace_slot (ctx, name))
-    if (mc_slot *mslot = module_binding_slot
-	(slot, name, mod < MODULE_IMPORT_BASE,
-	 mod == MODULE_NONE ? MODULE_SLOT_GLOBAL
-	 : mod == MODULE_PURVIEW ? MODULE_SLOT_CURRENT : mod, false))
-      {
-	gcc_assert (!mslot->is_lazy ());
-	binding = *mslot;
-	binding = MAYBE_STAT_DECL (binding);
-	if (TREE_CODE (binding) != NAMESPACE_DECL
-	    || DECL_NAMESPACE_ALIAS (binding))
-	  binding = NULL_TREE;
-      }
+    {
+      if (mod == MODULE_PURVIEW || mod == MODULE_NONE)
+	{
+	  mod = mod == MODULE_NONE ? MODULE_SLOT_GLOBAL : MODULE_SLOT_CURRENT;
+	  tree *mslot = get_fixed_binding_slot (slot, name, mod, false);
+	  if (mslot)
+	    binding = *mslot;
+	}
+      else if (mc_slot *mslot = search_imported_binding_slot (slot, mod))
+	{
+	  if (!mslot->is_lazy ())
+	    binding = *mslot;
+	}
+
+      if (binding)
+	{
+	  binding = MAYBE_STAT_DECL (binding);
+	  if (TREE_CODE (binding) != NAMESPACE_DECL
+	      || DECL_NAMESPACE_ALIAS (binding))
+	    binding = NULL_TREE;
+	}
+    }
 
   return binding;
 }
@@ -5901,7 +5935,7 @@ finish_local_using_decl (tree decl, tree scope, tree name)
     }
   else
     /* Install the new binding.  */
-    // FIXME short circute P_L_B
+    // FIXME short circuit P_L_B
     push_local_binding (name, value, true);
 
   if (!type)
@@ -8068,7 +8102,8 @@ reuse_namespace (tree *slot, tree ctx, tree name)
       /* Public namespace.  Shared.  */
       tree *global_slot = slot;
       if (TREE_CODE (*slot) == MODULE_VECTOR)
-	global_slot = fixed_module_binding_slot (slot, name, true, false);
+	global_slot = get_fixed_binding_slot (slot, name,
+					      MODULE_SLOT_GLOBAL, false);
 
       if (tree decl = *global_slot)
 	if (TREE_CODE (decl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (decl))
@@ -8141,7 +8176,8 @@ make_namespace_finish (tree ns, tree *slot, location_t loc,
   if (modules_p () && TREE_PUBLIC (ns) && (from_import || *slot != ns))
     {
       /* Place a binding in the global module's slot.  */
-      slot = fixed_module_binding_slot (slot, DECL_NAME (ns), true, true);
+      slot = get_fixed_binding_slot (slot, DECL_NAME (ns),
+				     MODULE_SLOT_GLOBAL, true);
       if (*slot && *slot != ns)
 	{
 	  /* Something was already bound there.  */
@@ -8298,34 +8334,37 @@ add_imported_namespace (tree ctx, tree name, unsigned mod, location_t loc,
     }
 
   /* Now insert.  */
+  tree *mslot = NULL;
   if (mod < MODULE_IMPORT_BASE)
-    mod = MODULE_SLOT_CURRENT;
-  else if (TREE_PUBLIC (decl) && TREE_CODE (*slot) == MODULE_VECTOR)
+    mslot = get_fixed_binding_slot (slot, name, MODULE_SLOT_CURRENT, true);
+  else
     {
-      /* See if we can extend the final slot.  */
-      module_cluster *last = MODULE_VECTOR_CLUSTER_LAST (*slot);
-      gcc_checking_assert (last->indices[0].span);
-      unsigned jx = MODULE_VECTOR_SLOTS_PER_CLUSTER;
-
-      while (--jx)
-	if (last->indices[jx].span)
-	  break;
-      tree final = last->slots[jx];
-      if (export_p == !STAT_HACK_P (final)
-	  && MAYBE_STAT_DECL (final) == decl
-	  && last->indices[jx].base + last->indices[jx].span == mod
-	  && (MODULE_VECTOR_NUM_CLUSTERS (*slot) > 1
-	      || (MODULE_VECTOR_SLOTS_PER_CLUSTER > MODULE_IMPORT_BASE
-		  && jx >= MODULE_IMPORT_BASE)))
+      if (TREE_PUBLIC (decl) && TREE_CODE (*slot) == MODULE_VECTOR)
 	{
-	  last->indices[jx].span++;
-	  return decl;
+	  /* See if we can extend the final slot.  */
+	  module_cluster *last = MODULE_VECTOR_CLUSTER_LAST (*slot);
+	  gcc_checking_assert (last->indices[0].span);
+	  unsigned jx = MODULE_VECTOR_SLOTS_PER_CLUSTER;
+
+	  while (--jx)
+	    if (last->indices[jx].span)
+	      break;
+	  tree final = last->slots[jx];
+	  if (export_p == !STAT_HACK_P (final)
+	      && MAYBE_STAT_DECL (final) == decl
+	      && last->indices[jx].base + last->indices[jx].span == mod
+	      && (MODULE_VECTOR_NUM_CLUSTERS (*slot) > 1
+		  || (MODULE_VECTOR_SLOTS_PER_CLUSTER > MODULE_IMPORT_BASE
+		      && jx >= MODULE_IMPORT_BASE)))
+	    {
+	      last->indices[jx].span++;
+	      return decl;
+	    }
 	}
+      mslot = &(tree &)*append_imported_binding_slot (slot, name, mod);
     }
 
-  mc_slot *mslot = module_binding_slot (slot, name,
-					mod < MODULE_IMPORT_BASE, mod, true);
-  gcc_assert (!mslot->is_lazy () && (!*mslot || (export_p && *mslot == decl)));
+  gcc_assert (!*mslot || (export_p && *mslot == decl));
   *mslot = export_p ? decl : stat_hack (decl, NULL_TREE);
 
   return decl;

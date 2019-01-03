@@ -1,3 +1,15 @@
+2019-01-03  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* name-lookup.c (module_binding_slot): Break apart to ...
+	(search_imported_binding_slot, get_fixed_binding_slot)
+	(append_imported_binding_slot): ... these.
+	(fixed_module_binding_slot): Delete.
+	(do_pushdecl, match_global_decl, import_module_binding)
+	(set_module_binding, get_binding_or_decl, get_imported_namespace)
+	(reuse_namespace, make_namespace_finish)
+	(add_imported_namespace): Update for new API.
+
 2019-01-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
