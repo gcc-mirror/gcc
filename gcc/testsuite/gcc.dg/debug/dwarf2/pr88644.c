@@ -1,6 +1,6 @@
-/* PR debug/80263 */
+/* PR debug/88644 */
 /* { dg-do compile } */
-/* { dg-options "-g -dA" } */
+/* { dg-options "-gdwarf-4 -dA -gpubnames" } */
 
 char array[1];
 
