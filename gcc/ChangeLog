@@ -1,3 +1,9 @@
+2019-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/88644
+	* dwarf2out.c (modified_type_die): If type is equal to sizetype,
+	change it to qualified_type.
+
 2019-01-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-utils.c (scale_ipa_profile_for_fn): Break out from ...
