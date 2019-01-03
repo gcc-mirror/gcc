@@ -375,6 +375,20 @@ get_base_var (tree t)
   return t;
 }
 
+/* Scale function of calls in NODE by ratio ORIG_COUNT/NODE->count.  */
+
+void
+scale_ipa_profile_for_fn (struct cgraph_node *node, profile_count orig_count)
+{
+  profile_count to = node->count;
+  profile_count::adjust_for_ipa_scaling (&to, &orig_count);
+  struct cgraph_edge *e;
+  
+  for (e = node->callees; e; e = e->next_callee)
+    e->count = e->count.apply_scale (to, orig_count);
+  for (e = node->indirect_calls; e; e = e->next_callee)
+    e->count = e->count.apply_scale (to, orig_count);
+}
 
 /* SRC and DST are going to be merged.  Take SRC's profile and merge it into
    DST so it is not going to be lost.  Possibly destroy SRC's body on the way
@@ -392,6 +406,7 @@ ipa_merge_profiles (struct cgraph_node *dst,
   if (!src->definition
       || !dst->definition)
     return;
+
   if (src->frequency < dst->frequency)
     src->frequency = dst->frequency;
 
@@ -401,6 +416,10 @@ ipa_merge_profiles (struct cgraph_node *dst,
 
   if (src->profile_id && !dst->profile_id)
     dst->profile_id = src->profile_id;
+
+  /* Merging zero profile to dst is no-op.  */
+  if (src->count.ipa () == profile_count::zero ())
+    return;
 
   /* FIXME when we merge in unknown profile, we ought to set counts as
      unsafe.  */
@@ -412,10 +431,20 @@ ipa_merge_profiles (struct cgraph_node *dst,
       fprintf (symtab->dump_file, "Merging profiles of %s to %s\n",
 	       src->dump_name (), dst->dump_name ());
     }
+  profile_count orig_count = dst->count;
+
   if (dst->count.initialized_p () && dst->count.ipa () == dst->count)
     dst->count += src->count.ipa ();
   else 
     dst->count = src->count.ipa ();
+
+  /* First handle functions with no gimple body.  */
+  if (dst->thunk.thunk_p || dst->alias
+      || src->thunk.thunk_p || src->alias)
+    {
+      scale_ipa_profile_for_fn (dst, orig_count);
+      return;
+    }
 
   /* This is ugly.  We need to get both function bodies into memory.
      If declaration is merged, we need to duplicate it to be able
@@ -641,7 +670,10 @@ ipa_merge_profiles (struct cgraph_node *dst,
         src->release_body ();
       ipa_update_overall_fn_summary (dst);
     }
-  /* TODO: if there is no match, we can scale up.  */
+  /* We can't update CFG profile, but we can scale IPA profile. CFG
+     will be scaled according to dst->count after IPA passes.  */
+  else
+    scale_ipa_profile_for_fn (dst, orig_count);
   src->decl = oldsrcdecl;
 }
 
