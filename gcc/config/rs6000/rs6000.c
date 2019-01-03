@@ -26738,7 +26738,7 @@ rs6000_reg_live_or_pic_offset_p (int reg)
 	return true;
 
       if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_DARWIN)
-	  && flag_pic && crtl->uses_pic_offset_table)
+	  && flag_pic)
 	return true;
     }
 
@@ -26768,6 +26768,13 @@ first_reg_to_save (void)
 	  || (TARGET_TOC && TARGET_MINIMAL_TOC))
       && rs6000_reg_live_or_pic_offset_p (RS6000_PIC_OFFSET_TABLE_REGNUM))
     first_reg = RS6000_PIC_OFFSET_TABLE_REGNUM;
+
+#if TARGET_MACHO
+  if (flag_pic
+      && crtl->uses_pic_offset_table
+      && first_reg > RS6000_PIC_OFFSET_TABLE_REGNUM)
+    return RS6000_PIC_OFFSET_TABLE_REGNUM;
+#endif
 
   return first_reg;
 }
