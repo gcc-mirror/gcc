@@ -1,3 +1,8 @@
+2019-01-03  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-3.c: New test.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
