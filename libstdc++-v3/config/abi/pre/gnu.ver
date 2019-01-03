@@ -2069,6 +2069,9 @@ GLIBCXX_3.4.26 {
     _ZNSt3pmr28unsynchronized_pool_resource11do_allocateE[jmy][jmy];
     _ZNSt3pmr28unsynchronized_pool_resource13do_deallocateEPv[jmy][jmy];
 
+    _ZNSt14collate_bynameI[cw]EC[12]ERKSs[jmy];
+    _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE3getES3_S3_RSt8ios_baseRSt12_Ios_IostateP2tmcc;
+
 } GLIBCXX_3.4.25;
 
 # Symbols in the support library (libsupc++) have their own tag.

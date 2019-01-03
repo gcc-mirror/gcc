@@ -1,3 +1,11 @@
+2019-01-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88681
+	* config/abi/pre/gnu.ver: Add missing exports.
+	* testsuite/22_locale/collate_byname/88681.cc: New test.
+	* testsuite/22_locale/time_get/get/char/88681.cc: New test.
+	* testsuite/22_locale/time_get/get/wchar_t/88681.cc: New test.
+
 2019-01-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/23_containers/map/cons/deduction.cc: Test deduction from
