@@ -1,4 +1,11 @@
 2019-01-03  Jonathan Wakely  <jwakely@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/88607
+	* include/experimental/memory: Replace UTF-8 quote characters.
+	* include/std/future: Replace UTF-8 "em dash" characters.
+
+2019-01-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/88607
 	* include/bits/forward_list.h: Replace UTF-8 "ligature fi" character.

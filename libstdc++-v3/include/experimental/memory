@@ -63,12 +63,12 @@ inline namespace fundamentals_v2
       using __reference = add_lvalue_reference_t<_Tp>; // exposition-only
 
       // 3.2.2, observer_ptr constructors
-      // default c’tor
+      // default c'tor
       constexpr observer_ptr() noexcept
       : __t()
       { }
 
-      // pointer-accepting c’tors
+      // pointer-accepting c'tors
       constexpr observer_ptr(nullptr_t) noexcept
       : __t()
       { }
@@ -77,7 +77,7 @@ inline namespace fundamentals_v2
       : __t(__p)
       { }
 
-      // copying c’tors (in addition to compiler-generated copy c’tor)
+      // copying c'tors (in addition to compiler-generated copy c'tor)
       template <typename _Up,
 		typename = typename enable_if<
 		  is_convertible<typename add_pointer<_Up>::type, __pointer
