@@ -1,3 +1,8 @@
+2019-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/88594
+	* gcc.dg/pr88594.c: New test.
+
 2019-01-04  Jan Beulich  <jbeulich@suse.com>
 
 	* gcc.target/i386/avx512bitalg-vpshufbitqmb.c,
