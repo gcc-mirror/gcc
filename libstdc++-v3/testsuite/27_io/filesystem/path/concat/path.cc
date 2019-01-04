@@ -59,9 +59,18 @@ test02()
   }
 }
 
+void
+test03()
+{
+  path p = "a/";
+  p += path("/b");
+  compare_paths(p, "a//b");
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }
