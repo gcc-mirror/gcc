@@ -3145,8 +3145,13 @@ _GLIBCXX_END_NAMESPACE_CXX11
       typedef _Alloc					    allocator_type;
       typedef typename _CharT_alloc_type::size_type	    size_type;
       typedef typename _CharT_alloc_type::difference_type   difference_type;
+#if __cplusplus < 201103L
       typedef typename _CharT_alloc_type::reference	    reference;
       typedef typename _CharT_alloc_type::const_reference   const_reference;
+#else
+      typedef value_type&				    reference;
+      typedef const value_type&				    const_reference;
+#endif
       typedef typename _CharT_alloc_type::pointer	    pointer;
       typedef typename _CharT_alloc_type::const_pointer	    const_pointer;
       typedef __gnu_cxx::__normal_iterator<pointer, basic_string>  iterator;
@@ -3526,10 +3531,11 @@ _GLIBCXX_END_NAMESPACE_CXX11
       basic_string()
 #if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
       _GLIBCXX_NOEXCEPT
-      : _M_dataplus(_S_empty_rep()._M_refdata(), _Alloc()) { }
+      : _M_dataplus(_S_empty_rep()._M_refdata(), _Alloc())
 #else
-      : _M_dataplus(_S_construct(size_type(), _CharT(), _Alloc()), _Alloc()){ }
+      : _M_dataplus(_S_construct(size_type(), _CharT(), _Alloc()), _Alloc())
 #endif
+      { }
 
       /**
        *  @brief  Construct an empty string using allocator @a a.
@@ -3610,7 +3616,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
       noexcept // FIXME C++11: should always be noexcept.
 #endif
-      : _M_dataplus(__str._M_dataplus)
+      : _M_dataplus(std::move(__str._M_dataplus))
       {
 #if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
 	__str._M_data(_S_empty_rep()._M_refdata());
@@ -3625,6 +3631,25 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  @param  __a  Allocator to use (default is default allocator).
        */
       basic_string(initializer_list<_CharT> __l, const _Alloc& __a = _Alloc());
+
+      basic_string(const basic_string& __str, const _Alloc& __a)
+      : _M_dataplus(__str._M_rep()->_M_grab(__a, __str.get_allocator()), __a)
+      { }
+
+      basic_string(basic_string&& __str, const _Alloc& __a)
+      : _M_dataplus(__str._M_data(), __a)
+      {
+	if (__a == __str.get_allocator())
+	  {
+#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
+	    __str._M_data(_S_empty_rep()._M_refdata());
+#else
+	    __str._M_data(_S_construct(size_type(), _CharT(), __a));
+#endif
+	  }
+	else
+	  _M_dataplus._M_p = _S_construct(__str.begin(), __str.end(), __a);
+      }
 #endif // C++11
 
       /**

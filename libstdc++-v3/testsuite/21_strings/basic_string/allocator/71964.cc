@@ -16,8 +16,6 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++11 } }
-// COW strings don't support C++11 allocators:
-// { dg-require-effective-target cxx11-abi }
 
 #include <string>
 #include <testsuite_hooks.h>
@@ -47,6 +45,17 @@ template<typename T>
 
     bool moved_to;
     bool moved_from;
+
+#if ! _GLIBCXX_USE_CXX11_ABI
+    // COW string doesn't use allocator_traits, requires C++03 allocator API.
+    using pointer = T*;
+    using const_pointer = const T*;
+    using difference_type = int;
+    template<typename U> struct rebind { using other = mv_allocator<U>; };
+    void construct(pointer p, const T& val) { ::new(p) T(val); }
+    void destroy(pointer p) { p->~T(); }
+    size_type max_size() const { return std::allocator<T>().max_size(); }
+#endif
   };
 
 template<typename T, typename U>

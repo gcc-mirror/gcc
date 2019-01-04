@@ -1,5 +1,27 @@
 2019-01-04  Jonathan Wakely  <jwakely@redhat.com>
 
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.26): Export allocator-extended
+	copy/move constructors for old std::basic_string.
+	* include/bits/basic_string.h [!_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::reference, basic_string::const_reference): Define
+	as plain references for C++11 and later.
+	(basic_string::basic_string()): Put constructor body outside
+	preprocessor conditional groups.
+	(basic_string::basic_string(basic_string&&)): Move _Alloc_hider
+	instead of copying it.
+	(basic_string::basic_string(const basic_string&, const _Alloc&)):
+	Define.
+	(basic_string::basic_string(basic_string&&, const _Alloc&)):
+	Define.
+	* include/bits/fs_path.h [!_GLIBCXX_USE_CXX11_ABI]: Remove special
+	cases for old basic_string.
+	* testsuite/21_strings/basic_string/cons/char/8.cc: Test
+	allocator-extended constructors unconditionally. Add extra members to
+	allocator type when using old string ABI.
+	* testsuite/21_strings/basic_string/allocator/71964.cc: Enable test
+	for old string ABI.
+	* testsuite/21_strings/basic_string/cons/wchar_t/8.cc: Likewise.
+
 	* testsuite/23_containers/list/61347.cc: Avoid spurious failure when
 	-fno-inline added to test flags.
 

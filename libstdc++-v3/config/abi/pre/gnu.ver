@@ -2072,6 +2072,11 @@ GLIBCXX_3.4.26 {
     _ZNSt14collate_bynameI[cw]EC[12]ERKSs[jmy];
     _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE3getES3_S3_RSt8ios_baseRSt12_Ios_IostateP2tmcc;
 
+    _ZNSsC[12]ERKSsRKSaIcE;
+    _ZNSsC[12]EOSsRKSaIcE;
+    _ZNSbIwSt11char_traitsIwESaIwEEC[12]ERKS2_RKS1_;
+    _ZNSbIwSt11char_traitsIwESaIwEEC[12]EOS2_RKS1_;
+
 } GLIBCXX_3.4.25;
 
 # Symbols in the support library (libsupc++) have their own tag.
