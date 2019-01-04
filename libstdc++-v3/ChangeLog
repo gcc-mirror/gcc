@@ -1,5 +1,8 @@
 2019-01-04  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/27_io/filesystem/filesystem_error/copy.cc: Fix static
+	assertion failures with old std::string ABI.
+
 	* include/bits/fs_path.h (path::_List::erase): Replace both overloads
 	with ...
 	(path::pop_back(), path::_M_erase_from(const_iterator)): New member
