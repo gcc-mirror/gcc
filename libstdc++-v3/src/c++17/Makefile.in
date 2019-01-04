@@ -121,8 +121,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libc__17convenience_la_LIBADD =
-am__objects_1 = memory_resource.lo
-am__objects_2 =
+am__objects_1 = memory_resource.lo string-inst.lo
+@ENABLE_DUAL_ABI_TRUE@am__objects_2 = cow-string-inst.lo
 @ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_3 = $(am__objects_2)
 am_libc__17convenience_la_OBJECTS = $(am__objects_1) $(am__objects_3)
 libc__17convenience_la_OBJECTS = $(am_libc__17convenience_la_OBJECTS)
@@ -411,10 +411,11 @@ AM_CPPFLAGS = $(GLIBCXX_INCLUDES) $(CPPFLAGS)
 noinst_LTLIBRARIES = libc++17convenience.la
 headers = 
 sources = \
-	memory_resource.cc
+	memory_resource.cc \
+	string-inst.cc
 
 @ENABLE_DUAL_ABI_FALSE@extra_string_inst_sources = 
-@ENABLE_DUAL_ABI_TRUE@extra_string_inst_sources = 
+@ENABLE_DUAL_ABI_TRUE@extra_string_inst_sources = cow-string-inst.cc
 # XTEMPLATE_FLAGS =
 @ENABLE_EXTERN_TEMPLATE_FALSE@inst_sources = 
 

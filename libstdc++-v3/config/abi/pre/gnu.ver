@@ -1742,7 +1742,8 @@ GLIBCXX_3.4.21 {
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]I[PN]*;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE[Daip]*;
-    _ZNKSt7__cxx1112basic_string*;
+    _ZNKSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE[1-9]*;
+    _ZNKSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEixE[jmy];
 
     # operator+ for ABI-tagged std::basic_string
     _ZStplI[cw]St11char_traitsI[cw]ESaI[cw]EENSt7__cxx1112basic_stringIT_T0_T1_EE*;
@@ -2076,6 +2077,27 @@ GLIBCXX_3.4.26 {
     _ZNSsC[12]EOSsRKSaIcE;
     _ZNSbIwSt11char_traitsIwESaIwEEC[12]ERKS2_RKS1_;
     _ZNSbIwSt11char_traitsIwESaIwEEC[12]EOS2_RKS1_;
+
+    # basic_string<C, T, A>::operator basic_string_view<C, T>() const
+    _ZNKSscvSt17basic_string_viewIcSt11char_traitsIcEEEv;
+    _ZNKSbIwSt11char_traitsIwESaIwEEcvSt17basic_string_viewIwS0_EEv;
+    _ZNKSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEcvSt17basic_string_viewI[cw]S2_EEv;
+    # basic_string<C, T, A>::data()
+    _ZNSs4dataEv;
+    _ZNSbIwSt11char_traitsIwESaIwEE4dataEv;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE4dataEv;
+    # basic_string<C, T, A>::_S_to_string_view(basic_string_view<C, T>)
+    _ZNSs17_S_to_string_viewESt17basic_string_viewIcSt11char_traitsIcEE;
+    _ZNSbIwSt11char_traitsIwESaIwEE17_S_to_string_viewESt17basic_string_viewIwS0_E;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE17_S_to_string_viewESt17basic_string_viewI[cw]S2_E;
+    # basic_string<C, T, A>::__sv_wrapper::__sv_wrapper(basic_string_view<C, T>)
+    _ZNSs12__sv_wrapperC[12]ESt17basic_string_viewIcSt11char_traitsIcEE;
+    _ZNSbIwSt11char_traitsIwESaIwEE12__sv_wrapperC[12]ESt17basic_string_viewIwS0_E;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE12__sv_wrapperC[12]ESt17basic_string_viewI[cw]S2_E;
+    # basic_string<C, T, A>::basic_string(__sv_wrapper, const allocator_type&)
+    _ZNSsC[12]ENSs12__sv_wrapperERKSaIcE;
+    _ZNSbIwSt11char_traitsIwESaIwEEC[12]ENS2_12__sv_wrapperERKS1_;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ENS4_12__sv_wrapperERKS3_;
 
 } GLIBCXX_3.4.25;
 
