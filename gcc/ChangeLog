@@ -1,3 +1,8 @@
+2019-01-04  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88363
+	* doc/extend.texi (attribute alloc_align, alloc_size): Update.
+
 2019-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* gdbinit.in: Turn off pagination for the skip commands, restore

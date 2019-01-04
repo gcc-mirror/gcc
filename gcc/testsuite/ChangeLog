@@ -1,3 +1,8 @@
+2019-01-04  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88363
+	* c-c++-common/attributes-4.c: New test.
+
 2019-01-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/48543
