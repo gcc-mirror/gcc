@@ -1,3 +1,9 @@
+2019-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/88594
+	* config/i386/i386.c (ix86_expand_divmod_libfunc): Use mode instead
+	of GET_MODE (opN) as modes of the libcall arguments.
+
 2019-01-04  Jan Beulich  <jbeulich@suse.com>
 
 	* config/i386/sse.md
