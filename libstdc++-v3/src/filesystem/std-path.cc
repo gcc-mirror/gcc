@@ -945,7 +945,7 @@ path::operator+=(const path& p)
       else if (orig_filenamelen == 0 && it != last)
 	{
 	  // Remove empty filename at end of original path.
-	  _M_cmpts.erase(std::prev(output));
+	  _M_cmpts.erase(--output);
 	}
 
       if (it != last && it->_M_type() == _Type::_Root_name)
