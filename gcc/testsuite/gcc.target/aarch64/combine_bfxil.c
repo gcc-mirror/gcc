@@ -114,4 +114,4 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-assembler-times "bfxil\\t" 13 } } */
+/* { dg-final { scan-assembler-times "bfxil\\t" 18 } } */
