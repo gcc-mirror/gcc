@@ -1,3 +1,11 @@
+2019-01-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/modifiers/assign/char/
+	move_assign_optim.cc: Avoid spurious failure when -fno-inline added
+	to test flags.
+	* testsuite/21_strings/basic_string/modifiers/assign/wchar_t/
+	move_assign_optim.cc: Likewise.
+
 2019-01-03  Jonathan Wakely  <jwakely@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

@@ -30,6 +30,8 @@ test01(std::string& target, std::string&& source)
   // The move assignment operator should be simple enough that the compiler
   // can see that it never results in a length_error or bad_alloc exception
   // (which would be turned into std::terminate by the noexcept on the
-  // assignment operator).
+  // assignment operator). This is only true when inlining though.
+#ifndef __NO_INLINE__
   target = std::move(source);
+#endif
 }
