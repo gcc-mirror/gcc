@@ -85,14 +85,15 @@ expand_block_clear (rtx operands[])
   if (! optimize_size && bytes > 8 * clear_step)
     return 0;
 
+  bool unaligned_vsx_ok = (bytes >= 32 && TARGET_EFFICIENT_UNALIGNED_VSX);
+
   for (offset = 0; bytes > 0; offset += clear_bytes, bytes -= clear_bytes)
     {
       machine_mode mode = BLKmode;
       rtx dest;
 
       if (TARGET_ALTIVEC
-	  && ((bytes >= 16 && align >= 128)
-	      || (bytes >= 32 && TARGET_EFFICIENT_UNALIGNED_VSX)))
+	  && (bytes >= 16 && (align >= 128 || unaligned_vsx_ok)))
 	{
 	  clear_bytes = 16;
 	  mode = V4SImode;

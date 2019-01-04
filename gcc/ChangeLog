@@ -1,3 +1,10 @@
+2019-01-04  Aaron Sawdey  <acsawdey@linux.ibm.com>
+	Backport from mainline
+	2018-11-28  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000-string.c (expand_block_clear): Change how
+	we determine if unaligned vsx is ok.
+
 2019-01-03  Jan Hubicka  <hubicka@ucw.cz>
 	Backport from mainline
 	2019-01-03  Jan Hubicka  <hubicka@ucw.cz>
