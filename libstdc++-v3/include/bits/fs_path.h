@@ -544,8 +544,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       const value_type& front() const noexcept;
       const value_type& back() const noexcept;
 
-      void erase(const_iterator);
-      void erase(const_iterator, const_iterator);
+      void pop_back();
+      void _M_erase_from(const_iterator __pos); // erases [__pos,end())
 
       struct _Impl;
       struct _Impl_deleter
