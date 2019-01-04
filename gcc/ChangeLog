@@ -1,3 +1,34 @@
+2019-01-04  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/sse.md
+	(<avx512>_cmp<mode>3<mask_scalar_merge_name><round_saeonly_name>,
+	<avx512>_cmp<mode>3<mask_scalar_merge_name>,
+	<avx512>_ucmp<mode>3<mask_scalar_merge_name>,
+	<avx512>_ucmp<mode>3<mask_scalar_merge_name>,
+	avx512f_vmcmp<mode>3<round_saeonly_name>,
+	avx512f_vmcmp<mode>3_mask<round_saeonly_name>,
+	avx512f_maskcmp<mode>3,
+	<avx512>_cvt<ssemodesuffix>2mask<mode>,
+	<avx512>_cvt<ssemodesuffix>2mask<mode>,
+	*<avx512>_cvtmask2<ssemodesuffix><mode>,
+	*<avx512>_cvtmask2<ssemodesuffix><mode>,
+	<avx512>_eq<mode>3<mask_scalar_merge_name>_1,
+	<avx512>_eq<mode>3<mask_scalar_merge_name>_1,
+	<avx512>_gt<mode>3<mask_scalar_merge_name>,
+	<avx512>_gt<mode>3<mask_scalar_merge_name>,
+	<avx512>_testm<mode>3<mask_scalar_merge_name>,
+	<avx512>_testnm<mode>3<mask_scalar_merge_name>,
+	*<avx512>_testm<VI1248_AVX512VLBW:mode>3_zext,
+	*<avx512>_testm<VI1248_AVX512VLBW:mode>3_zext_mask,
+	*<avx512>_testnm<VI1248_AVX512VLBW:mode>3_zext,
+	*<avx512>_testnm<VI1248_AVX512VLBW:mode>3_zext_mask,
+	avx512cd_maskb_vec_dup<mode>,
+	avx512cd_maskw_vec_dup<mode>,
+	avx512dq_fpclass<mode><mask_scalar_merge_name>,
+	avx512dq_vmfpclass<mode>,
+	avx512vl_vpshufbitqmb<mode><mask_scalar_merge_name>): Use =k
+	instead of =Yk.
+
 2019-01-03  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/88659
