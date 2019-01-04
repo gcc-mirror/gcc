@@ -1,5 +1,29 @@
 2019-01-04  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/fs_path.h (path::_List::erase): Replace both overloads
+	with ...
+	(path::pop_back(), path::_M_erase_from(const_iterator)): New member
+	functions that will only erase elements at the end.
+	* src/filesystem/std-path.cc (path::_List::_Impl::pop_back()): Define.
+	(path::_List::_Impl::_M_erase_from(const_iterator)): Define.
+	(path::_List::operator=(const _List&)): Use _M_erase_from(p) instead
+	of erase(p, end()).
+	(path::_List::pop_back()): Define.
+	(path::_List::_M_erase_from(const_iterator)): Define.
+	(path::operator/=(const path&)): Use pop_back to remove last component
+	and _M_erase_from to remove multiple components.
+	(path::_M_append(basic_string_view<value_type>)): Likewise.
+	(path::operator+=(const path&)): Likewise.
+	(path::_M_concat(basic_string_view<value_type>)): Likewise.
+	(path::remove_filename()): Likewise.
+	(path::lexically_normal()): Use _List::_Impl iterators instead of
+	path::iterator. Use pop_back to remove components from the end. Clear
+	trailing filename, instead of using erase(const_iterator) to remove
+	a non-final component.
+	* testsuite/27_io/filesystem/path/generation/normal.cc: Test
+	additional cases.
+	* testsuite/27_io/filesystem/path/generation/normal2.cc: New test.
+
 	* src/filesystem/std-path.cc (path::operator+=(const path&)): Fix
 	incorrect treatment of empty filename after trailing slash.
 	* testsuite/27_io/filesystem/path/concat/path.cc: Test problem case.

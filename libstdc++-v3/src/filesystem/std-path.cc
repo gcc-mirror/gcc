@@ -207,22 +207,17 @@ struct path::_List::_Impl
 
   void clear() { std::destroy_n(begin(), _M_size); _M_size = 0; }
 
-  void erase(const_iterator cpos)
+  void pop_back()
   {
-    iterator pos = begin() + (cpos - begin());
-    if (pos + 1 != end())
-      std::move(pos + 1, end(), pos);
-    pos->~_Cmpt();
+    back().~_Cmpt();
     --_M_size;
   }
 
-  void erase(const_iterator cfirst, const_iterator clast)
+  void _M_erase_from(const_iterator pos)
   {
-    iterator first = begin() + (cfirst - begin());
-    iterator last = begin() + (clast - begin());
-    if (last != end())
-      std::move(last, end(), first);
-    std::destroy(first + (end() - last), end());
+    iterator first = begin() + (pos - begin());
+    iterator last = end();
+    std::destroy(first, last);
     _M_size -= last - first;
   }
 
@@ -288,7 +283,7 @@ path::_List::operator=(const _List& other)
 	      impl->_M_size = newsize;
 	    }
 	  else if (newsize < oldsize)
-	    impl->erase(impl->begin() + newsize, impl->end());
+	    impl->_M_erase_from(impl->begin() + newsize);
 	  std::copy_n(from, minsize, to);
 	  type(_Type::_Multi);
 	}
@@ -401,15 +396,16 @@ path::_List::back() const noexcept
 }
 
 inline void
-path::_List::erase(const_iterator pos)
+path::_List::pop_back()
 {
-  _M_impl->erase(pos);
+  __glibcxx_assert(size() > 0);
+  _M_impl->pop_back();
 }
 
 inline void
-path::_List::erase(const_iterator first, const_iterator last)
+path::_List::_M_erase_from(const_iterator pos)
 {
-  _M_impl->erase(first, last);
+  _M_impl->_M_erase_from(pos);
 }
 
 inline void
@@ -591,7 +587,10 @@ path::operator/=(const path& __p)
 	{
 	  // Remove empty final component
 	  if (_M_cmpts._M_impl->back().empty())
-	    _M_cmpts._M_impl->erase(--output);
+	    {
+	      _M_cmpts.pop_back();
+	      --output;
+	    }
 	}
       else if (orig_pathlen != 0)
 	{
@@ -629,7 +628,7 @@ path::operator/=(const path& __p)
     {
       _M_pathname.resize(orig_pathlen);
       if (orig_type == _Type::_Multi)
-	_M_cmpts.erase(_M_cmpts.begin() + orig_size, _M_cmpts.end());
+	_M_cmpts._M_erase_from(_M_cmpts.begin() + orig_size);
       else
 	_M_cmpts.clear();
       _M_cmpts.type(orig_type);
@@ -774,7 +773,10 @@ path::_M_append(basic_string_view<value_type> s)
 	{
 	  // Remove empty final component
 	  if (_M_cmpts._M_impl->back().empty())
-	    _M_cmpts._M_impl->erase(--output);
+	    {
+	      _M_cmpts.pop_back();
+	      --output;
+	    }
 	}
       else if (orig_pathlen != 0)
 	{
@@ -818,7 +820,7 @@ path::_M_append(basic_string_view<value_type> s)
     {
       _M_pathname.resize(orig_pathlen);
       if (orig_type == _Type::_Multi)
-	_M_cmpts.erase(_M_cmpts.begin() + orig_size, _M_cmpts.end());
+	_M_cmpts._M_erase_from(_M_cmpts.begin() + orig_size);
       else
 	_M_cmpts.clear();
       _M_cmpts.type(orig_type);
@@ -945,7 +947,8 @@ path::operator+=(const path& p)
       else if (orig_filenamelen == 0 && it != last)
 	{
 	  // Remove empty filename at end of original path.
-	  _M_cmpts.erase(--output);
+	  _M_cmpts.pop_back();
+	  --output;
 	}
 
       if (it != last && it->_M_type() == _Type::_Root_name)
@@ -995,7 +998,7 @@ path::operator+=(const path& p)
       if (orig_type == _Type::_Multi)
 	{
 	  if (_M_cmpts.size() > orig_size)
-	    _M_cmpts.erase(_M_cmpts.begin() + orig_size, _M_cmpts.end());
+	    _M_cmpts._M_erase_from(_M_cmpts.begin() + orig_size);
 	  if (orig_filenamelen != -1)
 	    {
 	      if (_M_cmpts.size() == orig_size)
@@ -1182,7 +1185,7 @@ path::_M_concat(basic_string_view<value_type> s)
       _M_pathname.resize(orig_pathlen);
       if (orig_type == _Type::_Multi)
 	{
-	  _M_cmpts.erase(_M_cmpts.begin() + orig_size, _M_cmpts.end());
+	  _M_cmpts._M_erase_from(_M_cmpts.begin() + orig_size);
 	  if (orig_filenamelen != -1)
 	    {
 	      auto& back = _M_cmpts.back();
@@ -1213,7 +1216,7 @@ path::remove_filename()
 	      if (prev->_M_type() == _Type::_Root_dir
 		  || prev->_M_type() == _Type::_Root_name)
 		{
-		  _M_cmpts.erase(cmpt);
+		  _M_cmpts.pop_back();
 		  if (_M_cmpts.size() == 1)
 		    {
 		      _M_cmpts.type(_M_cmpts.front()._M_type());
@@ -1681,25 +1684,30 @@ path::lexically_normal() const
 	      // Got a path with a relative path (i.e. at least one non-root
 	      // element) and no filename at the end (i.e. empty last element),
 	      // so must have a trailing slash. See what is before it.
-	      auto elem = std::prev(ret.end(), 2);
+	      auto elem = ret._M_cmpts.end() - 2;
 	      if (elem->has_filename() && !is_dotdot(*elem))
 		{
 		  // Remove the filename before the trailing slash
 		  // (equiv. to ret = ret.parent_path().remove_filename())
 
-		  if (elem == ret.begin())
+		  if (elem == ret._M_cmpts.begin())
 		    ret.clear();
 		  else
 		    {
-		      ret._M_pathname.erase(elem._M_cur->_M_pos);
-		      // Do we still have a trailing slash?
+		      ret._M_pathname.erase(elem->_M_pos);
+		      // Remove empty filename at the end:
+		      ret._M_cmpts.pop_back();
+		      // If we still have a trailing non-root dir separator
+		      // then leave an empty filename at the end:
 		      if (std::prev(elem)->_M_type() == _Type::_Filename)
-			ret._M_cmpts.erase(elem._M_cur);
-		      else
-			ret._M_cmpts.erase(elem._M_cur, ret._M_cmpts.end());
+			elem->clear();
+		      else // remove the component completely:
+			ret._M_cmpts.pop_back();
 		    }
 		}
-	      else // ???
+	      else
+		// Append the ".." to something ending in "../" which happens
+		// when normalising paths like ".././.." and "../a/../.."
 		ret /= p;
 	    }
 	}
