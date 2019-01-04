@@ -965,16 +965,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     path::string(const _Allocator& __a) const
     {
       if constexpr (is_same_v<_CharT, value_type>)
-	{
-#if _GLIBCXX_USE_CXX11_ABI
-	  return { _M_pathname, __a };
-#else
-	  if constexpr (is_same_v<_Allocator, string_type::allocator_type>)
-	    return _M_pathname;
-	  else
-	    return { _M_pathname, string_type::size_type(0), __a };
-#endif
-	}
+	return { _M_pathname, __a };
       else
 	return _S_str_convert<_CharT, _Traits>(_M_pathname, __a);
     }

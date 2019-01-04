@@ -70,10 +70,8 @@ test01()
   VERIFY( construct( lvalue.begin(), lvalue.end(), alloc ) == 6 );
   VERIFY( construct( list{ 'l' , 'i' , 's', 't' } ) == 4 );
   VERIFY( construct( list{ 'l', 'i', 's', 't' }, alloc ) == 4 );
-#if _GLIBCXX_USE_CXX11_ABI
   VERIFY( construct( lvalue, alloc ) == 6 );
   VERIFY( construct( string{"rvalue"}, alloc ) == 6 );
-#endif
 }
 
 int
