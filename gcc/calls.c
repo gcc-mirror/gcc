@@ -1681,7 +1681,7 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	  bndrng[1] = maxlen;
 	  bound = void_type_node;
 	}
-      else
+      else if (maxlen)
 	{
 	  /* Replace the bound on the operation with the upper bound
 	     of the length of the string if the latter is smaller.  */

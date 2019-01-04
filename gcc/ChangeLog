@@ -1,3 +1,8 @@
+2019-01-03  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/88659
+	* calls.c (maybe_warn_nonstring_arg): Avoid assuming maxlen is set.
+
 2019-01-03  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* config/rs6000/rs6000-string.c (expand_block_move): Don't use
@@ -65,7 +70,7 @@
 	(maybe_set_strlen_range): Parts refactored into set_strlen_range.
 	Call set_strlen_range.
 	* tree-ssa-strlen.h (set_strlen_range): Add prototype.
-	
+
 	PR middle-end/88663
 	* gimple-fold.c (get_range_strlen): Update prototype to no longer
 	need the flexp argument.
@@ -80,7 +85,7 @@
 	from get_range_strlen.
 	* gimple-ssa-sprintf.c (get_string_length): Update for the new
 	get_range_strlen API.
-	
+
 2019-01-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/88130
