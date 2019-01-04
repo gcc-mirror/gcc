@@ -1,5 +1,8 @@
 2019-01-04  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/21_strings/basic_string/requirements/
+	explicit_instantiation/debug.cc: Remove XFAIL for old ABI.
+
 	* testsuite/27_io/filesystem/filesystem_error/copy.cc: Fix static
 	assertion failures with old std::string ABI.
 
