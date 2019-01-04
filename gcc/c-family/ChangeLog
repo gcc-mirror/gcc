@@ -1,3 +1,8 @@
+2019-01-04  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88363
+	* c-attribs.c (positional_argument): Also accept enumerated types.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

@@ -498,10 +498,11 @@ attribute_takes_identifier_p (const_tree attr_id)
 
 /* Verify that argument value POS at position ARGNO to attribute NAME
    applied to function TYPE refers to a function parameter at position
-   POS and the expected type CODE.  If so, return POS after default
-   conversions, if any.  Otherwise, issue appropriate warnings and
-   return null.  A non-zero 1-based ARGNO should be passed ib by
-   callers only for attributes with more than one argument.  */
+   POS and the expected type CODE.  Treat CODE == INTEGER_TYPE as
+   matching all C integral types except bool.  If successful, return
+   POS after default conversions, if any.  Otherwise, issue appropriate
+   warnings and return null.  A non-zero 1-based ARGNO should be passed
+   in by callers only for attributes with more than one argument.  */
 
 tree
 positional_argument (const_tree fntype, const_tree atname, tree pos,
@@ -630,17 +631,22 @@ positional_argument (const_tree fntype, const_tree atname, tree pos,
 	  return NULL_TREE;
 	}
 
-      /* Where the expected code is STRING_CST accept any pointer
-	 to a narrow character type, qualified or otherwise.  */
       bool type_match;
       if (code == STRING_CST && POINTER_TYPE_P (argtype))
 	{
+	  /* Where the expected code is STRING_CST accept any pointer
+	     to a narrow character type, qualified or otherwise.  */
 	  tree type = TREE_TYPE (argtype);
 	  type = TYPE_MAIN_VARIANT (type);
 	  type_match = (type == char_type_node
 			|| type == signed_char_type_node
 			|| type == unsigned_char_type_node);
 	}
+      else if (code == INTEGER_TYPE)
+	/* For integers, accept enums, wide characters and other types
+	   that match INTEGRAL_TYPE_P except for bool.  */
+	type_match = (INTEGRAL_TYPE_P (argtype)
+		      && TREE_CODE (argtype) != BOOLEAN_TYPE);
       else
 	type_match = TREE_CODE (argtype) == code;
 
