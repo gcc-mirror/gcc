@@ -1604,7 +1604,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Until those definitions are compiled as C++17 suppress the declaration,
   // so C++17 code will implicitly instantiate std::string and std::wstring
   // as needed.
-# if __cplusplus <= 201402L && _GLIBCXX_EXTERN_TEMPLATE > 0
+# if __cplusplus <= 201703L && _GLIBCXX_EXTERN_TEMPLATE > 0
   extern template class basic_string<char>;
 # elif ! _GLIBCXX_USE_CXX11_ABI
   // Still need to prevent implicit instantiation of the COW empty rep,
@@ -1627,7 +1627,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     getline(basic_istream<char>&, string&);
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-# if __cplusplus <= 201402L && _GLIBCXX_EXTERN_TEMPLATE > 0
+# if __cplusplus <= 201703L && _GLIBCXX_EXTERN_TEMPLATE > 0
   extern template class basic_string<wchar_t>;
 # elif ! _GLIBCXX_USE_CXX11_ABI
   extern template basic_string<wchar_t>::size_type

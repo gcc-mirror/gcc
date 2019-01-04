@@ -28,10 +28,11 @@ noinst_LTLIBRARIES = libc++17convenience.la
 headers =
 
 sources = \
-	memory_resource.cc
+	memory_resource.cc \
+	string-inst.cc
 
 if ENABLE_DUAL_ABI
-extra_string_inst_sources =
+extra_string_inst_sources = cow-string-inst.cc
 else
 extra_string_inst_sources =
 endif

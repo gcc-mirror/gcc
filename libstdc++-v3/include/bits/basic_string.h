@@ -44,7 +44,7 @@
 #include <initializer_list>
 #endif
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
 # include <string_view>
 #endif
 
@@ -109,7 +109,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
 
     private:
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       // A helper type for avoiding boiler-plate.
       typedef basic_string_view<_CharT, _Traits> __sv_type;
 
@@ -134,6 +134,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	explicit __sv_wrapper(__sv_type __sv) noexcept : _M_sv(__sv) { }
 	__sv_type _M_sv;
       };
+
+      /**
+       *  @brief  Only internally used: Construct string from a string view
+       *          wrapper.
+       *  @param  __svw  string view wrapper.
+       *  @param  __a  Allocator to use.
+       */
+      explicit
+      basic_string(__sv_wrapper __svw, const _Alloc& __a)
+      : basic_string(__svw._M_sv.data(), __svw._M_sv.size(), __a) { }
 #endif
 
       // Use empty-base optimization: http://www.cantrip.org/emptyopt.html
@@ -617,7 +627,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	: _M_dataplus(_M_local_data(), __a)
 	{ _M_construct(__beg, __end); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Construct string from a substring of a string_view.
        *  @param  __t   Source object convertible to string view.
@@ -639,16 +649,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	explicit
 	basic_string(const _Tp& __t, const _Alloc& __a = _Alloc())
 	: basic_string(__sv_wrapper(_S_to_string_view(__t)), __a) { }
-
-      /**
-       *  @brief  Only internally used: Construct string from a string view
-       *          wrapper.
-       *  @param  __svw  string view wrapper.
-       *  @param  __a  Allocator to use.
-       */
-      explicit
-      basic_string(__sv_wrapper __svw, const _Alloc& __a)
-      : basic_string(__svw._M_sv.data(), __svw._M_sv.size(), __a) { }
 #endif // C++17
 
       /**
@@ -799,7 +799,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       }
 #endif // C++11
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Set value to string constructed from a string_view.
        *  @param  __svt  An object convertible to string_view.
@@ -1200,7 +1200,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { return this->append(__l.begin(), __l.size()); }
 #endif // C++11
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Append a string_view.
        *  @param __svt  An object convertible to string_view to be appended.
@@ -1309,7 +1309,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
         append(_InputIterator __first, _InputIterator __last)
         { return this->replace(end(), end(), __first, __last); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Append a string_view.
        *  @param __svt  An object convertible to string_view to be appended.
@@ -1481,7 +1481,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { return this->assign(__l.begin(), __l.size()); }
 #endif // C++11
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Set value from a string_view.
        *  @param __svt  The source object convertible to string_view.
@@ -1750,7 +1750,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	return iterator(_M_data() + __pos);
       }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Insert a string_view.
        *  @param __pos  Iterator referencing position in string to insert at.
@@ -2181,7 +2181,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { return this->replace(__i1, __i2, __l.begin(), __l.size()); }
 #endif // C++11
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Replace range of characters with string_view.
        *  @param __pos  The position to replace at.
@@ -2309,7 +2309,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       data() const _GLIBCXX_NOEXCEPT
       { return _M_data(); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Return non-const pointer to contents.
        *
@@ -2359,7 +2359,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NOEXCEPT
       { return this->find(__str.data(), __pos, __str.size()); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find position of a string_view.
        *  @param __svt  The object convertible to string_view to locate.
@@ -2421,7 +2421,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NOEXCEPT
       { return this->rfind(__str.data(), __pos, __str.size()); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find last position of a string_view.
        *  @param __svt  The object convertible to string_view to locate.
@@ -2500,7 +2500,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NOEXCEPT
       { return this->find_first_of(__str.data(), __pos, __str.size()); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find position of a character of a string_view.
        *  @param __svt  An object convertible to string_view containing
@@ -2584,7 +2584,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NOEXCEPT
       { return this->find_last_of(__str.data(), __pos, __str.size()); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find last position of a character of string.
        *  @param __svt  An object convertible to string_view containing
@@ -2667,7 +2667,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NOEXCEPT
       { return this->find_first_not_of(__str.data(), __pos, __str.size()); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find position of a character not in a string_view.
        *  @param __svt  A object convertible to string_view containing
@@ -2749,7 +2749,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NOEXCEPT
       { return this->find_last_not_of(__str.data(), __pos, __str.size()); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find last position of a character not in a string_view.
        *  @param __svt  An object convertible to string_view containing
@@ -2859,7 +2859,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	return __r;
       }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Compare to a string_view.
        *  @param __svt An object convertible to string_view to compare against.
@@ -3493,7 +3493,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       _S_empty_rep() _GLIBCXX_NOEXCEPT
       { return _Rep::_S_empty_rep(); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       // A helper type for avoiding boiler-plate.
       typedef basic_string_view<_CharT, _Traits> __sv_type;
 
@@ -3518,6 +3518,16 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	explicit __sv_wrapper(__sv_type __sv) noexcept : _M_sv(__sv) { }
 	__sv_type _M_sv;
       };
+
+      /**
+       *  @brief  Only internally used: Construct string from a string view
+       *          wrapper.
+       *  @param  __svw  string view wrapper.
+       *  @param  __a  Allocator to use.
+       */
+      explicit
+      basic_string(__sv_wrapper __svw, const _Alloc& __a)
+      : basic_string(__svw._M_sv.data(), __svw._M_sv.size(), __a) { }
 #endif
 
     public:
@@ -3662,7 +3672,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
         basic_string(_InputIterator __beg, _InputIterator __end,
 		     const _Alloc& __a = _Alloc());
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Construct string from a substring of a string_view.
        *  @param  __t   Source object convertible to string view.
@@ -3684,16 +3694,6 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	explicit
 	basic_string(const _Tp& __t, const _Alloc& __a = _Alloc())
 	: basic_string(__sv_wrapper(_S_to_string_view(__t)), __a) { }
-
-      /**
-       *  @brief  Only internally used: Construct string from a string view
-       *          wrapper.
-       *  @param  __svw  string view wrapper.
-       *  @param  __a  Allocator to use.
-       */
-      explicit
-      basic_string(__sv_wrapper __svw, const _Alloc& __a)
-      : basic_string(__svw._M_sv.data(), __svw._M_sv.size(), __a) { }
 #endif // C++17
 
       /**
@@ -3761,7 +3761,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       }
 #endif // C++11
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Set value to string constructed from a string_view.
        *  @param  __svt An object convertible to  string_view.
@@ -4183,7 +4183,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       { return this->append(__l.begin(), __l.size()); }
 #endif // C++11
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Append a string_view.
        *  @param __svt The object convertible to string_view to be appended.
@@ -4275,7 +4275,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
         append(_InputIterator __first, _InputIterator __last)
         { return this->replace(_M_iend(), _M_iend(), __first, __last); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Append a string_view.
        *  @param __svt The object convertible to string_view to be appended.
@@ -4433,7 +4433,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       { return this->assign(__l.begin(), __l.size()); }
 #endif // C++11
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Set value from a string_view.
        *  @param __svt The source object convertible to string_view.
@@ -4640,7 +4640,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	return iterator(_M_data() + __pos);
       }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Insert a string_view.
        *  @param __pos  Iterator referencing position in string to insert at.
@@ -5030,7 +5030,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       { return this->replace(__i1, __i2, __l.begin(), __l.end()); }
 #endif // C++11
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Replace range of characters with string_view.
        *  @param __pos  The position to replace at.
@@ -5203,7 +5203,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       data() const _GLIBCXX_NOEXCEPT
       { return _M_data(); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Return non-const pointer to contents.
        *
@@ -5286,7 +5286,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       size_type
       find(_CharT __c, size_type __pos = 0) const _GLIBCXX_NOEXCEPT;
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find position of a string_view.
        *  @param __svt  The object convertible to string_view to locate.
@@ -5364,7 +5364,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       size_type
       rfind(_CharT __c, size_type __pos = npos) const _GLIBCXX_NOEXCEPT;
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find last position of a string_view.
        *  @param __svt  The object convertible to string_view to locate.
@@ -5447,7 +5447,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       find_first_of(_CharT __c, size_type __pos = 0) const _GLIBCXX_NOEXCEPT
       { return this->find(__c, __pos); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find position of a character of a string_view.
        *  @param __svt  An object convertible to string_view containing
@@ -5531,7 +5531,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       find_last_of(_CharT __c, size_type __pos = npos) const _GLIBCXX_NOEXCEPT
       { return this->rfind(__c, __pos); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find last position of a character of string.
        *  @param __svt  An object convertible to string_view containing
@@ -5612,7 +5612,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       find_first_not_of(_CharT __c, size_type __pos = 0) const
       _GLIBCXX_NOEXCEPT;
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find position of a character not in a string_view.
        *  @param __svt  An object convertible to string_view containing
@@ -5694,7 +5694,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       find_last_not_of(_CharT __c, size_type __pos = npos) const
       _GLIBCXX_NOEXCEPT;
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find last position of a character not in a string_view.
        *  @param __svt  An object convertible to string_view containing
@@ -5756,7 +5756,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	return __r;
       }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Compare to a string_view.
        *  @param __svt An object convertible to string_view to compare against.

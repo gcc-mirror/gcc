@@ -1,5 +1,21 @@
 2019-01-04  Jonathan Wakely  <jwakely@redhat.com>
 
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.21): Make patterns less greedy
+	for const member functions of std::basic_string.
+	(GLIBCXX_3.4.26): Export member functions of std::basic_string added
+	in C++17.
+	* include/bits/basic_string.h (basic_string(__sv_wrapper, const A&)):
+	Make non-standard constructor private.
+	[!_GLIBCXX_USE_CXX11_ABI] (basic_string(__sv_wrapper, const A&)):
+	Likewise.
+	* include/bits/basic_string.tcc (std::string, std::wstring): Declare
+	explicit instantiations for C++17 as well as earlier dialects.
+	* src/c++17/Makefile.am: Add new source files.
+	* src/c++17/Makefile.in: Regenerate.
+	* src/c++17/cow-string-inst.cc: New file defining explicit
+	instantiations for basic_string member functions added in C++17.
+	* src/c++17/string-inst.cc: Likewise.
+
 	* config/abi/pre/gnu.ver (GLIBCXX_3.4.26): Export allocator-extended
 	copy/move constructors for old std::basic_string.
 	* include/bits/basic_string.h [!_GLIBCXX_USE_CXX11_ABI]
