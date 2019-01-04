@@ -40,8 +40,11 @@
 #define GOMP_MAP_FLAG_SPECIAL_0		(1 << 2)
 #define GOMP_MAP_FLAG_SPECIAL_1		(1 << 3)
 #define GOMP_MAP_FLAG_SPECIAL_2		(1 << 4)
+#define GOMP_MAP_FLAG_SPECIAL_4		(1 << 6)
 #define GOMP_MAP_FLAG_SPECIAL		(GOMP_MAP_FLAG_SPECIAL_1 \
 					 | GOMP_MAP_FLAG_SPECIAL_0)
+#define GOMP_MAP_DEEP_COPY		(GOMP_MAP_FLAG_SPECIAL_4 \
+					 | GOMP_MAP_FLAG_SPECIAL_2)
 /* Flag to force a specific behavior (or else, trigger a run-time error).  */
 #define GOMP_MAP_FLAG_FORCE		(1 << 7)
 
@@ -128,6 +131,13 @@ enum gomp_map_kind
     /* Decrement usage count and deallocate if zero.  */
     GOMP_MAP_RELEASE =			(GOMP_MAP_FLAG_SPECIAL_2
 					 | GOMP_MAP_DELETE),
+    /* In OpenACC, attach a pointer to a mapped struct field.  */
+    GOMP_MAP_ATTACH =			(GOMP_MAP_DEEP_COPY | 0),
+    /* In OpenACC, detach a pointer to a mapped struct field.  */
+    GOMP_MAP_DETACH =			(GOMP_MAP_DEEP_COPY | 1),
+    /* In OpenACC, detach a pointer to a mapped struct field.  */
+    GOMP_MAP_FORCE_DETACH =		(GOMP_MAP_DEEP_COPY
+					 | GOMP_MAP_FLAG_FORCE | 1),
 
     /* Internal to GCC, not used in libgomp.  */
     /* Do not map, but pointer assign a pointer instead.  */

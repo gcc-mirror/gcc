@@ -867,6 +867,8 @@ struct target_var_desc {
   bool copy_from;
   /* True if data always should be copied from device to host at the end.  */
   bool always_copy_from;
+  /* True if variable should be detached at end of region.  */
+  bool do_detach;
   /* Relative offset against key host_start.  */
   uintptr_t offset;
   /* Actual length.  */
@@ -908,6 +910,10 @@ struct target_mem_desc {
 #define OFFSET_POINTER (~(uintptr_t) 1)
 #define OFFSET_STRUCT (~(uintptr_t) 2)
 
+/* A special tag value for "virtual_refcount" in the splay_tree_key_s structure
+   below.  */
+#define VREFCOUNT_LINK_KEY (~(uintptr_t) 0)
+
 struct splay_tree_key_s {
   /* Address of the host object.  */
   uintptr_t host_start;
@@ -919,10 +925,21 @@ struct splay_tree_key_s {
   uintptr_t tgt_offset;
   /* Reference count.  */
   uintptr_t refcount;
-  /* Dynamic reference count.  */
-  uintptr_t dynamic_refcount;
-  /* Pointer to the original mapping of "omp declare target link" object.  */
-  splay_tree_key link_key;
+  /* Reference counts beyond those that represent genuine references in the
+     linked splay tree key/target memory structures, e.g. for multiple OpenACC
+     "present increment" operations (via "acc enter data") referring to the same
+     host-memory block.
+     If set to VREFCOUNT_LINK_KEY (for OpenMP, where this field is not otherwise
+     needed), the union below represents a link key.  */
+  uintptr_t virtual_refcount;
+  union {
+    /* For a block with attached pointers, the attachment counters for each.
+       Only used for OpenACC.  */
+    uintptr_t *attach_count;
+    /* Pointer to the original mapping of "omp declare target link" object.
+       Only used for OpenMP.  */
+    splay_tree_key link_key;
+  } u;
 };
 
 /* The comparison function.  */
@@ -944,13 +961,6 @@ splay_compare (splay_tree_key x, splay_tree_key y)
 
 typedef struct acc_dispatch_t
 {
-  /* This is a linked list of data mapped using the
-     acc_map_data/acc_unmap_data or "acc enter data"/"acc exit data" pragmas.
-     Unlike mapped_data in the goacc_thread struct, unmapping can
-     happen out-of-order with respect to mapping.  */
-  /* This is guarded by the lock in the "outer" struct gomp_device_descr.  */
-  struct target_mem_desc *data_environ;
-
   /* Execute.  */
   __typeof (GOMP_OFFLOAD_openacc_exec) *exec_func;
 
@@ -1060,13 +1070,15 @@ struct gomp_device_descr
 enum gomp_map_vars_kind
 {
   GOMP_MAP_VARS_OPENACC,
+  GOMP_MAP_VARS_OPENACC_ENTER_DATA,
   GOMP_MAP_VARS_TARGET,
   GOMP_MAP_VARS_DATA,
   GOMP_MAP_VARS_ENTER_DATA
 };
 
-extern void gomp_acc_insert_pointer (size_t, void **, size_t *, void *, int);
-extern void gomp_acc_remove_pointer (void *, size_t, bool, int, int, int);
+extern void gomp_acc_remove_pointer (struct gomp_device_descr *, void **,
+				     size_t *, unsigned short *, int, bool,
+				     int);
 extern void gomp_acc_declare_allocate (bool, size_t, void **, size_t *,
 				       unsigned short *);
 struct gomp_coalesce_buf;
@@ -1076,6 +1088,14 @@ extern void gomp_copy_host2dev (struct gomp_device_descr *,
 extern void gomp_copy_dev2host (struct gomp_device_descr *,
 				struct goacc_asyncqueue *, void *, const void *,
 				size_t);
+extern uintptr_t gomp_map_val (struct target_mem_desc *, void **, size_t);
+extern void gomp_attach_pointer (struct gomp_device_descr *,
+				 struct goacc_asyncqueue *, splay_tree,
+				 splay_tree_key, uintptr_t, size_t,
+				 struct gomp_coalesce_buf *);
+extern void gomp_detach_pointer (struct gomp_device_descr *,
+				 struct goacc_asyncqueue *, splay_tree_key,
+				 uintptr_t, bool, struct gomp_coalesce_buf *);
 
 extern struct target_mem_desc *gomp_map_vars (struct gomp_device_descr *,
 					      size_t, void **, void **,
@@ -1092,10 +1112,11 @@ extern void gomp_unmap_vars_async (struct target_mem_desc *, bool,
 				   struct goacc_asyncqueue *);
 extern void gomp_init_device (struct gomp_device_descr *);
 extern bool gomp_fini_device (struct gomp_device_descr *);
-extern void gomp_free_memmap (struct splay_tree_s *);
 extern void gomp_unload_device (struct gomp_device_descr *);
 extern bool gomp_remove_var (struct gomp_device_descr *, splay_tree_key);
 extern bool gomp_offload_target_available_p (int);
+extern void gomp_remove_var_async (struct gomp_device_descr *, splay_tree_key,
+				   struct goacc_asyncqueue *);
 
 /* work.c */
 

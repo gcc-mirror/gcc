@@ -1,3 +1,27 @@
+2018-12-14  Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.h (gfc_omp_map_op): Add OMP_MAP_ATTACH, OMP_MAP_DETACH.
+	* openmp.c (gfc_match_omp_variable_list): Add allow_derived parameter.
+	Parse derived-type member accesses if true.
+	(omp_mask2): Add OMP_CLAUSE_ATTACH and OMP_CLAUSE_DETACH.
+	(gfc_match_omp_map_clause): Add allow_derived parameter.  Pass to
+	gfc_match_omp_variable_list.
+	(gfc_match_omp_clauses): Support attach and detach.  Support derived
+	types for appropriate OpenACC directives.
+	(OACC_PARALLEL_CLAUSES, OACC_KERNELS_CLAUSES, OACC_DATA_CLAUSES)
+	(OACC_ENTER_DATA_CLAUSES): Add OMP_CLAUSE_ATTACH.
+	(OACC_EXIT_DATA_CLAUSES): Add OMP_CLAUSE_DETACH.
+	(check_symbol_not_pointer): Don't disallow pointer objects of derived
+	type.
+	(resolve_oacc_data_clauses): Don't disallow allocatable derived types.
+	(resolve_omp_clauses): Perform duplicate checking only for non-derived
+	type component accesses (plain variables and arrays or array sections).
+	Support component refs.
+	* trans-openmp.c (gfc_omp_privatize_by_reference): Support component
+	refs.
+	(gfc_trans_omp_clauses): Support component refs, attach and detach
+	clauses.
+
 2015-08-20  Joseph Myers  <joseph@codesourcery.com>
 
 	PR libgomp/81886

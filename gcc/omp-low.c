@@ -9164,6 +9164,9 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case GOMP_MAP_FORCE_DEVICEPTR:
 	  case GOMP_MAP_DEVICE_RESIDENT:
 	  case GOMP_MAP_LINK:
+	  case GOMP_MAP_ATTACH:
+	  case GOMP_MAP_DETACH:
+	  case GOMP_MAP_FORCE_DETACH:
 	    gcc_assert (is_gimple_omp_oacc (stmt));
 	    break;
 	  default:

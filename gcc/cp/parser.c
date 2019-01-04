@@ -32201,6 +32201,8 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_ALIGNED;
 	  else if (!strcmp ("async", p))
 	    result = PRAGMA_OACC_CLAUSE_ASYNC;
+	  else if (!strcmp ("attach", p))
+	    result = PRAGMA_OACC_CLAUSE_ATTACH;
 	  break;
 	case 'c':
 	  if (!strcmp ("collapse", p))
@@ -32221,6 +32223,8 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_DEFAULTMAP;
 	  else if (!strcmp ("depend", p))
 	    result = PRAGMA_OMP_CLAUSE_DEPEND;
+	  else if (!strcmp ("detach", p))
+	    result = PRAGMA_OACC_CLAUSE_DETACH;
 	  else if (!strcmp ("device", p))
 	    result = PRAGMA_OMP_CLAUSE_DEVICE;
 	  else if (!strcmp ("deviceptr", p))
@@ -32423,11 +32427,15 @@ check_no_duplicate_clause (tree clauses, enum omp_clause_code code,
 
    COLON can be NULL if only closing parenthesis should end the list,
    or pointer to bool which will receive false if the list is terminated
-   by closing parenthesis or true if the list is terminated by colon.  */
+   by closing parenthesis or true if the list is terminated by colon.
+
+   The optional ALLOW_DEREF argument is true if list items can use the deref
+   (->) operator.  */
 
 static tree
 cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
-				tree list, bool *colon)
+				tree list, bool *colon,
+				bool allow_deref = false)
 {
   cp_token *token;
   bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
@@ -32500,15 +32508,20 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 	    case OMP_CLAUSE_MAP:
 	    case OMP_CLAUSE_FROM:
 	    case OMP_CLAUSE_TO:
-	      while (cp_lexer_next_token_is (parser->lexer, CPP_DOT))
+	      while (cp_lexer_next_token_is (parser->lexer, CPP_DOT)
+		     || (allow_deref
+			 && cp_lexer_next_token_is (parser->lexer, CPP_DEREF)))
 		{
+		  cpp_ttype ttype
+		    = cp_lexer_next_token_is (parser->lexer, CPP_DOT)
+		      ? CPP_DOT : CPP_DEREF;
 		  location_t loc
 		    = cp_lexer_peek_token (parser->lexer)->location;
 		  cp_id_kind idk = CP_ID_KIND_NONE;
 		  cp_lexer_consume_token (parser->lexer);
 		  decl = convert_from_reference (decl);
 		  decl
-		    = cp_parser_postfix_dot_deref_expression (parser, CPP_DOT,
+		    = cp_parser_postfix_dot_deref_expression (parser, ttype,
 							      decl, false,
 							      &idk, loc);
 		}
@@ -32626,19 +32639,23 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
    common case for omp clauses.  */
 
 static tree
-cp_parser_omp_var_list (cp_parser *parser, enum omp_clause_code kind, tree list)
+cp_parser_omp_var_list (cp_parser *parser, enum omp_clause_code kind, tree list,
+			bool allow_deref = false)
 {
   if (cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
-    return cp_parser_omp_var_list_no_open (parser, kind, list, NULL);
+    return cp_parser_omp_var_list_no_open (parser, kind, list, NULL,
+					   allow_deref);
   return list;
 }
 
-/* OpenACC 2.0:
+/* OpenACC 2.5:
+   attach ( variable-list )
    copy ( variable-list )
    copyin ( variable-list )
    copyout ( variable-list )
    create ( variable-list )
    delete ( variable-list )
+   detach ( variable-list )
    present ( variable-list ) */
 
 static tree
@@ -32648,6 +32665,9 @@ cp_parser_oacc_data_clause (cp_parser *parser, pragma_omp_clause c_kind,
   enum gomp_map_kind kind;
   switch (c_kind)
     {
+    case PRAGMA_OACC_CLAUSE_ATTACH:
+      kind = GOMP_MAP_ATTACH;
+      break;
     case PRAGMA_OACC_CLAUSE_COPY:
       kind = GOMP_MAP_TOFROM;
       break;
@@ -32662,6 +32682,9 @@ cp_parser_oacc_data_clause (cp_parser *parser, pragma_omp_clause c_kind,
       break;
     case PRAGMA_OACC_CLAUSE_DELETE:
       kind = GOMP_MAP_RELEASE;
+      break;
+    case PRAGMA_OACC_CLAUSE_DETACH:
+      kind = GOMP_MAP_DETACH;
       break;
     case PRAGMA_OACC_CLAUSE_DEVICE:
       kind = GOMP_MAP_FORCE_TO;
@@ -32682,7 +32705,7 @@ cp_parser_oacc_data_clause (cp_parser *parser, pragma_omp_clause c_kind,
       gcc_unreachable ();
     }
   tree nl, c;
-  nl = cp_parser_omp_var_list (parser, OMP_CLAUSE_MAP, list);
+  nl = cp_parser_omp_var_list (parser, OMP_CLAUSE_MAP, list, true);
 
   for (c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
     OMP_CLAUSE_SET_MAP_KIND (c, kind);
@@ -35018,6 +35041,10 @@ cp_parser_oacc_all_clauses (cp_parser *parser, omp_clause_mask mask,
 						  clauses);
 	  c_name = "auto";
 	  break;
+	case PRAGMA_OACC_CLAUSE_ATTACH:
+	  clauses = cp_parser_oacc_data_clause (parser, c_kind, clauses);
+	  c_name = "attach";
+	  break;
 	case PRAGMA_OACC_CLAUSE_COLLAPSE:
 	  clauses = cp_parser_omp_clause_collapse (parser, clauses, here);
 	  c_name = "collapse";
@@ -35045,6 +35072,10 @@ cp_parser_oacc_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OMP_CLAUSE_DEFAULT:
 	  clauses = cp_parser_omp_clause_default (parser, clauses, here, true);
 	  c_name = "default";
+	  break;
+	case PRAGMA_OACC_CLAUSE_DETACH:
+	  clauses = cp_parser_oacc_data_clause (parser, c_kind, clauses);
+	  c_name = "detach";
 	  break;
 	case PRAGMA_OACC_CLAUSE_DEVICE:
 	  clauses = cp_parser_oacc_data_clause (parser, c_kind, clauses);
@@ -38695,10 +38726,12 @@ cp_parser_oacc_cache (cp_parser *parser, cp_token *pragma_tok)
      structured-block  */
 
 #define OACC_DATA_CLAUSE_MASK						\
-	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPY)		\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ATTACH)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPY)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYIN)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYOUT)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_CREATE)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DETACH)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEVICEPTR)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF)			\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT) )
@@ -38898,6 +38931,7 @@ cp_parser_oacc_declare (cp_parser *parser, cp_token *pragma_tok)
 
 #define OACC_ENTER_DATA_CLAUSE_MASK					\
 	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF)			\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ATTACH)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ASYNC)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYIN)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_CREATE)		\
@@ -38908,6 +38942,7 @@ cp_parser_oacc_declare (cp_parser *parser, cp_token *pragma_tok)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ASYNC)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYOUT)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DELETE) 		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DETACH)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_FINALIZE) 		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
@@ -39011,6 +39046,7 @@ cp_parser_oacc_loop (cp_parser *parser, cp_token *pragma_tok, char *p_name,
 
 #define OACC_KERNELS_CLAUSE_MASK					\
 	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ASYNC)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ATTACH)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPY)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYIN)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYOUT)		\
@@ -39026,6 +39062,7 @@ cp_parser_oacc_loop (cp_parser *parser, cp_token *pragma_tok, char *p_name,
 
 #define OACC_PARALLEL_CLAUSE_MASK					\
 	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ASYNC)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ATTACH)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPY)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYIN)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYOUT)		\

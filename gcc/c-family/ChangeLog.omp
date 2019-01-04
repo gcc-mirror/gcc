@@ -1,0 +1,7 @@
+2018-12-14  Julian Brown  <julian@codesourcery.com>
+
+	* c-pragma.h (pragma_omp_clause): Add PRAGMA_OACC_CLAUSE_ATTACH and
+	PRAGMA_OACC_CLAUSE_DETACH.
+	* c-common.h (c_omp_map_clause_name): Add prototype.
+	* c-omp.c (c_omp_map_clause_name): New function.
+

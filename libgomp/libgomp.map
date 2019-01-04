@@ -476,6 +476,16 @@ OACC_2.5 {
 	acc_update_self_async_array_h_;
 } OACC_2.0.1;
 
+OACC_2.6 {
+  global:
+	acc_attach;
+	acc_attach_async;
+	acc_detach;
+	acc_detach_async;
+	acc_detach_finalize;
+	acc_detach_finalize_async;
+} OACC_2.5;
+
 GOACC_2.0 {
   global:
 	GOACC_data_end;

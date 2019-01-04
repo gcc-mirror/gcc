@@ -1,0 +1,9 @@
+2018-12-14  Julian Brown  <julian@codesourcery.com>
+
+	* c-c++-common/goacc/mdc-1.c: New test.
+	* c-c++-common/goacc/mdc-2.c: New test.
+	* gcc.dg/goacc/mdc.C: New test.
+	* gfortran.dg/goacc/data-clauses.f95: New test.
+	* gfortran.dg/goacc/derived-types.f90: New test.
+	* gfortran.dg/goacc/enter-exit-data.f95: New test.
+

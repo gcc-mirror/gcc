@@ -113,6 +113,10 @@ enum gimplify_omp_var_data
 
   GOVD_NONTEMPORAL = 4194304,
 
+  /* Flag for GOVD_MAP: (struct) vars that have pointer attachments for
+     fields.  */
+  GOVD_MAP_HAS_ATTACHMENTS = 8388608,
+
   GOVD_DATA_SHARE_CLASS = (GOVD_SHARED | GOVD_PRIVATE | GOVD_FIRSTPRIVATE
 			   | GOVD_LASTPRIVATE | GOVD_REDUCTION | GOVD_LINEAR
 			   | GOVD_LOCAL)
@@ -8066,7 +8070,13 @@ insert_struct_comp_map (enum tree_code code, tree c, tree struct_node,
   OMP_CLAUSE_SET_MAP_KIND (c2, mkind);
   OMP_CLAUSE_DECL (c2) = unshare_expr (OMP_CLAUSE_DECL (c));
   OMP_CLAUSE_CHAIN (c2) = scp ? *scp : prev_node;
-  OMP_CLAUSE_SIZE (c2) = TYPE_SIZE_UNIT (ptr_type_node);
+  if (OMP_CLAUSE_CHAIN (prev_node) != c
+      && OMP_CLAUSE_CODE (OMP_CLAUSE_CHAIN (prev_node)) == OMP_CLAUSE_MAP
+      && (OMP_CLAUSE_MAP_KIND (OMP_CLAUSE_CHAIN (prev_node))
+	  == GOMP_MAP_TO_PSET))
+    OMP_CLAUSE_SIZE (c2) = OMP_CLAUSE_SIZE (OMP_CLAUSE_CHAIN (prev_node));
+  else
+    OMP_CLAUSE_SIZE (c2) = TYPE_SIZE_UNIT (ptr_type_node);
   if (struct_node)
     OMP_CLAUSE_CHAIN (struct_node) = c2;
 
@@ -8660,7 +8670,9 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		  remove = true;
 		  break;
 		}
-	      if (DECL_P (decl))
+	      if (DECL_P (decl)
+		  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_TO_PSET
+		  && code != OACC_UPDATE)
 		{
 		  if (error_operand_p (decl))
 		    {
@@ -8713,16 +8725,40 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		    = splay_tree_lookup (ctx->variables, (splay_tree_key)decl);
 		  bool ptr = (OMP_CLAUSE_MAP_KIND (c)
 			      == GOMP_MAP_ALWAYS_POINTER);
+		  bool attach = OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH
+			        || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_DETACH;
+		  bool has_attachments = false;
+		  /* For OpenACC, pointers in structs should trigger an
+		     attach action.  */
+		  if (ptr && (region_type & ORT_ACC) != 0)
+		    {
+		      /* Turning a GOMP_MAP_ALWAYS_POINTER clause into a
+			 GOMP_MAP_ATTACH clause after we have detected a case
+			 that needs a GOMP_MAP_STRUCT mapping added.  */
+		      gomp_map_kind k
+			= (code == OACC_EXIT_DATA) ? GOMP_MAP_DETACH
+						   : GOMP_MAP_ATTACH;
+		      OMP_CLAUSE_SET_MAP_KIND (c, k);
+		      has_attachments = true;
+		    }
 		  if (n == NULL || (n->value & GOVD_MAP) == 0)
 		    {
 		      tree l = build_omp_clause (OMP_CLAUSE_LOCATION (c),
 						 OMP_CLAUSE_MAP);
-		      OMP_CLAUSE_SET_MAP_KIND (l, GOMP_MAP_STRUCT);
+		      gomp_map_kind k = attach ? GOMP_MAP_FORCE_PRESENT
+					       : GOMP_MAP_STRUCT;
+
+		      OMP_CLAUSE_SET_MAP_KIND (l, k);
 		      if (!base_eq_orig_base)
 			OMP_CLAUSE_DECL (l) = unshare_expr (orig_base);
 		      else
 			OMP_CLAUSE_DECL (l) = decl;
-		      OMP_CLAUSE_SIZE (l) = size_int (1);
+		      OMP_CLAUSE_SIZE (l)
+			= (!attach
+			   ? size_int (1)
+			   : DECL_P (OMP_CLAUSE_DECL (l))
+			   ? DECL_SIZE_UNIT (OMP_CLAUSE_DECL (l))
+			   : TYPE_SIZE_UNIT (TREE_TYPE (OMP_CLAUSE_DECL (l))));
 		      if (struct_map_to_clause == NULL)
 			struct_map_to_clause = new hash_map<tree, tree>;
 		      struct_map_to_clause->put (decl, l);
@@ -8754,9 +8790,11 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		      flags = GOVD_MAP | GOVD_EXPLICIT;
 		      if (GOMP_MAP_ALWAYS_P (OMP_CLAUSE_MAP_KIND (c)) || ptr)
 			flags |= GOVD_SEEN;
+		      if (has_attachments)
+			flags |= GOVD_MAP_HAS_ATTACHMENTS;
 		      goto do_add_decl;
 		    }
-		  else
+		  else if (struct_map_to_clause)
 		    {
 		      tree *osc = struct_map_to_clause->get (decl);
 		      tree *sc = NULL, *scp = NULL;
@@ -8765,8 +8803,10 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		      sc = &OMP_CLAUSE_CHAIN (*osc);
 		      if (*sc != c
 			  && (OMP_CLAUSE_MAP_KIND (*sc)
-			      == GOMP_MAP_FIRSTPRIVATE_REFERENCE)) 
+			      == GOMP_MAP_FIRSTPRIVATE_REFERENCE))
 			sc = &OMP_CLAUSE_CHAIN (*sc);
+		      /* Here "prev_list_p" is the end of the inserted
+			 alloc/release nodes after the struct node, OSC.  */
 		      for (; *sc != c; sc = &OMP_CLAUSE_CHAIN (*sc))
 			if (ptr && sc == prev_list_p)
 			  break;
@@ -8825,9 +8865,10 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			  }
 		      if (remove)
 			break;
-		      OMP_CLAUSE_SIZE (*osc)
-			= size_binop (PLUS_EXPR, OMP_CLAUSE_SIZE (*osc),
-				      size_one_node);
+		      if (!attach)
+			OMP_CLAUSE_SIZE (*osc)
+			  = size_binop (PLUS_EXPR, OMP_CLAUSE_SIZE (*osc),
+					size_one_node);
 		      if (ptr)
 			{
 			  tree cl = insert_struct_comp_map (code, c, NULL,
@@ -8858,11 +8899,15 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		}
 	      if (!remove
 		  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ALWAYS_POINTER
+		  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_TO_PSET
 		  && OMP_CLAUSE_CHAIN (c)
 		  && OMP_CLAUSE_CODE (OMP_CLAUSE_CHAIN (c)) == OMP_CLAUSE_MAP
-		  && (OMP_CLAUSE_MAP_KIND (OMP_CLAUSE_CHAIN (c))
-		      == GOMP_MAP_ALWAYS_POINTER))
+		  && ((OMP_CLAUSE_MAP_KIND (OMP_CLAUSE_CHAIN (c))
+		       == GOMP_MAP_ALWAYS_POINTER)
+		      || (OMP_CLAUSE_MAP_KIND (OMP_CLAUSE_CHAIN (c))
+		          == GOMP_MAP_TO_PSET)))
 		prev_list_p = list_p;
+
 	      break;
 	    }
 	  flags = GOVD_MAP | GOVD_EXPLICIT;
@@ -9483,6 +9528,8 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
   if (flags & (GOVD_EXPLICIT | GOVD_LOCAL))
     return 0;
   if ((flags & GOVD_SEEN) == 0)
+    return 0;
+  if ((flags & GOVD_MAP_HAS_ATTACHMENTS) != 0)
     return 0;
   if (flags & GOVD_DEBUG_PRIVATE)
     {
@@ -11876,8 +11923,9 @@ gimplify_omp_target_update (tree *expr_p, gimple_seq *pre_p)
 	   && omp_find_clause (OMP_STANDALONE_CLAUSES (expr),
 			       OMP_CLAUSE_FINALIZE))
     {
-      /* Use GOMP_MAP_DELETE/GOMP_MAP_FORCE_FROM to denote that "finalize"
-	 semantics apply to all mappings of this OpenACC directive.  */
+      /* Use GOMP_MAP_DELETE, GOMP_MAP_FORCE_DETACH, and
+	 GOMP_MAP_FORCE_FROM to denote that "finalize" semantics apply
+	 to all mappings of this OpenACC directive.  */
       bool finalize_marked = false;
       for (tree c = OMP_STANDALONE_CLAUSES (expr); c; c = OMP_CLAUSE_CHAIN (c))
 	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP)
@@ -11891,10 +11939,19 @@ gimplify_omp_target_update (tree *expr_p, gimple_seq *pre_p)
 	      OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_DELETE);
 	      finalize_marked = true;
 	      break;
+	    case GOMP_MAP_DETACH:
+	      OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_FORCE_DETACH);
+	      finalize_marked = true;
+	      break;
+	    case GOMP_MAP_STRUCT:
+	    case GOMP_MAP_FORCE_PRESENT:
+	      /* Skip over an initial struct or force_present mapping.  */
+	      break;
 	    default:
-	      /* Check consistency: libgomp relies on the very first data
-		 mapping clause being marked, so make sure we did that before
-		 any other mapping clauses.  */
+	      /* Check consistency: libgomp relies on the very first
+		 non-struct, non-force-present data mapping clause being
+		 marked, so make sure we did that before any other mapping
+		 clauses.  */
 	      gcc_assert (finalize_marked);
 	      break;
 	    }

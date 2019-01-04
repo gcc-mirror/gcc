@@ -57,12 +57,32 @@ find_pointer (int pos, size_t mapnum, unsigned short *kinds)
   if (pos + 1 >= mapnum)
     return 0;
 
-  unsigned char kind = kinds[pos+1] & 0xff;
+  unsigned char kind0 = kinds[pos] & 0xff;
 
-  if (kind == GOMP_MAP_TO_PSET)
-    return 3;
-  else if (kind == GOMP_MAP_POINTER)
-    return 2;
+  switch (kind0)
+    {
+    case GOMP_MAP_TO:
+    case GOMP_MAP_FORCE_TO:
+    case GOMP_MAP_FROM:
+    case GOMP_MAP_FORCE_FROM:
+    case GOMP_MAP_TOFROM:
+    case GOMP_MAP_FORCE_TOFROM:
+    case GOMP_MAP_ALLOC:
+    case GOMP_MAP_RELEASE:
+      {
+	unsigned char kind1 = kinds[pos + 1] & 0xff;
+	if (kind1 == GOMP_MAP_POINTER
+	    || kind1 == GOMP_MAP_ALWAYS_POINTER
+	    || kind1 == GOMP_MAP_ATTACH
+	    || kind1 == GOMP_MAP_DETACH
+	    || kind1 == GOMP_MAP_FORCE_DETACH)
+	  return 2;
+	else if (kind1 == GOMP_MAP_TO_PSET)
+	  return 3;
+      }
+    default:
+      /* empty.  */;
+    }
 
   return 0;
 }
@@ -240,9 +260,8 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
   
   devaddrs = gomp_alloca (sizeof (void *) * mapnum);
   for (i = 0; i < mapnum; i++)
-    devaddrs[i] = (void *) (tgt->list[i].key->tgt->tgt_start
-			    + tgt->list[i].key->tgt_offset
-			    + tgt->list[i].offset);
+    devaddrs[i] = (void *) gomp_map_val (tgt, hostaddrs, i);
+
   if (aq == NULL)
     {
       acc_dev->openacc.exec_func (tgt_fn, mapnum, hostaddrs, devaddrs,
@@ -361,6 +380,10 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
   if (mapnum > 0)
     {
       unsigned char kind = kinds[0] & 0xff;
+
+      if (kind == GOMP_MAP_STRUCT || kind == GOMP_MAP_FORCE_PRESENT)
+        kind = kinds[1] & 0xff;
+
       if (kind == GOMP_MAP_DELETE
 	  || kind == GOMP_MAP_FORCE_FROM)
 	finalize = true;
@@ -371,11 +394,14 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
     {
       unsigned char kind = kinds[i] & 0xff;
 
-      if (kind == GOMP_MAP_POINTER || kind == GOMP_MAP_TO_PSET)
+      if (kind == GOMP_MAP_POINTER
+	  || kind == GOMP_MAP_TO_PSET
+	  || kind == GOMP_MAP_STRUCT
+	  || kind == GOMP_MAP_FORCE_PRESENT)
 	continue;
 
       if (kind == GOMP_MAP_FORCE_ALLOC
-	  || kind == GOMP_MAP_FORCE_PRESENT
+	  || kind == GOMP_MAP_ATTACH
 	  || kind == GOMP_MAP_FORCE_TO
 	  || kind == GOMP_MAP_TO
 	  || kind == GOMP_MAP_ALLOC)
@@ -386,6 +412,8 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
 
       if (kind == GOMP_MAP_RELEASE
 	  || kind == GOMP_MAP_DELETE
+	  || kind == GOMP_MAP_DETACH
+	  || kind == GOMP_MAP_FORCE_DETACH
 	  || kind == GOMP_MAP_FROM
 	  || kind == GOMP_MAP_FORCE_FROM)
 	break;
@@ -424,6 +452,19 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
 		case GOMP_MAP_FORCE_TO:
 		  acc_copyin_async (hostaddrs[i], sizes[i], async);
 		  break;
+		case GOMP_MAP_STRUCT:
+		  {
+		    int elems = sizes[i];
+		    goacc_aq aq = get_goacc_asyncqueue (async);
+		    gomp_map_vars_async (acc_dev, aq, elems + 1, &hostaddrs[i],
+					 NULL, &sizes[i], &kinds[i], true,
+					 GOMP_MAP_VARS_OPENACC_ENTER_DATA);
+		    i += elems;
+		  }
+		  break;
+		case GOMP_MAP_ATTACH:
+		case GOMP_MAP_FORCE_PRESENT:
+		  break;
 		default:
 		  gomp_fatal (">>>> GOACC_enter_exit_data UNHANDLED kind 0x%.2x",
 			      kind);
@@ -432,8 +473,14 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
 	    }
 	  else
 	    {
-	      gomp_acc_insert_pointer (pointer, &hostaddrs[i],
-				       &sizes[i], &kinds[i], async);
+	      goacc_aq aq = get_goacc_asyncqueue (async);
+	      for (int j = 0; j < 2; j++)
+		gomp_map_vars_async (acc_dev, aq,
+				     (j == 0 || pointer == 2) ? 1 : 2,
+				     &hostaddrs[i + j], NULL,
+				     &sizes[i + j], &kinds[i + j], true,
+				     GOMP_MAP_VARS_OPENACC_ENTER_DATA);
+
 	      /* Increment 'i' by two because OpenACC requires fortran
 		 arrays to be contiguous, so each PSET is associated with
 		 one of MAP_FORCE_ALLOC/MAP_FORCE_PRESET/MAP_FORCE_TO, and
@@ -441,51 +488,140 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
 	      i += pointer - 1;
 	    }
 	}
+
+      /* This loop only handles explicit "attach" clauses that are not an
+	 implicit part of a copy{,in,out}, etc. mapping.  */
+      for (i = 0; i < mapnum; i++)
+        {
+	  unsigned char kind = kinds[i] & 0xff;
+
+	  /* Scan for pointers and PSETs.  */
+	  int pointer = find_pointer (i, mapnum, kinds);
+
+	  if (!pointer)
+	    {
+	      if (kind == GOMP_MAP_ATTACH)
+		acc_attach (hostaddrs[i]);
+	      else if (kind == GOMP_MAP_STRUCT)
+	        i += sizes[i];
+	    }
+	  else
+	    i += pointer - 1;
+	}
     }
   else
-    for (i = 0; i < mapnum; ++i)
-      {
-	unsigned char kind = kinds[i] & 0xff;
+    {
+      /* Handle "detach" before copyback/deletion of mapped data.  */
+      for (i = 0; i < mapnum; i++)
+        {
+	  unsigned char kind = kinds[i] & 0xff;
 
-	int pointer = find_pointer (i, mapnum, kinds);
+	  int pointer = find_pointer (i, mapnum, kinds);
 
-	if (!pointer)
-	  {
-	    switch (kind)
-	      {
-	      case GOMP_MAP_RELEASE:
-	      case GOMP_MAP_DELETE:
-		if (acc_is_present (hostaddrs[i], sizes[i]))
+	  if (!pointer)
+	    {
+	      if (kind == GOMP_MAP_DETACH)
+		acc_detach (hostaddrs[i]);
+	      else if (kind == GOMP_MAP_FORCE_DETACH)
+		acc_detach_finalize (hostaddrs[i]);
+	      else if (kind == GOMP_MAP_STRUCT)
+	        i += sizes[i];
+	    }
+	  else
+	    {
+	      unsigned char kind2 = kinds[i + pointer - 1] & 0xff;
+
+	      if (kind2 == GOMP_MAP_DETACH)
+		acc_detach (hostaddrs[i + pointer - 1]);
+	      else if (kind2 == GOMP_MAP_FORCE_DETACH)
+	        acc_detach_finalize (hostaddrs[i + pointer - 1]);
+
+	      i += pointer - 1;
+	    }
+	}
+
+      for (i = 0; i < mapnum; ++i)
+	{
+	  unsigned char kind = kinds[i] & 0xff;
+
+	  int pointer = find_pointer (i, mapnum, kinds);
+
+	  if (!pointer)
+	    {
+	      switch (kind)
+		{
+		case GOMP_MAP_RELEASE:
+		case GOMP_MAP_DELETE:
+		  if (acc_is_present (hostaddrs[i], sizes[i]))
+		    {
+		      if (finalize)
+			acc_delete_finalize_async (hostaddrs[i], sizes[i],
+						   async);
+		      else
+			acc_delete_async (hostaddrs[i], sizes[i], async);
+		    }
+		  break;
+		case GOMP_MAP_DETACH:
+		case GOMP_MAP_FORCE_DETACH:
+		case GOMP_MAP_FORCE_PRESENT:
+		  break;
+		case GOMP_MAP_FROM:
+		case GOMP_MAP_FORCE_FROM:
+		  if (finalize)
+		    acc_copyout_finalize_async (hostaddrs[i], sizes[i], async);
+		  else
+		    acc_copyout_async (hostaddrs[i], sizes[i], async);
+		  break;
+		case GOMP_MAP_STRUCT:
 		  {
-		    if (finalize)
-		      acc_delete_finalize_async (hostaddrs[i], sizes[i], async);
-		    else
-		      acc_delete_async (hostaddrs[i], sizes[i], async);
+		    int elems = sizes[i];
+		    goacc_aq aq = get_goacc_asyncqueue (async);
+		    for (int j = 1; j <= elems; j++)
+		      {
+			struct splay_tree_key_s k;
+			k.host_start = (uintptr_t) hostaddrs[i + j];
+			k.host_end = k.host_start + sizes[i + j];
+			splay_tree_key str;
+			gomp_mutex_lock (&acc_dev->lock);
+			str = splay_tree_lookup (&acc_dev->mem_map, &k);
+			gomp_mutex_unlock (&acc_dev->lock);
+			if (str)
+		          {
+			    assert (str->virtual_refcount
+				    != VREFCOUNT_LINK_KEY);
+			    if (finalize)
+			      {
+				str->refcount -= str->virtual_refcount;
+				str->virtual_refcount = 0;
+			      }
+			    if (str->virtual_refcount > 0)
+			      {
+				str->refcount--;
+				str->virtual_refcount--;
+			      }
+			    else if (str->refcount > 0)
+			      str->refcount--;
+			    if (str->refcount == 0)
+			      gomp_remove_var_async (acc_dev, str, aq);
+			  }
+		      }
+		    i += elems;
 		  }
-		break;
-	      case GOMP_MAP_FROM:
-	      case GOMP_MAP_FORCE_FROM:
-		if (finalize)
-		  acc_copyout_finalize_async (hostaddrs[i], sizes[i], async);
-		else
-		  acc_copyout_async (hostaddrs[i], sizes[i], async);
-		break;
-	      default:
-		gomp_fatal (">>>> GOACC_enter_exit_data UNHANDLED kind 0x%.2x",
-			    kind);
-		break;
-	      }
-	  }
-	else
-	  {
-	    bool copyfrom = (kind == GOMP_MAP_FORCE_FROM
-			     || kind == GOMP_MAP_FROM);
-	    gomp_acc_remove_pointer (hostaddrs[i], sizes[i], copyfrom, async,
-				     finalize, pointer);
-	    /* See the above comment.  */
-	    i += pointer - 1;
-	  }
-      }
+		  break;
+		default:
+		  gomp_fatal (">>>> GOACC_enter_exit_data UNHANDLED kind 0x%.2x",
+			      kind);
+		  break;
+		}
+	    }
+	  else
+	    {
+	      gomp_acc_remove_pointer (acc_dev, &hostaddrs[i], &sizes[i],
+				       &kinds[i], async, finalize, pointer);
+	      i += pointer - 1;
+	    }
+	}
+    }
 }
 
 static void

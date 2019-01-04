@@ -1,3 +1,91 @@
+2018-12-14  Julian Brown  <julian@codesourcery.com>
+
+	* libgomp.h (struct target_var_desc): Add do_detach flag.
+	(VREFCOUNT_LINK_KEY): New macro.
+	(struct splay_tree_key_s): Put link_key and new attach_count field into
+	a new union.  Substitute dynamic_refcount field for virtual_refcount.
+	(struct acc_dispatch_t): Remove data_environ field.
+	(enum gomp_map_vars_kind): Add GOMP_MAP_VARS_OPENACC_ENTER_DATA.
+	(gomp_acc_insert_pointer): Remove prototype.
+	(gomp_acc_remove_pointer): Update prototype.
+	(struct gomp_coalesce_buf): Add forward declaration.
+	(gomp_map_val, gomp_attach_pointer, gomp_detach_pointer): Add
+	prototypes.
+	* libgomp.map (OACC_2.6): New section. Add acc_attach, acc_attach_async,
+	acc_detach, acc_detach_async, acc_detach_finalize,
+	acc_detach_finalize_async.
+	* oacc-async.c (goacc_remove_var_async): New function.
+	* oacc-host.c (host_dispatch): Don't initialise removed data_environ
+	field.
+	* oacc-init.c (acc_shutdown_1): Use gomp_remove_var instead of
+	gomp_unmap_vars to remove mappings by splay tree key instead of target
+	memory descriptor.
+	* oacc-int.h (splay_tree_key_s): Add forward declaration.
+	(goacc_remove_var_async): Add prototype.
+	* oacc-mem.c (lookup_dev_1): New function.
+	(lookup_dev): Reimplement using above.
+	(acc_free, acc_hostptr): Update calls to lookup_dev.
+	(acc_map_data): Likewise.  Don't add to data_environ list.
+	(acc_unmap_data): Remove call to gomp_unmap_vars.  Fix semantics to
+	remove mapping, but not mapped data.
+	(present_create_copy): Use virtual_refcount instead of
+	dynamic_refcount.  Don't manipulate data_environ.  Fix target pointer
+	return value.
+	(delete_copyout): Update for virtual_refcount semantics.  Use
+	goacc_remove_var_async for asynchronous delete/copyouts.
+	(gomp_acc_insert_pointer): Remove function.
+	(gomp_acc_remove_pointer): Reimplement.
+	(acc_attach_async, acc_attach, goacc_detach_internal, acc_detach)
+	(acc_detach_async, acc_detach_finalize, acc_detach_finalize_async): New
+	functions.
+	* oacc-parallel.c (find_pointer): Support attach/detach.  Make a little
+	more strict.
+	(GOACC_parallel_keyed): Use gomp_map_val to calculate device addresses.
+	(GOACC_enter_exit_data): Support attach/detach and GOMP_MAP_STRUCT.
+	Don't call gomp_acc_insert_pointer.
+	* openacc.h (acc_attach, acc_attach_async, acc_detach)
+	(acc_detach_async, acc_detach_finalize, acc_detach_finalize_async): Add
+	prototypes.
+	* target.c (gomp_map_vars_existing): Initialise do_detach field of
+	tgt_var_desc.
+	(gomp_attach_pointer, gomp_detach_pointer): New functions.
+	(gomp_map_val): Make global.
+	(gomp_map_vars_async): Handle GOMP_MAP_VARS_OPENACC_ENTER_DATA.  Update
+	for virtual_refcount semantics.  Support attach and detach.
+	(gomp_remove_var): Free attach count array if present.
+	(gomp_unmap_vars_async): Support detach and update for virtual_refcount
+	semantics.  Disambiguate link_key/attach_count using virtual_refcount
+	with magic value as a tag.
+	(gomp_load_image_to_device): Zero-initialise virtual_refcount fields.
+	(gomp_free_memmap): Remove function.
+	(gomp_exit_data): Check virtual_refcount for tag value before using
+	link_key.
+	(omp_target_associate_ptr): Zero-initialise virtual_refcount and
+	link_key splay tree key fields.
+	(gomp_target_init): Don't initialise removed data_environ field.
+	* testsuite/libgomp.oacc-c-c++-common/context-2.c: Use correct API to
+	deallocate acc_copyin'd data.
+	* testsuite/libgomp.oacc-c-c++-common/context-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-3.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-4.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-5.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-6.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-7.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-8.c: New test.
+	* testsuite/libgomp.oacc-fortran/deep-copy-1.c: New test.
+	* testsuite/libgomp.oacc-fortran/deep-copy-2.c: New test.
+	* testsuite/libgomp.oacc-fortran/deep-copy-3.c: New test.
+	* testsuite/libgomp.oacc-fortran/deep-copy-4.c: New test.
+	* testsuite/libgomp.oacc-fortran/deep-copy-5.c: New test.
+	* testsuite/libgomp.oacc-fortran/deep-copy-6.c: New test.
+	* testsuite/libgomp.oacc-fortran/deep-copy-7.c: New test.
+	* testsuite/libgomp.oacc-fortran/deep-copy-8.c: New test.
+	* testsuite/libgomp.oacc-fortran/data-2.f90: Update test.
+	* testsuite/libgomp.oacc-fortran/derived-type-1.f90: New test.
+	* testsuite/libgomp.oacc-fortran/update-2.f90: New test.
+
 2018-11-10  Julian Brown  <julian@codesourcery.com>
 
 	* libgomp.h (OFFSET_INLINED, OFFSET_POINTER, OFFSET_STRUCT): Define.

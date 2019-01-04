@@ -1,3 +1,9 @@
+2018-12-14  Julian Brown  <julian@codesourcery.com>
+
+	* gomp-constants.h (GOMP_MAP_DEEP_COPY): Define.
+	(gomp_map_kind): Add GOMP_MAP_ATTACH, GOMP_MAP_DETACH,
+	GOMP_MAP_FORCE_DETACH.
+
 2019-02-26  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* gomp-constants.h (GOMP_ASYNC_DEFAULT): Define.

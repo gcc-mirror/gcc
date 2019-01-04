@@ -265,8 +265,6 @@ static struct gomp_device_descr host_dispatch =
     .state = GOMP_DEVICE_UNINITIALIZED,
 
     .openacc = {
-      .data_environ = NULL,
-
       .exec_func = host_openacc_exec,
 
       .create_thread_data_func = host_openacc_create_thread_data,

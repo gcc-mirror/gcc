@@ -302,9 +302,13 @@ acc_shutdown_1 (acc_device_t d)
 
       if (walk->dev)
 	{
-	  gomp_mutex_lock (&walk->dev->lock);
-	  gomp_free_memmap (&walk->dev->mem_map);
-	  gomp_mutex_unlock (&walk->dev->lock);
+	  while (walk->dev->mem_map.root)
+	    {
+	      splay_tree_key k = &walk->dev->mem_map.root->key;
+	      if (k->virtual_refcount == VREFCOUNT_LINK_KEY)
+		k->u.link_key = NULL;
+	      gomp_remove_var (walk->dev, k);
+	    }
 
 	  walk->dev = NULL;
 	  walk->base_dev = NULL;

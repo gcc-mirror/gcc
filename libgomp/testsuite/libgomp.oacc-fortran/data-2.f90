@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-additional-options "-cpp" }
 
 program test
   use openacc
@@ -70,9 +71,13 @@ program test
     end do
   !$acc end parallel
   
-  !$acc exit data copyout (d(1:N)) async
+  !$acc exit data delete (c(1:N)) copyout (d(1:N)) async
   !$acc exit data async
   !$acc wait
+
+#if !ACC_MEM_SHARED
+  if (acc_is_present (c) .eqv. .TRUE.) call abort
+#endif
 
   do i = 1, N
     if (d(i) .ne. 4.0) call abort
