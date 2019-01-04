@@ -42,7 +42,7 @@ void testc(const std::list<short>& l)
 
 int main()
 {
-#if _GLIBCXX_USE_DUAL_ABI
+#if ! __NO_INLINE__
   std::list<short> l;
   testm(l);
   testc(l);
