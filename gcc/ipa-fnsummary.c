@@ -2034,7 +2034,10 @@ analyze_function_body (struct cgraph_node *node, bool early)
   info->account_size_time (0, 0, bb_predicate, bb_predicate);
 
   bb_predicate = predicate::not_inlined ();
-  info->account_size_time (2 * ipa_fn_summary::size_scale, 0, bb_predicate,
+  info->account_size_time (PARAM_VALUE (PARAM_UNINLINED_FUNCTION_INSNS)
+			   * ipa_fn_summary::size_scale,
+			   PARAM_VALUE (PARAM_UNINLINED_FUNCTION_TIME),
+			   bb_predicate,
 		           bb_predicate);
 
   if (fbi.info)
@@ -2418,7 +2421,11 @@ compute_fn_summary (struct cgraph_node *node, bool early)
       node->local.can_change_signature = false;
       es->call_stmt_size = eni_size_weights.call_cost;
       es->call_stmt_time = eni_time_weights.call_cost;
-      info->account_size_time (ipa_fn_summary::size_scale * 2, 2, t, t);
+      info->account_size_time (ipa_fn_summary::size_scale
+			       * PARAM_VALUE
+				 (PARAM_UNINLINED_FUNCTION_THUNK_INSNS),
+			       PARAM_VALUE
+				 (PARAM_UNINLINED_FUNCTION_THUNK_TIME), t, t);
       t = predicate::not_inlined ();
       info->account_size_time (2 * ipa_fn_summary::size_scale, 0, t, t);
       ipa_update_overall_fn_summary (node);
