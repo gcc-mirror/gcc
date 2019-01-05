@@ -268,13 +268,32 @@ fs::copy(const path& from, const path& to, copy_options options)
 namespace std::filesystem
 {
   // Need this as there's no 'perm_options::none' enumerator.
-  inline bool is_set(fs::perm_options obj, fs::perm_options bits)
+  static inline bool is_set(fs::perm_options obj, fs::perm_options bits)
   {
     return (obj & bits) != fs::perm_options{};
   }
 }
 
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H
+
+namespace
+{
+  struct internal_file_clock : fs::__file_clock
+  {
+    using __file_clock::_S_to_sys;
+    using __file_clock::_S_from_sys;
+
+    static fs::file_time_type
+    from_stat(const fs::stat_type& st, std::error_code& ec) noexcept
+    {
+      const auto sys_time = fs::file_time(st, ec);
+      if (sys_time == sys_time.min())
+	return fs::file_time_type::min();
+      return _S_from_sys(sys_time);
+    }
+  };
+}
+
 #ifdef NEED_DO_COPY_FILE
 bool
 fs::do_copy_file(const path::value_type* from, const path::value_type* to,
@@ -348,10 +367,10 @@ fs::do_copy_file(const path::value_type* from, const path::value_type* to,
 	}
       else if (options.update)
 	{
-	  const auto from_mtime = file_time(*from_st, ec);
+	  const auto from_mtime = internal_file_clock::from_stat(*from_st, ec);
 	  if (ec)
 	    return false;
-	  if ((from_mtime <= file_time(*to_st, ec)) || ec)
+	  if ((from_mtime <= internal_file_clock::from_stat(*to_st, ec)) || ec)
 	    return false;
 	}
       else if (!options.overwrite)
@@ -1122,7 +1141,10 @@ fs::last_write_time(const path& p)
 fs::file_time_type
 fs::last_write_time(const path& p, error_code& ec) noexcept
 {
-  return do_stat(p, ec, [&ec](const auto& st) { return file_time(st, ec); },
+  return do_stat(p, ec,
+		 [&ec](const auto& st) {
+		     return internal_file_clock::from_stat(st, ec);
+		 },
 		 file_time_type::min());
 }
 
@@ -1139,7 +1161,7 @@ void
 fs::last_write_time(const path& p __attribute__((__unused__)),
 		    file_time_type new_time, error_code& ec) noexcept
 {
-  auto d = new_time.time_since_epoch();
+  auto d = internal_file_clock::_S_to_sys(new_time).time_since_epoch();
   auto s = chrono::duration_cast<chrono::seconds>(d);
 #if _GLIBCXX_USE_UTIMENSAT
   auto ns = chrono::duration_cast<chrono::nanoseconds>(d - s);
