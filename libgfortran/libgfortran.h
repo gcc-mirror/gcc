@@ -202,7 +202,7 @@ extern int __mingw_snprintf (char *, size_t, const char *, ...)
 # define iexport(x)		iexport1(x, IPREFIX(x))
 # define iexport1(x,y)		iexport2(x,y)
 # define iexport2(x,y) \
-	extern __typeof(x) PREFIX(x) __attribute__((__alias__(#y)))
+  extern __typeof(x) PREFIX(x) __attribute__((__alias__(#y), __copy__ (x)))
 #else
 # define export_proto(x)	sym_rename(x, PREFIX(x))
 # define export_proto_np(x)	extern char swallow_semicolon
