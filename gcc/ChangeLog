@@ -1,5 +1,15 @@
 2019-01-05  Jan Hubicka  <hubicka@ucw.cz>
 
+	* doc/invoke.texi (max-inline-insns-small): New parameters.
+	* ipa-inline.c (want_early_inline_function_p): simplify.
+	(want_inline_small_function_p): Fix pasto from previous patch;
+	use max-inline-insns-small bound.
+	* params.def (max-inline-insns-small): New param.
+	* ipa-fnsummary.c (analyze_function_body): Initialize time/size
+	variables correctly.
+
+2019-01-05  Jan Hubicka  <hubicka@ucw.cz>
+
 	* doc/invoke.texi: Document max-inline-insns-size,
 	uninlined-function-insns, uninlined-function-time,
 	uninlined-thunk-insns and uninlined-thunk-time.

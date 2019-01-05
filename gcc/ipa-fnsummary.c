@@ -1969,9 +1969,9 @@ fp_expression_p (gimple *stmt)
 static void
 analyze_function_body (struct cgraph_node *node, bool early)
 {
-  sreal time = 0;
+  sreal time = PARAM_VALUE (PARAM_UNINLINED_FUNCTION_TIME);
   /* Estimate static overhead for function prologue/epilogue and alignment. */
-  int size = 2;
+  int size = PARAM_VALUE (PARAM_UNINLINED_FUNCTION_INSNS);
   /* Benefits are scaled by probability of elimination that is in range
      <0,2>.  */
   basic_block bb;
