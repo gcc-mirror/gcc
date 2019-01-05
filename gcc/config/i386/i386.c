@@ -17240,18 +17240,6 @@ ix86_const_not_ok_for_debug_p (rtx x)
   if (SYMBOL_REF_P (x) && strcmp (XSTR (x, 0), GOT_SYMBOL_NAME) == 0)
     return true;
 
-  /* Reject UNSPECs within expressions.  We could accept symbol@gotoff
-     + literal_constant, but that would hardly come up in practice,
-     and it's not worth the trouble of having to reject that as an
-     operand to pretty much anything else.  */
-  if (UNARY_P (x)
-      && GET_CODE (XEXP (x, 0)) == UNSPEC)
-    return true;
-  if (BINARY_P (x)
-      && (GET_CODE (XEXP (x, 0)) == UNSPEC
-	  || GET_CODE (XEXP (x, 1)) == UNSPEC))
-    return true;
-
   return false;
 }
 
