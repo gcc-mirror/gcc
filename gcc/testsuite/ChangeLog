@@ -1,3 +1,7 @@
+2019-01-05  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	* g++.dg/ext/sync-4.C: Add dg-xfail-run-if for darwin.
+
 2019-01-04  Martin Sebor  <msebor@redhat.com>
 
 	PR c/88546
