@@ -1,3 +1,15 @@
+2019-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/88635
+	* dwarf2out.c (const_ok_for_output_1): Reject MINUS that contains
+	SYMBOL_REF, CODE_LABEL or UNSPEC in subexpressions of second argument.
+	Reject PLUS that contains SYMBOL_REF, CODE_LABEL or UNSPEC in
+	subexpressions of both operands.
+	(mem_loc_descriptor): Handle UNSPEC if target hook acks it and all the
+	subrtxes are CONSTANT_P.
+	* config/i386/i386.c (ix86_const_not_ok_for_debug_p): Revert
+	2018-11-09 changes.
+
 2019-01-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	* params.def (hot-bb-count-ws-permille): Set to 990.
