@@ -1,3 +1,17 @@
+2019-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_fwd.h (__file_clock): Define new clock.
+	(file_time_type): Redefine in terms of __file_clock.
+	* src/filesystem/ops-common.h (file_time): Add FIXME comment about
+	overflow.
+	* src/filesystem/std-ops.cc (is_set(perm_options, perm_options)): Give
+	internal linkage.
+	(internal_file_lock): New helper type for accessing __file_clock.
+	(do_copy_file): Use internal_file_lock to convert system time to
+	file_time_type.
+	(last_write_time(const path&, error_code&)): Likewise.
+	(last_write_time(const path&, file_time_type, error_code&)): Likewise.
+
 2019-01-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/abi/pre/gnu.ver (GLIBCXX_3.4.21): Make patterns less greedy

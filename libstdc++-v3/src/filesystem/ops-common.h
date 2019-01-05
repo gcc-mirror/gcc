@@ -158,6 +158,24 @@ namespace __gnu_posix
     nanoseconds ns{};
 #endif
 
+    // FIXME
+    // There are possible timespec values which will overflow
+    // chrono::system_clock::time_point but would not overflow
+    // __file_clock::time_point, due to its different epoch.
+    //
+    // By checking for overflow of the intermediate system_clock::duration
+    // type, we report an error for values which are actually representable
+    // in the file_time_type result type.
+    //
+    // Howard Hinnant's solution for this problem is to use
+    // duration<__int128>{s} + ns, which doesn't overflow.
+    // An alternative would be to do the epoch correction on s before
+    // the addition, and then go straight to file_time_type instead of
+    // going via chrono::system_clock::time_point.
+    //
+    // (This only applies to the C++17 Filesystem library, because for the
+    // Filesystem TS we don't have a distinct __file_clock, we just use the
+    // system clock for file timestamps).
     if (s >= (nanoseconds::max().count() / 1e9))
       {
 	ec = std::make_error_code(std::errc::value_too_large); // EOVERFLOW
