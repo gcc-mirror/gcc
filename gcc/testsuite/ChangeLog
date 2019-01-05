@@ -1,5 +1,10 @@
 2019-01-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/82564
+	PR target/88620
+	* gcc.dg/nested-func-12.c: New test.
+	* gcc.c-torture/compile/pr82564.c: New test.
+
 	PR debug/88635
 	* gcc.dg/debug/dwarf2/pr88635.c: New test.
 

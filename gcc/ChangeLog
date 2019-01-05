@@ -1,5 +1,10 @@
 2019-01-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/82564
+	PR target/88620
+	* expr.c (expand_assignment): For calls returning VLA structures
+	if to_rtx is not a MEM, force it into a stack temporary.
+
 	PR debug/88635
 	* dwarf2out.c (const_ok_for_output_1): Reject MINUS that contains
 	SYMBOL_REF, CODE_LABEL or UNSPEC in subexpressions of second argument.
