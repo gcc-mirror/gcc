@@ -523,7 +523,7 @@ can_inline_edge_by_limits_p (struct cgraph_edge *e, bool report,
 	       > opt_for_fn (caller->decl, optimize_size))
 	{
 	  int growth = estimate_edge_growth (e);
-	  if (growth > 0
+	  if (growth > PARAM_VALUE (PARAM_MAX_INLINE_INSNS_SIZE)
 	      && (!DECL_DECLARED_INLINE_P (callee->decl)
 		  && growth >= MAX (MAX_INLINE_INSNS_SINGLE,
 				    MAX_INLINE_INSNS_AUTO)))
@@ -635,7 +635,7 @@ want_early_inline_function_p (struct cgraph_edge *e)
       int growth = estimate_edge_growth (e);
       int n;
 
-      if (growth <= 0)
+      if (growth <= PARAM_VALUE (PARAM_MAX_INLINE_INSNS_SIZE))
 	;
       else if (!e->maybe_hot_p ()
 	       && growth > 0)
@@ -791,7 +791,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
       ipa_hints hints = estimate_edge_hints (e);
       int big_speedup = -1; /* compute this lazily */
 
-      if (growth <= 0)
+      if (growth <= PARAM_VALUE (PARAM_VALUE (PARAM_MAX_INLINE_INSNS_SIZE)))
 	;
       /* Apply MAX_INLINE_INSNS_SINGLE limit.  Do not do so when
 	 hints suggests that inlining given function is very profitable.  */
@@ -809,6 +809,8 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 	  want_inline = false;
 	}
       else if (!DECL_DECLARED_INLINE_P (callee->decl)
+	       && (in_lto_p
+		   && growth >= PARAM_VALUE (PARAM_EARLY_INLINING_INSNS))
 	       && !opt_for_fn (e->caller->decl, flag_inline_functions))
 	{
 	  /* growth_likely_positive is expensive, always test it last.  */

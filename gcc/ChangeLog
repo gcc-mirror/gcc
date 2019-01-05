@@ -1,5 +1,18 @@
 2019-01-05  Jan Hubicka  <hubicka@ucw.cz>
 
+	* doc/invoke.texi: Document max-inline-insns-size,
+	uninlined-function-insns, uninlined-function-time,
+	uninlined-thunk-insns and uninlined-thunk-time.
+	* params.def: Add max-inline-insns-size,
+	uninlined-function-insns, uninlined-function-time,
+	uninlined-thunk-insns and uninlined-thunk-time.
+	* ipa-fnsummary.c (compute_fn_summary, analyze_function_body): Use
+	new parameters.
+	* ipa-inline.c (can_inline_edge_by_limits_p,
+	want_inline_small_function_p): Use new parameters.
+
+2019-01-05  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-fnsummary.c (analyze_function_body): Fix accounting of time.
 
 2019-01-05  Jakub Jelinek  <jakub@redhat.com>

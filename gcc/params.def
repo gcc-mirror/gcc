@@ -83,6 +83,33 @@ DEFPARAM (PARAM_MAX_INLINE_INSNS_AUTO,
 	  "The maximum number of instructions when automatically inlining.",
 	  30, 0, 0)
 
+DEFPARAM (PARAM_MAX_INLINE_INSNS_SIZE,
+	  "max-inline-insns-size",
+	  "The maximum number of instructions when inlining for size.",
+	  0, 0, 0)
+
+DEFPARAM (PARAM_UNINLINED_FUNCTION_INSNS,
+	  "uninlined-function-insns",
+	  "Instruction accounted for function prologue, epilogue and other"
+	  " overhead.",
+	  2, 0, 0)
+
+DEFPARAM (PARAM_UNINLINED_FUNCTION_TIME,
+	  "uninlined-function-time",
+	  "Time accounted for function prologue, epilogue and other"
+	  " overhead.",
+	  0, 0, 0)
+
+DEFPARAM (PARAM_UNINLINED_FUNCTION_THUNK_INSNS,
+	  "uninlined-thunk-insns",
+	  "Instruction accounted for function thunk overhead.",
+	  2, 0, 0)
+
+DEFPARAM (PARAM_UNINLINED_FUNCTION_THUNK_TIME,
+	  "uninlined-thunk-time",
+	  "Time accounted for function thunk overhead.",
+	  2, 0, 0)
+
 DEFPARAM (PARAM_MAX_INLINE_INSNS_RECURSIVE,
 	  "max-inline-insns-recursive",
 	  "The maximum number of instructions inline function can grow to via recursive inlining.",
