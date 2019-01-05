@@ -87,7 +87,8 @@ typedef struct timespec __gthread_time_t;
 #  define __gthrw_pragma(pragma)
 # endif
 # define __gthrw2(name,name2,type) \
-  static __typeof(type) name __attribute__ ((__weakref__(#name2))); \
+  static __typeof(type) name \
+    __attribute__ ((__weakref__(#name2), __copy__ (type))); \
   __gthrw_pragma(weak type)
 # define __gthrw_(name) __gthrw_ ## name
 #else

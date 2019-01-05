@@ -2461,6 +2461,12 @@ handle_copy_attribute (tree *node, tree name, tree args,
 	      || is_attribute_p ("weakref", atname))
 	    continue;
 
+	  /* Attribute leaf only applies to extern functions.
+	     Avoid copying it to static ones.  */
+	  if (!TREE_PUBLIC (decl)
+	      && is_attribute_p ("leaf", atname))
+	    continue;
+
 	  tree atargs = TREE_VALUE (at);
 	  /* Create a copy of just the one attribute ar AT, including
 	     its argumentsm and add it to DECL.  */
@@ -2478,12 +2484,27 @@ handle_copy_attribute (tree *node, tree name, tree args,
       return NULL_TREE;
     }
 
+  /* A function declared with attribute nothrow has the attribute
+     attached to it, but a C++ throw() function does not.  */
+  if (TREE_NOTHROW (ref))
+    TREE_NOTHROW (decl) = true;
+
+  /* Similarly, a function declared with attribute noreturn has it
+     attached on to it, but a C11 _Noreturn function does not.  */
   tree reftype = ref;
+  if (DECL_P (ref)
+      && TREE_THIS_VOLATILE (ref)
+      && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (reftype)))
+    TREE_THIS_VOLATILE (decl) = true;
+
   if (DECL_P (ref) || EXPR_P (ref))
     reftype = TREE_TYPE (ref);
 
   if (POINTER_TYPE_P (reftype))
     reftype = TREE_TYPE (reftype);
+
+  if (!TYPE_P (reftype))
+    return NULL_TREE;
 
   tree attrs = TYPE_ATTRIBUTES (reftype);
 
@@ -4193,6 +4214,15 @@ has_attribute (location_t atloc, tree t, tree attr, tree (*convert)(tree))
 	    {
 	      if (expr && DECL_P (expr))
 		found_match = TREE_READONLY (expr);
+	    }
+	  else if (!strcmp ("noreturn", namestr))
+	    {
+	      /* C11 _Noreturn sets the volatile bit without attaching
+		 an attribute to the decl.  */
+	      if (expr
+		  && DECL_P (expr)
+		  && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (expr)))
+		found_match = TREE_THIS_VOLATILE (expr);
 	    }
 	  else if (!strcmp ("pure", namestr))
 	    {
