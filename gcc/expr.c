@@ -5254,6 +5254,21 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	      emit_move_insn (XEXP (to_rtx, 1), read_complex_part (temp, true));
 	    }
 	}
+      /* For calls to functions returning variable length structures, if TO_RTX
+	 is not a MEM, go through a MEM because we must not create temporaries
+	 of the VLA type.  */
+      else if (!MEM_P (to_rtx)
+	       && TREE_CODE (from) == CALL_EXPR
+	       && COMPLETE_TYPE_P (TREE_TYPE (from))
+	       && TREE_CODE (TYPE_SIZE (TREE_TYPE (from))) != INTEGER_CST)
+	{
+	  rtx temp = assign_stack_temp (GET_MODE (to_rtx),
+					GET_MODE_SIZE (GET_MODE (to_rtx)));
+	  result = store_field (temp, bitsize, bitpos, bitregion_start,
+				bitregion_end, mode1, from, get_alias_set (to),
+				nontemporal, reversep);
+	  emit_move_insn (to_rtx, temp);
+	}
       else
 	{
 	  if (MEM_P (to_rtx))
