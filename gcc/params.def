@@ -403,7 +403,7 @@ DEFPARAM(HOT_BB_COUNT_WS_PERMILLE,
 	 "hot-bb-count-ws-permille",
          "A basic block profile count is considered hot if it contributes to "
          "the given permillage of the entire profiled execution (used in LTO mode).",
-	 999, 0, 1000)
+	 990, 0, 1000)
 DEFPARAM(HOT_BB_FREQUENCY_FRACTION,
 	 "hot-bb-frequency-fraction",
 	 "Select fraction of the maximal frequency of executions of basic block in function given basic block needs to have to be considered hot.",
