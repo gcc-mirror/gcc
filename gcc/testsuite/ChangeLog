@@ -1,3 +1,7 @@
+2019-01-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/ipcp-2.c: Update bounds.
+
 2019-01-05  Dominique d'Humieres  <dominiq@gcc.gnu.org>
 
 	* gcc.dg/plugin/plugindir1.c: Adjust dg-prune-output for Darwin.

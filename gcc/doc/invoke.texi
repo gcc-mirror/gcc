@@ -11007,6 +11007,10 @@ by the compiler are investigated.  To those functions, a different
 (more restrictive) limit compared to functions declared inline can
 be applied.
 
+@item max-inline-insns-small
+This is bound applied to calls which are considered relevant with
+@option{-finline-small-functions}.
+
 @item max-inline-insns-size
 This is bound applied to calls which are optimized for size. Small growth
 may be desirable to anticipate optimization oppurtunities exposed by inlining.

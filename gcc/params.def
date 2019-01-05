@@ -83,6 +83,11 @@ DEFPARAM (PARAM_MAX_INLINE_INSNS_AUTO,
 	  "The maximum number of instructions when automatically inlining.",
 	  30, 0, 0)
 
+DEFPARAM (PARAM_MAX_INLINE_INSNS_SMALL,
+	  "max-inline-insns-small",
+	  "The maximum number of instructions when automatically inlining small functions.",
+	  0, 0, 0)
+
 DEFPARAM (PARAM_MAX_INLINE_INSNS_SIZE,
 	  "max-inline-insns-size",
 	  "The maximum number of instructions when inlining for size.",
