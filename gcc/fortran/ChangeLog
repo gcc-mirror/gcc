@@ -1,3 +1,16 @@
+2019-01-05  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/88009
+	* class.c (gfc_find_derived_vtab): Mark the _final component as
+	artificial.
+	(find_intrinsic_vtab): Ditto. Also add an extra check to avoid
+	dereferencing a null pointer and adjust indentation.
+	* resolve.c (resolve_fl_variable): Add extra check to avoid
+	dereferencing a null pointer. Move variable declarations to local scope.
+	(resolve_fl_procedure): Add extra check to avoid dereferencing a null
+	pointer.
+	* symbol.c (check_conflict): Suppress errors for artificial symbols.
+
 2019-01-01  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* parse.c (decode_statement):  Suppress "Unclassifiable statement"
