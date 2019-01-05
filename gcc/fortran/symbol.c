@@ -440,6 +440,9 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   const char *a1, *a2;
   int standard;
 
+  if (attr->artificial)
+    return true;
+
   if (where == NULL)
     where = &gfc_current_locus;
 
