@@ -2234,12 +2234,12 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		    {
 		      predicate ip = bb_predicate & predicate::not_inlined ();
 		      info->account_size_time (this_size * prob,
-					       (this_time * prob) / 2, ip,
+					       (final_time * prob) / 2, ip,
 					       p);
 		    }
 		  if (prob != 2)
 		    info->account_size_time (this_size * (2 - prob),
-					     (this_time * (2 - prob) / 2),
+					     (final_time * (2 - prob) / 2),
 					     bb_predicate,
 					     p);
 		}

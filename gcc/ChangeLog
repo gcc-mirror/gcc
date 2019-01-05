@@ -1,3 +1,7 @@
+2019-01-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-fnsummary.c (analyze_function_body): Fix accounting of time.
+
 2019-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/82564
