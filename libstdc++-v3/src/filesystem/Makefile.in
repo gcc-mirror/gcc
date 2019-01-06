@@ -151,9 +151,9 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 libstdc__fs_la_LIBADD =
 @ENABLE_DUAL_ABI_TRUE@am__objects_1 = cow-dir.lo cow-ops.lo \
 @ENABLE_DUAL_ABI_TRUE@	cow-path.lo cow-std-dir.lo \
-@ENABLE_DUAL_ABI_TRUE@	cow-std-ops.lo cow-std-path.lo
+@ENABLE_DUAL_ABI_TRUE@	cow-std-ops.lo
 am__objects_2 = dir.lo ops.lo path.lo std-dir.lo std-ops.lo \
-	std-path.lo $(am__objects_1)
+	$(am__objects_1)
 am_libstdc__fs_la_OBJECTS = $(am__objects_2)
 libstdc__fs_la_OBJECTS = $(am_libstdc__fs_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -444,8 +444,7 @@ headers =
 @ENABLE_DUAL_ABI_TRUE@	cow-ops.cc \
 @ENABLE_DUAL_ABI_TRUE@	cow-path.cc \
 @ENABLE_DUAL_ABI_TRUE@	cow-std-dir.cc \
-@ENABLE_DUAL_ABI_TRUE@	cow-std-ops.cc \
-@ENABLE_DUAL_ABI_TRUE@	cow-std-path.cc
+@ENABLE_DUAL_ABI_TRUE@	cow-std-ops.cc
 
 sources = \
 	dir.cc \
@@ -453,7 +452,6 @@ sources = \
 	path.cc \
 	std-dir.cc \
 	std-ops.cc \
-	std-path.cc \
 	${cxx11_abi_sources}
 
 

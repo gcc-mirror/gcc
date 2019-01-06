@@ -1,6 +1,5 @@
-// { dg-options "-lstdc++fs -std=gnu++17" }
+// { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
-// { dg-require-filesystem-ts "" }
 
 // Copyright (C) 2016-2019 Free Software Foundation, Inc.
 //

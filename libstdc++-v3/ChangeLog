@@ -1,5 +1,79 @@
 2019-01-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/86756
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4): Make various patterns for
+	typeinfo and vtables less greedy.
+	(GLIBCXX_3.4.26): Export symbols for std::filesystem::path.
+	* src/c++17/Makefile.am: Add fs_path.cc and cow-fs_path.cc.
+	* src/c++17/Makefile.in: Regenerate.
+	* src/c++17/cow-fs_path.cc: Move src/filesystem/cow-std-path.cc to
+	here, and change name of included file.
+	* src/c++17/fs_path.cc: Move src/filesystem/std-path.cc to here.
+	* src/filesystem/Makefile.am: Remove std-path.cc and cow-std-path.cc
+	from sources.
+	* src/filesystem/Makefile.in: Regenerate.
+	* src/filesystem/cow-std-path.cc: Move to src/c++17/cow-fs_path.cc.
+	* src/filesystem/std-path.cc: Move to src/c++17/fs_path.cc.
+	* testsuite/27_io/filesystem/path/append/path.cc: Remove -lstdc++fs
+	from dg-options and remove dg-require-filesystem-ts.
+	* testsuite/27_io/filesystem/path/append/source.cc: Likewise.
+	* testsuite/27_io/filesystem/path/assign/assign.cc: Likewise.
+	* testsuite/27_io/filesystem/path/assign/copy.cc: Likewise.
+	* testsuite/27_io/filesystem/path/compare/compare.cc: Likewise.
+	* testsuite/27_io/filesystem/path/compare/lwg2936.cc: Likewise.
+	* testsuite/27_io/filesystem/path/compare/path.cc: Likewise.
+	* testsuite/27_io/filesystem/path/compare/strings.cc: Likewise.
+	* testsuite/27_io/filesystem/path/concat/path.cc: Likewise.
+	* testsuite/27_io/filesystem/path/concat/strings.cc: Likewise.
+	* testsuite/27_io/filesystem/path/construct/80762.cc: Likewise.
+	* testsuite/27_io/filesystem/path/construct/copy.cc: Likewise.
+	* testsuite/27_io/filesystem/path/construct/default.cc: Likewise.
+	* testsuite/27_io/filesystem/path/construct/format.cc: Likewise.
+	* testsuite/27_io/filesystem/path/construct/locale.cc: Likewise.
+	* testsuite/27_io/filesystem/path/construct/range.cc: Likewise.
+	* testsuite/27_io/filesystem/path/construct/string_view.cc: Likewise.
+	* testsuite/27_io/filesystem/path/decompose/extension.cc: Likewise.
+	* testsuite/27_io/filesystem/path/decompose/filename.cc: Likewise.
+	* testsuite/27_io/filesystem/path/decompose/parent_path.cc: Likewise.
+	* testsuite/27_io/filesystem/path/decompose/relative_path.cc: Likewise.
+	* testsuite/27_io/filesystem/path/decompose/root_directory.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/decompose/root_name.cc: Likewise.
+	* testsuite/27_io/filesystem/path/decompose/root_path.cc: Likewise.
+	* testsuite/27_io/filesystem/path/decompose/stem.cc: Likewise.
+	* testsuite/27_io/filesystem/path/generation/normal.cc: Likewise.
+	* testsuite/27_io/filesystem/path/generation/normal2.cc: Likewise.
+	* testsuite/27_io/filesystem/path/generation/proximate.cc: Likewise.
+	* testsuite/27_io/filesystem/path/generation/relative.cc: Likewise.
+	* testsuite/27_io/filesystem/path/generic/generic_string.cc: Likewise.
+	* testsuite/27_io/filesystem/path/itr/components.cc: Likewise.
+	* testsuite/27_io/filesystem/path/itr/traversal.cc: Likewise.
+	* testsuite/27_io/filesystem/path/modifiers/clear.cc: Likewise.
+	* testsuite/27_io/filesystem/path/modifiers/make_preferred.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/modifiers/remove_filename.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/modifiers/replace_extension.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/modifiers/replace_filename.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/modifiers/swap.cc: Likewise.
+	* testsuite/27_io/filesystem/path/native/string.cc: Likewise.
+	* testsuite/27_io/filesystem/path/nonmember/append.cc: Likewise.
+	* testsuite/27_io/filesystem/path/nonmember/hash_value.cc: Likewise.
+	* testsuite/27_io/filesystem/path/query/empty.cc: Likewise.
+	* testsuite/27_io/filesystem/path/query/has_extension.cc: Likewise.
+	* testsuite/27_io/filesystem/path/query/has_filename.cc: Likewise.
+	* testsuite/27_io/filesystem/path/query/has_parent_path.cc: Likewise.
+	* testsuite/27_io/filesystem/path/query/has_relative_path.cc: Likewise.
+	* testsuite/27_io/filesystem/path/query/has_root_directory.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/query/has_root_name.cc: Likewise.
+	* testsuite/27_io/filesystem/path/query/has_root_path.cc: Likewise.
+	* testsuite/27_io/filesystem/path/query/has_stem.cc: Likewise.
+	* testsuite/27_io/filesystem/path/query/is_absolute.cc: Likewise.
+	* testsuite/27_io/filesystem/path/query/is_relative.cc: Likewise.
+
 	PR libstdc++/87431
 	* include/std/variant (_Variant_storage<true, _Types...>::_M_valid):
 	Check is_trivially_copyable instead of is_scalar.
