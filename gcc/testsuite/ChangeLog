@@ -1,3 +1,9 @@
+2019-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/88363
+	* c-c++-common/attributes-4.c (falloc_align_int128,
+	falloc_size_int128): Guard with #ifdef __SIZEOF_INT128__.
+
 2019-01-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/ipa/ipcp-2.c: Update bounds.

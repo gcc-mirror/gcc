@@ -26,7 +26,9 @@ ATTR (alloc_align (1)) void* falloc_align_wchar (wchar_t);
 /* Using an enum might make sense in an API that limits the alignments
    it accepts to just the set of the defined enumerators.   */
 ATTR (alloc_align (1)) void* falloc_align_enum (enum A);
+#ifdef __SIZEOF_INT128__
 ATTR (alloc_align (1)) void* falloc_align_int128 (__int128_t);
+#endif
 
 
 ATTR (alloc_align (1)) void* falloc_size_char (char);
@@ -34,7 +36,9 @@ ATTR (alloc_size (1)) void* falloc_size_char16 (char16_t);
 ATTR (alloc_size (1)) void* falloc_size_char32 (char32_t);
 ATTR (alloc_size (1)) void* falloc_size_wchar (wchar_t);
 ATTR (alloc_size (1)) void* falloc_size_enum (enum A);
+#ifdef __SIZEOF_INT128__
 ATTR (alloc_align (1)) void* falloc_size_int128 (__int128_t);
+#endif
 
 
 typedef struct { int i; } S;
