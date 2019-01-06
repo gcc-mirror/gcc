@@ -1173,7 +1173,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	    overall_growth += 256 * 256 - 256;
 	  denominator *= overall_growth;
         }
-      denominator *= inlined_time;
+      denominator *= ipa_fn_summaries->get (caller)->self_size + growth;
 
       badness = - numerator / denominator;
 
