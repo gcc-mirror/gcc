@@ -439,7 +439,7 @@ namespace __variant
       constexpr bool
       _M_valid() const noexcept
       {
-	if constexpr ((is_scalar_v<_Types> && ...))
+	if constexpr ((is_trivially_copyable_v<_Types> && ...))
 	  return true;
 	return this->_M_index != __index_type(variant_npos);
       }
@@ -1185,6 +1185,23 @@ namespace __variant
 	{
 	  static_assert(_Np < sizeof...(_Types),
 			"The index should be in [0, number of alternatives)");
+
+	  using type = variant_alternative_t<_Np, variant>;
+	  // If constructing the value can throw but move assigning it can't,
+	  // construct in a temporary and then move assign from it. This gives
+	  // the strong exception safety guarantee, ensuring we never become
+	  // valueless.
+	  if constexpr (is_trivially_copyable_v<type>
+	      && !is_nothrow_constructible_v<type, _Args...>)
+	    {
+	      // If move assignment cannot throw then we can provide the
+	      // strong exception safety guarantee, and never become valueless.
+	      variant __tmp(in_place_index<_Np>,
+			    std::forward<_Args>(__args)...);
+	      *this = std::move(__tmp);
+	      return std::get<_Np>(*this);
+	    }
+
 	  this->~variant();
 	  __try
 	    {
@@ -1208,6 +1225,20 @@ namespace __variant
 	{
 	  static_assert(_Np < sizeof...(_Types),
 			"The index should be in [0, number of alternatives)");
+
+	  using type = variant_alternative_t<_Np, variant>;
+	  if constexpr (is_trivially_copyable_v<type>
+	      && !is_nothrow_constructible_v<type, initializer_list<_Up>,
+					     _Args...>)
+	    {
+	      // If move assignment cannot throw then we can provide the
+	      // strong exception safety guarantee, and never become valueless.
+	      variant __tmp(in_place_index<_Np>, __il,
+			    std::forward<_Args>(__args)...);
+	      *this = std::move(__tmp);
+	      return std::get<_Np>(*this);
+	    }
+
 	  this->~variant();
 	  __try
 	    {

@@ -1,5 +1,18 @@
 2019-01-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/87431
+	* include/std/variant (_Variant_storage<true, _Types...>::_M_valid):
+	Check is_trivially_copyable instead of is_scalar.
+	(variant::emplace<N, Args>(Args&&...)): If construction of the new
+	contained value can throw and its type is trivially copyable then
+	construct into a temporary variant and move from it, to provide the
+	strong exception safety guarantee.
+	(variant::emplace<N, U, Args>(initializer_list<U>, Args&&...)):
+	Likewise.
+	* testsuite/20_util/variant/87431.cc: New test.
+	* testsuite/20_util/variant/run.cc: Adjust test so that throwing
+	conversion causes valueless state.
+
 	PR libstdc++/88607
 	* testsuite/17_intro/headers/c++1998/charset.cc: New test.
 	* testsuite/17_intro/headers/c++2011/charset.cc: New test.
