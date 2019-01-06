@@ -1,3 +1,11 @@
+2019-01-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/88658
+	* gfortran.h: Add macro gfc_real_4_kind
+	* simplify.c (simplify_min_max): Special case for the types of
+	AMAX0, AMIN0, MAX1 and MIN1, which actually change the types of
+	their arguments.
+
 2019-01-05  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/88009
