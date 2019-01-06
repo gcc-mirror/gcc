@@ -121,9 +121,10 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libc__17convenience_la_LIBADD =
-@ENABLE_DUAL_ABI_TRUE@am__objects_1 = cow-fs_path.lo
-am__objects_2 = fs_path.lo memory_resource.lo string-inst.lo \
-	$(am__objects_1)
+@ENABLE_DUAL_ABI_TRUE@am__objects_1 = cow-fs_dir.lo cow-fs_ops.lo \
+@ENABLE_DUAL_ABI_TRUE@	cow-fs_path.lo
+am__objects_2 = fs_dir.lo fs_ops.lo fs_path.lo memory_resource.lo \
+	string-inst.lo $(am__objects_1)
 @ENABLE_DUAL_ABI_TRUE@am__objects_3 = cow-string-inst.lo
 @ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_4 = $(am__objects_3)
 am_libc__17convenience_la_OBJECTS = $(am__objects_2) $(am__objects_4)
@@ -415,7 +416,11 @@ headers =
 @ENABLE_DUAL_ABI_FALSE@extra_string_inst_sources = 
 @ENABLE_DUAL_ABI_TRUE@extra_string_inst_sources = cow-string-inst.cc
 @ENABLE_DUAL_ABI_FALSE@extra_fs_sources = 
-@ENABLE_DUAL_ABI_TRUE@extra_fs_sources = cow-fs_path.cc
+@ENABLE_DUAL_ABI_TRUE@extra_fs_sources = \
+@ENABLE_DUAL_ABI_TRUE@	cow-fs_dir.cc \
+@ENABLE_DUAL_ABI_TRUE@	cow-fs_ops.cc \
+@ENABLE_DUAL_ABI_TRUE@	cow-fs_path.cc
+
 # XTEMPLATE_FLAGS =
 @ENABLE_EXTERN_TEMPLATE_FALSE@inst_sources = 
 
@@ -424,6 +429,8 @@ headers =
 @ENABLE_EXTERN_TEMPLATE_TRUE@	$(extra_string_inst_sources)
 
 sources = \
+	fs_dir.cc \
+	fs_ops.cc \
 	fs_path.cc \
 	memory_resource.cc \
 	string-inst.cc \

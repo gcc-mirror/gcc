@@ -1,4 +1,4 @@
-// Class filesystem::directory_entry etc. -*- C++ -*-
+// Filesystem operations -*- C++ -*-
 
 // Copyright (C) 2015-2019 Free Software Foundation, Inc.
 //
@@ -23,4 +23,4 @@
 // <http://www.gnu.org/licenses/>.
 
 #define _GLIBCXX_USE_CXX11_ABI 0
-#include "std-dir.cc"
+#include "fs_ops.cc"

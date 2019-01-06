@@ -29,7 +29,10 @@ headers =
 
 if ENABLE_DUAL_ABI
 extra_string_inst_sources = cow-string-inst.cc
-extra_fs_sources = cow-fs_path.cc
+extra_fs_sources = \
+	cow-fs_dir.cc \
+	cow-fs_ops.cc \
+	cow-fs_path.cc
 else
 extra_string_inst_sources =
 extra_fs_sources =
@@ -45,6 +48,8 @@ inst_sources =
 endif
 
 sources = \
+	fs_dir.cc \
+	fs_ops.cc \
 	fs_path.cc \
 	memory_resource.cc \
 	string-inst.cc \
