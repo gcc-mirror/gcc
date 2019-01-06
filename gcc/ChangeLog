@@ -1,5 +1,13 @@
 2019-01-03  Jan Hubicka  <hubicka@ucw.cz>
 	Backport from mainline
+	2019-01-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/88130
+	* varpool.c (varpool_node::ctor_useable_for_folding_p): Also return
+	false at WPA time when body was removed.
+
+2019-01-03  Jan Hubicka  <hubicka@ucw.cz>
+	Backport from mainline
 	2018-08-29  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/86517

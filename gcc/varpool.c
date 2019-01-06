@@ -333,14 +333,14 @@ varpool_node::ctor_useable_for_folding_p (void)
   if (TREE_THIS_VOLATILE (decl))
     return false;
 
+  /* Avoid attempts to load constructors that was not streamed.  */
+  if (in_lto_p && DECL_INITIAL (real_node->decl) == error_mark_node
+      && real_node->body_removed)
+    return false;
+
   /* If we do not have a constructor, we can't use it.  */
   if (DECL_INITIAL (real_node->decl) == error_mark_node
       && !real_node->lto_file_data)
-    return false;
-
-  /* Avoid attempts to load constructors that was not streamed.  */
-  if (flag_ltrans && DECL_INITIAL (real_node->decl) == error_mark_node
-      && real_node->body_removed)
     return false;
 
   /* Vtables are defined by their types and must match no matter of interposition
