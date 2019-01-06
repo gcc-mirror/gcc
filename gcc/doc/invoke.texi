@@ -9499,6 +9499,8 @@ DO I = 1, N
    D(I) = E(I) * F
 ENDDO
 @end smallexample
+This flag is enabled by default at @option{-O3}.
+It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -ftree-loop-distribute-patterns
 @opindex ftree-loop-distribute-patterns
@@ -9524,6 +9526,8 @@ DO I = 1, N
 ENDDO
 @end smallexample
 and the initialization loop is transformed into a call to memset zero.
+This flag is enabled by default at @option{-O3}.
+It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -floop-interchange
 @opindex floop-interchange
@@ -9544,12 +9548,14 @@ for (int i = 0; i < N; i++)
       c[i][j] = c[i][j] + a[i][k]*b[k][j];
 @end smallexample
 This flag is enabled by default at @option{-O3}.
+It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -floop-unroll-and-jam
 @opindex floop-unroll-and-jam
 Apply unroll and jam transformations on feasible loops.  In a loop
 nest this unrolls the outer loop by some factor and fuses the resulting
 multiple inner loops.  This flag is enabled by default at @option{-O3}.
+It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -ftree-loop-im
 @opindex ftree-loop-im
@@ -10804,6 +10810,8 @@ else
 
 This is particularly useful for assumed-shape arrays in Fortran where
 (for example) it allows better vectorization assuming contiguous accesses.
+This flag is enabled by default at @option{-O3}.
+It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -ffunction-sections
 @itemx -fdata-sections

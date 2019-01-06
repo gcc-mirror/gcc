@@ -1708,10 +1708,18 @@ enable_fdo_optimizations (struct gcc_options *opts,
     opts->x_flag_tree_loop_vectorize = value;
   if (!opts_set->x_flag_tree_slp_vectorize)
     opts->x_flag_tree_slp_vectorize = value;
+  if (!opts_set->x_flag_version_loops_for_strides)
+    opts->x_flag_version_loops_for_strides = value;
   if (!opts_set->x_flag_vect_cost_model)
     opts->x_flag_vect_cost_model = VECT_COST_MODEL_DYNAMIC;
   if (!opts_set->x_flag_tree_loop_distribute_patterns)
     opts->x_flag_tree_loop_distribute_patterns = value;
+  if (!opts_set->x_flag_loop_interchange)
+    opts->x_flag_loop_interchange = value;
+  if (!opts_set->x_flag_unroll_jam)
+    opts->x_flag_unroll_jam = value;
+  if (!opts_set->x_flag_tree_loop_distribution)
+    opts->x_flag_tree_loop_distribution = value;
 }
 
 /* -f{,no-}sanitize{,-recover}= suboptions.  */
