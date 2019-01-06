@@ -1,5 +1,14 @@
 2019-01-05  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR tree-opt/86020
+	Revert:
+	2017-05-22  Jan Hubicka  <hubicka@ucw.cz>
+	
+        * ipa-inline.c (edge_badness): Use inlined_time instead of
+        inline_summaries->get.
+
+2019-01-05  Jan Hubicka  <hubicka@ucw.cz>
+
 	* opts.c (enable_fdo_optimizations): Enable
 	version-loops-for-strides, loop-interchange, unrol-and-jam
 	and tree-loop-distribution.
