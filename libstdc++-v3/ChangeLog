@@ -1,3 +1,12 @@
+2019-01-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88607
+	* testsuite/17_intro/headers/c++1998/charset.cc: New test.
+	* testsuite/17_intro/headers/c++2011/charset.cc: New test.
+	* testsuite/17_intro/headers/c++2014/charset.cc: New test.
+	* testsuite/17_intro/headers/c++2017/charset.cc: New test.
+	* testsuite/17_intro/headers/c++2020/charset.cc: New test.
+
 2019-01-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/fs_fwd.h (__file_clock): Define new clock.
