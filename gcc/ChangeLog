@@ -1,5 +1,12 @@
 2019-01-05  Jan Hubicka  <hubicka@ucw.cz>
 
+	* opts.c (enable_fdo_optimizations): Enable
+	version-loops-for-strides, loop-interchange, unrol-and-jam
+	and tree-loop-distribution.
+	* invoke.texi: Document newly enabled options.
+
+2019-01-05  Jan Hubicka  <hubicka@ucw.cz>
+
 	* doc/invoke.texi (max-inline-insns-small): New parameters.
 	* ipa-inline.c (want_early_inline_function_p): simplify.
 	(want_inline_small_function_p): Fix pasto from previous patch;
