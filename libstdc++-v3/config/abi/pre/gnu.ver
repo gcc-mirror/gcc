@@ -2167,6 +2167,58 @@ GLIBCXX_3.4.26 {
     _ZNSt10filesystem7__cxx114pathpLERKS1_;
     _ZT[IV]NSt10filesystem7__cxx1116filesystem_errorE;
 
+    _ZNSt10filesystem10equivalent*;
+    _ZNSt10filesystem10remove_all*;
+    _ZNSt10filesystem11permissions*;
+    _ZNSt10filesystem12current_path*;
+    _ZNSt10filesystem12read_symlink*;
+    _ZNSt10filesystem14create_symlink*;
+    _ZNSt10filesystem14symlink_status*;
+    _ZNSt10filesystem15last_write_time*;
+    _ZNSt10filesystem16create_directory*;
+    _ZNSt10filesystem16create_hard_link*;
+    _ZNSt10filesystem16weakly_canonical*;
+    _ZNSt10filesystem18create_directories*;
+    _ZNSt10filesystem19temp_directory_path*;
+    _ZNSt10filesystem24create_directory_symlink*;
+    _ZNSt10filesystem4copy*;
+    _ZNSt10filesystem5space*;
+    _ZNSt10filesystem6remove*;
+    _ZNSt10filesystem6status*;
+    _ZNSt10filesystem8absolute*;
+    _ZNSt10filesystem8is_empty*;
+    _ZNSt10filesystem8relative*;
+    _ZNSt10filesystem9canonical*;
+    _ZNSt10filesystem9copy_file*;
+    _ZNSt10filesystem9file_size*;
+    _ZNSt10filesystem9proximate*;
+
+    _ZNKSt10filesystem18directory_iteratordeEv;
+    _ZNKSt10filesystem28recursive_directory_iterator5depthEv;
+    _ZNKSt10filesystem28recursive_directory_iteratordeEv;
+    _ZNSt10filesystem18directory_iteratorC[12]ERKNS_4pathENS_17directory_optionsEPSt10error_code;
+    _ZNSt10filesystem18directory_iteratorppEv;
+    _ZNSt10filesystem28recursive_directory_iterator3popERSt10error_code;
+    _ZNSt10filesystem28recursive_directory_iterator3popEv;
+    _ZNSt10filesystem28recursive_directory_iterator9incrementERSt10error_code;
+    _ZNSt10filesystem28recursive_directory_iteratorC[12]ERKNS_4pathENS_17directory_optionsEPSt10error_code;
+    _ZNSt10filesystem28recursive_directory_iteratorD[12]Ev;
+    _ZNSt10filesystem28recursive_directory_iteratoraSEOS0_;
+    _ZNSt10filesystem28recursive_directory_iteratorppEv;
+
+    _ZNKSt10filesystem7__cxx1118directory_iteratordeEv;
+    _ZNKSt10filesystem7__cxx1128recursive_directory_iterator5depthEv;
+    _ZNKSt10filesystem7__cxx1128recursive_directory_iteratordeEv;
+    _ZNSt10filesystem7__cxx1118directory_iteratorC[12]ERKNS0_4pathENS_17directory_optionsEPSt10error_code;
+    _ZNSt10filesystem7__cxx1118directory_iteratorppEv;
+    _ZNSt10filesystem7__cxx1128recursive_directory_iterator3popERSt10error_code;
+    _ZNSt10filesystem7__cxx1128recursive_directory_iterator3popEv;
+    _ZNSt10filesystem7__cxx1128recursive_directory_iterator9incrementERSt10error_code;
+    _ZNSt10filesystem7__cxx1128recursive_directory_iteratorC[12]ERKNS0_4pathENS_17directory_optionsEPSt10error_code;
+    _ZNSt10filesystem7__cxx1128recursive_directory_iteratorD[12]Ev;
+    _ZNSt10filesystem7__cxx1128recursive_directory_iteratoraSEOS1_;
+    _ZNSt10filesystem7__cxx1128recursive_directory_iteratorppEv;
+
 } GLIBCXX_3.4.25;
 
 # Symbols in the support library (libsupc++) have their own tag.

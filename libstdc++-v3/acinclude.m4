@@ -4452,6 +4452,40 @@ dnl
     fi
     AC_MSG_RESULT($glibcxx_cv_utimensat)
 dnl
+    AC_MSG_CHECKING([for utime])
+    AC_CACHE_VAL(glibcxx_cv_utime, [dnl
+      GCC_TRY_COMPILE_OR_LINK(
+        [
+          #include <utime.h>
+        ],
+        [
+          struct utimbuf t = { 1, 1 };
+          int i = utime("path", &t);
+        ],
+        [glibcxx_cv_utime=yes],
+        [glibcxx_cv_utime=no])
+    ])
+    if test $glibcxx_cv_utime = yes; then
+      AC_DEFINE(_GLIBCXX_USE_UTIME, 1, [Define if utime is available in <utime.h>.])
+    fi
+    AC_MSG_RESULT($glibcxx_cv_utime)
+dnl
+    AC_MSG_CHECKING([for lstat])
+    AC_CACHE_VAL(glibcxx_cv_lstat, [dnl
+      GCC_TRY_COMPILE_OR_LINK(
+        [ #include <sys/stat.h> ],
+        [
+          struct stat st;
+          int i = lstat("path", &st);
+        ],
+        [glibcxx_cv_lstat=yes],
+        [glibcxx_cv_lstat=no])
+    ])
+    if test $glibcxx_cv_lstat = yes; then
+      AC_DEFINE(_GLIBCXX_USE_LSTAT, 1, [Define if lstat is available in <sys/stat.h>.])
+    fi
+    AC_MSG_RESULT($glibcxx_cv_lstat)
+dnl
     AC_MSG_CHECKING([for struct stat.st_mtim.tv_nsec])
     AC_CACHE_VAL(glibcxx_cv_st_mtim, [dnl
       GCC_TRY_COMPILE_OR_LINK(

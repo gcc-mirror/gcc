@@ -970,6 +970,9 @@
 /* Define if code specialized for long long should be used. */
 #undef _GLIBCXX_USE_LONG_LONG
 
+/* Define if lstat is available in <sys/stat.h>. */
+#undef _GLIBCXX_USE_LSTAT
+
 /* Defined if nanosleep is available. */
 #undef _GLIBCXX_USE_NANOSLEEP
 
@@ -1009,6 +1012,9 @@
 
 /* Define if obsolescent tmpnam is available in <stdio.h>. */
 #undef _GLIBCXX_USE_TMPNAM
+
+/* Define if utime is available in <utime.h>. */
+#undef _GLIBCXX_USE_UTIME
 
 /* Define if utimensat and UTIME_OMIT are available in <sys/stat.h> and
    AT_FDCWD in <fcntl.h>. */

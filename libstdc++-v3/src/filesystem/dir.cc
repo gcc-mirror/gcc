@@ -27,6 +27,11 @@
 #endif
 
 #include <experimental/filesystem>
+
+#ifndef _GLIBCXX_HAVE_DIRENT_H
+# error "the <dirent.h> header is needed to build the Filesystem TS"
+#endif
+
 #include <utility>
 #include <stack>
 #include <string.h>

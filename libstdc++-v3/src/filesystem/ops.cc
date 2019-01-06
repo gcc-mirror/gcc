@@ -24,6 +24,8 @@
 
 #ifndef _GLIBCXX_USE_CXX11_ABI
 # define _GLIBCXX_USE_CXX11_ABI 1
+# define NEED_DO_COPY_FILE
+# define NEED_DO_SPACE
 #endif
 
 #include <experimental/filesystem>
@@ -243,7 +245,6 @@ namespace
 
   using std::filesystem::is_not_found_errno;
   using std::filesystem::file_time;
-  using std::filesystem::do_copy_file;
 #endif // _GLIBCXX_HAVE_SYS_STAT_H
 
 } // namespace
@@ -1175,7 +1176,7 @@ fs::space(const path& p, error_code& ec) noexcept
 #else
   auto str = p.c_str();
 #endif
-  std::filesystem::do_space(str, info.capacity, info.free, info.available, ec);
+  fs::do_space(str, info.capacity, info.free, info.available, ec);
   return info;
 }
 

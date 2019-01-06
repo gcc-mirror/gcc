@@ -42,6 +42,14 @@
 # include <wchar.h>
 #endif
 
+#ifdef NEED_DO_COPY_FILE
+# include <filesystem>
+# include <ext/stdio_filebuf.h>
+# ifdef _GLIBCXX_USE_SENDFILE
+#  include <sys/sendfile.h> // sendfile
+# endif
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -108,25 +116,41 @@ namespace __gnu_posix
     return ret;
   }
   using char_type = wchar_t;
-#else // _GLIBCXX_FILESYSTEM_IS_WINDOWS
+#elif defined _GLIBCXX_HAVE_UNISTD_H
   using ::open;
   using ::close;
-#ifdef _GLIBCXX_HAVE_SYS_STAT_H
+# ifdef _GLIBCXX_HAVE_SYS_STAT_H
   typedef struct ::stat stat_type;
   using ::stat;
+#  ifdef _GLIBCXX_USE_LSTAT
   using ::lstat;
-#endif
+#  else
+  inline int lstat(const char* path, stat_type* buffer)
+  { return stat(path, buffer); }
+#  endif
+# endif
   using ::mode_t;
   using ::chmod;
   using ::mkdir;
   using ::getcwd;
   using ::chdir;
-#if !_GLIBCXX_USE_UTIMENSAT && _GLIBCXX_HAVE_UTIME_H
+# if !_GLIBCXX_USE_UTIMENSAT && _GLIBCXX_USE_UTIME
   using ::utimbuf;
   using ::utime;
-#endif
+# endif
   using ::rename;
   using ::truncate;
+  using char_type = char;
+#else // ! _GLIBCXX_FILESYSTEM_IS_WINDOWS && ! _GLIBCXX_HAVE_UNISTD_H
+  inline int open(const char*, int, ...) { errno = ENOTSUP; return -1; }
+  inline int close(int) { errno = ENOTSUP; return -1; }
+  using mode_t = int;
+  inline int chmod(const char*, mode_t) { errno = ENOTSUP; return -1; }
+  inline int mkdir(const char*, mode_t) { errno = ENOTSUP; return -1; }
+  inline char* getcwd(char*, size_t) { errno = ENOTSUP; return nullptr; }
+  inline int chdir(const char*) { errno = ENOTSUP; return -1; }
+  inline int rename(const char*, const char*) { errno = ENOTSUP; return -1; }
+  inline int truncate(const char*, long) { errno = ENOTSUP; return -1; }
   using char_type = char;
 #endif // _GLIBCXX_FILESYSTEM_IS_WINDOWS
 } // namespace __gnu_posix
@@ -190,18 +214,6 @@ namespace __gnu_posix
     bool skip, update, overwrite;
   };
 
-  bool
-  do_copy_file(const __gnu_posix::char_type* from,
-	       const __gnu_posix::char_type* to,
-	       copy_options_existing_file options,
-	       stat_type* from_st, stat_type* to_st,
-	       std::error_code& ec) noexcept;
-
-  void
-  do_space(const __gnu_posix::char_type* pathname,
-	   uintmax_t& capacity, uintmax_t& free, uintmax_t& available,
-	   std::error_code&);
-
 #endif // _GLIBCXX_HAVE_SYS_STAT_H
 
 } // namespace filesystem
@@ -211,6 +223,19 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
 
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H
   using std::filesystem::__gnu_posix::stat_type;
+  using std::filesystem::__gnu_posix::char_type;
+
+  bool
+  do_copy_file(const char_type* from, const char_type* to,
+	       std::filesystem::copy_options_existing_file options,
+	       stat_type* from_st, stat_type* to_st,
+	       std::error_code& ec) noexcept;
+
+  void
+  do_space(const char_type* pathname,
+	   uintmax_t& capacity, uintmax_t& free, uintmax_t& available,
+	   std::error_code&);
+
 
   inline file_type
   make_file_type(const stat_type& st) noexcept
@@ -257,6 +282,253 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
 	is_set(opt, copy_options::overwrite_existing)
     };
   }
+
+#ifdef NEED_DO_COPY_FILE
+  bool
+  do_copy_file(const char_type* from, const char_type* to,
+	       std::filesystem::copy_options_existing_file options,
+	       stat_type* from_st, stat_type* to_st,
+	       std::error_code& ec) noexcept
+  {
+    namespace fs = std::filesystem;
+    namespace posix = fs::__gnu_posix;
+
+    stat_type st1, st2;
+    file_status t, f;
+
+    if (to_st == nullptr)
+      {
+	if (posix::stat(to, &st1))
+	  {
+	    const int err = errno;
+	    if (!fs::is_not_found_errno(err))
+	      {
+		ec.assign(err, std::generic_category());
+		return false;
+	      }
+	  }
+	else
+	  to_st = &st1;
+      }
+    else if (to_st == from_st)
+      to_st = nullptr;
+
+    if (to_st == nullptr)
+      t = file_status{file_type::not_found};
+    else
+      t = make_file_status(*to_st);
+
+    if (from_st == nullptr)
+      {
+	if (posix::stat(from, &st2))
+	  {
+	    ec.assign(errno, std::generic_category());
+	    return false;
+	  }
+	else
+	  from_st = &st2;
+      }
+    f = make_file_status(*from_st);
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 2712. copy_file() has a number of unspecified error conditions
+    if (!is_regular_file(f))
+      {
+	ec = std::make_error_code(std::errc::not_supported);
+	return false;
+      }
+
+    if (exists(t))
+      {
+	if (!is_regular_file(t))
+	  {
+	    ec = std::make_error_code(std::errc::not_supported);
+	    return false;
+	  }
+
+	if (to_st->st_dev == from_st->st_dev
+	    && to_st->st_ino == from_st->st_ino)
+	  {
+	    ec = std::make_error_code(std::errc::file_exists);
+	    return false;
+	  }
+
+	if (options.skip)
+	  {
+	    ec.clear();
+	    return false;
+	  }
+	else if (options.update)
+	  {
+	    const auto from_mtime = fs::file_time(*from_st, ec);
+	    if (ec)
+	      return false;
+	    if ((from_mtime <= fs::file_time(*to_st, ec)) || ec)
+	      return false;
+	  }
+	else if (!options.overwrite)
+	  {
+	    ec = std::make_error_code(std::errc::file_exists);
+	    return false;
+	  }
+	else if (!is_regular_file(t))
+	  {
+	    ec = std::make_error_code(std::errc::not_supported);
+	    return false;
+	  }
+      }
+
+    struct CloseFD {
+      ~CloseFD() { if (fd != -1) posix::close(fd); }
+      bool close() { return posix::close(std::exchange(fd, -1)) == 0; }
+      int fd;
+    };
+
+    CloseFD in = { posix::open(from, O_RDONLY) };
+    if (in.fd == -1)
+      {
+	ec.assign(errno, std::generic_category());
+	return false;
+      }
+    int oflag = O_WRONLY|O_CREAT;
+    if (options.overwrite || options.update)
+      oflag |= O_TRUNC;
+    else
+      oflag |= O_EXCL;
+    CloseFD out = { posix::open(to, oflag, S_IWUSR) };
+    if (out.fd == -1)
+      {
+	if (errno == EEXIST && options.skip)
+	  ec.clear();
+	else
+	  ec.assign(errno, std::generic_category());
+	return false;
+      }
+
+#if defined _GLIBCXX_USE_FCHMOD && ! defined _GLIBCXX_FILESYSTEM_IS_WINDOWS
+    if (::fchmod(out.fd, from_st->st_mode))
+#elif defined _GLIBCXX_USE_FCHMODAT && ! defined _GLIBCXX_FILESYSTEM_IS_WINDOWS
+    if (::fchmodat(AT_FDCWD, to, from_st->st_mode, 0))
+#else
+    if (posix::chmod(to, from_st->st_mode))
+#endif
+      {
+	ec.assign(errno, std::generic_category());
+	return false;
+      }
+
+    size_t count = from_st->st_size;
+#if defined _GLIBCXX_USE_SENDFILE && ! defined _GLIBCXX_FILESYSTEM_IS_WINDOWS
+    off_t offset = 0;
+    ssize_t n = ::sendfile(out.fd, in.fd, &offset, count);
+    if (n < 0 && errno != ENOSYS && errno != EINVAL)
+      {
+	ec.assign(errno, std::generic_category());
+	return false;
+      }
+    if ((size_t)n == count)
+      {
+	if (!out.close() || !in.close())
+	  {
+	    ec.assign(errno, std::generic_category());
+	    return false;
+	  }
+	ec.clear();
+	return true;
+      }
+    else if (n > 0)
+      count -= n;
+#endif // _GLIBCXX_USE_SENDFILE
+
+    using std::ios;
+    __gnu_cxx::stdio_filebuf<char> sbin(in.fd, ios::in|ios::binary);
+    __gnu_cxx::stdio_filebuf<char> sbout(out.fd, ios::out|ios::binary);
+
+    if (sbin.is_open())
+      in.fd = -1;
+    if (sbout.is_open())
+      out.fd = -1;
+
+#ifdef _GLIBCXX_USE_SENDFILE
+    if (n != 0)
+      {
+	if (n < 0)
+	  n = 0;
+
+	const auto p1 = sbin.pubseekoff(n, ios::beg, ios::in);
+	const auto p2 = sbout.pubseekoff(n, ios::beg, ios::out);
+
+	const std::streampos errpos(std::streamoff(-1));
+	if (p1 == errpos || p2 == errpos)
+	  {
+	    ec = std::make_error_code(std::errc::io_error);
+	    return false;
+	  }
+      }
+#endif
+
+    if (count && !(std::ostream(&sbout) << &sbin))
+      {
+	ec = std::make_error_code(std::errc::io_error);
+	return false;
+      }
+    if (!sbout.close() || !sbin.close())
+      {
+	ec.assign(errno, std::generic_category());
+	return false;
+      }
+    ec.clear();
+    return true;
+  }
+#endif // NEED_DO_COPY_FILE
+
+#ifdef NEED_DO_SPACE
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+  void
+  do_space(const char_type* pathname,
+	   uintmax_t& capacity, uintmax_t& free, uintmax_t& available,
+	   std::error_code& ec)
+  {
+#ifdef _GLIBCXX_HAVE_SYS_STATVFS_H
+    struct ::statvfs f;
+    if (::statvfs(pathname, &f))
+	ec.assign(errno, std::generic_category());
+    else
+      {
+	if (f.f_frsize != (unsigned long)-1)
+	  {
+	    const uintmax_t fragment_size = f.f_frsize;
+	    const fsblkcnt_t unknown = -1;
+	    if (f.f_blocks != unknown)
+	      capacity = f.f_blocks * fragment_size;
+	    if (f.f_bfree != unknown)
+	      free = f.f_bfree * fragment_size;
+	    if (f.f_bavail != unknown)
+	      available = f.f_bavail * fragment_size;
+	  }
+	ec.clear();
+      }
+#elif _GLIBCXX_FILESYSTEM_IS_WINDOWS
+    ULARGE_INTEGER bytes_avail = {}, bytes_total = {}, bytes_free = {};
+    if (GetDiskFreeSpaceExW(pathname, &bytes_avail, &bytes_total, &bytes_free))
+      {
+	if (bytes_total.QuadPart != 0)
+	  capacity = bytes_total.QuadPart;
+	if (bytes_free.QuadPart != 0)
+	  free = bytes_free.QuadPart;
+	if (bytes_avail.QuadPart != 0)
+	  available = bytes_avail.QuadPart;
+	ec.clear();
+      }
+    else
+      ec.assign((int)GetLastError(), std::system_category());
+#else
+    ec = std::make_error_code(std::errc::not_supported);
+#endif
+  }
+#pragma GCC diagnostic pop
+#endif // NEED_DO_SPACE
+
 #endif // _GLIBCXX_HAVE_SYS_STAT_H
 
 _GLIBCXX_END_NAMESPACE_FILESYSTEM
