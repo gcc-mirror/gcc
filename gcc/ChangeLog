@@ -1,4 +1,14 @@
+2019-01-03  Jan Hubicka  <hubicka@ucw.cz>
+	Backport from mainline
+	2018-08-29  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/86517
+	PR lto/88185
+	* lto-opts.c (lto_write_options): Always stream PIC/PIE mode.
+	* lto-wrapper.c (merge_and_complain): Fix merging of PIC/PIE.
+
 2019-01-04  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
 	Backport from mainline
 	2018-11-28  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
