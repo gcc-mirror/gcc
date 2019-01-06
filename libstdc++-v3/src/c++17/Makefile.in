@@ -121,10 +121,12 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libc__17convenience_la_LIBADD =
-am__objects_1 = memory_resource.lo string-inst.lo
-@ENABLE_DUAL_ABI_TRUE@am__objects_2 = cow-string-inst.lo
-@ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_3 = $(am__objects_2)
-am_libc__17convenience_la_OBJECTS = $(am__objects_1) $(am__objects_3)
+@ENABLE_DUAL_ABI_TRUE@am__objects_1 = cow-fs_path.lo
+am__objects_2 = fs_path.lo memory_resource.lo string-inst.lo \
+	$(am__objects_1)
+@ENABLE_DUAL_ABI_TRUE@am__objects_3 = cow-string-inst.lo
+@ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_4 = $(am__objects_3)
+am_libc__17convenience_la_OBJECTS = $(am__objects_2) $(am__objects_4)
 libc__17convenience_la_OBJECTS = $(am_libc__17convenience_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -410,18 +412,22 @@ AM_CPPFLAGS = $(GLIBCXX_INCLUDES) $(CPPFLAGS)
 # Convenience library for C++17 runtime.
 noinst_LTLIBRARIES = libc++17convenience.la
 headers = 
-sources = \
-	memory_resource.cc \
-	string-inst.cc
-
 @ENABLE_DUAL_ABI_FALSE@extra_string_inst_sources = 
 @ENABLE_DUAL_ABI_TRUE@extra_string_inst_sources = cow-string-inst.cc
+@ENABLE_DUAL_ABI_FALSE@extra_fs_sources = 
+@ENABLE_DUAL_ABI_TRUE@extra_fs_sources = cow-fs_path.cc
 # XTEMPLATE_FLAGS =
 @ENABLE_EXTERN_TEMPLATE_FALSE@inst_sources = 
 
 # XTEMPLATE_FLAGS = -fno-implicit-templates
 @ENABLE_EXTERN_TEMPLATE_TRUE@inst_sources = \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	$(extra_string_inst_sources)
+
+sources = \
+	fs_path.cc \
+	memory_resource.cc \
+	string-inst.cc \
+	$(extra_fs_sources)
 
 libc__17convenience_la_SOURCES = $(sources)  $(inst_sources)
 
@@ -434,7 +440,8 @@ AM_CXXFLAGS = \
 	-std=gnu++17 \
 	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
 	$(XTEMPLATE_FLAGS) $(VTV_CXXFLAGS) \
-	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS)
+	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS) \
+	-fimplicit-templates
 
 AM_MAKEFLAGS = \
 	"gxx_include_dir=$(gxx_include_dir)"
@@ -731,11 +738,6 @@ uninstall-am:
 
 
 vpath % $(top_srcdir)/src/c++17
-
-memory_resource.lo: memory_resource.cc
-	$(LTCXXCOMPILE) -fimplicit-templates -c $< -o $@
-memory_resource.o: memory_resource.cc
-	$(CXXCOMPILE) -fimplicit-templates -c $< -o $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

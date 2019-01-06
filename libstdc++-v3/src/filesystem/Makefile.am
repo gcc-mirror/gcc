@@ -32,8 +32,7 @@ cxx11_abi_sources = \
 	cow-ops.cc \
 	cow-path.cc \
 	cow-std-dir.cc \
-	cow-std-ops.cc \
-	cow-std-path.cc
+	cow-std-ops.cc
 else
 cxx11_abi_sources =
 endif
@@ -44,7 +43,6 @@ sources = \
 	path.cc \
 	std-dir.cc \
 	std-ops.cc \
-	std-path.cc \
 	${cxx11_abi_sources}
 
 # vpath % $(top_srcdir)/src/filesystem
