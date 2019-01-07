@@ -1,3 +1,13 @@
+2019-01-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/88598
+	* tree.h (initializer_each_zero_or_onep): Declare.
+	* tree.c (initializer_each_zero_or_onep): New function.
+	(signed_or_unsigned_type_for): Handle float types too.
+	(unsigned_type_for, signed_type_for): Update comments accordingly.
+	* match.pd: Fold x * { 0 or 1, 0 or 1, ...} to
+	x & { 0 or -1, 0 or -1, ... }.
+
 2019-01-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/install.texi: Replace references to x86_64-unknown-linux-gnu
