@@ -1,5 +1,35 @@
 2019-01-07  Tom de Vries  <tdevries@suse.de>
 
+	* config/nvptx/nvptx-protos.h (nvptx_output_red_partition): Declare.
+	* config/nvptx/nvptx.c (vector_red_size, vector_red_align,
+	vector_red_partition, vector_red_sym): New global variables.
+	(nvptx_option_override): Initialize vector_red_sym.
+	(nvptx_declare_function_name): Restore red_partition register.
+	(nvptx_file_end): Emit code to declare the vector reduction variables.
+	(nvptx_output_red_partition): New function.
+	(nvptx_expand_shared_addr): Add vector argument. Use it to handle
+	large vector reductions.
+	(enum nvptx_builtins): Add NVPTX_BUILTIN_VECTOR_ADDR.
+	(nvptx_init_builtins): Add VECTOR_ADDR.
+	(nvptx_expand_builtin): Update call to nvptx_expand_shared_addr.
+	Handle nvptx_expand_shared_addr.
+	(nvptx_get_shared_red_addr): Add vector argument and handle large
+	vectors.
+	(nvptx_goacc_reduction_setup): Add offload_attrs argument and handle
+	large vectors.
+	(nvptx_goacc_reduction_init): Likewise.
+	(nvptx_goacc_reduction_fini): Likewise.
+	(nvptx_goacc_reduction_teardown): Likewise.
+	(nvptx_goacc_reduction): Update calls to nvptx_goacc_reduction_{setup,
+	init,fini,teardown}.
+	(nvptx_init_axis_predicate): Initialize vector_red_partition.
+	(nvptx_set_current_function): Init vector_red_partition.
+	* config/nvptx/nvptx.md (UNSPECV_RED_PART): New unspecv.
+	(nvptx_red_partition): New insn.
+	* config/nvptx/nvptx.h (struct machine_function): Add red_partition.
+
+2019-01-07  Tom de Vries  <tdevries@suse.de>
+
 	PR target/85381
 	* config/nvptx/nvptx.c (nvptx_process_pars): Don't emit barriers for
 	empty loops.

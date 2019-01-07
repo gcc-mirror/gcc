@@ -68,6 +68,8 @@
 
    UNSPECV_SIMT_ENTER
    UNSPECV_SIMT_EXIT
+
+   UNSPECV_RED_PART
 ])
 
 (define_attr "subregs_ok" "false,true"
@@ -1507,4 +1509,14 @@
   [(unspec_volatile [(const_int 0)] UNSPECV_NOUNROLL)]
   ""
   "\\t.pragma \\\"nounroll\\\";"
+  [(set_attr "predicable" "false")])
+
+(define_insn "nvptx_red_partition"
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=R")
+	(unspec_volatile [(match_operand:DI 1 "const_int_operand")]
+	 UNSPECV_RED_PART))]
+  ""
+  {
+    return nvptx_output_red_partition (operands[0], operands[1]);
+  }
   [(set_attr "predicable" "false")])

@@ -224,6 +224,8 @@ struct GTY(()) machine_function
   rtx bcast_partition; /* Register containing the size of each
 			  vector's partition of share-memory used to
 			  broadcast state.  */
+  rtx red_partition; /* Similar to bcast_partition, except for vector
+			reductions.  */
   rtx sync_bar; /* Synchronization barrier ID for vectors.  */
   rtx unisimt_master; /* 'Master lane index' for -muniform-simt.  */
   rtx unisimt_predicate; /* Predicate for -muniform-simt.  */
