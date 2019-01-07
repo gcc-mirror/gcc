@@ -59,6 +59,7 @@
 #include "builtins.h"
 #include "omp-general.h"
 #include "omp-low.h"
+#include "omp-offload.h"
 #include "gomp-constants.h"
 #include "dumpfile.h"
 #include "internal-fn.h"
@@ -5496,6 +5497,40 @@ nvptx_apply_dim_limits (int dims[])
     dims[GOMP_DIM_VECTOR] = PTX_WARP_SIZE;
 }
 
+/* Return true if FNDECL contains calls to vector-partitionable routines.  */
+
+static bool
+has_vector_partitionable_routine_calls_p (tree fndecl)
+{
+  if (!fndecl)
+    return false;
+
+  basic_block bb;
+  FOR_EACH_BB_FN (bb, DECL_STRUCT_FUNCTION (fndecl))
+    for (gimple_stmt_iterator i = gsi_start_bb (bb); !gsi_end_p (i);
+	 gsi_next_nondebug (&i))
+      {
+	gimple *stmt = gsi_stmt (i);
+	if (gimple_code (stmt) != GIMPLE_CALL)
+	  continue;
+
+	tree callee = gimple_call_fndecl (stmt);
+	if (!callee)
+	  continue;
+
+	tree attrs  = oacc_get_fn_attrib (callee);
+	if (attrs == NULL_TREE)
+	  return false;
+
+	int partition_level = oacc_fn_attrib_level (attrs);
+	bool seq_routine_p = partition_level == GOMP_DIM_MAX;
+	if (!seq_routine_p)
+	  return true;
+      }
+
+  return false;
+}
+
 /* As nvptx_goacc_validate_dims, but does not return bool to indicate whether
    DIMS has changed.  */
 
@@ -5611,6 +5646,16 @@ nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level)
     old_dims[i] = dims[i];
 
   const char *vector_reason = NULL;
+  if (offload_region_p && has_vector_partitionable_routine_calls_p (decl))
+    {
+      if (dims[GOMP_DIM_VECTOR] > PTX_WARP_SIZE)
+	{
+	  vector_reason = G_("using vector_length (%d) due to call to"
+			     " vector-partitionable routine, ignoring %d");
+	  dims[GOMP_DIM_VECTOR] = PTX_WARP_SIZE;
+	}
+    }
+
   if (dims[GOMP_DIM_VECTOR] == 0)
     {
       vector_reason = G_("using vector_length (%d), ignoring runtime setting");
