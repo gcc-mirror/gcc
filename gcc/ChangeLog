@@ -1,3 +1,15 @@
+2019-01-08  Alan Modra  <amodra@gmail.com>
+
+	PR target/88614
+	* genattrtab.c (max_attr_value, min_attr_value, or_attr_value):
+	Delete "unknownp" parameter.  Adjust callers.  Handle
+	CONST_INT, PLUS, MINUS, and MULT.
+	(attr_value_aligned): Renamed from or_attr_value.
+	(min_attr_value): Return INT_MIN for unhandled rtl case..
+	(min_fn): ..and translate to INT_MAX here.
+	(write_length_unit_log): Modify to cope without "unknown".
+	(write_attr_value): Handle IF_THEN_ELSE.
+
 2019-01-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-stmts.c (vectorizable_store): Don't use the dataref_offset
