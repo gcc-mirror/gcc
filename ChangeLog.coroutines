@@ -1,5 +1,12 @@
 2019-01-07  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/coroutine-builtins.def: Update copyright years.
+	* gcc/coroutine-passes.c: Likewise.
+	* gcc/cp/coroutines.cc: Likewise.
+	* gcc/testsuite/g++.dg/coroutines/coroutines.exp: Likewise.
+
+2019-01-07  Iain Sandoe  <iain@sandoe.co.uk>
+
 	Merge trunk r267619.
 
 2018-12-24  Iain Sandoe  <iain@sandoe.co.uk>
