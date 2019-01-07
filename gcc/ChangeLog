@@ -1,3 +1,8 @@
+2019-01-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-uncprop.c (ssa_equip_hash_traits): Remove in favor
+	of tree_operand_hash.
+
 2019-01-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/88598

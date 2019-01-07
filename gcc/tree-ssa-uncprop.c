@@ -268,19 +268,7 @@ associate_equivalences_with_edges (void)
    so with each value we have a list of SSA_NAMEs that have the
    same value.  */
 
-/* Traits for the hash_map to record the value to SSA name equivalences
-   mapping.  */
-struct ssa_equip_hash_traits : default_hash_traits <tree>
-{
-  static inline hashval_t hash (value_type value)
-    { return iterative_hash_expr (value, 0); }
-  static inline bool equal (value_type existing, value_type candidate)
-    { return operand_equal_p (existing, candidate, 0); }
-};
-
-typedef hash_map<tree, auto_vec<tree>,
-		 simple_hashmap_traits <ssa_equip_hash_traits,
-					auto_vec <tree> > > val_ssa_equiv_t;
+typedef hash_map<tree_operand_hash, auto_vec<tree> > val_ssa_equiv_t;
 
 /* Global hash table implementing a mapping from invariant values
    to a list of SSA_NAMEs which have the same value.  We might be
