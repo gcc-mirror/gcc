@@ -5376,25 +5376,37 @@ nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level)
       gcc_assert (dims[GOMP_DIM_GANG] >= -1);
     }
 
-  if (dims[GOMP_DIM_VECTOR] >= 0
-      && dims[GOMP_DIM_VECTOR] != PTX_WARP_SIZE)
+  int old_dims[GOMP_DIM_MAX];
+  unsigned int i;
+  for (i = 0; i < GOMP_DIM_MAX; ++i)
+    old_dims[i] = dims[i];
+
+  const char *vector_reason = NULL;
+  if (dims[GOMP_DIM_VECTOR] == 0)
     {
-      warning_at (decl ? DECL_SOURCE_LOCATION (decl) : UNKNOWN_LOCATION, 0,
-		  dims[GOMP_DIM_VECTOR]
-		  ? G_("using vector_length (%d), ignoring %d")
-		  : G_("using vector_length (%d), ignoring runtime setting"),
-		  PTX_DEFAULT_VECTOR_LENGTH, dims[GOMP_DIM_VECTOR]);
+      vector_reason = G_("using vector_length (%d), ignoring runtime setting");
       dims[GOMP_DIM_VECTOR] = PTX_DEFAULT_VECTOR_LENGTH;
     }
 
+  if (dims[GOMP_DIM_VECTOR] > 0
+      && dims[GOMP_DIM_VECTOR] != PTX_WARP_SIZE)
+    dims[GOMP_DIM_VECTOR] = PTX_DEFAULT_VECTOR_LENGTH;
+
   /* Check the num workers is not too large.  */
   if (dims[GOMP_DIM_WORKER] > PTX_WORKER_LENGTH)
-    {
-      warning_at (decl ? DECL_SOURCE_LOCATION (decl) : UNKNOWN_LOCATION, 0,
-		  "using num_workers (%d), ignoring %d",
-		  PTX_WORKER_LENGTH, dims[GOMP_DIM_WORKER]);
-      dims[GOMP_DIM_WORKER] = PTX_WORKER_LENGTH;
-    }
+    dims[GOMP_DIM_WORKER] = PTX_WORKER_LENGTH;
+
+  if (dims[GOMP_DIM_VECTOR] != old_dims[GOMP_DIM_VECTOR])
+    warning_at (decl ? DECL_SOURCE_LOCATION (decl) : UNKNOWN_LOCATION, 0,
+		vector_reason != NULL
+		? vector_reason
+		: G_("using vector_length (%d), ignoring %d"),
+		dims[GOMP_DIM_VECTOR], old_dims[GOMP_DIM_VECTOR]);
+
+  if (dims[GOMP_DIM_WORKER] != old_dims[GOMP_DIM_WORKER])
+    warning_at (decl ? DECL_SOURCE_LOCATION (decl) : UNKNOWN_LOCATION, 0,
+		G_("using num_workers (%d), ignoring %d"),
+		dims[GOMP_DIM_WORKER], old_dims[GOMP_DIM_WORKER]);
 
   if (oacc_default_dims_p)
     {

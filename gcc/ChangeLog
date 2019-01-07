@@ -1,5 +1,10 @@
 2019-01-07  Tom de Vries  <tdevries@suse.de>
 
+	* config/nvptx/nvptx.c (nvptx_goacc_validate_dims_1): Move warnings to
+	as late as possible.
+
+2019-01-07  Tom de Vries  <tdevries@suse.de>
+
 	* config/nvptx/nvptx.c (PTX_VECTOR_LENGTH): Remove.
 	(PTX_DEFAULT_VECTOR_LENGTH, PTX_MAX_VECTOR_LENGTH): Define.
 	(nvptx_goacc_validate_dims_1, nvptx_dim_limit)
