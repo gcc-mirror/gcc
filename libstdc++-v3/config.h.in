@@ -511,6 +511,9 @@
 /* Define to 1 if the target supports thread-local storage. */
 #undef HAVE_TLS
 
+/* Define if truncate is available in <unistd.h>. */
+#undef HAVE_TRUNCATE
+
 /* Define to 1 if you have the <uchar.h> header file. */
 #undef HAVE_UCHAR_H
 

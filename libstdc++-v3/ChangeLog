@@ -1,3 +1,19 @@
+2019-01-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Check for truncate.
+	* config.h.in: Regenerate.
+	* config/abi/pre/gnu.ver: Order patterns for filesystem operations
+	alphabetically and add missing entries for copy_symlink,
+	hard_link_count, rename, and resize_file.
+	* configure: Regenerate.
+	* src/c++17/fs_ops.cc (resize_file): Remove #if so posix::truncate is
+	used unconditionally.
+	* src/filesystem/ops-common.h (__gnu_posix::truncate)
+	[!_GLIBCXX_HAVE_TRUNCATE]: Provide fallback definition that only
+	supports truncating to zero length.
+	* testsuite/27_io/filesystem/operations/all.cc: New test.
+	* testsuite/27_io/filesystem/operations/resize_file.cc: New test.
+
 2019-01-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/86756
