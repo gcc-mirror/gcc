@@ -739,8 +739,8 @@ morph_fn_to_coro (tree orig)
 			     NULL, tf_warning_or_error);
   // init our actual var.
   r = build2 (INIT_EXPR, TREE_TYPE (gro), gro, TREE_OPERAND (r, 1));
-  r = build_stmt (fn_start, EXPR_STMT, r);
   r = maybe_cleanup_point_expr_void (r);
+  r = build_stmt (fn_start, EXPR_STMT, r);
   add_stmt (r);
 
   tree start_label = get_identifier ("coro.start");
