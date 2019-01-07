@@ -1,5 +1,10 @@
 2019-01-07  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/cp/decl.c (finish_function): Don't try to process exceptions
+	yet.
+
+2019-01-07  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/coroutine-builtins.def: Update copyright years.
 	* gcc/coroutine-passes.c: Likewise.
 	* gcc/cp/coroutines.cc: Likewise.

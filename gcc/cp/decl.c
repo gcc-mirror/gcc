@@ -15938,11 +15938,12 @@ finish_function (bool inline_p)
       fndecl = morph_fn_to_coro (fndecl);
       if (fndecl == NULL_TREE)
         return error_mark_node;
-
+#if NO_EH_YET
       if (use_eh_spec_block (fndecl))
 	finish_eh_spec_block (TYPE_RAISES_EXCEPTIONS
 			      (TREE_TYPE (fndecl)),
 			      current_eh_spec_block);
+#endif
     }
   else
   /* For a cloned function, we've already got all the code we need;
