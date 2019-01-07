@@ -1,5 +1,12 @@
 2019-01-07  Tom de Vries  <tdevries@suse.de>
 
+	* config/nvptx/nvptx.c (nvptx_welformed_vector_length_p)
+	(nvptx_apply_dim_limits): New function.
+	(nvptx_goacc_validate_dims_1): Allow PTX_MAX_VECTOR_LENGTH larger than
+	PTX_WARP_SIZE.
+
+2019-01-07  Tom de Vries  <tdevries@suse.de>
+
 	* config/nvptx/nvptx.c (nvptx_goacc_validate_dims_1): Move warnings to
 	as late as possible.
 
