@@ -261,10 +261,10 @@ In order to build GCC, the C standard library and headers must be present
 for all target variants for which target libraries will be built (and not
 only the variant of the host C++ compiler).
 
-This affects the popular @samp{x86_64-unknown-linux-gnu} platform (among
+This affects the popular @samp{x86_64-pc-linux-gnu} platform (among
 other multilib targets), for which 64-bit (@samp{x86_64}) and 32-bit
 (@samp{i386}) libc headers are usually packaged separately. If you do a
-build of a native compiler on @samp{x86_64-unknown-linux-gnu}, make sure you
+build of a native compiler on @samp{x86_64-pc-linux-gnu}, make sure you
 either have the 32-bit libc developer package properly installed (the exact
 name of the package depends on your distro) or you must build GCC as a
 64-bit only compiler by configuring with the option
@@ -2070,14 +2070,14 @@ host system architecture.  For the case that the linker has a
 different (but run-time compatible) architecture, these flags can be
 specified to build plugins that are compatible to the linker.  For
 example, if you are building GCC for a 64-bit x86_64
-(@samp{x86_64-unknown-linux-gnu}) host system, but have a 32-bit x86
+(@samp{x86_64-pc-linux-gnu}) host system, but have a 32-bit x86
 GNU/Linux (@samp{i686-pc-linux-gnu}) linker executable (which is
 executable on the former system), you can configure GCC as follows for
 getting compatible linker plugins:
 
 @smallexample
 % @var{srcdir}/configure \
-    --host=x86_64-unknown-linux-gnu \
+    --host=x86_64-pc-linux-gnu \
     --enable-linker-plugin-configure-flags=--host=i686-pc-linux-gnu \
     --enable-linker-plugin-flags='CC=gcc\ -m32\ -Wl,-rpath,[...]/i686-pc-linux-gnu/lib'
 @end smallexample
