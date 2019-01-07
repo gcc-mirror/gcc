@@ -4103,7 +4103,6 @@ get_initial_defs_for_reduction (slp_tree slp_node,
   unsigned int group_size = stmts.length ();
   unsigned int i;
   struct loop *loop;
-  auto_vec<tree, 16> permute_results;
 
   vector_type = STMT_VINFO_VECTYPE (stmt_vinfo);
 
@@ -4138,6 +4137,7 @@ get_initial_defs_for_reduction (slp_tree slp_node,
   bool constant_p = true;
   tree_vector_builder elts (vector_type, nunits, 1);
   elts.quick_grow (nunits);
+  gimple_seq ctor_seq = NULL;
   for (j = 0; j < nunits * number_of_vectors; ++j)
     {
       tree op;
@@ -4163,7 +4163,6 @@ get_initial_defs_for_reduction (slp_tree slp_node,
 
       if (number_of_places_left_in_vector == 0)
 	{
-	  gimple_seq ctor_seq = NULL;
 	  tree init;
 	  if (constant_p && !neutral_op
 	      ? multiple_p (TYPE_VECTOR_SUBPARTS (vector_type), nunits)
@@ -4189,16 +4188,11 @@ get_initial_defs_for_reduction (slp_tree slp_node,
 	  else
 	    {
 	      /* First time round, duplicate ELTS to fill the
-		 required number of vectors, then cherry pick the
-		 appropriate result for each iteration.  */
-	      if (vec_oprnds->is_empty ())
-		duplicate_and_interleave (&ctor_seq, vector_type, elts,
-					  number_of_vectors,
-					  permute_results);
-	      init = permute_results[number_of_vectors - j - 1];
+		 required number of vectors.  */
+	      duplicate_and_interleave (&ctor_seq, vector_type, elts,
+					number_of_vectors, *vec_oprnds);
+	      break;
 	    }
-	  if (ctor_seq != NULL)
-	    gsi_insert_seq_on_edge_immediate (pe, ctor_seq);
 	  vec_oprnds->quick_push (init);
 
 	  number_of_places_left_in_vector = nunits;
@@ -4207,6 +4201,8 @@ get_initial_defs_for_reduction (slp_tree slp_node,
 	  constant_p = true;
 	}
     }
+  if (ctor_seq != NULL)
+    gsi_insert_seq_on_edge_immediate (pe, ctor_seq);
 }
 
 
