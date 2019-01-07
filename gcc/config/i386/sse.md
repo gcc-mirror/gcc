@@ -8362,9 +8362,9 @@
 
 (define_expand "vec_extract<mode><ssehalfvecmodelower>"
   [(match_operand:<ssehalfvecmode> 0 "nonimmediate_operand")
-   (match_operand:V_512 1 "register_operand")
+   (match_operand:V_256_512 1 "register_operand")
    (match_operand 2 "const_0_to_1_operand")]
-  "TARGET_AVX512F"
+  "TARGET_AVX"
 {
   if (INTVAL (operands[2]))
     emit_insn (gen_vec_extract_hi_<mode> (operands[0], operands[1]));

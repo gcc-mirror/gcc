@@ -1,5 +1,9 @@
 2019-01-07  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (vec_extract<mode><ssehalfvecmodelower>): Use
+	V_256_512 iterator instead of V_512 and TARGET_AVX instead of
+	TARGET_AVX512F as condition.
+
 	PR debug/88723
 	* dwarf2out.c (const_ok_for_output_1): Remove redundant call to
 	const_not_ok_for_debug_p target hook.
