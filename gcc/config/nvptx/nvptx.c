@@ -5267,6 +5267,30 @@ nvptx_simt_vf ()
   return PTX_WARP_SIZE;
 }
 
+static bool
+nvptx_welformed_vector_length_p (int l)
+{
+  gcc_assert (l > 0);
+  return l % PTX_WARP_SIZE == 0;
+}
+
+static void
+nvptx_apply_dim_limits (int dims[])
+{
+  /* Check that the vector_length is not too large.  */
+  if (dims[GOMP_DIM_VECTOR] > PTX_MAX_VECTOR_LENGTH)
+    dims[GOMP_DIM_VECTOR] = PTX_MAX_VECTOR_LENGTH;
+
+  /* Check that the number of workers is not too large.  */
+  if (dims[GOMP_DIM_WORKER] > PTX_WORKER_LENGTH)
+    dims[GOMP_DIM_WORKER] = PTX_WORKER_LENGTH;
+
+  /* Ensure that num_worker * vector_length <= cta size.  */
+  if (dims[GOMP_DIM_WORKER] > 0 &&  dims[GOMP_DIM_VECTOR] > 0
+      && dims[GOMP_DIM_WORKER] * dims[GOMP_DIM_VECTOR] > PTX_CTA_SIZE)
+    dims[GOMP_DIM_VECTOR] = PTX_WARP_SIZE;
+}
+
 /* As nvptx_goacc_validate_dims, but does not return bool to indicate whether
    DIMS has changed.  */
 
@@ -5389,12 +5413,10 @@ nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level)
     }
 
   if (dims[GOMP_DIM_VECTOR] > 0
-      && dims[GOMP_DIM_VECTOR] != PTX_WARP_SIZE)
+      && !nvptx_welformed_vector_length_p (dims[GOMP_DIM_VECTOR]))
     dims[GOMP_DIM_VECTOR] = PTX_DEFAULT_VECTOR_LENGTH;
 
-  /* Check the num workers is not too large.  */
-  if (dims[GOMP_DIM_WORKER] > PTX_WORKER_LENGTH)
-    dims[GOMP_DIM_WORKER] = PTX_WORKER_LENGTH;
+  nvptx_apply_dim_limits (dims);
 
   if (dims[GOMP_DIM_VECTOR] != old_dims[GOMP_DIM_VECTOR])
     warning_at (decl ? DECL_SOURCE_LOCATION (decl) : UNKNOWN_LOCATION, 0,
@@ -5415,6 +5437,7 @@ nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level)
 	dims[GOMP_DIM_WORKER] = PTX_DEFAULT_RUNTIME_DIM;
       if (dims[GOMP_DIM_GANG] < 0)
 	dims[GOMP_DIM_GANG] = PTX_DEFAULT_RUNTIME_DIM;
+      nvptx_apply_dim_limits (dims);
     }
 }
 
