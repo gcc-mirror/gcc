@@ -1,3 +1,8 @@
+2019-01-07  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* gfortran.map (GFORTRAN_9): Make GFORTRAN_9 node depend on
+	GFORTRAN_8.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
