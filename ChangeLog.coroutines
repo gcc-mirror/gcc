@@ -1,5 +1,11 @@
 2019-01-07  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/coroutine-passes.c (execute_expand_coro_ifns): New.
+	(pass_coroutine_expand_ifns): Update comments. (execute): Call the
+	dummy implementation.
+
+2019-01-07  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/coroutine-builtins.def (BUILT_IN_CORO_PROMISE,
 	BUILT_IN_CORO_DONE, BUILT_IN_CORO_NOOP): Mark nothrow.
 	* gcc/internal-fn.c (CO_FRAME, CO_YIELD, CO_ACTOR): Likewise.

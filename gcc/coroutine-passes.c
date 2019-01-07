@@ -52,6 +52,43 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "cfgloop.h"
 
+/* Iterate the function exanding the IFNs.  */
+
+static unsigned int
+execute_expand_coro_ifns (void)
+{
+  basic_block bb;
+  gimple_stmt_iterator gsi;
+  FOR_EACH_BB_FN (bb, cfun)
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
+      {
+	gimple *stmt = gsi_stmt (gsi);
+	if (!is_gimple_call (stmt) || !gimple_call_internal_p (stmt))
+	  {
+	  gsi_next (&gsi);
+	  continue;
+	  }
+	switch (gimple_call_internal_fn (stmt))
+	  {
+	  case IFN_CO_FRAME:
+	  case IFN_CO_YIELD:
+	  case IFN_CO_ACTOR:
+	    fprintf (stderr, "saw coro IFN %s in %s\n",
+		     internal_fn_name (gimple_call_internal_fn (stmt)),
+		     IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
+	    //stmt = gimple_build_nop ();
+	    gsi_remove(&gsi, true);
+	    if (gsi_end_p (gsi))
+	      break;
+	    continue;
+	  default:
+	    gsi_next (&gsi);
+	    break;
+	  }
+      }
+  return 0;
+}
+
 namespace {
 
 const pass_data pass_data_coroutine_expand_ifns  =
@@ -77,13 +114,12 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_coroutines; };
 
-  virtual unsigned int execute (function *f)
+  virtual unsigned int execute (function *f ATTRIBUTE_UNUSED)
     {
-      fprintf (stderr, "called my pass for %s!\n", IDENTIFIER_POINTER (DECL_NAME (f->decl)));
-      return 0;
+      return execute_expand_coro_ifns ();
     }
 
-}; // class pass_oacc_device_lower
+}; // class pass_coroutine_expand_ifns
 
 } // anon namespace
 
