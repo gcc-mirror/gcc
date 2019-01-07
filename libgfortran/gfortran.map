@@ -1578,4 +1578,4 @@ GFORTRAN_9 {
   __ieee_arithmetic_MOD_ieee_support_subnormal_4;
   __ieee_arithmetic_MOD_ieee_support_subnormal_8;
   __ieee_arithmetic_MOD_ieee_support_subnormal_noarg;
-};
+} GFORTRAN_8;
