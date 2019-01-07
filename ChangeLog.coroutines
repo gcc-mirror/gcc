@@ -1,5 +1,13 @@
 2019-01-07  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/coroutine-passes.c (lower_coro_builtin,
+	execute_lower_coro_builtins, pass_data_coroutine_lower_builtins,
+	gate, execute): New.
+	* gcc/passes.def: Add pass_coroutine_lower_builtins.
+	* gcc/tree-pass.h (make_pass_coroutine_lower_builtins): New.
+
+2019-01-07  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/coroutine-passes.c (execute_expand_coro_ifns): New.
 	(pass_coroutine_expand_ifns): Update comments. (execute): Call the
 	dummy implementation.
