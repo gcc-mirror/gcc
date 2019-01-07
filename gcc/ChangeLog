@@ -1,5 +1,23 @@
 2019-01-07  Tom de Vries  <tdevries@suse.de>
 
+	* config/nvptx/nvptx.c (oacc_bcast_partition): Declare.
+	(nvptx_option_override): Init oacc_bcast_partition.
+	(nvptx_init_oacc_workers): New function.
+	(nvptx_declare_function_name): Call nvptx_init_oacc_workers.
+	(nvptx_needs_shared_bcast): New function.
+	(nvptx_find_par): Generalize to enable vectors to use shared-memory
+	to propagate state.
+	(nvptx_shared_propagate): Initialize vector bcast partition and
+	synchronization state.
+	(nvptx_single):  Generalize to enable vectors to use shared-memory
+	to propagate state.
+	(nvptx_process_pars): Likewise.
+	(nvptx_set_current_function): Initialize oacc_broadcast_partition.
+	* config/nvptx/nvptx.h (struct machine_function): Add
+	bcast_partition and sync_bar members.
+
+2019-01-07  Tom de Vries  <tdevries@suse.de>
+
 	* config/nvptx/nvptx.c (nvptx_welformed_vector_length_p)
 	(nvptx_apply_dim_limits): New function.
 	(nvptx_goacc_validate_dims_1): Allow PTX_MAX_VECTOR_LENGTH larger than
