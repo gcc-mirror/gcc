@@ -1,5 +1,11 @@
 2019-01-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/88676
+	* gcc.dg/tree-ssa/pr88676.c: New test.
+	* gcc.dg/pr88676.c: New test.
+	* gcc.dg/tree-ssa/pr15826.c: Just verify there is no goto,
+	allow &.
+
 	PR sanitizer/88619
 	* c-c++-common/asan/pr88619.c: New test.
 

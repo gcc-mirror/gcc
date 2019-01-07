@@ -1,5 +1,9 @@
 2019-01-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/88676
+	* tree-ssa-phiopt.c (two_value_replacement): New function.
+	(tree_ssa_phiopt_worker): Call it.
+
 	PR sanitizer/88619
 	* cfgexpand.c (expand_stack_vars): Only align prev_offset to
 	ASAN_MIN_RED_ZONE_SIZE, not to maximum of that and alignb.

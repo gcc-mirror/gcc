@@ -48,6 +48,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "case-cfn-macros.h"
 
 static unsigned int tree_ssa_phiopt_worker (bool, bool, bool);
+static bool two_value_replacement (basic_block, basic_block, edge, gphi *,
+				   tree, tree);
 static bool conditional_replacement (basic_block, basic_block,
 				     edge, edge, gphi *, tree, tree);
 static gphi *factor_out_conditional_conversion (edge, edge, gphi *, tree, tree,
@@ -332,8 +334,11 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 	    }
 
 	  /* Do the replacement of conditional if it can be done.  */
-	  if (!early_p
-	      && conditional_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
+	  if (two_value_replacement (bb, bb1, e2, phi, arg0, arg1))
+	    cfgchanged = true;
+	  else if (!early_p
+		   && conditional_replacement (bb, bb1, e1, e2, phi,
+					       arg0, arg1))
 	    cfgchanged = true;
 	  else if (abs_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
 	    cfgchanged = true;
@@ -570,6 +575,142 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
   gsi = gsi_for_stmt (phi);
   gsi_remove (&gsi, true);
   return newphi;
+}
+
+/* Optimize
+   # x_5 in range [cst1, cst2] where cst2 = cst1 + 1
+   if (x_5 op cstN) # where op is == or != and N is 1 or 2
+     goto bb3;
+   else
+     goto bb4;
+   bb3:
+   bb4:
+   # r_6 = PHI<cst3(2), cst4(3)> # where cst3 == cst4 + 1 or cst4 == cst3 + 1
+
+   to r_6 = x_5 + (min (cst3, cst4) - cst1) or
+   r_6 = (min (cst3, cst4) + cst1) - x_5 depending on op, N and which
+   of cst3 and cst4 is smaller.  */
+
+static bool
+two_value_replacement (basic_block cond_bb, basic_block middle_bb,
+		       edge e1, gphi *phi, tree arg0, tree arg1)
+{
+  /* Only look for adjacent integer constants.  */
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+      || !INTEGRAL_TYPE_P (TREE_TYPE (arg1))
+      || TREE_CODE (arg0) != INTEGER_CST
+      || TREE_CODE (arg1) != INTEGER_CST
+      || (tree_int_cst_lt (arg0, arg1)
+	  ? wi::to_widest (arg0) + 1 != wi::to_widest (arg1)
+	  : wi::to_widest (arg1) + 1 != wi::to_widest (arg1)))
+    return false;
+
+  if (!empty_block_p (middle_bb))
+    return false;
+
+  gimple *stmt = last_stmt (cond_bb);
+  tree lhs = gimple_cond_lhs (stmt);
+  tree rhs = gimple_cond_rhs (stmt);
+
+  if (TREE_CODE (lhs) != SSA_NAME
+      || !INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+      || TREE_CODE (TREE_TYPE (lhs)) == BOOLEAN_TYPE
+      || TREE_CODE (rhs) != INTEGER_CST)
+    return false;
+
+  switch (gimple_cond_code (stmt))
+    {
+    case EQ_EXPR:
+    case NE_EXPR:
+      break;
+    default:
+      return false;
+    }
+
+  wide_int min, max;
+  if (get_range_info (lhs, &min, &max) != VR_RANGE
+      || min + 1 != max
+      || (wi::to_wide (rhs) != min
+	  && wi::to_wide (rhs) != max))
+    return false;
+
+  /* We need to know which is the true edge and which is the false
+     edge so that we know when to invert the condition below.  */
+  edge true_edge, false_edge;
+  extract_true_false_edges_from_block (cond_bb, &true_edge, &false_edge);
+  if ((gimple_cond_code (stmt) == EQ_EXPR)
+      ^ (wi::to_wide (rhs) == max)
+      ^ (e1 == false_edge))
+    std::swap (arg0, arg1);
+
+  tree type;
+  if (TYPE_PRECISION (TREE_TYPE (lhs)) == TYPE_PRECISION (TREE_TYPE (arg0)))
+    {
+      /* Avoid performing the arithmetics in bool type which has different
+	 semantics, otherwise prefer unsigned types from the two with
+	 the same precision.  */
+      if (TREE_CODE (TREE_TYPE (arg0)) == BOOLEAN_TYPE
+	  || !TYPE_UNSIGNED (TREE_TYPE (arg0)))
+	type = TREE_TYPE (lhs);
+      else
+	type = TREE_TYPE (arg0);
+    }
+  else if (TYPE_PRECISION (TREE_TYPE (lhs)) > TYPE_PRECISION (TREE_TYPE (arg0)))
+    type = TREE_TYPE (lhs);
+  else
+    type = TREE_TYPE (arg0);
+
+  min = wide_int::from (min, TYPE_PRECISION (type),
+			TYPE_SIGN (TREE_TYPE (lhs)));
+  wide_int a = wide_int::from (wi::to_wide (arg0), TYPE_PRECISION (type),
+			       TYPE_SIGN (TREE_TYPE (arg0)));
+  enum tree_code code;
+  wi::overflow_type ovf;
+  if (tree_int_cst_lt (arg0, arg1))
+    {
+      code = PLUS_EXPR;
+      a -= min;
+      if (!TYPE_UNSIGNED (type))
+	{
+	  /* lhs is known to be in range [min, min+1] and we want to add a
+	     to it.  Check if that operation can overflow for those 2 values
+	     and if yes, force unsigned type.  */
+	  wi::add (min + (wi::neg_p (a) ? 0 : 1), a, SIGNED, &ovf);
+	  if (ovf)
+	    type = unsigned_type_for (type);
+	}
+    }
+  else
+    {
+      code = MINUS_EXPR;
+      a += min;
+      if (!TYPE_UNSIGNED (type))
+	{
+	  /* lhs is known to be in range [min, min+1] and we want to subtract
+	     it from a.  Check if that operation can overflow for those 2
+	     values and if yes, force unsigned type.  */
+	  wi::sub (a, min + (wi::neg_p (min) ? 0 : 1), SIGNED, &ovf);
+	  if (ovf)
+	    type = unsigned_type_for (type);
+	}
+    }
+
+  tree arg = wide_int_to_tree (type, a);
+  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+  if (!useless_type_conversion_p (type, TREE_TYPE (lhs)))
+    lhs = gimplify_build1 (&gsi, NOP_EXPR, type, lhs);
+  tree new_rhs;
+  if (code == PLUS_EXPR)
+    new_rhs = gimplify_build2 (&gsi, PLUS_EXPR, type, lhs, arg);
+  else
+    new_rhs = gimplify_build2 (&gsi, MINUS_EXPR, type, arg, lhs);
+  if (!useless_type_conversion_p (TREE_TYPE (arg0), type))
+    new_rhs = gimplify_build1 (&gsi, NOP_EXPR, TREE_TYPE (arg0), new_rhs);
+
+  replace_phi_edge_with_variable (cond_bb, e1, phi, new_rhs);
+
+  /* Note that we optimized this PHI.  */
+  return true;
 }
 
 /*  The function conditional_replacement does the main work of doing the
