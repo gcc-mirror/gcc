@@ -1,3 +1,9 @@
+2019-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/88701
+	* c-decl.c (build_compound_literal): If not TREE_STATIC, only pushdecl
+	if current_function_decl is non-NULL.
+
 2019-01-07  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/88720
