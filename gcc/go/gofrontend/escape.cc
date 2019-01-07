@@ -1737,6 +1737,16 @@ Escape_analysis_assign::expression(Expression** pexpr)
       }
       break;
 
+    case Expression::EXPRESSION_SLICE_VALUE:
+      {
+	// Connect the pointer field to the slice value.
+	Node* slice_node = Node::make_node(*pexpr);
+	Node* ptr_node =
+	  Node::make_node((*pexpr)->slice_value_expression()->valmem());
+	this->assign(slice_node, ptr_node);
+      }
+      break;
+
     case Expression::EXPRESSION_HEAP:
       {
 	Node* pointer_node = Node::make_node(*pexpr);
@@ -2263,6 +2273,8 @@ Escape_analysis_assign::assign(Node* dst, Node* src)
 	  // DST = map[T]V{...}.
 	case Expression::EXPRESSION_STRUCT_CONSTRUCTION:
 	  // DST = T{...}.
+	case Expression::EXPRESSION_SLICE_VALUE:
+	  // DST = slice{ptr, len, cap}
 	case Expression::EXPRESSION_ALLOCATION:
 	  // DST = new(T).
 	case Expression::EXPRESSION_BOUND_METHOD:
