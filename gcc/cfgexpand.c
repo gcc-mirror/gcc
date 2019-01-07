@@ -1130,7 +1130,7 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 		  prev_offset = frame_offset.to_constant ();
 		}
 	      prev_offset = align_base (prev_offset,
-					MAX (alignb, ASAN_MIN_RED_ZONE_SIZE),
+					ASAN_MIN_RED_ZONE_SIZE,
 					!FRAME_GROWS_DOWNWARD);
 	      tree repr_decl = NULL_TREE;
 	      unsigned HOST_WIDE_INT size

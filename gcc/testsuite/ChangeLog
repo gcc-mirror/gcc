@@ -1,5 +1,8 @@
 2019-01-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/88619
+	* c-c++-common/asan/pr88619.c: New test.
+
 	PR c++/85052
 	* c-c++-common/builtin-convertvector-1.c: New test.
 	* c-c++-common/torture/builtin-convertvector-1.c: New test.
