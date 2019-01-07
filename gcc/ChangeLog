@@ -1,3 +1,11 @@
+2019-01-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/88567
+	* tree-vect-loop.c (get_initial_defs_for_reduction): Pass the
+	output vector directly to duplicate_and_interleave instead of
+	going through a temporary.  Postpone insertion of ctor_seq to
+	the end of the loop.
+
 2019-01-07  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/86891
