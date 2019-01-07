@@ -1,3 +1,11 @@
+2019-01-07  Tom de Vries  <tdevries@suse.de>
+
+	PR target/85486
+	* config/nvptx/nvptx.c (has_vector_partitionable_routine_calls_p): New
+	function.
+	(nvptx_goacc_validate_dims): Force vl32 if calling vector-partitionable
+	routines.
+
 2019-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (vec_extract<mode><ssehalfvecmodelower>): Use
