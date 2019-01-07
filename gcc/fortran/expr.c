@@ -5695,6 +5695,75 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
   return true;
 }
 
+/* Return true if the expression is guaranteed to be non-contiguous,
+   false if we cannot prove anything.  It is probably best to call
+   this after gfc_is_simply_contiguous.  If neither of them returns
+   true, we cannot say (at compile-time).  */
+
+bool
+gfc_is_not_contiguous (gfc_expr *array)
+{
+  int i;
+  gfc_array_ref *ar = NULL;
+  gfc_ref *ref;
+  bool previous_incomplete;
+
+  for (ref = array->ref; ref; ref = ref->next)
+    {
+      /* Array-ref shall be last ref.  */
+
+      if (ar)
+	return true;
+
+      if (ref->type == REF_ARRAY)
+	ar = &ref->u.ar;
+    }
+
+  if (ar == NULL || ar->type != AR_SECTION)
+    return false;
+
+  previous_incomplete = false;
+
+  /* Check if we can prove that the array is not contiguous.  */
+
+  for (i = 0; i < ar->dimen; i++)
+    {
+      mpz_t arr_size, ref_size;
+
+      if (gfc_ref_dimen_size (ar, i, &ref_size, NULL))
+	{
+	  if (gfc_dep_difference (ar->as->lower[i], ar->as->upper[i], &arr_size))
+	    {
+	      /* a(2:4,2:) is known to be non-contiguous, but
+		 a(2:4,i:i) can be contiguous.  */
+	      if (previous_incomplete && mpz_cmp_si (ref_size, 1) != 0)
+		{
+		  mpz_clear (arr_size);
+		  mpz_clear (ref_size);
+		  return true;
+		}
+	      else if (mpz_cmp (arr_size, ref_size) != 0)
+		previous_incomplete = true;
+
+	      mpz_clear (arr_size);
+	    }
+
+	  /* Check for a(::2), i.e. where the stride is not unity.
+	     This is only done if there is more than one element in
+	     the reference along this dimension.  */
+
+	  if (mpz_cmp_ui (ref_size, 1) > 0 && ar->type == AR_SECTION
+	      && ar->dimen_type[i] == DIMEN_RANGE
+	      && ar->stride[i] && ar->stride[i]->expr_type == EXPR_CONSTANT
+	      && mpz_cmp_si (ar->stride[i]->value.integer, 1) != 0)
+	    return true;
+
+	  mpz_clear (ref_size);
+	}
+    }
+  /* We didn't find anything definitive.  */
+  return false;
+}
 
 /* Build call to an intrinsic procedure.  The number of arguments has to be
    passed (rather than ending the list with a NULL value) because we may

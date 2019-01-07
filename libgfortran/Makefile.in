@@ -414,7 +414,7 @@ am__objects_54 = size_from_kind.lo $(am__objects_53)
 am__objects_57 = associated.lo abort.lo args.lo cshift0.lo eoshift0.lo \
 	eoshift2.lo erfc_scaled.lo extends_type_of.lo fnum.lo \
 	ierrno.lo ishftc.lo mvbits.lo move_alloc.lo pack_generic.lo \
-	selected_char_kind.lo size.lo spread_generic.lo \
+	selected_char_kind.lo size.lo is_contiguous.lo spread_generic.lo \
 	string_intrinsics.lo rand.lo random.lo reshape_generic.lo \
 	reshape_packed.lo selected_int_kind.lo selected_real_kind.lo \
 	unpack_generic.lo in_pack_generic.lo in_unpack_generic.lo \
@@ -760,6 +760,7 @@ gfor_helper_src = intrinsics/associated.c intrinsics/abort.c \
 	intrinsics/ierrno.c intrinsics/ishftc.c intrinsics/mvbits.c \
 	intrinsics/move_alloc.c intrinsics/pack_generic.c \
 	intrinsics/selected_char_kind.c intrinsics/size.c \
+	intrinsics/is_contiguous.c \
 	intrinsics/spread_generic.c intrinsics/string_intrinsics.c \
 	intrinsics/rand.c intrinsics/random.c \
 	intrinsics/reshape_generic.c intrinsics/reshape_packed.c \
@@ -2198,6 +2199,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/single.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/size.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/size_from_kind.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/is_contiguous.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sleep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spread_c10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spread_c16.Plo@am__quote@
@@ -6317,6 +6319,13 @@ size.lo: intrinsics/size.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='intrinsics/size.c' object='size.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o size.lo `test -f 'intrinsics/size.c' || echo '$(srcdir)/'`intrinsics/size.c
+
+is_contiguous.lo: intrinsics/is_contiguous.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT is_contiguous.lo -MD -MP -MF $(DEPDIR)/is_contiguous.Tpo -c -o is_contiguous.lo `test -f 'intrinsics/is_contiguous.c' || echo '$(srcdir)/'`intrinsics/is_contiguous.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/is_contiguous.Tpo $(DEPDIR)/is_contiguous.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='intrinsics/is_contiguous.c' object='is_contiguous.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o is_contiguous.lo `test -f 'intrinsics/is_contiguous.c' || echo '$(srcdir)/'`intrinsics/is_contiguous.c
 
 spread_generic.lo: intrinsics/spread_generic.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT spread_generic.lo -MD -MP -MF $(DEPDIR)/spread_generic.Tpo -c -o spread_generic.lo `test -f 'intrinsics/spread_generic.c' || echo '$(srcdir)/'`intrinsics/spread_generic.c

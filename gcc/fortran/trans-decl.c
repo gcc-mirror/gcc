@@ -213,6 +213,7 @@ tree gfor_fndecl_size1;
 tree gfor_fndecl_iargc;
 tree gfor_fndecl_kill;
 tree gfor_fndecl_kill_sub;
+tree gfor_fndecl_is_contiguous0;
 
 
 /* Intrinsic functions implemented in Fortran.  */
@@ -3498,6 +3499,12 @@ gfc_build_intrinsic_function_decls (void)
   gfor_fndecl_kill = gfc_build_library_function_decl (
 	get_identifier (PREFIX ("kill")), gfc_int4_type_node,
 	2, gfc_int4_type_node, gfc_int4_type_node);
+
+  gfor_fndecl_is_contiguous0 = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("is_contiguous0")), ".R",
+	gfc_int4_type_node, 1, pvoid_type_node);
+  DECL_PURE_P (gfor_fndecl_is_contiguous0) = 1;
+  TREE_NOTHROW (gfor_fndecl_is_contiguous0) = 1;
 }
 
 

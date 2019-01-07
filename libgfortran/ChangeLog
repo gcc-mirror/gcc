@@ -1,3 +1,14 @@
+2019-01-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	Harald Anlauf <anlauf@gmx.de>
+	Tobias Burnus <burnus@gcc.gnu.org>
+
+	PR fortran/45424
+	* Makefile.am: Add intrinsics/is_contiguous.c.
+	* Makefile.in: Regenerated.
+	* gfortran.map: Add _gfortran_is_contiguous0.
+	* intrinsics/is_contiguous.c: New file.
+	* libgfortran.h: Add prototype for is_contiguous0.
+
 2019-01-07  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* gfortran.map (GFORTRAN_9): Make GFORTRAN_9 node depend on

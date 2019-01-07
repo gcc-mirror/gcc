@@ -1518,6 +1518,7 @@ GFORTRAN_9 {
   _gfortran_findloc1_s4;
   _gfortran_findloc2_s1;
   _gfortran_findloc2_s4;
+  _gfortran_is_contiguous0;
   _gfortran_mfindloc0_c16;
   _gfortran_mfindloc0_c4;
   _gfortran_mfindloc0_c8;

@@ -1,3 +1,25 @@
+2019-01-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	Harald Anlauf <anlauf@gmx.de>
+	Tobias Burnus <burnus@gcc.gnu.org>
+
+	PR fortran/45424
+	* check.c (gfc_check_is_contiguous): New function.
+	* expr.c (gfc_is_not_contiguous): New function.
+	* gfortran.h (gfc_isym_id): Add GFC_ISYM_IS_CONTIGUOUS.
+	Add prototype for gfc_is_not_contiguous.
+	* intrinsic.c (do_ts29113_check): Add GFC_ISYM_IS_CONTIGUOUS.
+	(add_function): Add is_contiguous.
+	* intrinsic.h: Add prototypes for gfc_check_is_contiguous,
+	gfc_simplify_is_contiguous and gfc_resolve_is_contiguous.
+	* intrinsic.texi: Add IS_CONTIGUOUS.
+	* iresolve.c (gfc_resolve_is_contiguous): New function.
+	* simplify.c (gfc_simplify_is_contiguous): New function.
+	* trans-decl.c (gfor_fncecl_is_contiguous0): New variable.
+	(gfc_build_intrinsic_function_decl): Add it.
+	* trans-intrinsic.c (gfc_conv_intrinsic_is_contiguous): New
+	function.
+	(gfc_conv_intrinsic_function): Handle GFC_ISYM_IS_CONTIGUOUS.
+
 2019-01-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/88658
