@@ -82,7 +82,8 @@
 #define WORKAROUND_PTXJIT_BUG_3 1
 
 #define PTX_WARP_SIZE 32
-#define PTX_VECTOR_LENGTH 32
+#define PTX_DEFAULT_VECTOR_LENGTH PTX_WARP_SIZE
+#define PTX_MAX_VECTOR_LENGTH PTX_WARP_SIZE
 #define PTX_WORKER_LENGTH 32
 #define PTX_DEFAULT_RUNTIME_DIM 0 /* Defer to runtime.  */
 
@@ -5376,14 +5377,14 @@ nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level)
     }
 
   if (dims[GOMP_DIM_VECTOR] >= 0
-      && dims[GOMP_DIM_VECTOR] != PTX_VECTOR_LENGTH)
+      && dims[GOMP_DIM_VECTOR] != PTX_WARP_SIZE)
     {
       warning_at (decl ? DECL_SOURCE_LOCATION (decl) : UNKNOWN_LOCATION, 0,
 		  dims[GOMP_DIM_VECTOR]
 		  ? G_("using vector_length (%d), ignoring %d")
 		  : G_("using vector_length (%d), ignoring runtime setting"),
-		  PTX_VECTOR_LENGTH, dims[GOMP_DIM_VECTOR]);
-      dims[GOMP_DIM_VECTOR] = PTX_VECTOR_LENGTH;
+		  PTX_DEFAULT_VECTOR_LENGTH, dims[GOMP_DIM_VECTOR]);
+      dims[GOMP_DIM_VECTOR] = PTX_DEFAULT_VECTOR_LENGTH;
     }
 
   /* Check the num workers is not too large.  */
@@ -5397,7 +5398,7 @@ nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level)
 
   if (oacc_default_dims_p)
     {
-      dims[GOMP_DIM_VECTOR] = PTX_VECTOR_LENGTH;
+      dims[GOMP_DIM_VECTOR] = PTX_DEFAULT_VECTOR_LENGTH;
       if (dims[GOMP_DIM_WORKER] < 0)
 	dims[GOMP_DIM_WORKER] = PTX_DEFAULT_RUNTIME_DIM;
       if (dims[GOMP_DIM_GANG] < 0)
@@ -5440,7 +5441,7 @@ nvptx_dim_limit (int axis)
   switch (axis)
     {
     case GOMP_DIM_VECTOR:
-      return PTX_VECTOR_LENGTH;
+      return PTX_MAX_VECTOR_LENGTH;
 
     default:
       break;
@@ -5937,7 +5938,7 @@ nvptx_goacc_reduction_fini (gcall *call)
       /* Emit binary shuffle tree.  TODO. Emit this as an actual loop,
 	 but that requires a method of emitting a unified jump at the
 	 gimple level.  */
-      for (int shfl = PTX_VECTOR_LENGTH / 2; shfl > 0; shfl = shfl >> 1)
+      for (int shfl = PTX_WARP_SIZE / 2; shfl > 0; shfl = shfl >> 1)
 	{
 	  tree other_var = make_ssa_name (TREE_TYPE (var));
 	  nvptx_generate_vector_shuffle (gimple_location (call),
