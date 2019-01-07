@@ -1,5 +1,13 @@
 2019-01-07  Tom de Vries  <tdevries@suse.de>
 
+	* config/nvptx/nvptx.c (PTX_VECTOR_LENGTH): Remove.
+	(PTX_DEFAULT_VECTOR_LENGTH, PTX_MAX_VECTOR_LENGTH): Define.
+	(nvptx_goacc_validate_dims_1, nvptx_dim_limit)
+	(nvptx_goacc_reduction_fini): Use PTX_DEFAULT_VECTOR_LENGTH,
+	PTX_MAX_VECTOR_LENGTH and PTX_WARP_SIZE instead of PTX_VECTOR_LENGTH.
+
+2019-01-07  Tom de Vries  <tdevries@suse.de>
+
 	* config/nvptx/nvptx.c (nvptx_goacc_validate_dims): Add asserts.
 
 2019-01-07  Tom de Vries  <tdevries@suse.de>
