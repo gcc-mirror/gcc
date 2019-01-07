@@ -1,3 +1,8 @@
+2019-01-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88741 - wrong error with initializer-string.
+	* g++.dg/init/array50.C: New test.
+
 2019-01-07  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c++/88261
