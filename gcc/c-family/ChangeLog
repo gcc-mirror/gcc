@@ -1,3 +1,10 @@
+2019-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85052
+	* c-common.h (enum rid): Add RID_BUILTIN_CONVERTVECTOR.
+	(c_build_vec_convert): Declare.
+	* c-common.c (c_build_vec_convert): New function.
+
 2019-01-04  Martin Sebor  <msebor@redhat.com>
 
 	PR c/88546

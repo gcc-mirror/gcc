@@ -10596,6 +10596,33 @@ to and from other datatypes of the same size).
 You cannot operate between vectors of different lengths or different
 signedness without a cast.
 
+@findex __builtin_convertvector
+Vector conversion is available using the
+@code{__builtin_convertvector (vec, vectype)}
+function.  @var{vec} must be an expression with integral or floating
+vector type and @var{vectype} an integral or floating vector type with the
+same number of elements.  The result has @var{vectype} type and value of
+a C cast of every element of @var{vec} to the element type of @var{vectype}.
+
+Consider the following example,
+@smallexample
+typedef int v4si __attribute__ ((vector_size (16)));
+typedef float v4sf __attribute__ ((vector_size (16)));
+typedef double v4df __attribute__ ((vector_size (32)));
+typedef unsigned long long v4di __attribute__ ((vector_size (32)));
+
+v4si a = @{1,-2,3,-4@};
+v4sf b = @{1.5f,-2.5f,3.f,7.f@};
+v4di c = @{1ULL,5ULL,0ULL,10ULL@};
+v4sf d = __builtin_convertvector (a, v4sf); /* d is @{1.f,-2.f,3.f,-4.f@} */
+/* Equivalent of:
+   v4sf d = @{ (float)a[0], (float)a[1], (float)a[2], (float)a[3] @}; */
+v4df e = __builtin_convertvector (a, v4df); /* e is @{1.,-2.,3.,-4.@} */
+v4df f = __builtin_convertvector (b, v4df); /* f is @{1.5,-2.5,3.,7.@} */
+v4si g = __builtin_convertvector (f, v4si); /* g is @{1,-2,3,7@} */
+v4si h = __builtin_convertvector (c, v4si); /* h is @{1,5,0,10@} */
+@end smallexample
+
 @node Offsetof
 @section Support for @code{offsetof}
 @findex __builtin_offsetof

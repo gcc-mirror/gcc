@@ -18813,6 +18813,27 @@ tsubst_copy_and_build (tree t,
 					      (*call_args)[0], complain);
 	      break;
 
+	    case IFN_VEC_CONVERT:
+	      gcc_assert (nargs == 1);
+	      if (vec_safe_length (call_args) != 1)
+		{
+		  error_at (cp_expr_loc_or_loc (t, input_location),
+			    "wrong number of arguments to "
+			    "%<__builtin_convertvector%>");
+		  ret = error_mark_node;
+		  break;
+		}
+	      ret = cp_build_vec_convert ((*call_args)[0], input_location,
+					  tsubst (TREE_TYPE (t), args,
+						  complain, in_decl),
+					  complain);
+	      if (TREE_CODE (ret) == VIEW_CONVERT_EXPR)
+		{
+		  release_tree_vector (call_args);
+		  RETURN (ret);
+		}
+	      break;
+
 	    default:
 	      /* Unsupported internal function with arguments.  */
 	      gcc_unreachable ();

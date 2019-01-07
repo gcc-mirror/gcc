@@ -376,6 +376,7 @@ const struct c_common_resword c_common_reswords[] =
     RID_BUILTIN_CALL_WITH_STATIC_CHAIN, D_CONLY },
   { "__builtin_choose_expr", RID_CHOOSE_EXPR, D_CONLY },
   { "__builtin_complex", RID_BUILTIN_COMPLEX, D_CONLY },
+  { "__builtin_convertvector", RID_BUILTIN_CONVERTVECTOR, 0 },
   { "__builtin_has_attribute", RID_BUILTIN_HAS_ATTRIBUTE, 0 },
   { "__builtin_launder", RID_BUILTIN_LAUNDER, D_CXXONLY },
   { "__builtin_shuffle", RID_BUILTIN_SHUFFLE, 0 },
@@ -1067,6 +1068,70 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask,
   ret = build3_loc (loc, VEC_PERM_EXPR, TREE_TYPE (v0), v0, v1, mask);
 
   if (!c_dialect_cxx () && !wrap)
+    ret = c_wrap_maybe_const (ret, true);
+
+  return ret;
+}
+
+/* Build a VEC_CONVERT ifn for __builtin_convertvector builtin.  */
+
+tree
+c_build_vec_convert (location_t loc1, tree expr, location_t loc2, tree type,
+		     bool complain)
+{
+  if (error_operand_p (type))
+    return error_mark_node;
+  if (error_operand_p (expr))
+    return error_mark_node;
+
+  if (!VECTOR_INTEGER_TYPE_P (TREE_TYPE (expr))
+      && !VECTOR_FLOAT_TYPE_P (TREE_TYPE (expr)))
+    {
+      if (complain)
+	error_at (loc1, "%<__builtin_convertvector%> first argument must "
+			"be an integer or floating vector");
+      return error_mark_node;
+    }
+
+  if (!VECTOR_INTEGER_TYPE_P (type) && !VECTOR_FLOAT_TYPE_P (type))
+    {
+      if (complain)
+	error_at (loc2, "%<__builtin_convertvector%> second argument must "
+			"be an integer or floating vector type");
+      return error_mark_node;
+    }
+
+  if (maybe_ne (TYPE_VECTOR_SUBPARTS (TREE_TYPE (expr)),
+		TYPE_VECTOR_SUBPARTS (type)))
+    {
+      if (complain)
+	error_at (loc1, "%<__builtin_convertvector%> number of elements "
+			"of the first argument vector and the second argument "
+			"vector type should be the same");
+      return error_mark_node;
+    }
+
+  if ((TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (expr)))
+       == TYPE_MAIN_VARIANT (TREE_TYPE (type)))
+      || (VECTOR_INTEGER_TYPE_P (TREE_TYPE (expr))
+	  && VECTOR_INTEGER_TYPE_P (type)
+	  && (TYPE_PRECISION (TREE_TYPE (TREE_TYPE (expr)))
+	      == TYPE_PRECISION (TREE_TYPE (type)))))
+    return build1_loc (loc1, VIEW_CONVERT_EXPR, type, expr);
+
+  bool wrap = true;
+  bool maybe_const = false;
+  tree ret;
+  if (!c_dialect_cxx ())
+    {
+      /* Avoid C_MAYBE_CONST_EXPRs inside of VEC_CONVERT argument.  */
+      expr = c_fully_fold (expr, false, &maybe_const);
+      wrap &= maybe_const;
+    }
+
+  ret = build_call_expr_internal_loc (loc1, IFN_VEC_CONVERT, type, 1, expr);
+
+  if (!wrap)
     ret = c_wrap_maybe_const (ret, true);
 
   return ret;

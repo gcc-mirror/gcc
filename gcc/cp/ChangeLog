@@ -1,3 +1,16 @@
+2019-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85052
+	* cp-tree.h (cp_build_vec_convert): Declare.
+	* parser.c (cp_parser_postfix_expression): Parse
+	__builtin_convertvector.
+	* constexpr.c: Include fold-const-call.h.
+	(cxx_eval_internal_function): Handle IFN_VEC_CONVERT.
+	(potential_constant_expression_1): Likewise.
+	* semantics.c (cp_build_vec_convert): New function.
+	* pt.c (tsubst_copy_and_build): Handle CALL_EXPR to
+	IFN_VEC_CONVERT.
+
 2019-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88636
