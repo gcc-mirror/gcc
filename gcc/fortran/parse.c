@@ -1,5 +1,5 @@
 /* Main parser.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -587,10 +587,16 @@ decode_statement (void)
     }
 
   /* All else has failed, so give up.  See if any of the matchers has
-     stored an error message of some sort.  */
-
+     stored an error message of some sort.  Suppress the "Unclassifiable
+     statement" if a previous error message was emitted, e.g., by
+     gfc_error_now ().  */
   if (!gfc_error_check ())
-    gfc_error_now ("Unclassifiable statement at %C");
+    {
+      int ecnt;
+      gfc_get_errors (NULL, &ecnt);
+      if (ecnt <= 0)
+        gfc_error_now ("Unclassifiable statement at %C");
+    }
 
   reject_statement ();
 

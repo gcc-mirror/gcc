@@ -1,5 +1,5 @@
 /* gfortran header file
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -2967,6 +2967,7 @@ extern int gfc_character_storage_size;
 
 #define gfc_logical_4_kind 4
 #define gfc_integer_4_kind 4
+#define gfc_real_4_kind 4
 
 /* symbol.c */
 void gfc_clear_new_implicit (void);

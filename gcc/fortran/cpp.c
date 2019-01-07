@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -607,6 +607,28 @@ gfc_cpp_init (void)
       else if (opt->code == OPT_MT || opt->code == OPT_MQ)
 	deps_add_target (cpp_get_deps (cpp_in),
 			 opt->arg, opt->code == OPT_MQ);
+    }
+
+  /* Pre-defined macros for non-required INTEGER kind types.  */
+  for (gfc_integer_info *itype = gfc_integer_kinds; itype->kind != 0; itype++)
+    {
+      if (itype->kind == 1)
+	cpp_define (cpp_in, "__GFC_INT_1__=1");
+      if (itype->kind == 2)
+	cpp_define (cpp_in, "__GFC_INT_2__=1");
+      if (itype->kind == 8)
+	cpp_define (cpp_in, "__GFC_INT_8__=1");
+      if (itype->kind == 16)
+	cpp_define (cpp_in, "__GFC_INT_16__=1");
+    }
+
+  /* Pre-defined macros for non-required REAL kind types.  */
+  for (gfc_real_info *rtype = gfc_real_kinds; rtype->kind != 0; rtype++)
+    {
+      if (rtype->kind == 10)
+	cpp_define (cpp_in, "__GFC_REAL_10__=1");
+      if (rtype->kind == 16)
+	cpp_define (cpp_in, "__GFC_REAL_16__=1");
     }
 
   if (gfc_cpp_option.working_directory

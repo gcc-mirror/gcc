@@ -1,4 +1,4 @@
-/* Copyright (C) 2011-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2011-2019 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -58,6 +58,12 @@ AARCH64_CORE("thunderx",      thunderx,      thunderx,  8A,  AARCH64_FL_FOR_ARCH
    this order is required to handle variant correctly. */
 AARCH64_CORE("thunderxt88p1", thunderxt88p1, thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO,	thunderxt88,  0x43, 0x0a1, 0)
 AARCH64_CORE("thunderxt88",   thunderxt88,   thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderxt88,  0x43, 0x0a1, -1)
+
+/* OcteonTX is the official name for T81/T83. */
+AARCH64_CORE("octeontx",      octeontx,      thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  0x43, 0x0a0, -1)
+AARCH64_CORE("octeontx81",    octeontxt81,   thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  0x43, 0x0a2, -1)
+AARCH64_CORE("octeontx83",    octeontxt83,   thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  0x43, 0x0a3, -1)
+
 AARCH64_CORE("thunderxt81",   thunderxt81,   thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  0x43, 0x0a2, -1)
 AARCH64_CORE("thunderxt83",   thunderxt83,   thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  0x43, 0x0a3, -1)
 

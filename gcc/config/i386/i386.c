@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IA-32.
-   Copyright (C) 1988-2018 Free Software Foundation, Inc.
+   Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17238,18 +17238,6 @@ ix86_const_not_ok_for_debug_p (rtx x)
     return true;
 
   if (SYMBOL_REF_P (x) && strcmp (XSTR (x, 0), GOT_SYMBOL_NAME) == 0)
-    return true;
-
-  /* Reject UNSPECs within expressions.  We could accept symbol@gotoff
-     + literal_constant, but that would hardly come up in practice,
-     and it's not worth the trouble of having to reject that as an
-     operand to pretty much anything else.  */
-  if (UNARY_P (x)
-      && GET_CODE (XEXP (x, 0)) == UNSPEC)
-    return true;
-  if (BINARY_P (x)
-      && (GET_CODE (XEXP (x, 0)) == UNSPEC
-	  || GET_CODE (XEXP (x, 1)) == UNSPEC))
     return true;
 
   return false;
@@ -51014,9 +51002,7 @@ ix86_expand_divmod_libfunc (rtx libfunc, machine_mode mode,
   rtx rem = assign_386_stack_local (mode, SLOT_TEMP);
 
   rtx quot = emit_library_call_value (libfunc, NULL_RTX, LCT_NORMAL,
-				      mode,
-				      op0, GET_MODE (op0),
-				      op1, GET_MODE (op1),
+				      mode, op0, mode, op1, mode,
 				      XEXP (rem, 0), Pmode);
   *quot_p = quot;
   *rem_p = rem;

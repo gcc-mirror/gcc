@@ -1,5 +1,5 @@
 # Manipulate the CPU, FPU and architecture descriptions for ARM.
-# Copyright (C) 2017-2018 Free Software Foundation, Inc.
+# Copyright (C) 2017-2019 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -62,7 +62,7 @@ function boilerplate (style) {
     print cc "Generated automatically by parsecpu.awk from arm-cpus.in."
     print cc "Do not edit."
     print ""
-    print cc "Copyright (C) 2011-2018 Free Software Foundation, Inc."
+    print cc "Copyright (C) 2011-2019 Free Software Foundation, Inc."
     print ""
     print cc "This file is part of GCC."
     print ""

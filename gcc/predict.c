@@ -1,5 +1,5 @@
 /* Branch prediction routines for the GNU compiler.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -877,12 +877,21 @@ set_even_probabilities (basic_block bb,
 	    int p = prediction->ep_probability;
 	    profile_probability prob
 	      = profile_probability::from_reg_br_prob_base (p);
-	    profile_probability remainder = prob.invert ();
 
 	    if (prediction->ep_edge == e)
 	      e->probability = prob;
+	    else if (unlikely_edges != NULL && unlikely_edges->contains (e))
+	      e->probability = profile_probability::very_unlikely ();
 	    else
-	      e->probability = remainder.apply_scale (1, nedges - 1);
+	      {
+		profile_probability remainder = prob.invert ();
+		remainder -= profile_probability::very_unlikely ()
+		  .apply_scale (unlikely_count, 1);
+		int count = nedges - unlikely_count - 1;
+		gcc_assert (count >= 0);
+
+		e->probability = remainder.apply_scale (1, count);
+	      }
 	  }
 	else
 	  e->probability = profile_probability::never ();
@@ -1217,10 +1226,12 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
       if (preds)
 	for (pred = *preds; pred; pred = pred->ep_next)
 	  {
-	    if (pred->ep_probability <= PROB_VERY_UNLIKELY)
+	    if (pred->ep_probability <= PROB_VERY_UNLIKELY
+		|| pred->ep_predictor == PRED_COLD_LABEL)
 	      unlikely_edges.add (pred->ep_edge);
 	    if (pred->ep_probability >= PROB_VERY_LIKELY
-		|| pred->ep_predictor == PRED_BUILTIN_EXPECT)
+		|| pred->ep_predictor == PRED_BUILTIN_EXPECT
+		|| pred->ep_predictor == PRED_HOT_LABEL)
 	      likely_edges.add (pred);
 	  }
 

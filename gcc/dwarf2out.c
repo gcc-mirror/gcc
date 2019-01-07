@@ -1,5 +1,5 @@
 /* Output Dwarf2 format symbol table information from GCC.
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
    Contributed by Gary Funck (gary@intrepid.com).
    Derived from DWARF 1 implementation of Ron Guilmette (rfg@monkeys.com).
    Extensively modified by Jason Merrill (jason@cygnus.com).
@@ -13152,6 +13152,8 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	       && TYPE_PRECISION (sizetype) == TYPE_PRECISION (size_type_node)
 	       && TYPE_UNSIGNED (sizetype) == TYPE_UNSIGNED (size_type_node))
 	qualified_type = size_type_node;
+      if (type == sizetype)
+	type = qualified_type;
     }
 
   /* If we do, then we can just use its DIE, if it exists.  */
@@ -14462,6 +14464,41 @@ const_ok_for_output_1 (rtx rtl)
     case NOT:
     case NEG:
       return false;
+    case PLUS:
+      {
+	/* Make sure SYMBOL_REFs/UNSPECs are at most in one of the
+	   operands.  */
+	subrtx_var_iterator::array_type array;
+	bool first = false;
+	FOR_EACH_SUBRTX_VAR (iter, array, XEXP (rtl, 0), ALL)
+	  if (SYMBOL_REF_P (*iter)
+	      || LABEL_P (*iter)
+	      || GET_CODE (*iter) == UNSPEC)
+	    {
+	      first = true;
+	      break;
+	    }
+	if (!first)
+	  return true;
+	FOR_EACH_SUBRTX_VAR (iter, array, XEXP (rtl, 1), ALL)
+	  if (SYMBOL_REF_P (*iter)
+	      || LABEL_P (*iter)
+	      || GET_CODE (*iter) == UNSPEC)
+	    return false;
+	return true;
+      }
+    case MINUS:
+      {
+	/* Disallow negation of SYMBOL_REFs or UNSPECs when they
+	   appear in the second operand of MINUS.  */
+	subrtx_var_iterator::array_type array;
+	FOR_EACH_SUBRTX_VAR (iter, array, XEXP (rtl, 1), ALL)
+	  if (SYMBOL_REF_P (*iter)
+	      || LABEL_P (*iter)
+	      || GET_CODE (*iter) == UNSPEC)
+	    return false;
+	return true;
+      }
     default:
       return true;
     }
@@ -15605,6 +15642,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	 pool.  */
     case CONST:
     case SYMBOL_REF:
+    case UNSPEC:
       if (!is_a <scalar_int_mode> (mode, &int_mode)
 	  || (GET_MODE_SIZE (int_mode) > DWARF2_ADDR_SIZE
 #ifdef POINTERS_EXTEND_UNSIGNED
@@ -15612,6 +15650,30 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 #endif
 	      ))
 	break;
+
+      if (GET_CODE (rtl) == UNSPEC)
+	{
+	  /* If delegitimize_address couldn't do anything with the UNSPEC, we
+	     can't express it in the debug info.  This can happen e.g. with some
+	     TLS UNSPECs.  Allow UNSPECs formerly from CONST that the backend
+	     approves.  */
+	  bool not_ok = false;
+	  subrtx_var_iterator::array_type array;
+	  FOR_EACH_SUBRTX_VAR (iter, array, rtl, ALL)
+	    if ((*iter != rtl && !CONSTANT_P (*iter))
+		|| !const_ok_for_output_1 (*iter))
+	      {
+		not_ok = true;
+		break;
+	      }
+
+	  if (not_ok)
+	    break;
+
+	  rtl = gen_rtx_CONST (GET_MODE (rtl), rtl);
+	  goto symref;
+	}
+
       if (GET_CODE (rtl) == SYMBOL_REF
 	  && SYMBOL_REF_TLS_MODEL (rtl) != TLS_MODEL_NONE)
 	{
@@ -16280,7 +16342,6 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
     case VEC_CONCAT:
     case VEC_DUPLICATE:
     case VEC_SERIES:
-    case UNSPEC:
     case HIGH:
     case FMA:
     case STRICT_LOW_PART:
@@ -16289,9 +16350,6 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
     case CLRSB:
     case CLOBBER:
     case CLOBBER_HIGH:
-      /* If delegitimize_address couldn't do anything with the UNSPEC, we
-	 can't express it in the debug info.  This can happen e.g. with some
-	 TLS UNSPECs.  */
       break;
 
     case CONST_STRING:

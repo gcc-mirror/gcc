@@ -1,5 +1,5 @@
 /* Function summary pass.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -1969,9 +1969,9 @@ fp_expression_p (gimple *stmt)
 static void
 analyze_function_body (struct cgraph_node *node, bool early)
 {
-  sreal time = 0;
+  sreal time = PARAM_VALUE (PARAM_UNINLINED_FUNCTION_TIME);
   /* Estimate static overhead for function prologue/epilogue and alignment. */
-  int size = 2;
+  int size = PARAM_VALUE (PARAM_UNINLINED_FUNCTION_INSNS);
   /* Benefits are scaled by probability of elimination that is in range
      <0,2>.  */
   basic_block bb;
@@ -2034,7 +2034,10 @@ analyze_function_body (struct cgraph_node *node, bool early)
   info->account_size_time (0, 0, bb_predicate, bb_predicate);
 
   bb_predicate = predicate::not_inlined ();
-  info->account_size_time (2 * ipa_fn_summary::size_scale, 0, bb_predicate,
+  info->account_size_time (PARAM_VALUE (PARAM_UNINLINED_FUNCTION_INSNS)
+			   * ipa_fn_summary::size_scale,
+			   PARAM_VALUE (PARAM_UNINLINED_FUNCTION_TIME),
+			   bb_predicate,
 		           bb_predicate);
 
   if (fbi.info)
@@ -2234,12 +2237,12 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		    {
 		      predicate ip = bb_predicate & predicate::not_inlined ();
 		      info->account_size_time (this_size * prob,
-					       (this_time * prob) / 2, ip,
+					       (final_time * prob) / 2, ip,
 					       p);
 		    }
 		  if (prob != 2)
 		    info->account_size_time (this_size * (2 - prob),
-					     (this_time * (2 - prob) / 2),
+					     (final_time * (2 - prob) / 2),
 					     bb_predicate,
 					     p);
 		}
@@ -2418,7 +2421,11 @@ compute_fn_summary (struct cgraph_node *node, bool early)
       node->local.can_change_signature = false;
       es->call_stmt_size = eni_size_weights.call_cost;
       es->call_stmt_time = eni_time_weights.call_cost;
-      info->account_size_time (ipa_fn_summary::size_scale * 2, 2, t, t);
+      info->account_size_time (ipa_fn_summary::size_scale
+			       * PARAM_VALUE
+				 (PARAM_UNINLINED_FUNCTION_THUNK_INSNS),
+			       PARAM_VALUE
+				 (PARAM_UNINLINED_FUNCTION_THUNK_TIME), t, t);
       t = predicate::not_inlined ();
       info->account_size_time (2 * ipa_fn_summary::size_scale, 0, t, t);
       ipa_update_overall_fn_summary (node);

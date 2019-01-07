@@ -12,10 +12,6 @@ include 'dec_structure_1.f90'
 ! { dg-error "Expecting END PROGRAM" " " { target *-*-* } 19 }
 ! { dg-error "-fdec-structure" " " { target *-*-* } 21 }
 ! { dg-error "-fdec-structure" " " { target *-*-* } 22 }
-! { dg-error "Unclassifiable statement" " " { target *-*-* } 25 }
-! { dg-error "Unclassifiable statement" " " { target *-*-* } 26 }
-! { dg-error "Unclassifiable statement" " " { target *-*-* } 27 }
-! { dg-error "Unclassifiable statement" " " { target *-*-* } 28 }
 ! { dg-error "is not a variable" " " { target *-*-* } 30 }
 ! { dg-error "Bad character" " " { target *-*-* } 32 }
 ! { dg-error "Expecting END PROGRAM" " " { target *-*-* } 34 }

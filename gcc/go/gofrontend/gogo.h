@@ -1863,11 +1863,7 @@ class Variable
   // Whether this variable should live in the heap.
   bool
   is_in_heap() const
-  {
-    return this->is_address_taken_
-      && this->escapes_
-      && !this->is_global_;
-  }
+  { return this->is_address_taken_ && !this->is_global_; }
 
   // Note that something takes the address of this variable.
   void
@@ -1884,16 +1880,6 @@ class Variable
   void
   set_non_escaping_address_taken()
   { this->is_non_escaping_address_taken_ = true; }
-
-  // Return whether this variable escapes the function it is declared in.
-  bool
-  escapes()
-  { return this->escapes_; }
-
-  // Note that this variable does not escape the function it is declared in.
-  void
-  set_does_not_escape()
-  { this->escapes_ = false; }
 
   // Get the source location of the variable's declaration.
   Location
@@ -2117,9 +2103,6 @@ class Variable
   // True if this variable should be put in a unique section.  This is
   // used for field tracking.
   bool in_unique_section_ : 1;
-  // Whether this variable escapes the function it is created in.  This is
-  // true until shown otherwise.
-  bool escapes_ : 1;
   // The top-level declaration for this variable. Only used for local
   // variables. Must be a Temporary_statement if not NULL.
   Statement* toplevel_decl_;
@@ -2135,7 +2118,7 @@ class Result_variable
 		  Location location)
     : type_(type), function_(function), index_(index), location_(location),
       backend_(NULL), is_address_taken_(false),
-      is_non_escaping_address_taken_(false), escapes_(true)
+      is_non_escaping_address_taken_(false)
   { }
 
   // Get the type of the result variable.
@@ -2179,23 +2162,10 @@ class Result_variable
   set_non_escaping_address_taken()
   { this->is_non_escaping_address_taken_ = true; }
 
-  // Return whether this variable escapes the function it is declared in.
-  bool
-  escapes()
-  { return this->escapes_; }
-
-  // Note that this variable does not escape the function it is declared in.
-  void
-  set_does_not_escape()
-  { this->escapes_ = false; }
-
   // Whether this variable should live in the heap.
   bool
   is_in_heap() const
-  {
-    return this->is_address_taken_
-      && this->escapes_;
-  }
+  { return this->is_address_taken_; }
 
   // Set the function.  This is used when cloning functions which call
   // recover.
@@ -2223,9 +2193,6 @@ class Result_variable
   // Whether something takes the address of this variable such that
   // the address does not escape the function.
   bool is_non_escaping_address_taken_;
-  // Whether this variable escapes the function it is created in.  This is
-  // true until shown otherwise.
-  bool escapes_;
 };
 
 // The value we keep for a named constant.  This lets us hold a type

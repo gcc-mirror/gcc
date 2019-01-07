@@ -1,5 +1,5 @@
 /* Transformations based on profile information for values.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1188,7 +1188,7 @@ init_node_map (bool local)
   cgraph_node_map = new hash_map<profile_id_hash, cgraph_node *>;
 
   FOR_EACH_DEFINED_FUNCTION (n)
-    if (n->has_gimple_body_p ())
+    if (n->has_gimple_body_p () || n->thunk.thunk_p)
       {
 	cgraph_node **val;
 	if (local)

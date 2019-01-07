@@ -1,5 +1,5 @@
 !    Implementation of the IEEE_ARITHMETIC standard intrinsic module
-!    Copyright (C) 2013-2018 Free Software Foundation, Inc.
+!    Copyright (C) 2013-2019 Free Software Foundation, Inc.
 !    Contributed by Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
 ! 
 ! This file is part of the GNU Fortran runtime library (libgfortran).
@@ -55,9 +55,11 @@ module IEEE_ARITHMETIC
     IEEE_NEGATIVE_INF      = IEEE_CLASS_TYPE(3), &
     IEEE_NEGATIVE_NORMAL   = IEEE_CLASS_TYPE(4), &
     IEEE_NEGATIVE_DENORMAL = IEEE_CLASS_TYPE(5), &
+    IEEE_NEGATIVE_SUBNORMAL= IEEE_CLASS_TYPE(5), &
     IEEE_NEGATIVE_ZERO     = IEEE_CLASS_TYPE(6), &
     IEEE_POSITIVE_ZERO     = IEEE_CLASS_TYPE(7), &
     IEEE_POSITIVE_DENORMAL = IEEE_CLASS_TYPE(8), &
+    IEEE_POSITIVE_SUBNORMAL= IEEE_CLASS_TYPE(8), &
     IEEE_POSITIVE_NORMAL   = IEEE_CLASS_TYPE(9), &
     IEEE_POSITIVE_INF      = IEEE_CLASS_TYPE(10)
 
@@ -795,6 +797,7 @@ REM_MACRO(4,4,4)
 
 SUPPORTGENERIC(IEEE_SUPPORT_DATATYPE)
 SUPPORTGENERIC(IEEE_SUPPORT_DENORMAL)
+SUPPORTGENERIC(IEEE_SUPPORT_SUBNORMAL)
 SUPPORTGENERIC(IEEE_SUPPORT_DIVIDE)
 SUPPORTGENERIC(IEEE_SUPPORT_INF)
 SUPPORTGENERIC(IEEE_SUPPORT_IO)
@@ -914,17 +917,39 @@ contains
 
     real(kind=4), intent(in) :: X
     type(IEEE_CLASS_TYPE), intent(in) :: CLASS
+    logical flag
 
     select case (CLASS%hidden)
       case (1)     ! IEEE_SIGNALING_NAN
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_get_halting_mode(ieee_invalid, flag)
+           call ieee_set_halting_mode(ieee_invalid, .false.)
+        end if
         res = -1
         res = sqrt(res)
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_set_halting_mode(ieee_invalid, flag)
+        end if
       case (2)     ! IEEE_QUIET_NAN
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_get_halting_mode(ieee_invalid, flag)
+           call ieee_set_halting_mode(ieee_invalid, .false.)
+        end if
         res = -1
         res = sqrt(res)
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_set_halting_mode(ieee_invalid, flag)
+        end if
       case (3)     ! IEEE_NEGATIVE_INF
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_get_halting_mode(ieee_overflow, flag)
+           call ieee_set_halting_mode(ieee_overflow, .false.)
+        end if
         res = huge(res)
         res = (-res) * res
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_set_halting_mode(ieee_overflow, flag)
+        end if
       case (4)     ! IEEE_NEGATIVE_NORMAL
         res = -42
       case (5)     ! IEEE_NEGATIVE_DENORMAL
@@ -941,8 +966,15 @@ contains
       case (9)     ! IEEE_POSITIVE_NORMAL
         res = 42
       case (10)    ! IEEE_POSITIVE_INF
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_get_halting_mode(ieee_overflow, flag)
+           call ieee_set_halting_mode(ieee_overflow, .false.)
+        end if
         res = huge(res)
         res = res * res
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_set_halting_mode(ieee_overflow, flag)
+        end if
       case default ! IEEE_OTHER_VALUE, should not happen
         res = 0
      end select
@@ -952,17 +984,39 @@ contains
 
     real(kind=8), intent(in) :: X
     type(IEEE_CLASS_TYPE), intent(in) :: CLASS
+    logical flag
 
     select case (CLASS%hidden)
       case (1)     ! IEEE_SIGNALING_NAN
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_get_halting_mode(ieee_invalid, flag)
+           call ieee_set_halting_mode(ieee_invalid, .false.)
+        end if
         res = -1
         res = sqrt(res)
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_set_halting_mode(ieee_invalid, flag)
+        end if
       case (2)     ! IEEE_QUIET_NAN
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_get_halting_mode(ieee_invalid, flag)
+           call ieee_set_halting_mode(ieee_invalid, .false.)
+        end if
         res = -1
         res = sqrt(res)
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_set_halting_mode(ieee_invalid, flag)
+        end if
       case (3)     ! IEEE_NEGATIVE_INF
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_get_halting_mode(ieee_overflow, flag)
+           call ieee_set_halting_mode(ieee_overflow, .false.)
+        end if
         res = huge(res)
         res = (-res) * res
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_set_halting_mode(ieee_overflow, flag)
+        end if
       case (4)     ! IEEE_NEGATIVE_NORMAL
         res = -42
       case (5)     ! IEEE_NEGATIVE_DENORMAL
@@ -979,8 +1033,15 @@ contains
       case (9)     ! IEEE_POSITIVE_NORMAL
         res = 42
       case (10)    ! IEEE_POSITIVE_INF
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_get_halting_mode(ieee_overflow, flag)
+           call ieee_set_halting_mode(ieee_overflow, .false.)
+        end if
         res = huge(res)
         res = res * res
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_set_halting_mode(ieee_overflow, flag)
+        end if
       case default ! IEEE_OTHER_VALUE, should not happen
         res = 0
      end select
@@ -991,17 +1052,39 @@ contains
 
     real(kind=10), intent(in) :: X
     type(IEEE_CLASS_TYPE), intent(in) :: CLASS
+    logical flag
 
     select case (CLASS%hidden)
       case (1)     ! IEEE_SIGNALING_NAN
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_get_halting_mode(ieee_invalid, flag)
+           call ieee_set_halting_mode(ieee_invalid, .false.)
+        end if
         res = -1
         res = sqrt(res)
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_set_halting_mode(ieee_invalid, flag)
+        end if
       case (2)     ! IEEE_QUIET_NAN
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_get_halting_mode(ieee_invalid, flag)
+           call ieee_set_halting_mode(ieee_invalid, .false.)
+        end if
         res = -1
         res = sqrt(res)
-      case (3)     ! IEEE_NEGATIVE_INF
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_set_halting_mode(ieee_invalid, flag)
+        end if
+     case (3)     ! IEEE_NEGATIVE_INF
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_get_halting_mode(ieee_overflow, flag)
+           call ieee_set_halting_mode(ieee_overflow, .false.)
+        end if
         res = huge(res)
         res = (-res) * res
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_set_halting_mode(ieee_overflow, flag)
+        end if
       case (4)     ! IEEE_NEGATIVE_NORMAL
         res = -42
       case (5)     ! IEEE_NEGATIVE_DENORMAL
@@ -1018,8 +1101,15 @@ contains
       case (9)     ! IEEE_POSITIVE_NORMAL
         res = 42
       case (10)    ! IEEE_POSITIVE_INF
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_get_halting_mode(ieee_overflow, flag)
+           call ieee_set_halting_mode(ieee_overflow, .false.)
+        end if
         res = huge(res)
         res = res * res
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_set_halting_mode(ieee_overflow, flag)
+        end if
       case default ! IEEE_OTHER_VALUE, should not happen
         res = 0
      end select
@@ -1032,17 +1122,39 @@ contains
 
     real(kind=16), intent(in) :: X
     type(IEEE_CLASS_TYPE), intent(in) :: CLASS
+    logical flag
 
     select case (CLASS%hidden)
       case (1)     ! IEEE_SIGNALING_NAN
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_get_halting_mode(ieee_invalid, flag)
+           call ieee_set_halting_mode(ieee_invalid, .false.)
+        end if
         res = -1
         res = sqrt(res)
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_set_halting_mode(ieee_invalid, flag)
+        end if
       case (2)     ! IEEE_QUIET_NAN
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_get_halting_mode(ieee_invalid, flag)
+           call ieee_set_halting_mode(ieee_invalid, .false.)
+        end if
         res = -1
         res = sqrt(res)
+        if (ieee_support_halting(ieee_invalid)) then
+           call ieee_set_halting_mode(ieee_invalid, flag)
+        end if
       case (3)     ! IEEE_NEGATIVE_INF
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_get_halting_mode(ieee_overflow, flag)
+           call ieee_set_halting_mode(ieee_overflow, .false.)
+        end if
         res = huge(res)
         res = (-res) * res
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_set_halting_mode(ieee_overflow, flag)
+        end if
       case (4)     ! IEEE_NEGATIVE_NORMAL
         res = -42
       case (5)     ! IEEE_NEGATIVE_DENORMAL
@@ -1059,8 +1171,15 @@ contains
       case (9)     ! IEEE_POSITIVE_NORMAL
         res = 42
       case (10)    ! IEEE_POSITIVE_INF
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_get_halting_mode(ieee_overflow, flag)
+           call ieee_set_halting_mode(ieee_overflow, .false.)
+        end if
         res = huge(res)
         res = res * res
+        if (ieee_support_halting(ieee_overflow)) then
+           call ieee_set_halting_mode(ieee_overflow, flag)
+        end if
       case default ! IEEE_OTHER_VALUE, should not happen
         res = 0
      end select
@@ -1243,7 +1362,7 @@ SUPPORTMACRO(IEEE_SUPPORT_DATATYPE,16,.true.)
 #endif
 SUPPORTMACRO_NOARG(IEEE_SUPPORT_DATATYPE,.true.)
 
-! IEEE_SUPPORT_DENORMAL
+! IEEE_SUPPORT_DENORMAL and IEEE_SUPPORT_SUBNORMAL
 
 SUPPORTMACRO(IEEE_SUPPORT_DENORMAL,4,.true.)
 SUPPORTMACRO(IEEE_SUPPORT_DENORMAL,8,.true.)
@@ -1254,6 +1373,16 @@ SUPPORTMACRO(IEEE_SUPPORT_DENORMAL,10,.true.)
 SUPPORTMACRO(IEEE_SUPPORT_DENORMAL,16,.true.)
 #endif
 SUPPORTMACRO_NOARG(IEEE_SUPPORT_DENORMAL,.true.)
+
+SUPPORTMACRO(IEEE_SUPPORT_SUBNORMAL,4,.true.)
+SUPPORTMACRO(IEEE_SUPPORT_SUBNORMAL,8,.true.)
+#ifdef HAVE_GFC_REAL_10
+SUPPORTMACRO(IEEE_SUPPORT_SUBNORMAL,10,.true.)
+#endif
+#ifdef HAVE_GFC_REAL_16
+SUPPORTMACRO(IEEE_SUPPORT_SUBNORMAL,16,.true.)
+#endif
+SUPPORTMACRO_NOARG(IEEE_SUPPORT_SUBNORMAL,.true.)
 
 ! IEEE_SUPPORT_DIVIDE
 

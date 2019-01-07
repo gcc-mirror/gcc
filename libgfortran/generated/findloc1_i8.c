@@ -1,5 +1,5 @@
 /* Implementation of the FINDLOC intrinsic
-   Copyright (C) 2018 Free Software Foundation, Inc.
+   Copyright (C) 2018-2019 Free Software Foundation, Inc.
    Contributed by Thomas König <tk@tkoenig.net>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -103,7 +103,7 @@ findloc1_i8 (gfc_array_index_type * const restrict retarray,
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
-      retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_INTEGER_4));
+      retarray->base_addr = xmallocarray (alloc_size, sizeof (index_type));
       if (alloc_size == 0)
 	{
 	  /* Make sure we have a zero-sized array.  */
@@ -291,7 +291,7 @@ mfindloc1_i8 (gfc_array_index_type * const restrict retarray,
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
-      retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_INTEGER_4));
+      retarray->base_addr = xmallocarray (alloc_size, sizeof (index_type));
       if (alloc_size == 0)
 	{
 	  /* Make sure we have a zero-sized array.  */
@@ -407,7 +407,7 @@ sfindloc1_i8 (gfc_array_index_type * const restrict retarray,
   index_type dim;
   bool continue_loop;
 
-  if (*mask)
+  if (mask == NULL || *mask)
     {
       findloc1_i8 (retarray, array, value, pdim, back);
       return;
@@ -464,7 +464,7 @@ sfindloc1_i8 (gfc_array_index_type * const restrict retarray,
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
-      retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_INTEGER_4));
+      retarray->base_addr = xmallocarray (alloc_size, sizeof (index_type));
       if (alloc_size == 0)
 	{
 	  /* Make sure we have a zero-sized array.  */

@@ -1,5 +1,5 @@
 /* Interprocedural semantic function equality pass
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
 
    Contributed by Jan Hubicka <hubicka@ucw.cz> and Martin Liska <mliska@suse.cz>
 
@@ -598,6 +598,9 @@ private:
   static bool traverse_congruence_split (congruence_class * const &cls,
 					 bitmap const &b,
 					 traverse_split_pair *pair);
+
+  /* Compare function for sorting pairs in do_congruence_step_f.  */
+  static int sort_congruence_split (const void *, const void *);
 
   /* Reads a section from LTO stream file FILE_DATA. Input block for DATA
      contains LEN bytes.  */

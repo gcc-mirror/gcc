@@ -1,6 +1,6 @@
 // Filesystem operations -*- C++ -*-
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,11 +29,9 @@
 #endif
 
 #include <filesystem>
-#include <experimental/filesystem>
 #include <functional>
 #include <ostream>
 #include <stack>
-#include <ext/stdio_filebuf.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
@@ -47,9 +45,6 @@
 #ifdef _GLIBCXX_HAVE_SYS_STATVFS_H
 # include <sys/statvfs.h> // statvfs
 #endif
-#ifdef _GLIBCXX_USE_SENDFILE
-# include <sys/sendfile.h> // sendfile
-#endif
 #if !_GLIBCXX_USE_UTIMENSAT && _GLIBCXX_HAVE_UTIME_H
 # include <utime.h> // utime
 #endif
@@ -59,7 +54,9 @@
 
 #define _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM namespace filesystem {
 #define _GLIBCXX_END_NAMESPACE_FILESYSTEM }
-#include "ops-common.h"
+#include "../filesystem/ops-common.h"
+
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 
 namespace fs = std::filesystem;
 namespace posix = std::filesystem::__gnu_posix;
@@ -268,213 +265,37 @@ fs::copy(const path& from, const path& to, copy_options options)
 namespace std::filesystem
 {
   // Need this as there's no 'perm_options::none' enumerator.
-  inline bool is_set(fs::perm_options obj, fs::perm_options bits)
+  static inline bool is_set(fs::perm_options obj, fs::perm_options bits)
   {
     return (obj & bits) != fs::perm_options{};
   }
 }
 
-#ifdef _GLIBCXX_HAVE_SYS_STAT_H
-#ifdef NEED_DO_COPY_FILE
-bool
-fs::do_copy_file(const path::value_type* from, const path::value_type* to,
-		 copy_options_existing_file options,
-		 stat_type* from_st, stat_type* to_st,
-		 std::error_code& ec) noexcept
+namespace
 {
-  stat_type st1, st2;
-  fs::file_status t, f;
+  struct internal_file_clock : fs::__file_clock
+  {
+    using __file_clock::_S_to_sys;
+    using __file_clock::_S_from_sys;
 
-  if (to_st == nullptr)
+#ifdef _GLIBCXX_HAVE_SYS_STAT_H
+    static fs::file_time_type
+    from_stat(const fs::stat_type& st, std::error_code& ec) noexcept
     {
-      if (posix::stat(to, &st1))
-	{
-	  const int err = errno;
-	  if (!is_not_found_errno(err))
-	    {
-	      ec.assign(err, std::generic_category());
-	      return false;
-	    }
-	}
-      else
-	to_st = &st1;
+      const auto sys_time = fs::file_time(st, ec);
+      if (sys_time == sys_time.min())
+	return fs::file_time_type::min();
+      return _S_from_sys(sys_time);
     }
-  else if (to_st == from_st)
-    to_st = nullptr;
-
-  if (to_st == nullptr)
-    t = fs::file_status{fs::file_type::not_found};
-  else
-    t = make_file_status(*to_st);
-
-  if (from_st == nullptr)
-    {
-      if (posix::stat(from, &st2))
-	{
-	  ec.assign(errno, std::generic_category());
-	  return false;
-	}
-      else
-	from_st = &st2;
-    }
-  f = make_file_status(*from_st);
-  // _GLIBCXX_RESOLVE_LIB_DEFECTS
-  // 2712. copy_file() has a number of unspecified error conditions
-  if (!is_regular_file(f))
-    {
-      ec = std::make_error_code(std::errc::not_supported);
-      return false;
-    }
-
-  if (exists(t))
-    {
-      if (!is_regular_file(t))
-	{
-	  ec = std::make_error_code(std::errc::not_supported);
-	  return false;
-	}
-
-      if (to_st->st_dev == from_st->st_dev
-	  && to_st->st_ino == from_st->st_ino)
-	{
-	  ec = std::make_error_code(std::errc::file_exists);
-	  return false;
-	}
-
-      if (options.skip)
-	{
-	  ec.clear();
-	  return false;
-	}
-      else if (options.update)
-	{
-	  const auto from_mtime = file_time(*from_st, ec);
-	  if (ec)
-	    return false;
-	  if ((from_mtime <= file_time(*to_st, ec)) || ec)
-	    return false;
-	}
-      else if (!options.overwrite)
-	{
-	  ec = std::make_error_code(std::errc::file_exists);
-	  return false;
-	}
-      else if (!is_regular_file(t))
-	{
-	  ec = std::make_error_code(std::errc::not_supported);
-	  return false;
-	}
-    }
-
-  struct CloseFD {
-    ~CloseFD() { if (fd != -1) posix::close(fd); }
-    bool close() { return posix::close(std::exchange(fd, -1)) == 0; }
-    int fd;
+#endif
   };
-
-  CloseFD in = { posix::open(from, O_RDONLY) };
-  if (in.fd == -1)
-    {
-      ec.assign(errno, std::generic_category());
-      return false;
-    }
-  int oflag = O_WRONLY|O_CREAT;
-  if (options.overwrite || options.update)
-    oflag |= O_TRUNC;
-  else
-    oflag |= O_EXCL;
-  CloseFD out = { posix::open(to, oflag, S_IWUSR) };
-  if (out.fd == -1)
-    {
-      if (errno == EEXIST && options.skip)
-	ec.clear();
-      else
-	ec.assign(errno, std::generic_category());
-      return false;
-    }
-
-#if defined _GLIBCXX_USE_FCHMOD && ! defined _GLIBCXX_FILESYSTEM_IS_WINDOWS
-  if (::fchmod(out.fd, from_st->st_mode))
-#elif defined _GLIBCXX_USE_FCHMODAT && ! defined _GLIBCXX_FILESYSTEM_IS_WINDOWS
-  if (::fchmodat(AT_FDCWD, to, from_st->st_mode, 0))
-#else
-  if (posix::chmod(to, from_st->st_mode))
-#endif
-    {
-      ec.assign(errno, std::generic_category());
-      return false;
-    }
-
-  size_t count = from_st->st_size;
-#if defined _GLIBCXX_USE_SENDFILE && ! defined _GLIBCXX_FILESYSTEM_IS_WINDOWS
-  off_t offset = 0;
-  ssize_t n = ::sendfile(out.fd, in.fd, &offset, count);
-  if (n < 0 && errno != ENOSYS && errno != EINVAL)
-    {
-      ec.assign(errno, std::generic_category());
-      return false;
-    }
-  if ((size_t)n == count)
-    {
-      if (!out.close() || !in.close())
-	{
-	  ec.assign(errno, std::generic_category());
-	  return false;
-	}
-      ec.clear();
-      return true;
-    }
-  else if (n > 0)
-    count -= n;
-#endif // _GLIBCXX_USE_SENDFILE
-
-  using std::ios;
-  __gnu_cxx::stdio_filebuf<char> sbin(in.fd, ios::in|ios::binary);
-  __gnu_cxx::stdio_filebuf<char> sbout(out.fd, ios::out|ios::binary);
-
-  if (sbin.is_open())
-    in.fd = -1;
-  if (sbout.is_open())
-    out.fd = -1;
-
-#ifdef _GLIBCXX_USE_SENDFILE
-  if (n != 0)
-    {
-      if (n < 0)
-	n = 0;
-
-      const auto p1 = sbin.pubseekoff(n, ios::beg, ios::in);
-      const auto p2 = sbout.pubseekoff(n, ios::beg, ios::out);
-
-      const std::streampos errpos(std::streamoff(-1));
-      if (p1 == errpos || p2 == errpos)
-	{
-	  ec = std::make_error_code(std::errc::io_error);
-	  return false;
-	}
-    }
-#endif
-
-  if (count && !(std::ostream(&sbout) << &sbin))
-    {
-      ec = std::make_error_code(std::errc::io_error);
-      return false;
-    }
-  if (!sbout.close() || !sbin.close())
-    {
-      ec.assign(errno, std::generic_category());
-      return false;
-    }
-  ec.clear();
-  return true;
 }
-#endif // NEED_DO_COPY_FILE
-#endif // _GLIBCXX_HAVE_SYS_STAT_H
 
 void
 fs::copy(const path& from, const path& to, copy_options options,
 	 error_code& ec)
 {
+#ifdef _GLIBCXX_HAVE_SYS_STAT_H
   const bool skip_symlinks = is_set(options, copy_options::skip_symlinks);
   const bool create_symlinks = is_set(options, copy_options::create_symlinks);
   const bool copy_symlinks = is_set(options, copy_options::copy_symlinks);
@@ -572,6 +393,9 @@ fs::copy(const path& from, const path& to, copy_options options,
   // 2683. filesystem::copy() says "no effects"
   else
     ec.clear();
+#else
+  ec = std::make_error_code(std::errc::not_supported);
+#endif
 }
 
 bool
@@ -1049,6 +873,7 @@ namespace
 std::uintmax_t
 fs::file_size(const path& p, error_code& ec) noexcept
 {
+#ifdef _GLIBCXX_HAVE_SYS_STAT_H
   struct S
   {
     S(const stat_type& st) : type(make_file_type(st)), size(st.st_size) { }
@@ -1066,6 +891,9 @@ fs::file_size(const path& p, error_code& ec) noexcept
       else
 	ec = std::make_error_code(std::errc::not_supported);
     }
+#else
+  ec = std::make_error_code(std::errc::not_supported);
+#endif
   return -1;
 }
 
@@ -1082,8 +910,13 @@ fs::hard_link_count(const path& p)
 std::uintmax_t
 fs::hard_link_count(const path& p, error_code& ec) noexcept
 {
+#ifdef _GLIBCXX_HAVE_SYS_STAT_H
   return do_stat(p, ec, std::mem_fn(&stat_type::st_nlink),
 		 static_cast<uintmax_t>(-1));
+#else
+  ec = std::make_error_code(std::errc::not_supported);
+  return static_cast<uintmax_t>(-1);
+#endif
 }
 
 bool
@@ -1122,8 +955,16 @@ fs::last_write_time(const path& p)
 fs::file_time_type
 fs::last_write_time(const path& p, error_code& ec) noexcept
 {
-  return do_stat(p, ec, [&ec](const auto& st) { return file_time(st, ec); },
+#ifdef _GLIBCXX_HAVE_SYS_STAT_H
+  return do_stat(p, ec,
+		 [&ec](const auto& st) {
+		     return internal_file_clock::from_stat(st, ec);
+		 },
 		 file_time_type::min());
+#else
+  ec = std::make_error_code(std::errc::not_supported);
+  return file_time_type::min();
+#endif
 }
 
 void
@@ -1136,10 +977,10 @@ fs::last_write_time(const path& p, file_time_type new_time)
 }
 
 void
-fs::last_write_time(const path& p __attribute__((__unused__)),
+fs::last_write_time(const path& p,
 		    file_time_type new_time, error_code& ec) noexcept
 {
-  auto d = new_time.time_since_epoch();
+  auto d = internal_file_clock::_S_to_sys(new_time).time_since_epoch();
   auto s = chrono::duration_cast<chrono::seconds>(d);
 #if _GLIBCXX_USE_UTIMENSAT
   auto ns = chrono::duration_cast<chrono::nanoseconds>(d - s);
@@ -1157,7 +998,7 @@ fs::last_write_time(const path& p __attribute__((__unused__)),
     ec.assign(errno, std::generic_category());
   else
     ec.clear();
-#elif _GLIBCXX_HAVE_UTIME_H
+#elif _GLIBCXX_USE_UTIME && _GLIBCXX_HAVE_SYS_STAT_H
   posix::utimbuf times;
   times.modtime = s.count();
   times.actime = do_stat(p, ec, [](const auto& st) { return st.st_atime; },
@@ -1257,7 +1098,7 @@ fs::read_symlink(const path& p)
   return tgt;
 }
 
-fs::path fs::read_symlink(const path& p [[gnu::unused]], error_code& ec)
+fs::path fs::read_symlink(const path& p, error_code& ec)
 {
   path result;
 #if defined(_GLIBCXX_HAVE_READLINK) && defined(_GLIBCXX_HAVE_SYS_STAT_H)
@@ -1450,51 +1291,6 @@ fs::space(const path& p)
   return s;
 }
 
-#ifdef NEED_DO_SPACE
-void
-fs::do_space(const __gnu_posix::char_type* pathname,
-	 uintmax_t& capacity, uintmax_t& free, uintmax_t& available,
-	 std::error_code& ec)
-{
-#ifdef _GLIBCXX_HAVE_SYS_STATVFS_H
-  struct ::statvfs f;
-  if (::statvfs(pathname, &f))
-      ec.assign(errno, std::generic_category());
-  else
-    {
-      if (f.f_frsize != (unsigned long)-1)
-	{
-	  const uintmax_t fragment_size = f.f_frsize;
-	  const fsblkcnt_t unknown = -1;
-	  if (f.f_blocks != unknown)
-	    capacity = f.f_blocks * fragment_size;
-	  if (f.f_bfree != unknown)
-	    free = f.f_bfree * fragment_size;
-	  if (f.f_bavail != unknown)
-	    available = f.f_bavail * fragment_size;
-	}
-      ec.clear();
-    }
-#elif _GLIBCXX_FILESYSTEM_IS_WINDOWS
-  ULARGE_INTEGER bytes_avail = {}, bytes_total = {}, bytes_free = {};
-  if (GetDiskFreeSpaceExW(pathname, &bytes_avail, &bytes_total, &bytes_free))
-    {
-      if (bytes_total.QuadPart != 0)
-	capacity = bytes_total.QuadPart;
-      if (bytes_free.QuadPart != 0)
-	free = bytes_free.QuadPart;
-      if (bytes_avail.QuadPart != 0)
-	available = bytes_avail.QuadPart;
-      ec.clear();
-    }
-  else
-    ec.assign((int)GetLastError(), std::system_category());
-#else
-  ec = std::make_error_code(std::errc::not_supported);
-#endif
-}
-#endif // NEED_DO_SPACE
-
 fs::space_info
 fs::space(const path& p, error_code& ec) noexcept
 {
@@ -1503,6 +1299,7 @@ fs::space(const path& p, error_code& ec) noexcept
     static_cast<uintmax_t>(-1),
     static_cast<uintmax_t>(-1)
   };
+#ifdef _GLIBCXX_HAVE_SYS_STAT_H
 #if _GLIBCXX_FILESYSTEM_IS_WINDOWS
   path dir = absolute(p);
   dir.remove_filename();
@@ -1510,7 +1307,10 @@ fs::space(const path& p, error_code& ec) noexcept
 #else
   auto str = p.c_str();
 #endif
+
   do_space(str, info.capacity, info.free, info.available, ec);
+#endif // _GLIBCXX_HAVE_SYS_STAT_H
+
   return info;
 }
 

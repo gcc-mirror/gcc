@@ -1,6 +1,6 @@
 // Class filesystem::directory_entry etc. -*- C++ -*-
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,6 +27,11 @@
 #endif
 
 #include <experimental/filesystem>
+
+#ifndef _GLIBCXX_HAVE_DIRENT_H
+# error "the <dirent.h> header is needed to build the Filesystem TS"
+#endif
+
 #include <utility>
 #include <stack>
 #include <string.h>

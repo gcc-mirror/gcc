@@ -1,3 +1,12 @@
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2018-12-28  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gomp-constants.h (GOACC_FLAG_HOST_FALLBACK)
+	(GOACC_FLAGS_MARSHAL_OP, GOACC_FLAGS_UNMARSHAL): Define.
+
 2018-12-22  Jason Merrill  <jason@redhat.com>
 
 	* demangle.h: Remove support for ancient GNU (pre-3.0), Lucid,

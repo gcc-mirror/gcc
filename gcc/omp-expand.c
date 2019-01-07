@@ -2,7 +2,7 @@
    directives to separate functions, converts others into explicit calls to the
    runtime library (libgomp) and so forth
 
-Copyright (C) 2005-2018 Free Software Foundation, Inc.
+Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -7496,9 +7496,8 @@ expand_omp_target (struct omp_region *region)
 
   /* Emit a library call to launch the offloading region, or do data
      transfers.  */
-  tree t1, t2, t3, t4, device, cond, depend, c, clauses;
+  tree t1, t2, t3, t4, depend, c, clauses;
   enum built_in_function start_ix;
-  location_t clause_loc;
   unsigned int flags_i = 0;
 
   switch (gimple_omp_target_kind (entry_stmt))
@@ -7542,49 +7541,63 @@ expand_omp_target (struct omp_region *region)
 
   clauses = gimple_omp_target_clauses (entry_stmt);
 
-  /* By default, the value of DEVICE is GOMP_DEVICE_ICV (let runtime
-     library choose) and there is no conditional.  */
-  cond = NULL_TREE;
-  device = build_int_cst (integer_type_node, GOMP_DEVICE_ICV);
+  tree device = NULL_TREE;
+  location_t device_loc = UNKNOWN_LOCATION;
+  tree goacc_flags = NULL_TREE;
+  if (is_gimple_omp_oacc (entry_stmt))
+    {
+      /* By default, no GOACC_FLAGs are set.  */
+      goacc_flags = integer_zero_node;
+    }
+  else
+    {
+      c = omp_find_clause (clauses, OMP_CLAUSE_DEVICE);
+      if (c)
+	{
+	  device = OMP_CLAUSE_DEVICE_ID (c);
+	  device_loc = OMP_CLAUSE_LOCATION (c);
+	}
+      else
+	{
+	  /* By default, the value of DEVICE is GOMP_DEVICE_ICV (let runtime
+	     library choose).  */
+	  device = build_int_cst (integer_type_node, GOMP_DEVICE_ICV);
+	  device_loc = gimple_location (entry_stmt);
+	}
 
+      c = omp_find_clause (clauses, OMP_CLAUSE_NOWAIT);
+      if (c)
+	flags_i |= GOMP_TARGET_FLAG_NOWAIT;
+    }
+
+  /* By default, there is no conditional.  */
+  tree cond = NULL_TREE;
   c = omp_find_clause (clauses, OMP_CLAUSE_IF);
   if (c)
     cond = OMP_CLAUSE_IF_EXPR (c);
-
-  c = omp_find_clause (clauses, OMP_CLAUSE_DEVICE);
-  if (c)
-    {
-      /* Even if we pass it to all library function calls, it is currently only
-	 defined/used for the OpenMP target ones.  */
-      gcc_checking_assert (start_ix == BUILT_IN_GOMP_TARGET
-			   || start_ix == BUILT_IN_GOMP_TARGET_DATA
-			   || start_ix == BUILT_IN_GOMP_TARGET_UPDATE
-			   || start_ix == BUILT_IN_GOMP_TARGET_ENTER_EXIT_DATA);
-
-      device = OMP_CLAUSE_DEVICE_ID (c);
-      clause_loc = OMP_CLAUSE_LOCATION (c);
-    }
-  else
-    clause_loc = gimple_location (entry_stmt);
-
-  c = omp_find_clause (clauses, OMP_CLAUSE_NOWAIT);
-  if (c)
-    flags_i |= GOMP_TARGET_FLAG_NOWAIT;
-
-  /* Ensure 'device' is of the correct type.  */
-  device = fold_convert_loc (clause_loc, integer_type_node, device);
-
-  /* If we found the clause 'if (cond)', build
-     (cond ? device : GOMP_DEVICE_HOST_FALLBACK).  */
+  /* If we found the clause 'if (cond)', build:
+     OpenACC: goacc_flags = (cond ? goacc_flags : flags | GOACC_FLAG_HOST_FALLBACK)
+     OpenMP: device = (cond ? device : GOMP_DEVICE_HOST_FALLBACK) */
   if (cond)
     {
+      tree *tp;
+      if (is_gimple_omp_oacc (entry_stmt))
+	tp = &goacc_flags;
+      else
+	{
+	  /* Ensure 'device' is of the correct type.  */
+	  device = fold_convert_loc (device_loc, integer_type_node, device);
+
+	  tp = &device;
+	}
+
       cond = gimple_boolify (cond);
 
       basic_block cond_bb, then_bb, else_bb;
       edge e;
       tree tmp_var;
 
-      tmp_var = create_tmp_var (TREE_TYPE (device));
+      tmp_var = create_tmp_var (TREE_TYPE (*tp));
       if (offloaded)
 	e = split_block_after_labels (new_bb);
       else
@@ -7607,13 +7620,20 @@ expand_omp_target (struct omp_region *region)
       gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
 
       gsi = gsi_start_bb (then_bb);
-      stmt = gimple_build_assign (tmp_var, device);
+      stmt = gimple_build_assign (tmp_var, *tp);
       gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
 
       gsi = gsi_start_bb (else_bb);
-      stmt = gimple_build_assign (tmp_var,
-				  build_int_cst (integer_type_node,
-						 GOMP_DEVICE_HOST_FALLBACK));
+      if (is_gimple_omp_oacc (entry_stmt))
+	stmt = gimple_build_assign (tmp_var,
+				    BIT_IOR_EXPR,
+				    *tp,
+				    build_int_cst (integer_type_node,
+						   GOACC_FLAG_HOST_FALLBACK));
+      else
+	stmt = gimple_build_assign (tmp_var,
+				    build_int_cst (integer_type_node,
+						   GOMP_DEVICE_HOST_FALLBACK));
       gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
 
       make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
@@ -7623,14 +7643,17 @@ expand_omp_target (struct omp_region *region)
       make_edge (then_bb, new_bb, EDGE_FALLTHRU);
       make_edge (else_bb, new_bb, EDGE_FALLTHRU);
 
-      device = tmp_var;
+      *tp = tmp_var;
+
       gsi = gsi_last_nondebug_bb (new_bb);
     }
   else
     {
       gsi = gsi_last_nondebug_bb (new_bb);
-      device = force_gimple_operand_gsi (&gsi, device, true, NULL_TREE,
-					 true, GSI_SAME_STMT);
+
+      if (device != NULL_TREE)
+	device = force_gimple_operand_gsi (&gsi, device, true, NULL_TREE,
+					   true, GSI_SAME_STMT);
     }
 
   t = gimple_omp_target_data_arg (entry_stmt);
@@ -7654,7 +7677,17 @@ expand_omp_target (struct omp_region *region)
   bool tagging = false;
   /* The maximum number used by any start_ix, without varargs.  */
   auto_vec<tree, 11> args;
-  args.quick_push (device);
+  if (is_gimple_omp_oacc (entry_stmt))
+    {
+      tree goacc_flags_m = fold_build1 (GOACC_FLAGS_MARSHAL_OP,
+					TREE_TYPE (goacc_flags), goacc_flags);
+      goacc_flags_m = force_gimple_operand_gsi (&gsi, goacc_flags_m, true,
+						NULL_TREE, true,
+						GSI_SAME_STMT);
+      args.quick_push (goacc_flags_m);
+    }
+  else
+    args.quick_push (device);
   if (offloaded)
     args.quick_push (build_fold_addr_expr (child_fn));
   args.quick_push (t1);

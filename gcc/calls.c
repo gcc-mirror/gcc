@@ -1,5 +1,5 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
-   Copyright (C) 1989-2018 Free Software Foundation, Inc.
+   Copyright (C) 1989-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1569,9 +1569,11 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
   /* The bound argument to a bounded string function like strncpy.  */
   tree bound = NULL_TREE;
 
-  /* The range of lengths of a string argument to one of the comparison
-     functions.  If the length is less than the bound it is used instead.  */
-  tree lenrng[2] = { NULL_TREE, NULL_TREE };
+  /* The longest known or possible string argument to one of the comparison
+     functions.  If the length is less than the bound it is used instead.
+     Since the length is only used for warning and not for code generation
+     disable strict mode in the calls to get_range_strlen below.  */
+  tree maxlen = NULL_TREE;
 
   /* It's safe to call "bounded" string functions with a non-string
      argument since the functions provide an explicit bound for this
@@ -1591,11 +1593,15 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	   and to adjust the range of the bound of the bounded ones.  */
 	for (unsigned argno = 0;
 	     argno < MIN (nargs, 2)
-	     && !(lenrng[1] && TREE_CODE (lenrng[1]) == INTEGER_CST); argno++)
+	       && !(maxlen && TREE_CODE (maxlen) == INTEGER_CST); argno++)
 	  {
 	    tree arg = CALL_EXPR_ARG (exp, argno);
 	    if (!get_attr_nonstring_decl (arg))
-	      get_range_strlen (arg, lenrng);
+	      {
+		c_strlen_data lendata = { };
+		get_range_strlen (arg, &lendata, /* eltsize = */ 1);
+		maxlen = lendata.maxbound;
+	      }
 	  }
       }
       /* Fall through.  */
@@ -1616,8 +1622,11 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
       {
 	tree arg = CALL_EXPR_ARG (exp, 0);
 	if (!get_attr_nonstring_decl (arg))
-	  get_range_strlen (arg, lenrng);
-
+	  {
+	    c_strlen_data lendata = { };
+	    get_range_strlen (arg, &lendata, /* eltsize = */ 1);
+	    maxlen = lendata.maxbound;
+	  }
 	if (nargs > 1)
 	  bound = CALL_EXPR_ARG (exp, 1);
 	break;
@@ -1658,28 +1667,28 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	}
     }
 
-  if (lenrng[1] && TREE_CODE (lenrng[1]) == INTEGER_CST)
+  if (maxlen && !integer_all_onesp (maxlen))
     {
       /* Add one for the nul.  */
-      lenrng[1] = const_binop (PLUS_EXPR, TREE_TYPE (lenrng[1]),
-			       lenrng[1], size_one_node);
+      maxlen = const_binop (PLUS_EXPR, TREE_TYPE (maxlen), maxlen,
+			    size_one_node);
 
       if (!bndrng[0])
 	{
 	  /* Conservatively use the upper bound of the lengths for
 	     both the lower and the upper bound of the operation.  */
-	  bndrng[0] = lenrng[1];
-	  bndrng[1] = lenrng[1];
+	  bndrng[0] = maxlen;
+	  bndrng[1] = maxlen;
 	  bound = void_type_node;
 	}
-      else
+      else if (maxlen)
 	{
 	  /* Replace the bound on the operation with the upper bound
 	     of the length of the string if the latter is smaller.  */
-	  if (tree_int_cst_lt (lenrng[1], bndrng[0]))
-	    bndrng[0] = lenrng[1];
-	  else if (tree_int_cst_lt (lenrng[1], bndrng[1]))
-	    bndrng[1] = lenrng[1];
+	  if (tree_int_cst_lt (maxlen, bndrng[0]))
+	    bndrng[0] = maxlen;
+	  else if (tree_int_cst_lt (maxlen, bndrng[1]))
+	    bndrng[1] = maxlen;
 	}
     }
 

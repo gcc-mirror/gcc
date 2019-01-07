@@ -3936,24 +3936,12 @@ Unary_expression::check_operand_address_taken(Gogo*)
   // If this->escapes_ is false at this point, then it was set to
   // false by an explicit call to set_does_not_escape, and the value
   // does not escape.  If this->escapes_ is true, we may be able to
-  // set it to false if taking the address of a variable that does not
-  // escape.
-  Node* n = Node::make_node(this);
-  if ((n->encoding() & ESCAPE_MASK) == int(Node::ESCAPE_NONE))
-    this->escapes_ = false;
-
-  Named_object* var = NULL;
-  if (this->expr_->var_expression() != NULL)
-    var = this->expr_->var_expression()->named_object();
-  else if (this->expr_->enclosed_var_expression() != NULL)
-    var = this->expr_->enclosed_var_expression()->variable();
-
-  if (this->escapes_ && var != NULL)
+  // set it to false based on the escape analysis pass.
+  if (this->escapes_)
     {
-      if (var->is_variable())
-	this->escapes_ = var->var_value()->escapes();
-      if (var->is_result_variable())
-	this->escapes_ = var->result_var_value()->escapes();
+      Node* n = Node::make_node(this);
+      if ((n->encoding() & ESCAPE_MASK) == int(Node::ESCAPE_NONE))
+	this->escapes_ = false;
     }
 
   this->expr_->address_taken(this->escapes_);

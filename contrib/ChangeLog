@@ -1,3 +1,7 @@
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py: Add Gerard Jungman as external author.
+
 2018-11-26  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* update-copyright.py (TestsuiteFilter): Skip .d tests.

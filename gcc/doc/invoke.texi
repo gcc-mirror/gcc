@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2018 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2019 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -8,7 +8,7 @@
 @c man end
 
 @c man begin COPYRIGHT
-Copyright @copyright{} 1988-2018 Free Software Foundation, Inc.
+Copyright @copyright{} 1988-2019 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -9503,6 +9503,8 @@ DO I = 1, N
    D(I) = E(I) * F
 ENDDO
 @end smallexample
+This flag is enabled by default at @option{-O3}.
+It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -ftree-loop-distribute-patterns
 @opindex ftree-loop-distribute-patterns
@@ -9528,6 +9530,8 @@ DO I = 1, N
 ENDDO
 @end smallexample
 and the initialization loop is transformed into a call to memset zero.
+This flag is enabled by default at @option{-O3}.
+It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -floop-interchange
 @opindex floop-interchange
@@ -9548,12 +9552,14 @@ for (int i = 0; i < N; i++)
       c[i][j] = c[i][j] + a[i][k]*b[k][j];
 @end smallexample
 This flag is enabled by default at @option{-O3}.
+It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -floop-unroll-and-jam
 @opindex floop-unroll-and-jam
 Apply unroll and jam transformations on feasible loops.  In a loop
 nest this unrolls the outer loop by some factor and fuses the resulting
 multiple inner loops.  This flag is enabled by default at @option{-O3}.
+It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -ftree-loop-im
 @opindex ftree-loop-im
@@ -10808,6 +10814,8 @@ else
 
 This is particularly useful for assumed-shape arrays in Fortran where
 (for example) it allows better vectorization assuming contiguous accesses.
+This flag is enabled by default at @option{-O3}.
+It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -ffunction-sections
 @itemx -fdata-sections
@@ -11010,6 +11018,27 @@ a lot of functions that would otherwise not be considered for inlining
 by the compiler are investigated.  To those functions, a different
 (more restrictive) limit compared to functions declared inline can
 be applied.
+
+@item max-inline-insns-small
+This is bound applied to calls which are considered relevant with
+@option{-finline-small-functions}.
+
+@item max-inline-insns-size
+This is bound applied to calls which are optimized for size. Small growth
+may be desirable to anticipate optimization oppurtunities exposed by inlining.
+
+@item uninlined-function-insns
+Number of instructions accounted by inliner for function overhead such as
+function prologue and epilogue.
+
+@item uninlined-function-time
+Extra time accounted by inliner for function overhead such as time needed to
+execute function prologue and epilogue
+
+@item uninlined-thunk-insns
+@item uninlined-thunk-time
+Same as @option{--param uninlined-function-insns} and
+@option{--param uninlined-function-time} but applied to function thunks
 
 @item inline-min-speedup
 When estimated performance improvement of caller + callee runtime exceeds this
@@ -15642,6 +15671,7 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-a57}, @samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75},
 @samp{cortex-a76}, @samp{ares}, @samp{exynos-m1}, @samp{emag}, @samp{falkor},
 @samp{qdf24xx}, @samp{saphira}, @samp{phecda}, @samp{xgene1}, @samp{vulcan},
+@samp{octeontx}, @samp{octeontx81},  @samp{octeontx83},
 @samp{thunderx}, @samp{thunderxt88}, @samp{thunderxt88p1}, @samp{thunderxt81},
 @samp{tsv110}, @samp{thunderxt83}, @samp{thunderx2t99},
 @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},

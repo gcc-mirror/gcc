@@ -1,5 +1,5 @@
 /* Process declarations and variables for C++ compiler.
-   Copyright (C) 1988-2018 Free Software Foundation, Inc.
+   Copyright (C) 1988-2019 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -3331,15 +3331,15 @@ var_needs_tls_wrapper (tree var)
    translation unit.  */
 
 static tree
-get_local_tls_init_fn (void)
+get_local_tls_init_fn (location_t loc)
 {
   tree sname = get_identifier ("__tls_init");
   tree fn = get_global_binding (sname);
   if (!fn)
     {
-      fn = build_lang_decl (FUNCTION_DECL, sname,
-			     build_function_type (void_type_node,
-						  void_list_node));
+      fn = build_lang_decl_loc (loc, FUNCTION_DECL, sname,
+				build_function_type (void_type_node,
+						     void_list_node));
       SET_DECL_LANGUAGE (fn, lang_c);
       TREE_PUBLIC (fn) = false;
       DECL_ARTIFICIAL (fn) = true;
@@ -3369,7 +3369,7 @@ get_tls_init_fn (tree var)
   /* If the variable is internal, or if we can't generate aliases,
      call the local init function directly.  */
   if (!TREE_PUBLIC (var) || !TARGET_SUPPORTS_ALIASES)
-    return get_local_tls_init_fn ();
+    return get_local_tls_init_fn (DECL_SOURCE_LOCATION (var));
 
   tree sname = mangle_tls_init_fn (var);
   tree fn = get_global_binding (sname);
@@ -4435,7 +4435,7 @@ handle_tls_init (void)
   set_decl_tls_model (guard, decl_default_tls_model (guard));
   pushdecl_top_level_and_finish (guard, NULL_TREE);
 
-  tree fn = get_local_tls_init_fn ();
+  tree fn = get_local_tls_init_fn (loc);
   start_preparsed_function (fn, NULL_TREE, SF_PRE_PARSED);
   tree body = begin_function_body ();
   tree if_stmt = begin_if_stmt ();

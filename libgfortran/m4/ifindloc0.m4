@@ -1,5 +1,5 @@
 `/* Implementation of the FINDLOC intrinsic
-   Copyright (C) 2018 Free Software Foundation, Inc.
+   Copyright (C) 2018-2019 Free Software Foundation, Inc.
    Contributed by Thomas König <tk@tkoenig.net>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -48,7 +48,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank-1, 1);
       retarray->dtype.rank = 1;
       retarray->offset = 0;
-      retarray->base_addr = xmallocarray (rank, sizeof (GFC_INTEGER_4));
+      retarray->base_addr = xmallocarray (rank, sizeof (index_type));
     }
   else
     {
@@ -179,7 +179,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank-1, 1);
       retarray->dtype.rank = 1;
       retarray->offset = 0;
-      retarray->base_addr = xmallocarray (rank, sizeof (GFC_INTEGER_4));
+      retarray->base_addr = xmallocarray (rank, sizeof (index_type));
     }
   else
     {
@@ -317,7 +317,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   index_type * restrict dest;
   index_type n;
 
-  if (*mask)
+  if (mask == NULL || *mask)
     {
       findloc0_'atype_code` (retarray, array, value, back'len_arg`);
       return;
@@ -333,7 +333,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank-1, 1);
       retarray->dtype.rank = 1;
       retarray->offset = 0;
-      retarray->base_addr = xmallocarray (rank, sizeof (GFC_INTEGER_4));
+      retarray->base_addr = xmallocarray (rank, sizeof (index_type));
     }
   else if (unlikely (compile_options.bounds_check))
     {

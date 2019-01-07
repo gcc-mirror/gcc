@@ -1,3 +1,29 @@
+2019-01-03  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-3.c: New test.
+
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi: Bump @copying's copyright year.
+
+2018-12-28  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-parallel.c (GOACC_parallel_keyed, GOACC_parallel)
+	(GOACC_data_start, GOACC_enter_exit_data, GOACC_update)
+	(GOACC_declare): Redefine the "device" argument to "flags".
+
+2018-12-28  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* target.c (struct gomp_coalesce_chunk): New structure.
+	(struct gomp_coalesce_buf): Update the chunks member to use that
+	type.  Adjust all users.
+
 2018-12-19  Tom de Vries  <tdevries@suse.de>
 
 	* testsuite/libgomp.oacc-c-c++-common/pr85381-2.c: New test.
@@ -10835,7 +10861,7 @@
 
 	Initial implementation and checkin.
 
-Copyright (C) 2005-2018 Free Software Foundation, Inc.
+Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

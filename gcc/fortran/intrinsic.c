@@ -1,6 +1,6 @@
 /* Build up a list of intrinsic subroutines and functions for the
    name-resolution stage.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -2025,8 +2025,9 @@ add_functions (void)
 
   make_generic ("iachar", GFC_ISYM_IACHAR, GFC_STD_F95);
 
-  add_sym_2 ("iand", GFC_ISYM_IAND, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
-	     gfc_check_iand, gfc_simplify_iand, gfc_resolve_iand,
+  add_sym_2 ("iand", GFC_ISYM_IAND, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di,
+	     GFC_STD_F95,
+	     gfc_check_iand_ieor_ior, gfc_simplify_iand, gfc_resolve_iand,
 	     i, BT_INTEGER, di, REQUIRED, j, BT_INTEGER, di, REQUIRED);
 
   if (flag_dec_intrinsic_ints)
@@ -2114,8 +2115,9 @@ add_functions (void)
 
   make_generic ("ichar", GFC_ISYM_ICHAR, GFC_STD_F77);
 
-  add_sym_2 ("ieor", GFC_ISYM_IEOR, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
-	     gfc_check_ieor, gfc_simplify_ieor, gfc_resolve_ieor,
+  add_sym_2 ("ieor", GFC_ISYM_IEOR, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di,
+	     GFC_STD_F95,
+	     gfc_check_iand_ieor_ior, gfc_simplify_ieor, gfc_resolve_ieor,
 	     i, BT_INTEGER, di, REQUIRED, j, BT_INTEGER, di, REQUIRED);
 
   if (flag_dec_intrinsic_ints)
@@ -2192,8 +2194,9 @@ add_functions (void)
 
   make_generic ("long", GFC_ISYM_LONG, GFC_STD_GNU);
 
-  add_sym_2 ("ior", GFC_ISYM_IOR, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
-	     gfc_check_ior, gfc_simplify_ior, gfc_resolve_ior,
+  add_sym_2 ("ior", GFC_ISYM_IOR, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di,
+	     GFC_STD_F95,
+	     gfc_check_iand_ieor_ior, gfc_simplify_ior, gfc_resolve_ior,
 	     i, BT_INTEGER, di, REQUIRED, j, BT_INTEGER, di, REQUIRED);
 
   if (flag_dec_intrinsic_ints)

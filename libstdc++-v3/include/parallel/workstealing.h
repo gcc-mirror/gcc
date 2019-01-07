@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007-2018 Free Software Foundation, Inc.
+// Copyright (C) 2007-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -30,7 +30,7 @@
  *
  *  R. D. Blumofe and C. E. Leiserson.
  *  Scheduling multithreaded computations by work stealing.
- *  Journal of the ACM, 46(5):720–748, 1999.
+ *  Journal of the ACM, 46(5):720-748, 1999.
  *
  *  This file is a GNU parallel extension to the Standard C++ Library.
  */

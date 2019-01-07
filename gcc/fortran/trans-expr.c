@@ -1,5 +1,5 @@
 /* Expression translation
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -5760,17 +5760,21 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	     array-descriptor actual to array-descriptor dummy, see
 	     PR 41911 for why a check has to be inserted.
 	     fsym == NULL is checked as intrinsics required the descriptor
-	     but do not always set fsym.  */
+	     but do not always set fsym.  
+	     Also, it is necessary to pass a NULL pointer to library routines
+	     which usually ignore optional arguments, so they can handle
+	     these themselves.  */
 	  if (e->expr_type == EXPR_VARIABLE
 	      && e->symtree->n.sym->attr.optional
-	      && ((e->rank != 0 && elemental_proc)
-		  || e->representation.length || e->ts.type == BT_CHARACTER
-		  || (e->rank != 0
-		      && (fsym == NULL
-			  || (fsym-> as
-			      && (fsym->as->type == AS_ASSUMED_SHAPE
-				  || fsym->as->type == AS_ASSUMED_RANK
-			      	  || fsym->as->type == AS_DEFERRED))))))
+	      && (((e->rank != 0 && elemental_proc)
+		   || e->representation.length || e->ts.type == BT_CHARACTER
+		   || (e->rank != 0
+		       && (fsym == NULL
+			   || (fsym->as
+			       && (fsym->as->type == AS_ASSUMED_SHAPE
+				   || fsym->as->type == AS_ASSUMED_RANK
+				   || fsym->as->type == AS_DEFERRED)))))
+		  || se->ignore_optional))
 	    gfc_conv_missing_dummy (&parmse, e, fsym ? fsym->ts : e->ts,
 				    e->representation.length);
 	}

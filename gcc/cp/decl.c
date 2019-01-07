@@ -1,5 +1,5 @@
 /* Process declarations and variables for C++ compiler.
-   Copyright (C) 1988-2018 Free Software Foundation, Inc.
+   Copyright (C) 1988-2019 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -4536,11 +4536,9 @@ builtin_function_1 (tree decl, tree context, bool is_global)
     }
 
   if (is_global)
-    pushdecl_top_level (decl);
+    return pushdecl_top_level (decl);
   else
-    pushdecl (decl);
-
-  return decl;
+    return pushdecl (decl);
 }
 
 tree

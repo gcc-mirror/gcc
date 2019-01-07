@@ -1,5 +1,5 @@
 @ignore
-Copyright (C) 2005-2018 Free Software Foundation, Inc.
+Copyright (C) 2005-2019 Free Software Foundation, Inc.
 This is part of the GNU Fortran manual.   
 For copying conditions, see the file gfortran.texi.
 
@@ -1144,15 +1144,20 @@ Function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{I} @tab The type shall be either a scalar @code{INTEGER}
-type or a scalar @code{LOGICAL} type.
-@item @var{J} @tab The type shall be the same as the type of @var{I}.
+type or a scalar @code{LOGICAL} type or a boz-literal-constant.
+@item @var{J} @tab The type shall be the same as the type of @var{I} or
+a boz-literal-constant. @var{I} and @var{J} shall not both be
+boz-literal-constants.  If either @var{I} or @var{J} is a
+boz-literal-constant, then the other argument must be a scalar @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
 The return type is either a scalar @code{INTEGER} or a scalar
 @code{LOGICAL}.  If the kind type parameters differ, then the
 smaller kind type is implicitly converted to larger kind, and the 
-return has the larger kind.
+return has the larger kind.  A boz-literal-constant is 
+converted to an @code{INTEGER} with the kind type parameter of
+the other argument as-if a call to @ref{INT} occurred.
 
 @item @emph{Example}:
 @smallexample
@@ -7523,16 +7528,17 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER}.
-@item @var{J} @tab The type shall be @code{INTEGER}, of the same
-kind as @var{I}.  (As a GNU extension, different kinds are also 
-permitted.)
+@item @var{I} @tab The type shall be @code{INTEGER} or a boz-literal-constant.
+@item @var{J} @tab The type shall be @code{INTEGER} with the same
+kind type parameter as @var{I} or a boz-literal-constant.
+@var{I} and @var{J} shall not both be boz-literal-constants.
 @end multitable
 
 @item @emph{Return value}:
-The return type is @code{INTEGER}, of the same kind as the
-arguments.  (If the argument kinds differ, it is of the same kind as
-the larger argument.)
+The return type is @code{INTEGER} with the kind type parameter of the
+arguments.
+A boz-literal-constant is converted to an @code{INTEGER} with the kind
+type parameter of the other argument as-if a call to @ref{INT} occurred.
 
 @item @emph{Example}:
 @smallexample
@@ -7973,16 +7979,17 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER}.
-@item @var{J} @tab The type shall be @code{INTEGER}, of the same
-kind as @var{I}.  (As a GNU extension, different kinds are also 
-permitted.)
+@item @var{I} @tab The type shall be @code{INTEGER} or a boz-literal-constant.
+@item @var{J} @tab The type shall be @code{INTEGER} with the same
+kind type parameter as @var{I} or a boz-literal-constant.
+@var{I} and @var{J} shall not both be boz-literal-constants.
 @end multitable
 
 @item @emph{Return value}:
-The return type is @code{INTEGER}, of the same kind as the
-arguments.  (If the argument kinds differ, it is of the same kind as
-the larger argument.)
+The return type is @code{INTEGER} with the kind type parameter of the
+arguments.
+A boz-literal-constant is converted to an @code{INTEGER} with the kind
+type parameter of the other argument as-if a call to @ref{INT} occurred.
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
@@ -8291,16 +8298,17 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER}.
-@item @var{J} @tab The type shall be @code{INTEGER}, of the same
-kind as @var{I}.  (As a GNU extension, different kinds are also 
-permitted.)
+@item @var{I} @tab The type shall be @code{INTEGER} or a boz-literal-constant.
+@item @var{J} @tab The type shall be @code{INTEGER} with the same
+kind type parameter as @var{I} or a boz-literal-constant.
+@var{I} and @var{J} shall not both be boz-literal-constants.
 @end multitable
 
 @item @emph{Return value}:
-The return type is @code{INTEGER}, of the same kind as the
-arguments.  (If the argument kinds differ, it is of the same kind as
-the larger argument.)
+The return type is @code{INTEGER} with the kind type parameter of the
+arguments.
+A boz-literal-constant is converted to an @code{INTEGER} with the kind
+type parameter of the other argument as-if a call to @ref{INT} occurred.
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
@@ -10296,11 +10304,12 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I}    @tab Shall be of type @code{INTEGER}.
-@item @var{J}    @tab Shall be of type @code{INTEGER} and of the same
-kind as @var{I}.
-@item @var{MASK} @tab Shall be of type @code{INTEGER} and of the same
-kind as @var{I}.
+@item @var{I} @tab Shall be of type @code{INTEGER} or a boz-literal-constant.
+@item @var{J} @tab Shall be of type @code{INTEGER} with the same
+kind type parameter as @var{I} or a boz-literal-constant.
+@var{I} and @var{J} shall not both be boz-literal-constants.
+@item @var{MASK} @tab Shall be of type @code{INTEGER} or a boz-literal-constant
+and of the same kind as @var{I}.
 @end multitable
 
 @item @emph{Return value}:
@@ -11125,15 +11134,20 @@ Function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{I} @tab The type shall be either a scalar @code{INTEGER}
-type or a scalar @code{LOGICAL} type.
-@item @var{J} @tab The type shall be the same as the type of @var{J}.
+type or a scalar @code{LOGICAL} type or a boz-literal-constant.
+@item @var{J} @tab The type shall be the same as the type of @var{I} or
+a boz-literal-constant. @var{I} and @var{J} shall not both be
+boz-literal-constants.  If either @var{I} and @var{J} is a
+boz-literal-constant, then the other argument must be a scalar @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
 The return type is either a scalar @code{INTEGER} or a scalar
 @code{LOGICAL}.  If the kind type parameters differ, then the
 smaller kind type is implicitly converted to larger kind, and the 
-return has the larger kind.
+return has the larger kind.  A boz-literal-constant is 
+converted to an @code{INTEGER} with the kind type parameter of
+the other argument as-if a call to @ref{INT} occurred.
 
 @item @emph{Example}:
 @smallexample
@@ -14639,16 +14653,21 @@ Function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be either  a scalar @code{INTEGER}
-type or a scalar @code{LOGICAL} type.
-@item @var{J} @tab The type shall be the same as the type of @var{I}.
+@item @var{I} @tab The type shall be either a scalar @code{INTEGER}
+type or a scalar @code{LOGICAL} type or a boz-literal-constant.
+@item @var{J} @tab The type shall be the same as the type of @var{I} or
+a boz-literal-constant. @var{I} and @var{J} shall not both be
+boz-literal-constants.  If either @var{I} and @var{J} is a
+boz-literal-constant, then the other argument must be a scalar @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
 The return type is either a scalar @code{INTEGER} or a scalar
 @code{LOGICAL}.  If the kind type parameters differ, then the
 smaller kind type is implicitly converted to larger kind, and the 
-return has the larger kind.
+return has the larger kind.  A boz-literal-constant is 
+converted to an @code{INTEGER} with the kind type parameter of
+the other argument as-if a call to @ref{INT} occurred.
 
 @item @emph{Example}:
 @smallexample

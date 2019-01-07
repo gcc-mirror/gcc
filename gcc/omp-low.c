@@ -4,7 +4,7 @@
 
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -7011,6 +7011,12 @@ lower_omp_task_reductions (omp_context *ctx, enum tree_code code, tree clauses,
       *last = field;
       DECL_CHAIN (field) = ifield;
       last = &DECL_CHAIN (ifield);
+      DECL_CONTEXT (field) = record_type;
+      if (TYPE_ALIGN (record_type) < DECL_ALIGN (field))
+	SET_TYPE_ALIGN (record_type, DECL_ALIGN (field));
+      DECL_CONTEXT (ifield) = record_type;
+      if (TYPE_ALIGN (record_type) < DECL_ALIGN (ifield))
+	SET_TYPE_ALIGN (record_type, DECL_ALIGN (ifield));
     }
   for (int pass = 0; pass < 2; pass++)
     {
@@ -7036,12 +7042,16 @@ lower_omp_task_reductions (omp_context *ctx, enum tree_code code, tree clauses,
 	  else
 	    SET_DECL_ALIGN (field, TYPE_ALIGN (type));
 	  DECL_CONTEXT (field) = record_type;
+	  if (TYPE_ALIGN (record_type) < DECL_ALIGN (field))
+	    SET_TYPE_ALIGN (record_type, DECL_ALIGN (field));
 	  *last = field;
 	  last = &DECL_CHAIN (field);
 	  tree bfield
 	    = build_decl (OMP_CLAUSE_LOCATION (c), FIELD_DECL, NULL_TREE,
 			  boolean_type_node);
 	  DECL_CONTEXT (bfield) = record_type;
+	  if (TYPE_ALIGN (record_type) < DECL_ALIGN (bfield))
+	    SET_TYPE_ALIGN (record_type, DECL_ALIGN (bfield));
 	  *last = bfield;
 	  last = &DECL_CHAIN (bfield);
 	}

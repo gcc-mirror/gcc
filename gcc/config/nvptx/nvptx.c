@@ -1,5 +1,5 @@
 /* Target code for NVPTX.
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
    This file is part of GCC.
@@ -2873,6 +2873,57 @@ nvptx_reorg_uniform_simt ()
     }
 }
 
+/* Offloading function attributes.  */
+
+struct offload_attrs
+{
+  unsigned mask;
+  int num_gangs;
+  int num_workers;
+  int vector_length;
+};
+
+/* Define entries for cfun->machine->axis_dim.  */
+
+#define MACH_VECTOR_LENGTH 0
+#define MACH_MAX_WORKERS 1
+
+static void populate_offload_attrs (offload_attrs *oa);
+
+static void
+init_axis_dim (void)
+{
+  offload_attrs oa;
+  int max_workers;
+
+  populate_offload_attrs (&oa);
+
+  if (oa.num_workers == 0)
+    max_workers = PTX_CTA_SIZE / oa.vector_length;
+  else
+    max_workers = oa.num_workers;
+
+  cfun->machine->axis_dim[MACH_VECTOR_LENGTH] = oa.vector_length;
+  cfun->machine->axis_dim[MACH_MAX_WORKERS] = max_workers;
+  cfun->machine->axis_dim_init_p = true;
+}
+
+static int ATTRIBUTE_UNUSED
+nvptx_mach_max_workers ()
+{
+  if (!cfun->machine->axis_dim_init_p)
+    init_axis_dim ();
+  return cfun->machine->axis_dim[MACH_MAX_WORKERS];
+}
+
+static int ATTRIBUTE_UNUSED
+nvptx_mach_vector_length ()
+{
+  if (!cfun->machine->axis_dim_init_p)
+    init_axis_dim ();
+  return cfun->machine->axis_dim[MACH_VECTOR_LENGTH];
+}
+
 /* Loop structure of the function.  The entire function is described as
    a NULL loop.  */
 
@@ -4576,6 +4627,41 @@ nvptx_neuter_pars (parallel *par, unsigned modes, unsigned outer)
     nvptx_neuter_pars (par->next, modes, outer);
 }
 
+static void
+populate_offload_attrs (offload_attrs *oa)
+{
+  tree attr = oacc_get_fn_attrib (current_function_decl);
+  tree dims = TREE_VALUE (attr);
+  unsigned ix;
+
+  oa->mask = 0;
+
+  for (ix = 0; ix != GOMP_DIM_MAX; ix++, dims = TREE_CHAIN (dims))
+    {
+      tree t = TREE_VALUE (dims);
+      int size = (t == NULL_TREE) ? -1 : TREE_INT_CST_LOW (t);
+      tree allowed = TREE_PURPOSE (dims);
+
+      if (size != 1 && !(allowed && integer_zerop (allowed)))
+	oa->mask |= GOMP_DIM_MASK (ix);
+
+      switch (ix)
+	{
+	case GOMP_DIM_GANG:
+	  oa->num_gangs = size;
+	  break;
+
+	case GOMP_DIM_WORKER:
+	  oa->num_workers = size;
+	  break;
+
+	case GOMP_DIM_VECTOR:
+	  oa->vector_length = size;
+	  break;
+	}
+    }
+}
+
 #if WORKAROUND_PTXJIT_BUG_2
 /* Variant of pc_set that only requires JUMP_P (INSN) if STRICT.  This variant
    is needed in the nvptx target because the branches generated for
@@ -4757,27 +4843,19 @@ nvptx_reorg (void)
     {
       /* If we determined this mask before RTL expansion, we could
 	 elide emission of some levels of forks and joins.  */
-      unsigned mask = 0;
-      tree dims = TREE_VALUE (attr);
-      unsigned ix;
+      offload_attrs oa;
 
-      for (ix = 0; ix != GOMP_DIM_MAX; ix++, dims = TREE_CHAIN (dims))
-	{
-	  int size = TREE_INT_CST_LOW (TREE_VALUE (dims));
-	  tree allowed = TREE_PURPOSE (dims);
+      populate_offload_attrs (&oa);
 
-	  if (size != 1 && !(allowed && integer_zerop (allowed)))
-	    mask |= GOMP_DIM_MASK (ix);
-	}
       /* If there is worker neutering, there must be vector
 	 neutering.  Otherwise the hardware will fail.  */
-      gcc_assert (!(mask & GOMP_DIM_MASK (GOMP_DIM_WORKER))
-		  || (mask & GOMP_DIM_MASK (GOMP_DIM_VECTOR)));
+      gcc_assert (!(oa.mask & GOMP_DIM_MASK (GOMP_DIM_WORKER))
+		  || (oa.mask & GOMP_DIM_MASK (GOMP_DIM_VECTOR)));
 
       /* Discover & process partitioned regions.  */
       parallel *pars = nvptx_discover_pars (&bb_insn_map);
       nvptx_process_pars (pars);
-      nvptx_neuter_pars (pars, mask, 0);
+      nvptx_neuter_pars (pars, oa.mask, 0);
       delete pars;
     }
 
@@ -5188,15 +5266,12 @@ nvptx_simt_vf ()
   return PTX_WARP_SIZE;
 }
 
-/* Validate compute dimensions of an OpenACC offload or routine, fill
-   in non-unity defaults.  FN_LEVEL indicates the level at which a
-   routine might spawn a loop.  It is negative for non-routines.  If
-   DECL is null, we are validating the default dimensions.  */
+/* As nvptx_goacc_validate_dims, but does not return bool to indicate whether
+   DIMS has changed.  */
 
-static bool
-nvptx_goacc_validate_dims (tree decl, int dims[], int fn_level)
+static void
+nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level)
 {
-  bool changed = false;
   bool oacc_default_dims_p = false;
   bool oacc_min_dims_p = false;
   bool offload_region_p = false;
@@ -5255,24 +5330,60 @@ nvptx_goacc_validate_dims (tree decl, int dims[], int fn_level)
       dims[GOMP_DIM_VECTOR] = fn_level > GOMP_DIM_VECTOR ? 1 : 0;
       dims[GOMP_DIM_WORKER] = fn_level > GOMP_DIM_WORKER ? 1 : 0;
       dims[GOMP_DIM_GANG] = fn_level > GOMP_DIM_GANG ? 1 : 0;
-      changed = true;
     }
 
-  /* The vector size must be 32, unless this is a SEQ routine.  */
-  if ((offload_region_p || oacc_default_dims_p
-       || (routine_p && !routine_seq_p))
-      && dims[GOMP_DIM_VECTOR] >= 0
+  if (oacc_min_dims_p)
+    {
+      gcc_assert (dims[GOMP_DIM_VECTOR] == 1);
+      gcc_assert (dims[GOMP_DIM_WORKER] == 1);
+      gcc_assert (dims[GOMP_DIM_GANG] == 1);
+
+      dims[GOMP_DIM_VECTOR] = PTX_WARP_SIZE;
+      return;
+    }
+
+  if (routine_p)
+    {
+      if (!routine_seq_p)
+	dims[GOMP_DIM_VECTOR] = PTX_WARP_SIZE;
+
+      return;
+    }
+
+  if (oacc_default_dims_p)
+    {
+      /* -1  : not set
+	  0  : set at runtime, f.i. -fopenacc-dims=-
+         >= 1: set at compile time, f.i. -fopenacc-dims=1.  */
+      gcc_assert (dims[GOMP_DIM_VECTOR] >= -1);
+      gcc_assert (dims[GOMP_DIM_WORKER] >= -1);
+      gcc_assert (dims[GOMP_DIM_GANG] >= -1);
+
+      /* But -fopenacc-dims=- is not yet supported on trunk.  */
+      gcc_assert (dims[GOMP_DIM_VECTOR] != 0);
+      gcc_assert (dims[GOMP_DIM_WORKER] != 0);
+      gcc_assert (dims[GOMP_DIM_GANG] != 0);
+    }
+
+  if (offload_region_p)
+    {
+      /* -1   : not set
+	  0   : set using variable, f.i. num_gangs (n)
+	  >= 1: set using constant, f.i. num_gangs (1).  */
+      gcc_assert (dims[GOMP_DIM_VECTOR] >= -1);
+      gcc_assert (dims[GOMP_DIM_WORKER] >= -1);
+      gcc_assert (dims[GOMP_DIM_GANG] >= -1);
+    }
+
+  if (dims[GOMP_DIM_VECTOR] >= 0
       && dims[GOMP_DIM_VECTOR] != PTX_VECTOR_LENGTH)
     {
-      if ((offload_region_p || oacc_default_dims_p)
-	  && dims[GOMP_DIM_VECTOR] >= 0)
-	warning_at (decl ? DECL_SOURCE_LOCATION (decl) : UNKNOWN_LOCATION, 0,
-		    dims[GOMP_DIM_VECTOR]
-		    ? G_("using vector_length (%d), ignoring %d")
-		    : G_("using vector_length (%d), ignoring runtime setting"),
-		    PTX_VECTOR_LENGTH, dims[GOMP_DIM_VECTOR]);
+      warning_at (decl ? DECL_SOURCE_LOCATION (decl) : UNKNOWN_LOCATION, 0,
+		  dims[GOMP_DIM_VECTOR]
+		  ? G_("using vector_length (%d), ignoring %d")
+		  : G_("using vector_length (%d), ignoring runtime setting"),
+		  PTX_VECTOR_LENGTH, dims[GOMP_DIM_VECTOR]);
       dims[GOMP_DIM_VECTOR] = PTX_VECTOR_LENGTH;
-      changed = true;
     }
 
   /* Check the num workers is not too large.  */
@@ -5282,20 +5393,39 @@ nvptx_goacc_validate_dims (tree decl, int dims[], int fn_level)
 		  "using num_workers (%d), ignoring %d",
 		  PTX_WORKER_LENGTH, dims[GOMP_DIM_WORKER]);
       dims[GOMP_DIM_WORKER] = PTX_WORKER_LENGTH;
-      changed = true;
     }
 
-  if (oacc_default_dims_p || oacc_min_dims_p)
+  if (oacc_default_dims_p)
     {
       dims[GOMP_DIM_VECTOR] = PTX_VECTOR_LENGTH;
       if (dims[GOMP_DIM_WORKER] < 0)
 	dims[GOMP_DIM_WORKER] = PTX_DEFAULT_RUNTIME_DIM;
       if (dims[GOMP_DIM_GANG] < 0)
 	dims[GOMP_DIM_GANG] = PTX_DEFAULT_RUNTIME_DIM;
-      changed = true;
     }
+}
 
-  return changed;
+/* Validate compute dimensions of an OpenACC offload or routine, fill
+   in non-unity defaults.  FN_LEVEL indicates the level at which a
+   routine might spawn a loop.  It is negative for non-routines.  If
+   DECL is null, we are validating the default dimensions.  */
+
+static bool
+nvptx_goacc_validate_dims (tree decl, int dims[], int fn_level)
+{
+  int old_dims[GOMP_DIM_MAX];
+  unsigned int i;
+
+  for (i = 0; i < GOMP_DIM_MAX; ++i)
+    old_dims[i] = dims[i];
+
+  nvptx_goacc_validate_dims_1 (decl, dims, fn_level);
+
+  for (i = 0; i < GOMP_DIM_MAX; ++i)
+    if (old_dims[i] != dims[i])
+      return true;
+
+  return false;
 }
 
 /* Return maximum dimension size, or zero for unbounded.  */

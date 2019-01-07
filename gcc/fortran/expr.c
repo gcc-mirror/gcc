@@ -1,5 +1,5 @@
 /* Routines for manipulation of expression nodes.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -2869,9 +2869,16 @@ gfc_check_init_expr (gfc_expr *e)
 		break;
 
 	      case AS_DEFERRED:
-		gfc_error ("Deferred array %qs at %L is not permitted "
-			   "in an initialization expression",
-			   e->symtree->n.sym->name, &e->where);
+		if (!e->symtree->n.sym->attr.allocatable
+		    && !e->symtree->n.sym->attr.pointer
+		    && e->symtree->n.sym->attr.dummy)
+		  gfc_error ("Assumed-shape array %qs at %L is not permitted "
+			     "in an initialization expression",
+			     e->symtree->n.sym->name, &e->where);
+		else
+		  gfc_error ("Deferred array %qs at %L is not permitted "
+			     "in an initialization expression",
+			     e->symtree->n.sym->name, &e->where);
 		break;
 
 	      case AS_EXPLICIT:
@@ -3061,6 +3068,7 @@ external_spec_function (gfc_expr *e)
 	  || !strcmp (f->name, "ieee_support_halting")
 	  || !strcmp (f->name, "ieee_support_datatype")
 	  || !strcmp (f->name, "ieee_support_denormal")
+	  || !strcmp (f->name, "ieee_support_subnormal")
 	  || !strcmp (f->name, "ieee_support_divide")
 	  || !strcmp (f->name, "ieee_support_inf")
 	  || !strcmp (f->name, "ieee_support_io")

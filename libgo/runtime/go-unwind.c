@@ -444,6 +444,9 @@ PERSONALITY_FUNCTION (int version,
   switch (state & _US_ACTION_MASK)
     {
     case _US_VIRTUAL_UNWIND_FRAME:
+      if (state & _UA_FORCE_UNWIND)
+        /* We are called from _Unwind_Backtrace.  No handler to run.  */
+        CONTINUE_UNWINDING;
       actions = _UA_SEARCH_PHASE;
       break;
 
@@ -646,6 +649,17 @@ findstackmaps (struct _Unwind_Context *context, _Unwind_Ptr *ip, _Unwind_Ptr *sp
   _sleb128_t index;
   int size;
 
+#ifdef __ARM_EABI_UNWINDER__
+  {
+    _Unwind_Control_Block *ucbp;
+    ucbp = (_Unwind_Control_Block *) _Unwind_GetGR (context, 12);
+    if (*ucbp->pr_cache.ehtp & (1u << 31))
+      // The "compact" model is used, with one of the predefined
+      // personality functions. It doesn't have standard LSDA.
+      return NOTFOUND_OK;
+  }
+#endif
+
   language_specific_data = (const unsigned char *)
     _Unwind_GetLanguageSpecificData (context);
 
@@ -778,7 +792,9 @@ bool
 scanstackwithmap (void *gcw)
 {
   _Unwind_Reason_Code code;
+  runtime_xadd (&__go_runtime_in_callers, 1);
   code = _Unwind_Backtrace (scanstackwithmap_callback, gcw);
+  runtime_xadd (&__go_runtime_in_callers, -1);
   return code == _URC_END_OF_STACK;
 }
 

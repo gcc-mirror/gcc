@@ -80499,6 +80499,134 @@ $as_echo "#define _GLIBCXX_USE_UTIMENSAT 1" >>confdefs.h
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_utimensat" >&5
 $as_echo "$glibcxx_cv_utimensat" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for utime" >&5
+$as_echo_n "checking for utime... " >&6; }
+    if ${glibcxx_cv_utime+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+        if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+          #include <utime.h>
+
+int
+main ()
+{
+
+          struct utimbuf t = { 1, 1 };
+          int i = utime("path", &t);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_utime=yes
+else
+  glibcxx_cv_utime=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+          #include <utime.h>
+
+int
+main ()
+{
+
+          struct utimbuf t = { 1, 1 };
+          int i = utime("path", &t);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_utime=yes
+else
+  glibcxx_cv_utime=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+    if test $glibcxx_cv_utime = yes; then
+
+$as_echo "#define _GLIBCXX_USE_UTIME 1" >>confdefs.h
+
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_utime" >&5
+$as_echo "$glibcxx_cv_utime" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for lstat" >&5
+$as_echo_n "checking for lstat... " >&6; }
+    if ${glibcxx_cv_lstat+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+        if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+ #include <sys/stat.h>
+int
+main ()
+{
+
+          struct stat st;
+          int i = lstat("path", &st);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_lstat=yes
+else
+  glibcxx_cv_lstat=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+ #include <sys/stat.h>
+int
+main ()
+{
+
+          struct stat st;
+          int i = lstat("path", &st);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_lstat=yes
+else
+  glibcxx_cv_lstat=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+    if test $glibcxx_cv_lstat = yes; then
+
+$as_echo "#define _GLIBCXX_USE_LSTAT 1" >>confdefs.h
+
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_lstat" >&5
+$as_echo "$glibcxx_cv_lstat" >&6; }
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for struct stat.st_mtim.tv_nsec" >&5
 $as_echo_n "checking for struct stat.st_mtim.tv_nsec... " >&6; }
     if ${glibcxx_cv_st_mtim+:} false; then :

@@ -1,5 +1,5 @@
 /* Inlining decision heuristics.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -523,7 +523,7 @@ can_inline_edge_by_limits_p (struct cgraph_edge *e, bool report,
 	       > opt_for_fn (caller->decl, optimize_size))
 	{
 	  int growth = estimate_edge_growth (e);
-	  if (growth > 0
+	  if (growth > PARAM_VALUE (PARAM_MAX_INLINE_INSNS_SIZE)
 	      && (!DECL_DECLARED_INLINE_P (callee->decl)
 		  && growth >= MAX (MAX_INLINE_INSNS_SINGLE,
 				    MAX_INLINE_INSNS_AUTO)))
@@ -635,10 +635,9 @@ want_early_inline_function_p (struct cgraph_edge *e)
       int growth = estimate_edge_growth (e);
       int n;
 
-      if (growth <= 0)
+      if (growth <= PARAM_VALUE (PARAM_MAX_INLINE_INSNS_SIZE))
 	;
-      else if (!e->maybe_hot_p ()
-	       && growth > 0)
+      else if (!e->maybe_hot_p ())
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, e->call_stmt,
@@ -791,7 +790,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
       ipa_hints hints = estimate_edge_hints (e);
       int big_speedup = -1; /* compute this lazily */
 
-      if (growth <= 0)
+      if (growth <= PARAM_VALUE (PARAM_MAX_INLINE_INSNS_SIZE))
 	;
       /* Apply MAX_INLINE_INSNS_SINGLE limit.  Do not do so when
 	 hints suggests that inlining given function is very profitable.  */
@@ -809,7 +808,8 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 	  want_inline = false;
 	}
       else if (!DECL_DECLARED_INLINE_P (callee->decl)
-	       && !opt_for_fn (e->caller->decl, flag_inline_functions))
+	       && !opt_for_fn (e->caller->decl, flag_inline_functions)
+	       && growth >= PARAM_VALUE (PARAM_MAX_INLINE_INSNS_SMALL))
 	{
 	  /* growth_likely_positive is expensive, always test it last.  */
           if (growth >= MAX_INLINE_INSNS_SINGLE
@@ -1173,7 +1173,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	    overall_growth += 256 * 256 - 256;
 	  denominator *= overall_growth;
         }
-      denominator *= inlined_time;
+      denominator *= ipa_fn_summaries->get (caller)->self_size + growth;
 
       badness = - numerator / denominator;
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2018 Free Software Foundation, Inc.
+// Copyright (C) 2016-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -70,10 +70,8 @@ test01()
   VERIFY( construct( lvalue.begin(), lvalue.end(), alloc ) == 6 );
   VERIFY( construct( list{ 'l' , 'i' , 's', 't' } ) == 4 );
   VERIFY( construct( list{ 'l', 'i', 's', 't' }, alloc ) == 4 );
-#if _GLIBCXX_USE_CXX11_ABI
   VERIFY( construct( lvalue, alloc ) == 6 );
   VERIFY( construct( string{"rvalue"}, alloc ) == 6 );
-#endif
 }
 
 int

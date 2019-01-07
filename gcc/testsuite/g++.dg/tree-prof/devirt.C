@@ -1,4 +1,6 @@
-/* { dg-options "-O3 -fdump-tree-dom3" } */
+/* PR ipa/88561 */
+/* { dg-options "-O3 -fdump-tree-dom3-details" } */
+
 struct nsISupports
 {
   virtual int QueryInterface (const int &aIID, void **aInstancePtr) = 0;
@@ -119,5 +121,6 @@ main ()
     __builtin_abort ();
 }
 
-/* { dg-final-use-not-autofdo { scan-ipa-dump-times 3 "folding virtual function call to virtual unsigned int mozPersonalDictionary::_ZThn16" "dom3" } } */
-/* { dg-final-use-not-autofdo { scan-ipa-dump-times 3 "folding virtual function call to virtual unsigned int mozPersonalDictionary::AddRef" "dom3" } } */
+/* { dg-final-use-not-autofdo { scan-tree-dump-times "folding virtual function call to virtual unsigned int mozPersonalDictionary::_ZThn16" 1 "dom3" { target { lp64 || llp64 } } } } */
+/* { dg-final-use-not-autofdo { scan-tree-dump-times "folding virtual function call to virtual unsigned int mozPersonalDictionary::_ZThn8" 1 "dom3" { target ilp32 } } } */
+/* { dg-final-use-not-autofdo { scan-tree-dump-times "folding virtual function call to virtual unsigned int mozPersonalDictionary::AddRef" 1 "dom3" } } */

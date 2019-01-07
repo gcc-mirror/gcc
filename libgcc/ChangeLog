@@ -1,3 +1,7 @@
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2018-12-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* unwind-pe.h (read_encoded_value_with_base): Add GCC pragma
@@ -9682,7 +9686,7 @@
 	shared-object.mk, siditi-object.mk, static-object.mk: New files.
 	* configure: Generated.
 
-Copyright (C) 2007-2018 Free Software Foundation, Inc.
+Copyright (C) 2007-2019 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

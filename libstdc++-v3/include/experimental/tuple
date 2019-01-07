@@ -1,6 +1,6 @@
 // <experimental/tuple> -*- C++ -*-
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,7 +45,7 @@ namespace experimental
 {
 inline namespace fundamentals_v1
 {
-  // See C++14 §20.4.2.5, tuple helper classes
+  // See C++14 20.4.2.5, tuple helper classes
   template <typename _Tp>
     constexpr size_t tuple_size_v = tuple_size<_Tp>::value;
 

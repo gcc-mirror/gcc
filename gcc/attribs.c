@@ -1,5 +1,5 @@
 /* Functions dealing with attribute handling, used by most front ends.
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1912,6 +1912,12 @@ decls_mismatched_attributes (tree tmpl, tree decl, tree attrlist,
 
   for (unsigned i = 0; blacklist[i]; ++i)
     {
+      /* Attribute leaf only applies to extern functions.  Avoid mentioning
+	 it when it's missing from a static declaration.  */
+      if (!TREE_PUBLIC (decl)
+	  && !strcmp ("leaf", blacklist[i]))
+	continue;
+
       for (unsigned j = 0; j != 2; ++j)
 	{
 	  if (!has_attribute (tmpls[j], tmpl_attrs[j], blacklist[i]))

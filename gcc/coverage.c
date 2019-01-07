@@ -1,5 +1,5 @@
 /* Read and write coverage files, and associated functionality.
-   Copyright (C) 1990-2018 Free Software Foundation, Inc.
+   Copyright (C) 1990-2019 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -329,7 +329,7 @@ get_coverage_counts (unsigned counter, unsigned cfg_checksum,
   else
     {
       gcc_assert (coverage_node_map_initialized_p ());
-      elt.ident = cgraph_node::get (cfun->decl)->profile_id;
+      elt.ident = cgraph_node::get (current_function_decl)->profile_id;
     }
   elt.ctr = counter;
   entry = counts_hash->find (&elt);

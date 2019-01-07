@@ -1,5 +1,5 @@
 /* Loop invariant motion.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1468,9 +1468,10 @@ gather_mem_refs_stmt (struct loop *loop, gimple *stmt)
       tree mem_base;
       if (aor.max_size_known_p ()
 	  && aor.offset.is_constant (&offset)
-	  && aor.offset.is_constant (&size)
-	  && aor.offset.is_constant (&max_size)
+	  && aor.size.is_constant (&size)
+	  && aor.max_size.is_constant (&max_size)
 	  && size == max_size
+	  && (size % BITS_PER_UNIT) == 0
 	  && (mem_base = get_addr_base_and_unit_offset (aor.ref, &mem_off)))
 	{
 	  hash = iterative_hash_expr (ao_ref_base (&aor), 0);

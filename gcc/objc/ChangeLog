@@ -1,3 +1,7 @@
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2018-12-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/43064
@@ -3808,7 +3812,7 @@
 	Move to c-objc-common.h.
 
 
-Copyright (C) 2004-2018 Free Software Foundation, Inc.
+Copyright (C) 2004-2019 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

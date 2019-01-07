@@ -1,6 +1,6 @@
 // Variable Templates For system_error -*- C++ -*-
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,7 +48,7 @@ namespace experimental
 {
 inline namespace fundamentals_v1
 {
-// See C++14 §19.5, System error support
+// See C++14 19.5, System error support
 template <typename _Tp>
   constexpr bool is_error_code_enum_v = is_error_code_enum<_Tp>::value;
 template <typename _Tp>

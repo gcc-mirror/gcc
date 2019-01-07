@@ -1,6 +1,6 @@
 /* Report error messages, build initializers, and perform
    some front-end optimizations for C++ compiler.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -2147,9 +2147,18 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
 	}
       else if (!parms)
 	{
-	  if (complain & tf_error)
-	    error ("cannot deduce template arguments for %qT from ()", anode);
-	  return error_mark_node;
+	  /* Even if there are no parameters, we might be able to deduce from
+	     default template arguments.  Pass TF_NONE so that we don't
+	     generate redundant diagnostics.  */
+	  type = do_auto_deduction (type, parms, anode, tf_none,
+				    adc_variable_type);
+	  if (type == error_mark_node)
+	    {
+	      if (complain & tf_error)
+		error ("cannot deduce template arguments for %qT from ()",
+		       anode);
+	      return error_mark_node;
+	    }
 	}
       else
 	type = do_auto_deduction (type, parms, anode, complain,

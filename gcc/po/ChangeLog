@@ -1,3 +1,11 @@
+2019-01-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* es.po: Update.
+
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2018-10-28  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* EXCLUDES: Add sources from d/dmd.
@@ -2633,7 +2641,7 @@ Sun Oct 31 17:17:18 1999  Jeffrey A Law  (law@cygnus.com)
 	libiberty/include directories.
 
 
-Copyright (C) 1999-2018 Free Software Foundation, Inc.
+Copyright (C) 1999-2019 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
@@ -4683,7 +4691,7 @@ Sun Oct 31 17:17:18 1999  Jeffrey A Law  (law@cygnus.com)
 	libiberty/include directories.
 
 
-Copyright (C) 1999-2018 Free Software Foundation, Inc.
+Copyright (C) 1999-2019 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

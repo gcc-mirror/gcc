@@ -1,4 +1,4 @@
-c Copyright (C) 1988-2018 Free Software Foundation, Inc.
+c Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -2487,7 +2487,8 @@ The @code{aligned} attribute can also be used for variables and fields
 @item alloc_align (@var{position})
 @cindex @code{alloc_align} function attribute
 The @code{alloc_align} attribute may be applied to a function that
-returns a pointer and takes at least one argument of an integer type.
+returns a pointer and takes at least one argument of an integer or
+enumerated type.
 It indicates that the returned pointer is aligned on a boundary given
 by the function argument at @var{position}.  Meaningful alignments are
 powers of 2 greater than one.  GCC uses this information to improve
@@ -2511,7 +2512,8 @@ given by parameter 1.
 @itemx alloc_size (@var{position-1}, @var{position-2})
 @cindex @code{alloc_size} function attribute
 The @code{alloc_size} attribute may be applied to a function that
-returns a pointer and takes at least one argument of an integer type.
+returns a pointer and takes at least one argument of an integer or
+enumerated type.
 It indicates that the returned pointer points to memory whose size is
 given by the function argument at @var{position-1}, or by the product
 of the arguments at @var{position-1} and @var{position-2}.  Meaningful
@@ -4978,8 +4980,12 @@ These function attributes are supported by the MSP430 back end:
 @cindex @code{critical} function attribute, MSP430
 Critical functions disable interrupts upon entry and restore the
 previous interrupt state upon exit.  Critical functions cannot also
-have the @code{naked} or @code{reentrant} attributes.  They can have
-the @code{interrupt} attribute.
+have the @code{naked}, @code{reentrant} or @code{interrupt} attributes.
+
+The MSP430 hardware ensures that interrupts are disabled on entry to
+@code{interrupt} functions, and restores the previous interrupt state
+on exit. The @code{critical} attribute is therefore redundant on
+@code{interrupt} functions.
 
 @item interrupt
 @cindex @code{interrupt} function attribute, MSP430

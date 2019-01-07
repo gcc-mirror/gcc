@@ -1,6 +1,6 @@
 /* Subroutines used to expand string and block move, clear,
    compare and other operations for PowerPC.
-   Copyright (C) 1991-2018 Free Software Foundation, Inc.
+   Copyright (C) 1991-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -2669,6 +2669,25 @@ expand_strn_compare (rtx operands[], int no_length)
   return true;
 }
 
+/* Generate loads and stores for a move of v4si mode using lvx/stvx.
+   This uses altivec_{l,st}vx_<mode>_internal which use unspecs to
+   keep combine from changing what instruction gets used.
+
+   DEST is the destination for the data.
+   SRC is the source of the data for the move.  */
+
+static rtx
+gen_lvx_v4si_move (rtx dest, rtx src)
+{
+  gcc_assert (MEM_P (dest) ^ MEM_P (src));
+  gcc_assert (GET_MODE (dest) == V4SImode && GET_MODE (src) == V4SImode);
+
+  if (MEM_P (dest))
+    return gen_altivec_stvx_v4si_internal (dest, src);
+  else 
+    return gen_altivec_lvx_v4si_internal (dest, src);
+}
+
 /* Expand a block move operation, and return 1 if successful.  Return 0
    if we should let the compiler generate normal code.
 
@@ -2721,11 +2740,11 @@ expand_block_move (rtx operands[])
 
       /* Altivec first, since it will be faster than a string move
 	 when it applies, and usually not significantly larger.  */
-      if (TARGET_ALTIVEC && bytes >= 16 && (TARGET_EFFICIENT_UNALIGNED_VSX || align >= 128))
+      if (TARGET_ALTIVEC && bytes >= 16 && align >= 128)
 	{
 	  move_bytes = 16;
 	  mode = V4SImode;
-	  gen_func.mov = gen_movv4si;
+	  gen_func.mov = gen_lvx_v4si_move;
 	}
       else if (bytes >= 8 && TARGET_POWERPC64
 	       && (align >= 64 || !STRICT_ALIGNMENT))

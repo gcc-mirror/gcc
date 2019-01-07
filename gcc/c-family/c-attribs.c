@@ -1,5 +1,5 @@
 /* C-family attributes handling.
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -498,10 +498,11 @@ attribute_takes_identifier_p (const_tree attr_id)
 
 /* Verify that argument value POS at position ARGNO to attribute NAME
    applied to function TYPE refers to a function parameter at position
-   POS and the expected type CODE.  If so, return POS after default
-   conversions, if any.  Otherwise, issue appropriate warnings and
-   return null.  A non-zero 1-based ARGNO should be passed ib by
-   callers only for attributes with more than one argument.  */
+   POS and the expected type CODE.  Treat CODE == INTEGER_TYPE as
+   matching all C integral types except bool.  If successful, return
+   POS after default conversions, if any.  Otherwise, issue appropriate
+   warnings and return null.  A non-zero 1-based ARGNO should be passed
+   in by callers only for attributes with more than one argument.  */
 
 tree
 positional_argument (const_tree fntype, const_tree atname, tree pos,
@@ -630,17 +631,22 @@ positional_argument (const_tree fntype, const_tree atname, tree pos,
 	  return NULL_TREE;
 	}
 
-      /* Where the expected code is STRING_CST accept any pointer
-	 to a narrow character type, qualified or otherwise.  */
       bool type_match;
       if (code == STRING_CST && POINTER_TYPE_P (argtype))
 	{
+	  /* Where the expected code is STRING_CST accept any pointer
+	     to a narrow character type, qualified or otherwise.  */
 	  tree type = TREE_TYPE (argtype);
 	  type = TYPE_MAIN_VARIANT (type);
 	  type_match = (type == char_type_node
 			|| type == signed_char_type_node
 			|| type == unsigned_char_type_node);
 	}
+      else if (code == INTEGER_TYPE)
+	/* For integers, accept enums, wide characters and other types
+	   that match INTEGRAL_TYPE_P except for bool.  */
+	type_match = (INTEGRAL_TYPE_P (argtype)
+		      && TREE_CODE (argtype) != BOOLEAN_TYPE);
       else
 	type_match = TREE_CODE (argtype) == code;
 
@@ -2455,6 +2461,12 @@ handle_copy_attribute (tree *node, tree name, tree args,
 	      || is_attribute_p ("weakref", atname))
 	    continue;
 
+	  /* Attribute leaf only applies to extern functions.
+	     Avoid copying it to static ones.  */
+	  if (!TREE_PUBLIC (decl)
+	      && is_attribute_p ("leaf", atname))
+	    continue;
+
 	  tree atargs = TREE_VALUE (at);
 	  /* Create a copy of just the one attribute ar AT, including
 	     its argumentsm and add it to DECL.  */
@@ -2472,12 +2484,27 @@ handle_copy_attribute (tree *node, tree name, tree args,
       return NULL_TREE;
     }
 
+  /* A function declared with attribute nothrow has the attribute
+     attached to it, but a C++ throw() function does not.  */
+  if (TREE_NOTHROW (ref))
+    TREE_NOTHROW (decl) = true;
+
+  /* Similarly, a function declared with attribute noreturn has it
+     attached on to it, but a C11 _Noreturn function does not.  */
   tree reftype = ref;
+  if (DECL_P (ref)
+      && TREE_THIS_VOLATILE (ref)
+      && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (reftype)))
+    TREE_THIS_VOLATILE (decl) = true;
+
   if (DECL_P (ref) || EXPR_P (ref))
     reftype = TREE_TYPE (ref);
 
   if (POINTER_TYPE_P (reftype))
     reftype = TREE_TYPE (reftype);
+
+  if (!TYPE_P (reftype))
+    return NULL_TREE;
 
   tree attrs = TYPE_ATTRIBUTES (reftype);
 
@@ -4187,6 +4214,15 @@ has_attribute (location_t atloc, tree t, tree attr, tree (*convert)(tree))
 	    {
 	      if (expr && DECL_P (expr))
 		found_match = TREE_READONLY (expr);
+	    }
+	  else if (!strcmp ("noreturn", namestr))
+	    {
+	      /* C11 _Noreturn sets the volatile bit without attaching
+		 an attribute to the decl.  */
+	      if (expr
+		  && DECL_P (expr)
+		  && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (expr)))
+		found_match = TREE_THIS_VOLATILE (expr);
 	    }
 	  else if (!strcmp ("pure", namestr))
 	    {

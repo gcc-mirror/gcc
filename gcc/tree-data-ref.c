@@ -1,5 +1,5 @@
 /* Data references and dependences detectors.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -3761,10 +3761,6 @@ analyze_subscript_affine_affine (tree chrec_a,
 
 	      if (niter > 0)
 		{
-		  HOST_WIDE_INT tau2 = MIN (FLOOR_DIV (niter_a - i0, i1),
-					    FLOOR_DIV (niter_b - j0, j1));
-		  HOST_WIDE_INT last_conflict = tau2 - (x1 - i0)/i1;
-
 		  /* If the overlap occurs outside of the bounds of the
 		     loop, there is no dependence.  */
 		  if (x1 >= niter_a || y1 >= niter_b)
@@ -3774,8 +3770,20 @@ analyze_subscript_affine_affine (tree chrec_a,
 		      *last_conflicts = integer_zero_node;
 		      goto end_analyze_subs_aa;
 		    }
+
+		  /* max stmt executions can get quite large, avoid
+		     overflows by using wide ints here.  */
+		  widest_int tau2
+		    = wi::smin (wi::sdiv_floor (wi::sub (niter_a, i0), i1),
+				wi::sdiv_floor (wi::sub (niter_b, j0), j1));
+		  widest_int last_conflict = wi::sub (tau2, (x1 - i0)/i1);
+		  if (wi::min_precision (last_conflict, SIGNED)
+		      <= TYPE_PRECISION (integer_type_node))
+		    *last_conflicts
+		       = build_int_cst (integer_type_node,
+					last_conflict.to_shwi ());
 		  else
-		    *last_conflicts = build_int_cst (NULL_TREE, last_conflict);
+		    *last_conflicts = chrec_dont_know;
 		}
 	      else
 		*last_conflicts = chrec_dont_know;
