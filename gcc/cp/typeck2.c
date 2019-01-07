@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-rich-location.h"
 
 static tree
-process_init_constructor (tree type, tree init, int nested,
+process_init_constructor (tree type, tree init, int nested, int flags,
 			  tsubst_flags_t complain);
 
 
@@ -817,8 +817,12 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
   if (flags & LOOKUP_ALREADY_DIGESTED)
     value = init;
   else
-    /* Digest the specified initializer into an expression.  */
-    value = digest_init_flags (type, init, flags, tf_warning_or_error);
+    {
+      if (TREE_STATIC (decl))
+	flags |= LOOKUP_ALLOW_FLEXARRAY_INIT;
+      /* Digest the specified initializer into an expression.  */
+      value = digest_init_flags (type, init, flags, tf_warning_or_error);
+    }
 
   if (TREE_CODE (type) == ARRAY_TYPE
       && TYPE_STRING_FLAG (TREE_TYPE (type))
@@ -1068,8 +1072,18 @@ digest_init_r (tree type, tree init, int nested, int flags,
     {
       if (nested && !TYPE_DOMAIN (type))
 	/* C++ flexible array members have a null domain.  */
-	pedwarn (loc, OPT_Wpedantic,
-		 "initialization of a flexible array member");
+	{
+	  if (flags & LOOKUP_ALLOW_FLEXARRAY_INIT)
+	    pedwarn (loc, OPT_Wpedantic,
+		     "initialization of a flexible array member");
+	  else
+	    {
+	      if (complain & tf_error)
+		error_at (loc, "non-static initialization of"
+			       " a flexible array member");
+	      return error_mark_node;
+	    }
+	}
 
       tree typ1 = TYPE_MAIN_VARIANT (TREE_TYPE (type));
       if (char_type_p (typ1)
@@ -1193,7 +1207,8 @@ digest_init_r (tree type, tree init, int nested, int flags,
 
   if (BRACE_ENCLOSED_INITIALIZER_P (stripped_init)
       && !TYPE_NON_AGGREGATE_CLASS (type))
-    return process_init_constructor (type, stripped_init, nested, complain);
+    return process_init_constructor (type, stripped_init, nested, flags,
+				     complain);
   else
     {
       if (COMPOUND_LITERAL_P (stripped_init) && code == ARRAY_TYPE)
@@ -1291,9 +1306,12 @@ picflag_from_initializer (tree init)
 /* Adjust INIT for going into a CONSTRUCTOR.  */
 
 static tree
-massage_init_elt (tree type, tree init, int nested, tsubst_flags_t complain)
+massage_init_elt (tree type, tree init, int nested, int flags,
+		  tsubst_flags_t complain)
 {
-  init = digest_init_r (type, init, nested ? 2 : 1, LOOKUP_IMPLICIT, complain);
+  flags &= LOOKUP_ALLOW_FLEXARRAY_INIT;
+  flags |= LOOKUP_IMPLICIT;
+  init = digest_init_r (type, init, nested ? 2 : 1, flags, complain);
   /* Strip a simple TARGET_EXPR when we know this is an initializer.  */
   if (SIMPLE_TARGET_EXPR_P (init))
     init = TARGET_EXPR_INITIAL (init);
@@ -1311,11 +1329,11 @@ massage_init_elt (tree type, tree init, int nested, tsubst_flags_t complain)
    which describe the initializers.  */
 
 static int
-process_init_constructor_array (tree type, tree init, int nested,
+process_init_constructor_array (tree type, tree init, int nested, int flags,
 				tsubst_flags_t complain)
 {
   unsigned HOST_WIDE_INT i, len = 0;
-  int flags = 0;
+  int picflags = 0;
   bool unbounded = false;
   constructor_elt *ce;
   vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (init);
@@ -1365,7 +1383,8 @@ process_init_constructor_array (tree type, tree init, int nested,
 	ce->index = error_mark_node;
       gcc_assert (ce->value);
       ce->value
-	= massage_init_elt (TREE_TYPE (type), ce->value, nested, complain);
+	= massage_init_elt (TREE_TYPE (type), ce->value, nested, flags,
+			    complain);
 
       gcc_checking_assert
 	(ce->value == error_mark_node
@@ -1373,7 +1392,7 @@ process_init_constructor_array (tree type, tree init, int nested,
 	     (strip_array_types (TREE_TYPE (type)),
 	      strip_array_types (TREE_TYPE (ce->value)))));
 
-      flags |= picflag_from_initializer (ce->value);
+      picflags |= picflag_from_initializer (ce->value);
     }
 
   /* No more initializers. If the array is unbounded, we are done. Otherwise,
@@ -1389,7 +1408,8 @@ process_init_constructor_array (tree type, tree init, int nested,
 	       we can't rely on the back end to do it for us, so make the
 	       initialization explicit by list-initializing from T{}.  */
 	    next = build_constructor (init_list_type_node, NULL);
-	    next = massage_init_elt (TREE_TYPE (type), next, nested, complain);
+	    next = massage_init_elt (TREE_TYPE (type), next, nested, flags,
+				     complain);
 	    if (initializer_zerop (next))
 	      /* The default zero-initialization is fine for us; don't
 		 add anything to the CONSTRUCTOR.  */
@@ -1406,7 +1426,7 @@ process_init_constructor_array (tree type, tree init, int nested,
 
 	if (next)
 	  {
-	    flags |= picflag_from_initializer (next);
+	    picflags |= picflag_from_initializer (next);
 	    if (len > i+1
 		&& (initializer_constant_valid_p (next, TREE_TYPE (next))
 		    == null_pointer_node))
@@ -1426,7 +1446,7 @@ process_init_constructor_array (tree type, tree init, int nested,
       }
 
   CONSTRUCTOR_ELTS (init) = v;
-  return flags;
+  return picflags;
 }
 
 /* Subroutine of process_init_constructor, which will process an initializer
@@ -1434,7 +1454,7 @@ process_init_constructor_array (tree type, tree init, int nested,
    the initializers.  */
 
 static int
-process_init_constructor_record (tree type, tree init, int nested,
+process_init_constructor_record (tree type, tree init, int nested, int flags,
 				 tsubst_flags_t complain)
 {
   vec<constructor_elt, va_gc> *v = NULL;
@@ -1449,7 +1469,7 @@ process_init_constructor_record (tree type, tree init, int nested,
   gcc_assert (!TYPE_POLYMORPHIC_P (type));
 
  restart:
-  int flags = 0;
+  int picflags = 0;
   unsigned HOST_WIDE_INT idx = 0;
   int designator_skip = -1;
   /* Generally, we will always have an index for each initializer (which is
@@ -1517,7 +1537,7 @@ process_init_constructor_record (tree type, tree init, int nested,
 	  if (ce)
 	    {
 	      gcc_assert (ce->value);
-	      next = massage_init_elt (type, next, nested, complain);
+	      next = massage_init_elt (type, next, nested, flags, complain);
 	      ++idx;
 	    }
 	}
@@ -1546,7 +1566,8 @@ process_init_constructor_record (tree type, tree init, int nested,
 	     for us, so build up TARGET_EXPRs.  If the type in question is
 	     a class, just build one up; if it's an array, recurse.  */
 	  next = build_constructor (init_list_type_node, NULL);
-	  next = massage_init_elt (TREE_TYPE (field), next, nested, complain);
+	  next = massage_init_elt (TREE_TYPE (field), next, nested, flags,
+				   complain);
 
 	  /* Warn when some struct elements are implicitly initialized.  */
 	  if ((complain & tf_warning)
@@ -1597,7 +1618,7 @@ process_init_constructor_record (tree type, tree init, int nested,
       /* If this is a bitfield, now convert to the lowered type.  */
       if (type != TREE_TYPE (field))
 	next = cp_convert_and_check (TREE_TYPE (field), next, complain);
-      flags |= picflag_from_initializer (next);
+      picflags |= picflag_from_initializer (next);
       CONSTRUCTOR_APPEND_ELT (v, field, next);
     }
 
@@ -1653,7 +1674,7 @@ process_init_constructor_record (tree type, tree init, int nested,
     }
 
   CONSTRUCTOR_ELTS (init) = v;
-  return flags;
+  return picflags;
 }
 
 /* Subroutine of process_init_constructor, which will process a single
@@ -1661,7 +1682,7 @@ process_init_constructor_record (tree type, tree init, int nested,
    which describe the initializer.  */
 
 static int
-process_init_constructor_union (tree type, tree init, int nested,
+process_init_constructor_union (tree type, tree init, int nested, int flags,
 				tsubst_flags_t complain)
 {
   constructor_elt *ce;
@@ -1749,7 +1770,7 @@ process_init_constructor_union (tree type, tree init, int nested,
 
   if (ce->value && ce->value != error_mark_node)
     ce->value = massage_init_elt (TREE_TYPE (ce->index), ce->value, nested,
-				  complain);
+				  flags, complain);
 
   return picflag_from_initializer (ce->value);
 }
@@ -1769,40 +1790,43 @@ process_init_constructor_union (tree type, tree init, int nested,
    of error.  */
 
 static tree
-process_init_constructor (tree type, tree init, int nested,
+process_init_constructor (tree type, tree init, int nested, int flags,
 			  tsubst_flags_t complain)
 {
-  int flags;
+  int picflags;
 
   gcc_assert (BRACE_ENCLOSED_INITIALIZER_P (init));
 
   if (TREE_CODE (type) == ARRAY_TYPE || VECTOR_TYPE_P (type))
-    flags = process_init_constructor_array (type, init, nested, complain);
+    picflags = process_init_constructor_array (type, init, nested, flags,
+					       complain);
   else if (TREE_CODE (type) == RECORD_TYPE)
-    flags = process_init_constructor_record (type, init, nested, complain);
+    picflags = process_init_constructor_record (type, init, nested, flags,
+						complain);
   else if (TREE_CODE (type) == UNION_TYPE)
-    flags = process_init_constructor_union (type, init, nested, complain);
+    picflags = process_init_constructor_union (type, init, nested, flags,
+					       complain);
   else
     gcc_unreachable ();
 
-  if (flags & PICFLAG_ERRONEOUS)
+  if (picflags & PICFLAG_ERRONEOUS)
     return error_mark_node;
 
   TREE_TYPE (init) = type;
   if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type) == NULL_TREE)
     cp_complete_array_type (&TREE_TYPE (init), init, /*do_default=*/0);
-  if (flags & PICFLAG_SIDE_EFFECTS)
+  if (picflags & PICFLAG_SIDE_EFFECTS)
     {
       TREE_CONSTANT (init) = false;
       TREE_SIDE_EFFECTS (init) = true;
     }
-  else if (flags & PICFLAG_NOT_ALL_CONSTANT)
+  else if (picflags & PICFLAG_NOT_ALL_CONSTANT)
     /* Make sure TREE_CONSTANT isn't set from build_constructor.  */
     TREE_CONSTANT (init) = false;
   else
     {
       TREE_CONSTANT (init) = 1;
-      if (!(flags & PICFLAG_NOT_ALL_SIMPLE))
+      if (!(picflags & PICFLAG_NOT_ALL_SIMPLE))
 	TREE_STATIC (init) = 1;
     }
   return init;

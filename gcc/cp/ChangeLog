@@ -1,3 +1,19 @@
+2019-01-07  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/88261
+	PR c++/69338
+	PR c++/69696
+	PR c++/69697
+	* cp-tree.h (LOOKUP_ALLOW_FLEXARRAY_INIT): New flag value.
+	* typeck2.c (digest_init_r): Raise an error for non-static
+	initialization of a flexible array member.
+	(process_init_constructor, massage_init_elt,
+	process_init_constructor_array, process_init_constructor_record,
+	process_init_constructor_union, process_init_constructor): Add the
+	flags parameter and pass it thru.
+	(store_init_value): Pass LOOKUP_ALLOW_FLEXARRAY_INIT parameter to
+	digest_init_flags for static decls.
+
 2019-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85052
