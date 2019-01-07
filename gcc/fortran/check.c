@@ -6500,6 +6500,17 @@ gfc_check_ttynam_sub (gfc_expr *unit, gfc_expr *name)
 
 
 bool
+gfc_check_is_contiguous (gfc_expr *array)
+{
+  if (!array_check (array, 0))
+    return false;
+
+  return true;
+}
+
+
+
+bool
 gfc_check_isatty (gfc_expr *unit)
 {
   if (unit == NULL)

@@ -195,6 +195,7 @@ Some basic guidelines for editing this document:
 * @code{IOR}:           IOR,       Bitwise logical or
 * @code{IPARITY}:       IPARITY,   Bitwise XOR of array elements
 * @code{IRAND}:         IRAND,     Integer pseudo-random number
+* @code{IS_CONTIGUOUS}:  IS_CONTIGUOUS, Test whether an array is contiguous
 * @code{IS_IOSTAT_END}:  IS_IOSTAT_END, Test for end-of-file value
 * @code{IS_IOSTAT_EOR}:  IS_IOSTAT_EOR, Test for end-of-record value
 * @code{ISATTY}:        ISATTY,    Whether a unit is a terminal device
@@ -8438,6 +8439,55 @@ end program test_irand
 
 
 
+@node IS_CONTIGUOUS
+@section @code{IS_CONTIGUOUS} --- Test whether an array is contiguous
+@fnindex IS_IOSTAT_EOR
+@cindex array, contiguity
+
+@table @asis
+@item @emph{Description}:
+@code{IS_CONTIGUOUS} tests whether an array is contiguous.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Inquiry function
+
+@item @emph{Syntax}:
+@code{RESULT = IS_CONTIGUOUS(ARRAY)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ARRAY} @tab Shall be an array of any type.
+@end multitable
+
+@item @emph{Return value}:
+Returns a @code{LOGICAL} of the default kind, which @code{.TRUE.} if
+@var{ARRAY} is contiguous and false otherwise.
+
+@item @emph{Example}:
+@smallexample
+program test
+  integer :: a(10)
+  a = [1,2,3,4,5,6,7,8,9,10]
+  call sub (a)      ! every element, is contiguous
+  call sub (a(::2)) ! every other element, is noncontiguous
+contains
+  subroutine sub (x)
+    integer :: x(:)
+    if (is_contiguous (x)) then
+      write (*,*) 'X is contiguous'
+    else
+      write (*,*) 'X is not contiguous'
+    end if
+  end subroutine sub
+end program test
+@end smallexample
+@end table
+
+
+
 @node IS_IOSTAT_END
 @section @code{IS_IOSTAT_END} --- Test for end-of-file value
 @fnindex IS_IOSTAT_END
@@ -8525,7 +8575,6 @@ PROGRAM iostat
 END PROGRAM
 @end smallexample
 @end table
-
 
 
 @node ISATTY
