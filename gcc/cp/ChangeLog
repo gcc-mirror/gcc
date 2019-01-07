@@ -1,3 +1,8 @@
+2019-01-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (start_decl): Improve two error_at locations.
+	(expand_static_init): Likewise.
+
 2019-01-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88741 - wrong error with initializer-string.
