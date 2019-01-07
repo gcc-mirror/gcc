@@ -1,3 +1,22 @@
+2019-01-07  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/88261
+	PR c++/69338
+	PR c++/69696
+	PR c++/69697
+	* gcc.dg/array-6.c: Move from here ...
+	* c-c++-common/array-6.c: ... to here and add some more test coverage.
+	* g++.dg/pr69338.C: New test.
+	* g++.dg/pr69697.C: Likewise.
+	* g++.dg/ext/flexary32.C: Likewise.
+	* g++.dg/ext/flexary3.C: Adjust test.
+	* g++.dg/ext/flexary12.C: Likewise.
+	* g++.dg/ext/flexary13.C: Likewise.
+	* g++.dg/ext/flexary15.C: Likewise.
+	* g++.dg/warn/Wplacement-new-size-1.C: Likewise.
+	* g++.dg/warn/Wplacement-new-size-2.C: Likewise.
+	* g++.dg/warn/Wplacement-new-size-6.C: Likewise.
+
 2019-01-07  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc.target/aarch64/subs_compare_2.c: Make '#' immediate prefix
