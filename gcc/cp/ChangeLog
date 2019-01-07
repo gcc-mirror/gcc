@@ -1,3 +1,8 @@
+2019-01-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88741 - wrong error with initializer-string.
+	* decl.c (cp_complete_array_type): Strip any location wrappers.
+
 2019-01-07  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c++/88261

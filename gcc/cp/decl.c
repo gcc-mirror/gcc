@@ -8433,6 +8433,7 @@ cp_complete_array_type (tree *ptype, tree initial_value, bool do_default)
 	{
 	  vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (initial_value);
 	  tree value = (*v)[0].value;
+	  STRIP_ANY_LOCATION_WRAPPER (value);
 
 	  if (TREE_CODE (value) == STRING_CST
 	      && v->length () == 1)
