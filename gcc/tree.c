@@ -11340,6 +11340,38 @@ uniform_integer_cst_p (tree t)
   return NULL_TREE;
 }
 
+/* If VECTOR_CST T has a single nonzero element, return the index of that
+   element, otherwise return -1.  */
+
+int
+single_nonzero_element (const_tree t)
+{
+  unsigned HOST_WIDE_INT nelts;
+  unsigned int repeat_nelts;
+  if (VECTOR_CST_NELTS (t).is_constant (&nelts))
+    repeat_nelts = nelts;
+  else if (VECTOR_CST_NELTS_PER_PATTERN (t) == 2)
+    {
+      nelts = vector_cst_encoded_nelts (t);
+      repeat_nelts = VECTOR_CST_NPATTERNS (t);
+    }
+  else
+    return -1;
+
+  int res = -1;
+  for (unsigned int i = 0; i < nelts; ++i)
+    {
+      tree elt = vector_cst_elt (t, i);
+      if (!integer_zerop (elt) && !real_zerop (elt))
+	{
+	  if (res >= 0 || i >= repeat_nelts)
+	    return -1;
+	  res = i;
+	}
+    }
+  return res;
+}
+
 /* Build an empty statement at location LOC.  */
 
 tree

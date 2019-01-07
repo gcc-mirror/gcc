@@ -5251,3 +5251,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 			    { wide_int_to_tree (sizetype, off); })
 	      { swap_p ? @0 : @2; }))
 	    { rhs_tree; })))))))))
+
+/* Fold REDUC (@0 & @1) -> @0[I] & @1[I] if element I is the only nonzero
+   element of @1.  */
+(for reduc (IFN_REDUC_PLUS IFN_REDUC_IOR IFN_REDUC_XOR)
+ (simplify (reduc (view_convert? (bit_and @0 VECTOR_CST@1)))
+  (with { int i = single_nonzero_element (@1); }
+   (if (i >= 0)
+    (with { tree elt = vector_cst_elt (@1, i);
+	    tree elt_type = TREE_TYPE (elt);
+	    unsigned int elt_bits = tree_to_uhwi (TYPE_SIZE (elt_type));
+	    tree size = bitsize_int (elt_bits);
+	    tree pos = bitsize_int (elt_bits * i); }
+     (view_convert
+      (bit_and:elt_type
+       (BIT_FIELD_REF:elt_type @0 { size; } { pos; })
+       { elt; })))))))
