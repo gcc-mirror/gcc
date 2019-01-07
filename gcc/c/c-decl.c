@@ -5438,7 +5438,7 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const,
       pushdecl (decl);
       rest_of_decl_compilation (decl, 1, 0);
     }
-  else
+  else if (current_function_decl)
     pushdecl (decl);
 
   if (non_const)
