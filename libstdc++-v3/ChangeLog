@@ -1,5 +1,18 @@
 2019-01-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/87787
+	* include/bits/char_traits.h (char_traits::move): Do not pass null
+	pointers to memmove.
+	* include/bits/locale_facets.h
+	(ctype<char>::widen(const char*, const char*, char*)): Do not
+	pass null pointers to memcpy.
+	(ctype<char>::narrow(const char*, const char*, char, char*)):
+	Likewise.
+	(ctype<char>::do_widen(const char*, const char*, char*)):
+	Likewise.
+	(ctype<char>::do_narrow(const char*, const char*, char, char*)):
+	Likewise.
+
 	* doc/xml/manual/spine.xml: Update copyright years.
 	* doc/xml/manual/status_cxx2017.xml: Adjust note about -lstdc++fs.
 	* doc/xml/manual/using.xml: Remove requirement to link with -lstdc++fs
