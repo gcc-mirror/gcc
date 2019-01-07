@@ -61,7 +61,7 @@ func panicmakeslicecap() {
 	panic(errorString("makeslice: cap out of range"))
 }
 
-func makeslice(et *_type, len, cap int) slice {
+func makeslice(et *_type, len, cap int) unsafe.Pointer {
 	// NOTE: The len > maxElements check here is not strictly necessary,
 	// but it produces a 'len out of range' error instead of a 'cap out of range' error
 	// when someone does make([]T, bignumber). 'cap out of range' is true too,
@@ -76,11 +76,10 @@ func makeslice(et *_type, len, cap int) slice {
 		panicmakeslicecap()
 	}
 
-	p := mallocgc(et.size*uintptr(cap), et, true)
-	return slice{p, len, cap}
+	return mallocgc(et.size*uintptr(cap), et, true)
 }
 
-func makeslice64(et *_type, len64, cap64 int64) slice {
+func makeslice64(et *_type, len64, cap64 int64) unsafe.Pointer {
 	len := int(len64)
 	if int64(len) != len64 {
 		panicmakeslicelen()

@@ -7787,21 +7787,29 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
   Expression* call;
   if (is_slice)
     {
+      Temporary_statement* len_temp = NULL;
+      if (!len_arg->is_constant())
+	{
+	  len_temp = Statement::make_temporary(NULL, len_arg, loc);
+	  inserter->insert(len_temp);
+	  len_arg = Expression::make_temporary_reference(len_temp, loc);
+	}
+
       if (cap_arg == NULL)
 	{
           cap_small = len_small;
-          if (len_arg->numeric_constant_value(&nclen)
-              && nclen.to_unsigned_long(&vlen) == Numeric_constant::NC_UL_VALID)
-            cap_arg = Expression::make_integer_ul(vlen, len_arg->type(), loc);
-          else
-            {
-              Temporary_statement* temp = Statement::make_temporary(NULL,
-                                                                    len_arg,
-                                                                    loc);
-              inserter->insert(temp);
-              len_arg = Expression::make_temporary_reference(temp, loc);
-              cap_arg = Expression::make_temporary_reference(temp, loc);
-            }
+	  if (len_temp == NULL)
+	    cap_arg = len_arg->copy();
+	  else
+	    cap_arg = Expression::make_temporary_reference(len_temp, loc);
+	}
+      else if (!cap_arg->is_constant())
+	{
+	  Temporary_statement* cap_temp = Statement::make_temporary(NULL,
+								    cap_arg,
+								    loc);
+	  inserter->insert(cap_temp);
+	  cap_arg = Expression::make_temporary_reference(cap_temp, loc);
 	}
 
       Type* et = type->array_type()->element_type();
@@ -7809,7 +7817,12 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
       Runtime::Function code = Runtime::MAKESLICE;
       if (!len_small || !cap_small)
 	code = Runtime::MAKESLICE64;
-      call = Runtime::make_call(code, loc, 3, type_arg, len_arg, cap_arg);
+      Expression* mem = Runtime::make_call(code, loc, 3, type_arg, len_arg,
+					   cap_arg);
+      mem = Expression::make_unsafe_cast(Type::make_pointer_type(et), mem,
+					 loc);
+      call = Expression::make_slice_value(type, mem, len_arg->copy(),
+					  cap_arg->copy(), loc);
     }
   else if (is_map)
     {
@@ -13585,9 +13598,13 @@ Slice_construction_expression::do_get_backend(Translate_context* context)
       go_assert(this->storage_escapes_ || this->element_count() == 0);
       space = Expression::make_heap_expression(this->array_val_, loc);
     }
+  Array_type* at = this->valtype_->array_type();
+  Type* et = at->element_type();
+  space = Expression::make_unsafe_cast(Type::make_pointer_type(et),
+				       space, loc);
 
   // Build a constructor for the slice.
-  Expression* len = this->valtype_->array_type()->length();
+  Expression* len = at->length();
   Expression* slice_val =
     Expression::make_slice_value(this->type(), space, len, len, loc);
   return slice_val->get_backend(context);
@@ -15354,72 +15371,33 @@ Expression::make_slice_info(Expression* slice, Slice_info slice_info,
   return new Slice_info_expression(slice, slice_info, location);
 }
 
-// An expression that represents a slice value: a struct with value pointer,
-// length, and capacity fields.
-
-class Slice_value_expression : public Expression
-{
- public:
-  Slice_value_expression(Type* type, Expression* valptr, Expression* len,
-                         Expression* cap, Location location)
-      : Expression(EXPRESSION_SLICE_VALUE, location),
-        type_(type), valptr_(valptr), len_(len), cap_(cap)
-  { }
-
- protected:
-  int
-  do_traverse(Traverse*);
-
-  Type*
-  do_type()
-  { return this->type_; }
-
-  void
-  do_determine_type(const Type_context*)
-  { go_unreachable(); }
-
-  Expression*
-  do_copy()
-  {
-    return new Slice_value_expression(this->type_->copy_expressions(),
-				      this->valptr_->copy(),
-                                      this->len_->copy(), this->cap_->copy(),
-                                      this->location());
-  }
-
-  Bexpression*
-  do_get_backend(Translate_context* context);
-
-  void
-  do_dump_expression(Ast_dump_context*) const;
-
- private:
-  // The type of the slice value.
-  Type* type_;
-  // The pointer to the values in the slice.
-  Expression* valptr_;
-  // The length of the slice.
-  Expression* len_;
-  // The capacity of the slice.
-  Expression* cap_;
-};
+// Class Slice_value_expression.
 
 int
 Slice_value_expression::do_traverse(Traverse* traverse)
 {
   if (Type::traverse(this->type_, traverse) == TRAVERSE_EXIT
-      || Expression::traverse(&this->valptr_, traverse) == TRAVERSE_EXIT
+      || Expression::traverse(&this->valmem_, traverse) == TRAVERSE_EXIT
       || Expression::traverse(&this->len_, traverse) == TRAVERSE_EXIT
       || Expression::traverse(&this->cap_, traverse) == TRAVERSE_EXIT)
     return TRAVERSE_EXIT;
   return TRAVERSE_CONTINUE;
 }
 
+Expression*
+Slice_value_expression::do_copy()
+{
+  return new Slice_value_expression(this->type_->copy_expressions(),
+				    this->valmem_->copy(),
+				    this->len_->copy(), this->cap_->copy(),
+				    this->location());
+}
+
 Bexpression*
 Slice_value_expression::do_get_backend(Translate_context* context)
 {
   std::vector<Bexpression*> vals(3);
-  vals[0] = this->valptr_->get_backend(context);
+  vals[0] = this->valmem_->get_backend(context);
   vals[1] = this->len_->get_backend(context);
   vals[2] = this->cap_->get_backend(context);
 
@@ -15434,7 +15412,7 @@ Slice_value_expression::do_dump_expression(
 {
   ast_dump_context->ostream() << "slicevalue(";
   ast_dump_context->ostream() << "values: ";
-  this->valptr_->dump_expression(ast_dump_context);
+  this->valmem_->dump_expression(ast_dump_context);
   ast_dump_context->ostream() << ", length: ";
   this->len_->dump_expression(ast_dump_context);
   ast_dump_context->ostream() << ", capacity: ";
@@ -15443,11 +15421,14 @@ Slice_value_expression::do_dump_expression(
 }
 
 Expression*
-Expression::make_slice_value(Type* at, Expression* valptr, Expression* len,
+Expression::make_slice_value(Type* at, Expression* valmem, Expression* len,
                              Expression* cap, Location location)
 {
   go_assert(at->is_slice_type());
-  return new Slice_value_expression(at, valptr, len, cap, location);
+  go_assert(valmem->is_nil_expression()
+	    || (at->array_type()->element_type()
+		== valmem->type()->points_to()));
+  return new Slice_value_expression(at, valmem, len, cap, location);
 }
 
 // An expression that evaluates to some characteristic of a non-empty interface.
