@@ -311,7 +311,7 @@ module2bmi (const char *module)
 	  if (c == '.')
 	    c = '-';
 	  else if (c == ':')
-	    c = '+';
+	    c = ':'; /* Might want mapping on non-unix fs?  */
 	  else if (IS_DIR_SEPARATOR (c))
 	    c = '=';
 	  *ptr = c;

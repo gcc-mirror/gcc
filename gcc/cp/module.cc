@@ -29,24 +29,31 @@ along with GCC; see the file COPYING3.  If not see
    The merged modules proposal, p1103r1, allows me to drop support for
    two different schemes.
    
-   Each namespace-scope and container-like decl has a MODULE_OWNER.
-   This is MODULE_NONE for the global module, MODULE_PURVIEW for the
-   current TU and >= MODULE_IMPORT_BASE for imported modules.  During
-   compilation, the current module's owner will change from
-   MODULE_NONE to MODULE_PURVIEW at the module-declaration.  Any decl
-   with MODULE_OWNER != MODULE_NONE is in a module purview.  Builtins
-   are always MODULE_NONE. (Note that this is happenstance for decls
-   lacking DECL_LANG_SPECIFIC.)
+   Each namespace-scope decl has a MODULE_OWNER.  This is MODULE_NONE
+   for entities declared in the Global Module Fragment.  In the
+   purview of the current module, it is MODULE_PURVIEW.  For any
+   imported declaration it is >= MODULE_IMPORT_BASE.  Decls from
+   legacy imports have a MODULE_OWNER, even though they are in the
+   global module.  Builtins are always MODULE_NONE. (Note that
+   this is happenstance for decls lacking DECL_LANG_SPECIFIC.)  For
+   efficiency, MODULE_OWNER is also set in the decl of container-like
+   entities, so one doesn't have to go all the way up to the
+   namespace-scope containing entity.
 
    The decls for a particular module are held located in a sparse
-   array hanging off the ns-level binding of the name.  For imported
-   modules, the array slot is the same as the module owner.  For the
-   current TU, it is MODULE_SLOT_CURRENT.  To keep track of global
-   module entities made visible via multiple imports, we use
-   MODULE_SLOT_GLOBAL.  That slot is never searched during name
-   lookup.  The two reserved slots are always present.  If a name is
-   bound only in the current TU, there is a regular binding, not an
-   array.  We convert on demand.
+   array hanging off the ns-level binding of the name.  This is
+   partitioned into two: a set of Fixed slots at the start followed by
+   the sparse slots afterwards.  By construction we only need to
+   append new slots to the end -- there is never a need to insert in
+   the middle.  The fixed slots are MODULE_SLOT_CURRENT for the
+   current TU (regardless of whether it is a module or not),
+   MODULE_SLOT_GLOBAL and MODULE_SLOT_PARTITION.  These latter two
+   slots are used for merging entities across the global module and
+   module partitions respectively.  MODULE_SLOT_PARTITION is only
+   present in a module.  Neither slot is searched during name lookup
+   -- they are internal use only.  This vector is created lazily once
+   we require it, if there is only a declaration from the current TU, a
+   regular binding is present.  It is converted on demand.
 
    OPTIMIZATION: Outside of the current TU, we only need ADL to work.
    We could optimize regular lookup for the current TU by glomming all
@@ -56,12 +63,9 @@ along with GCC; see the file COPYING3.  If not see
    There is only one instance of each extern-linkage namespace.  It
    appears in every module slot that makes it visible.  It also
    appears in MODULE_SLOT_GLOBAL. (it is an ODR violation if they
-   collide with some other global module entity.) FIXME:Not yet implemented
-
-   A module import can bring in entities that cannot be found by name
-   lookup.  You use decltype tricks to get at it.  I am not sure
-   whether these should be DECL_HIDDEN for that import's binding, or
-   should just not be in the symbol table.
+   collide with some other global module entity.)  We also have an
+   optimization that shares the slot for adjacent modules that declare
+   the same such namespace.
 
    A module interface compilation produces a Binary Module Interface
    (BMI).  I use ELROND format, which allows a bunch of named sections
@@ -81,21 +85,29 @@ along with GCC; see the file COPYING3.  If not see
    defining a relocation type.
 
    References to decls not in the same SCC are by two different
-   mechanisms.  The simplest is for extern or module linkage entities,
-   which are by module, context, name & type.  We look in exactly that
-   scope, potentially lazily load it.  Other cases are by a per-module
-   vector of such decls.  Again, slots in this may be lazily loaded.
-   The three cases are:
+   mechanisms.
 
-   * Local linkage entities, which will be subject to linkage
-   promotion.  FIXME: Linkage promotion not implemented.
+   The simplest is for extern or module linkage entities, which are by
+   context, name, module & overload index.  We look in exactly that
+   scope, get the specified module binding and element from the
+   overload set (or type).  Getting the module binding might cause
+   lazy loading of that module's binding.
 
-   * Global module entity.  We must merge global decls across
-   modules.  FIXME: Not implemented
+   There are some entities are unnameable -- a local type returned
+   by a function (eg, a lambda).  These types must be referencable by
+   importing modules.  We construct a per-module vector of such types
+   and refer to them by index.
 
-   * Voldemort types.  These are unspellable types -- a local class
-   from a function for instance.  We generate a table of these and
-   refer to them by index.  FIXME: indirect cases not implemented.
+   Notice that lazy loading of one module's binding can cause lazy
+   loading of other bindings of the same or other modules.  Clearly we
+   want to avoid loops.  In a correct program there can be no loops in
+   the module dependency graph, and the above-mentioned SCC algorithm
+   places all intra-module circular dependencies in the same SCC.  It
+   also orders the SCCs wrt each other, so dependent SCCs come first.
+   As we load dependent modules first, we know there can be no
+   reference to a higher-numbered module, and because we write out
+   dependent SCCs first likewise for SCCs within the module.  This
+   allows us to immediately detect broken references.
 
 Classes used:
 
@@ -229,7 +241,7 @@ static inline tree identifier (cpp_hashnode *node)
 /* Id for dumping module information.  */
 int module_dump_id;
 
-/* We have a few more special module owners.  */
+/* We have a special module owner.  */
 #define MODULE_UNKNOWN (unsigned short)(~0U)    /* Not yet known.  */
 
 /* Prefix for section names.  (Not system-defined, so no leading dot.)  */
@@ -298,9 +310,8 @@ version2string (int version, verstr_t &out)
 	     version < 0 ? " (experimental)": "");
 }
 
-/* Traits to has an arbitrary pointer into a hash table. Entries are
-   not deletable, and removal is a noop (removal needed upon
-   destruction).  */
+/* Traits to hash an arbitrary pointer.  Entries are not deletable,
+   and removal is a noop (removal needed upon destruction).  */
 template <typename T>
 struct nodel_ptr_hash : pointer_hash<T>, typed_noop_remove <T *> {
   /* Nothing is deletable.  Everything is insertable.  */
@@ -8852,8 +8863,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	  /* An indirect import, find it, it should already be here.  */
 	  if (imp->is_detached ())
 	    {
-	      error_at (loc, "indirect import %qs is not already loaded",
-			imp->fullname);
+	      error_at (loc, "indirect import %qs is not already loaded", name);
 	      continue;
 	    }
 	}

@@ -59,7 +59,8 @@ proc decode_mod_spec { spec } {
 	    set pfx ".s"
 	    set spec [string range $spec 1 end-1]
 	}
-	set file "[string map {. - : + / =} $spec]$pfx.nms"
+	# Not mapping :, but recording it as a possibility
+	set file "[string map {. - : : / =} $spec]$pfx.nms"
     }
     return [list $not $file]
 }
