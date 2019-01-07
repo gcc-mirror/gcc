@@ -1,3 +1,8 @@
+2019-01-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/aarch64/subs_compare_2.c: Make '#' immediate prefix
+	optional in scan pattern.
+
 2019-01-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/88598

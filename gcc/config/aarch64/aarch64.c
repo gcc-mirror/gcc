@@ -16668,32 +16668,38 @@ aarch64_subvti_scratch_regs (rtx op1, rtx op2, rtx *low_dest,
    LOW_IN2 represents the low half (DImode) of TImode operand 2
    HIGH_DEST represents the high half (DImode) of TImode operand 0
    HIGH_IN1 represents the high half (DImode) of TImode operand 1
-   HIGH_IN2 represents the high half (DImode) of TImode operand 2.  */
-
+   HIGH_IN2 represents the high half (DImode) of TImode operand 2
+   UNSIGNED_P is true if the operation is being performed on unsigned
+   values.  */
 void
 aarch64_expand_subvti (rtx op0, rtx low_dest, rtx low_in1,
 		       rtx low_in2, rtx high_dest, rtx high_in1,
-		       rtx high_in2)
+		       rtx high_in2, bool unsigned_p)
 {
   if (low_in2 == const0_rtx)
     {
       low_dest = low_in1;
-      emit_insn (gen_subdi3_compare1 (high_dest, high_in1,
-				      force_reg (DImode, high_in2)));
+      high_in2 = force_reg (DImode, high_in2);
+      if (unsigned_p)
+	emit_insn (gen_subdi3_compare1 (high_dest, high_in1, high_in2));
+      else
+	emit_insn (gen_subvdi_insn (high_dest, high_in1, high_in2));
     }
   else
     {
       if (CONST_INT_P (low_in2))
 	{
-	  low_in2 = force_reg (DImode, GEN_INT (-UINTVAL (low_in2)));
 	  high_in2 = force_reg (DImode, high_in2);
-	  emit_insn (gen_adddi3_compareC (low_dest, low_in1, low_in2));
+	  emit_insn (gen_subdi3_compare1_imm (low_dest, low_in1, low_in2,
+					      GEN_INT (-INTVAL (low_in2))));
 	}
       else
 	emit_insn (gen_subdi3_compare1 (low_dest, low_in1, low_in2));
-      emit_insn (gen_subdi3_carryinCV (high_dest,
-				       force_reg (DImode, high_in1),
-				       high_in2));
+
+      if (unsigned_p)
+	emit_insn (gen_usubdi3_carryinC (high_dest, high_in1, high_in2));
+      else
+	emit_insn (gen_subdi3_carryinV (high_dest, high_in1, high_in2));
     }
 
   emit_move_insn (gen_lowpart (DImode, op0), low_dest);

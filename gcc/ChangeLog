@@ -1,3 +1,42 @@
+2019-01-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/86891
+	* config/aarch64/aarch64.c (aarch64_expand_subvti): New parameter
+	unsigned_p.  Handle signed and unsigned overflow correction as
+	required.
+	* config/aarch64/aarch64-protos.h (aarch64_expand_subvti): Update
+	prototype.
+	* config/aarch64/aarch64.md (addv<mode>4): Use aarch64_plus_operand
+	for operand 2.
+	(add<mode>3_compareV_imm): Make this callable for expanding.
+	(subv<GPI:mode>4): Use register_operand for operand 1.  Use
+	aarch64_plus_operand for operand 2.
+	(subv<GPI:mode>_insn): New insn pattern.
+	(subv<GPI:mode>_imm): Likewise.
+	(negv<GPI:mode>3): New expand pattern.
+	(negv<GPI:mode>_insn): New insn pattern.
+	(negv<GPI:mode>_cmp_only): Likewise.
+	(cmpv<GPI:mode>_insn): Likewise.
+	(subvti4): Use register_operand for operand 1.  Update call to
+	aarch64_expand_subvti.
+	(usubvti4): Likewise.
+	(negvti3): New expand pattern.
+	(negdi_carryout): New insn pattern.
+	(negvdi_carryinV): New insn pattern.
+	(sub<mode3>_compare1_imm): Delete named insn pattern, make anonymous
+	version the named version.
+	(peepholes to convert to sub<mode3>_compare1_imm): Adjust order of
+	operands.
+	(usub<GPI:mode>3_carryinC, usub<GPI:mode>3_carryinC_z1): New insn
+	patterns.
+	(usub<GPI:mode>3_carryinC_z2, usub<GPI:mode>3_carryinC): New insn
+	patterns.
+	(sub<mode>3_carryinCV, sub<mode>3_carryinCV_z1_z2): Delete.
+	(sub<mode>3_carryinCV_z1, sub<mode>3_carryinCV_z2): Delete.
+	(sub<mode>3_carryinCV): Delete.
+	(sub<GPI:mode>3_carryinV): New expand pattern.
+	sub<mode>3_carryinV, sub<mode>3_carryinV_z2): New insn patterns.
+
 2019-01-07  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-uncprop.c (ssa_equip_hash_traits): Remove in favor

@@ -530,7 +530,7 @@ void aarch64_subvti_scratch_regs (rtx, rtx, rtx *,
 				  rtx *, rtx *,
 				  rtx *, rtx *, rtx *);
 void aarch64_expand_subvti (rtx, rtx, rtx,
-			    rtx, rtx, rtx, rtx);
+			    rtx, rtx, rtx, rtx, bool);
 
 
 /* Initialize builtins for SIMD intrinsics.  */
