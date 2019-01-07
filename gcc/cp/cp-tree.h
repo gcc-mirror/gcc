@@ -7142,6 +7142,8 @@ extern bool is_lambda_ignored_entity            (tree);
 extern bool lambda_static_thunk_p		(tree);
 extern tree finish_builtin_launder		(location_t, tree,
 						 tsubst_flags_t);
+extern tree cp_build_vec_convert		(tree, location_t, tree,
+						 tsubst_flags_t);
 extern void start_lambda_scope			(tree);
 extern void record_lambda_scope			(tree);
 extern void record_null_lambda_scope		(tree);

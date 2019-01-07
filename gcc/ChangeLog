@@ -1,3 +1,20 @@
+2019-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85052
+	* tree-vect-generic.c: Include insn-config.h and recog.h.
+	(expand_vector_piecewise): Add defaulted ret_type argument,
+	if non-NULL, use that in preference to type for the result type.
+	(expand_vector_parallel): Formatting fix.
+	(do_vec_conversion, do_vec_narrowing_conversion,
+	expand_vector_conversion): New functions.
+	(expand_vector_operations_1): Call expand_vector_conversion
+	for VEC_CONVERT ifn calls.
+	* internal-fn.def (VEC_CONVERT): New internal function.
+	* internal-fn.c (expand_VEC_CONVERT): New function.
+	* fold-const-call.c (fold_const_vec_convert): New function.
+	(fold_const_call): Use it for CFN_VEC_CONVERT.
+	* doc/extend.texi (__builtin_convertvector): Document.
+
 2019-01-07  Tom de Vries  <tdevries@suse.de>
 
 	* config/nvptx/nvptx-protos.h (nvptx_output_red_partition): Declare.

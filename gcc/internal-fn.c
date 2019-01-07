@@ -2581,6 +2581,15 @@ expand_VA_ARG (internal_fn, gcall *)
   gcc_unreachable ();
 }
 
+/* IFN_VEC_CONVERT is supposed to be expanded at pass_lower_vector.  So this
+   dummy function should never be called.  */
+
+static void
+expand_VEC_CONVERT (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
 /* Expand the IFN_UNIQUE function according to its first argument.  */
 
 static void

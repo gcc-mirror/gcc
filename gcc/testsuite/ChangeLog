@@ -1,3 +1,11 @@
+2019-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85052
+	* c-c++-common/builtin-convertvector-1.c: New test.
+	* c-c++-common/torture/builtin-convertvector-1.c: New test.
+	* g++.dg/ext/builtin-convertvector-1.C: New test.
+	* g++.dg/cpp0x/constexpr-builtin4.C: New test.
+
 2018-12-26  Mateusz B  <mateuszb@poczta.onet.pl>
 
 	PR target/88521

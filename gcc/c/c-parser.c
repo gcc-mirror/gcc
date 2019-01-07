@@ -8038,6 +8038,7 @@ enum tgmath_parm_kind
      __builtin_shuffle ( assignment-expression ,
 			 assignment-expression ,
 			 assignment-expression, )
+     __builtin_convertvector ( assignment-expression , type-name )
 
    offsetof-member-designator:
      identifier
@@ -9113,17 +9114,14 @@ c_parser_postfix_expression (c_parser *parser)
 	      *p = convert_lvalue_to_rvalue (loc, *p, true, true);
 
 	    if (vec_safe_length (cexpr_list) == 2)
-	      expr.value =
-		c_build_vec_perm_expr
-		  (loc, (*cexpr_list)[0].value,
-		   NULL_TREE, (*cexpr_list)[1].value);
+	      expr.value = c_build_vec_perm_expr (loc, (*cexpr_list)[0].value,
+						  NULL_TREE,
+						  (*cexpr_list)[1].value);
 
 	    else if (vec_safe_length (cexpr_list) == 3)
-	      expr.value =
-		c_build_vec_perm_expr
-		  (loc, (*cexpr_list)[0].value,
-		   (*cexpr_list)[1].value,
-		   (*cexpr_list)[2].value);
+	      expr.value = c_build_vec_perm_expr (loc, (*cexpr_list)[0].value,
+						  (*cexpr_list)[1].value,
+						  (*cexpr_list)[2].value);
 	    else
 	      {
 		error_at (loc, "wrong number of arguments to "
@@ -9133,6 +9131,41 @@ c_parser_postfix_expression (c_parser *parser)
 	    set_c_expr_source_range (&expr, loc, close_paren_loc);
 	    break;
 	  }
+	case RID_BUILTIN_CONVERTVECTOR:
+	  {
+	    location_t start_loc = loc;
+	    c_parser_consume_token (parser);
+	    matching_parens parens;
+	    if (!parens.require_open (parser))
+	      {
+		expr.set_error ();
+		break;
+	      }
+	    e1 = c_parser_expr_no_commas (parser, NULL);
+	    mark_exp_read (e1.value);
+	    if (!c_parser_require (parser, CPP_COMMA, "expected %<,%>"))
+	      {
+		c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
+		expr.set_error ();
+		break;
+	      }
+	    loc = c_parser_peek_token (parser)->location;
+	    t1 = c_parser_type_name (parser);
+	    location_t end_loc = c_parser_peek_token (parser)->get_finish ();
+	    c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
+				       "expected %<)%>");
+	    if (t1 == NULL)
+	      expr.set_error ();
+	    else
+	      {
+		tree type_expr = NULL_TREE;
+		expr.value = c_build_vec_convert (start_loc, e1.value, loc,
+						  groktypename (t1, &type_expr,
+								NULL));
+		set_c_expr_source_range (&expr, start_loc, end_loc);
+	      }
+	  }
+	  break;
 	case RID_AT_SELECTOR:
 	  {
 	    gcc_assert (c_dialect_objc ());
