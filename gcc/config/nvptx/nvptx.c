@@ -4636,9 +4636,12 @@ nvptx_process_pars (parallel *par)
     {
       nvptx_shared_propagate (false, is_call, par->forked_block,
 			      par->forked_insn, !worker);
-      bool empty = nvptx_shared_propagate (true, is_call,
-					   par->forked_block, par->fork_insn,
-					   !worker);
+      bool no_prop_p
+	= nvptx_shared_propagate (true, is_call, par->forked_block,
+				  par->fork_insn, !worker);
+      bool empty_loop_p
+	= !is_call && (NEXT_INSN (par->forked_insn)
+		       && NEXT_INSN (par->forked_insn) == par->joining_insn);
       rtx barrier = GEN_INT (0);
       int threads = 0;
 
@@ -4648,7 +4651,11 @@ nvptx_process_pars (parallel *par)
 	  threads = nvptx_mach_vector_length ();
 	}
 
-      if (!empty || !is_call)
+      if (no_prop_p && empty_loop_p)
+	;
+      else if (no_prop_p && is_call)
+	;
+      else
 	{
 	  /* Insert begin and end synchronizations.  */
 	  emit_insn_before (nvptx_cta_sync (barrier, threads),
