@@ -1,5 +1,10 @@
 2019-01-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-stmts.c (vectorizable_store): Don't use the dataref_offset
+	optimization for masked stores.
+
+2019-01-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR middle-end/88567
 	* tree-vect-loop.c (get_initial_defs_for_reduction): Pass the
 	output vector directly to duplicate_and_interleave instead of
