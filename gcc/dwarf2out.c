@@ -14445,13 +14445,6 @@ const_ok_for_output_1 (rtx rtl)
   if (CONST_POLY_INT_P (rtl))
     return false;
 
-  if (targetm.const_not_ok_for_debug_p (rtl))
-    {
-      expansion_failed (NULL_TREE, rtl,
-			"Expression rejected for debug by the backend.\n");
-      return false;
-    }
-
   /* FIXME: Refer to PR60655. It is possible for simplification
      of rtl expressions in var tracking to produce such expressions.
      We should really identify / validate expressions
@@ -15660,8 +15653,17 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	  bool not_ok = false;
 	  subrtx_var_iterator::array_type array;
 	  FOR_EACH_SUBRTX_VAR (iter, array, rtl, ALL)
-	    if ((*iter != rtl && !CONSTANT_P (*iter))
-		|| !const_ok_for_output_1 (*iter))
+	    if (*iter != rtl && !CONSTANT_P (*iter))
+	      {
+		not_ok = true;
+		break;
+	      }
+
+	  if (not_ok)
+	    break;
+
+	  FOR_EACH_SUBRTX_VAR (iter, array, rtl, ALL)
+	    if (!const_ok_for_output_1 (*iter))
 	      {
 		not_ok = true;
 		break;

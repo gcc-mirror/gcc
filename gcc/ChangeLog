@@ -1,5 +1,12 @@
 2019-01-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/88723
+	* dwarf2out.c (const_ok_for_output_1): Remove redundant call to
+	const_not_ok_for_debug_p target hook.
+	(mem_loc_descriptor) <case UNSPEC>: Only call const_ok_for_output_1
+	on UNSPEC and subexpressions thereof if all subexpressions of the
+	UNSPEC are CONSTANT_P.
+
 	PR tree-optimization/88676
 	* tree-ssa-phiopt.c (two_value_replacement): New function.
 	(tree_ssa_phiopt_worker): Call it.
