@@ -5421,6 +5421,10 @@ nvptx_goacc_validate_dims (tree decl, int dims[], int fn_level)
 
   nvptx_goacc_validate_dims_1 (decl, dims, fn_level);
 
+  gcc_assert (dims[GOMP_DIM_VECTOR] != 0);
+  if (dims[GOMP_DIM_WORKER] > 0 && dims[GOMP_DIM_VECTOR] > 0)
+    gcc_assert (dims[GOMP_DIM_WORKER] * dims[GOMP_DIM_VECTOR] <= PTX_CTA_SIZE);
+
   for (i = 0; i < GOMP_DIM_MAX; ++i)
     if (old_dims[i] != dims[i])
       return true;
