@@ -29,6 +29,9 @@
 
 #ifdef _GLIBCXX_HAVE_UNISTD_H
 # include <unistd.h>
+# ifdef _GLIBCXX_HAVE_FCNTL_H
+#  include <fcntl.h>  // AT_FDCWD, O_TRUNC etc.
+# endif
 # if defined(_GLIBCXX_HAVE_SYS_STAT_H) && defined(_GLIBCXX_HAVE_SYS_TYPES_H)
 #  include <sys/types.h>
 #  include <sys/stat.h>
@@ -139,7 +142,23 @@ namespace __gnu_posix
   using ::utime;
 # endif
   using ::rename;
+# ifdef _GLIBCXX_HAVE_TRUNCATE
   using ::truncate;
+# else
+  inline int truncate(const char* path, off_t length)
+  {
+    if (length == 0)
+      {
+	const int fd = ::open(path, O_WRONLY|O_TRUNC);
+	if (fd == -1)
+	  return fd;
+	::close(fd);
+	return 0;
+      }
+    errno = ENOTSUP;
+    return -1;
+  }
+# endif
   using char_type = char;
 #else // ! _GLIBCXX_FILESYSTEM_IS_WINDOWS && ! _GLIBCXX_HAVE_UNISTD_H
   inline int open(const char*, int, ...) { errno = ENOTSUP; return -1; }

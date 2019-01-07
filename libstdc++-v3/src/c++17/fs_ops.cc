@@ -1268,16 +1268,12 @@ fs::resize_file(const path& p, uintmax_t size)
 void
 fs::resize_file(const path& p, uintmax_t size, error_code& ec) noexcept
 {
-#ifdef _GLIBCXX_HAVE_UNISTD_H
   if (size > static_cast<uintmax_t>(std::numeric_limits<off_t>::max()))
     ec.assign(EINVAL, std::generic_category());
   else if (posix::truncate(p.c_str(), size))
     ec.assign(errno, std::generic_category());
   else
     ec.clear();
-#else
-  ec = std::make_error_code(std::errc::not_supported);
-#endif
 }
 
 

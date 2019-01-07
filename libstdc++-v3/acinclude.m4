@@ -4590,6 +4590,19 @@ dnl
     fi
     AC_MSG_RESULT($glibcxx_cv_symlink)
 dnl
+    AC_MSG_CHECKING([for truncate])
+    AC_CACHE_VAL(glibcxx_cv_truncate, [dnl
+      GCC_TRY_COMPILE_OR_LINK(
+        [#include <unistd.h>],
+        [truncate("", 99);],
+        [glibcxx_cv_truncate=yes],
+        [glibcxx_cv_truncate=no])
+    ])
+    if test $glibcxx_cv_truncate = yes; then
+      AC_DEFINE(HAVE_TRUNCATE, 1, [Define if truncate is available in <unistd.h>.])
+    fi
+    AC_MSG_RESULT($glibcxx_cv_truncate)
+dnl
     CXXFLAGS="$ac_save_CXXFLAGS"
     AC_LANG_RESTORE
   fi
