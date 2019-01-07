@@ -1,5 +1,11 @@
 2019-01-07  Tom de Vries  <tdevries@suse.de>
 
+	PR target/85381
+	* config/nvptx/nvptx.c (nvptx_process_pars): Don't emit barriers for
+	empty loops.
+
+2019-01-07  Tom de Vries  <tdevries@suse.de>
+
 	* config/nvptx/nvptx.c (oacc_bcast_partition): Declare.
 	(nvptx_option_override): Init oacc_bcast_partition.
 	(nvptx_init_oacc_workers): New function.
