@@ -1,6 +1,16 @@
 2019-01-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/88598
+	* gcc.dg/vect/pr88598-1.c: New test.
+	* gcc.dg/vect/pr88598-2.c: Likewise.
+	* gcc.dg/vect/pr88598-3.c: Likewise.
+	* gcc.dg/vect/pr88598-4.c: Likewise.
+	* gcc.dg/vect/pr88598-5.c: Likewise.
+	* gcc.dg/vect/pr88598-6.c: Likewise.
+
+2019-01-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/88598
 	* gcc.dg/pr88598-1.c: New test.
 	* gcc.dg/pr88598-2.c: Likewise.
 	* gcc.dg/pr88598-3.c: Likewise.

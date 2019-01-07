@@ -4522,6 +4522,8 @@ extern tree uniform_vector_p (const_tree);
 
 extern tree uniform_integer_cst_p (tree);
 
+extern int single_nonzero_element (const_tree);
+
 /* Given a CONSTRUCTOR CTOR, return the element values as a vector.  */
 
 extern vec<tree, va_gc> *ctor_to_vec (tree);

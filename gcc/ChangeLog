@@ -1,6 +1,14 @@
 2019-01-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/88598
+	* tree.h (single_nonzero_element): Declare.
+	* tree.c (single_nonzero_element): New function.
+	* match.pd: Fold certain reductions of X & CST to X[I] & CST[I]
+	if I is the only nonzero element of CST.
+
+2019-01-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/88598
 	* tree.h (initializer_each_zero_or_onep): Declare.
 	* tree.c (initializer_each_zero_or_onep): New function.
 	(signed_or_unsigned_type_for): Handle float types too.
