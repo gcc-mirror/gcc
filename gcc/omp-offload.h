@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_OMP_DEVICE_H
 
 extern int oacc_get_default_dim (int dim);
+extern int oacc_get_min_dim (int dim);
 extern int oacc_fn_attrib_level (tree attr);
 
 extern GTY(()) vec<tree, va_gc> *offload_funcs;

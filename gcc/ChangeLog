@@ -1,3 +1,8 @@
+2019-01-07  Tom de Vries  <tdevries@suse.de>
+
+	* omp-offload.c (oacc_get_min_dim): New function.
+	* omp-offload.h (oacc_get_min_dim): Declare.
+
 2018-12-26  Mateusz B  <mateuszb@poczta.onet.pl>
 
 	PR target/88521
