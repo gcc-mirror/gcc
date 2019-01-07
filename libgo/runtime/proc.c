@@ -442,6 +442,11 @@ void getTraceback(G*, G*) __asm__(GOSYM_PREFIX "runtime.getTraceback");
 // goroutine stored in the traceback field, which is me.
 void getTraceback(G* me, G* gp)
 {
+	M* holdm;
+
+	holdm = gp->m;
+	gp->m = me->m;
+
 #ifdef USING_SPLIT_STACK
 	__splitstack_getcontext((void*)(&me->stackcontext[0]));
 #endif
@@ -450,6 +455,8 @@ void getTraceback(G* me, G* gp)
 	if (gp->traceback != 0) {
 		runtime_gogo(gp);
 	}
+
+	gp->m = holdm;
 }
 
 // Do a stack trace of gp, and then restore the context to
@@ -459,17 +466,11 @@ void
 gtraceback(G* gp)
 {
 	Traceback* traceback;
-	M* holdm;
 
 	traceback = (Traceback*)gp->traceback;
 	gp->traceback = 0;
-	holdm = gp->m;
-	if(holdm != nil && holdm != g->m)
-		runtime_throw("gtraceback: m is not nil");
-	gp->m = traceback->gp->m;
 	traceback->c = runtime_callers(1, traceback->locbuf,
 		sizeof traceback->locbuf / sizeof traceback->locbuf[0], false);
-	gp->m = holdm;
 	runtime_gogo(traceback->gp);
 }
 
