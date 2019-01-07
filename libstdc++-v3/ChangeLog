@@ -1,5 +1,11 @@
 2019-01-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/spine.xml: Update copyright years.
+	* doc/xml/manual/status_cxx2017.xml: Adjust note about -lstdc++fs.
+	* doc/xml/manual/using.xml: Remove requirement to link with -lstdc++fs
+	for C++17 filesystem library.
+	* doc/html/*: Regenerate.
+
 	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Check for truncate.
 	* config.h.in: Regenerate.
 	* config/abi/pre/gnu.ver: Order patterns for filesystem operations

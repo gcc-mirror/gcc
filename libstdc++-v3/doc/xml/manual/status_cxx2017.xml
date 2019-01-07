@@ -692,7 +692,7 @@ Feature-testing recommendations for C++</link>.
       <entry align="center"> 8.1 </entry>
       <entry><code> __has_include(&lt;filesystem&gt;) </code>,
 	     <code> __cpp_lib_filesystem >= 201603 </code>
-	     (requires linking with <code>-lstdc++fs</code>)
+	     (GCC 8.x requires linking with <code>-lstdc++fs</code>)
       </entry>
     </row>
 
