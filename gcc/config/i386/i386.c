@@ -9063,6 +9063,13 @@ function_value_ms_64 (machine_mode orig_mode, machine_mode mode,
 	      && !COMPLEX_MODE_P (mode))
 	    regno = FIRST_SSE_REG;
 	  break;
+	case 8:
+	case 4:
+	  if (valtype != NULL_TREE && AGGREGATE_TYPE_P (valtype))
+	    break;
+	  if (mode == SFmode || mode == DFmode)
+	    regno = FIRST_SSE_REG;
+	  break;
 	default:
 	  break;
         }
