@@ -580,6 +580,13 @@ oacc_get_default_dim (int dim)
   return oacc_default_dims[dim];
 }
 
+int
+oacc_get_min_dim (int dim)
+{
+  gcc_assert (0 <= dim && dim < GOMP_DIM_MAX);
+  return oacc_min_dims[dim];
+}
+
 /* Parse the default dimension parameter.  This is a set of
    :-separated optional compute dimensions.  Each specified dimension
    is a positive integer.  When device type support is added, it is
