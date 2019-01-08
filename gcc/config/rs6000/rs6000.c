@@ -8388,14 +8388,17 @@ rs6000_delegitimize_address (rtx orig_x)
 {
   rtx x, y, offset;
 
+  if (GET_CODE (orig_x) == UNSPEC && XINT (orig_x, 1) == UNSPEC_FUSION_GPR)
+    orig_x = XVECEXP (orig_x, 0, 0);
+
   orig_x = delegitimize_mem_from_attrs (orig_x);
+
   x = orig_x;
   if (MEM_P (x))
     x = XEXP (x, 0);
 
   y = x;
-  if (TARGET_CMODEL != CMODEL_SMALL
-      && GET_CODE (y) == LO_SUM)
+  if (TARGET_CMODEL != CMODEL_SMALL && GET_CODE (y) == LO_SUM)
     y = XEXP (y, 1);
 
   offset = NULL_RTX;
@@ -8407,8 +8410,7 @@ rs6000_delegitimize_address (rtx orig_x)
       y = XEXP (y, 0);
     }
 
-  if (GET_CODE (y) == UNSPEC
-      && XINT (y, 1) == UNSPEC_TOCREL)
+  if (GET_CODE (y) == UNSPEC && XINT (y, 1) == UNSPEC_TOCREL)
     {
       y = XVECEXP (y, 0, 0);
 
@@ -8435,8 +8437,7 @@ rs6000_delegitimize_address (rtx orig_x)
       && GET_CODE (XEXP (orig_x, 1)) == CONST)
     {
       y = XEXP (XEXP (orig_x, 1), 0);
-      if (GET_CODE (y) == UNSPEC
-	  && XINT (y, 1) == UNSPEC_MACHOPIC_OFFSET)
+      if (GET_CODE (y) == UNSPEC && XINT (y, 1) == UNSPEC_MACHOPIC_OFFSET)
 	return XVECEXP (y, 0, 0);
     }
 
