@@ -1,3 +1,13 @@
+2019-01-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/88721
+	* config/sparc/sparc.c (function_arg_slotno): Set *PPREGNO & *PPADDING
+	to -1 on entry.
+
+	PR debug/88723
+	* config/sparc/sparc.c (sparc_delegitimize_address): Deal with naked
+	UNSPECs and UNSPEC_MOVE_GOTDATA specifically.
+
 2019-01-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/88717
