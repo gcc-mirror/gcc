@@ -1,3 +1,9 @@
+2019-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR fortran/88611
+	* trans-expr.c (gfc_conv_initializer): For ISOCBINDING_NULL_*
+	directly build the expected GENERIC tree.
+
 2019-01-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	Harald Anlauf <anlauf@gmx.de>
 	Tobias Burnus <burnus@gcc.gnu.org>

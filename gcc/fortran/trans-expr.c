@@ -7086,19 +7086,12 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
   if (expr != NULL && expr->ts.type == BT_DERIVED
       && expr->ts.is_iso_c && expr->ts.u.derived)
     {
-      gfc_symbol *derived = expr->ts.u.derived;
-
-      /* The derived symbol has already been converted to a (void *).  Use
-	 its kind.  */
-      if (derived->ts.kind == 0)
-	derived->ts.kind = gfc_default_integer_kind;
-      expr = gfc_get_int_expr (derived->ts.kind, NULL, 0);
-      expr->ts.f90_type = derived->ts.f90_type;
-
-      gfc_init_se (&se, NULL);
-      gfc_conv_constant (&se, expr);
-      gcc_assert (TREE_CODE (se.expr) != CONSTRUCTOR);
-      return se.expr;
+      if (TREE_CODE (type) == ARRAY_TYPE)
+	return build_constructor (type, NULL);
+      else if (POINTER_TYPE_P (type))
+	return build_int_cst (type, 0);
+      else
+	gcc_unreachable ();
     }
 
   if (array && !procptr)
