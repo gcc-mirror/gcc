@@ -3,6 +3,11 @@
 	Backported from mainline
 	2018-12-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/88470
+	* cfgcleanup.c (outgoing_edges_match): If the function is
+	shrink-wrapped and bb1 ends with a JUMP_INSN with a single fake
+	edge to EXIT, return false.
+
 	PR rtl-optimization/88416
 	* valtrack.c (cleanup_auto_inc_dec): Handle pre/post-inc/dec/modify
 	even if !AUTO_INC_DEC.
