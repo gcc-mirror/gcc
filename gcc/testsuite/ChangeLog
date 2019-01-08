@@ -3,6 +3,9 @@
 	Backported from mainline
 	2018-11-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/88234
+	* gcc.dg/ubsan/pr88234.c: New test.
+
 	PR c++/87539
 	* g++.dg/cpp0x/pr87539.C: New test.
 

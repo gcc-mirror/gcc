@@ -16159,6 +16159,7 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   enum rs6000_builtins fn_code
     = (enum rs6000_builtins) DECL_FUNCTION_CODE (fndecl);
   tree arg0, arg1, lhs, temp;
+  enum tree_code bcode;
   gimple *g;
 
   size_t uns_fncode = (size_t) fn_code;
@@ -16197,10 +16198,32 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case P8V_BUILTIN_VADDUDM:
     case ALTIVEC_BUILTIN_VADDFP:
     case VSX_BUILTIN_XVADDDP:
+      bcode = PLUS_EXPR;
+    do_binary:
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
       lhs = gimple_call_lhs (stmt);
-      g = gimple_build_assign (lhs, PLUS_EXPR, arg0, arg1);
+      if (INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (lhs)))
+	  && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (TREE_TYPE (lhs))))
+	{
+	  /* Ensure the binary operation is performed in a type
+	     that wraps if it is integral type.  */
+	  gimple_seq stmts = NULL;
+	  tree type = unsigned_type_for (TREE_TYPE (lhs));
+	  tree uarg0 = gimple_build (&stmts, VIEW_CONVERT_EXPR,
+				     type, arg0);
+	  tree uarg1 = gimple_build (&stmts, VIEW_CONVERT_EXPR,
+				     type, arg1);
+	  tree res = gimple_build (&stmts, gimple_location (stmt), bcode,
+				   type, uarg0, uarg1);
+	  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	  g = gimple_build_assign (lhs, VIEW_CONVERT_EXPR,
+				   build1 (VIEW_CONVERT_EXPR,
+					   TREE_TYPE (lhs), res));
+	  gsi_replace (gsi, g, true);
+	  return true;
+	}
+      g = gimple_build_assign (lhs, bcode, arg0, arg1);
       gimple_set_location (g, gimple_location (stmt));
       gsi_replace (gsi, g, true);
       return true;
@@ -16212,13 +16235,8 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case P8V_BUILTIN_VSUBUDM:
     case ALTIVEC_BUILTIN_VSUBFP:
     case VSX_BUILTIN_XVSUBDP:
-      arg0 = gimple_call_arg (stmt, 0);
-      arg1 = gimple_call_arg (stmt, 1);
-      lhs = gimple_call_lhs (stmt);
-      g = gimple_build_assign (lhs, MINUS_EXPR, arg0, arg1);
-      gimple_set_location (g, gimple_location (stmt));
-      gsi_replace (gsi, g, true);
-      return true;
+      bcode = MINUS_EXPR;
+      goto do_binary;
     case VSX_BUILTIN_XVMULSP:
     case VSX_BUILTIN_XVMULDP:
       arg0 = gimple_call_arg (stmt, 0);

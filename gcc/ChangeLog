@@ -1,6 +1,14 @@
 2019-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/88234
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): For
+	vec_add and vec_sub builtins, perform PLUS_EXPR or MINUS_EXPR
+	in unsigned_type_for instead of vector integral type where overflow
+	doesn't wrap.
+
 	2018-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/86900
