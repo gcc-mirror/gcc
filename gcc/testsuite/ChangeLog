@@ -1,5 +1,12 @@
 2019-01-08  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* c-c++-common/builtin-has-attribute-3.c: Skip tests requiring symbol
+	alias support.
+	* c-c++-common/builtin-has-attribute-4.c: Likewise.
+	Append match for warning that ‘protected’ attribute is not supported.
+
+2019-01-08  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc.dg/Wmissing-attributes.c: Require alias support.
 	* gcc.dg/attr-copy-2.c: Likewise.
 	* gcc.dg/attr-copy-5.c: Likewise.

@@ -1,7 +1,9 @@
 /* Verify __builtin_has_attribute return value for variables.
    { dg-do compile }
    { dg-options "-Wall -ftrack-macro-expansion=0" }
-   { dg-options "-Wall -Wno-narrowing -Wno-unused -ftrack-macro-expansion=0" { target c++ } }  */
+   { dg-options "-Wall -Wno-narrowing -Wno-unused -ftrack-macro-expansion=0" { target c++ } }
+   { dg-additional-options "-DSKIP_ALIAS" { target *-*-darwin* } } 
+*/
 
 #define ATTR(...) __attribute__ ((__VA_ARGS__))
 
@@ -45,6 +47,7 @@ void test_aligned (void)
 }
 
 
+#ifndef SKIP_ALIAS
 int vtarget;
 extern ATTR (alias ("vtarget")) int valias;
 
@@ -55,7 +58,7 @@ void test_alias (void)
   A (1, valias, alias ("vtarget"));
   A (0, valias, alias ("vnone"));
 }
-
+#endif
 
 void test_cleanup (void)
 {
@@ -280,6 +283,6 @@ void test_weak (void)
 
   A (1, var_init_weak, weak);
   A (1, var_uninit_weak, weak);
-}
+} /* { dg-warning "protected visibility attribute not supported" "" { target { *-*-darwin* } } } */
 
 /* { dg-prune-output "specifies less restrictive attribute" } */
