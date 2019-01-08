@@ -2,6 +2,9 @@
 
 	Backported from mainline
 	2018-11-19  Jakub Jelinek  <jakub@redhat.com>
+ 
+	PR c++/60994
+	* g++.dg/lookup/pr60994.C: New test.
 
 	PR debug/87039
 	* g++.dg/gomp/pr78363-4.C: New test.
