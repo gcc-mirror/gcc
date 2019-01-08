@@ -174,6 +174,27 @@ GOMP_OFFLOAD_get_num_devices (void)
   return num_devices;
 }
 
+extern "C" union gomp_device_property_value
+GOMP_OFFLOAD_get_property (int n, int prop)
+{
+  union gomp_device_property_value nullval = { .val = 0 };
+
+  if (n >= num_devices)
+    {
+      GOMP_PLUGIN_error
+       ("Request for a property of a non-existing Intel MIC device %i", n);
+      return nullval;
+    }
+
+  switch (prop)
+    {
+    case GOMP_DEVICE_PROPERTY_VENDOR:
+      return (union gomp_device_property_value) { .ptr = /* TODO: "error: invalid conversion from 'const void*' to 'void*' [-fpermissive]" */ (char *) "Intel" };
+    default:
+      return nullval;
+    }
+}
+
 static bool
 offload (const char *file, uint64_t line, int device, const char *name,
 	 int num_vars, VarDesc *vars, const void **async_data)

@@ -1,3 +1,8 @@
+2019-01-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_get_property):
+	New function.
+
 2019-02-26  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_version):
