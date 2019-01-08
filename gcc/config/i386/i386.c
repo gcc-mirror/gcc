@@ -4856,8 +4856,14 @@ ix86_option_override_internal (bool main_args_p,
 
   /* Handle stack protector */
   if (!opts_set->x_ix86_stack_protector_guard)
-    opts->x_ix86_stack_protector_guard
-      = TARGET_HAS_BIONIC ? SSP_GLOBAL : SSP_TLS;
+    {
+#ifdef TARGET_THREAD_SSP_OFFSET
+      if (!TARGET_HAS_BIONIC)
+	opts->x_ix86_stack_protector_guard = SSP_TLS;
+      else
+#endif
+	opts->x_ix86_stack_protector_guard = SSP_GLOBAL;
+    }
 
 #ifdef TARGET_THREAD_SSP_OFFSET
   ix86_stack_protector_guard_offset = TARGET_THREAD_SSP_OFFSET;
