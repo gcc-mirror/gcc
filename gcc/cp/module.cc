@@ -3071,7 +3071,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   }
   void attach (location_t);
   bool do_import (const char *filename, cpp_reader *);
-  void direct_import (cpp_reader *);
+  void direct_import (cpp_reader *, bool lazy);
 };
 
 /* Hash module state by name.  This cannot be a member of
@@ -12827,12 +12827,12 @@ module_state::do_import (char const *fname, cpp_reader *reader)
   return ok;
 }
 
-/* Import this module now.  Fatal error on failure.  We include the
-   case of an interface unit's module declaration, setting up for an
-   export in that case.  */
+/* Import this module now.  Fatal error on failure.  LAZY is
+   true if we're a lazy pending imports (which will have preserved
+   the line map already).  */
 
 void
-module_state::direct_import (cpp_reader *reader)
+module_state::direct_import (cpp_reader *reader, bool lazy)
 {
   unsigned n = dump.push (this);
   bool ok = true;
@@ -12840,11 +12840,10 @@ module_state::direct_import (cpp_reader *reader)
   direct_p = true;
   if (!is_imported ())
     {
-      bool is_interface = mod == MODULE_PURVIEW;
       char *fname = NULL;
       unsigned pre_hwm = 0;
 
-      if (is_legacy ())
+      if (!lazy)
 	{
 	  /* Preserve the state of the line-map.  */
 	  pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
@@ -12852,37 +12851,33 @@ module_state::direct_import (cpp_reader *reader)
 	    spans.close ();
 
 	  maybe_create_loc ();
-	  fname = module_mapper::import_export (this, is_interface);
+	  fname = module_mapper::import_export (this, false);
 	}
 
-      if (!is_interface)
-	ok = do_import (fname, reader);
-      else if (fname)
-	filename = xstrdup (fname);
+      ok = do_import (fname, reader);
 
       /* Restore the line-map state.  */
-      if (is_legacy ())
+      if (!lazy)
 	{
 	  linemap_module_restore (line_table, pre_hwm);
 	  if (module_has_bmi_p ())
 	    spans.open ();
 	}
     }
+  gcc_assert (mod != MODULE_PURVIEW);
 
   if (!ok)
     fatal_error (loc, "returning to gate for a mechanical issue");
-  else if (mod != MODULE_PURVIEW)
-    {
-      module_state *imp = resolve_alias ();
-      imp->direct_p = true;
-      if (exported_p)
-	imp->exported_p = true;
-      (*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
-      if (imp->is_legacy ())
-	imp->import_macros ();
-      if (imp->is_primary ())
-	bitmap_ior_into ((*modules)[MODULE_NONE]->imports, imp->imports);
-    }
+
+  module_state *imp = resolve_alias ();
+  imp->direct_p = true;
+  if (exported_p)
+    imp->exported_p = true;
+  (*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
+  if (imp->is_legacy ())
+    imp->import_macros ();
+  if (imp->is_primary ())
+    bitmap_ior_into ((*modules)[MODULE_NONE]->imports, imp->imports);
 
   dump.pop (n);
 }
@@ -12981,7 +12976,7 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
     imp->exported_p = true;
 
   if (imp->is_legacy ())
-    imp->direct_import (reader);
+    imp->direct_import (reader, false);
   else
     vec_safe_push (pending_imports, imp);
 
@@ -12993,7 +12988,7 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
 
 bool
 declare_module (module_state *state, location_t from_loc, bool exporting_p,
-		tree, cpp_reader *reader)
+		tree, cpp_reader *)
 {
   gcc_assert (global_namespace == current_scope ());
   from_loc = ordinary_loc_of (line_table, from_loc);
@@ -13032,6 +13027,9 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
 	  module_kind |= MK_INTERFACE;
 	}
 
+      if (state->is_legacy ())
+	module_kind |= MK_GLOBAL | MK_EXPORTING;
+
       /* Copy the importing information we may have already done.  */
       state->imports = gmf->imports;
 
@@ -13048,13 +13046,7 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
   current_module = MODULE_PURVIEW;
   (*modules)[MODULE_PURVIEW] = gmf;
 
-  if (state->is_legacy ())
-    {
-      module_kind |= MK_GLOBAL | MK_EXPORTING;
-      state->direct_import (reader);
-    }
-  else
-    vec_safe_push (pending_imports, state);
+  vec_safe_push (pending_imports, state);
 
   return true;
 }
@@ -13231,7 +13223,7 @@ process_deferred_imports (cpp_reader *reader)
        ix != pending_imports->length (); ix++)
     {
       module_state *imp = (*pending_imports)[ix];
-      imp->direct_import (reader);
+      imp->direct_import (reader, true);
     }
 
   dump.pop (0);

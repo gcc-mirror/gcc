@@ -4622,7 +4622,7 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
   bool implicit_extern_c = false;
   bool first = modules_p ();
   int preamble = 0; /* Not seen a preamble.  */
-  bool deferred_imports = false;
+  bool deferred_imports = flag_modules < 0;
 
   /* Tell the tokenizer there are no tokens to copy.  */
   parser->lexer->last_token = NULL;

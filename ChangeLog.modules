@@ -1,6 +1,13 @@
 2019-01-08  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::direct_import): Add LAZY parm, use it
+	rather than legacy_p.  Never expect a has_bmi file.
+	(declare_module): Always add to pending imports.
+	* parser.c (cp_parser_translation_unit): Expect a deferred import
+	for a legacy module.
+
+	gcc/cp/
 	* cp-tree.h (module_has_bmi_p): New.
 	* module.cc (module_state::{is_interface,interface_p}): Rename to ...
 	(module_state::{is_primary,primary_p}): ... here.  Adjust users.
