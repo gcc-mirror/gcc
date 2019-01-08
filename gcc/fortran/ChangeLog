@@ -1,3 +1,15 @@
+2019-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2018-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/88377
+	* trans-openmp.c (gfc_omp_clause_default_ctor,
+	gfc_omp_clause_copy_ctor, gfc_omp_clause_assign_op,
+	gfc_omp_clause_linear_ctor, gfc_omp_clause_dtor): Only consider
+	GFC_DECL_GET_SCALAR_ALLOCATABLE vars as scalar allocatables if they
+	have pointer type.
+
 2018-12-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
