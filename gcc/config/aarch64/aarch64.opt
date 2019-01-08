@@ -149,8 +149,12 @@ mpc-relative-literal-loads
 Target Report Save Var(pcrelative_literal_loads) Init(2) Save
 PC relative literal loads.
 
+mbranch-protection=
+Target RejectNegative Joined Var(aarch64_branch_protection_string) Save
+Use branch-protection features.
+
 msign-return-address=
-Target RejectNegative Report Joined Enum(aarch64_ra_sign_scope_t) Var(aarch64_ra_sign_scope) Init(AARCH64_FUNCTION_NONE) Save
+Target Deprecated RejectNegative Joined Enum(aarch64_ra_sign_scope_t) Var(aarch64_ra_sign_scope) Init(AARCH64_FUNCTION_NONE) Save
 Select return address signing scope.
 
 Enum
