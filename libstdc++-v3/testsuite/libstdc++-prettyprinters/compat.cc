@@ -23,6 +23,22 @@
 
 namespace std
 {
+  template<typename T, typename U>
+    struct tuple
+    {
+      T _M_head_impl;
+    };
+
+  template<typename T> struct default_delete { };
+
+  template<typename T, typename D = default_delete<T>>
+    struct unique_ptr
+    {
+      unique_ptr(T* p) { _M_t._M_head_impl = p; }
+
+      tuple<T*, D> _M_t;
+    };
+
   // Old representation of std::optional, before GCC 9
   template<typename T>
     struct _Optional_payload
@@ -58,6 +74,12 @@ namespace std
 int
 main()
 {
+  struct datum { };
+  std::unique_ptr<datum> uptr (new datum);
+// { dg-final { regexp-test uptr {std::unique_ptr.datum. = {get\(\) = 0x.*}} } }
+  std::unique_ptr<datum> &ruptr = uptr;
+// { dg-final { regexp-test ruptr {std::unique_ptr.datum. = {get\(\) = 0x.*}} } }
+
   using std::optional;
 
   optional<int> o;
