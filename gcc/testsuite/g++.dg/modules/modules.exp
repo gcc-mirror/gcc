@@ -51,16 +51,15 @@ proc decode_mod_spec { spec } {
     if { [ string index $spec 0 ] == "=" } {
 	set file [string range $spec 1 end]
     } else {
-	set pfx {}
+	set pfx {gcm}
 	if { [ string index $spec 0 ] == "\"" } {
-	    set pfx ".u"
+	    set pfx "${pfx}u"
 	    set spec [string range $spec 1 end-1]
 	} elseif { [ string index $spec 0 ] == "<" } {
-	    set pfx ".s"
+	    set pfx "${pfx}s"
 	    set spec [string range $spec 1 end-1]
 	}
-	# Not mapping :, but recording it as a possibility
-	set file "[string map {. - : : / =} $spec]$pfx.nms"
+	set file "[string map {/ !} $spec].$pfx"
     }
     return [list $not $file]
 }

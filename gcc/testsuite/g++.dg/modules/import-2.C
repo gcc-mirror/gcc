@@ -5,7 +5,7 @@
 // { dg-module-bmi "!bill" }
 
 import bill;
-// { dg-error "failed to read module 'bill.nms'" "" { target *-*-* } 0 }
+// { dg-error {failed to read module 'bill.[^']*'} "" { target *-*-* } 0 }
 
 // { dg-prune-output "fatal error:" }
 // { dg-prune-output "compilation terminated" }

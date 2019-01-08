@@ -1,6 +1,16 @@
 2019-01-08  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cxx-mapper.cc (module2bmi): Update mapping
+	* module.cc (module_state::{maybe_defrost,freeze_an_elf}): Quote
+	filename..
+	gcc/testsuite/
+	* g++.dg/modules/modules.exp (decode_mod_spec): Update mapping.
+	* g++.dg/modules/freeze-1_d.C: Adjust scan-final.
+	* g++.dg/modules/import-2.C: Likewise.
+	* g++.dg/modules/mod-stamp-1_d.C: Likewise.
+
+	gcc/cp/
 	* module.cc (module_state::{interface_p,is_interface}): New.
 	(module_state::resolve_alias): Don't propagate exported_p here.
 	(module_state::write_readme): Show exportedness of imports.

@@ -12472,7 +12472,7 @@ module_state::maybe_defrost ()
     {
       if (lazy_open <= 0)
 	freeze_an_elf ();
-      dump () && dump ("Defrosting %s", filename);
+      dump () && dump ("Defrosting '%s'", filename);
       from ()->defrost (maybe_add_bmi_prefix (filename));
       lazy_open--;
     }
@@ -12912,7 +12912,7 @@ module_state::freeze_an_elf ()
 
   if (victim)
     {
-      dump () && dump ("Freezing %s", victim->filename);
+      dump () && dump ("Freezing '%s'", victim->filename);
       if (victim->slurp ()->macro_defs.size)
 	/* Save the macro definitions to a buffer.  */
 	victim->from ()->preserve (victim->slurp ()->macro_defs);

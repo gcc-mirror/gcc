@@ -13,9 +13,9 @@ int main ()
   return 0;
 }
 
-// { dg-final { scan-lang-dump {Freezing bob.nms} module } }
-// { dg-final { scan-lang-dump {Freezing stuart.nms} module } }
-// { dg-final { scan-lang-dump {Freezing kevin.nms} module } }
-// { dg-final { scan-lang-dump {Defrosting bob.nms} module } }
-// { dg-final { scan-lang-dump {Defrosting stuart.nms} module } }
-// { dg-final { scan-lang-dump {Defrosting kevin.nms} module } }
+// { dg-final { scan-lang-dump {Freezing 'bob.[^']*'} module } }
+// { dg-final { scan-lang-dump {Freezing 'stuart.[^']*'} module } }
+// { dg-final { scan-lang-dump {Freezing 'kevin.[^']*'} module } }
+// { dg-final { scan-lang-dump {Defrosting 'bob.[^']*'} module } }
+// { dg-final { scan-lang-dump {Defrosting 'stuart.[^']*'} module } }
+// { dg-final { scan-lang-dump {Defrosting 'kevin.[^']*'} module } }

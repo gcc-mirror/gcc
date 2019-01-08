@@ -308,22 +308,18 @@ module2bmi (const char *module)
       for (char *ptr = workspace; *ptr; ptr++)
 	{
 	  char c = *ptr;
-	  if (c == '.')
-	    c = '-';
-	  else if (c == ':')
-	    c = ':'; /* Might want mapping on non-unix fs?  */
-	  else if (IS_DIR_SEPARATOR (c))
-	    c = '=';
+	  if (IS_DIR_SEPARATOR (c))
+	    c = '!';
 	  *ptr = c;
 	}
 
+      strcpy (workspace + l, ".gcm");
+      l += 4;
       if (kind)
 	{
-	  workspace[l++] = '.';
 	  workspace[l++] = kind;
+	  workspace[l++] = 0;
 	}
-      
-      strcpy (workspace + l, ".nms");
       res = workspace;
     }
   return res;
