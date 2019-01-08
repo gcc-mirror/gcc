@@ -1,3 +1,8 @@
+2019-01-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88548 - this accepted in static member functions.
+	* g++.dg/cpp0x/this1.C: New test.
+
 2019-01-08  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/88753

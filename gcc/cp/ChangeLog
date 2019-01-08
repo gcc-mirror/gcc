@@ -1,3 +1,40 @@
+2019-01-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88548 - this accepted in static member functions.
+	* parser.c (cp_debug_parser): Adjust printing of
+	local_variables_forbidden_p.
+	(cp_parser_new): Set local_variables_forbidden_p to 0 rather than false.
+	(cp_parser_primary_expression): When checking
+	local_variables_forbidden_p, use THIS_FORBIDDEN or
+	LOCAL_VARS_FORBIDDEN.
+	(cp_parser_lambda_body): Update the type of
+	local_variables_forbidden_p.  Set it to 0 rather than false.
+	(cp_parser_condition): Adjust call to cp_parser_declarator.
+	(cp_parser_explicit_instantiation): Likewise.
+	(cp_parser_init_declarator): Likewise.
+	(cp_parser_declarator): New parameter.  Use it.
+	(cp_parser_direct_declarator): New parameter.  Use it to set
+	local_variables_forbidden_p.  Adjust call to cp_parser_declarator.
+	(cp_parser_type_id_1): Adjust call to cp_parser_declarator.
+	(cp_parser_parameter_declaration): Likewise.
+	(cp_parser_default_argument): Update the type of
+	local_variables_forbidden_p.  Set it to LOCAL_VARS_AND_THIS_FORBIDDEN
+	rather than true.
+	(cp_parser_member_declaration): Tell cp_parser_declarator if we saw
+	'static' or 'friend'.
+	(cp_parser_exception_declaration): Adjust call to cp_parser_declarator.
+	(cp_parser_late_parsing_default_args): Update the type of
+	local_variables_forbidden_p.  Set it to LOCAL_VARS_AND_THIS_FORBIDDEN
+	rather than true.
+	(cp_parser_cache_defarg): Adjust call to cp_parser_declarator.
+	(cp_parser_objc_class_ivars): Likewise.
+	(cp_parser_objc_struct_declaration): Likewise.
+	(cp_parser_omp_for_loop_init): Likewise.
+	* parser.h (cp_parser): Change the type of local_variables_forbidden_p
+	to unsigned char.
+	(LOCAL_VARS_FORBIDDEN, LOCAL_VARS_AND_THIS_FORBIDDEN, THIS_FORBIDDEN):
+	Define.
+
 2019-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (start_decl): Improve permerror location.
