@@ -1,6 +1,22 @@
 2019-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/87039
+	* omp-expand.c: Don't include debug.h.
+	(adjust_context_and_scope): Add REGION argument.  Find DECL_CONTEXT
+	from innermost outer parallel, task, or target that has a
+	child_fn set, or, if there is no such outer region, use
+	current_function_decl.  Do the DECL_CONTEXT adjustment regardless of
+	whether a suitable BLOCK is found or not.
+	(expand_parallel_call): Don't call adjust_context_and_scope here.
+	(grid_expand_target_grid_body): Revert 2017-01-25 changes.
+	(expand_omp_taskreg, expand_omp_target): Likewise.  Call
+	adjust_context_and_scope.
+	* dwarf2out.c (dwarf2out_early_global_decl): For
+	decl_function_context recurse instead of calling dwarf2out_decl.
+
 	2018-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/87475

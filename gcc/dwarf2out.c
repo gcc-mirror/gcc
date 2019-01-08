@@ -26390,7 +26390,7 @@ dwarf2out_early_global_decl (tree decl)
 		 enough so that it lands in its own context.  This avoids type
 		 pruning issues later on.  */
 	      if (context_die == NULL || is_declaration_die (context_die))
-		dwarf2out_decl (context);
+		dwarf2out_early_global_decl (context);
 	    }
 
 	  /* Emit an abstract origin of a function first.  This happens
