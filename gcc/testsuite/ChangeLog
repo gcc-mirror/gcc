@@ -1,3 +1,7 @@
+2019-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/out-of-class-redeclaration.C: New.
+
 2019-01-08  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* c-c++-common/builtin-has-attribute-3.c: Skip tests requiring symbol
