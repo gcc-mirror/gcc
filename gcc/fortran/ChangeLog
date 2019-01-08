@@ -1,3 +1,9 @@
+2019-01-08  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/88047
+	* class.c (gfc_find_vtab): For polymorphic typespecs, the components of
+	the class container may not be available (in case of invalid code).
+
 2019-01-08  Richard Biener  <rguenther@suse.de>
 
 	PR fortran/88611
