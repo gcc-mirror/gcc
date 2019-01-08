@@ -3,6 +3,9 @@
 	Backported from mainline
 	2018-12-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/87320
+	* gcc.dg/pr87320.c: New test.
+
 	PR c++/88103
 	* g++.dg/cpp0x/rv-cond3.C: New test.
 
