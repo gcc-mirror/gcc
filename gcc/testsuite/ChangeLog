@@ -1,6 +1,11 @@
 2019-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/88018
+	* g++.dg/tsan/pr88018.C: New test.
+
 	2018-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/87898

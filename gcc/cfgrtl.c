@@ -3315,8 +3315,15 @@ fixup_abnormal_edges (void)
 			 If it's placed after a trapping call (i.e. that
 			 call is the last insn anyway), we have no fallthru
 			 edge.  Simply delete this use and don't try to insert
-			 on the non-existent edge.  */
-		      if (GET_CODE (PATTERN (insn)) != USE)
+			 on the non-existent edge.
+			 Similarly, sometimes a call that can throw is
+			 followed in the source with __builtin_unreachable (),
+			 meaning that there is UB if the call returns rather
+			 than throws.  If there weren't any instructions
+			 following such calls before, supposedly even the ones
+			 we've deleted aren't significant and can be
+			 removed.  */
+		      if (e)
 			{
 			  /* We're not deleting it, we're moving it.  */
 			  insn->set_undeleted ();
