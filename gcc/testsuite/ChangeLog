@@ -1,3 +1,12 @@
+2019-01-08  Sam Tebbs  <sam.tebbs@arm.com>
+
+	* gcc.target/aarch64/(return_address_sign_1.c,
+	return_address_sign_2.c, return_address_sign_3.c (__attribute__)):
+	Change option to -mbranch-protection.
+	* gcc.target/aarch64/(branch-protection-option.c,
+	branch-protection-option-2.c, branch-protection-attr.c,
+	branch-protection-attr-2.c): New file.
+
 2019-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/diagnostic/out-of-class-redeclaration.C: New.

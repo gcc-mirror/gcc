@@ -1,3 +1,26 @@
+2019-01-08  Sam Tebbs  <sam.tebbs@arm.com>
+
+	* config/aarch64/aarch64.c (BRANCH_PROTECT_STR_MAX,
+	aarch64_parse_branch_protection,
+	struct aarch64_branch_protect_type,
+	aarch64_handle_no_branch_protection,
+	aarch64_handle_standard_branch_protection,
+	aarch64_validate_mbranch_protection,
+	aarch64_handle_pac_ret_protection,
+	aarch64_handle_attr_branch_protection,
+	accepted_branch_protection_string,
+	aarch64_pac_ret_subtypes,
+	aarch64_branch_protect_types,
+	aarch64_handle_pac_ret_leaf): Define.
+	(aarch64_override_options_after_change_1, aarch64_override_options):
+	Add check for accepted_branch_protection_string.
+	(aarch64_option_save): Save accepted_branch_protection_string.
+	(aarch64_option_restore): Save accepted_branch_protection_string.
+	* config/aarch64/aarch64.c (aarch64_attributes): Add branch-protection.
+	* config/aarch64/aarch64.opt: Add mbranch-protection. Deprecate
+	msign-return-address.
+	* doc/invoke.texi: Add mbranch-protection.
+
 2019-01-08  Alan Modra  <amodra@gmail.com>
 
 	PR target/88614

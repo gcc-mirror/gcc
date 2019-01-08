@@ -183,6 +183,12 @@ bool aarch64_pcrelative_literal_loads;
 /* Global flag for whether frame pointer is enabled.  */
 bool aarch64_use_frame_pointer;
 
+#define BRANCH_PROTECT_STR_MAX 255
+char *accepted_branch_protection_string = NULL;
+
+static enum aarch64_parse_opt_result
+aarch64_parse_branch_protection (const char*, char**);
+
 /* Support for command line parsing of boolean flags in the tuning
    structures.  */
 struct aarch64_flag_desc
@@ -1169,6 +1175,79 @@ typedef enum aarch64_cond_code
 aarch64_cc;
 
 #define AARCH64_INVERSE_CONDITION_CODE(X) ((aarch64_cc) (((int) X) ^ 1))
+
+struct aarch64_branch_protect_type
+{
+  /* The type's name that the user passes to the branch-protection option
+    string.  */
+  const char* name;
+  /* Function to handle the protection type and set global variables.
+    First argument is the string token corresponding with this type and the
+    second argument is the next token in the option string.
+    Return values:
+    * AARCH64_PARSE_OK: Handling was sucessful.
+    * AARCH64_INVALID_ARG: The type is invalid in this context and the caller
+      should print an error.
+    * AARCH64_INVALID_FEATURE: The type is invalid and the handler prints its
+      own error.  */
+  enum aarch64_parse_opt_result (*handler)(char*, char*);
+  /* A list of types that can follow this type in the option string.  */
+  const aarch64_branch_protect_type* subtypes;
+  unsigned int num_subtypes;
+};
+
+static enum aarch64_parse_opt_result
+aarch64_handle_no_branch_protection (char* str, char* rest)
+{
+  aarch64_ra_sign_scope = AARCH64_FUNCTION_NONE;
+  if (rest)
+    {
+      error ("unexpected %<%s%> after %<%s%>", rest, str);
+      return AARCH64_PARSE_INVALID_FEATURE;
+    }
+  return AARCH64_PARSE_OK;
+}
+
+static enum aarch64_parse_opt_result
+aarch64_handle_standard_branch_protection (char* str, char* rest)
+{
+  aarch64_ra_sign_scope = AARCH64_FUNCTION_NON_LEAF;
+  if (rest)
+    {
+      error ("unexpected %<%s%> after %<%s%>", rest, str);
+      return AARCH64_PARSE_INVALID_FEATURE;
+    }
+  return AARCH64_PARSE_OK;
+}
+
+static enum aarch64_parse_opt_result
+aarch64_handle_pac_ret_protection (char* str ATTRIBUTE_UNUSED,
+				    char* rest ATTRIBUTE_UNUSED)
+{
+  aarch64_ra_sign_scope = AARCH64_FUNCTION_NON_LEAF;
+  return AARCH64_PARSE_OK;
+}
+
+static enum aarch64_parse_opt_result
+aarch64_handle_pac_ret_leaf (char* str ATTRIBUTE_UNUSED,
+			      char* rest ATTRIBUTE_UNUSED)
+{
+  aarch64_ra_sign_scope = AARCH64_FUNCTION_ALL;
+  return AARCH64_PARSE_OK;
+}
+
+static const struct aarch64_branch_protect_type aarch64_pac_ret_subtypes[] = {
+  { "leaf", aarch64_handle_pac_ret_leaf, NULL, 0 },
+  { NULL, NULL, NULL, 0 }
+};
+
+static const struct aarch64_branch_protect_type aarch64_branch_protect_types[] = {
+  { "none", aarch64_handle_no_branch_protection, NULL, 0 },
+  { "standard", aarch64_handle_standard_branch_protection, NULL, 0 },
+  { "pac-ret", aarch64_handle_pac_ret_protection, aarch64_pac_ret_subtypes,
+    ARRAY_SIZE (aarch64_pac_ret_subtypes) },
+  { NULL, NULL, NULL, 0 }
+};
 
 /* The condition codes of the processor, and the inverse function.  */
 static const char * const aarch64_condition_codes[] =
@@ -11099,6 +11178,12 @@ aarch64_parse_override_string (const char* input_string,
 static void
 aarch64_override_options_after_change_1 (struct gcc_options *opts)
 {
+  if (accepted_branch_protection_string)
+    {
+      opts->x_aarch64_branch_protection_string
+	= xstrdup (accepted_branch_protection_string);
+    }
+
   /* PR 70044: We have to be careful about being called multiple times for the
      same function.  This means all changes should be repeatable.  */
 
@@ -11384,6 +11469,110 @@ aarch64_validate_mcpu (const char *str, const struct processor **res,
   return false;
 }
 
+/* Parses CONST_STR for branch protection features specified in
+   aarch64_branch_protect_types, and set any global variables required.  Returns
+   the parsing result and assigns LAST_STR to the last processed token from
+   CONST_STR so that it can be used for error reporting.  */
+
+static enum
+aarch64_parse_opt_result aarch64_parse_branch_protection (const char *const_str,
+							  char** last_str)
+{
+  char *str_root = xstrdup (const_str);
+  char* token_save = NULL;
+  char *str = strtok_r (str_root, "+", &token_save);
+  enum aarch64_parse_opt_result res = AARCH64_PARSE_OK;
+  if (!str)
+    res = AARCH64_PARSE_MISSING_ARG;
+  else
+    {
+      char *next_str = strtok_r (NULL, "+", &token_save);
+      /* Reset the branch protection features to their defaults.  */
+      aarch64_handle_no_branch_protection (NULL, NULL);
+
+      while (str && res == AARCH64_PARSE_OK)
+	{
+	  const aarch64_branch_protect_type* type = aarch64_branch_protect_types;
+	  bool found = false;
+	  /* Search for this type.  */
+	  while (type && type->name && !found && res == AARCH64_PARSE_OK)
+	    {
+	      if (strcmp (str, type->name) == 0)
+		{
+		  found = true;
+		  res = type->handler (str, next_str);
+		  str = next_str;
+		  next_str = strtok_r (NULL, "+", &token_save);
+		}
+	      else
+		type++;
+	    }
+	  if (found && res == AARCH64_PARSE_OK)
+	    {
+	      bool found_subtype = true;
+	      /* Loop through each token until we find one that isn't a
+		 subtype.  */
+	      while (found_subtype)
+		{
+		  found_subtype = false;
+		  const aarch64_branch_protect_type *subtype = type->subtypes;
+		  /* Search for the subtype.  */
+		  while (str && subtype && subtype->name && !found_subtype
+			  && res == AARCH64_PARSE_OK)
+		    {
+		      if (strcmp (str, subtype->name) == 0)
+			{
+			  found_subtype = true;
+			  res = subtype->handler (str, next_str);
+			  str = next_str;
+			  next_str = strtok_r (NULL, "+", &token_save);
+			}
+		      else
+			subtype++;
+		    }
+		}
+	    }
+	  else if (!found)
+	    res = AARCH64_PARSE_INVALID_ARG;
+	}
+    }
+  /* Copy the last processed token into the argument to pass it back.
+    Used by option and attribute validation to print the offending token.  */
+  if (last_str)
+    {
+      if (str) strcpy (*last_str, str);
+      else *last_str = NULL;
+    }
+  if (res == AARCH64_PARSE_OK)
+    {
+      /* If needed, alloc the accepted string then copy in const_str.
+	Used by override_option_after_change_1.  */
+      if (!accepted_branch_protection_string)
+	accepted_branch_protection_string = (char *) xmalloc (
+						      BRANCH_PROTECT_STR_MAX
+							+ 1);
+      strncpy (accepted_branch_protection_string, const_str,
+		BRANCH_PROTECT_STR_MAX + 1);
+      /* Forcibly null-terminate.  */
+      accepted_branch_protection_string[BRANCH_PROTECT_STR_MAX] = '\0';
+    }
+  return res;
+}
+
+static bool
+aarch64_validate_mbranch_protection (const char *const_str)
+{
+  char *str = (char *) xmalloc (strlen (const_str));
+  enum aarch64_parse_opt_result res =
+    aarch64_parse_branch_protection (const_str, &str);
+  if (res == AARCH64_PARSE_INVALID_ARG)
+    error ("invalid arg %<%s%> for %<-mbranch-protection=%>", str);
+  else if (res == AARCH64_PARSE_MISSING_ARG)
+    error ("missing arg for %<-mbranch-protection=%>");
+  free (str);
+  return res == AARCH64_PARSE_OK;
+}
+
 /* Validate a command-line -march option.  Parse the arch and extensions
    (if any) specified in STR and throw errors if appropriate.  Put the
    results, if they are valid, in RES and ISA_FLAGS.  Return whether the
@@ -11517,6 +11706,9 @@ aarch64_override_options (void)
   selected_cpu = NULL;
   selected_arch = NULL;
   selected_tune = NULL;
+
+  if (aarch64_branch_protection_string)
+    aarch64_validate_mbranch_protection (aarch64_branch_protection_string);
 
   /* -mcpu=CPU is shorthand for -march=ARCH_FOR_CPU, -mtune=CPU.
      If either of -march or -mtune is given, they override their
@@ -11690,6 +11882,8 @@ static void
 aarch64_option_save (struct cl_target_option *ptr, struct gcc_options *opts)
 {
   ptr->x_aarch64_override_tune_string = opts->x_aarch64_override_tune_string;
+  ptr->x_aarch64_branch_protection_string
+    = opts->x_aarch64_branch_protection_string;
 }
 
 /* Implements TARGET_OPTION_RESTORE.  Restore the backend codegen decisions
@@ -11703,6 +11897,13 @@ aarch64_option_restore (struct gcc_options *opts, struct cl_target_option *ptr)
   opts->x_explicit_arch = ptr->x_explicit_arch;
   selected_arch = aarch64_get_arch (ptr->x_explicit_arch);
   opts->x_aarch64_override_tune_string = ptr->x_aarch64_override_tune_string;
+  opts->x_aarch64_branch_protection_string
+    = ptr->x_aarch64_branch_protection_string;
+  if (opts->x_aarch64_branch_protection_string)
+    {
+      aarch64_parse_branch_protection (opts->x_aarch64_branch_protection_string,
+					NULL);
+    }
 
   aarch64_override_options_internal (opts);
 }
@@ -11897,6 +12098,37 @@ aarch64_handle_attr_cpu (const char *str)
   return false;
 }
 
+/* Handle the argument STR to the branch-protection= attribute.  */
+
+ static bool
+ aarch64_handle_attr_branch_protection (const char* str)
+ {
+  char *err_str = (char *) xmalloc (strlen (str));
+  enum aarch64_parse_opt_result res = aarch64_parse_branch_protection (str,
+								      &err_str);
+  bool success = false;
+  switch (res)
+    {
+     case AARCH64_PARSE_MISSING_ARG:
+       error ("missing argument to %<target(\"branch-protection=\")%> pragma or"
+	      " attribute");
+       break;
+     case AARCH64_PARSE_INVALID_ARG:
+       error ("invalid protection type (\"%s\") in %<target(\"branch-protection"
+	      "=\")%> pragma or attribute", err_str);
+       break;
+     case AARCH64_PARSE_OK:
+       success = true;
+      /* Fall through.  */
+     case AARCH64_PARSE_INVALID_FEATURE:
+       break;
+     default:
+       gcc_unreachable ();
+    }
+  free (err_str);
+  return success;
+ }
+
 /* Handle the argument STR to the tune= target attribute.  */
 
 static bool
@@ -11995,6 +12227,8 @@ static const struct aarch64_attribute_info aarch64_attributes[] =
   { "cpu", aarch64_attr_custom, false, aarch64_handle_attr_cpu, OPT_mcpu_ },
   { "tune", aarch64_attr_custom, false, aarch64_handle_attr_tune,
      OPT_mtune_ },
+  { "branch-protection", aarch64_attr_custom, false,
+     aarch64_handle_attr_branch_protection, OPT_mbranch_protection_ },
   { "sign-return-address", aarch64_attr_enum, false, NULL,
      OPT_msign_return_address_ },
   { NULL, aarch64_attr_custom, false, NULL, OPT____ }

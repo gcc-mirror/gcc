@@ -631,6 +631,7 @@ Objective-C and Objective-C++ Dialects}.
 -mlow-precision-recip-sqrt  -mlow-precision-sqrt  -mlow-precision-div @gol
 -mpc-relative-literal-loads @gol
 -msign-return-address=@var{scope} @gol
+-mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}] @gol
 -march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}  @gol
 -moverride=@var{string}  -mverbose-cost-dump  -mtrack-speculation} 
 
@@ -15738,7 +15739,21 @@ Select the function scope on which return address signing will be applied.
 Permissible values are @samp{none}, which disables return address signing,
 @samp{non-leaf}, which enables pointer signing for functions which are not leaf
 functions, and @samp{all}, which enables pointer signing for all functions.  The
-default value is @samp{none}.
+default value is @samp{none}. This option has been deprecated by
+-mbranch-protection.
+
+@item -mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}]
+@opindex mbranch-protection
+Select the branch protection features to use.
+@samp{none} is the default and turns off all types of branch protection.
+@samp{standard} turns on all types of branch protection features.  If a feature
+has additional tuning options, then @samp{standard} sets it to its standard
+level.
+@samp{pac-ret[+@var{leaf}]} turns on return address signing to its standard
+level: signing functions that save the return address to memory (non-leaf
+functions will practically always do this) using the a-key.  The optional
+argument @samp{leaf} can be used to extend the signing to include leaf
+functions.
 
 @item -msve-vector-bits=@var{bits}
 @opindex msve-vector-bits
