@@ -4949,12 +4949,19 @@ sparc_delegitimize_address (rtx x)
 {
   x = delegitimize_mem_from_attrs (x);
 
-  if (GET_CODE (x) == LO_SUM && GET_CODE (XEXP (x, 1)) == UNSPEC)
-    switch (XINT (XEXP (x, 1), 1))
+  if (GET_CODE (x) == LO_SUM)
+    x = XEXP (x, 1);
+
+  if (GET_CODE (x) == UNSPEC)
+    switch (XINT (x, 1))
       {
       case UNSPEC_MOVE_PIC:
       case UNSPEC_TLSLE:
-	x = XVECEXP (XEXP (x, 1), 0, 0);
+	x = XVECEXP (x, 0, 0);
+	gcc_assert (GET_CODE (x) == SYMBOL_REF);
+	break;
+      case UNSPEC_MOVE_GOTDATA:
+	x = XVECEXP (x, 0, 2);
 	gcc_assert (GET_CODE (x) == SYMBOL_REF);
 	break;
       default:
@@ -6872,6 +6879,10 @@ function_arg_slotno (const struct sparc_args *cum, machine_mode mode,
     = incoming ? SPARC_INCOMING_INT_ARG_FIRST : SPARC_OUTGOING_INT_ARG_FIRST;
   int slotno = cum->words, regno;
   enum mode_class mclass = GET_MODE_CLASS (mode);
+
+  /* Silence warnings in the callers.  */
+  *pregno = -1;
+  *ppadding = -1;
 
   if (type && TREE_ADDRESSABLE (type))
     return -1;
