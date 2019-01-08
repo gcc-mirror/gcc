@@ -1865,6 +1865,86 @@ vn_nary_simplify (vn_nary_op_t nary)
   return vn_nary_build_or_lookup_1 (&op, false);
 }
 
+/* Elimination engine.  */
+
+class eliminate_dom_walker : public dom_walker
+{
+public:
+  eliminate_dom_walker (cdi_direction, bitmap);
+  ~eliminate_dom_walker ();
+
+  virtual edge before_dom_children (basic_block);
+  virtual void after_dom_children (basic_block);
+
+  virtual tree eliminate_avail (basic_block, tree op);
+  virtual void eliminate_push_avail (basic_block, tree op);
+  tree eliminate_insert (basic_block, gimple_stmt_iterator *gsi, tree val);
+
+  void eliminate_stmt (basic_block, gimple_stmt_iterator *);
+
+  unsigned eliminate_cleanup (bool region_p = false);
+
+  bool do_pre;
+  unsigned int el_todo;
+  unsigned int eliminations;
+  unsigned int insertions;
+
+  /* SSA names that had their defs inserted by PRE if do_pre.  */
+  bitmap inserted_exprs;
+
+  /* Blocks with statements that have had their EH properties changed.  */
+  bitmap need_eh_cleanup;
+
+  /* Blocks with statements that have had their AB properties changed.  */
+  bitmap need_ab_cleanup;
+
+  /* Local state for the eliminate domwalk.  */
+  auto_vec<gimple *> to_remove;
+  auto_vec<gimple *> to_fixup;
+  auto_vec<tree> avail;
+  auto_vec<tree> avail_stack;
+};
+
+/* Adaptor to the elimination engine using RPO availability.  */
+
+class rpo_elim : public eliminate_dom_walker
+{
+public:
+  rpo_elim(basic_block entry_)
+    : eliminate_dom_walker (CDI_DOMINATORS, NULL), entry (entry_) {}
+  ~rpo_elim();
+
+  virtual tree eliminate_avail (basic_block, tree op);
+
+  virtual void eliminate_push_avail (basic_block, tree);
+
+  basic_block entry;
+  /* Instead of having a local availability lattice for each
+     basic-block and availability at X defined as union of
+     the local availabilities at X and its dominators we're
+     turning this upside down and track availability per
+     value given values are usually made available at very
+     few points (at least one).
+     So we have a value -> vec<location, leader> map where
+     LOCATION is specifying the basic-block LEADER is made
+     available for VALUE.  We push to this vector in RPO
+     order thus for iteration we can simply pop the last
+     entries.
+     LOCATION is the basic-block index and LEADER is its
+     SSA name version.  */
+  /* ???  We'd like to use auto_vec here with embedded storage
+     but that doesn't play well until we can provide move
+     constructors and use std::move on hash-table expansion.
+     So for now this is a bit more expensive than necessary.
+     We eventually want to switch to a chaining scheme like
+     for hashtable entries for unwinding which would make
+     making the vector part of the vn_ssa_aux structure possible.  */
+  typedef hash_map<tree, vec<std::pair<int, int> > > rpo_avail_t;
+  rpo_avail_t m_rpo_avail;
+};
+
+/* Global RPO state for access from hooks.  */
+static rpo_elim *rpo_avail;
 basic_block vn_context_bb;
 
 /* Callback for walk_non_aliased_vuses.  Tries to perform a lookup
@@ -3843,7 +3923,15 @@ visit_nary_op (tree lhs, gassign *stmt)
 		  ops[0] = vn_nary_op_lookup_pieces
 		      (2, gimple_assign_rhs_code (def), type, ops, NULL);
 		  /* We have wider operation available.  */
-		  if (ops[0])
+		  if (ops[0]
+		      /* If the leader is a wrapping operation we can
+		         insert it for code hoisting w/o introducing
+			 undefined overflow.  If it is not it has to
+			 be available.  See PR86554.  */
+		      && (TYPE_OVERFLOW_WRAPS (TREE_TYPE (ops[0]))
+			  || (rpo_avail && vn_context_bb
+			      && rpo_avail->eliminate_avail (vn_context_bb,
+							     ops[0]))))
 		    {
 		      unsigned lhs_prec = TYPE_PRECISION (type);
 		      unsigned rhs_prec = TYPE_PRECISION (TREE_TYPE (rhs1));
@@ -4653,45 +4741,6 @@ vn_nary_may_trap (vn_nary_op_t nary)
 
   return false;
 }
-
-
-class eliminate_dom_walker : public dom_walker
-{
-public:
-  eliminate_dom_walker (cdi_direction, bitmap);
-  ~eliminate_dom_walker ();
-
-  virtual edge before_dom_children (basic_block);
-  virtual void after_dom_children (basic_block);
-
-  virtual tree eliminate_avail (basic_block, tree op);
-  virtual void eliminate_push_avail (basic_block, tree op);
-  tree eliminate_insert (basic_block, gimple_stmt_iterator *gsi, tree val);
-
-  void eliminate_stmt (basic_block, gimple_stmt_iterator *);
-
-  unsigned eliminate_cleanup (bool region_p = false);
-
-  bool do_pre;
-  unsigned int el_todo;
-  unsigned int eliminations;
-  unsigned int insertions;
-
-  /* SSA names that had their defs inserted by PRE if do_pre.  */
-  bitmap inserted_exprs;
-
-  /* Blocks with statements that have had their EH properties changed.  */
-  bitmap need_eh_cleanup;
-
-  /* Blocks with statements that have had their AB properties changed.  */
-  bitmap need_ab_cleanup;
-
-  /* Local state for the eliminate domwalk.  */
-  auto_vec<gimple *> to_remove;
-  auto_vec<gimple *> to_fixup;
-  auto_vec<tree> avail;
-  auto_vec<tree> avail_stack;
-};
 
 eliminate_dom_walker::eliminate_dom_walker (cdi_direction direction,
 					    bitmap inserted_exprs_)
@@ -5647,47 +5696,6 @@ free_rpo_vn (void)
   constant_to_value_id = NULL;
   BITMAP_FREE (constant_value_ids);
 }
-
-/* Adaptor to the elimination engine using RPO availability.  */
-
-class rpo_elim : public eliminate_dom_walker
-{
-public:
-  rpo_elim(basic_block entry_)
-    : eliminate_dom_walker (CDI_DOMINATORS, NULL), entry (entry_) {}
-  ~rpo_elim();
-
-  virtual tree eliminate_avail (basic_block, tree op);
-
-  virtual void eliminate_push_avail (basic_block, tree);
-
-  basic_block entry;
-  /* Instead of having a local availability lattice for each
-     basic-block and availability at X defined as union of
-     the local availabilities at X and its dominators we're
-     turning this upside down and track availability per
-     value given values are usually made available at very
-     few points (at least one).
-     So we have a value -> vec<location, leader> map where
-     LOCATION is specifying the basic-block LEADER is made
-     available for VALUE.  We push to this vector in RPO
-     order thus for iteration we can simply pop the last
-     entries.
-     LOCATION is the basic-block index and LEADER is its
-     SSA name version.  */
-  /* ???  We'd like to use auto_vec here with embedded storage
-     but that doesn't play well until we can provide move
-     constructors and use std::move on hash-table expansion.
-     So for now this is a bit more expensive than necessary.
-     We eventually want to switch to a chaining scheme like
-     for hashtable entries for unwinding which would make
-     making the vector part of the vn_ssa_aux structure possible.  */
-  typedef hash_map<tree, vec<std::pair<int, int> > > rpo_avail_t;
-  rpo_avail_t m_rpo_avail;
-};
-
-/* Global RPO state for access from hooks.  */
-static rpo_elim *rpo_avail;
 
 /* Hook for maybe_push_res_to_seq, lookup the expression in the VN tables.  */
 
