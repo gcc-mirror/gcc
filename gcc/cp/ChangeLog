@@ -1,3 +1,7 @@
+2019-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (start_decl): Improve permerror location.
+
 2019-01-08  Jonathan Wakely  <jwakely@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

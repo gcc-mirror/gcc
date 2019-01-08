@@ -5202,7 +5202,8 @@ start_decl (const cp_declarator *declarator,
       if (DECL_EXTERNAL (decl) && ! DECL_TEMPLATE_SPECIALIZATION (decl)
 	  /* Aliases are definitions. */
 	  && !alias)
-	permerror (input_location, "declaration of %q#D outside of class is not definition",
+	permerror (declarator->id_loc,
+		   "declaration of %q#D outside of class is not definition",
 		   decl);
     }
 
