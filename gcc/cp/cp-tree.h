@@ -6793,6 +6793,8 @@ inline bool module_interface_p ()
 { return module_kind & MK_INTERFACE; }
 inline bool module_partition_p ()
 { return module_kind & MK_PARTITION; }
+inline bool module_has_bmi_p ()
+{ return module_kind & (MK_INTERFACE | MK_PARTITION); }
 inline bool module_global_p ()
 { return module_kind & MK_GLOBAL; }
 inline bool module_exporting_p ()

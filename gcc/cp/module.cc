@@ -2871,7 +2871,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool legacy_p : 1;	/* Is a legacy import.  */
   bool direct_p : 1;	/* A direct import of TU (includes interface
 			   of implementation).  */
-  bool interface_p : 1; /* Is interface of implementation.  */
+  bool primary_p : 1; /* Is the primary interface of this implementation.  */
   bool exported_p : 1;	/* We are exported.  */
   bool imported_p : 1;	/* Import has been done.  */
   bool alias_p : 1;	/* Alias for other module.  */
@@ -2920,9 +2920,9 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   {
     return imported_p;
   }
-  bool is_interface () const
+  bool is_primary () const
   {
-    return interface_p;
+    return primary_p;
   }
   bool is_legacy () const
   {
@@ -3097,7 +3097,7 @@ module_state::module_state (tree name, uintptr_t pp)
     partition_p (bool (pp & 1))
 {
   u1.slurp = NULL;
-  legacy_p = direct_p = interface_p = exported_p = imported_p = alias_p = false;
+  legacy_p = direct_p = primary_p = exported_p = imported_p = alias_p = false;
   if (name && (IDENTIFIER_POINTER (name)[0] == '"'
 	       || IDENTIFIER_POINTER (name)[0] == '<'))
     legacy_p = true;
@@ -9858,7 +9858,10 @@ module_state::read_cluster (unsigned snum)
 	    tree decls = NULL_TREE;
 	    tree type = NULL_TREE;
 	    tree visible = NULL_TREE;
-	    bool dedup = TREE_PUBLIC (ns) && (is_interface () || is_legacy ());
+	    bool dedup = (TREE_PUBLIC (ns)
+			  && (is_primary ()
+			      || is_partition ()
+			      || is_legacy ()));
 
 	    while (tree decl = sec.tree_node ())
 	      {
@@ -9892,7 +9895,7 @@ module_state::read_cluster (unsigned snum)
 		  decls = decl;
 
 		if (DECL_MODULE_EXPORT_P (decl)
-		    || (is_interface ()
+		    || ((is_primary () || is_partition ())
 			&& (TREE_PUBLIC (decl)
 			    /* Template types don't get TREE_PUBLIC set.  */
 			    || (TREE_CODE (decl) == TEMPLATE_DECL
@@ -9906,13 +9909,15 @@ module_state::read_cluster (unsigned snum)
 		decls = type;
 		if (!type)
 		  sec.set_overrun ();
-		else if (DECL_MODULE_EXPORT_P (type) || is_interface ())
+		else if (DECL_MODULE_EXPORT_P (type)
+			 || (is_primary () || is_partition ()))
 		  visible = decls;
 		type = NULL_TREE;
 	      }
 
 	    dump () && dump ("Binding of %P", ns, name);
-	    if (!set_module_binding (ns, name, mod, is_interface (),
+	    if (!set_module_binding (ns, name, mod,
+				     is_primary () || is_partition (),
 				     decls, type, visible))
 	      sec.set_overrun ();
 	    if (type && !sec.is_existing_mergeable (type))
@@ -12577,7 +12582,7 @@ module_state::set_import (module_state const *other, bool is_export)
   /* We see OTHER's exports (which include OTHER).  */
   bitmap_ior_into (imports, other->exports);
 
-  if (other->is_interface ())
+  if (other->is_primary ())
     bitmap_set_bit (exports, other->mod);
   else if (is_export)
     /* We'll export OTHER's exports.  */
@@ -12667,7 +12672,7 @@ module_may_redeclare (unsigned from)
   if (from == MODULE_NONE)
     return !module_purview_p ();
 
-  return (*modules)[from]->is_interface ();
+  return (*modules)[from]->is_primary ();
 }
 
 /* Set the module EXPORT and OWNER fields on DECL.  */
@@ -12843,7 +12848,7 @@ module_state::direct_import (cpp_reader *reader)
 	{
 	  /* Preserve the state of the line-map.  */
 	  pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
-	  if (module_interface_p ())
+	  if (module_has_bmi_p ())
 	    spans.close ();
 
 	  maybe_create_loc ();
@@ -12859,7 +12864,7 @@ module_state::direct_import (cpp_reader *reader)
       if (is_legacy ())
 	{
 	  linemap_module_restore (line_table, pre_hwm);
-	  if (module_interface_p ())
+	  if (module_has_bmi_p ())
 	    spans.open ();
 	}
     }
@@ -12875,7 +12880,7 @@ module_state::direct_import (cpp_reader *reader)
       (*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
       if (imp->is_legacy ())
 	imp->import_macros ();
-      if (imp->is_interface ())
+      if (imp->is_primary ())
 	bitmap_ior_into ((*modules)[MODULE_NONE]->imports, imp->imports);
     }
 
@@ -12993,7 +12998,6 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
   gcc_assert (global_namespace == current_scope ());
   from_loc = ordinary_loc_of (line_table, from_loc);
 
-
   if (module_purview_p () || !state->is_detached ())
     {
       if (module_purview_p ())
@@ -13013,26 +13017,33 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
 
   state->attach (from_loc);
 
+  /* We're a module, 'arry.  */
+  module_kind |= MK_MODULE;
+
   module_state *gmf = (*modules)[MODULE_NONE];
-  if (exporting_p)
+  if (state->is_partition () || exporting_p)
     {
+      if (state->is_partition ())
+	module_kind |= MK_PARTITION;
+
+      if (exporting_p)
+	{
+	  state->exported_p = true;
+	  module_kind |= MK_INTERFACE;
+	}
+
       /* Copy the importing information we may have already done.  */
       state->imports = gmf->imports;
 
-      state->exported_p = true;
       state->mod = MODULE_PURVIEW;
       gmf = state;
       (*modules)[MODULE_NONE] = state;
-      module_kind |= MK_INTERFACE;
     }
   else
     {
-      state->interface_p = true; // FIXME:Why?
+      state->primary_p = true;
       gmf->parent = state;
     }
-  module_kind |= MK_MODULE;
-  if (state->is_partition ())
-    module_kind |= MK_PARTITION;
 
   current_module = MODULE_PURVIEW;
   (*modules)[MODULE_PURVIEW] = gmf;
@@ -13179,12 +13190,12 @@ process_deferred_imports (cpp_reader *reader)
 
   /* Preserve the state of the line-map.  */
   unsigned pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
-  if (module_interface_p ())
+  if (module_has_bmi_p ())
     spans.close ();
 
   module_state *imp = (*pending_imports)[0];
   module_mapper *mapper = module_mapper::get (imp->from_loc);
-  bool is_interface = imp->mod == MODULE_PURVIEW;
+  bool has_bmi = imp->mod == MODULE_PURVIEW;
 
   if (mapper->is_server ())
     {
@@ -13193,7 +13204,7 @@ process_deferred_imports (cpp_reader *reader)
       for (unsigned ix = 0; ix != pending_imports->length (); ix++)
 	{
 	  imp = (*pending_imports)[ix];
-	  mapper->imex_query (imp, !ix && is_interface);
+	  mapper->imex_query (imp, !ix && has_bmi);
 	}
       mapper->uncork (imp->from_loc);
     }
@@ -13216,7 +13227,7 @@ process_deferred_imports (cpp_reader *reader)
   /* Now do the importing, which might cause additional requests
      (although nested import filenames are usually in their
      importer's import table).  */
-  for (unsigned ix = is_interface ? 1 : 0;
+  for (unsigned ix = has_bmi ? 1 : 0;
        ix != pending_imports->length (); ix++)
     {
       module_state *imp = (*pending_imports)[ix];
@@ -13228,7 +13239,7 @@ process_deferred_imports (cpp_reader *reader)
   vec_free (pending_imports);
 
   linemap_module_restore (line_table, pre_hwm);
-  if (module_interface_p ())
+  if (module_has_bmi_p ())
     spans.open ();
 }
 

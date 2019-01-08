@@ -1,5 +1,13 @@
 2019-01-08  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (module_has_bmi_p): New.
+	* module.cc (module_state::{is_interface,interface_p}): Rename to ...
+	(module_state::{is_primary,primary_p}): ... here.  Adjust users.
+	(module_state::read_cluster): Partitions need deduping too.
+	(declare_module): Set primary_p, partition_p.
+	(process_pending_imports): Adjust.
+
 	gcc/cp
 	* cp-tree.h (module_export_depth, module_purview): Replace with ...
 	(module_kind): ... this.
