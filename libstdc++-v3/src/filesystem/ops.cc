@@ -41,7 +41,7 @@
 # include <fcntl.h>  // AT_FDCWD, AT_SYMLINK_NOFOLLOW
 #endif
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H
-#  include <sys/stat.h>   // stat, utimensat, fchmodat
+# include <sys/stat.h>   // stat, utimensat, fchmodat
 #endif
 #ifdef _GLIBCXX_HAVE_SYS_STATVFS_H
 # include <sys/statvfs.h> // statvfs
@@ -909,7 +909,7 @@ fs::last_write_time(const path& p __attribute__((__unused__)),
     ec.assign(errno, std::generic_category());
   else
     ec.clear();
-#elif _GLIBCXX_HAVE_UTIME_H
+#elif _GLIBCXX_USE_UTIME && _GLIBCXX_HAVE_SYS_STAT_H
   posix::utimbuf times;
   times.modtime = s.count();
   times.actime = do_stat(p, ec, [](const auto& st) { return st.st_atime; },
