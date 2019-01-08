@@ -5970,10 +5970,11 @@ count_type_elements (const_tree type, bool for_ctor_p)
 
 static bool
 categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
+			    HOST_WIDE_INT *p_unique_nz_elts,
 			    HOST_WIDE_INT *p_init_elts, bool *p_complete)
 {
   unsigned HOST_WIDE_INT idx;
-  HOST_WIDE_INT nz_elts, init_elts, num_fields;
+  HOST_WIDE_INT nz_elts, unique_nz_elts, init_elts, num_fields;
   tree value, purpose, elt_type;
 
   /* Whether CTOR is a valid constant initializer, in accordance with what
@@ -5983,6 +5984,7 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
   bool const_p = const_from_elts_p ? true : TREE_STATIC (ctor);
 
   nz_elts = 0;
+  unique_nz_elts = 0;
   init_elts = 0;
   num_fields = 0;
   elt_type = NULL_TREE;
@@ -6007,12 +6009,13 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 	{
 	case CONSTRUCTOR:
 	  {
-	    HOST_WIDE_INT nz = 0, ic = 0;
+	    HOST_WIDE_INT nz = 0, unz = 0, ic = 0;
 
-	    bool const_elt_p = categorize_ctor_elements_1 (value, &nz, &ic,
-							   p_complete);
+	    bool const_elt_p = categorize_ctor_elements_1 (value, &nz, &unz,
+							   &ic, p_complete);
 
 	    nz_elts += mult * nz;
+	    unique_nz_elts += unz;
  	    init_elts += mult * ic;
 
 	    if (const_from_elts_p && const_p)
@@ -6024,21 +6027,31 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 	case REAL_CST:
 	case FIXED_CST:
 	  if (!initializer_zerop (value))
-	    nz_elts += mult;
+	    {
+	      nz_elts += mult;
+	      unique_nz_elts++;
+	    }
 	  init_elts += mult;
 	  break;
 
 	case STRING_CST:
 	  nz_elts += mult * TREE_STRING_LENGTH (value);
+	  unique_nz_elts += TREE_STRING_LENGTH (value);
 	  init_elts += mult * TREE_STRING_LENGTH (value);
 	  break;
 
 	case COMPLEX_CST:
 	  if (!initializer_zerop (TREE_REALPART (value)))
-	    nz_elts += mult;
+	    {
+	      nz_elts += mult;
+	      unique_nz_elts++;
+	    }
 	  if (!initializer_zerop (TREE_IMAGPART (value)))
-	    nz_elts += mult;
-	  init_elts += mult;
+	    {
+	      nz_elts += mult;
+	      unique_nz_elts++;
+	    }
+	  init_elts += 2 * mult;
 	  break;
 
 	case VECTOR_CST:
@@ -6050,7 +6063,10 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 	      {
 		tree v = VECTOR_CST_ELT (value, i);
 		if (!initializer_zerop (v))
-		  nz_elts += mult;
+		  {
+		    nz_elts += mult;
+		    unique_nz_elts++;
+		  }
 		init_elts += mult;
 	      }
 	  }
@@ -6060,6 +6076,7 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 	  {
 	    HOST_WIDE_INT tc = count_type_elements (elt_type, false);
 	    nz_elts += mult * tc;
+	    unique_nz_elts += tc;
 	    init_elts += mult * tc;
 
 	    if (const_from_elts_p && const_p)
@@ -6079,6 +6096,7 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
     *p_complete = false;
 
   *p_nz_elts += nz_elts;
+  *p_unique_nz_elts += unique_nz_elts;
   *p_init_elts += init_elts;
 
   return const_p;
@@ -6087,6 +6105,11 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 /* Examine CTOR to discover:
    * how many scalar fields are set to nonzero values,
      and place it in *P_NZ_ELTS;
+   * the same, but counting RANGE_EXPRs as multiplier of 1 instead of
+     high - low + 1 (this can be useful for callers to determine ctors
+     that could be cheaply initialized with - perhaps nested - loops
+     compared to copied from huge read-only data),
+     and place it in *P_UNIQUE_NZ_ELTS;
    * how many scalar fields in total are in CTOR,
      and place it in *P_ELT_COUNT.
    * whether the constructor is complete -- in the sense that every
@@ -6098,13 +6121,16 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 
 bool
 categorize_ctor_elements (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
+			  HOST_WIDE_INT *p_unique_nz_elts,
 			  HOST_WIDE_INT *p_init_elts, bool *p_complete)
 {
   *p_nz_elts = 0;
+  *p_unique_nz_elts = 0;
   *p_init_elts = 0;
   *p_complete = true;
 
-  return categorize_ctor_elements_1 (ctor, p_nz_elts, p_init_elts, p_complete);
+  return categorize_ctor_elements_1 (ctor, p_nz_elts, p_unique_nz_elts,
+				     p_init_elts, p_complete);
 }
 
 /* TYPE is initialized by a constructor with NUM_ELTS elements, the last
@@ -6135,17 +6161,18 @@ complete_ctor_at_level_p (const_tree type, HOST_WIDE_INT num_elts,
   return count_type_elements (type, true) == num_elts;
 }
 
-/* Return 1 if EXP contains mostly (3/4)  zeros.  */
+/* Return 1 if EXP contains mostly (3/4) zeros.  */
 
 static int
 mostly_zeros_p (const_tree exp)
 {
   if (TREE_CODE (exp) == CONSTRUCTOR)
     {
-      HOST_WIDE_INT nz_elts, init_elts;
+      HOST_WIDE_INT nz_elts, unz_elts, init_elts;
       bool complete_p;
 
-      categorize_ctor_elements (exp, &nz_elts, &init_elts, &complete_p);
+      categorize_ctor_elements (exp, &nz_elts, &unz_elts, &init_elts,
+				&complete_p);
       return !complete_p || nz_elts < init_elts / 4;
     }
 
@@ -6159,10 +6186,11 @@ all_zeros_p (const_tree exp)
 {
   if (TREE_CODE (exp) == CONSTRUCTOR)
     {
-      HOST_WIDE_INT nz_elts, init_elts;
+      HOST_WIDE_INT nz_elts, unz_elts, init_elts;
       bool complete_p;
 
-      categorize_ctor_elements (exp, &nz_elts, &init_elts, &complete_p);
+      categorize_ctor_elements (exp, &nz_elts, &unz_elts, &init_elts,
+				&complete_p);
       return nz_elts == 0;
     }
 
