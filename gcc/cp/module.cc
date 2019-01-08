@@ -3161,9 +3161,7 @@ static char *bmi_path;
 static size_t bmi_path_alloc;
 
 /* Global variables.  */
-int module_export_depth;
-/* < 0, in GMF  > 0 is module, > 1 is interface.  */
-int module_purview;
+unsigned module_kind;
 
 /* Global trees.  */
 static const std::pair<tree *, unsigned> global_tree_arys[] =
@@ -12741,12 +12739,6 @@ fixup_unscoped_enum_owner (tree enumtype)
     }
 }
 
-inline static bool
-module_maybe_interface_p ()
-{
-  return module_purview & 2;
-}
-
 /* THIS module is being imported (or defined) at FROM.  Create its
    name now.  */
 
@@ -12851,7 +12843,7 @@ module_state::direct_import (cpp_reader *reader)
 	{
 	  /* Preserve the state of the line-map.  */
 	  pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
-	  if (module_maybe_interface_p ())
+	  if (module_interface_p ())
 	    spans.close ();
 
 	  maybe_create_loc ();
@@ -12867,7 +12859,7 @@ module_state::direct_import (cpp_reader *reader)
       if (is_legacy ())
 	{
 	  linemap_module_restore (line_table, pre_hwm);
-	  if (module_maybe_interface_p ())
+	  if (module_interface_p ())
 	    spans.open ();
 	}
     }
@@ -12994,33 +12986,30 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
 /* Declare the name of the current module to be NAME.  EXPORTING_p is
    true if this TU is the exporting module unit.  */
 
-void
+bool
 declare_module (module_state *state, location_t from_loc, bool exporting_p,
 		tree, cpp_reader *reader)
 {
   gcc_assert (global_namespace == current_scope ());
-
-  if (module_purview_p ())
-    {
-      error_at (from_loc, "module purview already started");
-      inform ((*modules)[MODULE_PURVIEW]->from_loc, "module declared here");
-      return;
-    }
-
-  if (!module_gmf_p ())
-    error_at (from_loc, "global module fragment not present");
-
   from_loc = ordinary_loc_of (line_table, from_loc);
-  gcc_assert (!(*modules)[MODULE_PURVIEW]);
-  gcc_assert (state->is_legacy () == module_legacy_p ());
 
-  if (!state->is_detached ())
+
+  if (module_purview_p () || !state->is_detached ())
     {
-      /* Cannot be module unit of an imported module.  */
-      error_at (from_loc, "cannot declare module after import");
-      inform (state->from_loc, "module %qs imported here", state->fullname);
-      return;
+      if (module_purview_p ())
+	state = (*modules)[MODULE_PURVIEW];
+      error_at (from_loc, module_purview_p ()
+		? G_("module already declared")
+		: G_("module already imported"));
+      inform (state->from_loc,
+	      module_purview_p ()
+	      ? G_("module %qs declared here")
+	      : G_("module %qs imported here"),
+	      state->fullname);
+      return false;
     }
+
+  gcc_assert (!module_global_p () && !(*modules)[MODULE_PURVIEW]);
 
   state->attach (from_loc);
 
@@ -13034,22 +13023,29 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
       state->mod = MODULE_PURVIEW;
       gmf = state;
       (*modules)[MODULE_NONE] = state;
-      module_purview = 2;
+      module_kind |= MK_INTERFACE;
     }
   else
     {
-      state->interface_p = true;
+      state->interface_p = true; // FIXME:Why?
       gmf->parent = state;
-      module_purview = 1;
     }
+  module_kind |= MK_MODULE;
+  if (state->is_partition ())
+    module_kind |= MK_PARTITION;
 
   current_module = MODULE_PURVIEW;
   (*modules)[MODULE_PURVIEW] = gmf;
 
   if (state->is_legacy ())
-    state->direct_import (reader);
+    {
+      module_kind |= MK_GLOBAL | MK_EXPORTING;
+      state->direct_import (reader);
+    }
   else
     vec_safe_push (pending_imports, state);
+
+  return true;
 }
 
 /* Track if NODE undefs an imported macro.  */
@@ -13141,7 +13137,7 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
       unsigned n = dump.push (NULL);
       spans.init (map);
       dump.pop (n);
-      if (module_legacy_p ())
+      if (flag_modules < 0)
 	{
 	  if (!module_legacy_name)
 	    {
@@ -13165,9 +13161,6 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
 	  tree name = get_identifier (module_legacy_name);
 	  declare_module (get_module (name),
 			  spans.main_start (), true, NULL, reader);
-
-	  /* Everything is exported.  */
-	  push_module_export ();
 	}
     }
 }
@@ -13186,7 +13179,7 @@ process_deferred_imports (cpp_reader *reader)
 
   /* Preserve the state of the line-map.  */
   unsigned pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
-  if (module_maybe_interface_p ())
+  if (module_interface_p ())
     spans.close ();
 
   module_state *imp = (*pending_imports)[0];
@@ -13235,7 +13228,7 @@ process_deferred_imports (cpp_reader *reader)
   vec_free (pending_imports);
 
   linemap_module_restore (line_table, pre_hwm);
-  if (module_maybe_interface_p ())
+  if (module_interface_p ())
     spans.open ();
 }
 
@@ -13380,7 +13373,7 @@ void
 finish_module_parse (cpp_reader *reader)
 {
   if (module_legacy_p ())
-    pop_module_export ();
+    module_kind &= ~MK_EXPORTING;
 
   if (flag_module_macros)
     {

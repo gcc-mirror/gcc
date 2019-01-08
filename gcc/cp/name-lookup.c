@@ -8152,7 +8152,7 @@ make_namespace (tree ctx, tree name, unsigned mod, location_t loc,
 		  pos += sprintf (&buf[pos], "_%02x", *ptr);
 	      asm_name = get_identifier_with_length (buf, pos);
 	    }
-	  else if (module_gmf_p ())
+	  else if (module_global_p ())
 	    /* We cannot have it here, because there's nothing
 	       unique to mangle into the name.  */
 	    error ("anonymous namespaces cannot be used in"

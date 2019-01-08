@@ -2091,8 +2091,8 @@ static tree cp_parser_implicitly_scoped_statement
 static void cp_parser_already_scoped_statement
   (cp_parser *, bool *, const token_indent_info &);
 
-static void cp_parser_module_declaration
-  (cp_parser *parser, bool exporting);
+static bool cp_parser_module_declaration
+  (cp_parser *parser, bool first, bool exporting);
 static void cp_parser_import_declaration
   (cp_parser *parser, bool exporting, bool past_preamble);
 
@@ -4624,9 +4624,6 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
   int preamble = 0; /* Not seen a preamble.  */
   bool deferred_imports = false;
 
-  if (!first)
-    module_purview = -1;
-
   /* Tell the tokenizer there are no tokens to copy.  */
   parser->lexer->last_token = NULL;
 
@@ -4672,31 +4669,23 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	    ;
 	  else if (C_RID_CODE (next->u.value) == RID_MODULE)
 	    {
-	      if (!exporting && first
-		  && after->type == CPP_SEMICOLON)
-		{
-		  cp_lexer_consume_token (parser->lexer); /* module */
-		  cp_lexer_consume_token (parser->lexer); /* ; */
-		}
-	      else
-		{
-		  if (deferred_imports)
-		    /* The GMF may have deferred imports.  Do them before
-		       we become a module.  */
-		    process_deferred_imports (parse_in);
-		  if (exporting)
-		    cp_lexer_consume_token (parser->lexer);
-		  cp_parser_module_declaration (parser, exporting);
-		  preamble = +1; /* In preamble.  */
-		}
+	      if (deferred_imports)
+		/* The GMF may have deferred imports.  Do them before
+		   we become a module.  */
+		process_deferred_imports (parse_in);
+
+	      if (exporting)
+		cp_lexer_consume_token (parser->lexer);
+
+	      if (cp_parser_module_declaration (parser, first, exporting))
+		preamble = +1; /* In preamble.  */
+
 	      deferred_imports = true;
 	      first = false;
 	      continue;
 	    }
 	  else if (C_RID_CODE (next->u.value) == RID_IMPORT)
 	    {
-	      if (first)
-		module_purview = -1;
 	      first = false;
 	      if (exporting)
 		cp_lexer_consume_token (parser->lexer);
@@ -4710,8 +4699,6 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	    }
 	}
 
-      if (first)
-	module_purview = -1;
       first = false;
       if (preamble > 0)
 	preamble = -1;
@@ -13115,24 +13102,48 @@ cp_parser_module_name (cp_parser *parser, bool for_module)
 }
 
 /* Named module-declaration
-     module module-name attr-spec-seq-opt ;
+     module ;
+     [export] module module-name attr-spec-seq-opt ;
 */
 
-static void
-cp_parser_module_declaration (cp_parser *parser, bool exporting)
+static bool
+cp_parser_module_declaration (cp_parser *parser, bool first, bool exporting)
 {
   cp_token *token = cp_lexer_consume_token (parser->lexer);
+
+  if (first && !exporting && !module_purview_p ()
+      && cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+    {
+      /* start global module fragment. */
+      cp_lexer_consume_token (parser->lexer);
+      module_kind |= MK_GLOBAL;
+      return false;
+    }
+
   module_state *mod = cp_parser_module_name (parser, true);
   tree attrs = cp_parser_attributes_opt (parser);
 
   if (!mod || !cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
     {
+      /* Syntax error.  */
       cp_parser_skip_to_end_of_statement (parser);
       if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
 	cp_lexer_consume_token (parser->lexer);
+      return false;
     }
-  else
-    declare_module (mod, token->location, exporting, attrs, parse_in);
+
+  if (!module_purview_p ())
+    {
+      if (!first&& !module_global_p ())
+	{
+	  error_at (token->location, "global module fragment not present");
+	  return false;
+	}
+
+      module_kind &= ~MK_GLOBAL;
+    }
+
+  return declare_module (mod, token->location, exporting, attrs, parse_in);
 }
 
 /* Import-declaration
@@ -13176,10 +13187,13 @@ cp_parser_module_export (cp_parser *parser)
 	      token->u.value);
 
   bool braced = cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE);
-  if (push_module_export ())
+
+  unsigned mk = module_kind;
+  if (module_exporting_p ())
     error_at (token->location,
 	      "%qE may only occur once in an export declaration",
 	      token->u.value);
+  module_kind |= MK_EXPORTING;
 
   if (braced)
     {
@@ -13193,7 +13207,7 @@ cp_parser_module_export (cp_parser *parser)
   else
     cp_parser_declaration (parser);
 
-  pop_module_export ();
+  module_kind = mk;
 }
 
 /* Declarations [gram.dcl.dcl] */

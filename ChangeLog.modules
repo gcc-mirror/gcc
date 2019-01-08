@@ -1,3 +1,29 @@
+2019-01-08  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp
+	* cp-tree.h (module_export_depth, module_purview): Replace with ...
+	(module_kind): ... this.
+	(MK_MODULE, MK_GLOBAL, MK_INTERFACE, MK_PARTITION, MK_EXPORTING): New.
+	(module_purview_p, not_module_p, module_legacy_p)
+	(module_interface_p, module_partition_p, module_global_p)
+	(module_exporting_p): Adjust.
+	(declare_module): Return bool.
+	* module.cc (module_export_depth, module_purview): Replace with ...
+	(module_kind): ... this.
+	(module_maybe_interface_p): Delete.
+	(module_state::direct_import, declare_module)
+	(module_begin_main_file, process_deferred_imports)
+	(finish_module_parse): Adjust.
+	* name-lookup.c (make_namespae): Use module_global_p.
+	* parser.c (cp_parser_module_declaration): Return bool.  Deal with
+	GMF introducer.
+	(cp_parser_translation_unit, cp_parser_module_export): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/circ-1_d.C: Adjust.
+	* g++.dg/modules/mod-decl-1.C: Adjust.
+	* g++.dg/modules/mod-decl-5_b.C: Adjust.
+	* g++.dg/modules/p0713-3.C: Adjust.
+
 2019-01-07  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

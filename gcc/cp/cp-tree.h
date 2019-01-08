@@ -6773,18 +6773,31 @@ extern tree locate_ctor				(tree);
 extern tree implicitly_declare_fn               (special_function_kind, tree,
 						 bool, tree, tree);
 /* In module.cc  */
-extern int module_export_depth;
 class module_state; /* Forward declare.  */
 inline bool modules_p () { return flag_modules != 0; }
-extern int module_purview;
-inline bool module_legacy_p () { return flag_modules < 0; }
-inline bool module_purview_p () { return module_purview > 0; }
-inline bool module_interface_p () { return module_purview > 1; }
-inline bool module_gmf_p () { return !module_purview; }
-inline bool not_module_p () { return module_purview < 0; }
-inline bool module_exporting_p () { return module_export_depth != 0; }
-inline bool push_module_export () { return module_export_depth++; }
-inline void pop_module_export () { module_export_depth--; }
+
+#define MK_MODULE (1 << 0)
+#define MK_GLOBAL (1 << 1)
+#define MK_INTERFACE (1 << 2)
+#define MK_PARTITION (1 << 3)
+#define MK_EXPORTING (1 << 4)
+extern unsigned module_kind;
+
+inline bool module_purview_p ()
+{ return module_kind & MK_MODULE; }
+inline bool not_module_p ()
+{ return !(module_kind & (MK_MODULE | MK_GLOBAL)); }
+inline bool module_legacy_p ()
+{ return (module_kind & (MK_MODULE | MK_GLOBAL)) == (MK_MODULE | MK_GLOBAL); }
+inline bool module_interface_p ()
+{ return module_kind & MK_INTERFACE; }
+inline bool module_partition_p ()
+{ return module_kind & MK_PARTITION; }
+inline bool module_global_p ()
+{ return module_kind & MK_GLOBAL; }
+inline bool module_exporting_p ()
+{ return module_kind & MK_EXPORTING; }
+
 extern module_state *get_module (tree name, module_state *parent = NULL,
 				  bool partition = false);
 extern bool module_may_redeclare (unsigned);
@@ -6798,7 +6811,7 @@ extern void fixup_unscoped_enum_owner (tree);
 extern void set_implicit_module_owner (tree, tree);
 extern void import_module (module_state *, location_t, bool, tree,
 			   cpp_reader *);
-extern void declare_module (module_state *, location_t, bool, tree,
+extern bool declare_module (module_state *, location_t, bool, tree,
 			    cpp_reader *);
 extern void process_deferred_imports (cpp_reader *);
 extern void module_cpp_undef (cpp_reader *, location_t, cpp_hashnode *);

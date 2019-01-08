@@ -6,7 +6,7 @@ export module frist;
 
 import frist; // { dg-error {cannot import module.* in its own purview} }
 
-module foo.second; // { dg-error "already started" }
+module foo.second; // { dg-error "already declared" }
 
 namespace Foo 
 {
@@ -24,7 +24,7 @@ void Bink ()
 }
 
 module a.; // { dg-error "expected" }
-// { dg-error "already started" "" { target *-*-* } .-1 }
+// { dg-error "already declared" "" { target *-*-* } .-1 }
 
 
 // { dg-warning "not exporting module" "" { target *-*-* } 0 }
