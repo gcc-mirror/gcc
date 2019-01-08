@@ -473,8 +473,10 @@ switch_conversion::contains_linear_function_p (vec<constructor_elt, va_gc> *vec,
   if (TREE_CODE (elt0) != INTEGER_CST || TREE_CODE (elt1) != INTEGER_CST)
     return false;
 
-  wide_int range_min = wi::to_wide (fold_convert (TREE_TYPE (elt0),
-						  m_range_min));
+  wide_int range_min
+    = wide_int::from (wi::to_wide (m_range_min),
+		      TYPE_PRECISION (TREE_TYPE (elt0)),
+		      TYPE_SIGN (TREE_TYPE (m_range_min)));
   wide_int y1 = wi::to_wide (elt0);
   wide_int y2 = wi::to_wide (elt1);
   wide_int a = y2 - y1;
@@ -600,9 +602,9 @@ switch_conversion::build_one_array (int num, tree arr_index_type,
   name = copy_ssa_name (PHI_RESULT (phi));
   m_target_inbound_names[num] = name;
 
+  vec<constructor_elt, va_gc> *constructor = m_constructors[num];
   wide_int coeff_a, coeff_b;
-  bool linear_p = contains_linear_function_p (m_constructors[num], &coeff_a,
-					      &coeff_b);
+  bool linear_p = contains_linear_function_p (constructor, &coeff_a, &coeff_b);
   if (linear_p)
     {
       if (dump_file && coeff_a.to_uhwi () > 0)
@@ -610,7 +612,8 @@ switch_conversion::build_one_array (int num, tree arr_index_type,
 		 " and B = %" PRId64 "\n", coeff_a.to_shwi (),
 		 coeff_b.to_shwi ());
 
-      tree t = unsigned_type_for (TREE_TYPE (m_index_expr));
+      /* We must use type of constructor values.  */
+      tree t = unsigned_type_for (TREE_TYPE ((*constructor)[0].value));
       gimple_seq seq = NULL;
       tree tmp = gimple_convert (&seq, t, m_index_expr);
       tree tmp2 = gimple_build (&seq, MULT_EXPR, t,
@@ -633,10 +636,10 @@ switch_conversion::build_one_array (int num, tree arr_index_type,
 	  unsigned int i;
 	  constructor_elt *elt;
 
-	  FOR_EACH_VEC_SAFE_ELT (m_constructors[num], i, elt)
+	  FOR_EACH_VEC_SAFE_ELT (constructor, i, elt)
 	    elt->value = fold_convert (value_type, elt->value);
 	}
-      ctor = build_constructor (array_type, m_constructors[num]);
+      ctor = build_constructor (array_type, constructor);
       TREE_CONSTANT (ctor) = true;
       TREE_STATIC (ctor) = true;
 
