@@ -1,3 +1,10 @@
+2019-01-08  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/88753
+	* tree-switch-conversion.c (switch_conversion::build_one_array):
+	Come up with local variable constructor.  Convert first to
+	type of constructor values.
+
 2019-01-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/86554
