@@ -2873,8 +2873,10 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool legacy_p : 1;	/* Is a legacy import.  */
   bool direct_p : 1;	/* A direct import of TU (includes interface
 			   of implementation).  */
-  bool primary_p : 1; /* Is the primary interface of this implementation.  */
-  bool exported_p : 1;	/* We are exported.  */
+  bool primary_p : 1;   /* Is the primary interface of this
+			   implementation.  */
+  bool interface_p : 1; /* Is an interface (partition or primary).  */
+  bool exported_p : 1;	/* We are exported direct import.  */
   bool imported_p : 1;	/* Import has been done.  */
   bool alias_p : 1;	/* Alias for other module.  */
   bool partition_p : 1; /* A partition.  */
@@ -2925,6 +2927,10 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool is_primary () const
   {
     return primary_p;
+  }
+  bool is_interface () const
+  {
+    return interface_p;
   }
   bool is_legacy () const
   {
@@ -3099,7 +3105,8 @@ module_state::module_state (tree name, uintptr_t pp)
     partition_p (bool (pp & 1))
 {
   u1.slurp = NULL;
-  legacy_p = direct_p = primary_p = exported_p = imported_p = alias_p = false;
+  legacy_p = direct_p = primary_p = interface_p = exported_p
+    = imported_p = alias_p = false;
   if (name && (IDENTIFIER_POINTER (name)[0] == '"'
 	       || IDENTIFIER_POINTER (name)[0] == '<'))
     legacy_p = true;
@@ -7567,8 +7574,6 @@ module_state::resolve_alias ()
     {
       result = u1.alias;
       dump () && dump ("%M is an alias of %M", this, result);
-      if (exported_p)
-	result->exported_p = true;
     }
   return result;
 }
@@ -8753,7 +8758,8 @@ module_state::write_readme (elf_out *to, const char *options, cpp_hashnode *node
     {
       module_state *state = (*modules)[ix];
       if (state->is_direct ())
-	readme.printf ("import: %s %s", state->fullname, state->filename);
+	readme.printf ("%s: %s %s", state->exported_p ? "export" : "import",
+		       state->fullname, state->filename);
     }
 
   readme.end (to, to->name (MOD_SNAME_PFX ".README"), NULL);
@@ -8877,18 +8883,13 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
       if (imp->crc != crc)
 	error_at (loc, "import %qs has CRC mismatch", imp->fullname);
 
-      if (imp->is_alias ())
-	{
-	  dump () && dump ("Module %M is alias of %M", imp, imp->u1.alias);
-	  imp = imp->u1.alias;
-	}
+      imp = imp->resolve_alias ();
 
       (*slurp ()->remap)[ix] = imp->mod;
       if (lmaps)
 	set_import (imp, exported);
-      dump () && dump ("Found %simport:%u %M->%u",
-		       !lmaps ? "indirect " : imp->exported_p
-		       ? "exported " : "", ix, imp,
+      dump () && dump ("Found %simport:%u %M->%u", !lmaps ? "indirect "
+		       : exported ? "exported " : "", ix, imp,
 		       imp->mod);
       loaded++;
     }
@@ -12122,8 +12123,8 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
       }
   }
 
-  if (is_partition ())
-    cfg.u (); // FIXME:Do something with this
+  /* All non-partitions are interfaces.  */
+  interface_p = !is_partition () || cfg.u ();
 
   /* Allocate the REMAP vector.  */
   {
@@ -12393,15 +12394,13 @@ module_state::read (int fd, int e, cpp_reader *reader)
       from ()->set_error (elf::E_BAD_IMPORT);
       return NULL;
     }
-  else
-    {
-      vec_safe_push (modules, this);
-      /* We always import and export ourselves. */
-      bitmap_set_bit (imports, ix);
-      bitmap_set_bit (exports, ix);
-      if (is_legacy ())
-	bitmap_set_bit (slurp ()->legacies, ix);
-    }
+
+  vec_safe_push (modules, this);
+  /* We always import and export ourselves. */
+  bitmap_set_bit (imports, ix);
+  bitmap_set_bit (exports, ix);
+  if (is_legacy ())
+    bitmap_set_bit (slurp ()->legacies, ix);
   mod = remap = ix;
 
   (*slurp ()->remap)[MODULE_PURVIEW] = mod;
@@ -12593,12 +12592,14 @@ void
 module_state::set_import (module_state const *other, bool is_export)
 {
   gcc_checking_assert (this != other);
-  /* We see OTHER's exports (which include OTHER).  */
-  bitmap_ior_into (imports, other->exports);
 
-  if (other->is_primary ())
-    bitmap_set_bit (exports, other->mod);
-  else if (is_export)
+  /* We see OTHER's exports (which include's OTHER).
+     If OTHER is the primary interface or a partition we'll see its
+     imports.  */
+  bitmap_ior_into (imports, other->is_primary () || other->is_partition ()
+		   ? other->imports : other->exports);
+
+  if (is_export)
     /* We'll export OTHER's exports.  */
     bitmap_ior_into (exports, other->exports);
 
@@ -12890,8 +12891,6 @@ module_state::direct_import (cpp_reader *reader, bool lazy)
   (*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
   if (imp->is_legacy ())
     imp->import_macros ();
-  if (imp->is_primary ())
-    bitmap_ior_into ((*modules)[MODULE_NONE]->imports, imp->imports);
 
   dump.pop (n);
 }
@@ -13053,7 +13052,7 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
     }
   else
     {
-      state->primary_p = true;
+      state->primary_p = state->interface_p = true;
       gmf->parent = state;
     }
 

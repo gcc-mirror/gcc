@@ -1,6 +1,19 @@
 2019-01-08  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::{interface_p,is_interface}): New.
+	(module_state::resolve_alias): Don't propagate exported_p here.
+	(module_state::write_readme): Show exportedness of imports.
+	(module_state::read_imports): Use resolve_alias.
+	(module_state::read_config): Set interface_p.
+	(module_state::read): Reformat.
+	(module_state::set_import): Correctly set imports.
+	(module_state::direct_import): Not here.
+	(declare_module): Set interface_p.
+	gcc/testsuite/
+	* g++.dg/modules/import-1_e.C: Adjust scan.
+
+	gcc/cp/
 	* module.cc (bytes_out::set_crc): Only set if crc_ptr != 0.
 	(module_state::write_readme): Update for partitions.
 	(module_state::{read,write}_config): Write exported_p for
