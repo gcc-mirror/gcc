@@ -1,6 +1,11 @@
 2019-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/85794
+	* gcc.dg/vect/O3-pr85794.c: New test.
+
 	2018-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88122
