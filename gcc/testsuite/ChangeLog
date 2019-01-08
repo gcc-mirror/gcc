@@ -1,3 +1,10 @@
+2019-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/88457
+	* gcc.target/powerpc/pr88457.c: Remove -m32, -c and -mcpu=e300c3 from
+	dg-options.  Require ppc_cpu_supports_hw effective target instead of
+	powerpc64*-*-*.
+
 2019-01-08  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/88047
