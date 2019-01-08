@@ -1,4 +1,14 @@
+2019-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2018-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/87898
+	* omp-simd-clone.c (ipa_simd_modify_function_body): Remove debug stmts
+	where the first argument was changed into a non-decl.
+
 2019-01-03  Jan Hubicka  <hubicka@ucw.cz>
+
 	Backport from mainline
 	2019-01-02  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -7,6 +17,7 @@
 	false at WPA time when body was removed.
 
 2019-01-03  Jan Hubicka  <hubicka@ucw.cz>
+
 	Backport from mainline
 	2018-08-29  Jan Hubicka  <jh@suse.cz>
 
@@ -24,6 +35,7 @@
 	we determine if unaligned vsx is ok.
 
 2019-01-03  Jan Hubicka  <hubicka@ucw.cz>
+
 	Backport from mainline
 	2019-01-03  Jan Hubicka  <hubicka@ucw.cz>
 

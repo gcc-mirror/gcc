@@ -1,4 +1,13 @@
+2019-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2018-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/87898
+	* gcc.dg/gomp/pr87898.c: New test.
+
 2019-01-03  Jan Hubicka  <hubicka@ucw.cz>
+
 	Backport from mainline
 	2019-01-02  Jan Hubicka  <hubicka@ucw.cz>
 
