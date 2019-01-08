@@ -1,6 +1,11 @@
 2019-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87598
+	* gcc.target/aarch64/asm-5.c: New test.
+
 	2018-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/87360
