@@ -1,5 +1,10 @@
 2019-01-08  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/libstdc++-prettyprinters/compat.cc: Test printer support
+	for old std::unique_ptr layout.
+	* testsuite/libstdc++-prettyprinters/cxx17.cc: Fix std::variant test
+	to become valueless. Add filesystem::path tests.
+
 	PR libstdc++/87855
 	* include/std/optional (_Optional_payload_base): New class template
 	for common code hoisted from _Optional_payload specializations. Use

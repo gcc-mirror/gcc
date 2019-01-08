@@ -22,6 +22,7 @@
 // Type printers only recognize the old std::string for now.
 #define _GLIBCXX_USE_CXX11_ABI 0
 
+#include <filesystem>
 #include <any>
 #include <optional>
 #include <variant>
@@ -40,6 +41,11 @@ using std::map;
 using std::unordered_set;
 using std::shared_ptr;
 using std::weak_ptr;
+
+struct X {
+  X(int) { }
+  X(const X&) { } // not trivially-copyable
+};
 
 int
 main()
@@ -84,11 +90,11 @@ main()
 // { dg-final { note-test v0 {std::variant<float, int, std::string_view> [index 0] = {0}} } }
   variant<float, int, string_view> v1{ 0.5f };
 // { dg-final { note-test v1 {std::variant<float, int, std::string_view> [index 0] = {0.5}} } }
-  variant<float, int, string_view> v2;
+  variant<float, X, string_view> v2;
   try {
     v2.emplace<1>(S());
   } catch (int) { }
-// { dg-final { note-test v2 {std::variant<float, int, std::string_view> [no contained value]} } }
+// { dg-final { note-test v2 {std::variant<float, X, std::string_view> [no contained value]} } }
   variant<float, int, string_view> v3{ 3 };
 // { dg-final { note-test v3 {std::variant<float, int, std::string_view> [index 1] = {3}} } }
   variant<float, int, string_view> v4{ str };
@@ -117,6 +123,13 @@ main()
   weak_ptr wq = q;
 // { dg-final { regexp-test q {std::shared_ptr.int \[2\]. \(use count 2, weak count 1\) = {get\(\) = 0x.*}} } }
 // { dg-final { regexp-test wq {std::weak_ptr.int \[2\]. \(use count 2, weak count 1\) = {get\(\) = 0x.*}} } }
+
+  std::filesystem::path p0;
+// { dg-final { note-test p0 {filesystem::path ""} } }
+  std::filesystem::path p1("filename");
+// { dg-final { note-test p1 {filesystem::path "filename"} } }
+  std::filesystem::path p2("/dir/.");
+// { dg-final { note-test p2 {filesystem::path "/dir/file" = {[root-directory] = "/", [1] = "dir", [2] = "."}} } }
 
   std::cout << "\n";
   return 0;			// Mark SPOT
