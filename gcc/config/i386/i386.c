@@ -19137,7 +19137,10 @@ ix86_avx_u128_mode_exit (void)
   if (reg && ix86_check_avx_upper_register (reg))
     return AVX_U128_DIRTY;
 
-  return AVX_U128_CLEAN;
+  /* Exit mode is set to AVX_U128_DIRTY if there are 256bit or 512bit
+     modes used in function arguments, otherwise return AVX_U128_CLEAN.
+   */
+  return ix86_avx_u128_mode_entry ();
 }
 
 /* Return a mode that ENTITY is assumed to be
