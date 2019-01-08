@@ -10,4 +10,4 @@ struct S
   ~S();
 };
 
-__thread S s __attribute__((unused));  // { dg-error "12:non-local variable .s. declared .__thread. has" }
+__thread S s __attribute__((unused));  // { dg-error "12:non-local variable .s. declared .__thread." }
