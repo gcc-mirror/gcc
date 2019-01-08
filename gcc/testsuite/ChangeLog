@@ -2,7 +2,10 @@
 
 	Backported from mainline
 	2018-11-19  Jakub Jelinek  <jakub@redhat.com>
- 
+
+	PR tree-optimization/88071
+	* gcc.dg/pr88071.c: New test.
+
 	PR c++/60994
 	* g++.dg/lookup/pr60994.C: New test.
 

@@ -6323,7 +6323,7 @@ vectorize_fold_left_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	  /* Remove the statement, so that we can use the same code paths
 	     as for statements that we've just created.  */
 	  gimple_stmt_iterator tmp_gsi = gsi_for_stmt (new_stmt);
-	  gsi_remove (&tmp_gsi, false);
+	  gsi_remove (&tmp_gsi, true);
 	}
 
       if (i == vec_num - 1)
