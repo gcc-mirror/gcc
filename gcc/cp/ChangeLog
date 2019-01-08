@@ -1,6 +1,13 @@
 2019-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88180
+	* parser.c (cp_parser_class_specifier_1): If
+	cp_parser_check_type_definition fails, skip default arguments, NSDMIs,
+	etc. like for erroneous template args.
+
 	2018-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/87934
