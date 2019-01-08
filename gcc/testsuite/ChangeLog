@@ -1,3 +1,9 @@
+2019-01-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/88747
+	* jit.dg/test-sum-of-squares.c (verify_code): Update expected vrp
+	dump to reflect r266077.
+
 2019-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/88701
