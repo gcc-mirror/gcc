@@ -2266,6 +2266,7 @@ cp_fold (tree x)
 	    {
 	      val = TREE_OPERAND (val, 0);
 	      STRIP_NOPS (val);
+	      val = maybe_constant_value (val);
 	      if (TREE_CODE (val) == INTEGER_CST)
 		return fold_offsetof (op0, TREE_TYPE (x));
 	    }
