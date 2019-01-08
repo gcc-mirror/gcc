@@ -1,3 +1,8 @@
+2019-01-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/88717
+	* gcc.target/i386/pr88717.c: New test.
+
 2019-01-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88548 - this accepted in static member functions.
