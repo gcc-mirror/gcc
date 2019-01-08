@@ -10824,14 +10824,12 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
       tree name = mangle_ref_init_variable (decl);
       DECL_NAME (var) = name;
       SET_DECL_ASSEMBLER_NAME (var, name);
-
-      var = pushdecl (var);
     }
   else
     /* Create a new cleanup level if necessary.  */
     maybe_push_cleanup_level (type);
 
-  return var;
+  return pushdecl (var);
 }
 
 /* EXPR is the initializer for a variable DECL of reference or

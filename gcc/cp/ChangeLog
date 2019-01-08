@@ -3,6 +3,10 @@
 	Backported from mainline
 	2018-12-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/86669
+	* call.c (make_temporary_var_for_ref_to_temp): Call pushdecl even for
+	automatic vars.
+
 	PR c++/87506
 	* constexpr.c (adjust_temp_type): Handle EMPTY_CLASS_EXPR.
 
