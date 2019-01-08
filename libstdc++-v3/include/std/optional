@@ -98,8 +98,155 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __throw_bad_optional_access()
   { _GLIBCXX_THROW_OR_ABORT(bad_optional_access()); }
 
+  // This class template manages construction/destruction of
+  // the contained value for a std::optional.
+  template <typename _Tp>
+    struct _Optional_payload_base
+    {
+      using _Stored_type = remove_const_t<_Tp>;
 
-  // Payload for optionals with non-trivial destructor.
+      _Optional_payload_base() = default;
+      ~_Optional_payload_base() = default;
+
+      template<typename... _Args>
+	constexpr
+	_Optional_payload_base(in_place_t __tag, _Args&&... __args)
+	: _M_payload(__tag, std::forward<_Args>(__args)...),
+	  _M_engaged(true)
+	{ }
+
+      template<typename _Up, typename... _Args>
+	constexpr
+	_Optional_payload_base(std::initializer_list<_Up> __il,
+			       _Args&&... __args)
+	: _M_payload(__il, std::forward<_Args>(__args)...),
+	  _M_engaged(true)
+	{ }
+
+      // Constructor used by _Optional_base copy constructor when the
+      // contained value is not trivially copy constructible.
+      constexpr
+      _Optional_payload_base(bool __engaged,
+			     const _Optional_payload_base& __other)
+      {
+	if (__other._M_engaged)
+	  this->_M_construct(__other._M_get());
+      }
+
+      // Constructor used by _Optional_base move constructor when the
+      // contained value is not trivially move constructible.
+      constexpr
+      _Optional_payload_base(bool __engaged,
+			     _Optional_payload_base&& __other)
+      {
+	if (__other._M_engaged)
+	  this->_M_construct(std::move(__other._M_get()));
+      }
+
+      // Copy constructor is only used to when the contained value is
+      // trivially copy constructible.
+      _Optional_payload_base(const _Optional_payload_base&) = default;
+
+      // Move constructor is only used to when the contained value is
+      // trivially copy constructible.
+      _Optional_payload_base(_Optional_payload_base&&) = default;
+
+      _Optional_payload_base&
+      operator=(const _Optional_payload_base&) = default;
+
+      _Optional_payload_base&
+      operator=(_Optional_payload_base&&) = default;
+
+      struct _Empty_byte { };
+
+      template<typename _Up, bool = is_trivially_destructible_v<_Up>>
+	union _Storage
+	{
+	  constexpr _Storage() noexcept : _M_empty() { }
+
+	  template<typename... _Args>
+	    constexpr
+	    _Storage(in_place_t, _Args&&... __args)
+	    : _M_value(std::forward<_Args>(__args)...)
+	    { }
+
+	  template<typename _Vp, typename... _Args>
+	    constexpr
+	    _Storage(std::initializer_list<_Vp> __il, _Args&&... __args)
+	    : _M_value(__il, std::forward<_Args>(__args)...)
+	    { }
+
+	  _Empty_byte _M_empty;
+          _Up _M_value;
+	};
+
+      template<typename _Up>
+	union _Storage<_Up, false>
+	{
+	  constexpr _Storage() noexcept : _M_empty() { }
+
+	  template<typename... _Args>
+	    constexpr
+	    _Storage(in_place_t, _Args&&... __args)
+	    : _M_value(std::forward<_Args>(__args)...)
+	    { }
+
+	  template<typename _Vp, typename... _Args>
+	    constexpr
+	    _Storage(std::initializer_list<_Vp> __il, _Args&&... __args)
+	    : _M_value(__il, std::forward<_Args>(__args)...)
+	    { }
+
+	  // User-provided destructor is needed when _Up has non-trivial dtor.
+	  ~_Storage() { }
+
+	  _Empty_byte _M_empty;
+          _Up _M_value;
+	};
+
+      _Storage<_Stored_type> _M_payload;
+
+      bool _M_engaged = false;
+
+      template<typename... _Args>
+        void
+        _M_construct(_Args&&... __args)
+        noexcept(is_nothrow_constructible_v<_Stored_type, _Args...>)
+        {
+          ::new ((void *) std::__addressof(this->_M_payload))
+            _Stored_type(std::forward<_Args>(__args)...);
+          this->_M_engaged = true;
+        }
+
+      constexpr void
+      _M_destroy() noexcept
+      {
+	_M_engaged = false;
+	_M_payload._M_value.~_Stored_type();
+      }
+
+      // The _M_get() operations have _M_engaged as a precondition.
+      // They exist to access the contained value with the appropriate
+      // const-qualification, because _M_payload has had the const removed.
+
+      constexpr _Tp&
+      _M_get() noexcept
+      { return this->_M_payload._M_value; }
+
+      constexpr const _Tp&
+      _M_get() const noexcept
+      { return this->_M_payload._M_value; }
+
+      // _M_reset is a 'safe' operation with no precondition.
+      constexpr void
+      _M_reset() noexcept
+      {
+	if (this->_M_engaged)
+	  _M_destroy();
+      }
+    };
+
+  // Class template that manages the payload for optionals.
   template <typename _Tp,
 	    bool /*_HasTrivialDestructor*/ =
 	      is_trivially_destructible_v<_Tp>,
@@ -109,248 +256,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    bool /*_HasTrivialMove */ =
 	      is_trivially_move_assignable_v<_Tp>
 	      && is_trivially_move_constructible_v<_Tp>>
-    struct _Optional_payload
-    {
-      constexpr _Optional_payload() noexcept : _M_empty() { }
+    struct _Optional_payload;
 
-      template <typename... _Args>
-	constexpr
-	_Optional_payload(in_place_t, _Args&&... __args)
-	: _M_payload(std::forward<_Args>(__args)...), _M_engaged(true) { }
-
-      template<typename _Up, typename... _Args>
-	constexpr
-	_Optional_payload(std::initializer_list<_Up> __il,
-			  _Args&&... __args)
-	: _M_payload(__il, std::forward<_Args>(__args)...),
-	  _M_engaged(true)
-	{ }
-
-      constexpr
-      _Optional_payload(bool __engaged, const _Optional_payload& __other)
-      : _Optional_payload(__other)
-      { }
-
-      constexpr
-      _Optional_payload(bool __engaged, _Optional_payload&& __other)
-      : _Optional_payload(std::move(__other))
-      { }
-
-      constexpr
-      _Optional_payload(const _Optional_payload& __other)
-      {
-	if (__other._M_engaged)
-	  this->_M_construct(__other._M_payload);
-      }
-
-      constexpr
-      _Optional_payload(_Optional_payload&& __other)
-      {
-	if (__other._M_engaged)
-	  this->_M_construct(std::move(__other._M_payload));
-      }
-
-      constexpr
-      _Optional_payload&
-      operator=(const _Optional_payload& __other)
-      {
-        if (this->_M_engaged && __other._M_engaged)
-          this->_M_get() = __other._M_get();
-        else
-	  {
-	    if (__other._M_engaged)
-	      this->_M_construct(__other._M_get());
-	    else
-	      this->_M_reset();
-	  }
-	return *this;
-      }
-
-      constexpr
-      _Optional_payload&
-      operator=(_Optional_payload&& __other)
-      noexcept(__and_v<is_nothrow_move_constructible<_Tp>,
-		       is_nothrow_move_assignable<_Tp>>)
-      {
-	if (this->_M_engaged && __other._M_engaged)
-	  this->_M_get() = std::move(__other._M_get());
-	else
-	  {
-	    if (__other._M_engaged)
-	      this->_M_construct(std::move(__other._M_get()));
-	    else
-	      this->_M_reset();
-	  }
-	return *this;
-      }
-
-      using _Stored_type = remove_const_t<_Tp>;
-
-      struct _Empty_byte { };
-
-      union {
-          _Empty_byte _M_empty;
-          _Stored_type _M_payload;
-      };
-      bool _M_engaged = false;
-
-      ~_Optional_payload()
-      {
-        if (_M_engaged)
-          _M_payload.~_Stored_type();
-      }
-
-      template<typename... _Args>
-        void
-        _M_construct(_Args&&... __args)
-        noexcept(is_nothrow_constructible_v<_Stored_type, _Args...>)
-        {
-          ::new ((void *) std::__addressof(this->_M_payload))
-            _Stored_type(std::forward<_Args>(__args)...);
-          this->_M_engaged = true;
-        }
-
-      // The _M_get operations have _M_engaged as a precondition.
-      constexpr _Tp&
-      _M_get() noexcept
-      { return this->_M_payload; }
-
-      constexpr const _Tp&
-      _M_get() const noexcept
-      { return this->_M_payload; }
-
-      // _M_reset is a 'safe' operation with no precondition.
-      constexpr
-      void
-      _M_reset() noexcept
-      {
-	if (this->_M_engaged)
-	  {
-	    this->_M_engaged = false;
-	    this->_M_payload.~_Stored_type();
-	  }
-      }
-    };
-
-  // Payload for potentially-constexpr optionals.
+  // Payload for potentially-constexpr optionals (trivial copy/move/destroy).
   template <typename _Tp>
     struct _Optional_payload<_Tp, true, true, true>
+    : _Optional_payload_base<_Tp>
     {
-      constexpr _Optional_payload() noexcept
-      : _M_empty(), _M_engaged(false) { }
+      using _Optional_payload_base<_Tp>::_Optional_payload_base;
 
-      template<typename... _Args>
-	constexpr
-	_Optional_payload(in_place_t, _Args&&... __args)
-	: _M_payload(std::forward<_Args>(__args)...), _M_engaged(true)
-	{ }
-
-      template<typename _Up, typename... _Args>
-	constexpr
-	_Optional_payload(std::initializer_list<_Up> __il,
-			  _Args&&... __args)
-	: _M_payload(__il, std::forward<_Args>(__args)...),
-	  _M_engaged(true)
-	{ }
-
-      template <class _Up> struct __ctor_tag {};
-
-      constexpr
-      _Optional_payload(__ctor_tag<bool>, const _Tp& __other)
-      : _M_payload(__other), _M_engaged(true)
-      { }
-
-      constexpr _Optional_payload(__ctor_tag<void>) noexcept
-      : _M_empty(), _M_engaged(false)
-      { }
-
-      constexpr _Optional_payload(__ctor_tag<bool>, _Tp&& __other)
-      : _M_payload(std::move(__other)), _M_engaged(true)
-      { }
-
-      constexpr
-      _Optional_payload(bool __engaged, const _Optional_payload& __other)
-      : _Optional_payload(__engaged ?
-			  _Optional_payload(__ctor_tag<bool>{},
-					    __other._M_payload) :
-			  _Optional_payload(__ctor_tag<void>{}))
-      { }
-
-      constexpr
-      _Optional_payload(bool __engaged, _Optional_payload&& __other)
-      : _Optional_payload(__engaged
-			  ? _Optional_payload(__ctor_tag<bool>{},
-					      std::move(__other._M_payload))
-			  : _Optional_payload(__ctor_tag<void>{}))
-      { }
-
-      using _Stored_type = remove_const_t<_Tp>;
-
-      struct _Empty_byte { };
-
-      union {
-	  _Empty_byte _M_empty;
-          _Stored_type _M_payload;
-      };
-      bool _M_engaged;
+      _Optional_payload() = default;
     };
 
-  // Payload for optionals with non-trivial copy assignment.
+  // Payload for optionals with non-trivial copy construction/assignment.
   template <typename _Tp>
     struct _Optional_payload<_Tp, true, false, true>
+    : _Optional_payload_base<_Tp>
     {
-      constexpr _Optional_payload() noexcept
-      : _M_empty(), _M_engaged(false) { }
+      using _Optional_payload_base<_Tp>::_Optional_payload_base;
 
-      template<typename... _Args>
-	constexpr
-	_Optional_payload(in_place_t, _Args&&... __args)
-	: _M_payload(std::forward<_Args>(__args)...), _M_engaged(true)
-	{ }
-
-      template<typename _Up, typename... _Args>
-	constexpr
-	_Optional_payload(std::initializer_list<_Up> __il,
-			  _Args&&... __args)
-	: _M_payload(__il, std::forward<_Args>(__args)...),
-	  _M_engaged(true)
-	{ }
-
-      template <class _Up> struct __ctor_tag {};
-
-      constexpr _Optional_payload(__ctor_tag<bool>, const _Tp& __other)
-      : _M_payload(__other),
-	_M_engaged(true)
-      { }
-
-      constexpr _Optional_payload(__ctor_tag<void>) noexcept
-      : _M_empty(), _M_engaged(false)
-      { }
-
-      constexpr _Optional_payload(__ctor_tag<bool>, _Tp&& __other)
-      : _M_payload(std::move(__other)),
-	_M_engaged(true)
-      { }
-
-      constexpr
-      _Optional_payload(bool __engaged, const _Optional_payload& __other)
-      : _Optional_payload(__engaged ?
-			  _Optional_payload(__ctor_tag<bool>{},
-					    __other._M_payload) :
-			  _Optional_payload(__ctor_tag<void>{}))
-      { }
-
-      constexpr
-      _Optional_payload(bool __engaged, _Optional_payload&& __other)
-      : _Optional_payload(__engaged
-			  ? _Optional_payload(__ctor_tag<bool>{},
-					      std::move(__other._M_payload))
-			  : _Optional_payload(__ctor_tag<void>{}))
-      { }
-
+      _Optional_payload() = default;
+      ~_Optional_payload() = default;
       _Optional_payload(const _Optional_payload&) = default;
       _Optional_payload(_Optional_payload&&) = default;
+      _Optional_payload& operator=(_Optional_payload&&) = default;
 
+      // Non-trivial copy assignment.
       constexpr
       _Optional_payload&
       operator=(const _Optional_payload& __other)
@@ -366,113 +297,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 	return *this;
       }
-
-      _Optional_payload&
-      operator=(_Optional_payload&& __other) = default;
-
-      using _Stored_type = remove_const_t<_Tp>;
-
-      struct _Empty_byte { };
-
-      union {
-          _Empty_byte _M_empty;
-          _Stored_type _M_payload;
-      };
-      bool _M_engaged;
-
-      template<typename... _Args>
-        void
-        _M_construct(_Args&&... __args)
-        noexcept(is_nothrow_constructible_v<_Stored_type, _Args...>)
-        {
-          ::new ((void *) std::__addressof(this->_M_payload))
-            _Stored_type(std::forward<_Args>(__args)...);
-          this->_M_engaged = true;
-        }
-
-      // The _M_get operations have _M_engaged as a precondition.
-      constexpr _Tp&
-      _M_get() noexcept
-      { return this->_M_payload; }
-
-      constexpr const _Tp&
-      _M_get() const noexcept
-      { return this->_M_payload; }
-
-      // _M_reset is a 'safe' operation with no precondition.
-      constexpr
-      void
-      _M_reset() noexcept
-      {
-	if (this->_M_engaged)
-	  {
-	    this->_M_engaged = false;
-	    this->_M_payload.~_Stored_type();
-	  }
-      }
     };
 
-  // Payload for optionals with non-trivial move assignment.
+  // Payload for optionals with non-trivial move construction/assignment.
   template <typename _Tp>
     struct _Optional_payload<_Tp, true, true, false>
+    : _Optional_payload_base<_Tp>
     {
-      constexpr _Optional_payload() noexcept
-      : _M_empty(), _M_engaged(false) { }
+      using _Optional_payload_base<_Tp>::_Optional_payload_base;
 
-      template<typename... _Args>
-	constexpr
-	_Optional_payload(in_place_t, _Args&&... __args)
-	: _M_payload(std::forward<_Args>(__args)...),
-	  _M_engaged(true)
-	{ }
-
-      template<typename _Up, typename... _Args>
-	constexpr
-	_Optional_payload(std::initializer_list<_Up> __il,
-			  _Args&&... __args)
-	: _M_payload(__il, std::forward<_Args>(__args)...),
-	  _M_engaged(true)
-	{ }
-
-      template <class _Up> struct __ctor_tag {};
-
-      constexpr
-      _Optional_payload(__ctor_tag<bool>, const _Tp& __other)
-      : _M_payload(__other),
-	_M_engaged(true)
-      { }
-
-      constexpr _Optional_payload(__ctor_tag<void>) noexcept
-      : _M_empty(), _M_engaged(false)
-      { }
-
-      constexpr _Optional_payload(__ctor_tag<bool>, _Tp&& __other)
-      : _M_payload(std::move(__other)),
-	_M_engaged(true)
-      { }
-
-      constexpr
-      _Optional_payload(bool __engaged, const _Optional_payload& __other)
-      : _Optional_payload(__engaged ?
-			  _Optional_payload(__ctor_tag<bool>{},
-					    __other._M_payload) :
-			  _Optional_payload(__ctor_tag<void>{}))
-      { }
-
-      constexpr
-      _Optional_payload(bool __engaged, _Optional_payload&& __other)
-      : _Optional_payload(__engaged
-			  ? _Optional_payload(__ctor_tag<bool>{},
-					      std::move(__other._M_payload))
-			  : _Optional_payload(__ctor_tag<void>{}))
-      { }
-
+      _Optional_payload() = default;
+      ~_Optional_payload() = default;
       _Optional_payload(const _Optional_payload&) = default;
       _Optional_payload(_Optional_payload&&) = default;
+      _Optional_payload& operator=(const _Optional_payload&) = default;
 
-      _Optional_payload&
-      operator=(const _Optional_payload& __other) = default;
-
+      // Non-trivial move assignment.
       constexpr
       _Optional_payload&
       operator=(_Optional_payload&& __other)
@@ -489,107 +329,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      this->_M_reset();
 	  }
 	return *this;
-      }
-
-      using _Stored_type = remove_const_t<_Tp>;
-
-      struct _Empty_byte { };
-
-      union {
-          _Empty_byte _M_empty;
-          _Stored_type _M_payload;
-      };
-      bool _M_engaged;
-
-      template<typename... _Args>
-        void
-        _M_construct(_Args&&... __args)
-        noexcept(is_nothrow_constructible_v<_Stored_type, _Args...>)
-        {
-          ::new ((void *) std::__addressof(this->_M_payload))
-            _Stored_type(std::forward<_Args>(__args)...);
-          this->_M_engaged = true;
-        }
-
-      // The _M_get operations have _M_engaged as a precondition.
-      constexpr _Tp&
-      _M_get() noexcept
-      { return this->_M_payload; }
-
-      constexpr const _Tp&
-      _M_get() const noexcept
-      { return this->_M_payload; }
-
-      // _M_reset is a 'safe' operation with no precondition.
-      constexpr
-      void
-      _M_reset() noexcept
-      {
-	if (this->_M_engaged)
-	  {
-	    this->_M_engaged = false;
-	    this->_M_payload.~_Stored_type();
-	  }
       }
     };
 
   // Payload for optionals with non-trivial copy and move assignment.
   template <typename _Tp>
     struct _Optional_payload<_Tp, true, false, false>
+    : _Optional_payload_base<_Tp>
     {
-      constexpr _Optional_payload() noexcept
-      : _M_empty(), _M_engaged(false) {}
+      using _Optional_payload_base<_Tp>::_Optional_payload_base;
 
-      template<typename... _Args>
-	constexpr
-	_Optional_payload(in_place_t, _Args&&... __args)
-	: _M_payload(std::forward<_Args>(__args)...),
-	  _M_engaged(true)
-	{ }
-
-      template<typename _Up, typename... _Args>
-	constexpr
-	_Optional_payload(std::initializer_list<_Up> __il,
-			  _Args&&... __args)
-	: _M_payload(__il, std::forward<_Args>(__args)...),
-	  _M_engaged(true)
-	{ }
-
-      template <class _Up> struct __ctor_tag {};
-
-      constexpr _Optional_payload(__ctor_tag<bool>, const _Tp& __other)
-      : _M_payload(__other),
-	    _M_engaged(true)
-      { }
-
-      constexpr _Optional_payload(__ctor_tag<void>) noexcept
-      : _M_empty(), _M_engaged(false)
-      { }
-
-      constexpr _Optional_payload(__ctor_tag<bool>, _Tp&& __other)
-      : _M_payload(std::move(__other)),
-	_M_engaged(true)
-      { }
-
-      constexpr
-      _Optional_payload(bool __engaged, const _Optional_payload& __other)
-      : _Optional_payload(__engaged ?
-			  _Optional_payload(__ctor_tag<bool>{},
-					    __other._M_payload) :
-			  _Optional_payload(__ctor_tag<void>{}))
-      { }
-
-      constexpr
-      _Optional_payload(bool __engaged, _Optional_payload&& __other)
-      : _Optional_payload(__engaged
-			  ? _Optional_payload(__ctor_tag<bool>{},
-					      std::move(__other._M_payload))
-			  : _Optional_payload(__ctor_tag<void>{}))
-      { }
-
+      _Optional_payload() = default;
+      ~_Optional_payload() = default;
       _Optional_payload(const _Optional_payload&) = default;
       _Optional_payload(_Optional_payload&&) = default;
 
+      // Non-trivial copy
       constexpr
       _Optional_payload&
       operator=(const _Optional_payload& __other)
@@ -606,6 +361,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+      // Non-trivial move assignment.
       constexpr
       _Optional_payload&
       operator=(_Optional_payload&& __other)
@@ -623,56 +379,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 	return *this;
       }
-
-      using _Stored_type = remove_const_t<_Tp>;
-
-      struct _Empty_byte { };
-
-      union {
-          _Empty_byte _M_empty;
-          _Stored_type _M_payload;
-      };
-      bool _M_engaged;
-
-      template<typename... _Args>
-        constexpr
-        void
-        _M_construct(_Args&&... __args)
-        noexcept(is_nothrow_constructible_v<_Stored_type, _Args...>)
-        {
-          ::new ((void *) std::__addressof(this->_M_payload))
-            _Stored_type(std::forward<_Args>(__args)...);
-          this->_M_engaged = true;
-        }
-
-      // The _M_get operations have _M_engaged as a precondition.
-      constexpr _Tp&
-      _M_get() noexcept
-      { return this->_M_payload; }
-
-      constexpr const _Tp&
-      _M_get() const noexcept
-      { return this->_M_payload; }
-
-      // _M_reset is a 'safe' operation with no precondition.
-      constexpr
-      void
-      _M_reset() noexcept
-      {
-	if (this->_M_engaged)
-	  {
-	    this->_M_engaged = false;
-	    this->_M_payload.~_Stored_type();
-	  }
-      }
     };
 
+  // Payload for optionals with non-trivial destructors.
+  template <typename _Tp, bool _Copy, bool _Move>
+    struct _Optional_payload<_Tp, false, _Copy, _Move>
+    : _Optional_payload<_Tp, true, false, false>
+    {
+      // Base class implements all the constructors and assignment operators:
+      using _Optional_payload<_Tp, true, false, false>::_Optional_payload;
+      _Optional_payload() = default;
+      _Optional_payload(const _Optional_payload&) = default;
+      _Optional_payload(_Optional_payload&&) = default;
+      _Optional_payload& operator=(const _Optional_payload&) = default;
+      _Optional_payload& operator=(_Optional_payload&&) = default;
+
+      // Destructor needs to destroy the contained value:
+      ~_Optional_payload() { this->_M_reset(); }
+    };
+
+  // Common base class for _Optional_base<T> to avoid repeating these
+  // member functions in each specialization.
   template<typename _Tp, typename _Dp>
     class _Optional_base_impl
     {
     protected:
       using _Stored_type = remove_const_t<_Tp>;
-      
+
       // The _M_construct operation has !_M_engaged as a precondition
       // while _M_destruct has _M_engaged as a precondition.
       template<typename... _Args>
@@ -685,42 +418,59 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _Stored_type(std::forward<_Args>(__args)...);
 	  static_cast<_Dp*>(this)->_M_payload._M_engaged = true;
 	}
-      
+
       void
       _M_destruct() noexcept
-      {
-	static_cast<_Dp*>(this)->_M_payload._M_engaged = false;
-	static_cast<_Dp*>(this)->_M_payload._M_payload.~_Stored_type();
-      }
-      
+      { static_cast<_Dp*>(this)->_M_payload._M_destroy(); }
+
       // _M_reset is a 'safe' operation with no precondition.
-      constexpr
-      void
+      constexpr void
       _M_reset() noexcept
+      { static_cast<_Dp*>(this)->_M_payload._M_reset(); }
+
+      constexpr bool _M_is_engaged() const noexcept
+      { return static_cast<const _Dp*>(this)->_M_payload._M_engaged; }
+
+      // The _M_get operations have _M_engaged as a precondition.
+      constexpr _Tp&
+      _M_get() noexcept
       {
-	if (static_cast<_Dp*>(this)->_M_payload._M_engaged)
-	  static_cast<_Dp*>(this)->_M_destruct();
+	__glibcxx_assert(this->_M_is_engaged());
+	return static_cast<_Dp*>(this)->_M_payload._M_get();
       }
-  };
+
+      constexpr const _Tp&
+      _M_get() const noexcept
+      {
+	__glibcxx_assert(this->_M_is_engaged());
+	return static_cast<const _Dp*>(this)->_M_payload._M_get();
+      }
+    };
 
   /**
-    * @brief Class template that takes care of copy/move constructors
-    of optional
+    * @brief Class template that provides copy/move constructors of optional.
     *
     * Such a separate base class template is necessary in order to
     * conditionally make copy/move constructors trivial.
+    *
+    * When the contained value is trivally copy/move constructible,
+    * the copy/move constructors of _Optional_base will invoke the
+    * trivial copy/move constructor of _Optional_payload. Otherwise,
+    * they will invoke _Optional_payload(bool, const _Optional_payload&)
+    * or _Optional_payload(bool, _Optional_payload&&) to initialize
+    * the contained value, if copying/moving an engaged optional.
+    *
+    * Whether the other special members are trivial is determined by the
+    * _Optional_payload<_Tp> specialization used for the _M_payload member.
+    *
     * @see optional, _Enable_special_members
     */
   template<typename _Tp,
 	   bool = is_trivially_copy_constructible_v<_Tp>,
 	   bool = is_trivially_move_constructible_v<_Tp>>
-    class _Optional_base
-    // protected inheritance because optional needs to reach that base too
-      : protected _Optional_base_impl<_Tp, _Optional_base<_Tp>>
+    struct _Optional_base
+      : _Optional_base_impl<_Tp, _Optional_base<_Tp>>
     {
-      friend class _Optional_base_impl<_Tp, _Optional_base<_Tp>>;
-
-    public:
       // Constructors for disengaged optionals.
       constexpr _Optional_base() = default;
 
@@ -758,37 +508,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Optional_base& operator=(const _Optional_base&) = default;
       _Optional_base& operator=(_Optional_base&&) = default;
 
-    protected:
-
-      constexpr bool _M_is_engaged() const noexcept
-      { return this->_M_payload._M_engaged; }
-
-      // The _M_get operations have _M_engaged as a precondition.
-      constexpr _Tp&
-	_M_get() noexcept
-      {
-	__glibcxx_assert(this->_M_is_engaged());
-	return this->_M_payload._M_payload;
-      }
-
-      constexpr const _Tp&
-	_M_get() const noexcept
-      {
-	__glibcxx_assert(this->_M_is_engaged());
-	return this->_M_payload._M_payload;
-      }
-
-    private:
       _Optional_payload<_Tp> _M_payload;
     };
 
   template<typename _Tp>
-    class _Optional_base<_Tp, false, true>
-      : protected _Optional_base_impl<_Tp, _Optional_base<_Tp>>
+    struct _Optional_base<_Tp, false, true>
+      : _Optional_base_impl<_Tp, _Optional_base<_Tp>>
     {
-      friend class _Optional_base_impl<_Tp, _Optional_base<_Tp>>;
-    public:
-
       // Constructors for disengaged optionals.
       constexpr _Optional_base() = default;
 
@@ -822,37 +548,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Optional_base& operator=(const _Optional_base&) = default;
       _Optional_base& operator=(_Optional_base&&) = default;
 
-    protected:
-
-      constexpr bool _M_is_engaged() const noexcept
-      { return this->_M_payload._M_engaged; }
-
-      // The _M_get operations have _M_engaged as a precondition.
-      constexpr _Tp&
-	_M_get() noexcept
-      {
-	__glibcxx_assert(this->_M_is_engaged());
-	return this->_M_payload._M_payload;
-      }
-
-      constexpr const _Tp&
-	_M_get() const noexcept
-      {
-	__glibcxx_assert(this->_M_is_engaged());
-	return this->_M_payload._M_payload;
-      }
-
-    private:
       _Optional_payload<_Tp> _M_payload;
     };
 
   template<typename _Tp>
-    class _Optional_base<_Tp, true, false>
-      : protected _Optional_base_impl<_Tp, _Optional_base<_Tp>>
+    struct _Optional_base<_Tp, true, false>
+      : _Optional_base_impl<_Tp, _Optional_base<_Tp>>
     {
-      friend class _Optional_base_impl<_Tp, _Optional_base<_Tp>>;
-    public:
-
       // Constructors for disengaged optionals.
       constexpr _Optional_base() = default;
 
@@ -887,37 +589,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Optional_base& operator=(const _Optional_base&) = default;
       _Optional_base& operator=(_Optional_base&&) = default;
 
-    protected:
-
-      constexpr bool _M_is_engaged() const noexcept
-      { return this->_M_payload._M_engaged; }
-
-      // The _M_get operations have _M_engaged as a precondition.
-      constexpr _Tp&
-	_M_get() noexcept
-      {
-	__glibcxx_assert(this->_M_is_engaged());
-	return this->_M_payload._M_payload;
-      }
-
-      constexpr const _Tp&
-	_M_get() const noexcept
-      {
-	__glibcxx_assert(this->_M_is_engaged());
-	return this->_M_payload._M_payload;
-      }
-
-    private:
       _Optional_payload<_Tp> _M_payload;
     };
 
   template<typename _Tp>
-    class _Optional_base<_Tp, true, true>
-      : protected _Optional_base_impl<_Tp, _Optional_base<_Tp>>
+    struct _Optional_base<_Tp, true, true>
+      : _Optional_base_impl<_Tp, _Optional_base<_Tp>>
     {
-      friend class _Optional_base_impl<_Tp, _Optional_base<_Tp>>;
-    public:
-
       // Constructors for disengaged optionals.
       constexpr _Optional_base() = default;
 
@@ -947,27 +625,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Optional_base& operator=(const _Optional_base&) = default;
       _Optional_base& operator=(_Optional_base&&) = default;
 
-    protected:
-
-      constexpr bool _M_is_engaged() const noexcept
-      { return this->_M_payload._M_engaged; }
-
-      // The _M_get operations have _M_engaged as a precondition.
-      constexpr _Tp&
-	_M_get() noexcept
-      {
-	__glibcxx_assert(this->_M_is_engaged());
-	return this->_M_payload._M_payload;
-      }
-
-      constexpr const _Tp&
-	_M_get() const noexcept
-      {
-	__glibcxx_assert(this->_M_is_engaged());
-	return this->_M_payload._M_payload;
-      }
-
-    private:
       _Optional_payload<_Tp> _M_payload;
     };
 
@@ -1262,36 +919,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       value() const&
       {
 	return this->_M_is_engaged()
-	  ?  this->_M_get()
-	  : (__throw_bad_optional_access(),
-	     this->_M_get());
+	  ? this->_M_get()
+	  : (__throw_bad_optional_access(), this->_M_get());
       }
 
       constexpr _Tp&
       value()&
       {
 	return this->_M_is_engaged()
-	  ?  this->_M_get()
-	  : (__throw_bad_optional_access(),
-	     this->_M_get());
+	  ? this->_M_get()
+	  : (__throw_bad_optional_access(), this->_M_get());
       }
 
       constexpr _Tp&&
       value()&&
       {
 	return this->_M_is_engaged()
-	  ?  std::move(this->_M_get())
-	  : (__throw_bad_optional_access(),
-	     std::move(this->_M_get()));
+	  ? std::move(this->_M_get())
+	  : (__throw_bad_optional_access(), std::move(this->_M_get()));
       }
 
       constexpr const _Tp&&
       value() const&&
       {
 	return this->_M_is_engaged()
-	  ?  std::move(this->_M_get())
-	  : (__throw_bad_optional_access(),
-	     std::move(this->_M_get()));
+	  ? std::move(this->_M_get())
+	  : (__throw_bad_optional_access(), std::move(this->_M_get()));
       }
 
       template<typename _Up>
@@ -1302,8 +955,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  static_assert(is_convertible_v<_Up&&, _Tp>);
 
 	  return this->_M_is_engaged()
-	    ? this->_M_get()
-	    : static_cast<_Tp>(std::forward<_Up>(__u));
+	    ? this->_M_get() : static_cast<_Tp>(std::forward<_Up>(__u));
 	}
 
       template<typename _Up>

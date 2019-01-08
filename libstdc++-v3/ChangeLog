@@ -1,5 +1,32 @@
 2019-01-08  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/87855
+	* include/std/optional (_Optional_payload_base): New class template
+	for common code hoisted from _Optional_payload specializations. Use
+	a template for the union, to allow a partial specialization for
+	types with non-trivial destructors. Add constructors for in-place
+	initialization to the union.
+	(_Optional_payload(bool, const _Optional_payload&)): Use _M_construct
+	to perform non-trivial copy construction, instead of relying on
+	non-standard copy elision in a delegating constructor.
+	(_Optional_payload(bool, _Optional_payload&&)): Likewise for
+	non-trivial move construction.
+	(_Optional_payload): Derive from _Optional_payload_base and use it
+	for everything except the non-trivial assignment operators, which are
+	defined as needed.
+	(_Optional_payload<false, C, M>): Derive from the specialization
+	_Optional_payload<true, false, false> and add a destructor.
+	(_Optional_base_impl::_M_destruct, _Optional_base_impl::_M_reset):
+	Forward to corresponding members of _Optional_payload.
+	(_Optional_base_impl::_M_is_engaged, _Optional_base_impl::_M_get):
+	Hoist common members from _Optional_base.
+	(_Optional_base): Make all members and base class public.
+	(_Optional_base::_M_get, _Optional_base::_M_is_engaged): Move to
+	_Optional_base_impl.
+	* python/libstdcxx/v6/printers.py (StdExpOptionalPrinter): Add
+	support for new std::optional layout.
+	* testsuite/libstdc++-prettyprinters/compat.cc: New test.
+
 	PR libstdc++/88066
 	* include/bits/locale_conv.h: Use <> for includes not "".
 	* include/ext/random: Likewise.
