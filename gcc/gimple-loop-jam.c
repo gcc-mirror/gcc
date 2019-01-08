@@ -455,7 +455,7 @@ tree_loop_unroll_and_jam (void)
 	    fprintf (dump_file, "Cannot analyze data dependencies\n");
 	  free_data_refs (datarefs);
 	  free_dependence_relations (dependences);
-	  return false;
+	  continue;
 	}
       if (!datarefs.length ())
 	continue;

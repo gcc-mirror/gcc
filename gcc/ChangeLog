@@ -1,6 +1,12 @@
 2019-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/87360
+	* gimple-loop-jam.c (tree_loop_unroll_and_jam): On failure to analyze
+	data dependencies, don't return false, just continue.
+
 	2018-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88234
