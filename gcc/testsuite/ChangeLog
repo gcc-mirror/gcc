@@ -3,6 +3,9 @@
 	PR c++/88538 - braced-init-list in template-argument-list.
 	* g++.dg/cpp2a/nontype-class11.C: New test.
 
+	PR c++/88744
+	* g++.dg/cpp2a/nontype-class12.C: New test.
+
 2019-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88457
