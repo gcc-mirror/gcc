@@ -1,6 +1,11 @@
 2019-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88122
+	* g++.dg/cpp0x/implicit15.C: New test.
+
 	2018-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/87895
