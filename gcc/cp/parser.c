@@ -17026,6 +17026,14 @@ cp_parser_template_argument (cp_parser* parser)
     argument = cp_parser_constant_expression (parser);
   else
     {
+      /* In C++20, we can encounter a braced-init-list.  */
+      if (cxx_dialect >= cxx2a
+	  && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+	{
+	  bool expr_non_constant_p;
+	  return cp_parser_braced_list (parser, &expr_non_constant_p);
+	}
+
       /* With C++17 generalized non-type template arguments we need to handle
 	 lvalue constant expressions, too.  */
       argument = cp_parser_assignment_expression (parser);

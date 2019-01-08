@@ -1,5 +1,9 @@
 2019-01-08  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/88538 - braced-init-list in template-argument-list.
+	* parser.c (cp_parser_template_argument): Handle braced-init-list when
+	in C++20.
+
 	PR c++/88548 - this accepted in static member functions.
 	* parser.c (cp_debug_parser): Adjust printing of
 	local_variables_forbidden_p.
