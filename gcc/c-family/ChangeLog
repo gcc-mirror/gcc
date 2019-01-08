@@ -1,3 +1,14 @@
+2019-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2018-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88215
+	* c-ubsan.c: Include langhooks.h.
+	(ubsan_instrument_division): Change gcc_assert that main variants
+	of op0 and op1 types are equal to gcc_checking_assert that the
+	main variants are compatible types.
+
 2018-08-17  Martin Liska  <mliska@suse.cz>
 
         PR other/86992
