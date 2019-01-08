@@ -9,4 +9,4 @@ import baz; // { dg-error "must be within preamble" }
 
 int i;
 
-// { dg-warning "not exporting" "" { target *-*-* } 0 }
+// { dg-warning "not writing module" "" { target *-*-* } 0 }

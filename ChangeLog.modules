@@ -1,6 +1,18 @@
 2019-01-08  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (bytes_out::set_crc): Only set if crc_ptr != 0.
+	(module_state::write_readme): Update for partitions.
+	(module_state::{read,write}_config): Write exported_p for
+	partitions.
+	(finish_module_parse): Write partitions.
+	gcc/testsuite/
+	* g++.dg/modules/atom-decl-2.C: Adjust.
+	* g++.dg/modules/atom-pragma-3.C: Adjust.
+	* g++.dg/modules/mod-decl-1.C: Adjust.
+	* g++.dg/modules/mod-decl-3.C: Adjust.
+
+	gcc/cp/
 	* module.cc (module_state::direct_import): Add LAZY parm, use it
 	rather than legacy_p.  Never expect a has_bmi file.
 	(declare_module): Always add to pending imports.

@@ -686,22 +686,24 @@ unsigned bytes_out::lengths[4];
 int bytes_out::is_set = -1;
 
 /* If CRC_PTR non-null, set the CRC of the buffer.  Mix the CRC into
-   that pointed to by CRC_PTR.  Otherwise store zero.  */
+   that pointed to by CRC_PTR.  */
 
 void
 bytes_out::set_crc (unsigned *crc_ptr)
 {
-  gcc_checking_assert (pos >= 4);
-  unsigned crc = 0;
   if (crc_ptr)
     {
-      crc = calc_crc (pos);
+      gcc_checking_assert (pos >= 4);
+
+      unsigned crc = calc_crc (pos);
       unsigned accum = *crc_ptr;
       /* Only mix the existing *CRC_PTR if it is non-zero.  */
       accum = accum ? crc32_unsigned (accum, crc) : crc;
       *crc_ptr = accum;
+
+      /* Buffer will be sufficiently aligned.  */
+      *(unsigned *)buffer = crc;
     }
-  *(unsigned *)buffer = crc;
 }
 
 /* Finish a set of bools.  */
@@ -8723,29 +8725,35 @@ module_state::write_readme (elf_out *to, const char *options, cpp_hashnode *node
 
   readme.begin (false);
 
-  readme.printf ("GNU C++ %sModule", is_legacy () ? "legacy "  : "");
+  readme.printf ("GNU C++ %smodule%s%s",
+		 is_legacy () ? "legacy " : is_partition () ? "" : "primary ",
+		 is_legacy () ? ""
+		 : exported_p ? " interface" : " implementation",
+		 is_partition () ? " partition" : "");
+
   /* Compiler's version.  */
-  readme.printf ("compiler:%s", version_string);
+  readme.printf ("compiler: %s", version_string);
 
   /* Module format version.  */
   verstr_t string;
   version2string (get_version (), string);
-  readme.printf ("version:%s", string);
+  readme.printf ("version: %s", string);
 
   /* Module information.  */
-  readme.printf ("module:%s", fullname);
-  readme.printf ("source:%s", main_input_filename);
+  readme.printf ("module: %s", fullname);
+  readme.printf ("source: %s", main_input_filename);
 
-  readme.printf ("options:%s", options);
+  if (options[0])
+    readme.printf ("options: %s", options);
   if (node)
-    readme.printf ("macro:%s", NODE_NAME (node));
+    readme.printf ("macro: %s", NODE_NAME (node));
 
   /* Its direct imports.  */
   for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
     {
       module_state *state = (*modules)[ix];
       if (state->is_direct ())
-	readme.printf ("import:%s %s", state->fullname, state->filename);
+	readme.printf ("import: %s %s", state->fullname, state->filename);
     }
 
   readme.end (to, to->name (MOD_SNAME_PFX ".README"), NULL);
@@ -11920,6 +11928,9 @@ module_state::write_config (elf_out *to, module_state_config &config,
   cfg.u (fixed_trees->length ());
   cfg.u32 (global_crc);
 
+  if (is_partition ())
+    cfg.u (exported_p);
+
   cfg.u (modules->length ());
 
   dump () && dump ("Declaration sections are [%u,%u)",
@@ -12110,6 +12121,9 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
 	goto done;
       }
   }
+
+  if (is_partition ())
+    cfg.u (); // FIXME:Do something with this
 
   /* Allocate the REMAP vector.  */
   {
@@ -13391,13 +13405,13 @@ finish_module_parse (cpp_reader *reader)
   if (modules_p ())
     state = (*modules)[MODULE_PURVIEW];
 
-  if (!state || !state->exported_p)
+  if (!state || state->mod != MODULE_PURVIEW)
     {
       if (flag_module_only)
 	warning (0, "%<-fmodule-only%> used for non-interface");
     }
   else if (errorcount)
-    warning_at (state->loc, 0, "not exporting module due to errors");
+    warning_at (state->loc, 0, "not writing module due to errors");
   else
     {
       int fd = -1;
@@ -13455,7 +13469,7 @@ finish_module_parse (cpp_reader *reader)
       if (to.begin ())
 	state->write (&to, reader);
       if (!to.end ())
-	error_at (state->loc, "failed to export module: %s",
+	error_at (state->loc, "failed to write module: %s",
 		  to.get_error (state->filename));
 
       dump.pop (n);
@@ -13464,7 +13478,7 @@ finish_module_parse (cpp_reader *reader)
       ggc_collect ();
     }
 
-  if (state && state->exported_p && state->filename && errorcount)
+  if (state && state->mod == MODULE_PURVIEW && state->filename && errorcount)
     unlink (state->filename);
 
   /* We're done with the macro tables now.  */

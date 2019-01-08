@@ -20,4 +20,4 @@ namespace Bink
   import ben; // { dg-error "does not name" }
 }
 
-// { dg-warning "not exporting module" "" { target *-*-* } 0 }
+// { dg-warning "not writing module" "" { target *-*-* } 0 }
