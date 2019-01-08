@@ -1,3 +1,8 @@
+2019-01-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88538 - braced-init-list in template-argument-list.
+	* g++.dg/cpp2a/nontype-class11.C: New test.
+
 2019-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88457
