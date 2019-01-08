@@ -3,6 +3,12 @@
 	Backported from mainline
 	2018-12-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/85594
+	PR middle-end/88553
+	* omp-expand.c (extract_omp_for_update_vars): Regimplify the condition
+	if needed.
+	(expand_omp_for_generic): Don't clobber t temporary for ordered loops.
+
 	PR target/88522
 	* config/i386/sse.md (*avx512pf_gatherpf<mode>sf_mask,
 	*avx512pf_gatherpf<mode>df_mask, *avx512pf_scatterpf<mode>sf_mask,
