@@ -16097,11 +16097,12 @@ finish_function (bool inline_p)
 	{
 	  tree valtype = TREE_TYPE (DECL_RESULT (fndecl));
 	  if (TREE_CODE (valtype) == REFERENCE_TYPE
+	      && current_class_ref
 	      && same_type_ignoring_top_level_qualifiers_p
-		  (TREE_TYPE (valtype), TREE_TYPE (current_class_ref)))
-	    if (global_dc->option_enabled (OPT_Wreturn_type,
-					   global_dc->option_state))
-	      add_return_star_this_fixit (&richloc, fndecl);
+		  (TREE_TYPE (valtype), TREE_TYPE (current_class_ref))
+	      && global_dc->option_enabled (OPT_Wreturn_type,
+					    global_dc->option_state))
+	    add_return_star_this_fixit (&richloc, fndecl);
 	}
       warning_at (&richloc, OPT_Wreturn_type,
 		  "no return statement in function returning non-void");

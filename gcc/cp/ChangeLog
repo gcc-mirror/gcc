@@ -1,3 +1,11 @@
+2019-01-08  Jonathan Wakely  <jwakely@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88554
+	* decl.c (finish_function): For -Wreturn-type don't add a return *this;
+	fixit hint if current_class_ref is NULL.  Use a single if instead of
+	two nested ones.
+
 2019-01-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (start_decl): Improve two error_at locations.
