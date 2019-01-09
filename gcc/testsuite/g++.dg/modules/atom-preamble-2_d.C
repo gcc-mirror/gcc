@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules-ts" }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module" }
 import kevin;
 
 #if 1
@@ -10,3 +10,6 @@ int i;
 #endif
 
 int j; // end here
+
+// No duplicate mapper request.
+// { dg-final { scan-lang-dump "Mapper request:\\+IMPORT kevin\n-\n" module } }

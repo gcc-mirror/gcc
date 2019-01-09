@@ -2990,7 +2990,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  private:
   void write_partitions (elf_out *to, unsigned, unsigned *crc_ptr);
-  bool read_partitions (cpp_reader *, line_maps *);
+  bool read_partitions (unsigned);
 
  private:
   void write_config (elf_out *to, struct module_state_config &, unsigned crc);
@@ -8864,9 +8864,8 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
       if (lmaps)
 	{
 	  /* A direct import, maybe load it.  */
-	  size_t flen;
 	  location_t floc = read_location (sec);
-	  const char *fname = sec.str (&flen);
+	  const char *fname = sec.str (NULL);
 	  exported = sec.u ();
 
 	  if (sec.get_overrun ())
@@ -8883,10 +8882,23 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	      unsigned n = dump.push (imp);
 	      imp->maybe_create_loc ();
 	      imp->crc = crc;
+
 	      if (imp->filename)
 		fname = NULL;
 	      else if (!fname[0])
 		fname = module_mapper::import_export (imp, false);
+
+	      if (imp->mod == MODULE_NONE)
+		{
+		  /* Must import the partition now, as inter-module
+		     references from the partition we must be in
+		     require it.  The deduping machinery better be
+		     working ...  */
+		  dump () && dump ("Importing elided partition %M", imp);
+		  gcc_assert (imp->is_partition () && is_partition ());
+		  imp->mod = MODULE_UNKNOWN;
+		}
+
 	      if (!imp->do_import (fname, reader))
 		imp = NULL;
 	      dump.pop (n);
@@ -8976,28 +8988,76 @@ module_state::read_imports (cpp_reader *reader, line_maps *lmaps)
 void
 module_state::write_partitions (elf_out *to, unsigned count, unsigned *crc_ptr)
 {
-  dump () && dump ("Writing partitions");
+  dump () && dump ("Writing %u elided partitions", count);
   dump.indent ();
 
   bytes_out sec (to);
   sec.begin ();
 
-  sec.u (count);
   for (unsigned ix = MODULE_IMPORT_BASE; ix != modules->length (); ix++)
     {
       module_state *imp = (*modules)[ix];
       if (imp->is_partition ())
 	{
-	  dump () && dump ("Writing partition %M (crc=%x)", imp, imp->crc);
+	  dump () && dump ("Writing elided partition %M (crc=%x)",
+			   imp, imp->crc);
 	  sec.str (imp->maybe_partition_name ());
 	  sec.u32 (imp->crc);
 	  write_location (sec,
 			  imp->is_direct () ? imp->from_loc : UNKNOWN_LOCATION);
+	  sec.str (imp->filename);
+	  sec.u (imp->exported_p);
 	}
     }
 
   sec.end (to, to->name (MOD_SNAME_PFX ".prt"), crc_ptr);
   dump.outdent ();
+}
+
+bool
+module_state::read_partitions (unsigned count)
+{
+  bytes_in sec;
+  if (!sec.begin (loc, from (), MOD_SNAME_PFX ".prt"))
+    return false;
+
+  dump () && dump ("Reading %u elided partitions", count);
+  dump.indent ();
+
+  while (count--)
+    {
+      const char *name = sec.str (NULL);
+      unsigned crc = sec.u32 ();
+      location_t floc = read_location (sec);
+      const char *fname = sec.str (NULL);
+      bool exported = sec.u ();
+
+      if (sec.get_overrun ())
+	break;
+
+      dump () && dump ("Reading elided partition %s (crc=%x)", name, crc);
+
+      module_state *imp = get_module (name);
+      if (!imp->is_partition () || !imp->is_detached ())
+	{
+	  sec.set_overrun ();
+	  break;
+	}
+
+      /* Attach the partition without loading it.  We'll have to load
+	 for real if it's indirectly imported.  */
+      imp->attach (floc);
+      imp->exported_p = exported;
+      imp->crc = crc;
+      imp->mod = MODULE_NONE; /* Mark as wierd.   */
+      if (!imp->filename && fname[0])
+	imp->filename = xstrdup (fname);
+    }
+
+  dump.outdent ();
+  if (!sec.end (from ()))
+    return false;
+  return true;
 }
 
 /* DECL is a just streamed mergeable decl that should match EXISTING.  Check
@@ -12442,6 +12502,10 @@ module_state::read (int fd, int e, cpp_reader *reader)
       && !read_imports (reader, line_table))
     return NULL;
 
+  /* Read the elided partition table.  */
+  if (config.partitions && !read_partitions (config.partitions))
+    return NULL;
+
   /* Determine the module's number.  */
   gcc_checking_assert (mod == MODULE_UNKNOWN);
   gcc_checking_assert (this != (*modules)[MODULE_PURVIEW]);
@@ -12909,10 +12973,9 @@ void
 module_state::direct_import (cpp_reader *reader, bool lazy)
 {
   unsigned n = dump.push (this);
-  bool ok = true;
 
   direct_p = true;
-  if (!is_imported ())
+  if (!is_imported () && mod == MODULE_UNKNOWN)
     {
       char *fname = NULL;
       unsigned pre_hwm = 0;
@@ -12928,7 +12991,8 @@ module_state::direct_import (cpp_reader *reader, bool lazy)
 	  fname = module_mapper::import_export (this, false);
 	}
 
-      ok = do_import (fname, reader);
+      if (!do_import (fname, reader))
+	fatal_error (loc, "returning to gate for a mechanical issue");
 
       /* Restore the line-map state.  */
       if (!lazy)
@@ -12938,18 +13002,17 @@ module_state::direct_import (cpp_reader *reader, bool lazy)
 	    spans.open ();
 	}
     }
-  gcc_assert (mod != MODULE_PURVIEW);
 
-  if (!ok)
-    fatal_error (loc, "returning to gate for a mechanical issue");
-
-  module_state *imp = resolve_alias ();
-  imp->direct_p = true;
-  if (exported_p)
-    imp->exported_p = true;
-  (*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
-  if (imp->is_legacy ())
-    imp->import_macros ();
+  if (is_imported ())
+    {
+      module_state *imp = resolve_alias ();
+      imp->direct_p = true;
+      if (exported_p)
+	imp->exported_p = true;
+      (*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
+      if (imp->is_legacy ())
+	imp->import_macros ();
+    }
 
   dump.pop (n);
 }
@@ -13260,32 +13323,46 @@ process_deferred_imports (cpp_reader *reader)
   module_state *imp = (*pending_imports)[0];
   module_mapper *mapper = module_mapper::get (imp->from_loc);
   bool has_bmi = imp->mod == MODULE_PURVIEW;
+  bool any = false;
 
   if (mapper->is_server ())
-    {
-      /* Send batched request to mapper.  */
-      mapper->cork ();
-      for (unsigned ix = 0; ix != pending_imports->length (); ix++)
-	{
-	  imp = (*pending_imports)[ix];
-	  mapper->imex_query (imp, !ix && has_bmi);
-	}
-      mapper->uncork (imp->from_loc);
-    }
+    /* Send batched request to mapper.  */
+    for (unsigned ix = 0; ix != pending_imports->length (); ix++)
+      {
+	imp = (*pending_imports)[ix];
+	if (!imp->filename && !imp->imported_p)
+	  {
+	    /* The user may be directly importing the same module
+	       twice in a single block (they do this kind of thing).
+	       We only want one filename request, abuse the imported
+	       flag to do that.  */
+	    imp->imported_p = true;
+	    if (!any)
+	      mapper->cork ();
+	    any = true;
+	    mapper->imex_query (imp, !ix && has_bmi);
+	  }
+      }
+
+  if (any)
+    mapper->uncork (imp->from_loc);
 
   for (unsigned ix = 0; ix != pending_imports->length (); ix++)
     {
       imp = (*pending_imports)[ix];
 
       /* Read the mapper's responses.  */
-      if (mapper->is_server ())
-	if (char *fname = mapper->imex_response (imp))
-	  imp->filename = xstrdup (fname);
+      if (any && !imp->filename)
+	{
+	  imp->imported_p = false;
+	  if (char *fname = mapper->imex_response (imp))
+	    imp->filename = xstrdup (fname);
+	}
 
       imp->maybe_create_loc ();
     }
 
-  if (mapper->is_server ())
+  if (any)
     mapper->maybe_uncork (imp->loc);
 
   /* Now do the importing, which might cause additional requests
