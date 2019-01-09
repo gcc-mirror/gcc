@@ -477,10 +477,10 @@ prepare_shrink_wrap (basic_block entry_block)
   dead_debug_local_finish (&debug, NULL);
 }
 
-/* Return whether basic block PRO can get the prologue.  It can not if it
+/* Return whether basic block PRO can get the prologue.  It cannot if it
    has incoming complex edges that need a prologue inserted (we make a new
    block for the prologue, so those edges would need to be redirected, which
-   does not work).  It also can not if there exist registers live on entry
+   does not work).  It also cannot if there exist registers live on entry
    to PRO that are clobbered by the prologue.  */
 
 static bool

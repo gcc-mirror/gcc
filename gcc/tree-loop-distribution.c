@@ -1896,7 +1896,7 @@ pg_add_dependence_edges (struct graph *rdg, int dir,
 	      /* Be conservative.  If data references are not well analyzed,
 		 or the two data references have the same base address and
 		 offset, add dependence and consider it alias to each other.
-		 In other words, the dependence can not be resolved by
+		 In other words, the dependence cannot be resolved by
 		 runtime alias check.  */
 	      if (!DR_BASE_ADDRESS (dr1) || !DR_BASE_ADDRESS (dr2)
 		  || !DR_OFFSET (dr1) || !DR_OFFSET (dr2)
@@ -2109,7 +2109,7 @@ build_partition_graph (struct graph *rdg,
 
 	  /* Add edge to partition graph if there exists dependence.  There
 	     are two types of edges.  One type edge is caused by compilation
-	     time known dependence, this type can not be resolved by runtime
+	     time known dependence, this type cannot be resolved by runtime
 	     alias check.  The other type can be resolved by runtime alias
 	     check.  */
 	  if (dir == 1 || dir == 2

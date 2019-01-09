@@ -1855,7 +1855,7 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
   /* Flag is set in FLAG_BBS. Determine probability that flag will be true
      at loop exit.
 
-     This code may look fancy, but it can not update profile very realistically
+     This code may look fancy, but it cannot update profile very realistically
      because we do not know the probability that flag will be true at given
      loop exit.
 

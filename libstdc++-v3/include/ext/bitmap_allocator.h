@@ -754,7 +754,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /** @brief  Responsible for exponentially growing the internal
        *  memory pool.
        *
-       *  @throw  std::bad_alloc. If memory can not be allocated.
+       *  @throw  std::bad_alloc. If memory cannot be allocated.
        *
        *  Complexity: O(1), but internally depends upon the
        *  complexity of the function free_list::_M_get. The part where
@@ -810,7 +810,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /** @brief  Allocates memory for a single object of size
        *  sizeof(_Tp).
        *
-       *  @throw  std::bad_alloc. If memory can not be allocated.
+       *  @throw  std::bad_alloc. If memory cannot be allocated.
        *
        *  Complexity: Worst case complexity is O(N), but that
        *  is hardly ever hit. If and when this particular case is

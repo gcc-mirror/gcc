@@ -530,7 +530,7 @@ target_canonicalize_comparison (enum rtx_code *code, rtx *op0, rtx *op1,
 }
 
 /* Try to split PATTERN found in INSN.  This returns NULL_RTX if
-   PATTERN can not be split.  Otherwise, it returns an insn sequence.
+   PATTERN cannot be split.  Otherwise, it returns an insn sequence.
    This is a wrapper around split_insns which ensures that the
    reg_stat vector is made larger if the splitter creates a new
    register.  */

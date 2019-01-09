@@ -1,3 +1,10 @@
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
+	* caf/single.c: Mechanically replace "can not" with "cannot".
+	* io/unit.c: Likewise.
+
 2019-01-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	Harald Anlauf <anlauf@gmx.de>
 	Tobias Burnus <burnus@gcc.gnu.org>

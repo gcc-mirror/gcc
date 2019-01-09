@@ -51,7 +51,7 @@ enum symtab_type
 struct GTY((for_user)) section_hash_entry
 {
   int ref_count;
-  char *name;  /* As long as this datastructure stays in GGC, we can not put
+  char *name;  /* As long as this datastructure stays in GGC, we cannot put
 		  string at the tail of structure of GGC dies in horrible
 		  way  */
 };
@@ -283,7 +283,7 @@ public:
 				    void *data,
 				    bool include_overwrite);
 
-  /* If node can not be interposable by static or dynamic linker to point to
+  /* If node cannot be interposable by static or dynamic linker to point to
      different definition, return this symbol. Otherwise look for alias with
      such property and if none exists, introduce new one.  */
   symtab_node *noninterposable_alias (void);
@@ -482,7 +482,7 @@ public:
   /* C++ frontend produce same body aliases and extra name aliases for
      virtual functions and vtables that are obviously equivalent.
      Those aliases are bit special, especially because C++ frontend
-     visibility code is so ugly it can not get them right at first time
+     visibility code is so ugly it cannot get them right at first time
      and their visibility needs to be copied from their "masters" at
      the end of parsing.  */
   unsigned cpp_implicit_alias : 1;
@@ -709,7 +709,7 @@ struct GTY(()) cgraph_local_info {
   /* False when there is something makes versioning impossible.  */
   unsigned versionable : 1;
 
-  /* False when function calling convention and signature can not be changed.
+  /* False when function calling convention and signature cannot be changed.
      This is the case when __builtin_apply_args is used.  */
   unsigned can_change_signature : 1;
 
@@ -1229,7 +1229,7 @@ public:
      compilation units.  */
   bool can_be_local_p (void);
 
-  /* Return true when cgraph_node can not return or throw and thus
+  /* Return true when cgraph_node cannot return or throw and thus
      it is safe to ignore its side effects for IPA analysis.  */
   bool cannot_return_p (void);
 
@@ -1577,7 +1577,7 @@ public:
 
   /* Adjust all offsets in contexts by given number of bits.  */
   void offset_by (HOST_WIDE_INT);
-  /* Use when we can not track dynamic type change.  This speculatively assume
+  /* Use when we cannot track dynamic type change.  This speculatively assume
      type change is not happening.  */
   void possible_dynamic_type_change (bool, tree otr_type = NULL);
   /* Assume that both THIS and a given context is valid and strenghten THIS
@@ -1709,7 +1709,7 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
   /* Verify edge count and frequency.  */
   bool verify_count ();
 
-  /* Return true when call of edge can not lead to return from caller
+  /* Return true when call of edge cannot lead to return from caller
      and thus it is safe to ignore its side effects for IPA analysis
      when computing side effects of the caller.  */
   bool cannot_lead_to_return_p (void);
@@ -2933,7 +2933,7 @@ cgraph_node::can_remove_if_no_direct_calls_and_refs_p (void)
   /* Extern inlines can always go, we will use the external definition.  */
   if (DECL_EXTERNAL (decl))
     return true;
-  /* When function is needed, we can not remove it.  */
+  /* When function is needed, we cannot remove it.  */
   if (force_output || used_from_other_partition)
     return false;
   if (DECL_STATIC_CONSTRUCTOR (decl)

@@ -244,7 +244,7 @@ type_all_ctors_visible_p (tree t)
 {
   return !flag_ltrans
 	 && symtab->state >= CONSTRUCTION
-	 /* We can not always use type_all_derivations_known_p.
+	 /* We cannot always use type_all_derivations_known_p.
 	    For function local types we must assume case where
 	    the function is COMDAT and shared in between units.
 
@@ -1144,12 +1144,12 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
          verbose.  */
       if (IDENTIFIER_POINTER (n1) != IDENTIFIER_POINTER (n2))
         inform (loc_t1,
-	        "type %qT defined in anonymous namespace can not match "
+	        "type %qT defined in anonymous namespace cannot match "
 	        "type %qT across the translation unit boundary",
 	        t1, t2);
       else
         inform (loc_t1,
-	        "type %qT defined in anonymous namespace can not match "
+	        "type %qT defined in anonymous namespace cannot match "
 	        "across the translation unit boundary",
 	        t1);
       if (loc_t2_useful)
@@ -1312,7 +1312,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
       || (type_with_linkage_p (TYPE_MAIN_VARIANT (t2))
 	  && type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t2))))
     {
-      /* We can not trip this when comparing ODR types, only when trying to
+      /* We cannot trip this when comparing ODR types, only when trying to
 	 match different ODR derivations from different declarations.
 	 So WARN should be always false.  */
       gcc_assert (!warn);
@@ -2120,7 +2120,7 @@ get_odr_type (tree type, bool insert)
       val->all_derivations_known = type_all_derivations_known_p (type);
       for (i = 0; i < BINFO_N_BASE_BINFOS (binfo); i++)
 	/* For now record only polymorphic types. other are
-	   pointless for devirtualization and we can not precisely
+	   pointless for devirtualization and we cannot precisely
 	   determine ODR equivalency of these during LTO.  */
 	if (polymorphic_type_binfo_p (BINFO_BASE_BINFO (binfo, i)))
 	  {
@@ -2467,7 +2467,7 @@ is_cxa_pure_virtual_p (tree target)
 
 /* If TARGET has associated node, record it in the NODES array.
    CAN_REFER specify if program can refer to the target directly.
-   if TARGET is unknown (NULL) or it can not be inserted (for example because
+   if TARGET is unknown (NULL) or it cannot be inserted (for example because
    its body was already removed and there is no way to refer to it), clear
    COMPLETEP.  */
 
@@ -2568,7 +2568,7 @@ maybe_record_node (vec <cgraph_node *> &nodes,
   else if (!completep)
     ;
   /* We have definition of __cxa_pure_virtual that is not accessible (it is
-     optimized out or partitioned to other unit) so we can not add it.  When
+     optimized out or partitioned to other unit) so we cannot add it.  When
      not sanitizing, there is nothing to do.
      Otherwise declare the list incomplete.  */
   else if (pure_virtual)
@@ -3805,7 +3805,7 @@ ipa_devirt (void)
 		ndropped++;
 	        if (dump_file)
 		  fprintf (dump_file, "Dropping polymorphic call info;"
-			   " it can not be used by ipa-prop\n");
+			   " it cannot be used by ipa-prop\n");
 	      }
 
 	    if (!opt_for_fn (n->decl, flag_devirtualize_speculatively))

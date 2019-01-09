@@ -686,14 +686,14 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
    in between beggining of the function until CALL is invoked.
 
    Generally functions are not allowed to change type of such instances,
-   but they call destructors.  We assume that methods can not destroy the THIS
+   but they call destructors.  We assume that methods cannot destroy the THIS
    pointer.  Also as a special cases, constructor and destructors may change
    type of the THIS pointer.  */
 
 static bool
 param_type_may_change_p (tree function, tree arg, gimple *call)
 {
-  /* Pure functions can not do any changes on the dynamic type;
+  /* Pure functions cannot do any changes on the dynamic type;
      that require writting to memory.  */
   if (flags_from_decl_or_type (function) & (ECF_PURE | ECF_CONST))
     return false;
@@ -1971,7 +1971,7 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	    }
 	}
 
-      /* If ARG is pointer, we can not use its type to determine the type of aggregate
+      /* If ARG is pointer, we cannot use its type to determine the type of aggregate
 	 passed (because type conversions are ignored in gimple).  Usually we can
 	 safely get type from function declaration, but in case of K&R prototypes or
 	 variadic functions we can try our luck with type of the pointer passed.
@@ -2875,7 +2875,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "ipa-prop: Discovered call to a known target "
-		     "(%s -> %s) but can not refer to it. Giving up.\n",
+		     "(%s -> %s) but cannot refer to it. Giving up.\n",
 		     ie->caller->dump_name (),
 		     ie->callee->dump_name ());
 	  return NULL;
@@ -2914,7 +2914,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
 
   ipa_check_create_node_params ();
 
-  /* We can not make edges to inline clones.  It is bug that someone removed
+  /* We cannot make edges to inline clones.  It is bug that someone removed
      the cgraph node too early.  */
   gcc_assert (!callee->global.inlined_to);
 

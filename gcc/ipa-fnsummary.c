@@ -307,7 +307,7 @@ set_hint_predicate (predicate **p, predicate new_predicate)
    copy when called in a given context.  It is a bitmask of conditions. Bit
    0 means that condition is known to be false, while bit 1 means that condition
    may or may not be true.  These differs - for example NOT_INLINED condition
-   is always false in the second and also builtin_constant_p tests can not use
+   is always false in the second and also builtin_constant_p tests cannot use
    the fact that parameter is indeed a constant.
 
    KNOWN_VALS is partial mapping of parameters of NODE to constant values.
@@ -2219,7 +2219,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	      struct predicate p = bb_predicate & will_be_nonconstant;
 
 	      /* We can ignore statement when we proved it is never going
-		 to happen, but we can not do that for call statements
+		 to happen, but we cannot do that for call statements
 		 because edges are accounted specially.  */
 
 	      if (*(is_gimple_call (stmt) ? &bb_predicate : &p) != false)
@@ -2430,7 +2430,7 @@ compute_fn_summary (struct cgraph_node *node, bool early)
       info->account_size_time (2 * ipa_fn_summary::size_scale, 0, t, t);
       ipa_update_overall_fn_summary (node);
       info->self_size = info->size;
-      /* We can not inline instrumentation clones.  */
+      /* We cannot inline instrumentation clones.  */
       if (node->thunk.add_pointer_bounds_args)
 	{
           info->inlinable = false;
@@ -2471,7 +2471,7 @@ compute_fn_summary (struct cgraph_node *node, bool early)
 	     node->local.can_change_signature = true;
 	   else
 	     {
-	       /* Functions calling builtin_apply can not change signature.  */
+	       /* Functions calling builtin_apply cannot change signature.  */
 	       for (e = node->callees; e; e = e->next_callee)
 		 {
 		   tree cdecl = e->callee->decl;

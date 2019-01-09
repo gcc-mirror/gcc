@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Provide stubs for the hooks defined by darwin.h
      TARGET_EXTRA_PRE_INCLUDES, TARGET_EXTRA_INCLUDES
 
-   As both, gcc and gfortran link in incpath.o, we can not
+   As both, gcc and gfortran link in incpath.o, we cannot
    conditionally undefine said hooks if fortran is build.
    However, we can define do-nothing stubs of said hooks as
    we are not interested in objc include files in Fortran.

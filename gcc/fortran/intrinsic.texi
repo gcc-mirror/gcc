@@ -6762,7 +6762,7 @@ kind.
 
 @item @emph{Return value}:
 After @code{GETARG} returns, the @var{VALUE} argument holds the
-@var{POS}th command line argument. If @var{VALUE} can not hold the
+@var{POS}th command line argument. If @var{VALUE} cannot hold the
 argument, it is truncated to fit the length of @var{VALUE}. If there are
 less than @var{POS} arguments specified at the command line, @var{VALUE}
 will be filled with blanks. If @math{@var{POS} = 0}, @var{VALUE} is set
@@ -6875,7 +6875,7 @@ and of default kind.
 
 @item @emph{Return value}:
 After @code{GET_COMMAND_ARGUMENT} returns, the @var{VALUE} argument holds the 
-@var{NUMBER}-th command line argument. If @var{VALUE} can not hold the argument, it is 
+@var{NUMBER}-th command line argument. If @var{VALUE} cannot hold the argument, it is 
 truncated to fit the length of @var{VALUE}. If there are less than @var{NUMBER}
 arguments specified at the command line, @var{VALUE} will be filled with blanks. 
 If @math{@var{NUMBER} = 0}, @var{VALUE} is set to the name of the program (on

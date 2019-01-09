@@ -240,7 +240,7 @@ warn_type_compatibility_p (tree prevailing_type, tree type,
   prevailing_type = TYPE_MAIN_VARIANT (prevailing_type);
   type = TYPE_MAIN_VARIANT (type);
 
-  /* We can not use types_compatible_p because we permit some changes
+  /* We cannot use types_compatible_p because we permit some changes
      across types.  For example unsigned size_t and "signed size_t" may be
      compatible when merging C and Fortran types.  */
   if (COMPLETE_TYPE_P (prevailing_type)

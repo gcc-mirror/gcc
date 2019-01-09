@@ -138,7 +138,7 @@ package Types is
    -- Types Used for Text Buffer Handling --
    -----------------------------------------
 
-   --  We can not use type String for text buffers, since we must use the
+   --  We cannot use type String for text buffers, since we must use the
    --  standard 32-bit integer as an index value, since we count on all index
    --  values being the same size.
 

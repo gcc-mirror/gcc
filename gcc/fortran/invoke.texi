@@ -1112,7 +1112,7 @@ time.  This option is implied by @option{-Wall}.
 @item -Wdo-subscript
 @opindex @code{Wdo-subscript}
 Warn if an array subscript inside a DO loop could lead to an
-out-of-bounds access even if the compiler can not prove that the
+out-of-bounds access even if the compiler cannot prove that the
 statement is actually executed, in cases like
 @smallexample
   real a(3)

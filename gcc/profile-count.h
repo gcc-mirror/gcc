@@ -30,7 +30,7 @@ enum profile_quality {
   /* Uninitialized value.  */
   profile_uninitialized,
   /* Profile is based on static branch prediction heuristics and may
-     or may not match reality.  It is local to function and can not be compared
+     or may not match reality.  It is local to function and cannot be compared
      inter-procedurally.  Never used by probabilities (they are always local).
    */
   profile_guessed_local,
@@ -539,7 +539,7 @@ public:
     }
 
   /* Comparsions are three-state and conservative.  False is returned if
-     the inequality can not be decided.  */
+     the inequality cannot be decided.  */
   bool operator< (const profile_probability &other) const
     {
       return initialized_p () && other.initialized_p () && m_val < other.m_val;
@@ -596,7 +596,7 @@ public:
         was never run in train feedback) but they hold local static profile
         estimate.
 
-   Counters of type 1 and 3 can not be mixed with counters of different type
+   Counters of type 1 and 3 cannot be mixed with counters of different type
    within operation (because whole function should use one type of counter)
    with exception that global zero mix in most operations where outcome is
    well defined.
@@ -829,7 +829,7 @@ public:
     }
 
   /* Comparsions are three-state and conservative.  False is returned if
-     the inequality can not be decided.  */
+     the inequality cannot be decided.  */
   bool operator< (const profile_count &other) const
     {
       if (!initialized_p () || !other.initialized_p ())

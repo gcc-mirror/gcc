@@ -4583,7 +4583,7 @@ The syntax and semantics are otherwise identical to
 
 @deffn {MD Expression} define_special_memory_constraint name docstring exp
 Use this expression for constraints that match a subset of all memory
-operands: that is, @code{reload} can not make them match by reloading
+operands: that is, @code{reload} cannot make them match by reloading
 the address as it is described for @code{define_memory_constraint} or
 such address reload is undesirable with the performance point of view.
 
@@ -6213,8 +6213,8 @@ in a way that the blocks are not required to be aligned according to it in
 all cases. This expected alignment is also in bytes, just like operand 4.
 Expected size, when unknown, is set to @code{(const_int -1)}.
 Operand 7 is the minimal size of the block and operand 8 is the
-maximal size of the block (NULL if it can not be represented as CONST_INT).
-Operand 9 is the probable maximal size (i.e.@: we can not rely on it for
+maximal size of the block (NULL if it cannot be represented as CONST_INT).
+Operand 9 is the probable maximal size (i.e.@: we cannot rely on it for
 correctness, but it can be used for choosing proper code sequence for a
 given size).
 
@@ -9901,7 +9901,7 @@ the common part by the following construction
 @var{reservation-name} is a string giving name of @var{regexp}.
 Functional unit names and reservation names are in the same name
 space.  So the reservation names should be different from the
-functional unit names and can not be the reserved name @samp{nothing}.
+functional unit names and cannot be the reserved name @samp{nothing}.
 
 @findex define_bypass
 @cindex instruction latency time
@@ -9967,7 +9967,7 @@ separated by comma.  Currently pattern is one unit or units
 separated by white-spaces.
 
 The first construction (@samp{exclusion_set}) means that each
-functional unit in the first string can not be reserved simultaneously
+functional unit in the first string cannot be reserved simultaneously
 with a unit whose name is in the second string and vice versa.  For
 example, the construction is useful for describing processors
 (e.g.@: some SPARC processors) with a fully pipelined floating point
@@ -9975,7 +9975,7 @@ functional unit which can execute simultaneously only single floating
 point insns or only double floating point insns.
 
 The second construction (@samp{presence_set}) means that each
-functional unit in the first string can not be reserved unless at
+functional unit in the first string cannot be reserved unless at
 least one of pattern of units whose names are in the second string is
 reserved.  This is an asymmetric relation.  For example, it is useful
 for description that @acronym{VLIW} @samp{slot1} is reserved after
@@ -10030,7 +10030,7 @@ can be described as:
 (absence_set "slot0" "slot1, slot2")
 @end smallexample
 
-Or @samp{slot2} can not be reserved if @samp{slot0} and unit @samp{b0}
+Or @samp{slot2} cannot be reserved if @samp{slot0} and unit @samp{b0}
 are reserved or @samp{slot1} and unit @samp{b1} are reserved.  In
 this case we could write
 
@@ -10133,7 +10133,7 @@ are issued into the second pipeline.  Integer division and
 multiplication insns can be executed only in the second integer
 pipeline and their results are ready correspondingly in 9 and 4
 cycles.  The integer division is not pipelined, i.e.@: the subsequent
-integer division insn can not be issued until the current division
+integer division insn cannot be issued until the current division
 insn finished.  Floating point insns are fully pipelined and their
 results are ready in 3 cycles.  Where the result of a floating point
 insn is used by an integer insn, an additional delay of one cycle is

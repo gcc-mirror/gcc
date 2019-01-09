@@ -2911,7 +2911,7 @@ or @code{NULL} if this is an indirect call.\n\
 It is not uncommon for limitations of calling conventions to prevent\n\
 tail calls to functions outside the current unit of translation, or\n\
 during PIC compilation.  The hook is used to enforce these restrictions,\n\
-as the @code{sibcall} md pattern can not fail, or fall over to a\n\
+as the @code{sibcall} md pattern cannot fail, or fall over to a\n\
 ``normal'' call.  The criteria for successful sibling call optimization\n\
 may vary greatly between different architectures.",
  bool, (tree decl, tree exp),

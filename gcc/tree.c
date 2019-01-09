@@ -5658,7 +5658,7 @@ free_lang_data_in_decl (tree decl, struct free_lang_data_d *fld)
 	 use for middle-end.
 
 	 It would make more sense if frontends set TREE_ADDRESSABLE to 0 only
-	 for public objects that indeed can not be adressed, but it is not
+	 for public objects that indeed cannot be adressed, but it is not
 	 the case.  Set the flag to true so we do not get merge failures for
 	 i.e. virtual tables between units that take address of it and
 	 units that don't.  */
@@ -14239,7 +14239,7 @@ verify_type (const_tree t)
       debug_tree (ct);
       error_found = true;
     }
-  /* Method and function types can not be used to address memory and thus
+  /* Method and function types cannot be used to address memory and thus
      TYPE_CANONICAL really matters only for determining useless conversions.
 
      FIXME: C++ FE produce declarations of builtin functions that are not
@@ -14247,7 +14247,7 @@ verify_type (const_tree t)
   else if (TREE_CODE (t) == FUNCTION_TYPE)
     ;
   else if (t != ct
-	   /* FIXME: gimple_canonical_types_compatible_p can not compare types
+	   /* FIXME: gimple_canonical_types_compatible_p cannot compare types
 	      with variably sized arrays because their sizes possibly
 	      gimplified to different variables.  */
 	   && !variably_modified_type_p (ct, NULL)

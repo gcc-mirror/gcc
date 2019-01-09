@@ -14780,7 +14780,7 @@ aarch64_simd_dup_constant (rtx vals)
 /* Generate code to load VALS, which is a PARALLEL containing only
    constants (for vec_init) or CONST_VECTOR, efficiently into a
    register.  Returns an RTX to copy into the register, or NULL_RTX
-   for a PARALLEL that can not be converted into a CONST_VECTOR.  */
+   for a PARALLEL that cannot be converted into a CONST_VECTOR.  */
 static rtx
 aarch64_simd_make_constant (rtx vals)
 {
@@ -14818,12 +14818,12 @@ aarch64_simd_make_constant (rtx vals)
     /* Loaded using DUP.  */
     return const_dup;
   else if (const_vec != NULL_RTX)
-    /* Load from constant pool. We can not take advantage of single-cycle
+    /* Load from constant pool. We cannot take advantage of single-cycle
        LD1 because we need a PC-relative addressing mode.  */
     return const_vec;
   else
     /* A PARALLEL containing something not valid inside CONST_VECTOR.
-       We can not construct an initializer.  */
+       We cannot construct an initializer.  */
     return NULL_RTX;
 }
 

@@ -760,7 +760,7 @@ clear_addressable_bit (varpool_node *vnode, void *data ATTRIBUTE_UNUSED)
 
    Return true when unreachable symbol removal should be done.
 
-   FIXME: This can not be done in between gimplify and omp_expand since
+   FIXME: This cannot be done in between gimplify and omp_expand since
    readonly flag plays role on what is shared and what is not.  Currently we do
    this transformation as part of whole program visibility and re-do at
    ipa-reference pass (to take into account clonning), but it would

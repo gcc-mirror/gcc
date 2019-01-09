@@ -820,7 +820,7 @@ package body Set_Targ is
 
 begin
    --  First step: see if the -gnateT switch is present. As we have noted,
-   --  this has to be done very early, so can not depend on the normal circuit
+   --  this has to be done very early, so cannot depend on the normal circuit
    --  for reading switches and setting switches in Opt. The following code
    --  will set Opt.Target_Dependent_Info_Read_Name if the switch -gnateT=name
    --  is present in the options string.

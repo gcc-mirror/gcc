@@ -114,7 +114,7 @@
        (not (match_code "high,const,symbol_ref,label_ref")))
 {
   /* If the constant op does NOT satisfy Is20 nor Ihig,
-     we can not perform move behavior by a single instruction.  */
+     we cannot perform move behavior by a single instruction.  */
   if (CONST_INT_P (op)
       && !satisfies_constraint_Is20 (op)
       && !satisfies_constraint_Ihig (op))
@@ -128,7 +128,7 @@
        (not (match_code "high,const,symbol_ref,label_ref")))
 {
   /* If the constant op does NOT satisfy Is20 nor Ihig,
-     we can not perform move behavior by a single instruction.  */
+     we cannot perform move behavior by a single instruction.  */
   if (GET_CODE (op) == CONST_VECTOR
       && !satisfies_constraint_CVs2 (op)
       && !satisfies_constraint_CVhi (op))

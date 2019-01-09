@@ -2770,7 +2770,7 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	  reg_pending_barrier = TRUE_BARRIER;
 
 	/* For all ASM_OPERANDS, we must traverse the vector of input operands.
-	   We can not just fall through here since then we would be confused
+	   We cannot just fall through here since then we would be confused
 	   by the ASM_INPUT rtx inside ASM_OPERANDS, which do not indicate
 	   traditional asms unlike their normal usage.  */
 
@@ -4602,7 +4602,7 @@ check_dep (dep_t dep, bool relaxed_p)
 		&& (ds & DEP_CONTROL)
 		&& !(ds & (DEP_OUTPUT | DEP_ANTI | DEP_TRUE)));
 
-  /* HARD_DEP can not appear in dep_status of a link.  */
+  /* HARD_DEP cannot appear in dep_status of a link.  */
   gcc_assert (!(ds & HARD_DEP));
 
   /* Check that dependence status is set correctly when speculation is not

@@ -1,3 +1,11 @@
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
+	* cp-tree.h: Mechanically replace "can not" with "cannot".
+	* parser.c: Likewise.
+	* pt.c: Likewise.
+
 2019-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (grok_reference_init): Improve error location.

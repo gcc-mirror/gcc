@@ -53,7 +53,7 @@ restore_core_regs:
 	;; scratch registers and stack pointer before the base registers
 	;; disappear.  We also need to make sure no interrupts occur,
 	;; so put the whole thing in the delay slots of a dummy branch
-	;; We can not move the ret earlier as that would cause it to occur
+	;; We cannot move the ret earlier as that would cause it to occur
 	;; before the last load completes
 	b	.s1	(1f)
 	ldw	.d1t1	*+A4[4], A4

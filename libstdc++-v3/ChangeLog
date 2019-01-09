@@ -1,3 +1,10 @@
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
+	* include/ext/bitmap_allocator.h: Mechanically replace "can not"
+	with "cannot".
+
 2019-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/libstdc++-prettyprinters/cxx17.cc: Fix expected output

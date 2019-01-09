@@ -907,7 +907,7 @@ objc_add_property_declaration (location_t location, tree decl,
 
   if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
     {
-      error_at (location, "property can not be an array");
+      error_at (location, "property cannot be an array");
       return;
     }
 
@@ -922,10 +922,10 @@ objc_add_property_declaration (location_t location, tree decl,
 	 describe a pair of accessor methods, so its type (which is
 	 the type of the return value of the getter and the first
 	 argument of the setter) can't be a bitfield (as return values
-	 and arguments of functions can not be bitfields).  The
+	 and arguments of functions cannot be bitfields).  The
 	 underlying instance variable could be a bitfield, but that is
 	 a different matter.  */
-      error_at (location, "property can not be a bit-field");
+      error_at (location, "property cannot be a bit-field");
       return;
     }
 #endif
@@ -1743,7 +1743,7 @@ objc_build_setter_call (tree lhs, tree rhs)
 
   if (PROPERTY_READONLY (property_decl))
     {
-      error ("readonly property can not be set");
+      error ("readonly property cannot be set");
       return error_mark_node;
     }
   else
@@ -2053,7 +2053,7 @@ objc_start_method_definition (bool is_class_method, tree decl, tree attributes,
 #endif
 
   if (attributes)
-    warning_at (input_location, 0, "method attributes can not be specified in @implementation context");
+    warning_at (input_location, 0, "method attributes cannot be specified in @implementation context");
   else
     objc_decl_method_attributes (&decl, attributes, 0);
 
@@ -4210,7 +4210,7 @@ objc_begin_catch_clause (tree decl)
   else if (TYPE_HAS_OBJC_INFO (TREE_TYPE (type))
 	   && TYPE_OBJC_PROTOCOL_LIST (TREE_TYPE (type)))
     {
-      error ("@catch parameter can not be protocol-qualified");
+      error ("@catch parameter cannot be protocol-qualified");
       type = error_mark_node;
     }
   else if (POINTER_TYPE_P (type) && objc_is_object_id (TREE_TYPE (type)))
@@ -4677,7 +4677,7 @@ adjust_type_for_id_default (tree type)
     TREE_VALUE (type) = objc_object_type;
   else if (TREE_CODE (TREE_VALUE (type)) == RECORD_TYPE
 	   && TYPED_OBJECT (TREE_VALUE (type)))
-    error ("can not use an object as parameter to a method");
+    error ("cannot use an object as parameter to a method");
 
   return type;
 }
@@ -7225,7 +7225,7 @@ objc_synthesize_getter (tree klass, tree class_methods ATTRIBUTE_UNUSED, tree pr
 	  {
 	    /* This should never happen.  */
 	    error_at (location,
-		      "can not find instance variable associated with property");
+		      "cannot find instance variable associated with property");
 	    ret_val = error_mark_node;
 	    break;
 	  }
@@ -7421,7 +7421,7 @@ objc_synthesize_setter (tree klass, tree class_methods ATTRIBUTE_UNUSED, tree pr
 	if (!ivar || is_private (ivar))
 	  {
 	    error_at (location,
-		      "can not find instance variable associated with property");
+		      "cannot find instance variable associated with property");
 	    statement = error_mark_node;
 	    break;
 	  }
@@ -7727,7 +7727,7 @@ objc_add_synthesize_declaration (location_t location, tree property_and_ivar_lis
 
   if (TREE_CODE (objc_implementation_context) == CATEGORY_IMPLEMENTATION_TYPE)
     {
-      error_at (location, "%<@synthesize%> can not be used in categories");
+      error_at (location, "%<@synthesize%> cannot be used in categories");
       return;
     }
 

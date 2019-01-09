@@ -33,7 +33,7 @@ BEGIN {
 }
 
 # We begin with nm input.  Collect the set of symbols that are present
-# so that we can not emit them into the final version script -- Solaris
+# so that we cannot emit them into the final version script -- Solaris
 # complains at us if we do.
 
 state == "nm" && /^%%/ {

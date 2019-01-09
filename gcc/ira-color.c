@@ -1575,7 +1575,7 @@ update_conflict_hard_regno_costs (int *costs, enum reg_class aclass,
 /* Set up conflicting (through CONFLICT_REGS) for each object of
    allocno A and the start allocno profitable regs (through
    START_PROFITABLE_REGS).  Remember that the start profitable regs
-   exclude hard regs which can not hold value of mode of allocno A.
+   exclude hard regs which cannot hold value of mode of allocno A.
    This covers mostly cases when multi-register value should be
    aligned.  */
 static inline void
@@ -2272,7 +2272,7 @@ bucket_allocno_compare_func (const void *v1p, const void *v2p)
   /* Push pseudos requiring less hard registers first.  It means that
      we will assign pseudos requiring more hard registers first
      avoiding creation small holes in free hard register file into
-     which the pseudos requiring more hard registers can not fit.  */
+     which the pseudos requiring more hard registers cannot fit.  */
   if ((diff = (ira_reg_class_max_nregs[cl1][ALLOCNO_MODE (a1)]
 	       - ira_reg_class_max_nregs[cl2][ALLOCNO_MODE (a2)])) != 0)
     return diff;

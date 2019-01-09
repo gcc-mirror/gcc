@@ -8118,7 +8118,7 @@ legitimate_lo_sum_address_p (machine_mode mode, rtx x, int strict)
 	 recognizes some LO_SUM addresses as valid although this
 	 function says opposite.  In most cases, LRA through different
 	 transformations can generate correct code for address reloads.
-	 It can not manage only some LO_SUM cases.  So we need to add
+	 It cannot manage only some LO_SUM cases.  So we need to add
 	 code analogous to one in rs6000_legitimize_reload_address for
 	 LOW_SUM here saying that some addresses are still valid.  */
       large_toc_ok = (lra_in_progress && TARGET_CMODEL != CMODEL_SMALL
@@ -28983,7 +28983,7 @@ rs6000_output_function_epilogue (FILE *file)
 	 length fields that follow.  However, if you omit the optional
 	 fields, the assembler outputs zeros for all optional fields
 	 anyways, giving each variable length field is minimum length
-	 (as defined in sys/debug.h).  Thus we can not use the .tbtab
+	 (as defined in sys/debug.h).  Thus we cannot use the .tbtab
 	 pseudo-op at all.  */
 
       /* An all-zero word flags the start of the tbtab, for debuggers

@@ -564,7 +564,7 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
 				    lra_reg_info[conflict_regno].biggest_mode);
 	  /* Remember about multi-register pseudos.  For example, 2
 	     hard register pseudos can start on the same hard register
-	     but can not start on HR and HR+1/HR-1.  */
+	     but cannot start on HR and HR+1/HR-1.  */
 	  for (hr = conflict_hr + 1;
 	       hr < FIRST_PSEUDO_REGISTER && hr < conflict_hr + nregs;
 	       hr++)
@@ -634,7 +634,7 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
 				     PSEUDO_REGNO_MODE (regno), hard_regno)
 	  && targetm.hard_regno_mode_ok (hard_regno,
 					 PSEUDO_REGNO_MODE (regno))
-	  /* We can not use prohibited_class_mode_regs for all classes
+	  /* We cannot use prohibited_class_mode_regs for all classes
 	     because it is not defined for all classes.  */
 	  && (ira_allocno_class_translate[rclass] != rclass
 	      || ! TEST_HARD_REG_BIT (ira_prohibited_class_mode_regs
@@ -785,7 +785,7 @@ lra_setup_reg_renumber (int regno, int hard_regno, bool print_p)
 {
   int i, hr;
 
-  /* We can not just reassign hard register.  */
+  /* We cannot just reassign hard register.  */
   lra_assert (hard_regno < 0 || reg_renumber[regno] < 0);
   if ((hr = hard_regno) < 0)
     hr = reg_renumber[regno];
@@ -1434,7 +1434,7 @@ assign_by_spills (void)
 	  fails_p = nfails != 0;
 	  break;
 	}
-      /* This is a very rare event.  We can not assign a hard register
+      /* This is a very rare event.  We cannot assign a hard register
 	 to reload pseudo because the hard register was assigned to
 	 another reload pseudo on a previous assignment pass.  For x86
 	 example, on the 1st pass we assigned CX (although another

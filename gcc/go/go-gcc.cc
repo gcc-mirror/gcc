@@ -760,7 +760,7 @@ Gcc_backend::Gcc_backend()
 							NULL_TREE),
 		       false, false);
 
-  // The compiler uses __builtin_unreachable for cases that can not
+  // The compiler uses __builtin_unreachable for cases that cannot
   // occur.
   this->define_builtin(BUILT_IN_UNREACHABLE, "__builtin_unreachable", NULL,
 		       build_function_type(void_type_node, void_list_node),
@@ -909,7 +909,7 @@ Gcc_backend::function_type(const Btyped_identifier& receiver,
   if (result == error_mark_node)
     return this->error_type();
 
-  // The libffi library can not represent a zero-sized object.  To
+  // The libffi library cannot represent a zero-sized object.  To
   // avoid causing confusion on 32-bit SPARC, we treat a function that
   // returns a zero-sized value as returning void.  That should do no
   // harm since there is no actual value to be returned.  See

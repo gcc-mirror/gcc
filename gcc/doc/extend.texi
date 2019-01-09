@@ -10054,7 +10054,7 @@ register.
 
 @subsubheading Declaring the variable
 
-Global register variables can not have initial values, because an
+Global register variables cannot have initial values, because an
 executable file has no means to supply initial contents for a register.
 
 When selecting a register, choose one that is normally saved and 

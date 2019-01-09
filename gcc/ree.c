@@ -1206,7 +1206,7 @@ add_removable_extension (const_rtx expr, rtx_insn *insn,
 
       /* Fourth, if the extended version occupies more registers than the
 	 original and the source of the extension is the same hard register
-	 as the destination of the extension, then we can not eliminate
+	 as the destination of the extension, then we cannot eliminate
 	 the extension without deep analysis, so just punt.
 
 	 We allow this when the registers are different because the

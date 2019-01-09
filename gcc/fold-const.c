@@ -735,7 +735,7 @@ fold_negate_expr (location_t loc, tree t)
   return fold_convert_loc (loc, type, tem);
 }
 
-/* Like fold_negate_expr, but return a NEGATE_EXPR tree, if T can not be
+/* Like fold_negate_expr, but return a NEGATE_EXPR tree, if T cannot be
    negated in a simpler way.  Also allow for T to be NULL_TREE, in which case
    return NULL_TREE. */
 
@@ -8419,7 +8419,7 @@ maybe_canonicalize_comparison (location_t loc, enum tree_code code, tree type,
 
 /* Return whether BASE + OFFSET + BITPOS may wrap around the address
    space.  This is used to avoid issuing overflow warnings for
-   expressions like &p->x which can not wrap.  */
+   expressions like &p->x which cannot wrap.  */
 
 static bool
 pointer_may_wrap_p (tree base, tree offset, poly_int64 bitpos)

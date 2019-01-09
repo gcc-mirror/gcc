@@ -2708,7 +2708,7 @@ cgraph_node::set_pure_flag (bool pure, bool looping)
   return info.changed;
 }
 
-/* Return true when cgraph_node can not return or throw and thus
+/* Return true when cgraph_node cannot return or throw and thus
    it is safe to ignore its side effects for IPA analysis.  */
 
 bool
@@ -2722,7 +2722,7 @@ cgraph_node::cannot_return_p (void)
 	     == (ECF_NORETURN | ECF_NOTHROW));
 }
 
-/* Return true when call of edge can not lead to return from caller
+/* Return true when call of edge cannot lead to return from caller
    and thus it is safe to ignore its side effects for IPA analysis
    when computing side effects of the caller.
    FIXME: We could actually mark all edges that have no reaching

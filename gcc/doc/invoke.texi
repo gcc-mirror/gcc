@@ -13064,7 +13064,7 @@ most of benefits of whole program optimizations are however lost.
 During the incremental link (by @option{-r}) the linker plugin will default to
 @option{rel}. With current interfaces to GNU Binutils it is however not
 possible to link incrementally LTO objects and non-LTO objects into a single
-mixed object file.  In the case any of object files in incremental link can not
+mixed object file.  In the case any of object files in incremental link cannot
 be used for link-time optimization the linker plugin will output warning and
 use @samp{nolto-rel}. To maintain the whole program optimization it is
 recommended to link such objects into static library instead. Alternatively it
@@ -25771,7 +25771,7 @@ if this option were not present.
 @item -mfixed-range=@var{register-range}
 @opindex mfixed-range
 Generate code treating the given register range as fixed registers.
-A fixed register is one that the register allocator can not use.  This is
+A fixed register is one that the register allocator cannot use.  This is
 useful when compiling kernel code.  A register range is specified as
 two registers separated by a dash.  Multiple register ranges can be
 specified separated by a comma.
@@ -28463,7 +28463,7 @@ Note that @option{-mcmodel=large} is incompatible with
 not be reachable in the large code model.
 
 Note that @option{-mindirect-branch=thunk-extern} is incompatible with
-@option{-fcf-protection=branch} since the external thunk can not be modified
+@option{-fcf-protection=branch} since the external thunk cannot be modified
 to disable control-flow check.
 
 @item -mfunction-return=@var{choice}

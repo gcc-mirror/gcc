@@ -1432,7 +1432,7 @@ conv_expr_ref_to_caf_ref (stmtblock_t *block, gfc_expr *expr)
 			  gcc_assert (end != NULL_TREE);
 			  /* Multiply with the product of array's stride and
 			     the step of the ref to a virtual upper bound.
-			     We can not compute the actual upper bound here or
+			     We cannot compute the actual upper bound here or
 			     the caflib would compute the extend
 			     incorrectly.  */
 			  end = fold_build2 (MULT_EXPR, gfc_array_index_type,
