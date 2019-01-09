@@ -15836,6 +15836,27 @@ Use of this option with architectures prior to Armv8.2-A is not supported.
 @item profile
 Enable the Statistical Profiling extension.  This option is only to enable the
 extension at the assembler level and does not affect code generation.
+@item rng
+Enable the Armv8.5-a Random Number instructions.  This option is only to
+enable the extension at the assembler level and does not affect code
+generation.
+@item memtag
+Enable the Armv8.5-a Memory Tagging Extensions.  This option is only to
+enable the extension at the assembler level and does not affect code
+generation.
+@item sb
+Enable the Armv8-a Speculation Barrier instruction.  This option is only to
+enable the extension at the assembler level and does not affect code
+generation.  This option is enabled by default for @option{-march=armv8.5-a}.
+@item ssbs
+Enable the Armv8-a Speculative Store Bypass Safe instruction.  This option
+is only to enable the extension at the assembler level and does not affect code
+generation.  This option is enabled by default for @option{-march=armv8.5-a}.
+@item predres
+Enable the Armv8-a Execution and Data Prediction Restriction instructions.
+This option is only to enable the extension at the assembler level and does
+not affect code generation.  This option is enabled by default for
+@option{-march=armv8.5-a}.
 
 @end table
 
