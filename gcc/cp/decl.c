@@ -5357,7 +5357,8 @@ grok_reference_init (tree decl, tree type, tree init, int flags)
       if ((DECL_LANG_SPECIFIC (decl) == 0
 	   || DECL_IN_AGGR_P (decl) == 0)
 	  && ! DECL_THIS_EXTERN (decl))
-	error ("%qD declared as reference but not initialized", decl);
+	error_at (DECL_SOURCE_LOCATION (decl),
+		  "%qD declared as reference but not initialized", decl);
       return NULL_TREE;
     }
 
@@ -12517,8 +12518,9 @@ grokdeclarator (const cp_declarator *declarator,
 			    unqualified_id);
 		else if (constexpr_p && !initialized)
 		  {
-		    error ("%<constexpr%> static data member %qD must have an "
-			   "initializer", decl);
+		    error_at (DECL_SOURCE_LOCATION (decl),
+			      "%<constexpr%> static data member %qD must "
+			      "have an initializer", decl);
 		    constexpr_p = false;
 		  }
 
@@ -12756,8 +12758,9 @@ grokdeclarator (const cp_declarator *declarator,
 	  }
 	else if (constexpr_p && DECL_EXTERNAL (decl))
 	  {
-	    error ("declaration of %<constexpr%> variable %qD "
-		   "is not a definition", decl);
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "declaration of %<constexpr%> variable %qD "
+		      "is not a definition", decl);
 	    constexpr_p = false;
 	  }
 
