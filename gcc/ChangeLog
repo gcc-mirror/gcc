@@ -1,3 +1,8 @@
+2019-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (-Os): Remove trailing spaces.
+	(-finline-functions): Remove reference to -O2.
+
 2019-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/79593
