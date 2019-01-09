@@ -1,5 +1,18 @@
 2018-01-09  Sudakshina Das  <sudi.das@arm.com>
 
+	* config/aarch64/aarch64-protos.h (aarch64_bti_enabled): Declare.
+	* config/aarch64/aarch64.c (aarch64_handle_no_branch_protection):
+	Disable bti for -mbranch-protection=none.
+	(aarch64_handle_standard_branch_protection): Enable bti for
+	-mbranch-protection=standard.
+	(aarch64_handle_bti_protection): Enable bti for "bti" in the string to
+	-mbranch-protection.
+	(aarch64_bti_enabled): Check if bti is enabled.
+	* config/aarch64/aarch64.opt: Declare target variable.
+	* doc/invoke.texi: Add bti to the -mbranch-protection documentation.
+
+2018-01-09  Sudakshina Das  <sudi.das@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_expand_prologue): Use new
 	epilogue/prologue scratch registers EP0_REGNUM and EP1_REGNUM.
 	(aarch64_expand_epilogue): Likewise.
