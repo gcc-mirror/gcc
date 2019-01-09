@@ -12,7 +12,7 @@ end module m
 
 pure subroutine foo()
   use m
-  call bar(x) ! { dg-error "can not appear in a variable definition context" }
+  call bar(x) ! { dg-error "cannot appear in a variable definition context" }
   call bar2(x) ! { dg-error "is local to a PURE procedure and has the POINTER attribute" }
   call bb(y) ! { dg-error "is local to a PURE procedure and has the POINTER attribute" }
 contains
