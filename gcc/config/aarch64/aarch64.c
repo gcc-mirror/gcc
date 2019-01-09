@@ -5521,8 +5521,8 @@ aarch64_expand_prologue (void)
 	aarch64_emit_probe_stack_range (get_stack_check_protect (), frame_size);
     }
 
-  rtx ip0_rtx = gen_rtx_REG (Pmode, IP0_REGNUM);
-  rtx ip1_rtx = gen_rtx_REG (Pmode, IP1_REGNUM);
+  rtx tmp0_rtx = gen_rtx_REG (Pmode, EP0_REGNUM);
+  rtx tmp1_rtx = gen_rtx_REG (Pmode, EP1_REGNUM);
 
   /* In theory we should never have both an initial adjustment
      and a callee save adjustment.  Verify that is the case since the
@@ -5532,7 +5532,7 @@ aarch64_expand_prologue (void)
   /* Will only probe if the initial adjustment is larger than the guard
      less the amount of the guard reserved for use by the caller's
      outgoing args.  */
-  aarch64_allocate_and_probe_stack_space (ip0_rtx, ip1_rtx, initial_adjust,
+  aarch64_allocate_and_probe_stack_space (tmp0_rtx, tmp1_rtx, initial_adjust,
 					  true, false);
 
   if (callee_adjust != 0)
@@ -5550,7 +5550,7 @@ aarch64_expand_prologue (void)
 	}
       aarch64_add_offset (Pmode, hard_frame_pointer_rtx,
 			  stack_pointer_rtx, callee_offset,
-			  ip1_rtx, ip0_rtx, frame_pointer_needed);
+			  tmp1_rtx, tmp0_rtx, frame_pointer_needed);
       if (frame_pointer_needed && !frame_size.is_constant ())
 	{
 	  /* Variable-sized frames need to describe the save slot
@@ -5596,7 +5596,7 @@ aarch64_expand_prologue (void)
 
   /* We may need to probe the final adjustment if it is larger than the guard
      that is assumed by the called.  */
-  aarch64_allocate_and_probe_stack_space (ip1_rtx, ip0_rtx, final_adjust,
+  aarch64_allocate_and_probe_stack_space (tmp1_rtx, tmp0_rtx, final_adjust,
 					  !frame_pointer_needed, true);
 }
 
@@ -5647,8 +5647,8 @@ aarch64_expand_epilogue (bool for_sibcall)
   unsigned reg2 = cfun->machine->frame.wb_candidate2;
   rtx cfi_ops = NULL;
   rtx_insn *insn;
-  /* A stack clash protection prologue may not have left IP0_REGNUM or
-     IP1_REGNUM in a usable state.  The same is true for allocations
+  /* A stack clash protection prologue may not have left EP0_REGNUM or
+     EP1_REGNUM in a usable state.  The same is true for allocations
      with an SVE component, since we then need both temporary registers
      for each allocation.  For stack clash we are in a usable state if
      the adjustment is less than GUARD_SIZE - GUARD_USED_BY_CALLER.  */
@@ -5663,8 +5663,8 @@ aarch64_expand_epilogue (bool for_sibcall)
   bool can_inherit_p = (initial_adjust.is_constant ()
 			&& final_adjust.is_constant ())
 			&& (!flag_stack_clash_protection
-			     || known_lt (initial_adjust,
-					  guard_size - guard_used_by_caller));
+			    || known_lt (initial_adjust,
+					 guard_size - guard_used_by_caller));
 
   /* We need to add memory barrier to prevent read from deallocated stack.  */
   bool need_barrier_p
@@ -5682,20 +5682,20 @@ aarch64_expand_epilogue (bool for_sibcall)
 
   /* Restore the stack pointer from the frame pointer if it may not
      be the same as the stack pointer.  */
-  rtx ip0_rtx = gen_rtx_REG (Pmode, IP0_REGNUM);
-  rtx ip1_rtx = gen_rtx_REG (Pmode, IP1_REGNUM);
+  rtx tmp0_rtx = gen_rtx_REG (Pmode, EP0_REGNUM);
+  rtx tmp1_rtx = gen_rtx_REG (Pmode, EP1_REGNUM);
   if (frame_pointer_needed
       && (maybe_ne (final_adjust, 0) || cfun->calls_alloca))
     /* If writeback is used when restoring callee-saves, the CFA
        is restored on the instruction doing the writeback.  */
     aarch64_add_offset (Pmode, stack_pointer_rtx,
 			hard_frame_pointer_rtx, -callee_offset,
-			ip1_rtx, ip0_rtx, callee_adjust == 0);
+			tmp1_rtx, tmp0_rtx, callee_adjust == 0);
   else
      /* The case where we need to re-use the register here is very rare, so
 	avoid the complicated condition and just always emit a move if the
 	immediate doesn't fit.  */
-     aarch64_add_sp (ip1_rtx, ip0_rtx, final_adjust, true);
+     aarch64_add_sp (tmp1_rtx, tmp0_rtx, final_adjust, true);
 
   aarch64_restore_callee_saves (DImode, callee_offset, R0_REGNUM, R30_REGNUM,
 				callee_adjust != 0, &cfi_ops);
@@ -5722,8 +5722,11 @@ aarch64_expand_epilogue (bool for_sibcall)
       cfi_ops = NULL;
     }
 
-  aarch64_add_sp (ip0_rtx, ip1_rtx, initial_adjust,
-		  !can_inherit_p || df_regs_ever_live_p (IP0_REGNUM));
+  /* Liveness of EP0_REGNUM can not be trusted across function calls either, so
+     add restriction on emit_move optimization to leaf functions.  */
+  aarch64_add_sp (tmp0_rtx, tmp1_rtx, initial_adjust,
+		  (!can_inherit_p || !crtl->is_leaf
+		   || df_regs_ever_live_p (EP0_REGNUM)));
 
   if (cfi_ops)
     {
@@ -5829,8 +5832,8 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   emit_note (NOTE_INSN_PROLOGUE_END);
 
   this_rtx = gen_rtx_REG (Pmode, this_regno);
-  temp0 = gen_rtx_REG (Pmode, IP0_REGNUM);
-  temp1 = gen_rtx_REG (Pmode, IP1_REGNUM);
+  temp0 = gen_rtx_REG (Pmode, EP0_REGNUM);
+  temp1 = gen_rtx_REG (Pmode, EP1_REGNUM);
 
   if (vcall_offset == 0)
     aarch64_add_offset (Pmode, this_rtx, this_rtx, delta, temp1, temp0, false);

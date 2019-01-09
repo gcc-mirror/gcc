@@ -1,3 +1,8 @@
+2018-01-09  Sudakshina Das  <sudi.das@arm.com>
+
+	* gcc.target/aarch64/test_frame_17.c: Update to check for EP0_REGNUM
+	instead of IP0_REGNUM and add test case.
+
 2019-01-09  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
 
 	* gcc.target/aarch64/sve/copysign_1.c: New test for SVE vectorized
