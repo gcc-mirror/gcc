@@ -1,3 +1,9 @@
+2019-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (-Os): Add reference to -finline-functions.
+	(-finline-functions): Remove reference to -O2, add references
+	to -fprofile-use and -fauto-profile.
+
 2019-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

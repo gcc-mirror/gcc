@@ -7675,13 +7675,16 @@ results.  This is the default.
 @item -Os
 @opindex Os
 Optimize for size.  @option{-Os} enables all @option{-O2} optimizations that
-do not typically increase code size.  It also performs further
-optimizations designed to reduce code size.
+do not typically increase code size.
 
 @option{-Os} disables the following optimization flags:
 @gccoptlist{-falign-functions  -falign-jumps  -falign-loops @gol
 -falign-labels  -freorder-blocks  -freorder-blocks-algorithm=stc @gol
 -freorder-blocks-and-partition  -fprefetch-loop-arrays}
+
+It also enables @option{-finline-functions}, causes the compiler to tune for
+code size rather than execution speed, and performs further optimizations
+designed to reduce code size.
 
 @item -Ofast
 @opindex Ofast
@@ -7803,7 +7806,8 @@ time thanks to previous inlining.  This option has any effect only
 when inlining itself is turned on by the @option{-finline-functions}
 or @option{-finline-small-functions} options.
 
-Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+Enabled at levels @option{-O3}, @option{-Os}.  Also enabled
+by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -finline-functions
 @opindex finline-functions
