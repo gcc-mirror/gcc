@@ -1200,6 +1200,7 @@ static enum aarch64_parse_opt_result
 aarch64_handle_no_branch_protection (char* str, char* rest)
 {
   aarch64_ra_sign_scope = AARCH64_FUNCTION_NONE;
+  aarch64_enable_bti = 0;
   if (rest)
     {
       error ("unexpected %<%s%> after %<%s%>", rest, str);
@@ -1212,6 +1213,7 @@ static enum aarch64_parse_opt_result
 aarch64_handle_standard_branch_protection (char* str, char* rest)
 {
   aarch64_ra_sign_scope = AARCH64_FUNCTION_NON_LEAF;
+  aarch64_enable_bti = 1;
   if (rest)
     {
       error ("unexpected %<%s%> after %<%s%>", rest, str);
@@ -1236,6 +1238,14 @@ aarch64_handle_pac_ret_leaf (char* str ATTRIBUTE_UNUSED,
   return AARCH64_PARSE_OK;
 }
 
+static enum aarch64_parse_opt_result
+aarch64_handle_bti_protection (char* str ATTRIBUTE_UNUSED,
+				    char* rest ATTRIBUTE_UNUSED)
+{
+  aarch64_enable_bti = 1;
+  return AARCH64_PARSE_OK;
+}
+
 static const struct aarch64_branch_protect_type aarch64_pac_ret_subtypes[] = {
   { "leaf", aarch64_handle_pac_ret_leaf, NULL, 0 },
   { NULL, NULL, NULL, 0 }
@@ -1246,6 +1256,7 @@ static const struct aarch64_branch_protect_type aarch64_branch_protect_types[] =
   { "standard", aarch64_handle_standard_branch_protection, NULL, 0 },
   { "pac-ret", aarch64_handle_pac_ret_protection, aarch64_pac_ret_subtypes,
     ARRAY_SIZE (aarch64_pac_ret_subtypes) },
+  { "bti", aarch64_handle_bti_protection, NULL, 0 },
   { NULL, NULL, NULL, 0 }
 };
 
@@ -4723,6 +4734,13 @@ aarch64_return_address_signing_enabled (void)
   return (aarch64_ra_sign_scope == AARCH64_FUNCTION_ALL
 	  || (aarch64_ra_sign_scope == AARCH64_FUNCTION_NON_LEAF
 	      && cfun->machine->frame.reg_offset[LR_REGNUM] >= 0));
+}
+
+/* Return TRUE if Branch Target Identification Mechanism is enabled.  */
+bool
+aarch64_bti_enabled (void)
+{
+  return (aarch64_enable_bti == 1);
 }
 
 /* Emit code to save the callee-saved registers from register number START

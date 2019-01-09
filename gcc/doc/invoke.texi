@@ -15757,6 +15757,7 @@ level: signing functions that save the return address to memory (non-leaf
 functions will practically always do this) using the a-key.  The optional
 argument @samp{leaf} can be used to extend the signing to include leaf
 functions.
+@samp{bti} turns on branch target identification mechanism.
 
 @item -msve-vector-bits=@var{bits}
 @opindex msve-vector-bits
