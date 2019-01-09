@@ -1,5 +1,5 @@
 // { dg-options "-std=gnu++17" }
-// { dg-do compile }
+// { dg-do compile { target c++17 }  }
 
 // Copyright (C) 2018 Free Software Foundation, Inc.
 //
@@ -90,6 +90,24 @@ struct S2 {
   S2& operator=(const S2&) = default;
 };
 static_assert(std::is_trivially_move_assignable_v<S2>);
+
+struct S3 {
+  S3(const S3&);
+  S3& operator=(const S3&) = default;
+};
+static_assert(std::is_trivially_copy_assignable_v<S3>);
+static_assert(std::is_copy_assignable_v<S3>);
+static_assert(!std::is_trivially_copy_assignable_v<std::optional<S3>>);
+static_assert(std::is_copy_assignable_v<std::optional<S3>>);
+
+struct S4 {
+  S4(S4&&);
+  S4& operator=(S4&&) = default;
+};
+static_assert(std::is_trivially_move_assignable_v<S4>);
+static_assert(std::is_move_assignable_v<S4>);
+static_assert(!std::is_trivially_move_assignable_v<std::optional<S4>>);
+static_assert(std::is_move_assignable_v<std::optional<S4>>);
 
 union U2 {
   char dummy;

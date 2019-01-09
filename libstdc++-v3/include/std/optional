@@ -102,11 +102,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Payload for optionals with non-trivial destructor.
   template <typename _Tp,
 	    bool /*_HasTrivialDestructor*/ =
-	      is_trivially_destructible<_Tp>::value,
-	    bool /*_HasTrivialCopyAssignment*/ =
-	      is_trivially_copy_assignable<_Tp>::value,
-	    bool /*_HasTrivialMoveAssignment*/ =
-	      is_trivially_move_assignable<_Tp>::value>
+	      is_trivially_destructible_v<_Tp>,
+	    bool /*_HasTrivialCopy */ =
+	      is_trivially_copy_assignable_v<_Tp>
+	      && is_trivially_copy_constructible_v<_Tp>,
+	    bool /*_HasTrivialMove */ =
+	      is_trivially_move_assignable_v<_Tp>
+	      && is_trivially_move_constructible_v<_Tp>>
     struct _Optional_payload
     {
       constexpr _Optional_payload() noexcept : _M_empty() { }
@@ -148,6 +150,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  this->_M_construct(std::move(__other._M_payload));
       }
 
+      constexpr
       _Optional_payload&
       operator=(const _Optional_payload& __other)
       {
@@ -163,6 +166,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+      constexpr
       _Optional_payload&
       operator=(_Optional_payload&& __other)
       noexcept(__and_<is_nothrow_move_constructible<_Tp>,
@@ -216,6 +220,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return this->_M_payload; }
 
       // _M_reset is a 'safe' operation with no precondition.
+      constexpr
       void
       _M_reset() noexcept
       {
@@ -248,36 +253,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_engaged(true)
 	{ }
 
-      template <class _Up> struct __ctor_tag {};
-
-      constexpr
-      _Optional_payload(__ctor_tag<bool>, const _Tp& __other)
-      : _M_payload(__other), _M_engaged(true)
-      { }
-
-      constexpr _Optional_payload(__ctor_tag<void>) noexcept
-      : _M_empty(), _M_engaged(false)
-      { }
-
-      constexpr _Optional_payload(__ctor_tag<bool>, _Tp&& __other)
-      : _M_payload(std::move(__other)), _M_engaged(true)
-      { }
-
       constexpr
       _Optional_payload(bool __engaged, const _Optional_payload& __other)
-      : _Optional_payload(__engaged ?
-			  _Optional_payload(__ctor_tag<bool>{},
-					    __other._M_payload) :
-			  _Optional_payload(__ctor_tag<void>{}))
-      { }
+      : _M_engaged(__engaged)
+      {
+	if (__engaged)
+	  _M_construct(__other._M_get());
+      }
 
       constexpr
       _Optional_payload(bool __engaged, _Optional_payload&& __other)
-      : _Optional_payload(__engaged
-			  ? _Optional_payload(__ctor_tag<bool>{},
-					      std::move(__other._M_payload))
-			  : _Optional_payload(__ctor_tag<void>{}))
-      { }
+      : _M_engaged(__engaged)
+      {
+	if (__engaged)
+	  _M_construct(std::move(__other._M_get()));
+      }
 
       using _Stored_type = remove_const_t<_Tp>;
 
@@ -288,6 +278,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
           _Stored_type _M_payload;
       };
       bool _M_engaged;
+
+      // The _M_get operations have _M_engaged as a precondition.
+      constexpr _Tp&
+      _M_get() noexcept
+      { return this->_M_payload; }
+
+      constexpr const _Tp&
+      _M_get() const noexcept
+      { return this->_M_payload; }
     };
 
   // Payload for optionals with non-trivial copy assignment.
@@ -311,41 +310,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_engaged(true)
 	{ }
 
-      template <class _Up> struct __ctor_tag {};
-
-      constexpr _Optional_payload(__ctor_tag<bool>, const _Tp& __other)
-      : _M_payload(__other),
-	_M_engaged(true)
-      { }
-
-      constexpr _Optional_payload(__ctor_tag<void>) noexcept
-      : _M_empty(), _M_engaged(false)
-      { }
-
-      constexpr _Optional_payload(__ctor_tag<bool>, _Tp&& __other)
-      : _M_payload(std::move(__other)),
-	_M_engaged(true)
-      { }
-
       constexpr
       _Optional_payload(bool __engaged, const _Optional_payload& __other)
-      : _Optional_payload(__engaged ?
-			  _Optional_payload(__ctor_tag<bool>{},
-					    __other._M_payload) :
-			  _Optional_payload(__ctor_tag<void>{}))
-      { }
+      : _M_engaged(__engaged)
+      {
+	if (__engaged)
+	  _M_construct(__other._M_get());
+      }
 
       constexpr
       _Optional_payload(bool __engaged, _Optional_payload&& __other)
-      : _Optional_payload(__engaged
-			  ? _Optional_payload(__ctor_tag<bool>{},
-					      std::move(__other._M_payload))
-			  : _Optional_payload(__ctor_tag<void>{}))
-      { }
+      : _M_engaged(__engaged)
+      {
+	if (__engaged)
+	  _M_construct(std::move(__other._M_get()));
+      }
 
       _Optional_payload(const _Optional_payload&) = default;
       _Optional_payload(_Optional_payload&&) = default;
 
+      constexpr
       _Optional_payload&
       operator=(const _Optional_payload& __other)
       {
@@ -394,6 +378,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return this->_M_payload; }
 
       // _M_reset is a 'safe' operation with no precondition.
+      constexpr
       void
       _M_reset() noexcept
       {
@@ -427,38 +412,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_engaged(true)
 	{ }
 
-      template <class _Up> struct __ctor_tag {};
-
-      constexpr
-      _Optional_payload(__ctor_tag<bool>, const _Tp& __other)
-      : _M_payload(__other),
-	_M_engaged(true)
-      { }
-
-      constexpr _Optional_payload(__ctor_tag<void>) noexcept
-      : _M_empty(), _M_engaged(false)
-      { }
-
-      constexpr _Optional_payload(__ctor_tag<bool>, _Tp&& __other)
-      : _M_payload(std::move(__other)),
-	_M_engaged(true)
-      { }
-
       constexpr
       _Optional_payload(bool __engaged, const _Optional_payload& __other)
-      : _Optional_payload(__engaged ?
-			  _Optional_payload(__ctor_tag<bool>{},
-					    __other._M_payload) :
-			  _Optional_payload(__ctor_tag<void>{}))
-      { }
+      : _M_engaged(__engaged)
+      {
+	if (__engaged)
+	  _M_construct(__other._M_get());
+      }
 
       constexpr
       _Optional_payload(bool __engaged, _Optional_payload&& __other)
-      : _Optional_payload(__engaged
-			  ? _Optional_payload(__ctor_tag<bool>{},
-					      std::move(__other._M_payload))
-			  : _Optional_payload(__ctor_tag<void>{}))
-      { }
+      : _M_engaged(__engaged)
+      {
+	if (__engaged)
+	  _M_construct(std::move(__other._M_get()));
+      }
 
       _Optional_payload(const _Optional_payload&) = default;
       _Optional_payload(_Optional_payload&&) = default;
@@ -466,6 +434,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Optional_payload&
       operator=(const _Optional_payload& __other) = default;
 
+      constexpr
       _Optional_payload&
       operator=(_Optional_payload&& __other)
       noexcept(__and_<is_nothrow_move_constructible<_Tp>,
@@ -513,6 +482,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return this->_M_payload; }
 
       // _M_reset is a 'safe' operation with no precondition.
+      constexpr
       void
       _M_reset() noexcept
       {
@@ -546,41 +516,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_engaged(true)
 	{ }
 
-      template <class _Up> struct __ctor_tag {};
-
-      constexpr _Optional_payload(__ctor_tag<bool>, const _Tp& __other)
-      : _M_payload(__other),
-	    _M_engaged(true)
-      { }
-
-      constexpr _Optional_payload(__ctor_tag<void>) noexcept
-      : _M_empty(), _M_engaged(false)
-      { }
-
-      constexpr _Optional_payload(__ctor_tag<bool>, _Tp&& __other)
-      : _M_payload(std::move(__other)),
-	_M_engaged(true)
-      { }
-
       constexpr
       _Optional_payload(bool __engaged, const _Optional_payload& __other)
-      : _Optional_payload(__engaged ?
-			  _Optional_payload(__ctor_tag<bool>{},
-					    __other._M_payload) :
-			  _Optional_payload(__ctor_tag<void>{}))
-      { }
+      : _M_engaged(__engaged)
+      {
+	if (__engaged)
+	  _M_construct(__other._M_get());
+      }
 
       constexpr
       _Optional_payload(bool __engaged, _Optional_payload&& __other)
-      : _Optional_payload(__engaged
-			  ? _Optional_payload(__ctor_tag<bool>{},
-					      std::move(__other._M_payload))
-			  : _Optional_payload(__ctor_tag<void>{}))
-      { }
+      : _M_engaged(__engaged)
+      {
+	if (__engaged)
+	  _M_construct(std::move(__other._M_get()));
+      }
 
       _Optional_payload(const _Optional_payload&) = default;
       _Optional_payload(_Optional_payload&&) = default;
 
+      constexpr
       _Optional_payload&
       operator=(const _Optional_payload& __other)
       {
@@ -596,6 +551,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+      constexpr
       _Optional_payload&
       operator=(_Optional_payload&& __other)
       noexcept(__and_<is_nothrow_move_constructible<_Tp>,
@@ -643,6 +599,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return this->_M_payload; }
 
       // _M_reset is a 'safe' operation with no precondition.
+      constexpr
       void
       _M_reset() noexcept
       {
@@ -681,6 +638,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
       
       // _M_reset is a 'safe' operation with no precondition.
+      constexpr
       void
       _M_reset() noexcept
       {
@@ -1222,6 +1180,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator->() const
       { return std::__addressof(this->_M_get()); }
 
+      constexpr
       _Tp*
       operator->()
       { return std::__addressof(this->_M_get()); }
