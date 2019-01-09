@@ -3741,7 +3741,7 @@ package body Exp_Ch9 is
             raise Program_Error;
       end case;
 
-      --  When exceptions can not be propagated, we never need to call
+      --  When exceptions cannot be propagated, we never need to call
       --  Exception_Complete_Entry_Body.
 
       if No_Exception_Handlers_Set then

@@ -3782,7 +3782,7 @@ maybe_tidy_empty_bb (basic_block bb)
 
           if (!(e->flags & EDGE_FALLTHRU))
             {
-	      /* We can not invalidate computed topological order by moving
+	      /* We cannot invalidate computed topological order by moving
 	         the edge destination block (E->SUCC) along a fallthru edge.
 
 		 We will update dominators here only when we'll get

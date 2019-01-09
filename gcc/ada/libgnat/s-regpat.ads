@@ -347,7 +347,7 @@ package System.Regpat is
    --  N'th parenthesized subexpressions; Matches (0) is for the whole
    --  expression.
    --
-   --  Non-capturing parenthesis (introduced with (?:...)) can not be
+   --  Non-capturing parenthesis (introduced with (?:...)) cannot be
    --  retrieved and do not count in the match array index.
    --
    --  For instance, if your regular expression is: "a((b*)c+)(d+)", then

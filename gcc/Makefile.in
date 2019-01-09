@@ -746,7 +746,7 @@ EXTRA_HEADERS =@extra_headers_list@
 USE_GCC_STDINT = @use_gcc_stdint@
 
 # The configure script will set this to collect2$(exeext), except on a
-# (non-Unix) host which can not build collect2, for which it will be
+# (non-Unix) host which cannot build collect2, for which it will be
 # set to empty.
 COLLECT2 = @collect2@
 

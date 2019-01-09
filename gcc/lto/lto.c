@@ -290,7 +290,7 @@ hash_canonical_type (tree type)
   enum tree_code code;
 
   /* We compute alias sets only for types that needs them.
-     Be sure we do not recurse to something else as we can not hash incomplete
+     Be sure we do not recurse to something else as we cannot hash incomplete
      types in a way they would have same hash value as compatible complete
      types.  */
   gcc_checking_assert (type_with_alias_set_p (type));

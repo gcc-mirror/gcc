@@ -4960,7 +4960,7 @@ or @code{NULL} if this is an indirect call.
 It is not uncommon for limitations of calling conventions to prevent
 tail calls to functions outside the current unit of translation, or
 during PIC compilation.  The hook is used to enforce these restrictions,
-as the @code{sibcall} md pattern can not fail, or fall over to a
+as the @code{sibcall} md pattern cannot fail, or fall over to a
 ``normal'' call.  The criteria for successful sibling call optimization
 may vary greatly between different architectures.
 @end deftypefn

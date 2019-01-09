@@ -1884,7 +1884,7 @@ package body Ch4 is
    --  called in all contexts where a right parenthesis cannot legitimately
    --  follow an expression.
 
-   --  Error recovery: can not raise Error_Resync
+   --  Error recovery: cannot raise Error_Resync
 
    function P_Expression_No_Right_Paren return Node_Id is
       Expr : constant Node_Id := P_Expression;

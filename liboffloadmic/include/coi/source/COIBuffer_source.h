@@ -496,7 +496,7 @@ COIBufferCreate(
 ///         are provided as hints to the runtime system so it can make
 ///         certain performance optimizations. Note that the flag
 ///         COI_SAME_ADDRESS_SINKS_AND_SOURCE is still valid but may fail
-///         if the same address as in_Memory can not be allocated on the sink.
+///         if the same address as in_Memory cannot be allocated on the sink.
 ///
 /// @param  in_Memory
 ///         [in] A pointer to an already allocated memory region

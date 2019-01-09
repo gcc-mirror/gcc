@@ -408,7 +408,7 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
 
      The convention is that secondary input reloads are valid only if the
      secondary_class is different from class.  If you have such a case, you
-     can not use secondary reloads, you must work around the problem some
+     cannot use secondary reloads, you must work around the problem some
      other way.
 
      Allow this when a reload_in/out pattern is being used.  I.e. assume
@@ -6528,7 +6528,7 @@ reg_overlap_mentioned_for_reload_p (rtx x, rtx in)
       || GET_RTX_CLASS (GET_CODE (x)) == RTX_AUTOINC)
     x = XEXP (x, 0);
 
-  /* If either argument is a constant, then modifying X can not affect IN.  */
+  /* If either argument is a constant, then modifying X cannot affect IN.  */
   if (CONSTANT_P (x) || CONSTANT_P (in))
     return 0;
   else if (GET_CODE (x) == SUBREG && MEM_P (SUBREG_REG (x)))

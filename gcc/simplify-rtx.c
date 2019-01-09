@@ -6581,7 +6581,7 @@ simplify_subreg (machine_mode outermode, rtx op,
 
 	  /* Propagate original regno.  We don't have any way to specify
 	     the offset inside original regno, so do so only for lowpart.
-	     The information is used only by alias analysis that can not
+	     The information is used only by alias analysis that cannot
 	     grog partial register anyway.  */
 
 	  if (known_eq (subreg_lowpart_offset (outermode, innermode), byte))

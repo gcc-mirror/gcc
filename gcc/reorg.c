@@ -1064,9 +1064,9 @@ steal_delay_list_from_target (rtx_insn *insn, rtx condition, rtx_sequence *seq,
      ??? It may be possible to move other sets into INSN in addition to
      moving the instructions in the delay slots.
 
-     We can not steal the delay list if one of the instructions in the
+     We cannot steal the delay list if one of the instructions in the
      current delay_list modifies the condition codes and the jump in the
-     sequence is a conditional jump. We can not do this because we can
+     sequence is a conditional jump. We cannot do this because we can
      not change the direction of the jump because the condition codes
      will effect the direction of the jump in the sequence.  */
 

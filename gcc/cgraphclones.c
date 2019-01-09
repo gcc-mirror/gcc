@@ -648,7 +648,7 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
   DECL_ARGUMENTS (new_decl) = NULL;
   DECL_INITIAL (new_decl) = NULL;
   DECL_RESULT (new_decl) = NULL; 
-  /* We can not do DECL_RESULT (new_decl) = NULL; here because of LTO partitioning
+  /* We cannot do DECL_RESULT (new_decl) = NULL; here because of LTO partitioning
      sometimes storing only clone decl instead of original.  */
 
   /* Generate a new name for the new version. */

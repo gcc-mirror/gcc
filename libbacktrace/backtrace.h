@@ -94,7 +94,7 @@ typedef void (*backtrace_error_callback) (void *data, const char *msg,
    pointer on success, NULL on error.  If an error occurs, this will
    call the ERROR_CALLBACK routine.
 
-   Calling this function allocates resources that can not be freed.
+   Calling this function allocates resources that cannot be freed.
    There is no backtrace_free_state function.  The state is used to
    cache information that is expensive to recompute.  Programs are
    expected to call this function at most once and to save the return

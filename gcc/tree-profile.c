@@ -763,7 +763,7 @@ tree_profiling (void)
 
       if (node->thunk.thunk_p)
 	{
-	  /* We can not expand variadic thunks to Gimple.  */
+	  /* We cannot expand variadic thunks to Gimple.  */
 	  if (stdarg_p (TREE_TYPE (node->decl)))
 	    continue;
 	  thunk = true;

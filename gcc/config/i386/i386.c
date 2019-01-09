@@ -29759,13 +29759,13 @@ ix86_local_alignment (tree exp, machine_mode mode,
      a C99 variable-length array variable always has alignment of at least 16 bytes.
 
      This was added to allow use of aligned SSE instructions at arrays.  This
-     rule is meant for static storage (where compiler can not do the analysis
+     rule is meant for static storage (where compiler cannot do the analysis
      by itself).  We follow it for automatic variables only when convenient.
      We fully control everything in the function compiled and functions from
-     other unit can not rely on the alignment.
+     other unit cannot rely on the alignment.
 
      Exclude va_list type.  It is the common case of local array where
-     we can not benefit from the alignment.  
+     we cannot benefit from the alignment.  
 
      TODO: Probably one should optimize for size only when var is not escaping.  */
   if (TARGET_64BIT && optimize_function_for_speed_p (cfun)

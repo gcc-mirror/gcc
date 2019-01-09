@@ -1646,7 +1646,7 @@ declarator_can_be_parameter_pack (cp_declarator *declarator)
 
   /* Search for a declarator name, or any other declarator that goes
      after the point where the ellipsis could appear in a parameter
-     pack. If we find any of these, then this declarator can not be
+     pack. If we find any of these, then this declarator cannot be
      made into a parameter pack.  */
   bool found = false;
   while (declarator && !found)

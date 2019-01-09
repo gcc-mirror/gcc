@@ -1438,7 +1438,7 @@ find_givs_in_stmt_scev (struct ivopts_data *data, gimple *stmt, affine_iv *iv)
     return false;
 
   /* If STMT could throw, then do not consider STMT as defining a GIV.
-     While this will suppress optimizations, we can not safely delete this
+     While this will suppress optimizations, we cannot safely delete this
      GIV and associated statements, even if it appears it is not used.  */
   if (stmt_could_throw_p (cfun, stmt))
     return false;

@@ -967,7 +967,7 @@ add_csky_minipool_forward_ref (Mfix *fix)
   Mnode *mp;
 
   /* If the minipool starts before the end of FIX->INSN then this FIX
-     can not be placed into the current pool.  Furthermore, adding the
+     cannot be placed into the current pool.  Furthermore, adding the
      new constant pool entry may cause the pool to start FIX_SIZE bytes
      earlier.  */
   if (minipool_vector_head

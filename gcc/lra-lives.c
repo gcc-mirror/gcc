@@ -1073,7 +1073,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	      /* We should create a conflict of PIC pseudo with PIC
 		 hard reg as PIC hard reg can have a wrong value after
 		 jump described by the abnormal edge.  In this case we
-		 can not allocate PIC hard reg to PIC pseudo as PIC
+		 cannot allocate PIC hard reg to PIC pseudo as PIC
 		 pseudo will also have a wrong value.  */
 	      || (px == REAL_PIC_OFFSET_TABLE_REGNUM
 		  && pic_offset_table_rtx != NULL_RTX

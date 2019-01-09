@@ -2587,7 +2587,7 @@ remove_useless_values (cselib_val *base)
       bool del = false;
 
       /* If ANY of the store_infos match the cselib group that is
-	 being deleted, then the insn can not be deleted.  */
+	 being deleted, then the insn cannot be deleted.  */
       while (store_info)
 	{
 	  if ((store_info->group_id == -1)

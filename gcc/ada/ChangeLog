@@ -1,3 +1,13 @@
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
+	* exp_ch9.adb: Mechanically replace "can not" with "cannot".
+	* libgnat/s-regpat.ads: Likewise.
+	* par-ch4.adb: Likewise.
+	* set_targ.adb: Likewise.
+	* types.ads: Likewise.
+
 2019-01-08  Justin Squirek  <squirek@adacore.com>
 
 	Revert:

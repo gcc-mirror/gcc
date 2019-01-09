@@ -389,8 +389,8 @@ setup_regno_cost_classes_by_aclass (int regno, enum reg_class aclass)
 
 /* Setup cost classes for pseudo REGNO with MODE.  Usage of MODE can
    decrease number of cost classes for the pseudo, if hard registers
-   of some important classes can not hold a value of MODE.  So the
-   pseudo can not get hard register of some important classes and cost
+   of some important classes cannot hold a value of MODE.  So the
+   pseudo cannot get hard register of some important classes and cost
    calculation for such important classes is only wasting CPU
    time.  */
 static void

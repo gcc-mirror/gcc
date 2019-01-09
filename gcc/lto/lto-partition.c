@@ -250,14 +250,14 @@ add_symbol_to_partition (ltrans_partition part, symtab_node *node)
 {
   symtab_node *node1;
 
-  /* Verify that we do not try to duplicate something that can not be.  */
+  /* Verify that we do not try to duplicate something that cannot be.  */
   gcc_checking_assert (node->get_partitioning_class () == SYMBOL_DUPLICATE
 		       || !symbol_partitioned_p (node));
 
   while ((node1 = contained_in_symbol (node)) != node)
     node = node1;
 
-  /* If we have duplicated symbol contained in something we can not duplicate,
+  /* If we have duplicated symbol contained in something we cannot duplicate,
      we are very badly screwed.  The other way is possible, so we do not
      assert this in add_symbol_to_partition_1. 
 
@@ -1093,7 +1093,7 @@ rename_statics (lto_symtab_encoder_t encoder, symtab_node *node)
     return;
 
   /* Now walk symbols sharing the same name and see if there are any conflicts.
-     (all types of symbols counts here, since we can not have static of the
+     (all types of symbols counts here, since we cannot have static of the
      same name as external or public symbol.)  */
   for (s = symtab_node::get_for_asmname (name);
        s; s = s->next_sharing_asm_name)

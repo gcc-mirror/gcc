@@ -28,7 +28,7 @@
 #include "c-family/c-pragma.h"
 #include "stringpool.h"
 
-/* Output C specific EABI object attributes.  These can not be done in
+/* Output C specific EABI object attributes.  These cannot be done in
    arm.c because they require information from the C frontend.  */
 
 static void

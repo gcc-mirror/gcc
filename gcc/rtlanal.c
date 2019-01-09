@@ -1806,7 +1806,7 @@ reg_overlap_mentioned_p (const_rtx x, const_rtx in)
 {
   unsigned int regno, endregno;
 
-  /* If either argument is a constant, then modifying X can not
+  /* If either argument is a constant, then modifying X cannot
      affect IN.  Here we look at IN, we can profitably combine
      CONSTANT_P (x) with the switch statement below.  */
   if (CONSTANT_P (in))

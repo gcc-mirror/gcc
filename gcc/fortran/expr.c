@@ -2050,7 +2050,7 @@ scalarize_intrinsic_call (gfc_expr *, bool init_flag);
      1   Simplifying array constructors -- will substitute
 	 iterator values.
    Returns false on error, true otherwise.
-   NOTE: Will return true even if the expression can not be simplified.  */
+   NOTE: Will return true even if the expression cannot be simplified.  */
 
 bool
 gfc_simplify_expr (gfc_expr *p, int type)
@@ -5981,7 +5981,7 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
       if (pointer && is_pointer)
 	{
 	  if (context)
-	    gfc_error ("Variable %qs is PROTECTED and can not appear in a"
+	    gfc_error ("Variable %qs is PROTECTED and cannot appear in a"
 		       " pointer association context (%s) at %L",
 		       sym->name, context, &e->where);
 	  return false;
@@ -5989,7 +5989,7 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
       if (!pointer && !is_pointer)
 	{
 	  if (context)
-	    gfc_error ("Variable %qs is PROTECTED and can not appear in a"
+	    gfc_error ("Variable %qs is PROTECTED and cannot appear in a"
 		       " variable definition context (%s) at %L",
 		       sym->name, context, &e->where);
 	  return false;
@@ -6001,7 +6001,7 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
   if (!pointer && !own_scope && gfc_pure (NULL) && gfc_impure_variable (sym))
     {
       if (context)
-	gfc_error ("Variable %qs can not appear in a variable definition"
+	gfc_error ("Variable %qs cannot appear in a variable definition"
 		   " context (%s) at %L in PURE procedure",
 		   sym->name, context, &e->where);
       return false;
@@ -6075,9 +6075,9 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
       if (!gfc_check_vardef_context (assoc->target, pointer, false, false, NULL))
 	{
 	  if (context)
-	    gfc_error ("Associate-name %qs can not appear in a variable"
+	    gfc_error ("Associate-name %qs cannot appear in a variable"
 		       " definition context (%s) at %L because its target"
-		       " at %L can not, either",
+		       " at %L cannot, either",
 		       name, context, &e->where,
 		       &assoc->target->where);
 	  return false;

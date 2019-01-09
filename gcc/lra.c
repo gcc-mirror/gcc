@@ -881,7 +881,7 @@ collect_non_operand_hard_regs (rtx_insn *insn, rtx *x,
 	      }
 	  if (curr == NULL)
 	    {
-	      /* This is a new hard regno or the info can not be
+	      /* This is a new hard regno or the info cannot be
 		 integrated into the found structure.	 */
 #ifdef STACK_REGS
 	      early_clobber
@@ -1495,7 +1495,7 @@ add_regs_to_insn_regno_info (lra_insn_recog_data_t data, rtx x,
 	    if (curr->regno == regno)
 	      {
 		if (curr->subreg_p != subreg_p || curr->biggest_mode != mode)
-		  /* The info can not be integrated into the found
+		  /* The info cannot be integrated into the found
 		     structure.  */
 		  data->regs = new_insn_reg (data->insn, regno, type, mode,
 					     subreg_p, early_clobber,

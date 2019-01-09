@@ -5867,7 +5867,7 @@ type_with_alias_set_p (const_tree t)
   if (COMPLETE_TYPE_P (t))
     return true;
 
-  /* Incomplete types can not be accessed in general except for arrays
+  /* Incomplete types cannot be accessed in general except for arrays
      where we can fetch its element despite we have no array bounds.  */
   if (TREE_CODE (t) == ARRAY_TYPE && COMPLETE_TYPE_P (TREE_TYPE (t)))
     return true;

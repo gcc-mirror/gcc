@@ -6529,7 +6529,7 @@ expand_builtin_atomic_fetch_op (machine_mode mode, tree exp, rtx target,
   gcc_assert (TREE_OPERAND (addr, 0) == fndecl);
   TREE_OPERAND (addr, 0) = builtin_decl_explicit (ext_call);
 
-  /* If we will emit code after the call, the call can not be a tail call.
+  /* If we will emit code after the call, the call cannot be a tail call.
      If it is emitted as a tail call, a barrier is emitted after it, and
      then all trailing code is removed.  */
   if (!ignore)

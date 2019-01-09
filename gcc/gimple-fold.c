@@ -380,8 +380,8 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 			STRIP_USELESS_TYPE_CONVERSION (val);
 		      }
 		    else
-		      /* We can not use __builtin_unreachable here because it
-			 can not have address taken.  */
+		      /* We cannot use __builtin_unreachable here because it
+			 cannot have address taken.  */
 		      val = build_int_cst (TREE_TYPE (val), 0);
 		    return val;
 		  }
@@ -6988,7 +6988,7 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
 		     but don't fold.  */
 		  if (maybe_lt (offset, 0))
 		    return NULL_TREE;
-		  /* We can not determine ctor.  */
+		  /* We cannot determine ctor.  */
 		  if (!ctor)
 		    return NULL_TREE;
 		  return fold_ctor_reference (TREE_TYPE (t), ctor, offset,
@@ -7013,7 +7013,7 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
       /* We do not know precise address.  */
       if (!known_size_p (max_size) || maybe_ne (max_size, size))
 	return NULL_TREE;
-      /* We can not determine ctor.  */
+      /* We cannot determine ctor.  */
       if (!ctor)
 	return NULL_TREE;
 
