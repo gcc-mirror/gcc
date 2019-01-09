@@ -124,12 +124,12 @@ main()
 // { dg-final { regexp-test q {std::shared_ptr.int \[2\]. \(use count 2, weak count 1\) = {get\(\) = 0x.*}} } }
 // { dg-final { regexp-test wq {std::weak_ptr.int \[2\]. \(use count 2, weak count 1\) = {get\(\) = 0x.*}} } }
 
-  std::filesystem::path p0;
-// { dg-final { note-test p0 {filesystem::path ""} } }
-  std::filesystem::path p1("filename");
-// { dg-final { note-test p1 {filesystem::path "filename"} } }
-  std::filesystem::path p2("/dir/.");
-// { dg-final { note-test p2 {filesystem::path "/dir/file" = {[root-directory] = "/", [1] = "dir", [2] = "."}} } }
+  std::filesystem::path path0;
+// { dg-final { note-test path0 {filesystem::path ""} } }
+  std::filesystem::path path1("filename");
+// { dg-final { note-test path1 {filesystem::path "filename"} } }
+  std::filesystem::path path2("/dir/.");
+// { dg-final { note-test path2 {filesystem::path "/dir/." = {[root-directory] = "/", [1] = "dir", [2] = "."}} } }
 
   std::cout << "\n";
   return 0;			// Mark SPOT
