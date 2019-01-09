@@ -1,6 +1,9 @@
 /* { dg-do compile } */
 /* -Os to create jump table.  */
-/* { dg-options "-Os -mbranch-protection=standard" } */
+/* { dg-options "-Os" } */
+/* If configured with --enable-standard-branch-protection, don't use
+   command line option.  */
+/* { dg-additional-options "-mbranch-protection=standard" { target { ! default_branch_protection } } } */
 
 extern int f1 (void);
 extern int f2 (void);

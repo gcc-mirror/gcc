@@ -979,6 +979,7 @@ with_plugin_ld
 enable_gnu_indirect_function
 enable_initfini_array
 enable_comdat
+enable_standard_branch_protection
 enable_fix_cortex_a53_835769
 enable_fix_cortex_a53_843419
 with_glibc_version
@@ -1707,6 +1708,14 @@ Optional Features:
                           glibc systems
   --enable-initfini-array	use .init_array/.fini_array sections
   --enable-comdat         enable COMDAT group support
+
+  --enable-standard-branch-protection
+                          enable Branch Target Identification Mechanism and
+                          Return Address Signing by default for AArch64
+  --disable-standard-branch-protection
+                          disable Branch Target Identification Mechanism and
+                          Return Address Signing by default for AArch64
+
 
   --enable-fix-cortex-a53-835769
                           enable workaround for AArch64 Cortex-A53 erratum
@@ -25053,6 +25062,25 @@ $as_echo "$gcc_cv_as_aarch64_picreloc" >&6; }
 if test $gcc_cv_as_aarch64_picreloc = yes; then
 
 $as_echo "#define HAVE_AS_SMALL_PIC_RELOCS 1" >>confdefs.h
+
+fi
+
+    # Enable Branch Target Identification Mechanism and Return Address
+    # Signing by default.
+    # Check whether --enable-standard-branch-protection was given.
+if test "${enable_standard_branch_protection+set}" = set; then :
+  enableval=$enable_standard_branch_protection;
+        case $enableval in
+          yes)
+            tm_defines="${tm_defines} TARGET_ENABLE_BTI=1 TARGET_ENABLE_PAC_RET=1"
+            ;;
+          no)
+            ;;
+          *)
+            as_fn_error "'$enableval' is an invalid value for --enable-standard-branch-protection.\
+  Valid choices are 'yes' and 'no'." "$LINENO" 5
+            ;;
+        esac
 
 fi
 

@@ -4329,6 +4329,11 @@ proc check_effective_target_aarch64_bti_hw { } {
     } "-O2" ]
 }
 
+# Return 1 if GCC was configured with --enable-standard-branch-protection
+proc check_effective_target_default_branch_protection { } {
+    return [check_configured_with "enable-standard-branch-protection"]
+}
+
 # Return 1 if the target supports the ARMv8.1 Adv.SIMD extension, 0
 # otherwise.  The test is valid for AArch64 and ARM.  Record the command
 # line options needed.

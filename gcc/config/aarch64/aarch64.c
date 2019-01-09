@@ -11825,6 +11825,28 @@ aarch64_override_options (void)
   if (!selected_tune)
     selected_tune = selected_cpu;
 
+  if (aarch64_enable_bti == 2)
+    {
+#ifdef TARGET_ENABLE_BTI
+      aarch64_enable_bti = 1;
+#else
+      aarch64_enable_bti = 0;
+#endif
+    }
+
+  /* Return address signing is currently not supported for ILP32 targets.  For
+     LP64 targets use the configured option in the absence of a command-line
+     option for -mbranch-protection.  */
+  if (!TARGET_ILP32 && accepted_branch_protection_string == NULL)
+    {
+#ifdef TARGET_ENABLE_PAC_RET
+      aarch64_ra_sign_scope = AARCH64_FUNCTION_NON_LEAF;
+      aarch64_ra_sign_key = AARCH64_KEY_A;
+#else
+      aarch64_ra_sign_scope = AARCH64_FUNCTION_NONE;
+#endif
+    }
+
 #ifndef HAVE_AS_MABI_OPTION
   /* The compiler may have been configured with 2.23.* binutils, which does
      not have support for ILP32.  */

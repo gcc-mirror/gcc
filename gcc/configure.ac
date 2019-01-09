@@ -3962,6 +3962,29 @@ case "$target" in
 	ldr     x0, [[x2, #:gotpage_lo15:globalsym]]
     ],,[AC_DEFINE(HAVE_AS_SMALL_PIC_RELOCS, 1,
 	[Define if your assembler supports relocs needed by -fpic.])])
+    # Enable Branch Target Identification Mechanism and Return Address
+    # Signing by default.
+    AC_ARG_ENABLE(standard-branch-protection,
+    [
+AS_HELP_STRING([--enable-standard-branch-protection],
+        [enable Branch Target Identification Mechanism and Return Address Signing by default for AArch64])
+AS_HELP_STRING([--disable-standard-branch-protection],
+        [disable Branch Target Identification Mechanism and Return Address Signing by default for AArch64])
+    ],
+      [
+        case $enableval in
+          yes)
+            tm_defines="${tm_defines} TARGET_ENABLE_BTI=1 TARGET_ENABLE_PAC_RET=1"
+            ;;
+          no)
+            ;;
+          *)
+            AC_MSG_ERROR(['$enableval' is an invalid value for --enable-standard-branch-protection.\
+  Valid choices are 'yes' and 'no'.])
+            ;;
+        esac
+      ],
+    [])
     # Enable default workaround for AArch64 Cortex-A53 erratum 835769.
     AC_ARG_ENABLE(fix-cortex-a53-835769,
     [

@@ -1,4 +1,13 @@
 2018-01-09  Sudakshina Das  <sudi.das@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_override_options): Add case to
+	check configure option to set BTI and Return Address Signing.
+	* configure.ac: Add --enable-standard-branch-protection and
+	--disable-standard-branch-protection.
+	* configure: Regenerated.
+	* doc/install.texi: Document the same.
+
+2018-01-09  Sudakshina Das  <sudi.das@arm.com>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config.gcc (aarch64*-*-*): Add aarch64-bti-insert.o.

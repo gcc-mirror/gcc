@@ -3413,6 +3413,16 @@ The workaround is disabled by default if neither of
 @option{--enable-fix-cortex-a53-843419} or
 @option{--disable-fix-cortex-a53-843419} is given at configure time.
 
+To enable Branch Target Identification Mechanism and Return Address Signing by
+default at configure time use the @option{--enable-standard-branch-protection}
+option.  This is equivalent to having @option{-mbranch-protection=standard}
+during compilation.  This can be explicitly disabled during compilation by
+passing the @option{-mbranch-protection=none} option which turns off all
+types of branch protections.  Conversely,
+@option{--disable-standard-branch-protection} will disable both the
+protections by default.  This mechanism is turned off by default if neither
+of the options are given at configure time.
+
 @html
 <hr />
 @end html
