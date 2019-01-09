@@ -1,3 +1,11 @@
+2019-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (-Os): Add reference to -finline-functions.
+	(-finline-small-functions): Add references to -O3 and -Os.
+	(-findirect-inlining): Likewise.
+	(-finline-functions): Add references to -Os, -fprofile-use and
+	-fauto-profile.
+
 2019-01-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	revert:
