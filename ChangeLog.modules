@@ -1,6 +1,19 @@
 2019-01-09  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::read_partitions): New.
+	(module_state::read_imports): Deal with elided partitions.
+	(module_state::write_partitions): Write more.
+	(module_state::read): Read partitions.
+	(module_state::direct_import): Deal with elided partitions.
+	(process_deferred_imports): Don't request known filenames.  Avoid
+	double request.
+	gcc/testsuite/
+	* g++.dg/modules/atom-preamble-2_d.C: Check no duplicate.
+	gcc/
+	* doc/invoke.texi (C++ Modules): Update.
+
+	gcc/cp/
 	* module.cc (module_state::from_partition_p): New field.
 	(module_state::maybe_partition_name): New.
 	(module_state::{read,write}_imports): Adjust.
