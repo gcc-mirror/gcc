@@ -1,5 +1,8 @@
 2019-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/libstdc++-prettyprinters/cxx17.cc: Fix expected output
+	for filesystem::path. Give variables more distinctive names.
+
 	* include/std/optional (_Optional_payload_base::_M_copy_assign): New
 	member function to perform non-trivial assignment.
 	(_Optional_payload_base::_M_move_assign): Likewise.
