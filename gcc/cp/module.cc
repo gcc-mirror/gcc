@@ -2837,9 +2837,6 @@ slurping::~slurping ()
   close ();
 }
 
-/* Cannot be module_state member, because GTY.  */
-typedef vec<unsigned,va_heap,vl_embed> partition_vec;
-
 /* State of a particular module. */
 
 class GTY((chain_next ("%h.parent"), for_user)) module_state {
@@ -2872,14 +2869,15 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   unsigned short remap;		/* Remapping during writing.  */
   bool legacy_p : 1;	/* Is a legacy import.  */
   bool direct_p : 1;	/* A direct import of TU (includes interface
-			   of implementation).  */
+			   of implementation for which primary_p).  */
   bool primary_p : 1;   /* Is the primary interface of this
-			   implementation.  */
+			   implementation unit.  */
   bool interface_p : 1; /* Is an interface (partition or primary).  */
   bool exported_p : 1;	/* We are exported direct import.  */
   bool imported_p : 1;	/* Import has been done.  */
   bool alias_p : 1;	/* Alias for other module.  */
   bool partition_p : 1; /* A partition.  */
+  bool from_partition_p : 1; /* Direct import of a partition.  */
 
  public:
   module_state (tree name, uintptr_t);
@@ -2950,6 +2948,9 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool check_not_purview (location_t loc);
 
  public:
+  const char *maybe_partition_name () const;
+
+ public:
   void mangle ();
 
  public:
@@ -2982,10 +2983,14 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  private:
   /* Import tables. */
-  void write_imports (bytes_out &cfg, bool direct_p);
+  void write_imports (bytes_out &cfg, bool direct);
   unsigned read_imports (bytes_in &cfg, cpp_reader *, line_maps *maps);
   void write_imports (elf_out *to, unsigned *crc_ptr);
   bool read_imports (cpp_reader *, line_maps *);
+
+ private:
+  void write_partitions (elf_out *to, unsigned, unsigned *crc_ptr);
+  bool read_partitions (cpp_reader *, line_maps *);
 
  private:
   void write_config (elf_out *to, struct module_state_config &, unsigned crc);
@@ -3054,9 +3059,6 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool read_macros ();
   void install_macros ();
 
- private:
-  partition_vec *remap_partitions ();
-
  public:
   void import_macros ();
 
@@ -3106,7 +3108,7 @@ module_state::module_state (tree name, uintptr_t pp)
 {
   u1.slurp = NULL;
   legacy_p = direct_p = primary_p = interface_p = exported_p
-    = imported_p = alias_p = false;
+    = imported_p = alias_p = from_partition_p = false;
   if (name && (IDENTIFIER_POINTER (name)[0] == '"'
 	       || IDENTIFIER_POINTER (name)[0] == '<'))
     legacy_p = true;
@@ -6212,6 +6214,8 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
     /* Find the owning module and determine what to do.  */
     tree owner_decl = get_module_owner (decl);
     owner = MAYBE_DECL_MODULE_OWNER (owner_decl);
+    if (owner >= MODULE_IMPORT_BASE)
+      owner = (*modules)[owner]->remap;
 
     /* We should not get cross-module references to the pseudo
        template of a member of a template class.  */
@@ -7578,6 +7582,23 @@ module_state::resolve_alias ()
   return result;
 }
 
+/* If this is a partition return the :partname portion, otherwise the
+   whole name.  */
+
+const char *
+module_state::maybe_partition_name () const
+{
+  const char *name = fullname;
+
+  /* We could do 'clever' things like finding the non-partition root,
+     strlening that name and then indexing here.  But it's just
+     quicker to look for the separating ':'.  */
+  if (is_partition ())
+    name = strchr (fullname, ':');
+
+  return name;
+}
+
 /* If THIS is the current purview, issue an import error and return false.  */
 
 bool
@@ -8721,7 +8742,7 @@ int module_mapper::translate_include (cpp_reader *reader, line_maps *lmaps,
 
 /* A human-readable README section.  It is a STRTAB that may be
    extracted with:
-     readelf -p.gnu.c++.README $(module).nms */
+     readelf -pgnu.c++.README $(module).gcm */
 
 void
 module_state::write_readme (elf_out *to, const char *options, cpp_hashnode *node)
@@ -8757,9 +8778,10 @@ module_state::write_readme (elf_out *to, const char *options, cpp_hashnode *node
   for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
     {
       module_state *state = (*modules)[ix];
+
       if (state->is_direct ())
 	readme.printf ("%s: %s %s", state->exported_p ? "export" : "import",
-		       state->fullname, state->filename);
+		       state->maybe_partition_name (), state->filename);
     }
 
   readme.end (to, to->name (MOD_SNAME_PFX ".README"), NULL);
@@ -8780,31 +8802,36 @@ void
 module_state::write_imports (bytes_out &sec, bool direct)
 {
   unsigned count = 0;
-  
+
   for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
-    count += (*modules)[ix]->is_direct () == direct;
+    {
+      module_state *imp = (*modules)[ix];
+
+      if (imp->remap >= MODULE_IMPORT_BASE && imp->is_direct () == direct)
+	count++;
+    }
+
+  gcc_assert (!direct || count);
 
   sec.u (count);
   for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
     {
-      module_state *state = (*modules)[ix];
-      if (!is_partition () && state->is_partition ())
-	/* Skip partitions imported by main interface.  */
-	continue;
-      if (state->is_direct () == direct)
+      module_state *imp = (*modules)[ix];
+
+      if (imp->remap >= MODULE_IMPORT_BASE && imp->is_direct () == direct)
 	{
-	  dump () && dump ("Writing %simport:%u %M (crc=%x)",
+	  dump () && dump ("Writing %simport:%u->%u %M (crc=%x)",
 			   !direct ? "indirect "
-			   : state->exported_p ? "exported " : "",
-			   ix, state, state->crc);
-	  sec.u (ix);
-	  sec.str (state->fullname);
-	  sec.u32 (state->crc);
+			   : imp->exported_p ? "exported " : "",
+			   ix, imp->remap, imp, imp->crc);
+	  sec.u (imp->remap);
+	  sec.str (imp->maybe_partition_name ());
+	  sec.u32 (imp->crc);
 	  if (direct)
 	    {
-	      write_location (sec, state->from_loc);
-	      sec.str (state->filename);
-	      sec.u (state->exported_p);
+	      write_location (sec, imp->from_loc);
+	      sec.str (imp->filename);
+	      sec.u (imp->exported_p);
 	    }
 	}
     }
@@ -8866,6 +8893,9 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	      if (!imp)
 		continue;
 	    }
+
+	  if (is_partition () && !imp->is_partition ())
+	    imp->from_partition_p = true;
 	}
       else
 	{
@@ -8902,9 +8932,6 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 void
 module_state::write_imports (elf_out *to, unsigned *crc_ptr)
 {
-  if (modules->length () == MODULE_IMPORT_BASE)
-    return;
-
   dump () && dump ("Writing imports");
   dump.indent ();
 
@@ -8921,9 +8948,6 @@ module_state::write_imports (elf_out *to, unsigned *crc_ptr)
 bool
 module_state::read_imports (cpp_reader *reader, line_maps *lmaps)
 {
-  if (slurp ()->remap->length () == MODULE_IMPORT_BASE)
-    return true;
-
   bytes_in sec;
 
   if (!sec.begin (loc, from (), MOD_SNAME_PFX ".imp"))
@@ -8943,6 +8967,37 @@ module_state::read_imports (cpp_reader *reader, line_maps *lmaps)
   if (!sec.end (from ()))
     return false;
   return true;
+}
+
+/* We're the primary module interface, but have partitions.  Document
+   them so that non-partition module implementation units know which
+   have already been loaded.  */
+
+void
+module_state::write_partitions (elf_out *to, unsigned count, unsigned *crc_ptr)
+{
+  dump () && dump ("Writing partitions");
+  dump.indent ();
+
+  bytes_out sec (to);
+  sec.begin ();
+
+  sec.u (count);
+  for (unsigned ix = MODULE_IMPORT_BASE; ix != modules->length (); ix++)
+    {
+      module_state *imp = (*modules)[ix];
+      if (imp->is_partition ())
+	{
+	  dump () && dump ("Writing partition %M (crc=%x)", imp, imp->crc);
+	  sec.str (imp->maybe_partition_name ());
+	  sec.u32 (imp->crc);
+	  write_location (sec,
+			  imp->is_direct () ? imp->from_loc : UNKNOWN_LOCATION);
+	}
+    }
+
+  sec.end (to, to->name (MOD_SNAME_PFX ".prt"), crc_ptr);
+  dump.outdent ();
 }
 
 /* DECL is a just streamed mergeable decl that should match EXISTING.  Check
@@ -11761,13 +11816,16 @@ struct module_state_config {
   const char *opt_str;
   range_t sec_range;
   unsigned num_unnamed;
+  unsigned imports;
+  unsigned partitions;
   bool any_macros;
   cpp_hashnode *controlling_node;
   module_state *alias;
 
 public:
   module_state_config ()
-    :opt_str (get_opts ()), sec_range (0,0), num_unnamed (0), any_macros (false),
+    :opt_str (get_opts ()), sec_range (0,0), num_unnamed (0),
+     imports (0), partitions (0), any_macros (false),
      controlling_node (NULL), alias (NULL)
   {
   }
@@ -11932,7 +11990,8 @@ module_state::write_config (elf_out *to, module_state_config &config,
   if (is_partition ())
     cfg.u (exported_p);
 
-  cfg.u (modules->length ());
+  cfg.u (config.imports);
+  cfg.u (config.partitions);
 
   dump () && dump ("Declaration sections are [%u,%u)",
 		   config.sec_range.first, config.sec_range.second);
@@ -12126,11 +12185,11 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
   /* All non-partitions are interfaces.  */
   interface_p = !is_partition () || cfg.u ();
 
+  config.imports = cfg.u ();
+  config.partitions = cfg.u ();
+
   /* Allocate the REMAP vector.  */
-  {
-    unsigned imports = cfg.u ();
-    slurp ()->alloc_remap (imports);
-  }
+  slurp ()->alloc_remap (config.imports);
 
   /* Random config data.  */
   config.sec_range.first = cfg.u ();
@@ -12156,33 +12215,6 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
   return cfg.end (from ());
 }
 
-/* Determine remap numbers eliding partitions we've imported.
-   Return vector of partitions.  */
-
-partition_vec *
-module_state::remap_partitions ()
-{
-  if (is_partition ())
-    return NULL;
-  partition_vec *partitions = NULL;
-  vec_safe_reserve (partitions, modules->length ());
-
-  unsigned next = MODULE_IMPORT_BASE;
-  for (unsigned ix = MODULE_IMPORT_BASE; ix != modules->length (); ix++)
-    {
-      module_state *m = (*modules)[ix];
-      if (m->is_partition ())
-	{
-	  partitions->quick_push (ix);
-	  m->remap = MODULE_PURVIEW;
-	}
-      else
-	m->remap = next++;
-    }
-
-  return partitions;
-}
-
 /* Use ELROND format to record the following sections:
      qualified-names	    : binding value(s)
      MOD_SNAME_PFX.README   : human readable, stunningly STRTAB-like
@@ -12190,6 +12222,7 @@ module_state::remap_partitions ()
      MOD_SNAME_PFX.bnd      : binding table
      MOD_SNAME_PFX.vld      : unnamed table
      MOD_SNAME_PFX.imp      : import table
+     MOD_SNAME_PFX.prt      : partitions table
      MOD_SNAME_PFX.loc      : locations
      MOD_SNAME_PFX.def      : macro definitions
      MOD_SNAME_PFX.mac      : macro index
@@ -12199,7 +12232,26 @@ module_state::remap_partitions ()
 void
 module_state::write (elf_out *to, cpp_reader *reader)
 {
-  partition_vec *partitions = remap_partitions ();
+  /* Figure out remapped module numbers, which might elide
+     partitions.  */
+  unsigned mod_hwm = MODULE_IMPORT_BASE;
+  for (unsigned ix = MODULE_IMPORT_BASE; ix != modules->length (); ix++)
+    {
+      module_state *imp = (*modules)[ix];
+
+      /* Promote any non-partition import from a partition, unless
+	 we're a partition.  */
+      if (!is_partition () && !imp->is_partition () && imp->from_partition_p)
+	imp->direct_p = true;
+
+      /* Write any import that is not a partition, unless we're a
+	 partition.  */
+      if (is_partition () || !imp->is_partition ())
+	imp->remap = mod_hwm++;
+      else
+	imp->remap = MODULE_PURVIEW;
+    }
+
   unsigned crc = 0;
   depset::hash table (200);
 
@@ -12242,6 +12294,9 @@ module_state::write (elf_out *to, cpp_reader *reader)
   }
 
   module_state_config config;
+
+  config.imports = mod_hwm;
+  config.partitions = modules->length () - mod_hwm;
 
   /* depset::cluster is the cluster number,
      depset::section is unspecified scratch value.
@@ -12337,7 +12392,12 @@ module_state::write (elf_out *to, cpp_reader *reader)
   write_unnamed (to, sccs, config.num_unnamed, &crc);
 
   /* Write the import table.  */
-  write_imports (to, &crc);
+  if (config.imports > MODULE_IMPORT_BASE)
+    write_imports (to, &crc);
+
+  /* Write elided partition table.  */
+  if (config.partitions)
+    write_partitions (to, config.partitions, &crc);
 
   /* Write the line maps.  */
   write_locations (to, range_bits, &crc);
@@ -12353,8 +12413,6 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   trees_out::instrument ();
   dump () && dump ("Wrote %u sections", to->get_section_limit ());
-
-  vec_free (partitions);
 }
 
 /* Read a BMI from FD.  E is errno from its fopen.  Reading will
@@ -12380,7 +12438,8 @@ module_state::read (int fd, int e, cpp_reader *reader)
     return NULL;
 
   /* Read the import table.  */
-  if (!read_imports (reader, line_table))
+  if (config.imports > MODULE_IMPORT_BASE
+      && !read_imports (reader, line_table))
     return NULL;
 
   /* Determine the module's number.  */
