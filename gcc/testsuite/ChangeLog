@@ -1,3 +1,8 @@
+2019-01-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/68426
+	* gfortran.dg/spread_simplify_1.f90: New test.
+
 2019-01-09  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* lib/target-supports.exp
