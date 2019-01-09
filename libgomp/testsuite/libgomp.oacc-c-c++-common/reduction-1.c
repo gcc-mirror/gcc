@@ -8,9 +8,9 @@
 #include <stdlib.h>
 #include "reduction.h"
 
-const int ng = 8;
-const int nw = 4;
-const int vl = 32;
+#define ng 8
+#define nw 4
+#define vl 32
 
 static void
 test_reductions (void)

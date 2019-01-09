@@ -1,5 +1,15 @@
 2019-01-09  Tom de Vries  <tdevries@suse.de>
 
+	PR target/88756
+	* testsuite/libgomp.oacc-c-c++-common/reduction-1.c (ng, nw, vl): Use
+	#define instead of "const int".
+	* testsuite/libgomp.oacc-c-c++-common/reduction-2.c (ng, nw, vl): Same.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-3.c (ng, nw, vl): Same.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-4.c (ng, nw, vl): Same.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-5.c (ng, nw, vl): Same.
+
+2019-01-09  Tom de Vries  <tdevries@suse.de>
+
 	* plugin/plugin-nvptx.c (nvptx_exec): Make sure to launch with at least
 	one worker.
 
