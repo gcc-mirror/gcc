@@ -1,3 +1,12 @@
+2019-01-09  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
+
+	* gcc.target/aarch64/sve/copysign_1.c: New test for SVE vectorized
+	copysign.
+	* gcc.target/aarch64/sve/copysign_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/xorsign_1.c: New test for SVE vectorized
+	xorsign.
+	* gcc.target/aarch64/sve/xorsign_1_run.c: Likewise.
+
 2019-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/88331
