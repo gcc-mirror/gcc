@@ -2,6 +2,12 @@
 
 	PR other/16615
 
+	* expr.c: Change "can not" to "cannot".
+
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
 	* class.c: Mechanically replace "can not" with "cannot".
 	* decl.c: Likewise.
 	* expr.c: Likewise.

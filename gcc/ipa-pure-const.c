@@ -1792,8 +1792,8 @@ propagate_nothrow (void)
 				   function_or_virtual_thunk_symbol (&avail,
 								     e->caller);
 
-		  /* We can use info about the callee only if we know it can
-		     not be interposed.
+		  /* We can use info about the callee only if we know it
+		     cannot be interposed.
 		     When callee is compiled with non-call exceptions we also
 		     must check that the declaration is bound to current
 		     body as other semantically equivalent body may still

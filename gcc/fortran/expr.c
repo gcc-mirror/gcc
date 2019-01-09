@@ -6060,12 +6060,14 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 	  if (context)
 	    {
 	      if (assoc->target->expr_type == EXPR_VARIABLE)
-		gfc_error ("%qs at %L associated to vector-indexed target can"
-			   " not be used in a variable definition context (%s)",
+		gfc_error ("%qs at %L associated to vector-indexed target"
+			   " cannot be used in a variable definition"
+			   " context (%s)",
 			   name, &e->where, context);
 	      else
-		gfc_error ("%qs at %L associated to expression can"
-			   " not be used in a variable definition context (%s)",
+		gfc_error ("%qs at %L associated to expression"
+			   " cannot be used in a variable definition"
+			   " context (%s)",
 			   name, &e->where, context);
 	    }
 	  return false;

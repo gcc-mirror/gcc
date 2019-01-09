@@ -2,6 +2,13 @@
 
 	PR other/16615
 
+	* exp_ch11.adb: Change "can not" to "cannot".
+	* sem_ch4.adb: Likewise.
+
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
 	* exp_ch9.adb: Mechanically replace "can not" with "cannot".
 	* libgnat/s-regpat.ads: Likewise.
 	* par-ch4.adb: Likewise.

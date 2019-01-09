@@ -224,8 +224,8 @@ objc_EXPORT SEL * sel_copyTypedSelectorList (const char *name,
    This is useful if you have the name of the selector, and would
    really like to get a selector for it that includes the type
    encoding.  Unfortunately, if the program contains multiple selector
-   with the same name but different types, sel_getTypedSelector can
-   not possibly know which one you need, and so will return NULL.
+   with the same name but different types, sel_getTypedSelector cannot
+   possibly know which one you need, and so will return NULL.
 
    Compatibility Note: the Apple/NeXT runtime has untyped selectors,
    so it does not have this function, which is specific to the GNU

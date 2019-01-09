@@ -1564,8 +1564,8 @@ is_included_in (pred_chain one_pred, pred_chain_union preds)
    individual predicate chains (won't be a compile time problem
    as the chains are pretty short).  When the function returns
    false, it does not necessarily mean *PREDS1 is not a superset
-   of *PREDS2, but mean it may not be so since the analysis can
-   not prove it.  In such cases, false warnings may still be
+   of *PREDS2, but mean it may not be so since the analysis cannot
+   prove it.  In such cases, false warnings may still be
    emitted.  */
 
 static bool

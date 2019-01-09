@@ -2647,8 +2647,8 @@ process_alt_operands (int only_alternative)
 		     class which does not have actually enough regs to
 		     hold the value (e.g. x86 AREG for mode requiring
 		     more one general reg).  Therefore we have 2
-		     conditions to check that the reload pseudo can
-		     not hold the mode value.  */
+		     conditions to check that the reload pseudo cannot
+		     hold the mode value.  */
 		  && (!targetm.hard_regno_mode_ok
 		      (ira_class_hard_regs[this_alternative][0],
 		       GET_MODE (*curr_id->operand_loc[nop])))

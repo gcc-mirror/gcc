@@ -4029,8 +4029,8 @@ update_eliminables_and_spill (void)
 	did_spill = true;
 
 	/* Regardless of the state of spills, if we previously had
-	   a register that we thought we could eliminate, but now can
-	   not eliminate, we must run another pass.
+	   a register that we thought we could eliminate, but now
+	   cannot eliminate, we must run another pass.
 
 	   Consider pseudos which have an entry in reg_equiv_* which
 	   reference an eliminable register.  We must make another pass

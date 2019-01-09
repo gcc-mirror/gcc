@@ -2,6 +2,21 @@
 
 	PR other/16615
 
+	* config/pa/pa.c: Change "can not" to "cannot".
+	* gimple-ssa-evrp-analyze.c: Likewise.
+	* ipa-icf.c: Likewise.
+	* ipa-polymorphic-call.c: Likewise.
+	* ipa-pure-const.c: Likewise.
+	* lra-constraints.c: Likewise.
+	* lra-remat.c: Likewise.
+	* reload1.c: Likewise.
+	* reorg.c: Likewise.
+	* tree-ssa-uninit.c: Likewise.
+
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
 	* Makefile.in: Mechanically replace "can not" with "cannot".
 	* alias.c: Likewise.
 	* builtins.c: Likewise.

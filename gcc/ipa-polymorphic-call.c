@@ -2202,8 +2202,8 @@ ipa_polymorphic_call_context::combine_with (ipa_polymorphic_call_context ctx,
 	  updated = true;
 	}
 
-      /* If we do not know how the context is being used, we can
-	 not clear MAYBE_IN_CONSTRUCTION because it may be offseted
+      /* If we do not know how the context is being used, we cannot
+	 clear MAYBE_IN_CONSTRUCTION because it may be offseted
 	 to other component of OUTER_TYPE later and we know nothing
 	 about it.  */
       if (otr_type && maybe_in_construction
