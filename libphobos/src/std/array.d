@@ -76,7 +76,6 @@ Source: $(PHOBOSSRC std/_array.d)
 */
 module std.array;
 
-static import std.algorithm.iteration; // FIXME, remove with alias of splitter
 import std.functional;
 import std.meta;
 import std.traits;
@@ -1465,6 +1464,7 @@ if (isSomeString!S)
 {
     import std.ascii : isWhite;
     import std.algorithm.comparison : equal;
+    import std.algorithm.iteration : splitter;
 
     string str = "Hello World!";
     assert(str.splitter!(isWhite).equal(["Hello", "World!"]));
@@ -1523,10 +1523,6 @@ if (isSomeString!S)
     auto a = split([1, 2, 3, 4, 5, 1, 2, 3, 4, 5], [2, 3]);
     assert(a == [[1], [4, 5, 1], [4, 5]]);
 }
-
-// Explicitly undocumented. It will be removed in January 2018. @@@DEPRECATED_2018-01@@@
-deprecated("Please use std.algorithm.iteration.splitter instead.")
-alias splitter = std.algorithm.iteration.splitter;
 
 /++
     Eagerly splits $(D range) into an array, using $(D sep) as the delimiter.

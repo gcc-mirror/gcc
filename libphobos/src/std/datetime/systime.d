@@ -262,34 +262,6 @@ public:
     }
 
 
-    // Explicitly undocumented. It will be removed in January 2018. @@@DEPRECATED_2018-01@@@
-    deprecated("Use core.time.MonoTime.currTime instead")
-    static @property TickDuration currSystemTick() @safe nothrow
-    {
-        return TickDuration.currSystemTick;
-    }
-
-    deprecated @safe unittest
-    {
-        assert(Clock.currSystemTick.length > 0);
-    }
-
-    // Explicitly undocumented. It will be removed in January 2018. @@@DEPRECATED_2018-01@@@
-    deprecated("Use core.time.MonoTime instead. See currAppTick's documentation for details.")
-    static @property TickDuration currAppTick() @safe
-    {
-        return currSystemTick - TickDuration.appOrigin;
-    }
-
-    deprecated @safe unittest
-    {
-        auto a = Clock.currSystemTick;
-        auto b = Clock.currAppTick;
-        assert(a.length);
-        assert(b.length);
-        assert(a > b);
-    }
-
 private:
 
     @disable this() {}
@@ -446,51 +418,6 @@ public:
 
         assertThrown!DateTimeException(SysTime(DateTime.init, hnsecs(-1), UTC()));
         assertThrown!DateTimeException(SysTime(DateTime.init, seconds(1), UTC()));
-    }
-
-    // Explicitly undocumented. It will be removed in August 2017. @@@DEPRECATED_2017-08@@@
-    deprecated("Please use the overload which takes a Duration instead of a FracSec.")
-    this(in DateTime dateTime, in FracSec fracSec, immutable TimeZone tz = null) @safe
-    {
-        immutable fracHNSecs = fracSec.hnsecs;
-        enforce(fracHNSecs >= 0, new DateTimeException("A SysTime cannot have negative fractional seconds."));
-        _timezone = tz is null ? LocalTime() : tz;
-
-        try
-        {
-            immutable dateDiff = (dateTime.date - Date(1, 1, 1)).total!"hnsecs";
-            immutable todDiff = (dateTime.timeOfDay - TimeOfDay(0, 0, 0)).total!"hnsecs";
-
-            immutable adjustedTime = dateDiff + todDiff + fracHNSecs;
-            immutable standardTime = _timezone.tzToUTC(adjustedTime);
-
-            this(standardTime, _timezone);
-        }
-        catch (Exception e)
-            assert(0, "Date, TimeOfDay, or DateTime's constructor threw when it shouldn't have.");
-    }
-
-    deprecated @safe unittest
-    {
-        static void test(DateTime dt, FracSec fracSec, immutable TimeZone tz, long expected)
-        {
-            auto sysTime = SysTime(dt, fracSec, tz);
-            assert(sysTime._stdTime == expected);
-            assert(sysTime._timezone is (tz is null ? LocalTime() : tz),
-                   format("Given DateTime: %s, Given FracSec: %s", dt, fracSec));
-        }
-
-        test(DateTime.init, FracSec.init, UTC(), 0);
-        test(DateTime(1, 1, 1, 12, 30, 33), FracSec.init, UTC(), 450_330_000_000L);
-        test(DateTime(0, 12, 31, 12, 30, 33), FracSec.init, UTC(), -413_670_000_000L);
-        test(DateTime(1, 1, 1, 0, 0, 0), FracSec.from!"msecs"(1), UTC(), 10_000L);
-        test(DateTime(0, 12, 31, 23, 59, 59), FracSec.from!"msecs"(999), UTC(), -10_000L);
-
-        test(DateTime(0, 12, 31, 23, 59, 59), FracSec.from!"hnsecs"(9_999_999), UTC(), -1);
-        test(DateTime(0, 12, 31, 23, 59, 59), FracSec.from!"hnsecs"(1), UTC(), -9_999_999);
-        test(DateTime(0, 12, 31, 23, 59, 59), FracSec.from!"hnsecs"(0), UTC(), -10_000_000);
-
-        assertThrown!DateTimeException(SysTime(DateTime.init, FracSec.from!"hnsecs"(-1), UTC()));
     }
 
     /++
@@ -1887,125 +1814,6 @@ public:
         //immutable ist = SysTime(DateTime(1999, 7, 6, 12, 30, 33));
         static assert(!__traits(compiles, cst.fracSecs = msecs(7)));
         //static assert(!__traits(compiles, ist.fracSecs = msecs(7)));
-    }
-
-
-    // Explicitly undocumented. It will be removed in August 2017. @@@DEPRECATED_2017-08@@@
-    deprecated("Please use fracSecs (with an s) rather than fracSec (without an s). " ~
-               "It returns a Duration instead of a FracSec, as FracSec is being deprecated.")
-    @property FracSec fracSec() @safe const nothrow
-    {
-        try
-        {
-            auto hnsecs = removeUnitsFromHNSecs!"days"(adjTime);
-
-            if (hnsecs < 0)
-                hnsecs += convert!("hours", "hnsecs")(24);
-
-            hnsecs = removeUnitsFromHNSecs!"seconds"(hnsecs);
-
-            return FracSec.from!"hnsecs"(cast(int) hnsecs);
-        }
-        catch (Exception e)
-            assert(0, "FracSec.from!\"hnsecs\"() threw.");
-    }
-
-    deprecated @safe unittest
-    {
-        import std.range;
-
-        static void test(SysTime sysTime, FracSec expected, size_t line = __LINE__)
-        {
-            if (sysTime.fracSec != expected)
-                throw new AssertError(format("Value given: %s", sysTime.fracSec), __FILE__, line);
-        }
-
-        test(SysTime(0, UTC()), FracSec.from!"hnsecs"(0));
-        test(SysTime(1, UTC()), FracSec.from!"hnsecs"(1));
-        test(SysTime(-1, UTC()), FracSec.from!"hnsecs"(9_999_999));
-
-        foreach (tz; testTZs)
-        {
-            foreach (year; chain(testYearsBC, testYearsAD))
-            {
-                foreach (md; testMonthDays)
-                {
-                    foreach (hour; testHours)
-                    {
-                        foreach (minute; testMinSecs)
-                        {
-                            foreach (second; testMinSecs)
-                            {
-                                auto dt = DateTime(Date(year, md.month, md.day), TimeOfDay(hour, minute, second));
-                                foreach (fs; testFracSecs)
-                                    test(SysTime(dt, fs, tz), FracSec.from!"hnsecs"(fs.total!"hnsecs"));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        const cst = SysTime(DateTime(1999, 7, 6, 12, 30, 33));
-        //immutable ist = SysTime(DateTime(1999, 7, 6, 12, 30, 33));
-        assert(cst.fracSec == FracSec.zero);
-        //assert(ist.fracSec == FracSec.zero);
-    }
-
-
-    // Explicitly undocumented. It will be removed in August 2017. @@@DEPRECATED_2017-08@@@
-    deprecated("Please use fracSecs (with an s) rather than fracSec (without an s). " ~
-               "It takes a Duration instead of a FracSec, as FracSec is being deprecated.")
-    @property void fracSec(FracSec fracSec) @safe
-    {
-        immutable fracHNSecs = fracSec.hnsecs;
-        enforce(fracHNSecs >= 0, new DateTimeException("A SysTime cannot have negative fractional seconds."));
-
-        auto hnsecs = adjTime;
-        auto days = splitUnitsFromHNSecs!"days"(hnsecs);
-        immutable daysHNSecs = convert!("days", "hnsecs")(days);
-        immutable negative = hnsecs < 0;
-
-        if (negative)
-            hnsecs += convert!("hours", "hnsecs")(24);
-
-        immutable hour = splitUnitsFromHNSecs!"hours"(hnsecs);
-        immutable minute = splitUnitsFromHNSecs!"minutes"(hnsecs);
-        immutable second = getUnitsFromHNSecs!"seconds"(hnsecs);
-
-        hnsecs = fracHNSecs;
-        hnsecs += convert!("hours", "hnsecs")(hour);
-        hnsecs += convert!("minutes", "hnsecs")(minute);
-        hnsecs += convert!("seconds", "hnsecs")(second);
-
-        if (negative)
-            hnsecs -= convert!("hours", "hnsecs")(24);
-
-        adjTime = daysHNSecs + hnsecs;
-    }
-
-    deprecated @safe unittest
-    {
-        import std.range;
-
-        foreach (fracSec; testFracSecs)
-        {
-            foreach (st; chain(testSysTimesBC, testSysTimesAD))
-            {
-                auto dt = cast(DateTime) st;
-                auto expected = SysTime(dt, fracSec, st.timezone);
-                st.fracSec = FracSec.from!"hnsecs"(fracSec.total!"hnsecs");
-                assert(st == expected, format("[%s] [%s]", st, expected));
-            }
-        }
-
-        auto st = testSysTimesAD[0];
-        assertThrown!DateTimeException(st.fracSec = FracSec.from!"hnsecs"(-1));
-
-        const cst = SysTime(DateTime(1999, 7, 6, 12, 30, 33));
-        //immutable ist = SysTime(DateTime(1999, 7, 6, 12, 30, 33));
-        static assert(!__traits(compiles, cst.fracSec = FracSec.from!"msecs"(7)));
-        //static assert(!__traits(compiles, ist.fracSec = FracSec.from!"msecs"(7)));
     }
 
 
@@ -6167,33 +5975,6 @@ public:
         //assert(ist - duration == SysTime(DateTime(1999, 7, 6, 12, 30, 21)));
     }
 
-    // Explicitly undocumented. It will be removed in January 2018. @@@DEPRECATED_2018-01@@@
-    deprecated("Use Duration instead of TickDuration.")
-    SysTime opBinary(string op)(TickDuration td) @safe const pure nothrow
-        if (op == "+" || op == "-")
-    {
-        SysTime retval = SysTime(this._stdTime, this._timezone);
-        immutable hnsecs = td.hnsecs;
-        mixin("retval._stdTime " ~ op ~ "= hnsecs;");
-        return retval;
-    }
-
-    deprecated @safe unittest
-    {
-        // This probably only runs in cases where gettimeofday() is used, but it's
-        // hard to do this test correctly with variable ticksPerSec.
-        if (TickDuration.ticksPerSec == 1_000_000)
-        {
-            auto st = SysTime(DateTime(1999, 7, 6, 12, 30, 33), hnsecs(2_345_678));
-
-            assert(st + TickDuration.from!"usecs"(7) == SysTime(DateTime(1999, 7, 6, 12, 30, 33), hnsecs(2_345_748)));
-            assert(st + TickDuration.from!"usecs"(-7) == SysTime(DateTime(1999, 7, 6, 12, 30, 33), hnsecs(2_345_608)));
-
-            assert(st - TickDuration.from!"usecs"(-7) == SysTime(DateTime(1999, 7, 6, 12, 30, 33), hnsecs(2_345_748)));
-            assert(st - TickDuration.from!"usecs"(7) == SysTime(DateTime(1999, 7, 6, 12, 30, 33), hnsecs(2_345_608)));
-        }
-    }
-
 
     /++
         Gives the result of adding or subtracting a $(REF Duration, core,time) from
@@ -6395,46 +6176,6 @@ public:
         //static assert(!__traits(compiles, ist += duration));
         static assert(!__traits(compiles, cst -= duration));
         //static assert(!__traits(compiles, ist -= duration));
-    }
-
-    // Explicitly undocumented. It will be removed in January 2018. @@@DEPRECATED_2018-01@@@
-    deprecated("Use Duration instead of TickDuration.")
-    ref SysTime opOpAssign(string op)(TickDuration td) @safe pure nothrow
-        if (op == "+" || op == "-")
-    {
-        immutable hnsecs = td.hnsecs;
-        mixin("_stdTime " ~ op ~ "= hnsecs;");
-        return this;
-    }
-
-    deprecated @safe unittest
-    {
-        // This probably only runs in cases where gettimeofday() is used, but it's
-        // hard to do this test correctly with variable ticksPerSec.
-        if (TickDuration.ticksPerSec == 1_000_000)
-        {
-            {
-                auto st = SysTime(DateTime(1999, 7, 6, 12, 30, 33), hnsecs(2_345_678));
-                st += TickDuration.from!"usecs"(7);
-                assert(st == SysTime(DateTime(1999, 7, 6, 12, 30, 33), hnsecs(2_345_748)));
-            }
-            {
-                auto st = SysTime(DateTime(1999, 7, 6, 12, 30, 33), hnsecs(2_345_678));
-                st += TickDuration.from!"usecs"(-7);
-                assert(st == SysTime(DateTime(1999, 7, 6, 12, 30, 33), hnsecs(2_345_608)));
-            }
-
-            {
-                auto st = SysTime(DateTime(1999, 7, 6, 12, 30, 33), hnsecs(2_345_678));
-                st -= TickDuration.from!"usecs"(-7);
-                assert(st == SysTime(DateTime(1999, 7, 6, 12, 30, 33), hnsecs(2_345_748)));
-            }
-            {
-                auto st = SysTime(DateTime(1999, 7, 6, 12, 30, 33), hnsecs(2_345_678));
-                st -= TickDuration.from!"usecs"(7);
-                assert(st == SysTime(DateTime(1999, 7, 6, 12, 30, 33), hnsecs(2_345_608)));
-            }
-        }
     }
 
 

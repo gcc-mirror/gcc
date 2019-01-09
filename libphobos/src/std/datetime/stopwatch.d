@@ -403,10 +403,7 @@ Duration[fun.length] benchmark(fun...)(uint n)
     void f0() nothrow {}
     void f1() nothrow { auto b = to!string(a); }
     auto r = benchmark!(f0, f1)(1000);
-    version (GNU)
-        assert(r[0] >= Duration.zero);
-    else
-        assert(r[0] > Duration.zero);
+    assert(r[0] >= Duration.zero);
     assert(r[1] > Duration.zero);
     assert(r[1] > r[0]);
     assert(r[0] < seconds(1));
