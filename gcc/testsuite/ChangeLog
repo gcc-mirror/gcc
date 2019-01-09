@@ -1,5 +1,14 @@
 2018-01-09  Sudakshina Das  <sudi.das@arm.com>
 
+	* gcc.target/aarch64/bti-1.c: Update test to not add command line
+	option when configure with bti.
+	* gcc.target/aarch64/bti-2.c: Likewise.
+	* lib/target-supports.exp
+	(check_effective_target_default_branch_protection):
+	Add configure check for --enable-standard-branch-protection.
+
+2018-01-09  Sudakshina Das  <sudi.das@arm.com>
+
 	* gcc.target/aarch64/bti-1.c: New test.
 	* gcc.target/aarch64/bti-2.c: New test.
 	* gcc.target/aarch64/bti-3.c: New test.

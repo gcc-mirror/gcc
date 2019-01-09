@@ -1,6 +1,8 @@
 /* { dg-do run } */
 /* { dg-require-effective-target aarch64_bti_hw } */
-/* { dg-options "-mbranch-protection=standard" } */
+/* If configured with --enable-standard-branch-protection, don't use
+   command line option.  */
+/* { dg-additional-options "-mbranch-protection=standard" { target { ! default_branch_protection } } } */
 
 #include<stdio.h>
 
