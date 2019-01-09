@@ -1,3 +1,8 @@
+2019-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/88331
+	* gcc.target/i386/pr88331.c: New test.
+
 2019-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/diagnostic/constexpr2.C: New.
