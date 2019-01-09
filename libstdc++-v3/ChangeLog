@@ -1,5 +1,13 @@
 2019-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/optional (_Optional_payload_base::_M_copy_assign): New
+	member function to perform non-trivial assignment.
+	(_Optional_payload_base::_M_move_assign): Likewise.
+	(_Optional_payload<T, true, false, true>::operator=)
+	(_Optional_payload<T, true, true, false>::operator=)
+	(_Optional_payload<T, true, false, false>::operator=): Call
+	_M_copy_assign and/or _M_move_assign to do non-trivial assignments.
+
 	PR libstdc++/88204
 	* testsuite/26_numerics/complex/operators/more_constexpr.cc: Do not
 	test std::complex<long double> if long double format is IBM128.
