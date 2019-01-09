@@ -15628,8 +15628,11 @@ more feature modifiers.  This option has the form
 @option{-march=@var{arch}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}.
 
 The permissible values for @var{arch} are @samp{armv8-a},
-@samp{armv8.1-a}, @samp{armv8.2-a}, @samp{armv8.3-a} or @samp{armv8.4-a}
-or @var{native}.
+@samp{armv8.1-a}, @samp{armv8.2-a}, @samp{armv8.3-a}, @samp{armv8.4-a},
+@samp{armv8.5-a} or @var{native}.
+
+The value @samp{armv8.5-a} implies @samp{armv8.4-a} and enables compiler
+support for the ARMv8.5-A architecture extensions.
 
 The value @samp{armv8.4-a} implies @samp{armv8.3-a} and enables compiler
 support for the ARMv8.4-A architecture extensions.

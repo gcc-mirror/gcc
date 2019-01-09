@@ -1,3 +1,11 @@
+2018-01-09  Sudakshina Das  <sudi.das@arm.com>
+
+	* config/aarch64/aarch64-arches.def: Define AARCH64_ARCH for
+	ARMv8.5-A.
+	* gcc/config/aarch64/aarch64.h (AARCH64_FL_V8_5): New.
+	(AARCH64_FL_FOR_ARCH8_5, AARCH64_ISA_V8_5): New.
+	* gcc/doc/invoke.texi: Document ARMv8.5-A.
+
 2019-01-09  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
 
 	* config/aarch64/aarch64-sve.md (copysign<mode>3): New define_expand.
