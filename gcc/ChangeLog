@@ -1,3 +1,93 @@
+2019-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+            James Clarke  <jrtc27@jrtc27.com>
+
+	PR target/84010
+	* config/sparc/sparc.c (sparc_legitimize_tls_address): Only use Pmode
+	consistently in TLS address generation and adjust code to the renaming
+	of patterns.  Mark calls to __tls_get_addr as const.
+	* config/sparc/sparc.md (tgd_hi22): Turn into...
+	(tgd_hi22<P:mode>): ...this and use Pmode throughout.
+	(tgd_lo10): Turn into...
+	(tgd_lo10<P:mode>): ...this and use Pmode throughout.
+	(tgd_add32): Merge into...
+	(tgd_add64): Likewise.
+	(tgd_add<P:mode>): ...this and use Pmode throughout.
+	(tldm_hi22): Turn into...
+	(tldm_hi22<P:mode>): ...this and use Pmode throughout.
+	(tldm_lo10): Turn into...
+	(tldm_lo10<P:mode>): ...this and use Pmode throughout.
+	(tldm_add32): Merge into...
+	(tldm_add64): Likewise.
+	(tldm_add<P:mode>): ...this and use Pmode throughout.
+	(tldm_call32): Merge into...
+	(tldm_call64): Likewise.
+	(tldm_call<P:mode>): ...this and use Pmode throughout.
+	(tldo_hix22): Turn into...
+	(tldo_hix22<P:mode>): ...this and use Pmode throughout.
+	(tldo_lox10): Turn into...
+	(tldo_lox10<P:mode>): ...this and use Pmode throughout.
+	(tldo_add32): Merge into...
+	(tldo_add64): Likewise.
+	(tldo_add<P:mode>): ...this and use Pmode throughout.
+	(tie_hi22): Turn into...
+	(tie_hi22<P:mode>): ...this and use Pmode throughout.
+	(tie_lo10): Turn into...
+	(tie_lo10<P:mode>): ...this and use Pmode throughout.
+	(tie_ld64): Use DImode throughout.
+	(tie_add32): Merge into...
+	(tie_add64): Likewise.
+	(tie_add<P:mode>): ...this and use Pmode throughout.
+	(tle_hix22_sp32): Merge into...
+	(tle_hix22_sp64): Likewise.
+	(tle_hix22<P:mode>): ...this and use Pmode throughout.
+	(tle_lox22_sp32): Merge into...
+	(tle_lox22_sp64): Likewise.
+	(tle_lox22<P:mode>): ...this and use Pmode throughout.
+	(*tldo_ldub_sp32): Merge into...
+	(*tldo_ldub_sp64): Likewise.
+	(*tldo_ldub<P:mode>): ...this and use Pmode throughout.
+	(*tldo_ldub1_sp32): Merge into...
+	(*tldo_ldub1_sp64): Likewise.
+	(*tldo_ldub1<P:mode>): ...this and use Pmode throughout.
+	(*tldo_ldub2_sp32): Merge into...
+	(*tldo_ldub2_sp64): Likewise.
+	(*tldo_ldub2<P:mode>): ...this and use Pmode throughout.
+	(*tldo_ldsb1_sp32): Merge into...
+	(*tldo_ldsb1_sp64): Likewise.
+	(*tldo_ldsb1<P:mode>): ...this and use Pmode throughout.
+	(*tldo_ldsb2_sp32): Merge into...
+	(*tldo_ldsb2_sp64): Likewise.
+	(*tldo_ldsb2<P:mode>): ...this and use Pmode throughout.
+	(*tldo_ldub3_sp64): Use DImode throughout.
+	(*tldo_ldsb3_sp64): Likewise.
+	(*tldo_lduh_sp32): Merge into...
+	(*tldo_lduh_sp64): Likewise.
+	(*tldo_lduh<P:mode>): ...this and use Pmode throughout.
+	(*tldo_lduh1_sp32): Merge into...
+	(*tldo_lduh1_sp64): Likewise.
+	(*tldo_lduh1<P:mode>): ...this and use Pmode throughout.
+	(*tldo_ldsh1_sp32): Merge into...
+	(*tldo_ldsh1_sp64): Likewise.
+	(*tldo_ldsh1<P:mode>): ...this and use Pmode throughout.
+	(*tldo_lduh2_sp64): Use DImode throughout.
+	(*tldo_ldsh2_sp64): Likewise.
+	(*tldo_lduw_sp32): Merge into...
+	(*tldo_lduw_sp64): Likewise.
+	(*tldo_lduw<P:mode>): ...this and use Pmode throughout.
+	(*tldo_lduw1_sp64): Use DImode throughout.
+	(*tldo_ldsw1_sp64): Likewise.
+	(*tldo_ldx_sp64): Likewise.
+	(*tldo_stb_sp32): Merge into...
+	(*tldo_stb_sp64): Likewise.
+	(*tldo_stb<P:mode>): ...this and use Pmode throughout.
+	(*tldo_sth_sp32): Merge into...
+	(*tldo_sth_sp64): Likewise.
+	(*tldo_sth<P:mode>): ...this and use Pmode throughout.
+	(*tldo_stw_sp32): Merge into...
+	(*tldo_stw_sp64): Likewise.
+	(*tldo_stw<P:mode>): ...this and use Pmode throughout.
+	(*tldo_stx_sp64): Use DImode throughout.
+
 2018-01-09  Sudakshina Das  <sudi.das@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_override_options): Add case to
@@ -11,7 +101,7 @@
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config.gcc (aarch64*-*-*): Add aarch64-bti-insert.o.
-	* gcc/config/aarch64/aarch64.h: Update comment for TRAMPOLINE_SIZE.
+	* config/aarch64/aarch64.h: Update comment for TRAMPOLINE_SIZE.
 	* config/aarch64/aarch64.c (aarch64_asm_trampoline_template): Update
 	if bti is enabled.
 	* config/aarch64/aarch64-bti-insert.c: New file.
