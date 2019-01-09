@@ -1,3 +1,8 @@
+2019-01-09  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (nvptx_exec): Make sure to launch with at least
+	one worker.
+
 2019-01-07  Tom de Vries  <tdevries@suse.de>
 
 	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-3.c: Fix

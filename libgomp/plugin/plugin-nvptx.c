@@ -1272,6 +1272,7 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 				      ? vectors
 				      : dims[GOMP_DIM_VECTOR]);
 		workers = blocks / actual_vectors;
+		workers = MAX (workers, 1);
 	      }
 
 	    for (i = 0; i != GOMP_DIM_MAX; i++)
