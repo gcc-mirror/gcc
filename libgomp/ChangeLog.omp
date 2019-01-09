@@ -1,3 +1,8 @@
+2019-01-09  Julian Brown  <julian@codesourcery.com>
+
+	* libgomp.texi: Update mentions of OpenACC version to 2.6.  Update
+	section numbers to match version 2.6 of the spec.
+
 2019-03-19  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/lib-93.c: Adjust target selector.
