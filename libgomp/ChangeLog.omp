@@ -1,3 +1,13 @@
+2019-01-09  Julian Brown  <julian@codesourcery.com>
+
+	* libgomp.texi: Update mentions of OpenACC version to 2.6.  Update
+	section numbers to match version 2.6 of the spec.
+	* openacc.f90 (openacc_version): Update to 201711.
+	* openacc_lib.h (openacc_version): Update to 201711.
+	* testsuite/libgomp.oacc-fortran/openacc_version-1.f: Update expected
+	openacc_version to 201711.
+	* testsuite/libgomp.oacc-fortran/openacc_version-2.f90: Likewise.
+
 2019-01-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c:

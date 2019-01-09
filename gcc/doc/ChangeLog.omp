@@ -1,0 +1,4 @@
+2019-01-09  Julian Brown  <julian@codesourcery.com>
+
+	* invoke.texi: Update mention of OpenACC version to 2.6.
+
