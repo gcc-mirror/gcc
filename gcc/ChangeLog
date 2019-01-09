@@ -1,4 +1,34 @@
 2019-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.md (*tablejump_sp32): Merge into...
+	(*tablejump_sp64): Likewise.
+	(*tablejump<P:mode>): ...this.
+	(*call_address_sp32): Merge into...
+	(*call_address_sp64): Likewise.
+	(*call_address<P:mode>): ...this.
+	(*call_symbolic_sp32): Merge into...
+	(*call_symbolic_sp64): Likewise.
+	(*call_symbolic<P:mode>): ...this.
+	(call_value): Remove constraint and add predicate.
+	(*call_value_address_sp32): Merge into...
+	(*call_value_address_sp64): Likewise.
+	(*call_value_address<P:mode>): ...this.
+	(*call_value_symbolic_sp32): Merge into...
+	(*call_value_symbolic_sp64): Likewise.
+	(*call_value_symbolic<P:mode>): ...this.
+	(*sibcall_symbolic_sp32): Merge into...
+	(*sibcall_symbolic_sp64): Likewise.
+	(*sibcall_symbolic<P:mode>): ...this.
+	(sibcall_value): Remove constraint and add predicate.
+	(*sibcall_value_symbolic_sp32): Merge into...
+	(*sibcall_value_symbolic_sp64): Likewise.
+	(*sibcall_value_symbolic<P:mode>): ...this.
+	(window_save): Minor tweak.
+	(*branch_sp32): Merge into...
+	(*branch_sp64): Likewise.
+	(*branch<P:mode>): ...this.
+
+2019-01-09  Eric Botcazou  <ebotcazou@adacore.com>
             James Clarke  <jrtc27@jrtc27.com>
 
 	PR target/84010
