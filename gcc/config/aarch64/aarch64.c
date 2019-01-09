@@ -8250,18 +8250,36 @@ aarch64_return_addr (int count, rtx frame ATTRIBUTE_UNUSED)
 static void
 aarch64_asm_trampoline_template (FILE *f)
 {
+  int offset1 = 16;
+  int offset2 = 20;
+
+  if (aarch64_bti_enabled ())
+    {
+      asm_fprintf (f, "\thint\t34 // bti c\n");
+      offset1 -= 4;
+      offset2 -= 4;
+    }
+
   if (TARGET_ILP32)
     {
-      asm_fprintf (f, "\tldr\tw%d, .+16\n", IP1_REGNUM - R0_REGNUM);
-      asm_fprintf (f, "\tldr\tw%d, .+16\n", STATIC_CHAIN_REGNUM - R0_REGNUM);
+      asm_fprintf (f, "\tldr\tw%d, .+%d\n", IP1_REGNUM - R0_REGNUM, offset1);
+      asm_fprintf (f, "\tldr\tw%d, .+%d\n", STATIC_CHAIN_REGNUM - R0_REGNUM,
+		   offset1);
     }
   else
     {
-      asm_fprintf (f, "\tldr\t%s, .+16\n", reg_names [IP1_REGNUM]);
-      asm_fprintf (f, "\tldr\t%s, .+20\n", reg_names [STATIC_CHAIN_REGNUM]);
+      asm_fprintf (f, "\tldr\t%s, .+%d\n", reg_names [IP1_REGNUM], offset1);
+      asm_fprintf (f, "\tldr\t%s, .+%d\n", reg_names [STATIC_CHAIN_REGNUM],
+		   offset2);
     }
   asm_fprintf (f, "\tbr\t%s\n", reg_names [IP1_REGNUM]);
-  assemble_aligned_integer (4, const0_rtx);
+
+  /* The trampoline needs an extra padding instruction.  In case if BTI is
+     enabled the padding instruction is replaced by the BTI instruction at
+     the beginning.  */
+  if (!aarch64_bti_enabled ())
+    assemble_aligned_integer (4, const0_rtx);
+
   assemble_aligned_integer (POINTER_BYTES, const0_rtx);
   assemble_aligned_integer (POINTER_BYTES, const0_rtx);
 }

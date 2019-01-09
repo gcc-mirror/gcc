@@ -918,7 +918,7 @@ typedef struct
 
 #define RETURN_ADDR_RTX aarch64_return_addr
 
-/* 3 insns + padding + 2 pointer-sized entries.  */
+/* BTI c + 3 insns + 2 pointer-sized entries.  */
 #define TRAMPOLINE_SIZE	(TARGET_ILP32 ? 24 : 32)
 
 /* Trampolines contain dwords, so must be dword aligned.  */
