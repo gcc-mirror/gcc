@@ -1,3 +1,11 @@
+2019-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88204
+	* testsuite/26_numerics/complex/operators/more_constexpr.cc: Do not
+	test std::complex<long double> if long double format is IBM128.
+	* testsuite/26_numerics/complex/requirements/more_constexpr.cc:
+	Likewise.
+
 2019-01-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/libstdc++-prettyprinters/compat.cc: Test printer support
