@@ -1,5 +1,15 @@
 2018-01-09  Sudakshina Das  <sudi.das@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_expand_prologue): Use new
+	epilogue/prologue scratch registers EP0_REGNUM and EP1_REGNUM.
+	(aarch64_expand_epilogue): Likewise.
+	(aarch64_output_mi_thunk): Likewise
+	* config/aarch64/aarch64.h (REG_CLASS_CONTENTS): Change
+	TAILCALL_ADDR_REGS to x16 and x17.
+	* config/aarch64/aarch64.md: Define EP0_REGNUM and EP1_REGNUM.
+
+2018-01-09  Sudakshina Das  <sudi.das@arm.com>
+
 	* config/aarch64/aarch64-option-extensions.def: Define
 	AARCH64_OPT_EXTENSION for memtag, rng, sb, ssbs and predres.
 	* gcc/config/aarch64/aarch64.h (AARCH64_FL_RNG): New.

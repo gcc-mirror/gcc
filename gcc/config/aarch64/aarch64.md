@@ -35,6 +35,9 @@
     (R11_REGNUM		11)
     (R12_REGNUM		12)
     (R13_REGNUM		13)
+    ;; Scratch registers for prologue/epilogue use.
+    (EP0_REGNUM		12)
+    (EP1_REGNUM		13)
     (R14_REGNUM		14)
     (R15_REGNUM		15)
     (R16_REGNUM		16)
