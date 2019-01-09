@@ -6201,13 +6201,13 @@ cplus_demangle_init_info (const char *mangled, int options, size_t len,
 
   di->n = mangled;
 
-  /* We can not need more components than twice the number of chars in
+  /* We cannot need more components than twice the number of chars in
      the mangled string.  Most components correspond directly to
      chars, but the ARGLIST types are exceptions.  */
   di->num_comps = 2 * len;
   di->next_comp = 0;
 
-  /* Similarly, we can not need more substitutions than there are
+  /* Similarly, we cannot need more substitutions than there are
      chars in the mangled string.  */
   di->num_subs = len;
   di->next_sub = 0;
