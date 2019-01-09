@@ -400,7 +400,9 @@ assign_stack_local_1 (machine_mode mode, poly_int64 size,
     {
       /* If the required alignment exceeds MAX_SUPPORTED_STACK_ALIGNMENT and
 	 it is not OK to reduce it.  Align the slot dynamically.  */
-      if (mode == BLKmode && (kind & ASLK_REDUCE_ALIGN) == 0)
+      if (mode == BLKmode
+	  && (kind & ASLK_REDUCE_ALIGN) == 0
+	  && currently_expanding_to_rtl)
 	dynamic_align_addr = true;
       else
 	{
