@@ -2522,6 +2522,9 @@ Generally, they are available only for the host, with the exception of
 @code{acc_on_device}, which is available for both the host and the
 acceleration device.
 
+This list has not yet been updated for the OpenACC specification in
+version 2.6.
+
 @menu
 * acc_get_num_devices::         Get number of devices for the given device
                                 type.
@@ -3782,7 +3785,7 @@ Function for library registration.
 @chapter OpenACC Environment Variables
 
 The variables @env{ACC_DEVICE_TYPE} and @env{ACC_DEVICE_NUM}
-are defined by section 4 of the OpenACC specification in version 2.0.
+are defined by section 4 of the OpenACC specification in version 2.6.
 The variable @env{ACC_PROFLIB}
 is defined by section 4 of the OpenACC specification in version 2.6.
 The variable @env{GCC_ACC_NOTIFY} is used for diagnostic purposes.
