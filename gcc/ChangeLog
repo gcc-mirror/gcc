@@ -1,4 +1,8 @@
-2019-01-09  Jakub Jelinek  <jakub@redhat.com>
+2019-01-09  Jelinek  <jakub@redhat.com>
+
+	PR middle-end/88758
+	* tree.c (initializer_each_zero_or_onep) <case VECTOR_CST>: Use
+	vector_cst_elt instead of VECTOR_CST_ENCODED_ELT.
 
 	PR rtl-optimization/88331
 	* function.c (assign_stack_local_1): Don't set dynamic_align_addr if

@@ -11255,7 +11255,7 @@ initializer_each_zero_or_onep (const_tree expr)
 
 	for (unsigned int i = 0; i < nelts; ++i)
 	  {
-	    tree elt = VECTOR_CST_ENCODED_ELT (expr, i);
+	    tree elt = vector_cst_elt (expr, i);
 	    if (!initializer_each_zero_or_onep (elt))
 	      return false;
 	  }
