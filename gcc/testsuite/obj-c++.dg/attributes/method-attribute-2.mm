@@ -14,7 +14,7 @@
 @end
 
 @implementation obj
-- (int) depmth __attribute__((deprecated)) { return var; }  /* { dg-warning "method attributes can not be specified in @implementation context" } */
+- (int) depmth __attribute__((deprecated)) { return var; }  /* { dg-warning "method attributes cannot be specified in @implementation context" } */
 - (int) depmtharg:(int) iarg { return var + iarg ; }
 - (int) unusedarg:(int) __attribute__((unused)) uarg { return var; }
 - (int) depunusedarg:(int) __attribute__((unused)) uarg { return var; }

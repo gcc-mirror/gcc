@@ -1,3 +1,31 @@
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
+	* g++.dg/lto/odr-1_1.C: Update diagnostic message patterns to replace
+	"can not" with "cannot".
+	* gfortran.dg/common_15.f90: Likewise.
+	* gfortran.dg/derived_result_2.f90: Likewise.
+	* gfortran.dg/do_check_6.f90: Likewise.
+	* gfortran.dg/namelist_args.f90: Likewise.
+	* gfortran.dg/negative_unit_check.f90: Likewise.
+	* gfortran.dg/pure_formal_3.f90: Likewise.
+	* obj-c++.dg/attributes/method-attribute-2.mm: Likewise.
+	* obj-c++.dg/exceptions-3.mm: Likewise.
+	* obj-c++.dg/exceptions-4.mm: Likewise.
+	* obj-c++.dg/exceptions-5.mm: Likewise.
+	* obj-c++.dg/property/at-property-23.mm: Likewise.
+	* obj-c++.dg/property/dotsyntax-17.mm: Likewise.
+	* obj-c++.dg/property/property-neg-7.mm: Likewise.
+	* objc.dg/attributes/method-attribute-2.m: Likewise.
+	* objc.dg/exceptions-3.m: Likewise.
+	* objc.dg/exceptions-4.m: Likewise.
+	* objc.dg/exceptions-5.m: Likewise.
+	* objc.dg/param-1.m: Likewise.
+	* objc.dg/property/at-property-23.m: Likewise.
+	* objc.dg/property/dotsyntax-17.m: Likewise.
+	* objc.dg/property/property-neg-7.m: Likewise.
+
 2019-01-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/68426
