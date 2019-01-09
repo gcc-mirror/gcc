@@ -1,3 +1,12 @@
+2019-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/tls-ld-int8.c: New test.
+	* gcc.target/sparc/tls-ld-int16.c: Likewise.
+	* gcc.target/sparc/tls-ld-int32.c: Likewise.
+	* gcc.target/sparc/tls-ld-uint8.c: Likewise.
+	* gcc.target/sparc/tls-ld-uint16.c: Likewise.
+	* gcc.target/sparc/tls-ld-uint32.c: Likewise.
+
 2018-01-09  Sudakshina Das  <sudi.das@arm.com>
 
 	* gcc.target/aarch64/bti-1.c: Update test to not add command line
