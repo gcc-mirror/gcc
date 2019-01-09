@@ -7821,8 +7821,10 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
 					   cap_arg);
       mem = Expression::make_unsafe_cast(Type::make_pointer_type(et), mem,
 					 loc);
-      call = Expression::make_slice_value(type, mem, len_arg->copy(),
-					  cap_arg->copy(), loc);
+      Type* int_type = Type::lookup_integer_type("int");
+      len_arg = Expression::make_cast(int_type, len_arg->copy(), loc);
+      cap_arg = Expression::make_cast(int_type, cap_arg->copy(), loc);
+      call = Expression::make_slice_value(type, mem, len_arg, cap_arg, loc);
     }
   else if (is_map)
     {
