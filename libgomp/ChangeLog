@@ -1,5 +1,10 @@
 2019-01-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
+	* config/rtems/bar.c: Include "../linux/bar.c" and delete copy
+	and paste code.
+
+2019-01-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
 	* config/rtems/affinity-fmt.c: New file.  Include affinity-fmt.c,
 	undefining HAVE_GETPID and HAVE_GETHOSTNAME, and mapping fwrite to
 	write.
