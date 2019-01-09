@@ -15054,7 +15054,7 @@ kind @code{omp_proc_bind_kind}:
 @section OpenACC Module @code{OPENACC}
 @table @asis
 @item @emph{Standard}:
-OpenACC Application Programming Interface v2.0
+OpenACC Application Programming Interface v2.6
 @end table
 
 
@@ -15068,9 +15068,9 @@ are listed below.
 
 For details refer to the actual
 @uref{http://www.openacc.org/,
-OpenACC Application Programming Interface v2.0}.
+OpenACC Application Programming Interface v2.6}.
 
 @code{OPENACC} provides the scalar default-integer
 named constant @code{openacc_version} with a value of the form
 @var{yyyymm}, where @code{yyyy} is the year and @var{mm} the month
-of the OpenACC version; for OpenACC v2.0 the value is @code{201306}.
+of the OpenACC version; for OpenACC v2.6 the value is @code{201711}.

@@ -1,3 +1,7 @@
+2019-01-09  Julian Brown  <julian@codesourcery.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Update _OPENACC define to 201711.
+
 2019-01-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c.opt (fopenacc-kernels): Default to "split".
