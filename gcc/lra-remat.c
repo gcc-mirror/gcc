@@ -110,8 +110,8 @@ struct cand
 
 /* Vector containing all candidates.  */
 static vec<cand_t> all_cands;
-/* Map: insn -> candidate representing it.  It is null if the insn can
-   not be used for rematerialization.  */
+/* Map: insn -> candidate representing it.  It is null if the insn cannot
+   be used for rematerialization.  */
 static cand_t *insn_to_cand;
 /* A secondary map, for candidates that involve two insns, where the
    second one makes the equivalence.  The candidate must not be used

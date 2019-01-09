@@ -1160,8 +1160,8 @@ sem_function::merge (sem_item *alias_item)
 		     "profitable (function is too small).\n");
 	}
       /* If user paid attention to mark function noinline, assume it is
-	 somewhat special and do not try to turn it into a wrapper that can
-	 not be undone by inliner.  */
+	 somewhat special and do not try to turn it into a wrapper that
+	 cannot be undone by inliner.  */
       else if (lookup_attribute ("noinline", DECL_ATTRIBUTES (alias->decl)))
 	{
 	  if (dump_file)

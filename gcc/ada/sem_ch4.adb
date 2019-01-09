@@ -1908,8 +1908,8 @@ package body Sem_Ch4 is
          while Present (Op_Id) loop
             if Ekind (Op_Id) = E_Operator then
 
-               --  Do not consider operators declared in dead code, they can
-               --  not be part of the resolution.
+               --  Do not consider operators declared in dead code, they
+               --  cannot be part of the resolution.
 
                if Is_Eliminated (Op_Id) then
                   null;

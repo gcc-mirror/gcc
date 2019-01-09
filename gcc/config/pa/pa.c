@@ -1135,8 +1135,8 @@ hppa_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       /* If the newoffset will not fit in 14 bits (ldo), then
 	 handling this would take 4 or 5 instructions (2 to load
 	 the SYMBOL_REF + 1 or 2 to load the newoffset + 1 to
-	 add the new offset and the SYMBOL_REF.)  Combine can
-	 not handle 4->2 or 5->2 combinations, so do not create
+	 add the new offset and the SYMBOL_REF.)  Combine cannot
+	 handle 4->2 or 5->2 combinations, so do not create
 	 them.  */
       if (! VAL_14_BITS_P (newoffset)
 	  && GET_CODE (XEXP (x, 0)) == SYMBOL_REF)
@@ -9835,8 +9835,8 @@ pa_som_tm_clone_table_section (void)
 
 /* On hpux10, the linker will give an error if we have a reference
    in the read-only data section to a symbol defined in a shared
-   library.  Therefore, expressions that might require a reloc can
-   not be placed in the read-only data section.  */
+   library.  Therefore, expressions that might require a reloc
+   cannot be placed in the read-only data section.  */
 
 static section *
 pa_select_section (tree exp, int reloc,
