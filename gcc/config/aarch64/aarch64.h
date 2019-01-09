@@ -179,6 +179,18 @@ extern unsigned aarch64_architecture_version;
 
 /* ARMv8.5-A architecture extensions.  */
 #define AARCH64_FL_V8_5	      (1 << 22)  /* Has ARMv8.5-A features.  */
+#define AARCH64_FL_RNG	      (1 << 23)  /* ARMv8.5-A Random Number Insns.  */
+#define AARCH64_FL_MEMTAG     (1 << 24)  /* ARMv8.5-A Memory Tagging
+					    Extensions.  */
+
+/* Speculation Barrier instruction supported.  */
+#define AARCH64_FL_SB	      (1 << 25)
+
+/* Speculative Store Bypass Safe instruction supported.  */
+#define AARCH64_FL_SSBS	      (1 << 26)
+
+/* Execution and Data Prediction Restriction instructions supported.  */
+#define AARCH64_FL_PREDRES    (1 << 27)
 
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
@@ -199,7 +211,8 @@ extern unsigned aarch64_architecture_version;
   (AARCH64_FL_FOR_ARCH8_3 | AARCH64_FL_V8_4 | AARCH64_FL_F16FML \
    | AARCH64_FL_DOTPROD | AARCH64_FL_RCPC8_4)
 #define AARCH64_FL_FOR_ARCH8_5			\
-  (AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_V8_5)
+  (AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_V8_5	\
+   | AARCH64_FL_SB | AARCH64_FL_SSBS | AARCH64_FL_PREDRES)
 
 /* Macros to test ISA flags.  */
 

@@ -1,5 +1,16 @@
 2018-01-09  Sudakshina Das  <sudi.das@arm.com>
 
+	* config/aarch64/aarch64-option-extensions.def: Define
+	AARCH64_OPT_EXTENSION for memtag, rng, sb, ssbs and predres.
+	* gcc/config/aarch64/aarch64.h (AARCH64_FL_RNG): New.
+	(AARCH64_FL_MEMTAG, ARCH64_FL_SB, AARCH64_FL_SSBS): New.
+	(AARCH64_FL_PREDRES): New.
+	(AARCH64_FL_FOR_ARCH8_5): Add AARCH64_FL_SB, AARCH64_FL_SSBS and
+	AARCH64_FL_PREDRES by default.
+	* gcc/doc/invoke.texi: Document rng, memtag, sb, ssbs and predres.
+
+2018-01-09  Sudakshina Das  <sudi.das@arm.com>
+
 	* config/aarch64/aarch64-arches.def: Define AARCH64_ARCH for
 	ARMv8.5-A.
 	* gcc/config/aarch64/aarch64.h (AARCH64_FL_V8_5): New.
