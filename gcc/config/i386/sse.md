@@ -3423,6 +3423,20 @@
   operands[5] = gen_reg_rtx (<MODE>mode);
 })
 
+(define_expand "xorsign<mode>3"
+  [(set (match_dup 4)
+	(and:VF (match_dup 3)
+		(match_operand:VF 2 "vector_operand")))
+   (set (match_operand:VF 0 "register_operand")
+	(xor:VF (match_dup 4)
+		(match_operand:VF 1 "vector_operand")))]
+  "TARGET_SSE"
+{
+  operands[3] = ix86_build_signbit_mask (<MODE>mode, 1, 0);
+
+  operands[4] = gen_reg_rtx (<MODE>mode);
+})
+
 ;; Also define scalar versions.  These are used for abs, neg, and
 ;; conditional move.  Using subregs into vector modes causes register
 ;; allocation lossage.  These patterns do not allow memory operands

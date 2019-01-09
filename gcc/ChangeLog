@@ -1,3 +1,14 @@
+2019-01-09  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-protos.h (ix86_expand_xorsign): New prototype.
+	(ix86_split_xorsign): Ditto.
+	* config/i386/i386.c (ix86_expand_xorsign): New function.
+	(ix86_split_xorsign): Ditto.
+	* config/i386/i386.md (UNSPEC_XORSIGN): New unspec.
+	(xorsign<mode>3): New expander.
+	(xorsign<mode>3_1): New insn_and_split pattern.
+	* config/i386/sse.md (xorsign<mode>3): New expander.
+
 2019-01-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.md (*tablejump_sp32): Merge into...

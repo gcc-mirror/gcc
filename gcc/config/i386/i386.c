@@ -21860,6 +21860,63 @@ ix86_split_copysign_var (rtx operands[])
   emit_insn (gen_rtx_SET (dest, x));
 }
 
+/* Expand an xorsign operation.  */
+
+void
+ix86_expand_xorsign (rtx operands[])
+{
+  rtx (*xorsign_insn)(rtx, rtx, rtx, rtx);
+  machine_mode mode, vmode;
+  rtx dest, op0, op1, mask;
+
+  dest = operands[0];
+  op0 = operands[1];
+  op1 = operands[2];
+
+  mode = GET_MODE (dest);
+
+  if (mode == SFmode)
+    {
+      xorsign_insn = gen_xorsignsf3_1;
+      vmode = V4SFmode;
+    }
+  else if (mode == DFmode)
+    {
+      xorsign_insn = gen_xorsigndf3_1;
+      vmode = V2DFmode;
+    }
+  else
+    gcc_unreachable ();
+
+  mask = ix86_build_signbit_mask (vmode, 0, 0);
+
+  emit_insn (xorsign_insn (dest, op0, op1, mask));
+}
+
+/* Deconstruct an xorsign operation into bit masks.  */
+
+void
+ix86_split_xorsign (rtx operands[])
+{
+  machine_mode mode, vmode;
+  rtx dest, op0, mask, x;
+
+  dest = operands[0];
+  op0 = operands[1];
+  mask = operands[3];
+
+  mode = GET_MODE (dest);
+  vmode = GET_MODE (mask);
+
+  dest = lowpart_subreg (vmode, dest, mode);
+  x = gen_rtx_AND (vmode, dest, mask);
+  emit_insn (gen_rtx_SET (dest, x));
+
+  op0 = lowpart_subreg (vmode, op0, mode);
+  x = gen_rtx_XOR (vmode, dest, op0);
+  emit_insn (gen_rtx_SET (dest, x));
+}
+
 /* Return TRUE or FALSE depending on whether the first SET in INSN
    has source and destination with matching CC modes, and that the
    CC mode is at least as constrained as REQ_MODE.  */
