@@ -6842,17 +6842,10 @@ visl")
     }
 })
 
-(define_insn "*tablejump_sp32"
-  [(set (pc) (match_operand:SI 0 "address_operand" "p"))
+(define_insn "*tablejump<P:mode>"
+  [(set (pc) (match_operand:P 0 "address_operand" "p"))
    (use (label_ref (match_operand 1 "" "")))]
-  "TARGET_ARCH32"
-  "jmp\t%a0%#"
-  [(set_attr "type" "uncond_branch")])
-
-(define_insn "*tablejump_sp64"
-  [(set (pc) (match_operand:DI 0 "address_operand" "p"))
-   (use (label_ref (match_operand 1 "" "")))]
-  "TARGET_ARCH64"
+  ""
   "jmp\t%a0%#"
   [(set_attr "type" "uncond_branch")])
 
@@ -6929,39 +6922,21 @@ visl")
 ;; We can't use the same pattern for these two insns, because then registers
 ;; in the address may not be properly reloaded.
 
-(define_insn "*call_address_sp32"
-  [(call (mem:SI (match_operand:SI 0 "address_operand" "p"))
+(define_insn "*call_address<P:mode>"
+  [(call (mem:P (match_operand:P 0 "address_operand" "p"))
 	 (match_operand 1 "" ""))
-   (clobber (reg:SI O7_REG))]
+   (clobber (reg:P O7_REG))]
   ;;- Do not use operand 1 for most machines.
-  "TARGET_ARCH32"
+  ""
   "call\t%a0, %1%#"
   [(set_attr "type" "call")])
 
-(define_insn "*call_symbolic_sp32"
-  [(call (mem:SI (match_operand:SI 0 "symbolic_operand" "s"))
+(define_insn "*call_symbolic<P:mode>"
+  [(call (mem:P (match_operand:P 0 "symbolic_operand" "s"))
 	 (match_operand 1 "" ""))
-   (clobber (reg:SI O7_REG))]
+   (clobber (reg:P O7_REG))]
   ;;- Do not use operand 1 for most machines.
-  "TARGET_ARCH32"
-  "call\t%a0, %1%#"
-  [(set_attr "type" "call")])
-
-(define_insn "*call_address_sp64"
-  [(call (mem:DI (match_operand:DI 0 "address_operand" "p"))
-	 (match_operand 1 "" ""))
-   (clobber (reg:DI O7_REG))]
-  ;;- Do not use operand 1 for most machines.
-  "TARGET_ARCH64"
-  "call\t%a0, %1%#"
-  [(set_attr "type" "call")])
-
-(define_insn "*call_symbolic_sp64"
-  [(call (mem:DI (match_operand:DI 0 "symbolic_operand" "s"))
-	 (match_operand 1 "" ""))
-   (clobber (reg:DI O7_REG))]
-  ;;- Do not use operand 1 for most machines.
-  "TARGET_ARCH64"
+  ""
   "call\t%a0, %1%#"
   [(set_attr "type" "call")])
 
@@ -7026,8 +7001,8 @@ visl")
 (define_expand "call_value"
   ;; Note that this expression is not used for generating RTL.
   ;; All the RTL is generated explicitly below.
-  [(set (match_operand 0 "register_operand" "=rf")
-	(call (match_operand 1 "" "")
+  [(set (match_operand 0 "register_operand" "")
+	(call (match_operand 1 "call_operand" "")
 	      (match_operand 4 "" "")))]
   ;; operand 2 is stack_size_rtx
   ;; operand 3 is next_arg_register
@@ -7050,43 +7025,23 @@ visl")
   DONE;
 })
 
-(define_insn "*call_value_address_sp32"
-  [(set (match_operand 0 "" "=rf")
-	(call (mem:SI (match_operand:SI 1 "address_operand" "p"))
-	      (match_operand 2 "" "")))
-   (clobber (reg:SI O7_REG))]
-  ;;- Do not use operand 2 for most machines.
-  "TARGET_ARCH32"
-  "call\t%a1, %2%#"
-  [(set_attr "type" "call")])
-
-(define_insn "*call_value_symbolic_sp32"
-  [(set (match_operand 0 "" "=rf")
-	(call (mem:SI (match_operand:SI 1 "symbolic_operand" "s"))
-	      (match_operand 2 "" "")))
-   (clobber (reg:SI O7_REG))]
-  ;;- Do not use operand 2 for most machines.
-  "TARGET_ARCH32"
-  "call\t%a1, %2%#"
-  [(set_attr "type" "call")])
-
-(define_insn "*call_value_address_sp64"
+(define_insn "*call_value_address<P:mode>"
   [(set (match_operand 0 "" "")
-	(call (mem:DI (match_operand:DI 1 "address_operand" "p"))
+	(call (mem:P (match_operand:P 1 "address_operand" "p"))
 	      (match_operand 2 "" "")))
-   (clobber (reg:DI O7_REG))]
+   (clobber (reg:P O7_REG))]
   ;;- Do not use operand 2 for most machines.
-  "TARGET_ARCH64"
+  ""
   "call\t%a1, %2%#"
   [(set_attr "type" "call")])
 
-(define_insn "*call_value_symbolic_sp64"
+(define_insn "*call_value_symbolic<P:mode>"
   [(set (match_operand 0 "" "")
-	(call (mem:DI (match_operand:DI 1 "symbolic_operand" "s"))
+	(call (mem:P (match_operand:P 1 "symbolic_operand" "s"))
 	      (match_operand 2 "" "")))
-   (clobber (reg:DI O7_REG))]
+   (clobber (reg:P O7_REG))]
   ;;- Do not use operand 2 for most machines.
-  "TARGET_ARCH64"
+  ""
   "call\t%a1, %2%#"
   [(set_attr "type" "call")])
 
@@ -7131,52 +7086,31 @@ visl")
   ""
   "")
 
-(define_insn "*sibcall_symbolic_sp32"
-  [(call (mem:SI (match_operand:SI 0 "symbolic_operand" "s"))
+(define_insn "*sibcall_symbolic<P:mode>"
+  [(call (mem:P (match_operand:P 0 "symbolic_operand" "s"))
 	 (match_operand 1 "" ""))
    (return)]
-  "TARGET_ARCH32"
+  ""
 {
-  return output_sibcall(insn, operands[0]);
-}
-  [(set_attr "type" "sibcall")])
-
-(define_insn "*sibcall_symbolic_sp64"
-  [(call (mem:DI (match_operand:DI 0 "symbolic_operand" "s"))
-	 (match_operand 1 "" ""))
-   (return)]
-  "TARGET_ARCH64"
-{
-  return output_sibcall(insn, operands[0]);
+  return output_sibcall (insn, operands[0]);
 }
   [(set_attr "type" "sibcall")])
 
 (define_expand "sibcall_value"
-  [(parallel [(set (match_operand 0 "register_operand" "=rf")
-		(call (match_operand 1 "" "") (const_int 0)))
+  [(parallel [(set (match_operand 0 "register_operand")
+		   (call (match_operand 1 "call_operand" "") (const_int 0)))
 	      (return)])]
   ""
   "")
 
-(define_insn "*sibcall_value_symbolic_sp32"
-  [(set (match_operand 0 "" "=rf")
-	(call (mem:SI (match_operand:SI 1 "symbolic_operand" "s"))
-	      (match_operand 2 "" "")))
-   (return)]
-  "TARGET_ARCH32"
-{
-  return output_sibcall(insn, operands[1]);
-}
-  [(set_attr "type" "sibcall")])
-
-(define_insn "*sibcall_value_symbolic_sp64"
+(define_insn "*sibcall_value_symbolic<P:mode>"
   [(set (match_operand 0 "" "")
-	(call (mem:DI (match_operand:DI 1 "symbolic_operand" "s"))
+	(call (mem:P (match_operand:P 1 "symbolic_operand" "s"))
 	      (match_operand 2 "" "")))
    (return)]
-  "TARGET_ARCH64"
+  ""
 {
-  return output_sibcall(insn, operands[1]);
+  return output_sibcall (insn, operands[1]);
 }
   [(set_attr "type" "sibcall")])
 
@@ -7198,9 +7132,7 @@ visl")
 ;; information is manually added in emit_window_save.
 
 (define_insn "window_save"
-  [(unspec_volatile
-	[(match_operand 0 "arith_operand" "rI")]
-	UNSPECV_SAVEW)]
+  [(unspec_volatile [(match_operand 0 "arith_operand" "rI")] UNSPECV_SAVEW)]
   "!TARGET_FLAT"
   "save\t%%sp, %0, %%sp"
   [(set_attr "type" "savew")])
@@ -7416,18 +7348,12 @@ visl")
   ""
   "")
 
-(define_insn "*branch_sp32"
-  [(set (pc) (match_operand:SI 0 "address_operand" "p"))]
-  "TARGET_ARCH32"
+(define_insn "*branch<P:mode>"
+  [(set (pc) (match_operand:P 0 "address_operand" "p"))]
+  ""
  "jmp\t%a0%#"
  [(set_attr "type" "uncond_branch")])
  
-(define_insn "*branch_sp64"
-  [(set (pc) (match_operand:DI 0 "address_operand" "p"))]
-  "TARGET_ARCH64"
-  "jmp\t%a0%#"
-  [(set_attr "type" "uncond_branch")])
-
 (define_expand "save_stack_nonlocal"
   [(set (match_operand 0 "memory_operand" "")
 	(match_operand 1 "register_operand" ""))
