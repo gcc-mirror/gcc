@@ -8248,7 +8248,7 @@ except those that often increase code size:
 
 It also enables @option{-finline-functions}, causes the compiler to tune for
 code size rather than execution speed, and performs further optimizations
-designed to reduce code size.  
+designed to reduce code size.
 
 @item -Ofast
 @opindex Ofast
@@ -8396,7 +8396,7 @@ If all calls to a given function are integrated, and the function is
 declared @code{static}, then the function is normally not output as
 assembler code in its own right.
 
-Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.  Also enabled
+Enabled at levels @option{-O3}, @option{-Os}.  Also enabled
 by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -finline-functions-called-once
