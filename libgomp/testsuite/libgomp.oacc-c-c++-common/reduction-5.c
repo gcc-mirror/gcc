@@ -9,9 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-const int ng = 8;
-const int nw = 4;
-const int vl = 32;
+#define ng 8
+#define nw 4
+#define vl 32
 
 const int n = 100;
 
