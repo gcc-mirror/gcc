@@ -237,6 +237,10 @@
     UNSPECV_BLOCKAGE		; Represent a blockage
     UNSPECV_PROBE_STACK_RANGE	; Represent stack range probing.
     UNSPECV_SPECULATION_BARRIER ; Represent speculation barrier.
+    UNSPECV_BTI_NOARG		; Represent BTI.
+    UNSPECV_BTI_C		; Represent BTI c.
+    UNSPECV_BTI_J		; Represent BTI j.
+    UNSPECV_BTI_JC		; Represent BTI jc.
   ]
 )
 
@@ -6937,6 +6941,35 @@
     return "";
   }
   [(set_attr "type" "csel")]
+)
+
+;; BTI <target> instructions
+(define_insn "bti_noarg"
+  [(unspec_volatile [(const_int 0)] UNSPECV_BTI_NOARG)]
+  ""
+  "hint\t32 // bti"
+  [(set_attr "type" "no_insn")]
+)
+
+(define_insn "bti_c"
+  [(unspec_volatile [(const_int 0)] UNSPECV_BTI_C)]
+  ""
+  "hint\t34 // bti c"
+  [(set_attr "type" "no_insn")]
+)
+
+(define_insn "bti_j"
+  [(unspec_volatile [(const_int 0)] UNSPECV_BTI_J)]
+  ""
+  "hint\t36 // bti j"
+  [(set_attr "type" "no_insn")]
+)
+
+(define_insn "bti_jc"
+  [(unspec_volatile [(const_int 0)] UNSPECV_BTI_JC)]
+  ""
+  "hint\t38 // bti jc"
+  [(set_attr "type" "no_insn")]
 )
 
 ;; Helper for aarch64.c code.

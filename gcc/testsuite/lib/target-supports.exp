@@ -4313,6 +4313,22 @@ proc check_effective_target_arm_neonv2_hw { } {
     } [add_options_for_arm_neonv2 ""]]
 }
 
+# ID_AA64PFR1_EL1.BT using bits[3:0] == 1 implies BTI implimented.
+proc check_effective_target_aarch64_bti_hw { } {
+    if { ![istarget aarch64*-*-*] } {
+	return 0
+    }
+    return [check_runtime aarch64_bti_hw_available {
+	int
+	main (void)
+	{
+	  int a;
+	  asm volatile ("mrs %0, id_aa64pfr1_el1" : "=r" (a));
+	  return !((a & 0xf) == 1);
+	}
+    } "-O2" ]
+}
+
 # Return 1 if the target supports the ARMv8.1 Adv.SIMD extension, 0
 # otherwise.  The test is valid for AArch64 and ARM.  Record the command
 # line options needed.

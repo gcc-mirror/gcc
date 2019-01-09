@@ -1,4 +1,21 @@
 2018-01-09  Sudakshina Das  <sudi.das@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config.gcc (aarch64*-*-*): Add aarch64-bti-insert.o.
+	* gcc/config/aarch64/aarch64.h: Update comment for TRAMPOLINE_SIZE.
+	* config/aarch64/aarch64.c (aarch64_asm_trampoline_template): Update
+	if bti is enabled.
+	* config/aarch64/aarch64-bti-insert.c: New file.
+	* config/aarch64/aarch64-passes.def (INSERT_PASS_BEFORE): Insert bti
+	pass.
+	* config/aarch64/aarch64-protos.h (make_pass_insert_bti): Declare the
+	new bti pass.
+	* config/aarch64/aarch64.md (unspecv): Add UNSPECV_BTI_NOARG,
+	UNSPECV_BTI_C, UNSPECV_BTI_J and UNSPECV_BTI_JC.
+	(bti_noarg, bti_j, bti_c, bti_jc): New define_insns.
+	* config/aarch64/t-aarch64: Add rule for aarch64-bti-insert.o.
+
+2018-01-09  Sudakshina Das  <sudi.das@arm.com>
 
 	* config/aarch64/aarch64-protos.h (aarch64_bti_enabled): Declare.
 	* config/aarch64/aarch64.c (aarch64_handle_no_branch_protection):
