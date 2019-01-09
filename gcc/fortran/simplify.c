@@ -7572,7 +7572,8 @@ gfc_simplify_spread (gfc_expr *source, gfc_expr *dim_expr, gfc_expr *ncopies_exp
 	return NULL;
     }
 
-  if (source->expr_type == EXPR_CONSTANT)
+  if (source->expr_type == EXPR_CONSTANT
+      || source->expr_type == EXPR_STRUCTURE)
     {
       gcc_assert (dim == 0);
 
