@@ -1,3 +1,15 @@
+2019-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/88785
+	* config/i386/sse.md (float<floatunssuffix>v2div2sf2): Turn into
+	define_expand.
+	(*float<floatunssuffix>v2div2sf2): New define_insn.
+	(float<floatunssuffix>v2div2sf2_mask): Turn into define_expand.
+	(*float<floatunssuffix>v2div2sf2_mask): New define_insn.
+	(*float<floatunssuffix>v2div2sf2_mask_1): Replace
+	subrtxes (const_vector:V2SF [(const_int 0) (const_int 0)]) with
+	match_operands with "const0_operand" "C".
+
 2019-01-10  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/aarch64/aarch64-builtins.c
