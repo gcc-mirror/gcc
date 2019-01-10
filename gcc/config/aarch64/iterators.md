@@ -485,6 +485,12 @@
     UNSPEC_COND_GE	; Used in aarch64-sve.md.
     UNSPEC_COND_GT	; Used in aarch64-sve.md.
     UNSPEC_LASTB	; Used in aarch64-sve.md.
+    UNSPEC_FCADD90	; Used in aarch64-simd.md.
+    UNSPEC_FCADD270	; Used in aarch64-simd.md.
+    UNSPEC_FCMLA	; Used in aarch64-simd.md.
+    UNSPEC_FCMLA90	; Used in aarch64-simd.md.
+    UNSPEC_FCMLA180	; Used in aarch64-simd.md.
+    UNSPEC_FCMLA270	; Used in aarch64-simd.md.
 ])
 
 ;; ------------------------------------------------------------------
@@ -1134,6 +1140,13 @@
 			 (VNx16SI "vnx4bi") (VNx16SF "vnx4bi")
 			 (VNx8DI "vnx2bi") (VNx8DF "vnx2bi")])
 
+;; On AArch64 the By element instruction doesn't have a 2S variant.
+;; However because the instruction always selects a pair of values
+;; The normal 3SAME instruction can be used here instead.
+(define_mode_attr FCMLA_maybe_lane [(V2SF "<Vtype>") (V4SF "<Vetype>[%4]")
+				    (V4HF "<Vetype>[%4]") (V8HF "<Vetype>[%4]")
+				    ])
+
 ;; -------------------------------------------------------------------
 ;; Code Iterators
 ;; -------------------------------------------------------------------
@@ -1587,6 +1600,14 @@
 				      UNSPEC_COND_EQ UNSPEC_COND_NE
 				      UNSPEC_COND_GE UNSPEC_COND_GT])
 
+(define_int_iterator FCADD [UNSPEC_FCADD90
+			    UNSPEC_FCADD270])
+
+(define_int_iterator FCMLA [UNSPEC_FCMLA
+			    UNSPEC_FCMLA90
+			    UNSPEC_FCMLA180
+			    UNSPEC_FCMLA270])
+
 ;; Iterators for atomic operations.
 
 (define_int_iterator ATOMIC_LDOP
@@ -1847,6 +1868,13 @@
 			        (UNSPEC_COND_DIV "fdivr")
 			        (UNSPEC_COND_MAX "fmaxnm")
 			        (UNSPEC_COND_MIN "fminnm")])
+
+(define_int_attr rot [(UNSPEC_FCADD90 "90")
+		      (UNSPEC_FCADD270 "270")
+		      (UNSPEC_FCMLA "0")
+		      (UNSPEC_FCMLA90 "90")
+		      (UNSPEC_FCMLA180 "180")
+		      (UNSPEC_FCMLA270 "270")])
 
 (define_int_attr sve_fmla_op [(UNSPEC_COND_FMLA "fmla")
 			      (UNSPEC_COND_FMLS "fmls")

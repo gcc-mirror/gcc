@@ -1,3 +1,99 @@
+2019-01-10  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (enum aarch64_type_qualifiers): Add qualifier_lane_pair_index.
+	(emit-rtl.h): Include.
+	(TYPES_QUADOP_LANE_PAIR): New.
+	(aarch64_simd_expand_args): Use it.
+	(aarch64_simd_expand_builtin): Likewise.
+	(AARCH64_SIMD_FCMLA_LANEQ_BUILTINS, aarch64_fcmla_laneq_builtin_datum): New.
+	(FCMLA_LANEQ_BUILTIN, AARCH64_SIMD_FCMLA_LANEQ_BUILTIN_BASE,
+	AARCH64_SIMD_FCMLA_LANEQ_BUILTINS, aarch64_fcmla_lane_builtin_data,
+	aarch64_init_fcmla_laneq_builtins, aarch64_expand_fcmla_builtin): New.
+	(aarch64_init_builtins): Add aarch64_init_fcmla_laneq_builtins.
+	(aarch64_expand_buildin): Add AARCH64_SIMD_BUILTIN_FCMLA_LANEQ0_V2SF,
+	AARCH64_SIMD_BUILTIN_FCMLA_LANEQ90_V2SF, AARCH64_SIMD_BUILTIN_FCMLA_LANEQ180_V2SF,
+ 	AARCH64_SIMD_BUILTIN_FCMLA_LANEQ2700_V2SF, AARCH64_SIMD_BUILTIN_FCMLA_LANEQ0_V4HF,
+	AARCH64_SIMD_BUILTIN_FCMLA_LANEQ90_V4HF, AARCH64_SIMD_BUILTIN_FCMLA_LANEQ180_V4HF,
+	AARCH64_SIMD_BUILTIN_FCMLA_LANEQ270_V4HF.
+	* config/aarch64/iterators.md (FCMLA_maybe_lane): New.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Add __ARM_FEATURE_COMPLEX.
+	* config/aarch64/aarch64-simd-builtins.def (fcadd90, fcadd270, fcmla0, fcmla90,
+	fcmla180, fcmla270, fcmla_lane0, fcmla_lane90, fcmla_lane180, fcmla_lane270,
+	fcmla_laneq0, fcmla_laneq90, fcmla_laneq180, fcmla_laneq270,
+	fcmlaq_lane0, fcmlaq_lane90, fcmlaq_lane180, fcmlaq_lane270): New.
+	* config/aarch64/aarch64-simd.md (aarch64_fcmla_lane<rot><mode>,
+	aarch64_fcmla_laneq<rot>v4hf, aarch64_fcmlaq_lane<rot><mode>,aarch64_fcadd<rot><mode>,
+	aarch64_fcmla<rot><mode>): New.
+	* config/aarch64/arm_neon.h:
+	(vcadd_rot90_f16): New.
+	(vcaddq_rot90_f16): New.
+	(vcadd_rot270_f16): New.
+	(vcaddq_rot270_f16): New.
+	(vcmla_f16): New.
+	(vcmlaq_f16): New.
+	(vcmla_lane_f16): New.
+	(vcmla_laneq_f16): New.
+	(vcmlaq_lane_f16): New.
+	(vcmlaq_rot90_lane_f16): New.
+	(vcmla_rot90_laneq_f16): New.
+	(vcmla_rot90_lane_f16): New.
+	(vcmlaq_rot90_f16): New.
+	(vcmla_rot90_f16): New.
+	(vcmlaq_laneq_f16): New.
+	(vcmla_rot180_laneq_f16): New.
+	(vcmla_rot180_lane_f16): New.
+	(vcmlaq_rot180_f16): New.
+	(vcmla_rot180_f16): New.
+	(vcmlaq_rot90_laneq_f16): New.
+	(vcmlaq_rot270_laneq_f16): New.
+	(vcmlaq_rot270_lane_f16): New.
+	(vcmla_rot270_laneq_f16): New.
+	(vcmlaq_rot270_f16): New.
+	(vcmla_rot270_f16): New.
+	(vcmlaq_rot180_laneq_f16): New.
+	(vcmlaq_rot180_lane_f16): New.
+	(vcmla_rot270_lane_f16): New.
+	(vcadd_rot90_f32): New.
+	(vcaddq_rot90_f32): New.
+	(vcaddq_rot90_f64): New.
+	(vcadd_rot270_f32): New.
+	(vcaddq_rot270_f32): New.
+	(vcaddq_rot270_f64): New.
+	(vcmla_f32): New.
+	(vcmlaq_f32): New.
+	(vcmlaq_f64): New.
+	(vcmla_lane_f32): New.
+	(vcmla_laneq_f32): New.
+	(vcmlaq_lane_f32): New.
+	(vcmlaq_laneq_f32): New.
+	(vcmla_rot90_f32): New.
+	(vcmlaq_rot90_f32): New.
+	(vcmlaq_rot90_f64): New.
+	(vcmla_rot90_lane_f32): New.
+	(vcmla_rot90_laneq_f32): New.
+	(vcmlaq_rot90_lane_f32): New.
+	(vcmlaq_rot90_laneq_f32): New.
+	(vcmla_rot180_f32): New.
+	(vcmlaq_rot180_f32): New.
+	(vcmlaq_rot180_f64): New.
+	(vcmla_rot180_lane_f32): New.
+	(vcmla_rot180_laneq_f32): New.
+	(vcmlaq_rot180_lane_f32): New.
+	(vcmlaq_rot180_laneq_f32): New.
+	(vcmla_rot270_f32): New.
+	(vcmlaq_rot270_f32): New.
+	(vcmlaq_rot270_f64): New.
+	(vcmla_rot270_lane_f32): New.
+	(vcmla_rot270_laneq_f32): New.
+	(vcmlaq_rot270_lane_f32): New.
+	(vcmlaq_rot270_laneq_f32): New.
+	* config/aarch64/aarch64.h (TARGET_COMPLEX): New.
+	* config/aarch64/iterators.md (UNSPEC_FCADD90, UNSPEC_FCADD270,
+	UNSPEC_FCMLA, UNSPEC_FCMLA90, UNSPEC_FCMLA180, UNSPEC_FCMLA270): New.
+	(FCADD, FCMLA): New.
+	(rot): New.
+	* config/arm/types.md (neon_fcadd, neon_fcmla): New.
+
 2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/16615
