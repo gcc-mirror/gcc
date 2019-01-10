@@ -1,3 +1,9 @@
+2019-01-10  Sudakshina Das  <sudi.das@arm.com>
+
+	* gcc.target/aarch64/bti-1.c: Exempt for ilp32.
+	* gcc.target/aarch64/bti-2.c: Likewise.
+	* gcc.target/aarch64/bti-3.c: Likewise.
+
 2019-01-10  Stefan Agner  <stefan@agner.ch>
 
 	PR target/88648

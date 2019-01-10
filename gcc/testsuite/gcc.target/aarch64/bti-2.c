@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target lp64 } */
 /* { dg-require-effective-target aarch64_bti_hw } */
 /* If configured with --enable-standard-branch-protection, don't use
    command line option.  */
