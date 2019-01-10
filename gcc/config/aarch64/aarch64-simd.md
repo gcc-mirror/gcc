@@ -419,6 +419,70 @@
 }
 )
 
+;; The fcadd and fcmla patterns are made UNSPEC for the explicitly due to the
+;; fact that their usage need to guarantee that the source vectors are
+;; contiguous.  It would be wrong to describe the operation without being able
+;; to describe the permute that is also required, but even if that is done
+;; the permute would have been created as a LOAD_LANES which means the values
+;; in the registers are in the wrong order.
+(define_insn "aarch64_fcadd<rot><mode>"
+  [(set (match_operand:VHSDF 0 "register_operand" "=w")
+	(unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")
+		       (match_operand:VHSDF 2 "register_operand" "w")]
+		       FCADD))]
+  "TARGET_COMPLEX"
+  "fcadd\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>, #<rot>"
+  [(set_attr "type" "neon_fcadd")]
+)
+
+(define_insn "aarch64_fcmla<rot><mode>"
+  [(set (match_operand:VHSDF 0 "register_operand" "=w")
+	(plus:VHSDF (match_operand:VHSDF 1 "register_operand" "0")
+		    (unspec:VHSDF [(match_operand:VHSDF 2 "register_operand" "w")
+				   (match_operand:VHSDF 3 "register_operand" "w")]
+				   FCMLA)))]
+  "TARGET_COMPLEX"
+  "fcmla\t%0.<Vtype>, %2.<Vtype>, %3.<Vtype>, #<rot>"
+  [(set_attr "type" "neon_fcmla")]
+)
+
+
+(define_insn "aarch64_fcmla_lane<rot><mode>"
+  [(set (match_operand:VHSDF 0 "register_operand" "=w")
+	(plus:VHSDF (match_operand:VHSDF 1 "register_operand" "0")
+		    (unspec:VHSDF [(match_operand:VHSDF 2 "register_operand" "w")
+				   (match_operand:VHSDF 3 "register_operand" "w")
+				   (match_operand:SI 4 "const_int_operand" "n")]
+				   FCMLA)))]
+  "TARGET_COMPLEX"
+  "fcmla\t%0.<Vtype>, %2.<Vtype>, %3.<FCMLA_maybe_lane>, #<rot>"
+  [(set_attr "type" "neon_fcmla")]
+)
+
+(define_insn "aarch64_fcmla_laneq<rot>v4hf"
+  [(set (match_operand:V4HF 0 "register_operand" "=w")
+	(plus:V4HF (match_operand:V4HF 1 "register_operand" "0")
+		   (unspec:V4HF [(match_operand:V4HF 2 "register_operand" "w")
+				 (match_operand:V8HF 3 "register_operand" "w")
+				 (match_operand:SI 4 "const_int_operand" "n")]
+				 FCMLA)))]
+  "TARGET_COMPLEX"
+  "fcmla\t%0.4h, %2.4h, %3.h[%4], #<rot>"
+  [(set_attr "type" "neon_fcmla")]
+)
+
+(define_insn "aarch64_fcmlaq_lane<rot><mode>"
+  [(set (match_operand:VQ_HSF 0 "register_operand" "=w")
+	(plus:VQ_HSF (match_operand:VQ_HSF 1 "register_operand" "0")
+		     (unspec:VQ_HSF [(match_operand:VQ_HSF 2 "register_operand" "w")
+				     (match_operand:<VHALF> 3 "register_operand" "w")
+				     (match_operand:SI 4 "const_int_operand" "n")]
+				     FCMLA)))]
+  "TARGET_COMPLEX"
+  "fcmla\t%0.<Vtype>, %2.<Vtype>, %3.<FCMLA_maybe_lane>, #<rot>"
+  [(set_attr "type" "neon_fcmla")]
+)
+
 ;; These instructions map to the __builtins for the Dot Product operations.
 (define_insn "aarch64_<sur>dot<vsi2qi>"
   [(set (match_operand:VS 0 "register_operand" "=w")
