@@ -1,5 +1,22 @@
 2019-01-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/erase_if.h: Define __cpp_lib_erase_if.
+	* include/std/deque: Likewise.
+	* include/std/forward_list: Likewise.
+	* include/std/list: Likewise.
+	* include/std/string: Likewise.
+	* include/std/vector: Likewise.
+	* include/std/version: Likewise.
+	* testsuite/21_strings/basic_string/erasure.cc: Test macro.
+	* testsuite/23_containers/deque/erasure.cc: Likewise.
+	* testsuite/23_containers/forward_list/erasure.cc: Likewise.
+	* testsuite/23_containers/list/erasure.cc: Likewise.
+	* testsuite/23_containers/map/erasure.cc: Likewise.
+	* testsuite/23_containers/set/erasure.cc: Likewise.
+	* testsuite/23_containers/unordered_map/erasure.cc: Likewise.
+	* testsuite/23_containers/unordered_set/erasure.cc: Likewise.
+	* testsuite/23_containers/vector/erasure.cc: Likewise.
+
 	* include/experimental/internet [AI_NUMERICSERV]
 	(resolver_base::numeric_service): Define conditionally.
 	* testsuite/experimental/net/internet/resolver/base.cc: Test it

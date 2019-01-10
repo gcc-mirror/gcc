@@ -94,6 +94,9 @@ _GLIBCXX_END_NAMESPACE_VERSION
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+#define __cpp_lib_erase_if 201900L
+
   template<typename _Tp, typename _Alloc, typename _Predicate>
     inline typename deque<_Tp, _Alloc>::size_type
     erase_if(deque<_Tp, _Alloc>& __cont, _Predicate __pred)
