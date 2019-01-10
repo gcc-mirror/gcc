@@ -1,3 +1,8 @@
+2019-01-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/87305
+	* gcc.target/aarch64/pr87305.c: New.
+
 2019-01-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88792

@@ -1,3 +1,12 @@
+2019-01-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/87305
+	* lra-assigns.c
+	(setup_live_pseudos_and_spill_after_risky_transforms): Check
+	allocation for big endian pseudos used as paradoxical subregs and
+	spill them if it is wrong.
+	* lra-constraints.c (lra_constraints): Add a comment.
+
 2019-01-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88792
