@@ -1,3 +1,16 @@
+2019-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_fs.h (nonexistent_path): Include name
+	of the source file containing the caller.
+	* testsuite/27_io/filesystem/iterators/directory_iterator.cc: Remove
+	directories created by test.
+	* testsuite/27_io/filesystem/iterators/recursive_directory_iterator.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/iterators/directory_iterator.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/iterators/
+	recursive_directory_iterator.cc: Likewise.
+
 2019-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/88775
