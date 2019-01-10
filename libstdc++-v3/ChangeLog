@@ -1,6 +1,20 @@
 2019-01-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (path::_M_type): Change default member
+	initializer to _Filename.
+	(path::begin): Create past-the-end iterator for empty path.
+	(path::has_relative_path()): Return false for empty filenames.
+	(path::_M_split_cmpts): Set _M_type to _Filename for empty paths.
+	Fix offset of empty final component.
+	* testsuite/27_io/filesystem/path/itr/components.cc: New.
+	* testsuite/27_io/filesystem/path/itr/traversal.cc: Add new inputs.
+
+2019-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
 	2019-01-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/util/testsuite_fs.h (nonexistent_path): Include name
