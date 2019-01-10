@@ -1,3 +1,10 @@
+2019-01-10  Nathan Sidwell  <nathan@acm.org>
+	    Julian Brown  <julian@codesourcery.com>
+
+	PR lto/71959
+	* testsuite/libgomp.oacc-c++/pr71959-aux.cc: New.
+	* testsuite/libgomp.oacc-c++/pr71959.C: New.
+
 2019-01-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/rtems/bar.c: Include "../linux/bar.c" and delete copy
