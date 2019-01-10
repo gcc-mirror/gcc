@@ -1,13 +1,16 @@
+2019-01-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88376
+	* resolve.c (is_illegal_recursion): Remove an assert().
+
 2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/16615
-
 	* expr.c: Change "can not" to "cannot".
 
 2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/16615
-
 	* class.c: Mechanically replace "can not" with "cannot".
 	* decl.c: Likewise.
 	* expr.c: Likewise.

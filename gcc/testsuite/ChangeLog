@@ -1,7 +1,11 @@
+2019-01-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88376
+	* gfortran.dg/pr88376.f90: New test.
+
 2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/16615
-
 	* g++.dg/lto/odr-1_1.C: Update diagnostic message patterns to replace
 	"can not" with "cannot".
 	* gfortran.dg/common_15.f90: Likewise.
