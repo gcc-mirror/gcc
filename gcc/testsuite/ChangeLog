@@ -1,3 +1,7 @@
+2019-01-09  Wilco Dijkstra  <wdijkstr@arm.com>  
+
+	* gcc.target/aarch64/pr62178.c: Relax scan-assembler checks.
+
 2019-01-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/tls-ld-int8.c: New test.
