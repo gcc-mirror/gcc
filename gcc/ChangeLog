@@ -1,3 +1,9 @@
+2019-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88792
+	* tree-ssa-pre.c (get_representative_for): Do not return a
+	value-number here.
+
 2019-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/84877
