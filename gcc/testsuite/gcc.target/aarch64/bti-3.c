@@ -1,6 +1,7 @@
 /* This is a copy of gcc/testsuite/gcc.c-torture/execute/pr56982.c to test the
    setjmp case of the bti pass.  */
 /* { dg-do run } */
+/* { dg-require-effective-target lp64 } */
 /* { dg-require-effective-target aarch64_bti_hw } */
 /* { dg-options "--save-temps -mbranch-protection=standard" } */
 

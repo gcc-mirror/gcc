@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* -Os to create jump table.  */
 /* { dg-options "-Os" } */
+/* { dg-require-effective-target lp64 } */
 /* If configured with --enable-standard-branch-protection, don't use
    command line option.  */
 /* { dg-additional-options "-mbranch-protection=standard" { target { ! default_branch_protection } } } */
