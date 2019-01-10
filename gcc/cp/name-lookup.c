@@ -769,19 +769,27 @@ name_lookup::search_namespace_only (tree scope)
 					     marker);
 
 	  /* Scan the imported bindings.  */
-	  gcc_checking_assert (MODULE_VECTOR_SLOTS_PER_CLUSTER
-			       == MODULE_IMPORT_BASE);
+	  unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (val);
+	  if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_IMPORT_BASE)
+	    {
+	      ix--;
+	      cluster++;
+	    }
+
 	  /* Do this in forward order, so we load modules in an order
 	     the user expects.  */
-	  for (unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (val); ++cluster, --ix;)
+	  for (; ix--; cluster++)
 	    for (unsigned jx = 0; jx != MODULE_VECTOR_SLOTS_PER_CLUSTER; jx++)
 	      {
 		/* Are we importing this module?  */
-		for (unsigned base = cluster->indices[jx].base,
-		       span = cluster->indices[jx].span; span--; base++)
-		  if (bitmap_bit_p (imports, base))
-		    goto found;
+		if (unsigned base = cluster->indices[jx].base)
+		  if (unsigned span = cluster->indices[jx].span)
+		    do
+		      if (bitmap_bit_p (imports, base))
+			goto found;
+		    while (++base, --span);
 		continue;
+
 	      found:;
 		/* Is it loaded?  */
 		if (cluster->slots[jx].is_lazy ())
@@ -3351,9 +3359,61 @@ newbinding_bookkeeping (tree name, tree decl, cp_binding_level *level)
     check_extern_c_conflict (decl);
 }
 
+/* DECL is a new declaration that may be duplicated in OVL.  Use TPL,
+   RET & ARGS to find its clone, or NULL  */
+
+static tree
+check_mergeable_decl (tree decl, tree ovl, tree tpl, tree ret, tree args)
+{
+  for (ovl_iterator iter (ovl); iter; ++iter)
+    {
+      gcc_assert (!iter.using_p ());
+      tree match = *iter;
+
+      tree d_inner = decl;
+      tree m_inner = match;
+
+    again:
+      if (TREE_CODE (d_inner) != TREE_CODE (m_inner))
+	continue;
+
+      switch (TREE_CODE (d_inner))
+	{
+	case TEMPLATE_DECL:
+	  if (comp_template_parms (tpl, DECL_TEMPLATE_PARMS (m_inner)))
+	    {
+	      d_inner = DECL_TEMPLATE_RESULT (d_inner);
+	      m_inner = DECL_TEMPLATE_RESULT (m_inner);
+	      goto again;
+	    }
+	  break;
+
+	case FUNCTION_DECL:
+	  if (TREE_TYPE (m_inner)
+	      && (d_inner == decl
+		  || same_type_p (ret, TREE_TYPE (TREE_TYPE (m_inner))))
+	      && compparms (args, TYPE_ARG_TYPES (TREE_TYPE (m_inner))))
+	    return match;
+	  break;
+
+	case VAR_DECL:
+	  return match;
+
+	case TYPE_DECL:
+	  return match;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
+  return NULL_TREE;
+}
+
 /* DECL is being pushed.  Check whether it hides or ambiguates
    somethig seen as an import.  This include decls seen in our own
-   interface, which is OK.  */
+   interface, which is OK.  Also, check for merging a
+   global/partition decl.  */
 
 static tree
 check_module_override (tree decl, tree mvec, bool is_friend,
@@ -3361,19 +3421,24 @@ check_module_override (tree decl, tree mvec, bool is_friend,
 {
   bitmap imports = module_import_bitmap (current_module);
   module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (mvec);
+  unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (mvec);
 
-  gcc_checking_assert (MODULE_VECTOR_SLOTS_PER_CLUSTER
-		       == MODULE_IMPORT_BASE);
-  for (unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (mvec); ++cluster, --ix;)
-    for (unsigned jx = MODULE_VECTOR_SLOTS_PER_CLUSTER; jx--;)
+  if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_IMPORT_BASE)
+    {
+      cluster++;
+      ix--;
+    }
+
+  for (; ix--; cluster++)
+    for (unsigned jx = 0; jx != MODULE_VECTOR_SLOTS_PER_CLUSTER; jx++)
       {
 	/* Are we importing this module?  */
-	for (unsigned base = cluster->indices[jx].base,
-	       span = cluster->indices[jx].span; span--; base++)
-	  if (bitmap_bit_p (imports, base))
-	    goto found;
-	continue;
-      found:;
+	if (cluster->indices[jx].span != 1)
+	  continue;
+	if (!cluster->indices[jx].base)
+	  continue;
+	if (!bitmap_bit_p (imports, cluster->indices[jx].base))
+	  continue;
 	/* Is it loaded? */
 	if (cluster->slots[jx].is_lazy ())
 	  {
@@ -3520,9 +3585,11 @@ do_pushdecl (tree decl, bool is_friend)
 	  {
 	    if (match == error_mark_node)
 	      return match;
+
 	    /* We found a decl in an interface, push it into this
 	       binding.  */
-	    decl = update_binding (NULL, binding, mslot, old, match, is_friend);
+	    decl = update_binding (NULL, binding, mslot, old,
+				   match, is_friend);
 
 	    if (match == decl && DECL_MODULE_EXPORT_P (decl)
 		&& !DECL_MODULE_EXPORT_P (level->this_entity))
@@ -3634,47 +3701,9 @@ match_mergeable_decl (tree decl, bool partition, tree tpl, tree ret, tree args)
   tree *gslot = get_fixed_binding_slot
     (slot, DECL_NAME (decl),
      partition ? MODULE_SLOT_PARTITION : MODULE_SLOT_GLOBAL, true);
-  for (ovl_iterator iter (*gslot); iter; ++iter)
-    {
-      gcc_assert (!iter.using_p ());
-      tree glob = *iter;
 
-      tree dinner = decl;
-      tree ginner = glob;
-
-    again:
-      if (TREE_CODE (dinner) != TREE_CODE (ginner))
-	continue;
-
-      switch (TREE_CODE (dinner))
-	{
-	case TEMPLATE_DECL:
-	  if (comp_template_parms (tpl, DECL_TEMPLATE_PARMS (ginner)))
-	    {
-	      dinner = DECL_TEMPLATE_RESULT (dinner);
-	      ginner = DECL_TEMPLATE_RESULT (ginner);
-	      goto again;
-	    }
-	  break;
-
-	case FUNCTION_DECL:
-	  if (TREE_TYPE (ginner)
-	      && (dinner == decl
-		  || same_type_p (ret, TREE_TYPE (TREE_TYPE (ginner))))
-	      && compparms (args, TYPE_ARG_TYPES (TREE_TYPE (ginner))))
-	    return glob;
-	  break;
-
-	case VAR_DECL:
-	  return glob;
-
-	case TYPE_DECL:
-	  return glob;
-
-	default:
-	  gcc_unreachable ();
-	}
-    }
+  if (tree match = check_mergeable_decl (decl, *gslot, tpl, ret, args))
+    return match;
 
   *gslot = ovl_make (decl, *gslot);
   return NULL_TREE;
@@ -8107,9 +8136,13 @@ reuse_namespace (tree *slot, tree ctx, tree name)
 	global_slot = get_fixed_binding_slot (slot, name,
 					      MODULE_SLOT_GLOBAL, false);
 
-      if (tree decl = *global_slot)
-	if (TREE_CODE (decl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (decl))
-	  return decl;
+      for (ovl_iterator iter (*global_slot); iter; ++iter)
+	{
+	  tree decl = *iter;
+
+	  if (TREE_CODE (decl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (decl))
+	    return decl;
+	}
     }
   return NULL_TREE;
 }

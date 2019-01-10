@@ -13546,7 +13546,9 @@ finish_module_parse (cpp_reader *reader)
 	warning (0, "%<-fmodule-only%> used for non-interface");
     }
   else if (errorcount)
-    warning_at (state->loc, 0, "not writing module due to errors");
+    /* Report location of the module decl, not the module itself.  */
+    warning_at (state->from_loc, 0,
+		"not writing module %qs due to errors", state->fullname);
   else
     {
       int fd = -1;
@@ -13572,8 +13574,9 @@ finish_module_parse (cpp_reader *reader)
 	      if (cpp_macro *macro = cpp_get_deferred_macro
 		  (reader, controlling_node, state->loc))
 		if (macro->imported)
-		  error_at (state->loc, "controlling macro %qE is imported",
-			    identifier (controlling_node));
+		  error_at (state->from_loc,
+			    "module %qs controlling macro %qE is imported",
+			    state->fullname, identifier (controlling_node));
 	    }
 
 	  if (!cpp_user_macro_p (controlling_node)
@@ -13604,8 +13607,8 @@ finish_module_parse (cpp_reader *reader)
       if (to.begin ())
 	state->write (&to, reader);
       if (!to.end ())
-	error_at (state->loc, "failed to write module: %s",
-		  to.get_error (state->filename));
+	error_at (state->from_loc, "failed to write module %qs: %s",
+		  state->fullname, to.get_error (state->filename));
 
       dump.pop (n);
       if (!errorcount)
