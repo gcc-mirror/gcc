@@ -1,6 +1,19 @@
 2019-01-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-01-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	(path::lexically_normal()): Use std::vector iterators instead of
+	path::iterator. Use pop_back to remove components from the end. Clear
+	trailing filename, instead of using erase(const_iterator) to remove
+	a non-final component.
+	* testsuite/27_io/filesystem/path/generation/normal.cc: Test
+	additional cases.
+	* testsuite/27_io/filesystem/path/generation/normal2.cc: New test.
+
+2019-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
 	2018-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/80762

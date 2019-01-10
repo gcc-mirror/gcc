@@ -405,25 +405,30 @@ path::lexically_normal() const
 	      // Got a path with a relative path (i.e. at least one non-root
 	      // element) and no filename at the end (i.e. empty last element),
 	      // so must have a trailing slash. See what is before it.
-	      auto elem = std::prev(ret.end(), 2);
+	      auto elem = ret._M_cmpts.end() - 2;
 	      if (elem->has_filename() && !is_dotdot(*elem))
 		{
 		  // Remove the filename before the trailing slash
 		  // (equiv. to ret = ret.parent_path().remove_filename())
 
-		  if (elem == ret.begin())
+		  if (elem == ret._M_cmpts.begin())
 		    ret.clear();
 		  else
 		    {
-		      ret._M_pathname.erase(elem._M_cur->_M_pos);
-		      // Do we still have a trailing slash?
+		      ret._M_pathname.erase(elem->_M_pos);
+		      // Remove empty filename at the end:
+		      ret._M_cmpts.pop_back();
+		      // If we still have a trailing non-root dir separator
+		      // then leave an empty filename at the end:
 		      if (std::prev(elem)->_M_type == _Type::_Filename)
-			ret._M_cmpts.erase(elem._M_cur);
-		      else
-			ret._M_cmpts.erase(elem._M_cur, ret._M_cmpts.end());
+			elem->clear();
+		      else // remove the component completely:
+			ret._M_cmpts.pop_back();
 		    }
 		}
-	      else // ???
+	      else
+		// Append the ".." to something ending in "../" which happens
+		// when normalising paths like ".././.." and "../a/../.."
 		ret /= p;
 	    }
 	}
