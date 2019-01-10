@@ -1,3 +1,9 @@
+2019-01-10  Stefan Agner  <stefan@agner.ch>
+
+	PR target/88648
+	* config/arm/arm.c (arm_option_override_internal): Force
+	opts->x_inline_asm_unified to true only if TARGET_THUMB2_P.
+
 2019-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/88568

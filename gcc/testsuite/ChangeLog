@@ -1,3 +1,9 @@
+2019-01-10  Stefan Agner  <stefan@agner.ch>
+
+	PR target/88648
+	* gcc.target/arm/pr88648-asm-syntax-unified.c: Add test to
+	check if -masm-syntax-unified gets applied properly.
+
 2019-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/88568
