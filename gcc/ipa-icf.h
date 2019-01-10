@@ -602,6 +602,9 @@ private:
 					 bitmap const &b,
 					 traverse_split_pair *pair);
 
+  /* Compare function for sorting pairs in do_congruence_step_f.  */
+  static int sort_congruence_split (const void *, const void *);
+
   /* Reads a section from LTO stream file FILE_DATA. Input block for DATA
      contains LEN bytes.  */
   void read_section (lto_file_decl_data *file_data, const char *data,

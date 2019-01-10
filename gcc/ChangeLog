@@ -2,6 +2,18 @@
 
 	Backported from mainline
 
+	2019-01-02  Richard Biener  <rguenther@suse.de>
+	PR ipa/85574
+	* ipa-icf.h (sem_item_optimizer::sort_congruence_split): Declare.
+	* ipa-icf.c (sem_item_optimizer::sort_congruence_split): New
+	function.
+	(sem_item_optimizer::do_congruence_step_f): Sort the congruence
+	set after UIDs before splitting them.
+
+2019-01-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backported from mainline
+
 	2019-01-03  Jan Hubicka  <hubicka@ucw.cz>
 	PR tree-optimization/85574
 	* tree-ssa-uncprop.c (struct equiv_hash_elt): Remove unused
