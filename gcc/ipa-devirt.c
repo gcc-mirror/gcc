@@ -2615,6 +2615,7 @@ struct polymorphic_call_target_d
   vec <cgraph_node *> targets;
   tree decl_warning;
   int type_warning;
+  unsigned int n_odr_types;
   bool complete;
   bool speculative;
 };
@@ -2640,6 +2641,7 @@ polymorphic_call_target_hasher::hash (const polymorphic_call_target_d *odr_query
   hstate.add_hwi (odr_query->type->id);
   hstate.merge_hash (TYPE_UID (odr_query->context.outer_type));
   hstate.add_hwi (odr_query->context.offset);
+  hstate.add_hwi (odr_query->n_odr_types);
 
   if (odr_query->context.speculative_outer_type)
     {
@@ -2670,7 +2672,9 @@ polymorphic_call_target_hasher::equal (const polymorphic_call_target_d *t1,
 	      == t2->context.maybe_in_construction
 	  && t1->context.maybe_derived_type == t2->context.maybe_derived_type
 	  && (t1->context.speculative_maybe_derived_type
-	      == t2->context.speculative_maybe_derived_type));
+	      == t2->context.speculative_maybe_derived_type)
+	  /* Adding new type may affect outcome of target search.  */
+	  && t1->n_odr_types == t2->n_odr_types);
 }
 
 /* Remove entry in polymorphic call target cache hash.  */
@@ -3076,6 +3080,7 @@ possible_polymorphic_call_targets (tree otr_type,
   key.otr_token = otr_token;
   key.speculative = speculative;
   key.context = context;
+  key.n_odr_types = odr_types.length ();
   slot = polymorphic_call_target_hash->find_slot (&key, INSERT);
   if (cache_token)
    *cache_token = (void *)*slot;
@@ -3292,6 +3297,7 @@ possible_polymorphic_call_targets (tree otr_type,
 
   (*slot)->targets = nodes;
   (*slot)->complete = complete;
+  (*slot)->n_odr_types = odr_types.length ();
   if (completep)
     *completep = complete;
 
