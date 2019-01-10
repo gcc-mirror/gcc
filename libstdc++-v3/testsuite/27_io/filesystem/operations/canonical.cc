@@ -36,6 +36,7 @@ test01()
   VERIFY( ec );
 
   create_directory(p);
+  __gnu_test::scoped_file l(p, __gnu_test::scoped_file::adopt_file);
   auto p2 = canonical( p, ec );
   compare_paths( p2, fs::current_path()/p );
   VERIFY( !ec );
