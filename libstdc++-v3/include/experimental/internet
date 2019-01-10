@@ -1629,7 +1629,9 @@ namespace ip
       __flags_passive			= AI_PASSIVE,
       __flags_canonical_name		= AI_CANONNAME,
       __flags_numeric_host		= AI_NUMERICHOST,
+#ifdef AI_NUMERICSERV
       __flags_numeric_service		= AI_NUMERICSERV,
+#endif
       __flags_v4_mapped			= AI_V4MAPPED,
       __flags_all_matching		= AI_ALL,
       __flags_address_configured	= AI_ADDRCONFIG
@@ -1637,7 +1639,9 @@ namespace ip
     static constexpr flags passive		= __flags_passive;
     static constexpr flags canonical_name	= __flags_canonical_name;
     static constexpr flags numeric_host		= __flags_numeric_host;
+#ifdef AI_NUMERICSERV
     static constexpr flags numeric_service	= __flags_numeric_service;
+#endif
     static constexpr flags v4_mapped		= __flags_v4_mapped;
     static constexpr flags all_matching		= __flags_all_matching;
     static constexpr flags address_configured	= __flags_address_configured;

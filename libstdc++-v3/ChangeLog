@@ -1,3 +1,12 @@
+2019-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet [AI_NUMERICSERV]
+	(resolver_base::numeric_service): Define conditionally.
+	* testsuite/experimental/net/internet/resolver/base.cc: Test it
+	conditionally.
+	* testsuite/experimental/net/internet/resolver/ops/lookup.cc:
+	Likewise.
+
 2019-01-10  Ville Voutilainen  <ville.voutilainen@gmail.com>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
