@@ -22,6 +22,7 @@
 // 15.25 Permissions [fs.op.last_write_time]
 
 #include <filesystem>
+#include <limits>
 #include <testsuite_fs.h>
 #include <testsuite_hooks.h>
 
@@ -141,14 +142,27 @@ test02()
   VERIFY( !ec );
   VERIFY( approx_equal(last_write_time(f.path), time) );
 
+  if (std::numeric_limits<std::time_t>::max()
+      < std::numeric_limits<std::int64_t>::max())
+    return; // file clock's epoch is out of range for 32-bit time_t
+
   ec = bad_ec;
+  // The file clock's epoch:
   time = time_type();
   last_write_time(f.path, time, ec);
   VERIFY( !ec );
   VERIFY( approx_equal(last_write_time(f.path), time) );
 
   ec = bad_ec;
-  time -= std::chrono::milliseconds(1000 * 60 * 10 + 15);
+  // A time after the epoch
+  time += std::chrono::milliseconds(1000 * 60 * 10 + 15);
+  last_write_time(f.path, time, ec);
+  VERIFY( !ec );
+  VERIFY( approx_equal(last_write_time(f.path), time) );
+
+  ec = bad_ec;
+  // A time before than the epoch
+  time -= std::chrono::milliseconds(1000 * 60 * 20 + 15);
   last_write_time(f.path, time, ec);
   VERIFY( !ec );
   VERIFY( approx_equal(last_write_time(f.path), time) );
