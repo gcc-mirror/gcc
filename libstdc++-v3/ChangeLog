@@ -1,3 +1,8 @@
+2019-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/filesystem/std-path.cc (path::remove_filename()): Remove debug
+	check that prevents building with -fno-exceptions.
+
 2019-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/optional/cons/value_neg.cc: Change dg-error to

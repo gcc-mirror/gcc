@@ -63,8 +63,6 @@ path::remove_filename()
     }
   else if (_M_type == _Type::_Filename)
     clear();
-  if (!empty() && _M_pathname.back() != '/')
-    throw 1;
   return *this;
 }
 
