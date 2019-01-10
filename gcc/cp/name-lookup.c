@@ -3359,6 +3359,18 @@ newbinding_bookkeeping (tree name, tree decl, cp_binding_level *level)
     check_extern_c_conflict (decl);
 }
 
+/* DECL is a global or module-purview entity.  Record it in the global
+   or partition slot.  We have already checked for duplicates.  */
+
+static void
+record_mergeable_decl (tree *slot, tree name, tree decl)
+{
+  bool partition = module_not_legacy_p ();
+  tree *gslot = get_fixed_binding_slot
+    (slot, name, partition ? MODULE_SLOT_PARTITION : MODULE_SLOT_GLOBAL, true);
+  *gslot = ovl_make (decl, *gslot);
+}
+
 /* DECL is a new declaration that may be duplicated in OVL.  Use TPL,
    RET & ARGS to find its clone, or NULL  */
 
@@ -3372,6 +3384,11 @@ check_mergeable_decl (tree decl, tree ovl, tree tpl, tree ret, tree args)
 
       tree d_inner = decl;
       tree m_inner = match;
+
+      if (TREE_CODE (match) == NAMESPACE_DECL
+	  && !DECL_NAMESPACE_ALIAS (match))
+	/* Namespaces are never overloaded.  */
+	return match;
 
     again:
       if (TREE_CODE (d_inner) != TREE_CODE (m_inner))
@@ -3473,6 +3490,51 @@ check_module_override (tree decl, tree mvec, bool is_friend,
 	      return match;
 	    }
       }
+
+  if (TREE_PUBLIC (scope) && TREE_PUBLIC (decl) && !not_module_p ()
+      /* Namespaces are dealt with specially in
+	 make_namespace_finish.  */
+      && !(TREE_CODE (decl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (decl)))
+    {
+      /* Look in the appropriate mergeable decl slot.  */
+      tree mergeable = NULL_TREE;
+      if (module_not_legacy_p ())
+	mergeable = MODULE_VECTOR_CLUSTER (mvec, MODULE_SLOT_PARTITION
+					   / MODULE_VECTOR_SLOTS_PER_CLUSTER)
+	  .slots[MODULE_SLOT_PARTITION % MODULE_VECTOR_SLOTS_PER_CLUSTER];
+      else
+	mergeable = MODULE_VECTOR_CLUSTER (mvec, 0).slots[MODULE_SLOT_GLOBAL];
+      
+      if (mergeable)
+	{
+	  tree tpl = NULL_TREE;
+	  tree ret = NULL_TREE;
+	  tree args = NULL_TREE;
+	  tree inner = decl;
+
+	  if (TREE_CODE (decl) == TEMPLATE_DECL)
+	    {
+	      tpl = DECL_TEMPLATE_PARMS (decl);
+	      inner = DECL_TEMPLATE_RESULT (decl);
+	    }
+
+	  if (TREE_CODE (inner) == FUNCTION_DECL)
+	    {
+	      if (inner != decl)
+		ret = TREE_TYPE (TREE_TYPE (inner));
+	      args = TYPE_ARG_TYPES (TREE_TYPE (inner));
+	    }
+
+	  if (tree match
+	      = check_mergeable_decl (decl, mergeable, tpl, ret, args))
+	    {
+	      match = duplicate_decls (decl, match, is_friend);
+	      if (TREE_CODE (match) == TYPE_DECL)
+		SET_IDENTIFIER_TYPE_VALUE (name, TREE_TYPE (match));
+	      return match;
+	    }
+	}
+    }
 
   return NULL_TREE;
 }
@@ -3658,9 +3720,17 @@ do_pushdecl (tree decl, bool is_friend)
 	{
 	  newbinding_bookkeeping (name, decl, level);
 
-	  if (DECL_MODULE_EXPORT_P (decl) && level->kind == sk_namespace
-	      && !DECL_MODULE_EXPORT_P (level->this_entity))
-	    implicitly_export_namespace (level->this_entity);
+	  if (level->kind == sk_namespace
+	      && TREE_PUBLIC (level->this_entity))
+	    {
+	      if (DECL_MODULE_EXPORT_P (decl)
+		  && !DECL_MODULE_EXPORT_P (level->this_entity))
+		implicitly_export_namespace (level->this_entity);
+
+	      if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION
+		  && TREE_PUBLIC (decl) && !not_module_p ())
+		record_mergeable_decl (slot, name, decl);
+	    }
 	}
     }
   else
@@ -8205,30 +8275,19 @@ make_namespace (tree ctx, tree name, unsigned mod, location_t loc,
 }
 
 static void
-make_namespace_finish (tree ns, tree *slot, location_t loc,
-		       bool from_import = false)
+make_namespace_finish (tree ns, tree *slot, bool from_import = false)
 {
   if (modules_p () && TREE_PUBLIC (ns) && (from_import || *slot != ns))
     {
-      /* Place a binding in the global module's slot.  */
-      slot = get_fixed_binding_slot (slot, DECL_NAME (ns),
-				     MODULE_SLOT_GLOBAL, true);
-      if (*slot && *slot != ns)
-	{
-	  /* Something was already bound there.  */
-	  tree glob = OVL_FIRST (MAYBE_STAT_DECL (*slot));
-	  error_at (loc, "%q#D conflicts with global module declaration", ns);
-	  inform (DECL_SOURCE_LOCATION (glob),
-		  "global module declaration %qD", glob);
-	}
-      *slot = ns;
+      /* Merge into global slot.  */
+      tree *gslot = get_fixed_binding_slot (slot, DECL_NAME (ns),
+					    MODULE_SLOT_GLOBAL, true);
+      if (!check_mergeable_decl (ns, *gslot, NULL, NULL, NULL))
+	*gslot = ns;
     }
 
-  tree ctx = CP_DECL_CONTEXT (ns);
-  if (!from_import)
-    add_decl_to_level (NAMESPACE_LEVEL (ctx), ns);
-
   /* NS was newly created, finish off making it.  */
+  tree ctx = CP_DECL_CONTEXT (ns);
   cp_binding_level *scope = ggc_cleared_alloc<cp_binding_level> ();
   scope->this_entity = ns;
   scope->more_cleanups_ok = true;
@@ -8302,7 +8361,8 @@ push_namespace (tree name, bool make_inline)
       else
 	{
 	  /* finish up making the namespace.  */
-	  make_namespace_finish (ns, slot, input_location);
+	  add_decl_to_level (NAMESPACE_LEVEL (current_namespace), ns);
+	  make_namespace_finish (ns, slot);
 
 	  /* Add the anon using-directive here, we don't do it in
 	     make_namespace_finish.  */
@@ -8359,7 +8419,7 @@ add_imported_namespace (tree ctx, tree name, unsigned mod, location_t loc,
   if (!decl)
     {
       decl = make_namespace (ctx, name, mod, loc, inline_p, anon_name);
-      make_namespace_finish (decl, slot, loc, true);
+      make_namespace_finish (decl, slot, true);
     }
   else if (DECL_NAMESPACE_INLINE_P (decl) != inline_p)
     {

@@ -1,6 +1,19 @@
 2019-01-10  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (module_not_legacy_p): New.
+	* module.cc (trees_out::tree_namespace): Rema namespace owner.
+	(tree_in::tree_node): Protect bogus tt_namespace.
+	* name-lookup.c (record_mergeable_decl): New.
+	(check_mergeable_decl): Namespaces are never overloaded.
+	(check_module_override): Add to mergeable list.
+	(do_pushdecl): Record mergeable.
+	(make_namespace_finish): Use check_mergeable_decl.  Never add to level
+	(push_namespace): Add to level here.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-1_b.C: Adjust dump scan.
+
+	gcc/cp/
 	* module.cc (finish_module_parse): Better location info on errors.
 	* name-lookup.c (name_lookup::search_namespace_only): Skip
 	partition slot too.

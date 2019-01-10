@@ -6789,6 +6789,8 @@ inline bool not_module_p ()
 { return !(module_kind & (MK_MODULE | MK_GLOBAL)); }
 inline bool module_legacy_p ()
 { return (module_kind & (MK_MODULE | MK_GLOBAL)) == (MK_MODULE | MK_GLOBAL); }
+inline bool module_not_legacy_p ()
+{ return (module_kind & (MK_MODULE | MK_GLOBAL)) == MK_MODULE; }
 inline bool module_interface_p ()
 { return module_kind & MK_INTERFACE; }
 inline bool module_partition_p ()

@@ -6116,13 +6116,17 @@ trees_out::tree_ctx (tree ctx, bool need_contents, tree inner_decl)
 void
 trees_out::tree_namespace (tree ns, walk_kind ref, tree inner_decl)
 {
-  unsigned owner = (inner_decl ? MAYBE_DECL_MODULE_OWNER (inner_decl)
-		    : MODULE_NONE);
-
   if (streaming_p ())
     {
       i (tt_namespace);
-      u (TREE_PUBLIC (ns) ? MODULE_NONE : owner);
+      unsigned owner = MODULE_NONE;
+      if (!TREE_PUBLIC (ns))
+	{
+	  owner = MAYBE_DECL_MODULE_OWNER (inner_decl);
+	  if (owner >= MODULE_IMPORT_BASE)
+	    owner = (*modules)[owner]->remap;
+	}
+      u (owner);
       tree_ctx (CP_DECL_CONTEXT (ns), true, ns);
       tree_node (DECL_NAME (ns));
     }
@@ -6136,7 +6140,8 @@ trees_out::tree_namespace (tree ns, walk_kind ref, tree inner_decl)
     dump (dumper::TREE)
       && dump ("Wrote%s namespace:%d %C:%N@%M",
 	       TREE_PUBLIC (ns) ? " public" : "", tag, TREE_CODE (ns), ns,
-	       owner == MODULE_NONE ? NULL : (*modules)[owner]);
+	       TREE_PUBLIC (ns) ? NULL
+	       : (*modules)[MAYBE_DECL_MODULE_OWNER (inner_decl)]);
 }
 
 /* Reference DECL.  REF indicates the walk kind we are performing.
@@ -6809,9 +6814,10 @@ trees_in::tree_node ()
 	    set_overrun ();
 	    res = NULL;
 	  }
-	int tag = insert (res);
+
 	if (res)
 	  {
+	    int tag = insert (res);
 	    dump (dumper::TREE)
 	      && dump ("Namespace:%d %C:%N@%M", tag, TREE_CODE (res),
 		       res, owner == MODULE_NONE ? NULL : (*modules)[owner]);
