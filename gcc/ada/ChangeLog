@@ -1,14 +1,12 @@
 2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/16615
-
 	* exp_ch11.adb: Change "can not" to "cannot".
 	* sem_ch4.adb: Likewise.
 
 2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/16615
-
 	* exp_ch9.adb: Mechanically replace "can not" with "cannot".
 	* libgnat/s-regpat.ads: Likewise.
 	* par-ch4.adb: Likewise.
@@ -18,28 +16,22 @@
 2019-01-08  Justin Squirek  <squirek@adacore.com>
 
 	Revert:
-
 	2018-07-31  Justin Squirek  <squirek@adacore.com>
 
-	gcc/ada/
-
-		* lib-writ.adb (Write_With_Lines): Modfiy the generation
-		of dependencies within ali files so that source unit
-		bodies are properly listed even if said bodies are
-		missing.  Perform legacy behavior in GNATprove mode.
-		* lib-writ.ads: Modify documentation to reflect current
-		behavior.
+	* lib-writ.adb (Write_With_Lines): Modfiy the generation
+	of dependencies within ali files so that source unit
+	bodies are properly listed even if said bodies are
+	missing.  Perform legacy behavior in GNATprove mode.
+	* lib-writ.ads: Modify documentation to reflect current
+	behavior.
 
 	and:
-
 	2018-09-26  Justin Squirek  <squirek@adacore.com>
 
-	gcc/ada/
-
-		* lib-writ.adb, lib-writ.ads (Write_With_Lines): Add
-		documentation and an extra conditional check for RCI
-		units so that generated ali files will list the spec
-		only instead of a body when a body is not found.
+	* lib-writ.adb, lib-writ.ads (Write_With_Lines): Add
+	documentation and an extra conditional check for RCI
+	units so that generated ali files will list the spec
+	only instead of a body when a body is not found.
 
 2019-01-04  Eric Botcazou  <ebotcazou@adacore.com>
 
