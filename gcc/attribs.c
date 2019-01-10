@@ -1691,6 +1691,8 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
 	     a function global scope, unless declared static.  */
 	  if (current_function_decl != NULL_TREE && !TREE_STATIC (node))
 	    TREE_PUBLIC (node) = 1;
+	  /* Clear TREE_STATIC because DECL_EXTERNAL is set.  */
+	  TREE_STATIC (node) = 0;
 	}
 
       if (*no_add_attrs == false)
