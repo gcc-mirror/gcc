@@ -951,6 +951,9 @@ aarch64_init_simd_builtins (void)
 				     NULL, NULL_TREE);
       aarch64_builtin_decls[fcode] = fndecl;
     }
+
+   /* Initialize the remaining fcmla_laneq intrinsics.  */
+   aarch64_init_fcmla_laneq_builtins ();
 }
 
 static void
@@ -1078,10 +1081,7 @@ aarch64_init_builtins (void)
   aarch64_init_fp16_types ();
 
   if (TARGET_SIMD)
-    {
-      aarch64_init_simd_builtins ();
-      aarch64_init_fcmla_laneq_builtins ();
-    }
+    aarch64_init_simd_builtins ();
 
   aarch64_init_crc32_builtins ();
   aarch64_init_builtin_rsqrt ();

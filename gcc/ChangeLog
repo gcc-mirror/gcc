@@ -1,3 +1,9 @@
+2019-01-10  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_init_builtins): Move aarch64_init_fcmla_laneq_builtins...
+	(aarch64_init_simd_builtins): ...Here
+
 2019-01-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/87305
