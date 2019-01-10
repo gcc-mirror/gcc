@@ -1,3 +1,11 @@
+2019-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/84877
+	PR bootstrap/88450
+	* function.c (assign_stack_local_1): Revert the 2018-11-21 changes.
+	(assign_parm_setup_block): Do the argument slot realignment here
+	instead.
+
 2019-01-10  Stefan Agner  <stefan@agner.ch>
 
 	PR target/88648
