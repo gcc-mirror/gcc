@@ -764,6 +764,9 @@
   neon_sub_halve_q,\
   neon_sub_halve_narrow_q,\
 \
+  neon_fcadd,\
+  neon_fcmla,\
+\
   neon_abs,\
   neon_abs_q,\
   neon_dot,\

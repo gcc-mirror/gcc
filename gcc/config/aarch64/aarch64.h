@@ -242,6 +242,9 @@ extern unsigned aarch64_architecture_version;
 /* Random number instructions from Armv8.5-a.  */
 #define TARGET_RNG (AARCH64_ISA_RNG)
 
+/* Armv8.3-a Complex number extension to AdvSIMD extensions.  */
+#define TARGET_COMPLEX (TARGET_SIMD && TARGET_ARMV8_3)
+
 /* Make sure this is always defined so we don't have to check for ifdefs
    but rather use normal ifs.  */
 #ifndef TARGET_FIX_ERR_A53_835769_DEFAULT
