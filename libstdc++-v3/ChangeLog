@@ -1,3 +1,12 @@
+2019-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/88775
+	* include/bits/stl_function.h (greater<_Tp*>::operator(),
+	less<_Tp*>::operator(), greater_equal<_Tp*>::operator(),
+	less_equal<_Tp*>::operator()): Use __builtin_is_constant_evaluated
+	instead of __builtin_constant_p if available.  Don't bother with
+	the pointer comparison in C++11 and earlier.
+
 2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/16615
