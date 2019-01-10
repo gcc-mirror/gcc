@@ -337,6 +337,8 @@ top_var_list (gfc_data *d)
 
       new_var = gfc_get_data_variable ();
       *new_var = var;
+      if (new_var->expr)
+	new_var->expr->where = gfc_current_locus;
 
       if (tail == NULL)
 	d->var = new_var;
@@ -597,6 +599,7 @@ gfc_match_data (void)
 {
   gfc_data *new_data;
   gfc_expr *e;
+  gfc_ref *ref;
   match m;
 
   /* Before parsing the rest of a DATA statement, check F2008:c1206.  */
@@ -641,7 +644,7 @@ gfc_match_data (void)
 	  bool invalid;
 
 	  invalid = false;
-	  for (gfc_ref *ref = e->ref; ref; ref = ref->next)
+	  for (ref = e->ref; ref; ref = ref->next)
 	    if ((ref->type == REF_COMPONENT
 		 && ref->u.c.component->attr.allocatable)
 		|| (ref->type == REF_ARRAY
@@ -655,6 +658,21 @@ gfc_match_data (void)
 			 "near %C in DATA statement");
 	      goto cleanup;
 	    }
+
+	  /* F2008:C567 (R536) A data-i-do-object or a variable that appears
+	     as a data-stmt-object shall not be an object designator in which
+	     a pointer appears other than as the entire rightmost part-ref.  */
+	  ref = e->ref;
+	  if (e->symtree->n.sym->ts.type == BT_DERIVED
+	      && e->symtree->n.sym->attr.pointer
+	      && ref->type == REF_COMPONENT)
+	    goto partref;
+
+	  for (; ref; ref = ref->next)
+	    if (ref->type == REF_COMPONENT
+		&& ref->u.c.component->attr.pointer
+		&& ref->next)
+	      goto partref;
 	}
 
       m = top_val_list (new_data);
@@ -680,6 +698,12 @@ gfc_match_data (void)
   gfc_unset_implicit_pure (gfc_current_ns->proc_name);
 
   return MATCH_YES;
+
+partref:
+
+  gfc_error ("part-ref with pointer attribute near %L is not "
+	     "rightmost part-ref of data-stmt-object",
+	     &e->where);
 
 cleanup:
   set_in_match_data (false);
