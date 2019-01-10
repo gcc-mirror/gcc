@@ -495,7 +495,7 @@ GLIBCXX_3.4 {
     _ZNSo8_M_writeEPKc[ilx];
     _ZNSo3put*;
     _ZNSo[5-9][a-z]*;
-    _ZNSolsE*[^g];
+    _ZNSolsE*[^Dg];
 
     # std::basic_ostream<wchar_t>
     _ZNSt13basic_ostreamIwSt11char_traitsIwEEC[12]Ev;
@@ -509,7 +509,7 @@ GLIBCXX_3.4 {
     _ZNSt13basic_ostreamIwSt11char_traitsIwEE5writeEPKw*;
     _ZNSt13basic_ostreamIwSt11char_traitsIwEE6sentry*;
     _ZNSt13basic_ostreamIwSt11char_traitsIwEE8_M_writeEPKw[ilx];
-    _ZNSt13basic_ostreamIwSt11char_traitsIwEElsE*[^g];
+    _ZNSt13basic_ostreamIwSt11char_traitsIwEElsE*[^Dg];
 
     # std::ostream operators and inserters
     _ZSt4end[ls]I[cw]St11char_traitsI[cw]EERSt13basic_ostream*;
@@ -2222,6 +2222,10 @@ GLIBCXX_3.4.26 {
     _ZNSt10filesystem7__cxx1128recursive_directory_iteratorD[12]Ev;
     _ZNSt10filesystem7__cxx1128recursive_directory_iteratoraSEOS1_;
     _ZNSt10filesystem7__cxx1128recursive_directory_iteratorppEv;
+
+    # basic_ostream::operator<<(nullptr_t)
+    _ZNSolsEDn;
+    _ZNSt13basic_ostreamIwSt11char_traitsIwEElsEDn;
 
 } GLIBCXX_3.4.25;
 

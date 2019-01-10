@@ -1,3 +1,17 @@
+2019-01-10  Ville Voutilainen  <ville.voutilainen@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	Implement LWG 2221
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4): Tighten patterns.
+	(GLIBCXX_3.4.26): Add new exports.
+	* include/Makefile.am: Add ostream-inst.cc. Move string-inst.cc to
+	correct list of sources.
+	* include/Makefile.in: Regenerate.
+	* include/std/ostream (operator<<(nullptr_t)): New member function.
+	* src/c++17/ostream-inst.cc: New file.
+	* testsuite/27_io/basic_ostream/inserters_other/char/lwg2221.cc: New
+	test.
+
 2019-01-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/util/testsuite_fs.h (nonexistent_path): Include name
