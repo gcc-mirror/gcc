@@ -377,7 +377,6 @@ assign_stack_local_1 (machine_mode mode, poly_int64 size,
   poly_int64 bigend_correction = 0;
   poly_int64 slot_offset = 0, old_frame_offset;
   unsigned int alignment, alignment_in_bits;
-  bool dynamic_align_addr = false;
 
   if (align == 0)
     {
@@ -396,22 +395,14 @@ assign_stack_local_1 (machine_mode mode, poly_int64 size,
 
   alignment_in_bits = alignment * BITS_PER_UNIT;
 
+  /* Ignore alignment if it exceeds MAX_SUPPORTED_STACK_ALIGNMENT.  */
   if (alignment_in_bits > MAX_SUPPORTED_STACK_ALIGNMENT)
     {
-      /* If the required alignment exceeds MAX_SUPPORTED_STACK_ALIGNMENT and
-	 it is not OK to reduce it.  Align the slot dynamically.  */
-      if (mode == BLKmode
-	  && (kind & ASLK_REDUCE_ALIGN) == 0
-	  && currently_expanding_to_rtl)
-	dynamic_align_addr = true;
-      else
-	{
-	  alignment_in_bits = MAX_SUPPORTED_STACK_ALIGNMENT;
-	  alignment = MAX_SUPPORTED_STACK_ALIGNMENT / BITS_PER_UNIT;
-	}
+      alignment_in_bits = MAX_SUPPORTED_STACK_ALIGNMENT;
+      alignment = MAX_SUPPORTED_STACK_ALIGNMENT / BITS_PER_UNIT;
     }
 
-  if (SUPPORTS_STACK_ALIGNMENT && !dynamic_align_addr)
+  if (SUPPORTS_STACK_ALIGNMENT)
     {
       if (crtl->stack_alignment_estimated < alignment_in_bits)
 	{
@@ -441,42 +432,10 @@ assign_stack_local_1 (machine_mode mode, poly_int64 size,
 	}
     }
 
-  /* Handle overalignment here for parameter copy on the stack.
-     Reserved enough space for it and dynamically align the address.
-     No free frame_space is added here.  */
-  if (dynamic_align_addr)
-    {
-      rtx allocsize = gen_int_mode (size, Pmode);
-      get_dynamic_stack_size (&allocsize, 0, alignment_in_bits, NULL);
-
-      /* This is the size of space needed to accommodate required size of data
-	 with given alignment.  */
-      poly_int64 len = rtx_to_poly_int64 (allocsize);
-      old_frame_offset = frame_offset;
-
-      if (FRAME_GROWS_DOWNWARD)
-	{
-	  frame_offset -= len;
-	  try_fit_stack_local (frame_offset, len, len,
-			       PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT,
-			       &slot_offset);
-	}
-      else
-	{
-	  frame_offset += len;
-	  try_fit_stack_local (old_frame_offset, len, len,
-			       PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT,
-			       &slot_offset);
-	}
-      goto found_space;
-    }
-  else
-    {
-      if (crtl->stack_alignment_needed < alignment_in_bits)
-	crtl->stack_alignment_needed = alignment_in_bits;
-      if (crtl->max_used_stack_slot_alignment < alignment_in_bits)
-	crtl->max_used_stack_slot_alignment = alignment_in_bits;
-    }
+  if (crtl->stack_alignment_needed < alignment_in_bits)
+    crtl->stack_alignment_needed = alignment_in_bits;
+  if (crtl->max_used_stack_slot_alignment < alignment_in_bits)
+    crtl->max_used_stack_slot_alignment = alignment_in_bits;
 
   if (mode != BLKmode || maybe_ne (size, 0))
     {
@@ -562,12 +521,6 @@ assign_stack_local_1 (machine_mode mode, poly_int64 size,
 			  trunc_int_for_mode
 			  (slot_offset + bigend_correction,
 			   Pmode));
-
-  if (dynamic_align_addr)
-    {
-      addr = align_dynamic_address (addr, alignment_in_bits);
-      mark_reg_pointer (addr, alignment_in_bits);
-    }
 
   x = gen_rtx_MEM (mode, addr);
   set_mem_align (x, alignment_in_bits);
@@ -2960,8 +2913,21 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
   if (stack_parm == 0)
     {
       SET_DECL_ALIGN (parm, MAX (DECL_ALIGN (parm), BITS_PER_WORD));
-      stack_parm = assign_stack_local (BLKmode, size_stored,
-				       DECL_ALIGN (parm));
+      if (DECL_ALIGN (parm) > MAX_SUPPORTED_STACK_ALIGNMENT)
+	{
+	  rtx allocsize = gen_int_mode (size, Pmode);
+	  get_dynamic_stack_size (&allocsize, 0, DECL_ALIGN (parm), NULL);
+	  stack_parm = assign_stack_local (BLKmode, UINTVAL (allocsize),
+					   MAX_SUPPORTED_STACK_ALIGNMENT);
+	  rtx addr = align_dynamic_address (XEXP (stack_parm, 0),
+					    DECL_ALIGN (parm));
+	  mark_reg_pointer (addr, DECL_ALIGN (parm));
+	  stack_parm = gen_rtx_MEM (GET_MODE (stack_parm), addr);
+	  MEM_NOTRAP_P (stack_parm) = 1;
+	}
+      else
+	stack_parm = assign_stack_local (BLKmode, size_stored,
+					 DECL_ALIGN (parm));
       if (known_eq (GET_MODE_SIZE (GET_MODE (entry_parm)), size))
 	PUT_MODE (stack_parm, GET_MODE (entry_parm));
       set_mem_attributes (stack_parm, parm, 1);
