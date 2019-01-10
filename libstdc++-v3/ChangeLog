@@ -1,5 +1,8 @@
 2019-01-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/27_io/filesystem/operations/last_write_time.cc: Fix
+	test failures on targets with 32-bit time_t.
+
 	* include/bits/erase_if.h: Define __cpp_lib_erase_if.
 	* include/std/deque: Likewise.
 	* include/std/forward_list: Likewise.
