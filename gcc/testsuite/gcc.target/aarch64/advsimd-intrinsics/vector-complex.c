@@ -1,5 +1,4 @@
-/* { dg-skip-if "" { arm-*-* } } */
-/* { dg-do assemble } */
+/* { dg-do compile } */
 /* { dg-require-effective-target arm_v8_3a_complex_neon_ok } */
 /* { dg-add-options arm_v8_3a_complex_neon }  */
 /* { dg-additional-options "-O2 -save-temps" } */
@@ -249,3 +248,22 @@ test_vcmlaq_rot270_laneq_f32 (float32x4_t __r, float32x4_t __a, float32x4_t __b)
 /* { dg-final { scan-assembler-times {fcmla\tv[0-9]+.4s, v[0-9]+.4s, v[0-9]+.s\[1\], #270} 1 { target { aarch64*-*-* } } } } */
 /* { dg-final { scan-assembler-times {fcmla\tv[0-9]+.4s, v[0-9]+.4s, v[0-9]+.s\[1\], #90} 1 { target { aarch64*-*-* } } } } */
 /* { dg-final { scan-assembler-times {dup\td[0-9]+, v[0-9]+.d\[1\]} 4 { target { aarch64*-*-* } } } } */
+
+/* { dg-final { scan-assembler-times {vcadd.f32\td[0-9]+, d[0-9]+, d[0-9]+, #90} 2 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcadd.f32\tq[0-9]+, q[0-9]+, q[0-9]+, #90} 2 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f32\td[0-9]+, d[0-9]+, d[0-9]+, #0} 1 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f32\td[0-9]+, d[0-9]+, d[0-9]+, #180} 1 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f32\td[0-9]+, d[0-9]+, d[0-9]+, #270} 1 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f32\td[0-9]+, d[0-9]+, d[0-9]+, #90} 1 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f32\td[0-9]+, d[0-9]+, d[0-9]+\[0\], #0} 2 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f32\td[0-9]+, d[0-9]+, d[0-9]+\[0\], #180} 2 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f32\td[0-9]+, d[0-9]+, d[0-9]+\[0\], #270} 2 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f32\td[0-9]+, d[0-9]+, d[0-9]+\[0\], #90} 2 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f32\tq[0-9]+, q[0-9]+, d[0-9]+\[0\], #0} 2 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f32\tq[0-9]+, q[0-9]+, d[0-9]+\[0\], #180} 2 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f32\tq[0-9]+, q[0-9]+, d[0-9]+\[0\], #270} 2 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f32\tq[0-9]+, q[0-9]+, d[0-9]+\[0\], #90} 2 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f32\tq[0-9]+, q[0-9]+, q[0-9]+, #0} 1 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f32\tq[0-9]+, q[0-9]+, q[0-9]+, #180} 1 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f32\tq[0-9]+, q[0-9]+, q[0-9]+, #270} 1 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f32\tq[0-9]+, q[0-9]+, q[0-9]+, #90} 1 { target { arm*-*-* } } } } */
