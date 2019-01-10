@@ -4739,7 +4739,9 @@ lra_constraints (bool first_p)
   else
     /* On the first iteration we should check IRA assignment
        correctness.  In rare cases, the assignments can be wrong as
-       early clobbers operands are ignored in IRA.  */
+       early clobbers operands are ignored in IRA or usages of
+       paradoxical sub-registers are not taken into account by
+       IRA.  */
     lra_risky_transformations_p = first_p;
   new_insn_uid_start = get_max_uid ();
   new_regno_start = first_p ? lra_constraint_new_regno_start : max_reg_num ();
