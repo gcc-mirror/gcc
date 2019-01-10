@@ -1,5 +1,4 @@
-/* { dg-skip-if "" { arm-*-* } } */
-/* { dg-do assemble } */
+/* { dg-do compile } */
 /* { dg-require-effective-target arm_v8_3a_complex_neon_ok } */
 /* { dg-require-effective-target arm_v8_2a_fp16_scalar_ok } */
 /* { dg-add-options arm_v8_3a_complex_neon } */
@@ -304,3 +303,30 @@ test_vcmlaq_rot270_laneq_f16_2 (float16x8_t __r, float16x8_t __a, float16x8_t __
 /* { dg-final { scan-assembler-times {fcmla\tv[0-9]+.8h, v[0-9]+.8h, v[0-9]+.h\[3\], #180} 1 { target { aarch64*-*-* } } } } */
 /* { dg-final { scan-assembler-times {fcmla\tv[0-9]+.8h, v[0-9]+.8h, v[0-9]+.h\[3\], #270} 1 { target { aarch64*-*-* } } } } */
 /* { dg-final { scan-assembler-times {fcmla\tv[0-9]+.8h, v[0-9]+.8h, v[0-9]+.h\[3\], #90} 1 { target { aarch64*-*-* } } } } */
+
+/* { dg-final { scan-assembler-times {vcadd.f16\td[0-9]+, d[0-9]+, d[0-9]+, #90} 2 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcadd.f16\tq[0-9]+, q[0-9]+, q[0-9]+, #90} 2 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\td[0-9]+, d[0-9]+, d[0-9]+, #0} 1 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\td[0-9]+, d[0-9]+, d[0-9]+\[0\], #0} 3 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\td[0-9]+, d[0-9]+, d[0-9]+\[0\], #180} 3 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\td[0-9]+, d[0-9]+, d[0-9]+\[0\], #270} 3 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\td[0-9]+, d[0-9]+, d[0-9]+\[0\], #90} 3 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\td[0-9]+, d[0-9]+, d[0-9]+\[1\], #0} 1 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\td[0-9]+, d[0-9]+, d[0-9]+\[1\], #180} 1 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\td[0-9]+, d[0-9]+, d[0-9]+\[1\], #270} 1 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\td[0-9]+, d[0-9]+, d[0-9]+, #180} 1 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\td[0-9]+, d[0-9]+, d[0-9]+\[1\], #90} 1 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\td[0-9]+, d[0-9]+, d[0-9]+, #270} 1 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\td[0-9]+, d[0-9]+, d[0-9]+, #90} 1 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\tq[0-9]+, q[0-9]+, d[0-9]+\[0\], #0} 3 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\tq[0-9]+, q[0-9]+, d[0-9]+\[0\], #180} 3 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\tq[0-9]+, q[0-9]+, d[0-9]+\[0\], #270} 3 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\tq[0-9]+, q[0-9]+, d[0-9]+\[0\], #90} 3 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\tq[0-9]+, q[0-9]+, d[0-9]+\[1\], #0} 1 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\tq[0-9]+, q[0-9]+, d[0-9]+\[1\], #180} 1 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\tq[0-9]+, q[0-9]+, d[0-9]+\[1\], #270} 1 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\tq[0-9]+, q[0-9]+, d[0-9]+\[1\], #90} 1 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\tq[0-9]+, q[0-9]+, q[0-9]+, #0} 1 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\tq[0-9]+, q[0-9]+, q[0-9]+, #180} 1 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\tq[0-9]+, q[0-9]+, q[0-9]+, #270} 1 { target { arm*-*-* } } } } */
+/* { dg-final { scan-assembler-times {vcmla.f16\tq[0-9]+, q[0-9]+, q[0-9]+, #90} 1 { target { arm*-*-* } } } } */

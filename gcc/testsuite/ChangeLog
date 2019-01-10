@@ -1,5 +1,10 @@
 2019-01-10  Tamar Christina  <tamar.christina@arm.com>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vector-complex.c: Add AArch32 regexpr.
+	* gcc.target/aarch64/advsimd-intrinsics/vector-complex_f16.c: Likewise.
+
+2019-01-10  Tamar Christina  <tamar.christina@arm.com>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vector-complex.c: New test.
 	* gcc.target/aarch64/advsimd-intrinsics/vector-complex_f16.c: New test.
 

@@ -220,6 +220,9 @@ extern tree arm_fp16_type_node;
 					isa_bit_dotprod)		\
 			&& arm_arch8_2)
 
+/* Supports the Armv8.3-a Complex number AdvSIMD extensions.  */
+#define TARGET_COMPLEX (TARGET_NEON && arm_arch8_3)
+
 /* FPU supports the floating point FP16 instructions for ARMv8.2-A
    and later.  */
 #define TARGET_VFP_FP16INST \
@@ -441,6 +444,12 @@ extern int arm_arch8_1;
 
 /* Nonzero if this chip supports the ARM Architecture 8.2 extensions.  */
 extern int arm_arch8_2;
+
+/* Nonzero if this chip supports the ARM Architecture 8.3 extensions.  */
+extern int arm_arch8_3;
+
+/* Nonzero if this chip supports the ARM Architecture 8.4 extensions.  */
+extern int arm_arch8_4;
 
 /* Nonzero if this chip supports the FP16 instructions extension of ARM
    Architecture 8.2.  */

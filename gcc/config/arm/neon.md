@@ -3457,6 +3457,80 @@
   DONE;
 })
 
+
+;; The vcadd and vcmla patterns are made UNSPEC for the explicitly due to the
+;; fact that their usage need to guarantee that the source vectors are
+;; contiguous.  It would be wrong to describe the operation without being able
+;; to describe the permute that is also required, but even if that is done
+;; the permute would have been created as a LOAD_LANES which means the values
+;; in the registers are in the wrong order.
+(define_insn "neon_vcadd<rot><mode>"
+  [(set (match_operand:VF 0 "register_operand" "=w")
+	(unspec:VF [(match_operand:VF 1 "register_operand" "w")
+		    (match_operand:VF 2 "register_operand" "w")]
+		    VCADD))]
+  "TARGET_COMPLEX"
+  "vcadd.<V_s_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2, #<rot>"
+  [(set_attr "type" "neon_fcadd")]
+)
+
+(define_insn "neon_vcmla<rot><mode>"
+  [(set (match_operand:VF 0 "register_operand" "=w")
+	(plus:VF (match_operand:VF 1 "register_operand" "0")
+		 (unspec:VF [(match_operand:VF 2 "register_operand" "w")
+			     (match_operand:VF 3 "register_operand" "w")]
+			     VCMLA)))]
+  "TARGET_COMPLEX"
+  "vcmla.<V_s_elem>\t%<V_reg>0, %<V_reg>2, %<V_reg>3, #<rot>"
+  [(set_attr "type" "neon_fcmla")]
+)
+
+(define_insn "neon_vcmla_lane<rot><mode>"
+  [(set (match_operand:VF 0 "s_register_operand" "=w")
+	(plus:VF (match_operand:VF 1 "s_register_operand" "0")
+		 (unspec:VF [(match_operand:VF 2 "s_register_operand" "w")
+			     (match_operand:VF 3 "s_register_operand" "<VF_constraint>")
+			     (match_operand:SI 4 "const_int_operand" "n")]
+			     VCMLA)))]
+  "TARGET_COMPLEX"
+  {
+    operands = neon_vcmla_lane_prepare_operands (<MODE>mode, operands);
+    return "vcmla.<V_s_elem>\t%<V_reg>0, %<V_reg>2, d%c3[%c4], #<rot>";
+  }
+  [(set_attr "type" "neon_fcmla")]
+)
+
+(define_insn "neon_vcmla_laneq<rot><mode>"
+  [(set (match_operand:VDF 0 "s_register_operand" "=w")
+	(plus:VDF (match_operand:VDF 1 "s_register_operand" "0")
+		  (unspec:VDF [(match_operand:VDF 2 "s_register_operand" "w")
+			      (match_operand:<V_DOUBLE> 3 "s_register_operand" "<VF_constraint>")
+			      (match_operand:SI 4 "const_int_operand" "n")]
+			      VCMLA)))]
+  "TARGET_COMPLEX"
+  {
+    operands = neon_vcmla_lane_prepare_operands (<MODE>mode, operands);
+    return "vcmla.<V_s_elem>\t%<V_reg>0, %<V_reg>2, d%c3[%c4], #<rot>";
+  }
+  [(set_attr "type" "neon_fcmla")]
+)
+
+(define_insn "neon_vcmlaq_lane<rot><mode>"
+  [(set (match_operand:VQ_HSF 0 "s_register_operand" "=w")
+	(plus:VQ_HSF (match_operand:VQ_HSF 1 "s_register_operand" "0")
+		 (unspec:VQ_HSF [(match_operand:VQ_HSF 2 "s_register_operand" "w")
+				 (match_operand:<V_HALF> 3 "s_register_operand" "<VF_constraint>")
+				 (match_operand:SI 4 "const_int_operand" "n")]
+				 VCMLA)))]
+  "TARGET_COMPLEX"
+  {
+    operands = neon_vcmla_lane_prepare_operands (<MODE>mode, operands);
+    return "vcmla.<V_s_elem>\t%<V_reg>0, %<V_reg>2, d%c3[%c4], #<rot>";
+  }
+  [(set_attr "type" "neon_fcmla")]
+)
+
+
 ;; These instructions map to the __builtins for the Dot Product operations.
 (define_insn "neon_<sup>dot<vsi2qi>"
   [(set (match_operand:VCVTI 0 "register_operand" "=w")

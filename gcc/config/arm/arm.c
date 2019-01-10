@@ -895,6 +895,12 @@ int arm_arch8_1 = 0;
 /* Nonzero if this chip supports the ARM Architecture 8.2 extensions.  */
 int arm_arch8_2 = 0;
 
+/* Nonzero if this chip supports the ARM Architecture 8.3 extensions.  */
+int arm_arch8_3 = 0;
+
+/* Nonzero if this chip supports the ARM Architecture 8.4 extensions.  */
+int arm_arch8_4 = 0;
+
 /* Nonzero if this chip supports the FP16 instructions extension of ARM
    Architecture 8.2.  */
 int arm_fp16_inst = 0;
@@ -3649,6 +3655,8 @@ arm_option_reconfigure_globals (void)
   arm_arch8 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv8);
   arm_arch8_1 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv8_1);
   arm_arch8_2 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv8_2);
+  arm_arch8_3 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv8_3);
+  arm_arch8_4 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv8_4);
   arm_arch_thumb1 = bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
   arm_arch_thumb2 = bitmap_bit_p (arm_active_target.isa, isa_bit_thumb2);
   arm_arch_xscale = bitmap_bit_p (arm_active_target.isa, isa_bit_xscale);
@@ -12712,6 +12720,44 @@ neon_struct_mem_operand (rtx op)
 
   return FALSE;
 }
+
+/* Prepares the operands for the VCMLA by lane instruction such that the right
+   register number is selected.  This instruction is special in that it always
+   requires a D register, however there is a choice to be made between Dn[0],
+   Dn[1], D(n+1)[0], and D(n+1)[1] depending on the mode of the registers and
+   the PATTERNMODE of the insn.
+
+   The VCMLA by lane function always selects two values. For instance given D0
+   and a V2SF, the only valid index is 0 as the values in S0 and S1 will be
+   used by the instruction.  However given V4SF then index 0 and 1 are valid as
+   D0[0] or D1[0] are both valid.
+
+   This function centralizes that information based on OPERANDS, OPERANDS[3]
+   will be changed from a REG into a CONST_INT RTX and OPERANDS[4] will be
+   updated to contain the right index.  */
+
+rtx *
+neon_vcmla_lane_prepare_operands (machine_mode patternmode, rtx *operands)
+{
+  int lane = NEON_ENDIAN_LANE_N (patternmode, INTVAL (operands[4]));
+  machine_mode constmode = SImode;
+  machine_mode mode = GET_MODE (operands[3]);
+  int regno = REGNO (operands[3]);
+  regno = ((regno - FIRST_VFP_REGNUM) >> 1);
+  if (lane > 0 && lane >= GET_MODE_NUNITS (mode) / 4)
+    {
+      operands[3] = gen_int_mode (regno + 1, constmode);
+      operands[4]
+	= gen_int_mode (lane - GET_MODE_NUNITS (mode) / 4, constmode);
+    }
+  else
+    {
+      operands[3] = gen_int_mode (regno, constmode);
+      operands[4] = gen_int_mode (lane, constmode);
+    }
+  return operands;
+}
+
 
 /* Return true if X is a register that will be eliminated later on.  */
 int

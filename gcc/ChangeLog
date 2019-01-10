@@ -1,5 +1,88 @@
 2019-01-10  Tamar Christina  <tamar.christina@arm.com>
 
+	* config/arm/arm-builtins.c
+	(enum arm_type_qualifiers): Add qualifier_lane_pair_index.
+	(MAC_LANE_PAIR_QUALIFIERS): New.
+	(arm_expand_builtin_args): Use it.
+	(arm_expand_builtin_1): Likewise.
+	* config/arm/arm-protos.h (neon_vcmla_lane_prepare_operands): New.
+	* config/arm/arm.c (neon_vcmla_lane_prepare_operands): New.
+	* config/arm/arm-c.c (arm_cpu_builtins): Add __ARM_FEATURE_COMPLEX.
+	* config/arm/arm_neon.h:
+	(vcadd_rot90_f16): New.
+	(vcaddq_rot90_f16): New.
+	(vcadd_rot270_f16): New.
+	(vcaddq_rot270_f16): New.
+	(vcmla_f16): New.
+	(vcmlaq_f16): New.
+	(vcmla_lane_f16): New.
+	(vcmla_laneq_f16): New.
+	(vcmlaq_lane_f16): New.
+	(vcmlaq_laneq_f16): New.
+	(vcmla_rot90_f16): New.
+	(vcmlaq_rot90_f16): New.
+	(vcmla_rot90_lane_f16): New.
+	(vcmla_rot90_laneq_f16): New.
+	(vcmlaq_rot90_lane_f16): New.
+	(vcmlaq_rot90_laneq_f16): New.
+	(vcmla_rot180_f16): New.
+	(vcmlaq_rot180_f16): New.
+	(vcmla_rot180_lane_f16): New.
+	(vcmla_rot180_laneq_f16): New.
+	(vcmlaq_rot180_lane_f16): New.
+	(vcmlaq_rot180_laneq_f16): New.
+	(vcmla_rot270_f16): New.
+	(vcmlaq_rot270_f16): New.
+	(vcmla_rot270_lane_f16): New.
+	(vcmla_rot270_laneq_f16): New.
+	(vcmlaq_rot270_lane_f16): New.
+	(vcmlaq_rot270_laneq_f16): New.
+	(vcadd_rot90_f32): New.
+	(vcaddq_rot90_f32): New.
+	(vcadd_rot270_f32): New.
+	(vcaddq_rot270_f32): New.
+	(vcmla_f32): New.
+	(vcmlaq_f32): New.
+	(vcmla_lane_f32): New.
+	(vcmla_laneq_f32): New.
+	(vcmlaq_lane_f32): New.
+	(vcmlaq_laneq_f32): New.
+	(vcmla_rot90_f32): New.
+	(vcmlaq_rot90_f32): New.
+	(vcmla_rot90_lane_f32): New.
+	(vcmla_rot90_laneq_f32): New.
+	(vcmlaq_rot90_lane_f32): New.
+	(vcmlaq_rot90_laneq_f32): New.
+	(vcmla_rot180_f32): New.
+	(vcmlaq_rot180_f32): New.
+	(vcmla_rot180_lane_f32): New.
+	(vcmla_rot180_laneq_f32): New.
+	(vcmlaq_rot180_lane_f32): New.
+	(vcmlaq_rot180_laneq_f32): New.
+	(vcmla_rot270_f32): New.
+	(vcmlaq_rot270_f32): New.
+	(vcmla_rot270_lane_f32): New.
+	(vcmla_rot270_laneq_f32): New.
+	(vcmlaq_rot270_lane_f32): New.
+	(vcmlaq_rot270_laneq_f32): New.
+	* config/arm/arm_neon_builtins.def (vcadd90, vcadd270, vcmla0, vcmla90,
+	vcmla180, vcmla270, vcmla_lane0, vcmla_lane90, vcmla_lane180, vcmla_lane270,
+	vcmla_laneq0, vcmla_laneq90, vcmla_laneq180, vcmla_laneq270,
+	vcmlaq_lane0, vcmlaq_lane90, vcmlaq_lane180, vcmlaq_lane270): New.
+	* config/arm/neon.md (neon_vcmla_lane<rot><mode>,
+	neon_vcmla_laneq<rot><mode>, neon_vcmlaq_lane<rot><mode>): New.
+	* config/arm/arm.c (arm_arch8_3, arm_arch8_4): New.
+	* config/arm/arm.h (TARGET_COMPLEX, arm_arch8_3, arm_arch8_4): New.
+	(arm_option_reconfigure_globals): Use them.
+	* config/arm/iterators.md (VDF, VQ_HSF): New.
+	(VCADD, VCMLA): New.
+	(VF_constraint, rot, rotsplit1, rotsplit2): Add V4HF and V8HF.
+	* config/arm/neon.md (neon_vcadd<rot><mode>, neon_vcmla<rot><mode>): New.
+	* config/arm/unspecs.md (UNSPEC_VCADD90, UNSPEC_VCADD270,
+	UNSPEC_VCMLA, UNSPEC_VCMLA90, UNSPEC_VCMLA180, UNSPEC_VCMLA270): New.
+
+2019-01-10  Tamar Christina  <tamar.christina@arm.com>
+
 	* config/aarch64/aarch64-builtins.c (enum aarch64_type_qualifiers): Add qualifier_lane_pair_index.
 	(emit-rtl.h): Include.
 	(TYPES_QUADOP_LANE_PAIR): New.
