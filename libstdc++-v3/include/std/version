@@ -96,6 +96,7 @@
 #define __cpp_lib_clamp 201603
 #define __cpp_lib_constexpr_char_traits 201611
 #define __cpp_lib_enable_shared_from_this 201603
+#define __cpp_lib_erase_if 201900L
 #define __cpp_lib_filesystem 201703
 #define __cpp_lib_gcd 201606
 #define __cpp_lib_gcd_lcm 201606

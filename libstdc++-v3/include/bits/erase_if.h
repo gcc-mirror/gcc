@@ -38,6 +38,8 @@ namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#define __cpp_lib_erase_if 201900L
+
   namespace __detail
   {
     template<typename _Container, typename _Predicate>

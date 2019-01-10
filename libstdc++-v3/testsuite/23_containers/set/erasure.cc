@@ -21,6 +21,12 @@
 #include <set>
 #include <testsuite_hooks.h>
 
+#ifndef __cpp_lib_erase_if
+# error "Feature-test macro for erase_if missing"
+#elif __cpp_lib_erase_if < 201811
+# error "Feature-test macro for erase_if has wrong value"
+#endif
+
 auto is_odd = [](const int i) { return i % 2 != 0; };
 
 void
