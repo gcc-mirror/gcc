@@ -1,3 +1,9 @@
+2019-01-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/86322
+	* decl.c (top_var_list): Set locus of expr.
+	(gfc_match_data): Detect pointer on non-rightmost part-refs.
+
 2019-01-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88376
