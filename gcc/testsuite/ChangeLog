@@ -1,3 +1,9 @@
+2019-01-11  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/88758
+	* g++.dg/lto/pr88758_0.C: New test.
+	* g++.dg/lto/pr88758_1.C: New test.
+
 2019-01-11  Jan Beulich  <jbeulich@suse.com>
 
 	* gcc.target/i386/avx512f-vcvtsd2si-1.c,
