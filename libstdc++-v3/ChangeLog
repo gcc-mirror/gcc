@@ -1,5 +1,13 @@
 2019-01-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/refwrap.h [__cplusplus > 201703L]
+	(_Refwrap_base_arg1, _Refwrap_base_arg2, _Reference_wrapper_base)
+	(_Reference_wrapper_base_memfun): Do not define for C++2a.
+	(reference_wrapper): Do not derive from _Reference_wrapper_base_memfun
+	for C++2a.
+	(reference_wrapper::operator()): Add static assertion.
+	* testsuite/20_util/reference_wrapper/incomplete.cc: New test.
+
 	* include/std/chrono (duration_values::zero(), duration_values::min())
 	(duration_values::max()): Add noexcept.
 	(duration::zero(), duration::min(), duration::max()): Likewise.
