@@ -187,10 +187,23 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
 	}
       break;
 
-    CASE_CONVERT:
     case VIEW_CONVERT_EXPR:
       if (location_wrapper_p (expr))
-	loc = EXPR_LOCATION (expr);
+	{
+	  loc = EXPR_LOCATION (expr);
+	  tree op = TREE_OPERAND (expr, 0);
+	  tree nop = RECUR (op);
+	  if (nop == error_mark_node)
+	    return error_mark_node;
+	  TREE_OPERAND (expr, 0) = nop;
+	  /* If we're replacing a DECL with a constant, we also need to change
+	     the TREE_CODE of the location wrapper.  */
+	  if (op != nop && rvalue_p)
+	    TREE_SET_CODE (expr, NON_LVALUE_EXPR);
+	  return expr;
+	}
+      gcc_fallthrough();
+    CASE_CONVERT:
       recurse_op[0] = true;
       break;
 
