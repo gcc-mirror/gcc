@@ -1,3 +1,10 @@
+2019-01-11  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/87305
+	* lra-assigns.c
+	(setup_live_pseudos_and_spill_after_risky_transforms): Add code
+	for little endian pseudos used as paradoxical subreg.
+
 2019-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/88693
