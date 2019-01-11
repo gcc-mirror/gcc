@@ -1,3 +1,11 @@
+2019-01-11  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/i386.md (rex64suffix): Add L suffix for SI.
+	* config/i386/sse.md (cvtusi2<ssescalarmodesuffix>32<round_name>,
+	sse2_cvtsi2sd): Add {l}.
+	(sse2_cvtsi2sdq<round_name>): Make q conditional upon AT&T
+	syntax.
+
 2019-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88785

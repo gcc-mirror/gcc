@@ -1,3 +1,18 @@
+2019-01-11  Jan Beulich  <jbeulich@suse.com>
+
+	* gcc.target/i386/avx512f-vcvtsd2si-1.c,
+	gcc.target/i386/avx512f-vcvtss2si-1.c,
+	gcc.target/i386/avx512f-vcvttsd2si-1.c,
+	gcc.target/i386/avx512f-vcvttss2si-1.c: Permit l suffix.
+	* gcc.target/i386/avx512f-vcvtsi2ss-1.c,
+	gcc.target/i386/avx512f-vcvtusi2sd-1.c,
+	gcc.target/i386/avx512f-vcvtusi2ss-1.c: Expect l suffix.
+	* gcc.target/i386/avx512f-vcvtusi2sd-2.c,
+	gcc.target/i386/avx512f-vcvtusi2sd64-2.c,
+	gcc.target/i386/avx512f-vcvtusi2ss-2.c,
+	gcc.target/i386/avx512f-vcvtusi2ss64-2.c: Add asm volatile().
+	gcc.target/i386/pr19398.c: Permit l or q suffix.
+
 2019-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/88296

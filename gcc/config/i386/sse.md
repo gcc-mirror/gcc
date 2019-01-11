@@ -4781,7 +4781,7 @@
 	  (match_operand:VF_128 1 "register_operand" "v")
 	  (const_int 1)))]
   "TARGET_AVX512F && <round_modev4sf_condition>"
-  "vcvtusi2<ssescalarmodesuffix>\t{%2, <round_op3>%1, %0|%0, %1<round_op3>, %2}"
+  "vcvtusi2<ssescalarmodesuffix>{l}\t{%2, <round_op3>%1, %0|%0, %1<round_op3>, %2}"
   [(set_attr "type" "sseicvt")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<ssescalarmode>")])
@@ -5040,9 +5040,9 @@
 	  (const_int 1)))]
   "TARGET_SSE2"
   "@
-   cvtsi2sd\t{%2, %0|%0, %2}
-   cvtsi2sd\t{%2, %0|%0, %2}
-   vcvtsi2sd\t{%2, %1, %0|%0, %1, %2}"
+   cvtsi2sd{l}\t{%2, %0|%0, %2}
+   cvtsi2sd{l}\t{%2, %0|%0, %2}
+   vcvtsi2sd{l}\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,noavx,avx")
    (set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "double,direct,*")
@@ -5062,9 +5062,9 @@
 	  (const_int 1)))]
   "TARGET_SSE2 && TARGET_64BIT"
   "@
-   cvtsi2sdq\t{%2, %0|%0, %2}
-   cvtsi2sdq\t{%2, %0|%0, %2}
-   vcvtsi2sdq\t{%2, <round_op3>%1, %0|%0, %1<round_op3>, %2}"
+   cvtsi2sd{q}\t{%2, %0|%0, %2}
+   cvtsi2sd{q}\t{%2, %0|%0, %2}
+   vcvtsi2sd{q}\t{%2, <round_op3>%1, %0|%0, %1<round_op3>, %2}"
   [(set_attr "isa" "noavx,noavx,avx")
    (set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "double,direct,*")
