@@ -1,5 +1,10 @@
 2019-01-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/88802
+	* include/bits/functional_hash.h (hash<nullptr_t>): Define
+	specialization for C++17 (P0513R0, LWG 2817).
+	* testsuite/20_util/hash/nullptr.cc: New test.
+
 	PR libstdc++/88125
 	* config/abi/pre/gnu.ver (GLIBCXX_3.4.6): Remove unused duplicate
 	pattern for std::basic_stringbuf::str().
