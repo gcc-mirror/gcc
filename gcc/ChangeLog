@@ -1,3 +1,12 @@
+2019-01-11  Alan Modra  <amodra@gmail.com>
+
+	PR 88777
+	PR 88614
+	* genattrtab.c (min_fn): Don't translate values.
+	(min_attr_value): Return INT_MAX when the value can't be calculated.
+	Return minimum among any values that can be calculated.
+	(max_attr_value): Adjust.
+
 2019-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (PLUGIN_HEADERS): Add $(INSN_ATTR_H).
