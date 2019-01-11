@@ -1,5 +1,9 @@
 2019-01-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/88125
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.6): Remove unused duplicate
+	pattern for std::basic_stringbuf::str().
+
 	* config/abi/pre/gnu.ver (GLIBCXX_3.4): Correct recent changes to
 	basic_ostream::operator<< patterns.
 

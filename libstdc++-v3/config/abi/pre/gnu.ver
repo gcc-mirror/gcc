@@ -1165,10 +1165,6 @@ GLIBCXX_3.4.6 {
 
     _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE9showmanycEv;
 
-#ifdef HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT
-    _ZNKSt15basic_stringbufIwSt11char_traitsIwESaIwEE3strEv;
-#endif
-
     _ZN9__gnu_cxx6__poolILb1EE13_M_initializeEv;
 
 } GLIBCXX_3.4.5;
