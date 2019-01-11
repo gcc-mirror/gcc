@@ -2197,7 +2197,8 @@ rs6000_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 /* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  */
 
 static bool
-rs6000_hard_regno_call_part_clobbered (unsigned int regno, machine_mode mode)
+rs6000_hard_regno_call_part_clobbered (rtx_insn *insn ATTRIBUTE_UNUSED,
+				       unsigned int regno, machine_mode mode)
 {
   if (TARGET_32BIT
       && TARGET_POWERPC64

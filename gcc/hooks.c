@@ -142,7 +142,7 @@ hook_bool_puint64_puint64_true (poly_uint64, poly_uint64)
 
 /* Generic hook that takes (unsigned int, machine_mode) and returns false.  */
 bool
-hook_bool_uint_mode_false (unsigned int, machine_mode)
+hook_bool_insn_uint_mode_false (rtx_insn *, unsigned int, machine_mode)
 {
   return false;
 }

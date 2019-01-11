@@ -5379,7 +5379,8 @@ need_for_call_save_p (int regno)
 	       : call_used_reg_set,
 	       PSEUDO_REGNO_MODE (regno), reg_renumber[regno])
 	      || (targetm.hard_regno_call_part_clobbered
-		  (reg_renumber[regno], PSEUDO_REGNO_MODE (regno)))));
+		  (lra_reg_info[regno].call_insn,
+		   reg_renumber[regno], PSEUDO_REGNO_MODE (regno)))));
 }
 
 /* Global registers occurring in the current EBB.  */

@@ -1640,7 +1640,7 @@ lra_assign (bool &fails_p)
        asm is removed and it can result in incorrect allocation.  */
     for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
       if (lra_reg_info[i].nrefs != 0 && reg_renumber[i] >= 0
-	  && lra_reg_info[i].call_p
+	  && lra_reg_info[i].call_insn
 	  && overlaps_hard_reg_set_p (call_used_reg_set,
 				      PSEUDO_REGNO_MODE (i), reg_renumber[i]))
 	gcc_unreachable ();

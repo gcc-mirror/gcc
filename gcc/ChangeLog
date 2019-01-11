@@ -1,6 +1,53 @@
 2019-01-11  Steve Ellcey  <sellcey@marvell.com>
 
 	* config/aarch64/aarch64.c (aarch64_simd_call_p): New function.
+	(aarch64_hard_regno_call_part_clobbered): Add insn argument.
+	(aarch64_return_call_with_max_clobbers): New function.
+	(TARGET_RETURN_CALL_WITH_MAX_CLOBBERS): New macro.
+	* config/avr/avr.c (avr_hard_regno_call_part_clobbered): Add insn
+	argument.
+	* config/i386/i386.c (ix86_hard_regno_call_part_clobbered): Ditto.
+	* config/mips/mips.c (mips_hard_regno_call_part_clobbered): Ditto.
+	* config/rs6000/rs6000.c (rs6000_hard_regno_call_part_clobbered): Ditto.
+	* config/s390/s390.c (s390_hard_regno_call_part_clobbered): Ditto.
+	* cselib.c (cselib_process_insn): Add argument to
+	targetm.hard_regno_call_part_clobbered call.
+	* ira-conflicts.c (ira_build_conflicts): Ditto.
+	* ira-costs.c (ira_tune_allocno_costs): Ditto.
+	* lra-constraints.c (inherit_reload_reg): Ditto.
+	* lra-int.h (struct lra_reg): Add call_insn field, remove call_p field.
+	* lra-lives.c (check_pseudos_live_through_calls): Add call_insn
+	argument.  Call targetm.return_call_with_max_clobbers.
+	Add argument to targetm.hard_regno_call_part_clobbered call.
+	(calls_have_same_clobbers_p): New function.
+	(process_bb_lives): Add call_insn and last_call_insn variables.
+	Pass call_insn to check_pseudos_live_through_calls.
+	Modify if stmt to check targetm.return_call_with_max_clobbers.
+	Update setting of flush variable.
+	(lra_create_live_ranges_1): Set call_insn to NULL instead of call_p
+	to false.
+	* lra.c (initialize_lra_reg_info_element): Set call_insn to NULL.
+	* regcprop.c (copyprop_hardreg_forward_1): Add argument to
+        targetm.hard_regno_call_part_clobbered call.
+	* reginfo.c (choose_hard_reg_mode): Ditto.
+	* regrename.c (check_new_reg_p): Ditto.
+	* reload.c (find_equiv_reg): Ditto.
+	* reload1.c (emit_reload_insns): Ditto.
+	* sched-deps.c (deps_analyze_insn): Ditto.
+	* sel-sched.c (init_regs_for_mode): Ditto.
+	(mark_unavailable_hard_regs): Ditto.
+	* targhooks.c (default_dwarf_frame_reg_mode): Ditto.
+	* target.def (hard_regno_call_part_clobbered): Add insn argument.
+	(return_call_with_max_clobbers): New target function.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (TARGET_RETURN_CALL_WITH_MAX_CLOBBERS): New hook.
+	* hooks.c (hook_bool_uint_mode_false): Change to
+	hook_bool_insn_uint_mode_false.
+	* hooks.h (hook_bool_uint_mode_false): Ditto.
+
+2019-01-11  Steve Ellcey  <sellcey@marvell.com>
+
+	* config/aarch64/aarch64.c (aarch64_simd_call_p): New function.
 	(aarch64_remove_extra_call_preserved_regs): New function.
 	(TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS): New macro.
 	* doc/tm.texi.in (TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS): New hook.
