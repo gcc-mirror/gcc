@@ -2873,7 +2873,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool primary_p : 1;   /* Is the primary interface of this
 			   implementation unit.  */
   bool interface_p : 1; /* Is an interface (partition or primary).  */
-  bool exported_p : 1;	/* We are exported direct import.  */
+  bool exported_p : 1;	/* Direct_p && exported.  */
   bool imported_p : 1;	/* Import has been done.  */
   bool alias_p : 1;	/* Alias for other module.  */
   bool partition_p : 1; /* A partition.  */
@@ -7703,18 +7703,18 @@ get_module (const char *ptr)
      }
 
   module_state *parent = NULL;
-  bool partition = false;
-  for (const char *probe = ptr;; probe++)
-    if (!*probe || *probe == '.' || *probe == ':')
+  bool partition = *ptr == ':';
+  for (const char *probe = ptr += partition;; probe++)
+    if (!*probe || *probe == '.')
       {
 	size_t len = probe - ptr;
 	if (!len)
-	  return NULL;
+	  {
+	    return NULL;
+	  }
 	parent = get_module (get_identifier_with_length (ptr, len),
 			     parent, partition);
 	ptr = probe;
-	if (*probe == ':')
-	  partition = true;
 	if (!*ptr++)
 	  break;
       }
@@ -8760,7 +8760,7 @@ module_state::write_readme (elf_out *to, const char *options, cpp_hashnode *node
   readme.printf ("GNU C++ %smodule%s%s",
 		 is_legacy () ? "legacy " : is_partition () ? "" : "primary ",
 		 is_legacy () ? ""
-		 : exported_p ? " interface" : " implementation",
+		 : is_interface () ? " interface" : " implementation",
 		 is_partition () ? " partition" : "");
 
   /* Compiler's version.  */
@@ -8867,6 +8867,11 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
       unsigned crc = sec.u32 ();
       bool exported = false;
 
+      if (!imp)
+	sec.set_overrun ();
+      if (sec.get_overrun ())
+	break;
+
       if (lmaps)
 	{
 	  /* A direct import, maybe load it.  */
@@ -8910,16 +8915,21 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	      dump.pop (n);
 	      if (!imp)
 		continue;
+	      if (module_interface_p () && !module_partition_p ()
+		  && is_partition () && !is_interface ()
+		  && imp->is_partition () && imp->is_interface ())
+		error_at (loc, "interface partition %qs has not been exported",
+			  imp->maybe_partition_name ());
 	    }
 
 	  if (is_partition () && !imp->is_partition ())
 	    imp->from_partition_p = true;
+	  if (is_partition () && imp->is_partition ()
+	      && imp->is_interface () && exported)
+	    imp->exported_p = true;
 	}
       else
 	{
-	  if (sec.get_overrun ())
-	    break;
-
 	  /* An indirect import, find it, it should already be here.  */
 	  if (imp->is_detached ())
 	    {
@@ -9012,7 +9022,6 @@ module_state::write_partitions (elf_out *to, unsigned count, unsigned *crc_ptr)
 	  write_location (sec,
 			  imp->is_direct () ? imp->from_loc : UNKNOWN_LOCATION);
 	  sec.str (imp->filename);
-	  sec.u (imp->exported_p);
 	}
     }
 
@@ -9036,7 +9045,6 @@ module_state::read_partitions (unsigned count)
       unsigned crc = sec.u32 ();
       location_t floc = read_location (sec);
       const char *fname = sec.str (NULL);
-      bool exported = sec.u ();
 
       if (sec.get_overrun ())
 	break;
@@ -9053,7 +9061,6 @@ module_state::read_partitions (unsigned count)
       /* Attach the partition without loading it.  We'll have to load
 	 for real if it's indirectly imported.  */
       imp->attach (floc);
-      imp->exported_p = exported;
       imp->crc = crc;
       imp->mod = MODULE_NONE; /* Mark as wierd.   */
       if (!imp->filename && fname[0])
@@ -12054,7 +12061,7 @@ module_state::write_config (elf_out *to, module_state_config &config,
   cfg.u32 (global_crc);
 
   if (is_partition ())
-    cfg.u (exported_p);
+    cfg.u (is_interface ());
 
   cfg.u (config.imports);
   cfg.u (config.partitions);
@@ -13015,6 +13022,16 @@ module_state::direct_import (cpp_reader *reader, bool lazy)
       imp->direct_p = true;
       if (exported_p)
 	imp->exported_p = true;
+
+      /* If the current TU is an interface, any directly-imported
+	 interface partition must be exported.  */
+      if (imp->is_partition () && imp->is_interface ()
+	  && !imp->exported_p && module_interface_p ())
+	{
+	  imp->exported_p = true;
+	  error_at (imp->loc, "interface partition must be exported");
+	}
+
       (*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
       if (imp->is_legacy ())
 	imp->import_macros ();
@@ -13164,7 +13181,7 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
 
       if (exporting_p)
 	{
-	  state->exported_p = true;
+	  state->interface_p = true;
 	  module_kind |= MK_INTERFACE;
 	}
 

@@ -1,3 +1,18 @@
+2019-01-11  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (get_module): Fix partition parsing.
+	(module_state::read_imports): Check interface import requirements.
+	(module_state::{read,write}_partitions): No need for exported.
+	(module_state::write_config): Write is_interface.
+	(module_state::direct_import): Check interface import
+	requirements.
+	(declare_module): Set interface_p, not exported_p.
+	* parser.c (cp_parser_module_name): Partitions only in non-legacy
+	module purview.
+	gcc/testsuite/
+	* g++.dg/modules/part-2_[abcd].C: New.
+
 2019-01-10  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

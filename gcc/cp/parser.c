@@ -13074,7 +13074,7 @@ cp_parser_module_name (cp_parser *parser, bool for_module)
 
   module_state *parent = NULL;
   bool partitioned = false;
-  if (!for_module && token->type == CPP_COLON && module_purview_p ())
+  if (!for_module && token->type == CPP_COLON && module_not_legacy_p ())
     {
       partitioned = true;
       cp_lexer_consume_token (parser->lexer);
