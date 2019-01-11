@@ -1556,10 +1556,7 @@ max_fn (rtx exp)
 static rtx
 min_fn (rtx exp)
 {
-  int val = min_attr_value (exp);
-  if (val < 0)
-    val = INT_MAX;
-  return make_numeric_value (val);
+  return make_numeric_value (min_attr_value (exp));
 }
 
 static void
@@ -3786,11 +3783,10 @@ max_attr_value (rtx exp)
       current_max = max_attr_value (XEXP (exp, 0));
       if (current_max != INT_MAX)
 	{
-	  n = min_attr_value (XEXP (exp, 1));
-	  if (n == INT_MIN)
-	    current_max = INT_MAX;
-	  else
-	    current_max -= n;
+	  n = current_max;
+	  current_max = min_attr_value (XEXP (exp, 1));
+	  if (current_max != INT_MAX)
+	    current_max = n - current_max;
 	}
       break;
 
@@ -3831,8 +3827,11 @@ max_attr_value (rtx exp)
 }
 
 /* Given an attribute value expression, return the minimum value that
-   might be evaluated.  Return INT_MIN if the value can't be
-   calculated by this function.  */
+   might be evaluated.  Return INT_MAX if the value can't be
+   calculated by this function.  Note that when this function can
+   calculate one value inside IF_THEN_ELSE or some but not all values
+   inside COND, then it returns the minimum among those values it can
+   calculate.  */
 
 static int
 min_attr_value (rtx exp)
@@ -3852,34 +3851,33 @@ min_attr_value (rtx exp)
 
     case PLUS:
       current_min = min_attr_value (XEXP (exp, 0));
-      if (current_min != INT_MIN)
+      if (current_min != INT_MAX)
 	{
 	  n = current_min;
 	  current_min = min_attr_value (XEXP (exp, 1));
-	  if (current_min != INT_MIN)
+	  if (current_min != INT_MAX)
 	    current_min += n;
 	}
       break;
 
     case MINUS:
       current_min = min_attr_value (XEXP (exp, 0));
-      if (current_min != INT_MIN)
+      if (current_min != INT_MAX)
 	{
-	  n = max_attr_value (XEXP (exp, 1));
-	  if (n == INT_MAX)
-	    current_min = INT_MIN;
-	  else
-	    current_min -= n;
+	  n = current_min;
+	  current_min = max_attr_value (XEXP (exp, 1));
+	  if (current_min != INT_MAX)
+	    current_min = n - current_min;
 	}
       break;
 
     case MULT:
       current_min = min_attr_value (XEXP (exp, 0));
-      if (current_min != INT_MIN)
+      if (current_min != INT_MAX)
 	{
 	  n = current_min;
 	  current_min = min_attr_value (XEXP (exp, 1));
-	  if (current_min != INT_MIN)
+	  if (current_min != INT_MAX)
 	    current_min *= n;
 	}
       break;
@@ -3902,7 +3900,7 @@ min_attr_value (rtx exp)
       break;
 
     default:
-      current_min = INT_MIN;
+      current_min = INT_MAX;
       break;
     }
 
