@@ -1,5 +1,11 @@
 2019-01-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/intro.xml: Include new section.
+	* doc/xml/manual/status_cxx2017.xml: Document more
+	implementation-defined properties of the library.
+	* doc/xml/manual/status_cxx2020.xml: Document C++2a status.
+	* doc/html/*: Regenerate.
+
 	* include/bits/refwrap.h [__cplusplus > 201703L]
 	(_Refwrap_base_arg1, _Refwrap_base_arg2, _Reference_wrapper_base)
 	(_Reference_wrapper_base_memfun): Do not define for C++2a.
