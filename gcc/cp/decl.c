@@ -5096,7 +5096,8 @@ start_decl (const cp_declarator *declarator,
      a definition.  */
   if (initialized && DECL_DLLIMPORT_P (decl))
     {
-      error ("definition of %q#D is marked %<dllimport%>", decl);
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"definition of %q#D is marked %<dllimport%>", decl);
       DECL_DLLIMPORT_P (decl) = 0;
     }
 
@@ -12791,11 +12792,13 @@ grokdeclarator (const cp_declarator *declarator,
 	    /* It's common practice (and completely valid) to have a const
 	       be initialized and declared extern.  */
 	    if (!(type_quals & TYPE_QUAL_CONST))
-	      warning (0, "%qs initialized and declared %<extern%>", name);
+	      warning_at (DECL_SOURCE_LOCATION (decl), 0,
+			  "%qs initialized and declared %<extern%>", name);
 	  }
 	else
 	  {
-	    error ("%qs has both %<extern%> and initializer", name);
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "%qs has both %<extern%> and initializer", name);
 	    return error_mark_node;
 	  }
       }

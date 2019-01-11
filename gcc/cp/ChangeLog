@@ -1,3 +1,8 @@
+2019-01-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (start_decl): Improve error location.
+	(grokdeclarator): Likewise, improve two locations.
+
 2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/16615
