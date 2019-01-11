@@ -1,8 +1,5 @@
 /* { dg-do run } */
 
-/* Ignore vector_length warnings for offloaded (nvptx) targets.  */
-/* { dg-additional-options "-foffload=-w" } */
-
 /* float reductions.  */
 
 #include <stdlib.h>

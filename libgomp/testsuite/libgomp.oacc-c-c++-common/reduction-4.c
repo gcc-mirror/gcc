@@ -1,8 +1,5 @@
 /* { dg-do run { target { ! { hppa*-*-hpux* } } } } */
 
-/* Ignore vector_length warnings for offloaded (nvptx) targets.  */
-/* { dg-additional-options "-foffload=-w" } */
-
 /* complex reductions.  */
 
 #include <stdlib.h>
