@@ -1,3 +1,7 @@
+2019-01-11  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.c (PTX_CTA_SIZE): Move up.
+
 2019-01-11  Jan Beulich  <jbeulich@suse.com>
 
 	* config/i386/i386.md (rex64suffix): Add L suffix for SI.
