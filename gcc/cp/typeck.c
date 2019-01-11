@@ -9412,8 +9412,9 @@ maybe_warn_pessimizing_move (tree retval, tree functype)
 	{
 	  tree arg = CALL_EXPR_ARG (fn, 0);
 	  STRIP_NOPS (arg);
-	  if (TREE_CODE (arg) == ADDR_EXPR)
-	    arg = TREE_OPERAND (arg, 0);
+	  if (TREE_CODE (arg) != ADDR_EXPR)
+	    return;
+	  arg = TREE_OPERAND (arg, 0);
 	  arg = convert_from_reference (arg);
 	  /* Warn if we could do copy elision were it not for the move.  */
 	  if (can_do_nrvo_p (arg, functype))

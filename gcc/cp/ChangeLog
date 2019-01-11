@@ -1,3 +1,9 @@
+2019-01-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88692, c++/87882 - -Wredundant-move false positive with *this.
+	* typeck.c (maybe_warn_pessimizing_move): Return if ARG isn't
+	ADDR_EXPR.
+
 2019-01-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/88312 - pack expansion of decltype.
