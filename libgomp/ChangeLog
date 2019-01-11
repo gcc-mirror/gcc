@@ -1,3 +1,9 @@
+2019-01-11  Thomas Schwinge  <thomas@codesourcery.com>
+            James Norris  <jnorris@codesourcery.com>
+
+	* libgomp.texi: Better distinguish OpenACC and OpenMP "Runtime
+	Library Routines", and "Environment Variables".
+
 2019-01-11  Tom de Vries  <tdevries@suse.de>
 
 	* plugin/plugin-nvptx.c (nvptx_exec): Prevent vector_length 64 and

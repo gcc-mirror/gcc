@@ -95,10 +95,12 @@ changed to GNU Offloading and Multi Processing Runtime Library.
 @comment
 @menu
 * Enabling OpenMP::            How to enable OpenMP for your applications.
-* Runtime Library Routines::   The OpenMP runtime application programming 
+* OpenMP Runtime Library Routines: Runtime Library Routines.
+                               The OpenMP runtime application programming
                                interface.
-* Environment Variables::      Influencing runtime behavior with environment 
-                               variables.
+* OpenMP Environment Variables: Environment Variables.
+                               Influencing OpenMP runtime behavior with
+                               environment variables.
 * Enabling OpenACC::           How to enable OpenACC for your
                                applications.
 * OpenACC Runtime Library Routines:: The OpenACC runtime application
@@ -144,11 +146,11 @@ version 4.5.
 
 
 @c ---------------------------------------------------------------------
-@c Runtime Library Routines
+@c OpenMP Runtime Library Routines
 @c ---------------------------------------------------------------------
 
 @node Runtime Library Routines
-@chapter Runtime Library Routines
+@chapter OpenMP Runtime Library Routines
 
 The runtime routines described here are defined by Section 3 of the OpenMP
 specification in version 4.5.  The routines are structured in following
@@ -1327,11 +1329,11 @@ guaranteed not to change during the execution of the program.
 
 
 @c ---------------------------------------------------------------------
-@c Environment Variables
+@c OpenMP Environment Variables
 @c ---------------------------------------------------------------------
 
 @node Environment Variables
-@chapter Environment Variables
+@chapter OpenMP Environment Variables
 
 The environment variables which beginning with @env{OMP_} are defined by
 section 4 of the OpenMP specification in version 4.5, while those
