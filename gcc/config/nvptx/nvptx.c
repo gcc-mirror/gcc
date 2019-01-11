@@ -82,16 +82,17 @@
 #define WORKAROUND_PTXJIT_BUG_2 1
 #define WORKAROUND_PTXJIT_BUG_3 1
 
-#define PTX_WARP_SIZE 32
-#define PTX_DEFAULT_VECTOR_LENGTH PTX_WARP_SIZE
-#define PTX_MAX_VECTOR_LENGTH PTX_WARP_SIZE
-#define PTX_WORKER_LENGTH 32
-#define PTX_DEFAULT_RUNTIME_DIM 0 /* Defer to runtime.  */
-
 /* The PTX concept CTA (Concurrent Thread Array) maps on the CUDA concept thread
    block, which has had a maximum number of threads of 1024 since CUDA version
    2.x.  */
 #define PTX_CTA_SIZE 1024
+
+#define PTX_WARP_SIZE 32
+
+#define PTX_DEFAULT_VECTOR_LENGTH PTX_WARP_SIZE
+#define PTX_MAX_VECTOR_LENGTH PTX_WARP_SIZE
+#define PTX_WORKER_LENGTH 32
+#define PTX_DEFAULT_RUNTIME_DIM 0 /* Defer to runtime.  */
 
 /* The various PTX memory areas an object might reside in.  */
 enum nvptx_data_area
