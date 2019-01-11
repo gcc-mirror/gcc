@@ -1273,6 +1273,10 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 				      : dims[GOMP_DIM_VECTOR]);
 		workers = blocks / actual_vectors;
 		workers = MAX (workers, 1);
+		/* If we need a per-worker barrier ... .  */
+		if (actual_vectors > 32)
+		  /* Don't use more barriers than available.  */
+		  workers = MIN (workers, 15);
 	      }
 
 	    for (i = 0; i != GOMP_DIM_MAX; i++)
@@ -1301,6 +1305,24 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 			 " region or '-fopenacc-dim=:%d'",
 			 targ_fn->launch->fn, dims[GOMP_DIM_WORKER],
 			 suggest_workers, suggest_workers);
+    }
+
+  /* Check if the accelerator has sufficient barrier resources to
+     launch the offloaded kernel.  */
+  if (dims[GOMP_DIM_WORKER] > 15 && dims[GOMP_DIM_VECTOR] > 32)
+    {
+      const char *msg
+	= ("The Nvidia accelerator has insufficient barrier resources to launch"
+	   " '%s' with num_workers = %d and vector_length = %d"
+	   "; "
+	   "recompile the program with 'num_workers = x' on that offloaded"
+	   " region or '-fopenacc-dim=:x:' where x <= 15"
+	   "; "
+	   "or, recompile the program with 'vector_length = 32' on that"
+	   " offloaded region"
+	   ".\n");
+	GOMP_PLUGIN_fatal (msg, targ_fn->launch->fn, dims[GOMP_DIM_WORKER],
+			   dims[GOMP_DIM_VECTOR]);
     }
 
   /* This reserves a chunk of a pre-allocated page of memory mapped on both

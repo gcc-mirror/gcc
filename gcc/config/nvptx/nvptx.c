@@ -87,7 +87,13 @@
    2.x.  */
 #define PTX_CTA_SIZE 1024
 
+#define PTX_CTA_NUM_BARRIERS 16
 #define PTX_WARP_SIZE 32
+
+#define PTX_PER_CTA_BARRIER 0
+#define PTX_NUM_PER_CTA_BARRIERS 1
+#define PTX_FIRST_PER_WORKER_BARRIER (PTX_NUM_PER_CTA_BARRIERS)
+#define PTX_NUM_PER_WORKER_BARRIERS (PTX_CTA_NUM_BARRIERS - PTX_NUM_PER_CTA_BARRIERS)
 
 #define PTX_DEFAULT_VECTOR_LENGTH PTX_WARP_SIZE
 #define PTX_MAX_VECTOR_LENGTH PTX_WARP_SIZE
@@ -5496,6 +5502,13 @@ nvptx_apply_dim_limits (int dims[])
   if (dims[GOMP_DIM_WORKER] > 0 &&  dims[GOMP_DIM_VECTOR] > 0
       && dims[GOMP_DIM_WORKER] * dims[GOMP_DIM_VECTOR] > PTX_CTA_SIZE)
     dims[GOMP_DIM_VECTOR] = PTX_WARP_SIZE;
+
+  /* If we need a per-worker barrier ... .  */
+  if (dims[GOMP_DIM_WORKER] > 0 &&  dims[GOMP_DIM_VECTOR] > 0
+      && dims[GOMP_DIM_VECTOR] > PTX_WARP_SIZE)
+    /* Don't use more barriers than available.  */
+    dims[GOMP_DIM_WORKER] = MIN (dims[GOMP_DIM_WORKER],
+				 PTX_NUM_PER_WORKER_BARRIERS);
 }
 
 /* Return true if FNDECL contains calls to vector-partitionable routines.  */
