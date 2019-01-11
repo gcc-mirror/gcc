@@ -7431,9 +7431,11 @@ gfc_match_entry (void)
 	      gfc_error ("Missing required parentheses before BIND(C) at %C");
 	      return MATCH_ERROR;
 	    }
-	    if (!gfc_add_is_bind_c (&(entry->attr), entry->name,
-				    &(entry->declared_at), 1))
-	      return MATCH_ERROR;
+
+	  if (!gfc_add_is_bind_c (&(entry->attr), entry->name,
+				  &(entry->declared_at), 1))
+	    return MATCH_ERROR;
+	
 	}
 
       if (!gfc_current_ns->parent
@@ -7514,6 +7516,14 @@ gfc_match_entry (void)
   if (gfc_match_eos () != MATCH_YES)
     {
       gfc_syntax_error (ST_ENTRY);
+      return MATCH_ERROR;
+    }
+
+  /* F2018:C1546 An elemental procedure shall not have the BIND attribute.  */
+  if (proc->attr.elemental && entry->attr.is_bind_c)
+    {
+      gfc_error ("ENTRY statement at %L with BIND(C) prohibited in an "
+		 "elemental procedure", &entry->declared_at);
       return MATCH_ERROR;
     }
 
