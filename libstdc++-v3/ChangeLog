@@ -1,5 +1,12 @@
 2019-01-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/chrono (duration_values::zero(), duration_values::min())
+	(duration_values::max()): Add noexcept.
+	(duration::zero(), duration::min(), duration::max()): Likewise.
+	(time_point::zero(), time_point::min(), time_point::max()): Likewise.
+	* testsuite/20_util/duration/requirements/noexcept.cc: New test.
+	* testsuite/20_util/time_point/requirements/noexcept.cc: New test.
+
 	* include/std/version (__cpp_lib_erase_if): Move to C++20 group.
 
 2019-01-11  Jakub Jelinek  <jakub@redhat.com>
