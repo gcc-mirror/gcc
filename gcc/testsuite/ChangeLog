@@ -1,3 +1,10 @@
+2019-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/85956
+	PR lto/88733
+	* c-c++-common/gomp/pr85956.c: New test.
+	* g++.dg/gomp/pr88733.C: New test.
+
 2019-01-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR C++/88114

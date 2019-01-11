@@ -523,11 +523,27 @@ remap_type_1 (tree type, copy_body_data *id)
 
       if (TYPE_MAIN_VARIANT (new_tree) != new_tree)
 	{
-	  gcc_checking_assert (TYPE_DOMAIN (type) == TYPE_DOMAIN (TYPE_MAIN_VARIANT (type)));
+	  gcc_checking_assert (TYPE_DOMAIN (type)
+			       == TYPE_DOMAIN (TYPE_MAIN_VARIANT (type)));
 	  TYPE_DOMAIN (new_tree) = TYPE_DOMAIN (TYPE_MAIN_VARIANT (new_tree));
 	}
       else
-	TYPE_DOMAIN (new_tree) = remap_type (TYPE_DOMAIN (new_tree), id);
+        {
+	  TYPE_DOMAIN (new_tree) = remap_type (TYPE_DOMAIN (new_tree), id);
+	  /* For array bounds where we have decided not to copy over the bounds
+	     variable which isn't used in OpenMP/OpenACC region, change them to
+	     an uninitialized VAR_DECL temporary.  */
+	  if (TYPE_MAX_VALUE (TYPE_DOMAIN (new_tree)) == error_mark_node
+	      && id->adjust_array_error_bounds
+	      && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != error_mark_node)
+	    {
+	      tree v = create_tmp_var (TREE_TYPE (TYPE_DOMAIN (new_tree)));
+	      DECL_ATTRIBUTES (v)
+		= tree_cons (get_identifier ("omp dummy var"), NULL_TREE,
+			     DECL_ATTRIBUTES (v));
+	      TYPE_MAX_VALUE (TYPE_DOMAIN (new_tree)) = v;
+	    }
+        }
       break;
 
     case RECORD_TYPE:
