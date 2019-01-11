@@ -142,6 +142,9 @@
 
 #if __cplusplus > 201703L
 // c++2a
+#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+# define __cpp_lib_is_constant_evaluated 201811L
+#endif
 #define __cpp_lib_list_remove_return_type 201806L
 #endif // C++2a
 #endif // C++17
