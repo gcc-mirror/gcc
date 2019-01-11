@@ -1,3 +1,15 @@
+2019-01-11  Steve Ellcey  <sellcey@marvell.com>
+
+	* config/aarch64/aarch64.c (aarch64_simd_call_p): New function.
+	(aarch64_remove_extra_call_preserved_regs): New function.
+	(TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS): New macro.
+	* doc/tm.texi.in (TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS): New hook.
+	* doc/tm.texi: Regenerate.
+	* final.c (get_call_reg_set_usage): Call new hook.
+	* target.def (remove_extra_call_preserved_regs): New hook.
+	* targhooks.c (default_remove_extra_call_preserved_regs): New function.
+	* targhooks.h (default_remove_extra_call_preserved_regs): New function.
+
 2019-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/88714

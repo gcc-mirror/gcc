@@ -1655,6 +1655,45 @@ aarch64_reg_save_mode (tree fndecl, unsigned regno)
 	   : (aarch64_simd_decl_p (fndecl) ? E_TFmode : E_DFmode);
 }
 
+/* Return true if the instruction is a call to a SIMD function, false
+   if it is not a SIMD function or if we do not know anything about
+   the function.  */
+
+static bool
+aarch64_simd_call_p (rtx_insn *insn)
+{
+  rtx symbol;
+  rtx call;
+  tree fndecl;
+
+  gcc_assert (CALL_P (insn));
+  call = get_call_rtx_from (insn);
+  symbol = XEXP (XEXP (call, 0), 0);
+  if (GET_CODE (symbol) != SYMBOL_REF)
+    return false;
+  fndecl = SYMBOL_REF_DECL (symbol);
+  if (!fndecl)
+    return false;
+
+  return aarch64_simd_decl_p (fndecl);
+}
+
+/* Implement TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS.  If INSN calls
+   a function that uses the SIMD ABI, take advantage of the extra
+   call-preserved registers that the ABI provides.  */
+
+void
+aarch64_remove_extra_call_preserved_regs (rtx_insn *insn,
+					  HARD_REG_SET *return_set)
+{
+  if (aarch64_simd_call_p (insn))
+    {
+      for (int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	if (FP_SIMD_SAVED_REGNUM_P (regno))
+	  CLEAR_HARD_REG_BIT (*return_set, regno);
+    }
+}
+
 /* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  The callee only saves
    the lower 64 bits of a 128-bit register.  Tell the compiler the callee
    clobbers the top 64 bits when restoring the bottom 64 bits.  */
@@ -18824,6 +18863,10 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
 #define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
   aarch64_hard_regno_call_part_clobbered
+
+#undef TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS
+#define TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS \
+  aarch64_remove_extra_call_preserved_regs
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT aarch64_constant_alignment
