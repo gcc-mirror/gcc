@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #undef GCC_DIAG_STYLE
 #define GCC_DIAG_STYLE __gcc_gfc__
+#include "attribs.h"
 
 int ompws_flags;
 
@@ -297,10 +298,19 @@ gfc_walk_alloc_comps (tree decl, tree dest, tree var,
 	}
       else
 	{
+	  bool compute_nelts = false;
 	  if (!TYPE_DOMAIN (type)
 	      || TYPE_MAX_VALUE (TYPE_DOMAIN (type)) == NULL_TREE
 	      || TYPE_MIN_VALUE (TYPE_DOMAIN (type)) == error_mark_node
 	      || TYPE_MAX_VALUE (TYPE_DOMAIN (type)) == error_mark_node)
+	    compute_nelts = true;
+	  else if (VAR_P (TYPE_MAX_VALUE (TYPE_DOMAIN (type))))
+	    {
+	      tree a = DECL_ATTRIBUTES (TYPE_MAX_VALUE (TYPE_DOMAIN (type)));
+	      if (lookup_attribute ("omp dummy var", a))
+		compute_nelts = true;
+	    }
+	  if (compute_nelts)
 	    {
 	      tem = fold_build2 (EXACT_DIV_EXPR, sizetype,
 				 TYPE_SIZE_UNIT (type),
@@ -912,11 +922,20 @@ gfc_omp_clause_linear_ctor (tree clause, tree dest, tree src, tree add)
       && (!GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause))
 	  || !POINTER_TYPE_P (type)))
     {
+      bool compute_nelts = false;
       gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
       if (!TYPE_DOMAIN (type)
 	  || TYPE_MAX_VALUE (TYPE_DOMAIN (type)) == NULL_TREE
 	  || TYPE_MIN_VALUE (TYPE_DOMAIN (type)) == error_mark_node
 	  || TYPE_MAX_VALUE (TYPE_DOMAIN (type)) == error_mark_node)
+	compute_nelts = true;
+      else if (VAR_P (TYPE_MAX_VALUE (TYPE_DOMAIN (type))))
+	{
+	  tree a = DECL_ATTRIBUTES (TYPE_MAX_VALUE (TYPE_DOMAIN (type)));
+	  if (lookup_attribute ("omp dummy var", a))
+	    compute_nelts = true;
+	}
+      if (compute_nelts)
 	{
 	  nelems = fold_build2 (EXACT_DIV_EXPR, sizetype,
 				TYPE_SIZE_UNIT (type),

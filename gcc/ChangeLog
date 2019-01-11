@@ -1,3 +1,14 @@
+2019-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/85956
+	PR lto/88733
+	* tree-inline.h (struct copy_body_data): Add adjust_array_error_bounds
+	field.
+	* tree-inline.c (remap_type_1): Formatting fix.  If TYPE_MAX_VALUE of
+	ARRAY_TYPE's TYPE_DOMAIN is newly error_mark_node, replace it with
+	a dummy "omp dummy var" variable if id->adjust_array_error_bounds.
+	* omp-low.c (new_omp_context): Set cb.adjust_array_error_bounds.
+
 2019-01-11  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/87305

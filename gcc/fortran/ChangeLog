@@ -1,7 +1,16 @@
+2019-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/85956
+	PR lto/88733
+	* trans-openmp.c: Include attribs.h.
+	(gfc_walk_alloc_comps, gfc_omp_clause_linear_ctor): Handle
+	VAR_DECL max bound with "omp dummy var" attribute like NULL or
+	error_mark_node - recompute number of elts independently.
+
 2019-01-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/59345
-	* trans-array.c (gfc_conv_parameter_array):  Temporary
+	* trans-array.c (gfc_conv_parameter_array): Temporary
 	arrays generated for expressions do not need to be repacked.
 
 2019-01-10  Steven G. Kargl  <kargl@gcc.gnu.org>
@@ -103,7 +112,7 @@
 
 2019-01-01  Steven G. Kargl  <kargl@gcc.gnu.org>
 
-	* parse.c (decode_statement):  Suppress "Unclassifiable statement"
+	* parse.c (decode_statement): Suppress "Unclassifiable statement"
 	error if previous error messages were emittes.
 
 2019-01-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
