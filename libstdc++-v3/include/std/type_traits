@@ -3031,7 +3031,7 @@ template <typename _From, typename _To>
 
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
 
-#define __cpp_lib_is_constant_evaluated 201811L 	
+#define __cpp_lib_is_constant_evaluated 201811L
 
   constexpr inline bool
   is_constant_evaluated() noexcept
