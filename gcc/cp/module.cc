@@ -571,7 +571,7 @@ public:
   HOST_WIDE_INT wi ();  /* Read a HOST_WIDE_INT.  */
   unsigned HOST_WIDE_INT wu (); /* Read an unsigned HOST_WIDE_INT.  */
   const char *str (size_t * = NULL); /* Read a string.  */
-  const char *buf (size_t); /* Read a fixed-length buffer.  */
+  const void *buf (size_t); /* Read a fixed-length buffer.  */
   cpp_hashnode *cpp_node (); /* Read a cpp node.  */
 };
 
@@ -662,8 +662,8 @@ public:
     str ((const char *)NODE_NAME (node), NODE_LEN (node));
   }
   void str (const char *, size_t);  /* Write string of known length.  */
-  void buf (const char *, size_t);  /* Write fixed length buffer.  */
-  char *buf (size_t); /* Create a writable buffer */
+  void buf (const void *, size_t);  /* Write fixed length buffer.  */
+  void *buf (size_t); /* Create a writable buffer */
 
 public:
   /* Format a NUL-terminated raw string.  */
@@ -1001,7 +1001,7 @@ bytes_in::z ()
 }
 
 /* Buffer simply memcpied.  */
-char *
+void *
 bytes_out::buf (size_t len)
 {
   align (sizeof (void *) * 2);
@@ -1009,13 +1009,13 @@ bytes_out::buf (size_t len)
 }
 
 void
-bytes_out::buf (const char *src, size_t len)
+bytes_out::buf (const void *src, size_t len)
 {
-  if (char *ptr = buf (len))
+  if (void *ptr = buf (len))
     memcpy (ptr, src, len);
 }
 
-const char *
+const void *
 bytes_in::buf (size_t len)
 {
   align (sizeof (void *) * 2);
@@ -1051,7 +1051,7 @@ bytes_in::str (size_t *len_p)
   const char *str = NULL;
   if (len)
     {
-      str = buf (len + 1);
+      str = reinterpret_cast<const char *> (buf (len + 1));
       if (!str || str[len])
 	{
 	  set_overrun ();
@@ -4918,8 +4918,10 @@ trees_out::core_vals (tree t)
       }
 
   if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
-    gcc_unreachable (); // FIXME
-  
+    if (streaming_p ())
+      buf (reinterpret_cast<const void *> (TREE_REAL_CST_PTR (t)),
+	   sizeof (real_value));
+
   if (CODE_CONTAINS_STRUCT (code, TS_FIXED_CST))
     gcc_unreachable (); // FIXME
   
@@ -4930,7 +4932,10 @@ trees_out::core_vals (tree t)
     gcc_unreachable (); // FIXME
 
   if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
-    gcc_unreachable (); // FIXME
+    {
+      WT (TREE_REALPART (t));
+      WT (TREE_IMAGPART (t));
+    }
 
   if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
     gcc_unreachable (); /* Should never meet.  */
@@ -5342,8 +5347,11 @@ trees_in::core_vals (tree t)
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
-    gcc_unreachable (); // FIXME
-  
+    if (const void *bytes = buf (sizeof (real_value)))
+      TREE_REAL_CST_PTR (t)
+	= reinterpret_cast<real_value *> (memcpy (ggc_alloc<real_value> (),
+						  bytes, sizeof (real_value)));
+
   if (CODE_CONTAINS_STRUCT (code, TS_FIXED_CST))
     gcc_unreachable (); // FIXME
 
@@ -5354,7 +5362,10 @@ trees_in::core_vals (tree t)
     gcc_unreachable (); // FIXME
 
   if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
-    gcc_unreachable (); // FIXME
+    {
+      RT (TREE_REALPART (t));
+      RT (TREE_IMAGPART (t));
+    }
 
   if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
     return false; /* Should never meet.  */
@@ -11045,7 +11056,7 @@ module_state::write_define (bytes_out &sec, const cpp_macro *macro, bool located
 
   if (len)
     {
-      char *ptr = sec.buf (len);
+      char *ptr = reinterpret_cast<char *> (sec.buf (len));
       len = 0;
       for (unsigned ix = 0; ix != macro->count; ix++)
 	{
@@ -11141,7 +11152,7 @@ module_state::read_define (bytes_in &sec, cpp_reader *reader, bool located) cons
     }
 
   if (len)
-    if (const char *ptr = sec.buf (len))
+    if (const char *ptr = reinterpret_cast<const char *> (sec.buf (len)))
       {
 	/* There should be a final NUL.  */
 	if (ptr[len-1])

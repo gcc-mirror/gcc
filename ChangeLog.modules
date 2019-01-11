@@ -1,5 +1,12 @@
 2019-01-11  Nathan Sidwell  <nathan@acm.org>
 
+	Reals & Complex
+	gcc/cp/
+	* module.cc (bytes_{in,out}::buf): Void pointer
+	(trees_{in,out}::core_vals): Stream REAL_CST & COMPLEX.
+	gcc/testsuite/
+	* g++.dg/modules/literals-1_[ab].C: New.
+
 	gcc/cp/
 	* module.cc (get_module): Fix partition parsing.
 	(module_state::read_imports): Check interface import requirements.
