@@ -1,3 +1,8 @@
+2019-01-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/35031
+	* gfortran.dg/pr35031.f90: new test.
+
 2019-01-11  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88692, c++/87882 - -Wredundant-move false positive with *this.
