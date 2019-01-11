@@ -1,3 +1,8 @@
+2019-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4): Correct recent changes to
+	basic_ostream::operator<< patterns.
+
 2019-01-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/27_io/filesystem/operations/last_write_time.cc: Fix
