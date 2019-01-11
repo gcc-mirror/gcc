@@ -17,7 +17,7 @@
 # <http://www.gnu.org/licenses/>.
 
 OPTIONS_H_EXTRA += $(srcdir)/config/i386/stringop.def
-TM_H += $(srcdir)/config/i386/x86-tune.def
+TM_H += $(srcdir)/config/i386/x86-tune.def insn-attr-common.h
 PASSES_EXTRA += $(srcdir)/config/i386/i386-passes.def
 
 i386-c.o: $(srcdir)/config/i386/i386-c.c
