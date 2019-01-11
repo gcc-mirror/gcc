@@ -1,5 +1,13 @@
 2019-01-11  Tom de Vries  <tdevries@suse.de>
 
+	* config/nvptx/nvptx.c (PTX_CTA_NUM_BARRIERS, PTX_PER_CTA_BARRIER)
+	(PTX_NUM_PER_CTA_BARRIER, PTX_FIRST_PER_WORKER_BARRIER)
+	(PTX_NUM_PER_WORKER_BARRIERS): Define.
+	(nvptx_apply_dim_limits): Prevent vector_length 64 and
+	num_workers 16.
+
+2019-01-11  Tom de Vries  <tdevries@suse.de>
+
 	* config/nvptx/nvptx.c (PTX_CTA_SIZE): Move up.
 
 2019-01-11  Jan Beulich  <jbeulich@suse.com>

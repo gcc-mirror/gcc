@@ -1,5 +1,10 @@
 2019-01-11  Tom de Vries  <tdevries@suse.de>
 
+	* plugin/plugin-nvptx.c (nvptx_exec): Prevent vector_length 64 and
+	num_workers 16.
+
+2019-01-11  Tom de Vries  <tdevries@suse.de>
+
 	* testsuite/libgomp.oacc-c-c++-common/reduction-1.c: Remove
 	-foffload=-w.
 	* testsuite/libgomp.oacc-c-c++-common/reduction-2.c: Same.
