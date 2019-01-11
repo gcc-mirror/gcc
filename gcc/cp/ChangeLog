@@ -1,5 +1,11 @@
 2019-01-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/88312 - pack expansion of decltype.
+	* pt.c (instantiation_dependent_r): A template non-type parameter
+	pack is instantiation-dependent.
+
+2019-01-11  Jason Merrill  <jason@redhat.com>
+
 	PR c++/88613 - ICE with use of const var in lambda.
 	* expr.c (mark_use): Fix location wrapper handling.
 	* cp-gimplify.c (cp_fold_maybe_rvalue): Call mark_rvalue_use.
