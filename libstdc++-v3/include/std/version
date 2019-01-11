@@ -96,7 +96,6 @@
 #define __cpp_lib_clamp 201603
 #define __cpp_lib_constexpr_char_traits 201611
 #define __cpp_lib_enable_shared_from_this 201603
-#define __cpp_lib_erase_if 201900L
 #define __cpp_lib_filesystem 201703
 #define __cpp_lib_gcd 201606
 #define __cpp_lib_gcd_lcm 201606
@@ -142,6 +141,7 @@
 
 #if __cplusplus > 201703L
 // c++2a
+#define __cpp_lib_erase_if 201900L
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
 # define __cpp_lib_is_constant_evaluated 201811L
 #endif
