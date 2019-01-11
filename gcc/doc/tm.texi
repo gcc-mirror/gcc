@@ -1905,6 +1905,18 @@ The default implementation returns false, which is correct
 for targets that don't have partly call-clobbered registers.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS (rtx_insn *@var{insn}, HARD_REG_SET *@var{used_regs})
+This hook removes registers from the set of call-clobbered registers
+ in @var{used_regs} if, contrary to the default rules, something guarantees
+ that @samp{insn} preserves those registers.  For example, some targets
+ support variant ABIs in which functions preserve more registers than
+ normal functions would.  Removing those extra registers from @var{used_regs}
+ can lead to better register allocation.
+ 
+ The default implementation does nothing, which is always safe.
+ Defining the hook is purely an optimization.
+@end deftypefn
+
 @findex fixed_regs
 @findex call_used_regs
 @findex global_regs

@@ -5095,7 +5095,7 @@ get_call_reg_set_usage (rtx_insn *insn, HARD_REG_SET *reg_set,
 	  return true;
 	}
     }
-
   COPY_HARD_REG_SET (*reg_set, default_set);
+  targetm.remove_extra_call_preserved_regs (insn, reg_set);
   return false;
 }

@@ -5775,6 +5775,20 @@ for targets that don't have partly call-clobbered registers.",
  bool, (unsigned int regno, machine_mode mode),
  hook_bool_uint_mode_false)
 
+DEFHOOK
+(remove_extra_call_preserved_regs,
+ "This hook removes registers from the set of call-clobbered registers\n\
+ in @var{used_regs} if, contrary to the default rules, something guarantees\n\
+ that @samp{insn} preserves those registers.  For example, some targets\n\
+ support variant ABIs in which functions preserve more registers than\n\
+ normal functions would.  Removing those extra registers from @var{used_regs}\n\
+ can lead to better register allocation.\n\
+ \n\
+ The default implementation does nothing, which is always safe.\n\
+ Defining the hook is purely an optimization.",
+ void, (rtx_insn *insn, HARD_REG_SET *used_regs),
+ default_remove_extra_call_preserved_regs)
+
 /* Return the smallest number of different values for which it is best to
    use a jump-table instead of a tree of conditional branches.  */
 DEFHOOK
