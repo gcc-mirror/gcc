@@ -2220,6 +2220,16 @@ maybe_emit_vtables (tree ctype)
 	}
     }
 
+  /* For abstract classes, the destructor has been removed from the
+     vtable (in class.c's build_vtbl_initializer).  For a compiler-
+     generated destructor, it hence might not have been generated in
+     this translation unit - and with '#pragma interface' it might
+     never get generated.  */
+  if (CLASSTYPE_PURE_VIRTUALS (ctype)
+      && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (ctype)
+      && DECL_DEFAULTED_IN_CLASS_P(CLASSTYPE_DESTRUCTOR(ctype)))
+    note_vague_linkage_fn (CLASSTYPE_DESTRUCTOR(ctype));
+
   /* Since we're writing out the vtable here, also write the debug
      info.  */
   note_debug_info_needed (ctype);
@@ -5497,7 +5507,7 @@ mark_used (tree decl, tsubst_flags_t complain)
 	 within the body of a function so as to avoid collecting live data
 	 on the stack (such as overload resolution candidates).
 
-         We could just let cp_write_global_declarations handle synthesizing
+         We could just let c_parse_final_cleanups handle synthesizing
          this function by adding it to deferred_fns, but doing
          it at the use site produces better error messages.  */
       ++function_depth;

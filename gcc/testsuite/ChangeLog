@@ -1,3 +1,9 @@
+2019-01-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR C++/88114
+	* g++.dg/cpp0x/defaulted61.C: New	
+	* g++.dg/cpp0x/defaulted62.C: New.
+
 2019-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/88693

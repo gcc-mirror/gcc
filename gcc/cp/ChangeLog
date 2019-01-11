@@ -1,3 +1,10 @@
+2019-01-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR C++/88114
+	* decl2.c (maybe_emit_vtables): If needed, generate code for
+	the destructor of an abstract class.
+	(mark_used): Update comment for older function-name change.
+
 2019-01-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (start_decl): Improve error location.
