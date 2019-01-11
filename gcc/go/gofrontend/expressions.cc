@@ -13082,6 +13082,12 @@ Struct_construction_expression::do_get_backend(Translate_context* context)
 	  ++pv;
 	}
     }
+  if (this->type_->struct_type()->has_padding())
+    {
+      // Feed an extra value if there is a padding field.
+      Btype *fbtype = Type::lookup_integer_type("uint8")->get_backend(gogo);
+      init.push_back(gogo->backend()->zero_expression(fbtype));
+    }
   return gogo->backend()->constructor_expression(btype, init, this->location());
 }
 
