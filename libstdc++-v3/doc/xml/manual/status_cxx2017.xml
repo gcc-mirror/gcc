@@ -981,14 +981,21 @@ and test for <code>__STDCPP_MATH_SPEC_FUNCS__ >= 201003L</code>.
    </para>
 
    <para>
+      <emphasis>20.5.1.2 [headers]</emphasis>
+      Whether names from Annex K are declared by C++ headers depends on
+      whether the underlying C library supports Annex K and declares the
+      names. For the GNU C library, there is no Annex K support and so
+      none of its names are declared by C++ headers.
+   </para>
+
+   <para>
       <emphasis>23.6.5 [optional.bad_optional_access]</emphasis>
       <code>what()</code> returns <literal>"bad optional access"</literal>.
    </para>
 
    <para>
       <emphasis>23.7.3 [variant.variant]</emphasis>
-      Whether <classname>variant</classname> supports over-aligned types
-      should be documented here.
+      <classname>variant</classname> supports over-aligned types.
    </para>
 
    <para>
@@ -998,15 +1005,21 @@ and test for <code>__STDCPP_MATH_SPEC_FUNCS__ >= 201003L</code>.
 
    <para>
       <emphasis>23.12.5.2 [memory.resource.pool.options]</emphasis>
-      The limits for maximum number of blocks and largest allocation size
-      supported by <classname>pool_options</classname> should be documented
-      here.
+      Let S equal <code>numeric_limits&lt;size_t&gt;::digits</code>.
+      The limit for maximum number of blocks in a chunk is given by
+      <inlineequation><mathphrase>2<superscript>N</superscript>-1</mathphrase></inlineequation>,
+      where N is <inlineequation><mathphrase>min(19, 3 + S/2)</mathphrase></inlineequation>.
+      The largest allocation size that will be allocated from a pool is
+      <inlineequation><mathphrase>2<superscript>22</superscript></mathphrase></inlineequation>
+      when <inlineequation><mathphrase>S > 20</mathphrase></inlineequation>,
+      otherwise 3072 when <inlineequation><mathphrase>S > 16</mathphrase></inlineequation>,
+      otherwise 768.
    </para>
 
    <para>
       <emphasis>23.12.6.1 [memory.resource.monotonic.buffer.ctor]</emphasis>
-      The default <code>next_buffer_size</code> and growth factor should
-      be documented here.
+      The default <code>next_buffer_size</code> is <code>128 * sizeof(void*)</code>.
+      The default growth factor is <code>1.5</code>.
    </para>
 
    <para>
@@ -1067,13 +1080,32 @@ and test for <code>__STDCPP_MATH_SPEC_FUNCS__ >= 201003L</code>.
 
    <para>
       <emphasis>30.10.5 [fs.filesystem.syn]</emphasis>
-      The clock used for file times is
-      <classname>std::chrono::system_clock</classname>.
+      The clock used for file times is an unspecified type
+      with a signed 64-bit representation, capable of representing
+      timestamps with nanosecond resolution. The clock's epoch is
+      unspecified, but is not the same as the system clock's epoch.
    </para>
 
    <para>
       <emphasis>30.10.7.1 [fs.path.generic]</emphasis>
       dot-dot in the root-directory refers to the root-directory itself.
+      On Windows, a drive specifier such as <code>"C:"</code> or
+      <code>"z:"</code> is treated as a root-name. On Cygwin, a path
+      that begins with two successive directory separators is a
+      root-name. Otherwise (for POSIX-like systems other than Cygwin),
+      the implementation-defined root-name is an unspecified string
+      which does not appear in any pathnames.
+   </para>
+
+   <para>
+      <emphasis>30.10.10.1 [fs.enum.path.format]</emphasis>
+      The character sequence is always interpreted in the native pathname
+      format.
+   </para>
+
+   <para>
+      <emphasis>30.10.15.4 [fs.op.file_size]</emphasis>
+      If <code>!is_regular_file(p)</code>, an error is reported.
    </para>
 
 
