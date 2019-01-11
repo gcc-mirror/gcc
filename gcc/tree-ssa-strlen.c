@@ -3232,8 +3232,9 @@ get_min_string_length (tree rhs, bool *full_string_p)
 
   if (rhs && TREE_CODE (rhs) == STRING_CST)
     {
-      *full_string_p = true;
-      return strlen (TREE_STRING_POINTER (rhs));
+      HOST_WIDE_INT len = strlen (TREE_STRING_POINTER (rhs));
+      *full_string_p = len < TREE_STRING_LENGTH (rhs);
+      return len;
     }
 
   return -1;

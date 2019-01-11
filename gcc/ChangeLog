@@ -1,3 +1,10 @@
+2019-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/88693
+	* tree-ssa-strlen.c (get_min_string_length): Don't set *full_string_p
+	for STRING_CSTs that don't contain any NUL characters in the first
+	TREE_STRING_LENGTH bytes.
+
 2019-01-11  Alan Modra  <amodra@gmail.com>
 
 	PR 88777
