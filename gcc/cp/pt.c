@@ -25736,6 +25736,8 @@ instantiation_dependent_r (tree *tp, int *walk_subtrees,
     case TEMPLATE_PARM_INDEX:
       if (dependent_type_p (TREE_TYPE (*tp)))
 	return *tp;
+      if (TEMPLATE_PARM_PARAMETER_PACK (*tp))
+	return *tp;
       /* We'll check value-dependence separately.  */
       return NULL_TREE;
 
