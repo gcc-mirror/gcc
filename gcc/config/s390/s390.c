@@ -10098,7 +10098,8 @@ s390_hard_regno_scratch_ok (unsigned int regno)
    bytes are saved across calls, however.  */
 
 static bool
-s390_hard_regno_call_part_clobbered (unsigned int regno, machine_mode mode)
+s390_hard_regno_call_part_clobbered (rtx_insn *insn ATTRIBUTE_UNUSED,
+				     unsigned int regno, machine_mode mode)
 {
   if (!TARGET_64BIT
       && TARGET_ZARCH

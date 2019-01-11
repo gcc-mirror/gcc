@@ -1344,6 +1344,7 @@ initialize_lra_reg_info_element (int i)
   lra_reg_info[i].val = get_new_reg_value ();
   lra_reg_info[i].offset = 0;
   lra_reg_info[i].copies = NULL;
+  lra_reg_info[i].call_insn = NULL;
 }
 
 /* Initialize common reg info and copies.  */

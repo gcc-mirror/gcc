@@ -1699,9 +1699,25 @@ aarch64_remove_extra_call_preserved_regs (rtx_insn *insn,
    clobbers the top 64 bits when restoring the bottom 64 bits.  */
 
 static bool
-aarch64_hard_regno_call_part_clobbered (unsigned int regno, machine_mode mode)
+aarch64_hard_regno_call_part_clobbered (rtx_insn *insn, unsigned int regno,
+					machine_mode mode)
 {
-  return FP_REGNUM_P (regno) && maybe_gt (GET_MODE_SIZE (mode), 8);
+  bool simd_p = insn && CALL_P (insn) && aarch64_simd_call_p (insn);
+  return FP_REGNUM_P (regno)
+	 && maybe_gt (GET_MODE_SIZE (mode), simd_p ? 16 : 8);
+}
+
+/* Implement TARGET_RETURN_CALL_WITH_MAX_CLOBBERS.  */
+
+rtx_insn *
+aarch64_return_call_with_max_clobbers (rtx_insn *call_1, rtx_insn *call_2)
+{
+  gcc_assert (CALL_P (call_1) && CALL_P (call_2));
+
+  if (!aarch64_simd_call_p (call_1) || aarch64_simd_call_p (call_2))
+    return call_1;
+  else
+    return call_2;
 }
 
 /* Implement REGMODE_NATURAL_SIZE.  */
@@ -18867,6 +18883,10 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS
 #define TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS \
   aarch64_remove_extra_call_preserved_regs
+
+#undef TARGET_RETURN_CALL_WITH_MAX_CLOBBERS
+#define TARGET_RETURN_CALL_WITH_MAX_CLOBBERS \
+  aarch64_return_call_with_max_clobbers
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT aarch64_constant_alignment

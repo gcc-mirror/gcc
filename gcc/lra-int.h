@@ -91,10 +91,6 @@ struct lra_reg
   /* True if the pseudo should not be assigned to a stack register.  */
   bool no_stack_p;
 #endif
-  /* True if the pseudo crosses a call.	 It is setup in lra-lives.c
-     and used to check that the pseudo crossing a call did not get a
-     call used hard register.  */
-  bool call_p;
   /* Number of references and execution frequencies of the register in
      *non-debug* insns.	 */
   int nrefs, freq;
@@ -107,6 +103,8 @@ struct lra_reg
   int val;
   /* Offset from relative eliminate register to pesudo reg.  */
   poly_int64 offset;
+  /* Call instruction, if any, that may affect this psuedo reg.  */
+  rtx_insn *call_insn;
   /* These members are set up in lra-lives.c and updated in
      lra-coalesce.c.  */
   /* The biggest size mode in which each pseudo reg is referred in

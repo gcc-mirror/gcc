@@ -12906,7 +12906,8 @@ mips_hard_regno_scratch_ok (unsigned int regno)
    registers with MODE > 64 bits are part clobbered too.  */
 
 static bool
-mips_hard_regno_call_part_clobbered (unsigned int regno, machine_mode mode)
+mips_hard_regno_call_part_clobbered (rtx_insn *insn ATTRIBUTE_UNUSED,
+				     unsigned int regno, machine_mode mode)
 {
   if (TARGET_FLOATXX
       && hard_regno_nregs (regno, mode) == 1

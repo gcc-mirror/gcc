@@ -1054,7 +1054,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	    if ((TEST_HARD_REG_BIT (regs_invalidated_by_this_call, regno)
 		 || (targetm.hard_regno_call_part_clobbered
-		     (regno, vd->e[regno].mode)))
+		     (insn, regno, vd->e[regno].mode)))
 		&& (regno < set_regno || regno >= set_regno + set_nregs))
 	      kill_value_regno (regno, 1, vd);
 

@@ -3728,7 +3728,7 @@ deps_analyze_insn (struct deps_desc *deps, rtx_insn *insn)
              Since we only have a choice between 'might be clobbered'
              and 'definitely not clobbered', we must include all
              partly call-clobbered registers here.  */
-	    else if (targetm.hard_regno_call_part_clobbered (i,
+	    else if (targetm.hard_regno_call_part_clobbered (insn, i,
 							     reg_raw_mode[i])
                      || TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
               SET_REGNO_REG_SET (reg_pending_clobbers, i);
