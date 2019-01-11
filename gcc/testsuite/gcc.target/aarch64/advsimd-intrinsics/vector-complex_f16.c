@@ -1,7 +1,8 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_v8_3a_complex_neon_ok } */
-/* { dg-require-effective-target arm_v8_2a_fp16_scalar_ok } */
+/* { dg-require-effective-target arm_v8_2a_fp16_neon_ok } */
 /* { dg-add-options arm_v8_3a_complex_neon } */
+/* { dg-add-options arm_v8_2a_fp16_neon } */
 /* { dg-additional-options "-O2 -march=armv8.3-a+fp16 -save-temps" } */
 
 #include <arm_neon.h>
