@@ -1,3 +1,9 @@
+2019-01-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88692, c++/87882 - -Wredundant-move false positive with *this.
+	* g++.dg/cpp0x/Wredundant-move5.C: New test.
+	* g++.dg/cpp0x/Wredundant-move6.C: New test.
+
 2019-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/85956
