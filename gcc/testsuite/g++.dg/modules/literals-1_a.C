@@ -1,6 +1,8 @@
 // { dg-module-do run }
 // { dg-additional-options "-fmodules-ts -Wno-pedantic" }
 
+// Make sure e can serialize various literals.  */
+
 export module real2reel;
 // { dg-module-bmi real2reel }
 
@@ -29,4 +31,9 @@ export inline cplx_f emerald_lies ()
 export inline cplx_d forgotten_sons ()
 {
   return (cplx_d) {5, 6};
+}
+
+export inline int garden_party (unsigned ix)
+{
+  return "invites call the debs to play"[ix];
 }

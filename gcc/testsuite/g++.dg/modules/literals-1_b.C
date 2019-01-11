@@ -22,7 +22,10 @@ int main ()
   if (__real__ (c_d) != 5.0 || __imag__ (c_d) != 6.0)
     return 5;
 
-  
+
+  if (garden_party (7) != ' ')
+    return 6;
+
   return 0;
 }
 

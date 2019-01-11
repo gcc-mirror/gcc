@@ -4919,8 +4919,7 @@ trees_out::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
     if (streaming_p ())
-      buf (reinterpret_cast<const void *> (TREE_REAL_CST_PTR (t)),
-	   sizeof (real_value));
+      buf (TREE_REAL_CST_PTR (t), sizeof (real_value));
 
   if (CODE_CONTAINS_STRUCT (code, TS_FIXED_CST))
     gcc_unreachable (); // FIXME
@@ -4929,7 +4928,8 @@ trees_out::core_vals (tree t)
     gcc_unreachable (); // FIXME
 
   if (CODE_CONTAINS_STRUCT (code, TS_STRING))
-    gcc_unreachable (); // FIXME
+    /* Streamed during start.  */
+    gcc_checking_assert (code == STRING_CST);
 
   if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
     {
@@ -5359,7 +5359,7 @@ trees_in::core_vals (tree t)
     gcc_unreachable (); // FIXME
 
   if (CODE_CONTAINS_STRUCT (code, TS_STRING))
-    gcc_unreachable (); // FIXME
+    gcc_checking_assert (code == STRING_CST);
 
   if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
     {
