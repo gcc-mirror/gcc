@@ -7866,6 +7866,12 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 
   no_pack = contiguous && no_pack;
 
+  /* If we have an expression, an array temporary will be
+     generated which does not need to be packed / unpacked
+     if passed to an explicit-shape dummy array.  */
+
+  no_pack = no_pack || (g77 && expr->expr_type == EXPR_OP);
+
   /* Array constructors are always contiguous and do not need packing.  */
   array_constructor = g77 && !this_array_result && expr->expr_type == EXPR_ARRAY;
 
