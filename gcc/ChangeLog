@@ -1,3 +1,7 @@
+2019-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (PLUGIN_HEADERS): Add $(INSN_ATTR_H).
+
 2019-01-11  Steve Ellcey  <sellcey@marvell.com>
 
 	* config/aarch64/aarch64.c (aarch64_simd_call_p): New function.
