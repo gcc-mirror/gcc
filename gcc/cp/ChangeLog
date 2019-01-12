@@ -1,3 +1,8 @@
+2019-01-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (cp_finish_decl): Improve error location.
+	* decl2.c (grokfield): Likewise, improve two locations.
+
 2019-01-11  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88692, c++/87882 - -Wredundant-move false positive with *this.

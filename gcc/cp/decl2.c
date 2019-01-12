@@ -924,12 +924,14 @@ grokfield (const cp_declarator *declarator,
 	  else
 	    {
 	      gcc_assert (TREE_CODE (TREE_TYPE (value)) == FUNCTION_TYPE);
+	      location_t iloc
+		= cp_expr_loc_or_loc (init, DECL_SOURCE_LOCATION (value));
 	      if (friendp)
-		error ("initializer specified for friend function %qD",
-		       value);
+		error_at (iloc, "initializer specified for friend "
+			  "function %qD", value);
 	      else
-		error ("initializer specified for static member function %qD",
-		       value);
+		error_at (iloc, "initializer specified for static "
+			  "member function %qD", value);
 	    }
 	}
       else if (TREE_CODE (value) == FIELD_DECL)

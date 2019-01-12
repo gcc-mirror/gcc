@@ -7293,7 +7293,10 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 		    synthesize_method (decl);
 		}
 	      else
-		error ("function %q#D is initialized like a variable", decl);
+		error_at (cp_expr_loc_or_loc (init,
+					      DECL_SOURCE_LOCATION (decl)),
+			  "function %q#D is initialized like a variable",
+			  decl);
 	    }
 	  /* else no initialization required.  */
 	}
