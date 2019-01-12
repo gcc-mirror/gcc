@@ -1,0 +1,11 @@
+The files in the dmd subdirectory are part of the front-end for the
+Digital Mars D compiler, hosted at https://github.com/dlang/dmd/.
+
+They cover the lexical analysis, parsing, and semantic analysis of the
+D Programming Language defined in the documents at https://dlang.org/.
+
+To report a problem or look up known issues with the dmd front-end,
+please visit the issue tracker at https://issues.dlang.org/.
+
+All changes to dmd should go through the upstream repository first,
+then merged back to GCC.
