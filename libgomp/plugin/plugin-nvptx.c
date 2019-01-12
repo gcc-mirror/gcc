@@ -1297,14 +1297,16 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
   if (dims[GOMP_DIM_WORKER] * dims[GOMP_DIM_VECTOR]
       > targ_fn->max_threads_per_block)
     {
-      int suggest_workers
-	= targ_fn->max_threads_per_block / dims[GOMP_DIM_VECTOR];
-      GOMP_PLUGIN_fatal ("The Nvidia accelerator has insufficient resources to"
-			 " launch '%s' with num_workers = %d; recompile the"
-			 " program with 'num_workers = %d' on that offloaded"
-			 " region or '-fopenacc-dim=:%d'",
-			 targ_fn->launch->fn, dims[GOMP_DIM_WORKER],
-			 suggest_workers, suggest_workers);
+      const char *msg
+	= ("The Nvidia accelerator has insufficient resources to launch '%s'"
+	   " with num_workers = %d and vector_length = %d"
+	   "; "
+	   "recompile the program with 'num_workers = x and vector_length = y'"
+	   " on that offloaded region or '-fopenacc-dim=:x:y' where"
+	   " x * y <= %d"
+	   ".\n");
+      GOMP_PLUGIN_fatal (msg, targ_fn->launch->fn, dims[GOMP_DIM_WORKER],
+			 dims[GOMP_DIM_VECTOR], targ_fn->max_threads_per_block);
     }
 
   /* Check if the accelerator has sufficient barrier resources to
