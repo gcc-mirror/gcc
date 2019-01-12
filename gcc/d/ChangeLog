@@ -1,3 +1,7 @@
+2019-01-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* README.gcc: New file.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
