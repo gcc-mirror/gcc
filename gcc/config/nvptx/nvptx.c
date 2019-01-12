@@ -5556,6 +5556,7 @@ nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level, unsigned used)
   bool offload_region_p = false;
   bool routine_p = false;
   bool routine_seq_p = false;
+  int default_vector_length = -1;
 
   if (decl == NULL_TREE)
     {
@@ -5654,6 +5655,12 @@ nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level, unsigned used)
       gcc_assert (dims[GOMP_DIM_GANG] >= -1);
     }
 
+  if (offload_region_p)
+    default_vector_length = oacc_get_default_dim (GOMP_DIM_VECTOR);
+  else
+    /* oacc_default_dims_p.  */
+    default_vector_length = PTX_DEFAULT_VECTOR_LENGTH;
+
   int old_dims[GOMP_DIM_MAX];
   unsigned int i;
   for (i = 0; i < GOMP_DIM_MAX; ++i)
@@ -5673,12 +5680,12 @@ nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level, unsigned used)
   if (dims[GOMP_DIM_VECTOR] == 0)
     {
       vector_reason = G_("using vector_length (%d), ignoring runtime setting");
-      dims[GOMP_DIM_VECTOR] = PTX_DEFAULT_VECTOR_LENGTH;
+      dims[GOMP_DIM_VECTOR] = default_vector_length;
     }
 
   if (dims[GOMP_DIM_VECTOR] > 0
       && !nvptx_welformed_vector_length_p (dims[GOMP_DIM_VECTOR]))
-    dims[GOMP_DIM_VECTOR] = PTX_DEFAULT_VECTOR_LENGTH;
+    dims[GOMP_DIM_VECTOR] = default_vector_length;
 
   nvptx_apply_dim_limits (dims);
 
@@ -5696,7 +5703,7 @@ nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level, unsigned used)
 
   if (oacc_default_dims_p)
     {
-      dims[GOMP_DIM_VECTOR] = PTX_DEFAULT_VECTOR_LENGTH;
+      dims[GOMP_DIM_VECTOR] = default_vector_length;
       if (dims[GOMP_DIM_WORKER] < 0)
 	dims[GOMP_DIM_WORKER] = PTX_DEFAULT_RUNTIME_DIM;
       if (dims[GOMP_DIM_GANG] < 0)
@@ -5715,7 +5722,9 @@ nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level, unsigned used)
 	    /* Function oacc_validate_dims will apply the minimal dimension.  */
 	    continue;
 
-	  dims[i] = oacc_get_default_dim (i);
+	  dims[i] = (i == GOMP_DIM_VECTOR
+		     ? default_vector_length
+		     : oacc_get_default_dim (i));
 	}
 
       nvptx_apply_dim_limits (dims);
