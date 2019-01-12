@@ -1686,7 +1686,7 @@ are being validated and unspecified defaults should be filled in.\n\
 Diagnostics should be issued as appropriate.  Return\n\
 true, if changes have been made.  You must override this hook to\n\
 provide dimensions larger than 1.",
-bool, (tree decl, int *dims, int fn_level),
+bool, (tree decl, int *dims, int fn_level, unsigned used),
 default_goacc_validate_dims)
 
 DEFHOOK

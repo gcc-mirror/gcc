@@ -5549,7 +5549,7 @@ has_vector_partitionable_routine_calls_p (tree fndecl)
    DIMS has changed.  */
 
 static void
-nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level)
+nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level, unsigned used)
 {
   bool oacc_default_dims_p = false;
   bool oacc_min_dims_p = false;
@@ -5711,7 +5711,7 @@ nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level)
    DECL is null, we are validating the default dimensions.  */
 
 static bool
-nvptx_goacc_validate_dims (tree decl, int dims[], int fn_level)
+nvptx_goacc_validate_dims (tree decl, int dims[], int fn_level, unsigned used)
 {
   int old_dims[GOMP_DIM_MAX];
   unsigned int i;
@@ -5719,7 +5719,7 @@ nvptx_goacc_validate_dims (tree decl, int dims[], int fn_level)
   for (i = 0; i < GOMP_DIM_MAX; ++i)
     old_dims[i] = dims[i];
 
-  nvptx_goacc_validate_dims_1 (decl, dims, fn_level);
+  nvptx_goacc_validate_dims_1 (decl, dims, fn_level, used);
 
   gcc_assert (dims[GOMP_DIM_VECTOR] != 0);
   if (dims[GOMP_DIM_WORKER] > 0 && dims[GOMP_DIM_VECTOR] > 0)

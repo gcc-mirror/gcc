@@ -644,8 +644,8 @@ oacc_parse_default_dims (const char *dims)
     }
 
   /* Allow the backend to validate the dimensions.  */
-  targetm.goacc.validate_dims (NULL_TREE, oacc_default_dims, -1);
-  targetm.goacc.validate_dims (NULL_TREE, oacc_min_dims, -2);
+  targetm.goacc.validate_dims (NULL_TREE, oacc_default_dims, -1, 0);
+  targetm.goacc.validate_dims (NULL_TREE, oacc_min_dims, -2, 0);
 }
 
 /* Validate and update the dimensions for offloaded FN.  ATTRS is the
@@ -673,7 +673,7 @@ oacc_validate_dims (tree fn, tree attrs, int *dims, int level, unsigned used)
       pos = TREE_CHAIN (pos);
     }
 
-  bool changed = targetm.goacc.validate_dims (fn, dims, level);
+  bool changed = targetm.goacc.validate_dims (fn, dims, level, used);
 
   /* Default anything left to 1 or a partitioned default.  */
   for (ix = 0; ix != GOMP_DIM_MAX; ix++)
@@ -1717,7 +1717,8 @@ execute_oacc_device_lower ()
 
 bool
 default_goacc_validate_dims (tree ARG_UNUSED (decl), int *dims,
-			     int ARG_UNUSED (fn_level))
+			     int ARG_UNUSED (fn_level),
+			     unsigned ARG_UNUSED (used))
 {
   bool changed = false;
 
