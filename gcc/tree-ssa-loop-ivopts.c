@@ -3037,7 +3037,7 @@ find_inv_vars (struct ivopts_data *data, tree *expr_p, bitmap *inv_vars)
    It's hard to make decision whether constant part should be stripped
    or not.  We choose to not strip based on below facts:
      1) We need to count ADD cost for constant part if it's stripped,
-	which is't always trivial where this functions is called.
+	which isn't always trivial where this functions is called.
      2) Stripping constant away may be conflict with following loop
 	invariant hoisting pass.
      3) Not stripping constant away results in more invariant exprs,
