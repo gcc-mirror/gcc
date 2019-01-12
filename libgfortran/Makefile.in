@@ -179,7 +179,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(top_srcdir)/configure \
-	$(am__configure_deps)
+	$(am__configure_deps) $(gfor_c_HEADERS)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
@@ -215,7 +215,7 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(cafexeclibdir)" \
 	"$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" \
-	"$(DESTDIR)$(fincludedir)"
+	"$(DESTDIR)$(gfor_cdir)" "$(DESTDIR)$(fincludedir)"
 LTLIBRARIES = $(cafexeclib_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 libcaf_single_la_LIBADD =
 am_libcaf_single_la_OBJECTS = single.lo
@@ -378,7 +378,8 @@ am__objects_49 = findloc1_i1.lo findloc1_i2.lo findloc1_i4.lo \
 	findloc1_r16.lo findloc1_c4.lo findloc1_c8.lo findloc1_c16.lo
 am__objects_50 = findloc1_s1.lo findloc1_s4.lo
 am__objects_51 = findloc2_s1.lo findloc2_s4.lo
-am__objects_52 = $(am__objects_4) $(am__objects_5) $(am__objects_6) \
+am__objects_52 = ISO_Fortran_binding.lo
+am__objects_53 = $(am__objects_4) $(am__objects_5) $(am__objects_6) \
 	$(am__objects_7) $(am__objects_8) $(am__objects_9) \
 	$(am__objects_10) $(am__objects_11) $(am__objects_12) \
 	$(am__objects_13) $(am__objects_14) $(am__objects_15) \
@@ -393,14 +394,15 @@ am__objects_52 = $(am__objects_4) $(am__objects_5) $(am__objects_6) \
 	$(am__objects_40) $(am__objects_41) $(am__objects_42) \
 	$(am__objects_43) $(am__objects_44) $(am__objects_45) \
 	$(am__objects_46) $(am__objects_47) $(am__objects_48) \
-	$(am__objects_49) $(am__objects_50) $(am__objects_51)
-@LIBGFOR_MINIMAL_FALSE@am__objects_53 = close.lo file_pos.lo format.lo \
+	$(am__objects_49) $(am__objects_50) $(am__objects_51) \
+	$(am__objects_52)
+@LIBGFOR_MINIMAL_FALSE@am__objects_54 = close.lo file_pos.lo format.lo \
 @LIBGFOR_MINIMAL_FALSE@	inquire.lo intrinsics.lo list_read.lo \
 @LIBGFOR_MINIMAL_FALSE@	lock.lo open.lo read.lo transfer.lo \
 @LIBGFOR_MINIMAL_FALSE@	transfer128.lo unit.lo unix.lo write.lo \
 @LIBGFOR_MINIMAL_FALSE@	fbuf.lo async.lo
-am__objects_54 = size_from_kind.lo $(am__objects_53)
-@LIBGFOR_MINIMAL_FALSE@am__objects_55 = access.lo c99_functions.lo \
+am__objects_55 = size_from_kind.lo $(am__objects_54)
+@LIBGFOR_MINIMAL_FALSE@am__objects_56 = access.lo c99_functions.lo \
 @LIBGFOR_MINIMAL_FALSE@	chdir.lo chmod.lo clock.lo cpu_time.lo \
 @LIBGFOR_MINIMAL_FALSE@	ctime.lo date_and_time.lo dtime.lo \
 @LIBGFOR_MINIMAL_FALSE@	env.lo etime.lo execute_command_line.lo \
@@ -410,19 +412,19 @@ am__objects_54 = size_from_kind.lo $(am__objects_53)
 @LIBGFOR_MINIMAL_FALSE@	rename.lo stat.lo symlnk.lo \
 @LIBGFOR_MINIMAL_FALSE@	system_clock.lo time.lo umask.lo \
 @LIBGFOR_MINIMAL_FALSE@	unlink.lo
-@IEEE_SUPPORT_TRUE@am__objects_56 = ieee_helper.lo
-am__objects_57 = associated.lo abort.lo args.lo cshift0.lo eoshift0.lo \
+@IEEE_SUPPORT_TRUE@am__objects_57 = ieee_helper.lo
+am__objects_58 = associated.lo abort.lo args.lo cshift0.lo eoshift0.lo \
 	eoshift2.lo erfc_scaled.lo extends_type_of.lo fnum.lo \
-	ierrno.lo ishftc.lo mvbits.lo move_alloc.lo pack_generic.lo \
-	selected_char_kind.lo size.lo is_contiguous.lo spread_generic.lo \
-	string_intrinsics.lo rand.lo random.lo reshape_generic.lo \
-	reshape_packed.lo selected_int_kind.lo selected_real_kind.lo \
-	unpack_generic.lo in_pack_generic.lo in_unpack_generic.lo \
-	$(am__objects_55) $(am__objects_56)
-@IEEE_SUPPORT_TRUE@am__objects_58 = ieee_arithmetic.lo \
+	ierrno.lo ishftc.lo is_contiguous.lo mvbits.lo move_alloc.lo \
+	pack_generic.lo selected_char_kind.lo size.lo \
+	spread_generic.lo string_intrinsics.lo rand.lo random.lo \
+	reshape_generic.lo reshape_packed.lo selected_int_kind.lo \
+	selected_real_kind.lo unpack_generic.lo in_pack_generic.lo \
+	in_unpack_generic.lo $(am__objects_56) $(am__objects_57)
+@IEEE_SUPPORT_TRUE@am__objects_59 = ieee_arithmetic.lo \
 @IEEE_SUPPORT_TRUE@	ieee_exceptions.lo ieee_features.lo
-am__objects_59 =
-am__objects_60 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
+am__objects_60 =
+am__objects_61 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_abs_i4.lo _abs_i8.lo _abs_i16.lo _abs_r4.lo _abs_r8.lo \
 	_abs_r10.lo _abs_r16.lo _aimag_c4.lo _aimag_c8.lo \
 	_aimag_c10.lo _aimag_c16.lo _exp_r4.lo _exp_r8.lo _exp_r10.lo \
@@ -446,19 +448,19 @@ am__objects_60 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_conjg_c4.lo _conjg_c8.lo _conjg_c10.lo _conjg_c16.lo \
 	_aint_r4.lo _aint_r8.lo _aint_r10.lo _aint_r16.lo _anint_r4.lo \
 	_anint_r8.lo _anint_r10.lo _anint_r16.lo
-am__objects_61 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
+am__objects_62 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
 	_sign_r8.lo _sign_r10.lo _sign_r16.lo _dim_i4.lo _dim_i8.lo \
 	_dim_i16.lo _dim_r4.lo _dim_r8.lo _dim_r10.lo _dim_r16.lo \
 	_atan2_r4.lo _atan2_r8.lo _atan2_r10.lo _atan2_r16.lo \
 	_mod_i4.lo _mod_i8.lo _mod_i16.lo _mod_r4.lo _mod_r8.lo \
 	_mod_r10.lo _mod_r16.lo
-am__objects_62 = misc_specifics.lo
-am__objects_63 = $(am__objects_60) $(am__objects_61) $(am__objects_62) \
+am__objects_63 = misc_specifics.lo
+am__objects_64 = $(am__objects_61) $(am__objects_62) $(am__objects_63) \
 	dprod_r8.lo f2c_specifics.lo random_init.lo
-am__objects_64 = $(am__objects_3) $(am__objects_52) $(am__objects_54) \
-	$(am__objects_57) $(am__objects_58) $(am__objects_59) \
-	$(am__objects_63)
-@onestep_FALSE@am_libgfortran_la_OBJECTS = $(am__objects_64)
+am__objects_65 = $(am__objects_3) $(am__objects_53) $(am__objects_55) \
+	$(am__objects_58) $(am__objects_59) $(am__objects_60) \
+	$(am__objects_64)
+@onestep_FALSE@am_libgfortran_la_OBJECTS = $(am__objects_65)
 @onestep_TRUE@am_libgfortran_la_OBJECTS = libgfortran_c.lo
 libgfortran_la_OBJECTS = $(am_libgfortran_la_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -531,7 +533,7 @@ am__can_run_installinfo = \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
 DATA = $(toolexeclib_DATA)
-HEADERS = $(nodist_finclude_HEADERS)
+HEADERS = $(gfor_c_HEADERS) $(nodist_finclude_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) \
 	$(LISP)config.h.in
 # Read a list of newline-separated strings from the standard input,
@@ -690,7 +692,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -715,6 +716,8 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @LIBGFOR_USE_SYMVER_FALSE@version_dep = 
 @LIBGFOR_USE_SYMVER_GNU_TRUE@@LIBGFOR_USE_SYMVER_TRUE@version_dep = $(srcdir)/gfortran.map
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@version_dep = gfortran.map-sun
+gfor_c_HEADERS = $(srcdir)/ISO_Fortran_binding.h
+gfor_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)/include
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
 	    $(lt_host_flags)
 
@@ -757,10 +760,10 @@ gfor_helper_src = intrinsics/associated.c intrinsics/abort.c \
 	intrinsics/args.c intrinsics/cshift0.c intrinsics/eoshift0.c \
 	intrinsics/eoshift2.c intrinsics/erfc_scaled.c \
 	intrinsics/extends_type_of.c intrinsics/fnum.c \
-	intrinsics/ierrno.c intrinsics/ishftc.c intrinsics/mvbits.c \
+	intrinsics/ierrno.c intrinsics/ishftc.c \
+	intrinsics/is_contiguous.c intrinsics/mvbits.c \
 	intrinsics/move_alloc.c intrinsics/pack_generic.c \
 	intrinsics/selected_char_kind.c intrinsics/size.c \
-	intrinsics/is_contiguous.c \
 	intrinsics/spread_generic.c intrinsics/string_intrinsics.c \
 	intrinsics/rand.c intrinsics/random.c \
 	intrinsics/reshape_generic.c intrinsics/reshape_packed.c \
@@ -1341,6 +1344,9 @@ $(srcdir)/generated/spread_c8.c \
 $(srcdir)/generated/spread_c10.c \
 $(srcdir)/generated/spread_c16.c 
 
+i_isobinding_c = \
+$(srcdir)/runtime/ISO_Fortran_binding.c
+
 m4_files = m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/all.m4 \
     m4/any.m4 m4/count.m4 m4/maxloc0.m4 m4/maxloc1.m4 m4/maxval.m4 \
     m4/minloc0.m4 m4/minloc1.m4 m4/minval.m4 m4/product.m4 m4/sum.m4 \
@@ -1368,7 +1374,7 @@ gfor_built_src = $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_minloc1s_c) $(i_maxloc2s_c) $(i_minloc2s_c) $(i_maxvals_c) \
     $(i_maxval0s_c) $(i_minval0s_c) $(i_maxval1s_c) $(i_minval1s_c) \
     $(i_findloc0_c) $(i_findloc0s_c) $(i_findloc1_c) $(i_findloc1s_c) \
-    $(i_findloc2s_c)
+    $(i_findloc2s_c) $(i_isobinding_c)
 
 
 # Machine generated specifics
@@ -1698,6 +1704,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ISO_Fortran_binding.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/abort.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/access.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/all_l1.Plo@am__quote@
@@ -1892,6 +1899,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iparity_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iparity_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iparity_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/is_contiguous.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ishftc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/kill.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgfortran_c.Plo@am__quote@
@@ -2199,7 +2207,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/single.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/size.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/size_from_kind.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/is_contiguous.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sleep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spread_c10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spread_c16.Plo@am__quote@
@@ -6089,6 +6096,13 @@ findloc2_s4.lo: $(srcdir)/generated/findloc2_s4.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o findloc2_s4.lo `test -f '$(srcdir)/generated/findloc2_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/findloc2_s4.c
 
+ISO_Fortran_binding.lo: $(srcdir)/runtime/ISO_Fortran_binding.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ISO_Fortran_binding.lo -MD -MP -MF $(DEPDIR)/ISO_Fortran_binding.Tpo -c -o ISO_Fortran_binding.lo `test -f '$(srcdir)/runtime/ISO_Fortran_binding.c' || echo '$(srcdir)/'`$(srcdir)/runtime/ISO_Fortran_binding.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/ISO_Fortran_binding.Tpo $(DEPDIR)/ISO_Fortran_binding.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(srcdir)/runtime/ISO_Fortran_binding.c' object='ISO_Fortran_binding.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ISO_Fortran_binding.lo `test -f '$(srcdir)/runtime/ISO_Fortran_binding.c' || echo '$(srcdir)/'`$(srcdir)/runtime/ISO_Fortran_binding.c
+
 size_from_kind.lo: io/size_from_kind.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT size_from_kind.lo -MD -MP -MF $(DEPDIR)/size_from_kind.Tpo -c -o size_from_kind.lo `test -f 'io/size_from_kind.c' || echo '$(srcdir)/'`io/size_from_kind.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/size_from_kind.Tpo $(DEPDIR)/size_from_kind.Plo
@@ -6285,6 +6299,13 @@ ishftc.lo: intrinsics/ishftc.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ishftc.lo `test -f 'intrinsics/ishftc.c' || echo '$(srcdir)/'`intrinsics/ishftc.c
 
+is_contiguous.lo: intrinsics/is_contiguous.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT is_contiguous.lo -MD -MP -MF $(DEPDIR)/is_contiguous.Tpo -c -o is_contiguous.lo `test -f 'intrinsics/is_contiguous.c' || echo '$(srcdir)/'`intrinsics/is_contiguous.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/is_contiguous.Tpo $(DEPDIR)/is_contiguous.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='intrinsics/is_contiguous.c' object='is_contiguous.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o is_contiguous.lo `test -f 'intrinsics/is_contiguous.c' || echo '$(srcdir)/'`intrinsics/is_contiguous.c
+
 mvbits.lo: intrinsics/mvbits.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mvbits.lo -MD -MP -MF $(DEPDIR)/mvbits.Tpo -c -o mvbits.lo `test -f 'intrinsics/mvbits.c' || echo '$(srcdir)/'`intrinsics/mvbits.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/mvbits.Tpo $(DEPDIR)/mvbits.Plo
@@ -6319,13 +6340,6 @@ size.lo: intrinsics/size.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='intrinsics/size.c' object='size.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o size.lo `test -f 'intrinsics/size.c' || echo '$(srcdir)/'`intrinsics/size.c
-
-is_contiguous.lo: intrinsics/is_contiguous.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT is_contiguous.lo -MD -MP -MF $(DEPDIR)/is_contiguous.Tpo -c -o is_contiguous.lo `test -f 'intrinsics/is_contiguous.c' || echo '$(srcdir)/'`intrinsics/is_contiguous.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/is_contiguous.Tpo $(DEPDIR)/is_contiguous.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='intrinsics/is_contiguous.c' object='is_contiguous.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o is_contiguous.lo `test -f 'intrinsics/is_contiguous.c' || echo '$(srcdir)/'`intrinsics/is_contiguous.c
 
 spread_generic.lo: intrinsics/spread_generic.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT spread_generic.lo -MD -MP -MF $(DEPDIR)/spread_generic.Tpo -c -o spread_generic.lo `test -f 'intrinsics/spread_generic.c' || echo '$(srcdir)/'`intrinsics/spread_generic.c
@@ -6664,6 +6678,27 @@ uninstall-toolexeclibDATA:
 	@list='$(toolexeclib_DATA)'; test -n "$(toolexeclibdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(toolexeclibdir)'; $(am__uninstall_files_from_dir)
+install-gfor_cHEADERS: $(gfor_c_HEADERS)
+	@$(NORMAL_INSTALL)
+	@list='$(gfor_c_HEADERS)'; test -n "$(gfor_cdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(gfor_cdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(gfor_cdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(gfor_cdir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(gfor_cdir)" || exit $$?; \
+	done
+
+uninstall-gfor_cHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(gfor_c_HEADERS)'; test -n "$(gfor_cdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(gfor_cdir)'; $(am__uninstall_files_from_dir)
 install-nodist_fincludeHEADERS: $(nodist_finclude_HEADERS)
 	@$(NORMAL_INSTALL)
 	@list='$(nodist_finclude_HEADERS)'; test -n "$(fincludedir)" || list=; \
@@ -6749,7 +6784,7 @@ check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(LTLIBRARIES) $(DATA) $(HEADERS) config.h all-local
 installdirs:
-	for dir in "$(DESTDIR)$(cafexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(fincludedir)"; do \
+	for dir in "$(DESTDIR)$(cafexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(gfor_cdir)" "$(DESTDIR)$(fincludedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -6808,7 +6843,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-nodist_fincludeHEADERS
+install-data-am: install-gfor_cHEADERS install-nodist_fincludeHEADERS
 
 install-dvi: install-dvi-am
 
@@ -6858,7 +6893,7 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-cafexeclibLTLIBRARIES \
+uninstall-am: uninstall-cafexeclibLTLIBRARIES uninstall-gfor_cHEADERS \
 	uninstall-nodist_fincludeHEADERS uninstall-toolexeclibDATA \
 	uninstall-toolexeclibLTLIBRARIES
 
@@ -6873,16 +6908,16 @@ uninstall-am: uninstall-cafexeclibLTLIBRARIES \
 	dvi dvi-am html html-am info info-am install install-am \
 	install-cafexeclibLTLIBRARIES install-data install-data-am \
 	install-dvi install-dvi-am install-exec install-exec-am \
-	install-exec-local install-html install-html-am install-info \
-	install-info-am install-man install-nodist_fincludeHEADERS \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip install-toolexeclibDATA \
+	install-exec-local install-gfor_cHEADERS install-html \
+	install-html-am install-info install-info-am install-man \
+	install-nodist_fincludeHEADERS install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip install-toolexeclibDATA \
 	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
 	installdirs maintainer-clean maintainer-clean-generic \
 	maintainer-clean-local mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool mostlyclean-local pdf \
 	pdf-am ps ps-am tags tags-am uninstall uninstall-am \
-	uninstall-cafexeclibLTLIBRARIES \
+	uninstall-cafexeclibLTLIBRARIES uninstall-gfor_cHEADERS \
 	uninstall-nodist_fincludeHEADERS uninstall-toolexeclibDATA \
 	uninstall-toolexeclibLTLIBRARIES
 
