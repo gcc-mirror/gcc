@@ -1,3 +1,8 @@
+2019-01-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/35031
+	* gfortran.dg/pr35031.f90: new test.
+
 2019-01-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/tls-ld-int8.c: New test.
