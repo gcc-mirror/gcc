@@ -1,3 +1,18 @@
+2019-01-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	* gfortran.dg/ISO_Fortran_binding_2.f90 : Remove because of
+	reports of ICEs.
+	* gfortran.dg/ISO_Fortran_binding_2.c : Ditto.
+
+2019-01-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	* gfortran.dg/ISO_Fortran_binding_1.f90 : New test.
+	* gfortran.dg/ISO_Fortran_binding_1.c : Auxilliary file for test.
+	* gfortran.dg/ISO_Fortran_binding_2.f90 : New test.
+	* gfortran.dg/ISO_Fortran_binding_2.c : Auxilliary file for test.
+	* gfortran.dg/bind_c_array_params_2.f90 : Change search string
+	for dump tree scan.
+
 2019-01-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/35031
@@ -19,7 +34,7 @@
 2019-01-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR C++/88114
-	* g++.dg/cpp0x/defaulted61.C: New	
+	* g++.dg/cpp0x/defaulted61.C: New
 	* g++.dg/cpp0x/defaulted62.C: New.
 
 2019-01-11  Jakub Jelinek  <jakub@redhat.com>
