@@ -1,3 +1,10 @@
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-1.c: Expect
+	vector length to be 128.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Expect vector
+	length 2097152 to be reduced to 1024 instead of 32.
+
 2019-01-11  Thomas Schwinge  <thomas@codesourcery.com>
             James Norris  <jnorris@codesourcery.com>
 

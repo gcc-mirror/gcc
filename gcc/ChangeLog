@@ -1,3 +1,8 @@
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.c (nvptx_goacc_validate_dims): Take larger vector
+	lengths into account.
+
 2019-01-12  Svante Signell  <svante.signell@gmail.com>
 
 	* config/i386/gnu.h (TARGET_THREAD_SSP_OFFSET): Define.
