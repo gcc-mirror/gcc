@@ -1,5 +1,11 @@
 2019-01-12  Tom de Vries  <tdevries@suse.de>
 
+	PR target/85381
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-5.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/pr85381.c: New test.
+
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
 	* testsuite/libgomp.oacc-c-c++-common/vred2d-128.c: New test.
 	* testsuite/libgomp.oacc-fortran/gemm.f90: New test.
 	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-10.c: New test.
