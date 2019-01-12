@@ -1,3 +1,12 @@
+2019-01-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88811
+	PR libstdc++/83306
+	* src/filesystem/path.cc: Fix typo. If first path is empty, show []
+	before second path.
+	* testsuite/experimental/filesystem/filesystem_error/cons.cc: New
+	test.
+
 2019-01-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/intro.xml: Include new section.
