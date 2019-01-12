@@ -1,3 +1,35 @@
+2019-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/88807
+	* m4/minloc0.m4: Reindent to avoid -Wmisleading-indentation warnings.
+	* generated/minloc0_4_i1.c: Regenerated.
+	* generated/minloc0_4_i2.c: Regenerated.
+	* generated/minloc0_4_i4.c: Regenerated.
+	* generated/minloc0_4_i8.c: Regenerated.
+	* generated/minloc0_4_i16.c: Regenerated.
+	* generated/minloc0_4_r4.c: Regenerated.
+	* generated/minloc0_4_r8.c: Regenerated.
+	* generated/minloc0_4_r10.c: Regenerated.
+	* generated/minloc0_4_r16.c: Regenerated.
+	* generated/minloc0_8_i1.c: Regenerated.
+	* generated/minloc0_8_i2.c: Regenerated.
+	* generated/minloc0_8_i4.c: Regenerated.
+	* generated/minloc0_8_i8.c: Regenerated.
+	* generated/minloc0_8_i16.c: Regenerated.
+	* generated/minloc0_8_r4.c: Regenerated.
+	* generated/minloc0_8_r8.c: Regenerated.
+	* generated/minloc0_8_r10.c: Regenerated.
+	* generated/minloc0_8_r16.c: Regenerated.
+	* generated/minloc0_16_i1.c: Regenerated.
+	* generated/minloc0_16_i2.c: Regenerated.
+	* generated/minloc0_16_i4.c: Regenerated.
+	* generated/minloc0_16_i8.c: Regenerated.
+	* generated/minloc0_16_i16.c: Regenerated.
+	* generated/minloc0_16_r4.c: Regenerated.
+	* generated/minloc0_16_r8.c: Regenerated.
+	* generated/minloc0_16_r10.c: Regenerated.
+	* generated/minloc0_16_r16.c: Regenerated.
+
 2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/16615
@@ -6,8 +38,8 @@
 	* io/unit.c: Likewise.
 
 2019-01-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
-	Harald Anlauf <anlauf@gmx.de>
-	Tobias Burnus <burnus@gcc.gnu.org>
+	    Harald Anlauf <anlauf@gmx.de>
+	    Tobias Burnus <burnus@gcc.gnu.org>
 
 	PR fortran/45424
 	* Makefile.am: Add intrinsics/is_contiguous.c.
