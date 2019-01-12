@@ -1321,7 +1321,7 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 	   " region or '-fopenacc-dim=:x:' where x <= 15"
 	   "; "
 	   "or, recompile the program with 'vector_length = 32' on that"
-	   " offloaded region"
+	   " offloaded region or '-fopenacc-dim=::32'"
 	   ".\n");
 	GOMP_PLUGIN_fatal (msg, targ_fn->launch->fn, dims[GOMP_DIM_WORKER],
 			   dims[GOMP_DIM_VECTOR]);
