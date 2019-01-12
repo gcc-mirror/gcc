@@ -1,3 +1,9 @@
+2019-01-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/88776
+	* io/list_read.c (namelist_read): Use nml_err_ret path on read error
+	not based on stdin_unit.
+
 2019-01-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	* ISO_Fortran_binding.h : New file.
