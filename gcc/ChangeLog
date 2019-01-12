@@ -1,3 +1,9 @@
+2019-01-12  Svante Signell  <svante.signell@gmail.com>
+
+	* config/i386/gnu.h (TARGET_THREAD_SSP_OFFSET): Define.
+	(TARGET_CAN_SPLIT_STACK): Define.
+	(TARGET_THREAD_SPLIT_STACK_OFFSET): Define.
+
 2019-01-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	* params.def (inline-unit-growth): Set to 40.
