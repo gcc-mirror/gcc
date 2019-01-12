@@ -1,3 +1,14 @@
+2019-01-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	* ISO_Fortran_binding.h : New file.
+	* Makefile.am : Include ISO_Fortran_binding.c in the list of
+	files to compile.
+	* Makefile.in : Regenerated.
+	* gfortran.map : Add _gfortran_cfi_desc_to_gfc_desc,
+	_gfortran_gfc_desc_to_cfi_desc and the CFI API functions.
+	* runtime/ISO_Fortran_binding.c : New file containing the new
+	functions added to the map.
+
 2019-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libfortran/88807

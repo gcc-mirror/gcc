@@ -1486,6 +1486,16 @@ GFORTRAN_C99_8 {
 
 GFORTRAN_9 {
   global:
+  CFI_address;
+  CFI_allocate;
+  CFI_deallocate;
+  CFI_establish;
+  CFI_is_contiguous;
+  CFI_section;
+  CFI_select_part;
+  CFI_setpointer;
+  _gfortran_gfc_desc_to_cfi_desc;
+  _gfortran_cfi_desc_to_gfc_desc;
   _gfortran_findloc0_c16;
   _gfortran_findloc0_c4;
   _gfortran_findloc0_c8;

@@ -5,7 +5,7 @@
 !
 ! Check that assumed-shape variables are correctly passed to BIND(C)
 ! as defined in TS 29913
-! 
+!
 interface
   subroutine test (xx) bind(C, name="myBindC")
     type(*), dimension(:,:) :: xx
@@ -20,4 +20,4 @@ end
 ! { dg-final { scan-assembler-times "myBindC,%r2" 1 { target { hppa*-*-* } } } }
 ! { dg-final { scan-assembler-times "call\tmyBindC" 1 { target { *-*-cygwin* } } } }
 ! { dg-final { scan-assembler-times "brasl\t%r\[0-9\]*,myBindC" 1 { target { s390*-*-* } } } }
-! { dg-final { scan-tree-dump-times "test \\\(&parm\\." 1 "original" } }
+! { dg-final { scan-tree-dump-times "cfi_desc_to_gfc_desc \\\(&parm\\." 1 "original" } }
