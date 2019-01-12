@@ -1,3 +1,7 @@
+2019-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (convert_for_assignment): Fix a comment typo.
+
 2019-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/88701
