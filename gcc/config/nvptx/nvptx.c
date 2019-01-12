@@ -5669,6 +5669,8 @@ nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level, unsigned used)
   const char *vector_reason = NULL;
   if (offload_region_p && has_vector_partitionable_routine_calls_p (decl))
     {
+      default_vector_length = PTX_WARP_SIZE;
+
       if (dims[GOMP_DIM_VECTOR] > PTX_WARP_SIZE)
 	{
 	  vector_reason = G_("using vector_length (%d) due to call to"
