@@ -1,3 +1,15 @@
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.c (nvptx_goacc_validate_dims_1)
+	(nvptx_goacc_validate_dims): Add used parameter.
+	* doc/tm.texi: Regenerate.
+	* omp-offload.c (oacc_parse_default_dims, oacc_validate_dims): Add
+	argument to call to targetm.goacc.validate_dims.
+	(default_goacc_validate_dims): Add used
+	parameter.
+	* target.def (validate_dims): Add used parameter in DEFHOOK.
+	* targhooks.h (default_goacc_validate_dims): Add used parameter.
+
 2019-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/85956
