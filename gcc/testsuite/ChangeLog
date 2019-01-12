@@ -1,3 +1,10 @@
+2019-01-12  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	* gcc.dg/plugin/plugindir1.c: Adjust dg-prune-output for Darwin.
+	* gcc.dg/plugin/plugindir2.c: Likewise.
+	* gcc.dg/plugin/plugindir3.c: Likewise.
+	* gcc.dg/plugin/plugindir4.c: Likewise.
+
 2019-01-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/35031
