@@ -1,5 +1,10 @@
 2019-01-12  Tom de Vries  <tdevries@suse.de>
 
+	* config/nvptx/nvptx.c (nvptx_goacc_validate_dims_1): Alow setting
+	vector length using -fopenacc-dim.
+
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
 	* config/nvptx/nvptx.c (nvptx_goacc_validate_dims): Take larger vector
 	lengths into account.
 

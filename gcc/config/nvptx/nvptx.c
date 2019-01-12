@@ -5705,7 +5705,8 @@ nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level, unsigned used)
 
   if (oacc_default_dims_p)
     {
-      dims[GOMP_DIM_VECTOR] = default_vector_length;
+      if (dims[GOMP_DIM_VECTOR] < 0)
+	dims[GOMP_DIM_VECTOR] = default_vector_length;
       if (dims[GOMP_DIM_WORKER] < 0)
 	dims[GOMP_DIM_WORKER] = PTX_DEFAULT_RUNTIME_DIM;
       if (dims[GOMP_DIM_GANG] < 0)
