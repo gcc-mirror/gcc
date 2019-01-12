@@ -5703,6 +5703,23 @@ nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level, unsigned used)
 	dims[GOMP_DIM_GANG] = PTX_DEFAULT_RUNTIME_DIM;
       nvptx_apply_dim_limits (dims);
     }
+
+  if (offload_region_p)
+    {
+      for (i = 0; i < GOMP_DIM_MAX; i++)
+	{
+	  if (!(dims[i] < 0))
+	    continue;
+
+	  if ((used & GOMP_DIM_MASK (i)) == 0)
+	    /* Function oacc_validate_dims will apply the minimal dimension.  */
+	    continue;
+
+	  dims[i] = oacc_get_default_dim (i);
+	}
+
+      nvptx_apply_dim_limits (dims);
+    }
 }
 
 /* Validate compute dimensions of an OpenACC offload or routine, fill
