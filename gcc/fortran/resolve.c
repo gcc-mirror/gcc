@@ -11789,11 +11789,12 @@ gfc_verify_binding_labels (gfc_symbol *sym)
 		 sym->binding_label, &sym->declared_at, &gsym->where);
       /* Clear the binding label to prevent checking multiple times.  */
       sym->binding_label = NULL;
-
+      return;
     }
-  else if (sym->attr.flavor == FL_VARIABLE && module
-	   && (strcmp (module, gsym->mod_name) != 0
-	       || strcmp (sym->name, gsym->sym_name) != 0))
+
+  if (sym->attr.flavor == FL_VARIABLE && module
+      && (strcmp (module, gsym->mod_name) != 0
+	  || strcmp (sym->name, gsym->sym_name) != 0))
     {
       /* This can only happen if the variable is defined in a module - if it
 	 isn't the same module, reject it.  */
@@ -11802,14 +11803,16 @@ gfc_verify_binding_labels (gfc_symbol *sym)
 		 sym->name, module, sym->binding_label,
 		 &sym->declared_at, &gsym->where, gsym->mod_name);
       sym->binding_label = NULL;
+      return;
     }
-  else if ((sym->attr.function || sym->attr.subroutine)
-	   && ((gsym->type != GSYM_SUBROUTINE && gsym->type != GSYM_FUNCTION)
-	       || (gsym->defined && sym->attr.if_source != IFSRC_IFBODY))
-	   && sym != gsym->ns->proc_name
-	   && (module != gsym->mod_name
-	       || strcmp (gsym->sym_name, sym->name) != 0
-	       || (module && strcmp (module, gsym->mod_name) != 0)))
+
+  if ((sym->attr.function || sym->attr.subroutine)
+      && ((gsym->type != GSYM_SUBROUTINE && gsym->type != GSYM_FUNCTION)
+	   || (gsym->defined && sym->attr.if_source != IFSRC_IFBODY))
+      && (sym != gsym->ns->proc_name && sym->attr.entry == 0)
+      && (module != gsym->mod_name
+	  || strcmp (gsym->sym_name, sym->name) != 0
+	  || (module && strcmp (module, gsym->mod_name) != 0)))
     {
       /* Print an error if the procedure is defined multiple times; we have to
 	 exclude references to the same procedure via module association or
