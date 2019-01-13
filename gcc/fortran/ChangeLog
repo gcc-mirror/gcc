@@ -1,5 +1,11 @@
 2019-01-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/57992
+	* trans-array.c (gfc_conv_array_parameter):  Do not pack/unpack
+	functions with contiguous results.
+
+2019-01-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/59345
 	* trans-array.c (gfc_conv_array_parameter): Remove TODO.  Do not
 	pack/unpack results of functions which return an explicit-shaped

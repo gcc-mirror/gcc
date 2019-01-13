@@ -7894,7 +7894,9 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 	{
 	  gfc_symbol *result = expr->value.function.esym->result;
 	  if (result->attr.dimension
-	      && (result->as->type == AS_EXPLICIT || result->attr.allocatable))
+	      && (result->as->type == AS_EXPLICIT
+		  || result->attr.allocatable
+		  || result->attr.contiguous))
 	    no_pack = 1;
 	}
     }
