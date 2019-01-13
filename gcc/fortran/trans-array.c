@@ -7756,7 +7756,6 @@ array_parameter_size (tree desc, gfc_expr *expr, tree *size)
 }
 
 /* Convert an array for passing as an actual parameter.  */
-/* TODO: Optimize passing g77 arrays.  */
 
 void
 gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
@@ -7882,11 +7881,23 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 
   no_pack = contiguous && no_pack;
 
-  /* If we have an expression, an array temporary will be
-     generated which does not need to be packed / unpacked
-     if passed to an explicit-shape dummy array.  */
+  /* If we have an EXPR_OP or a function returning an explicit-shaped
+     or allocatable array, an array temporary will be generated which
+     does not need to be packed / unpacked if passed to an
+     explicit-shape dummy array.  */
 
-  no_pack = no_pack || (g77 && expr->expr_type == EXPR_OP);
+  if (g77)
+    {
+      if (expr->expr_type == EXPR_OP)
+	no_pack = 1;
+      else if (expr->expr_type == EXPR_FUNCTION && expr->value.function.esym)
+	{
+	  gfc_symbol *result = expr->value.function.esym->result;
+	  if (result->attr.dimension
+	      && (result->as->type == AS_EXPLICIT || result->attr.allocatable))
+	    no_pack = 1;
+	}
+    }
 
   /* Array constructors are always contiguous and do not need packing.  */
   array_constructor = g77 && !this_array_result && expr->expr_type == EXPR_ARRAY;
