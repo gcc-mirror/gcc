@@ -1,3 +1,10 @@
+2019-01-12  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/61765
+	* resolve.c (gfc_verify_binding_labels): Break if-elseif-elseif
+	structure into independent if's with a return to simplify logic.
+	Avoid a check for ENTRY name with bind(c).
+
 2019-01-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	* gfortran.texi : Add description in sections on TS 29113 and
