@@ -1,3 +1,9 @@
+2019-01-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/88776
+	* io/open.c (newunit): Free format buffer if the unit specified is for
+	stdin, stdout, or stderr. 
+
 2019-01-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/88776
