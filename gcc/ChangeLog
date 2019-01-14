@@ -1,3 +1,8 @@
+2019-01-14  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (dt_simplify::gen_1): Change dumping dependent on
+	whether we are in (simplify ...) or (match ...) context.
+
 2019-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/88796
