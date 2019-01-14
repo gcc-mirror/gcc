@@ -9343,6 +9343,8 @@ is_std_move_p (tree fn)
 static bool
 can_do_nrvo_p (tree retval, tree functype)
 {
+  if (functype == error_mark_node)
+    return false;
   if (retval)
     STRIP_ANY_LOCATION_WRAPPER (retval);
   tree result = DECL_RESULT (current_function_decl);
