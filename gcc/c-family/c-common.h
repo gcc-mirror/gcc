@@ -1336,6 +1336,9 @@ extern tree tm_mask_to_attr (int);
 extern tree find_tm_attribute (tree);
 extern const struct attribute_spec::exclusions attr_cold_hot_exclusions[];
 
+/* In c-format.c.  */
+extern bool valid_format_string_type_p (tree);
+
 /* A bitmap of flags to positional_argument.  */
 enum posargflags {
   /* Consider positional attribute argument value zero valid.  */

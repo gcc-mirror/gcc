@@ -631,17 +631,13 @@ positional_argument (const_tree fntype, const_tree atname, tree pos,
 	  return NULL_TREE;
 	}
 
+      /* Where the expected code is STRING_CST accept any pointer
+	 expected by attribute format (this includes possibly qualified
+	 char pointers and, for targets like Darwin, also pointers to
+	 struct CFString).  */
       bool type_match;
-      if (code == STRING_CST && POINTER_TYPE_P (argtype))
-	{
-	  /* Where the expected code is STRING_CST accept any pointer
-	     to a narrow character type, qualified or otherwise.  */
-	  tree type = TREE_TYPE (argtype);
-	  type = TYPE_MAIN_VARIANT (type);
-	  type_match = (type == char_type_node
-			|| type == signed_char_type_node
-			|| type == unsigned_char_type_node);
-	}
+      if (code == STRING_CST)
+	type_match = valid_format_string_type_p (argtype);
       else if (code == INTEGER_TYPE)
 	/* For integers, accept enums, wide characters and other types
 	   that match INTEGRAL_TYPE_P except for bool.  */
@@ -652,6 +648,21 @@ positional_argument (const_tree fntype, const_tree atname, tree pos,
 
       if (!type_match)
 	{
+	  if (code == STRING_CST)
+	    {
+	      /* Reject invalid format strings with an error.  */
+	      if (argno < 1)
+		error ("%qE attribute argument value %qE refers to "
+		       "parameter type %qT",
+		       atname, pos, argtype);
+	      else
+		error ("%qE attribute argument %i value %qE refers to "
+		       "parameter type %qT",
+		       atname, argno, pos, argtype);
+
+	      return NULL_TREE;
+	    }
+
 	  if (argno < 1)
 	    warning (OPT_Wattributes,
 		     "%qE attribute argument value %qE refers to "

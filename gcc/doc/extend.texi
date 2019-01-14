@@ -22397,10 +22397,14 @@ bit-fields.  See the Solaris man page for @code{cmn_err} for more information.
 @node Darwin Format Checks
 @subsection Darwin Format Checks
 
-Darwin targets support the @code{CFString} (or @code{__CFString__}) in the format
-attribute context.  Declarations made with such attribution are parsed for correct syntax
-and format argument types.  However, parsing of the format string itself is currently undefined
-and is not carried out by this version of the compiler.
+In addition to the full set of format archetypes (attribute format style
+arguments such as @code{printf}, @code{scanf}, @code{strftime}, and
+@code{strfmon}), Darwin targets also support the @code{CFString} (or
+@code{__CFString__}) archetype in the @code{format} attribute.
+Declarations with this archetype are parsed for correct syntax
+and argument types.  However, parsing of the format string itself and
+validating arguments against it in calls to such functions is currently
+not performed.
 
 Additionally, @code{CFStringRefs} (defined by the @code{CoreFoundation} headers) may
 also be used as format arguments.  Note that the relevant headers are only likely to be
