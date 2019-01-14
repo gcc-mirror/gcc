@@ -1026,6 +1026,17 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain, bool const_only)
   return ok;
 }
 
+/* True iff TYPE is a C++2a "ordinary" character type.  */
+
+bool
+ordinary_char_type_p (tree type)
+{
+  type = TYPE_MAIN_VARIANT (type);
+  return (type == char_type_node
+	  || type == signed_char_type_node
+	  || type == unsigned_char_type_node);
+}
+
 /* Process the initializer INIT for a variable of type TYPE, emitting
    diagnostics for invalid initializers and converting the initializer as
    appropriate.
@@ -1091,36 +1102,30 @@ digest_init_r (tree type, tree init, int nested, int flags,
 	  && TREE_CODE (stripped_init) == STRING_CST)
 	{
 	  tree char_type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (init)));
+	  bool incompat_string_cst = false;
 
-	  if (TYPE_PRECISION (typ1) == BITS_PER_UNIT)
+	  if (typ1 != char_type)
 	    {
-	      if (char_type != char_type_node
-		  && char_type != signed_char_type_node
-		  && char_type != unsigned_char_type_node)
-		{
-		  if (complain & tf_error)
-		    error_at (loc, "char-array initialized from wide string");
-		  return error_mark_node;
-		}
+	      /* The array element type does not match the initializing string
+	         literal element type; this is only allowed when both types are
+	         ordinary character type.  There are no string literals of
+	         signed or unsigned char type in the language, but we can get
+	         them internally from converting braced-init-lists to
+	         STRING_CST.  */
+	      if (ordinary_char_type_p (typ1)
+		  && ordinary_char_type_p (char_type))
+		/* OK */;
+	      else
+		incompat_string_cst = true;
 	    }
-	  else
+
+	  if (incompat_string_cst)
 	    {
-	      if (char_type == char_type_node
-		  || char_type == signed_char_type_node
-		  || char_type == unsigned_char_type_node)
-		{
-		  if (complain & tf_error)
-		    error_at (loc,
-			      "int-array initialized from non-wide string");
-		  return error_mark_node;
-		}
-	      else if (char_type != typ1)
-		{
-		  if (complain & tf_error)
-		    error_at (loc, "int-array initialized from incompatible "
-			      "wide string");
-		  return error_mark_node;
-		}
+	      if (complain & tf_error)
+		error_at (loc, "cannot initialize array of %qT from "
+		          "a string literal with type array of %qT",
+		          typ1, char_type);
+	      return error_mark_node;
 	    }
 
 	  if (nested == 2 && !TYPE_DOMAIN (type))

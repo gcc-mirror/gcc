@@ -1300,6 +1300,11 @@ fcanonical-system-headers
 C ObjC C++ ObjC++
 Where shorter, use canonicalized paths to systems headers.
 
+fchar8_t
+C++ ObjC++ Var(flag_char8_t) Init(-1)
+Enable the char8_t fundamental type and use it as the type for UTF-8 string
+and character literals.
+
 fcheck-pointer-bounds
 C ObjC C++ ObjC++ LTO Deprecated
 Deprecated in GCC 9.  This switch has no effect.

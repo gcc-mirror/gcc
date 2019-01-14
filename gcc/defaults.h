@@ -583,6 +583,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    affect C++ name mangling because in C++ these are distinct types
    not typedefs.  */
 
+#ifndef CHAR8_TYPE
+#define CHAR8_TYPE "unsigned char"
+#endif
+
 #ifdef UINT_LEAST16_TYPE
 #define CHAR16_TYPE UINT_LEAST16_TYPE
 #else

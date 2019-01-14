@@ -702,6 +702,9 @@ cpp_atomic_builtins (cpp_reader *pfile)
 			(have_swap[SWAP_INDEX (boolean_type_node)]? 2 : 1));
   builtin_define_with_int_value ("__GCC_ATOMIC_CHAR_LOCK_FREE", 
 			(have_swap[SWAP_INDEX (signed_char_type_node)]? 2 : 1));
+  if (flag_char8_t)
+    builtin_define_with_int_value ("__GCC_ATOMIC_CHAR8_T_LOCK_FREE",
+			(have_swap[SWAP_INDEX (char8_type_node)]? 2 : 1));
   builtin_define_with_int_value ("__GCC_ATOMIC_CHAR16_T_LOCK_FREE", 
 			(have_swap[SWAP_INDEX (char16_type_node)]? 2 : 1));
   builtin_define_with_int_value ("__GCC_ATOMIC_CHAR32_T_LOCK_FREE", 
@@ -1000,6 +1003,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	cpp_define (pfile, "__cpp_template_template_args=201611");
       if (flag_threadsafe_statics)
 	cpp_define (pfile, "__cpp_threadsafe_static_init=200806");
+      if (flag_char8_t)
+        cpp_define (pfile, "__cpp_char8_t=201811");
     }
   /* Note that we define this for C as well, so that we know if
      __attribute__((cleanup)) will interface with EH.  */

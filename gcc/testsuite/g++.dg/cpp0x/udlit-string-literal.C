@@ -7,7 +7,9 @@
 using namespace my_string_literals;
 
 decltype("Hello, World!"s) s;
+#if !__cpp_char8_t == !__cpp_lib_char8_t
 decltype(u8"Hello, World!"s) s8;
+#endif
 decltype(L"Hello, World!"s) ws;
 decltype(u"Hello, World!"s) s16;
 decltype(U"Hello, World!"s) s32;

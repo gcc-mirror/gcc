@@ -180,6 +180,9 @@ enum rid
   /* C++11 */
   RID_CONSTEXPR, RID_DECLTYPE, RID_NOEXCEPT, RID_NULLPTR, RID_STATIC_ASSERT,
 
+  /* char8_t */
+  RID_CHAR8,
+
   /* C++ concepts */
   RID_CONCEPT, RID_REQUIRES,
 
@@ -287,6 +290,7 @@ extern GTY ((length ("(int) RID_MAX"))) tree *ridpointers;
 
 enum c_tree_index
 {
+    CTI_CHAR8_TYPE,
     CTI_CHAR16_TYPE,
     CTI_CHAR32_TYPE,
     CTI_WCHAR_TYPE,
@@ -330,6 +334,7 @@ enum c_tree_index
     CTI_UINTPTR_TYPE,
 
     CTI_CHAR_ARRAY_TYPE,
+    CTI_CHAR8_ARRAY_TYPE,
     CTI_CHAR16_ARRAY_TYPE,
     CTI_CHAR32_ARRAY_TYPE,
     CTI_WCHAR_ARRAY_TYPE,
@@ -409,20 +414,22 @@ extern machine_mode c_default_pointer_mode;
    mask) is _true_.  Thus for keywords which are present in all
    languages the disable field is zero.  */
 
-#define D_CONLY		0x001	/* C only (not in C++).  */
-#define D_CXXONLY	0x002	/* C++ only (not in C).  */
-#define D_C99		0x004	/* In C, C99 only.  */
-#define D_CXX11         0x008	/* In C++, C++11 only.  */
-#define D_EXT		0x010	/* GCC extension.  */
-#define D_EXT89		0x020	/* GCC extension incorporated in C99.  */
-#define D_ASM		0x040	/* Disabled by -fno-asm.  */
-#define D_OBJC		0x080	/* In Objective C and neither C nor C++.  */
-#define D_CXX_OBJC	0x100	/* In Objective C, and C++, but not C.  */
-#define D_CXXWARN	0x200	/* In C warn with -Wcxx-compat.  */
-#define D_CXX_CONCEPTS  0x400   /* In C++, only with concepts. */
-#define D_TRANSMEM	0X800   /* C++ transactional memory TS.  */
+#define D_CONLY		0x0001	/* C only (not in C++).  */
+#define D_CXXONLY	0x0002	/* C++ only (not in C).  */
+#define D_C99		0x0004	/* In C, C99 only.  */
+#define D_CXX11         0x0008	/* In C++, C++11 only.  */
+#define D_EXT		0x0010	/* GCC extension.  */
+#define D_EXT89		0x0020	/* GCC extension incorporated in C99.  */
+#define D_ASM		0x0040	/* Disabled by -fno-asm.  */
+#define D_OBJC		0x0080	/* In Objective C and neither C nor C++.  */
+#define D_CXX_OBJC	0x0100	/* In Objective C, and C++, but not C.  */
+#define D_CXXWARN	0x0200	/* In C warn with -Wcxx-compat.  */
+#define D_CXX_CONCEPTS  0x0400	/* In C++, only with concepts.  */
+#define D_TRANSMEM	0X0800	/* C++ transactional memory TS.  */
+#define D_CXX_CHAR8_T	0X1000	/* In C++, only with -fchar8_t.  */
 
 #define D_CXX_CONCEPTS_FLAGS D_CXXONLY | D_CXX_CONCEPTS
+#define D_CXX_CHAR8_T_FLAGS D_CXXONLY | D_CXX_CHAR8_T
 
 /* The reserved keyword table.  */
 extern const struct c_common_resword c_common_reswords[];
@@ -430,6 +437,7 @@ extern const struct c_common_resword c_common_reswords[];
 /* The number of items in the reserved keyword table.  */
 extern const unsigned int num_c_common_reswords;
 
+#define char8_type_node			c_global_trees[CTI_CHAR8_TYPE]
 #define char16_type_node		c_global_trees[CTI_CHAR16_TYPE]
 #define char32_type_node		c_global_trees[CTI_CHAR32_TYPE]
 #define wchar_type_node			c_global_trees[CTI_WCHAR_TYPE]
@@ -475,6 +483,7 @@ extern const unsigned int num_c_common_reswords;
 #define truthvalue_false_node		c_global_trees[CTI_TRUTHVALUE_FALSE]
 
 #define char_array_type_node		c_global_trees[CTI_CHAR_ARRAY_TYPE]
+#define char8_array_type_node		c_global_trees[CTI_CHAR8_ARRAY_TYPE]
 #define char16_array_type_node		c_global_trees[CTI_CHAR16_ARRAY_TYPE]
 #define char32_array_type_node		c_global_trees[CTI_CHAR32_ARRAY_TYPE]
 #define wchar_array_type_node		c_global_trees[CTI_WCHAR_ARRAY_TYPE]
