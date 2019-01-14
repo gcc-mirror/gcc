@@ -1,3 +1,10 @@
+2019-01-14  Tom Honermann  <tom@honermann.net>
+
+	* cp-demangle.c (cplus_demangle_builtin_types)
+	(cplus_demangle_type): Add name demangling for char8_t (Du).
+	* cp-demangle.h: Increase D_BUILTIN_TYPE_COUNT to accommodate the
+	new char8_t type.
+
 2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/16615

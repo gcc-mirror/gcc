@@ -10770,7 +10770,9 @@ grokdeclarator (const cp_declarator *declarator,
 	  error_at (&richloc, "%<long%> and %<short%> specified together");
 	}
       else if (TREE_CODE (type) != INTEGER_TYPE
-	       || type == char16_type_node || type == char32_type_node
+	       || type == char8_type_node
+	       || type == char16_type_node
+	       || type == char32_type_node
 	       || ((long_p || short_p)
 		   && (explicit_char || explicit_intN)))
 	error_at (loc, "%qs specified with %qT", key, type);

@@ -1877,6 +1877,7 @@ type_promotes_to (tree type)
      wider.  Scoped enums don't promote, but pretend they do for backward
      ABI bug compatibility wrt varargs.  */
   else if (TREE_CODE (type) == ENUMERAL_TYPE
+	   || type == char8_type_node
 	   || type == char16_type_node
 	   || type == char32_type_node
 	   || type == wchar_type_node)

@@ -1,3 +1,28 @@
+2019-01-14  Tom Honermann  <tom@honermann.net>
+
+	Implement P0482R5, char8_t: A type for UTF-8 characters and strings
+	* cvt.c (type_promotes_to): Handle char8_t promotion.
+	* decl.c (grokdeclarator): Handle invalid type specifier
+	combinations involving char8_t.
+	* lex.c (init_reswords): Add char8_t as a reserved word.
+	* mangle.c (write_builtin_type): Add name mangling for char8_t (Du).
+	* parser.c (cp_keyword_starts_decl_specifier_p)
+	(cp_parser_simple_type_specifier): Recognize char8_t as a simple
+	type specifier.
+	(cp_parser_string_literal): Use char8_array_type_node for the type
+	of CPP_UTF8STRING.
+	(cp_parser_set_decl_spec_type): Tolerate char8_t typedefs in system
+	headers.
+	* rtti.c (emit_support_tinfos): type_info support for char8_t.
+	* tree.c (char_type_p): Recognize char8_t as a character type.
+	* typeck.c (string_conv_p): Handle conversions of u8 string
+	literals of char8_t type.
+	(check_literal_operator_args): Handle UDLs with u8 string literals
+	of char8_t type.
+	* typeck2.c (ordinary_char_type_p): New.
+	(digest_init_r): Disallow initializing a char array with a u8 string
+	literal.
+
 2019-01-14  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/88263

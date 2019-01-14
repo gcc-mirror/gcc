@@ -996,6 +996,10 @@ c_common_post_options (const char **pfilename)
   if (flag_sized_deallocation == -1)
     flag_sized_deallocation = (cxx_dialect >= cxx14);
 
+  /* char8_t support is new in C++2A.  */
+  if (flag_char8_t == -1)
+    flag_char8_t = (cxx_dialect >= cxx2a);
+
   if (flag_extern_tls_init)
     {
       if (!TARGET_SUPPORTS_ALIASES || !SUPPORTS_WEAK)

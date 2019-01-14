@@ -206,7 +206,7 @@ in the following sections.
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
 @gccoptlist{-fabi-version=@var{n}  -fno-access-control @gol
--faligned-new=@var{n}  -fargs-in-order=@var{n}  -fcheck-new @gol
+-faligned-new=@var{n}  -fargs-in-order=@var{n}  -fchar8_t  -fcheck-new @gol
 -fconstexpr-depth=@var{n}  -fconstexpr-loop-limit=@var{n} @gol
 -fno-elide-constructors @gol
 -fno-enforce-eh-specs @gol
@@ -2425,6 +2425,60 @@ but few users will need to override the default of
 @code{alignof(std::max_align_t)}.
 
 This flag is enabled by default for @option{-std=c++17}.
+
+@item -fchar8_t
+@itemx -fno-char8_t
+@opindex fchar8_t
+@opindex fno-char8_t
+Enable support for @code{char8_t} as adopted for C++2a.  This includes
+the addition of a new @code{char8_t} fundamental type, changes to the
+types of UTF-8 string and character literals, new signatures for
+user-defined literals, associated standard library updates, and new
+@code{__cpp_char8_t} and @code{__cpp_lib_char8_t} feature test macros.
+
+This option enables functions to be overloaded for ordinary and UTF-8
+strings:
+
+@smallexample
+int f(const char *);    // #1
+int f(const char8_t *); // #2
+int v1 = f("text");     // Calls #1
+int v2 = f(u8"text");   // Calls #2
+@end smallexample
+
+@noindent
+and introduces new signatures for user-defined literals:
+
+@smallexample
+int operator""_udl1(char8_t);
+int v3 = u8'x'_udl1;
+int operator""_udl2(const char8_t*, std::size_t);
+int v4 = u8"text"_udl2;
+template<typename T, T...> int operator""_udl3();
+int v5 = u8"text"_udl3;
+@end smallexample
+
+@noindent
+The change to the types of UTF-8 string and character literals introduces
+incompatibilities with ISO C++11 and later standards.  For example, the
+following code is well-formed under ISO C++11, but is ill-formed when
+@option{-fchar8_t} is specified.
+
+@smallexample
+char ca[] = u8"xx";     // error: char-array initialized from wide
+                        //        string
+const char *cp = u8"xx";// error: invalid conversion from
+                        //        `const char8_t*' to `const char*'
+int f(const char*);
+auto v = f(u8"xx");     // error: invalid conversion from
+                        //        `const char8_t*' to `const char*'
+std::string s@{u8"xx"@};  // error: no matching function for call to
+                        //        `std::basic_string<char>::basic_string()'
+using namespace std::literals;
+s = u8"xx"s;            // error: conversion from
+                        //        `basic_string<char8_t>' to non-scalar
+                        //        type `basic_string<char>' requested
+@end smallexample
 
 @item -fcheck-new
 @opindex fcheck-new

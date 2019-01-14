@@ -4,3 +4,4 @@
 constexpr wchar_t c1 = L"hi"[3];	// { dg-error "array subscript" }
 constexpr char16_t c2 = u"hi"[3];	// { dg-error "array subscript" }
 constexpr char32_t c3 = U"hi"[3];	// { dg-error "array subscript" }
+constexpr char c4 = u8"hi"[3];		// { dg-error "array subscript" }
