@@ -30,6 +30,10 @@ int main ()
   if (v[0] != 1 || v[1] != 7 || v[2] != 3 || v[3] != 9)
     return 7;
 
+  v = charting_the_single ();
+  if (v[0] != 1 || v[1] != 2 || v[2] != 3 || v[3] != 4)
+    return 8;
+
   return 0;
 }
 

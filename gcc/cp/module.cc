@@ -4141,7 +4141,14 @@ trees_out::start (tree t)
     case POLY_INT_CST:
       gcc_unreachable (); // FIXME
       break;
+    case FIXED_CST:
+      gcc_unreachable (); /* Not supported in C++.  */
+      break;
     case INTEGER_CST:
+      // FIXME: For INTEGER_CSTs of ENUM type we should see if this is
+      // one of the enum values, and fish the const out of the
+      // CONST_DECL itself.  Of course, writing out the enum defn
+      // itself will need to prevent doing that
       u (TREE_INT_CST_NUNITS (t));
       u (TREE_INT_CST_EXT_NUNITS (t));
       u (TREE_INT_CST_OFFSET_NUNITS (t));
@@ -4268,11 +4275,8 @@ trees_in::finish (tree t)
     /* We're not a pending template in this TU.  */
     TI_PENDING_TEMPLATE_FLAG (t) = 0;
 
-  if (TREE_CODE (t) == INTEGER_CST)
-    {
-      // FIXME:Remap small ints
-      // FIXME:other consts too
-    }
+  if (TREE_CODE (t) == INTEGER_CST && !TREE_OVERFLOW (t))
+    t = cache_integer_cst (t, true);
 
   return t;
 }
@@ -4301,7 +4305,9 @@ trees_out::core_bools (tree t)
   WB (t->base.used_flag); // FIXME: should we be dumping this?
   WB (t->base.nothrow_flag);
   WB (t->base.static_flag);
-  WB (t->base.public_flag);
+  if (TREE_CODE_CLASS (code) != tcc_type)
+    /* This is TYPE_CACHED_VALUES_P for types.  */
+    WB (t->base.public_flag);
   WB (t->base.private_flag);
   WB (t->base.protected_flag);
   WB (t->base.deprecated_flag);
@@ -4445,7 +4451,8 @@ trees_in::core_bools (tree t)
   RB (t->base.used_flag);
   RB (t->base.nothrow_flag);
   RB (t->base.static_flag);
-  RB (t->base.public_flag);
+  if (TREE_CODE_CLASS (code) != tcc_type)
+    RB (t->base.public_flag);
   RB (t->base.private_flag);
   RB (t->base.protected_flag);
   RB (t->base.deprecated_flag);
@@ -4929,8 +4936,8 @@ trees_out::core_vals (tree t)
       buf (TREE_REAL_CST_PTR (t), sizeof (real_value));
 
   if (CODE_CONTAINS_STRUCT (code, TS_FIXED_CST))
-    gcc_unreachable (); // FIXME
-  
+    gcc_unreachable (); /* Not supported in C++.  */
+
   if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
     for (unsigned ix = vector_cst_encoded_nelts (t); ix--;)
       WT (VECTOR_CST_ENCODED_ELT (t, ix));
@@ -5361,7 +5368,7 @@ trees_in::core_vals (tree t)
 						  bytes, sizeof (real_value)));
 
   if (CODE_CONTAINS_STRUCT (code, TS_FIXED_CST))
-    gcc_unreachable (); // FIXME
+    gcc_unreachable (); /* Not suported in C++.  */
 
   if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
     for (unsigned ix = vector_cst_encoded_nelts (t); ix--;)

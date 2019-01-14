@@ -1687,8 +1687,8 @@ wide_int_to_tree (tree type, const poly_wide_int_ref &value)
   return build_poly_int_cst (type, value);
 }
 
-void
-cache_integer_cst (tree t)
+tree
+cache_integer_cst (tree t, bool small)
 {
   tree type = TREE_TYPE (t);
   int ix = -1;
@@ -1732,7 +1732,8 @@ cache_integer_cst (tree t)
 	     obvious test will not get the correct answer.  */
 	  if (prec < HOST_BITS_PER_WIDE_INT)
 	    {
-	      if (tree_to_uhwi (t) < (unsigned HOST_WIDE_INT) INTEGER_SHARE_LIMIT)
+	      if (tree_to_uhwi (t)
+		  < (unsigned HOST_WIDE_INT) INTEGER_SHARE_LIMIT)
 		ix = tree_to_uhwi (t);
 	    }
 	  else if (wi::ltu_p (wi::to_wide (t), INTEGER_SHARE_LIMIT))
@@ -1759,6 +1760,8 @@ cache_integer_cst (tree t)
       break;
 
     case ENUMERAL_TYPE:
+      /* The slot used by TYPE_CACHED_VALUES is used for the enum
+	 members.  */
       break;
 
     default:
@@ -1774,10 +1777,15 @@ cache_integer_cst (tree t)
 	  TYPE_CACHED_VALUES (type) = make_tree_vec (limit);
 	}
 
-      gcc_assert (TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) == NULL_TREE);
-      TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) = t;
+      if (tree r = TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix))
+	{
+	  gcc_assert (small);
+	  t = r;
+	}
+      else
+	TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) = t;
     }
-  else
+  else if (!small)
     {
       /* Use the cache of larger shared ints.  */
       tree *slot = int_cst_hash_table->find_slot (t, INSERT);
@@ -1789,6 +1797,8 @@ cache_integer_cst (tree t)
 	/* Otherwise insert this one into the hash table.  */
 	*slot = t;
     }
+
+  return t;
 }
 
 

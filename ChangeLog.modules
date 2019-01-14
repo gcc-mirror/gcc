@@ -1,5 +1,13 @@
 2019-01-14  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* tree.h (cache_integer_cst): Add defaulted small parm.
+	* tree.c (cache_integer_cst): Add small parm, adjust.
+	gcc/cp/
+	* module.cc (trees_out::start): FIXED_CST are C only.
+	(trees_in::finish): Merge small INTEGER_CSTs.
+	(trees_{in,out}::core_bools): Don't write base.public_flag of types.
+
 	gcc/cp/
 	* module.cc (trees_out::start): Catch POLY_INT_CST, adjust
 	VECTOR_CST.

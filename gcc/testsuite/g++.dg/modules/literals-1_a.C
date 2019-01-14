@@ -45,3 +45,7 @@ export inline vec incubus ()
   return (vec){1,7,3,9}; // Not an arithmetic series
 }
 
+export inline vec charting_the_single ()
+{
+  return (vec){1,2,3,4}; // An arithmetic series
+}
