@@ -1,3 +1,17 @@
+2019-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/88796
+	* emit-rtl.h (struct rtl_data): Add stack_protect_guard_decl field.
+	* cfgexpand.c (stack_protect_prologue): Initialize
+	crtl->stack_protect_guard_decl.
+	* function.c (stack_protect_epilogue): Use it instead of calling
+	targetm.stack_protect_guard again.
+	* dse.c (check_mem_read_rtx): Ignore MEM_VOLATILE_P reads from
+	MEMs with MEM_EXPR equal to crtl->stack_protect_guard or
+	crtl->stack_protect_guard_decl.
+	* config/i386/i386.c (ix86_stack_protect_guard): Set TREE_THIS_VOLATILE
+	on the returned MEM_EXPR.
+
 2019-01-12  Tom de Vries  <tdevries@suse.de>
 
 	* config/nvptx/nvptx.c (nvptx_goacc_validate_dims_1): Alow setting

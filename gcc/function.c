@@ -4902,7 +4902,7 @@ init_function_start (tree subr)
 void
 stack_protect_epilogue (void)
 {
-  tree guard_decl = targetm.stack_protect_guard ();
+  tree guard_decl = crtl->stack_protect_guard_decl;
   rtx_code_label *label = gen_label_rtx ();
   rtx x, y;
   rtx_insn *seq = NULL;

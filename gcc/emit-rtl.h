@@ -87,6 +87,10 @@ struct GTY(()) rtl_data {
      Used for detecting stack clobbers.  */
   tree stack_protect_guard;
 
+  /* The __stack_chk_guard variable or expression holding the stack
+     protector canary value.  */
+  tree stack_protect_guard_decl;
+
   /* List (chain of INSN_LIST) of labels heading the current handlers for
      nonlocal gotos.  */
   rtx_insn_list *x_nonlocal_goto_handler_labels;

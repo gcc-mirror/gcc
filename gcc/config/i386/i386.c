@@ -45094,6 +45094,7 @@ ix86_stack_protect_guard (void)
 	  t = build_int_cst (asptrtype, ix86_stack_protector_guard_offset);
 	  t = build2 (MEM_REF, asptrtype, t,
 		      build_int_cst (asptrtype, 0));
+	  TREE_THIS_VOLATILE (t) = 1;
 	}
 
       return t;

@@ -6219,6 +6219,7 @@ stack_protect_prologue (void)
   tree guard_decl = targetm.stack_protect_guard ();
   rtx x, y;
 
+  crtl->stack_protect_guard_decl = guard_decl;
   x = expand_normal (crtl->stack_protect_guard);
 
   if (targetm.have_stack_protect_combined_set () && guard_decl)
