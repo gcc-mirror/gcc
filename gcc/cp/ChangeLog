@@ -4,6 +4,9 @@
 	* decl2.c (maybe_emit_vtables): Check CLASSTYPE_LAZY_DESTRUCTOR.
 	Fix formatting.
 
+	PR c++/88825 - ICE with bogus function return type deduction.
+	* typeck.c (can_do_nrvo_p): Check error_mark_node.
+
 2019-01-14  Tom Honermann  <tom@honermann.net>
 
 	Implement P0482R5, char8_t: A type for UTF-8 characters and strings
