@@ -2229,8 +2229,9 @@ maybe_emit_vtables (tree ctype)
      never get generated.  */
   if (CLASSTYPE_PURE_VIRTUALS (ctype)
       && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (ctype)
-      && DECL_DEFAULTED_IN_CLASS_P(CLASSTYPE_DESTRUCTOR(ctype)))
-    note_vague_linkage_fn (CLASSTYPE_DESTRUCTOR(ctype));
+      && !CLASSTYPE_LAZY_DESTRUCTOR (ctype)
+      && DECL_DEFAULTED_IN_CLASS_P (CLASSTYPE_DESTRUCTOR (ctype)))
+    note_vague_linkage_fn (CLASSTYPE_DESTRUCTOR (ctype));
 
   /* Since we're writing out the vtable here, also write the debug
      info.  */
