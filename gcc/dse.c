@@ -2072,8 +2072,29 @@ check_mem_read_rtx (rtx *loc, bb_info_t bb_info)
   insn_info = bb_info->last_insn;
 
   if ((MEM_ALIAS_SET (mem) == ALIAS_SET_MEMORY_BARRIER)
-      || (MEM_VOLATILE_P (mem)))
+      || MEM_VOLATILE_P (mem))
     {
+      if (crtl->stack_protect_guard
+	  && (MEM_EXPR (mem) == crtl->stack_protect_guard
+	      || (crtl->stack_protect_guard_decl
+		  && MEM_EXPR (mem) == crtl->stack_protect_guard_decl))
+	  && MEM_VOLATILE_P (mem))
+	{
+	  /* This is either the stack protector canary on the stack,
+	     which ought to be written by a MEM_VOLATILE_P store and
+	     thus shouldn't be deleted and is read at the very end of
+	     function, but shouldn't conflict with any other store.
+	     Or it is __stack_chk_guard variable or TLS or whatever else
+	     MEM holding the canary value, which really shouldn't be
+	     ever modified in -fstack-protector* protected functions,
+	     otherwise the prologue store wouldn't match the epilogue
+	     check.  */
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, " stack protector canary read ignored.\n");
+	  insn_info->cannot_delete = true;
+	  return;
+	}
+
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, " adding wild read, volatile or barrier.\n");
       add_wild_read (bb_info);
