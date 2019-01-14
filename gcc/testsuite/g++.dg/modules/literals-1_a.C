@@ -37,3 +37,11 @@ export inline int garden_party (unsigned ix)
 {
   return "invites call the debs to play"[ix];
 }
+
+using vec = int __attribute__((vector_size (sizeof (int) * 4)));
+
+export inline vec incubus ()
+{
+  return (vec){1,7,3,9}; // Not an arithmetic series
+}
+

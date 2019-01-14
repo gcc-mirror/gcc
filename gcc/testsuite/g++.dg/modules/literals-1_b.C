@@ -26,6 +26,10 @@ int main ()
   if (garden_party (7) != ' ')
     return 6;
 
+  auto v = incubus ();
+  if (v[0] != 1 || v[1] != 7 || v[2] != 3 || v[3] != 9)
+    return 7;
+
   return 0;
 }
 

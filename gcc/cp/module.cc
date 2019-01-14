@@ -4138,6 +4138,9 @@ trees_out::start (tree t)
       u (VECTOR_CST_LOG2_NPATTERNS (t));
       u (VECTOR_CST_NELTS_PER_PATTERN (t));
       break;
+    case POLY_INT_CST:
+      gcc_unreachable (); // FIXME
+      break;
     case INTEGER_CST:
       u (TREE_INT_CST_NUNITS (t));
       u (TREE_INT_CST_EXT_NUNITS (t));
@@ -4190,7 +4193,11 @@ trees_in::start (unsigned code, int klass)
       t = make_tree_vec (u ());
       break;
     case VECTOR_CST:
-      t = make_vector (u (), u ());
+      {
+	unsigned log2_npats = u ();
+	unsigned elts_per = u ();
+	t = make_vector (log2_npats, elts_per);
+      }
       break;
     case INTEGER_CST:
       {
@@ -4925,7 +4932,8 @@ trees_out::core_vals (tree t)
     gcc_unreachable (); // FIXME
   
   if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
-    gcc_unreachable (); // FIXME
+    for (unsigned ix = vector_cst_encoded_nelts (t); ix--;)
+      WT (VECTOR_CST_ENCODED_ELT (t, ix));
 
   if (CODE_CONTAINS_STRUCT (code, TS_STRING))
     /* Streamed during start.  */
@@ -5356,7 +5364,8 @@ trees_in::core_vals (tree t)
     gcc_unreachable (); // FIXME
 
   if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
-    gcc_unreachable (); // FIXME
+    for (unsigned ix = vector_cst_encoded_nelts (t); ix--;)
+      RT (VECTOR_CST_ENCODED_ELT (t, ix));
 
   if (CODE_CONTAINS_STRUCT (code, TS_STRING))
     gcc_checking_assert (code == STRING_CST);

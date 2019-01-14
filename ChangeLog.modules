@@ -1,6 +1,20 @@
+2019-01-14  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (trees_out::start): Catch POLY_INT_CST, adjust
+	VECTOR_CST.
+	(trees_{in,out}::core_vals): Do TS_VECTOR.
+	* g++.dg/modules/literals-1_[ab].C: Add vector cst.
+
 2019-01-11  Nathan Sidwell  <nathan@acm.org>
 
-	Reals & Complex
+	String literals.
+	gcc/cp/
+	* module.cc (trees_{in,out}::core_vals): String literals (a NOP).
+	gcc/testsuite/
+	* g++.dg/modules/literals-1_[ab].C: Add string lit.
+
+	Real & complex literals.
 	gcc/cp/
 	* module.cc (bytes_{in,out}::buf): Void pointer
 	(trees_{in,out}::core_vals): Stream REAL_CST & COMPLEX.
