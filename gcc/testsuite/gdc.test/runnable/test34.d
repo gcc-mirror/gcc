@@ -707,24 +707,7 @@ void foo35()
         c = 3;
 
         xxx = cast(typeof(xxx))(a + b);
-        version(GNU)
-        {
-            version(X86) asm
-            {
-                "int $3;" : : : ;
-            }
-            else version(X86_64) asm
-            {
-                "int $3;" : : : ;
-            }
-            else
-            {
-                import gcc.builtins;
-                __builtin_trap();
-            }
-        }
-        else
-            asm { int 3; }
+        throw new Exception("xxx");
         xxx( 4, 5, 6 );
 }
 
