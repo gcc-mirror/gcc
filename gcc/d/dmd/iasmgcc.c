@@ -224,7 +224,7 @@ Lerror:
 static GccAsmStatement *parseGccAsm(Parser *p, GccAsmStatement *s)
 {
     s->insn = p->parseExpression();
-    if (p->token.value == TOKsemicolon)
+    if (p->token.value == TOKsemicolon || p->token.value == TOKeof)
         goto Ldone;
 
     // No semicolon followed after instruction template, treat as extended asm.
@@ -254,7 +254,7 @@ static GccAsmStatement *parseGccAsm(Parser *p, GccAsmStatement *s)
                 assert(0);
         }
 
-        if (p->token.value == TOKsemicolon)
+        if (p->token.value == TOKsemicolon || p->token.value == TOKeof)
             goto Ldone;
     }
 Ldone:
@@ -288,6 +288,7 @@ Statement *gccAsmSemantic(GccAsmStatement *s, Scope *sc)
         *ptoklist = NULL;
     }
     p.token = *toklist;
+    p.scanloc = s->loc;
 
     // Parse the gcc asm statement.
     s = parseGccAsm(&p, s);

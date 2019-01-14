@@ -1,3 +1,11 @@
+2019-01-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/asm1.d: New test.
+	* gdc.dg/asm2.d: New test.
+	* gdc.dg/asm3.d: New test.
+	* gdc.dg/asm4.d: New test.
+	* lib/gdc.exp (gdc_init): Set gcc_error_prefix and gcc_warning_prefix.
+
 2019-01-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/88776
