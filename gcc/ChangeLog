@@ -1,3 +1,8 @@
+2019-01-14  Martin Sebor  <msebor@redhat.com>
+
+	PR target/88638
+	* doc/extend.texi (Darwin Format Checks): Clarify.
+
 2019-01-14  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (dt_simplify::gen_1): Change dumping dependent on
