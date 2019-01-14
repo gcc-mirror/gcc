@@ -529,6 +529,14 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
   if (u2 != NULL)
     unlock_unit (u2);
 
+  /* If the unit specified is preconnected with a file specified to be open,
+     then clear the format buffer.  */
+  if ((opp->common.unit == options.stdin_unit ||
+       opp->common.unit == options.stdout_unit ||
+       opp->common.unit == options.stderr_unit)
+      && (opp->common.flags & IOPARM_OPEN_HAS_FILE) != 0)
+    fbuf_destroy (u);
+
   /* Open file.  */
 
   s = open_external (opp, flags);
