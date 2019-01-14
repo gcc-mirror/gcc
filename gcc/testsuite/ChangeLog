@@ -1,3 +1,10 @@
+2019-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp1z/feat-cxx1z.C: Add tests for
+	__cpp_guaranteed_copy_elision and __cpp_nontype_template_parameter_auto
+	feature test macros.
+	* g++.dg/cpp2a/feat-cxx2a.C: Likewise.
+
 2019-01-14  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88830 - ICE with abstract class.
