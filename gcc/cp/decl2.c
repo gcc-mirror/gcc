@@ -3445,7 +3445,9 @@ get_tls_wrapper_fn (tree var)
       tree type = non_reference (TREE_TYPE (var));
       type = build_reference_type (type);
       tree fntype = build_function_type (type, void_list_node);
-      fn = build_lang_decl (FUNCTION_DECL, sname, fntype);
+
+      fn = build_lang_decl_loc (DECL_SOURCE_LOCATION (var),
+				FUNCTION_DECL, sname, fntype);
       SET_DECL_LANGUAGE (fn, lang_c);
       TREE_PUBLIC (fn) = TREE_PUBLIC (var);
       DECL_ARTIFICIAL (fn) = true;
