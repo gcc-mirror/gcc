@@ -4919,6 +4919,10 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
     {
       gfc_conv_expr_descriptor (parmse, e);
 
+      if (POINTER_TYPE_P (TREE_TYPE (parmse->expr)))
+	parmse->expr = build_fold_indirect_ref_loc (input_location,
+						    parmse->expr);
+
       /* All the temporary descriptors are marked as DECL_ARTIFICIAL. If
 	 the expression type is different from the descriptor type, then
 	 the offset must be found (eg. to a component ref or substring)
@@ -4949,6 +4953,11 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
   else
     {
       gfc_conv_expr (parmse, e);
+
+      if (POINTER_TYPE_P (TREE_TYPE (parmse->expr)))
+	parmse->expr = build_fold_indirect_ref_loc (input_location,
+						    parmse->expr);
+
       /* Copy the scalar for INTENT_IN.  */
       if (e->expr_type == EXPR_VARIABLE && fsym->attr.intent == INTENT_IN)
 	parmse->expr = gfc_evaluate_now (parmse->expr, &parmse->pre);
@@ -5875,7 +5884,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	     array-descriptor actual to array-descriptor dummy, see
 	     PR 41911 for why a check has to be inserted.
 	     fsym == NULL is checked as intrinsics required the descriptor
-	     but do not always set fsym.  
+	     but do not always set fsym.
 	     Also, it is necessary to pass a NULL pointer to library routines
 	     which usually ignore optional arguments, so they can handle
 	     these themselves.  */

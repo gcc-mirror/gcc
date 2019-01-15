@@ -1,3 +1,8 @@
+2019-01-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Deal with exprs
+	that are indirect references; ie. dummy arguments.
+
 2019-01-13  Dominique d'Humieres  <dominiq@gcc.gnu.org>
 
 	PR fortran/88803
