@@ -3,6 +3,6 @@
 
 template < typename ... > struct A;
 
-struct B : A <			// { dg-error "invalid" }
+struct B : A <			// { dg-error "invalid" "" { target c++17_down } }
 {
-};
+}; // { dg-error "mismatch|expected" "" { target c++2a } }
