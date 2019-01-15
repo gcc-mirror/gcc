@@ -1,6 +1,6 @@
 2019-01-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
-	PR fortran/43072
+	PR fortran/43136
 	* resolve.c (resolve_array_ref): Add equal_length argument; set it
 	if the length of the substring equals that of the orignal
 	variable.
