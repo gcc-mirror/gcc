@@ -2941,33 +2941,7 @@ public:
 
   void visit (NullExp *e)
   {
-    Type *tb = e->type->toBasetype ();
-    tree value;
-
-    /* Handle certain special case conversions, where the underlying type is an
-       aggregate with a nullable interior pointer.  */
-    if (tb->ty == Tarray)
-      {
-	/* For dynamic arrays, set length and pointer fields to zero.  */
-	value = d_array_value (build_ctype (e->type), size_int (0),
-			       null_pointer_node);
-      }
-    else if (tb->ty == Taarray)
-      {
-	/* For associative arrays, set the pointer field to null.  */
-	value = build_constructor (build_ctype (e->type), NULL);
-      }
-    else if (tb->ty == Tdelegate)
-      {
-	/* For delegates, set the frame and function pointer to null.  */
-	value = build_delegate_cst (null_pointer_node,
-				    null_pointer_node, e->type);
-      }
-    else
-      value = d_convert (build_ctype (e->type), integer_zero_node);
-
-    TREE_CONSTANT (value) = 1;
-    this->result_ = value;
+    this->result_ = build_typeof_null_value (e->type);
   }
 
   /* Build a vector literal.  */

@@ -511,6 +511,7 @@ extern tree delegate_object (tree);
 extern tree build_delegate_cst (tree, tree, Type *);
 extern tree build_method_call (tree, tree, Type *);
 extern void extract_from_method_call (tree, tree &, tree &);
+extern tree build_typeof_null_value (Type *);
 extern tree build_vindex_ref (tree, tree, size_t);
 extern tree d_save_expr (tree);
 extern tree stabilize_expr (tree *);
