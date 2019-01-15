@@ -1,3 +1,11 @@
+2019-01-15  Richard Biener  <rguenther@suse.de>
+	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR ipa/88788
+	* ipa-pure-const.c (malloc_candidate_p_1): Add parameter visited and
+	return true if SSA_NAME is already marked in visited bitmap.
+	(malloc_candidate_p): Pass visited to malloc_candidate_p_1.
+
 2019-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/88775

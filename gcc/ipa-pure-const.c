@@ -878,9 +878,12 @@ check_retval_uses (tree retval, gimple *stmt)
 }
 
 static bool
-malloc_candidate_p_1 (function *fun, tree retval, gimple *ret_stmt, bool ipa)
+malloc_candidate_p_1 (function *fun, tree retval, gimple *ret_stmt, bool ipa,
+		      bitmap visited)
 {
   cgraph_node *node = cgraph_node::get_create (fun->decl);
+  if (!bitmap_set_bit (visited, SSA_NAME_VERSION (retval)))
+    return true;
 
   if (!check_retval_uses (retval, ret_stmt))
     DUMP_AND_RETURN("Return value has uses outside return stmt"
@@ -925,7 +928,7 @@ malloc_candidate_p_1 (function *fun, tree retval, gimple *ret_stmt, bool ipa)
 	    gimple *arg_def = SSA_NAME_DEF_STMT (arg);
 	    if (is_a<gphi *> (arg_def))
 	      {
-		if (!malloc_candidate_p_1 (fun, arg, phi, ipa))
+		if (!malloc_candidate_p_1 (fun, arg, phi, ipa, visited))
 		    DUMP_AND_RETURN ("nested phi fail")
 		continue;
 	      }
@@ -971,6 +974,7 @@ malloc_candidate_p (function *fun, bool ipa)
       || !flag_delete_null_pointer_checks)
     return false;
 
+  auto_bitmap visited;
   FOR_EACH_EDGE (e, ei, exit_block->preds)
     {
       gimple_stmt_iterator gsi = gsi_last_bb (e->src);
@@ -987,7 +991,7 @@ malloc_candidate_p (function *fun, bool ipa)
 	  || TREE_CODE (TREE_TYPE (retval)) != POINTER_TYPE)
 	DUMP_AND_RETURN("Return value is not SSA_NAME or not a pointer type.")
 
-      if (!malloc_candidate_p_1 (fun, retval, ret_stmt, ipa))
+      if (!malloc_candidate_p_1 (fun, retval, ret_stmt, ipa, visited))
 	return false;
     }
 
