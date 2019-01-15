@@ -448,6 +448,42 @@ extract_from_method_call (tree t, tree& callee, tree& object)
   callee = CONSTRUCTOR_ELT (t, 1)->value;
 }
 
+/* Build a typeof(null) constant of type TYPE.  Handles certain special case
+   conversions, where the underlying type is an aggregate with a nullable
+   interior pointer.  */
+
+tree
+build_typeof_null_value (Type *type)
+{
+  Type *tb = type->toBasetype ();
+  tree value;
+
+  /* For dynamic arrays, set length and pointer fields to zero.  */
+  if (tb->ty == Tarray)
+    value = d_array_value (build_ctype (type), size_int (0), null_pointer_node);
+
+  /* For associative arrays, set the pointer field to null.  */
+  else if (tb->ty == Taarray)
+    {
+      tree ctype = build_ctype (type);
+      gcc_assert (TYPE_ASSOCIATIVE_ARRAY (ctype));
+
+      value = build_constructor_single (ctype, TYPE_FIELDS (ctype),
+					null_pointer_node);
+    }
+
+  /* For delegates, set the frame and function pointer fields to null.  */
+  else if (tb->ty == Tdelegate)
+    value = build_delegate_cst (null_pointer_node, null_pointer_node, type);
+
+  /* Simple zero constant for all other types.  */
+  else
+    value = build_zero_cst (build_ctype (type));
+
+  TREE_CONSTANT (value) = 1;
+  return value;
+}
+
 /* Build a dereference into the virtual table for OBJECT to retrieve
    a function pointer of type FNTYPE at position INDEX.  */
 
