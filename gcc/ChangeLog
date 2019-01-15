@@ -1,3 +1,8 @@
+2019-01-15  Nikhil Benesch  <nikhil.benesch@gmail.com>
+
+        * godump.c (go_output_typedef): When outputting a typedef, refer
+	to the underlying type by its name and not its structure.
+
 2019-01-15  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/88795
