@@ -5059,7 +5059,8 @@ start_decl (const cp_declarator *declarator,
   if (initialized
       && TREE_CODE (decl) == TYPE_DECL)
     {
-      error ("typedef %qD is initialized (use decltype instead)", decl);
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"typedef %qD is initialized (use decltype instead)", decl);
       return error_mark_node;
     }
 
@@ -11935,6 +11936,8 @@ grokdeclarator (const cp_declarator *declarator,
 	}
     }
 
+  location_t loc = declarator ? declarator->id_loc : input_location;
+
   /* If this is declaring a typedef name, return a TYPE_DECL.  */
   if (typedef_p && decl_context != TYPENAME)
     {
@@ -11980,9 +11983,9 @@ grokdeclarator (const cp_declarator *declarator,
 	}
 
       if (decl_context == FIELD)
-	decl = build_lang_decl (TYPE_DECL, unqualified_id, type);
+	decl = build_lang_decl_loc (loc, TYPE_DECL, unqualified_id, type);
       else
-	decl = build_decl (input_location, TYPE_DECL, unqualified_id, type);
+	decl = build_decl (loc, TYPE_DECL, unqualified_id, type);
 
       if (decl_context != FIELD)
 	{
@@ -12223,7 +12226,6 @@ grokdeclarator (const cp_declarator *declarator,
 
   {
     tree decl = NULL_TREE;
-    location_t loc = declarator ? declarator->id_loc : input_location;
 
     if (decl_context == PARM)
       {

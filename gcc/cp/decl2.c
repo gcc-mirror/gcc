@@ -820,7 +820,8 @@ grokfield (const cp_declarator *declarator,
 
   if (TREE_CODE (value) == TYPE_DECL && init)
     {
-      error ("typedef %qD is initialized (use decltype instead)", value);
+      error_at (cp_expr_loc_or_loc (init, DECL_SOURCE_LOCATION (value)),
+		"typedef %qD is initialized (use decltype instead)", value);
       init = NULL_TREE;
     }
 
@@ -1038,7 +1039,8 @@ grokbitfield (const cp_declarator *declarator,
 
   if (TREE_CODE (value) == TYPE_DECL)
     {
-      error ("cannot declare %qD to be a bit-field type", value);
+      error_at (DECL_SOURCE_LOCATION (value),
+		"cannot declare %qD to be a bit-field type", value);
       return NULL_TREE;
     }
 
