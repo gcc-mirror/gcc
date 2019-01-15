@@ -1,7 +1,7 @@
 /* Contributed by Kris Van Hees <kris.van.hees@oracle.com> */
 /* Test the char8_t promotion rules. */
 /* { dg-do compile { target c++11 } } */
-/* { dg-options "-fchar8_t -Wall -Wconversion -Wsign-conversion -Wsign-promo" } */
+/* { dg-options "-fchar8_t -fsigned-char -Wall -Wconversion -Wsign-conversion -Wsign-promo" } */
 
 extern void f_c (char);
 extern void fsc (signed char);
