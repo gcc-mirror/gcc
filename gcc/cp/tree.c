@@ -2247,39 +2247,39 @@ ovl_splice (tree part, tree ovl)
   return ovl;
 }
 
-/* Order OVL by hidden/internal/module/export.  */
+/* Order OVL by hidden/internal/module/export.  This invalidates
+   OVL_DEDUP_P setting.  */
 
 tree
 ovl_sort (tree ovl)
 {
-  if (TREE_CODE (ovl) != OVERLOAD)
+  if (!ovl || TREE_CODE (ovl) != OVERLOAD)
     return ovl;
 
-  /* Skip hidden, these must already be at the front.  */
-  tree hidden = NULL_TREE, hidden_end = NULL_TREE;
-  for (; ovl && TREE_CODE (ovl) == OVERLOAD && OVL_HIDDEN_P (ovl);
-       ovl = OVL_CHAIN (ovl))
-    {
-      if (!hidden)
-	hidden = ovl;
-      hidden_end = ovl;
-    }
-
   /* Separate into intern/module/export sets */
+  tree hidden = NULL_TREE;
   tree intern = NULL_TREE;
   tree mod = NULL_TREE;
   tree exp = NULL_TREE;
-  for (ovl_iterator iter (ovl); iter; ++iter)
+  for (lkp_iterator iter (ovl); iter; ++iter)
     {
       tree decl = *iter;
+      if (iter.hidden_p () && DECL_HIDDEN_P (decl))
+	{
+	  hidden = ovl_make (decl, hidden);
+	  OVL_HIDDEN_P (hidden) = true;
+	}
       if (iter.using_p ())
-	intern = ovl_insert (decl, intern, true);
+	{
+	  intern = ovl_make (decl, intern);
+	  OVL_DEDUP_P (intern) = OVL_USING_P (intern) = true;
+	}
       else if (DECL_MODULE_EXPORT_P (decl))
-	exp = ovl_insert (decl, exp);
+	exp = ovl_make (decl, exp);
       else if (TREE_PUBLIC (decl))
-	mod = ovl_insert (decl, mod);
+	mod = ovl_make (decl, mod);
       else
-	intern = ovl_insert (decl, intern);
+	intern = ovl_make (decl, intern);
     }
 
   /* Splice the sets together.  */
@@ -2287,11 +2287,7 @@ ovl_sort (tree ovl)
   first = ovl_splice (exp, first);
   first = ovl_splice (mod, first);
   first = ovl_splice (intern, first);
-  if (hidden_end)
-    {
-      OVL_CHAIN (hidden_end) = first;
-      first = hidden;
-    }
+  first = ovl_splice (hidden, first);
 
   return first;
 }

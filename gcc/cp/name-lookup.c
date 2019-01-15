@@ -3359,6 +3359,12 @@ newbinding_bookkeeping (tree name, tree decl, cp_binding_level *level)
     check_extern_c_conflict (decl);
 }
 
+static void
+add_mergeable_decl (tree *gslot, tree decl)
+{
+  *gslot = ovl_make (decl, *gslot);
+}
+
 /* DECL is a global or module-purview entity.  Record it in the global
    or partition slot.  We have already checked for duplicates.  */
 
@@ -3368,11 +3374,17 @@ record_mergeable_decl (tree *slot, tree name, tree decl)
   bool partition = module_not_legacy_p ();
   tree *gslot = get_fixed_binding_slot
     (slot, name, partition ? MODULE_SLOT_PARTITION : MODULE_SLOT_GLOBAL, true);
-  *gslot = ovl_make (decl, *gslot);
+  add_mergeable_decl (gslot, decl);
 }
 
 /* DECL is a new declaration that may be duplicated in OVL.  Use TPL,
-   RET & ARGS to find its clone, or NULL  */
+   RET & ARGS to find its clone, or NULL.
+
+   We're conservative with matches, so ambiguous decls will be
+   registered as different, then lead to a lookup error if the two
+   modules are both visible.  Perhaps we want to do something similar
+   to duplicate decls to get ODR errors on loading?  We already have
+   some special casing for namespaces.  */
 
 static tree
 check_mergeable_decl (tree decl, tree ovl, tree tpl, tree ret, tree args)
@@ -3385,14 +3397,15 @@ check_mergeable_decl (tree decl, tree ovl, tree tpl, tree ret, tree args)
       tree d_inner = decl;
       tree m_inner = match;
 
-      if (TREE_CODE (match) == NAMESPACE_DECL
-	  && !DECL_NAMESPACE_ALIAS (match))
-	/* Namespaces are never overloaded.  */
-	return match;
-
     again:
       if (TREE_CODE (d_inner) != TREE_CODE (m_inner))
-	continue;
+	{
+	  if (TREE_CODE (match) == NAMESPACE_DECL
+	      && !DECL_NAMESPACE_ALIAS (match))
+	    /* Namespaces are never overloaded.  */
+	    return match;
+	  continue;
+	}
 
       switch (TREE_CODE (d_inner))
 	{
@@ -3413,14 +3426,8 @@ check_mergeable_decl (tree decl, tree ovl, tree tpl, tree ret, tree args)
 	    return match;
 	  break;
 
-	case VAR_DECL:
-	  return match;
-
-	case TYPE_DECL:
-	  return match;
-
 	default:
-	  gcc_unreachable ();
+	  return match;
 	}
     }
 
@@ -3752,16 +3759,12 @@ pushdecl (tree x, bool is_friend)
   return ret;
 }
 
-/* DECL is a yet-to-be-loaded mergeable entity.  PARTITiON is true if
+/* DECL is a yet-to-be-loaded mergeable entity.  PARTITION is true if
    it is from a module partition (otherwise it is a global module
    entity), TPL, RET and ARGS are its distinguishing features (some of
-   which may be NULL).  Look for an existing GME that matches and
-   return that if found.  Otherwise add this DECL into the GME list.
-
-   We're conservative with matches, so ambiguous decls will be
-   registered as different, then lead to a lookup error if the two
-   modules are both visible.  Perhaps we want to do something similar
-   to duplicate decls to get ODR errors on loading?  */
+   which may be NULL).  Look for an existing mergeable that matches
+   and return that if found.  Otherwise add this DECL into the
+   mergeable list.  */
 
 tree
 match_mergeable_decl (tree decl, bool partition, tree tpl, tree ret, tree args)
@@ -3775,33 +3778,157 @@ match_mergeable_decl (tree decl, bool partition, tree tpl, tree ret, tree args)
   if (tree match = check_mergeable_decl (decl, *gslot, tpl, ret, args))
     return match;
 
-  *gslot = ovl_make (decl, *gslot);
+  add_mergeable_decl (gslot, decl);
+
   return NULL_TREE;
 }
 
 /* Given a namespace-level binding BINDING, extract & sort the current
-   module's VALUE and TYPE bindings.  */
+   module's VALUE and TYPE bindings.  If PARTITIONS is non-NULL, it
+   is a bitmap of the partitions to merge.  */
 
 tree
-extract_module_binding (tree &binding, tree &type)
+extract_module_binding (tree &binding, tree &name_r, tree &type_r,
+			tree ns, bitmap partitions)
 {
-  tree *slot = &binding;
+  tree *slot = NULL;
+  tree value = NULL_TREE;
+  tree type = NULL_TREE;
+  auto_vec<tree> ovls (partitions ? bitmap_count_bits (partitions) : 0);
 
-  if (TREE_CODE (*slot) == MODULE_VECTOR)
+  if (TREE_CODE (binding) == MODULE_VECTOR)
     {
-      tree &slot_ref = MODULE_VECTOR_CLUSTER
-	(*slot, (MODULE_SLOT_CURRENT / MODULE_VECTOR_SLOTS_PER_CLUSTER))
-	.slots[MODULE_SLOT_CURRENT % MODULE_VECTOR_SLOTS_PER_CLUSTER];
-      slot = &slot_ref;
-      if (!*slot)
-	return NULL_TREE;
+      module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (binding);
+
+      name_r = MODULE_VECTOR_NAME (binding);
+      slot = reinterpret_cast <tree *> (&cluster->slots[MODULE_SLOT_CURRENT]);
+      if (partitions)
+	{
+	  /* Lazy loading can cause nested lookups due to template
+	     instantiations (this isn't right, but it is what we
+	     currently do).  That means deduping needs nesting.  To
+	     avoid that, do two passes.  When template instantiations
+	     are streamed too, the two-pass nature can go away.  */
+
+	  /* Collect the slots.  */
+	  unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (binding);
+	  if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_IMPORT_BASE)
+	    {
+	      ix--;
+	      cluster++;
+	    }
+
+	  /* Do this in forward order, so we load modules in an order
+	     the user expects.  */
+	  for (; ix--; cluster++)
+	    for (unsigned jx = 0; jx != MODULE_VECTOR_SLOTS_PER_CLUSTER; jx++)
+	      {
+		/* Are we importing this module?  */
+		if (unsigned base = cluster->indices[jx].base)
+		  if (unsigned span = cluster->indices[jx].span)
+		    do
+		      if (bitmap_bit_p (partitions, base))
+			goto found;
+		    while (++base, --span);
+		continue;
+
+	      found:;
+		/* Is it loaded?  */
+		if (cluster->slots[jx].is_lazy ())
+		  {
+		    gcc_assert (cluster->indices[jx].span == 1);
+		    lazy_load_binding (cluster->indices[jx].base, ns, name_r,
+				       &cluster->slots[jx], true);
+		  }
+
+		/* Load errors could mean there's nothing here.  */
+		if (tree bind = cluster->slots[jx])
+		  ovls.quick_push (bind);
+	      }
+	}
+    }
+  else
+    {
+      slot = &binding;
+      name_r = OVL_NAME (MAYBE_STAT_DECL (*slot));
     }
 
+  /* This TU's bindings.  */
   type = MAYBE_STAT_TYPE (*slot);
   slot = &MAYBE_STAT_DECL (*slot);
-  tree value = ovl_sort (*slot);
-  *slot = value;
+  value = *slot;
 
+  /* Remove hidden builtin -- but not hidden friend, we can only get
+     one of them.  */
+  if (value && anticipated_builtin_p (value))
+    value = OVL_CHAIN (value);
+
+  /* Keep implicit typedef in type slot.  */
+  if (value && DECL_IMPLICIT_TYPEDEF_P (value))
+    {
+      type = value;
+      value = NULL_TREE;
+    }
+
+  if (unsigned ix = ovls.length ())
+    {
+      /* Now dedup it all.  */
+      // FIXME: It is not clear what to do with internal-linkage
+      // entities from partitions.  p1394 touches on this.  For now we
+      // just merge them (except for anon namespaces).
+
+      /* Dedup: Engage!  */
+      lookup_mark (value, true);
+      do
+	{
+	  tree bind = ovls.pop ();
+	  tree btype = MAYBE_STAT_TYPE (bind);
+	  tree bval = MAYBE_STAT_DECL (bind);
+
+	  // FIXME: Not dealing with anonymous namespaces in
+	  // partitions.  These should probably be handled akin
+	  // to voldemort types.
+	  gcc_assert (!(TREE_CODE (bval) == NAMESPACE_DECL
+			&& !DECL_NAME (bval)));
+
+	  /* As above, keep implicit typedef in btype.  */
+	  if (DECL_IMPLICIT_TYPEDEF_P (bval))
+	    {
+	      btype = bval;
+	      bval = NULL;
+	    }
+
+	  if (btype)
+	    {
+	      /* Types must be the same.  */
+	      gcc_assert (!type || type == btype);
+	      type = btype;
+	    }
+
+	  if (bval)
+	    value = lookup_maybe_add (bval, value, true);
+	}
+      while (--ix);
+
+      /* Disengage!  */
+      lookup_mark (value, false);
+    }
+
+  if (!value)
+    {
+      value = type;
+      type = NULL_TREE;
+    }
+
+  value = ovl_sort (value);
+  /* We must not smack NULL into the hash table.  */
+  if (value)
+    *slot = value;
+  else
+    gcc_checking_assert (slot != &binding || anticipated_builtin_p (*slot));
+  type_r = type;
+
+  // FIXME:Don't skip the hidden friends!
   return ovl_skip_hidden (value);
 }
 

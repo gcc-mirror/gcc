@@ -1,3 +1,30 @@
+2019-01-15  Nathan Sidwell  <nathan@acm.org>
+
+	Partition BMI folding, but not entity merging.
+	gcc/cp/
+	* cp-tree.h (get_module_owner): Mark PURE.
+	* module.cc (loc_spans::open): Add location parm.
+	(trees_out::{lang_decl_bools,tree_node_specific,tree_decl}): Account
+	for remapping.
+	(depset::hash::add_binding): Account for partitions.
+	(module_state::write_locations): Account for partitions.
+	(module_state::read_locations): Add partition spans to primary
+	interface.
+	(module_state::add_writables): Add partition bitmap arg.  Adjust
+	extraction.
+	(module_state::write): Generate partition bitmap.
+	(module_state::read): Only read partitions on primary.
+	* name-lookup.h (extract_module_binding): Adjust parms.
+	* name-lookup.c (add_mergeable_decl): Break out from ...
+	(record_mergeable_decl): ... here.  Call it.
+	(match_mergeable_decl): Likewise.
+	(check_mergeable_decl): Tweak.
+	(extract_module_binding): Examine partitions and merge.
+	* tree.c (ovl_sort): Simplify. 
+	gcc/testsuite/
+	* g++.dg/modules/part-1_a.C: Adjust.
+	* g++.dg/modules/part-1_c.C: New.
+
 2019-01-14  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/

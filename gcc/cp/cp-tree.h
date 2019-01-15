@@ -6805,7 +6805,7 @@ inline bool module_exporting_p ()
 extern module_state *get_module (tree name, module_state *parent = NULL,
 				  bool partition = false);
 extern bool module_may_redeclare (unsigned);
-extern tree get_module_owner (tree);
+extern tree get_module_owner (tree) ATTRIBUTE_PURE;
 extern void set_module_owner (tree);
 extern void mangle_module (int m);
 extern void mangle_module_fini ();

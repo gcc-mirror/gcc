@@ -3,7 +3,7 @@
 
 export module foo:baz;
 
-export int foo ()
+export int baz ()
 {
   return -1;
 }
