@@ -848,14 +848,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Editorial Guidance for merging P0019r8 and P0528r3 </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1123r0.html">
 	P1123R0
 	</link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> Note 1 </entry>
       <entry />
     </row>
 
