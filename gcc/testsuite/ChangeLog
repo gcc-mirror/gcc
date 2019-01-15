@@ -1,3 +1,9 @@
+2019-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR inline-asm/52813
+	* gcc.target/i386/pr52813.c (test1): Turn the diagnostic into a
+	-Wdeprecated warning and expect a following note:.
+
 2019-01-15  Richard Biener  <rguenther@suse.de>
 
 	PR debug/88046

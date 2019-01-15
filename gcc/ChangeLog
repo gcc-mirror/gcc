@@ -1,3 +1,13 @@
+2019-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR inline-asm/52813
+	* doc/extend.texi: Document that listing the stack pointer in the
+	clobber list of an asm is a deprecated feature.
+	* common.opt (Wdeprecated): Moved from c-family/c.opt.
+	* cfgexpand.c (asm_clobber_reg_is_valid): Issue a -Wdeprecated
+	warning instead of an error for clobbers of the stack pointer.
+	Add a note explaining why.
+
 2019-01-15  Richard Biener  <rguenther@suse.de>
 
 	PR debug/88046
