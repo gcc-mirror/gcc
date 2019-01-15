@@ -1,3 +1,8 @@
+2019-01-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88866
+	* g++.dg/cpp0x/variadic126.C: Tweak dg-error.
+
 2019-01-15  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR inline-asm/52813
