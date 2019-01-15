@@ -1,3 +1,8 @@
+2019-01-14  Andi Kleen  <ak@linux.intel.com>
+
+	* Makefile.in: Lower autofdo sampling rate by 10x.
+	* Makefile.tpl: Dito.
+
 2019-01-14  Tom Honermann  <tom@honermann.net>
 
 	* defaults.h: Define CHAR8_TYPE.
