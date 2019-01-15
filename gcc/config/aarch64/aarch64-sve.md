@@ -3074,3 +3074,57 @@
    insr\t%0.<Vetype>, %<vwcore>2
    insr\t%0.<Vetype>, %<Vetype>2"
 )
+
+(define_expand "copysign<mode>3"
+  [(match_operand:SVE_F 0 "register_operand")
+   (match_operand:SVE_F 1 "register_operand")
+   (match_operand:SVE_F 2 "register_operand")]
+  "TARGET_SVE"
+  {
+    rtx sign = gen_reg_rtx (<V_INT_EQUIV>mode);
+    rtx mant = gen_reg_rtx (<V_INT_EQUIV>mode);
+    rtx int_res = gen_reg_rtx (<V_INT_EQUIV>mode);
+    int bits = GET_MODE_UNIT_BITSIZE (<MODE>mode) - 1;
+
+    rtx arg1 = lowpart_subreg (<V_INT_EQUIV>mode, operands[1], <MODE>mode);
+    rtx arg2 = lowpart_subreg (<V_INT_EQUIV>mode, operands[2], <MODE>mode);
+
+    emit_insn (gen_and<v_int_equiv>3
+	       (sign, arg2,
+		aarch64_simd_gen_const_vector_dup (<V_INT_EQUIV>mode,
+						   HOST_WIDE_INT_M1U
+						   << bits)));
+    emit_insn (gen_and<v_int_equiv>3
+	       (mant, arg1,
+		aarch64_simd_gen_const_vector_dup (<V_INT_EQUIV>mode,
+						   ~(HOST_WIDE_INT_M1U
+						     << bits))));
+    emit_insn (gen_ior<v_int_equiv>3 (int_res, sign, mant));
+    emit_move_insn (operands[0], gen_lowpart (<MODE>mode, int_res));
+    DONE;
+  }
+)
+
+(define_expand "xorsign<mode>3"
+  [(match_operand:SVE_F 0 "register_operand")
+   (match_operand:SVE_F 1 "register_operand")
+   (match_operand:SVE_F 2 "register_operand")]
+  "TARGET_SVE"
+  {
+    rtx sign = gen_reg_rtx (<V_INT_EQUIV>mode);
+    rtx int_res = gen_reg_rtx (<V_INT_EQUIV>mode);
+    int bits = GET_MODE_UNIT_BITSIZE (<MODE>mode) - 1;
+
+    rtx arg1 = lowpart_subreg (<V_INT_EQUIV>mode, operands[1], <MODE>mode);
+    rtx arg2 = lowpart_subreg (<V_INT_EQUIV>mode, operands[2], <MODE>mode);
+
+    emit_insn (gen_and<v_int_equiv>3
+	       (sign, arg2,
+		aarch64_simd_gen_const_vector_dup (<V_INT_EQUIV>mode,
+						   HOST_WIDE_INT_M1U
+						   << bits)));
+    emit_insn (gen_xor<v_int_equiv>3 (int_res, arg1, sign));
+    emit_move_insn (operands[0], gen_lowpart (<MODE>mode, int_res));
+    DONE;
+  }
+)

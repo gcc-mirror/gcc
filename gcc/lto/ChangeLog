@@ -1,3 +1,11 @@
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
+	* lto-partition.c: Mechanically replace "can not" with "cannot".
+	* lto-symtab.c: Likewise.
+	* lto.c: Likewise.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

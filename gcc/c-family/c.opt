@@ -477,8 +477,8 @@ C++ ObjC++ Var(warn_delnonvdtor) Warning LangEnabledBy(C++ ObjC++,Wall || Weffc+
 Warn about deleting polymorphic objects with non-virtual destructors.
 
 Wdeprecated
-C C++ ObjC ObjC++ CPP(cpp_warn_deprecated) CppReason(CPP_W_DEPRECATED) Var(warn_deprecated) Init(1) Warning
-Warn if a deprecated compiler feature, class, method, or field is used.
+C C++ ObjC ObjC++ CPP(cpp_warn_deprecated) CppReason(CPP_W_DEPRECATED)
+; Documented in common.opt
 
 Wdeprecated-copy
 C++ ObjC++ Var(warn_deprecated_copy) Warning LangEnabledBy(C++ ObjC++, Wextra)
@@ -1299,6 +1299,11 @@ C ObjC C++ ObjC++ Joined
 fcanonical-system-headers
 C ObjC C++ ObjC++
 Where shorter, use canonicalized paths to systems headers.
+
+fchar8_t
+C++ ObjC++ Var(flag_char8_t) Init(-1)
+Enable the char8_t fundamental type and use it as the type for UTF-8 string
+and character literals.
 
 fcheck-pointer-bounds
 C ObjC C++ ObjC++ LTO Deprecated

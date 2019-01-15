@@ -122,6 +122,10 @@ struct copy_body_data
   /* True if the location information will need to be reset.  */
   bool reset_location;
 
+  /* Replace error_mark_node as upper bound of array types with
+     an uninitialized VAR_DECL temporary.  */
+  bool adjust_array_error_bounds;
+
   /* A function to be called when duplicating BLOCK nodes.  */
   void (*transform_lang_insert_block) (tree);
 

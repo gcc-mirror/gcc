@@ -1761,7 +1761,7 @@ symtab_node::noninterposable_alias (symtab_node *node, void *data)
   return false;
 }
 
-/* If node can not be overwriten by static or dynamic linker to point to
+/* If node cannot be overwriten by static or dynamic linker to point to
    different definition, return NODE. Otherwise look for alias with such
    property and if none exists, introduce new one.  */
 
@@ -1882,9 +1882,9 @@ symtab_node::get_partitioning_class (void)
     {
       if (alias && definition && !ultimate_alias_target ()->definition)
 	return SYMBOL_EXTERNAL;
-      /* Constant pool references use local symbol names that can not
+      /* Constant pool references use local symbol names that cannot
          be promoted global.  We should never put into a constant pool
-         objects that can not be duplicated across partitions.  */
+         objects that cannot be duplicated across partitions.  */
       if (DECL_IN_CONSTANT_POOL (decl))
 	return SYMBOL_DUPLICATE;
       if (DECL_HARD_REGISTER (decl))
@@ -1923,7 +1923,7 @@ symtab_node::nonzero_address ()
 
 	  if (target->alias && target->weakref)
 	    return false;
-	  /* We can not recurse to target::nonzero.  It is possible that the
+	  /* We cannot recurse to target::nonzero.  It is possible that the
 	     target is used only via the alias.
 	     We may walk references and look for strong use, but we do not know
 	     if this strong use will survive to final binary, so be
@@ -2016,7 +2016,7 @@ symtab_node::equal_address_to (symtab_node *s2, bool memory_accessed)
   bool really_binds_local1 = binds_local1;
   bool really_binds_local2 = binds_local2;
 
-  /* Addresses of vtables and virtual functions can not be used by user
+  /* Addresses of vtables and virtual functions cannot be used by user
      code and are used only within speculation.  In this case we may make
      symbol equivalent to its alias even if interposition may break this
      rule.  Doing so will allow us to turn speculative inlining into
@@ -2042,7 +2042,7 @@ symtab_node::equal_address_to (symtab_node *s2, bool memory_accessed)
       return 1;
     }
 
-  /* If both symbols may resolve to NULL, we can not really prove them
+  /* If both symbols may resolve to NULL, we cannot really prove them
      different.  */
   if (!memory_accessed && !nonzero_address () && !s2->nonzero_address ())
     return -1;
@@ -2056,7 +2056,7 @@ symtab_node::equal_address_to (symtab_node *s2, bool memory_accessed)
     return -1;
 
   /* If we have a non-interposale definition of at least one of the symbols
-     and the other symbol is different, we know other unit can not interpose
+     and the other symbol is different, we know other unit cannot interpose
      it to the first symbol; all aliases of the definition needs to be 
      present in the current unit.  */
   if (((really_binds_local1 || really_binds_local2)
@@ -2147,7 +2147,7 @@ symtab_node::can_increase_alignment_p (void)
   if (TREE_ASM_WRITTEN (target->decl))
     return false;
 
-  /* If target is already placed in an anchor, we can not touch its
+  /* If target is already placed in an anchor, we cannot touch its
      alignment.  */
   if (DECL_RTL_SET_P (target->decl)
       && MEM_P (DECL_RTL (target->decl))
@@ -2342,7 +2342,7 @@ symtab_node::output_to_lto_symbol_table_p (void)
 
  /* Ignore all references from external vars initializers - they are not really
     part of the compilation unit until they are used by folding.  Some symbols,
-    like references to external construction vtables can not be referred to at
+    like references to external construction vtables cannot be referred to at
     all.  We decide this at can_refer_decl_in_current_unit_p.  */
  if (!definition || DECL_EXTERNAL (decl))
     {

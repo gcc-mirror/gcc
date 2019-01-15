@@ -62,6 +62,47 @@ const char s16[] = R"??(??)??";
 const char s17[] = R"?(?)??)?";
 const char s18[] = R"??(??)??)??)??";
 
+const char u800[] = u8R"??=??(??<??>??)??'??!??-\
+(a)#[{}]^|~";
+)??=??";
+const char u801[] = u8R"a(
+)\
+a"
+)a";
+const char u802[] = u8R"a(
+)a\
+"
+)a";
+const char u803[] = u8R"ab(
+)a\
+b"
+)ab";
+const char u804[] = u8R"a??/(x)a??/";
+const char u805[] = u8R"abcdefghijklmn??(abc)abcdefghijklmn??";
+const char u806[] = u8R"abcdefghijklm??/(abc)abcdefghijklm??/";
+const char u807[] = u8R"abc(??)\
+abc";)abc";
+const char u808[] = u8R"def(de)\
+def";)def";
+const char u809[] = u8R"a(??)\
+a"
+)a";
+const char u810[] = u8R"a(??)a\
+"
+)a";
+const char u811[] = u8R"ab(??)a\
+b"
+)ab";
+const char u812[] = u8R"a#(a#)a??=)a#";
+const char u813[] = u8R"a#(??)a??=??)a#";
+const char u814[] = u8R"??/(x)??/
+";)??/";
+const char u815[] = u8R"??/(??)??/
+";)??/";
+const char u816[] = u8R"??(??)??";
+const char u817[] = u8R"?(?)??)?";
+const char u818[] = u8R"??(??)??)??)??";
+
 const char16_t u00[] = uR"??=??(??<??>??)??'??!??-\
 (a)#[{}]^|~";
 )??=??";
@@ -211,6 +252,25 @@ main (void)
   TEST (s16, "??");
   TEST (s17, "?)??");
   TEST (s18, "??"")??"")??");
+  TEST (u800, u8"??""<??"">??"")??""'??""!??""-\\\n(a)#[{}]^|~\";\n");
+  TEST (u801, u8"\n)\\\na\"\n");
+  TEST (u802, u8"\n)a\\\n\"\n");
+  TEST (u803, u8"\n)a\\\nb\"\n");
+  TEST (u804, u8"x");
+  TEST (u805, u8"abc");
+  TEST (u806, u8"abc");
+  TEST (u807, u8"??"")\\\nabc\";");
+  TEST (u808, u8"de)\\\ndef\";");
+  TEST (u809, u8"??"")\\\na\"\n");
+  TEST (u810, u8"??"")a\\\n\"\n");
+  TEST (u811, u8"??"")a\\\nb\"\n");
+  TEST (u812, u8"a#)a??""=");
+  TEST (u813, u8"??"")a??""=??");
+  TEST (u814, u8"x)??""/\n\";");
+  TEST (u815, u8"??"")??""/\n\";");
+  TEST (u816, u8"??");
+  TEST (u817, u8"?)??");
+  TEST (u818, u8"??"")??"")??");
   TEST (u00, u"??""<??"">??"")??""'??""!??""-\\\n(a)#[{}]^|~\";\n");
   TEST (u01, u"\n)\\\na\"\n");
   TEST (u02, u"\n)a\\\n\"\n");

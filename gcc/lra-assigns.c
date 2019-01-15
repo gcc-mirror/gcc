@@ -564,7 +564,7 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
 				    lra_reg_info[conflict_regno].biggest_mode);
 	  /* Remember about multi-register pseudos.  For example, 2
 	     hard register pseudos can start on the same hard register
-	     but can not start on HR and HR+1/HR-1.  */
+	     but cannot start on HR and HR+1/HR-1.  */
 	  for (hr = conflict_hr + 1;
 	       hr < FIRST_PSEUDO_REGISTER && hr < conflict_hr + nregs;
 	       hr++)
@@ -634,7 +634,7 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
 				     PSEUDO_REGNO_MODE (regno), hard_regno)
 	  && targetm.hard_regno_mode_ok (hard_regno,
 					 PSEUDO_REGNO_MODE (regno))
-	  /* We can not use prohibited_class_mode_regs for all classes
+	  /* We cannot use prohibited_class_mode_regs for all classes
 	     because it is not defined for all classes.  */
 	  && (ira_allocno_class_translate[rclass] != rclass
 	      || ! TEST_HARD_REG_BIT (ira_prohibited_class_mode_regs
@@ -785,7 +785,7 @@ lra_setup_reg_renumber (int regno, int hard_regno, bool print_p)
 {
   int i, hr;
 
-  /* We can not just reassign hard register.  */
+  /* We cannot just reassign hard register.  */
   lra_assert (hard_regno < 0 || reg_renumber[regno] < 0);
   if ((hr = hard_regno) < 0)
     hr = reg_renumber[regno];
@@ -1146,12 +1146,12 @@ static void
 setup_live_pseudos_and_spill_after_risky_transforms (bitmap
 						     spilled_pseudo_bitmap)
 {
-  int p, i, j, n, regno, hard_regno;
+  int p, i, j, n, regno, hard_regno, biggest_nregs, nregs_diff;
   unsigned int k, conflict_regno;
   poly_int64 offset;
   int val;
   HARD_REG_SET conflict_set;
-  machine_mode mode;
+  machine_mode mode, biggest_mode;
   lra_live_range_t r;
   bitmap_iterator bi;
   int max_regno = max_reg_num ();
@@ -1166,8 +1166,30 @@ setup_live_pseudos_and_spill_after_risky_transforms (bitmap
   for (n = 0, i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     if ((pic_offset_table_rtx == NULL_RTX
 	 || i != (int) REGNO (pic_offset_table_rtx))
-	&& reg_renumber[i] >= 0 && lra_reg_info[i].nrefs > 0)
-      sorted_pseudos[n++] = i;
+	&& (hard_regno = reg_renumber[i]) >= 0 && lra_reg_info[i].nrefs > 0)
+      {
+	biggest_mode = lra_reg_info[i].biggest_mode;
+	biggest_nregs = hard_regno_nregs (hard_regno, biggest_mode);
+	nregs_diff = (biggest_nregs
+		      - hard_regno_nregs (hard_regno, PSEUDO_REGNO_MODE (i)));
+	enum reg_class rclass = lra_get_allocno_class (i);
+
+	if ((WORDS_BIG_ENDIAN
+	     && (hard_regno - nregs_diff < 0
+		 || !TEST_HARD_REG_BIT (reg_class_contents[rclass],
+					hard_regno - nregs_diff)))
+	    || (!WORDS_BIG_ENDIAN
+		&& (hard_regno + nregs_diff >= FIRST_PSEUDO_REGISTER
+		    || !TEST_HARD_REG_BIT (reg_class_contents[rclass],
+					   hard_regno + nregs_diff))))
+	  {
+	    /* Hard registers of paradoxical sub-registers are out of
+	       range of pseudo register class.  Spill the pseudo.  */
+	    reg_renumber[i] = -1;
+	    continue;
+	  }
+	sorted_pseudos[n++] = i;
+      }
   qsort (sorted_pseudos, n, sizeof (int), pseudo_compare_func);
   if (pic_offset_table_rtx != NULL_RTX
       && (regno = REGNO (pic_offset_table_rtx)) >= FIRST_PSEUDO_REGISTER
@@ -1206,10 +1228,11 @@ setup_live_pseudos_and_spill_after_risky_transforms (bitmap
 	    || hard_regno != reg_renumber[conflict_regno])
 	  {
 	    int conflict_hard_regno = reg_renumber[conflict_regno];
-	    machine_mode biggest_mode = lra_reg_info[conflict_regno].biggest_mode;
-	    int biggest_nregs = hard_regno_nregs (conflict_hard_regno,
-						  biggest_mode);
-	    int nregs_diff
+	    
+	    biggest_mode = lra_reg_info[conflict_regno].biggest_mode;
+	    biggest_nregs = hard_regno_nregs (conflict_hard_regno,
+					      biggest_mode);
+	    nregs_diff
 	      = (biggest_nregs
 		 - hard_regno_nregs (conflict_hard_regno,
 				     PSEUDO_REGNO_MODE (conflict_regno)));
@@ -1434,7 +1457,7 @@ assign_by_spills (void)
 	  fails_p = nfails != 0;
 	  break;
 	}
-      /* This is a very rare event.  We can not assign a hard register
+      /* This is a very rare event.  We cannot assign a hard register
 	 to reload pseudo because the hard register was assigned to
 	 another reload pseudo on a previous assignment pass.  For x86
 	 example, on the 1st pass we assigned CX (although another
@@ -1621,7 +1644,7 @@ lra_assign (bool &fails_p)
        asm is removed and it can result in incorrect allocation.  */
     for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
       if (lra_reg_info[i].nrefs != 0 && reg_renumber[i] >= 0
-	  && lra_reg_info[i].call_p
+	  && lra_reg_info[i].call_insn
 	  && overlaps_hard_reg_set_p (call_used_reg_set,
 				      PSEUDO_REGNO_MODE (i), reg_renumber[i]))
 	gcc_unreachable ();

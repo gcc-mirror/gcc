@@ -494,7 +494,7 @@ fs::filesystem_error::_M_gen_what()
   const std::string pstr2 = _M_path2.u8string();
   experimental::string_view s = this->system_error::what();
   const size_t len = 18 + s.length()
-    + (pstr1.length() ? pstr1.length() + 3 : 0)
+    + (pstr1.length() || pstr2.length() ? pstr1.length() + 3 : 0)
     + (pstr2.length() ? pstr2.length() + 3 : 0);
   std::string w;
   w.reserve(len);
@@ -506,8 +506,10 @@ fs::filesystem_error::_M_gen_what()
       w += pstr1;
       w += ']';
     }
-  if (!pstr1.empty())
+  if (!pstr2.empty())
     {
+      if (pstr1.empty())
+	w += " []";
       w += " [";
       w += pstr2;
       w += ']';

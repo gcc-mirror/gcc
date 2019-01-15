@@ -2828,7 +2828,7 @@ warn_for_address_or_pointer_of_packed_member (bool convert_p, tree type,
 	      location_t location = EXPR_LOC_OR_LOC (rhs, input_location);
 	      warning_at (location, OPT_Waddress_of_packed_member,
 			  "converting a packed %qT pointer (alignment %d) "
-			  "to %qT (alignment %d) may may result in an "
+			  "to %qT (alignment %d) may result in an "
 			  "unaligned pointer value",
 			  rhstype, rhs_align, type, type_align);
 	      tree decl = TYPE_STUB_DECL (TREE_TYPE (rhstype));

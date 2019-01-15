@@ -1,6 +1,6 @@
 /* Testing return address signing where no combined instructions used.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -msign-return-address=all" } */
+/* { dg-options "-O2 -mbranch-protection=pac-ret+leaf" } */
 /* { dg-require-effective-target lp64 } */
 
 int foo (int);

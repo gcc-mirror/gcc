@@ -85,10 +85,10 @@ DEF_GO_RUNTIME(COMPLEX128_DIV, "__go_complex128_div",
 
 // Make a slice.
 DEF_GO_RUNTIME(MAKESLICE, "runtime.makeslice", P3(TYPE, INT, INT),
-	       R1(SLICE))
+	       R1(POINTER))
 
 DEF_GO_RUNTIME(MAKESLICE64, "runtime.makeslice64", P3(TYPE, INT64, INT64),
-	       R1(SLICE))
+	       R1(POINTER))
 
 
 // Make a map with a hint and an (optional, unused) map structure.

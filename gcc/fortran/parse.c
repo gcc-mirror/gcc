@@ -587,10 +587,16 @@ decode_statement (void)
     }
 
   /* All else has failed, so give up.  See if any of the matchers has
-     stored an error message of some sort.  */
-
+     stored an error message of some sort.  Suppress the "Unclassifiable
+     statement" if a previous error message was emitted, e.g., by
+     gfc_error_now ().  */
   if (!gfc_error_check ())
-    gfc_error_now ("Unclassifiable statement at %C");
+    {
+      int ecnt;
+      gfc_get_errors (NULL, &ecnt);
+      if (ecnt <= 0)
+        gfc_error_now ("Unclassifiable statement at %C");
+    }
 
   reject_statement ();
 
@@ -3740,7 +3746,7 @@ loop:
 	  break;
       }
 
-  /* If we find a statement that can not be followed by an IMPLICIT statement
+  /* If we find a statement that cannot be followed by an IMPLICIT statement
      (and thus we can expect to see none any further), type the function result
      if it has not yet been typed.  Be careful not to give the END statement
      to verify_st_order!  */
@@ -4537,7 +4543,7 @@ parse_associate (void)
 	 in case of association to a derived-type.  */
       sym->ts = a->target->ts;
 
-      /* Check if the target expression is array valued.  This can not always
+      /* Check if the target expression is array valued.  This cannot always
 	 be done by looking at target.rank, because that might not have been
 	 set yet.  Therefore traverse the chain of refs, looking for the last
 	 array ref and evaluate that.  */

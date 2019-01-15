@@ -4619,7 +4619,7 @@ gfc_match_inquire (void)
       && ((mpz_get_si (inquire->unit->value.integer) == GFC_INTERNAL_UNIT4)
       || (mpz_get_si (inquire->unit->value.integer) == GFC_INTERNAL_UNIT)))
     {
-      gfc_error ("UNIT number in INQUIRE statement at %L can not "
+      gfc_error ("UNIT number in INQUIRE statement at %L cannot "
 		 "be %d", &loc, (int) mpz_get_si (inquire->unit->value.integer));
       goto cleanup;
     }

@@ -1,5 +1,7 @@
 2019-01-15  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r267946.
+
 	Partition BMI folding, but not entity merging.
 	gcc/cp/
 	* cp-tree.h (get_module_owner): Mark PURE.

@@ -1452,6 +1452,15 @@ gfc_resolve_isatty (gfc_expr *f, gfc_expr *u)
 
 
 void
+gfc_resolve_is_contiguous (gfc_expr *f, gfc_expr *array ATTRIBUTE_UNUSED)
+{
+  f->ts.type = BT_LOGICAL;
+  f->ts.kind = gfc_default_logical_kind;
+  f->value.function.name = gfc_get_string ("__is_contiguous");
+}
+
+
+void
 gfc_resolve_ishft (gfc_expr *f, gfc_expr *i, gfc_expr *shift)
 {
   f->ts = i->ts;

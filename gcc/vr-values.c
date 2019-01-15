@@ -2390,7 +2390,7 @@ vr_values::vrp_evaluate_conditional_warnv_with_ops (enum tree_code code,
 }
 
 /* Given (CODE OP0 OP1) within STMT, try to simplify it based on value range
-   information.  Return NULL if the conditional can not be evaluated.
+   information.  Return NULL if the conditional cannot be evaluated.
    The ranges of all the names equivalent with the operands in COND
    will be used when trying to compute the value.  If the result is
    based on undefined signed overflow, issue a warning if

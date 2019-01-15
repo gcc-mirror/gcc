@@ -523,11 +523,27 @@ remap_type_1 (tree type, copy_body_data *id)
 
       if (TYPE_MAIN_VARIANT (new_tree) != new_tree)
 	{
-	  gcc_checking_assert (TYPE_DOMAIN (type) == TYPE_DOMAIN (TYPE_MAIN_VARIANT (type)));
+	  gcc_checking_assert (TYPE_DOMAIN (type)
+			       == TYPE_DOMAIN (TYPE_MAIN_VARIANT (type)));
 	  TYPE_DOMAIN (new_tree) = TYPE_DOMAIN (TYPE_MAIN_VARIANT (new_tree));
 	}
       else
-	TYPE_DOMAIN (new_tree) = remap_type (TYPE_DOMAIN (new_tree), id);
+        {
+	  TYPE_DOMAIN (new_tree) = remap_type (TYPE_DOMAIN (new_tree), id);
+	  /* For array bounds where we have decided not to copy over the bounds
+	     variable which isn't used in OpenMP/OpenACC region, change them to
+	     an uninitialized VAR_DECL temporary.  */
+	  if (TYPE_MAX_VALUE (TYPE_DOMAIN (new_tree)) == error_mark_node
+	      && id->adjust_array_error_bounds
+	      && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != error_mark_node)
+	    {
+	      tree v = create_tmp_var (TREE_TYPE (TYPE_DOMAIN (new_tree)));
+	      DECL_ATTRIBUTES (v)
+		= tree_cons (get_identifier ("omp dummy var"), NULL_TREE,
+			     DECL_ATTRIBUTES (v));
+	      TYPE_MAX_VALUE (TYPE_DOMAIN (new_tree)) = v;
+	    }
+        }
       break;
 
     case RECORD_TYPE:
@@ -615,7 +631,7 @@ remap_type (tree type, copy_body_data *id)
 static bool
 can_be_nonlocal (tree decl, copy_body_data *id)
 {
-  /* We can not duplicate function decls.  */
+  /* We cannot duplicate function decls.  */
   if (TREE_CODE (decl) == FUNCTION_DECL)
     return true;
 
@@ -2778,7 +2794,7 @@ copy_cfg_body (copy_body_data * id,
 	    && bb->index != ENTRY_BLOCK
 	    && bb->index != EXIT_BLOCK)
 	  maybe_move_debug_stmts_to_successors (id, (basic_block) bb->aux);
-	/* Update call edge destinations.  This can not be done before loop
+	/* Update call edge destinations.  This cannot be done before loop
 	   info is updated, because we may split basic blocks.  */
 	if (id->transform_call_graph_edges == CB_CGE_DUPLICATE
 	    && bb->index != ENTRY_BLOCK
@@ -2796,7 +2812,7 @@ copy_cfg_body (copy_body_data * id,
 	maybe_move_debug_stmts_to_successors (id,
 					      BASIC_BLOCK_FOR_FN (cfun, last));
       BASIC_BLOCK_FOR_FN (cfun, last)->aux = NULL;
-      /* Update call edge destinations.  This can not be done before loop
+      /* Update call edge destinations.  This cannot be done before loop
 	 info is updated, because we may split basic blocks.  */
       if (id->transform_call_graph_edges == CB_CGE_DUPLICATE)
 	redirect_all_calls (id, BASIC_BLOCK_FOR_FN (cfun, last));
@@ -3527,7 +3543,7 @@ copy_forbidden (struct function *fun)
 static const char *inline_forbidden_reason;
 
 /* A callback for walk_gimple_seq to handle statements.  Returns non-null
-   iff a function can not be inlined.  Also sets the reason why. */
+   iff a function cannot be inlined.  Also sets the reason why. */
 
 static tree
 inline_forbidden_p_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,

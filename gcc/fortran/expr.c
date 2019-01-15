@@ -2050,7 +2050,7 @@ scalarize_intrinsic_call (gfc_expr *, bool init_flag);
      1   Simplifying array constructors -- will substitute
 	 iterator values.
    Returns false on error, true otherwise.
-   NOTE: Will return true even if the expression can not be simplified.  */
+   NOTE: Will return true even if the expression cannot be simplified.  */
 
 bool
 gfc_simplify_expr (gfc_expr *p, int type)
@@ -5695,6 +5695,75 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
   return true;
 }
 
+/* Return true if the expression is guaranteed to be non-contiguous,
+   false if we cannot prove anything.  It is probably best to call
+   this after gfc_is_simply_contiguous.  If neither of them returns
+   true, we cannot say (at compile-time).  */
+
+bool
+gfc_is_not_contiguous (gfc_expr *array)
+{
+  int i;
+  gfc_array_ref *ar = NULL;
+  gfc_ref *ref;
+  bool previous_incomplete;
+
+  for (ref = array->ref; ref; ref = ref->next)
+    {
+      /* Array-ref shall be last ref.  */
+
+      if (ar)
+	return true;
+
+      if (ref->type == REF_ARRAY)
+	ar = &ref->u.ar;
+    }
+
+  if (ar == NULL || ar->type != AR_SECTION)
+    return false;
+
+  previous_incomplete = false;
+
+  /* Check if we can prove that the array is not contiguous.  */
+
+  for (i = 0; i < ar->dimen; i++)
+    {
+      mpz_t arr_size, ref_size;
+
+      if (gfc_ref_dimen_size (ar, i, &ref_size, NULL))
+	{
+	  if (gfc_dep_difference (ar->as->lower[i], ar->as->upper[i], &arr_size))
+	    {
+	      /* a(2:4,2:) is known to be non-contiguous, but
+		 a(2:4,i:i) can be contiguous.  */
+	      if (previous_incomplete && mpz_cmp_si (ref_size, 1) != 0)
+		{
+		  mpz_clear (arr_size);
+		  mpz_clear (ref_size);
+		  return true;
+		}
+	      else if (mpz_cmp (arr_size, ref_size) != 0)
+		previous_incomplete = true;
+
+	      mpz_clear (arr_size);
+	    }
+
+	  /* Check for a(::2), i.e. where the stride is not unity.
+	     This is only done if there is more than one element in
+	     the reference along this dimension.  */
+
+	  if (mpz_cmp_ui (ref_size, 1) > 0 && ar->type == AR_SECTION
+	      && ar->dimen_type[i] == DIMEN_RANGE
+	      && ar->stride[i] && ar->stride[i]->expr_type == EXPR_CONSTANT
+	      && mpz_cmp_si (ar->stride[i]->value.integer, 1) != 0)
+	    return true;
+
+	  mpz_clear (ref_size);
+	}
+    }
+  /* We didn't find anything definitive.  */
+  return false;
+}
 
 /* Build call to an intrinsic procedure.  The number of arguments has to be
    passed (rather than ending the list with a NULL value) because we may
@@ -5912,7 +5981,7 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
       if (pointer && is_pointer)
 	{
 	  if (context)
-	    gfc_error ("Variable %qs is PROTECTED and can not appear in a"
+	    gfc_error ("Variable %qs is PROTECTED and cannot appear in a"
 		       " pointer association context (%s) at %L",
 		       sym->name, context, &e->where);
 	  return false;
@@ -5920,7 +5989,7 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
       if (!pointer && !is_pointer)
 	{
 	  if (context)
-	    gfc_error ("Variable %qs is PROTECTED and can not appear in a"
+	    gfc_error ("Variable %qs is PROTECTED and cannot appear in a"
 		       " variable definition context (%s) at %L",
 		       sym->name, context, &e->where);
 	  return false;
@@ -5932,7 +6001,7 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
   if (!pointer && !own_scope && gfc_pure (NULL) && gfc_impure_variable (sym))
     {
       if (context)
-	gfc_error ("Variable %qs can not appear in a variable definition"
+	gfc_error ("Variable %qs cannot appear in a variable definition"
 		   " context (%s) at %L in PURE procedure",
 		   sym->name, context, &e->where);
       return false;
@@ -5991,12 +6060,14 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 	  if (context)
 	    {
 	      if (assoc->target->expr_type == EXPR_VARIABLE)
-		gfc_error ("%qs at %L associated to vector-indexed target can"
-			   " not be used in a variable definition context (%s)",
+		gfc_error ("%qs at %L associated to vector-indexed target"
+			   " cannot be used in a variable definition"
+			   " context (%s)",
 			   name, &e->where, context);
 	      else
-		gfc_error ("%qs at %L associated to expression can"
-			   " not be used in a variable definition context (%s)",
+		gfc_error ("%qs at %L associated to expression"
+			   " cannot be used in a variable definition"
+			   " context (%s)",
 			   name, &e->where, context);
 	    }
 	  return false;
@@ -6006,9 +6077,9 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
       if (!gfc_check_vardef_context (assoc->target, pointer, false, false, NULL))
 	{
 	  if (context)
-	    gfc_error ("Associate-name %qs can not appear in a variable"
+	    gfc_error ("Associate-name %qs cannot appear in a variable"
 		       " definition context (%s) at %L because its target"
-		       " at %L can not, either",
+		       " at %L cannot, either",
 		       name, context, &e->where,
 		       &assoc->target->where);
 	  return false;

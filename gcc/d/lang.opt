@@ -124,7 +124,7 @@ Warn about casts that will produce a null result.
 
 Wdeprecated
 D
-; Documented in C
+; Documented in common.opt
 
 Werror
 D

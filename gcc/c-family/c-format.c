@@ -122,8 +122,8 @@ format_warning_at_char (location_t fmt_string_loc, tree format_string_cst,
    The function returns true if strref points to any string type valid for the 
    language dialect and target.  */
 
-static bool
-valid_stringptr_type_p (tree strref)
+bool
+valid_format_string_type_p (tree strref)
 {
   return (strref != NULL
 	  && TREE_CODE (strref) == POINTER_TYPE
@@ -160,7 +160,7 @@ handle_format_arg_attribute (tree *node, tree atname,
 	return NULL_TREE;
     }
 
-  if (!valid_stringptr_type_p (TREE_TYPE (type)))
+  if (!valid_format_string_type_p (TREE_TYPE (type)))
     {
       if (!(flags & (int) ATTR_FLAG_BUILT_IN))
 	error ("function does not return string type");
@@ -194,7 +194,7 @@ check_format_string (const_tree fntype, unsigned HOST_WIDE_INT format_num,
     }
 
   if (!ref
-      || !valid_stringptr_type_p (ref))
+      || !valid_format_string_type_p (ref))
     {
       if (!(flags & (int) ATTR_FLAG_BUILT_IN))
 	error ("format string argument is not a string type");
@@ -267,13 +267,21 @@ check_format_string (const_tree fntype, unsigned HOST_WIDE_INT format_num,
   gcc_unreachable ();
 }
 
-/* Verify EXPR is a constant, and store its value.
-   If validated_p is true there should be no errors.
+/* Under the control of FLAGS, verify EXPR is a valid constant that
+   refers to a positional argument ARGNO having a string type (char*
+   or, for targets like Darwin, a pointer to struct CFString) to
+   a function type FNTYPE declared with attribute ATNAME.
+   If valid, store the constant's integer value in *VALUE and return
+   the value.
+   If VALIDATED_P is true assert the validation is successful.
    Returns the converted constant value on success, null otherwise.  */
+
 static tree
 get_constant (const_tree fntype, const_tree atname, tree expr, int argno,
 	      unsigned HOST_WIDE_INT *value, int flags, bool validated_p)
 {
+  /* Require the referenced argument to have a string type.  For targets
+     like Darwin, also accept pointers to struct CFString.  */
   if (tree val = positional_argument (fntype, atname, expr, STRING_CST,
 				      argno, flags))
     {

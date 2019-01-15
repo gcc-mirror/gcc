@@ -112,7 +112,7 @@ possible_placement_new (tree type, tree expected_type,
    If the same is produced by multiple inheritance, we end up with A and offset
    sizeof(int). 
 
-   If we can not find corresponding class, give up by setting
+   If we cannot find corresponding class, give up by setting
    THIS->OUTER_TYPE to OTR_TYPE and THIS->OFFSET to NULL. 
    Return true when lookup was sucesful.
 
@@ -146,7 +146,7 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree otr_type,
     derived from OUTER_TYPE.
 
     Because the instance type may contain field whose type is of OUTER_TYPE,
-    we can not derive any effective information about it.
+    we cannot derive any effective information about it.
 
     TODO: In the case we know all derrived types, we can definitely do better
     here.  */
@@ -191,7 +191,7 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree otr_type,
       tree fld;
 
       /* If we do not know size of TYPE, we need to be more conservative
-         about accepting cases where we can not find EXPECTED_TYPE.
+         about accepting cases where we cannot find EXPECTED_TYPE.
 	 Generally the types that do matter here are of constant size.
 	 Size_unknown case should be very rare.  */
       if (TYPE_SIZE (type)
@@ -233,7 +233,7 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree otr_type,
 		  && type_known_to_have_no_derivations_p (outer_type))
 		maybe_derived_type = false;
 
-	      /* Type can not contain itself on an non-zero offset.  In that case
+	      /* Type cannot contain itself on an non-zero offset.  In that case
 		 just give up.  Still accept the case where size is now known.
 		 Either the second copy may appear past the end of type or within
 		 the non-POD buffer located inside the variably sized type
@@ -287,7 +287,7 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree otr_type,
 	      size = tree_to_uhwi (DECL_SIZE (fld));
 
 	      /* We can always skip types smaller than pointer size:
-		 those can not contain a virtual table pointer.
+		 those cannot contain a virtual table pointer.
 
 		 Disqualifying fields that are too small to fit OTR_TYPE
 		 saves work needed to walk them for no benefit.
@@ -552,7 +552,7 @@ decl_maybe_in_construction_p (tree base, tree outer_type,
   if (DECL_STRUCT_FUNCTION (function)->after_inlining)
     return true;
 
-  /* Pure functions can not do any changes on the dynamic type;
+  /* Pure functions cannot do any changes on the dynamic type;
      that require writting to memory.  */
   if ((!base || !auto_var_in_fn_p (base, function))
       && flags_from_decl_or_type (function) & (ECF_PURE | ECF_CONST))
@@ -1745,7 +1745,7 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
      sub-objects and the code written by the user is run.  Only this may
      include calling virtual functions, directly or indirectly.
 
-     4) placement new can not be used to change type of non-POD statically
+     4) placement new cannot be used to change type of non-POD statically
      allocated variables.
 
      There is no way to call a constructor of an ancestor sub-object in any
@@ -2202,8 +2202,8 @@ ipa_polymorphic_call_context::combine_with (ipa_polymorphic_call_context ctx,
 	  updated = true;
 	}
 
-      /* If we do not know how the context is being used, we can
-	 not clear MAYBE_IN_CONSTRUCTION because it may be offseted
+      /* If we do not know how the context is being used, we cannot
+	 clear MAYBE_IN_CONSTRUCTION because it may be offseted
 	 to other component of OUTER_TYPE later and we know nothing
 	 about it.  */
       if (otr_type && maybe_in_construction
@@ -2333,7 +2333,7 @@ ipa_polymorphic_call_context::make_speculative (tree otr_type)
 			    otr_type);
 }
 
-/* Use when we can not track dynamic type change.  This speculatively assume
+/* Use when we cannot track dynamic type change.  This speculatively assume
    type change is not happening.  */
 
 void

@@ -1629,11 +1629,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     //
     // [futures.async]:
     //
-    // — a call to a waiting function on an asynchronous return object that
+    // - a call to a waiting function on an asynchronous return object that
     // shares the shared state created by this async call shall block until
     // the associated thread has completed, as if joined, or else time out.
     //
-    // — the associated thread completion synchronizes with the return from
+    // - the associated thread completion synchronizes with the return from
     // the first function that successfully detects the ready status of the
     // shared state or with the return from the last function that releases
     // the shared state, whichever happens first.

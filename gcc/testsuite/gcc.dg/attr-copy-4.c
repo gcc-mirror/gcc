@@ -1,7 +1,7 @@
 /* PR middle-end/81824 - Warn for missing attributes with function aliases
    Exercise attribute copy for types.
    { dg-do compile }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-O2 -Wall -ftrack-macro-expansion=0" } */
 
 #define Assert(expr)   typedef char AssertExpr[2 * !!(expr) - 1]
 

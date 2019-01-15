@@ -319,8 +319,8 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt, bool temporary)
 	    }
 	  else
 	    {
-	      /* We're going to need to unwind this range.  We can
-		 not use VR as that's a stack object.  We have to allocate
+	      /* We're going to need to unwind this range.  We cannot
+		 use VR as that's a stack object.  We have to allocate
 		 a new range and push the old range onto the stack.  We
 		 also have to be very careful about sharing the underlying
 		 bitmaps.  Ugh.  */

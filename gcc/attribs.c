@@ -1691,6 +1691,8 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
 	     a function global scope, unless declared static.  */
 	  if (current_function_decl != NULL_TREE && !TREE_STATIC (node))
 	    TREE_PUBLIC (node) = 1;
+	  /* Clear TREE_STATIC because DECL_EXTERNAL is set.  */
+	  TREE_STATIC (node) = 0;
 	}
 
       if (*no_add_attrs == false)
@@ -1912,6 +1914,12 @@ decls_mismatched_attributes (tree tmpl, tree decl, tree attrlist,
 
   for (unsigned i = 0; blacklist[i]; ++i)
     {
+      /* Attribute leaf only applies to extern functions.  Avoid mentioning
+	 it when it's missing from a static declaration.  */
+      if (!TREE_PUBLIC (decl)
+	  && !strcmp ("leaf", blacklist[i]))
+	continue;
+
       for (unsigned j = 0; j != 2; ++j)
 	{
 	  if (!has_attribute (tmpls[j], tmpl_attrs[j], blacklist[i]))

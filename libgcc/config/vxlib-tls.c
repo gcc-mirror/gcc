@@ -70,7 +70,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
    The task delete hook is only installed when at least one thread
    has TLS data.  This is a necessary precaution, to allow this module
-   to be unloaded - a module with a hook can not be removed.
+   to be unloaded - a module with a hook cannot be removed.
 
    Since this interface is used to allocate only a small number of
    keys, the table size is small and static, which simplifies the

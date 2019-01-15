@@ -535,9 +535,12 @@ cp_debug_parser (FILE *file, cp_parser *parser)
 			      parser->allow_non_integral_constant_expression_p);
   cp_debug_print_flag (file, "Seen non-constant expression",
 			      parser->non_integral_constant_expression_p);
-  cp_debug_print_flag (file, "Local names and 'this' forbidden in "
-			      "current context",
-			      parser->local_variables_forbidden_p);
+  cp_debug_print_flag (file, "Local names forbidden in current context",
+			      (parser->local_variables_forbidden_p
+			       & LOCAL_VARS_FORBIDDEN));
+  cp_debug_print_flag (file, "'this' forbidden in current context",
+			      (parser->local_variables_forbidden_p
+			       & THIS_FORBIDDEN));
   cp_debug_print_flag (file, "In unbraced linkage specification",
 			      parser->in_unbraced_linkage_specification_p);
   cp_debug_print_flag (file, "Parsing a declarator",
@@ -903,6 +906,7 @@ cp_keyword_starts_decl_specifier_p (enum rid keyword)
     case RID_TYPENAME:
       /* Simple type specifiers.  */
     case RID_CHAR:
+    case RID_CHAR8:
     case RID_CHAR16:
     case RID_CHAR32:
     case RID_WCHAR:
@@ -1601,7 +1605,7 @@ declarator_can_be_parameter_pack (cp_declarator *declarator)
 
   /* Search for a declarator name, or any other declarator that goes
      after the point where the ellipsis could appear in a parameter
-     pack. If we find any of these, then this declarator can not be
+     pack. If we find any of these, then this declarator cannot be
      made into a parameter pack.  */
   bool found = false;
   while (declarator && !found)
@@ -2165,9 +2169,10 @@ static tree cp_parser_init_declarator
    location_t *, tree *);
 static cp_declarator *cp_parser_declarator
   (cp_parser *, cp_parser_declarator_kind, cp_parser_flags, int *, bool *,
-   bool, bool);
+   bool, bool, bool);
 static cp_declarator *cp_parser_direct_declarator
-  (cp_parser *, cp_parser_declarator_kind, cp_parser_flags, int *, bool, bool);
+  (cp_parser *, cp_parser_declarator_kind, cp_parser_flags, int *, bool, bool,
+   bool);
 static enum tree_code cp_parser_ptr_operator
   (cp_parser *, tree *, cp_cv_quals *, tree *);
 static cp_cv_quals cp_parser_cv_qualifier_seq_opt
@@ -3912,7 +3917,7 @@ cp_parser_new (void)
   parser->non_integral_constant_expression_p = false;
 
   /* Local variable names are not forbidden.  */
-  parser->local_variables_forbidden_p = false;
+  parser->local_variables_forbidden_p = 0;
 
   /* We are not processing an `extern "C"' declaration.  */
   parser->in_unbraced_linkage_specification_p = false;
@@ -4192,8 +4197,13 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok,
 	{
 	default:
 	case CPP_STRING:
-	case CPP_UTF8STRING:
 	  TREE_TYPE (value) = char_array_type_node;
+	  break;
+	case CPP_UTF8STRING:
+	  if (flag_char8_t)
+	    TREE_TYPE (value) = char8_array_type_node;
+	  else
+	    TREE_TYPE (value) = char_array_type_node;
 	  break;
 	case CPP_STRING16:
 	  TREE_TYPE (value) = char16_array_type_node;
@@ -5463,7 +5473,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	  /* Recognize the `this' keyword.  */
 	case RID_THIS:
 	  cp_lexer_consume_token (parser->lexer);
-	  if (parser->local_variables_forbidden_p)
+	  if (parser->local_variables_forbidden_p & THIS_FORBIDDEN)
 	    {
 	      error_at (token->location,
 			"%<this%> may not be used in this context");
@@ -5739,14 +5749,14 @@ cp_parser_primary_expression (cp_parser *parser,
 		      template <int N> struct A {
 			int a[B<N>::i];
 		      };
-		     
+
 		   is accepted.  At template-instantiation time, we
 		   will check that B<N>::i is actually a constant.  */
 		return decl;
 	      }
 	    /* Check to see if DECL is a local variable in a context
 	       where that is forbidden.  */
-	    if (parser->local_variables_forbidden_p
+	    if ((parser->local_variables_forbidden_p & LOCAL_VARS_FORBIDDEN)
 		&& local_variable_p (decl))
 	      {
 		error_at (id_expression.get_location (),
@@ -7087,6 +7097,32 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    gcc_unreachable ();
 	  }
 	break;
+      }
+
+    case RID_BUILTIN_CONVERTVECTOR:
+      {
+	tree expression;
+	tree type;
+	/* Consume the `__builtin_convertvector' token.  */
+	cp_lexer_consume_token (parser->lexer);
+	/* Look for the opening `('.  */
+	matching_parens parens;
+	parens.require_open (parser);
+	/* Now, parse the assignment-expression.  */
+	expression = cp_parser_assignment_expression (parser);
+	/* Look for the `,'.  */
+	cp_parser_require (parser, CPP_COMMA, RT_COMMA);
+	location_t type_location
+	  = cp_lexer_peek_token (parser->lexer)->location;
+	/* Parse the type-id.  */
+	{
+	  type_id_in_expr_sentinel s (parser);
+	  type = cp_parser_type_id (parser);
+	}
+	/* Look for the closing `)'.  */
+	parens.require_close (parser);
+	return cp_build_vec_convert (expression, type_location, type,
+				     tf_warning_or_error);
       }
 
     default:
@@ -10960,7 +10996,8 @@ static void
 cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
 {
   bool nested = (current_function_decl != NULL_TREE);
-  bool local_variables_forbidden_p = parser->local_variables_forbidden_p;
+  unsigned char local_variables_forbidden_p
+    = parser->local_variables_forbidden_p;
   bool in_function_body = parser->in_function_body;
 
   /* The body of a lambda-expression is not a subexpression of the enclosing
@@ -10977,7 +11014,7 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
   vec<tree> omp_privatization_save;
   save_omp_privatization_clauses (omp_privatization_save);
   /* Clear this in case we're in the middle of a default argument.  */
-  parser->local_variables_forbidden_p = false;
+  parser->local_variables_forbidden_p = 0;
   parser->in_function_body = true;
 
   {
@@ -12022,7 +12059,8 @@ cp_parser_condition (cp_parser* parser)
 					 /*ctor_dtor_or_conv_p=*/NULL,
 					 /*parenthesized_p=*/NULL,
 					 /*member_p=*/false,
-					 /*friend_p=*/false);
+					 /*friend_p=*/false,
+					 /*static_p=*/false);
       /* Parse the attributes.  */
       attributes = cp_parser_attributes_opt (parser);
       /* Parse the asm-specification.  */
@@ -17230,6 +17268,14 @@ cp_parser_template_argument (cp_parser* parser)
     argument = cp_parser_constant_expression (parser);
   else
     {
+      /* In C++20, we can encounter a braced-init-list.  */
+      if (cxx_dialect >= cxx2a
+	  && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+	{
+	  bool expr_non_constant_p;
+	  return cp_parser_braced_list (parser, &expr_non_constant_p);
+	}
+
       /* With C++17 generalized non-type template arguments we need to handle
 	 lvalue constant expressions, too.  */
       argument = cp_parser_assignment_expression (parser);
@@ -17333,7 +17379,8 @@ cp_parser_explicit_instantiation (cp_parser* parser)
 				/*ctor_dtor_or_conv_p=*/NULL,
 				/*parenthesized_p=*/NULL,
 				/*member_p=*/false,
-				/*friend_p=*/false);
+				/*friend_p=*/false,
+				/*static_p=*/false);
       if (declares_class_or_enum & 2)
 	cp_parser_check_for_definition_in_return_type (declarator,
 						       decl_specifiers.type,
@@ -17698,6 +17745,9 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       if (decl_specs)
 	decl_specs->explicit_char_p = true;
       type = char_type_node;
+      break;
+    case RID_CHAR8:
+      type = char8_type_node;
       break;
     case RID_CHAR16:
       type = char16_type_node;
@@ -20278,7 +20328,7 @@ cp_parser_init_declarator (cp_parser* parser,
     = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 			    flags, &ctor_dtor_or_conv_p,
 			    /*parenthesized_p=*/NULL,
-			    member_p, friend_p);
+			    member_p, friend_p, /*static_p=*/false);
   /* Gather up the deferred checks.  */
   stop_deferring_access_checks ();
 
@@ -20696,7 +20746,9 @@ cp_parser_init_declarator (cp_parser* parser,
 
    MEMBER_P is true iff this declarator is a member-declarator.
 
-   FRIEND_P is true iff this declarator is a friend.  */
+   FRIEND_P is true iff this declarator is a friend.
+
+   STATIC_P is true iff the keyword static was seen.  */
 
 static cp_declarator *
 cp_parser_declarator (cp_parser* parser,
@@ -20704,7 +20756,7 @@ cp_parser_declarator (cp_parser* parser,
 		      cp_parser_flags flags,
 		      int* ctor_dtor_or_conv_p,
 		      bool* parenthesized_p,
-		      bool member_p, bool friend_p)
+		      bool member_p, bool friend_p, bool static_p)
 {
   cp_declarator *declarator;
   enum tree_code code;
@@ -20746,7 +20798,7 @@ cp_parser_declarator (cp_parser* parser,
 					 /*ctor_dtor_or_conv_p=*/NULL,
 					 /*parenthesized_p=*/NULL,
 					 /*member_p=*/false,
-					 friend_p);
+					 friend_p, /*static_p=*/false);
 
       /* If we are parsing an abstract-declarator, we must handle the
 	 case where the dependent declarator is absent.  */
@@ -20765,7 +20817,7 @@ cp_parser_declarator (cp_parser* parser,
 						   CPP_OPEN_PAREN);
       declarator = cp_parser_direct_declarator (parser, dcl_kind,
 						flags, ctor_dtor_or_conv_p,
-						member_p, friend_p);
+						member_p, friend_p, static_p);
     }
 
   if (gnu_attributes && declarator && declarator != cp_error_declarator)
@@ -20801,7 +20853,7 @@ cp_parser_declarator (cp_parser* parser,
    of ambiguity we prefer an abstract declarator, as per
    [dcl.ambig.res].
    The parser flags FLAGS is used to control type-specifier parsing.
-   CTOR_DTOR_OR_CONV_P, MEMBER_P, and FRIEND_P are
+   CTOR_DTOR_OR_CONV_P, MEMBER_P, FRIEND_P, and STATIC_P are
    as for cp_parser_declarator.  */
 
 static cp_declarator *
@@ -20809,7 +20861,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 			     cp_parser_declarator_kind dcl_kind,
 			     cp_parser_flags flags,
 			     int* ctor_dtor_or_conv_p,
-			     bool member_p, bool friend_p)
+			     bool member_p, bool friend_p, bool static_p)
 {
   cp_token *token;
   cp_declarator *declarator = NULL;
@@ -20912,6 +20964,11 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  tree attrs;
 		  bool memfn = (member_p || (pushed_scope
 					     && CLASS_TYPE_P (pushed_scope)));
+		  unsigned char local_variables_forbidden_p
+		    = parser->local_variables_forbidden_p;
+		  /* 'this' is not allowed in static member functions.  */
+		  if (static_p || friend_p)
+		    parser->local_variables_forbidden_p |= THIS_FORBIDDEN;
 
 		  is_declarator = true;
 
@@ -20959,6 +21016,10 @@ cp_parser_direct_declarator (cp_parser* parser,
 		     return type, so are not those of the declared
 		     function.  */
 		  parser->default_arg_ok_p = false;
+
+		  /* Restore the state of local_variables_forbidden_p.  */
+		  parser->local_variables_forbidden_p
+		    = local_variables_forbidden_p;
 		}
 
 	      /* Remove the function parms from scope.  */
@@ -20989,7 +21050,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 		= cp_parser_declarator (parser, dcl_kind, flags,
 					ctor_dtor_or_conv_p,
 					/*parenthesized_p=*/NULL,
-					member_p, friend_p);
+					member_p, friend_p,
+					/*static_p=*/false);
 	      parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
 	      first = false;
 	      /* Expect a `)'.  */
@@ -21883,7 +21945,8 @@ cp_parser_type_id_1 (cp_parser *parser, cp_parser_flags flags,
 			    CP_PARSER_FLAGS_NONE, NULL,
 			    /*parenthesized_p=*/NULL,
 			    /*member_p=*/false,
-			    /*friend_p=*/false);
+			    /*friend_p=*/false,
+			    /*static_p=*/false);
   /* Check to see if there really was a declarator.  */
   if (!cp_parser_parse_definitely (parser))
     abstract_declarator = NULL;
@@ -22468,7 +22531,8 @@ cp_parser_parameter_declaration (cp_parser *parser,
 					 /*ctor_dtor_or_conv_p=*/NULL,
 					 parenthesized_p,
 					 /*member_p=*/false,
-					 /*friend_p=*/false);
+					 /*friend_p=*/false,
+					 /*static_p=*/false);
       parser->default_arg_ok_p = saved_default_arg_ok_p;
       /* After the declarator, allow more attributes.  */
       decl_specifiers.attributes
@@ -22649,7 +22713,7 @@ cp_parser_default_argument (cp_parser *parser, bool template_parm_p)
 {
   tree default_argument = NULL_TREE;
   bool saved_greater_than_is_operator_p;
-  bool saved_local_variables_forbidden_p;
+  unsigned char saved_local_variables_forbidden_p;
   bool non_constant_p, is_direct_init;
 
   /* Make sure that PARSER->GREATER_THAN_IS_OPERATOR_P is
@@ -22659,7 +22723,7 @@ cp_parser_default_argument (cp_parser *parser, bool template_parm_p)
   /* Local variable names (and the `this' keyword) may not
      appear in a default argument.  */
   saved_local_variables_forbidden_p = parser->local_variables_forbidden_p;
-  parser->local_variables_forbidden_p = true;
+  parser->local_variables_forbidden_p = LOCAL_VARS_AND_THIS_FORBIDDEN;
   /* Parse the assignment-expression.  */
   if (template_parm_p)
     push_deferring_access_checks (dk_no_deferred);
@@ -24678,6 +24742,7 @@ cp_parser_member_declaration (cp_parser* parser)
 	      cp_declarator *declarator;
 	      tree asm_specification;
 	      int ctor_dtor_or_conv_p;
+	      bool static_p = (decl_specifiers.storage_class == sc_static);
 
 	      /* Parse the declarator.  */
 	      declarator
@@ -24686,7 +24751,7 @@ cp_parser_member_declaration (cp_parser* parser)
 					&ctor_dtor_or_conv_p,
 					/*parenthesized_p=*/NULL,
 					/*member_p=*/true,
-					friend_p);
+					friend_p, static_p);
 
 	      /* If something went wrong parsing the declarator, make sure
 		 that we at least consume some tokens.  */
@@ -25567,7 +25632,8 @@ cp_parser_exception_declaration (cp_parser* parser)
 				       /*ctor_dtor_or_conv_p=*/NULL,
 				       /*parenthesized_p=*/NULL,
 				       /*member_p=*/false,
-				       /*friend_p=*/false);
+				       /*friend_p=*/false,
+				       /*static_p=*/false);
 
   /* Restore the saved message.  */
   parser->type_definition_forbidden_message = saved_message;
@@ -28807,7 +28873,7 @@ cp_parser_late_parsing_nsdmi (cp_parser *parser, tree field)
 static void
 cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
 {
-  bool saved_local_variables_forbidden_p;
+  unsigned char saved_local_variables_forbidden_p;
   tree parm, parmdecl;
 
   /* While we're parsing the default args, we might (due to the
@@ -28819,7 +28885,7 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
   /* Local variable names (and the `this' keyword) may not appear
      in a default argument.  */
   saved_local_variables_forbidden_p = parser->local_variables_forbidden_p;
-  parser->local_variables_forbidden_p = true;
+  parser->local_variables_forbidden_p = LOCAL_VARS_AND_THIS_FORBIDDEN;
 
   push_defarg_context (fn);
 
@@ -29093,14 +29159,15 @@ cp_parser_set_decl_spec_type (cp_decl_specifier_seq *decl_specs,
 {
   decl_specs->any_specifiers_p = true;
 
-  /* If the user tries to redeclare bool, char16_t, char32_t, or wchar_t
-     (with, for example, in "typedef int wchar_t;") we remember that
+  /* If the user tries to redeclare bool, char8_t, char16_t, char32_t, or
+     wchar_t (with, for example, in "typedef int wchar_t;") we remember that
      this is what happened.  In system headers, we ignore these
      declarations so that G++ can work with system headers that are not
      C++-safe.  */
   if (decl_spec_seq_has_spec_p (decl_specs, ds_typedef)
       && !type_definition_p
       && (type_spec == boolean_type_node
+	  || type_spec == char8_type_node
 	  || type_spec == char16_type_node
 	  || type_spec == char32_type_node
 	  || type_spec == wchar_type_node)
@@ -29898,7 +29965,8 @@ cp_parser_cache_defarg (cp_parser *parser, bool nsdmi)
 					    &ctor_dtor_or_conv_p,
 					    /*parenthesized_p=*/NULL,
 					    /*member_p=*/true,
-					    /*friend_p=*/false);
+					    /*friend_p=*/false,
+					    /*static_p=*/false);
 		      peek = cp_lexer_peek_token (parser->lexer);
 		      if (cp_parser_error_occurred (parser))
 			break;
@@ -31265,7 +31333,8 @@ cp_parser_objc_class_ivars (cp_parser* parser)
 					&ctor_dtor_or_conv_p,
 					/*parenthesized_p=*/NULL,
 					/*member_p=*/false,
-					/*friend_p=*/false);
+					/*friend_p=*/false,
+					/*static_p=*/false);
 	    }
 
 	  /* Look for attributes that apply to the ivar.  */
@@ -31823,7 +31892,7 @@ cp_parser_objc_struct_declaration (cp_parser *parser)
       /* Parse the declarator.  */
       declarator = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 					 CP_PARSER_FLAGS_NONE,
-					 NULL, NULL, false, false);
+					 NULL, NULL, false, false, false);
 
       /* Look for attributes that apply to the ivar.  */
       attributes = cp_parser_attributes_opt (parser);
@@ -36456,7 +36525,8 @@ cp_parser_omp_for_loop_init (cp_parser *parser,
 					 /*ctor_dtor_or_conv_p=*/NULL,
 					 /*parenthesized_p=*/NULL,
 					 /*member_p=*/false,
-					 /*friend_p=*/false);
+					 /*friend_p=*/false,
+					 /*static_p=*/false);
       attributes = cp_parser_attributes_opt (parser);
       asm_specification = cp_parser_asm_specification_opt (parser);
 

@@ -2487,7 +2487,8 @@ The @code{aligned} attribute can also be used for variables and fields
 @item alloc_align (@var{position})
 @cindex @code{alloc_align} function attribute
 The @code{alloc_align} attribute may be applied to a function that
-returns a pointer and takes at least one argument of an integer type.
+returns a pointer and takes at least one argument of an integer or
+enumerated type.
 It indicates that the returned pointer is aligned on a boundary given
 by the function argument at @var{position}.  Meaningful alignments are
 powers of 2 greater than one.  GCC uses this information to improve
@@ -2511,7 +2512,8 @@ given by parameter 1.
 @itemx alloc_size (@var{position-1}, @var{position-2})
 @cindex @code{alloc_size} function attribute
 The @code{alloc_size} attribute may be applied to a function that
-returns a pointer and takes at least one argument of an integer type.
+returns a pointer and takes at least one argument of an integer or
+enumerated type.
 It indicates that the returned pointer points to memory whose size is
 given by the function argument at @var{position-1}, or by the product
 of the arguments at @var{position-1} and @var{position-2}.  Meaningful
@@ -9439,6 +9441,15 @@ When the compiler selects which registers to use to represent input and output
 operands, it does not use any of the clobbered registers. As a result, 
 clobbered registers are available for any use in the assembler code.
 
+Another restriction is that the clobber list should not contain the
+stack pointer register.  This is because the compiler requires the
+value of the stack pointer to be the same after an @code{asm}
+statement as it was on entry to the statement.  However, previous
+versions of GCC did not enforce this rule and allowed the stack
+pointer to appear in the list, with unclear semantics.  This behavior
+is deprecated and listing the stack pointer may become an error in
+future versions of GCC@.
+
 Here is a realistic example for the VAX showing the use of clobbered 
 registers: 
 
@@ -10052,7 +10063,7 @@ register.
 
 @subsubheading Declaring the variable
 
-Global register variables can not have initial values, because an
+Global register variables cannot have initial values, because an
 executable file has no means to supply initial contents for a register.
 
 When selecting a register, choose one that is normally saved and 
@@ -10593,6 +10604,33 @@ to and from other datatypes of the same size).
 
 You cannot operate between vectors of different lengths or different
 signedness without a cast.
+
+@findex __builtin_convertvector
+Vector conversion is available using the
+@code{__builtin_convertvector (vec, vectype)}
+function.  @var{vec} must be an expression with integral or floating
+vector type and @var{vectype} an integral or floating vector type with the
+same number of elements.  The result has @var{vectype} type and value of
+a C cast of every element of @var{vec} to the element type of @var{vectype}.
+
+Consider the following example,
+@smallexample
+typedef int v4si __attribute__ ((vector_size (16)));
+typedef float v4sf __attribute__ ((vector_size (16)));
+typedef double v4df __attribute__ ((vector_size (32)));
+typedef unsigned long long v4di __attribute__ ((vector_size (32)));
+
+v4si a = @{1,-2,3,-4@};
+v4sf b = @{1.5f,-2.5f,3.f,7.f@};
+v4di c = @{1ULL,5ULL,0ULL,10ULL@};
+v4sf d = __builtin_convertvector (a, v4sf); /* d is @{1.f,-2.f,3.f,-4.f@} */
+/* Equivalent of:
+   v4sf d = @{ (float)a[0], (float)a[1], (float)a[2], (float)a[3] @}; */
+v4df e = __builtin_convertvector (a, v4df); /* e is @{1.,-2.,3.,-4.@} */
+v4df f = __builtin_convertvector (b, v4df); /* f is @{1.5,-2.5,3.,7.@} */
+v4si g = __builtin_convertvector (f, v4si); /* g is @{1,-2,3,7@} */
+v4si h = __builtin_convertvector (c, v4si); /* h is @{1,5,0,10@} */
+@end smallexample
 
 @node Offsetof
 @section Support for @code{offsetof}
@@ -22368,10 +22406,14 @@ bit-fields.  See the Solaris man page for @code{cmn_err} for more information.
 @node Darwin Format Checks
 @subsection Darwin Format Checks
 
-Darwin targets support the @code{CFString} (or @code{__CFString__}) in the format
-attribute context.  Declarations made with such attribution are parsed for correct syntax
-and format argument types.  However, parsing of the format string itself is currently undefined
-and is not carried out by this version of the compiler.
+In addition to the full set of format archetypes (attribute format style
+arguments such as @code{printf}, @code{scanf}, @code{strftime}, and
+@code{strfmon}), Darwin targets also support the @code{CFString} (or
+@code{__CFString__}) archetype in the @code{format} attribute.
+Declarations with this archetype are parsed for correct syntax
+and argument types.  However, parsing of the format string itself and
+validating arguments against it in calls to such functions is currently
+not performed.
 
 Additionally, @code{CFStringRefs} (defined by the @code{CoreFoundation} headers) may
 also be used as format arguments.  Note that the relevant headers are only likely to be

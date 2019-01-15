@@ -232,7 +232,7 @@ assign_spill_hard_regs (int *pseudo_regnos, int n)
   basic_block bb;
   HARD_REG_SET conflict_hard_regs;
   bitmap setjump_crosses = regstat_get_setjmp_crosses ();
-  /* Hard registers which can not be used for any purpose at given
+  /* Hard registers which cannot be used for any purpose at given
      program point because they are unallocatable or already allocated
      for other pseudos.	 */
   HARD_REG_SET *reserved_hard_regs;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1908,8 +1908,8 @@ package body Sem_Ch4 is
          while Present (Op_Id) loop
             if Ekind (Op_Id) = E_Operator then
 
-               --  Do not consider operators declared in dead code, they can
-               --  not be part of the resolution.
+               --  Do not consider operators declared in dead code, they
+               --  cannot be part of the resolution.
 
                if Is_Eliminated (Op_Id) then
                   null;

@@ -239,7 +239,7 @@ is_improper (symtab_node *n, void *v ATTRIBUTE_UNUSED)
   if (TREE_READONLY (t))
     return true;
 
-  /* We can not track variables with address taken.  */
+  /* We cannot track variables with address taken.  */
   if (TREE_ADDRESSABLE (t))
     return true;
 
@@ -641,7 +641,7 @@ get_read_write_all_from_node (struct cgraph_node *node,
 {
   struct cgraph_edge *e, *ie;
 
-  /* When function is overwritable, we can not assume anything.  */
+  /* When function is overwritable, we cannot assume anything.  */
   if (node->get_availability () <= AVAIL_INTERPOSABLE
       || (node->analyzed && !opt_for_fn (node->decl, flag_ipa_reference)))
     read_write_all_from_decl (node, read_all, write_all);

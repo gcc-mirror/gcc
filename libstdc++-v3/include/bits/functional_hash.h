@@ -254,6 +254,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(long double __val) const noexcept;
     };
 
+#if __cplusplus >= 201703L
+  template<>
+    struct hash<nullptr_t> : public __hash_base<size_t, nullptr_t>
+    {
+      size_t
+      operator()(nullptr_t) const noexcept
+      { return 0; }
+    };
+#endif
+
   // @} group hashes
 
   // Hint about performance of hash functor. If not fast the hash-based

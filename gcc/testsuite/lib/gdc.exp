@@ -192,6 +192,8 @@ proc gdc_init { args } {
     global GDC_UNDER_TEST
     global TESTING_IN_BUILD_TREE
     global TEST_ALWAYS_FLAGS
+    global gcc_warning_prefix
+    global gcc_error_prefix
 
     # We set LC_ALL and LANG to C so that we get the same error messages as expected.
     setenv LC_ALL C
@@ -249,6 +251,9 @@ proc gdc_init { args } {
     }
 
     verbose -log "ALWAYS_DFLAGS set to $ALWAYS_DFLAGS"
+
+    set gcc_warning_prefix "warning:"
+    set gcc_error_prefix "(fatal )?error:"
 
     verbose "gdc is initialized" 3
 }

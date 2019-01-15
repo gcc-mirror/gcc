@@ -2967,7 +2967,7 @@ split_all_insns (void)
 
 	     If that happens and INSN was the last reference to the
 	     given EH region, then the EH region will become unreachable.
-	     We can not leave the unreachable blocks in the CFG as that
+	     We cannot leave the unreachable blocks in the CFG as that
 	     will trigger a checking failure.
 
 	     So track if INSN has a REG_EH_REGION note.  If so and we

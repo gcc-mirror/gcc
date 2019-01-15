@@ -48,7 +48,7 @@ namespace experimental
 {
 inline namespace fundamentals_v1
 {
-// See C++14 §19.5, System error support
+// See C++14 19.5, System error support
 template <typename _Tp>
   constexpr bool is_error_code_enum_v = is_error_code_enum<_Tp>::value;
 template <typename _Tp>

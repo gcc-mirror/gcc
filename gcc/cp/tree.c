@@ -4452,8 +4452,9 @@ handle_nodiscard_attribute (tree *node, tree name, tree /*args*/,
   if (TREE_CODE (*node) == FUNCTION_DECL)
     {
       if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (*node))))
-	warning (OPT_Wattributes, "%qE attribute applied to %qD with void "
-		 "return type", name, *node);
+	warning_at (DECL_SOURCE_LOCATION (*node),
+		    OPT_Wattributes, "%qE attribute applied to %qD with void "
+		    "return type", name, *node);
     }
   else if (OVERLOAD_TYPE_P (*node))
     /* OK */;
@@ -5101,6 +5102,7 @@ char_type_p (tree type)
   return (same_type_p (type, char_type_node)
 	  || same_type_p (type, unsigned_char_type_node)
 	  || same_type_p (type, signed_char_type_node)
+	  || same_type_p (type, char8_type_node)
 	  || same_type_p (type, char16_type_node)
 	  || same_type_p (type, char32_type_node)
 	  || same_type_p (type, wchar_type_node));

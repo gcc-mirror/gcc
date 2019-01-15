@@ -2197,7 +2197,8 @@ rs6000_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 /* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  */
 
 static bool
-rs6000_hard_regno_call_part_clobbered (unsigned int regno, machine_mode mode)
+rs6000_hard_regno_call_part_clobbered (rtx_insn *insn ATTRIBUTE_UNUSED,
+				       unsigned int regno, machine_mode mode)
 {
   if (TARGET_32BIT
       && TARGET_POWERPC64
@@ -8118,7 +8119,7 @@ legitimate_lo_sum_address_p (machine_mode mode, rtx x, int strict)
 	 recognizes some LO_SUM addresses as valid although this
 	 function says opposite.  In most cases, LRA through different
 	 transformations can generate correct code for address reloads.
-	 It can not manage only some LO_SUM cases.  So we need to add
+	 It cannot manage only some LO_SUM cases.  So we need to add
 	 code analogous to one in rs6000_legitimize_reload_address for
 	 LOW_SUM here saying that some addresses are still valid.  */
       large_toc_ok = (lra_in_progress && TARGET_CMODEL != CMODEL_SMALL
@@ -8388,14 +8389,17 @@ rs6000_delegitimize_address (rtx orig_x)
 {
   rtx x, y, offset;
 
+  if (GET_CODE (orig_x) == UNSPEC && XINT (orig_x, 1) == UNSPEC_FUSION_GPR)
+    orig_x = XVECEXP (orig_x, 0, 0);
+
   orig_x = delegitimize_mem_from_attrs (orig_x);
+
   x = orig_x;
   if (MEM_P (x))
     x = XEXP (x, 0);
 
   y = x;
-  if (TARGET_CMODEL != CMODEL_SMALL
-      && GET_CODE (y) == LO_SUM)
+  if (TARGET_CMODEL != CMODEL_SMALL && GET_CODE (y) == LO_SUM)
     y = XEXP (y, 1);
 
   offset = NULL_RTX;
@@ -8407,8 +8411,7 @@ rs6000_delegitimize_address (rtx orig_x)
       y = XEXP (y, 0);
     }
 
-  if (GET_CODE (y) == UNSPEC
-      && XINT (y, 1) == UNSPEC_TOCREL)
+  if (GET_CODE (y) == UNSPEC && XINT (y, 1) == UNSPEC_TOCREL)
     {
       y = XVECEXP (y, 0, 0);
 
@@ -8435,8 +8438,7 @@ rs6000_delegitimize_address (rtx orig_x)
       && GET_CODE (XEXP (orig_x, 1)) == CONST)
     {
       y = XEXP (XEXP (orig_x, 1), 0);
-      if (GET_CODE (y) == UNSPEC
-	  && XINT (y, 1) == UNSPEC_MACHOPIC_OFFSET)
+      if (GET_CODE (y) == UNSPEC && XINT (y, 1) == UNSPEC_MACHOPIC_OFFSET)
 	return XVECEXP (y, 0, 0);
     }
 
@@ -28982,7 +28984,7 @@ rs6000_output_function_epilogue (FILE *file)
 	 length fields that follow.  However, if you omit the optional
 	 fields, the assembler outputs zeros for all optional fields
 	 anyways, giving each variable length field is minimum length
-	 (as defined in sys/debug.h).  Thus we can not use the .tbtab
+	 (as defined in sys/debug.h).  Thus we cannot use the .tbtab
 	 pseudo-op at all.  */
 
       /* An all-zero word flags the start of the tbtab, for debuggers

@@ -419,7 +419,7 @@ add_deps_for_risky_insns (rtx_insn *head, rtx_insn *tail)
 	    case PRISKY_CANDIDATE:
 	      /* ??? We could implement better checking PRISKY_CANDIDATEs
 		 analogous to sched-rgn.c.  */
-	      /* We can not change the mode of the backward
+	      /* We cannot change the mode of the backward
 		 dependency because REG_DEP_ANTI has the lowest
 		 rank.  */
 	      if (! sched_insns_conditions_mutex_p (insn, prev))

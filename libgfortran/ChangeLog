@@ -1,3 +1,81 @@
+2019-01-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/88776
+	* io/open.c (newunit): Free format buffer if the unit specified is for
+	stdin, stdout, or stderr. 
+
+2019-01-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/88776
+	* io/list_read.c (namelist_read): Use nml_err_ret path on read error
+	not based on stdin_unit.
+
+2019-01-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	* ISO_Fortran_binding.h : New file.
+	* Makefile.am : Include ISO_Fortran_binding.c in the list of
+	files to compile.
+	* Makefile.in : Regenerated.
+	* gfortran.map : Add _gfortran_cfi_desc_to_gfc_desc,
+	_gfortran_gfc_desc_to_cfi_desc and the CFI API functions.
+	* runtime/ISO_Fortran_binding.c : New file containing the new
+	functions added to the map.
+
+2019-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/88807
+	* m4/minloc0.m4: Reindent to avoid -Wmisleading-indentation warnings.
+	* generated/minloc0_4_i1.c: Regenerated.
+	* generated/minloc0_4_i2.c: Regenerated.
+	* generated/minloc0_4_i4.c: Regenerated.
+	* generated/minloc0_4_i8.c: Regenerated.
+	* generated/minloc0_4_i16.c: Regenerated.
+	* generated/minloc0_4_r4.c: Regenerated.
+	* generated/minloc0_4_r8.c: Regenerated.
+	* generated/minloc0_4_r10.c: Regenerated.
+	* generated/minloc0_4_r16.c: Regenerated.
+	* generated/minloc0_8_i1.c: Regenerated.
+	* generated/minloc0_8_i2.c: Regenerated.
+	* generated/minloc0_8_i4.c: Regenerated.
+	* generated/minloc0_8_i8.c: Regenerated.
+	* generated/minloc0_8_i16.c: Regenerated.
+	* generated/minloc0_8_r4.c: Regenerated.
+	* generated/minloc0_8_r8.c: Regenerated.
+	* generated/minloc0_8_r10.c: Regenerated.
+	* generated/minloc0_8_r16.c: Regenerated.
+	* generated/minloc0_16_i1.c: Regenerated.
+	* generated/minloc0_16_i2.c: Regenerated.
+	* generated/minloc0_16_i4.c: Regenerated.
+	* generated/minloc0_16_i8.c: Regenerated.
+	* generated/minloc0_16_i16.c: Regenerated.
+	* generated/minloc0_16_r4.c: Regenerated.
+	* generated/minloc0_16_r8.c: Regenerated.
+	* generated/minloc0_16_r10.c: Regenerated.
+	* generated/minloc0_16_r16.c: Regenerated.
+
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
+	* caf/single.c: Mechanically replace "can not" with "cannot".
+	* io/unit.c: Likewise.
+
+2019-01-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	    Harald Anlauf <anlauf@gmx.de>
+	    Tobias Burnus <burnus@gcc.gnu.org>
+
+	PR fortran/45424
+	* Makefile.am: Add intrinsics/is_contiguous.c.
+	* Makefile.in: Regenerated.
+	* gfortran.map: Add _gfortran_is_contiguous0.
+	* intrinsics/is_contiguous.c: New file.
+	* libgfortran.h: Add prototype for is_contiguous0.
+
+2019-01-07  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* gfortran.map (GFORTRAN_9): Make GFORTRAN_9 node depend on
+	GFORTRAN_8.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

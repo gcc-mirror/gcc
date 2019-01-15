@@ -1,6 +1,5 @@
-// { dg-options "-std=gnu++17 -lstdc++fs" }
+// { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
-// { dg-require-filesystem-ts "" }
 
 // Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
@@ -59,9 +58,18 @@ test02()
   }
 }
 
+void
+test03()
+{
+  path p = "a/";
+  p += path("/b");
+  compare_paths(p, "a//b");
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }

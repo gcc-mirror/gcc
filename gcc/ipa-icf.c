@@ -368,7 +368,7 @@ sem_item::compare_referenced_symbol_properties (symtab_node *used_by,
 	  && (!used_by || !is_a <cgraph_node *> (used_by) || address
 	      || opt_for_fn (used_by->decl, flag_devirtualize)))
 	return return_false_with_msg
-		 ("references to virtual tables can not be merged");
+		 ("references to virtual tables cannot be merged");
 
       if (address && DECL_ALIGN (n1->decl) != DECL_ALIGN (n2->decl))
 	return return_false_with_msg ("alignment mismatch");
@@ -1083,23 +1083,23 @@ sem_function::merge (sem_item *alias_item)
   if (original->can_be_discarded_p ())
     original_discardable = true;
   /* Also consider case where we have resolution info and we know that
-     original's definition is not going to be used.  In this case we can not
+     original's definition is not going to be used.  In this case we cannot
      create alias to original.  */
   if (node->resolution != LDPR_UNKNOWN
       && !decl_binds_to_current_def_p (node->decl))
     original_discardable = original_discarded = true;
 
   /* Creating a symtab alias is the optimal way to merge.
-     It however can not be used in the following cases:
+     It however cannot be used in the following cases:
 
      1) if ORIGINAL and ALIAS may be possibly compared for address equality.
      2) if ORIGINAL is in a section that may be discarded by linker or if
-	it is an external functions where we can not create an alias
+	it is an external functions where we cannot create an alias
 	(ORIGINAL_DISCARDABLE)
      3) if target do not support symbol aliases.
      4) original and alias lie in different comdat groups.
 
-     If we can not produce alias, we will turn ALIAS into WRAPPER of ORIGINAL
+     If we cannot produce alias, we will turn ALIAS into WRAPPER of ORIGINAL
      and/or redirect all callers from ALIAS to ORIGINAL.  */
   if ((original_address_matters && alias_address_matters)
       || (original_discardable
@@ -1149,7 +1149,7 @@ sem_function::merge (sem_item *alias_item)
 	{
 	  if (dump_file)
 	    fprintf (dump_file,
-		     "can not create wrapper of stdarg function.\n");
+		     "cannot create wrapper of stdarg function.\n");
 	}
       else if (ipa_fn_summaries
 	       && ipa_fn_summaries->get (alias) != NULL
@@ -1160,8 +1160,8 @@ sem_function::merge (sem_item *alias_item)
 		     "profitable (function is too small).\n");
 	}
       /* If user paid attention to mark function noinline, assume it is
-	 somewhat special and do not try to turn it into a wrapper that can
-	 not be undone by inliner.  */
+	 somewhat special and do not try to turn it into a wrapper that
+	 cannot be undone by inliner.  */
       else if (lookup_attribute ("noinline", DECL_ATTRIBUTES (alias->decl)))
 	{
 	  if (dump_file)
@@ -1184,7 +1184,7 @@ sem_function::merge (sem_item *alias_item)
       if (!redirect_callers && !create_wrapper)
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "Not unifying; can not redirect callers nor "
+	    fprintf (dump_file, "Not unifying; cannot redirect callers nor "
 		     "produce wrapper\n\n");
 	  return false;
 	}
@@ -1193,7 +1193,7 @@ sem_function::merge (sem_item *alias_item)
 	 If ORIGINAL is interposable, we need to call a local alias.
 	 Also produce local alias (if possible) as an optimization.
 
-	 Local aliases can not be created inside comdat groups because that
+	 Local aliases cannot be created inside comdat groups because that
 	 prevents inlining.  */
       if (!original_discardable && !original->get_comdat_group ())
 	{
@@ -1203,12 +1203,12 @@ sem_function::merge (sem_item *alias_item)
 	      && original->get_availability () > AVAIL_INTERPOSABLE)
 	    local_original = original;
 	}
-      /* If we can not use local alias, fallback to the original
+      /* If we cannot use local alias, fallback to the original
 	 when possible.  */
       else if (original->get_availability () > AVAIL_INTERPOSABLE)
 	local_original = original;
 
-      /* If original is COMDAT local, we can not really redirect calls outside
+      /* If original is COMDAT local, we cannot really redirect calls outside
 	 of its comdat group to it.  */
       if (original->comdat_local_p ())
         redirect_callers = false;
@@ -1216,7 +1216,7 @@ sem_function::merge (sem_item *alias_item)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "Not unifying; "
-		     "can not produce local alias.\n\n");
+		     "cannot produce local alias.\n\n");
 	  return false;
 	}
 
@@ -1224,7 +1224,7 @@ sem_function::merge (sem_item *alias_item)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "Not unifying; "
-		     "can not redirect callers nor produce a wrapper\n\n");
+		     "cannot redirect callers nor produce a wrapper\n\n");
 	  return false;
 	}
       if (!create_wrapper
@@ -1233,7 +1233,7 @@ sem_function::merge (sem_item *alias_item)
 	  && !alias->can_remove_if_no_direct_calls_p ())
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "Not unifying; can not make wrapper and "
+	    fprintf (dump_file, "Not unifying; cannot make wrapper and "
 		     "function has other uses than direct calls\n\n");
 	  return false;
 	}
@@ -2124,7 +2124,7 @@ sem_variable::merge (sem_item *alias_item)
   /* See if original is in a section that can be discarded if the main
      symbol is not used.
      Also consider case where we have resolution info and we know that
-     original's definition is not going to be used.  In this case we can not
+     original's definition is not going to be used.  In this case we cannot
      create alias to original.  */
   if (original->can_be_discarded_p ()
       || (node->resolution != LDPR_UNKNOWN
@@ -2160,7 +2160,7 @@ sem_variable::merge (sem_item *alias_item)
       return false;
     }
 
-  /* We can not merge if address comparsion metters.  */
+  /* We cannot merge if address comparsion metters.  */
   if (alias_address_matters && flag_merge_constants < 2)
     {
       if (dump_file)

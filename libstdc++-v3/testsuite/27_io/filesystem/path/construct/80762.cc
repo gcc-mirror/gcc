@@ -17,7 +17,6 @@
 
 // { dg-options "-std=gnu++17" }
 // { dg-do compile { target c++17 } }
-// { dg-require-filesystem-ts "" }
 
 #include <filesystem>
 

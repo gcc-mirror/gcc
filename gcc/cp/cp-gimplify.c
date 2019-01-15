@@ -2124,6 +2124,8 @@ cp_fold_maybe_rvalue (tree x, bool rval)
   while (true)
     {
       x = cp_fold (x);
+      if (rval)
+	x = mark_rvalue_use (x);
       if (rval && DECL_P (x)
 	  && !TYPE_REF_P (TREE_TYPE (x)))
 	{

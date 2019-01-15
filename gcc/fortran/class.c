@@ -630,7 +630,7 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 		   || attr->select_type_temporary || attr->associate_var;
 
   if (!attr->class_ok)
-    /* We can not build the class container yet.  */
+    /* We cannot build the class container yet.  */
     return true;
 
   /* Determine the name of the encapsulating type.  */
@@ -2466,6 +2466,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		goto cleanup;
 	      c->attr.proc_pointer = 1;
 	      c->attr.access = ACCESS_PRIVATE;
+	      c->attr.artificial = 1;
 	      c->tb = XCNEW (gfc_typebound_proc);
 	      c->tb->ppc = 1;
 	      generate_finalization_wrapper (derived, ns, tname, c);
@@ -2762,9 +2763,9 @@ find_intrinsic_vtab (gfc_typespec *ts)
 	      /* This is elemental so that arrays are automatically
 		 treated correctly by the scalarizer.  */
 	      copy->attr.elemental = 1;
-	      if (ns->proc_name->attr.flavor == FL_MODULE)
+	      if (ns->proc_name && ns->proc_name->attr.flavor == FL_MODULE)
 		copy->module = ns->proc_name->name;
-		  gfc_set_sym_referenced (copy);
+	      gfc_set_sym_referenced (copy);
 	      /* Set up formal arguments.  */
 	      gfc_get_symbol ("src", sub_ns, &src);
 	      src->ts.type = ts->type;
@@ -2798,6 +2799,7 @@ find_intrinsic_vtab (gfc_typespec *ts)
 		goto cleanup;
 	      c->attr.proc_pointer = 1;
 	      c->attr.access = ACCESS_PRIVATE;
+	      c->attr.artificial = 1;
 	      c->tb = XCNEW (gfc_typebound_proc);
 	      c->tb->ppc = 1;
 	      c->initializer = gfc_get_null_expr (NULL);
@@ -2844,7 +2846,10 @@ gfc_find_vtab (gfc_typespec *ts)
     case BT_DERIVED:
       return gfc_find_derived_vtab (ts->u.derived);
     case BT_CLASS:
-      return gfc_find_derived_vtab (ts->u.derived->components->ts.u.derived);
+      if (ts->u.derived->components && ts->u.derived->components->ts.u.derived)
+	return gfc_find_derived_vtab (ts->u.derived->components->ts.u.derived);
+      else
+	return NULL;
     default:
       return find_intrinsic_vtab (ts);
     }

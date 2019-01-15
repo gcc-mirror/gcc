@@ -1,3 +1,17 @@
+2019-01-09  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/86343
+	* go-gcc.cc (Gcc_backend::set_placeholder_struct_type): Go back to
+	build_distinct_type_copy, but copy the fields so that they have
+	the right DECL_CONTEXT.
+
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
+	* go-backend.c: Mechanically replace "can not" with "cannot".
+	* go-gcc.cc: Likewise.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

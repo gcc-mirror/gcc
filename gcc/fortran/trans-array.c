@@ -293,6 +293,22 @@ gfc_conv_descriptor_rank (tree desc)
 
 
 tree
+gfc_conv_descriptor_attribute (tree desc)
+{
+  tree tmp;
+  tree dtype;
+
+  dtype = gfc_conv_descriptor_dtype (desc);
+  tmp = gfc_advance_chain (TYPE_FIELDS (TREE_TYPE (dtype)),
+			   GFC_DTYPE_ATTRIBUTE);
+  gcc_assert (tmp!= NULL_TREE
+	      && TREE_TYPE (tmp) == short_integer_type_node);
+  return fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (tmp),
+			  dtype, tmp, NULL_TREE);
+}
+
+
+tree
 gfc_get_descriptor_dimension (tree desc)
 {
   tree type, field;
@@ -6767,7 +6783,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
 
 
 /* Calculate the overall offset, including subreferences.  */
-static void
+void
 gfc_get_dataptr_offset (stmtblock_t *block, tree parm, tree desc, tree offset,
 			bool subref, gfc_expr *expr)
 {
@@ -7740,7 +7756,6 @@ array_parameter_size (tree desc, gfc_expr *expr, tree *size)
 }
 
 /* Convert an array for passing as an actual parameter.  */
-/* TODO: Optimize passing g77 arrays.  */
 
 void
 gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
@@ -7865,6 +7880,26 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 	     gfc_is_simply_contiguous (expr, false, true));
 
   no_pack = contiguous && no_pack;
+
+  /* If we have an EXPR_OP or a function returning an explicit-shaped
+     or allocatable array, an array temporary will be generated which
+     does not need to be packed / unpacked if passed to an
+     explicit-shape dummy array.  */
+
+  if (g77)
+    {
+      if (expr->expr_type == EXPR_OP)
+	no_pack = 1;
+      else if (expr->expr_type == EXPR_FUNCTION && expr->value.function.esym)
+	{
+	  gfc_symbol *result = expr->value.function.esym->result;
+	  if (result->attr.dimension
+	      && (result->as->type == AS_EXPLICIT
+		  || result->attr.allocatable
+		  || result->attr.contiguous))
+	    no_pack = 1;
+	}
+    }
 
   /* Array constructors are always contiguous and do not need packing.  */
   array_constructor = g77 && !this_array_result && expr->expr_type == EXPR_ARRAY;
@@ -9078,7 +9113,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 				     TREE_TYPE (len), len, tmp);
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	      size = size_of_string_in_bytes (c->ts.kind, len);
-	      /* This component can not have allocatable components,
+	      /* This component cannot have allocatable components,
 		 therefore add_when_allocated of duplicate_allocatable ()
 		 is always NULL.  */
 	      tmp = duplicate_allocatable (dcmp, comp, ctype, rank,

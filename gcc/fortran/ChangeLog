@@ -1,3 +1,172 @@
+2019-01-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Deal with exprs
+	that are indirect references; ie. dummy arguments.
+
+2019-01-13  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR fortran/88803
+	* gfortran.texi: Replace @xref with @ref and adjust the sentence.
+
+2019-01-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/57992
+	* trans-array.c (gfc_conv_array_parameter):  Do not pack/unpack
+	functions with contiguous results.
+
+2019-01-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/59345
+	* trans-array.c (gfc_conv_array_parameter): Remove TODO.  Do not
+	pack/unpack results of functions which return an explicit-shaped
+	or allocatable array.
+
+2019-01-12  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/61765
+	* resolve.c (gfc_verify_binding_labels): Break if-elseif-elseif
+	structure into independent if's with a return to simplify logic.
+	Avoid a check for ENTRY name with bind(c).
+
+2019-01-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	* gfortran.texi : Add description in sections on TS 29113 and
+	further interoperability with C.
+	* trans-array.c (gfc_conv_descriptor_attribute): New function.
+	(gfc_get_dataptr_offset): Remove static function attribute.
+	* trans-array.h : Add prototypes for above functions.
+	* trans-decl.c : Add declarations for the library functions
+	cfi_desc_to_gfc_desc and gfc_desc_to_cfi_desc.
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): New function.
+	(gfc_conv_procedure_call): Call it for scalar and array actual
+	arguments, when the formal arguments are bind_c with assumed
+	shape or assumed rank.
+	* trans.h : External declarations for gfor_fndecl_cfi_to_gfc
+	and gfor_fndecl_gfc_to_cfi.
+
+2019-01-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/35031
+	* decl.c (gfc_match_entry): Check for F2018:C1546.  Fix nearby
+	mis-indentation.
+
+2019-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/85956
+	PR lto/88733
+	* trans-openmp.c: Include attribs.h.
+	(gfc_walk_alloc_comps, gfc_omp_clause_linear_ctor): Handle
+	VAR_DECL max bound with "omp dummy var" attribute like NULL or
+	error_mark_node - recompute number of elts independently.
+
+2019-01-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/59345
+	* trans-array.c (gfc_conv_parameter_array): Temporary
+	arrays generated for expressions do not need to be repacked.
+
+2019-01-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/86322
+	* decl.c (top_var_list): Set locus of expr.
+	(gfc_match_data): Detect pointer on non-rightmost part-refs.
+
+2019-01-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88376
+	* resolve.c (is_illegal_recursion): Remove an assert().
+
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+	* expr.c: Change "can not" to "cannot".
+
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+	* class.c: Mechanically replace "can not" with "cannot".
+	* decl.c: Likewise.
+	* expr.c: Likewise.
+	* gfc-internals.texi: Likewise.
+	* intrinsic.texi: Likewise.
+	* invoke.texi: Likewise.
+	* io.c: Likewise.
+	* match.c: Likewise.
+	* parse.c: Likewise.
+	* primary.c: Likewise.
+	* resolve.c: Likewise.
+	* symbol.c: Likewise.
+	* trans-array.c: Likewise.
+	* trans-decl.c: Likewise.
+	* trans-intrinsic.c: Likewise.
+	* trans-stmt.c: Likewise.
+
+2019-01-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/68426
+	* simplify.c (gfc_simplify_spread): Also simplify if the
+	type of source is an EXPR_STRUCTURE.
+
+2019-01-08  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/88047
+	* class.c (gfc_find_vtab): For polymorphic typespecs, the components of
+	the class container may not be available (in case of invalid code).
+
+2019-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR fortran/88611
+	* trans-expr.c (gfc_conv_initializer): For ISOCBINDING_NULL_*
+	directly build the expected GENERIC tree.
+
+2019-01-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	Harald Anlauf <anlauf@gmx.de>
+	Tobias Burnus <burnus@gcc.gnu.org>
+
+	PR fortran/45424
+	* check.c (gfc_check_is_contiguous): New function.
+	* expr.c (gfc_is_not_contiguous): New function.
+	* gfortran.h (gfc_isym_id): Add GFC_ISYM_IS_CONTIGUOUS.
+	Add prototype for gfc_is_not_contiguous.
+	* intrinsic.c (do_ts29113_check): Add GFC_ISYM_IS_CONTIGUOUS.
+	(add_function): Add is_contiguous.
+	* intrinsic.h: Add prototypes for gfc_check_is_contiguous,
+	gfc_simplify_is_contiguous and gfc_resolve_is_contiguous.
+	* intrinsic.texi: Add IS_CONTIGUOUS.
+	* iresolve.c (gfc_resolve_is_contiguous): New function.
+	* simplify.c (gfc_simplify_is_contiguous): New function.
+	* trans-decl.c (gfor_fncecl_is_contiguous0): New variable.
+	(gfc_build_intrinsic_function_decl): Add it.
+	* trans-intrinsic.c (gfc_conv_intrinsic_is_contiguous): New
+	function.
+	(gfc_conv_intrinsic_function): Handle GFC_ISYM_IS_CONTIGUOUS.
+
+2019-01-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/88658
+	* gfortran.h: Add macro gfc_real_4_kind
+	* simplify.c (simplify_min_max): Special case for the types of
+	AMAX0, AMIN0, MAX1 and MIN1, which actually change the types of
+	their arguments.
+
+2019-01-05  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/88009
+	* class.c (gfc_find_derived_vtab): Mark the _final component as
+	artificial.
+	(find_intrinsic_vtab): Ditto. Also add an extra check to avoid
+	dereferencing a null pointer and adjust indentation.
+	* resolve.c (resolve_fl_variable): Add extra check to avoid
+	dereferencing a null pointer. Move variable declarations to local scope.
+	(resolve_fl_procedure): Add extra check to avoid dereferencing a null
+	pointer.
+	* symbol.c (check_conflict): Suppress errors for artificial symbols.
+
+2019-01-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* parse.c (decode_statement): Suppress "Unclassifiable statement"
+	error if previous error messages were emittes.
+
 2019-01-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/82743

@@ -2216,6 +2216,7 @@ string_conv_p (const_tree totype, const_tree exp, int warn)
 
   t = TREE_TYPE (totype);
   if (!same_type_p (t, char_type_node)
+      && !same_type_p (t, char8_type_node)
       && !same_type_p (t, char16_type_node)
       && !same_type_p (t, char32_type_node)
       && !same_type_p (t, wchar_type_node))
@@ -9073,7 +9074,8 @@ convert_for_assignment (tree type, tree rhs,
       TREE_NO_WARNING (rhs) = 1;
     }
 
-  warn_for_address_or_pointer_of_packed_member (false, type, rhs);
+  if (complain & tf_warning)
+    warn_for_address_or_pointer_of_packed_member (false, type, rhs);
 
   return perform_implicit_conversion_flags (strip_top_quals (type), rhs,
 					    complain, flags);
@@ -9341,6 +9343,8 @@ is_std_move_p (tree fn)
 static bool
 can_do_nrvo_p (tree retval, tree functype)
 {
+  if (functype == error_mark_node)
+    return false;
   if (retval)
     STRIP_ANY_LOCATION_WRAPPER (retval);
   tree result = DECL_RESULT (current_function_decl);
@@ -9411,8 +9415,9 @@ maybe_warn_pessimizing_move (tree retval, tree functype)
 	{
 	  tree arg = CALL_EXPR_ARG (fn, 0);
 	  STRIP_NOPS (arg);
-	  if (TREE_CODE (arg) == ADDR_EXPR)
-	    arg = TREE_OPERAND (arg, 0);
+	  if (TREE_CODE (arg) != ADDR_EXPR)
+	    return;
+	  arg = TREE_OPERAND (arg, 0);
 	  arg = convert_from_reference (arg);
 	  /* Warn if we could do copy elision were it not for the move.  */
 	  if (can_do_nrvo_p (arg, functype))
@@ -10286,6 +10291,7 @@ check_literal_operator_args (const_tree decl,
 	      t = TYPE_MAIN_VARIANT (t);
 	      if ((maybe_raw_p = same_type_p (t, char_type_node))
 		  || same_type_p (t, wchar_type_node)
+		  || same_type_p (t, char8_type_node)
 		  || same_type_p (t, char16_type_node)
 		  || same_type_p (t, char32_type_node))
 		{
@@ -10317,6 +10323,8 @@ check_literal_operator_args (const_tree decl,
 	  else if (same_type_p (t, char_type_node))
 	    max_arity = 1;
 	  else if (same_type_p (t, wchar_type_node))
+	    max_arity = 1;
+	  else if (same_type_p (t, char8_type_node))
 	    max_arity = 1;
 	  else if (same_type_p (t, char16_type_node))
 	    max_arity = 1;

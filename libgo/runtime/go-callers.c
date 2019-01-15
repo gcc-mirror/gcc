@@ -202,8 +202,8 @@ runtime_callers (int32 skip, Location *locbuf, int32 m, bool keep_thunks)
   data.index = 0;
   data.max = m;
   data.keep_thunks = keep_thunks;
-  state = __go_get_backtrace_state ();
   runtime_xadd (&__go_runtime_in_callers, 1);
+  state = __go_get_backtrace_state ();
   backtrace_full (state, 0, callback, error_callback, &data);
   runtime_xadd (&__go_runtime_in_callers, -1);
 

@@ -9063,6 +9063,13 @@ function_value_ms_64 (machine_mode orig_mode, machine_mode mode,
 	      && !COMPLEX_MODE_P (mode))
 	    regno = FIRST_SSE_REG;
 	  break;
+	case 8:
+	case 4:
+	  if (valtype != NULL_TREE && AGGREGATE_TYPE_P (valtype))
+	    break;
+	  if (mode == SFmode || mode == DFmode)
+	    regno = FIRST_SSE_REG;
+	  break;
 	default:
 	  break;
         }
@@ -17240,18 +17247,6 @@ ix86_const_not_ok_for_debug_p (rtx x)
   if (SYMBOL_REF_P (x) && strcmp (XSTR (x, 0), GOT_SYMBOL_NAME) == 0)
     return true;
 
-  /* Reject UNSPECs within expressions.  We could accept symbol@gotoff
-     + literal_constant, but that would hardly come up in practice,
-     and it's not worth the trouble of having to reject that as an
-     operand to pretty much anything else.  */
-  if (UNARY_P (x)
-      && GET_CODE (XEXP (x, 0)) == UNSPEC)
-    return true;
-  if (BINARY_P (x)
-      && (GET_CODE (XEXP (x, 0)) == UNSPEC
-	  || GET_CODE (XEXP (x, 1)) == UNSPEC))
-    return true;
-
   return false;
 }
 
@@ -19142,7 +19137,10 @@ ix86_avx_u128_mode_exit (void)
   if (reg && ix86_check_avx_upper_register (reg))
     return AVX_U128_DIRTY;
 
-  return AVX_U128_CLEAN;
+  /* Exit mode is set to AVX_U128_DIRTY if there are 256bit or 512bit
+     modes used in function arguments, otherwise return AVX_U128_CLEAN.
+   */
+  return ix86_avx_u128_mode_entry ();
 }
 
 /* Return a mode that ENTITY is assumed to be
@@ -21859,6 +21857,63 @@ ix86_split_copysign_var (rtx operands[])
     }
 
   x = gen_rtx_IOR (vmode, dest, scratch);
+  emit_insn (gen_rtx_SET (dest, x));
+}
+
+/* Expand an xorsign operation.  */
+
+void
+ix86_expand_xorsign (rtx operands[])
+{
+  rtx (*xorsign_insn)(rtx, rtx, rtx, rtx);
+  machine_mode mode, vmode;
+  rtx dest, op0, op1, mask;
+
+  dest = operands[0];
+  op0 = operands[1];
+  op1 = operands[2];
+
+  mode = GET_MODE (dest);
+
+  if (mode == SFmode)
+    {
+      xorsign_insn = gen_xorsignsf3_1;
+      vmode = V4SFmode;
+    }
+  else if (mode == DFmode)
+    {
+      xorsign_insn = gen_xorsigndf3_1;
+      vmode = V2DFmode;
+    }
+  else
+    gcc_unreachable ();
+
+  mask = ix86_build_signbit_mask (vmode, 0, 0);
+
+  emit_insn (xorsign_insn (dest, op0, op1, mask));
+}
+
+/* Deconstruct an xorsign operation into bit masks.  */
+
+void
+ix86_split_xorsign (rtx operands[])
+{
+  machine_mode mode, vmode;
+  rtx dest, op0, mask, x;
+
+  dest = operands[0];
+  op0 = operands[1];
+  mask = operands[3];
+
+  mode = GET_MODE (dest);
+  vmode = GET_MODE (mask);
+
+  dest = lowpart_subreg (vmode, dest, mode);
+  x = gen_rtx_AND (vmode, dest, mask);
+  emit_insn (gen_rtx_SET (dest, x));
+
+  op0 = lowpart_subreg (vmode, op0, mode);
+  x = gen_rtx_XOR (vmode, dest, op0);
   emit_insn (gen_rtx_SET (dest, x));
 }
 
@@ -29704,13 +29759,13 @@ ix86_local_alignment (tree exp, machine_mode mode,
      a C99 variable-length array variable always has alignment of at least 16 bytes.
 
      This was added to allow use of aligned SSE instructions at arrays.  This
-     rule is meant for static storage (where compiler can not do the analysis
+     rule is meant for static storage (where compiler cannot do the analysis
      by itself).  We follow it for automatic variables only when convenient.
      We fully control everything in the function compiled and functions from
-     other unit can not rely on the alignment.
+     other unit cannot rely on the alignment.
 
      Exclude va_list type.  It is the common case of local array where
-     we can not benefit from the alignment.  
+     we cannot benefit from the alignment.  
 
      TODO: Probably one should optimize for size only when var is not escaping.  */
   if (TARGET_64BIT && optimize_function_for_speed_p (cfun)
@@ -40161,7 +40216,8 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
    the low 16 bytes are saved.  */
 
 static bool
-ix86_hard_regno_call_part_clobbered (unsigned int regno, machine_mode mode)
+ix86_hard_regno_call_part_clobbered (rtx_insn *insn ATTRIBUTE_UNUSED,
+				     unsigned int regno, machine_mode mode)
 {
   return SSE_REGNO_P (regno) && GET_MODE_SIZE (mode) > 16;
 }
@@ -45038,6 +45094,7 @@ ix86_stack_protect_guard (void)
 	  t = build_int_cst (asptrtype, ix86_stack_protector_guard_offset);
 	  t = build2 (MEM_REF, asptrtype, t,
 		      build_int_cst (asptrtype, 0));
+	  TREE_THIS_VOLATILE (t) = 1;
 	}
 
       return t;
@@ -51014,9 +51071,7 @@ ix86_expand_divmod_libfunc (rtx libfunc, machine_mode mode,
   rtx rem = assign_386_stack_local (mode, SLOT_TEMP);
 
   rtx quot = emit_library_call_value (libfunc, NULL_RTX, LCT_NORMAL,
-				      mode,
-				      op0, GET_MODE (op0),
-				      op1, GET_MODE (op1),
+				      mode, op0, mode, op1, mode,
 				      XEXP (rem, 0), Pmode);
   *quot_p = quot;
   *rem_p = rem;

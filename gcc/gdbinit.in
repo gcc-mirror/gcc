@@ -219,6 +219,11 @@ macro define __null 0
 macro define input_line expand_location(input_location).line
 macro define input_filename expand_location(input_location).file
 
+# Remember previous pagination status and turn it off, so that
+# the messages for skip commands don't require pagination.
+python __gcc_prev_pagination=gdb.parameter("pagination")
+set pagination off
+
 # Gracefully handle aborts in functions used from gdb.
 set unwindonsignal on
 
@@ -280,3 +285,6 @@ skip PATTERN
 skip INSN_LOCATION
 skip INSN_HAS_LOCATION
 skip JUMP_LABEL_AS_INSN
+
+# Restore pagination to the previous state.
+python if __gcc_prev_pagination: gdb.execute("set pagination on")

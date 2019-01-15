@@ -1925,7 +1925,7 @@ explicit_class_specialization_p (tree type)
 }
 
 /* Print the list of functions at FNS, going through all the overloads
-   for each element of the list.  Alternatively, FNS can not be a
+   for each element of the list.  Alternatively, FNS cannot be a
    TREE_LIST, in which case it will be printed together with all the
    overloads.
 
@@ -18813,6 +18813,27 @@ tsubst_copy_and_build (tree t,
 					      (*call_args)[0], complain);
 	      break;
 
+	    case IFN_VEC_CONVERT:
+	      gcc_assert (nargs == 1);
+	      if (vec_safe_length (call_args) != 1)
+		{
+		  error_at (cp_expr_loc_or_loc (t, input_location),
+			    "wrong number of arguments to "
+			    "%<__builtin_convertvector%>");
+		  ret = error_mark_node;
+		  break;
+		}
+	      ret = cp_build_vec_convert ((*call_args)[0], input_location,
+					  tsubst (TREE_TYPE (t), args,
+						  complain, in_decl),
+					  complain);
+	      if (TREE_CODE (ret) == VIEW_CONVERT_EXPR)
+		{
+		  release_tree_vector (call_args);
+		  RETURN (ret);
+		}
+	      break;
+
 	    default:
 	      /* Unsupported internal function with arguments.  */
 	      gcc_unreachable ();
@@ -22044,7 +22065,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
       /* If the argument deduction results is a METHOD_TYPE,
          then there is a problem.
          METHOD_TYPE doesn't map to any real C++ type the result of
-	 the deduction can not be of that type.  */
+	 the deduction cannot be of that type.  */
       if (TREE_CODE (arg) == METHOD_TYPE)
 	return unify_method_type_error (explain_p, arg);
 
@@ -25718,6 +25739,8 @@ instantiation_dependent_r (tree *tp, int *walk_subtrees,
 
     case TEMPLATE_PARM_INDEX:
       if (dependent_type_p (TREE_TYPE (*tp)))
+	return *tp;
+      if (TEMPLATE_PARM_PARAMETER_PACK (*tp))
 	return *tp;
       /* We'll check value-dependence separately.  */
       return NULL_TREE;

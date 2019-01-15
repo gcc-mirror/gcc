@@ -2469,40 +2469,21 @@ bool foo150()
 void crash(int x)
 {
     if (x==200) return;
-
-    version(GNU)
-    {
-        version(X86) asm
-        {
-            "int $3;" : :  :;
-        }
-        else version(X86_64) asm
-        {
-            "int $3;" : : :;
-        }
-        else
-        {
-            import gcc.builtins;
-            __builtin_trap();
-        }
-    }
-    else
-    {
-        asm { int 3; }
-    }
+    assert(0);
 }
 
 void test151()
 {
-   int x;
-   bug3521(&x);
+    int x;
+    bug3521(&x);
 }
 
-void bug3521(int *a){
+void bug3521(int *a)
+{
     int c = 0;
     *a = 0;
     if ( *a || (*a != (c = 200)) )
-       crash(c);
+        crash(c);
 }
 
 /***************************************************/
@@ -4236,28 +4217,22 @@ void oddity4001()
 }
 
 /***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=3809
 
 int bug3809()
 {
-    version(GNU)
-    {
-        version(X86)
-            asm { "nop"; }
-        else version(X86_64)
-            asm { "nop"; }
-        else version(ARM)
-            asm { "nop"; }
-        else
-            static assert(false, "ASM code not implemented for this architecture");
-    }
-    else
-    {
-        asm { nop; }
-    }
-    return 0;
+    static int a = 0;
+    return a;
 }
-struct BUG3809 { int xx; }
-void bug3809b() {
+
+struct BUG3809
+{
+    int xx;
+}
+
+void bug3809b()
+{
+    BUG3809 b = { bug3809() };
 }
 
 /***************************************************/

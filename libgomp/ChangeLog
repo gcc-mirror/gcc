@@ -1,3 +1,130 @@
+2019-01-15  Tom de Vries  <tdevries@suse.de>
+
+	PR target/80547
+	* testsuite/libgomp.oacc-c-c++-common/gang-reduction-var-assignment.c:
+	New test.
+
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/pr85486-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-5.c: New test.
+	* testsuite/libgomp.oacc-fortran/gemm-2.f90: New test.
+
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (nvptx_exec): Update error message.
+
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-64-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-64-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-64-3.c: New test.
+
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
+	PR target/85486
+	* testsuite/libgomp.oacc-c-c++-common/pr85486-3.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/pr85486.c: New test.
+
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
+	PR target/85381
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-5.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/pr85381.c: New test.
+
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/vred2d-128.c: New test.
+	* testsuite/libgomp.oacc-fortran/gemm.f90: New test.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-10.c: New test.
+
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-7.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-4.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-6.c: New test.
+
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (nvptx_exec): Update insufficient hardware
+	resources diagnostic.
+
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-1.c: Expect
+	vector length to be 128.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Expect vector
+	length 2097152 to be reduced to 1024 instead of 32.
+
+2019-01-11  Thomas Schwinge  <thomas@codesourcery.com>
+            James Norris  <jnorris@codesourcery.com>
+
+	* libgomp.texi: Better distinguish OpenACC and OpenMP "Runtime
+	Library Routines", and "Environment Variables".
+
+2019-01-11  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (nvptx_exec): Prevent vector_length 64 and
+	num_workers 16.
+
+2019-01-11  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/reduction-1.c: Remove
+	-foffload=-w.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-2.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-3.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-4.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-5.c: Same.
+
+2019-01-11  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/insufficient-resources.c: New
+	test.
+
+2019-01-10  Nathan Sidwell  <nathan@acm.org>
+	    Julian Brown  <julian@codesourcery.com>
+
+	PR lto/71959
+	* testsuite/libgomp.oacc-c++/pr71959-aux.cc: New.
+	* testsuite/libgomp.oacc-c++/pr71959.C: New.
+
+2019-01-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems/bar.c: Include "../linux/bar.c" and delete copy
+	and paste code.
+
+2019-01-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems/affinity-fmt.c: New file.  Include affinity-fmt.c,
+	undefining HAVE_GETPID and HAVE_GETHOSTNAME, and mapping fwrite to
+	write.
+
+2019-01-09  Tom de Vries  <tdevries@suse.de>
+
+	PR target/88756
+	* testsuite/libgomp.oacc-c-c++-common/reduction-1.c (ng, nw, vl): Use
+	#define instead of "const int".
+	* testsuite/libgomp.oacc-c-c++-common/reduction-2.c (ng, nw, vl): Same.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-3.c (ng, nw, vl): Same.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-4.c (ng, nw, vl): Same.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-5.c (ng, nw, vl): Same.
+
+2019-01-09  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (nvptx_exec): Make sure to launch with at least
+	one worker.
+
+2019-01-07  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-3.c: Fix
+	GOMP_OPENACC_DIM argument.
+
+2019-01-03  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-3.c: New test.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

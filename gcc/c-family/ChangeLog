@@ -1,3 +1,73 @@
+2019-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR inline-asm/52813
+	* c.opt (Wdeprecated): Move documentation and variable to common.opt.
+
+2019-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtin): Define __cpp_guaranteed_copy_elision
+	and __cpp_nontype_template_parameter_auto.  Add a comment that
+	__cpp_template_auto is deprecated.
+
+2019-01-14  Tom Honermann  <tom@honermann.net>
+
+	Implement P0482R5, char8_t: A type for UTF-8 characters and strings
+	* c-common.c (c_common_reswords): Add char8_t.
+	(fix_string_type): Use char8_t for the type of u8 string literals.
+	(c_common_get_alias_set): char8_t doesn't alias.
+	(c_common_nodes_and_builtins): Define char8_t as a builtin type in
+	C++.
+	(c_stddef_cpp_builtins): Add __CHAR8_TYPE__.
+	(keyword_begins_type_specifier): Add RID_CHAR8.
+	* c-common.h (rid): Add RID_CHAR8.
+	(c_tree_index): Add CTI_CHAR8_TYPE and CTI_CHAR8_ARRAY_TYPE.
+	Define D_CXX_CHAR8_T and D_CXX_CHAR8_T_FLAGS.
+	Define char8_type_node and char8_array_type_node.
+	* c-cppbuiltin.c (cpp_atomic_builtins): Predefine
+	__GCC_ATOMIC_CHAR8_T_LOCK_FREE.
+	(c_cpp_builtins): Predefine __cpp_char8_t.
+	* c-lex.c (lex_string): Use char8_array_type_node as the type of
+	CPP_UTF8STRING.
+	(lex_charconst): Use char8_type_node as the type of CPP_UTF8CHAR.
+	* c-opts.c: If not otherwise specified, enable -fchar8_t when
+	targeting C++2a.
+	* c.opt: Add the -fchar8_t command line option.
+
+2019-01-14  Martin Sebor  <msebor@redhat.com>
+
+	PR target/88638
+	* c-attribs.c (positional_argument): Call valid_format_string_type_p
+	and issue errors if it fails.
+	* c-common.h (valid_format_string_type_p): Declare.
+	* c-format.c (valid_stringptr_type_p): Rename...
+	(valid_format_string_type_p): ...to this and make extern.
+	(handle_format_arg_attribute): Adjust to new name.
+	(check_format_string): Same.
+
+2019-01-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* c-warn.c (warn_for_address_or_pointer_of_packed_member):
+	Replace "may may" with "may" in warning message.
+
+2019-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85052
+	* c-common.h (enum rid): Add RID_BUILTIN_CONVERTVECTOR.
+	(c_build_vec_convert): Declare.
+	* c-common.c (c_build_vec_convert): New function.
+
+2019-01-04  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88546
+	* c-attribs.c (handle_copy_attribute): Avoid copying attribute leaf.
+	Handle C++ empty throw specification and C11 _Noreturn.
+	(has_attribute): Also handle C11 _Noreturn.
+
+2019-01-04  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88363
+	* c-attribs.c (positional_argument): Also accept enumerated types.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

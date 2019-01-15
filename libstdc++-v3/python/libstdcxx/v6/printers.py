@@ -1093,13 +1093,23 @@ class StdExpOptionalPrinter(SingleObjContainerPrinter):
 
     def __init__ (self, typename, val):
         valtype = self._recognize (val.type.template_argument(0))
-        self.typename = strip_versioned_namespace(typename)
-        self.typename = re.sub('^std::(experimental::|)(fundamentals_v\d::|)(.*)', r'std::\1\3<%s>' % valtype, self.typename, 1)
-        if not self.typename.startswith('std::experimental'):
-            val = val['_M_payload']
-        self.val = val
-        contained_value = val['_M_payload'] if self.val['_M_engaged'] else None
-        visualizer = gdb.default_visualizer (val['_M_payload'])
+        typename = strip_versioned_namespace(typename)
+        self.typename = re.sub('^std::(experimental::|)(fundamentals_v\d::|)(.*)', r'std::\1\3<%s>' % valtype, typename, 1)
+        payload = val['_M_payload']
+        if self.typename.startswith('std::experimental'):
+            engaged = val['_M_engaged']
+            contained_value = payload
+        else:
+            engaged = payload['_M_engaged']
+            contained_value = payload['_M_payload']
+            try:
+                # Since GCC 9
+                contained_value = contained_value['_M_value']
+            except:
+                pass
+        visualizer = gdb.default_visualizer (contained_value)
+        if not engaged:
+            contained_value = None
         super (StdExpOptionalPrinter, self).__init__ (contained_value, visualizer)
 
     def to_string (self):

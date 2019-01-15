@@ -591,7 +591,7 @@ release_ssa_name_fn (struct function *fn, tree var)
      keep a status bit in the SSA_NAME node itself to indicate it has
      been put on the free list.
 
-     Note that once on the freelist you can not reference the SSA_NAME's
+     Note that once on the freelist you cannot reference the SSA_NAME's
      defining statement.  */
   if (! SSA_NAME_IN_FREE_LIST (var))
     {

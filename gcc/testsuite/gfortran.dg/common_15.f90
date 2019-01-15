@@ -4,6 +4,6 @@
 !
 ! Contributed by Vittorio Zecca <zeccav@gmail.com>
 
-common/sub/ a  ! { dg-error "can not have the EXTERNAL attribute" }
+common/sub/ a  ! { dg-error "cannot have the EXTERNAL attribute" }
 external sub
 end

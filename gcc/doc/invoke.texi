@@ -207,7 +207,7 @@ in the following sections.
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
 @gccoptlist{-fabi-version=@var{n}  -fno-access-control @gol
--faligned-new=@var{n}  -fargs-in-order=@var{n}  -fcheck-new @gol
+-faligned-new=@var{n}  -fargs-in-order=@var{n}  -fchar8_t  -fcheck-new @gol
 -fconstexpr-depth=@var{n}  -fconstexpr-loop-limit=@var{n} @gol
 -fno-elide-constructors @gol
 -fno-enforce-eh-specs @gol
@@ -632,6 +632,7 @@ Objective-C and Objective-C++ Dialects}.
 -mlow-precision-recip-sqrt  -mlow-precision-sqrt  -mlow-precision-div @gol
 -mpc-relative-literal-loads @gol
 -msign-return-address=@var{scope} @gol
+-mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}] @gol
 -march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}  @gol
 -moverride=@var{string}  -mverbose-cost-dump  -mtrack-speculation} 
 
@@ -2425,6 +2426,60 @@ but few users will need to override the default of
 @code{alignof(std::max_align_t)}.
 
 This flag is enabled by default for @option{-std=c++17}.
+
+@item -fchar8_t
+@itemx -fno-char8_t
+@opindex fchar8_t
+@opindex fno-char8_t
+Enable support for @code{char8_t} as adopted for C++2a.  This includes
+the addition of a new @code{char8_t} fundamental type, changes to the
+types of UTF-8 string and character literals, new signatures for
+user-defined literals, associated standard library updates, and new
+@code{__cpp_char8_t} and @code{__cpp_lib_char8_t} feature test macros.
+
+This option enables functions to be overloaded for ordinary and UTF-8
+strings:
+
+@smallexample
+int f(const char *);    // #1
+int f(const char8_t *); // #2
+int v1 = f("text");     // Calls #1
+int v2 = f(u8"text");   // Calls #2
+@end smallexample
+
+@noindent
+and introduces new signatures for user-defined literals:
+
+@smallexample
+int operator""_udl1(char8_t);
+int v3 = u8'x'_udl1;
+int operator""_udl2(const char8_t*, std::size_t);
+int v4 = u8"text"_udl2;
+template<typename T, T...> int operator""_udl3();
+int v5 = u8"text"_udl3;
+@end smallexample
+
+@noindent
+The change to the types of UTF-8 string and character literals introduces
+incompatibilities with ISO C++11 and later standards.  For example, the
+following code is well-formed under ISO C++11, but is ill-formed when
+@option{-fchar8_t} is specified.
+
+@smallexample
+char ca[] = u8"xx";     // error: char-array initialized from wide
+                        //        string
+const char *cp = u8"xx";// error: invalid conversion from
+                        //        `const char8_t*' to `const char*'
+int f(const char*);
+auto v = f(u8"xx");     // error: invalid conversion from
+                        //        `const char8_t*' to `const char*'
+std::string s@{u8"xx"@};  // error: no matching function for call to
+                        //        `std::basic_string<char>::basic_string()'
+using namespace std::literals;
+s = u8"xx"s;            // error: conversion from
+                        //        `basic_string<char8_t>' to non-scalar
+                        //        type `basic_string<char>' requested
+@end smallexample
 
 @item -fcheck-new
 @opindex fcheck-new
@@ -7004,14 +7059,15 @@ the element size.  This warning is enabled by @option{-Wall}.
 @item -Wmemset-transposed-args
 @opindex Wmemset-transposed-args
 @opindex Wno-memset-transposed-args
-Warn for suspicious calls to the @code{memset} built-in function, if the
-second argument is not zero and the third argument is zero.  This warns e.g.@:
-about @code{memset (buf, sizeof buf, 0)} where most probably
-@code{memset (buf, 0, sizeof buf)} was meant instead.  The diagnostics
-is only emitted if the third argument is literal zero.  If it is some
-expression that is folded to zero, a cast of zero to some type, etc., 
-it is far less likely that the user has mistakenly exchanged the arguments 
-and no warning is emitted.  This warning is enabled by @option{-Wall}.
+Warn for suspicious calls to the @code{memset} built-in function where
+the second argument is not zero and the third argument is zero.  For
+example, the call @code{memset (buf, sizeof buf, 0)} is diagnosed because
+@code{memset (buf, 0, sizeof buf)} was meant instead.  The diagnostic
+is only emitted if the third argument is a literal zero.  Otherwise, if
+it is an expression that is folded to zero, or a cast of zero to some
+type, it is far less likely that the arguments have been mistakenly
+transposed and no warning is emitted.  This warning is enabled
+by @option{-Wall}.
 
 @item -Waddress
 @opindex Waddress
@@ -8293,7 +8349,7 @@ except those that often increase code size:
 
 It also enables @option{-finline-functions}, causes the compiler to tune for
 code size rather than execution speed, and performs further optimizations
-designed to reduce code size.  
+designed to reduce code size.
 
 @item -Ofast
 @opindex Ofast
@@ -8441,7 +8497,7 @@ If all calls to a given function are integrated, and the function is
 declared @code{static}, then the function is normally not output as
 assembler code in its own right.
 
-Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.  Also enabled
+Enabled at levels @option{-O3}, @option{-Os}.  Also enabled
 by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -finline-functions-called-once
@@ -9545,6 +9601,8 @@ DO I = 1, N
    D(I) = E(I) * F
 ENDDO
 @end smallexample
+This flag is enabled by default at @option{-O3}.
+It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -ftree-loop-distribute-patterns
 @opindex ftree-loop-distribute-patterns
@@ -9570,6 +9628,8 @@ DO I = 1, N
 ENDDO
 @end smallexample
 and the initialization loop is transformed into a call to memset zero.
+This flag is enabled by default at @option{-O3}.
+It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -floop-interchange
 @opindex floop-interchange
@@ -9590,12 +9650,14 @@ for (int i = 0; i < N; i++)
       c[i][j] = c[i][j] + a[i][k]*b[k][j];
 @end smallexample
 This flag is enabled by default at @option{-O3}.
+It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -floop-unroll-and-jam
 @opindex floop-unroll-and-jam
 Apply unroll and jam transformations on feasible loops.  In a loop
 nest this unrolls the outer loop by some factor and fuses the resulting
 multiple inner loops.  This flag is enabled by default at @option{-O3}.
+It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -ftree-loop-im
 @opindex ftree-loop-im
@@ -10850,6 +10912,8 @@ else
 
 This is particularly useful for assumed-shape arrays in Fortran where
 (for example) it allows better vectorization assuming contiguous accesses.
+This flag is enabled by default at @option{-O3}.
+It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -ffunction-sections
 @itemx -fdata-sections
@@ -11052,6 +11116,27 @@ a lot of functions that would otherwise not be considered for inlining
 by the compiler are investigated.  To those functions, a different
 (more restrictive) limit compared to functions declared inline can
 be applied.
+
+@item max-inline-insns-small
+This is bound applied to calls which are considered relevant with
+@option{-finline-small-functions}.
+
+@item max-inline-insns-size
+This is bound applied to calls which are optimized for size. Small growth
+may be desirable to anticipate optimization oppurtunities exposed by inlining.
+
+@item uninlined-function-insns
+Number of instructions accounted by inliner for function overhead such as
+function prologue and epilogue.
+
+@item uninlined-function-time
+Extra time accounted by inliner for function overhead such as time needed to
+execute function prologue and epilogue
+
+@item uninlined-thunk-insns
+@item uninlined-thunk-time
+Same as @option{--param uninlined-function-insns} and
+@option{--param uninlined-function-time} but applied to function thunks
 
 @item inline-min-speedup
 When estimated performance improvement of caller + callee runtime exceeds this
@@ -13080,7 +13165,7 @@ most of benefits of whole program optimizations are however lost.
 During the incremental link (by @option{-r}) the linker plugin will default to
 @option{rel}. With current interfaces to GNU Binutils it is however not
 possible to link incrementally LTO objects and non-LTO objects into a single
-mixed object file.  In the case any of object files in incremental link can not
+mixed object file.  In the case any of object files in incremental link cannot
 be used for link-time optimization the linker plugin will output warning and
 use @samp{nolto-rel}. To maintain the whole program optimization it is
 recommended to link such objects into static library instead. Alternatively it
@@ -15654,8 +15739,11 @@ more feature modifiers.  This option has the form
 @option{-march=@var{arch}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}.
 
 The permissible values for @var{arch} are @samp{armv8-a},
-@samp{armv8.1-a}, @samp{armv8.2-a}, @samp{armv8.3-a} or @samp{armv8.4-a}
-or @var{native}.
+@samp{armv8.1-a}, @samp{armv8.2-a}, @samp{armv8.3-a}, @samp{armv8.4-a},
+@samp{armv8.5-a} or @var{native}.
+
+The value @samp{armv8.5-a} implies @samp{armv8.4-a} and enables compiler
+support for the ARMv8.5-A architecture extensions.
 
 The value @samp{armv8.4-a} implies @samp{armv8.3-a} and enables compiler
 support for the ARMv8.4-A architecture extensions.
@@ -15765,7 +15853,22 @@ Select the function scope on which return address signing will be applied.
 Permissible values are @samp{none}, which disables return address signing,
 @samp{non-leaf}, which enables pointer signing for functions which are not leaf
 functions, and @samp{all}, which enables pointer signing for all functions.  The
-default value is @samp{none}.
+default value is @samp{none}. This option has been deprecated by
+-mbranch-protection.
+
+@item -mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}]
+@opindex mbranch-protection
+Select the branch protection features to use.
+@samp{none} is the default and turns off all types of branch protection.
+@samp{standard} turns on all types of branch protection features.  If a feature
+has additional tuning options, then @samp{standard} sets it to its standard
+level.
+@samp{pac-ret[+@var{leaf}]} turns on return address signing to its standard
+level: signing functions that save the return address to memory (non-leaf
+functions will practically always do this) using the a-key.  The optional
+argument @samp{leaf} can be used to extend the signing to include leaf
+functions.
+@samp{bti} turns on branch target identification mechanism.
 
 @item -msve-vector-bits=@var{bits}
 @opindex msve-vector-bits
@@ -15845,6 +15948,27 @@ Use of this option with architectures prior to Armv8.2-A is not supported.
 @item profile
 Enable the Statistical Profiling extension.  This option is only to enable the
 extension at the assembler level and does not affect code generation.
+@item rng
+Enable the Armv8.5-a Random Number instructions.  This option is only to
+enable the extension at the assembler level and does not affect code
+generation.
+@item memtag
+Enable the Armv8.5-a Memory Tagging Extensions.  This option is only to
+enable the extension at the assembler level and does not affect code
+generation.
+@item sb
+Enable the Armv8-a Speculation Barrier instruction.  This option is only to
+enable the extension at the assembler level and does not affect code
+generation.  This option is enabled by default for @option{-march=armv8.5-a}.
+@item ssbs
+Enable the Armv8-a Speculative Store Bypass Safe instruction.  This option
+is only to enable the extension at the assembler level and does not affect code
+generation.  This option is enabled by default for @option{-march=armv8.5-a}.
+@item predres
+Enable the Armv8-a Execution and Data Prediction Restriction instructions.
+This option is only to enable the extension at the assembler level and does
+not affect code generation.  This option is enabled by default for
+@option{-march=armv8.5-a}.
 
 @end table
 
@@ -25758,7 +25882,7 @@ if this option were not present.
 @item -mfixed-range=@var{register-range}
 @opindex mfixed-range
 Generate code treating the given register range as fixed registers.
-A fixed register is one that the register allocator can not use.  This is
+A fixed register is one that the register allocator cannot use.  This is
 useful when compiling kernel code.  A register range is specified as
 two registers separated by a dash.  Multiple register ranges can be
 specified separated by a comma.
@@ -28450,7 +28574,7 @@ Note that @option{-mcmodel=large} is incompatible with
 not be reachable in the large code model.
 
 Note that @option{-mindirect-branch=thunk-extern} is incompatible with
-@option{-fcf-protection=branch} since the external thunk can not be modified
+@option{-fcf-protection=branch} since the external thunk cannot be modified
 to disable control-flow check.
 
 @item -mfunction-return=@var{choice}

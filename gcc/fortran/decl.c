@@ -337,6 +337,8 @@ top_var_list (gfc_data *d)
 
       new_var = gfc_get_data_variable ();
       *new_var = var;
+      if (new_var->expr)
+	new_var->expr->where = gfc_current_locus;
 
       if (tail == NULL)
 	d->var = new_var;
@@ -597,6 +599,7 @@ gfc_match_data (void)
 {
   gfc_data *new_data;
   gfc_expr *e;
+  gfc_ref *ref;
   match m;
 
   /* Before parsing the rest of a DATA statement, check F2008:c1206.  */
@@ -641,7 +644,7 @@ gfc_match_data (void)
 	  bool invalid;
 
 	  invalid = false;
-	  for (gfc_ref *ref = e->ref; ref; ref = ref->next)
+	  for (ref = e->ref; ref; ref = ref->next)
 	    if ((ref->type == REF_COMPONENT
 		 && ref->u.c.component->attr.allocatable)
 		|| (ref->type == REF_ARRAY
@@ -655,6 +658,21 @@ gfc_match_data (void)
 			 "near %C in DATA statement");
 	      goto cleanup;
 	    }
+
+	  /* F2008:C567 (R536) A data-i-do-object or a variable that appears
+	     as a data-stmt-object shall not be an object designator in which
+	     a pointer appears other than as the entire rightmost part-ref.  */
+	  ref = e->ref;
+	  if (e->symtree->n.sym->ts.type == BT_DERIVED
+	      && e->symtree->n.sym->attr.pointer
+	      && ref->type == REF_COMPONENT)
+	    goto partref;
+
+	  for (; ref; ref = ref->next)
+	    if (ref->type == REF_COMPONENT
+		&& ref->u.c.component->attr.pointer
+		&& ref->next)
+	      goto partref;
 	}
 
       m = top_val_list (new_data);
@@ -680,6 +698,12 @@ gfc_match_data (void)
   gfc_unset_implicit_pure (gfc_current_ns->proc_name);
 
   return MATCH_YES;
+
+partref:
+
+  gfc_error ("part-ref with pointer attribute near %L is not "
+	     "rightmost part-ref of data-stmt-object",
+	     &e->where);
 
 cleanup:
   set_in_match_data (false);
@@ -2440,7 +2464,7 @@ variable_decl (int elem)
 
   /* At this point, we know for sure if the symbol is PARAMETER and can thus
      determine (and check) whether it can be implied-shape.  If it
-     was parsed as assumed-size, change it because PARAMETERs can not
+     was parsed as assumed-size, change it because PARAMETERs cannot
      be assumed-size.
 
      An explicit-shape-array cannot appear under several conditions.
@@ -5673,7 +5697,7 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
 	  retval = false;
 	}
 
-      /* Scalar variables that are bind(c) can not have the pointer
+      /* Scalar variables that are bind(c) cannot have the pointer
 	 or allocatable attributes.  */
       if (tmp_sym->attr.is_bind_c == 1)
 	{
@@ -5702,7 +5726,7 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
 	gfc_error ("Return type of BIND(C) function %qs at %L cannot "
 		   "be an array", tmp_sym->name, &(tmp_sym->declared_at));
 
-      /* BIND(C) functions can not return a character string.  */
+      /* BIND(C) functions cannot return a character string.  */
       if (bind_c_function && tmp_sym->ts.type == BT_CHARACTER)
 	if (tmp_sym->ts.u.cl == NULL || tmp_sym->ts.u.cl->length == NULL
 	    || tmp_sym->ts.u.cl->length->expr_type != EXPR_CONSTANT
@@ -7407,9 +7431,11 @@ gfc_match_entry (void)
 	      gfc_error ("Missing required parentheses before BIND(C) at %C");
 	      return MATCH_ERROR;
 	    }
-	    if (!gfc_add_is_bind_c (&(entry->attr), entry->name,
-				    &(entry->declared_at), 1))
-	      return MATCH_ERROR;
+
+	  if (!gfc_add_is_bind_c (&(entry->attr), entry->name,
+				  &(entry->declared_at), 1))
+	    return MATCH_ERROR;
+	
 	}
 
       if (!gfc_current_ns->parent
@@ -7490,6 +7516,14 @@ gfc_match_entry (void)
   if (gfc_match_eos () != MATCH_YES)
     {
       gfc_syntax_error (ST_ENTRY);
+      return MATCH_ERROR;
+    }
+
+  /* F2018:C1546 An elemental procedure shall not have the BIND attribute.  */
+  if (proc->attr.elemental && entry->attr.is_bind_c)
+    {
+      gfc_error ("ENTRY statement at %L with BIND(C) prohibited in an "
+		 "elemental procedure", &entry->declared_at);
       return MATCH_ERROR;
     }
 

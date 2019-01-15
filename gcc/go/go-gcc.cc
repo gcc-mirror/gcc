@@ -760,7 +760,7 @@ Gcc_backend::Gcc_backend()
 							NULL_TREE),
 		       false, false);
 
-  // The compiler uses __builtin_unreachable for cases that can not
+  // The compiler uses __builtin_unreachable for cases that cannot
   // occur.
   this->define_builtin(BUILT_IN_UNREACHABLE, "__builtin_unreachable", NULL,
 		       build_function_type(void_type_node, void_list_node),
@@ -909,7 +909,7 @@ Gcc_backend::function_type(const Btyped_identifier& receiver,
   if (result == error_mark_node)
     return this->error_type();
 
-  // The libffi library can not represent a zero-sized object.  To
+  // The libffi library cannot represent a zero-sized object.  To
   // avoid causing confusion on 32-bit SPARC, we treat a function that
   // returns a zero-sized value as returning void.  That should do no
   // harm since there is no actual value to be returned.  See
@@ -1098,9 +1098,13 @@ Gcc_backend::set_placeholder_struct_type(
   if (TYPE_NAME(t) != NULL_TREE)
     {
       // Build the data structure gcc wants to see for a typedef.
-      tree copy = build_variant_type_copy(t);
+      tree copy = build_distinct_type_copy(t);
       TYPE_NAME(copy) = NULL_TREE;
       DECL_ORIGINAL_TYPE(TYPE_NAME(t)) = copy;
+      TYPE_SIZE(copy) = NULL_TREE;
+      Btype* bc = this->make_type(copy);
+      this->fill_in_struct(bc, fields);
+      delete bc;
     }
 
   return r->get_tree() != error_mark_node;

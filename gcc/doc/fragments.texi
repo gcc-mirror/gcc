@@ -63,7 +63,7 @@ in @code{EXTRA-PARTS}.
 @findex MULTILIB_OPTIONS
 @item MULTILIB_OPTIONS
 For some targets, invoking GCC in different ways produces objects
-that can not be linked together.  For example, for some targets GCC
+that cannot be linked together.  For example, for some targets GCC
 produces both big and little endian code.  For these targets, you must
 arrange for multiple versions of @file{libgcc.a} to be compiled, one for
 each set of incompatible options.  When GCC invokes the linker, it

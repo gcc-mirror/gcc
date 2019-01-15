@@ -50,7 +50,7 @@ inline namespace fundamentals_v1
 {
 #define __cpp_lib_experimental_type_trait_variable_templates 201402
 
-// See C++14 §20.10.4.1, primary type categories
+// See C++14 20.10.4.1, primary type categories
 template <typename _Tp>
   constexpr bool is_void_v = is_void<_Tp>::value;
 template <typename _Tp>
@@ -82,7 +82,7 @@ template <typename _Tp>
 template <typename _Tp>
   constexpr bool is_function_v = is_function<_Tp>::value;
 
-// See C++14 §20.10.4.2, composite type categories
+// See C++14 20.10.4.2, composite type categories
 template <typename _Tp>
   constexpr bool is_reference_v = is_reference<_Tp>::value;
 template <typename _Tp>
@@ -98,7 +98,7 @@ template <typename _Tp>
 template <typename _Tp>
  constexpr bool is_member_pointer_v = is_member_pointer<_Tp>::value;
 
-// See C++14 §20.10.4.3, type properties
+// See C++14 20.10.4.3, type properties
 template <typename _Tp>
   constexpr bool is_const_v = is_const<_Tp>::value;
 template <typename _Tp>
@@ -194,7 +194,7 @@ template <typename _Tp>
   constexpr bool has_virtual_destructor_v =
     has_virtual_destructor<_Tp>::value;
 
-// See C++14 §20.10.5, type property queries
+// See C++14 20.10.5, type property queries
 template <typename _Tp>
   constexpr size_t alignment_of_v = alignment_of<_Tp>::value;
 template <typename _Tp>
@@ -202,7 +202,7 @@ template <typename _Tp>
 template <typename _Tp, unsigned _Idx = 0>
   constexpr size_t extent_v = extent<_Tp, _Idx>::value;
 
-// See C++14 §20.10.6, type relations
+// See C++14 20.10.6, type relations
 template <typename _Tp, typename _Up>
   constexpr bool is_same_v = is_same<_Tp, _Up>::value;
 template <typename _Base, typename _Derived>

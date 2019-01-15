@@ -354,7 +354,7 @@ void test_hash()
   {
     struct A
     {
-      operator int()
+      operator string()
       {
         throw nullptr;
       }
@@ -362,7 +362,7 @@ void test_hash()
     variant<int, string> v;
     try
       {
-        v.emplace<0>(A{});
+        v.emplace<1>(A{});
       }
     catch (nullptr_t)
       {

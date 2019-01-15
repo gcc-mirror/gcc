@@ -202,7 +202,7 @@ ptr_deref_may_alias_decl_p (tree ptr, tree decl)
 	return true;
     }
 
-  /* Non-aliased variables can not be pointed to.  */
+  /* Non-aliased variables cannot be pointed to.  */
   if (!may_be_aliased (decl))
     return false;
 

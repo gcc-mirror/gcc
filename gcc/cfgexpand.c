@@ -1130,7 +1130,7 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 		  prev_offset = frame_offset.to_constant ();
 		}
 	      prev_offset = align_base (prev_offset,
-					MAX (alignb, ASAN_MIN_RED_ZONE_SIZE),
+					ASAN_MIN_RED_ZONE_SIZE,
 					!FRAME_GROWS_DOWNWARD);
 	      tree repr_decl = NULL_TREE;
 	      unsigned HOST_WIDE_INT size
@@ -2872,12 +2872,16 @@ asm_clobber_reg_is_valid (int regno, int nregs, const char *regname)
       error ("PIC register clobbered by %qs in %<asm%>", regname);
       is_valid = false;
     }
-  /* Clobbering the STACK POINTER register is an error.  */
-  if (overlaps_hard_reg_set_p (regset, Pmode, STACK_POINTER_REGNUM))
-    {
-      error ("Stack Pointer register clobbered by %qs in %<asm%>", regname);
-      is_valid = false;
-    }
+  /* Clobbering the stack pointer register is deprecated.  GCC expects
+     the value of the stack pointer after an asm statement to be the same
+     as it was before, so no asm can validly clobber the stack pointer in
+     the usual sense.  Adding the stack pointer to the clobber list has
+     traditionally had some undocumented and somewhat obscure side-effects.  */
+  if (overlaps_hard_reg_set_p (regset, Pmode, STACK_POINTER_REGNUM)
+      && warning (OPT_Wdeprecated, "listing the stack pointer register"
+		  " %qs in a clobber list is deprecated", regname))
+    inform (input_location, "the value of the stack pointer after an %<asm%>"
+	    " statement must be the same as it was before the statement");
 
   return is_valid;
 }
@@ -6219,6 +6223,7 @@ stack_protect_prologue (void)
   tree guard_decl = targetm.stack_protect_guard ();
   rtx x, y;
 
+  crtl->stack_protect_guard_decl = guard_decl;
   x = expand_normal (crtl->stack_protect_guard);
 
   if (targetm.have_stack_protect_combined_set () && guard_decl)

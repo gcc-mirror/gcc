@@ -4512,6 +4512,7 @@ extern tree first_field (const_tree);
    combinations indicate definitive answers.  */
 
 extern bool initializer_zerop (const_tree, bool * = NULL);
+extern bool initializer_each_zero_or_onep (const_tree);
 
 extern wide_int vector_cst_int_elt (const_tree, unsigned int);
 extern tree vector_cst_elt (const_tree, unsigned int);
@@ -4526,6 +4527,8 @@ extern tree uniform_vector_p (const_tree);
    return NULL_TREE.  */
 
 extern tree uniform_integer_cst_p (tree);
+
+extern int single_nonzero_element (const_tree);
 
 /* Given a CONSTRUCTOR CTOR, return the element values as a vector.  */
 
@@ -5870,7 +5873,7 @@ type_with_alias_set_p (const_tree t)
   if (COMPLETE_TYPE_P (t))
     return true;
 
-  /* Incomplete types can not be accessed in general except for arrays
+  /* Incomplete types cannot be accessed in general except for arrays
      where we can fetch its element despite we have no array bounds.  */
   if (TREE_CODE (t) == ARRAY_TYPE && COMPLETE_TYPE_P (TREE_TYPE (t)))
     return true;

@@ -487,6 +487,7 @@ enum gfc_isym_id
   GFC_ISYM_IPARITY,
   GFC_ISYM_IRAND,
   GFC_ISYM_ISATTY,
+  GFC_ISYM_IS_CONTIGUOUS,
   GFC_ISYM_IS_IOSTAT_END,
   GFC_ISYM_IS_IOSTAT_EOR,
   GFC_ISYM_ISNAN,
@@ -2967,6 +2968,7 @@ extern int gfc_character_storage_size;
 
 #define gfc_logical_4_kind 4
 #define gfc_integer_4_kind 4
+#define gfc_real_4_kind 4
 
 /* symbol.c */
 void gfc_clear_new_implicit (void);
@@ -3204,6 +3206,7 @@ bool gfc_extract_hwi (gfc_expr *, HOST_WIDE_INT *, int = 0);
 
 bool is_subref_array (gfc_expr *);
 bool gfc_is_simply_contiguous (gfc_expr *, bool, bool);
+bool gfc_is_not_contiguous (gfc_expr *);
 bool gfc_check_init_expr (gfc_expr *);
 
 gfc_expr *gfc_build_conversion (gfc_expr *);

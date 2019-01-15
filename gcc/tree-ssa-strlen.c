@@ -1121,66 +1121,22 @@ adjust_last_stmt (strinfo *si, gimple *stmt, bool is_strcat)
   update_stmt (last.stmt);
 }
 
-/* For an LHS that is an SSA_NAME and for strlen() or strnlen() argument
-   SRC, set LHS range info to [0, min (N, BOUND)] if SRC refers to
-   a character array A[N] with unknown length bounded by N, and for
-   strnlen(), by min (N, BOUND).  */
+/* For an LHS that is an SSA_NAME that is the result of a strlen()
+   call, or when BOUND is non-null, of a strnlen() call, set LHS
+   range info to [0, min (MAX, BOUND)] when the range includes more
+   than one value and return LHS.  Otherwise, when the range
+   [MIN, MAX] is such that MIN == MAX, return the tree representation
+   of (MIN). The latter allows callers to fold suitable strnlen() calls
+   to constants.  */
 
-static tree
-maybe_set_strlen_range (tree lhs, tree src, tree bound)
+tree
+set_strlen_range (tree lhs, wide_int max, tree bound /* = NULL_TREE */)
 {
   if (TREE_CODE (lhs) != SSA_NAME
       || !INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
     return NULL_TREE;
 
-  if (TREE_CODE (src) == SSA_NAME)
-    {
-      gimple *def = SSA_NAME_DEF_STMT (src);
-      if (is_gimple_assign (def)
-	  && gimple_assign_rhs_code (def) == ADDR_EXPR)
-	src = gimple_assign_rhs1 (def);
-    }
-
-  wide_int max = wi::to_wide (TYPE_MAX_VALUE (ptrdiff_type_node));
   wide_int min = wi::zero (max.get_precision ());
-
-  if (TREE_CODE (src) == ADDR_EXPR)
-    {
-      /* The last array member of a struct can be bigger than its size
-	 suggests if it's treated as a poor-man's flexible array member.  */
-      src = TREE_OPERAND (src, 0);
-      bool src_is_array = TREE_CODE (TREE_TYPE (src)) == ARRAY_TYPE;
-      if (src_is_array
-	  && TREE_CODE (src) != MEM_REF
-	  && !array_at_struct_end_p (src))
-	{
-	  tree type = TREE_TYPE (src);
-	  if (tree size = TYPE_SIZE_UNIT (type))
-	    if (size && TREE_CODE (size) == INTEGER_CST)
-	      max = wi::to_wide (size);
-
-	  /* For strlen() the upper bound above is equal to
-	     the longest string that can be stored in the array
-	     (i.e., it accounts for the terminating nul.  For
-	     strnlen() bump up the maximum by one since the array
-	     need not be nul-terminated.  */
-	  if (!bound && max != 0)
-	    --max;
-	}
-      else
-	{
-	  if (TREE_CODE (src) == COMPONENT_REF && !src_is_array)
-	    src = TREE_OPERAND (src, 1);
-	  if (DECL_P (src))
-	    {
-	      /* Handle the unlikely case of strlen (&c) where c is some
-		 variable.  */
-	      if (tree size = DECL_SIZE_UNIT (src))
-		if (TREE_CODE (size) == INTEGER_CST)
-		  max = wi::to_wide (size);
-	    }
-	}
-    }
 
   if (bound)
     {
@@ -1205,7 +1161,7 @@ maybe_set_strlen_range (tree lhs, tree src, tree bound)
 	    {
 	      /* For a bound in a known range, adjust the range determined
 		 above as necessary.  For a bound in some anti-range or
-		 in an unknown range, use the range determined above.  */
+		 in an unknown range, use the range determined by callers.  */
 	      if (wi::ltu_p (minbound, min))
 		min = minbound;
 	      if (wi::ltu_p (maxbound, max))
@@ -1219,6 +1175,79 @@ maybe_set_strlen_range (tree lhs, tree src, tree bound)
 
   set_range_info (lhs, VR_RANGE, min, max);
   return lhs;
+}
+
+/* For an LHS that is an SSA_NAME and for strlen() or strnlen() argument
+   SRC, set LHS range info to [0, min (N, BOUND)] if SRC refers to
+   a character array A[N] with unknown length bounded by N, and for
+   strnlen(), by min (N, BOUND).  */
+
+static tree
+maybe_set_strlen_range (tree lhs, tree src, tree bound)
+{
+  if (TREE_CODE (lhs) != SSA_NAME
+      || !INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
+    return NULL_TREE;
+
+  if (TREE_CODE (src) == SSA_NAME)
+    {
+      gimple *def = SSA_NAME_DEF_STMT (src);
+      if (is_gimple_assign (def)
+	  && gimple_assign_rhs_code (def) == ADDR_EXPR)
+	src = gimple_assign_rhs1 (def);
+    }
+
+  /* The longest string is PTRDIFF_MAX - 1 bytes including the final
+     NUL so that the difference between a pointer to just past it and
+     one to its beginning is positive.  */
+  wide_int max = wi::to_wide (TYPE_MAX_VALUE (ptrdiff_type_node)) - 2;
+
+  if (TREE_CODE (src) == ADDR_EXPR)
+    {
+      /* The last array member of a struct can be bigger than its size
+	 suggests if it's treated as a poor-man's flexible array member.  */
+      src = TREE_OPERAND (src, 0);
+      if (TREE_CODE (src) != MEM_REF
+	  && !array_at_struct_end_p (src))
+	{
+	  tree type = TREE_TYPE (src);
+	  tree size = TYPE_SIZE_UNIT (type);
+	  if (size
+	      && TREE_CODE (size) == INTEGER_CST
+	      && !integer_zerop (size))
+	    {
+	      /* Even though such uses of strlen would be undefined,
+		 avoid relying on arrays of arrays in case some genius
+		 decides to call strlen on an unterminated array element
+		 that's followed by a terminated one.  Likewise, avoid
+		 assuming that a struct array member is necessarily
+		 nul-terminated (the nul may be in the member that
+		 follows).  In those cases, assume that the length
+		 of the string stored in such an array is bounded
+		 by the size of the enclosing object if one can be
+		 determined.  */
+	      tree base = get_base_address (src);
+	      if (VAR_P (base))
+		{
+		  if (tree size = DECL_SIZE_UNIT (base))
+		    if (size
+			&& TREE_CODE (size) == INTEGER_CST
+			&& TREE_CODE (TREE_TYPE (base)) != POINTER_TYPE)
+		      max = wi::to_wide (size);
+		}
+	    }
+
+	  /* For strlen() the upper bound above is equal to
+	     the longest string that can be stored in the array
+	     (i.e., it accounts for the terminating nul.  For
+	     strnlen() bump up the maximum by one since the array
+	     need not be nul-terminated.  */
+	  if (!bound && max != 0)
+	    --max;
+	}
+    }
+
+  return set_strlen_range (lhs, max, bound);
 }
 
 /* Handle a strlen call.  If strlen of the argument is known, replace
@@ -3203,8 +3232,9 @@ get_min_string_length (tree rhs, bool *full_string_p)
 
   if (rhs && TREE_CODE (rhs) == STRING_CST)
     {
-      *full_string_p = true;
-      return strlen (TREE_STRING_POINTER (rhs));
+      HOST_WIDE_INT len = strlen (TREE_STRING_POINTER (rhs));
+      *full_string_p = len < TREE_STRING_LENGTH (rhs);
+      return len;
     }
 
   return -1;

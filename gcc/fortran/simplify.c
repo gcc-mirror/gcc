@@ -4963,6 +4963,8 @@ static gfc_expr *
 simplify_min_max (gfc_expr *expr, int sign)
 {
   gfc_actual_arglist *arg, *last, *extremum;
+  gfc_expr *tmp, *ret;
+  const char *fname;
 
   last = NULL;
   extremum = NULL;
@@ -4995,7 +4997,27 @@ simplify_min_max (gfc_expr *expr, int sign)
   if (expr->value.function.actual->next != NULL)
     return NULL;
 
-  return gfc_copy_expr (expr->value.function.actual->expr);
+  /* Handle special cases of specific functions (min|max)1 and
+     a(min|max)0.  */
+
+  tmp = expr->value.function.actual->expr;
+  fname = expr->value.function.isym->name;
+
+  if ((tmp->ts.type != BT_INTEGER || tmp->ts.kind != gfc_integer_4_kind)
+      && (strcmp (fname, "min1") == 0 || strcmp (fname, "max1") == 0))
+    {
+      ret = gfc_convert_constant (tmp, BT_INTEGER, gfc_integer_4_kind);
+    }
+  else if ((tmp->ts.type != BT_REAL || tmp->ts.kind != gfc_real_4_kind)
+	   && (strcmp (fname, "amin0") == 0 || strcmp (fname, "amax0") == 0))
+    {
+      ret = gfc_convert_constant (tmp, BT_REAL, gfc_real_4_kind);
+    }
+  else
+    ret = gfc_copy_expr (tmp);
+
+  return ret;
+
 }
 
 
@@ -6266,6 +6288,18 @@ do_xor (gfc_expr *result, gfc_expr *e)
   return result;
 }
 
+
+gfc_expr *
+gfc_simplify_is_contiguous (gfc_expr *array)
+{
+  if (gfc_is_simply_contiguous (array, false, true))
+    return gfc_get_logical_expr (gfc_default_logical_kind, &array->where, 1);
+
+  if (gfc_is_not_contiguous (array))
+    return gfc_get_logical_expr (gfc_default_logical_kind, &array->where, 0);
+    
+  return NULL;
+}
 
 
 gfc_expr *
@@ -7538,7 +7572,8 @@ gfc_simplify_spread (gfc_expr *source, gfc_expr *dim_expr, gfc_expr *ncopies_exp
 	return NULL;
     }
 
-  if (source->expr_type == EXPR_CONSTANT)
+  if (source->expr_type == EXPR_CONSTANT
+      || source->expr_type == EXPR_STRUCTURE)
     {
       gcc_assert (dim == 0);
 

@@ -1159,7 +1159,7 @@ sjlj_emit_function_enter (rtx_code_label *dispatch_label)
 
   /* We're storing this libcall's address into memory instead of
      calling it directly.  Thus, we must call assemble_external_libcall
-     here, as we can not depend on emit_library_call to do it for us.  */
+     here, as we cannot depend on emit_library_call to do it for us.  */
   assemble_external_libcall (personality);
   mem = adjust_address (fc, Pmode, sjlj_fc_personality_ofs);
   emit_move_insn (mem, personality);

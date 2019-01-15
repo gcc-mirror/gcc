@@ -1392,7 +1392,7 @@ gcse_after_reload_main (rtx f ATTRIBUTE_UNUSED)
 	 increase the number of redundant loads found.  So compute transparency
 	 information for each memory expression in the hash table.  */
       df_analyze ();
-      /* This can not be part of the normal allocation routine because
+      /* This cannot be part of the normal allocation routine because
 	 we have to know the number of elements in the hash table.  */
       transp = sbitmap_vector_alloc (last_basic_block_for_fn (cfun),
 				     expr_table->elements ());

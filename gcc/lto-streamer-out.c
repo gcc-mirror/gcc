@@ -857,7 +857,7 @@ DFS::DFS_write_tree_body (struct output_block *ob,
       /* TYPE_CANONICAL is re-computed during type merging, so no need
 	 to follow it here.  */
       /* Do not stream TYPE_STUB_DECL; it is not needed by LTO but currently
-	 it can not be freed by free_lang_data without triggering ICEs in
+	 it cannot be freed by free_lang_data without triggering ICEs in
 	 langhooks.  */
     }
 

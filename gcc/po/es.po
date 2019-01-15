@@ -1,8 +1,8 @@
 # Mensajes en español para gcc-8.1.0.
-# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2016, 2017, 2018 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2016, 2017, 2018, 2019 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Cristian Othón Martínez Vera <cfuga@cfuga.mx>, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
-# Antonio Ceballos Roa <aceballos@gmail.com>, 2016, 2017, 2018
+# Antonio Ceballos Roa <aceballos@gmail.com>, 2016, 2017, 2018, 2019
 #
 # Agradezco a Juan Cuquejo Mira por sus comentarios sobre esta traducción
 #
@@ -13,6 +13,7 @@
 # asan               - asan
 # bug                - error
 # callback           - callback
+# construct          - TBD
 # cse                - TBD
 # demangled          - mutilado
 # dereference        - desreferencia
@@ -42,7 +43,7 @@ msgstr ""
 "Project-Id-Version: gcc 8.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-07-25 14:25+0000\n"
-"PO-Revision-Date: 2018-10-17 01:00+0200\n"
+"PO-Revision-Date: 2019-01-06 23:49+0100\n"
 "Last-Translator: Antonio Ceballos Roa <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -33188,7 +33189,7 @@ msgstr "el subprograma %q+F no está marcado Inline"
 #: ada/gcc-interface/trans.c:6401
 #, gcc-internal-format
 msgid "out-of-bounds access may be optimized away"
-msgstr ""
+msgstr "el acceso fuera de límites puede optimizarse fuera"
 
 #: ada/gcc-interface/trans.c:6403
 #, fuzzy, gcc-internal-format
@@ -33801,7 +33802,7 @@ msgstr "const %qD sin inicializar es no válida en C++"
 #: c/c-decl.c:5224 cp/decl.c:7318
 #, gcc-internal-format
 msgid "%q+D in declare target directive does not have mappable type"
-msgstr ""
+msgstr "%q+D en directiva de objetivo de declaración no tiene tipo asociable"
 
 #: c/c-decl.c:5288
 #, gcc-internal-format
@@ -34388,7 +34389,7 @@ msgstr "el parámetro %q+D sólo tiene una declaración posterior"
 #: c/c-decl.c:7394
 #, gcc-internal-format
 msgid "%<%s %E%> declared inside parameter list will not be visible outside of this definition or declaration"
-msgstr ""
+msgstr "%<%s %E%> declarado dentro de la list de parámetros no será visible fuera de esta definición o declaración"
 
 #: c/c-decl.c:7400
 #, gcc-internal-format, gfc-internal-format
@@ -34458,12 +34459,12 @@ msgstr "miembro %q+D duplicado"
 #: c/c-decl.c:7906
 #, gcc-internal-format
 msgid "empty struct has size 0 in C, size 1 in C++"
-msgstr ""
+msgstr "una struct vacía tiene tamaño 0 en C y tamaño 1 en C++"
 
 #: c/c-decl.c:7909
 #, gcc-internal-format
 msgid "empty union has size 0 in C, size 1 in C++"
-msgstr ""
+msgstr "una union vacía tiene tamaño 0 en C y tamaño 1 en C++"
 
 #: c/c-decl.c:8014
 #, gcc-internal-format
@@ -34600,7 +34601,7 @@ msgstr "el tipo de devolución de %qD no es %<int%>"
 #: c/c-decl.c:8898
 #, gcc-internal-format
 msgid "%<_Atomic%>-qualified return type of %qD"
-msgstr ""
+msgstr "calificado %<_Atomic%> el tipo de retorno de %qD"
 
 #: c/c-decl.c:8905
 #, gcc-internal-format
@@ -35381,12 +35382,12 @@ msgstr "variable de iteración no válida en la enumeración rápida"
 #: c/c-parser.c:6172 cp/parser.c:11708
 #, gcc-internal-format
 msgid "missing loop condition in loop with %<GCC ivdep%> pragma"
-msgstr ""
+msgstr "falta la condición del bucle en bucle con pragma %<GCC ivdep%>"
 
 #: c/c-parser.c:6178 cp/parser.c:11714
 #, gcc-internal-format
 msgid "missing loop condition in loop with %<GCC unroll%> pragma"
-msgstr ""
+msgstr "falta la condición del bucle en bucle con pragma %<GCC unroll%>"
 
 #: c/c-parser.c:6212
 #, gcc-internal-format
@@ -35590,12 +35591,12 @@ msgstr "el argumento '%u' de %<__builtin_tgmath%> tiene un número incorrecto de
 #: c/c-parser.c:8333 c/c-parser.c:8343
 #, gcc-internal-format
 msgid "invalid type-generic return type for argument %u of %<__builtin_tgmath%>"
-msgstr ""
+msgstr "el tipo de retorno de tipo genérico para el argumento %u de %<__builtin_tgmath%> no es válido"
 
 #: c/c-parser.c:8365 c/c-parser.c:8375
 #, gcc-internal-format
 msgid "invalid type-generic type for argument %u of argument %u of %<__builtin_tgmath%>"
-msgstr ""
+msgstr "el tipo de tipo genérico para el argumento %u del argumento %u de %<__builtin_tgmath%> no es válido"
 
 #: c/c-parser.c:8408
 #, gcc-internal-format
@@ -35605,89 +35606,77 @@ msgstr "los argumentos de función de %<__builtin_tgmath%> tienen todos el mismo
 #: c/c-parser.c:8427
 #, gcc-internal-format
 msgid "function arguments of %<__builtin_tgmath%> lack type-generic parameter"
-msgstr ""
+msgstr "los argumentos de función de %<__builtin_tgmath%> carecen de paramétro de tipo genérico"
 
 #: c/c-parser.c:8475
 #, gcc-internal-format
 msgid "duplicate type-generic parameter type for function argument %u of %<__builtin_tgmath%>"
-msgstr ""
+msgstr "el tipo de parámetro de tipo genérico para el argumento de función %u de %<__builtin_tgmath%> está duplicado"
 
 #: c/c-parser.c:8498
 #, gcc-internal-format
 msgid "bad return type for function argument %u of %<__builtin_tgmath%>"
-msgstr ""
+msgstr "tipo de retorno inadecuado para el argumento de función %u de %<__builtin_tgmath%>"
 
 #: c/c-parser.c:8515
-#, fuzzy, gcc-internal-format
-#| msgid "wrong number of arguments to function %<__builtin_next_arg%>"
+#, gcc-internal-format
 msgid "bad type for argument %u of function argument %u of %<__builtin_tgmath%>"
-msgstr "número erróneo de argumentos para la función %<__builtin_next_arg%>"
+msgstr "tipo inadecuado para el argumento %u del argumento de función %u de %<__builtin_tgmath%>"
 
 #: c/c-parser.c:8553
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid type for parameter %d of constexpr function %q+#D"
+#, gcc-internal-format, gfc-internal-format
 msgid "invalid type of argument %u of type-generic function"
-msgstr "tipo no válido del parámetro %d en la función constexpr %q+#D"
+msgstr "tipo no válido del argumento %u de la función de tipo genérico"
 
 #: c/c-parser.c:8564
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "non-floating-point argument in call to function %qE"
+#, gcc-internal-format, gfc-internal-format
 msgid "decimal floating-point argument %u to complex-only type-generic function"
-msgstr "argumento que no es de coma flotante en la llamada a la función %qE"
+msgstr "argumento de coma flotante decimal %u para función de tipo genérico solo para complejos"
 
 #: c/c-parser.c:8572
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "non-floating-point argument in call to function %qE"
+#, gcc-internal-format, gfc-internal-format
 msgid "decimal floating-point argument %u to binary-only type-generic function"
-msgstr "argumento que no es de coma flotante en la llamada a la función %qE"
+msgstr "argumento de coma flotante decimal %u para función de tipo genérico solo para binarios"
 
 #: c/c-parser.c:8580 c/c-parser.c:8610
-#, fuzzy, gcc-internal-format
-#| msgid "non-floating-point arguments in call to function %qE"
+#, gcc-internal-format
 msgid "both complex and decimal floating-point arguments to type-generic function"
-msgstr "argumentos que no son de coma flotante en la llamada a la función %qE"
+msgstr "argumentos de ambos tipos complejo y de coma flotante decimal para función de tipo genérico"
 
 #: c/c-parser.c:8588 c/c-parser.c:8630
-#, fuzzy, gcc-internal-format
-#| msgid "non-floating-point arguments in call to function %qE"
+#, gcc-internal-format
 msgid "both binary and decimal floating-point arguments to type-generic function"
-msgstr "argumentos que no son de coma flotante en la llamada a la función %qE"
+msgstr "argumentos de ambos tipos binario y de coma flotante decimal para función de tipo genérico"
 
 #: c/c-parser.c:8602
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "complex arguments must have identical types"
+#, gcc-internal-format, gfc-internal-format
 msgid "complex argument %u to decimal-only type-generic function"
-msgstr "los argumentos complejos deben tener tipos idénticos"
+msgstr "argumento complejo %u para función de tipo genérico solo para decimales"
 
 #: c/c-parser.c:8622
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid argument to built-in function"
+#, gcc-internal-format, gfc-internal-format
 msgid "binary argument %u to decimal-only type-generic function"
-msgstr "argumento no válido para la función interna"
+msgstr "argumento binario %u para función de tipo genérico solo para decimales"
 
 #: c/c-parser.c:8728
-#, fuzzy, gcc-internal-format
-#| msgid "no matching function for call to %<%D(%A)%>"
+#, gcc-internal-format
 msgid "no matching function for type-generic call"
-msgstr "no hay una función coincidente para la llamada a %<%D(%A)%>"
+msgstr "no hay ninguna función coincidente para la llamada de tipo genérico"
 
 #: c/c-parser.c:8769
-#, fuzzy, gcc-internal-format
-#| msgid "wrong number of arguments to %<__builtin_choose_expr%>"
+#, gcc-internal-format
 msgid "wrong number of arguments to %<__builtin_call_with_static_chain%>"
-msgstr "número erróneo de argumentos para %<__builtin_choose_expr%>"
+msgstr "número erróneo de argumentos para %<__builtin_call_with_static_chain%>"
 
 #: c/c-parser.c:8782
-#, fuzzy, gcc-internal-format
-#| msgid "third argument to %<__builtin_prefetch%> must be a constant"
+#, gcc-internal-format
 msgid "first argument to %<__builtin_call_with_static_chain%> must be a call expression"
-msgstr "el tercer argumento de %<__builtin_prefetch%> debe ser una constante"
+msgstr "el primer argumento de %<__builtin_call_with_static_chain%> debe ser una expresión de llamada"
 
 #: c/c-parser.c:8786
-#, fuzzy, gcc-internal-format
-#| msgid "second argument to %<__builtin_prefetch%> must be a constant"
+#, gcc-internal-format
 msgid "second argument to %<__builtin_call_with_static_chain%> must be a pointer type"
-msgstr "el segundo argumento de %<__builtin_prefetch%> debe ser una constante"
+msgstr "el segundo argumento de %<__builtin_call_with_static_chain%> debe ser un tipo puntero"
 
 #: c/c-parser.c:8812
 #, gcc-internal-format
@@ -36519,13 +36508,12 @@ msgstr "%qT no tiene un miembro llamado %qE"
 #: c/c-typeck.c:2430
 #, gcc-internal-format
 msgid "accessing a member %qE of an atomic structure %qE"
-msgstr ""
+msgstr "accediendo a un miembro %qE de una estructura atómica %qE"
 
 #: c/c-typeck.c:2433
-#, fuzzy, gcc-internal-format
-#| msgid "passing arg %d of pointer to function"
+#, gcc-internal-format
 msgid "accessing a member %qE of an atomic union %qE"
-msgstr "al pasar el argumento %d del puntero a la función"
+msgstr "accediendo a un miembro %qE de una unión atómica %qE"
 
 #: c/c-typeck.c:2493
 #, gcc-internal-format
@@ -36841,7 +36829,7 @@ msgstr "conversión implícita de %qT a %qT para coincidir con otro resultado de
 #: c/c-typeck.c:5097 c/c-typeck.c:5103
 #, gcc-internal-format
 msgid "operand of ?: changes signedness from %qT to %qT due to unsignedness of other operand"
-msgstr ""
+msgstr "un operando de ?: cambia de tipo de signo de %qT a %qT debido al tipo sin signo de otro operando"
 
 #: c/c-typeck.c:5120
 #, gcc-internal-format
@@ -37400,7 +37388,7 @@ msgstr "exceso de elementos en el inicializador de struct"
 #: c/c-typeck.c:9523
 #, gcc-internal-format
 msgid "positional initialization of field in %<struct%> declared with %<designated_init%> attribute"
-msgstr ""
+msgstr "inicialización posicional de un campo de %<struct%> declarado con el atributo %<designated_init%>"
 
 #: c/c-typeck.c:9594
 #, gcc-internal-format
@@ -37694,29 +37682,28 @@ msgstr ""
 #: c/c-typeck.c:12577 cp/semantics.c:4696
 #, gcc-internal-format
 msgid "negative low bound in array section in %qs clause"
-msgstr ""
+msgstr "límite inferior negativo en sección de matriz en cláusula %qs"
 
 #: c/c-typeck.c:12586 c/c-typeck.c:12696 cp/semantics.c:4705
 #: cp/semantics.c:4815
-#, fuzzy, gcc-internal-format
-#| msgid "variable length array is used"
+#, gcc-internal-format
 msgid "negative length in array section in %qs clause"
-msgstr "se usó la matriz de longitud variable"
+msgstr "longitud negativa en sección de matriz en cláusula %qs"
 
 #: c/c-typeck.c:12603 cp/semantics.c:4722
 #, gcc-internal-format
 msgid "low bound %qE above array section size in %qs clause"
-msgstr ""
+msgstr "límite inferior %qE por encima del tamaño de la sección de matriz en cláusula %qs"
 
 #: c/c-typeck.c:12640 cp/semantics.c:4759
 #, gcc-internal-format
 msgid "length %qE above array section size in %qs clause"
-msgstr ""
+msgstr "longitud %qE por encima del tamaño de la sección de matriz en cláusula %qs"
 
 #: c/c-typeck.c:12655 cp/semantics.c:4774
 #, gcc-internal-format
 msgid "high bound %qE above array section size in %qs clause"
-msgstr ""
+msgstr "límite superior %qE por encima del tamaño de la sección de matriz en cláusula %qs"
 
 #: c/c-typeck.c:12688 cp/semantics.c:4807
 #, fuzzy, gcc-internal-format
@@ -37791,7 +37778,7 @@ msgstr ""
 #: c/c-typeck.c:13359 cp/semantics.c:6002
 #, gcc-internal-format
 msgid "%<linear%> clause step %qE is neither constant nor a parameter"
-msgstr ""
+msgstr "cláusula %<linear%> paso %qE no es ni constante ni parámetro"
 
 #: c/c-typeck.c:13389 c/c-typeck.c:13776 cp/semantics.c:6086
 #: cp/semantics.c:6927
@@ -38176,10 +38163,8 @@ msgid "initializing %qH with %qI in converted constant expression does not bind 
 msgstr ""
 
 #: cp/call.c:4101
-#, fuzzy
-#| msgid "temporary of non-literal type %qT in a constant expression"
 msgid "conversion from %qH to %qI in a converted constant expression"
-msgstr "temporal del tipo %qT que no es literal en una expresión constante"
+msgstr "conversión de %qH a %qI en una expresión constante convertida"
 
 #: cp/call.c:4238
 #, gcc-internal-format
@@ -38514,22 +38499,19 @@ msgid "scoped enum %qT passed through ... as %qT before -fabi-version=6, %qT aft
 msgstr ""
 
 #: cp/call.c:7217
-#, fuzzy, gcc-internal-format
-#| msgid "cannot pass objects of non-trivially-copyable type %q#T through %<...%>"
+#, gcc-internal-format
 msgid "passing objects of non-trivially-copyable type %q#T through %<...%> is conditionally supported"
-msgstr "no se puede pasar objetos de tipo no-copiable-trivialmente q%#T a través de %<...%>"
+msgstr "el paso de objetos de tipo no-copiable-trivialmente %q#T a través de %<...%> se admite condicionalmente"
 
 #: cp/call.c:7253
-#, fuzzy, gcc-internal-format
-#| msgid "cannot receive objects of non-trivially-copyable type %q#T through %<...%>; "
+#, gcc-internal-format
 msgid "cannot receive reference type %qT through %<...%>"
-msgstr "no se puede recibir objetos de tipo no-copiable-trivialmente q%#T a través de %<...%>"
+msgstr "no se puede recibir el tipo de referencia %qT a través de %<...%>"
 
 #: cp/call.c:7263
-#, fuzzy, gcc-internal-format
-#| msgid "cannot receive objects of non-trivially-copyable type %q#T through %<...%>; "
+#, gcc-internal-format
 msgid "receiving objects of non-trivially-copyable type %q#T through %<...%> is conditionally-supported"
-msgstr "no se puede recibir objetos de tipo no-copiable-trivialmente q%#T a través de %<...%>"
+msgstr "la recepción de objetos de tipo no-copiable-trivialmente %q#T a través de %<...%> se admite condicionalmente"
 
 #: cp/call.c:7331
 #, gcc-internal-format
@@ -38943,10 +38925,9 @@ msgstr ""
 
 #: cp/class.c:1325 cp/class.c:1331 cp/class.c:1337 cp/class.c:1348
 #: cp/cvt.c:1028
-#, fuzzy, gcc-internal-format
-#| msgid "%qD declared here"
+#, gcc-internal-format
 msgid "%qT declared here"
-msgstr "%qD se declara aquí"
+msgstr "%qT se declara aquí"
 
 #: cp/class.c:1329
 #, gcc-internal-format
@@ -38986,7 +38967,7 @@ msgstr "%q#T solamente define constructores privados y no tiene friends"
 #: cp/class.c:2160
 #, gcc-internal-format
 msgid "%q#D is public, but requires an existing %q#T object"
-msgstr ""
+msgstr "%q#D es público, pero requiere que exista un objeto %q#T"
 
 # Ojo, no es impostor, sino impositor, el que impone. cfuga
 #: cp/class.c:2434
@@ -39001,40 +38982,34 @@ msgid "%qD can be marked override"
 msgstr "no se puede sobrecargar %q+#D"
 
 #: cp/class.c:2801
-#, fuzzy, gcc-internal-format
-#| msgid "%q+#D marked final, but is not virtual"
+#, gcc-internal-format
 msgid "%q+#D marked %<final%>, but is not virtual"
-msgstr "se marca %q+#D como final, pero no es virtual"
+msgstr "se marca %q+#D como %<final%>, pero no es virtual"
 
 #: cp/class.c:2803
-#, fuzzy, gcc-internal-format
-#| msgid "%q+#D marked override, but does not override"
+#, gcc-internal-format
 msgid "%q+#D marked %<override%>, but does not override"
-msgstr "%q+#D se marca como override, pero no hace override"
+msgstr "%q+#D se marca como %<override%>, pero no hace override"
 
 #: cp/class.c:2865
-#, fuzzy, gcc-internal-format
-#| msgid "%q+D was hidden"
+#, gcc-internal-format
 msgid "%qD was hidden"
-msgstr "%q+D estaba escondido"
+msgstr "%qD estaba oculto"
 
 #: cp/class.c:2867
-#, fuzzy, gcc-internal-format
-#| msgid "  by %q+D"
+#, gcc-internal-format
 msgid "  by %qD"
-msgstr "  por %q+D"
+msgstr "  por %qD"
 
 #: cp/class.c:2900
-#, fuzzy, gcc-internal-format
-#| msgid "%q+#D invalid; an anonymous union can only have non-static data members"
+#, gcc-internal-format
 msgid "%q#D invalid; an anonymous union may only have public non-static data members"
-msgstr "%q+#D no válido; un union anónimo sólo puede tener miembros con datos no estáticos"
+msgstr "%q#D no válido; una union anónima solo puede tener miembros con datos no estáticos públicos"
 
 #: cp/class.c:2910 cp/name-lookup.c:3293 cp/parser.c:19717
-#, fuzzy, gcc-internal-format
-#| msgid "-traditional is deprecated and may be removed"
+#, gcc-internal-format
 msgid "this flexibility is deprecated and will be removed"
-msgstr "-traditional es obsoleto y será eliminado"
+msgstr "esta flexibilidad es obsoleta y será eliminada"
 
 #: cp/class.c:3101
 #, gcc-internal-format
@@ -39167,13 +39142,12 @@ msgstr "  pero no se impone a %<operator=(const %T&)%>"
 #: cp/class.c:4101
 #, gcc-internal-format
 msgid "alignment of %qD increased in -fabi-version=9 (GCC 5.2)"
-msgstr ""
+msgstr "el alineamiento de %qD se ha incrementado en -fabi-version=9 (GCC 5.2)"
 
 #: cp/class.c:4104
-#, fuzzy, gcc-internal-format
-#| msgid "alignment of %qD is bigger than original declaration"
+#, gcc-internal-format
 msgid "alignment of %qD will increase in -fabi-version=9"
-msgstr "la alineación de %qD es más grande que la declaración original"
+msgstr "la alineación de %qD aumentará en -fabi-version=9"
 
 #: cp/class.c:4382
 #, gcc-internal-format
@@ -39191,10 +39165,9 @@ msgid "method declared %qE overriding %qE method"
 msgstr "el método declarado como %qE anula el método %qE"
 
 #: cp/class.c:5367 cp/constexpr.c:237
-#, fuzzy, gcc-internal-format
-#| msgid "enclosing class of constexpr non-static member function %q+#D is not a literal type"
+#, gcc-internal-format
 msgid "enclosing class of %<constexpr%> non-static member function %q+#D is not a literal type"
-msgstr "la clase envolvente de la función miembro que no es estática constexpr %q+#D no es un tipo literal"
+msgstr "la clase envolvente de la función miembro que no es estática %<constexpr%> %q+#D no es un tipo literal"
 
 #: cp/class.c:5391
 #, gcc-internal-format
@@ -39212,10 +39185,9 @@ msgid "  %q+T has a non-trivial destructor"
 msgstr "  %q+T tiene un destructor que no es trivial"
 
 #: cp/class.c:5404
-#, fuzzy, gcc-internal-format
-#| msgid "  %q+T is not an aggregate, does not have a trivial default constructor, and has no constexpr constructor that is not a copy or move constructor"
+#, gcc-internal-format
 msgid "  %q+T is not an aggregate, does not have a trivial default constructor, and has no %<constexpr%> constructor that is not a copy or move constructor"
-msgstr "  %q+T no es un agregado, no tiene un constructor trivial por defecto y no tiene un constructor constexpr que no es un constructor copy o move"
+msgstr "  %q+T no es un agregado, no tiene un constructor trivial por defecto y no tiene un constructor %<constexpr%> que no es un constructor copy o move"
 
 #: cp/class.c:5437
 #, gcc-internal-format
@@ -39367,10 +39339,9 @@ msgid "type transparent %q#T cannot be made transparent because the type of the 
 msgstr ""
 
 #: cp/class.c:7088
-#, fuzzy, gcc-internal-format
-#| msgid "deducing from brace-enclosed initializer list requires #include <initializer_list>"
+#, gcc-internal-format
 msgid "definition of %qD does not match %<#include <initializer_list>%>"
-msgstr "la deducción de una lista inicializadora encerrada entre llaves requiere #include <initializer_list>"
+msgstr "la definición de %qD no coincide con %<#include <initializer_list>%>"
 
 #: cp/class.c:7099
 #, gcc-internal-format
@@ -39428,22 +39399,19 @@ msgid "declaration of %q#D"
 msgstr "la declaración de %q#D"
 
 #: cp/class.c:8254
-#, fuzzy, gcc-internal-format
-#| msgid "changes meaning of %qD from %q+#D"
+#, gcc-internal-format
 msgid "changes meaning of %qD from %q#D"
-msgstr "cambia el significado de %qD a partir de %q+#D"
+msgstr "cambia el significado de %qD a partir de %q#D"
 
 #: cp/constexpr.c:98
-#, fuzzy, gcc-internal-format
-#| msgid "the type %qT of constexpr variable %qD is not literal"
+#, gcc-internal-format
 msgid "the type %qT of %<constexpr%> variable %qD is not literal"
-msgstr "el tipo %qT de variable constexpr %qD no es literal"
+msgstr "el tipo %qT de variable %<constexpr%> %qD no es literal"
 
 #: cp/constexpr.c:107
-#, fuzzy, gcc-internal-format
-#| msgid "temporary of non-literal type %qT in a constant expression"
+#, gcc-internal-format
 msgid "variable %qD of non-literal type %qT in %<constexpr%> function"
-msgstr "temporal del tipo %qT que no es literal en una expresión constante"
+msgstr "la variable %qD del tipo %qT que no es literal en una función %<constexpr%>"
 
 #: cp/constexpr.c:118
 #, fuzzy, gcc-internal-format
@@ -39452,16 +39420,14 @@ msgid "%<constexpr%> variable %qD has variably-modified type %qT"
 msgstr "el parámetro puede no tener el tipo modificado variablemente %qT"
 
 #: cp/constexpr.c:189
-#, fuzzy, gcc-internal-format
-#| msgid "defaulted constructor calls non-constexpr %q+D"
+#, gcc-internal-format
 msgid "inherited constructor %qD is not %<constexpr%>"
-msgstr "un constructor por defecto llama a %q+D que no es constexpr"
+msgstr "el constructor heredado %qD no es %<constexpr%>"
 
 #: cp/constexpr.c:201
-#, fuzzy, gcc-internal-format
-#| msgid "invalid type for parameter %d of constexpr function %q+#D"
+#, gcc-internal-format
 msgid "invalid type for parameter %d of %<constexpr%> function %q+#D"
-msgstr "tipo no válido del parámetro %d en la función constexpr %q+#D"
+msgstr "tipo no válido del parámetro %d en la función %<constexpr%> %q+#D"
 
 #: cp/constexpr.c:213
 #, gcc-internal-format

@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef STACK_REALIGN_DEFAULT
 #define STACK_REALIGN_DEFAULT (TARGET_64BIT ? 0 : 1)
 
-/* Old versions of the Solaris assembler can not handle the difference of
+/* Old versions of the Solaris assembler cannot handle the difference of
    labels in different sections, so force DW_EH_PE_datarel if so.  */
 #ifndef HAVE_AS_IX86_DIFF_SECT_DELTA
 #undef ASM_PREFERRED_EH_DATA_FORMAT

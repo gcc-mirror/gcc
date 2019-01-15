@@ -1089,7 +1089,7 @@ resolve_common_blocks (gfc_symtree *common_root)
 	       sym->name, &common_root->n.common->where, &sym->declared_at);
 
   if (sym->attr.external)
-    gfc_error ("COMMON block %qs at %L can not have the EXTERNAL attribute",
+    gfc_error ("COMMON block %qs at %L cannot have the EXTERNAL attribute",
 	       sym->name, &common_root->n.common->where);
 
   if (sym->attr.intrinsic)
@@ -1685,8 +1685,6 @@ is_illegal_recursion (gfc_symbol* sym, gfc_namespace* context)
   if (sym->attr.flavor == FL_PROGRAM
       || gfc_fl_struct (sym->attr.flavor))
     return false;
-
-  gcc_assert (sym->attr.flavor == FL_PROCEDURE);
 
   /* If we've got an ENTRY, find real procedure.  */
   if (sym->attr.entry && sym->ns->entries)
@@ -9319,7 +9317,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	default_case->next = if_st;
     }
 
-  /* Resolve the internal code.  This can not be done earlier because
+  /* Resolve the internal code.  This cannot be done earlier because
      it requires that the sym->assoc of selectors is set already.  */
   gfc_current_ns = ns;
   gfc_resolve_blocks (code->block, gfc_current_ns);
@@ -9453,7 +9451,7 @@ resolve_transfer (gfc_code *code)
 	  return;
 	}
 
-      /* C_PTR and C_FUNPTR have private components which means they can not
+      /* C_PTR and C_FUNPTR have private components which means they cannot
          be printed.  However, if -std=gnu and not -pedantic, allow
          the component to be printed to help debugging.  */
       if (ts->u.derived->ts.f90_type == BT_VOID)
@@ -11791,11 +11789,12 @@ gfc_verify_binding_labels (gfc_symbol *sym)
 		 sym->binding_label, &sym->declared_at, &gsym->where);
       /* Clear the binding label to prevent checking multiple times.  */
       sym->binding_label = NULL;
-
+      return;
     }
-  else if (sym->attr.flavor == FL_VARIABLE && module
-	   && (strcmp (module, gsym->mod_name) != 0
-	       || strcmp (sym->name, gsym->sym_name) != 0))
+
+  if (sym->attr.flavor == FL_VARIABLE && module
+      && (strcmp (module, gsym->mod_name) != 0
+	  || strcmp (sym->name, gsym->sym_name) != 0))
     {
       /* This can only happen if the variable is defined in a module - if it
 	 isn't the same module, reject it.  */
@@ -11804,14 +11803,16 @@ gfc_verify_binding_labels (gfc_symbol *sym)
 		 sym->name, module, sym->binding_label,
 		 &sym->declared_at, &gsym->where, gsym->mod_name);
       sym->binding_label = NULL;
+      return;
     }
-  else if ((sym->attr.function || sym->attr.subroutine)
-	   && ((gsym->type != GSYM_SUBROUTINE && gsym->type != GSYM_FUNCTION)
-	       || (gsym->defined && sym->attr.if_source != IFSRC_IFBODY))
-	   && sym != gsym->ns->proc_name
-	   && (module != gsym->mod_name
-	       || strcmp (gsym->sym_name, sym->name) != 0
-	       || (module && strcmp (module, gsym->mod_name) != 0)))
+
+  if ((sym->attr.function || sym->attr.subroutine)
+      && ((gsym->type != GSYM_SUBROUTINE && gsym->type != GSYM_FUNCTION)
+	   || (gsym->defined && sym->attr.if_source != IFSRC_IFBODY))
+      && (sym != gsym->ns->proc_name && sym->attr.entry == 0)
+      && (module != gsym->mod_name
+	  || strcmp (gsym->sym_name, sym->name) != 0
+	  || (module && strcmp (module, gsym->mod_name) != 0)))
     {
       /* Print an error if the procedure is defined multiple times; we have to
 	 exclude references to the same procedure via module association or
@@ -12274,13 +12275,8 @@ deferred_requirements (gfc_symbol *sym)
 static bool
 resolve_fl_variable (gfc_symbol *sym, int mp_flag)
 {
-  int no_init_flag, automatic_flag;
-  gfc_expr *e;
-  const char *auto_save_msg;
-  bool saved_specification_expr;
-
-  auto_save_msg = "Automatic object %qs at %L cannot have the "
-		  "SAVE attribute";
+  const char *auto_save_msg = "Automatic object %qs at %L cannot have the "
+			      "SAVE attribute";
 
   if (!resolve_fl_var_and_proc (sym, mp_flag))
     return false;
@@ -12288,7 +12284,7 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
   /* Set this flag to check that variables are parameters of all entries.
      This check is effected by the call to gfc_resolve_expr through
      is_non_constant_shape_array.  */
-  saved_specification_expr = specification_expr;
+  bool saved_specification_expr = specification_expr;
   specification_expr = true;
 
   if (sym->ns->proc_name
@@ -12315,6 +12311,8 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
     {
       /* Make sure that character string variables with assumed length are
 	 dummy arguments.  */
+      gfc_expr *e = NULL;
+
       if (sym->ts.u.cl)
 	e = sym->ts.u.cl->length;
       else
@@ -12364,7 +12362,7 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
     apply_default_init_local (sym); /* Try to apply a default initialization.  */
 
   /* Determine if the symbol may not have an initializer.  */
-  no_init_flag = automatic_flag = 0;
+  int no_init_flag = 0, automatic_flag = 0;
   if (sym->attr.allocatable || sym->attr.external || sym->attr.dummy
       || sym->attr.intrinsic || sym->attr.result)
     no_init_flag = 1;
@@ -12494,7 +12492,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
      module procedures are excluded by 2.2.3.3 - i.e., they are not
      externally accessible and can access all the objects accessible in
      the host.  */
-  if (!(sym->ns->parent
+  if (!(sym->ns->parent && sym->ns->parent->proc_name
 	&& sym->ns->parent->proc_name->attr.flavor == FL_MODULE)
       && gfc_check_symbol_access (sym))
     {
@@ -15314,7 +15312,7 @@ resolve_symbol (gfc_symbol *sym)
 	  for (; formal; formal = formal->next)
 	    if (formal->sym && formal->sym->attr.flavor == FL_NAMELIST)
 	      {
-		gfc_error ("Namelist %qs can not be an argument to "
+		gfc_error ("Namelist %qs cannot be an argument to "
 			   "subroutine or function at %L",
 			   formal->sym->name, &sym->declared_at);
 		return;

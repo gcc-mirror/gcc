@@ -7283,7 +7283,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	    }
 	}
 
-      /* If RHS is't an address, check pointer or array of packed
+      /* If RHS isn't an address, check pointer or array of packed
 	 struct or union.  */
       warn_for_address_or_pointer_of_packed_member
 	(TREE_CODE (orig_rhs) != ADDR_EXPR, type, orig_rhs);

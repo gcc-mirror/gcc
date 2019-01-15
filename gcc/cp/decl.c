@@ -4562,11 +4562,9 @@ builtin_function_1 (tree decl, tree context, bool is_global)
     }
 
   if (is_global)
-    pushdecl_top_level (decl);
+    return pushdecl_top_level (decl);
   else
-    pushdecl (decl);
-
-  return decl;
+    return pushdecl (decl);
 }
 
 tree
@@ -5088,7 +5086,8 @@ start_decl (const cp_declarator *declarator,
   if (initialized
       && TREE_CODE (decl) == TYPE_DECL)
     {
-      error ("typedef %qD is initialized (use decltype instead)", decl);
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"typedef %qD is initialized (use decltype instead)", decl);
       return error_mark_node;
     }
 
@@ -5125,7 +5124,8 @@ start_decl (const cp_declarator *declarator,
      a definition.  */
   if (initialized && DECL_DLLIMPORT_P (decl))
     {
-      error ("definition of %q#D is marked %<dllimport%>", decl);
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"definition of %q#D is marked %<dllimport%>", decl);
       DECL_DLLIMPORT_P (decl) = 0;
     }
 
@@ -5231,7 +5231,8 @@ start_decl (const cp_declarator *declarator,
       if (DECL_EXTERNAL (decl) && ! DECL_TEMPLATE_SPECIALIZATION (decl)
 	  /* Aliases are definitions. */
 	  && !alias)
-	permerror (input_location, "declaration of %q#D outside of class is not definition",
+	permerror (declarator->id_loc,
+		   "declaration of %q#D outside of class is not definition",
 		   decl);
     }
 
@@ -5264,10 +5265,12 @@ start_decl (const cp_declarator *declarator,
     {
       bool ok = false;
       if (CP_DECL_THREAD_LOCAL_P (decl))
-	error ("%qD declared %<thread_local%> in %<constexpr%> function",
-	       decl);
+	error_at (DECL_SOURCE_LOCATION (decl),
+		  "%qD declared %<thread_local%> in %<constexpr%> function",
+		  decl);
       else if (TREE_STATIC (decl))
-	error ("%qD declared %<static%> in %<constexpr%> function", decl);
+	error_at (DECL_SOURCE_LOCATION (decl),
+		  "%qD declared %<static%> in %<constexpr%> function", decl);
       else
 	ok = true;
       if (!ok)
@@ -5383,7 +5386,8 @@ grok_reference_init (tree decl, tree type, tree init, int flags)
       if ((DECL_LANG_SPECIFIC (decl) == 0
 	   || DECL_IN_AGGR_P (decl) == 0)
 	  && ! DECL_THIS_EXTERN (decl))
-	error ("%qD declared as reference but not initialized", decl);
+	error_at (DECL_SOURCE_LOCATION (decl),
+		  "%qD declared as reference but not initialized", decl);
       return NULL_TREE;
     }
 
@@ -7317,7 +7321,10 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 		    synthesize_method (decl);
 		}
 	      else
-		error ("function %q#D is initialized like a variable", decl);
+		error_at (cp_expr_loc_or_loc (init,
+					      DECL_SOURCE_LOCATION (decl)),
+			  "function %q#D is initialized like a variable",
+			  decl);
 	    }
 	  /* else no initialization required.  */
 	}
@@ -8282,18 +8289,18 @@ expand_static_init (tree decl, tree init)
   if (CP_DECL_THREAD_LOCAL_P (decl) && DECL_GNU_TLS_P (decl)
       && !DECL_FUNCTION_SCOPE_P (decl))
     {
+      location_t dloc = DECL_SOURCE_LOCATION (decl);
       if (init)
-	error ("non-local variable %qD declared %<__thread%> "
-	       "needs dynamic initialization", decl);
+	error_at (dloc, "non-local variable %qD declared %<__thread%> "
+		  "needs dynamic initialization", decl);
       else
-	error ("non-local variable %qD declared %<__thread%> "
-	       "has a non-trivial destructor", decl);
+	error_at (dloc, "non-local variable %qD declared %<__thread%> "
+		  "has a non-trivial destructor", decl);
       static bool informed;
       if (!informed)
 	{
-	  inform (DECL_SOURCE_LOCATION (decl),
-		  "C++11 %<thread_local%> allows dynamic initialization "
-		  "and destruction");
+	  inform (dloc, "C++11 %<thread_local%> allows dynamic "
+		  "initialization and destruction");
 	  informed = true;
 	}
       return;
@@ -8462,6 +8469,7 @@ cp_complete_array_type (tree *ptype, tree initial_value, bool do_default)
 	{
 	  vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (initial_value);
 	  tree value = (*v)[0].value;
+	  STRIP_ANY_LOCATION_WRAPPER (value);
 
 	  if (TREE_CODE (value) == STRING_CST
 	      && v->length () == 1)
@@ -10794,7 +10802,9 @@ grokdeclarator (const cp_declarator *declarator,
 	  error_at (&richloc, "%<long%> and %<short%> specified together");
 	}
       else if (TREE_CODE (type) != INTEGER_TYPE
-	       || type == char16_type_node || type == char32_type_node
+	       || type == char8_type_node
+	       || type == char16_type_node
+	       || type == char32_type_node
 	       || ((long_p || short_p)
 		   && (explicit_char || explicit_intN)))
 	error_at (loc, "%qs specified with %qT", key, type);
@@ -11957,6 +11967,8 @@ grokdeclarator (const cp_declarator *declarator,
 	}
     }
 
+  location_t loc = declarator ? declarator->id_loc : input_location;
+
   /* If this is declaring a typedef name, return a TYPE_DECL.  */
   if (typedef_p && decl_context != TYPENAME)
     {
@@ -12002,9 +12014,9 @@ grokdeclarator (const cp_declarator *declarator,
 	}
 
       if (decl_context == FIELD)
-	decl = build_lang_decl (TYPE_DECL, unqualified_id, type);
+	decl = build_lang_decl_loc (loc, TYPE_DECL, unqualified_id, type);
       else
-	decl = build_decl (input_location, TYPE_DECL, unqualified_id, type);
+	decl = build_decl (loc, TYPE_DECL, unqualified_id, type);
 
       if (decl_context != FIELD)
 	{
@@ -12248,7 +12260,6 @@ grokdeclarator (const cp_declarator *declarator,
 
   {
     tree decl = NULL_TREE;
-    location_t loc = declarator ? declarator->id_loc : input_location;
 
     if (decl_context == PARM)
       {
@@ -12549,8 +12560,9 @@ grokdeclarator (const cp_declarator *declarator,
 			    unqualified_id);
 		else if (constexpr_p && !initialized)
 		  {
-		    error ("%<constexpr%> static data member %qD must have an "
-			   "initializer", decl);
+		    error_at (DECL_SOURCE_LOCATION (decl),
+			      "%<constexpr%> static data member %qD must "
+			      "have an initializer", decl);
 		    constexpr_p = false;
 		  }
 
@@ -12788,8 +12800,9 @@ grokdeclarator (const cp_declarator *declarator,
 	  }
 	else if (constexpr_p && DECL_EXTERNAL (decl))
 	  {
-	    error ("declaration of %<constexpr%> variable %qD "
-		   "is not a definition", decl);
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "declaration of %<constexpr%> variable %qD "
+		      "is not a definition", decl);
 	    constexpr_p = false;
 	  }
 
@@ -12820,11 +12833,13 @@ grokdeclarator (const cp_declarator *declarator,
 	    /* It's common practice (and completely valid) to have a const
 	       be initialized and declared extern.  */
 	    if (!(type_quals & TYPE_QUAL_CONST))
-	      warning (0, "%qs initialized and declared %<extern%>", name);
+	      warning_at (DECL_SOURCE_LOCATION (decl), 0,
+			  "%qs initialized and declared %<extern%>", name);
 	  }
 	else
 	  {
-	    error ("%qs has both %<extern%> and initializer", name);
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "%qs has both %<extern%> and initializer", name);
 	    return error_mark_node;
 	  }
       }
@@ -16136,11 +16151,12 @@ finish_function (bool inline_p)
 	{
 	  tree valtype = TREE_TYPE (DECL_RESULT (fndecl));
 	  if (TREE_CODE (valtype) == REFERENCE_TYPE
+	      && current_class_ref
 	      && same_type_ignoring_top_level_qualifiers_p
-		  (TREE_TYPE (valtype), TREE_TYPE (current_class_ref)))
-	    if (global_dc->option_enabled (OPT_Wreturn_type,
-					   global_dc->option_state))
-	      add_return_star_this_fixit (&richloc, fndecl);
+		  (TREE_TYPE (valtype), TREE_TYPE (current_class_ref))
+	      && global_dc->option_enabled (OPT_Wreturn_type,
+					    global_dc->option_state))
+	    add_return_star_this_fixit (&richloc, fndecl);
 	}
       warning_at (&richloc, OPT_Wreturn_type,
 		  "no return statement in function returning non-void");

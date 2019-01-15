@@ -114,6 +114,8 @@ tree gfor_fndecl_fdate;
 tree gfor_fndecl_ttynam;
 tree gfor_fndecl_in_pack;
 tree gfor_fndecl_in_unpack;
+tree gfor_fndecl_cfi_to_gfc;
+tree gfor_fndecl_gfc_to_cfi;
 tree gfor_fndecl_associated;
 tree gfor_fndecl_system_clock4;
 tree gfor_fndecl_system_clock8;
@@ -213,6 +215,7 @@ tree gfor_fndecl_size1;
 tree gfor_fndecl_iargc;
 tree gfor_fndecl_kill;
 tree gfor_fndecl_kill_sub;
+tree gfor_fndecl_is_contiguous0;
 
 
 /* Intrinsic functions implemented in Fortran.  */
@@ -1368,7 +1371,7 @@ gfc_add_assign_aux_vars (gfc_symbol * sym)
   gfc_finish_var_decl (length, sym);
   gfc_finish_var_decl (addr, sym);
   /*  STRING_LENGTH is also used as flag. Less than -1 means that
-      ASSIGN_ADDR can not be used. Equal -1 means that ASSIGN_ADDR is the
+      ASSIGN_ADDR cannot be used. Equal -1 means that ASSIGN_ADDR is the
       target label's address. Otherwise, value is the length of a format string
       and ASSIGN_ADDR is its address.  */
   if (TREE_STATIC (length))
@@ -3498,6 +3501,12 @@ gfc_build_intrinsic_function_decls (void)
   gfor_fndecl_kill = gfc_build_library_function_decl (
 	get_identifier (PREFIX ("kill")), gfc_int4_type_node,
 	2, gfc_int4_type_node, gfc_int4_type_node);
+
+  gfor_fndecl_is_contiguous0 = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("is_contiguous0")), ".R",
+	gfc_int4_type_node, 1, pvoid_type_node);
+  DECL_PURE_P (gfor_fndecl_is_contiguous0) = 1;
+  TREE_NOTHROW (gfor_fndecl_is_contiguous0) = 1;
 }
 
 
@@ -3611,6 +3620,14 @@ gfc_build_builtin_function_decls (void)
   gfor_fndecl_in_unpack = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("internal_unpack")), ".wR",
 	void_type_node, 2, pvoid_type_node, pvoid_type_node);
+
+  gfor_fndecl_cfi_to_gfc = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("cfi_desc_to_gfc_desc")), ".ww",
+	void_type_node, 2, pvoid_type_node, ppvoid_type_node);
+
+  gfor_fndecl_gfc_to_cfi = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("gfc_desc_to_cfi_desc")), ".wR",
+	void_type_node, 2, ppvoid_type_node, pvoid_type_node);
 
   gfor_fndecl_associated = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("associated")), ".RR",

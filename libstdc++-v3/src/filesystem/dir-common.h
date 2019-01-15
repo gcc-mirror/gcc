@@ -26,6 +26,7 @@
 #define _GLIBCXX_DIR_COMMON_H 1
 
 #include <string.h>  // strcmp
+#include <errno.h>
 #if _GLIBCXX_FILESYSTEM_IS_WINDOWS
 #include <wchar.h>  // wcscmp
 #endif
@@ -34,8 +35,6 @@
 #  include <sys/types.h>
 # endif
 # include <dirent.h>
-#else
-# error "the <dirent.h> header is needed to build the Filesystem TS"
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -53,13 +52,20 @@ using dirent = _wdirent;
 inline DIR* opendir(const wchar_t* path) { return ::_wopendir(path); }
 inline dirent* readdir(DIR* dir) { return ::_wreaddir(dir); }
 inline int closedir(DIR* dir) { return ::_wclosedir(dir); }
-#else
+#elif defined _GLIBCXX_HAVE_DIRENT_H
 using char_type = char;
 using DIR = ::DIR;
 typedef struct ::dirent dirent;
 using ::opendir;
 using ::readdir;
 using ::closedir;
+#else
+using char_type = char;
+struct dirent { const char* d_name; };
+struct DIR { };
+inline DIR* opendir(const char*) { return nullptr; }
+inline dirent* readdir(DIR*) { return nullptr; }
+inline int closedir(DIR*) { return -1; }
 #endif
 } // namespace __gnu_posix
 

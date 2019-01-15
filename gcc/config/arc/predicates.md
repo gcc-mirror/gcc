@@ -696,7 +696,7 @@
        (match_test "REGNO (op) == (TARGET_BIG_ENDIAN ? 59 : 58)")
        (match_test "TARGET_V2")))
 
-; Unfortunately, we can not allow a const_int_operand before reload, because
+; Unfortunately, we cannot allow a const_int_operand before reload, because
 ; reload needs a non-void mode to guide it how to reload the inside of a
 ; {sign_}extend.
 (define_predicate "extend_operand"

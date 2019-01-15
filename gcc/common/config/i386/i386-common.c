@@ -1411,7 +1411,7 @@ ix86_option_init_struct (struct gcc_options *opts)
 }
 
 /* On the x86 -fsplit-stack and -fstack-protector both use the same
-   field in the TCB, so they can not be used together.  */
+   field in the TCB, so they cannot be used together.  */
 
 static bool
 ix86_supports_split_stack (bool report ATTRIBUTE_UNUSED,

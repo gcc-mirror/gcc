@@ -79,6 +79,7 @@ machine_mode c_default_pointer_mode = VOIDmode;
 	tree signed_char_type_node;
 	tree wchar_type_node;
 
+	tree char8_type_node;
 	tree char16_type_node;
 	tree char32_type_node;
 
@@ -127,6 +128,11 @@ machine_mode c_default_pointer_mode = VOIDmode;
    Used when a wide string literal is created.
 
 	tree wchar_array_type_node;
+
+   Type `char8_t[SOMENUMBER]' or something like it.
+   Used when a UTF-8 string literal is created.
+
+	tree char8_array_type_node;
 
    Type `char16_t[SOMENUMBER]' or something like it.
    Used when a UTF-16 string literal is created.
@@ -376,6 +382,7 @@ const struct c_common_resword c_common_reswords[] =
     RID_BUILTIN_CALL_WITH_STATIC_CHAIN, D_CONLY },
   { "__builtin_choose_expr", RID_CHOOSE_EXPR, D_CONLY },
   { "__builtin_complex", RID_BUILTIN_COMPLEX, D_CONLY },
+  { "__builtin_convertvector", RID_BUILTIN_CONVERTVECTOR, 0 },
   { "__builtin_has_attribute", RID_BUILTIN_HAS_ATTRIBUTE, 0 },
   { "__builtin_launder", RID_BUILTIN_LAUNDER, D_CXXONLY },
   { "__builtin_shuffle", RID_BUILTIN_SHUFFLE, 0 },
@@ -451,6 +458,7 @@ const struct c_common_resword c_common_reswords[] =
   { "case",		RID_CASE,	0 },
   { "catch",		RID_CATCH,	D_CXX_OBJC | D_CXXWARN },
   { "char",		RID_CHAR,	0 },
+  { "char8_t",		RID_CHAR8,	D_CXX_CHAR8_T_FLAGS | D_CXXWARN },
   { "char16_t",		RID_CHAR16,	D_CXXONLY | D_CXX11 | D_CXXWARN },
   { "char32_t",		RID_CHAR32,	D_CXXONLY | D_CXX11 | D_CXXWARN },
   { "class",		RID_CLASS,	D_CXX_OBJC | D_CXXWARN },
@@ -756,6 +764,11 @@ fix_string_type (tree value)
       charsz = 1;
       e_type = char_type_node;
     }
+  else if (flag_char8_t && TREE_TYPE (value) == char8_array_type_node)
+    {
+      charsz = TYPE_PRECISION (char8_type_node) / BITS_PER_UNIT;
+      e_type = char8_type_node;
+    }
   else if (TREE_TYPE (value) == char16_array_type_node)
     {
       charsz = TYPE_PRECISION (char16_type_node) / BITS_PER_UNIT;
@@ -836,7 +849,8 @@ fix_string_type (tree value)
    CPP_STRING16, or CPP_STRING32.  Return CPP_OTHER in case of error.
    This may not be exactly the string token type that initially created
    the string, since CPP_WSTRING is indistinguishable from the 16/32 bit
-   string type at this point.
+   string type, and CPP_UTF8STRING is indistinguishable from CPP_STRING
+   at this point.
 
    This effectively reverses part of the logic in lex_string and
    fix_string_type.  */
@@ -1076,6 +1090,70 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask,
   ret = build3_loc (loc, VEC_PERM_EXPR, TREE_TYPE (v0), v0, v1, mask);
 
   if (!c_dialect_cxx () && !wrap)
+    ret = c_wrap_maybe_const (ret, true);
+
+  return ret;
+}
+
+/* Build a VEC_CONVERT ifn for __builtin_convertvector builtin.  */
+
+tree
+c_build_vec_convert (location_t loc1, tree expr, location_t loc2, tree type,
+		     bool complain)
+{
+  if (error_operand_p (type))
+    return error_mark_node;
+  if (error_operand_p (expr))
+    return error_mark_node;
+
+  if (!VECTOR_INTEGER_TYPE_P (TREE_TYPE (expr))
+      && !VECTOR_FLOAT_TYPE_P (TREE_TYPE (expr)))
+    {
+      if (complain)
+	error_at (loc1, "%<__builtin_convertvector%> first argument must "
+			"be an integer or floating vector");
+      return error_mark_node;
+    }
+
+  if (!VECTOR_INTEGER_TYPE_P (type) && !VECTOR_FLOAT_TYPE_P (type))
+    {
+      if (complain)
+	error_at (loc2, "%<__builtin_convertvector%> second argument must "
+			"be an integer or floating vector type");
+      return error_mark_node;
+    }
+
+  if (maybe_ne (TYPE_VECTOR_SUBPARTS (TREE_TYPE (expr)),
+		TYPE_VECTOR_SUBPARTS (type)))
+    {
+      if (complain)
+	error_at (loc1, "%<__builtin_convertvector%> number of elements "
+			"of the first argument vector and the second argument "
+			"vector type should be the same");
+      return error_mark_node;
+    }
+
+  if ((TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (expr)))
+       == TYPE_MAIN_VARIANT (TREE_TYPE (type)))
+      || (VECTOR_INTEGER_TYPE_P (TREE_TYPE (expr))
+	  && VECTOR_INTEGER_TYPE_P (type)
+	  && (TYPE_PRECISION (TREE_TYPE (TREE_TYPE (expr)))
+	      == TYPE_PRECISION (TREE_TYPE (type)))))
+    return build1_loc (loc1, VIEW_CONVERT_EXPR, type, expr);
+
+  bool wrap = true;
+  bool maybe_const = false;
+  tree ret;
+  if (!c_dialect_cxx ())
+    {
+      /* Avoid C_MAYBE_CONST_EXPRs inside of VEC_CONVERT argument.  */
+      expr = c_fully_fold (expr, false, &maybe_const);
+      wrap &= maybe_const;
+    }
+
+  ret = build_call_expr_internal_loc (loc1, IFN_VEC_CONVERT, type, 1, expr);
+
+  if (!wrap)
     ret = c_wrap_maybe_const (ret, true);
 
   return ret;
@@ -3584,8 +3662,12 @@ c_common_get_alias_set (tree t)
   if (!TYPE_P (t))
     return -1;
 
+  /* Unlike char, char8_t doesn't alias. */
+  if (flag_char8_t && t == char8_type_node)
+    return -1;
+
   /* The C standard guarantees that any object may be accessed via an
-     lvalue that has character type.  */
+     lvalue that has narrow character type (except char8_t).  */
   if (t == char_type_node
       || t == signed_char_type_node
       || t == unsigned_char_type_node)
@@ -3994,6 +4076,7 @@ c_get_ident (const char *id)
 void
 c_common_nodes_and_builtins (void)
 {
+  int char8_type_size;
   int char16_type_size;
   int char32_type_size;
   int wchar_type_size;
@@ -4284,6 +4367,22 @@ c_common_nodes_and_builtins (void)
   /* This is for wide string constants.  */
   wchar_array_type_node
     = build_array_type (wchar_type_node, array_domain_type);
+
+  /* Define 'char8_t'.  */
+  char8_type_node = get_identifier (CHAR8_TYPE);
+  char8_type_node = TREE_TYPE (identifier_global_value (char8_type_node));
+  char8_type_size = TYPE_PRECISION (char8_type_node);
+  if (c_dialect_cxx ())
+    {
+      char8_type_node = make_unsigned_type (char8_type_size);
+
+      if (flag_char8_t)
+        record_builtin_type (RID_CHAR8, "char8_t", char8_type_node);
+    }
+
+  /* This is for UTF-8 string constants.  */
+  char8_array_type_node
+    = build_array_type (char8_type_node, array_domain_type);
 
   /* Define 'char16_t'.  */
   char16_type_node = get_identifier (CHAR16_TYPE);
@@ -5082,6 +5181,8 @@ c_stddef_cpp_builtins(void)
   builtin_define_with_value ("__WINT_TYPE__", WINT_TYPE, 0);
   builtin_define_with_value ("__INTMAX_TYPE__", INTMAX_TYPE, 0);
   builtin_define_with_value ("__UINTMAX_TYPE__", UINTMAX_TYPE, 0);
+  if (flag_char8_t)
+    builtin_define_with_value ("__CHAR8_TYPE__", CHAR8_TYPE, 0);
   builtin_define_with_value ("__CHAR16_TYPE__", CHAR16_TYPE, 0);
   builtin_define_with_value ("__CHAR32_TYPE__", CHAR32_TYPE, 0);
   if (SIG_ATOMIC_TYPE)
@@ -7800,6 +7901,7 @@ keyword_begins_type_specifier (enum rid keyword)
     case RID_ACCUM:
     case RID_BOOL:
     case RID_WCHAR:
+    case RID_CHAR8:
     case RID_CHAR16:
     case RID_CHAR32:
     case RID_SAT:

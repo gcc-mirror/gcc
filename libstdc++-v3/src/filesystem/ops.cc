@@ -24,6 +24,8 @@
 
 #ifndef _GLIBCXX_USE_CXX11_ABI
 # define _GLIBCXX_USE_CXX11_ABI 1
+# define NEED_DO_COPY_FILE
+# define NEED_DO_SPACE
 #endif
 
 #include <experimental/filesystem>
@@ -39,7 +41,7 @@
 # include <fcntl.h>  // AT_FDCWD, AT_SYMLINK_NOFOLLOW
 #endif
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H
-#  include <sys/stat.h>   // stat, utimensat, fchmodat
+# include <sys/stat.h>   // stat, utimensat, fchmodat
 #endif
 #ifdef _GLIBCXX_HAVE_SYS_STATVFS_H
 # include <sys/statvfs.h> // statvfs
@@ -243,7 +245,6 @@ namespace
 
   using std::filesystem::is_not_found_errno;
   using std::filesystem::file_time;
-  using std::filesystem::do_copy_file;
 #endif // _GLIBCXX_HAVE_SYS_STAT_H
 
 } // namespace
@@ -908,7 +909,7 @@ fs::last_write_time(const path& p __attribute__((__unused__)),
     ec.assign(errno, std::generic_category());
   else
     ec.clear();
-#elif _GLIBCXX_HAVE_UTIME_H
+#elif _GLIBCXX_USE_UTIME && _GLIBCXX_HAVE_SYS_STAT_H
   posix::utimbuf times;
   times.modtime = s.count();
   times.actime = do_stat(p, ec, [](const auto& st) { return st.st_atime; },
@@ -1175,7 +1176,7 @@ fs::space(const path& p, error_code& ec) noexcept
 #else
   auto str = p.c_str();
 #endif
-  std::filesystem::do_space(str, info.capacity, info.free, info.available, ec);
+  fs::do_space(str, info.capacity, info.free, info.available, ec);
   return info;
 }
 

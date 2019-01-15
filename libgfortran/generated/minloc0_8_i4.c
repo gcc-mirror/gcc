@@ -123,27 +123,27 @@ minloc0_8_i4 (gfc_array_i8 * const restrict retarray,
 	}
       else
 #endif
-    if (back)
-      do
-	{
-	  if (unlikely (*base <= minval))
-	    {
-	      minval = *base;
-	      for (n = 0; n < rank; n++)
-		dest[n * dstride] = count[n] + 1;
-	    }
-	  base += sstride[0];
-	}
-      while (++count[0] != extent[0]);
-    else
-      do
-        {
-	  if (unlikely (*base < minval))
-	    {
-	      minval = *base;
-	      for (n = 0; n < rank; n++)
-	        dest[n * dstride] = count[n] + 1;
-	    }
+      if (back)
+	do
+	  {
+	    if (unlikely (*base <= minval))
+	      {
+		minval = *base;
+		for (n = 0; n < rank; n++)
+		  dest[n * dstride] = count[n] + 1;
+	      }
+	    base += sstride[0];
+	  }
+	while (++count[0] != extent[0]);
+      else
+	do
+	  {
+	    if (unlikely (*base < minval))
+	      {
+		minval = *base;
+		for (n = 0; n < rank; n++)
+		  dest[n * dstride] = count[n] + 1;
+	      }
 	  /* Implementation end.  */
 	  /* Advance to the next element.  */
 	  base += sstride[0];
