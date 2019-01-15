@@ -635,6 +635,12 @@ class Type
   needs_key_update()
   { return this->do_needs_key_update(); }
 
+  // Return whether the hash function of this type might panic.  This
+  // is only called for types used as a key in a map type.
+  bool
+  hash_might_panic()
+  { return this->do_hash_might_panic(); }
+
   // Whether the type is permitted in the heap.
   bool
   in_heap()
@@ -1071,6 +1077,10 @@ class Type
 
   virtual bool
   do_needs_key_update()
+  { return false; }
+
+  virtual bool
+  do_hash_might_panic()
   { return false; }
 
   virtual bool
@@ -2601,6 +2611,9 @@ class Struct_type : public Type
   do_needs_key_update();
 
   bool
+  do_hash_might_panic();
+
+  bool
   do_in_heap();
 
   unsigned int
@@ -2777,6 +2790,10 @@ class Array_type : public Type
   bool
   do_needs_key_update()
   { return this->element_type_->needs_key_update(); }
+
+  bool
+  do_hash_might_panic()
+  { return this->length_ != NULL && this->element_type_->hash_might_panic(); }
 
   bool
   do_in_heap()
@@ -3168,6 +3185,11 @@ class Interface_type : public Type
   // contains a float.
   bool
   do_needs_key_update()
+  { return true; }
+
+  // Hashing an unhashable type stored in an interface might panic.
+  bool
+  do_hash_might_panic()
   { return true; }
 
   unsigned int
