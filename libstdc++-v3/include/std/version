@@ -39,7 +39,7 @@
 
 #if !defined(__STRICT_ANSI__)
 // gnu++03
-# define __cpp_lib_uncaught_exceptions 201411
+# define __cpp_lib_uncaught_exceptions 201411L
 #endif
 
 #if __cplusplus >= 201103L
@@ -85,6 +85,7 @@
 #if __cplusplus >= 201703L
 // c++17
 #define __cpp_lib_addressof_constexpr 201603
+#define __cpp_lib_any 201606L
 #define __cpp_lib_apply 201603
 #define __cpp_lib_array_constexpr 201603
 #define __cpp_lib_as_const 201510
@@ -126,7 +127,8 @@
 #define __cpp_lib_node_extract 201606
 #define __cpp_lib_nonmember_container_access 201411
 #define __cpp_lib_not_fn 201603
-#define __cpp_lib_optional 201603
+#define __cpp_lib_optional 201606L
+#define __cpp_lib_raw_memory_algorithms 201606L
 #define __cpp_lib_sample 201603
 #ifdef _GLIBCXX_HAS_GTHREADS
 # define __cpp_lib_scoped_lock 201703
@@ -135,8 +137,10 @@
 #define __cpp_lib_shared_ptr_weak_type 201606
 #define __cpp_lib_string_view 201603
 #define __cpp_lib_type_trait_variable_templates 201510L
+#define __cpp_lib_uncaught_exceptions 201411L
 #define __cpp_lib_unordered_map_insertion 201411
 #define __cpp_lib_unordered_map_try_emplace 201411
+#define __cpp_lib_variant 201606L
 #define __cpp_lib_void_t 201411
 
 #if __cplusplus > 201703L
