@@ -1,3 +1,8 @@
+2019-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR inline-asm/52813
+	* c.opt (Wdeprecated): Move documentation and variable to common.opt.
+
 2019-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-cppbuiltin.c (c_cpp_builtin): Define __cpp_guaranteed_copy_elision

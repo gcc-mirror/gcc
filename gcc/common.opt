@@ -579,6 +579,10 @@ Wattribute-warning
 Common Var(warn_attribute_warning) Init(1) Warning
 Warn about uses of __attribute__((warning)) declarations.
 
+Wdeprecated
+Common Var(warn_deprecated) Init(1) Warning
+Warn if a deprecated compiler feature, class, method, or field is used.
+
 Wdeprecated-declarations
 Common Var(warn_deprecated_decl) Init(1) Warning
 Warn about uses of __attribute__((deprecated)) declarations.
