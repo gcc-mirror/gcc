@@ -1,3 +1,16 @@
+2019-01-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (start_decl): Improve error location.
+	* decl2.c (grokfield): Likewise.
+
+2019-01-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Move further up the location_t loc
+	declaration and use the location when building a TYPE_DECL for
+	a typedef name.
+	* decl2.c (grokbitfield): Use DECL_SOURCE_LOCATION in the error
+	about an ill-formed bit-field as typedef.
+
 2019-01-14  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88830 - ICE with abstract class.

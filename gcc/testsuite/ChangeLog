@@ -1,3 +1,11 @@
+2019-01-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/typedef-initialized.C: New.
+
+2019-01-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/bitfld3.C: New.
+
 2019-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/88775
