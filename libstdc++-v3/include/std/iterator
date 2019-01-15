@@ -67,4 +67,8 @@
 #include <bits/streambuf_iterator.h>
 #include <bits/range_access.h>
 
+#if __cplusplus >= 201402L && ! defined _GLIBCXX_DEBUG // PR libstdc++/70303
+# define __cpp_lib_null_iterators 201304L
+#endif
+
 #endif /* _GLIBCXX_ITERATOR */

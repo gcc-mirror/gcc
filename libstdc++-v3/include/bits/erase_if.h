@@ -38,7 +38,9 @@ namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#define __cpp_lib_erase_if 201900L
+#if __cplusplus > 201703L
+# define __cpp_lib_erase_if 201900L
+#endif
 
   namespace __detail
   {

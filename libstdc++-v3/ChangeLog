@@ -1,5 +1,13 @@
 2019-01-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/erase_if.h [__cplusplus > 201703L]
+	(__cpp_lib_erase_if): Only define for C++2a.
+	* include/std/iterator [__cplusplus >= 201402L && !_GLIBCXX_DEBUG]
+	(__cpp_lib_null_iterators): Define.
+	* include/std/version [__cplusplus >= 201402L && !_GLIBCXX_DEBUG]
+	(__cpp_lib_null_iterators): Define.
+	[__cpp_impl_destroying_delete] (__cpp_lib_destroying_delete): Define.
+
 	* doc/xml/manual/status_cxx2017.xml: Document P0032R3 and P0307R2
 	status.
 	* include/bits/stl_uninitialized.h (__cpp_lib_raw_memory_algorithms):

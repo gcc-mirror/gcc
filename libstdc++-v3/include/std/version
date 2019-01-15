@@ -42,6 +42,10 @@
 # define __cpp_lib_uncaught_exceptions 201411L
 #endif
 
+#if __cpp_impl_destroying_delete
+# define __cpp_lib_destroying_delete 201806L
+#endif
+
 #if __cplusplus >= 201103L
 // c++11
 #define __cpp_lib_allocator_is_always_equal 201411
@@ -71,6 +75,9 @@
 #define __cpp_lib_is_final 201402L
 #define __cpp_lib_make_reverse_iterator 201402
 #define __cpp_lib_make_unique 201304
+#ifndef _GLIBCXX_DEBUG // PR libstdc++/70303
+# define __cpp_lib_null_iterators 201304L
+#endif
 #define __cpp_lib_quoted_string_io 201304
 #define __cpp_lib_robust_nonmodifying_seq_ops 201304
 #ifdef _GLIBCXX_HAS_GTHREADS
