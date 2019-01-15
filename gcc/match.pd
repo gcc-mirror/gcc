@@ -3896,6 +3896,52 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		    || TREE_CODE (base1) == SSA_NAME
 		    || TREE_CODE (base1) == STRING_CST))
          equal = (base0 == base1);
+       if (equal == 0)
+	 {
+	   if (!DECL_P (base0) || !DECL_P (base1))
+	     equal = 2;
+	   else if (cmp != EQ_EXPR && cmp != NE_EXPR)
+	     equal = 2;
+	   /* If this is a pointer comparison, ignore for now even
+	      valid equalities where one pointer is the offset zero
+	      of one object and the other to one past end of another one.  */
+	   else if (!INTEGRAL_TYPE_P (TREE_TYPE (@2)))
+	     ;
+	   /* Assume that automatic variables can't be adjacent to global
+	      variables.  */
+	   else if (is_global_var (base0) != is_global_var (base1))
+	     ;
+	   else
+	     {
+	       tree sz0 = DECL_SIZE_UNIT (base0);
+	       tree sz1 = DECL_SIZE_UNIT (base1);
+	       /* If sizes are unknown, e.g. VLA or not representable,
+		  punt.  */
+	       if (!tree_fits_poly_int64_p (sz0)
+		   || !tree_fits_poly_int64_p (sz1))
+		 equal = 2;
+	       else
+		 {
+		   poly_int64 size0 = tree_to_poly_int64 (sz0);
+		   poly_int64 size1 = tree_to_poly_int64 (sz1);
+		   /* If one offset is pointing (or could be) to the beginning
+		      of one object and the other is pointing to one past the
+		      last byte of the other object, punt.  */
+		   if (maybe_eq (off0, 0) && maybe_eq (off1, size1))
+		     equal = 2;
+		   else if (maybe_eq (off1, 0) && maybe_eq (off0, size0))
+		     equal = 2;
+		   /* If both offsets are the same, there are some cases
+		      we know that are ok.  Either if we know they aren't
+		      zero, or if we know both sizes are no zero.  */
+		   if (equal == 2
+		       && known_eq (off0, off1)
+		       && (known_ne (off0, 0)
+			   || (known_ne (size0, 0) && known_ne (size1, 0))))
+		     equal = 0;
+		 }
+	     }
+	 }
      }
      (if (equal == 1
 	  && (cmp == EQ_EXPR || cmp == NE_EXPR
@@ -3918,16 +3964,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	{ constant_boolean_node (known_ge (off0, off1), type); })
        (if (cmp == GT_EXPR && (known_gt (off0, off1) || known_le (off0, off1)))
 	{ constant_boolean_node (known_gt (off0, off1), type); }))
-      (if (equal == 0
-	   && DECL_P (base0) && DECL_P (base1)
-	   /* If we compare this as integers require equal offset.  */
-	   && (!INTEGRAL_TYPE_P (TREE_TYPE (@2))
-	       || known_eq (off0, off1)))
-       (switch
-	(if (cmp == EQ_EXPR)
-	 { constant_boolean_node (false, type); })
-	(if (cmp == NE_EXPR)
-	 { constant_boolean_node (true, type); })))))))))
+      (if (equal == 0)
+	(switch
+	 (if (cmp == EQ_EXPR)
+	  { constant_boolean_node (false, type); })
+	 (if (cmp == NE_EXPR)
+	  { constant_boolean_node (true, type); })))))))))
 
 /* Simplify pointer equality compares using PTA.  */
 (for neeq (ne eq)
