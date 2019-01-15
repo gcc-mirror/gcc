@@ -1,3 +1,7 @@
+2019-01-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml: Update P1123R0 status.
+
 2019-01-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/88811
