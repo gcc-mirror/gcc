@@ -1,3 +1,8 @@
+2019-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88855
+	* gcc.dg/pr88855.c: New testcase.
+
 2019-01-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/diagnostic/typedef-initialized.C: New.

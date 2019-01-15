@@ -2633,6 +2633,8 @@ combine_blocks (struct loop *loop)
 	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
 		SET_USE (use_p, last_vdef);
 	    }
+	  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_phi_result (vphi)))
+	    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (last_vdef) = 1;
 	  gsi = gsi_for_stmt (vphi); 
 	  remove_phi_node (&gsi, true);
 	}
@@ -2691,6 +2693,8 @@ combine_blocks (struct loop *loop)
 	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
 		SET_USE (use_p, last_vdef);
 	    }
+	  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_phi_result (vphi)))
+	    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (last_vdef) = 1;
 	  gimple_stmt_iterator gsi = gsi_for_stmt (vphi); 
 	  remove_phi_node (&gsi, true);
 	}
