@@ -1,3 +1,12 @@
+2019-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/88775
+	* match.pd (cmp (convert1?@2 addr@0) (convert2? addr@1)): Optimize
+	equal == 0 equality pointer comparisons some more if compared in
+	integral types and either one points to an automatic var and the
+	other to a global, or we can prove at least one points to the middle
+	or both point to start or both point to end.
+
 2019-01-14  Andi Kleen  <ak@linux.intel.com>
 
 	* Makefile.in: Lower autofdo sampling rate by 10x.
