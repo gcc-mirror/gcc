@@ -1,5 +1,9 @@
 2019-01-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/shared_ptr_base.h (__cpp_lib_shared_ptr_arrays): Define
+	as 201611L, because P0497R0 changes are supported.
+	* include/std/version (__cpp_lib_shared_ptr_arrays): Likewise.
+
 	* include/bits/erase_if.h [__cplusplus > 201703L]
 	(__cpp_lib_erase_if): Only define for C++2a.
 	* include/std/iterator [__cplusplus >= 201402L && !_GLIBCXX_DEBUG]

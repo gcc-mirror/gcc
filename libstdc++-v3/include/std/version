@@ -52,7 +52,7 @@
 #define __cpp_lib_allocator_traits_is_always_equal 201411
 #define __cpp_lib_is_null_pointer 201309
 #define __cpp_lib_result_of_sfinae 201210
-#define __cpp_lib_shared_ptr_arrays 201603
+#define __cpp_lib_shared_ptr_arrays 201611L
 
 #if !defined(__STRICT_ANSI__)
 // gnu++11

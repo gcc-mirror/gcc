@@ -890,7 +890,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_pi = nullptr;
     }
 
-#define __cpp_lib_shared_ptr_arrays 201603
+#define __cpp_lib_shared_ptr_arrays 201611L
 
   // Helper traits for shared_ptr of array:
 
