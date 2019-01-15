@@ -1,3 +1,9 @@
+2019-01-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/81849
+	* resolve.c (resolve_symbol): Host associated varaibles can appear
+	in the specification statement of a RESULT array.
+
 2019-01-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Deal with exprs
