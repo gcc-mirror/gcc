@@ -787,6 +787,31 @@ Feature-testing recommendations for C++</link>.
              <code> __cpp_lib_to_chars >= 201611 </code></entry>
     </row>
 
+    <row>
+      <entry> Homogeneous interface for variant, any and optional </entry>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0032r3.pdf">
+	P0032R3
+	</link>
+      </entry>
+      <entry align="center"> 7.1  </entry>
+      <entry>
+             <code> __cpp_lib_any >= 201606 </code>,
+             <code> __cpp_lib_optional >= 201606 </code>,
+             <code> __cpp_lib_variant >= 201606 </code>
+      </entry>
+    </row>
+
+    <row>
+      <entry> Making Optional Greater Equal Again </entry>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0307r2.pdf">
+	P0307R2
+	</link>
+      </entry>
+      <entry align="center"> 7.1  </entry>
+      <entry> <code> __cpp_lib_optional >= 201606 </code> </entry>
+    </row>
 
   </tbody>
 </tgroup>

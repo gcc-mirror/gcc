@@ -1,5 +1,23 @@
 2019-01-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2017.xml: Document P0032R3 and P0307R2
+	status.
+	* include/bits/stl_uninitialized.h (__cpp_lib_raw_memory_algorithms):
+	Define.
+	* include/std/any (__cpp_lib_any): Define as 201606L, because P0032R3
+	changes are supported.
+	* include/std/optional (__cpp_lib_optional): Likewise.
+	* include/std/variant (__cpp_lib_variant): Likewise.
+	* include/std/version [!__STRICT_ANSI__]
+	(__cpp_lib_uncaught_exceptions): Define as long integer.
+	[__cplusplus >= 201703L] (__cpp_lib_any)
+	(__cpp_lib_raw_memory_algorithms, __cpp_lib_uncaught_exceptions)
+	(__cpp_lib_variant): Define for C++17.
+	[__cplusplus >= 201703L] (__cpp_lib_optional): Update value and define
+	as long integer.
+	* libsupc++/exception (__cpp_lib_uncaught_exceptions): Define as long
+	integer.
+
 	* doc/xml/manual/status_cxx2020.xml: Update P1123R0 status.
 
 2019-01-12  Jonathan Wakely  <jwakely@redhat.com>

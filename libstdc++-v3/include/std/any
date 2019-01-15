@@ -66,7 +66,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
   }
 
-#define __cpp_lib_any 201603
+#define __cpp_lib_any 201606L
 
   /**
    *  @brief A type-safe container of any type.
