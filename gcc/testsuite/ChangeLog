@@ -1,5 +1,10 @@
 2019-01-15  Richard Biener  <rguenther@suse.de>
 
+	PR debug/88046
+	* g++.dg/lto/pr88046_0.C: New testcase.
+
+2019-01-15  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/88855
 	* gcc.dg/pr88855.c: New testcase.
 

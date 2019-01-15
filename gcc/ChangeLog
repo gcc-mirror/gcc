@@ -1,5 +1,11 @@
 2019-01-15  Richard Biener  <rguenther@suse.de>
 
+	PR debug/88046
+	* dwarf2out.c (gen_member_die): Do not generate inheritance
+	DIEs late.
+
+2019-01-15  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/88855
 	* tree-if-conv.c (combine_blocks): Collect
 	SSA_NAME_OCCURS_IN_ABNORMAL_PHI from propagated out virtuals.
