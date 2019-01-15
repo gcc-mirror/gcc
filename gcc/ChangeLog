@@ -1,3 +1,9 @@
+2019-01-15  Tom de Vries  <tdevries@suse.de>
+
+	PR target/80547
+	* config/nvptx/nvptx.c (nvptx_goacc_reduction_init): Handle
+	lhs == NULL_TREE for gang-level reduction.
+
 2019-01-15  Richard Biener  <rguenther@suse.de>
 	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 

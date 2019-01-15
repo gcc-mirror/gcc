@@ -6242,7 +6242,8 @@ nvptx_goacc_reduction_init (gcall *call, offload_attrs *oa)
 	    init = var;
 	}
 
-      gimplify_assign (lhs, init, &seq);
+      if (lhs != NULL_TREE)
+	gimplify_assign (lhs, init, &seq);
     }
 
   pop_gimplify_context (NULL);
