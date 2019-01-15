@@ -1239,8 +1239,9 @@ pop_scope (void)
 	      && DECL_ABSTRACT_ORIGIN (p) != NULL_TREE
 	      && DECL_ABSTRACT_ORIGIN (p) != p)
 	    TREE_ADDRESSABLE (DECL_ABSTRACT_ORIGIN (p)) = 1;
-	  if (!DECL_EXTERNAL (p)
+	  if (!TREE_PUBLIC (p)
 	      && !DECL_INITIAL (p)
+	      && !b->nested
 	      && scope != file_scope
 	      && scope != external_scope)
 	    {
@@ -1256,7 +1257,7 @@ pop_scope (void)
 		 in the same translation unit."  */
 	      if (!flag_gnu89_inline
 		  && !lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (p))
-		  && scope != external_scope)
+		  && scope == external_scope)
 		pedwarn (input_location, 0,
 			 "inline function %q+D declared but never defined", p);
 	      DECL_EXTERNAL (p) = 1;
