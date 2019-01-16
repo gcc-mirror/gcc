@@ -2855,7 +2855,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
     module_state *GTY ((tag ("true"))) alias;	/* Alias of */
   } GTY ((desc ("%1.alias_p"))) u1;
 
-  const char *fullname;	/* Full name of module.  */
+  const char *flatname;	/* Flatname of module.  */
   char *filename;	/* BMI Filename */
   /* The LOC is unset until we import the module.  */
   location_t loc; 	/* Location referring to module itself.  */
@@ -2946,9 +2946,6 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
  public:
   module_state *resolve_alias ();
   bool check_not_purview (location_t loc);
-
- public:
-  const char *maybe_partition_name () const;
 
  public:
   void mangle ();
@@ -3071,15 +3068,27 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   location_t read_location (bytes_in &) const;
 
  public:
+  void set_flatname ();
+  const char *get_flatname (bool primary = false) const;
+
+ public:
   /* Create a location for module.   */
   void maybe_create_loc ()
   {
     gcc_checking_assert (from_loc != UNKNOWN_LOCATION);
     if (loc == UNKNOWN_LOCATION)
       /* Error paths can cause this to be set and then repeated.  */
-      loc = linemap_module_loc (line_table, from_loc, fullname);
+      loc = linemap_module_loc (line_table, from_loc, get_flatname ());
   }
-  void attach (location_t);
+  void attach (location_t from)
+  {
+    from_loc = from;
+
+    if (!flatname)
+      set_flatname ();
+  }
+
+ public:
   bool do_import (const char *filename, cpp_reader *);
   void direct_import (cpp_reader *, bool lazy);
 };
@@ -3101,7 +3110,7 @@ struct module_state_hash : ggc_ptr_hash<module_state> {
 module_state::module_state (tree name, uintptr_t pp)
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
     parent (reinterpret_cast<module_state *>(pp & ~uintptr_t (1))),
-    name (name), fullname (NULL), filename (NULL),
+    name (name), flatname (NULL), filename (NULL),
     loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
     mod (MODULE_UNKNOWN), subst (0), crc (0), remap (0),
     partition_p (bool (pp & 1))
@@ -3597,7 +3606,7 @@ dumper::operator () (const char *format, ...)
 		if (m->is_detached ())
 		  str = "(detached)";
 		else
-		  str = m->fullname;
+		  str = m->get_flatname ();
 	      }
 	    fputs (str, dumps->stream);
 	  }
@@ -6798,7 +6807,7 @@ trees_in::tree_node ()
 	  {
 	    error_at (state->loc, "failed to find %<%E%s%E@%s%>",
 		      ctx, &"::"[2 * (ctx == global_namespace)],
-		      name, module_name (owner));
+		      name, (*modules)[owner]->get_flatname ());
 	    set_overrun ();
 	  }
 	else if (TREE_CODE (res) != TYPE_DECL
@@ -7621,23 +7630,6 @@ module_state::resolve_alias ()
   return result;
 }
 
-/* If this is a partition return the :partname portion, otherwise the
-   whole name.  */
-
-const char *
-module_state::maybe_partition_name () const
-{
-  const char *name = fullname;
-
-  /* We could do 'clever' things like finding the non-partition root,
-     strlening that name and then indexing here.  But it's just
-     quicker to look for the separating ':'.  */
-  if (is_partition ())
-    name = strchr (fullname, ':');
-
-  return name;
-}
-
 /* If THIS is the current purview, issue an import error and return false.  */
 
 bool
@@ -7649,8 +7641,9 @@ module_state::check_not_purview (location_t loc)
   if (imp == this)
     {
       /* Cannot import the current module.  */
-      error_at (loc, "cannot import module %qs in its own purview", fullname);
-      inform (from_loc, "module %qs declared here", fullname);
+      error_at (loc, "cannot import module %qs in its own purview",
+		get_flatname ());
+      inform (from_loc, "module %qs declared here", get_flatname ());
       return false;
     }
   return true;
@@ -7702,11 +7695,17 @@ mangle_module_fini ()
 module_state *
 get_module (tree name, module_state *parent, bool partition)
 {
-  if (partition && !parent)
+  if (partition)
     {
-      parent = (*modules)[MODULE_PURVIEW];
-      while (parent->is_partition ())
-	parent = parent->parent;
+      if (!parent)
+	{
+	  parent = (*modules)[MODULE_PURVIEW];
+	  while (parent->is_partition ())
+	    parent = parent->parent;
+	}
+
+      if (!parent->is_partition () && !parent->flatname)
+	parent->set_flatname ();
     }
 
   module_state_hash::compare_type ct (name, uintptr_t (parent) | partition);
@@ -7763,7 +7762,7 @@ module_state::announce (const char *what) const
   if (noisy_p ())
     {
       fprintf (stderr, mod < MODULE_LIMIT ? " %s:%s:%u" : " %s:%s",
-	       what, fullname, mod);
+	       what, get_flatname (), mod);
       fflush (stderr);
     }
 }
@@ -8263,7 +8262,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	      state->filename = xstrdup (file);
 	    else if (strcmp (state->filename, file))
 	      warning_at (loc, 0, "ignoring conflicting mapping of %qs to %qs",
-			  state->fullname, file);
+			  state->get_flatname (), file);
 	  }
       fclose (from);
       from = NULL;
@@ -8644,8 +8643,9 @@ module_mapper::handshake (location_t loc, const char *cookie)
 void
 module_mapper::imex_query (const module_state *state, bool exporting)
 {
-  send_command (state->from_loc, "%sPORT %s",
-		exporting ? "EX" : "IM",  state->fullname);
+  send_command (state->from_loc, "%sPORT %s%s",
+		exporting ? "EX" : "IM",
+		state->get_flatname (true), state->get_flatname ());
 }
 
 /* Response to import/export query.  */
@@ -8668,7 +8668,7 @@ module_mapper::bmi_response (const module_state *state)
 
     case 1: /* ERROR $msg */
       error_at (state->from_loc, "mapper cannot provide module %qs: %s",
-		state->fullname, response_error ());
+		state->get_flatname (), response_error ());
       break;
     }
 
@@ -8702,7 +8702,8 @@ module_mapper::export_done (const module_state *state)
   if (mapper->is_server ())
     {
       dump () && dump ("Completed mapper");
-      mapper->send_command (state->from_loc, "DONE %s", state->fullname);
+      mapper->send_command (state->from_loc, "DONE %s%s",
+			    state->get_flatname (true), state->get_flatname ());
     }
   else
     ok = mapper->is_live ();
@@ -8808,7 +8809,7 @@ module_state::write_readme (elf_out *to, const char *options, cpp_hashnode *node
   readme.printf ("version: %s", string);
 
   /* Module information.  */
-  readme.printf ("module: %s", fullname);
+  readme.printf ("module: %s%s", get_flatname (true), get_flatname ());
   readme.printf ("source: %s", main_input_filename);
 
   if (options[0])
@@ -8823,7 +8824,7 @@ module_state::write_readme (elf_out *to, const char *options, cpp_hashnode *node
 
       if (state->is_direct ())
 	readme.printf ("%s: %s %s", state->exported_p ? "export" : "import",
-		       state->maybe_partition_name (), state->filename);
+		       state->get_flatname (), state->filename);
     }
 
   readme.end (to, to->name (MOD_SNAME_PFX ".README"), NULL);
@@ -8867,7 +8868,7 @@ module_state::write_imports (bytes_out &sec, bool direct)
 			   : imp->exported_p ? "exported " : "",
 			   ix, imp->remap, imp, imp->crc);
 	  sec.u (imp->remap);
-	  sec.str (imp->maybe_partition_name ());
+	  sec.str (imp->get_flatname ());
 	  sec.u32 (imp->crc);
 	  if (direct)
 	    {
@@ -8955,7 +8956,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 		  && is_partition () && !is_interface ()
 		  && imp->is_partition () && imp->is_interface ())
 		error_at (loc, "interface partition %qs has not been exported",
-			  imp->maybe_partition_name ());
+			  imp->get_flatname ());
 	    }
 
 	  if (is_partition () && !imp->is_partition ())
@@ -8975,7 +8976,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	}
 
       if (imp->crc != crc)
-	error_at (loc, "import %qs has CRC mismatch", imp->fullname);
+	error_at (loc, "import %qs has CRC mismatch", imp->get_flatname ());
 
       imp = imp->resolve_alias ();
 
@@ -9053,7 +9054,7 @@ module_state::write_partitions (elf_out *to, unsigned count, unsigned *crc_ptr)
 	{
 	  dump () && dump ("Writing elided partition %M (crc=%x)",
 			   imp, imp->crc);
-	  sec.str (imp->maybe_partition_name ());
+	  sec.str (imp->get_flatname ());
 	  sec.u32 (imp->crc);
 	  write_location (sec,
 			  imp->is_direct () ? imp->from_loc : UNKNOWN_LOCATION);
@@ -12077,7 +12078,9 @@ module_state::write_config (elf_out *to, module_state_config &config,
   cfg.u32 (unsigned (get_version ()));
   cfg.u32 (inner_crc);
 
-  cfg.u (to->name (is_legacy () ? "" : fullname));
+  cfg.u (to->name (is_legacy () ? "" : get_flatname ()));
+  if (is_partition ())
+    cfg.u (to->name (get_flatname (true)));
 
   if (!is_legacy ())
     ;
@@ -12182,17 +12185,30 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
   /* Check module name.  */
   {
     const char *their_name = from ()->name (cfg.u ());
-    const char *our_name = is_legacy () ? "" : fullname;
+    const char *their_primary = "";
+    const char *our_name = "";
+    const char *our_primary = "";
+
+    if (their_name[0] == ':')
+      their_primary = from ()->name (cfg.u ());
+
+    if (!is_legacy ())
+      {
+	our_name = get_flatname ();
+	our_primary = get_flatname (true);
+      }
 
     /* Legacy modules can be aliased, so name checking is
        inappropriate.  */
-    if (strcmp (their_name, our_name))
+    if (strcmp (their_name, our_name)
+	|| strcmp (their_primary, our_primary))
       {
 	error_at (loc,
-		  their_name[0] && our_name[0] ? G_("module %qs found")
+		  their_name[0] && our_name[0] ? G_("module %<%s%s%> found")
 		  : their_name[0]
-		  ? G_("legacy module expected, module %qs found")
-		  : G_("module %qs expected, legacy module found"),
+		  ? G_("legacy module expected, module %<%s%s%> found")
+		  : G_("module %<%s%s%> expected, legacy module found"),
+		  their_name[0] ? their_primary : our_primary,
 		  their_name[0] ? their_name : our_name);
 	cfg.set_overrun ();
 	goto done;
@@ -12257,7 +12273,7 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
     dump () && dump ("Reading CRC=%x", crc);
     if (!is_direct () && crc != e_crc)
       {
-	error_at (loc, "module %qs CRC mismatch", fullname);
+	error_at (loc, "module %qs CRC mismatch", get_flatname ());
 	cfg.set_overrun ();
 	goto done;
       }
@@ -12601,7 +12617,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
   mod = remap = ix;
 
   (*slurp ()->remap)[MODULE_PURVIEW] = mod;
-  dump () && dump ("Assigning %s module number %u", fullname, mod);
+  dump () && dump ("Assigning %M module number %u", this, mod);
 
   if (config.controlling_node)
     {
@@ -12722,7 +12738,8 @@ module_state::check_read (unsigned diag_count, tree ns, tree id)
 	 fail).  */
       if (slurp ()->remaining && id)
 	error_at (loc, "failed to load binding %<%E%s%E@%s%>: %s",
-		  ns, &"::"[ns == global_namespace ? 2 : 0], id, fullname, err);
+		  ns, &"::"[ns == global_namespace ? 2 : 0], id,
+		  get_flatname (), err);
       else if (filename)
 	error_at  (loc, "failed to read module %qs: %s", filename, err);
       else
@@ -12752,7 +12769,7 @@ module_state::check_read (unsigned diag_count, tree ns, tree id)
     inform (input_location,
 	    is_legacy () ? G_("during lazy loading of %<%E%s%E%>")
 	    : G_("during lazy loading of %<%E%s%E@%s%>"),
-	    ns, ns == global_namespace ? "" : "::", id, fullname);
+	    ns, ns == global_namespace ? "" : "::", id, get_flatname ());
 
   if (!ok && diag_count)
     fatal_error (loc, "jumping off the crazy train to crashville");
@@ -12764,18 +12781,17 @@ module_state::check_read (unsigned diag_count, tree ns, tree id)
    including dots.  */
 
 char const *
-module_name (unsigned ix, bool full)
+module_name (unsigned ix, const char **maybe_primary)
 {
   module_state *imp = (*modules)[ix];
 
   if (!imp->name)
     imp = imp->parent;
 
-  if (!full)
-    while (imp->is_partition ())
-      imp = imp->parent;
+  if (maybe_primary)
+    *maybe_primary = imp->get_flatname (true);
 
-  return imp->fullname;
+  return imp->get_flatname ();
 }
 
 /* Return the bitmap describing what modules are imported into
@@ -12961,42 +12977,57 @@ fixup_unscoped_enum_owner (tree enumtype)
     }
 }
 
-/* THIS module is being imported (or defined) at FROM.  Create its
-   name now.  */
+const char *
+module_state::get_flatname (bool primary) const
+{
+  gcc_checking_assert (flatname);
+
+  if (!primary)
+    return flatname;
+  else if (!is_partition ())
+    return "";
+
+  const module_state *p = this;
+  do
+    p = p->parent;
+  while (p->is_partition ());
+
+  return p->get_flatname ();
+}
+
+/* Create the flat name string.  It is simplest to have it handy.  */
 
 void
-module_state::attach (location_t from)
+module_state::set_flatname ()
 {
-  from_loc = from;
-
-  /* Create the fullname.  */
+  gcc_checking_assert (!flatname);
   if (!parent)
-    fullname = IDENTIFIER_POINTER (name);
+    flatname = IDENTIFIER_POINTER (name);
   else
     {
-      /* It is simpler to create a flat string name now, rather than
-	 spew it on demand when needed.  */
       auto_vec<tree,5> ids;
       size_t len = 0;
-      unsigned partition = 0;
-      for (module_state *probe = this; probe; probe = probe->parent)
+
+      for (module_state *probe = this;
+	   probe && is_partition () == probe->is_partition ();
+	   probe = probe->parent)
 	{
-	  if (probe->is_partition ())
-	    partition++;
 	  ids.safe_push (probe->name);
-	  len += IDENTIFIER_LENGTH (probe->name);
+	  len += IDENTIFIER_LENGTH (probe->name) + 1;
 	}
-      fullname = XNEWVEC (char, ids.length () + len);
-      len = 0;
-      while (ids.length ())
+      char *flat = XNEWVEC (char, len + is_partition ());
+      flatname = flat;
+
+      if (is_partition ())
+	*flat++ = ':';
+      for (unsigned len = 0; ids.length ();)
 	{
 	  if (len)
-	    const_cast<char *> (fullname)[len++] =
-	      partition == ids.length () ? ':' : '.';
+	    flat[len++] = '.';
 	  tree elt = ids.pop ();
-	  memcpy (const_cast<char *> (fullname) + len,
-		  IDENTIFIER_POINTER (elt), IDENTIFIER_LENGTH (elt) + 1);
-	  len += IDENTIFIER_LENGTH (elt);
+	  unsigned l = IDENTIFIER_LENGTH (elt);
+	  memcpy (flat + len, IDENTIFIER_POINTER (elt), l + 1);
+	  len += l;
 	}
     }
 }
@@ -13228,7 +13259,7 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
 	      module_purview_p ()
 	      ? G_("module %qs declared here")
 	      : G_("module %qs imported here"),
-	      state->fullname);
+	      state->get_flatname ());
       return false;
     }
 
@@ -13637,7 +13668,7 @@ finish_module_parse (cpp_reader *reader)
   else if (errorcount)
     /* Report location of the module decl, not the module itself.  */
     warning_at (state->from_loc, 0,
-		"not writing module %qs due to errors", state->fullname);
+		"not writing module %qs due to errors", state->get_flatname ());
   else
     {
       int fd = -1;
@@ -13665,7 +13696,8 @@ finish_module_parse (cpp_reader *reader)
 		if (macro->imported)
 		  error_at (state->from_loc,
 			    "module %qs controlling macro %qE is imported",
-			    state->fullname, identifier (controlling_node));
+			    state->get_flatname (),
+			    identifier (controlling_node));
 	    }
 
 	  if (!cpp_user_macro_p (controlling_node)
@@ -13697,7 +13729,7 @@ finish_module_parse (cpp_reader *reader)
 	state->write (&to, reader);
       if (!to.end ())
 	error_at (state->from_loc, "failed to write module %qs: %s",
-		  state->fullname, to.get_error (state->filename));
+		  state->get_flatname (), to.get_error (state->filename));
 
       dump.pop (n);
       if (!errorcount)

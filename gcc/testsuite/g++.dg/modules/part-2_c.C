@@ -6,4 +6,4 @@ export module foo:inter2; // { dg-warning "not writing" }
 import :imp; // ok
 
 import :inter; // error
-// { dg-regexp "In module imported at \[^\n]*part-2_c.C:8:.:\nfoo:inter: error: interface partition must be exported\n" }
+// { dg-regexp "In module imported at \[^\n]*part-2_c.C:8:.:\n:inter: error: interface partition must be exported\n" }

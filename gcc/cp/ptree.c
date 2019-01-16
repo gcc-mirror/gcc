@@ -62,7 +62,8 @@ cxx_print_decl (FILE *file, tree node, int indent)
     {
       if (need_indent)
 	indent_to (file, indent + 3);
-      fprintf (file, " module %d:%s", mod, module_name (mod));
+      const char *primary;
+      fprintf (file, " module %d:%s", mod, module_name (mod, &primary));
       need_indent = false;
     }
 

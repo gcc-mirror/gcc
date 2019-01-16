@@ -1,6 +1,22 @@
 2019-01-16  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (module_name): Replace FULL parm with primary pointer.
+	* error.c (dump_module_suffix): Adjust.
+	* module.cc (module_state::fullname): Rename to flatname.
+	(module_state::{get,set}_flatname): New.  Use get_flatname.
+	(module_state::attach): Conditionally call set_flatname.
+	(get_module): Likewise.
+	(module_mapper::imex_query): Adjust.
+	(module_mapper::bmi_response): Likewise.
+	(module_state::write_readme): Adjust.
+	(module_state::{read,write}_config): Adjust name checking.
+	* name-lookup.c (make_namespace): Adjust anonymous name creation.
+	* ptree.c (cxx_print_decl): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/part-2_[cd].C: Adjust regex.
+
+	gcc/cp/
 	* cp-tree.h (module_name): Add FULL parm.
 	* module.cc (module_name): Check it and strip partitions if not.
 	* error.c (dump_module_suffix): Don't want full name.
