@@ -1,3 +1,12 @@
+2019-02-14  Ulrich Drepper  <drepper@redhat.com>
+
+	PR libstdc++/88738
+	Warn about unused comparisons of shared_ptr/unique_ptr
+	* include/bits/c++config [_GLIBCXX_NODISCARD]: Define.
+	* include/bits/shared_ptr.h: Use it for operator ==, !=,
+	<, <=, >, >= for shared_ptr.
+	* include/bits/unique_ptr.h: Likewise for unique_ptr.
+
 2019-01-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/shared_ptr_base.h (__cpp_lib_shared_ptr_arrays): Define
