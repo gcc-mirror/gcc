@@ -1,3 +1,12 @@
+2019-01-16  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	Backported from mainline
+
+	2019-01-03  Aaron Sawdey  <acsawdey@linux.ibm.com>
+	* config/rs6000/rs6000-string.c (expand_block_move): Don't use
+	unaligned vsx and avoid lxvd2x/stxvd2x.
+	(gen_lvx_v4si_move): New function.
+
 2019-01-16  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from mainline
