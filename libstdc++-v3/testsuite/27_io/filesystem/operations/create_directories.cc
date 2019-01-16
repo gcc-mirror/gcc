@@ -70,6 +70,8 @@ test01()
   b = fs::create_directories( p/"./d4/../d5", ec );
   VERIFY( !ec );
   VERIFY( b );
+  VERIFY( is_directory(p/"d4") );
+  VERIFY( is_directory(p/"d5") );
   VERIFY( is_directory(p/"./d4/../d5") );
 
   std::uintmax_t count = remove_all(p, ec);

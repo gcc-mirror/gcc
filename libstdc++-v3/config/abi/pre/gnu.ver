@@ -2060,6 +2060,10 @@ GLIBCXX_3.4.26 {
     _ZNSt13basic_istreamIwSt11char_traitsIwEE6ignoreExt;
     # std::basic_filebuf::open(const wchar_t*, openmode)
     _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE4openEPKwSt13_Ios_Openmode;
+    _ZNSt13basic_fstreamI[cw]St11char_traitsI[cw]EEC[12]EPKwSt13_Ios_Openmode;
+    _ZNSt13basic_fstreamI[cw]St11char_traitsI[cw]EE4openEPKwSt13_Ios_Openmode;
+    _ZNSt14basic_[io]fstreamI[cw]St11char_traitsI[cw]EEC[12]EPKwSt13_Ios_Openmode;
+    _ZNSt14basic_[io]fstreamI[cw]St11char_traitsI[cw]EE4openEPKwSt13_Ios_Openmode;
 
     _ZN11__gnu_debug25_Safe_local_iterator_base16_M_attach_singleEPNS_19_Safe_sequence_baseEb;
 
@@ -2122,7 +2126,7 @@ GLIBCXX_3.4.26 {
     _ZNKSt10filesystem4path5_List3endEv;
     _ZNKSt10filesystem4path5_List5beginEv;
     _ZNKSt10filesystem4path7compareERKS0_;
-    _ZNKSt10filesystem4path7compareESt17basic_string_viewIcSt11char_traitsIcEE;
+    _ZNKSt10filesystem4path7compareESt17basic_string_viewI[cw]St11char_traitsI[cw]EE;
     _ZNKSt10filesystem4path9root_*Ev;
     _ZNSt10filesystem10hash_valueERKNS_4pathE;
     _ZNSt10filesystem16filesystem_errorC[12]E*;
@@ -2132,8 +2136,8 @@ GLIBCXX_3.4.26 {
     _ZNSt10filesystem4path1[567]re*;
     _ZNSt10filesystem4path5_ListC1ERKS1_;
     _ZNSt10filesystem4path5_ListC1Ev;
-    _ZNSt10filesystem4path9_M_appendESt17basic_string_viewIcSt11char_traitsIcEE;
-    _ZNSt10filesystem4path9_M_concatESt17basic_string_viewIcSt11char_traitsIcEE;
+    _ZNSt10filesystem4path9_M_appendESt17basic_string_viewI[cw]St11char_traitsI[cw]EE;
+    _ZNSt10filesystem4path9_M_concatESt17basic_string_viewI[cw]St11char_traitsI[cw]EE;
     _ZNSt10filesystem4pathaSERKS0_;
     _ZNSt10filesystem4pathdVERKS0_;
     _ZNSt10filesystem4pathpLERKS0_;
@@ -2148,7 +2152,7 @@ GLIBCXX_3.4.26 {
     _ZNKSt10filesystem7__cxx114path5_List3endEv;
     _ZNKSt10filesystem7__cxx114path5_List5beginEv;
     _ZNKSt10filesystem7__cxx114path7compareERKS1_;
-    _ZNKSt10filesystem7__cxx114path7compareESt17basic_string_viewIcSt11char_traitsIcEE;
+    _ZNKSt10filesystem7__cxx114path7compareESt17basic_string_viewI[cw]St11char_traitsI[cw]EE;
     _ZNKSt10filesystem7__cxx114path9root_*Ev;
     _ZNSt10filesystem7__cxx1110hash_valueERKNS0_4pathE;
     _ZNSt10filesystem7__cxx1116filesystem_errorC[12]E*;
@@ -2158,8 +2162,8 @@ GLIBCXX_3.4.26 {
     _ZNSt10filesystem7__cxx114path1[567]re*;
     _ZNSt10filesystem7__cxx114path5_ListC1ERKS2_;
     _ZNSt10filesystem7__cxx114path5_ListC1Ev;
-    _ZNSt10filesystem7__cxx114path9_M_appendESt17basic_string_viewIcSt11char_traitsIcEE;
-    _ZNSt10filesystem7__cxx114path9_M_concatESt17basic_string_viewIcSt11char_traitsIcEE;
+    _ZNSt10filesystem7__cxx114path9_M_appendESt17basic_string_viewI[cw]St11char_traitsI[cw]EE;
+    _ZNSt10filesystem7__cxx114path9_M_concatESt17basic_string_viewI[cw]St11char_traitsI[cw]EE;
     _ZNSt10filesystem7__cxx114pathaSERKS1_;
     _ZNSt10filesystem7__cxx114pathdVERKS1_;
     _ZNSt10filesystem7__cxx114pathpLERKS1_;
@@ -2220,6 +2224,12 @@ GLIBCXX_3.4.26 {
     _ZNSt10filesystem7__cxx1128recursive_directory_iteratorD[12]Ev;
     _ZNSt10filesystem7__cxx1128recursive_directory_iteratoraSEOS1_;
     _ZNSt10filesystem7__cxx1128recursive_directory_iteratorppEv;
+
+    _ZNSt12__shared_ptrINSt10filesystem7__cxx114_DirELN9__gnu_cxx12_Lock_policyE2EEC1Ev;
+    _ZNSt12__shared_ptrINSt10filesystem7__cxx114_DirELN9__gnu_cxx12_Lock_policyE2EEC1EOS5_;
+    _ZNSt12__shared_ptrINSt10filesystem7__cxx114_DirELN9__gnu_cxx12_Lock_policyE2EEaSEOS5_;
+    _ZNSt12__shared_ptrINSt10filesystem7__cxx1128recursive_directory_iterator10_Dir_stackELN9__gnu_cxx12_Lock_policyE2EEC1Ev;
+    _ZNSt12__shared_ptrINSt10filesystem7__cxx1128recursive_directory_iterator10_Dir_stackELN9__gnu_cxx12_Lock_policyE2EEC1EOS6_;
 
     # basic_ostream::operator<<(nullptr_t)
     _ZNSolsEDn;
