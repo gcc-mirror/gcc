@@ -1,3 +1,12 @@
+2019-01-16  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (aarch64_simd_expand_args): Use
+	correct max nunits for endian swap.
+	(aarch64_expand_fcmla_builtin): Correct subreg code.
+	* config/aarch64/aarch64-simd.md (aarch64_fcmla_lane<rot><mode>,
+	aarch64_fcmla_laneq<rot>v4hf, aarch64_fcmlaq_lane<rot><mode>): Correct
+	lane endianness.
+
 2019-01-16  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_gimplify_va_arg):
