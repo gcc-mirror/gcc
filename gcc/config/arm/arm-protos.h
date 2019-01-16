@@ -109,7 +109,7 @@ extern int arm_coproc_mem_operand (rtx, bool);
 extern int neon_vector_mem_operand (rtx, int, bool);
 extern int neon_struct_mem_operand (rtx);
 
-extern rtx *neon_vcmla_lane_prepare_operands (machine_mode, rtx *);
+extern rtx *neon_vcmla_lane_prepare_operands (rtx *);
 
 extern int tls_mentioned_p (rtx);
 extern int symbol_mentioned_p (rtx);
