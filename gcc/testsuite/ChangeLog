@@ -1,3 +1,8 @@
+2019-01-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR target/88861
+	* g++.dg/torture/pr88861.C: New test.
+
 2019-01-16  Tamar Christina  <tamar.christina@arm.com>
 
 	PR debug/88046

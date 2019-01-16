@@ -1,3 +1,11 @@
+2019-01-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR target/88861
+	* combine.c (delete_noop_moves): Convert to "bool" return,
+	returning true if any edges are eliminated.
+	(combine_instructions): Also return true if delete_noop_moves
+	returns true.
+
 2019-01-16  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/aarch64/aarch64-builtins.c (aarch64_simd_expand_args): Use
