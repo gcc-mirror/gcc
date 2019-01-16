@@ -843,7 +843,8 @@ wide_int_range_pointer (enum tree_code code,
 			const wide_int &vr0_min,
 			const wide_int &vr0_max,
 			const wide_int &vr1_min,
-			const wide_int &vr1_max)
+			const wide_int &vr1_max,
+			bool overflow_wraps)
 {
   unsigned prec = vr0_min.get_precision ();
   if (code == MIN_EXPR || code == MAX_EXPR)
@@ -864,9 +865,26 @@ wide_int_range_pointer (enum tree_code code,
   else if (code == POINTER_PLUS_EXPR)
     {
       /* For pointer types, we are really only interested in asserting
-	 whether the expression evaluates to non-NULL.  */
-      if (!wide_int_range_includes_zero_p (vr0_min, vr0_max, sign)
-	  || !wide_int_range_includes_zero_p (vr1_min, vr1_max, sign))
+	 whether the expression evaluates to non-NULL.
+
+	 With -fno-delete-null-pointer-checks we need to be more
+	 conservative.  As some object might reside at address 0,
+	 then some offset could be added to it and the same offset
+	 subtracted again and the result would be NULL.
+	 E.g.
+	 static int a[12]; where &a[0] is NULL and
+	 ptr = &a[6];
+	 ptr -= 6;
+	 ptr will be NULL here, even when there is POINTER_PLUS_EXPR
+	 where the first range doesn't include zero and the second one
+	 doesn't either.  As the second operand is sizetype (unsigned),
+	 consider all ranges where the MSB could be set as possible
+	 subtractions where the result might be NULL.  */
+      if ((!wide_int_range_includes_zero_p (vr0_min, vr0_max, sign)
+	   || !wide_int_range_includes_zero_p (vr1_min, vr1_max, sign))
+	  && !overflow_wraps
+	  && (flag_delete_null_pointer_checks
+	      || !wi::sign_mask (vr1_max)))
 	return WIDE_INT_RANGE_NONNULL;
       else if (wide_int_range_zero_p (vr0_min, vr0_max, prec)
 	       && wide_int_range_zero_p (vr1_min, vr1_max, prec))
@@ -900,7 +918,8 @@ irange_pointer_optimization (enum tree_code code, signop s, irange &r,
 {
   tree type = r.type ();
   wide_int_range_nullness n;
-  n = wide_int_range_pointer (code, s, lh_lb, lh_ub, rh_lb, rh_ub);
+  n = wide_int_range_pointer (code, s, lh_lb, lh_ub, rh_lb, rh_ub,
+			      TYPE_OVERFLOW_WRAPS (type));
   if (n == WIDE_INT_RANGE_UNKNOWN)
     r.set_varying (type);
   else if (n == WIDE_INT_RANGE_NULL)
@@ -1959,20 +1978,7 @@ operator_pointer_plus::fold_range (irange& r, const irange& lh,
   if (empty_range_check (r, lh, rh, lh.type ()))
     return true;
 
-  // For pointer types we are mostly concerned with NULL and NON-NULL.
-  // If either side is non-null, the result will be non-null.
-  if (!lh.contains_p (wi::zero (TYPE_PRECISION (lh.type ())))
-      || !rh.contains_p (wi::zero (TYPE_PRECISION (rh.type ()))))
-    range_non_zero (&r, lh.type ());
-  else
-    {
-      // Can't perform a union since the RH is a different type from the LH.
-      if (lh.zero_p () && rh.zero_p ())
-        r = lh;
-      else
-	r.set_varying (lh.type ());
-    }
-  return true;
+  return op_rr (POINTER_PLUS_EXPR, r, lh, rh);
 }
 
 // Unary identity function.

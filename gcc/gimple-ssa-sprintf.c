@@ -4011,8 +4011,8 @@ handle_gimple_call (gimple_stmt_iterator *gsi)
 	    {
 	      tree max = wide_int_to_tree (TREE_TYPE (size), r.upper_bound ());
 	      tree min = wide_int_to_tree (TREE_TYPE (size), r.lower_bound ());
-	      unsigned HOST_WIDE_INT minsize = min;
-	      unsigned HOST_WIDE_INT maxsize = max;
+	      unsigned HOST_WIDE_INT minsize = TREE_INT_CST_LOW (min);
+	      unsigned HOST_WIDE_INT maxsize = TREE_INT_CST_LOW (max);
 	      dstsize = warn_level < 2 ? maxsize : minsize;
 
 	      if (minsize > target_int_max ())

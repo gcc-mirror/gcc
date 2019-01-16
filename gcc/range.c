@@ -465,6 +465,13 @@ irange::canonicalize ()
       else
 	++p;
     }
+  if (TREE_CODE (m_type) == ENUMERAL_TYPE)
+    {
+      /* For -fstrict-enums we may receive out-of-range ranges.  Chop
+	 things off appropriately.  */
+      irange bits (m_type, TYPE_MIN_VALUE (m_type), TYPE_MAX_VALUE (m_type));
+      intersect (bits);
+    }
   gcc_assert (!CHECKING_P || valid_p ());
 }
 
@@ -916,7 +923,7 @@ irange::singleton_p (wide_int &elem) const
 // Convert irange  to a value_range_kind.
 
 void
-irange_to_value_range (value_range &vr, const irange &r)
+irange_to_value_range (value_range_base &vr, const irange &r)
 {
   if (r.varying_p ())
     {
@@ -983,7 +990,7 @@ value_range_to_irange (irange &r,
 // Same as above, but takes an entire value_range instead of piecemeal.
 
 void
-value_range_to_irange (irange &r, tree type, const value_range &vr)
+value_range_to_irange (irange &r, tree type, const value_range_base &vr)
 {
   if (vr.varying_p () || vr.undefined_p ())
     r.set_varying (type);
