@@ -1,3 +1,8 @@
+2019-01-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR debug/88046
+	* g++.dg/lto/pr88046_0.C: Check for shared and fPIC.
+
 2019-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/other/pr33558.C: Test location too.
