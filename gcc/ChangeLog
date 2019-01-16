@@ -1,3 +1,8 @@
+2019-01-16  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_gimplify_va_arg):
+	Handle split indirect COMPLEX_TYPE arguments.
+
 2019-01-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/86891
