@@ -1,3 +1,11 @@
+2019-01-16  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from mainline
+	2018-12-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/88214
+	* gcc.dg/ipa/pr88214.c: New test.
+
 2019-01-15  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/81849

@@ -1577,7 +1577,8 @@ determine_locally_known_aggregate_parts (gcall *call, tree arg,
       if (TREE_CODE (arg) == SSA_NAME)
 	{
 	  tree type_size;
-          if (!tree_fits_uhwi_p (TYPE_SIZE (TREE_TYPE (arg_type))))
+          if (!tree_fits_uhwi_p (TYPE_SIZE (TREE_TYPE (arg_type)))
+	      || !POINTER_TYPE_P (TREE_TYPE (arg)))
             return;
 	  check_ref = true;
 	  arg_base = arg;
