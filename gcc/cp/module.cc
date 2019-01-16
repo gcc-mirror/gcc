@@ -2496,7 +2496,7 @@ public:
 public:
   /* Read a global module entity.  We expect very few mergeables per
      cluster, usually at most one.  */
-  void tree_mergeable ();
+  void tree_mergeable (bool mod_mergeable);
   void reserve_mergeables (unsigned len)
   {
     if (mergeables.length ())
@@ -6907,9 +6907,9 @@ trees_in::tree_node ()
 
 	if (is_mergeable)
 	  {
-	    /* A global module entity.  We've already deduped it, but
-	       need to read in the value here.  Either in-place, or as
-	       a dummy.  */
+	    /* A mergeable entity.  We've already deduped it, but need
+	       to read in the value here.  Either in-place, or as a
+	       dummy.  */
 	    tag = i ();
 	    if (tag < 0 && unsigned (~tag) < back_refs.length ())
 	      res = back_refs[~tag];
@@ -7158,7 +7158,12 @@ trees_out::tree_mergeable (tree decl)
 
   tree_ctx (DECL_CONTEXT (inner), true, inner);
   tree_node (DECL_NAME (inner));
-  u (module_legacy_p () ? MODULE_NONE : MAYBE_DECL_MODULE_OWNER (decl));
+
+  unsigned is_mod = false;
+  if (!module_legacy_p ())
+    is_mod = MAYBE_DECL_MODULE_OWNER (decl) != MODULE_NONE;
+  u (is_mod);
+
   state->write_location (*this, DECL_SOURCE_LOCATION (inner));
 
  again:
@@ -7205,12 +7210,12 @@ trees_out::tree_mergeable (tree decl)
 }
 
 void
-trees_in::tree_mergeable ()
+trees_in::tree_mergeable (bool mod_mergeable)
 {
   tree decl = NULL_TREE;
   tree ctx = tree_node ();
   tree name = tree_node ();
-  unsigned owner = u ();
+  bool is_mod = u ();
   location_t loc = state->read_location (*this);
 
   tree tpl = NULL_TREE;
@@ -7264,14 +7269,13 @@ trees_in::tree_mergeable ()
 	}
     }
 
-  if (owner > MODULE_PURVIEW)
-    set_overrun ();
-
   if (!get_overrun ())
     {
       const char *kind = "new";
-      if (tree existing = match_mergeable_decl (decl, owner != MODULE_NONE,
-						tpl, ret, args))
+      if (is_mod && !mod_mergeable)
+	kind = "unique";
+      else if (tree existing
+	       = match_mergeable_decl (decl, is_mod, tpl, ret, args))
 	{
 	  decl = existing;
 	  mergeables.quick_push (decl);
@@ -9883,9 +9887,20 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	}
       else if (b->is_decl () || b->is_defn ())
 	{
-	  if (TREE_PUBLIC (CP_DECL_CONTEXT (decl))
-	      && (is_legacy () || !MAYBE_DECL_MODULE_OWNER (decl)))
-	    mergeables.safe_push (decl);
+	  if (TREE_PUBLIC (CP_DECL_CONTEXT (decl)))
+	    {
+	      unsigned owner = MODULE_NONE;
+
+	      if (!is_legacy ())
+		owner = MAYBE_DECL_MODULE_OWNER (decl);
+
+	      if (owner >= MODULE_IMPORT_BASE) 
+		owner = (*modules)[owner]->remap;
+
+	      if (owner < MODULE_IMPORT_BASE)
+		if (owner == MODULE_NONE) // FIXME: remove test
+		  mergeables.safe_push (decl);
+	    }
 	}
     }
 
@@ -10132,7 +10147,7 @@ module_state::read_cluster (unsigned snum)
 	    unsigned len = sec.u ();
 	    sec.reserve_mergeables (len);
 	    for (unsigned ix = 0; !sec.get_overrun () && ix != len; ix++)
-	      sec.tree_mergeable ();
+	      sec.tree_mergeable (is_primary () || is_partition ());
 	  }
 	  break;
 

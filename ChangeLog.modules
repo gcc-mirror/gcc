@@ -1,5 +1,12 @@
 2019-01-16  Nathan Sidwell  <nathan@acm.org>
 
+	Merge partition entities (disabled).
+	gcc/cp/
+	* module.cc (trees_{in,out}::tree_mergeable): Fold partitions.
+	(module_state::{read,write}_cluster): Register module entities.
+	gcc/testsuite/
+	* g++.dg/modules/part-3_[abcd].C: New.
+
 	gcc/cp/
 	* module.cc (dumper::GM): Rename to MERGE.  Update uses.
 
