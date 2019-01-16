@@ -7189,14 +7189,15 @@ trees_out::tree_mergeable (tree decl)
       break;
 
     case TYPE_DECL:
-      // FIXME:for now
-      gcc_assert (DECL_IMPLICIT_TYPEDEF_P (inner));
-      inner = TREE_TYPE (inner);
-      gcc_assert (TYPE_MAIN_VARIANT (inner) == inner);
-      u (TREE_CODE (inner));
-      tree_node_specific (inner);
-      core_bools (inner);
-      bflush ();
+      if (DECL_IMPLICIT_TYPEDEF_P (inner))
+	{
+	  inner = TREE_TYPE (inner);
+	  gcc_assert (TYPE_MAIN_VARIANT (inner) == inner);
+	  u (TREE_CODE (inner));
+	  tree_node_specific (inner);
+	  core_bools (inner);
+	  bflush ();
+	}
       break;
 
     default:
@@ -7251,16 +7252,15 @@ trees_in::tree_mergeable (bool mod_mergeable)
 	  break;
 
 	case TYPE_DECL:
-	  if (!DECL_IMPLICIT_TYPEDEF_P (inner))
-	    set_overrun ();
-	  if (tree type = start (u (), tcc_type))
-	    {
-	      tree_node_specific (type, false);
-	      core_bools (type);
-	      bflush ();
-	      TREE_TYPE (inner) = type;
-	      TYPE_NAME (type) = inner;
-	    }
+	  if (DECL_IMPLICIT_TYPEDEF_P (inner))
+	    if (tree type = start (u (), tcc_type))
+	      {
+		tree_node_specific (type, false);
+		core_bools (type);
+		bflush ();
+		TREE_TYPE (inner) = type;
+		TYPE_NAME (type) = inner;
+	      }
 	  break;
 
 	default:

@@ -1,5 +1,11 @@
 2019-01-16  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_{in,out}::tree_mergeable): Allow non-implicit
+	typedefs.
+	gcc/testsuite/
+	* g++.dg/modules/leg-merge-9_[abc].[HC]: New.
+
 	Merge partition entities (disabled).
 	gcc/cp/
 	* module.cc (trees_{in,out}::tree_mergeable): Fold partitions.
