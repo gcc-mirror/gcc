@@ -1,3 +1,32 @@
+2019-01-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/86891
+	* config/aarch64/aarch64-modes.def: Add comment about how the carry
+	bit is set by add and compare.
+	(CC_ADC): New CC_MODE.
+	* config/aarch64/aarch64.c (aarch64_select_cc_mode): Use variables
+	to cache the code and mode of X.  Adjust the shape of a CC_Cmode
+	comparison.  Add detection for CC_ADCmode.
+	(aarch64_get_condition_code_1): Update code support for CC_Cmode.  Add
+	CC_ADCmode.
+	* config/aarch64/aarch64.md (uaddv<mode>4): Use LTU with CCmode.
+	(uaddvti4): Comparison result is in CC_ADCmode and the condition is GEU.
+	(add<mode>3_compareC_cconly_imm): Delete.  Merge into...
+	(add<mode>3_compareC_cconly): ... this.  Restructure the comparison
+	to eliminate the need for zero-extending the operands.
+	(add<mode>3_compareC_imm): Delete.  Merge into ...
+	(add<mode>3_compareC): ... this.  Restructure the comparison to
+	eliminate the need for zero-extending the operands.
+	(add<mode>3_carryin): Use LTU for the overflow detection.
+	(add<mode>3_carryinC): Use CC_ADCmode for the result of the carry out.
+	Reexpress comparison for overflow.
+	(add<mode>3_carryinC_zero): Update for change to add<mode>3_carryinC.
+	(add<mode>3_carryinC): Likewise.
+	(add<mode>3_carryinV): Use LTU for carry between partials.
+	* config/aarch64/predicates.md (aarch64_carry_operation): Update
+	handling of CC_Cmode and add CC_ADCmode.
+	(aarch64_borrow_operation): Likewise.
+
 2019-01-16  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/arm/arm-protos.h (neon_vcmla_lane_prepare_operands): Remove patternmode.
