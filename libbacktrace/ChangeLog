@@ -1,5 +1,12 @@
 2019-01-16  Tom de Vries  <tdevries@suse.de>
 
+	* dwarf.c (read_referenced_name_from_attr): New function.  Factor out
+	of ...
+ 	(read_referenced_name): ... here, and ...
+	(read_function_entry): ... here.
+
+2019-01-16  Tom de Vries  <tdevries@suse.de>
+
 	* dwarf.c (read_referenced_name): Don't allow DW_AT_name to override any
 	name.
 	(read_function_entry): Same.  Don't allow name found via
