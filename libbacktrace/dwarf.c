@@ -2151,18 +2151,25 @@ read_referenced_name (struct dwarf_data *ddata, struct unit *u,
       switch (abbrev->attrs[i].name)
 	{
 	case DW_AT_name:
-	  /* We prefer the linkage name if get one.  */
+	  /* Third name preference: don't override.  A name we found in some
+	     other way, will normally be more useful -- e.g., this name is
+	     normally not mangled.  */
+	  if (ret != NULL)
+	    break;
 	  if (val.encoding == ATTR_VAL_STRING)
 	    ret = val.u.string;
 	  break;
 
 	case DW_AT_linkage_name:
 	case DW_AT_MIPS_linkage_name:
+	  /* First name preference: override all.  */
 	  if (val.encoding == ATTR_VAL_STRING)
 	    return val.u.string;
 	  break;
 
 	case DW_AT_specification:
+	  /* Second name preference: override DW_AT_name, don't override
+	     DW_AT_linkage_name.  */
 	  if (abbrev->attrs[i].form == DW_FORM_ref_addr
 	      || abbrev->attrs[i].form == DW_FORM_ref_sig8)
 	    {
@@ -2315,6 +2322,7 @@ read_function_entry (struct backtrace_state *state, struct dwarf_data *ddata,
       int highpc_is_relative;
       uint64_t ranges;
       int have_ranges;
+      int have_linkage_name;
 
       code = read_uleb128 (unit_buf);
       if (code == 0)
@@ -2351,6 +2359,7 @@ read_function_entry (struct backtrace_state *state, struct dwarf_data *ddata,
       highpc_is_relative = 0;
       ranges = 0;
       have_ranges = 0;
+      have_linkage_name = 0;
       for (i = 0; i < abbrev->num_attrs; ++i)
 	{
 	  struct attr_val val;
@@ -2399,6 +2408,10 @@ read_function_entry (struct backtrace_state *state, struct dwarf_data *ddata,
 
 		case DW_AT_abstract_origin:
 		case DW_AT_specification:
+		  /* Second name preference: override DW_AT_name, don't override
+		     DW_AT_linkage_name.  */
+		  if (have_linkage_name)
+		    break;
 		  if (abbrev->attrs[i].form == DW_FORM_ref_addr
 		      || abbrev->attrs[i].form == DW_FORM_ref_sig8)
 		    {
@@ -2420,21 +2433,21 @@ read_function_entry (struct backtrace_state *state, struct dwarf_data *ddata,
 		  break;
 
 		case DW_AT_name:
+		  /* Third name preference: don't override.  */
+		  if (function->name != NULL)
+		    break;
 		  if (val.encoding == ATTR_VAL_STRING)
-		    {
-		      /* Don't override a name we found in some other
-			 way, as it will normally be more
-			 useful--e.g., this name is normally not
-			 mangled.  */
-		      if (function->name == NULL)
-			function->name = val.u.string;
-		    }
+		    function->name = val.u.string;
 		  break;
 
 		case DW_AT_linkage_name:
 		case DW_AT_MIPS_linkage_name:
+		  /* First name preference: override all.  */
 		  if (val.encoding == ATTR_VAL_STRING)
-		    function->name = val.u.string;
+		    {
+		      function->name = val.u.string;
+		      have_linkage_name = 1;
+		    }
 		  break;
 
 		case DW_AT_low_pc:
