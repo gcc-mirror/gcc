@@ -1,3 +1,10 @@
+2019-01-16  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (module_name): Add FULL parm.
+	* module.cc (module_name): Check it and strip partitions if not.
+	* error.c (dump_module_suffix): Don't want full name.
+
 2019-01-15  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r267946.

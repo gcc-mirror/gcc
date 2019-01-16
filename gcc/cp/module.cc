@@ -12764,11 +12764,16 @@ module_state::check_read (unsigned diag_count, tree ns, tree id)
    including dots.  */
 
 char const *
-module_name (unsigned ix)
+module_name (unsigned ix, bool full)
 {
   module_state *imp = (*modules)[ix];
+
   if (!imp->name)
     imp = imp->parent;
+
+  if (!full)
+    while (imp->is_partition ())
+      imp = imp->parent;
 
   return imp->fullname;
 }
