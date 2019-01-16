@@ -12725,8 +12725,7 @@ neon_struct_mem_operand (rtx op)
 /* Prepares the operands for the VCMLA by lane instruction such that the right
    register number is selected.  This instruction is special in that it always
    requires a D register, however there is a choice to be made between Dn[0],
-   Dn[1], D(n+1)[0], and D(n+1)[1] depending on the mode of the registers and
-   the PATTERNMODE of the insn.
+   Dn[1], D(n+1)[0], and D(n+1)[1] depending on the mode of the registers.
 
    The VCMLA by lane function always selects two values. For instance given D0
    and a V2SF, the only valid index is 0 as the values in S0 and S1 will be
@@ -12738,9 +12737,9 @@ neon_struct_mem_operand (rtx op)
    updated to contain the right index.  */
 
 rtx *
-neon_vcmla_lane_prepare_operands (machine_mode patternmode, rtx *operands)
+neon_vcmla_lane_prepare_operands (rtx *operands)
 {
-  int lane = NEON_ENDIAN_LANE_N (patternmode, INTVAL (operands[4]));
+  int lane = INTVAL (operands[4]);
   machine_mode constmode = SImode;
   machine_mode mode = GET_MODE (operands[3]);
   int regno = REGNO (operands[3]);

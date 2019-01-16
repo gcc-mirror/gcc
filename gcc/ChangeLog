@@ -1,3 +1,10 @@
+2019-01-16  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm-protos.h (neon_vcmla_lane_prepare_operands): Remove patternmode.
+	* config/arm/arm.c (neon_vcmla_lane_prepare_operands): Likewise.
+	* config/arm/neon.md (neon_vcmla_lane<rot><mode>, neon_vcmla_laneq<rot><mode>,
+	neon_vcmlaq_lane<rot><mode>): Remove endianness conversion.
+
 2019-01-16  Martin Liska  <mliska@suse.cz>
 
 	* Makefile.in: Set TOOL_INCLUDE_DIR and NATIVE_SYSTEM_HEADER_DIR

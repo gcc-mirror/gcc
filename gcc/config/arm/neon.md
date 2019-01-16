@@ -3494,7 +3494,7 @@
 			     VCMLA)))]
   "TARGET_COMPLEX"
   {
-    operands = neon_vcmla_lane_prepare_operands (<MODE>mode, operands);
+    operands = neon_vcmla_lane_prepare_operands (operands);
     return "vcmla.<V_s_elem>\t%<V_reg>0, %<V_reg>2, d%c3[%c4], #<rot>";
   }
   [(set_attr "type" "neon_fcmla")]
@@ -3509,7 +3509,7 @@
 			      VCMLA)))]
   "TARGET_COMPLEX"
   {
-    operands = neon_vcmla_lane_prepare_operands (<MODE>mode, operands);
+    operands = neon_vcmla_lane_prepare_operands (operands);
     return "vcmla.<V_s_elem>\t%<V_reg>0, %<V_reg>2, d%c3[%c4], #<rot>";
   }
   [(set_attr "type" "neon_fcmla")]
@@ -3524,7 +3524,7 @@
 				 VCMLA)))]
   "TARGET_COMPLEX"
   {
-    operands = neon_vcmla_lane_prepare_operands (<MODE>mode, operands);
+    operands = neon_vcmla_lane_prepare_operands (operands);
     return "vcmla.<V_s_elem>\t%<V_reg>0, %<V_reg>2, d%c3[%c4], #<rot>";
   }
   [(set_attr "type" "neon_fcmla")]
