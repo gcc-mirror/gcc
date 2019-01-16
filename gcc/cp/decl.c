@@ -11902,36 +11902,43 @@ grokdeclarator (const cp_declarator *declarator,
 
   if (storage_class == sc_mutable)
     {
+      location_t sloc = declspecs->locations[ds_storage_class];
       if (decl_context != FIELD || friendp)
 	{
-	  error ("non-member %qs cannot be declared %<mutable%>", name);
+	  error_at (sloc, "non-member %qs cannot be declared %<mutable%>",
+		    name);
 	  storage_class = sc_none;
 	}
       else if (decl_context == TYPENAME || typedef_p)
 	{
-	  error ("non-object member %qs cannot be declared %<mutable%>", name);
+	  error_at (sloc,
+		    "non-object member %qs cannot be declared %<mutable%>",
+		    name);
 	  storage_class = sc_none;
 	}
       else if (TREE_CODE (type) == FUNCTION_TYPE
 	       || TREE_CODE (type) == METHOD_TYPE)
 	{
-	  error ("function %qs cannot be declared %<mutable%>", name);
+	  error_at (sloc, "function %qs cannot be declared %<mutable%>",
+		    name);
 	  storage_class = sc_none;
 	}
       else if (staticp)
 	{
-	  error ("static %qs cannot be declared %<mutable%>", name);
+	  error_at (sloc, "%<static%> %qs cannot be declared %<mutable%>",
+		    name);
 	  storage_class = sc_none;
 	}
       else if (type_quals & TYPE_QUAL_CONST)
 	{
-	  error ("const %qs cannot be declared %<mutable%>", name);
+	  error_at (sloc, "%<const%> %qs cannot be declared %<mutable%>",
+		    name);
 	  storage_class = sc_none;
 	}
       else if (TYPE_REF_P (type))
 	{
-	  permerror (input_location, "reference %qs cannot be declared "
-	             "%<mutable%>", name);
+	  permerror (sloc, "reference %qs cannot be declared %<mutable%>",
+		     name);
 	  storage_class = sc_none;
 	}
     }
