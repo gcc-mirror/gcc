@@ -2087,6 +2087,43 @@ read_line_info (struct backtrace_state *state, struct dwarf_data *ddata,
   return 0;
 }
 
+static const char *read_referenced_name (struct dwarf_data *, struct unit *,
+					 uint64_t, backtrace_error_callback,
+					 void *);
+
+/* Read the name of a function from a DIE referenced by ATTR with VAL.  */
+
+static const char *
+read_referenced_name_from_attr (struct dwarf_data *ddata, struct unit *u,
+				struct attr *attr, struct attr_val *val,
+				backtrace_error_callback error_callback,
+				void *data)
+{
+  switch (attr->name)
+    {
+    case DW_AT_abstract_origin:
+    case DW_AT_specification:
+      break;
+    default:
+      return NULL;
+    }
+
+  if (attr->form == DW_FORM_ref_addr
+      || attr->form == DW_FORM_ref_sig8)
+    {
+      /* This refers to an abstract origin defined in
+	 some other compilation unit.  We can handle
+	 this case if we must, but it's harder.  */
+      return NULL;
+    }
+
+  if (val->encoding == ATTR_VAL_UINT
+      || val->encoding == ATTR_VAL_REF_UNIT)
+    return read_referenced_name (ddata, u, val->u.uint, error_callback, data);
+
+  return NULL;
+}
+
 /* Read the name of a function from a DIE referenced by a
    DW_AT_abstract_origin or DW_AT_specification tag.  OFFSET is within
    the same compilation unit.  */
@@ -2170,24 +2207,14 @@ read_referenced_name (struct dwarf_data *ddata, struct unit *u,
 	case DW_AT_specification:
 	  /* Second name preference: override DW_AT_name, don't override
 	     DW_AT_linkage_name.  */
-	  if (abbrev->attrs[i].form == DW_FORM_ref_addr
-	      || abbrev->attrs[i].form == DW_FORM_ref_sig8)
-	    {
-	      /* This refers to a specification defined in some other
-		 compilation unit.  We can handle this case if we
-		 must, but it's harder.  */
-	      break;
-	    }
-	  if (val.encoding == ATTR_VAL_UINT
-	      || val.encoding == ATTR_VAL_REF_UNIT)
-	    {
-	      const char *name;
+	  {
+	    const char *name;
 
-	      name = read_referenced_name (ddata, u, val.u.uint,
-					   error_callback, data);
-	      if (name != NULL)
-		ret = name;
-	    }
+	    name = read_referenced_name_from_attr (ddata, u, &abbrev->attrs[i],
+						   &val, error_callback, data);
+	    if (name != NULL)
+	      ret = name;
+	  }
 	  break;
 
 	default:
@@ -2412,24 +2439,16 @@ read_function_entry (struct backtrace_state *state, struct dwarf_data *ddata,
 		     DW_AT_linkage_name.  */
 		  if (have_linkage_name)
 		    break;
-		  if (abbrev->attrs[i].form == DW_FORM_ref_addr
-		      || abbrev->attrs[i].form == DW_FORM_ref_sig8)
-		    {
-		      /* This refers to an abstract origin defined in
-			 some other compilation unit.  We can handle
-			 this case if we must, but it's harder.  */
-		      break;
-		    }
-		  if (val.encoding == ATTR_VAL_UINT
-		      || val.encoding == ATTR_VAL_REF_UNIT)
-		    {
-		      const char *name;
+		  {
+		    const char *name;
 
-		      name = read_referenced_name (ddata, u, val.u.uint,
-						   error_callback, data);
-		      if (name != NULL)
-			function->name = name;
-		    }
+		    name
+		      = read_referenced_name_from_attr (ddata, u,
+							&abbrev->attrs[i], &val,
+							error_callback, data);
+		    if (name != NULL)
+		      function->name = name;
+		  }
 		  break;
 
 		case DW_AT_name:
