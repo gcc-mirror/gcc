@@ -99,6 +99,14 @@
 # define _GLIBCXX_ABI_TAG_CXX11 __attribute ((__abi_tag__ ("cxx11")))
 #endif
 
+// Macro to warn about unused results.
+#if __cplusplus >= 201703L
+# define _GLIBCXX_NODISCARD [[__nodiscard__]]
+#else
+# define _GLIBCXX_NODISCARD
+#endif
+
+
 
 #if __cplusplus
 

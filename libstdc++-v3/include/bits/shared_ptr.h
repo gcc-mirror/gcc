@@ -380,37 +380,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // 20.7.2.2.7 shared_ptr comparisons
   template<typename _Tp, typename _Up>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator==(const shared_ptr<_Tp>& __a, const shared_ptr<_Up>& __b) noexcept
     { return __a.get() == __b.get(); }
 
   template<typename _Tp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator==(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
     { return !__a; }
 
   template<typename _Tp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator==(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
     { return !__a; }
 
   template<typename _Tp, typename _Up>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator!=(const shared_ptr<_Tp>& __a, const shared_ptr<_Up>& __b) noexcept
     { return __a.get() != __b.get(); }
 
   template<typename _Tp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator!=(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
     { return (bool)__a; }
 
   template<typename _Tp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator!=(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
     { return (bool)__a; }
 
   template<typename _Tp, typename _Up>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator<(const shared_ptr<_Tp>& __a, const shared_ptr<_Up>& __b) noexcept
     {
       using _Tp_elt = typename shared_ptr<_Tp>::element_type;
@@ -420,7 +420,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator<(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
     {
       using _Tp_elt = typename shared_ptr<_Tp>::element_type;
@@ -428,7 +428,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator<(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
     {
       using _Tp_elt = typename shared_ptr<_Tp>::element_type;
@@ -436,47 +436,47 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp, typename _Up>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator<=(const shared_ptr<_Tp>& __a, const shared_ptr<_Up>& __b) noexcept
     { return !(__b < __a); }
 
   template<typename _Tp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator<=(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
     { return !(nullptr < __a); }
 
   template<typename _Tp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator<=(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
     { return !(__a < nullptr); }
 
   template<typename _Tp, typename _Up>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator>(const shared_ptr<_Tp>& __a, const shared_ptr<_Up>& __b) noexcept
     { return (__b < __a); }
 
   template<typename _Tp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator>(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
     { return nullptr < __a; }
 
   template<typename _Tp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator>(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
     { return __a < nullptr; }
 
   template<typename _Tp, typename _Up>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator>=(const shared_ptr<_Tp>& __a, const shared_ptr<_Up>& __b) noexcept
     { return !(__a < __b); }
 
   template<typename _Tp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator>=(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
     { return !(__a < nullptr); }
 
   template<typename _Tp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator>=(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
     { return !(nullptr < __a); }
 
