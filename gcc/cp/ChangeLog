@@ -1,3 +1,11 @@
+2019-01-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/78244 - narrowing conversion in template not detected.
+	* call.c (perform_implicit_conversion_flags): Set
+	IMPLICIT_CONV_EXPR_BRACED_INIT.
+	* cp-tree.h (IMPLICIT_CONV_EXPR_BRACED_INIT): New.
+	* pt.c (tsubst_copy_and_build): Use it.
+
 2019-01-15  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/88795
