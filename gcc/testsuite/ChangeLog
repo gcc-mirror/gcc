@@ -1,3 +1,10 @@
+2019-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/51628
+	PR target/88682
+	* c-c++-common/pr51628-10.c (unaligned_int128_t): Add
+	may_alias attribute.
+
 2019-01-15  Nikhil Benesch  <nikhil.benesch@gmail.com>
 
         * gcc.misc-tests/godump-1.c: Add test case for typedef before
