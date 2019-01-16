@@ -11018,6 +11018,8 @@ perform_implicit_conversion_flags (tree type, tree expr,
       expr = build1 (IMPLICIT_CONV_EXPR, type, expr);
       if (!(flags & LOOKUP_ONLYCONVERTING))
 	IMPLICIT_CONV_EXPR_DIRECT_INIT (expr) = true;
+      if (flags & LOOKUP_NO_NARROWING)
+	IMPLICIT_CONV_EXPR_BRACED_INIT (expr) = true;
     }
   else
     expr = convert_like (conv, expr, complain);
