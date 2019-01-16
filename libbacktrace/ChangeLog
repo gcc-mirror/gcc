@@ -1,3 +1,11 @@
+2019-01-16  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (read_referenced_name): Don't allow DW_AT_name to override any
+	name.
+	(read_function_entry): Same.  Don't allow name found via
+	DW_AT_abstract_origin or case DW_AT_specification to override linkage
+	name.
+
 2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/16615
