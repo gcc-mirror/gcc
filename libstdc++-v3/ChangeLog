@@ -1,3 +1,47 @@
+2019-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.26): Add exports for fstream
+	constructors and open members taking wide strings. Fix patterns for
+	filesystem::path members to match wstring_view parameters. Add
+	exports for shared_ptr members used by directory iterators.
+	* src/c++17/fs_ops.cc (remove(const path&, error_code&)): Clear the
+	error code parameter if the file doesn't exist.
+	* src/filesystem/ops.cc (remove(const path&, error_code&)):
+	Likewise.
+	* testsuite/27_io/filesystem/operations/canonical.cc: Fix expected
+	values for mingw targets, where "/" is not an absolute path. Do not
+	test symlinks on mingw targets.
+	* testsuite/experimental/filesystem/operations/canonical.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/copy.cc: Do not test symlinks
+	on mingw targets.
+	* testsuite/experimental/filesystem/operations/copy.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/create_directories.cc: Check
+	that each component of the path is created.
+	* testsuite/experimental/filesystem/operations/create_directories.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/operations/exists.cc: Do not test
+	permissions on mingw targets.
+	* testsuite/experimental/filesystem/operations/exists.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/is_empty.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/is_empty.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/permissions.cc: XFAIL for
+	mingw targets.
+	* testsuite/experimental/filesystem/operations/permissions.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/operations/remove.cc: Do not test
+	symlinks or permissions on mingw targets.
+	* testsuite/experimental/filesystem/operations/remove.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/remove_all.cc: Do not test
+	symlinks on mingw targets.
+	* testsuite/experimental/filesystem/operations/remove_all.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/operations/status.cc: Do not test
+	permissions on mingw targets.
+	* testsuite/27_io/filesystem/operations/weakly_canonical.cc: Do not
+	test symlinks on mingw targets.
+	* testsuite/experimental/filesystem/operations/space.cc: Fix test
+	for mingw targets.
+
 2019-02-14  Ulrich Drepper  <drepper@redhat.com>
 
 	PR libstdc++/88738
