@@ -1871,7 +1871,7 @@
   ""
 {
   emit_insn (gen_add<mode>3_compareC (operands[0], operands[1], operands[2]));
-  aarch64_gen_unlikely_cbranch (NE, CC_Cmode, operands[3]);
+  aarch64_gen_unlikely_cbranch (LTU, CC_Cmode, operands[3]);
 
   DONE;
 })
@@ -1973,7 +1973,7 @@
   emit_move_insn (gen_lowpart (DImode, operands[0]), low_dest);
   emit_move_insn (gen_highpart (DImode, operands[0]), high_dest);
 
-  aarch64_gen_unlikely_cbranch (NE, CC_Cmode, operands[3]);
+  aarch64_gen_unlikely_cbranch (GEU, CC_ADCmode, operands[3]);
   DONE;
  })
 
@@ -2010,69 +2010,36 @@
   [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
 )
 
-(define_insn "*add<mode>3_compareC_cconly_imm"
-  [(set (reg:CC_C CC_REGNUM)
-	(ne:CC_C
-	  (plus:<DWI>
-	    (zero_extend:<DWI> (match_operand:GPI 0 "register_operand" "r,r"))
-	    (match_operand:<DWI> 2 "const_scalar_int_operand" ""))
-	  (zero_extend:<DWI>
-	    (plus:GPI
-	      (match_dup 0)
-	      (match_operand:GPI 1 "aarch64_plus_immediate" "I,J")))))]
-  "aarch64_zero_extend_const_eq (<DWI>mode, operands[2],
-				 <MODE>mode, operands[1])"
-  "@
-  cmn\\t%<w>0, %1
-  cmp\\t%<w>0, #%n1"
-  [(set_attr "type" "alus_imm")]
-)
-
 (define_insn "*add<mode>3_compareC_cconly"
   [(set (reg:CC_C CC_REGNUM)
-	(ne:CC_C
-	  (plus:<DWI>
-	    (zero_extend:<DWI> (match_operand:GPI 0 "register_operand" "r"))
-	    (zero_extend:<DWI> (match_operand:GPI 1 "register_operand" "r")))
-	  (zero_extend:<DWI> (plus:GPI (match_dup 0) (match_dup 1)))))]
+	(compare:CC_C
+	  (plus:GPI
+	    (match_operand:GPI 0 "register_operand" "r,r,r")
+	    (match_operand:GPI 1 "aarch64_plus_operand" "r,I,J"))
+	  (match_dup 0)))]
   ""
-  "cmn\\t%<w>0, %<w>1"
-  [(set_attr "type" "alus_sreg")]
-)
-
-(define_insn "*add<mode>3_compareC_imm"
-  [(set (reg:CC_C CC_REGNUM)
-	(ne:CC_C
-	  (plus:<DWI>
-	    (zero_extend:<DWI> (match_operand:GPI 1 "register_operand" "r,r"))
-	    (match_operand:<DWI> 3 "const_scalar_int_operand" ""))
-	  (zero_extend:<DWI>
-	    (plus:GPI
-	      (match_dup 1)
-	      (match_operand:GPI 2 "aarch64_plus_immediate" "I,J")))))
-   (set (match_operand:GPI 0 "register_operand" "=r,r")
-	(plus:GPI (match_dup 1) (match_dup 2)))]
-  "aarch64_zero_extend_const_eq (<DWI>mode, operands[3],
-                                 <MODE>mode, operands[2])"
   "@
-  adds\\t%<w>0, %<w>1, %2
-  subs\\t%<w>0, %<w>1, #%n2"
-  [(set_attr "type" "alus_imm")]
+  cmn\\t%<w>0, %<w>1
+  cmn\\t%<w>0, %1
+  cmp\\t%<w>0, #%n1"
+  [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
 )
 
 (define_insn "add<mode>3_compareC"
   [(set (reg:CC_C CC_REGNUM)
 	(compare:CC_C
-	  (plus:<DWI>
-	    (zero_extend:<DWI> (match_operand:GPI 1 "register_operand" "r"))
-	    (zero_extend:<DWI> (match_operand:GPI 2 "register_operand" "r")))
-	  (zero_extend:<DWI>
-	    (plus:GPI (match_dup 1) (match_dup 2)))))
-   (set (match_operand:GPI 0 "register_operand" "=r")
+	  (plus:GPI
+	    (match_operand:GPI 1 "register_operand" "r,r,r")
+	    (match_operand:GPI 2 "aarch64_plus_operand" "r,I,J"))
+	  (match_dup 1)))
+   (set (match_operand:GPI 0 "register_operand" "=r,r,r")
 	(plus:GPI (match_dup 1) (match_dup 2)))]
   ""
-  "adds\\t%<w>0, %<w>1, %<w>2"
-  [(set_attr "type" "alus_sreg")]
+  "@
+  adds\\t%<w>0, %<w>1, %<w>2
+  adds\\t%<w>0, %<w>1, %2
+  subs\\t%<w>0, %<w>1, #%n2"
+  [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
 )
 
 (define_insn "*add<mode>3_compareV_cconly_imm"
@@ -2470,7 +2437,7 @@
   [(set (match_operand:GPI 0 "register_operand")
 	(plus:GPI
 	  (plus:GPI
-	    (ne:GPI (reg:CC_C CC_REGNUM) (const_int 0))
+	    (ltu:GPI (reg:CC_C CC_REGNUM) (const_int 0))
 	    (match_operand:GPI 1 "aarch64_reg_or_zero"))
 	  (match_operand:GPI 2 "aarch64_reg_or_zero")))]
    ""
@@ -2509,7 +2476,7 @@
 (define_expand "add<mode>3_carryinC"
   [(parallel
      [(set (match_dup 3)
-	   (compare:CC_C
+	   (compare:CC_ADC
 	     (plus:<DWI>
 	       (plus:<DWI>
 		 (match_dup 4)
@@ -2517,57 +2484,54 @@
 		   (match_operand:GPI 1 "register_operand" "")))
 	       (zero_extend:<DWI>
 		 (match_operand:GPI 2 "register_operand" "")))
-	   (zero_extend:<DWI>
-	     (plus:GPI
-	       (plus:GPI (match_dup 5) (match_dup 1))
-	       (match_dup 2)))))
+	     (match_dup 6)))
       (set (match_operand:GPI 0 "register_operand")
 	   (plus:GPI
 	     (plus:GPI (match_dup 5) (match_dup 1))
 	     (match_dup 2)))])]
    ""
 {
-  operands[3] = gen_rtx_REG (CC_Cmode, CC_REGNUM);
-  operands[4] = gen_rtx_NE (<DWI>mode, operands[3], const0_rtx);
-  operands[5] = gen_rtx_NE (<MODE>mode, operands[3], const0_rtx);
+  operands[3] = gen_rtx_REG (CC_ADCmode, CC_REGNUM);
+  rtx ccin = gen_rtx_REG (CC_Cmode, CC_REGNUM);
+  operands[4] = gen_rtx_LTU (<DWI>mode, ccin, const0_rtx);
+  operands[5] = gen_rtx_LTU (<MODE>mode, ccin, const0_rtx);
+  operands[6] = immed_wide_int_const (wi::shwi (1, <DWI>mode)
+				      << GET_MODE_BITSIZE (<MODE>mode),
+				      TImode);
 })
 
 (define_insn "*add<mode>3_carryinC_zero"
-  [(set (reg:CC_C CC_REGNUM)
-	(compare:CC_C
+  [(set (reg:CC_ADC CC_REGNUM)
+	(compare:CC_ADC
 	  (plus:<DWI>
 	    (match_operand:<DWI> 2 "aarch64_carry_operation" "")
 	    (zero_extend:<DWI> (match_operand:GPI 1 "register_operand" "r")))
-	  (zero_extend:<DWI>
-	    (plus:GPI
-	      (match_operand:GPI 3 "aarch64_carry_operation" "")
-	      (match_dup 1)))))
+	  (match_operand 4 "const_scalar_int_operand" "")))
    (set (match_operand:GPI 0 "register_operand" "=r")
-	(plus:GPI (match_dup 3) (match_dup 1)))]
-   ""
+	(plus:GPI (match_operand:GPI 3 "aarch64_carry_operation" "")
+		  (match_dup 1)))]
+  "rtx_mode_t (operands[4], <DWI>mode)
+   == (wi::shwi (1, <DWI>mode) << (unsigned) GET_MODE_BITSIZE (<MODE>mode))"
    "adcs\\t%<w>0, %<w>1, <w>zr"
   [(set_attr "type" "adc_reg")]
 )
 
 (define_insn "*add<mode>3_carryinC"
-  [(set (reg:CC_C CC_REGNUM)
-	(compare:CC_C
+  [(set (reg:CC_ADC CC_REGNUM)
+	(compare:CC_ADC
 	  (plus:<DWI>
 	    (plus:<DWI>
 	      (match_operand:<DWI> 3 "aarch64_carry_operation" "")
 	      (zero_extend:<DWI> (match_operand:GPI 1 "register_operand" "r")))
 	    (zero_extend:<DWI> (match_operand:GPI 2 "register_operand" "r")))
-	  (zero_extend:<DWI>
-	    (plus:GPI
-	      (plus:GPI
-		(match_operand:GPI 4 "aarch64_carry_operation" "")
-		(match_dup 1))
-	      (match_dup 2)))))
+	  (match_operand 5 "const_scalar_int_operand" "")))
    (set (match_operand:GPI 0 "register_operand" "=r")
 	(plus:GPI
-	  (plus:GPI (match_dup 4) (match_dup 1))
+	  (plus:GPI (match_operand:GPI 4 "aarch64_carry_operation" "")
+		    (match_dup 1))
 	  (match_dup 2)))]
-   ""
+  "rtx_mode_t (operands[5], <DWI>mode)
+   == (wi::shwi (1, <DWI>mode) << (unsigned) GET_MODE_BITSIZE (<MODE>mode))"
    "adcs\\t%<w>0, %<w>1, %<w>2"
   [(set_attr "type" "adc_reg")]
 )
@@ -2594,8 +2558,8 @@
    ""
 {
   rtx cc = gen_rtx_REG (CC_Cmode, CC_REGNUM);
-  operands[3] = gen_rtx_NE (<DWI>mode, cc, const0_rtx);
-  operands[4] = gen_rtx_NE (<MODE>mode, cc, const0_rtx);
+  operands[3] = gen_rtx_LTU (<DWI>mode, cc, const0_rtx);
+  operands[4] = gen_rtx_LTU (<MODE>mode, cc, const0_rtx);
 })
 
 (define_insn "*add<mode>3_carryinV_zero"
