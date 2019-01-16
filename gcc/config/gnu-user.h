@@ -151,4 +151,4 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #undef TARGET_F951_OPTIONS
 #define TARGET_F951_OPTIONS "%{!nostdinc:\
-  %:fortran-preinclude-file(-fpre-include= math-vector-fortran.h)}"
+  %:fortran-preinclude-file(-fpre-include= math-vector-fortran.h finclude%s/)}"

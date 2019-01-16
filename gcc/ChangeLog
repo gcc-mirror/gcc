@@ -1,3 +1,14 @@
+2019-01-16  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Set TOOL_INCLUDE_DIR and NATIVE_SYSTEM_HEADER_DIR
+	for GCC driver.
+	* config/gnu-user.h (TARGET_F951_OPTIONS): Add 'finclude%s/' as
+	a new argument.
+	* gcc.c (add_sysrooted_hdrs_prefix): New function.
+	(path_prefix_reset): Move up in the source file.
+	(find_fortran_preinclude_file): Make complex search for the
+	fortran header files.
+
 2019-01-15  Nikhil Benesch  <nikhil.benesch@gmail.com>
 
         * godump.c (go_output_typedef): When outputting a typedef, refer
