@@ -90,6 +90,7 @@ nds32 port		Shiva Chen		<shiva0217@gmail.com>
 nios2 port		Chung-Lin Tang		<cltang@codesourcery.com>
 nios2 port		Sandra Loosemore	<sandra@codesourcery.com>
 nvptx port		Tom de Vries		<tdevries@suse.de>
+or1k port		Stafford Horne		<shorne@gmail.com>
 pdp11 port		Paul Koning		<ni1d@arrl.net>
 powerpcspe port		Andrew Jenner		<andrew@codesourcery.com>
 riscv port		Kito Cheng		<kito.cheng@gmail.com>
@@ -310,6 +311,7 @@ Giovanni Bajo					<giovannibajo@gcc.gnu.org>
 Simon Baldwin					<simonb@google.com>
 Scott Bambrough					<scottb@netwinder.org>
 Wolfgang Bangerth				<bangerth@dealii.org>
+Gergö Barany					<gergo@codesourcery.com>
 Charles Baylis					<charles.baylis@linaro.org>
 Tejas Belagod					<tejas.belagod@arm.com>
 Jon Beniston					<jon@beniston.com>
@@ -359,7 +361,7 @@ Simon Dardis					<simon.dardis@imgtec.com>
 Sudakshina Das					<sudi.das@arm.com>
 Bud Davis					<jmdavis@link.com>
 Chris Demetriou					<cgd@google.com>
-Sameera Deshpande				<sameera.deshpande@arm.com>
+Sameera Deshpande				<sameera.deshpande@linaro.org>
 Wilco Dijkstra					<wdijkstr@arm.com>
 Benoit Dupont de Dinechin			<benoit.dupont-de-dinechin@st.com>
 Jason Eckhardt					<jle@rice.edu>
@@ -527,13 +529,15 @@ Andris Pavenis					<andris.pavenis@iki.fi>
 Fernando Pereira				<pronesto@gmail.com>
 Sebastian Perta					<sebastian.perta@renesas.com>
 Sebastian Peryt					<sebastian.peryt@intel.com>
+Johannes Pfau					<johannespfau@gmail.com>
 Kaushik Phatak					<kaushik.phatak@kpitcummins.com>
 Nicolas Pitre					<nico@cam.org>
+Michael Ploujnikov				<michael.ploujnikov@oracle.com>
 Paul Pluzhnikov					<ppluzhnikov@google.com>
 Antoniu Pop					<antoniu.pop@gmail.com>
 Siddhesh Poyarekar				<siddhesh@sourceware.org>
 Vidya Praveen					<vidyapraveen@arm.com>
-Thomas Preud'homme				<thomas.preudhomme@arm.com>
+Thomas Preud'homme				<thomas.preudhomme@celest.fr>
 Vladimir Prus					<vladimir@codesourcery.com>
 Yao Qi						<yao@codesourcery.com>
 Jerry Quinn					<jlquinn@optonline.net>

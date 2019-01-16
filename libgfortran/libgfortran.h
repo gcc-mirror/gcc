@@ -1,5 +1,5 @@
 /* Common declarations for all of libgfortran.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>, and
    Andy Vaught <andy@xena.eas.asu.edu>
 
@@ -202,7 +202,7 @@ extern int __mingw_snprintf (char *, size_t, const char *, ...)
 # define iexport(x)		iexport1(x, IPREFIX(x))
 # define iexport1(x,y)		iexport2(x,y)
 # define iexport2(x,y) \
-	extern __typeof(x) PREFIX(x) __attribute__((__alias__(#y)))
+  extern __typeof(x) PREFIX(x) __attribute__((__alias__(#y), __copy__ (x)))
 #else
 # define export_proto(x)	sym_rename(x, PREFIX(x))
 # define export_proto_np(x)	extern char swallow_semicolon
@@ -359,6 +359,7 @@ typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_1) gfc_array_i1;
 typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_2) gfc_array_i2;
 typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_4) gfc_array_i4;
 typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_8) gfc_array_i8;
+typedef GFC_ARRAY_DESCRIPTOR (index_type) gfc_array_index_type;
 #ifdef HAVE_GFC_INTEGER_16
 typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_16) gfc_array_i16;
 #endif
@@ -385,8 +386,9 @@ typedef GFC_ARRAY_DESCRIPTOR (GFC_LOGICAL_8) gfc_array_l8;
 #ifdef HAVE_GFC_LOGICAL_16
 typedef GFC_ARRAY_DESCRIPTOR (GFC_LOGICAL_16) gfc_array_l16;
 #endif
-typedef gfc_array_i1 gfc_array_s1;
-typedef gfc_array_i4 gfc_array_s4;
+
+typedef GFC_ARRAY_DESCRIPTOR (GFC_UINTEGER_1) gfc_array_s1;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_UINTEGER_4) gfc_array_s4;
 
 /* These are for when you actually want to declare a descriptor, as
    opposed to a pointer to it.  */
@@ -1373,6 +1375,11 @@ typedef GFC_ARRAY_DESCRIPTOR (void) array_t;
 extern index_type size0 (const array_t * array); 
 iexport_proto(size0);
 
+/* is_contiguous.c */
+
+extern GFC_LOGICAL_4 is_contiguous0 (const array_t * const restrict array); 
+iexport_proto(is_contiguous0);
+
 /* bounds.c */
 
 extern void bounds_equal_extents (array_t *, array_t *, const char *,
@@ -1757,7 +1764,9 @@ void cshift1_16_c16 (gfc_array_c16 * const restrict,
 internal_proto(cshift1_16_c16);
 #endif
 
-/* Define this if we support asynchronous I/O on this platform.  This
-   currently requires weak symbols.  */
+/* We always have these.  */
+
+#define HAVE_GFC_UINTEGER_1 1
+#define HAVE_GFC_UINTEGER_4 1
 
 #endif  /* LIBGFOR_H  */

@@ -1,7 +1,6 @@
 # Process this file with autoconf to produce a configure script, like so:
 # aclocal && autoconf && autoheader && automake
 
-AC_PREREQ(2.64)
 AC_INIT([GNU Fortran Runtime Library], 0.3,,[libgfortran])
 AC_CONFIG_HEADER(config.h)
 GCC_TOPLEV_SUBDIRS
@@ -609,8 +608,8 @@ fi
 LIBGFOR_CHECK_ATTRIBUTE_VISIBILITY
 LIBGFOR_CHECK_ATTRIBUTE_ALIAS
 
-# Check out sync builtins support.
-LIBGFOR_CHECK_SYNC_FETCH_AND_ADD
+# Check out atomic builtins support.
+LIBGFOR_CHECK_ATOMIC_FETCH_ADD
 
 # Check out #pragma weak.
 LIBGFOR_GTHREAD_WEAK

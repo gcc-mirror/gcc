@@ -1,5 +1,5 @@
 /* Target machine subroutines for Altera Nios II.
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by Jonah Graham (jgraham@altera.com), 
    Will Reece (wreece@altera.com), and Jeff DaSilva (jdasilva@altera.com).
    Contributed by Mentor Graphics, Inc.
@@ -1539,6 +1539,19 @@ nios2_rtx_costs (rtx x, machine_mode mode,
 	    *total = COSTS_N_INSNS (2);  /* Latency adjustment.  */
 	  else 
 	    *total = COSTS_N_INSNS (1);
+	  if (TARGET_HAS_MULX && GET_MODE (x) == DImode)
+	    {
+	      enum rtx_code c0 = GET_CODE (XEXP (x, 0));
+	      enum rtx_code c1 = GET_CODE (XEXP (x, 1));
+	      if ((c0 == SIGN_EXTEND && c1 == SIGN_EXTEND)
+		  || (c0 == ZERO_EXTEND && c1 == ZERO_EXTEND))
+		/* This is the <mul>sidi3 pattern, which expands into 4 insns,
+		   2 multiplies and 2 moves.  */
+		{
+		  *total = *total * 2 + COSTS_N_INSNS (2);
+		  return true;
+		}
+	    }
           return false;
         }
 
@@ -4264,8 +4277,8 @@ nios2_valid_target_attribute_rec (tree args)
 			    continue;
 			  if (!ISDIGIT (*t))
 			    {			 
-			      error ("`custom-%s=' argument requires "
-				     "numeric digits", N2FPU_NAME (code));
+			      error ("%<custom-%s=%> argument should be "
+				     "a non-negative integer", N2FPU_NAME (code));
 			      return false;
 			    }
 			}

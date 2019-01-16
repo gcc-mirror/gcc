@@ -1,5 +1,5 @@
 /* Pretty formatting of GENERIC trees in C syntax.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
    Adapted from c-pretty-print.c by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -392,6 +392,31 @@ dump_array_domain (pretty_printer *pp, tree domain, int spc, dump_flags_t flags)
 }
 
 
+/* Dump OpenMP iterators ITER.  */
+
+static void
+dump_omp_iterators (pretty_printer *pp, tree iter, int spc, dump_flags_t flags)
+{
+  pp_string (pp, "iterator(");
+  for (tree it = iter; it; it = TREE_CHAIN (it))
+    {
+      if (it != iter)
+	pp_string (pp, ", ");
+      dump_generic_node (pp, TREE_TYPE (TREE_VEC_ELT (it, 0)), spc, flags,
+			 false);
+      pp_space (pp);
+      dump_generic_node (pp, TREE_VEC_ELT (it, 0), spc, flags, false);
+      pp_equal (pp);
+      dump_generic_node (pp, TREE_VEC_ELT (it, 1), spc, flags, false);
+      pp_colon (pp);
+      dump_generic_node (pp, TREE_VEC_ELT (it, 2), spc, flags, false);
+      pp_colon (pp);
+      dump_generic_node (pp, TREE_VEC_ELT (it, 3), spc, flags, false);
+    }
+  pp_right_paren (pp);
+}
+
+
 /* Dump OpenMP clause CLAUSE.  PP, CLAUSE, SPC and FLAGS are as in
    dump_generic_node.  */
 
@@ -413,7 +438,13 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       goto print_remap;
     case OMP_CLAUSE_LASTPRIVATE:
       name = "lastprivate";
-      goto print_remap;
+      if (!OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (clause))
+	goto print_remap;
+      pp_string (pp, "lastprivate(conditional:");
+      dump_generic_node (pp, OMP_CLAUSE_DECL (clause),
+			 spc, flags, false);
+      pp_right_paren (pp);
+      break;
     case OMP_CLAUSE_COPYIN:
       name = "copyin";
       goto print_remap;
@@ -432,11 +463,17 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
     case OMP_CLAUSE__LOOPTEMP_:
       name = "_looptemp_";
       goto print_remap;
+    case OMP_CLAUSE__REDUCTEMP_:
+      name = "_reductemp_";
+      goto print_remap;
     case OMP_CLAUSE_TO_DECLARE:
       name = "to";
       goto print_remap;
     case OMP_CLAUSE_LINK:
       name = "link";
+      goto print_remap;
+    case OMP_CLAUSE_NONTEMPORAL:
+      name = "nontemporal";
       goto print_remap;
   print_remap:
       pp_string (pp, name);
@@ -446,8 +483,20 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       pp_right_paren (pp);
       break;
 
+    case OMP_CLAUSE_TASK_REDUCTION:
+    case OMP_CLAUSE_IN_REDUCTION:
+      pp_string (pp, OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_IN_REDUCTION
+		     ? "in_" : "task_");
+      /* FALLTHRU */
     case OMP_CLAUSE_REDUCTION:
       pp_string (pp, "reduction(");
+      if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_REDUCTION)
+	{
+	  if (OMP_CLAUSE_REDUCTION_TASK (clause))
+	    pp_string (pp, "task,");
+	  else if (OMP_CLAUSE_REDUCTION_INSCAN (clause))
+	    pp_string (pp, "inscan,");
+	}
       if (OMP_CLAUSE_REDUCTION_CODE (clause) != ERROR_MARK)
 	{
 	  pp_string (pp,
@@ -464,7 +513,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       switch (OMP_CLAUSE_IF_MODIFIER (clause))
 	{
 	case ERROR_MARK: break;
+	case VOID_CST: pp_string (pp, "cancel:"); break;
 	case OMP_PARALLEL: pp_string (pp, "parallel:"); break;
+	case OMP_SIMD: pp_string (pp, "simd:"); break;
 	case OMP_TASK: pp_string (pp, "task:"); break;
 	case OMP_TASKLOOP: pp_string (pp, "taskloop:"); break;
 	case OMP_TARGET_DATA: pp_string (pp, "target data:"); break;
@@ -643,18 +694,27 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       pp_string (pp, "depend(");
       switch (OMP_CLAUSE_DEPEND_KIND (clause))
 	{
+	case OMP_CLAUSE_DEPEND_DEPOBJ:
+	  name = "depobj";
+	  break;
 	case OMP_CLAUSE_DEPEND_IN:
-	  pp_string (pp, "in");
+	  name = "in";
 	  break;
 	case OMP_CLAUSE_DEPEND_OUT:
-	  pp_string (pp, "out");
+	  name = "out";
 	  break;
 	case OMP_CLAUSE_DEPEND_INOUT:
-	  pp_string (pp, "inout");
+	  name = "inout";
+	  break;
+	case OMP_CLAUSE_DEPEND_MUTEXINOUTSET:
+	  name = "mutexinoutset";
 	  break;
 	case OMP_CLAUSE_DEPEND_SOURCE:
 	  pp_string (pp, "source)");
 	  return;
+	case OMP_CLAUSE_DEPEND_LAST:
+	  name = "__internal__";
+	  break;
 	case OMP_CLAUSE_DEPEND_SINK:
 	  pp_string (pp, "sink:");
 	  for (tree t = OMP_CLAUSE_DECL (clause); t; t = TREE_CHAIN (t))
@@ -680,10 +740,21 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	default:
 	  gcc_unreachable ();
 	}
-      pp_colon (pp);
-      dump_generic_node (pp, OMP_CLAUSE_DECL (clause),
-			 spc, flags, false);
-      pp_right_paren (pp);
+      {
+	tree t = OMP_CLAUSE_DECL (clause);
+	if (TREE_CODE (t) == TREE_LIST
+	    && TREE_PURPOSE (t)
+	    && TREE_CODE (TREE_PURPOSE (t)) == TREE_VEC)
+	  {
+	    dump_omp_iterators (pp, TREE_PURPOSE (t), spc, flags);
+	    pp_colon (pp);
+	    t = TREE_VALUE (t);
+	  }
+	pp_string (pp, name);
+	pp_colon (pp);
+	dump_generic_node (pp, t, spc, flags, false);
+	pp_right_paren (pp);
+      }
       break;
 
     case OMP_CLAUSE_MAP:
@@ -900,7 +971,53 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       break;
 
     case OMP_CLAUSE_DEFAULTMAP:
-      pp_string (pp, "defaultmap(tofrom:scalar)");
+      pp_string (pp, "defaultmap(");
+      switch (OMP_CLAUSE_DEFAULTMAP_BEHAVIOR (clause))
+	{
+	case OMP_CLAUSE_DEFAULTMAP_ALLOC:
+	  pp_string (pp, "alloc");
+	  break;
+	case OMP_CLAUSE_DEFAULTMAP_TO:
+	  pp_string (pp, "to");
+	  break;
+	case OMP_CLAUSE_DEFAULTMAP_FROM:
+	  pp_string (pp, "from");
+	  break;
+	case OMP_CLAUSE_DEFAULTMAP_TOFROM:
+	  pp_string (pp, "tofrom");
+	  break;
+	case OMP_CLAUSE_DEFAULTMAP_FIRSTPRIVATE:
+	  pp_string (pp, "firstprivate");
+	  break;
+	case OMP_CLAUSE_DEFAULTMAP_NONE:
+	  pp_string (pp, "none");
+	  break;
+	case OMP_CLAUSE_DEFAULTMAP_DEFAULT:
+	  pp_string (pp, "default");
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      switch (OMP_CLAUSE_DEFAULTMAP_CATEGORY (clause))
+	{
+	case OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED:
+	  break;
+	case OMP_CLAUSE_DEFAULTMAP_CATEGORY_SCALAR:
+	  pp_string (pp, ":scalar");
+	  break;
+	case OMP_CLAUSE_DEFAULTMAP_CATEGORY_AGGREGATE:
+	  pp_string (pp, ":aggregate");
+	  break;
+	case OMP_CLAUSE_DEFAULTMAP_CATEGORY_ALLOCATABLE:
+	  pp_string (pp, ":allocatable");
+	  break;
+	case OMP_CLAUSE_DEFAULTMAP_CATEGORY_POINTER:
+	  pp_string (pp, ":pointer");
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      pp_right_paren (pp);
       break;
 
     case OMP_CLAUSE__SIMDUID_:
@@ -1063,9 +1180,7 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       break;
 
     default:
-      /* Should never happen.  */
-      dump_generic_node (pp, clause, spc, flags, false);
-      break;
+      gcc_unreachable ();
     }
 }
 
@@ -1218,6 +1333,34 @@ dump_block_node (pretty_printer *pp, tree block, int spc, dump_flags_t flags)
     }
 }
 
+/* Dump #pragma omp atomic memory order clause.  */
+
+void
+dump_omp_atomic_memory_order (pretty_printer *pp, enum omp_memory_order mo)
+{
+  switch (mo)
+    {
+    case OMP_MEMORY_ORDER_RELAXED:
+      pp_string (pp, " relaxed");
+      break;
+    case OMP_MEMORY_ORDER_SEQ_CST:
+      pp_string (pp, " seq_cst");
+      break;
+    case OMP_MEMORY_ORDER_ACQ_REL:
+      pp_string (pp, " acq_rel");
+      break;
+    case OMP_MEMORY_ORDER_ACQUIRE:
+      pp_string (pp, " acquire");
+      break;
+    case OMP_MEMORY_ORDER_RELEASE:
+      pp_string (pp, " release");
+      break;
+    case OMP_MEMORY_ORDER_UNSPECIFIED:
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
 
 /* Dump the node NODE on the pretty_printer PP, SPC spaces of
    indent.  FLAGS specifies details to show in the dump (see TDF_* in
@@ -2991,7 +3134,8 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       break;
 
     case OMP_TASK:
-      pp_string (pp, "#pragma omp task");
+      pp_string (pp, OMP_TASK_BODY (node) ? "#pragma omp task"
+					  : "#pragma omp taskwait");
       dump_omp_clauses (pp, OMP_TASK_CLAUSES (node), spc, flags);
       goto dump_omp_body;
 
@@ -3122,6 +3266,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
     case OMP_TASKGROUP:
       pp_string (pp, "#pragma omp taskgroup");
+      dump_omp_clauses (pp, OMP_TASKGROUP_CLAUSES (node), spc, flags);
       goto dump_omp_body;
 
     case OMP_ORDERED:
@@ -3144,8 +3289,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
     case OMP_ATOMIC:
       pp_string (pp, "#pragma omp atomic");
-      if (OMP_ATOMIC_SEQ_CST (node))
-	pp_string (pp, " seq_cst");
+      dump_omp_atomic_memory_order (pp, OMP_ATOMIC_MEMORY_ORDER (node));
       newline_and_indent (pp, spc + 2);
       dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
       pp_space (pp);
@@ -3156,8 +3300,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
     case OMP_ATOMIC_READ:
       pp_string (pp, "#pragma omp atomic read");
-      if (OMP_ATOMIC_SEQ_CST (node))
-	pp_string (pp, " seq_cst");
+      dump_omp_atomic_memory_order (pp, OMP_ATOMIC_MEMORY_ORDER (node));
       newline_and_indent (pp, spc + 2);
       dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
       pp_space (pp);
@@ -3166,8 +3309,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
     case OMP_ATOMIC_CAPTURE_OLD:
     case OMP_ATOMIC_CAPTURE_NEW:
       pp_string (pp, "#pragma omp atomic capture");
-      if (OMP_ATOMIC_SEQ_CST (node))
-	pp_string (pp, " seq_cst");
+      dump_omp_atomic_memory_order (pp, OMP_ATOMIC_MEMORY_ORDER (node));
       newline_and_indent (pp, spc + 2);
       dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
       pp_space (pp);

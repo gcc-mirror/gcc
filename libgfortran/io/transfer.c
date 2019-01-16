@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist transfer functions contributed by Paul Thomas
    F2003 I/O support contributed by Jerry DeLisle
@@ -241,16 +241,6 @@ read_sf_internal (st_parameter_dt *dtp, size_t *length)
       && dtp->u.p.current_unit->pad_status == PAD_NO)
     hit_eof (dtp);
 
-  /* If we have seen an eor previously, return a length of 0.  The
-     caller is responsible for correctly padding the input field.  */
-  if (dtp->u.p.sf_seen_eor)
-    {
-      *length = 0;
-      /* Just return something that isn't a NULL pointer, otherwise the
-         caller thinks an error occurred.  */
-      return (char*) empty_string;
-    }
-
   /* There are some cases with mixed DTIO where we have read a character
      and saved it in the last character buffer, so we need to backup.  */
   if (unlikely (dtp->u.p.current_unit->child_dtio > 0 &&
@@ -260,22 +250,80 @@ read_sf_internal (st_parameter_dt *dtp, size_t *length)
       sseek (dtp->u.p.current_unit->s, -1, SEEK_CUR);
     }
 
-  lorig = *length;
-  if (is_char4_unit(dtp))
+  /* To support legacy code we have to scan the input string one byte
+     at a time because we don't know where an early comma may be and the
+     requested length could go past the end of a comma shortened
+     string.  We only do this if -std=legacy was given at compile
+     time.  We also do not support this on kind=4 strings.  */
+  if (unlikely(compile_options.warn_std == 0)) // the slow legacy way.
     {
-      gfc_char4_t *p = (gfc_char4_t *) mem_alloc_r4 (dtp->u.p.current_unit->s,
-			length);
-      base = fbuf_alloc (dtp->u.p.current_unit, lorig);
-      for (size_t i = 0; i < *length; i++, p++)
-	base[i] = *p > 255 ? '?' : (unsigned char) *p;
-    }
-  else
-    base = mem_alloc_r (dtp->u.p.current_unit->s, length);
+      size_t n;
+      size_t tmp = 1;
+      char *q;
 
-  if (unlikely (lorig > *length))
+      /* If we have seen an eor previously, return a length of 0.  The
+	 caller is responsible for correctly padding the input field.  */
+      if (dtp->u.p.sf_seen_eor)
+	{
+	  *length = 0;
+	  /* Just return something that isn't a NULL pointer, otherwise the
+	     caller thinks an error occurred.  */
+	  return (char*) empty_string;
+	}
+
+      /* Get the first character of the string to establish the base
+	 address and check for comma or end-of-record condition.  */
+      base = mem_alloc_r (dtp->u.p.current_unit->s, &tmp);
+      if (tmp == 0)
+	{
+	  dtp->u.p.sf_seen_eor = 1;
+	  *length = 0;
+	  return (char*) empty_string;
+	}
+      if (*base == ',')
+	{
+	  dtp->u.p.current_unit->bytes_left--;
+	  *length = 0;
+	  return (char*) empty_string;
+	}
+
+      /* Now we scan the rest and deal with either an end-of-file
+         condition or a comma, as needed.  */
+      for (n = 1; n < *length; n++)
+	{
+	  q = mem_alloc_r (dtp->u.p.current_unit->s, &tmp);
+	  if (tmp == 0)
+	    {
+	      hit_eof (dtp);
+	      return NULL;
+	    }
+	  if (*q == ',')
+	    {
+	      dtp->u.p.current_unit->bytes_left -= n;
+	      *length = n;
+	      break;
+	    }
+	}
+    }
+  else // the fast way
     {
-      hit_eof (dtp);
-      return NULL;
+      lorig = *length;
+      if (is_char4_unit(dtp))
+	{
+	  gfc_char4_t *p = (gfc_char4_t *) mem_alloc_r4 (dtp->u.p.current_unit->s,
+			    length);
+	  base = fbuf_alloc (dtp->u.p.current_unit, lorig);
+	  for (size_t i = 0; i < *length; i++, p++)
+	    base[i] = *p > 255 ? '?' : (unsigned char) *p;
+	}
+      else
+	base = mem_alloc_r (dtp->u.p.current_unit->s, length);
+
+      if (unlikely (lorig > *length))
+	{
+	  hit_eof (dtp);
+	  return NULL;
+	}
     }
 
   dtp->u.p.current_unit->bytes_left -= *length;
@@ -3141,7 +3189,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	}
     }
 
-  if (au)
+  if (au && dtp->u.p.async)
     {
       NOTE ("enqueue_data_transfer");
       enqueue_data_transfer_init (au, dtp, read_flag);
@@ -4265,11 +4313,8 @@ st_read_done (st_parameter_dt *dtp)
 	    *dtp->id = enqueue_done_id (dtp->u.p.current_unit->au, AIO_READ_DONE);  
 	  else
 	    {
-	      enqueue_done (dtp->u.p.current_unit->au, AIO_READ_DONE);
-	      /* An asynchronous unit without ASYNCHRONOUS="YES" - make this
-		 synchronous by performing a wait operation.  */
-	      if (!dtp->u.p.async)
-		async_wait (&dtp->common, dtp->u.p.current_unit->au);
+	      if (dtp->u.p.async)
+		enqueue_done (dtp->u.p.current_unit->au, AIO_READ_DONE);
 	    }
 	}
       else
@@ -4353,18 +4398,17 @@ st_write_done (st_parameter_dt *dtp)
 {
   if (dtp->u.p.current_unit)
     {
-      if (dtp->u.p.current_unit->au)
+      if (dtp->u.p.current_unit->au && dtp->u.p.async)
 	{
 	  if (dtp->common.flags & IOPARM_DT_HAS_ID)
 	    *dtp->id = enqueue_done_id (dtp->u.p.current_unit->au,
 					AIO_WRITE_DONE);
 	  else
 	    {
-	      enqueue_done (dtp->u.p.current_unit->au, AIO_WRITE_DONE);
-	      /* An asynchronous unit without ASYNCHRONOUS="YES" - make this
-		 synchronous by performing a wait operation.  */
-	      if (!dtp->u.p.async)
-		async_wait (&dtp->common, dtp->u.p.current_unit->au);
+	      /* We perform synchronous I/O on an asynchronous unit, so no need
+		 to enqueue AIO_READ_DONE.  */
+	      if (dtp->u.p.async)
+		enqueue_done (dtp->u.p.current_unit->au, AIO_WRITE_DONE);
 	    }
 	}
       else

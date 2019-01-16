@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fwrapv" } */
+/* { dg-require-effective-target ptr_eq_long } */
 
 char *a;
 int b(void)

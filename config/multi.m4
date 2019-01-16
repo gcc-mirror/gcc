@@ -64,4 +64,5 @@ multi_basedir="$multi_basedir"
 CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
 CC="$CC"
 CXX="$CXX"
-GFORTRAN="$GFORTRAN"])])dnl
+GFORTRAN="$GFORTRAN"
+GDC="$GDC"])])dnl

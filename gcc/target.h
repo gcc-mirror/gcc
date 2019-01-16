@@ -1,5 +1,5 @@
 /* Data structure definitions for a generic GCC target.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -158,8 +158,11 @@ extern bool stmt_in_inner_loop_p (struct _stmt_vec_info *);
 struct asm_int_op
 {
   const char *hi;
+  const char *psi;
   const char *si;
+  const char *pdi;
   const char *di;
+  const char *pti;
   const char *ti;
 };
 

@@ -1,5 +1,5 @@
 /* Hooks for cfg representation specific functions.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <s.pop@laposte.net>
 
 This file is part of GCC.
@@ -38,18 +38,18 @@ struct profile_record
 {
   /* The number of basic blocks where sum(freq) of the block's predecessors
      doesn't match reasonably well with the incoming frequency.  */
-  int num_mismatched_freq_in[2];
+  int num_mismatched_freq_in;
   /* Likewise for a basic block's successors.  */
-  int num_mismatched_freq_out[2];
+  int num_mismatched_freq_out;
   /* The number of basic blocks where sum(count) of the block's predecessors
      doesn't match reasonably well with the incoming frequency.  */
-  int num_mismatched_count_in[2];
+  int num_mismatched_count_in;
   /* Likewise for a basic block's successors.  */
-  int num_mismatched_count_out[2];
+  int num_mismatched_count_out;
   /* A weighted cost of the run-time of the function body.  */
-  gcov_type time[2];
+  gcov_type_unsigned time;
   /* A weighted cost of the size of the function body.  */
-  int size[2];
+  int size;
   /* True iff this pass actually was run.  */
   bool run;
 };
@@ -182,7 +182,7 @@ struct cfg_hooks
   basic_block (*split_block_before_cond_jump) (basic_block);
 
   /* Do book-keeping of a basic block for the profile consistency checker.  */
-  void (*account_profile_record) (basic_block, int, struct profile_record *);
+  void (*account_profile_record) (basic_block, struct profile_record *);
 };
 
 extern void verify_flow_info (void);
@@ -254,7 +254,8 @@ extern void copy_bbs (basic_block *, unsigned, basic_block *,
 		      edge *, unsigned, edge *, struct loop *,
 		      basic_block, bool);
 
-void account_profile_record (struct profile_record *, int);
+void profile_record_check_consistency (profile_record *);
+void profile_record_account_profile (profile_record *);
 
 /* Hooks containers.  */
 extern struct cfg_hooks gimple_cfg_hooks;

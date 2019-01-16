@@ -1,5 +1,5 @@
 /* Backward propagation of indirect loads through PHIs.
-   Copyright (C) 2007-2018 Free Software Foundation, Inc.
+   Copyright (C) 2007-2019 Free Software Foundation, Inc.
    Contributed by Richard Guenther <rguenther@suse.de>
 
 This file is part of GCC.
@@ -159,7 +159,7 @@ phiprop_insert_phi (basic_block bb, gphi *phi, gimple *use_stmt,
     {
       tree old_arg, new_var;
       gassign *tmp;
-      source_location locus;
+      location_t locus;
 
       old_arg = PHI_ARG_DEF_FROM_EDGE (phi, e);
       locus = gimple_phi_arg_location_from_edge (phi, e);

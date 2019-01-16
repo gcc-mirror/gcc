@@ -1,5 +1,5 @@
 /* Tree-dumping functionality for intermediate representation.
-   Copyright (C) 1999-2018 Free Software Foundation, Inc.
+   Copyright (C) 1999-2019 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>
 
 This file is part of GCC.
@@ -326,6 +326,12 @@ cp_dump_tree (void* dump_info, tree t)
     case EXPR_STMT:
       dump_stmt (di, t);
       dump_child ("expr", EXPR_STMT_EXPR (t));
+      break;
+
+    case OMP_DEPOBJ:
+      dump_stmt (di, t);
+      dump_child ("depobj", OMP_DEPOBJ_DEPOBJ (t));
+      dump_child ("clauses", OMP_DEPOBJ_CLAUSES (t));
       break;
 
     default:

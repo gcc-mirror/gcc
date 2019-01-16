@@ -1,0 +1,1248 @@
+2011-12-31  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-codegen.cc, d/d-glue.cc, d/d-irstate.cc: Revert some prior code
+	additions.
+	[a61a03e817c3]
+
+	* d/d-decls.cc, d/d-glue.cc: Issue #301 - ref return funcs returning
+	wrong reference
+	[2350d3a27ac8]
+
+2011-12-30  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-irstate.cc, d/d-lang.cc: Implicitly convert all statements to
+	void, warn if statement has no side effects.
+	[d73ff02f1131]
+
+	* d/d-decls.cc, d/d-glue.cc: mark RESULT_DECL as artificial.
+	[a2de4187caa4]
+
+	* d/d-codegen.cc, d/d-glue.cc: Remove check for isref out of ::call
+	and into CallExp::toElem
+	[1b827c7df15c]
+
+	* d/d-codegen.cc, d/d-codegen.h, d/d-glue.cc: Use INIT_EXPR instead of
+	MODIFY_EXPR where applicable, added vinit.
+	[27c401e61169]
+
+	* d/d-codegen.cc, d/d-codegen.h: Move functions written in d-codegen
+	header to source file.
+	[605c79094f14]
+
+	* d/d-codegen.cc: Issue #302 - lazy arg causing ICE in
+	gimple_expand_cfg, at cfgexpand.c:4063
+	[786acc44a0ff]
+
+2011-12-28  Daniel Green  <venix1@gmail.com>
+
+	* d/phobos2/Makefile.am, d/phobos2/Makefile.in: Add
+	std/internal/windows/advapi32.o to WINDOWS_OBJS.
+	[e7639c523add]
+
+2011-12-28  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-gcc-includes.h, d/d-glue.cc: Emit pretty debug tree information
+	on -fdump-tree-original
+	[7631e902659e]
+
+	* d/d-asm-i386.h, d/d-codegen.h, d/d-glue.cc, d/d-lang.cc,
+	d/d-objfile.cc: Remove some dead code.
+	[e8ae51578e54]
+
+	* d/d-codegen.cc, d/d-decls.cc, d/d-glue.cc, d/d-lang-45.h,
+	d/d-lang.cc, d/d-lang.h, d/d-objfile.cc: Issue #258 - cannot access
+	frame with contract inheritance
+	[0b470bc59251]
+
+	* d/d-lang.cc, d/gdc.1, d/lang.opt: Add switches to control in(),
+	out() and invariant() code generation.
+	[e9904da308eb]
+
+	* d/asmstmt.cc, d/d-builtins2.cc, d/d-decls.cc, d/d-glue.cc,
+	d/patches/patch-gcc-4.2.x, d/patches/patch-gcc-4.3.x,
+	d/patches/patch-gcc-4.4.x, d/patches/patch-gcc-4.5.x,
+	d/patches/patch-gcc-4.6.x: Remove gdc patch to cgraph.c - fix codegen.
+	[fc5e3bddbf94]
+
+	* d/d-decls.cc: Issue #298 - Array Range Functions Don't Get Inlined
+	[f9217ce815ea]
+
+2011-12-25  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-glue.cc, d/dmd2/expression.c, d/dmd2/expression.h,
+	d/dmd2/optimize.c, d/phobos/configure, d/phobos2/configure: Fixup
+	arrayliteral assignments.
+	[d71656e55ad8]
+
+	* d/phobos/configure, d/phobos2/configure: Rebuild configure for D1
+	[bedf43669633]
+
+	* d/d-glue.cc: Issue #297 - GDC Acquires Locks Twice in Synchronized
+	Member Methods.
+	[7470a20b2900]
+
+	* d/d-objfile.cc, d/d-objfile.h: First attack at fixing issue #246
+	[bd1f89846e93]
+
+2011-12-23  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-codegen.cc: Issue #287 - Casting between array types is broken.
+	[63647d6f2b87]
+
+	* d/phobos2/Makefile.in, d/phobos2/configure: Rebuild Makefile.in,
+	configure for D2.
+	[b3200b086277]
+
+	* d/d-lang.cc: Issue #296 - -fproperty implies -frelease
+	[4dfa4c11ccd7]
+
+	* d/d-codegen.cc, d/d-codegen.h, d/d-lang.cc: Remove unused
+	warnSignCompare.
+	[60ea5d6b4173]
+
+	* d/d-codegen.cc: Issue #289 - ICE: in extract_range_from_binary_expr,
+	at tree-vrp.c:229
+	[9076a0f27fd9]
+
+	* d/dmd-script, d/dmd-script.1, d/gdc.1: Update manpages for new
+	GDC/GDMD options.
+	[9caec4bea289]
+
+	* d/d-objfile.cc: Issue #279 - ICE: in gimple_expand_cfg
+	[6778c7a1f79e]
+
+	* d/d-builtins2.cc: Add CTFE support for builtins atan2, rndtol,
+	expm1, exp2.
+	[afe30f1b9435]
+
+2011-12-18  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-codegen.cc: D2 - Handle nulltype to D array conversions.
+	[d7fe9fa5bb6c]
+
+	* d/d-glue.cc, d/d-lang.cc: Match GCC logic for emitting D_LP64
+	version identifier.
+	[7475431fe1bd]
+
+	* d/d-codegen.cc, d/d-decls.cc, d/d-glue.cc: Better implementation of
+	bt, btc, bts, btr functions, allowing constant folding.
+	[caf2c8d4f036]
+
+	* d/d-builtins2.cc: Implement CTFE for bswap, bsr, bsf.
+	[730c51fcdd3e]
+
+	* d/druntime/core/thread.d: Issue #290 - errno conflict in std.file
+	[ecd60be7f89c]
+
+	* d/d-lang.cc: Define D_LP64 if is64bit.
+	[633ea9c9e5bf]
+
+	* d/dmd-script: Issue #282 - gdmd multithreaded -lib implementation.
+	[f1bd82f9bb5b]
+
+	* d/dmd-script: Issue #283 - gdmd: libraries not put into -od dir.
+	[75a7b584473a]
+
+	* d/d-objfile.cc, d/dmd/attrib.c, d/dmd2/attrib.c, d/lang.opt: Issue
+	#286 - -fignore-unknown-pragmas doesn't seem to work
+	[f342fde254e2]
+
+2011-12-16  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-builtins2.cc, d/d-codegen.cc, d/d-decls.cc, d/d-glue.cc,
+	d/d-irstate.cc, d/d-irstate.h, d/d-lang.cc, d/dmd2/*, d/druntime/*,
+	d/phobos2/*: Updated D2 Frontend to 2.057
+	[36c28efc6c88]
+
+2011-12-11  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/dmd/*: Updated D1 Frontend to 1.072
+	[e83cac3b4109]
+
+	* d/dmd/expression.c, d/dmd2/expression.c: Issue #279 - ICE: in
+	gimple_expand_cfg
+	[c501487a685a]
+
+2011-12-08  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/Make-lang.in, d/asmstmt.cc, d/d-asm-i386.h, d/d-builtins2.cc,
+	d/d-codegen.cc, d/d-cppmngl.cc, d/d-decls.cc, d/d-dmd-gcc.h,
+	d/d-glue.cc, d/d-irstate.cc, d/d-lang-45.h, d/d-lang-type-45.h,
+	d/d-lang-type.h, d/d-lang.cc, d/d-lang.h, d/d-objfile.cc,
+	d/dmd-script, d/dmd2/*, d/druntime/*, d/phobos2/*: Updated D2 Fronted
+	to 2.056
+	[fbe890ef4c1f]
+
+	* d/d-codegen.cc, d/d-glue.cc: Relax conversion checking. Move getImpl
+	to CastExp.
+	[b0407ff2e57c]
+
+	* d/dmd/optimize.c, d/dmd2/optimize.c: Remove old frontend ifdef'd
+	code.
+	[8e0291212f46]
+
+2011-12-02  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-lang.cc, d/lang-specs.h, d/lang.opt: remove preprocessor options
+	from spec and use own switches.
+	[5f71b69d1494]
+
+	* d/d-objfile.cc: Issue #275 - ICE with wrong interface implementation
+	[e32c8fbe7343]
+
+	* d/d-lang.cc, d/dmd/mars.h, d/dmd2/mars.h, d/lang-specs.h,
+	d/lang.opt: Issue #236 - -M, -MM, -MF options to generate dependencies
+	like gcc
+	[3763796b9cbf]
+
+	* d/d-lang.cc, d/lang.opt: ASCII collate lang switches.
+	[951ff44f1035]
+
+2011-12-02  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-objfile.cc: Issue #268 - ICE with -flto and -g
+	[3da453291dc3]
+
+2011-11-24  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/Make-lang.in: Issue #266 - make install-strip fails to install
+	gdmd.
+	[d1005cb77a06]
+
+	* d/d-glue.cc, d/d-lang.cc, d/dt.cc: Remove checks for
+	type_structural_equality for now.
+	[5265f1318114]
+
+	* d/d-glue.cc: Issue #261 - ICE: tree check: expected record_type or
+	union_type, have array_type in delegateVal
+	[61ab289788a3]
+
+	* d/d-glue.cc: Issue #264 - ICE: can't convert between bool and enum :
+	bool
+	[fcb2523b8ccd]
+
+	* d/d-codegen.cc, d/d-glue.cc: Issue #263 - forward reference error
+	with algorithm.find
+	[75b7e1bca4d7]
+
+2011-11-19  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/asmstmt.cc, d/d-asm-i386.h, d/d-builtins2.cc, d/d-decls.cc,
+	d/d-glue.cc, d/d-irstate.cc, d/d-lang-45.h, d/d-lang.cc, d/d-lang.h,
+	d/d-objfile.cc: Add d_free, rename dkeep to d_keep.
+	[a0e0fcfd913c]
+
+2011-11-18  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-builtins2.cc, d/d-codegen.cc, d/d-lang-45.h, d/d-lang.cc,
+	d/d-lang.h: Issue #262 - ICE: weird segfault when -o option is used
+	[51d11a9bddf2]
+
+	* d/d-lang.cc: Issue #255 - ICE: invalid conversion in gimple call
+	[36ae9c015e86]
+
+	* d/d-decls.cc: Issue #259 - ICE: constant not recomputed when
+	ADDR_EXPR changed
+	[72c16f7ab674]
+
+	* d/d-builtins2.cc, d/d-dmd-gcc.h, d/dmd/attrib.c,
+	d/dmd/declaration.c, d/dmd/declaration.h, d/dmd/mtype.c,
+	d/dmd/struct.c, d/dmd2/attrib.c, d/dmd2/declaration.c,
+	d/dmd2/declaration.h, d/dmd2/mtype.c, d/dmd2/struct.c: Issue #215 -
+	Alignment of struct members wrong on ARM
+	[2df7ca5fa4b6]
+
+	* d/d-codegen.cc, d/d-codegen.h, d/d-decls.cc, d/d-glue.cc,
+	d/d-lang.cc: Issue #242 - Another lambda segfault
+	[467d7fa518fc]
+
+2011-10-31  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-lang.cc: Arm -> ARM and darwin -> Darwin in d-lang.cc.
+	[51e67c38af0c]
+
+2011-10-30  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/target-ver-syms.sh: Make some system and CPU version identifiers
+	consistent in casing.
+	[5d11c2ded7b7]
+
+	* d/d-codegen.cc, d/d-decls.cc, d/d-glue.cc: Use isMember2 when
+	checking member functions.
+	[d89c3b7d495a]
+
+	* d/d-codegen.cc, d/d-decls.cc, d/d-lang-45.h, d/d-lang.h,
+	d/d-objfile.cc: Issue #78 D1/D2 - in/out contract inheritance
+	[736ae4b92f2]
+
+2011-10-26  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/asmstmt.cc, d/d-asm-i386.h, d/d-glue.cc, d/d-irstate.cc: Issue
+	#252 - Error: suffix or operands invalid for `jc'
+	[0d65aed46422]
+
+	* d/lang-specs.h, d/patches/patch-apple-gcc-5465,
+	d/patches/patch-apple-gcc-5664, d/patches/patch-gcc-4.2.x,
+	d/patches/patch-gcc-4.3.x, d/patches/patch-gcc-4.4.x,
+	d/patches/patch-gcc-4.5.x, d/patches/patch-gcc-4.6.x: Issue #251 -
+	Remove all references to fmultilib-dir usage in gdc spec and patches.
+	[c72727fc3f13]
+
+2011-10-23  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/druntime/core/stdc/stdio.d, d/druntime/core/stdc/stdlib.d,
+	d/druntime/rt/critical_.d, d/druntime/rt/dmain2.d,
+	d/druntime/rt/monitor_.d, d/phobos/config/libc.x3,
+	d/phobos2/config/libc.x3, d/target-ver-syms.sh: Start on implementing
+	platform agnostic druntime for GDC D2.
+	[c46d1009bd78]
+
+	* d/d-lang.cc, d/target-ver-syms.sh: Add VENDOR_VERSYM to D version
+	identifiers if defined.
+	[f7abc9009d0d]
+
+	* d/d-lang.cc, d/d-objfile.cc: Issue #224 - Link time optimization
+	[bf9d0ac53e9d]
+
+	* d/d-decls.cc, d/d-glue.cc, d/d-irstate.cc, d/d-irstate.h,
+	d/d-lang.cc, d/d-objfile.cc, d/d-objfile.h, d/lang.opt: Merge changes
+	from gcc-4.7 branch.
+	[5992dd0f2f7e]
+
+	* d/d-codegen.cc: Use gcc atomics for bt, btc, btr, bts intrinsics.
+	[2cc2e8c5a778]
+
+	* d/d-glue.cc: build_assign_math_op: Stabilize LHS expression.
+	[031b711ce09]
+
+2011-10-21  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/asmstmt.cc, d/d-asm-i386.h, d/d-codegen.cc, d/d-glue.cc,
+	d/d-irstate.cc, d/d-lang-45.h, d/d-lang.h, d/dmd/mtype.c,
+	d/dmd2/mtype.c: Issue #247 - undefined reference to `.LDASM1'
+	[19de20aec625]
+
+	* d/asmstmt.cc, d/d-asm-i386.h: Fallback to 32bit instruct suffix when
+	64bit not available, add special case for fild.
+	[8789c97f84ac]
+
+	* d/asmstmt.cc, d/d-asm-i386.h: Issue #248 - Inline assembler
+	generates wrong argument size for FILD instruction.
+	[8bd2a4ca84c0]
+
+2011-09-27  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/dmd-script: Issue #241 - dmd.conf DFLAGS doesn't work with
+	DMD-style args.
+	[4bf307759462]
+
+	* d/d-codegen.cc, d/d-glue.cc: Issue #239 - Filter + Closure =
+	Segfault.
+	[23b24ffe94f2]
+
+	* d/dmd-script: Properly handle -X and -map switches in gdmd.
+	[f7c13cf55264]
+
+	* d/asmstmt.cc, d/d-asm-i386.h, d/d-irstate.cc, d/d-irstate.h: Fixup
+	some build warnings.
+	[891f65500765]
+
+	* d/dmd-script: Issue #234 - add DFLAGS to the build command in gdmd.
+	[3acdb17df213]
+
+2011-09-25  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/dmd-script: Issue #234 - dmd.conf equivalent
+	[db9070d078a8]
+
+	* d/druntime/core/thread.d, d/phobos2/std/path.d: Re-add fixes that
+	got removed in last D library merge.
+	[a998cdff6e0f]
+
+	* d/dmd/todt.c, d/dmd2/todt.c, d/dt.cc: size_t'ify toDt.
+	[c1306d366f94]
+
+	* d/d-glue.cc: CallExp - only call convert on basic return types.
+	[bc7ad8e2569]
+
+	* d/d-gcc-real.cc: real_t::convert - check base type
+	[71eb59683499]
+
+	* d/dmd/attrib.c, d/dmd2/attrib.c: Optimise attribute pragma
+	arguments.
+	[dca4ddf21110]
+
+2011-09-23  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-glue.cc: Issue #235 - ICE in feep's tools library
+	[17da3d28ba17]
+
+2011-09-15  Daniel Green  <venix1@gmail.com>
+
+	* d/d-glue.cc: Make PowAssignExp::toElem only compile with D2.
+	[fa6a47ddbd9c]
+
+	* d/dt.h: Issue #231.  Use size_t for dt_size declaration in dt.h.
+	[f9fee0fd57a2]
+
+2011-09-14  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-builtins2.cc, d/d-gcc-real.cc, d/d-gcc-real.h, d/d-glue.cc,
+	d/dmd2/constfold.c, d/dmd2/declaration.h, d/dmd2/expression.c,
+	d/dmd2/expression.h, d/dmd2/interpret.c, d/dmd2/optimize.c: Implement
+	constant folding of ^^ expressions.
+	[06f5e7c038fa]
+
+	* d/asmstmt.cc, d/d-asm-i386.h, d/d-builtins2.cc, d/d-codegen.cc,
+	d/d-cppmngl.cc, d/d-decls.cc, d/d-glue.cc, d/d-incpath.cc,
+	d/d-lang.cc, d/d-objfile.cc, d/dt.cc: Change unsigned for size_t in
+	for loops.
+	[814fc99ff732]
+
+	* d/d-lang.cc, d/dmd/mars.c, d/dmd2/mars.c: Re-enforce -Werror flag in
+	gdc.
+	[eced11f7d5b5]
+
+	* d/d-glue.cc: Issue #232 - sqrt(3) == 2.15118e-4930
+	[8994cef9271f]
+
+2011-09-12  Daniel Green  <venix1@gmail.com>
+
+	* d/d-lang.cc: Convert Array to Strings required by DMD 1.070/2.055
+	[fc0033715683]
+
+2011-09-12  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/druntime/rt/dmain2.d, d/druntime/rt/lifetime.d: Issue #214 -
+	Segfault Allocating from Shared Static C'tor
+	[41218d9f5f59]
+
+	* d/asmstmt.cc, d/d-asm-i386.h, d/d-builtins2.cc, d/d-codegen.cc,
+	d/d-codegen.h, d/d-cppmngl.cc, d/d-decls.cc, d/d-dmd-gcc.h,
+	d/d-glue.cc, d/d-incpath.cc, d/d-irstate.cc, d/d-irstate.h,
+	d/d-lang.cc, d/d-objfile.cc, d/d-objfile.h, d/dmd2/*, d/druntime/*,
+	d/phobos2/*: Updated D2 Frontend to 2.055.
+	[0ada920f6394]
+
+	* d/dmd/*, d/phobos/*: Updated D1 Frontend to 1.070.
+	[fad5f4cad72b]
+
+2011-09-10  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-spec.c: Issue #230 - Error building Cross Compiler under MinGW
+	[b0a9ef534877]
+
+	* d/d-lang.cc, d/druntime/core/thread.d: Issue #226 - GC from spawned
+	threads segfaults on 64-bit
+	[3ea496446c7e]
+
+2011-09-03  Daniel Green  <venix1@gmail.com>
+
+	* d/asmstmt.cc: Use of V1 is more correct.
+	[748ce286f58f]
+
+	* d/dmd/root.c d/dmd2/root.c: Enables MinGW32 to use ANSI STDIO.
+	[e69b142048f0]
+
+	* d/asmstmt.cc: Allow inline assembly to set return values.  Matches
+	DMD functionality.
+	[857c5645429c]
+
+2011-08-29  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-codegen.cc, d/d-decls.cc, d/d-glue.cc, d/d-lang.cc,
+	d/d-objfile.cc, d/symbol.cc: Emit pretty identifier to the debugger.
+	[ac87eb9db360]
+
+2011-08-23  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-codegen.cc, d/d-glue.cc, d/d-objfile.cc: Don't warn about unused
+	compiler generated vars.
+	[0a71a122ca29]
+
+	* d/d-codegen.cc, d/d-codegen.h, d/d-glue.cc, d/d-irstate.cc,
+	d/d-irstate.h, d/d-lang-45.h, d/d-lang.cc, d/d-lang.h: New functions
+	build_d_decl_lang_specific, d_mark_exp_read. Added support for
+	-Wunused-variable, WIP -Wunused-but-set-variable.
+	[d23bab68266c]
+
+2011-08-19  Daniel Green  <venix1@gmail.com>
+
+	* d/druntime/core/sys/windows/stacktrace.d: Issue #227.  build error
+	libphobos/core/sys/windows/stacktrace.d.
+	[b1c34b7e7764]
+
+2011-08-15  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-decls.cc: Issue #225 - Array ops should be COMDAT.
+	[dda1c10c8c7b]
+
+2011-08-12  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-glue.cc, d/d-irstate.cc: Re-add codegen which caused issue #205
+	in correct place.
+	[e26b2b67bffa]
+
+	* d/d-codegen.cc, d/d-gcc-includes.h: Issue #191 - SEGV(gimple.c:2624)
+	getting array ref of incomplete type.
+	[d0edf91c3fcf]
+
+2011-08-07  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-codegen.cc, d/d-glue.cc: Issue #205 - ICE using phobos sort.
+	[b3a5c764de90]
+
+	* d/d-asm-i386.h, d/d-tree.def: Define tree code IASM_EXPR.
+	[c7e7dc1c089b]
+
+	* d/d-asm-i386.h: Handle zero and one operand forms of fcomi, fcomip.
+	Fixed db, ds, di, dl to output constants and strings properly.
+	[e394c90a88fa]
+
+	* d/d-decls.cc, d/d-glue.cc, d/d-lang-type-45.h, d/d-lang-type.h,
+	d/d-lang.cc, d/d-lang.h: Create TYPE_LANG_SPECIFIC type for arrays,
+	functions, delegates.
+	[1c25bfb71c05]
+
+	* d/d-glue.cc, d/dt.cc: Use TYPE_STRUCTURAL_EQUALITY for conversions
+	of records, should fix Issue #217.
+	[04b8a399ddeb]
+
+	* d/asmstmt.cc, d/d-asm-i386.h: Fix error using offsetoff for
+	SymOffExp's in IASM.
+	[933d2ca08770]
+
+	* d/d-asm-i386.h: Added SSE4.1, SSE4.2 instructions
+	[6a643f59ac86]
+
+	* d/d-codegen.cc, d/d-codegen.h, d/d-glue.cc, d/d-lang-45.h,
+	d/d-lang.cc, d/d-lang.h, d/d-objfile.cc, d/dt.cc: More 4.6.x gimple
+	checking issues.
+	[148a5a16d432]
+
+2011-07-30  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-codegen.cc, d/d-glue.cc, d/d-lang-45.h, d/d-lang.h,
+	d/d-objfile.cc, d/dt.cc: Fix gimplication checking issues in 4.6.x
+	[d3cc96b0546f]
+
+	* d/d-codegen.cc: Issue #220 - Segfault on nested mixin functions.
+	[c3720dd1e4f6]
+
+	* d/patches/patch-gcc-4.6.x: Issue #218 - segmentation fault when
+	compiling Hello World.
+	[07bb061b2e4b]
+
+2011-07-28  Daniel Green  <venix1@gmail.com>
+
+	* d/d-glue.cc: Backout untested solution to issue #217.
+	[fd532d8a5181]
+
+	* d/d-glue.cc, d/setup-gcc.sh: Fixes issue #219
+	[949ab1610a42]
+
+	* d/setup-gcc.sh: Updated -hg to reflect working directory revision
+	and handle compiling outside a mercurial repository.
+	[b3b60fdac583]
+
+2011-07-24  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/GDC.html, d/README, d/gdc-version: GDC version 0.30
+	[a4f3d0470b7a]
+
+	* d/Make-lang.in, d/d-codegen.cc, d/d-codegen.h, d/d-glue.cc,
+	d/d-lang.cc, d/patches/patch-gcc-4.2.x, d/patches/patch-gcc-4.3.x,
+	d/patches/patch-gcc-4.4.x, d/patches/patch-gcc-4.5.x,
+	d/patches/patch-gcc-4.6.x, d/symbol.cc d/symbol.h: Re-implemented D
+	custom static chains into frontend - removed all belated backend
+	patches.
+	[488e8c0f482f]
+
+	* d/Make-lang.in, d/asmstmt.cc, d/d-asm-i386.h, d/d-codegen.cc,
+	d/d-codegen.h, d/d-decls.cc, d/d-glue.cc, d/d-lang.cc, d/d-objfile.cc,
+	d/d-objfile.h, d/dmd2/*, d/druntime/*, d/phobos2/*: Updated D2
+	Frontend to 2.054
+	[ca958eccbde0]
+
+	* d/Make-lang.in, d/asmstmt.cc, d/d-builtins.c, d/d-builtins2.cc,
+	d/d-codegen.cc, d/d-codegen.h, d/d-convert.cc, d/d-decls.cc,
+	d/d-glue.cc, d/d-irstate.cc, d/dmd/*, d/phobos/*: Updated D1 Frontend
+	to 1.069
+	[c77c7af3dda0]
+
+2011-07-11  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-codegen.cc, d/d-glue.cc, d/d-lang.h: Debug fixes: Give AAs a
+	TYPE_NAME. Make closure vars visible to the debugger.
+	[7cb42bd4eb94]
+
+2011-07-09  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-asm-i386.h: Issue #213 - ASM: Invalid absolute jmp/call address
+	[e01697578501]
+
+	* d/d-asm-i386.h, d/d-glue.cc, d/d-lang.cc: Asm 32/64bit generation
+	fixes.
+	[0a2261bde3e1]
+
+	* d/d-codegen.h, d/d-decls.cc, d/d-lang.h, d/patches/patch-gcc-4.4.x,
+	d/patches/patch-gcc-4.5.x, d/patches/patch-gcc-4.6.x: Use
+	TREE_NO_TRAMPOLINE macro - remove redundant patches.
+	[b79169244c60]
+
+2011-07-04  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/Make-lang.in: Fixes executable relocation issues with MinGW.
+	[c272d49246c9]
+
+	* d/d-decls.cc: Always mark struct/class members for inlining.
+	[61c81c98d80c]
+
+2011-06-30  Daniel Green  <venix1@gmail.com>
+
+	* d/d-asm-i386.h: Fixes issue #213.
+	[71737ec293cb]
+
+2011-06-20  Daniel Green  <venix1@gmail.com>
+
+	* d/phobos/internal/gc/win32.d, d/phobos/std/stream.d: Win64 support
+	for Phobos/D1.
+	[b2b0dae5dec2]
+
+	* d/Make-lang.in, d/dmd/root.c: Enables ANSI implemention of MinGW
+	stdio.
+	[fd0f112bfca8]
+
+	* d/dmd-script: Added the ability to specify the name of output map
+	file.  Undocumented DMD feature.
+	[d36a8b0e175]
+
+2011-06-19  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-codegen.cc, d/d-glue.cc, d/d-objfile.cc, d/dmd2/arrayop.c,
+	d/druntime/core/stdc/math.d, d/phobos2/gcc/deh.d: Issue #212 - ICE
+	With Map, dotProduct
+	[f333a7e70d3d]
+
+2011-06-08  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-asm-i386.h, d/d-builtins2.cc, d/d-codegen.cc, d/d-codegen.h,
+	d/d-decls.cc, d/d-glue.cc, d/dmd2/*, d/druntime/*, d/phobos2/*:
+	Updated D2 Frontend to 2.053
+	[89eccdc0155e]
+
+	* d/d-decls.cc, d/d-lang-45.h, d/d-lang.h, d/d-objfile.cc: gcc-4.6.x -
+	Fix imported static const optimizer bug (D2 now passes testsuite).
+	[9ccc077422a8]
+
+2011-06-05  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/Make-lang.in, d/d-codegen.cc, d/dmd-script: gcc-4.6.x - -combine
+	removed, re-add d-gcc.o object, fix compilation on ARM.
+	[dd43ade64753]
+
+	* d/d-decls.cc, d/d-objfile.cc, d/patches/patch-gcc-4.6.x: gcc-4.6.x -
+	Fix undefined references to thunks.
+	[6b13c1f980f4]
+
+	* d/d-bi-attrs-40.h, d/d-bi-attrs-41.h: Remove d-bi-attrs.h for 4.0
+	and 4.1
+	[86169933de9c]
+
+2011-06-02  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/Make-lang.in, d/d-bi-attrs-45.h, d/d-lang.cc, d/d-spec.c,
+	d/lang.opt, d/patches/patch-gcc-4.6.x, d/setup-gcc.sh: Fix missing
+	gcc-4.6 driver options, add to setup scripts.
+	[937e3e68e003]
+
+2011-05-31  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/Make-lang.in, d/config-lang.in, d/d-builtins.c, d/d-builtins2.cc,
+	d/d-codegen.h, d/d-gcc-real.cc, d/d-glue.cc, d/d-incpath.cc,
+	d/d-lang-45.h, d/d-lang.cc, d/d-spec.c, d/lang.opt,
+	d/patches/patch-gcc-4.6.x, d/patches/patch-toplev-4.6.x: Add gcc-4.6.x
+	support
+	[94fdbcd3ae33]
+
+	* d/Make-lang.in, d/d-bi-attrs-45.h, d/d-builtins.c, d/d-codegen.cc,
+	d/d-codegen.h, d/d-gcc-includes.h, d/d-lang.cc, d/d-lang.h,
+	d/d-objfile.cc, d/druntime/core/stdc/stdarg.d,
+	d/druntime/core/vararg.d, d/patches/patch-gcc-4.0.x,
+	d/patches/patch-gcc-4.1.x, d/patches/patch-toplev-4.0.x,
+	d/patches/patch-toplev-4.1.x, d/phobos/std/c/stdarg.d,
+	d/phobos/std/stdarg.d, d/symbol.h: Drop support for gcc-4.0.x;
+	gcc-4.1.x
+	[75f0bbfbdd5e]
+
+	* d/d-asm-i386.h: Rename cmpxch8b to cmpxchg8b
+	[21128c37d917]
+
+2011-04-29  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-glue.cc: Issue #203 - ArrayLiteralExp::toElem incorrectly sets
+	TREE_STATIC
+	[584a5f3a7dce]
+
+	* d/druntime/core/stdc/wchar_.d: Use alias to make vswprintf and
+	swprintf match ANSI signature.
+	[344229e36805]
+
+	* d/d-glue.cc: Issue #200 - Optimization breaks condition variables
+	[b805b62dcdc8]
+
+	* d/d-builtins2.cc, d/d-codegen.cc, d/d-glue.cc, d/dt.cc: Be less
+	trusting with GCC builtins.
+	[194016d49ca]
+
+2011-04-23  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-asm-i386.h: Make SSE3 iasm opcodes available for 32bit.
+	[7861f5acdf6b]
+
+	* d/dmd/todt.c, d/dmd2/todt.c: speed up emission of large static array
+	initialisers.
+	[9a840a37e508]
+
+	* d-decls.cc, d/d-glue.cc, d/phobos/configure, d/phobos/configure.in,
+	d/phobos2/Makefile.am, d/phobos2/configure: D1 regression with static
+	array equality testing.
+	[af07c3a2f08c]
+
+2011-04-18  Daniel Green  <venix1@gmail.com>
+
+	* d/phobos2/Makefile.in: Added std/c/wcharh.d to list of compiled
+	Windows objects.  Required by MinGW's stdio patch
+	[3cf208768d86]
+
+2011-04-17  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/Make-lang.in, d/d-decls.cc, d/druntime/core/thread.d,
+	d/phobos/configure, d/phobos/configure.in, d/phobos2/Makefile.am,
+	d/phobos2/Makefile.in, d/phobos2/configure, d/phobos2/configure.in:
+	Edit configure scripts so cross compilers install imports in gcc
+	version specific runtime directory
+	[8fe76a59ba1e]
+
+	* d/d-builtins2.cc: Issue #192 - ARM Compilation Fails When Including
+	gcc.intrinsics
+	[bf186179001b]
+
+	* d/druntime/core/stdc/stdio.d: Change ctor in cstdio to 'shared
+	static' - should fix Mingw IO in std.stdio
+	[efb1b1ed90d8]
+
+	* d/d-objfile.cc, d/druntime/core/stdc/stdio.d, d/phobos2/Makefile.am,
+	d/phobos2/Makefile.in, d/phobos2/std/stdio.d: Merge Daniel's MinGW
+	work, put special case static ctor in core.stdio
+	[71f10f204790]
+
+2011-04-15  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/dmd/func.c, d/dmd2/func.c: Remove __va_argsave definition from
+	64bit GDC
+	[997a9ec407fe]
+
+	* testsuite/*: Upload D2 testsuite for GDC.
+	[6e40c9c42f6e]
+
+	* d/d-asm-i386.h, d/d-irstate.cc, d/d-objfile.cc,
+	d/druntime/core/thread.d: 64bit IASM fix, move tls definitions to
+	d-objfile, add _tls_index stub for MinGW.
+	[ff35bec78100]
+
+	* d/d-objfile.cc: Issue #187 - Multiple definition of TypeInfo with
+	MinGW.
+	[d52ae1bf8343]
+
+	* d/d-lang.cc, d/dmd-script, d/druntime/rt/monitor_.d: Uncomment
+	implementations in rt.monitor_ (for MinGW), code cleanups.
+	[1cf36f68d061]
+
+	* d/d-codegen.cc: Issue #189 - sqrt(integer) causes ICE in
+	maybeExpandSpecialCall
+	[d46da356ca46]
+
+	* d/d-incpath.cc: Issue #188 - -J option ignored.
+	[875395c71f37]
+
+	* d/Make-lang.in, d/d-asm-i386.h, d/d-builtins2.cc, d/d-codegen.cc,
+	d/d-glue.cc, d/d-irstate.cc, d/dt.cc: 64bit testsuite fixes - passes
+	all tests 32bit linux passes.
+	[62c8038af25a]
+
+	* d/Make-lang.in, d/d-builtins.c, d/d-decls.cc, d/d-lang-45.h,
+	d/d-lang.cc, d/d-lang.h, d/d-misc.c, d/d-objfile.cc,
+	d/phobos/configure, d/phobos/configure.in, d/phobos2/configure,
+	d/phobos2/configure.in: Remove d-misc.c, fixed code that depended on
+	it.
+	[066ecfe85f1]
+
+	* d/d-builtins2.cc, d/d-codegen.cc, d/d-codegen.h: Issue #185 -
+	Intrinsics cause ICE on MinGW
+	[c17a1cdfb868]
+
+2011-04-11  Daniel Green  <venix1@gmail.com>
+
+	* d/Make-lang.in, d/d-incpath.cc, d/d-lang-45.h, d/d-lang.cc,
+	d/d-lang.h: Added d-incpath.c for handling import paths.
+	[5a55df337408]
+
+	* d/setup-gcc.sh: Added option '-hg' for replacing 'gdc-version' with
+	repository revision.
+	[32ed0cf6d419]
+
+2011-04-09  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-codegen.cc, d/d-codegen.h: Implement math intrinsics into the
+	compiler.
+	[431f375abaf1]
+
+	* d/d-asm-i386.h, d/druntime/core/atomic.d: More 64bit IASM fixes,
+	favour ASM implementations in core.atomic.
+	[8f5627ca0ba5]
+
+	* d/phobos2/gcc/bitmanip.d: Really remove gcc.bitmanip.
+	[c61617158bd8]
+
+	* d/druntime/core/atomic.d, d/phobos/configure, d/phobos/configure.in,
+	d/phobos2/Makefile.am, d/phobos2/Makefile.in, d/phobos2/configure,
+	d/phobos2/configure.in, d/phobos2/gcc/atomics.d: First stab at
+	gcc.atomics; Remove unused gcc.bitmanip; Add -inline as DFLAG for
+	Phobos
+	[1a74f184e2d8]
+
+2011-04-08  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-asm-i386.h, d/d-codegen.cc, d/d-glue.cc, d/d-lang.cc,
+	d/d-spec.c: Issue #164 - ICE:fold-const.c:2792.
+	[c42297cf76c3]
+
+	* d/d-asm-i386.h, d/druntime/core/thread.d: 64bit IASM fixes.
+	[406daaa254ad]
+
+	* d/d-builtins2.cc, d/d-glue.cc: Issue #164 - (ICE:fold-const.c:2792)
+	using std.range.zip
+	[437b1cc2f607]
+
+	* d/d-lang.cc, d/phobos/Makefile.am, d/phobos/Makefile.in,
+	d/phobos2/Makefile.am, d/phobos2/Makefile.in: Phobos: Issue #179 -
+	explicitly include zlib directory when building.
+	[37ba91ed454c]
+
+	* d/d-convert.cc: Issue 143: non-determistic FPE in runtime code.
+	[4ea171da4900]
+
+	* d/d-codegen.cc: Issue #178 - ICE in hwi2toli.
+	[9133d6873087]
+
+	* d/Make-lang.in, d/d-codegen.cc: Tidy up Make-lang.in, remove old
+	bits.
+	[1d8b36b4bfb7]
+
+	* d/d-codegen.cc, d/d-glue.cc, d/d-irstate.cc, d/d-objfile.cc: Remove
+	old-old workarounds for GCC < 4.0.x
+	[b2ffdbb41245]
+
+	* d/d-gcc-real.cc, d/d-gcc-real.h, d/dmd/cast.c, d/dmd2/cast.c,
+	d/dmd2/expression.c: D2: Fix precision bug in PowExp.
+	[ab7782c68bb5]
+
+	* d/d-codegen.cc, d/d-gcc-real.cc: Don't error when casting from
+	static array -> struct of same type size.
+	[90b0b0208d3f]
+
+2011-03-30  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/Make-lang.in, d/d-gcc-real.cc, d/d-gcc-real.h: Fix strict-aliasing
+	warning.
+	[79ed94287f94]
+
+2011-03-30  Daniel Green  <venix1@gmail.com>
+
+	* d/asmstmt.cc: An unitialized array was forcing GDC to mark all
+	registers as clobbered.
+	[007de89f7694]
+
+2011-03-27  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-lang.cc: Move cgraph finalize into d_write_global_decls.
+	[b7da3f7426ac]
+
+	* d/asmstmt.cc, d/d-asm-i386.h, d/d-codegen.h, d/d-dmd-gcc.h,
+	d/d-gcc-real.h, d/d-irstate.cc, d/d-irstate.h, d/d-objfile.cc,
+	d/d-objfile.h, d/druntime/core/thread.d, d/patches/patch-gcc-4.5.x,
+	d/symbol.h: _tlsstart/_tlsend compiler generated symbols.
+	[d2dfed983fff]
+
+	* d/Make-lang.in, d/d-builtins.c, d/d-builtins2.cc, d/d-codegen.cc,
+	d/d-glue.cc, d/d-lang-45.h, d/d-lang.cc, d/d-lang.h: New
+	d_global_trees array for gcc trees of commonly used D types/decls.
+	[d553b62db8e6]
+
+2011-03-24  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-codegen.cc, d/d-decls.cc, d/d-glue.cc, d/d-objfile.cc,
+	d/d-objfile.h, d/patches/patch-gcc-4.1.x, d/patches/patch-gcc-4.2.x,
+	d/patches/patch-gcc-4.3.x, d/patches/patch-gcc-4.4.x,
+	d/patches/patch-gcc-4.5.x: More WIP DMD calling convention - evaluate
+	arguments left to right, pass in reverse order
+	[6949b05e21e4]
+
+	* d/asmstmt.cc, d/d-asm-i386.h, d/d-codegen.cc, d/d-codegen.h,
+	d/d-irstate.cc, d/d-lang-45.h, d/d-lang.cc, d/d-lang.h, d/lang.opt:
+	More WIP - 64bit IASM.
+	[a85a80c8732a]
+
+	* d/patches/patch-gcc-4.1.x, d/patches/patch-gcc-4.2.x,
+	d/patches/patch-gcc-4.3.x, d/patches/patch-gcc-4.4.x,
+	d/patches/patch-gcc-4.5.x, d/patches/patch-toplev-4.1.x,
+	d/patches/patch-toplev-4.2.x, d/patches/patch-toplev-4.3.x,
+	d/patches/patch-toplev-4.4.x, d/patches/patch-toplev-4.5.x: Switch
+	patches to unified diff.
+	[1738b301128b]
+
+	* d/d-builtins2.cc, d/d-decls.cc, d/d-glue.cc, d/d-objfile.cc,
+	d/d-tree.def, d/patches/patch-gcc-4.1.x, d/patches/patch-gcc-4.2.x,
+	d/patches/patch-gcc-4.3.x, d/patches/patch-gcc-4.4.x,
+	d/patches/patch-gcc-4.5.x: More WIP DMD calling convention - Add
+	'optlink' function attribute.
+	[521dce459f71]
+
+2011-03-19  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-codegen.cc, d/d-codegen.h, d/d-glue.cc: WIP: Merge
+	make_bool_binop, make_math_op, make_assign_math_op into toElemBin.
+	[886b0a5af18a]
+
+	* d/asmstmt.cc, d/d-asm-i386.h, d/d-bi-attrs-44.h, d/d-bi-attrs-45.h,
+	d/d-builtins2.cc, d/d-codegen.cc, d/d-codegen.h, d/d-convert.cc,
+	d/d-cppmngl.cc, d/d-decls.cc, d/d-glue.cc, d/d-irstate.h,
+	d/d-lang-45.h, d/d-objfile.cc, d/d-spec.c: Use gcc_unreachable instead
+	of abort, cleanup line endings.
+	[3d6a01bd6e93]
+
+2011-03-18  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-lang.cc, d/d-objfile.cc, d/d-objfile.h, d/symbol.cc, d/symbol.h:
+	Issue #167 - Assembler error: Already defined.
+	[36a609d5155b]
+
+	* d/d-glue.cc: IndexExp: call aaGetp if AA is modifiable.
+	[d69227218b07]
+
+	* d/d-codegen.cc, d/d-objfile.cc: Issue #165: Link failure with
+	templates.
+	[2221d9fb1dd9]
+
+	* d/Make-lang.in, d/d-builtins2.cc, d/d-codegen.cc: Add experimental
+	void* _argptr implementation switch in Makefile.
+	[9a8cbe47da29]
+
+	* d/Make-lang.in, d/d-builtins2.cc, d/d-codegen.cc, d/d-convert.cc,
+	d/d-gcc-real.cc, d/d-glue.cc, d/d-spec.c: Replace calls to
+	fold(build()) with fold_build()
+	[8eab661a9626]
+
+	* d/d-convert.cc: Harden d_truthvalue_conversion, catches scalars
+	passed for conversion by buggy frontend.
+	[ff5142f57beb]
+
+	* d/Make-lang.in, d/d-decls.cc, d/d-glue.cc, d/d-lang.cc: Add
+	experimental DMD calling convention switch in Makefile
+	[c5153f67119a]
+
+	* d/d-bi-attrs-44.h: Update d-bi-attrs-44.h for current 4.4.5 release.
+	[e44747eee585]
+
+	* d/d-glue.cc: Mark used parameters to prevent false warnings from
+	-Wunused-parameter.
+	[f0a6db429617]
+
+2011-03-12  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-glue.cc: Fix codegen bug in CatAssignExp.
+	[15f72843d336]
+
+	* d/d-builtins2.cc, d/d-codegen.cc, d/d-codegen.h, d/d-glue.cc,
+	d/d-lang.cc, d/d-objfile.cc: IRState::addTypeModifiers - Add D2 type
+	modifiers (const/shared) onto GCC types (const/volatile).
+	[ef3c725214ec]
+
+2011-03-06  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-lang.cc, d/d-spec.c, d/gdc.1, d/lang-specs.h,
+	d/patches/patch-apple-gcc-5664, d/patches/patch-gcc-4.2.x,
+	d/patches/patch-gcc-4.3.x, d/patches/patch-gcc-4.4.x,
+	d/patches/patch-gcc-4.5.x: Remove lang_specific_spec_functions code.
+	[da7dc4ae6277]
+
+	* d/dmd-script: Issue #161 - noboundscheck doesn't work with GDMD.
+	[9ad16376258f]
+
+2011-02-28  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-decls.cc, d/d-glue.cc, d/d-objfile.cc, d/d-objfile.h,
+	d/dmd/template.c, d/dmd2/template.c, d/symbol.h: Moved GCC code to
+	prevent templates being emitted more than once to the backend.
+	[585920b19963]
+
+	* d/Make-lang.in, d/d-decls.cc, d/d-glue.cc, d/d-lang.h,
+	d/d-objfile.cc: Cleaned up ObjFile::makeDeclOneOnly implementation.
+	[cbad6b2b6b42]
+
+2011-02-25  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-apple-gcc.c, d/d-builtins2.cc, d/d-c-stubs.c, d/d-codegen.cc,
+	d/d-gcc-includes.h, d/d-glue.cc, d/d-lang.cc, d/d-objfile.cc: Remove
+	dependencies on CPP objects.
+	[33967b4ff6e9]
+
+	* d/d-gcc-includes.h, d/patches/patch-apple-gcc-5465,
+	d/patches/patch-apple-gcc-5664, d/patches/patch-gcc-4.0.x,
+	d/patches/patch-gcc-4.1.x, d/patches/patch-gcc-4.2.x,
+	d/patches/patch-gcc-4.3.x, d/patches/patch-gcc-4.4.x,
+	d/patches/patch-gcc-4.5.x: Remove old redundant code.
+	[7b72e8118c29]
+
+	* d/d-spec.c: Handle -pthread option in d-spec.c
+	[b6062a158fdd]
+
+	* d/d-glue.cc, d/phobos2/std/stdio.d, d/target-ver-syms.sh: Issue #151
+	- MinGW-w64: recent GDC does not build w/ recent GCC
+	[978bb5bc82cf]
+
+	* d/druntime/core/sys/posix/sys/un.d, d/phobos2/Makefile.am,
+	d/phobos2/Makefile.in: Remove posix.sys.un from druntime.
+	[bb92ab765845]
+
+2011-02-20  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/Make-lang.in, d/d-builtins2.cc, d/d-lang.cc, d/d-spec.c, d/dmd2/*,
+	d/druntime/*, d/phobos2/*: Updated D2 Frontend to 2.052.
+	[c4980ba67971]
+
+	* d/dmd/*, d/phobos/*: Updated D1 Frontend to 1.067.
+	[343f35cc00c8]
+
+	* d/d-objfile.cc: Put compiler-generated arrayops on comdat.
+	[4d14649603c2]
+
+	* d/d-gcc-includes.h, d/d-glue.cc: use totym to apply D type modifiers
+	on GCC types.
+	[d3b9d3188b68]
+
+	* d/d-decls.cc: Issue #155 - ICE when using byte
+	[7846c6471861]
+
+	* d/d-bi-attrs-43.h, d/d-bi-attrs-44.h, d/d-bi-attrs-45.h: Remove
+	'artificial' attribute from GDC.
+	[4b8f90d1f6aa]
+
+	* d/d-codegen.cc, d/d-glue.cc, d/d-irstate.cc, d/d-lang.cc: Conversion
+	fixes for types with GCC attributes applied.
+	[5e733844f91f]
+
+	* d/d-codegen.cc, d/d-codegen.h, d/d-decls.cc, d/d-glue.cc,
+	d/d-objfile.cc, d/druntime/object.di, d/druntime/object_.d,
+	d/druntime/rt/aaA.d, d/phobos/Makefile.am, d/phobos/Makefile.in,
+	d/phobos/gcc/support.d, d/phobos/internal/aaA.d,
+	d/phobos/internal/gc/gc.d, d/phobos2/gcc/support.d: ABI update: New
+	signatures for _d_assocarrayliteralTp, _d_arrayliteralTp and
+	_d_arrayappendcTp
+	[b66226b53e71]
+
+	* d/d-glue.cc: Update make_assign_math_op implementation
+	[8390d07b450e]
+
+	* d/d-builtins.c, d/d-builtins2.cc, d/d-codegen.cc,
+	d/d-gcc-includes.h, d/d-glue.cc, d/d-lang-45.h, d/d-lang.cc,
+	d/d-lang.h, d/d-objfile.cc: Fix cast-qual and unused parameter
+	warnings in glue.
+	[377c4f5505be]
+
+	* d/Make-lang.in, d/d-c-stubs.c, d/d-lang.cc: Drop support for CPP
+	Builtins.
+	[6dc9468f6789]
+
+2011-02-10  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-builtins.c, d/d-builtins2.cc, d/d-lang-45.h, d/d-lang.cc,
+	d/d-lang.h: New function added to langhooks: d_register_builtin_type.
+	[9674e391725f]
+
+	* d/d-bi-attrs-40.h, d/d-bi-attrs-41.h, d/d-bi-attrs-42.h,
+	d/d-bi-attrs-43.h, d/d-bi-attrs-44.h, d/d-bi-attrs-45.h: Only accept
+	string argument in mode attribute handler.
+	[99764267b71b]
+
+	* d/asmstmt.cc, d/d-builtins2.cc, d/d-codegen.cc, d/d-cppmngl.cc,
+	d/d-decls.cc, d/d-dmd-gcc.h, d/d-glue.cc, d/d-irstate.cc,
+	d/d-objfile.cc, d/d-todt.cc: Remove all references to total.h in glue.
+	[30c8afda4902]
+
+	* d/asmstmt.cc, d/d-apple-gcc.c, d/d-asm-i386.h, d/d-builtins2.cc,
+	d/d-codegen.cc, d/d-cppmngl.cc, d/d-decls.cc, d/d-gcc-real.cc,
+	d/d-glue.cc, d/d-irstate.cc, d/d-lang.cc, d/d-objfile.cc, d/dt.cc:
+	Remove all references to assert.h in glue.
+	[1d176d15d1e8]
+
+2011-02-02  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-bi-attrs-40.h, d/d-bi-attrs-41.h, d/d-bi-attrs-42.h,
+	d/d-bi-attrs-43.h, d/d-bi-attrs-44.h, d/d-bi-attrs-45.h,
+	d/dmd/attrib.c, d/dmd2/attrib.c: Fix mode attribute handler to accept
+	string argument.
+	[4ab9f7b5de07]
+
+2011-01-29  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/druntime/core/stdc/config.d: D2 - import gcc.builtins in
+	core.stdc.config
+	[1e41fd67396c]
+
+	* d/d-codegen.cc, d/d-glue.cc, d/druntime/core/stdc/config.d,
+	d/druntime/core/stdc/stdint.d, d/druntime/core/thread.d,
+	d/druntime/gc/gc.d, d/druntime/gc/gcbits.d, d/druntime/gc/gcx.d,
+	d/druntime/gcstub/gc.d, d/druntime/rt/lifetime.d,
+	d/phobos2/std/intrinsic.d: 64bit TLS/GC fixes. Closes #109, #115.
+	[0c10de583cd3]
+
+2011-01-28  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/Make-lang.in, d/d-codegen.cc, d/dmd/*, d/phobos/*: Updated D1
+	Frontend to 1.066
+	[06b390b6f86b]
+
+	* d/d-codegen.cc, d/d-glue.cc, d/druntime/rt/mars.h,
+	d/phobos/std/c/stdarg.d: Remove redundant checks for Tbit in D1, add
+	__va_argsave_t alias in phobos.
+	[5a4481f10bce]
+
+	* d/Make-lang.in: use new variable (ALL_CXXFLAGS)
+	[a3ec7496100e]
+
+	* d/d-c-stubs.c, d/d-codegen.cc, d/d-codegen.h, d/dmd/root.h,
+	d/dmd2/root.h: Implement frontend std.intrinsics into GDC.
+	[330bd9e6077b]
+
+2011-01-18  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/asmstmt.cc, d/d-codegen.cc, d/dmd/statement.h, d/dmd2/statement.h:
+	Implemented ExtAsmstatement::toCBuffer.
+	[4163067c9831]
+
+	* d/dmd/arrayop.c, d/dmd/root.c, d/dmd2/arrayop.c, d/dmd2/root.c: Add
+	binary implementation, use it in arrayops.
+	[78358cd41c04]
+
+	* d/dmd2/func.c, d/phobos/std/math.d, d/phobos2/std/intrinsic.d,
+	d/phobos2/std/math.d, d/phobos2/std/string.d: Fix log2 implementation
+	for systems requiring supplement.
+	[961f4dd29944]
+
+2011-01-16  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-glue.cc: Pass static chain by reference for functions nested in
+	classes.
+	[e37f417ab86f]
+
+	* d/d-lang-45.h, d/dmd/todt.c, d/dmd2/todt.c: rework todt for GCC.
+	[a15a367a189a]
+
+	* d/druntime/core/sys/posix/config.d,
+	d/druntime/core/sys/posix/sys/stat.d,
+	d/druntime/core/sys/posix/sys/types.d, d/druntime/gc/gcx.d: rework
+	sys.stat struct implementation.
+	[dc8e70a01ccf]
+
+2011-01-13  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-glue.cc, d/d-lang.cc, d/d-lang.h: Improve type names of
+	shared/const/immutable types in debugging.
+	[95990b0754e6]
+
+	* d/d-codegen.cc: Issue #147 - static arrays passed as parameter
+	should be value type.
+	[59c59a459398]
+
+	* d/patches/patch-gcc-4.4.x, d/patches/patch-gcc-4.5.x: Second fix for
+	Issue #104.
+	[1e4da57f4be4]
+
+2011-01-09  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/dmd/mtype.c, d/dmd2/mtype.c: Issue #134 - Fix 64bit double align.
+	[ab3473b8ee56]
+
+	* d/dmd-script, d/patches/patch-gcc-4.4.x, d/patches/patch-gcc-4.5.x:
+	Remove -fomit-frame-pointer from gdmd, fixes Issue #141
+	[191fd75f1716]
+
+2011-01-06  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-codegen.h, d/d-glue.cc, d/d-objfile.cc, d/lang-specs.h: Compiler
+	segfault when not Object class not defined.
+	[44b6978e5f6c]
+
+	* d/d-builtins2.ca,c d/d-codegen.h, d/d-decls.cc, d/d-glue.cc,
+	d/d-lang.cc, d/dmd/dchar.h, d/dmd/mars.c, d/dmd2/dchar.h: Fix some
+	warnings in d-lang, ICE when object.d is empty.
+	[48827ef72351]
+
+	* d/d-asm-i386.h, d/d-codegen.h: Refs Issue #135 - turn ICE into a
+	temp error.
+	[8f4b7ddb676e]
+
+	* d/d-glue.cc: Call rest_of_type_compilation in toDebug for
+	Record/Union/Enums.
+	[ca79068bcb60]
+
+	* d/druntime/object.di, d/druntime/object_.d: Issue #133 - Segfault On
+	AA Foreach
+	[aba6c8857d64]
+
+	*  d/druntime/core/thread.d, d/druntime/gc/gcx.d: Refs #115 - addRoot
+	for each call for malloc in the GC.
+	[3721c1dc5aad]
+
+	* d/phobos2/Makefile.am, d/phobos2/Makefile.in: D2 - emit templates
+	only for building phobos.
+	[c2b8a3f7c35b]
+
+	* d/d-decls.cc, d/d-objfile.cc: Issue #132 - unresolved symbol with
+	typedef initializers.
+	[69ebdbbcd8c2]
+
+	* d/druntime/core/sys/posix/config.d,
+	d/druntime/core/sys/posix/signal.d,
+	d/druntime/core/sys/posix/sys/stat.d, d/phobos2/std/file.d: Fix struct
+	stat_t implementation for linux.
+	[29c51189bf66]
+
+2011-01-02  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d/d-spec.c: Fix warning messages in d-spec.c.
+	[da4c33277396]
+
+	* d/d-codegen.cc,  d/d-glue.cc: Issue #105 - assertion failure
+	comparing structs for equality.
+	[9a212ed12cec]
+
+	* d/d-codegen.cc: Fix some diagnostic messages.
+	[1447423e541a]
+
+	* d/d-convert.cc: Update d_convert_basic for gcc-4.5
+	[28166c71baad]
+
+	* d/d-builtins.c, d/d-builtins2.cc, d/d-codegen.cc, d/d-decls.cc,
+	d/d-glue.cc, d/d-lang-45.h, d/d-lang.cc, d/d-lang.h, d/d-objfile.cc:
+	Declare d_build_decl as extern "C". Add function d_build_decl_loc.
+	[29253025adb2]
+
+
+Copyright (C) 2011 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

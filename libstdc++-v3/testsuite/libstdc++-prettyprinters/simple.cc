@@ -4,7 +4,7 @@
 // { dg-options "-g -O0 -std=gnu++98" }
 // { dg-skip-if "" { *-*-* } { "-D_GLIBCXX_PROFILE" } }
 
-// Copyright (C) 2011-2018 Free Software Foundation, Inc.
+// Copyright (C) 2011-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,6 +40,10 @@ main()
   std::string tem;
   std::string str = "zardoz";
 // { dg-final { note-test str "\"zardoz\"" } }
+
+  // PR 65229
+  std::bitset<0> bs0;
+// { dg-final { note-test bs0 {std::bitset} } }
 
   std::bitset<10> bs;
   bs[0] = 1;

@@ -1,5 +1,5 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
-   Copyright (C) 1988-2018 Free Software Foundation, Inc.
+   Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1146,7 +1146,7 @@ class move_by_pieces_d : public op_by_pieces_d
     : op_by_pieces_d (to, false, from, true, NULL, NULL, len, align)
   {
   }
-  rtx finish_endp (int);
+  rtx finish_retmode (memop_ret);
 };
 
 /* Return true if MODE can be used for a set of copies, given an
@@ -1182,15 +1182,14 @@ move_by_pieces_d::generate (rtx op0, rtx op1,
 }
 
 /* Perform the final adjustment at the end of a string to obtain the
-   correct return value for the block operation.  If ENDP is 1 return
-   memory at the end ala mempcpy, and if ENDP is 2 return memory the
-   end minus one byte ala stpcpy.  */
+   correct return value for the block operation.
+   Return value is based on RETMODE argument.  */
 
 rtx
-move_by_pieces_d::finish_endp (int endp)
+move_by_pieces_d::finish_retmode (memop_ret retmode)
 {
   gcc_assert (!m_reverse);
-  if (endp == 2)
+  if (retmode == RETURN_END_MINUS_ONE)
     {
       m_to.maybe_postinc (-1);
       --m_offset;
@@ -1206,13 +1205,11 @@ move_by_pieces_d::finish_endp (int endp)
 
    ALIGN is maximum stack alignment we can assume.
 
-   If ENDP is 0 return to, if ENDP is 1 return memory at the end ala
-   mempcpy, and if ENDP is 2 return memory the end minus one byte ala
-   stpcpy.  */
+   Return value is based on RETMODE argument.  */
 
 rtx
 move_by_pieces (rtx to, rtx from, unsigned HOST_WIDE_INT len,
-		unsigned int align, int endp)
+		unsigned int align, memop_ret retmode)
 {
 #ifndef PUSH_ROUNDING
   if (to == NULL)
@@ -1223,8 +1220,8 @@ move_by_pieces (rtx to, rtx from, unsigned HOST_WIDE_INT len,
 
   data.run ();
 
-  if (endp)
-    return data.finish_endp (endp);
+  if (retmode != RETURN_BEGIN)
+    return data.finish_retmode (retmode);
   else
     return to;
 }
@@ -1244,7 +1241,7 @@ class store_by_pieces_d : public op_by_pieces_d
     : op_by_pieces_d (to, false, NULL_RTX, true, cfn, cfn_data, len, align)
   {
   }
-  rtx finish_endp (int);
+  rtx finish_retmode (memop_ret);
 };
 
 /* Return true if MODE can be used for a set of stores, given an
@@ -1272,15 +1269,14 @@ store_by_pieces_d::generate (rtx op0, rtx op1, machine_mode)
 }
 
 /* Perform the final adjustment at the end of a string to obtain the
-   correct return value for the block operation.  If ENDP is 1 return
-   memory at the end ala mempcpy, and if ENDP is 2 return memory the
-   end minus one byte ala stpcpy.  */
+   correct return value for the block operation.
+   Return value is based on RETMODE argument.  */
 
 rtx
-store_by_pieces_d::finish_endp (int endp)
+store_by_pieces_d::finish_retmode (memop_ret retmode)
 {
   gcc_assert (!m_reverse);
-  if (endp == 2)
+  if (retmode == RETURN_END_MINUS_ONE)
     {
       m_to.maybe_postinc (-1);
       --m_offset;
@@ -1370,18 +1366,17 @@ can_store_by_pieces (unsigned HOST_WIDE_INT len,
    pointer which will be passed as argument in every CONSTFUN call.
    ALIGN is maximum alignment we can assume.  MEMSETP is true if this is
    a memset operation and false if it's a copy of a constant string.
-   If ENDP is 0 return to, if ENDP is 1 return memory at the end ala
-   mempcpy, and if ENDP is 2 return memory the end minus one byte ala
-   stpcpy.  */
+   Return value is based on RETMODE argument.  */
 
 rtx
 store_by_pieces (rtx to, unsigned HOST_WIDE_INT len,
 		 rtx (*constfun) (void *, HOST_WIDE_INT, scalar_int_mode),
-		 void *constfundata, unsigned int align, bool memsetp, int endp)
+		 void *constfundata, unsigned int align, bool memsetp,
+		 memop_ret retmode)
 {
   if (len == 0)
     {
-      gcc_assert (endp != 2);
+      gcc_assert (retmode != RETURN_END_MINUS_ONE);
       return to;
     }
 
@@ -1393,8 +1388,8 @@ store_by_pieces (rtx to, unsigned HOST_WIDE_INT len,
   store_by_pieces_d data (to, constfun, constfundata, len, align);
   data.run ();
 
-  if (endp)
-    return data.finish_endp (endp);
+  if (retmode != RETURN_BEGIN)
+    return data.finish_retmode (retmode);
   else
     return to;
 }
@@ -1624,7 +1619,7 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
     }
 
   if (CONST_INT_P (size) && can_move_by_pieces (INTVAL (size), align))
-    move_by_pieces (x, y, INTVAL (size), align, 0);
+    move_by_pieces (x, y, INTVAL (size), align, RETURN_BEGIN);
   else if (emit_block_move_via_movmem (x, y, size, align,
 				       expected_align, expected_size,
 				       min_size, max_size, probable_max_size))
@@ -4421,7 +4416,8 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 	      && where_pad != stack_direction)
 	    anti_adjust_stack (gen_int_mode (extra, Pmode));
 
-	  move_by_pieces (NULL, xinner, INTVAL (size) - used, align, 0);
+	  move_by_pieces (NULL, xinner, INTVAL (size) - used, align,
+			  RETURN_BEGIN);
 	}
       else
 #endif /* PUSH_ROUNDING  */
@@ -5258,6 +5254,21 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	      emit_move_insn (XEXP (to_rtx, 1), read_complex_part (temp, true));
 	    }
 	}
+      /* For calls to functions returning variable length structures, if TO_RTX
+	 is not a MEM, go through a MEM because we must not create temporaries
+	 of the VLA type.  */
+      else if (!MEM_P (to_rtx)
+	       && TREE_CODE (from) == CALL_EXPR
+	       && COMPLETE_TYPE_P (TREE_TYPE (from))
+	       && TREE_CODE (TYPE_SIZE (TREE_TYPE (from))) != INTEGER_CST)
+	{
+	  rtx temp = assign_stack_temp (GET_MODE (to_rtx),
+					GET_MODE_SIZE (GET_MODE (to_rtx)));
+	  result = store_field (temp, bitsize, bitpos, bitregion_start,
+				bitregion_end, mode1, from, get_alias_set (to),
+				nontemporal, reversep);
+	  emit_move_insn (to_rtx, temp);
+	}
       else
 	{
 	  if (MEM_P (to_rtx))
@@ -5613,12 +5624,13 @@ store_expr (tree exp, rtx target, int call_param_p,
 
       dest_mem = target;
 
+      memop_ret retmode = exp_len > str_copy_len ? RETURN_END : RETURN_BEGIN;
       dest_mem = store_by_pieces (dest_mem,
 				  str_copy_len, builtin_strncpy_read_str,
 				  CONST_CAST (char *,
 					      TREE_STRING_POINTER (str)),
 				  MEM_ALIGN (target), false,
-				  exp_len > str_copy_len ? 1 : 0);
+				  retmode);
       if (exp_len > str_copy_len)
 	clear_storage (adjust_address (dest_mem, BLKmode, 0),
 		       GEN_INT (exp_len - str_copy_len),
@@ -5948,10 +5960,11 @@ count_type_elements (const_tree type, bool for_ctor_p)
 
 static bool
 categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
+			    HOST_WIDE_INT *p_unique_nz_elts,
 			    HOST_WIDE_INT *p_init_elts, bool *p_complete)
 {
   unsigned HOST_WIDE_INT idx;
-  HOST_WIDE_INT nz_elts, init_elts, num_fields;
+  HOST_WIDE_INT nz_elts, unique_nz_elts, init_elts, num_fields;
   tree value, purpose, elt_type;
 
   /* Whether CTOR is a valid constant initializer, in accordance with what
@@ -5961,6 +5974,7 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
   bool const_p = const_from_elts_p ? true : TREE_STATIC (ctor);
 
   nz_elts = 0;
+  unique_nz_elts = 0;
   init_elts = 0;
   num_fields = 0;
   elt_type = NULL_TREE;
@@ -5985,12 +5999,13 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 	{
 	case CONSTRUCTOR:
 	  {
-	    HOST_WIDE_INT nz = 0, ic = 0;
+	    HOST_WIDE_INT nz = 0, unz = 0, ic = 0;
 
-	    bool const_elt_p = categorize_ctor_elements_1 (value, &nz, &ic,
-							   p_complete);
+	    bool const_elt_p = categorize_ctor_elements_1 (value, &nz, &unz,
+							   &ic, p_complete);
 
 	    nz_elts += mult * nz;
+	    unique_nz_elts += unz;
  	    init_elts += mult * ic;
 
 	    if (const_from_elts_p && const_p)
@@ -6002,21 +6017,31 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 	case REAL_CST:
 	case FIXED_CST:
 	  if (!initializer_zerop (value))
-	    nz_elts += mult;
+	    {
+	      nz_elts += mult;
+	      unique_nz_elts++;
+	    }
 	  init_elts += mult;
 	  break;
 
 	case STRING_CST:
 	  nz_elts += mult * TREE_STRING_LENGTH (value);
+	  unique_nz_elts += TREE_STRING_LENGTH (value);
 	  init_elts += mult * TREE_STRING_LENGTH (value);
 	  break;
 
 	case COMPLEX_CST:
 	  if (!initializer_zerop (TREE_REALPART (value)))
-	    nz_elts += mult;
+	    {
+	      nz_elts += mult;
+	      unique_nz_elts++;
+	    }
 	  if (!initializer_zerop (TREE_IMAGPART (value)))
-	    nz_elts += mult;
-	  init_elts += mult;
+	    {
+	      nz_elts += mult;
+	      unique_nz_elts++;
+	    }
+	  init_elts += 2 * mult;
 	  break;
 
 	case VECTOR_CST:
@@ -6028,7 +6053,10 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 	      {
 		tree v = VECTOR_CST_ELT (value, i);
 		if (!initializer_zerop (v))
-		  nz_elts += mult;
+		  {
+		    nz_elts += mult;
+		    unique_nz_elts++;
+		  }
 		init_elts += mult;
 	      }
 	  }
@@ -6038,6 +6066,7 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 	  {
 	    HOST_WIDE_INT tc = count_type_elements (elt_type, false);
 	    nz_elts += mult * tc;
+	    unique_nz_elts += tc;
 	    init_elts += mult * tc;
 
 	    if (const_from_elts_p && const_p)
@@ -6057,6 +6086,7 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
     *p_complete = false;
 
   *p_nz_elts += nz_elts;
+  *p_unique_nz_elts += unique_nz_elts;
   *p_init_elts += init_elts;
 
   return const_p;
@@ -6065,6 +6095,11 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 /* Examine CTOR to discover:
    * how many scalar fields are set to nonzero values,
      and place it in *P_NZ_ELTS;
+   * the same, but counting RANGE_EXPRs as multiplier of 1 instead of
+     high - low + 1 (this can be useful for callers to determine ctors
+     that could be cheaply initialized with - perhaps nested - loops
+     compared to copied from huge read-only data),
+     and place it in *P_UNIQUE_NZ_ELTS;
    * how many scalar fields in total are in CTOR,
      and place it in *P_ELT_COUNT.
    * whether the constructor is complete -- in the sense that every
@@ -6076,13 +6111,16 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 
 bool
 categorize_ctor_elements (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
+			  HOST_WIDE_INT *p_unique_nz_elts,
 			  HOST_WIDE_INT *p_init_elts, bool *p_complete)
 {
   *p_nz_elts = 0;
+  *p_unique_nz_elts = 0;
   *p_init_elts = 0;
   *p_complete = true;
 
-  return categorize_ctor_elements_1 (ctor, p_nz_elts, p_init_elts, p_complete);
+  return categorize_ctor_elements_1 (ctor, p_nz_elts, p_unique_nz_elts,
+				     p_init_elts, p_complete);
 }
 
 /* TYPE is initialized by a constructor with NUM_ELTS elements, the last
@@ -6113,17 +6151,18 @@ complete_ctor_at_level_p (const_tree type, HOST_WIDE_INT num_elts,
   return count_type_elements (type, true) == num_elts;
 }
 
-/* Return 1 if EXP contains mostly (3/4)  zeros.  */
+/* Return 1 if EXP contains mostly (3/4) zeros.  */
 
 static int
 mostly_zeros_p (const_tree exp)
 {
   if (TREE_CODE (exp) == CONSTRUCTOR)
     {
-      HOST_WIDE_INT nz_elts, init_elts;
+      HOST_WIDE_INT nz_elts, unz_elts, init_elts;
       bool complete_p;
 
-      categorize_ctor_elements (exp, &nz_elts, &init_elts, &complete_p);
+      categorize_ctor_elements (exp, &nz_elts, &unz_elts, &init_elts,
+				&complete_p);
       return !complete_p || nz_elts < init_elts / 4;
     }
 
@@ -6137,10 +6176,11 @@ all_zeros_p (const_tree exp)
 {
   if (TREE_CODE (exp) == CONSTRUCTOR)
     {
-      HOST_WIDE_INT nz_elts, init_elts;
+      HOST_WIDE_INT nz_elts, unz_elts, init_elts;
       bool complete_p;
 
-      categorize_ctor_elements (exp, &nz_elts, &init_elts, &complete_p);
+      categorize_ctor_elements (exp, &nz_elts, &unz_elts, &init_elts,
+				&complete_p);
       return nz_elts == 0;
     }
 
@@ -8750,8 +8790,8 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 		 != INTEGER_CST check.  Handle it.  */
 	      if (GET_MODE (op0) == VOIDmode && GET_MODE (op1) == VOIDmode)
 		{
-		  op0 = convert_modes (innermode, mode, op0, true);
-		  op1 = convert_modes (innermode, mode, op1, false);
+		  op0 = convert_modes (mode, innermode, op0, true);
+		  op1 = convert_modes (mode, innermode, op1, false);
 		  return REDUCE_BIT_FIELD (expand_mult (mode, op0, op1,
 							target, unsignedp));
 		}
@@ -8773,7 +8813,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	  if (TREE_CODE (treeop0) != INTEGER_CST)
 	    {
 	      if (find_widening_optab_handler (this_optab, mode, innermode)
-		    != CODE_FOR_nothing)
+		  != CODE_FOR_nothing)
 		{
 		  expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1,
 				   EXPAND_NORMAL);
@@ -8782,9 +8822,9 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 		  if (GET_MODE (op0) == VOIDmode && GET_MODE (op1) == VOIDmode)
 		    {
 		     widen_mult_const:
-		      op0 = convert_modes (innermode, mode, op0, zextend_p);
+		      op0 = convert_modes (mode, innermode, op0, zextend_p);
 		      op1
-			= convert_modes (innermode, mode, op1,
+			= convert_modes (mode, innermode, op1,
 					 TYPE_UNSIGNED (TREE_TYPE (treeop1)));
 		      return REDUCE_BIT_FIELD (expand_mult (mode, op0, op1,
 							    target,
@@ -8795,21 +8835,19 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 		  return REDUCE_BIT_FIELD (temp);
 		}
 	      if (find_widening_optab_handler (other_optab, mode, innermode)
-		    != CODE_FOR_nothing
+		  != CODE_FOR_nothing
 		  && innermode == word_mode)
 		{
 		  rtx htem, hipart;
 		  op0 = expand_normal (treeop0);
-		  if (TREE_CODE (treeop1) == INTEGER_CST)
-		    op1 = convert_modes (word_mode, mode,
-					 expand_normal (treeop1),
-					 TYPE_UNSIGNED (TREE_TYPE (treeop1)));
-		  else
-		    op1 = expand_normal (treeop1);
-		  /* op0 and op1 might still be constant, despite the above
+		  op1 = expand_normal (treeop1);
+		  /* op0 and op1 might be constants, despite the above
 		     != INTEGER_CST check.  Handle it.  */
 		  if (GET_MODE (op0) == VOIDmode && GET_MODE (op1) == VOIDmode)
 		    goto widen_mult_const;
+		  if (TREE_CODE (treeop1) == INTEGER_CST)
+		    op1 = convert_modes (mode, word_mode, op1,
+					 TYPE_UNSIGNED (TREE_TYPE (treeop1)));
 		  temp = expand_binop (mode, other_optab, op0, op1, target,
 				       unsignedp, OPTAB_LIB_WIDEN);
 		  hipart = gen_highpart (word_mode, temp);
@@ -9468,9 +9506,31 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
       gcc_assert (target);
       return target;
 
-    case VEC_PACK_TRUNC_EXPR:
     case VEC_PACK_SAT_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:
+      mode = TYPE_MODE (TREE_TYPE (treeop0));
+      goto binop;
+
+    case VEC_PACK_TRUNC_EXPR:
+      if (VECTOR_BOOLEAN_TYPE_P (type)
+	  && VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (treeop0))
+	  && mode == TYPE_MODE (TREE_TYPE (treeop0))
+	  && SCALAR_INT_MODE_P (mode))
+	{
+	  struct expand_operand eops[4];
+	  machine_mode imode = TYPE_MODE (TREE_TYPE (treeop0));
+	  expand_operands (treeop0, treeop1,
+			   subtarget, &op0, &op1, EXPAND_NORMAL);
+	  this_optab = vec_pack_sbool_trunc_optab;
+	  enum insn_code icode = optab_handler (this_optab, imode);
+	  create_output_operand (&eops[0], target, mode);
+	  create_convert_operand_from (&eops[1], op0, imode, false);
+	  create_convert_operand_from (&eops[2], op1, imode, false);
+	  temp = GEN_INT (TYPE_VECTOR_SUBPARTS (type).to_constant ());
+	  create_input_operand (&eops[3], temp, imode);
+	  expand_insn (icode, 4, eops);
+	  return eops[0].value;
+	}
       mode = TYPE_MODE (TREE_TYPE (treeop0));
       goto binop;
 
@@ -10930,7 +10990,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 					 DECL_ATTRIBUTES (fndecl))) != NULL)
 	  {
 	    const char *ident = lang_hooks.decl_printable_name (fndecl, 1);
-	    warning_at (tree_nonartificial_location (exp), 0,
+	    warning_at (tree_nonartificial_location (exp),
+			OPT_Wattribute_warning,
 			"%Kcall to %qs declared with attribute warning: %s",
 			exp, identifier_to_locale (ident),
 			TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr))));
@@ -11357,18 +11418,15 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
       tree arg0 = TREE_OPERAND (arg, 0);
       tree arg1 = TREE_OPERAND (arg, 1);
 
-      STRIP_NOPS (arg0);
-      STRIP_NOPS (arg1);
-
-      if (TREE_CODE (arg0) == ADDR_EXPR)
-	;   /* Do nothing.  */
-      else if (TREE_CODE (arg1) == ADDR_EXPR)
-	std::swap (arg0, arg1);
-      else
-	return NULL_TREE;
-
       tree offset;
-      if (tree str = string_constant (arg0, &offset, mem_size, decl))
+      tree str = string_constant (arg0, &offset, mem_size, decl);
+      if (!str)
+	{
+	   str = string_constant (arg1, &offset, mem_size, decl);
+	   arg1 = arg0;
+	}
+
+      if (str)
 	{
 	  /* Avoid pointers to arrays (see bug 86622).  */
 	  if (POINTER_TYPE_P (TREE_TYPE (arg))
@@ -11379,7 +11437,8 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 		   && tree_int_cst_equal (*mem_size, DECL_SIZE_UNIT (*decl))))
 	    return NULL_TREE;
 
-	  tree type = TREE_TYPE (arg1);
+	  tree type = TREE_TYPE (offset);
+	  arg1 = fold_convert (type, arg1);
 	  *ptr_offset = fold_build2 (PLUS_EXPR, type, offset, arg1);
 	  return str;
 	}
@@ -11411,7 +11470,8 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 	    return NULL_TREE;
 
 	  tree rhs2 = gimple_assign_rhs2 (stmt);
-	  tree type = TREE_TYPE (rhs2);
+	  tree type = TREE_TYPE (offset);
+	  rhs2 = fold_convert (type, rhs2);
 	  *ptr_offset = fold_build2 (PLUS_EXPR, type, offset, rhs2);
 	  return str;
 	}
@@ -11484,18 +11544,46 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 	offset = off;
     }
 
-  if (!init || TREE_CODE (init) != STRING_CST)
+  if (!init)
     return NULL_TREE;
 
+  *ptr_offset = offset;
+
+  tree eltype = TREE_TYPE (init);
+  tree initsize = TYPE_SIZE_UNIT (eltype);
   if (mem_size)
-    *mem_size = TYPE_SIZE_UNIT (TREE_TYPE (init));
+    *mem_size = initsize;
+
   if (decl)
     *decl = array;
 
-  gcc_checking_assert (tree_to_shwi (TYPE_SIZE_UNIT (TREE_TYPE (init)))
-		       >= TREE_STRING_LENGTH (init));
+  if (TREE_CODE (init) == INTEGER_CST
+      && (TREE_CODE (TREE_TYPE (array)) == INTEGER_TYPE
+	  || TYPE_MAIN_VARIANT (eltype) == char_type_node))
+    {
+      /* For a reference to (address of) a single constant character,
+	 store the native representation of the character in CHARBUF.
+	 If the reference is to an element of an array or a member
+	 of a struct, only consider narrow characters until ctors
+	 for wide character arrays are transformed to STRING_CSTs
+	 like those for narrow arrays.  */
+      unsigned char charbuf[MAX_BITSIZE_MODE_ANY_MODE / BITS_PER_UNIT];
+      int len = native_encode_expr (init, charbuf, sizeof charbuf, 0);
+      if (len > 0)
+	{
+	  /* Construct a string literal with elements of ELTYPE and
+	     the representation above.  Then strip
+	     the ADDR_EXPR (ARRAY_REF (...)) around the STRING_CST.  */
+	  init = build_string_literal (len, (char *)charbuf, eltype);
+	  init = TREE_OPERAND (TREE_OPERAND (init, 0), 0);
+	}
+    }
 
-  *ptr_offset = offset;
+  if (TREE_CODE (init) != STRING_CST)
+    return NULL_TREE;
+
+  gcc_checking_assert (tree_to_shwi (initsize) >= TREE_STRING_LENGTH (init));
+
   return init;
 }
 

@@ -11097,6 +11097,9 @@ package body Sem_Ch12 is
                 Expression             => New_Copy_Tree
                                             (Default_Expression (Formal)));
 
+            Set_Corresponding_Generic_Association
+              (Decl_Node, Expression (Decl_Node));
+
             Append (Decl_Node, List);
             Set_Analyzed (Expression (Decl_Node), False);
 

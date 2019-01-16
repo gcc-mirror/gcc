@@ -1,5 +1,5 @@
 /* Callgraph based analysis of static variables.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -339,7 +339,7 @@ check_decl (funct_state local,
   if (DECL_EXTERNAL (t) || TREE_PUBLIC (t))
     {
       /* Readonly reads are safe.  */
-      if (TREE_READONLY (t) && !TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (t)))
+      if (TREE_READONLY (t))
 	return; /* Read of a constant, do not change the function state.  */
       else
 	{

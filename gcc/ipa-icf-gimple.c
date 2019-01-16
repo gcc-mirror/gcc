@@ -1,5 +1,5 @@
 /* Interprocedural Identical Code Folding pass
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
 
    Contributed by Jan Hubicka <hubicka@ucw.cz> and Martin Liska <mliska@suse.cz>
 
@@ -991,6 +991,9 @@ func_checker::compare_gimple_asm (const gasm *g1, const gasm *g2)
     return false;
 
   if (gimple_asm_input_p (g1) != gimple_asm_input_p (g2))
+    return false;
+
+  if (gimple_asm_inline_p (g1) != gimple_asm_inline_p (g2))
     return false;
 
   if (gimple_asm_ninputs (g1) != gimple_asm_ninputs (g2))

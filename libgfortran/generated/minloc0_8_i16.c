@@ -1,5 +1,5 @@
 /* Implementation of the MINLOC intrinsic
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -198,6 +198,13 @@ mminloc0_8_i16 (gfc_array_i8 * const restrict retarray,
   index_type n;
   int mask_kind;
 
+
+  if (mask == NULL)
+    {
+      minloc0_8_i16 (retarray, array, back);
+      return;
+    }
+
   rank = GFC_DESCRIPTOR_RANK (array);
   if (rank <= 0)
     runtime_error ("Rank of array needs to be > 0");
@@ -368,7 +375,7 @@ sminloc0_8_i16 (gfc_array_i8 * const restrict retarray,
   index_type n;
   GFC_INTEGER_8 *dest;
 
-  if (*mask)
+  if (mask == NULL || *mask)
     {
       minloc0_8_i16 (retarray, array, back);
       return;

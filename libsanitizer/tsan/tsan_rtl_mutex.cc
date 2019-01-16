@@ -82,7 +82,9 @@ void MutexDestroy(ThreadState *thr, uptr pc, uptr addr, u32 flagz) {
   SyncVar *s = ctx->metamap.GetIfExistsAndLock(addr, true);
   if (s == 0)
     return;
-  if ((flagz & MutexFlagLinkerInit) || s->IsFlagSet(MutexFlagLinkerInit)) {
+  if ((flagz & MutexFlagLinkerInit)
+      || s->IsFlagSet(MutexFlagLinkerInit)
+      || ((flagz & MutexFlagNotStatic) && !s->IsFlagSet(MutexFlagNotStatic))) {
     // Destroy is no-op for linker-initialized mutexes.
     s->mtx.Unlock();
     return;
@@ -100,7 +102,7 @@ void MutexDestroy(ThreadState *thr, uptr pc, uptr addr, u32 flagz) {
     unlock_locked = true;
   }
   u64 mid = s->GetId();
-  u32 last_lock = s->last_lock;
+  u64 last_lock = s->last_lock;
   if (!unlock_locked)
     s->Reset(thr->proc());  // must not reset it before the report is printed
   s->mtx.Unlock();
@@ -110,7 +112,7 @@ void MutexDestroy(ThreadState *thr, uptr pc, uptr addr, u32 flagz) {
     rep.AddMutex(mid);
     VarSizeStackTrace trace;
     ObtainCurrentStack(thr, pc, &trace);
-    rep.AddStack(trace);
+    rep.AddStack(trace, true);
     FastState last(last_lock);
     RestoreStack(last.tid(), last.epoch(), &trace, 0);
     rep.AddStack(trace, true);
@@ -357,7 +359,7 @@ void MutexReadOrWriteUnlock(ThreadState *thr, uptr pc, uptr addr) {
     if (s->recursion == 0) {
       StatInc(thr, StatMutexUnlock);
       s->owner_tid = SyncVar::kInvalidTid;
-      ReleaseImpl(thr, pc, &s->clock);
+      ReleaseStoreImpl(thr, pc, &s->clock);
     } else {
       StatInc(thr, StatMutexRecUnlock);
     }

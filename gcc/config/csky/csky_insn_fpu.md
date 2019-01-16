@@ -1,5 +1,5 @@
 ;; C-SKY FPU instruction descriptions.
-;; Copyright (C) 2018 Free Software Foundation, Inc.
+;; Copyright (C) 2018-2019 Free Software Foundation, Inc.
 ;; Contributed by C-SKY Microsystems and Mentor Graphics.
 ;;
 ;; This file is part of GCC.
@@ -131,7 +131,7 @@
   [(set (match_operand:SF		   0 "register_operand" "=v")
 	(mult:SF (neg:SF (match_operand:SF 1 "register_operand" "%v"))
 		 (match_operand:SF	   2 "register_operand" "v")))]
-  "CSKY_ISA_FEATURE (fpv2_sf)"
+  "CSKY_ISA_FEATURE (fpv2_sf) && !flag_rounding_math"
   "fnmuls\t%0, %1, %2")
 
 (define_insn "*fpuv2_nmulsf3_2"
@@ -145,7 +145,7 @@
   [(set (match_operand:DF		   0 "register_operand" "=v")
 	(mult:DF (neg:DF (match_operand:DF 1 "register_operand" "%v"))
 		 (match_operand:DF	   2 "register_operand" "v")))]
- "CSKY_ISA_FEATURE (fpv2_df)"
+ "CSKY_ISA_FEATURE (fpv2_df) && !flag_rounding_math"
  "fnmuld\t%0, %1, %2")
 
 (define_insn "*fpuv2_nmuldf3_2"

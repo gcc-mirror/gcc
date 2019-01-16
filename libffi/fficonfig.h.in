@@ -121,12 +121,12 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
+/* Define to 1 if GNU symbol versioning is used for libatomic. */
+#undef LIBAT_GNU_SYMBOL_VERSIONING
+
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */
 #undef LT_OBJDIR
-
-/* Define to 1 if your C compiler doesn't accept -c and -o together. */
-#undef NO_MINUS_C_MINUS_O
 
 /* Name of package */
 #undef PACKAGE
@@ -187,6 +187,9 @@
 #  undef WORDS_BIGENDIAN
 # endif
 #endif
+
+/* Define to `unsigned int' if <sys/types.h> does not define. */
+#undef size_t
 
 
 #ifdef HAVE_HIDDEN_VISIBILITY_ATTRIBUTE

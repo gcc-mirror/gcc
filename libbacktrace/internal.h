@@ -1,5 +1,5 @@
 /* internal.h -- Internal header file for stack backtrace library.
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 Redistribution and use in source and binary forms, with or without
@@ -256,6 +256,18 @@ extern int backtrace_vector_release (struct backtrace_state *state,
 				     struct backtrace_vector *vec,
 				     backtrace_error_callback error_callback,
 				     void *data);
+
+/* Free the space managed by VEC.  This will reset VEC.  */
+
+static inline void
+backtrace_vector_free (struct backtrace_state *state,
+		       struct backtrace_vector *vec,
+		       backtrace_error_callback error_callback, void *data)
+{
+  vec->alc += vec->size;
+  vec->size = 0;
+  backtrace_vector_release (state, vec, error_callback, data);
+}
 
 /* Read initial debug data from a descriptor, and set the
    fileline_data, syminfo_fn, and syminfo_data fields of STATE.

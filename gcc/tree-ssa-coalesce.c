@@ -1,5 +1,5 @@
 /* Coalesce SSA_NAMES together for the out-of-ssa pass.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -135,6 +135,7 @@ struct coalesce_list
   coalesce_pair **sorted;	/* List when sorted.  */
   int num_sorted;		/* Number in the sorted list.  */
   cost_one_pair *cost_one_list;/* Single use coalesces with cost 1.  */
+  obstack ob;
 };
 
 #define NO_BEST_COALESCE	-1
@@ -226,8 +227,6 @@ pop_cost_one_pair (coalesce_list *cl, int *p1, int *p2)
   *p2 = ptr->second_element;
   cl->cost_one_list = ptr->next;
 
-  free (ptr);
-
   return 1;
 }
 
@@ -251,7 +250,6 @@ pop_best_coalesce (coalesce_list *cl, int *p1, int *p2)
   *p1 = node->first_element;
   *p2 = node->second_element;
   ret = node->cost;
-  free (node);
 
   return ret;
 }
@@ -273,6 +271,7 @@ create_coalesce_list (void)
   list->sorted = NULL;
   list->num_sorted = 0;
   list->cost_one_list = NULL;
+  gcc_obstack_init (&list->ob);
   return list;
 }
 
@@ -287,6 +286,7 @@ delete_coalesce_list (coalesce_list *cl)
   cl->list = NULL;
   free (cl->sorted);
   gcc_assert (cl->num_sorted == 0);
+  obstack_free (&cl->ob, NULL);
   free (cl);
 }
 
@@ -328,7 +328,7 @@ find_coalesce_pair (coalesce_list *cl, int p1, int p2, bool create)
 
   if (!*slot)
     {
-      struct coalesce_pair * pair = XNEW (struct coalesce_pair);
+      struct coalesce_pair * pair = XOBNEW (&cl->ob, struct coalesce_pair);
       gcc_assert (cl->sorted == NULL);
       pair->first_element = p.first_element;
       pair->second_element = p.second_element;
@@ -346,7 +346,7 @@ add_cost_one_coalesce (coalesce_list *cl, int p1, int p2)
 {
   cost_one_pair *pair;
 
-  pair = XNEW (cost_one_pair);
+  pair = XOBNEW (&cl->ob, cost_one_pair);
   pair->first_element = p1;
   pair->second_element = p2;
   pair->next = cl->cost_one_list;
@@ -677,8 +677,8 @@ ssa_conflicts_dump (FILE *file, ssa_conflicts *ptr)
 struct live_track
 {
   bitmap_obstack obstack;	/* A place to allocate our bitmaps.  */
-  bitmap live_base_var;		/* Indicates if a basevar is live.  */
-  bitmap *live_base_partitions;	/* Live partitions for each basevar.  */
+  bitmap_head live_base_var;		/* Indicates if a basevar is live.  */
+  bitmap_head *live_base_partitions;	/* Live partitions for each basevar.  */
   var_map map;			/* Var_map being used for partition mapping.  */
 };
 
@@ -695,14 +695,14 @@ new_live_track (var_map map)
   /* Make sure there is a partition view in place.  */
   gcc_assert (map->partition_to_base_index != NULL);
 
-  ptr = (live_track *) xmalloc (sizeof (live_track));
+  ptr = XNEW (live_track);
   ptr->map = map;
   lim = num_basevars (map);
   bitmap_obstack_initialize (&ptr->obstack);
-  ptr->live_base_partitions = (bitmap *) xmalloc (sizeof (bitmap *) * lim);
-  ptr->live_base_var = BITMAP_ALLOC (&ptr->obstack);
+  ptr->live_base_partitions = XNEWVEC (bitmap_head, lim);
+  bitmap_initialize (&ptr->live_base_var, &ptr->obstack);
   for (x = 0; x < lim; x++)
-    ptr->live_base_partitions[x] = BITMAP_ALLOC (&ptr->obstack);
+    bitmap_initialize (&ptr->live_base_partitions[x], &ptr->obstack);
   return ptr;
 }
 
@@ -713,8 +713,8 @@ static void
 delete_live_track (live_track *ptr)
 {
   bitmap_obstack_release (&ptr->obstack);
-  free (ptr->live_base_partitions);
-  free (ptr);
+  XDELETEVEC (ptr->live_base_partitions);
+  XDELETE (ptr);
 }
 
 
@@ -726,10 +726,10 @@ live_track_remove_partition (live_track *ptr, int partition)
   int root;
 
   root = basevar_index (ptr->map, partition);
-  bitmap_clear_bit (ptr->live_base_partitions[root], partition);
+  bitmap_clear_bit (&ptr->live_base_partitions[root], partition);
   /* If the element list is empty, make the base variable not live either.  */
-  if (bitmap_empty_p (ptr->live_base_partitions[root]))
-    bitmap_clear_bit (ptr->live_base_var, root);
+  if (bitmap_empty_p (&ptr->live_base_partitions[root]))
+    bitmap_clear_bit (&ptr->live_base_var, root);
 }
 
 
@@ -743,9 +743,9 @@ live_track_add_partition (live_track *ptr, int partition)
   root = basevar_index (ptr->map, partition);
   /* If this base var wasn't live before, it is now.  Clear the element list
      since it was delayed until needed.  */
-  if (bitmap_set_bit (ptr->live_base_var, root))
-    bitmap_clear (ptr->live_base_partitions[root]);
-  bitmap_set_bit (ptr->live_base_partitions[root], partition);
+  if (bitmap_set_bit (&ptr->live_base_var, root))
+    bitmap_clear (&ptr->live_base_partitions[root]);
+  bitmap_set_bit (&ptr->live_base_partitions[root], partition);
 
 }
 
@@ -774,8 +774,8 @@ live_track_live_p (live_track *ptr, tree var)
   if (p != NO_PARTITION)
     {
       root = basevar_index (ptr->map, p);
-      if (bitmap_bit_p (ptr->live_base_var, root))
-	return bitmap_bit_p (ptr->live_base_partitions[root], p);
+      if (bitmap_bit_p (&ptr->live_base_var, root))
+	return bitmap_bit_p (&ptr->live_base_partitions[root], p);
     }
   return false;
 }
@@ -819,9 +819,9 @@ live_track_process_def (live_track *ptr, tree def, ssa_conflicts *graph)
 
   /* If the bitmap isn't empty now, conflicts need to be added.  */
   root = basevar_index (ptr->map, p);
-  if (bitmap_bit_p (ptr->live_base_var, root))
+  if (bitmap_bit_p (&ptr->live_base_var, root))
     {
-      b = ptr->live_base_partitions[root];
+      b = &ptr->live_base_partitions[root];
       EXECUTE_IF_SET_IN_BITMAP (b, 0, x, bi)
         ssa_conflicts_add (graph, p, x);
     }
@@ -850,7 +850,7 @@ live_track_clear_base_vars (live_track *ptr)
   /* Simply clear the live base list.  Anything marked as live in the element
      lists will be cleared later if/when the base variable ever comes alive
      again.  */
-  bitmap_clear (ptr->live_base_var);
+  bitmap_clear (&ptr->live_base_var);
 }
 
 

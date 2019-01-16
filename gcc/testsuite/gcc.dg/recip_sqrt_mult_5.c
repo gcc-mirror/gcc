@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Ofast -fdump-tree-recip" } */
+/* { dg-additional-options "-fcompare-debug" { target { ! powerpc-ibm-aix* } } } */
 
 /* We want to do the recip_sqrt transformations here there is already
    a multiplication on the main path.  */

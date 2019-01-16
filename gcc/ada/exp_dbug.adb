@@ -1053,7 +1053,7 @@ package body Exp_Dbug is
                Name                => New_Occurrence_Of (E, Loc));
 
             Append (Decl, Declarations (N));
-            Set_Needs_Debug_Info (Defining_Identifier (Decl));
+            Set_Debug_Info_Needed (Defining_Identifier (Decl));
          end if;
 
          Next_Entity (E);

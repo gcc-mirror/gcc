@@ -42,7 +42,7 @@ msgstr ""
 "Project-Id-Version: gcc 8.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-07-25 14:25+0000\n"
-"PO-Revision-Date: 2018-10-17 01:00+0200\n"
+"PO-Revision-Date: 2019-01-02 18:32+0100\n"
 "Last-Translator: Antonio Ceballos Roa <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -33188,7 +33188,7 @@ msgstr "el subprograma %q+F no está marcado Inline"
 #: ada/gcc-interface/trans.c:6401
 #, gcc-internal-format
 msgid "out-of-bounds access may be optimized away"
-msgstr ""
+msgstr "el acceso fuera de límites puede optimizarse fuera"
 
 #: ada/gcc-interface/trans.c:6403
 #, fuzzy, gcc-internal-format
@@ -33801,7 +33801,7 @@ msgstr "const %qD sin inicializar es no válida en C++"
 #: c/c-decl.c:5224 cp/decl.c:7318
 #, gcc-internal-format
 msgid "%q+D in declare target directive does not have mappable type"
-msgstr ""
+msgstr "%q+D en directiva de objetivo de declaración no tiene tipo asociable"
 
 #: c/c-decl.c:5288
 #, gcc-internal-format
@@ -34388,7 +34388,7 @@ msgstr "el parámetro %q+D sólo tiene una declaración posterior"
 #: c/c-decl.c:7394
 #, gcc-internal-format
 msgid "%<%s %E%> declared inside parameter list will not be visible outside of this definition or declaration"
-msgstr ""
+msgstr "%<%s %E%> declarado dentro de la list de parámetros no será visible fuera de esta definición o declaración"
 
 #: c/c-decl.c:7400
 #, gcc-internal-format, gfc-internal-format
@@ -34458,12 +34458,12 @@ msgstr "miembro %q+D duplicado"
 #: c/c-decl.c:7906
 #, gcc-internal-format
 msgid "empty struct has size 0 in C, size 1 in C++"
-msgstr ""
+msgstr "una struct vacía tiene tamaño 0 en C y tamaño 1 en C++"
 
 #: c/c-decl.c:7909
 #, gcc-internal-format
 msgid "empty union has size 0 in C, size 1 in C++"
-msgstr ""
+msgstr "una union vacía tiene tamaño 0 en C y tamaño 1 en C++"
 
 #: c/c-decl.c:8014
 #, gcc-internal-format
@@ -34600,7 +34600,7 @@ msgstr "el tipo de devolución de %qD no es %<int%>"
 #: c/c-decl.c:8898
 #, gcc-internal-format
 msgid "%<_Atomic%>-qualified return type of %qD"
-msgstr ""
+msgstr "calificado %<_Atomic%> el tipo de retorno de %qD"
 
 #: c/c-decl.c:8905
 #, gcc-internal-format
@@ -35381,12 +35381,12 @@ msgstr "variable de iteración no válida en la enumeración rápida"
 #: c/c-parser.c:6172 cp/parser.c:11708
 #, gcc-internal-format
 msgid "missing loop condition in loop with %<GCC ivdep%> pragma"
-msgstr ""
+msgstr "falta la condición del bucle en bucle con pragma %<GCC ivdep%>"
 
 #: c/c-parser.c:6178 cp/parser.c:11714
 #, gcc-internal-format
 msgid "missing loop condition in loop with %<GCC unroll%> pragma"
-msgstr ""
+msgstr "falta la condición del bucle en bucle con pragma %<GCC unroll%>"
 
 #: c/c-parser.c:6212
 #, gcc-internal-format
@@ -35590,12 +35590,12 @@ msgstr "el argumento '%u' de %<__builtin_tgmath%> tiene un número incorrecto de
 #: c/c-parser.c:8333 c/c-parser.c:8343
 #, gcc-internal-format
 msgid "invalid type-generic return type for argument %u of %<__builtin_tgmath%>"
-msgstr ""
+msgstr "el tipo de retorno de tipo genérico para el argumento %u de %<__builtin_tgmath%> no es válido"
 
 #: c/c-parser.c:8365 c/c-parser.c:8375
 #, gcc-internal-format
 msgid "invalid type-generic type for argument %u of argument %u of %<__builtin_tgmath%>"
-msgstr ""
+msgstr "el tipo de tipo genérico para el argumento %u del argumento %u de %<__builtin_tgmath%> no es válido"
 
 #: c/c-parser.c:8408
 #, gcc-internal-format
@@ -35605,89 +35605,77 @@ msgstr "los argumentos de función de %<__builtin_tgmath%> tienen todos el mismo
 #: c/c-parser.c:8427
 #, gcc-internal-format
 msgid "function arguments of %<__builtin_tgmath%> lack type-generic parameter"
-msgstr ""
+msgstr "los argumentos de función de %<__builtin_tgmath%> carecen de paramétro de tipo genérico"
 
 #: c/c-parser.c:8475
 #, gcc-internal-format
 msgid "duplicate type-generic parameter type for function argument %u of %<__builtin_tgmath%>"
-msgstr ""
+msgstr "el tipo de parámetro de tipo genérico para el argumento de función %u de %<__builtin_tgmath%> está duplicado"
 
 #: c/c-parser.c:8498
 #, gcc-internal-format
 msgid "bad return type for function argument %u of %<__builtin_tgmath%>"
-msgstr ""
+msgstr "tipo de retorno inadecuado para el argumento de función %u de %<__builtin_tgmath%>"
 
 #: c/c-parser.c:8515
-#, fuzzy, gcc-internal-format
-#| msgid "wrong number of arguments to function %<__builtin_next_arg%>"
+#, gcc-internal-format
 msgid "bad type for argument %u of function argument %u of %<__builtin_tgmath%>"
-msgstr "número erróneo de argumentos para la función %<__builtin_next_arg%>"
+msgstr "tipo inadecuado para el argumento %u del argumento de función %u de %<__builtin_tgmath%>"
 
 #: c/c-parser.c:8553
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid type for parameter %d of constexpr function %q+#D"
+#, gcc-internal-format, gfc-internal-format
 msgid "invalid type of argument %u of type-generic function"
-msgstr "tipo no válido del parámetro %d en la función constexpr %q+#D"
+msgstr "tipo no válido del argumento %u de la función de tipo genérico"
 
 #: c/c-parser.c:8564
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "non-floating-point argument in call to function %qE"
+#, gcc-internal-format, gfc-internal-format
 msgid "decimal floating-point argument %u to complex-only type-generic function"
-msgstr "argumento que no es de coma flotante en la llamada a la función %qE"
+msgstr "argumento de coma flotante decimal %u para función de tipo genérico solo para complejos"
 
 #: c/c-parser.c:8572
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "non-floating-point argument in call to function %qE"
+#, gcc-internal-format, gfc-internal-format
 msgid "decimal floating-point argument %u to binary-only type-generic function"
-msgstr "argumento que no es de coma flotante en la llamada a la función %qE"
+msgstr "argumento de coma flotante decimal %u para función de tipo genérico solo para binarios"
 
 #: c/c-parser.c:8580 c/c-parser.c:8610
-#, fuzzy, gcc-internal-format
-#| msgid "non-floating-point arguments in call to function %qE"
+#, gcc-internal-format
 msgid "both complex and decimal floating-point arguments to type-generic function"
-msgstr "argumentos que no son de coma flotante en la llamada a la función %qE"
+msgstr "argumentos de ambos tipos complejo y de coma flotante decimal para función de tipo genérico"
 
 #: c/c-parser.c:8588 c/c-parser.c:8630
-#, fuzzy, gcc-internal-format
-#| msgid "non-floating-point arguments in call to function %qE"
+#, gcc-internal-format
 msgid "both binary and decimal floating-point arguments to type-generic function"
-msgstr "argumentos que no son de coma flotante en la llamada a la función %qE"
+msgstr "argumentos de ambos tipos binario y de coma flotante decimal para función de tipo genérico"
 
 #: c/c-parser.c:8602
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "complex arguments must have identical types"
+#, gcc-internal-format, gfc-internal-format
 msgid "complex argument %u to decimal-only type-generic function"
-msgstr "los argumentos complejos deben tener tipos idénticos"
+msgstr "argumento complejo %u para función de tipo genérico solo para decimales"
 
 #: c/c-parser.c:8622
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid argument to built-in function"
+#, gcc-internal-format, gfc-internal-format
 msgid "binary argument %u to decimal-only type-generic function"
-msgstr "argumento no válido para la función interna"
+msgstr "argumento binario %u para función de tipo genérico solo para decimales"
 
 #: c/c-parser.c:8728
-#, fuzzy, gcc-internal-format
-#| msgid "no matching function for call to %<%D(%A)%>"
+#, gcc-internal-format
 msgid "no matching function for type-generic call"
-msgstr "no hay una función coincidente para la llamada a %<%D(%A)%>"
+msgstr "no hay ninguna función coincidente para la llamada de tipo genérico"
 
 #: c/c-parser.c:8769
-#, fuzzy, gcc-internal-format
-#| msgid "wrong number of arguments to %<__builtin_choose_expr%>"
+#, gcc-internal-format
 msgid "wrong number of arguments to %<__builtin_call_with_static_chain%>"
-msgstr "número erróneo de argumentos para %<__builtin_choose_expr%>"
+msgstr "número erróneo de argumentos para %<__builtin_call_with_static_chain%>"
 
 #: c/c-parser.c:8782
-#, fuzzy, gcc-internal-format
-#| msgid "third argument to %<__builtin_prefetch%> must be a constant"
+#, gcc-internal-format
 msgid "first argument to %<__builtin_call_with_static_chain%> must be a call expression"
-msgstr "el tercer argumento de %<__builtin_prefetch%> debe ser una constante"
+msgstr "el primer argumento de %<__builtin_call_with_static_chain%> debe ser una expresión de llamada"
 
 #: c/c-parser.c:8786
-#, fuzzy, gcc-internal-format
-#| msgid "second argument to %<__builtin_prefetch%> must be a constant"
+#, gcc-internal-format
 msgid "second argument to %<__builtin_call_with_static_chain%> must be a pointer type"
-msgstr "el segundo argumento de %<__builtin_prefetch%> debe ser una constante"
+msgstr "el segundo argumento de %<__builtin_call_with_static_chain%> debe ser un tipo puntero"
 
 #: c/c-parser.c:8812
 #, gcc-internal-format

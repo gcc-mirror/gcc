@@ -1243,6 +1243,13 @@ Alphabetical List of All Switches
   :file:`scos.adb`.
 
 
+.. index:: -fgnat-encodings  (gcc)
+
+:switch:`-fgnat-encodings=[all|gdb|minimal]`
+  This switch controls the balance between GNAT encodings and standard DWARF
+  emitted in the debug information.
+
+
 .. index:: -flto  (gcc)
 
 :switch:`-flto[={n}]`
@@ -2081,7 +2088,7 @@ Alphabetical List of All Switches
 
 .. index:: -gnatR  (gcc)
 
-:switch:`-gnatR[0|1|2|3][e][j][m][s]`
+:switch:`-gnatR[0|1|2|3|4][e][j][m][s]`
   Output representation information for declared types, objects and
   subprograms. Note that this switch is not allowed if a previous
   :switch:`-gnatD` switch has been given, since these two switches
@@ -5843,13 +5850,14 @@ Debugging Control
 
 .. index:: -gnatR  (gcc)
 
-:switch:`-gnatR[0|1|2|3][e][j][m][s]`
+:switch:`-gnatR[0|1|2|3|4][e][j][m][s]`
   This switch controls output from the compiler of a listing showing
   representation information for declared types, objects and subprograms.
   For :switch:`-gnatR0`, no information is output (equivalent to omitting
   the :switch:`-gnatR` switch). For :switch:`-gnatR1` (which is the default,
   so :switch:`-gnatR` with no parameter has the same effect), size and
   alignment information is listed for declared array and record types.
+
   For :switch:`-gnatR2`, size and alignment information is listed for all
   declared types and objects. The ``Linker_Section`` is also listed for any
   entity for which the ``Linker_Section`` is set explicitly or implicitly (the
@@ -5862,9 +5870,13 @@ Debugging Control
   n'th discriminant. See source files :file:`repinfo.ads/adb` in the
   GNAT sources for full details on the format of :switch:`-gnatR3` output.
 
+  For :switch:`-gnatR4`, information for relevant compiler-generated types
+  is also listed, i.e. when they are structurally part of other declared
+  types and objects.
+
   If the switch is followed by an ``e`` (e.g. :switch:`-gnatR2e`), then
   extended representation information for record sub-components of records
-  are included.
+  is included.
 
   If the switch is followed by an ``m`` (e.g. :switch:`-gnatRm`), then
   subprogram conventions and parameter passing mechanisms for all the
@@ -5909,6 +5921,36 @@ Debugging Control
   including ``gnatfind`` and ``gnatxref``. The :switch:`-gnatx` switch
   suppresses this information. This saves some space and may slightly
   speed up compilation, but means that these tools cannot be used.
+
+
+.. index:: -fgnat-encodings  (gcc)
+
+:switch:`-fgnat-encodings=[all|gdb|minimal]`
+  This switch controls the balance between GNAT encodings and standard DWARF
+  emitted in the debug information.
+
+  Historically, old debug formats like stabs were not powerful enough to
+  express some Ada types (for instance, variant records or fixed-point types).
+  To work around this, GNAT introduced proprietary encodings that embed the
+  missing information ("GNAT encodings").
+
+  Recent versions of the DWARF debug information format are now able to
+  correctly describe most of these Ada constructs ("standard DWARF"). As
+  third-party tools started to use this format, GNAT has been enhanced to
+  generate it. However, most tools (including GDB) are still relying on GNAT
+  encodings.
+
+  To support all tools, GNAT needs to be versatile about the balance between
+  generation of GNAT encodings and standard DWARF. This is what
+  :switch:`-fgnat-encodings` is about.
+
+  * ``=all``: Emit all GNAT encodings, and then emit as much standard DWARF as
+    possible so it does not conflict with GNAT encodings.
+  * ``=gdb``: Emit as much standard DWARF as possible as long as the current
+    GDB handles it. Emit GNAT encodings for the rest.
+  * ``=minimal``: Emit as much standard DWARF as possible and emit GNAT
+    encodings for the rest.
+
 
 .. _Exception_Handling_Control:
 

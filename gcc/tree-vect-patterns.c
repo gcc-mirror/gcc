@@ -1,5 +1,5 @@
 /* Analysis Utilities for Loop Vectorization.
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by Dorit Nuzman <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -367,6 +367,7 @@ vect_look_through_possible_promotion (vec_info *vinfo, tree op,
   tree res = NULL_TREE;
   tree op_type = TREE_TYPE (op);
   unsigned int orig_precision = TYPE_PRECISION (op_type);
+  unsigned int min_precision = orig_precision;
   stmt_vec_info caster = NULL;
   while (TREE_CODE (op) == SSA_NAME && INTEGRAL_TYPE_P (op_type))
     {
@@ -385,7 +386,7 @@ vect_look_through_possible_promotion (vec_info *vinfo, tree op,
 	 This copes with cases such as the result of an arithmetic
 	 operation being truncated before being stored, and where that
 	 arithmetic operation has been recognized as an over-widened one.  */
-      if (TYPE_PRECISION (op_type) <= orig_precision)
+      if (TYPE_PRECISION (op_type) <= min_precision)
 	{
 	  /* Use OP as the UNPROM described above if we haven't yet
 	     found a promotion, or if using the new input preserves the
@@ -393,7 +394,10 @@ vect_look_through_possible_promotion (vec_info *vinfo, tree op,
 	  if (!res
 	      || TYPE_PRECISION (unprom->type) == orig_precision
 	      || TYPE_SIGN (unprom->type) == TYPE_SIGN (op_type))
-	    unprom->set_op (op, dt, caster);
+	    {
+	      unprom->set_op (op, dt, caster);
+	      min_precision = TYPE_PRECISION (op_type);
+	    }
 	  /* Stop if we've already seen a promotion and if this
 	     conversion does more than change the sign.  */
 	  else if (TYPE_PRECISION (op_type)
@@ -716,34 +720,60 @@ vect_convert_input (stmt_vec_info stmt_info, tree type,
   if (TREE_CODE (unprom->op) == INTEGER_CST)
     return wide_int_to_tree (type, wi::to_widest (unprom->op));
 
-  /* See if we can reuse an existing result.  */
+  tree input = unprom->op;
   if (unprom->caster)
     {
       tree lhs = gimple_get_lhs (unprom->caster->stmt);
-      if (types_compatible_p (TREE_TYPE (lhs), type))
-	return lhs;
+      tree lhs_type = TREE_TYPE (lhs);
+
+      /* If the result of the existing cast is the right width, use it
+	 instead of the source of the cast.  */
+      if (TYPE_PRECISION (lhs_type) == TYPE_PRECISION (type))
+	input = lhs;
+      /* If the precision we want is between the source and result
+	 precisions of the existing cast, try splitting the cast into
+	 two and tapping into a mid-way point.  */
+      else if (TYPE_PRECISION (lhs_type) > TYPE_PRECISION (type)
+	       && TYPE_PRECISION (type) > TYPE_PRECISION (unprom->type))
+	{
+	  /* In order to preserve the semantics of the original cast,
+	     give the mid-way point the same signedness as the input value.
+
+	     It would be possible to use a signed type here instead if
+	     TYPE is signed and UNPROM->TYPE is unsigned, but that would
+	     make the sign of the midtype sensitive to the order in
+	     which we process the statements, since the signedness of
+	     TYPE is the signedness required by just one of possibly
+	     many users.  Also, unsigned promotions are usually as cheap
+	     as or cheaper than signed ones, so it's better to keep an
+	     unsigned promotion.  */
+	  tree midtype = build_nonstandard_integer_type
+	    (TYPE_PRECISION (type), TYPE_UNSIGNED (unprom->type));
+	  tree vec_midtype = get_vectype_for_scalar_type (midtype);
+	  if (vec_midtype)
+	    {
+	      input = vect_recog_temp_ssa_var (midtype, NULL);
+	      gassign *new_stmt = gimple_build_assign (input, NOP_EXPR,
+						       unprom->op);
+	      if (!vect_split_statement (unprom->caster, input, new_stmt,
+					 vec_midtype))
+		append_pattern_def_seq (stmt_info, new_stmt, vec_midtype);
+	    }
+	}
+
+      /* See if we can reuse an existing result.  */
+      if (types_compatible_p (type, TREE_TYPE (input)))
+	return input;
     }
 
   /* We need a new conversion statement.  */
   tree new_op = vect_recog_temp_ssa_var (type, NULL);
-  gassign *new_stmt = gimple_build_assign (new_op, NOP_EXPR, unprom->op);
-
-  /* If the operation is the input to a vectorizable cast, try splitting
-     that cast into two, taking the required result as a mid-way point.  */
-  if (unprom->caster)
-    {
-      tree lhs = gimple_get_lhs (unprom->caster->stmt);
-      if (TYPE_PRECISION (TREE_TYPE (lhs)) > TYPE_PRECISION (type)
-	  && TYPE_PRECISION (type) > TYPE_PRECISION (unprom->type)
-	  && (TYPE_UNSIGNED (unprom->type) || !TYPE_UNSIGNED (type))
-	  && vect_split_statement (unprom->caster, new_op, new_stmt, vectype))
-	return new_op;
-    }
+  gassign *new_stmt = gimple_build_assign (new_op, NOP_EXPR, input);
 
   /* If OP is an external value, see if we can insert the new statement
      on an incoming edge.  */
-  if (unprom->dt == vect_external_def)
-    if (edge e = vect_get_external_def_edge (stmt_info->vinfo, unprom->op))
+  if (input == unprom->op && unprom->dt == vect_external_def)
+    if (edge e = vect_get_external_def_edge (stmt_info->vinfo, input))
       {
 	basic_block new_bb = gsi_insert_on_edge_immediate (e, new_stmt);
 	gcc_assert (!new_bb);
@@ -1640,28 +1670,37 @@ vect_recog_over_widening_pattern (stmt_vec_info last_stmt_info, tree *type_out)
   bool unsigned_p = (last_stmt_info->operation_sign == UNSIGNED);
   tree new_type = build_nonstandard_integer_type (new_precision, unsigned_p);
 
+  /* If we're truncating an operation, we need to make sure that we
+     don't introduce new undefined overflow.  The codes tested here are
+     a subset of those accepted by vect_truncatable_operation_p.  */
+  tree op_type = new_type;
+  if (TYPE_OVERFLOW_UNDEFINED (new_type)
+      && (code == PLUS_EXPR || code == MINUS_EXPR || code == MULT_EXPR))
+    op_type = build_nonstandard_integer_type (new_precision, true);
+
   /* We specifically don't check here whether the target supports the
      new operation, since it might be something that a later pattern
      wants to rewrite anyway.  If targets have a minimum element size
      for some optabs, we should pattern-match smaller ops to larger ops
      where beneficial.  */
   tree new_vectype = get_vectype_for_scalar_type (new_type);
-  if (!new_vectype)
+  tree op_vectype = get_vectype_for_scalar_type (op_type);
+  if (!new_vectype || !op_vectype)
     return NULL;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "demoting %T to %T\n",
 		     type, new_type);
 
-  /* Calculate the rhs operands for an operation on NEW_TYPE.  */
+  /* Calculate the rhs operands for an operation on OP_TYPE.  */
   tree ops[3] = {};
   for (unsigned int i = 1; i < first_op; ++i)
     ops[i - 1] = gimple_op (last_stmt, i);
   vect_convert_inputs (last_stmt_info, nops, &ops[first_op - 1],
-		       new_type, &unprom[0], new_vectype);
+		       op_type, &unprom[0], op_vectype);
 
-  /* Use the operation to produce a result of type NEW_TYPE.  */
-  tree new_var = vect_recog_temp_ssa_var (new_type, NULL);
+  /* Use the operation to produce a result of type OP_TYPE.  */
+  tree new_var = vect_recog_temp_ssa_var (op_type, NULL);
   gimple *pattern_stmt = gimple_build_assign (new_var, code,
 					      ops[0], ops[1], ops[2]);
   gimple_set_location (pattern_stmt, gimple_location (last_stmt));
@@ -1670,6 +1709,13 @@ vect_recog_over_widening_pattern (stmt_vec_info last_stmt_info, tree *type_out)
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "created pattern stmt: %G", pattern_stmt);
 
+  /* Convert back to the original signedness, if OP_TYPE is different
+     from NEW_TYPE.  */
+  if (op_type != new_type)
+    pattern_stmt = vect_convert_output (last_stmt_info, new_type,
+					pattern_stmt, op_vectype);
+
+  /* Promote the result to the original type.  */
   pattern_stmt = vect_convert_output (last_stmt_info, type,
 				      pattern_stmt, new_vectype);
 
@@ -1715,8 +1761,16 @@ vect_recog_average_pattern (stmt_vec_info last_stmt_info, tree *type_out)
   if (!INTEGRAL_TYPE_P (type) || target_precision >= TYPE_PRECISION (type))
     return NULL;
 
-  /* Get the definition of the shift input.  */
+  /* Look through any change in sign on the shift input.  */
   tree rshift_rhs = gimple_assign_rhs1 (last_stmt);
+  vect_unpromoted_value unprom_plus;
+  rshift_rhs = vect_look_through_possible_promotion (vinfo, rshift_rhs,
+						     &unprom_plus);
+  if (!rshift_rhs
+      || TYPE_PRECISION (TREE_TYPE (rshift_rhs)) != TYPE_PRECISION (type))
+    return NULL;
+
+  /* Get the definition of the shift input.  */
   stmt_vec_info plus_stmt_info = vect_get_internal_def (vinfo, rshift_rhs);
   if (!plus_stmt_info)
     return NULL;
@@ -4719,7 +4773,15 @@ vect_mark_pattern_stmts (stmt_vec_info orig_stmt_info, gimple *pattern_stmt,
   if (def_seq)
     for (gimple_stmt_iterator si = gsi_start (def_seq);
 	 !gsi_end_p (si); gsi_next (&si))
-      vect_init_pattern_stmt (gsi_stmt (si), orig_stmt_info, pattern_vectype);
+      {
+	stmt_vec_info pattern_stmt_info
+	  = vect_init_pattern_stmt (gsi_stmt (si),
+				    orig_stmt_info, pattern_vectype);
+	/* Stmts in the def sequence are not vectorizable cycle or
+	   induction defs, instead they should all be vect_internal_def
+	   feeding the main pattern stmt which retains this def type.  */
+	STMT_VINFO_DEF_TYPE (pattern_stmt_info) = vect_internal_def;
+      }
 
   if (orig_pattern_stmt)
     {

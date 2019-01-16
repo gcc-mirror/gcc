@@ -1,3 +1,105 @@
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2018-12-29  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* Makefile.am (xcoff_%.c): Use an actual newline instead of \n
+	in sed pattern.
+	* Makefile.in: Regenerate.
+
+2018-12-28  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (build_address_map): Reuse unused units.
+
+2018-12-28  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (build_address_map): Simplify by removing local variable
+	abbrevs.
+
+2018-12-28  Ian Lance Taylor  <iant@golang.org>
+	    Tom de Vries  <tdevries@suse.de>
+
+	PR libbacktrace/88063
+	* dwarf.c (free_unit_addrs_vector): Remove.
+	(build_address_map): Keep track of allocated units in vector.  Free
+	allocated units and corresponding abbrevs upon failure.  Remove now
+	redundant call to free_unit_addrs_vector.  Free addrs vector upon
+	failure.  Free allocated unit vector.
+
+2018-12-28  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (build_address_map): Free addrs vector upon failure.
+
+2018-12-14  Tom de Vries  <tdevries@suse.de>
+
+	PR testsuite/88491
+	* allocfail.sh: Remove "set -o pipefail".
+
+2018-12-12  Tom de Vries  <tdevries@suse.de>
+
+	* Makefile.am (TESTS): Add allocfail.sh.
+	(check_PROGRAMS): Add allocfail.
+	* Makefile.in: Regenerate.
+	* instrumented_alloc.c: New file.  Redefine malloc and realloc.
+	Include alloc.c.
+	* allocfail.c: New file.
+	* allocfail.sh: New file.
+
+2018-11-30  Tom de Vries  <tdevries@suse.de>
+
+	* Makefile.am (check_PROGRAMS): Add test_elf, test_xcoff_32,
+	test_xcoff_64, test_pecoff and test_unknown.
+	* Makefile.in: Regenerate.
+	* test_format.c: New file.
+
+2018-11-30  Tom de Vries  <tdevries@suse.de>
+
+	* Makefile.am : Add _with_alloc version for each test in
+	check_PROGRAMS.
+	* Makefile.in: Regenerate.
+
+2018-11-30  Tom de Vries  <tdevries@suse.de>
+
+	* internal.h (backtrace_vector_free): New static inline fuction,
+	factored out of ...
+	* dwarf.c (read_line_info): ... here.
+
+2018-11-28  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (read_abbrevs): Fix handling of abbrevs->abbrevs allocation
+	failure.
+
+2018-11-27  Tom de Vries  <tdevries@suse.de>
+
+	* mmap.c (backtrace_vector_release): Same.
+	* unittest.c (test1): Add check.
+
+2018-11-27  Tom de Vries  <tdevries@suse.de>
+
+	* alloc.c (backtrace_vector_release): Handle vec->size == 0 using free
+	instead of realloc.
+	* Makefile.am (check_PROGRAMS): Add unittest.
+	* Makefile.in: Regenerate.
+	* unittest.c: New file.
+
+2018-11-22  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (read_initial_length): Factor out of ...
+	(build_address_map, read_line_info): ... here.
+
+2018-11-21  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (read_string): Factor out of ...
+	(read_attribute, read_line_header, read_line_program): ... here.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* Makefile.am: Include multilib.am.
+	* configure.ac: Remove AC_PREREQ.  Use AC_LANG_SOURCE.
+	* Makefile.in, aclocal.m4, config.h.in, configure: Regenerate.
+
 2018-10-05  Ian Lance Taylor  <iant@golang.org>
 
 	PR libbacktrace/87529
@@ -955,7 +1057,7 @@
 
 	* Initial implementation.
 
-Copyright (C) 2012-2018 Free Software Foundation, Inc.
+Copyright (C) 2012-2019 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

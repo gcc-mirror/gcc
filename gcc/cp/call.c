@@ -1,5 +1,5 @@
 /* Functions related to invoking -*- C++ -*- methods and overloaded functions.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) and
    modified by Brendan Kehoe (brendan@cygnus.com).
 
@@ -166,8 +166,8 @@ static tree build_over_call (struct z_candidate *, int, tsubst_flags_t);
 		     /*c_cast_p=*/false, (COMPLAIN))
 static tree convert_like_real (conversion *, tree, tree, int, bool,
 			       bool, tsubst_flags_t);
-static void op_error (location_t, enum tree_code, enum tree_code, tree,
-		      tree, tree, bool);
+static void op_error (const op_location_t &, enum tree_code, enum tree_code,
+		      tree, tree, tree, bool);
 static struct z_candidate *build_user_type_conversion_1 (tree, tree, int,
 							 tsubst_flags_t);
 static void print_z_candidate (location_t, const char *, struct z_candidate *);
@@ -3251,6 +3251,12 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
       goto fail;
     }
 
+  /* Now the explicit specifier might have been deduced; check if this
+     declaration is explicit.  If it is and we're ignoring non-converting
+     constructors, don't add this function to the set of candidates.  */
+  if ((flags & LOOKUP_ONLYCONVERTING) && DECL_NONCONVERTING_P (fn))
+    return NULL;
+
   if (DECL_CONSTRUCTOR_P (fn) && nargs == 2)
     {
       tree arg_types = FUNCTION_FIRST_USER_PARMTYPE (fn);
@@ -4707,7 +4713,8 @@ op_error_string (const char *errmsg, int ntypes, bool match)
 }
 
 static void
-op_error (location_t loc, enum tree_code code, enum tree_code code2,
+op_error (const op_location_t &loc,
+	  enum tree_code code, enum tree_code code2,
 	  tree arg1, tree arg2, tree arg3, bool match)
 {
   bool assop = code == MODIFY_EXPR;
@@ -4761,8 +4768,12 @@ op_error (location_t loc, enum tree_code code, enum tree_code code2,
     default:
       if (arg2)
 	if (flag_diagnostics_show_caret)
-	  error_at (loc, op_error_string (G_("%<operator%s%>"), 2, match),
-		    opname, TREE_TYPE (arg1), TREE_TYPE (arg2));
+	  {
+	    binary_op_rich_location richloc (loc, arg1, arg2, true);
+	    error_at (&richloc,
+		      op_error_string (G_("%<operator%s%>"), 2, match),
+		      opname, TREE_TYPE (arg1), TREE_TYPE (arg2));
+	  }
 	else
 	  error_at (loc, op_error_string (G_("%<operator%s%> in %<%E %s %E%>"),
 					  2, match),
@@ -4861,7 +4872,8 @@ conditional_conversion (tree e1, tree e2, tsubst_flags_t complain)
    arguments to the conditional expression.  */
 
 static tree
-build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
+build_conditional_expr_1 (const op_location_t &loc,
+			  tree arg1, tree arg2, tree arg3,
                           tsubst_flags_t complain)
 {
   tree arg2_type;
@@ -5341,9 +5353,12 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
       if (TREE_CODE (arg2_type) == ENUMERAL_TYPE
 	  && TREE_CODE (arg3_type) == ENUMERAL_TYPE)
         {
-	  if (TREE_CODE (orig_arg2) == CONST_DECL
-	      && TREE_CODE (orig_arg3) == CONST_DECL
-	      && DECL_CONTEXT (orig_arg2) == DECL_CONTEXT (orig_arg3))
+	  tree stripped_orig_arg2 = tree_strip_any_location_wrapper (orig_arg2);
+	  tree stripped_orig_arg3 = tree_strip_any_location_wrapper (orig_arg3);
+	  if (TREE_CODE (stripped_orig_arg2) == CONST_DECL
+	      && TREE_CODE (stripped_orig_arg3) == CONST_DECL
+	      && (DECL_CONTEXT (stripped_orig_arg2)
+		  == DECL_CONTEXT (stripped_orig_arg3)))
 	    /* Two enumerators from the same enumeration can have different
 	       types when the enumeration is still being defined.  */;
           else if (complain & tf_warning)
@@ -5452,7 +5467,8 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 /* Wrapper for above.  */
 
 tree
-build_conditional_expr (location_t loc, tree arg1, tree arg2, tree arg3,
+build_conditional_expr (const op_location_t &loc,
+			tree arg1, tree arg2, tree arg3,
                         tsubst_flags_t complain)
 {
   tree ret;
@@ -5641,8 +5657,9 @@ op_is_ordered (tree_code code)
 }
 
 static tree
-build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
-		tree arg2, tree arg3, tree *overload, tsubst_flags_t complain)
+build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
+		tree arg1, tree arg2, tree arg3, tree *overload,
+		tsubst_flags_t complain)
 {
   struct z_candidate *candidates = 0, *cand;
   vec<tree, va_gc> *arglist;
@@ -6121,7 +6138,7 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
 /* Wrapper for above.  */
 
 tree
-build_new_op (location_t loc, enum tree_code code, int flags,
+build_new_op (const op_location_t &loc, enum tree_code code, int flags,
 	      tree arg1, tree arg2, tree arg3,
 	      tree *overload, tsubst_flags_t complain)
 {
@@ -6184,6 +6201,31 @@ aligned_allocation_fn_p (tree t)
   return (a && same_type_p (TREE_VALUE (a), align_type_node));
 }
 
+/* True if T is std::destroying_delete_t.  */
+
+static bool
+std_destroying_delete_t_p (tree t)
+{
+  return (TYPE_CONTEXT (t) == std_node
+	  && id_equal (TYPE_IDENTIFIER (t), "destroying_delete_t"));
+}
+
+/* A deallocation function with at least two parameters whose second parameter
+   type is of type std::destroying_delete_t is a destroying operator delete. A
+   destroying operator delete shall be a class member function named operator
+   delete. [ Note: Array deletion cannot use a destroying operator
+   delete. --end note ] */
+
+tree
+destroying_delete_p (tree t)
+{
+  tree a = TYPE_ARG_TYPES (TREE_TYPE (t));
+  if (!a || !TREE_CHAIN (a))
+    return NULL_TREE;
+  tree type = TREE_VALUE (TREE_CHAIN (a));
+  return std_destroying_delete_t_p (type) ? type : NULL_TREE;
+}
+
 /* Returns true iff T, an element of an OVERLOAD chain, is a usual deallocation
    function (3.7.4.2 [basic.stc.dynamic.deallocation]) with a parameter of
    std::align_val_t.  */
@@ -6201,6 +6243,8 @@ aligned_deallocation_fn_p (tree t)
     return false;
 
   tree a = FUNCTION_ARG_CHAIN (t);
+  if (destroying_delete_p (t))
+    a = TREE_CHAIN (a);
   if (same_type_p (TREE_VALUE (a), align_type_node)
       && TREE_CHAIN (a) == void_list_node)
     return true;
@@ -6236,6 +6280,8 @@ usual_deallocation_fn_p (tree t)
   tree chain = FUNCTION_ARG_CHAIN (t);
   if (!chain)
     return false;
+  if (destroying_delete_p (t))
+    chain = TREE_CHAIN (chain);
   if (chain == void_list_node
       || ((!global || flag_sized_deallocation)
 	  && second_parm_is_size_t (t)))
@@ -6301,6 +6347,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
     fns = lookup_name_nonclass (fnname);
 
   /* Strip const and volatile from addr.  */
+  tree oaddr = addr;
   addr = cp_convert (ptr_type_node, addr, complain);
 
   if (placement)
@@ -6478,9 +6525,24 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	}
       else
 	{
+	  tree destroying = destroying_delete_p (fn);
+	  if (destroying)
+	    {
+	      /* Strip const and volatile from addr but retain the type of the
+		 object.  */
+	      tree rtype = TREE_TYPE (TREE_TYPE (oaddr));
+	      rtype = cv_unqualified (rtype);
+	      rtype = TYPE_POINTER_TO (rtype);
+	      addr = cp_convert (rtype, oaddr, complain);
+	      destroying = build_functional_cast (destroying, NULL_TREE,
+						  complain);
+	    }
+
 	  tree ret;
 	  vec<tree, va_gc> *args = make_tree_vector ();
 	  args->quick_push (addr);
+	  if (destroying)
+	    args->quick_push (destroying);
 	  if (second_parm_is_size_t (fn))
 	    args->quick_push (size);
 	  if (aligned_deallocation_fn_p (fn))
@@ -6630,13 +6692,17 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
   if (null_node_p (expr) && TREE_CODE (totype) != BOOLEAN_TYPE
       && ARITHMETIC_TYPE_P (totype))
     {
-      source_location loc =
-	expansion_point_location_if_in_system_header (input_location);
-
+      location_t loc = EXPR_LOC_OR_LOC (expr, input_location);
+      loc = expansion_point_location_if_in_system_header (loc);
       if (fn)
-	warning_at (loc, OPT_Wconversion_null,
-		    "passing NULL to non-pointer argument %P of %qD",
-		    argnum, fn);
+	{
+	  auto_diagnostic_group d;
+	  if (warning_at (loc, OPT_Wconversion_null,
+			  "passing NULL to non-pointer argument %P of %qD",
+			  argnum, fn))
+	    inform (get_fndecl_argument_location (fn, argnum),
+		    "  declared here");
+	}
       else
 	warning_at (loc, OPT_Wconversion_null,
 		    "converting to non-pointer type %qT from NULL", totype);
@@ -6646,12 +6712,18 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
   else if (TREE_CODE (TREE_TYPE (expr)) == BOOLEAN_TYPE
 	   && TYPE_PTR_P (totype))
     {
+      location_t loc = EXPR_LOC_OR_LOC (expr, input_location);
       if (fn)
-	warning_at (input_location, OPT_Wconversion_null,
-		    "converting %<false%> to pointer type for argument %P "
-		    "of %qD", argnum, fn);
+	{
+	  auto_diagnostic_group d;
+	  if (warning_at (loc, OPT_Wconversion_null,
+			  "converting %<false%> to pointer type for argument "
+			  "%P of %qD", argnum, fn))
+	    inform (get_fndecl_argument_location (fn, argnum),
+		    "  declared here");
+	}
       else
-	warning_at (input_location, OPT_Wconversion_null,
+	warning_at (loc, OPT_Wconversion_null,
 		    "converting %<false%> to pointer type %qT", totype);
     }
   /* Handle zero as null pointer warnings for cases other
@@ -6659,7 +6731,7 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
   else if (null_ptr_cst_p (expr) &&
 	   (TYPE_PTR_OR_PTRMEM_P (totype) || NULLPTR_TYPE_P (totype)))
     {
-      source_location loc =
+      location_t loc =
        expansion_point_location_if_in_system_header (input_location);
       maybe_warn_zero_as_null_pointer_constant (expr, loc);
     }
@@ -6689,6 +6761,11 @@ maybe_print_user_conv_context (conversion *convs)
 location_t
 get_fndecl_argument_location (tree fndecl, int argnum)
 {
+  /* The locations of implicitly-declared functions are likely to be
+     more meaningful than those of their parameters.  */
+  if (DECL_ARTIFICIAL (fndecl))
+    return DECL_SOURCE_LOCATION (fndecl);
+
   int i;
   tree param;
 
@@ -6704,6 +6781,18 @@ get_fndecl_argument_location (tree fndecl, int argnum)
     return DECL_SOURCE_LOCATION (fndecl);
 
   return DECL_SOURCE_LOCATION (param);
+}
+
+/* If FNDECL is non-NULL, issue a note highlighting ARGNUM
+   within its declaration (or the fndecl itself if something went
+   wrong).  */
+
+void
+maybe_inform_about_fndecl_for_bogus_argument_init (tree fn, int argnum)
+{
+  if (fn)
+    inform (get_fndecl_argument_location (fn, argnum),
+	    "  initializing argument %P of %qD", argnum, fn);
 }
 
 /* Perform the conversions in CONVS on the expression EXPR.  FN and
@@ -6783,9 +6872,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 					     complain);
 	      else
 		expr = cp_convert (totype, expr, complain);
-	      if (complained && fn)
-		inform (DECL_SOURCE_LOCATION (fn),
-			"  initializing argument %P of %qD", argnum, fn);
+	      if (complained)
+		maybe_inform_about_fndecl_for_bogus_argument_init (fn, argnum);
 	      return expr;
 	    }
 	  else if (t->kind == ck_user || !t->bad_p)
@@ -6812,9 +6900,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 				  "invalid conversion from %qH to %qI",
 				  TREE_TYPE (expr), totype);
 	}
-      if (complained && fn)
-	inform (get_fndecl_argument_location (fn, argnum),
-		"  initializing argument %P of %qD", argnum, fn);
+      if (complained)
+	maybe_inform_about_fndecl_for_bogus_argument_init (fn, argnum);
 
       return cp_convert (totype, expr, complain);
     }
@@ -6936,9 +7023,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 		       ? LOOKUP_IMPLICIT : LOOKUP_NORMAL);
 	  build_user_type_conversion (totype, convs->u.expr, flags, complain);
 	  gcc_assert (seen_error ());
-	  if (fn)
-	    inform (DECL_SOURCE_LOCATION (fn),
-		    "  initializing argument %P of %qD", argnum, fn);
+	  maybe_inform_about_fndecl_for_bogus_argument_init (fn, argnum);
 	}
       return error_mark_node;
 
@@ -7032,9 +7117,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    {
 	      auto_diagnostic_group d;
 	      maybe_print_user_conv_context (convs);
-	      if (fn)
-		inform (DECL_SOURCE_LOCATION (fn),
-			"  initializing argument %P of %qD", argnum, fn);
+	      maybe_inform_about_fndecl_for_bogus_argument_init (fn, argnum);
 	    }
 	  return error_mark_node;
 	}
@@ -7085,9 +7168,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	{
 	  auto_diagnostic_group d;
 	  maybe_print_user_conv_context (convs);
-	  if (fn)
-	    inform (DECL_SOURCE_LOCATION (fn),
-		    "  initializing argument %P of %qD", argnum, fn);
+	  maybe_inform_about_fndecl_for_bogus_argument_init (fn, argnum);
 	}
 
       return build_cplus_new (totype, expr, complain);
@@ -7114,9 +7195,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    else
 	      gcc_unreachable ();
 	    maybe_print_user_conv_context (convs);
-	    if (fn)
-	      inform (DECL_SOURCE_LOCATION (fn),
-		      "  initializing argument %P of %qD", argnum, fn);
+	    maybe_inform_about_fndecl_for_bogus_argument_init (fn, argnum);
+
 	    return error_mark_node;
 	  }
 
@@ -7335,7 +7415,7 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
 /* va_arg (EXPR, TYPE) is a builtin. Make sure it is not abused.  */
 
 tree
-build_x_va_arg (source_location loc, tree expr, tree type)
+build_x_va_arg (location_t loc, tree expr, tree type)
 {
   if (processing_template_decl)
     {
@@ -7549,6 +7629,10 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
 	}
       maybe_warn_parm_abi (type, cp_expr_loc_or_loc (val, input_location));
     }
+
+  if (complain & tf_warning)
+    warn_for_address_or_pointer_of_packed_member (false, type, val);
+
   return val;
 }
 
@@ -8198,7 +8282,6 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
     {
       tree *fargs = (!nargs ? argarray
 			    : (tree *) alloca (nargs * sizeof (tree)));
-      auto_vec<location_t> arglocs (nargs);
       for (j = 0; j < nargs; j++)
 	{
 	  /* For -Wformat undo the implicit passing by hidden reference
@@ -8207,12 +8290,11 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	      && TYPE_REF_P (TREE_TYPE (argarray[j])))
 	    fargs[j] = TREE_OPERAND (argarray[j], 0);
 	  else
-	    fargs[j] = maybe_constant_value (argarray[j]);
-	  arglocs.quick_push (EXPR_LOC_OR_LOC (argarray[j], input_location));
+	    fargs[j] = argarray[j];
 	}
 
       warned_p = check_function_arguments (input_location, fn, TREE_TYPE (fn),
-					   nargs, fargs, &arglocs);
+					   nargs, fargs, NULL);
     }
 
   if (DECL_INHERITED_CTOR (fn))
@@ -9250,8 +9332,8 @@ complain_about_bad_argument (location_t arg_loc,
   error_at (&richloc,
 	    "cannot convert %qH to %qI",
 	    from_type, to_type);
-  inform (get_fndecl_argument_location (fndecl, parmnum),
-	  "  initializing argument %P of %qD", parmnum, fndecl);
+  maybe_inform_about_fndecl_for_bogus_argument_init (fndecl,
+						     parmnum);
 }
 
 /* Subroutine of build_new_method_call_1, for where there are no viable
@@ -11081,14 +11163,12 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
       tree name = mangle_ref_init_variable (decl);
       DECL_NAME (var) = name;
       SET_DECL_ASSEMBLER_NAME (var, name);
-
-      var = pushdecl (var);
     }
   else
     /* Create a new cleanup level if necessary.  */
     maybe_push_cleanup_level (type);
 
-  return var;
+  return pushdecl (var);
 }
 
 /* EXPR is the initializer for a variable DECL of reference or

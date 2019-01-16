@@ -1,6 +1,6 @@
 /* OpenACC Runtime initialization routines
 
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -153,8 +153,9 @@ acc_free (void *d)
     gomp_fatal ("error in freeing device memory in %s", __FUNCTION__);
 }
 
-void
-acc_memcpy_to_device (void *d, void *h, size_t s)
+static void
+memcpy_tofrom_device (bool from, void *d, void *h, size_t s, int async,
+		      const char *libfnname)
 {
   /* No need to call lazy open here, as the device pointer must have
      been obtained from a routine that did that.  */
@@ -164,31 +165,49 @@ acc_memcpy_to_device (void *d, void *h, size_t s)
 
   if (thr->dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
     {
-      memmove (d, h, s);
+      if (from)
+	memmove (h, d, s);
+      else
+	memmove (d, h, s);
       return;
     }
 
-  if (!thr->dev->host2dev_func (thr->dev->target_id, d, h, s))
-    gomp_fatal ("error in %s", __FUNCTION__);
+  if (async > acc_async_sync)
+    thr->dev->openacc.async_set_async_func (async);
+
+  bool ret = (from
+	      ? thr->dev->dev2host_func (thr->dev->target_id, h, d, s)
+	      : thr->dev->host2dev_func (thr->dev->target_id, d, h, s));
+
+  if (async > acc_async_sync)
+    thr->dev->openacc.async_set_async_func (acc_async_sync);
+
+  if (!ret)
+    gomp_fatal ("error in %s", libfnname);
+}
+
+void
+acc_memcpy_to_device (void *d, void *h, size_t s)
+{
+  memcpy_tofrom_device (false, d, h, s, acc_async_sync, __FUNCTION__);
+}
+
+void
+acc_memcpy_to_device_async (void *d, void *h, size_t s, int async)
+{
+  memcpy_tofrom_device (false, d, h, s, async, __FUNCTION__);
 }
 
 void
 acc_memcpy_from_device (void *h, void *d, size_t s)
 {
-  /* No need to call lazy open here, as the device pointer must have
-     been obtained from a routine that did that.  */
-  struct goacc_thread *thr = goacc_thread ();
+  memcpy_tofrom_device (true, d, h, s, acc_async_sync, __FUNCTION__);
+}
 
-  assert (thr && thr->dev);
-
-  if (thr->dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
-    {
-      memmove (h, d, s);
-      return;
-    }
-
-  if (!thr->dev->dev2host_func (thr->dev->target_id, h, d, s))
-    gomp_fatal ("error in %s", __FUNCTION__);
+void
+acc_memcpy_from_device_async (void *h, void *d, size_t s, int async)
+{
+  memcpy_tofrom_device (true, d, h, s, async, __FUNCTION__);
 }
 
 /* Return the device pointer that corresponds to host data H.  Or NULL
@@ -428,7 +447,7 @@ acc_unmap_data (void *h)
 #define FLAG_COPY (1 << 2)
 
 static void *
-present_create_copy (unsigned f, void *h, size_t s)
+present_create_copy (unsigned f, void *h, size_t s, int async)
 {
   void *d;
   splay_tree_key n;
@@ -490,10 +509,16 @@ present_create_copy (unsigned f, void *h, size_t s)
 
       gomp_mutex_unlock (&acc_dev->lock);
 
+      if (async > acc_async_sync)
+	acc_dev->openacc.async_set_async_func (async);
+
       tgt = gomp_map_vars (acc_dev, mapnum, &hostaddrs, NULL, &s, &kinds, true,
 			   GOMP_MAP_VARS_OPENACC);
       /* Initialize dynamic refcount.  */
       tgt->list[0].key->dynamic_refcount = 1;
+
+      if (async > acc_async_sync)
+	acc_dev->openacc.async_set_async_func (acc_async_sync);
 
       gomp_mutex_lock (&acc_dev->lock);
 
@@ -510,46 +535,63 @@ present_create_copy (unsigned f, void *h, size_t s)
 void *
 acc_create (void *h, size_t s)
 {
-  return present_create_copy (FLAG_PRESENT | FLAG_CREATE, h, s);
+  return present_create_copy (FLAG_PRESENT | FLAG_CREATE, h, s, acc_async_sync);
 }
 
-void *
-acc_copyin (void *h, size_t s)
+void
+acc_create_async (void *h, size_t s, int async)
 {
-  return present_create_copy (FLAG_PRESENT | FLAG_CREATE | FLAG_COPY, h, s);
+  present_create_copy (FLAG_PRESENT | FLAG_CREATE, h, s, async);
 }
 
+/* acc_present_or_create used to be what acc_create is now.  */
+/* acc_pcreate is acc_present_or_create by a different name.  */
+#ifdef HAVE_ATTRIBUTE_ALIAS
+strong_alias (acc_create, acc_present_or_create)
+strong_alias (acc_create, acc_pcreate)
+#else
 void *
 acc_present_or_create (void *h, size_t s)
 {
-  return present_create_copy (FLAG_PRESENT | FLAG_CREATE, h, s);
+  return acc_create (h, s);
 }
 
-/* acc_pcreate is acc_present_or_create by a different name.  */
-#ifdef HAVE_ATTRIBUTE_ALIAS
-strong_alias (acc_present_or_create, acc_pcreate)
-#else
 void *
 acc_pcreate (void *h, size_t s)
 {
-  return acc_present_or_create (h, s);
+  return acc_create (h, s);
 }
 #endif
 
 void *
-acc_present_or_copyin (void *h, size_t s)
+acc_copyin (void *h, size_t s)
 {
-  return present_create_copy (FLAG_PRESENT | FLAG_CREATE | FLAG_COPY, h, s);
+  return present_create_copy (FLAG_PRESENT | FLAG_CREATE | FLAG_COPY, h, s,
+			      acc_async_sync);
 }
 
+void
+acc_copyin_async (void *h, size_t s, int async)
+{
+  present_create_copy (FLAG_PRESENT | FLAG_CREATE | FLAG_COPY, h, s, async);
+}
+
+/* acc_present_or_copyin used to be what acc_copyin is now.  */
 /* acc_pcopyin is acc_present_or_copyin by a different name.  */
 #ifdef HAVE_ATTRIBUTE_ALIAS
-strong_alias (acc_present_or_copyin, acc_pcopyin)
+strong_alias (acc_copyin, acc_present_or_copyin)
+strong_alias (acc_copyin, acc_pcopyin)
 #else
+void *
+acc_present_or_copyin (void *h, size_t s)
+{
+  return acc_copyin (h, s);
+}
+
 void *
 acc_pcopyin (void *h, size_t s)
 {
-  return acc_present_or_copyin (h, s);
+  return acc_copyin (h, s);
 }
 #endif
 
@@ -557,7 +599,7 @@ acc_pcopyin (void *h, size_t s)
 #define FLAG_FINALIZE (1 << 1)
 
 static void
-delete_copyout (unsigned f, void *h, size_t s, const char *libfnname)
+delete_copyout (unsigned f, void *h, size_t s, int async, const char *libfnname)
 {
   size_t host_size;
   splay_tree_key n;
@@ -633,7 +675,13 @@ delete_copyout (unsigned f, void *h, size_t s, const char *libfnname)
 	}
 
       if (f & FLAG_COPYOUT)
-	acc_dev->dev2host_func (acc_dev->target_id, h, d, s);
+	{
+	  if (async > acc_async_sync)
+	    acc_dev->openacc.async_set_async_func (async);
+	  acc_dev->dev2host_func (acc_dev->target_id, h, d, s);
+	  if (async > acc_async_sync)
+	    acc_dev->openacc.async_set_async_func (acc_async_sync);
+	}
 
       gomp_remove_var (acc_dev, n);
     }
@@ -644,41 +692,54 @@ delete_copyout (unsigned f, void *h, size_t s, const char *libfnname)
 void
 acc_delete (void *h , size_t s)
 {
-  delete_copyout (0, h, s, __FUNCTION__);
+  delete_copyout (0, h, s, acc_async_sync, __FUNCTION__);
+}
+
+void
+acc_delete_async (void *h , size_t s, int async)
+{
+  delete_copyout (0, h, s, async, __FUNCTION__);
 }
 
 void
 acc_delete_finalize (void *h , size_t s)
 {
-  delete_copyout (FLAG_FINALIZE, h, s, __FUNCTION__);
+  delete_copyout (FLAG_FINALIZE, h, s, acc_async_sync, __FUNCTION__);
 }
 
 void
 acc_delete_finalize_async (void *h , size_t s, int async)
 {
-  delete_copyout (FLAG_FINALIZE, h, s, __FUNCTION__);
+  delete_copyout (FLAG_FINALIZE, h, s, async, __FUNCTION__);
 }
 
 void
 acc_copyout (void *h, size_t s)
 {
-  delete_copyout (FLAG_COPYOUT, h, s, __FUNCTION__);
+  delete_copyout (FLAG_COPYOUT, h, s, acc_async_sync, __FUNCTION__);
+}
+
+void
+acc_copyout_async (void *h, size_t s, int async)
+{
+  delete_copyout (FLAG_COPYOUT, h, s, async, __FUNCTION__);
 }
 
 void
 acc_copyout_finalize (void *h, size_t s)
 {
-  delete_copyout (FLAG_COPYOUT | FLAG_FINALIZE, h, s, __FUNCTION__);
+  delete_copyout (FLAG_COPYOUT | FLAG_FINALIZE, h, s, acc_async_sync,
+		  __FUNCTION__);
 }
 
 void
 acc_copyout_finalize_async (void *h, size_t s, int async)
 {
-  delete_copyout (FLAG_COPYOUT | FLAG_FINALIZE, h, s, __FUNCTION__);
+  delete_copyout (FLAG_COPYOUT | FLAG_FINALIZE, h, s, async, __FUNCTION__);
 }
 
 static void
-update_dev_host (int is_dev, void *h, size_t s)
+update_dev_host (int is_dev, void *h, size_t s, int async)
 {
   splay_tree_key n;
   void *d;
@@ -704,10 +765,16 @@ update_dev_host (int is_dev, void *h, size_t s)
   d = (void *) (n->tgt->tgt_start + n->tgt_offset
 		+ (uintptr_t) h - n->host_start);
 
+  if (async > acc_async_sync)
+    acc_dev->openacc.async_set_async_func (async);
+
   if (is_dev)
     acc_dev->host2dev_func (acc_dev->target_id, d, h, s);
   else
     acc_dev->dev2host_func (acc_dev->target_id, h, d, s);
+
+  if (async > acc_async_sync)
+    acc_dev->openacc.async_set_async_func (acc_async_sync);
 
   gomp_mutex_unlock (&acc_dev->lock);
 }
@@ -715,13 +782,25 @@ update_dev_host (int is_dev, void *h, size_t s)
 void
 acc_update_device (void *h, size_t s)
 {
-  update_dev_host (1, h, s);
+  update_dev_host (1, h, s, acc_async_sync);
+}
+
+void
+acc_update_device_async (void *h, size_t s, int async)
+{
+  update_dev_host (1, h, s, async);
 }
 
 void
 acc_update_self (void *h, size_t s)
 {
-  update_dev_host (0, h, s);
+  update_dev_host (0, h, s, acc_async_sync);
+}
+
+void
+acc_update_self_async (void *h, size_t s, int async)
+{
+  update_dev_host (0, h, s, async);
 }
 
 void

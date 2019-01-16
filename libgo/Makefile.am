@@ -1224,3 +1224,5 @@ clean-local:
 
 distclean-local:
 	find . -name '*.lo.dep' -print | xargs rm -f
+
+include $(top_srcdir)/../multilib.am

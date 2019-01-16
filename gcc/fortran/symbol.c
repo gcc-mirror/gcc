@@ -1,5 +1,5 @@
 /* Maintain binary trees of symbols.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -439,6 +439,9 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 
   const char *a1, *a2;
   int standard;
+
+  if (attr->artificial)
+    return true;
 
   if (where == NULL)
     where = &gfc_current_locus;

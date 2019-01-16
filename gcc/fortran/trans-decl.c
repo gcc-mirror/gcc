@@ -1,5 +1,5 @@
 /* Backend function setup
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -213,6 +213,7 @@ tree gfor_fndecl_size1;
 tree gfor_fndecl_iargc;
 tree gfor_fndecl_kill;
 tree gfor_fndecl_kill_sub;
+tree gfor_fndecl_is_contiguous0;
 
 
 /* Intrinsic functions implemented in Fortran.  */
@@ -3498,6 +3499,12 @@ gfc_build_intrinsic_function_decls (void)
   gfor_fndecl_kill = gfc_build_library_function_decl (
 	get_identifier (PREFIX ("kill")), gfc_int4_type_node,
 	2, gfc_int4_type_node, gfc_int4_type_node);
+
+  gfor_fndecl_is_contiguous0 = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("is_contiguous0")), ".R",
+	gfc_int4_type_node, 1, pvoid_type_node);
+  DECL_PURE_P (gfor_fndecl_is_contiguous0) = 1;
+  TREE_NOTHROW (gfor_fndecl_is_contiguous0) = 1;
 }
 
 
@@ -4825,7 +4832,11 @@ struct module_hasher : ggc_ptr_hash<module_htab_entry>
 {
   typedef const char *compare_type;
 
-  static hashval_t hash (module_htab_entry *s) { return htab_hash_string (s); }
+  static hashval_t hash (module_htab_entry *s)
+  {
+    return htab_hash_string (s->name);
+  }
+
   static bool
   equal (module_htab_entry *a, const char *b)
   {

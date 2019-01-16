@@ -1,3 +1,5 @@
+/* See also "../../gfortran.dg/goacc/loop-2-parallel.f95".  */
+
 void P(void)
 {
   int i, j;
@@ -115,16 +117,16 @@ void P(void)
   for (i = 0; i < 10; i++)
     { }
 
-#pragma acc parallel loop seq gang // { dg-error "'seq' overrides" "" { target c } }
-  for (i = 0; i < 10; i++) // { dg-error "'seq' overrides" "" { target c++ } }
+#pragma acc parallel loop seq gang // { dg-error "'seq' overrides" }
+  for (i = 0; i < 10; i++)
     { }
 
 #pragma acc parallel loop worker
   for (i = 0; i < 10; i++)
     { }
 
-#pragma acc parallel loop seq worker // { dg-error "'seq' overrides" "" { target c } }
-  for (i = 0; i < 10; i++) // { dg-error "'seq' overrides" "" { target c++ } }
+#pragma acc parallel loop seq worker // { dg-error "'seq' overrides" }
+  for (i = 0; i < 10; i++)
     { }
 #pragma acc parallel loop gang worker
   for (i = 0; i < 10; i++)
@@ -134,8 +136,8 @@ void P(void)
   for (i = 0; i < 10; i++)
     { }
 
-#pragma acc parallel loop seq vector // { dg-error "'seq' overrides" "" { target c } }
-  for (i = 0; i < 10; i++) // { dg-error "'seq' overrides" "" { target c++ } }
+#pragma acc parallel loop seq vector // { dg-error "'seq' overrides" }
+  for (i = 0; i < 10; i++)
     { }
 #pragma acc parallel loop gang vector
   for (i = 0; i < 10; i++)
@@ -147,16 +149,16 @@ void P(void)
 #pragma acc parallel loop auto
   for (i = 0; i < 10; i++)
     { }
-#pragma acc parallel loop seq auto // { dg-error "'seq' overrides" "" { target c } }
-  for (i = 0; i < 10; i++) // { dg-error "'seq' overrides" "" { target c++ } }
+#pragma acc parallel loop seq auto // { dg-error "'seq' overrides" }
+  for (i = 0; i < 10; i++)
     { }
-#pragma acc parallel loop gang auto // { dg-error "'auto' conflicts" "" { target c } }
-  for (i = 0; i < 10; i++) // { dg-error "'auto' conflicts" "" { target c++ } }
+#pragma acc parallel loop gang auto // { dg-error "'auto' conflicts" }
+  for (i = 0; i < 10; i++)
     { }
-#pragma acc parallel loop worker auto // { dg-error "'auto' conflicts" "" { target c } }
-  for (i = 0; i < 10; i++) // { dg-error "'auto' conflicts" "" { target c++ } }
+#pragma acc parallel loop worker auto // { dg-error "'auto' conflicts" }
+  for (i = 0; i < 10; i++)
     { }
-#pragma acc parallel loop vector auto // { dg-error "'auto' conflicts" "" { target c } }
-  for (i = 0; i < 10; i++) // { dg-error "'auto' conflicts" "" { target c++ } }
+#pragma acc parallel loop vector auto // { dg-error "'auto' conflicts" }
+  for (i = 0; i < 10; i++)
     { }
 }

@@ -1,0 +1,77 @@
+// test that the import of std.math is not needed
+
+__gshared uint x0 = 0;
+__gshared uint x1 = 1;
+__gshared uint x2 = 2;
+__gshared uint x3 = 3;
+__gshared uint x4 = 4;
+__gshared uint x5 = 5;
+__gshared uint x6 = 6;
+__gshared uint x7 = 7;
+__gshared uint x10 = 10;
+__gshared uint x15 = 15;
+__gshared uint x31 = 31;
+__gshared uint x32 = 32;
+
+void main()
+{
+    assert(2 ^^ x0 == 1);
+    assert(2 ^^ x1 == 2);
+    assert(2 ^^ x31 == 0x80000000);
+    assert(4 ^^ x0 == 1);
+    assert(4 ^^ x1 == 4);
+    assert(4 ^^ x15 == 0x40000000);
+    assert(8 ^^ x0 == 1);
+    assert(8 ^^ x1 == 8);
+    assert(8 ^^ x10 == 0x40000000);
+    assert(16 ^^ x0 == 1);
+    assert(16 ^^ x1 == 16);
+    assert(16 ^^ x7 == 0x10000000);
+    assert(32 ^^ x0 == 1);
+    assert(32 ^^ x1 == 32);
+    assert(32 ^^ x6 == 0x40000000);
+    assert(64 ^^ x0 == 1);
+    assert(64 ^^ x1 == 64);
+    assert(64 ^^ x5 == 0x40000000);
+    assert(128 ^^ x0 == 1);
+    assert(128 ^^ x1 == 128);
+    assert(128 ^^ x4 == 0x10000000);
+    assert(256 ^^ x0 == 1);
+    assert(256 ^^ x1 == 256);
+    assert(256 ^^ x3 == 0x1000000);
+    assert(512 ^^ x0 == 1);
+    assert(512 ^^ x1 == 512);
+    assert(512 ^^ x3 == 0x8000000);
+    assert(1024 ^^ x0 == 1);
+    assert(1024 ^^ x1 == 1024);
+    assert(1024 ^^ x3 == 0x40000000);
+    assert(2048 ^^ x0 == 1);
+    assert(2048 ^^ x1 == 2048);
+    assert(2048 ^^ x2 == 0x400000);
+    assert(4096 ^^ x0 == 1);
+    assert(4096 ^^ x1 == 4096);
+    assert(4096 ^^ x2 == 0x1000000);
+    assert(8192 ^^ x0 == 1);
+    assert(8192 ^^ x1 == 8192);
+    assert(8192 ^^ x2 == 0x4000000);
+    assert(16384 ^^ x0 == 1);
+    assert(16384 ^^ x1 == 16384);
+    assert(16384 ^^ x2 == 0x10000000);
+    assert(32768 ^^ x0 == 1);
+    assert(32768 ^^ x1 == 32768);
+    assert(32768 ^^ x2 == 0x40000000);
+    assert(65536 ^^ x0 == 1);
+    assert(65536 ^^ x1 == 65536);
+    assert(131072 ^^ x0 == 1);
+    assert(131072 ^^ x1 == 131072);
+    assert(262144 ^^ x0 == 1);
+    assert(262144 ^^ x1 == 262144);
+    assert(524288 ^^ x0 == 1);
+    assert(524288 ^^ x1 == 524288);
+    assert(1048576 ^^ x0 == 1);
+    assert(1048576 ^^ x1 == 1048576);
+    assert(2097152 ^^ x0 == 1);
+    assert(2097152 ^^ x1 == 2097152);
+    assert(4194304 ^^ x0 == 1);
+    assert(4194304 ^^ x1 == 4194304);
+}

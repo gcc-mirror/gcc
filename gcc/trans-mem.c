@@ -1,5 +1,5 @@
 /* Passes for transactional memory support.
-   Copyright (C) 2008-2018 Free Software Foundation, Inc.
+   Copyright (C) 2008-2019 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -265,20 +265,7 @@ is_tm_safe (const_tree x)
 static bool
 is_tm_pure_call (gimple *call)
 {
-  if (gimple_call_internal_p (call))
-    return (gimple_call_flags (call) & (ECF_CONST | ECF_TM_PURE)) != 0;
-
-  tree fn = gimple_call_fn (call);
-
-  if (TREE_CODE (fn) == ADDR_EXPR)
-    {
-      fn = TREE_OPERAND (fn, 0);
-      gcc_assert (TREE_CODE (fn) == FUNCTION_DECL);
-    }
-  else
-    fn = TREE_TYPE (fn);
-
-  return is_tm_pure (fn);
+  return (gimple_call_flags (call) & (ECF_CONST | ECF_TM_PURE)) != 0;
 }
 
 /* Return true if X has been marked TM_CALLABLE.  */
@@ -4859,7 +4846,7 @@ tm_mangle (tree old_asm_id)
 
   if (dc == NULL)
     {
-      char length[8];
+      char length[12];
 
     do_unencoded:
       sprintf (length, "%u", IDENTIFIER_LENGTH (old_asm_id));

@@ -1,5 +1,5 @@
 /* RTL dead store elimination.
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
    Contributed by Richard Sandiford <rsandifor@codesourcery.com>
    and Kenneth Zadeck <zadeck@naturalbridge.com>
@@ -1841,7 +1841,7 @@ get_stored_val (store_info *store_info, machine_mode read_mode,
   else
     gap = read_offset - store_info->offset;
 
-  if (maybe_ne (gap, 0))
+  if (gap.is_constant () && maybe_ne (gap, 0))
     {
       poly_int64 shift = gap * BITS_PER_UNIT;
       poly_int64 access_size = GET_MODE_SIZE (read_mode) + gap;

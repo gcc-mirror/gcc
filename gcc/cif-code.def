@@ -1,7 +1,7 @@
 /* This file contains the definitions of the cgraph_inline_failed_t
    enums used in GCC.
 
-   Copyright (C) 2008-2018 Free Software Foundation, Inc.
+   Copyright (C) 2008-2019 Free Software Foundation, Inc.
    Contributed by Doug Kwan <dougkwan@google.com>
 
 This file is part of GCC.
@@ -131,6 +131,12 @@ DEFCIFCODE(USES_COMDAT_LOCAL, CIF_FINAL_ERROR,
 /* We can't inline because of mismatched caller/callee attributes.  */
 DEFCIFCODE(ATTRIBUTE_MISMATCH, CIF_FINAL_ERROR,
 	   N_("function attribute mismatch"))
+
+/* We can't inline because the user requests only static functions
+   but the function has external linkage for live patching purpose.  */
+DEFCIFCODE(EXTERN_LIVE_ONLY_STATIC, CIF_FINAL_ERROR,
+	   N_("function has external linkage when the user requests only"
+	      " inlining static for live patching"))
 
 /* We proved that the call is unreachable.  */
 DEFCIFCODE(UNREACHABLE, CIF_FINAL_ERROR,

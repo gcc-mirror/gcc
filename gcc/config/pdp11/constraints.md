@@ -1,5 +1,5 @@
 ;;- Constraint definitions for the pdp11 for GNU C compiler
-;; Copyright (C) 2010-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2019 Free Software Foundation, Inc.
 ;; Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 ;; This file is part of GCC.
@@ -88,3 +88,32 @@
        (match_test "memory_address_p (GET_MODE (op), XEXP (op, 0))
                     && no_side_effect_operand (op, GET_MODE (op))")))
 
+;; What follows is a set of constraints used to prevent the generation
+;; of insns that have a register as source, and an auto-increment or
+;; auto-decrement memory reference as the destination where the register
+;; is the same as the source.  On the PDP11, such instructions are not
+;; implemented consistently across the models and often do something
+;; different from what the RTL intends.
+(define_register_constraint "Z0" "NOTR0_REG" "Register other than 0")
+(define_register_constraint "Z1" "NOTR1_REG" "Register other than 1")
+(define_register_constraint "Z2" "NOTR2_REG" "Register other than 2")
+(define_register_constraint "Z3" "NOTR3_REG" "Register other than 3")
+(define_register_constraint "Z4" "NOTR4_REG" "Register other than 4")
+(define_register_constraint "Z5" "NOTR5_REG" "Register other than 5")
+(define_register_constraint "Z6" "NOTSP_REG"
+  "Register other than stack pointer (register 6)")
+(define_memory_constraint "Za" "R0 push/pop"
+  (match_test "pushpop_regeq (op, 0)"))
+(define_memory_constraint "Zb" "R1 push/pop"
+  (match_test "pushpop_regeq (op, 1)"))
+(define_memory_constraint "Zc" "R2 push/pop"
+  (match_test "pushpop_regeq (op, 2)"))
+(define_memory_constraint "Zd" "R3 push/pop"
+  (match_test "pushpop_regeq (op, 3)"))
+(define_memory_constraint "Ze" "R4 push/pop"
+  (match_test "pushpop_regeq (op, 4)"))
+(define_memory_constraint "Zf" "R5 push/pop"
+  (match_test "pushpop_regeq (op, 5)"))
+(define_memory_constraint "Zg" "SP push/pop"
+  (match_test "pushpop_regeq (op, 6)"))
+  

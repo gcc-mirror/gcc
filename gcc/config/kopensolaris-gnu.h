@@ -1,5 +1,5 @@
 /* Definitions for kOpenSolaris-based GNU systems with ELF format
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
    Contributed by Robert Millan.
 
 This file is part of GCC.
@@ -29,6 +29,12 @@ along with GCC; see the file COPYING3.  If not see
 	builtin_assert ("system=posix");	\
     }						\
   while (0)
+
+#define GNU_USER_TARGET_D_OS_VERSIONS()		\
+    do {					\
+	builtin_version ("Solaris");		\
+	builtin_version ("CRuntime_Glibc");	\
+    } while (0)
 
 #undef GNU_USER_DYNAMIC_LINKER
 #define GNU_USER_DYNAMIC_LINKER "/lib/ld.so.1"

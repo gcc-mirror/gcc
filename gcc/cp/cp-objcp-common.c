@@ -1,5 +1,5 @@
 /* Some code common to C++ and ObjC++ front ends.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -446,6 +446,7 @@ cp_common_init_ts (void)
   MARK_TS_TYPED (UNARY_RIGHT_FOLD_EXPR);
   MARK_TS_TYPED (BINARY_LEFT_FOLD_EXPR);
   MARK_TS_TYPED (BINARY_RIGHT_FOLD_EXPR);
+  MARK_TS_TYPED (OMP_DEPOBJ);
 }
 
 #include "gt-cp-cp-objcp-common.h"

@@ -1,5 +1,5 @@
 /* Simple garbage collection for the GNU compiler.
-   Copyright (C) 1999-2018 Free Software Foundation, Inc.
+   Copyright (C) 1999-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -194,14 +194,6 @@ ggc_splay_dont_free (void * x ATTRIBUTE_UNUSED, void *nl)
 {
   gcc_assert (!nl);
 }
-
-/* Print statistics that are independent of the collector in use.  */
-#define SCALE(x) ((unsigned long) ((x) < 1024*10 \
-		  ? (x) \
-		  : ((x) < 1024*1024*10 \
-		     ? (x) / 1024 \
-		     : (x) / (1024*1024))))
-#define LABEL(x) ((x) < 1024*10 ? ' ' : ((x) < 1024*1024*10 ? 'k' : 'M'))
 
 void
 ggc_print_common_statistics (FILE *stream ATTRIBUTE_UNUSED,
@@ -890,16 +882,17 @@ struct ggc_usage: public mem_usage
   inline void
   dump (const char *prefix, ggc_usage &total) const
   {
-    long balance = get_balance ();
+    size_t balance = get_balance ();
     fprintf (stderr,
-	     "%-48s %10li:%5.1f%%%10li:%5.1f%%"
-	     "%10li:%5.1f%%%10li:%5.1f%%%10li\n",
-	     prefix, (long)m_collected,
+	     "%-48s " PRsa (9) ":%5.1f%%" PRsa (9) ":%5.1f%%"
+	     PRsa (9) ":%5.1f%%" PRsa (9) ":%5.1f%%" PRsa (9) "\n",
+	     prefix, SIZE_AMOUNT (m_collected),
 	     get_percent (m_collected, total.m_collected),
-	     (long)m_freed, get_percent (m_freed, total.m_freed),
-	     (long)balance, get_percent (balance, total.get_balance ()),
-	     (long)m_overhead, get_percent (m_overhead, total.m_overhead),
-	     (long)m_times);
+	     SIZE_AMOUNT (m_freed), get_percent (m_freed, total.m_freed),
+	     SIZE_AMOUNT (balance), get_percent (balance, total.get_balance ()),
+	     SIZE_AMOUNT (m_overhead),
+	     get_percent (m_overhead, total.m_overhead),
+	     SIZE_AMOUNT (m_times));
   }
 
   /* Dump usage coupled to LOC location, where TOTAL is sum of all rows.  */
@@ -923,7 +916,7 @@ struct ggc_usage: public mem_usage
   }
 
   /* Get balance which is GGC allocation leak.  */
-  inline long
+  inline size_t
   get_balance () const
   {
     return m_allocated + m_overhead - m_collected - m_freed;
@@ -938,10 +931,7 @@ struct ggc_usage: public mem_usage
     const mem_pair_t f = *(const mem_pair_t *)first;
     const mem_pair_t s = *(const mem_pair_t *)second;
 
-    if (*f.second == *s.second)
-      return 0;
-
-    return *f.second < *s.second ? 1 : -1;
+    return s.second->get_balance () - f.second->get_balance ();
   }
 
   /* Compare rows in final GGC summary dump.  */

@@ -72,6 +72,9 @@
 /* Define to 1 if you have the `atanl' function. */
 #undef HAVE_ATANL
 
+/* Define to 1 if the target supports __atomic_fetch_add */
+#undef HAVE_ATOMIC_FETCH_ADD
+
 /* Define to 1 if the target supports __attribute__((alias(...))). */
 #undef HAVE_ATTRIBUTE_ALIAS
 
@@ -729,20 +732,17 @@
 /* Define to 1 if you have the `strtold' function. */
 #undef HAVE_STRTOLD
 
-/* Define to 1 if `struct stat' is a member of `st_blksize'. */
+/* Define to 1 if `st_blksize' is a member of `struct stat'. */
 #undef HAVE_STRUCT_STAT_ST_BLKSIZE
 
-/* Define to 1 if `struct stat' is a member of `st_blocks'. */
+/* Define to 1 if `st_blocks' is a member of `struct stat'. */
 #undef HAVE_STRUCT_STAT_ST_BLOCKS
 
-/* Define to 1 if `struct stat' is a member of `st_rdev'. */
+/* Define to 1 if `st_rdev' is a member of `struct stat'. */
 #undef HAVE_STRUCT_STAT_ST_RDEV
 
 /* Define to 1 if you have the `symlink' function. */
 #undef HAVE_SYMLINK
-
-/* Define to 1 if the target supports __sync_fetch_and_add */
-#undef HAVE_SYNC_FETCH_AND_ADD
 
 /* Define to 1 if you have the <sys/random.h> header file. */
 #undef HAVE_SYS_RANDOM_H
@@ -865,9 +865,6 @@
    */
 #undef LT_OBJDIR
 
-/* Define to 1 if your C compiler doesn't accept -c and -o together. */
-#undef NO_MINUS_C_MINUS_O
-
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
 
@@ -931,6 +928,11 @@
 # undef __EXTENSIONS__
 #endif
 
+
+/* Enable large inode numbers on Mac OS X 10.5.  */
+#ifndef _DARWIN_USE_64_BIT_INODE
+# define _DARWIN_USE_64_BIT_INODE 1
+#endif
 
 /* Number of bits in a file offset, on hosts where this is settable. */
 #undef _FILE_OFFSET_BITS

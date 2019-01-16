@@ -1,6 +1,6 @@
 /* Handle modules, which amounts to loading and saving symbols and
    their attendant structures.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -2125,6 +2125,7 @@ DECL_MIO_NAME (procedure_type)
 DECL_MIO_NAME (ref_type)
 DECL_MIO_NAME (sym_flavor)
 DECL_MIO_NAME (sym_intent)
+DECL_MIO_NAME (inquiry_type)
 #undef DECL_MIO_NAME
 
 /* Symbol attributes are stored in list with the first three elements
@@ -3140,6 +3141,15 @@ static const mstring ref_types[] = {
     minit ("ARRAY", REF_ARRAY),
     minit ("COMPONENT", REF_COMPONENT),
     minit ("SUBSTRING", REF_SUBSTRING),
+    minit ("INQUIRY", REF_INQUIRY),
+    minit (NULL, -1)
+};
+
+static const mstring inquiry_types[] = {
+    minit ("RE", INQUIRY_RE),
+    minit ("IM", INQUIRY_IM),
+    minit ("KIND", INQUIRY_KIND),
+    minit ("LEN", INQUIRY_LEN),
     minit (NULL, -1)
 };
 
@@ -3169,6 +3179,10 @@ mio_ref (gfc_ref **rp)
       mio_expr (&r->u.ss.start);
       mio_expr (&r->u.ss.end);
       mio_charlen (&r->u.ss.length);
+      break;
+
+    case REF_INQUIRY:
+      r->u.i = MIO_NAME (inquiry_type) (r->u.i, inquiry_types);
       break;
     }
 
@@ -3697,7 +3711,6 @@ static void
 mio_namelist (gfc_symbol *sym)
 {
   gfc_namelist *n, *m;
-  const char *check_name;
 
   mio_lparen ();
 
@@ -3708,17 +3721,6 @@ mio_namelist (gfc_symbol *sym)
     }
   else
     {
-      /* This departure from the standard is flagged as an error.
-	 It does, in fact, work correctly. TODO: Allow it
-	 conditionally?  */
-      if (sym->attr.flavor == FL_NAMELIST)
-	{
-	  check_name = find_use_name (sym->name, false);
-	  if (check_name && strcmp (check_name, sym->name) != 0)
-	    gfc_error ("Namelist %s cannot be renamed by USE "
-		       "association to %s", sym->name, check_name);
-	}
-
       m = NULL;
       while (peek_atom () != ATOM_RPAREN)
 	{
@@ -5178,7 +5180,13 @@ read_module (void)
 	      if (p->u.pointer == NULL)
 		associate_integer_pointer (p, c);
 	      mio_pool_string (&comp_name);
-	      gcc_assert (comp_name == c->name);
+	      if (comp_name != c->name)
+		{
+		  gfc_fatal_error ("Mismatch in components of derived type "
+				   "%qs from %qs at %C: expecting %qs, "
+				   "but got %qs", sym->name, sym->module,
+				   c->name, comp_name);
+		}
 	      skip_list (1); /* component end.  */
 	    }
 	  mio_rparen (); /* component list closing.  */

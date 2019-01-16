@@ -1,5 +1,5 @@
 /* RTL reader for GCC.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -272,12 +272,15 @@ apply_subst_iterator (rtx rt, unsigned int, int value)
   rtx new_attr;
   rtvec attrs_vec, new_attrs_vec;
   int i;
-  if (value == 1)
+  /* define_split has no attributes.  */
+  if (value == 1 || GET_CODE (rt) == DEFINE_SPLIT)
     return;
   gcc_assert (GET_CODE (rt) == DEFINE_INSN
+	      || GET_CODE (rt) == DEFINE_INSN_AND_SPLIT
 	      || GET_CODE (rt) == DEFINE_EXPAND);
 
-  attrs_vec = XVEC (rt, 4);
+  int attrs = GET_CODE (rt) == DEFINE_INSN_AND_SPLIT ? 7 : 4;
+  attrs_vec = XVEC (rt, attrs);
 
   /* If we've already added attribute 'current_iterator_name', then we
      have nothing to do now.  */
@@ -309,7 +312,7 @@ apply_subst_iterator (rtx rt, unsigned int, int value)
 	      GET_NUM_ELEM (attrs_vec) * sizeof (rtx));
       new_attrs_vec->elem[GET_NUM_ELEM (attrs_vec)] = new_attr;
     }
-  XVEC (rt, 4) = new_attrs_vec;
+  XVEC (rt, attrs) = new_attrs_vec;
 }
 
 /* Map subst-attribute ATTR to subst iterator ITER.  */

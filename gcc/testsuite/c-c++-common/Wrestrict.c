@@ -262,8 +262,13 @@ void test_memcpy_range (char *d, size_t sz)
   {
     /* Create an offset in the range [0, -1].  */
     size_t o = sz << 1;
+#if __SIZEOF_SIZE_T__ < 4
+    T (d, d + o, 1234);
+    T (d + o, d, 2345);
+#else
     T (d, d + o, 12345);
     T (d + o, d, 23456);
+#endif
   }
 
   /* Exercise memcpy with both destination and source pointer offsets

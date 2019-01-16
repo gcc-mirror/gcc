@@ -1,3 +1,11 @@
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* config/go.m4: Remove file.
+	* Makefile.am (ACLOCAL_AMFLAGS): Do not use -I ./config.
+	* configure.ac:  Remove AC_PREREQ.  Do not include config/go.m4.
+	* Makefile.in, aclocal.m4, configure: Regenerate.
+
 2018-09-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.am (mostlyclean-local): Ignore chmod errors.

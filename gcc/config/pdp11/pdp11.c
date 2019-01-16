@@ -1,5 +1,5 @@
 /* Subroutines for gcc2 for pdp11.
-   Copyright (C) 1994-2018 Free Software Foundation, Inc.
+   Copyright (C) 1994-2019 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GCC.
@@ -304,6 +304,9 @@ static bool pdp11_scalar_mode_supported_p (scalar_mode);
 
 #undef TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
+#undef  TARGET_STACK_PROTECT_RUNTIME_ENABLED_P
+#define TARGET_STACK_PROTECT_RUNTIME_ENABLED_P hook_bool_void_false
 
 /* A helper function to determine if REGNO should be saved in the
    current function's stack frame.  */
@@ -316,6 +319,13 @@ pdp11_saved_regno (unsigned regno)
 
 /* Expand the function prologue.  */
 
+/* Frame layout, from high to low memory (stack push order):
+   return address (from jsr instruction)
+   saved CPU registers, lowest number first
+   saved FPU registers, lowest number first, always 64 bit mode
+   *** frame pointer points here ***
+   local variables
+   alloca storage if any.  */
 void
 pdp11_expand_prologue (void)
 {							       
@@ -331,31 +341,9 @@ pdp11_expand_prologue (void)
       emit_insn (gen_seti ());
     }
     
-  if (frame_pointer_needed) 					
-    {								
-      x = gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx);
-      x = gen_frame_mem (Pmode, x);
-      emit_move_insn (x, hard_frame_pointer_rtx);
-
-      emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
-    }								
-
-  /* Make frame.  */
-  if (fsize)
-    {
-      emit_insn (gen_addhi3 (stack_pointer_rtx, stack_pointer_rtx,
-			     GEN_INT (-fsize)));
-
-      /* Prevent frame references via the frame pointer from being
-	 scheduled before the frame is allocated.  */
-      if (frame_pointer_needed)
-	emit_insn (gen_blockage ());
-    }
-
   /* Save CPU registers.  */
   for (regno = R0_REGNUM; regno <= PC_REGNUM; regno++)
-    if (pdp11_saved_regno (regno)
-	&& (regno != HARD_FRAME_POINTER_REGNUM || !frame_pointer_needed))
+    if (pdp11_saved_regno (regno))
       {
 	x = gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx);
 	x = gen_frame_mem (Pmode, x);
@@ -383,25 +371,21 @@ pdp11_expand_prologue (void)
 	x = gen_frame_mem (DFmode, x);
 	emit_move_insn (x, via_ac);
       }
+
+  if (frame_pointer_needed)
+    emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
+
+  /* Make local variable space.  */
+  if (fsize)
+    emit_insn (gen_addhi3 (stack_pointer_rtx, stack_pointer_rtx,
+			   GEN_INT (-fsize)));
 }
 
-/* The function epilogue should not depend on the current stack pointer!
-   It should use the frame pointer only.  This is mandatory because
-   of alloca; we also take advantage of it to omit stack adjustments
-   before returning.  */
-
-/* Maybe we can make leaf functions faster by switching to the
-   second register file - this way we don't have to save regs!
-   leaf functions are ~ 50% of all functions (dynamically!) 
-
-   set/clear bit 11 (dec. 2048) of status word for switching register files - 
-   but how can we do this? the pdp11/45 manual says bit may only 
-   be set (p.24), but not cleared!
-
-   switching to kernel is probably more expensive, so we'll leave it 
-   like this and not use the second set of registers... 
-
-   maybe as option if you want to generate code for kernel mode? */
+/* Generate epilogue.  This uses the frame pointer to pop the local
+   variables and any alloca data off the stack.  If there is no alloca
+   and frame pointer elimination hasn't been disabled, there is no
+   frame pointer and the local variables are popped by adjusting the
+   stack pointer instead.  */
 
 void
 pdp11_expand_epilogue (void)
@@ -410,6 +394,20 @@ pdp11_expand_epilogue (void)
   unsigned regno;
   rtx x, reg, via_ac = NULL;
 
+  /* Deallocate the local variables.  */
+  if (fsize)
+    {
+      if (frame_pointer_needed)
+	{
+	  /* We can deallocate the frame with a single move.  */
+	  emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
+	}
+      else
+	emit_insn (gen_addhi3 (stack_pointer_rtx, stack_pointer_rtx,
+			       GEN_INT (fsize)));
+    }
+
+  /* Restore the FPU registers.  */
   if (pdp11_saved_regno (AC4_REGNUM) || pdp11_saved_regno (AC5_REGNUM))
     {
       /* Find a temporary with which to restore AC4/5.  */
@@ -421,109 +419,33 @@ pdp11_expand_epilogue (void)
 	  }
     }
 
-  /* If possible, restore registers via pops.  */
-  if (!frame_pointer_needed || crtl->sp_is_unchanging)
-    {
-      /* Restore registers via pops.  */
+  /* Restore registers via pops.  */
 
-      for (regno = AC5_REGNUM; regno >= AC0_REGNUM; regno--)
-	if (pdp11_saved_regno (regno))
+  for (regno = AC5_REGNUM; regno >= AC0_REGNUM; regno--)
+    if (pdp11_saved_regno (regno))
+      {
+	x = gen_rtx_POST_INC (Pmode, stack_pointer_rtx);
+	x = gen_frame_mem (DFmode, x);
+	reg = gen_rtx_REG (DFmode, regno);
+
+	if (LOAD_FPU_REG_P (regno))
+	  emit_move_insn (reg, x);
+	else
 	  {
-	    x = gen_rtx_POST_INC (Pmode, stack_pointer_rtx);
-	    x = gen_frame_mem (DFmode, x);
-	    reg = gen_rtx_REG (DFmode, regno);
-
-	    if (LOAD_FPU_REG_P (regno))
-	      emit_move_insn (reg, x);
-	    else
-	      {
-		emit_move_insn (via_ac, x);
-		emit_move_insn (reg, via_ac);
-	      }
+	    emit_move_insn (via_ac, x);
+	    emit_move_insn (reg, via_ac);
 	  }
+      }
 
-      for (regno = PC_REGNUM; regno >= R0_REGNUM + 2; regno--)
-	if (pdp11_saved_regno (regno)
-	    && (regno != HARD_FRAME_POINTER_REGNUM || !frame_pointer_needed))
-	  {
-	    x = gen_rtx_POST_INC (Pmode, stack_pointer_rtx);
-	    x = gen_frame_mem (Pmode, x);
-	    emit_move_insn (gen_rtx_REG (Pmode, regno), x);
-	  }
-    }
-  else
-    {
-      /* Restore registers via moves.  */
-      /* ??? If more than a few registers need to be restored, it's smaller
-	 to generate a pointer through which we can emit pops.  Consider
-	 that moves cost 2*NREG words and pops cost NREG+3 words.  This
-	 means that the crossover is NREG=3.
+  for (regno = PC_REGNUM; regno >= R0_REGNUM + 2; regno--)
+    if (pdp11_saved_regno (regno))
+      {
+	x = gen_rtx_POST_INC (Pmode, stack_pointer_rtx);
+	x = gen_frame_mem (Pmode, x);
+	emit_move_insn (gen_rtx_REG (Pmode, regno), x);
+      }
 
-	 Possible registers to use are:
-	  (1) The first call-saved general register.  This register will
-		be restored with the last pop.
-	  (2) R1, if it's not used as a return register.
-	  (3) FP itself.  This option may result in +4 words, since we
-		may need two add imm,rn instructions instead of just one.
-		This also has the downside that we're not representing
-		the unwind info in any way, so during the epilogue the
-		debugger may get lost.  */
-
-      HOST_WIDE_INT ofs = -pdp11_sp_frame_offset ();
-
-      for (regno = AC5_REGNUM; regno >= AC0_REGNUM; regno--)
-	if (pdp11_saved_regno (regno))
-	  {
-	    x = plus_constant (Pmode, hard_frame_pointer_rtx, ofs);
-	    x = gen_frame_mem (DFmode, x);
-	    reg = gen_rtx_REG (DFmode, regno);
-
-	    if (LOAD_FPU_REG_P (regno))
-	      emit_move_insn (reg, x);
-	    else
-	      {
-	        emit_move_insn (via_ac, x);
-		emit_move_insn (reg, via_ac);
-	      }
-	    ofs += 8;
-	  }
-
-      for (regno = PC_REGNUM; regno >= R0_REGNUM + 2; regno--)
-	if (pdp11_saved_regno (regno)
-	    && (regno != HARD_FRAME_POINTER_REGNUM || !frame_pointer_needed))
-	  {
-	    x = plus_constant (Pmode, hard_frame_pointer_rtx, ofs);
-	    x = gen_frame_mem (Pmode, x);
-	    emit_move_insn (gen_rtx_REG (Pmode, regno), x);
-	    ofs += 2;
-	  }
-    }
-
-  /* Deallocate the stack frame.  */
-  if (fsize)
-    {
-      /* Prevent frame references via any pointer from being
-	 scheduled after the frame is deallocated.  */
-      emit_insn (gen_blockage ());
-
-      if (frame_pointer_needed)
-	{
-	  /* We can deallocate the frame with a single move.  */
-	  emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx);
-	}
-      else
-	emit_insn (gen_addhi3 (stack_pointer_rtx, stack_pointer_rtx,
-			       GEN_INT (fsize)));
-    }
-
-  if (frame_pointer_needed)
-    {
-      x = gen_rtx_POST_INC (Pmode, stack_pointer_rtx);
-      x = gen_frame_mem (Pmode, x);
-      emit_move_insn (hard_frame_pointer_rtx, x);
-    }
-
-  emit_jump_insn (gen_return ());
+  emit_jump_insn (gen_rtspc ());
 }
 
 /* Return the best assembler insn template
@@ -539,20 +461,22 @@ singlemove_string (rtx *operands)
 
 
 /* Expand multi-word operands (SImode or DImode) into the 2 or 4
-   corresponding HImode operands.  The number of operands is given
-   as the third argument, and the required order of the parts as
-   the fourth argument.  */
+   corresponding HImode operands.  The number of operands is given as
+   the third argument, the word count for the mode as the fourth
+   argument, and the required order of parts as the sixth argument.
+   The word count is explicit because sometimes we're asked to compare
+   two constants, both of which have mode VOIDmode, so we can't always
+   rely on the input operand mode to imply the operand size.  */
 bool
-pdp11_expand_operands (rtx *operands, rtx exops[][2], int opcount, 
+pdp11_expand_operands (rtx *operands, rtx exops[][2],
+		       int opcount, int words,
 		       pdp11_action *action, pdp11_partorder order)
 {
-  int words, op, w, i, sh;
+  int op, w, i, sh;
   pdp11_partorder useorder;
   bool sameoff = false;
   enum { REGOP, OFFSOP, MEMOP, PUSHOP, POPOP, CNSTOP, RNDOP } optype;
   long sval[2];
-  
-  words = GET_MODE_BITSIZE (GET_MODE (operands[0])) / 16;
   
   /* If either piece order is accepted and one is pre-decrement
      while the other is post-increment, set order to be high order
@@ -566,19 +490,16 @@ pdp11_expand_operands (rtx *operands, rtx exops[][2], int opcount,
   useorder = either;
   if (opcount == 2)
     {
-      if (!REG_P (operands[0]) && !REG_P (operands[1]) &&
-	  !(CONSTANT_P (operands[1]) || 
-	    GET_CODE (operands[1]) == CONST_DOUBLE) &&
+      if (GET_CODE (operands[0]) == MEM &&
+	  GET_CODE (operands[1]) == MEM &&
 	  ((GET_CODE (XEXP (operands[0], 0)) == POST_INC &&
 	    GET_CODE (XEXP (operands[1], 0)) == PRE_DEC) ||
 	   (GET_CODE (XEXP (operands[0], 0)) == PRE_DEC &&
 	    GET_CODE (XEXP (operands[1], 0)) == POST_INC)))
 	    useorder = big;
-      else if ((!REG_P (operands[0]) &&
+      else if ((GET_CODE (operands[0]) == MEM &&
 		GET_CODE (XEXP (operands[0], 0)) == PRE_DEC) ||
-	       (!REG_P (operands[1]) &&
-		!(CONSTANT_P (operands[1]) || 
-		  GET_CODE (operands[1]) == CONST_DOUBLE) &&
+	       (GET_CODE (operands[1]) == MEM &&
 		GET_CODE (XEXP (operands[1], 0)) == PRE_DEC))
 	useorder = little;
       else if (REG_P (operands[0]) && REG_P (operands[1]) &&
@@ -615,7 +536,7 @@ pdp11_expand_operands (rtx *operands, rtx exops[][2], int opcount,
       /* First classify the operand.  */
       if (REG_P (operands[op]))
 	optype = REGOP;
-      else if (CONSTANT_P (operands[op])
+      else if (CONST_INT_P (operands[op])
 	       || GET_CODE (operands[op]) == CONST_DOUBLE)
 	optype = CNSTOP;
       else if (GET_CODE (XEXP (operands[op], 0)) == POST_INC)
@@ -663,8 +584,11 @@ pdp11_expand_operands (rtx *operands, rtx exops[][2], int opcount,
 	}
 
       if (GET_CODE (operands[op]) == CONST_DOUBLE)
-	REAL_VALUE_TO_TARGET_DOUBLE
-	  (*CONST_DOUBLE_REAL_VALUE (operands[op]), sval);
+	{
+	  gcc_assert (GET_MODE (operands[op]) != VOIDmode);
+	  REAL_VALUE_TO_TARGET_DOUBLE
+	    (*CONST_DOUBLE_REAL_VALUE (operands[op]), sval);
+	}
       
       for (i = 0; i < words; i++)
 	{
@@ -707,24 +631,31 @@ pdp11_expand_operands (rtx *operands, rtx exops[][2], int opcount,
 const char *
 output_move_multiple (rtx *operands)
 {
+  rtx inops[2];
   rtx exops[4][2];
+  rtx adjops[2];
+  
   pdp11_action action[2];
   int i, words;
   
   words = GET_MODE_BITSIZE (GET_MODE (operands[0])) / 16;
+  adjops[1] = gen_rtx_CONST_INT (HImode, words * 2);
 
-  pdp11_expand_operands (operands, exops, 2, action, either);
+  inops[0] = operands[0];
+  inops[1] = operands[1];
+  
+  pdp11_expand_operands (inops, exops, 2, words, action, either);
   
   /* Check for explicit decrement before.  */
   if (action[0] == dec_before)
     {
-      operands[0] = XEXP (operands[0], 0);
-      output_asm_insn ("sub\t%#4,%0", operands);
+      adjops[0] = XEXP (XEXP (operands[0], 0), 0);
+      output_asm_insn ("sub\t%1,%0", adjops);
     }
   if (action[1] == dec_before)
     {
-      operands[1] = XEXP (operands[1], 0);
-      output_asm_insn ("sub\t%#4,%1", operands);
+      adjops[0] = XEXP (XEXP (operands[1], 0), 0);
+      output_asm_insn ("sub\t%1,%0", adjops);
     }
 
   /* Do the words.  */
@@ -734,13 +665,13 @@ output_move_multiple (rtx *operands)
   /* Check for increment after.  */
   if (action[0] == inc_after)
     {
-      operands[0] = XEXP (operands[0], 0);
-      output_asm_insn ("add\t%#4,%0", operands);
+      adjops[0] = XEXP (XEXP (operands[0], 0), 0);
+      output_asm_insn ("add\t%1,%0", adjops);
     }
   if (action[1] == inc_after)
     {
-      operands[1] = XEXP (operands[1], 0);
-      output_asm_insn ("add\t%#4,%1", operands);
+      adjops[0] = XEXP (XEXP (operands[1], 0), 0);
+      output_asm_insn ("add\t%1,%0", adjops);
     }
 
   return "";
@@ -752,9 +683,9 @@ pdp11_gen_int_label (char *label, const char *prefix, int num)
 {
   if (TARGET_DEC_ASM)
     /* +1 because GCC numbers labels starting at zero.  */
-    sprintf (label, "*%lu$", num + 1);
+    sprintf (label, "*%u$", num + 1);
   else
-    sprintf (label, "*%s_%lu", prefix, num);
+    sprintf (label, "*%s_%u", prefix, num);
 }
   
 /* Output an ascii string.  */
@@ -780,7 +711,7 @@ output_ascii (FILE *file, const char *p, int size)
 	    {
 	      if (delim)
 		putc ('"', file);
-	      fprintf (file, "<%o%>", c);
+	      fprintf (file, "<%o>", c);
 	      delim = false;
 	    }
 	  else
@@ -815,15 +746,30 @@ pdp11_asm_output_var (FILE *file, const char *name, int size,
 {
   if (align > 8)
     fprintf (file, "\t.even\n");
-  if (global)
+  if (TARGET_DEC_ASM)
     {
-      fprintf (file, ".globl ");
       assemble_name (file, name);
+      if (global)
+	fputs ("::", file);
+      else
+	fputs (":", file);
+      if (align > 8)
+	fprintf (file, "\t.blkw\t%o\n", (size & 0xffff) / 2);
+      else
+	fprintf (file, "\t.blkb\t%o\n", size & 0xffff);
     }
-  fprintf (file, "\n");
-  assemble_name (file, name);
-  fputs (":", file);
-  ASM_OUTPUT_SKIP (file, size);
+  else
+    {
+      if (global)
+	{
+	  fprintf (file, ".globl ");
+	  assemble_name (file, name);
+	}
+      fprintf (file, "\n");
+      assemble_name (file, name);
+      fputs (":", file);
+      ASM_OUTPUT_SKIP (file, size);
+    }  
 }
 
 /* Special format operators handled here:
@@ -855,7 +801,7 @@ pdp11_asm_print_operand (FILE *file, rtx x, int code)
     fprintf (file, "%s", reg_names[REGNO (x)]);
   else if (GET_CODE (x) == MEM)
     output_address (GET_MODE (x), XEXP (x, 0));
-  else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) != SImode)
+  else if (GET_CODE (x) == CONST_DOUBLE && FLOAT_MODE_P (GET_MODE (x)))
     {
       REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (x), sval);
       if (TARGET_DEC_ASM)
@@ -1013,8 +959,7 @@ static int
 pdp11_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 			  reg_class_t c1, reg_class_t c2)
 {
-  if (((c1 == MUL_REGS || c1 == GENERAL_REGS) &&
-       (c2 == MUL_REGS || c2 == GENERAL_REGS)))
+  if (CPU_REG_CLASS (c1) && CPU_REG_CLASS (c2))
     return 2;
   else if ((c1 >= LOAD_FPU_REGS && c1 <= FPU_REGS && c2 == LOAD_FPU_REGS) ||
 	   (c2 >= LOAD_FPU_REGS && c2 <= FPU_REGS && c1 == LOAD_FPU_REGS))
@@ -1512,50 +1457,32 @@ no_side_effect_operand(rtx op, machine_mode mode ATTRIBUTE_UNUSED)
   return FALSE;
 }
 
-
-/*
- * expand a block move:
- *
- * operands[0]	... to
- * operands[1]  ... from
- * operands[2]  ... length
- * operands[3]  ... alignment
- */
-
-void
-expand_block_move(rtx *operands)
+/* Return TRUE if op is a push or pop using the register "regno".  */
+bool
+pushpop_regeq (rtx op, int regno)
 {
-    rtx lb, test;
-    rtx fromop, toop, counter;
-    int count;
+  rtx addr;
+  
+  /* False if not memory reference.  */
+  if (GET_CODE (op) != MEM)
+    return FALSE;
+  
+  /* Get the address of the memory reference.  */
+  addr = XEXP (op, 0);
 
-    /* Transform BLKmode MEM reference into a (reg)+ operand.  */
-    toop = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
-    toop = gen_rtx_POST_INC (Pmode, toop);
-    fromop = copy_to_mode_reg (Pmode, XEXP (operands[1], 0));
-    fromop = gen_rtx_POST_INC (Pmode, fromop);
-
-    count = INTVAL (operands[2]);
-    if (INTVAL (operands [3]) >= 2 && (count & 1) == 0)
-      {
-	count >>= 1;
-	toop = gen_rtx_MEM (HImode, toop);
-	fromop = gen_rtx_MEM (HImode, fromop);
-      }
-    else
-      {
-	toop = gen_rtx_MEM (QImode, toop);
-	fromop = gen_rtx_MEM (QImode, fromop);
-      }
-    counter = copy_to_mode_reg (HImode, gen_rtx_CONST_INT (HImode, count));
-
-    /* Label at top of loop */
-    lb = gen_label_rtx ();
-    emit_label (lb);
-    emit_move_insn (toop, fromop);
-    emit_insn (gen_subhi3 (counter, counter, const1_rtx));
-    test = gen_rtx_NE (HImode, counter, const0_rtx);
-    emit_jump_insn (gen_cbranchhi4 (test, counter, const0_rtx, lb));
+  if (GET_CODE (addr) == MEM)
+    addr = XEXP (addr, 0);
+    
+  switch (GET_CODE (addr))
+    {
+    case PRE_DEC:
+    case POST_INC:
+    case PRE_MODIFY:
+    case POST_MODIFY:
+      return REGNO (XEXP (addr, 0)) == regno;
+    default:
+      return FALSE;
+    }
 }
 
 /* This function checks whether a real value can be encoded as
@@ -1565,7 +1492,12 @@ int
 legitimate_const_double_p (rtx address)
 {
   long sval[2];
+
+  /* If it's too big for HOST_WIDE_INT, it's definitely to big here.  */
+  if (GET_MODE (address) == VOIDmode)
+    return 0;
   REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (address), sval);
+
   if ((sval[0] & 0xffff) == 0 && sval[1] == 0)
     return 1;
   return 0;
@@ -1723,7 +1655,7 @@ pdp11_legitimate_address_p (machine_mode mode,
 	  && GET_CODE ((xfoob = XEXP (operand, 1))) == PLUS
 	  && GET_CODE (XEXP (xfoob, 0)) == REG
 	  && REGNO (XEXP (xfoob, 0)) == STACK_POINTER_REGNUM
-	  && CONSTANT_P (XEXP (xfoob, 1))
+	  && CONST_INT_P (XEXP (xfoob, 1))
 	  && INTVAL (XEXP (xfoob,1)) == -2;
 
       case POST_MODIFY:
@@ -1733,7 +1665,7 @@ pdp11_legitimate_address_p (machine_mode mode,
 	  && GET_CODE ((xfoob = XEXP (operand, 1))) == PLUS
 	  && GET_CODE (XEXP (xfoob, 0)) == REG
 	  && REGNO (XEXP (xfoob, 0)) == STACK_POINTER_REGNUM
-	  && CONSTANT_P (XEXP (xfoob, 1))
+	  && CONST_INT_P (XEXP (xfoob, 1))
 	  && INTVAL (XEXP (xfoob,1)) == 2;
 
       case MEM:
@@ -1792,16 +1724,18 @@ pdp11_legitimate_address_p (machine_mode mode,
 enum reg_class
 pdp11_regno_reg_class (int regno)
 { 
-  if (regno == FRAME_POINTER_REGNUM || regno == ARG_POINTER_REGNUM)
-    return GENERAL_REGS;
+  if (regno == ARG_POINTER_REGNUM)
+    return NOTSP_REG;
   else if (regno == CC_REGNUM || regno == FCC_REGNUM)
     return CC_REGS;
   else if (regno > AC3_REGNUM)
     return NO_LOAD_FPU_REGS;
   else if (regno >= AC0_REGNUM)
     return LOAD_FPU_REGS;
-  else if (regno & 1)
-    return MUL_REGS;
+  else if (regno == 6)
+    return NOTR0_REG;
+  else if (regno < 6)
+    return NOTSP_REG;
   else
     return GENERAL_REGS;
 }
@@ -1815,11 +1749,11 @@ pdp11_fixed_cc_regs (unsigned int *p1, unsigned int *p2)
   return true;
 }
 
-int
-pdp11_sp_frame_offset (void)
+static int
+pdp11_reg_save_size (void)
 {
   int offset = 0, regno;
-  offset = get_frame_size();
+
   for (regno = 0; regno <= PC_REGNUM; regno++)
     if (pdp11_saved_regno (regno))
       offset += 2;
@@ -1836,32 +1770,18 @@ pdp11_sp_frame_offset (void)
 int
 pdp11_initial_elimination_offset (int from, int to)
 {
+  /* Get the size of the register save area.  */
   int spoff;
   
-  if (from == ARG_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
-    return 4;
-  else if (from == FRAME_POINTER_REGNUM
-	   && to == HARD_FRAME_POINTER_REGNUM)
-    return 0;
+  if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
+    return get_frame_size ();
+  else if (from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
+    return pdp11_reg_save_size () + 2;
+  else if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
+    return pdp11_reg_save_size () + 2 + get_frame_size ();
   else
-    {
-      gcc_assert (to == STACK_POINTER_REGNUM);
-
-      /* Get the size of the register save area.  */
-      spoff = pdp11_sp_frame_offset ();
-      if (from == FRAME_POINTER_REGNUM)
-	return spoff;
-
-      gcc_assert (from == ARG_POINTER_REGNUM);
-
-      /* If there is a frame pointer, that is saved too.  */
-      if (frame_pointer_needed)
-	spoff += 2;
-      
-      /* Account for the saved PC in the function call.  */
-      return spoff + 2;
-    }
-}    
+    gcc_assert (0);
+}
 
 /* A copy of output_addr_const modified for pdp11 expression syntax.
    output_addr_const also gets called for %cDIGIT and %nDIGIT, which we don't
@@ -1911,21 +1831,6 @@ output_addr_const_pdp11 (FILE *file, rtx x)
 
     case CONST:
       output_addr_const_pdp11 (file, XEXP (x, 0));
-      break;
-
-    case CONST_DOUBLE:
-      if (GET_MODE (x) == VOIDmode)
-	{
-	  /* We can use %o if the number is one word and positive.  */
-	  if (TARGET_DEC_ASM)
-	    fprintf (file, "%o", (int) CONST_DOUBLE_LOW (x) & 0xffff);
-	  else
-	    fprintf (file, "%#o", (int) CONST_DOUBLE_LOW (x) & 0xffff);
-	}
-      else
-	/* We can't handle floating point constants;
-	   PRINT_OPERAND must handle them.  */
-	output_operand_lossage ("floating constant misused");
       break;
 
     case PLUS:
@@ -2033,7 +1938,7 @@ pdp11_expand_shift (rtx *operands, rtx (*shift_sc) (rtx, rtx, rtx),
   rtx r, test;
   rtx_code_label *lb;
   
-  if (CONSTANT_P (operands[2]) && pdp11_small_shift (INTVAL (operands[2])))
+  if (CONST_INT_P (operands[2]) && pdp11_small_shift (INTVAL (operands[2])))
     emit_insn ((*shift_sc) (operands[0], operands[1], operands[2]));
   else if (TARGET_40_PLUS)
     return false;
@@ -2043,7 +1948,7 @@ pdp11_expand_shift (rtx *operands, rtx (*shift_sc) (rtx, rtx, rtx),
       r = gen_reg_rtx (HImode);
       emit_move_insn (operands[0], operands[1]);
       emit_move_insn (r, operands[2]);
-      if (!CONSTANT_P (operands[2]))
+      if (!CONST_INT_P (operands[2]))
 	{
 	  test = gen_rtx_LE (HImode, r, const0_rtx);
 	  emit_jump_insn (gen_cbranchhi4 (test, r, const0_rtx, lb));
@@ -2053,7 +1958,7 @@ pdp11_expand_shift (rtx *operands, rtx (*shift_sc) (rtx, rtx, rtx),
 	 optimizer and it doesn't appreciate flow changes happening
 	 while it's doing things.  */
       emit_insn ((*shift_base) (operands[0], operands[1], r));
-      if (!CONSTANT_P (operands[2]))
+      if (!CONST_INT_P (operands[2]))
 	{
 	  emit_label (lb);
 
@@ -2072,16 +1977,20 @@ const char *
 pdp11_assemble_shift (rtx *operands, machine_mode m, int code)
 {
   int i, n;
-  rtx exops[4][2];
+  rtx inops[2];
+  rtx exops[2][2];
   rtx lb[1];
   pdp11_action action[2];
-  const bool small = CONSTANT_P (operands[2]) && pdp11_small_shift (INTVAL (operands[2]));
+  const bool small = CONST_INT_P (operands[2]) && pdp11_small_shift (INTVAL (operands[2]));
 
   gcc_assert (small || !TARGET_40_PLUS);
 
   if (m == E_SImode)
-      pdp11_expand_operands (operands, exops, 1, action, either);
-
+    {
+      inops[0] = operands[0];
+      pdp11_expand_operands (inops, exops, 1, 2, action, either);
+    }
+  
   if (!small)
     {
       /* Loop case, generate the top of loop label.  */
@@ -2179,7 +2088,7 @@ pdp11_shift_length (rtx *operands, machine_mode m, int code, bool simple_operand
   /* If shifting by a small constant, the loop is unrolled by the
      shift count.  Otherwise, account for the size of the decrement
      and branch.  */
-  if (CONSTANT_P (operands[2]) && pdp11_small_shift (INTVAL (operands[2])))
+  if (CONST_INT_P (operands[2]) && pdp11_small_shift (INTVAL (operands[2])))
     shift_size *= INTVAL (operands[2]);
   else
     shift_size += 4;
@@ -2189,6 +2098,39 @@ pdp11_shift_length (rtx *operands, machine_mode m, int code, bool simple_operand
     shift_size += 2;
 
   return shift_size;
+}
+
+/* Return the length of 2 or 4 word integer compares.  */
+int
+pdp11_cmp_length (rtx *operands, int words)
+{
+  rtx inops[2];
+  rtx exops[4][2];
+  rtx lb[1];
+  int i, len = 0;
+
+  if (!reload_completed)
+    return 2;
+  
+  inops[0] = operands[0];
+  inops[1] = operands[1];
+  
+  pdp11_expand_operands (inops, exops, 2, words, NULL, big);
+
+  for (i = 0; i < words; i++)
+    {
+      len += 4;    /* cmp instruction word and branch that follows.  */
+      if (!REG_P (exops[i][0]) &&
+	  !simple_memory_operand (exops[i][0], HImode))
+	len += 2;  /* first operand extra word.  */
+      if (!REG_P (exops[i][1]) &&
+	  !simple_memory_operand (exops[i][1], HImode) &&
+	  !(CONST_INT_P (exops[i][1]) && INTVAL (exops[i][1]) == 0))
+	len += 2;  /* second operand extra word.  */
+    }
+
+  /* Deduct one word because there is no branch at the end.  */
+  return len - 2;
 }
 
 /* Prepend to CLOBBERS hard registers that are automatically clobbered

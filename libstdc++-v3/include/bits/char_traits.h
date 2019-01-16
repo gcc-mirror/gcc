@@ -1,6 +1,6 @@
 // Character Traits for use by standard string and iostream -*- C++ -*-
 
-// Copyright (C) 1997-2018 Free Software Foundation, Inc.
+// Copyright (C) 1997-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -183,6 +183,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     char_traits<_CharT>::
     move(char_type* __s1, const char_type* __s2, std::size_t __n)
     {
+      if (__n == 0)
+	return __s1;
       return static_cast<_CharT*>(__builtin_memmove(__s1, __s2,
 						    __n * sizeof(char_type)));
     }

@@ -1,5 +1,5 @@
 /* Target definitions for GCC for Intel 80386 running Solaris 2
-   Copyright (C) 1993-2018 Free Software Foundation, Inc.
+   Copyright (C) 1993-2019 Free Software Foundation, Inc.
    Contributed by Fred Fish (fnf@cygnus.com).
 
 This file is part of GCC.
@@ -53,6 +53,9 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef CPP_SPEC
 #define CPP_SPEC "%(cpp_subtarget)"
+
+#undef CC1_SPEC
+#define CC1_SPEC "%(cc1_cpu) " ASAN_CC1_SPEC
 
 /* GNU as understands --32 and --64, but the native Solaris
    assembler requires -xarch=generic or -xarch=generic64 instead.  */
@@ -240,6 +243,10 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef USE_GAS
 #define LARGECOMM_SECTION_ASM_OP "\t.lbcomm\t"
 #endif
+
+/* -fsanitize=address is currently only supported for 32-bit.  */
+#define ASAN_REJECT_SPEC \
+  DEF_ARCH64_SPEC("%e:-fsanitize=address is not supported in this configuration")
 
 #define USE_IX86_FRAME_POINTER 1
 #define USE_X86_64_FRAME_POINTER 1

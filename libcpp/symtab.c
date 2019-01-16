@@ -1,5 +1,5 @@
 /* Hash tables.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -304,7 +304,6 @@ ht_dump_statistics (cpp_hash_table *table)
   while (++p < limit);
 
   nelts = table->nelements;
-  overhead = obstack_memory_used (&table->stack) - total_bytes;
   headers = table->nslots * sizeof (hashnode);
 
   fprintf (stderr, "\nString pool\nentries\t\t%lu\n",
@@ -315,9 +314,17 @@ ht_dump_statistics (cpp_hash_table *table)
 	   (unsigned long) table->nslots);
   fprintf (stderr, "deleted\t\t%lu\n",
 	   (unsigned long) deleted);
-  fprintf (stderr, "bytes\t\t%lu%c (%lu%c overhead)\n",
-	   SCALE (total_bytes), LABEL (total_bytes),
-	   SCALE (overhead), LABEL (overhead));
+
+  if (table->alloc_subobject)
+    fprintf (stderr, "GGC bytes\t%lu%c\n",
+	     SCALE (total_bytes), LABEL (total_bytes));
+  else
+    {
+      overhead = obstack_memory_used (&table->stack) - total_bytes;
+      fprintf (stderr, "obstack bytes\t%lu%c (%lu%c overhead)\n",
+	       SCALE (total_bytes), LABEL (total_bytes),
+	       SCALE (overhead), LABEL (overhead));
+    }
   fprintf (stderr, "table size\t%lu%c\n",
 	   SCALE (headers), LABEL (headers));
 

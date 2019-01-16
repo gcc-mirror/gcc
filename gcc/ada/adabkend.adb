@@ -186,6 +186,26 @@ package body Adabkend is
             Opt.Suppress_Control_Flow_Optimizations := True;
             return;
 
+         --  Recognize -gxxx switches
+
+         elsif Switch_Chars (First) = 'g' then
+            Debugger_Level := 2;
+
+            if First < Last then
+               case Switch_Chars (First + 1) is
+                  when '0' =>
+                     Debugger_Level := 0;
+                  when '1' =>
+                     Debugger_Level := 1;
+                  when '2' =>
+                     Debugger_Level := 2;
+                  when '3' =>
+                     Debugger_Level := 3;
+                  when others =>
+                     null;
+               end case;
+            end if;
+
          --  Ignore all other back end switches
 
          elsif Is_Back_End_Switch (Switch_Chars) then

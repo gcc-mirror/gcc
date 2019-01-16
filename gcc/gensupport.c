@@ -1,5 +1,5 @@
 /* Support routines for the various generation passes.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -2827,6 +2827,7 @@ add_predicate_code (struct pred_data *pred, enum rtx_code code)
 	  && code != CONCAT
 	  && code != PARALLEL
 	  && code != STRICT_LOW_PART
+	  && code != ZERO_EXTRACT
 	  && code != SCRATCH)
 	pred->allows_non_lvalue = true;
 

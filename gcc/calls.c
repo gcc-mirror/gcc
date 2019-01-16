@@ -1,5 +1,5 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
-   Copyright (C) 1989-2018 Free Software Foundation, Inc.
+   Copyright (C) 1989-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1338,9 +1338,10 @@ get_size_range (tree exp, tree range[2], bool allow_zero /* = false */,
 /* Diagnose a call EXP to function FN decorated with attribute alloc_size
    whose argument numbers given by IDX with values given by ARGS exceed
    the maximum object size or cause an unsigned oveflow (wrapping) when
-   multiplied.  When ARGS[0] is null the function does nothing.  ARGS[1]
-   may be null for functions like malloc, and non-null for those like
-   calloc that are decorated with a two-argument attribute alloc_size.  */
+   multiplied.  FN is null when EXP is a call via a function pointer.
+   When ARGS[0] is null the function does nothing.  ARGS[1] may be null
+   for functions like malloc, and non-null for those like calloc that
+   are decorated with a two-argument attribute alloc_size.  */
 
 void
 maybe_warn_alloc_args_overflow (tree fn, tree exp, tree args[2], int idx[2])
@@ -1353,6 +1354,8 @@ maybe_warn_alloc_args_overflow (tree fn, tree exp, tree args[2], int idx[2])
 
   location_t loc = EXPR_LOCATION (exp);
 
+  tree fntype = fn ? TREE_TYPE (fn) : TREE_TYPE (TREE_TYPE (exp));
+  built_in_function fncode = fn ? DECL_FUNCTION_CODE (fn) : BUILT_IN_NONE;
   bool warned = false;
 
   /* Validate each argument individually.  */
@@ -1378,11 +1381,11 @@ maybe_warn_alloc_args_overflow (tree fn, tree exp, tree args[2], int idx[2])
 		 friends.
 		 Also avoid issuing the warning for calls to function named
 		 "alloca".  */
-	      if ((DECL_FUNCTION_CODE (fn) == BUILT_IN_ALLOCA
+	      if ((fncode == BUILT_IN_ALLOCA
 		   && IDENTIFIER_LENGTH (DECL_NAME (fn)) != 6)
-		  || (DECL_FUNCTION_CODE (fn) != BUILT_IN_ALLOCA
+		  || (fncode != BUILT_IN_ALLOCA
 		      && !lookup_attribute ("returns_nonnull",
-					    TYPE_ATTRIBUTES (TREE_TYPE (fn)))))
+					    TYPE_ATTRIBUTES (fntype))))
 		warned = warning_at (loc, OPT_Walloc_zero,
 				     "%Kargument %i value is zero",
 				     exp, idx[i] + 1);
@@ -1394,6 +1397,7 @@ maybe_warn_alloc_args_overflow (tree fn, tree exp, tree args[2], int idx[2])
 		 size overflow.  There's no good way to detect C++98 here
 		 so avoid diagnosing these calls for all C++ modes.  */
 	      if (i == 0
+		  && fn
 		  && !args[1]
 		  && lang_GNU_CXX ()
 		  && DECL_IS_OPERATOR_NEW (fn)
@@ -1477,7 +1481,7 @@ maybe_warn_alloc_args_overflow (tree fn, tree exp, tree args[2], int idx[2])
 	}
     }
 
-  if (warned)
+  if (warned && fn)
     {
       location_t fnloc = DECL_SOURCE_LOCATION (fn);
 
@@ -1499,6 +1503,7 @@ tree
 get_attr_nonstring_decl (tree expr, tree *ref)
 {
   tree decl = expr;
+  tree var = NULL_TREE;
   if (TREE_CODE (decl) == SSA_NAME)
     {
       gimple *def = SSA_NAME_DEF_STMT (decl);
@@ -1511,17 +1516,25 @@ get_attr_nonstring_decl (tree expr, tree *ref)
 	      || code == VAR_DECL)
 	    decl = gimple_assign_rhs1 (def);
 	}
-      else if (tree var = SSA_NAME_VAR (decl))
-	decl = var;
+      else
+	var = SSA_NAME_VAR (decl);
     }
 
   if (TREE_CODE (decl) == ADDR_EXPR)
     decl = TREE_OPERAND (decl, 0);
 
+  /* To simplify calling code, store the referenced DECL regardless of
+     the attribute determined below, but avoid storing the SSA_NAME_VAR
+     obtained above (it's not useful for dataflow purposes).  */
   if (ref)
     *ref = decl;
 
-  if (TREE_CODE (decl) == ARRAY_REF)
+  /* Use the SSA_NAME_VAR that was determined above to see if it's
+     declared nonstring.  Otherwise drill down into the referenced
+     DECL.  */
+  if (var)
+    decl = var;
+  else if (TREE_CODE (decl) == ARRAY_REF)
     decl = TREE_OPERAND (decl, 0);
   else if (TREE_CODE (decl) == COMPONENT_REF)
     decl = TREE_OPERAND (decl, 1);
@@ -1552,9 +1565,11 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
   /* The bound argument to a bounded string function like strncpy.  */
   tree bound = NULL_TREE;
 
-  /* The range of lengths of a string argument to one of the comparison
-     functions.  If the length is less than the bound it is used instead.  */
-  tree lenrng[2] = { NULL_TREE, NULL_TREE };
+  /* The longest known or possible string argument to one of the comparison
+     functions.  If the length is less than the bound it is used instead.
+     Since the length is only used for warning and not for code generation
+     disable strict mode in the calls to get_range_strlen below.  */
+  tree maxlen = NULL_TREE;
 
   /* It's safe to call "bounded" string functions with a non-string
      argument since the functions provide an explicit bound for this
@@ -1574,11 +1589,15 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	   and to adjust the range of the bound of the bounded ones.  */
 	for (unsigned argno = 0;
 	     argno < MIN (nargs, 2)
-	     && !(lenrng[1] && TREE_CODE (lenrng[1]) == INTEGER_CST); argno++)
+	       && !(maxlen && TREE_CODE (maxlen) == INTEGER_CST); argno++)
 	  {
 	    tree arg = CALL_EXPR_ARG (exp, argno);
 	    if (!get_attr_nonstring_decl (arg))
-	      get_range_strlen (arg, lenrng);
+	      {
+		c_strlen_data lendata = { };
+		get_range_strlen (arg, &lendata, /* eltsize = */ 1);
+		maxlen = lendata.maxbound;
+	      }
 	  }
       }
       /* Fall through.  */
@@ -1599,8 +1618,11 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
       {
 	tree arg = CALL_EXPR_ARG (exp, 0);
 	if (!get_attr_nonstring_decl (arg))
-	  get_range_strlen (arg, lenrng);
-
+	  {
+	    c_strlen_data lendata = { };
+	    get_range_strlen (arg, &lendata, /* eltsize = */ 1);
+	    maxlen = lendata.maxbound;
+	  }
 	if (nargs > 1)
 	  bound = CALL_EXPR_ARG (exp, 1);
 	break;
@@ -1641,28 +1663,28 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	}
     }
 
-  if (lenrng[1] && TREE_CODE (lenrng[1]) == INTEGER_CST)
+  if (maxlen && !integer_all_onesp (maxlen))
     {
       /* Add one for the nul.  */
-      lenrng[1] = const_binop (PLUS_EXPR, TREE_TYPE (lenrng[1]),
-			       lenrng[1], size_one_node);
+      maxlen = const_binop (PLUS_EXPR, TREE_TYPE (maxlen), maxlen,
+			    size_one_node);
 
       if (!bndrng[0])
 	{
 	  /* Conservatively use the upper bound of the lengths for
 	     both the lower and the upper bound of the operation.  */
-	  bndrng[0] = lenrng[1];
-	  bndrng[1] = lenrng[1];
+	  bndrng[0] = maxlen;
+	  bndrng[1] = maxlen;
 	  bound = void_type_node;
 	}
-      else
+      else if (maxlen)
 	{
 	  /* Replace the bound on the operation with the upper bound
 	     of the length of the string if the latter is smaller.  */
-	  if (tree_int_cst_lt (lenrng[1], bndrng[0]))
-	    bndrng[0] = lenrng[1];
-	  else if (tree_int_cst_lt (lenrng[1], bndrng[1]))
-	    bndrng[1] = lenrng[1];
+	  if (tree_int_cst_lt (maxlen, bndrng[0]))
+	    bndrng[0] = maxlen;
+	  else if (tree_int_cst_lt (maxlen, bndrng[1]))
+	    bndrng[1] = maxlen;
 	}
     }
 
@@ -1920,14 +1942,13 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 
   bitmap_obstack_release (NULL);
 
-  /* Extract attribute alloc_size and if set, store the indices of
-     the corresponding arguments in ALLOC_IDX, and then the actual
-     argument(s) at those indices in ALLOC_ARGS.  */
+  /* Extract attribute alloc_size from the type of the called expression
+     (which could be a function or a function pointer) and if set, store
+     the indices of the corresponding arguments in ALLOC_IDX, and then
+     the actual argument(s) at those indices in ALLOC_ARGS.  */
   int alloc_idx[2] = { -1, -1 };
-  if (tree alloc_size
-      = (fndecl ? lookup_attribute ("alloc_size",
-				    TYPE_ATTRIBUTES (TREE_TYPE (fndecl)))
-	 : NULL_TREE))
+  if (tree alloc_size = lookup_attribute ("alloc_size",
+					  TYPE_ATTRIBUTES (fntype)))
     {
       tree args = TREE_VALUE (alloc_size);
       alloc_idx[0] = TREE_INT_CST_LOW (TREE_VALUE (args)) - 1;

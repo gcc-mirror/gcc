@@ -1,0 +1,1262 @@
+2016-12-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* expr.cc (ExprVisitor::visit(VarExp)): Remove type forced conversion.
+
+2016-12-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (d_handle_option): Handle -ftransition=safe.
+	* lang.opt (ftransition=safe): Add compiler option.
+
+2016-12-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (d_init_options): Initialize hdrStripPlainFunctions.
+	(d_post_options): Add post option handling of flag.
+
+2016-12-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (layout_aggregate_type): Adjust layout of D interfaces.
+	Only add a __vptr field if no base interfaces, don't add __monitor.
+
+2016-12-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (d_parse_file): Run runDeferredSemantic2 after semantic2.
+
+2016-12-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* expr.cc (ExprVisitor::visit(ArrayLiteralExp)): Use getElement to
+	index elements array.
+	(ExprVisitor::visit(VectorExp)): Likewise.
+
+2016-12-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (D_DMD_OBJS): Add d/objc.o
+	* types.cc (TypeVisitor::visit(TypeFunction)): Handle ObjC linkage.
+
+2016-12-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (mangle_decl): New function.
+	(make_internal_name): Update.
+	(get_symbol_decl): Update.
+
+2016-12-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* expr.cc (ExprVisitor::needs_dtor): New function.
+	(ExprVisitor::lvalue_p): New function.
+	(ExprVisitor::visit(AssignExp)): Check both for postblit and dtors
+	when generating array assignments.
+
+2016-12-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (convert_expr): Allow upcasting C++ classes.
+	(build_class_instance): Generate initial values of vtable interfaces
+	before class fields.
+	(layout_aggregate_type): Layout vtable interfaces before class fields.
+	* d-decls.cc (get_symbol_decl): Build DECL_ARGUMENTS for functions
+	that have no body.
+
+2016-12-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-target.cc (Target::cppExceptions): New variable.
+	(Target::init): Initialize it.
+	(Target::prefixName): New function.
+
+2016-12-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-objfile.cc (ClassDeclaration::toObjFile): Use layout_classinfo to
+	generate TypeInfo for classes.
+	(InterfaceDeclaration::toObjFile): Likewise.
+	* d-todt.cc (build_vptr_monitor): Remove function.
+	* typeinfo.cc (TypeInfoVisitor::set_field): New function.
+	(TypeInfoVisitor::layout_interfaces): New function.
+	(TypeInfoVisitor::layout_interface_vtables): New function.
+	(TypeInfoVisitor::visit(TypeInfoClassDeclaration)): Implement.
+	(layout_classinfo): New function.
+
+2016-12-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* typeinfo.cc (TypeInfoVisitor): Use build_typeinfo instead of
+	get_typeinfo_decl.
+	* d-objfile.cc (ClassDeclaration::toObjFile): Use build_constructor to
+	build the vtable, instead of using dt_cons.
+
+2016-12-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (layout_moduleinfo_fields): Use finish_aggregate_type
+	instead of layout_type.
+	(layout_classinfo_interfaces): Likewise.
+
+2016-12-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (build_dtype): Use static create method for allocating
+	frontend types.
+	* d-codegen.cc (declaration_type): Likewise.
+	(type_passed_as): Likewise.
+	(get_libcall): Likewise.
+	* d-lang.cc (d_parse_file): Likewise.
+	* d-objfile.cc (build_simple_function_decl): Likewise.
+	(build_emutls_function): Likewise.
+	* d-todt.cc (StructDeclaration::toDt): Likewise.
+	* typeinfo.cc (TypeInfoVisitor::visit(TypeInfoInterfaceDeclaration)):
+	Likewise.
+
+2016-12-17  Johannes Pfau  <johannespfau@gmail.com>
+
+	* d-decls.cc (copy_struct): Also copy and update TYPE_METHODS.
+	* d-spec.c (lang_specific_driver): Do not link in math, thread and
+	time libraries. Use a spec file instead to do this.
+	(lang_specific_pre_link): Load libgphobos.spec to set up the link
+	dependencies for libgphobos.
+
+2016-12-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (build_dtype): Cache all allocated frontend types.
+	(builtin_sym): Update constructor.
+	(builtin_converted_decls): Rename to builtin_converted_syms.
+	(d_build_builtins_module): Check if decl set before assigning parent.
+
+2016-12-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (build_dtype): Set type modifiers on frontend type.
+
+2016-12-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (build_dtype): Don't set default parameter storage
+	class as const.
+
+2016-12-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (add_moduleinfo_field): New function.
+	(layout_moduleinfo_fields): New function.
+	(get_moduleinfo_decl): Use record type for moduleinfo decl.
+	* d-objfile.cc (build_moduleinfo_symbol): Delay calling
+	get_moduleinfo_decl until after ModuleInfo type is validated.
+	(d_finish_symbol): Remove check for unknown_type_node.
+
+2016-12-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (copy_struct): New function.
+	(layout_classinfo_interfaces): New function.
+	(get_classinfo_decl): Use record type for classinfo decl.
+	* d-codegen.cc (create_field_decl): New function.
+	Use it instead of build_decl when creating a new FIELD_DECL.
+
+2016-12-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (build_dtype): Don't build generic function types.
+	(d_build_builtins_module): Remove check.
+
+2016-12-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_vindex_ref): Move saving of object to callers.
+	* expr.cc (ExprVisitor::visit(CallExp)): Save object reference before
+	passing to build_vindex_ref.
+	(ExprVisitor::visit(DelegateExp)): Likewise.
+
+2016-12-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-spec.c (lang_specific_driver): Remove error handling.
+	* d-lang.cc (d_parse_file): Don't error twice.
+
+2016-12-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-spec.c (lang_specific_driver): Remove 'added' variable.
+
+2016-12-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (get_symbol_decl): Use needsCodegen to determine whether
+	template instance is extern or not.
+
+2016-12-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-glue.cc (escapePath): Move to dfrontend.
+	(readFile): Likewise.
+	(writeFile): Likewise.
+	(ensurePathToNameExists): Likewise.
+
+2016-12-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-target.cc: Include memmodel.h.
+	* d-attrib.c (d_handle_section_attribute): No longer set
+	user_defined_section_attribute.
+
+2016-11-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* types.cc (TypeVisitor::visit(Type)): Update.
+
+2016-11-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_struct_literal): Stop after first field
+	assignment in union constructor.
+	(build_class_instance): Skip void initialized fields.
+	* expr.cc (ExprVisitor::visit(StructLiteralExp)): Likewise.
+
+2016-11-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (get_symbol_decl): Don't set alignment if
+	STRUCTALIGN_DEFAULT.
+
+2016-11-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-todt.cc (ClassDeclaration::toDt): Update.
+	(ClassDeclaration::toDt2): Remove function.
+	(TypeSArray::toDtElem): Remove function.
+	(dt_chainon): Remove function.
+	(dt_zeropad): Remove function.
+	(dt_container): Remove function.
+	(dt_container2): Rename to dt_container.  All callers updated.
+	* d-objfile.cc (VarDeclaration::toObjFile): Update.
+
+2016-11-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (copy_lang_decl): Rename to d_dup_lang_specific_decl.
+	(LANG_HOOKS_DUP_LANG_SPECIFIC_DECL): Redefine.
+	* d-decls.cc (make_alias_for_thunk): Call dup_lang_specific_decl.
+	(make_thunk): Likewise.
+
+2016-11-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.h (FuncFrameInfo): Remove type.  All users updated to
+	interface with new frame macro accessors.
+	(build_frame_type): Mark as static.
+	(get_frameinfo): Update to return a tree type.
+	* d-lang.cc (LANG_HOOKS_TREE_SIZE): Redefine.
+	(LANG_HOOKS_PRINT_XNODE): Redefine.
+	(d_tree_size): New function.
+	(d_print_xnode): New function.
+	(d_tree_node_structure): New function.
+	* d-tree.def (FUNCFRAME_INFO): New tree_code.
+	* d-tree.h (tree_frame_info): New type.
+	(FRAMEINFO_CREATES_FRAME): New macro accessor.
+	(FRAMEINFO_STATIC_CHAIN): New macro accessor.
+	(FRAMEINFO_IS_CLOSURE): New macro accessor.
+	(FRAMEINFO_TYPE): New macro accessor.
+	(lang_decl): Replace frame_info field with a tree type.
+	(d_tree_node_structure_enum): New type.
+	(lang_tree_node): Update GTY tags.
+
+2016-11-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (setup_symbol_storage): Remove function.
+	(Dsymbol::toSymbol): Remove function and all overrides.  All callers
+	updated to call ...
+	(get_symbol_decl): ... New function.
+
+2016-11-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (output_modules): Remove variable.
+	(output_module): Remove variable.
+	(d_gcc_get_output_module): Remove function.  All callers updated to
+	use Module::rootModule.
+	* d-objfile.cc (FuncDeclaration::toObjFile): Mark all functions being
+	constructed here as TREE_STATIC.
+	(output_module_p): Remove function.  All callers updated to call
+	Module::isRoot.
+
+2016-11-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (get_template_storage_info): Remove function.
+	(setup_symbol_storage): Use Dsymbol::isInstantiated instead.
+
+2016-11-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_struct_literal): Handle anonymous fields.
+	(build_class_instance): New functions.
+	(find_aggregate_field): Update signature.  All callers updated.
+	* d-todt.cc (dt_chainon): Mark as static.
+	(dt_zeropad): Likewise.
+	(dt_container): Likewise.
+	(ClassReferenceExp::toInstanceDt): Remove function.
+	(ClassReferenceExp::toDt2): Remove function.
+
+2016-11-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-tree.h (lang_decl): Remove readonly field.
+	(DECL_LANG_READONLY): Remove macro.  All callers updated.
+
+2016-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (ClassReferenceExp::toSymbol): Use class record type for
+	static symbol.
+	* d-lang.cc (global_context): New static variable.
+	(global_declarations): New static variable.
+	(d_nametype): Pass built-in types to debug_hooks::type_decl.
+	(d_add_global_declaration): Remove function, update all callers.
+	(get_global_context): New function.
+	(d_pushdecl): Push decls to global, or bindings list here.
+	(StructDeclaration::toObjFile): Send type decl to d_pushdecl.
+	(ClassDeclaration::toObjFile): Likewise.
+	(InterfaceDeclaration::toObjFile): Likewise.
+	(EnumDeclaration::toObjFile): Likewise.
+	(FuncDeclaration::toObjFile): Send finished decl to d_pushdecl.
+	(d_finish_symbol): Likewise.
+	(emit_modref_hooks): Likewise.
+	(d_comdat_linkage): Don't set DECL_COMDAT on non-public decls.
+	(setup_symbol_storage): Don't set DECL_ABSTRACT_P on templates.
+	(d_finish_compilation): Remove check for type decls.
+	(build_type_decl): Don't add to global decl list, just call
+	rest_of_decl_compilation.
+	* expr.cc (ExprVisitor::visit(ArrayLiteralExp)): Send finished decl to
+	d_pushdecl.
+	* toir.cc (IRVisitor::visit(SwitchStatement)): Likewise.
+	(IRVisitor::end_scope): Mark bind expr as having side effects.
+	* typeinfo.cc (TypeInfoVisitor::visit(TypeInfoTupleDeclaration)): Send
+	finished decl to d_pushdecl.
+
+2016-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (layout_aggregate_type): Continue searching based on
+	aggregate members, not just fields.
+	* types.cc (TypeVisitor::visit(TypeEnum)): Use void for opaque enums.
+	(TypeVisitor::visit(TypeStruct)): Don't give opaque structs a size.
+
+2016-10-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* expr.cc (ExprVisitor::visit(AssignExp)): Don't set TREE_ADDRESSABLE.
+	* d-codegen.cc (build_assign): Handle setting up INIT_EXPR from a
+	value returning via NRVO here instead.
+
+2016-10-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (d_build_call): Only convert CALL_EXPRs into a
+	TARGET_EXPR if return type is TREE_ADDRESSABLE.
+	(build_assign): Use TARGET_EXPR accessors.
+	(compound_expr): Likewise.
+
+2016-10-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.h (d_types_same): Return early if types are identical.
+
+2016-10-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (FuncDeclaration::toThunkSymbol): Rename to make_thunk.
+	All callers updated.
+	(finish_thunk): Update signature.
+
+2016-10-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-objfile.h (Thunk): Remove type, move offset field to ...
+	* d-tree.h (lang_decl): ... here.  Replace Thunk field with a tree.
+	(THUNK_LANG_OFFSET): New macro accessor.
+	* d-lang.cc (copy_lang_decl): New function.
+	* d-decls.cc (FuncDeclaration::toThunkSymbol): Use new thunk macros.
+
+2016-10-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (finish_thunk): Add assert that current_function_decl is
+	never set when function is called.
+	(DeferredThunk): Remove type.
+	(deferred_thunks): Remove variable.
+	(write_deferred_thunks): Remove function.  All callers updated.
+	(use_thunk): Remove function.
+	(FuncDeclaration::toThunkSymbol): Call finish_thunk when done.
+
+2016-10-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-objfile.cc (deferred_thunks): Move to d-decls.cc.
+	(write_deferred_thunks): Likewise.
+	(use_thunk): Likewise.  Mark as static.
+	(thunk_labelno): Likewise.
+	(make_alias_for_thunk): Likewise.
+	(finish_thunk): Likewise.
+
+2016-10-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (setup_symbol_storage): Remove unused parameters.
+
+2016-10-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (ClassReferenceExp::toSymbol): Rename to
+	build_new_class_expr.  All callers updated.
+	(StructLiteralExp::toSymbol): Remove function.  Inline into caller ...
+	* expr.cc (ExprVisitor::visit(AddrExpr)): ... here.
+
+2016-10-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (TypeInfoDeclaration::toSymbol): Rename to
+	get_typeinfo_decl.  All callers updated.
+	(TypeInfoDeclVisitor): New visitor helper for get_typeinfo_decl.
+	* d-codegen.cc (get_decl_tree): Add check for building typeinfo decls.
+
+2016-10-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (AggregateDeclaration::toInitializer): Rename to
+	aggregate_initializer.  All callers updated.
+	(EnumDeclaration::toInitializer): Rename to enum_initializer.
+	(Module::toSymbol): Rename to get_moduleinfo_decl.
+	(ClassDeclaration::toSymbol): Rename to get_classinfo_decl.
+	(InterfaceDeclaration::toSymbol): Merge into get_classinfo_decl.
+
+2016-10-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (FuncDeclaration::toSymbol): Remove saving of current
+	module decl before calling semantic.
+	(StructLiteralExp::toSymbol): Don't handle sinit.
+	(ClassReferenceExp::toSymbol): Likewise.
+	(AggregateDeclaration::toInitializer): Likewise.
+	(EnumDeclaration::toInitializer): Likewise.
+	* d-glue.cc (toInitializer): Remove function.
+	* d-objfile.cc (FuncDeclaration::toObjFile): Remove saving of current
+	module decl before calling semantic.
+	* expr.cc (ExprVisitor::visit(CallExpr)): Replace accesses of sinit
+	field with useStaticInit.
+	(ExprVisitor::visit(StructLiteralExp)): Likewise.
+
+2016-10-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (ClassDeclaration::toVtblSymbol): Rename to
+	get_vtable_decl.  All callers updated.
+
+2016-10-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-objfile.cc (setup_symbol_storage): Move function to ...
+	* d-decls.cc (setup_symbol_storage): ... here.  Mark as static.
+	(get_template_storage_info): Likewise.
+
+2016-10-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (call_by_alias_p): Check whether caller and callee are
+	nested in the same parent function.
+	* expr.cc (ExprVisitor::visit(CallExp)): Set TREE_PUBLIC directly
+	instead of calling setup_symbol_storage.
+
+2016-10-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-objfile.cc (VarDeclaration::toObjFile): Always generate
+	DECL_INITIAL for all kinds of var decls.
+	* d-codegen.cc (build_address): Use the DECL_INITIAL directly if
+	taking the address of a CONST_DECL.
+
+2016-10-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-tree.h (DECL_LANG_TREE): Remove macro.  All callers updated.
+
+2016-10-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-objfile.h (Symbol): Remove struct.  Update all functions to return
+	a tree instead.  Remove all new allocations of Symbol.
+	* d-tree.h (DECL_LANG_READONLY): Update accessor.
+	(DECL_LANG_INITIAL): Likewise.
+	(DECL_LANG_TREE): Likewise.
+	(SET_DECL_LANG_FRAME_FIELD): Likewise.
+	(DECL_LANG_FRAME_FIELD): Likewise.
+	(SET_DECL_LANG_NRVO): Likewise.
+	(DECL_LANG_NRVO): Likewise.
+	(DECL_LANG_THUNKS): Likewise.
+	(DECL_LANG_FRAMEINFO): Likewise.
+
+2016-10-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-objfile.h (Symbol): Remove symbol identifier field.
+	* d-tree.h (DECL_LANG_IDENTIFIER): Remove macro.  Update callers to
+	instead use DECL_ASSEMBLER_NAME.
+	(DECL_LANG_PRETTY_NAME): Remove macro.
+
+2016-09-26  Johannes Pfau  <johannespfau@gmail.com>
+
+	* d-objfile.cc (d_finish_function): Handle template mixins (issue 231).
+
+2016-09-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (Dsymbol::toSymbolX): Remove function, update all callers
+	to use ...
+	(make_internal_name): ... New function.
+	* d-objfile.h (Symbol): Replace char* fields with tree.
+	* d-tree.h (lang_identifier): Add pretty_ident field.
+	(IDENTIFIER_PRETTY_NAME): New macro accessor.
+	(DECL_LANG_PRETTY_NAME): Update to use IDENTIFIER_PRETTY_NAME.
+
+2016-09-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-objfile.h (Symbol): Move declaration-specific fields to ...
+	* d-tree.h (lang_decl): ... here.
+	(DECL_LANG_READONLY): Update to reference lang_decl field.
+	(DECL_LANG_INITIAL): Likewise.
+	(DECL_LANG_FRAME_FIELD): Likewise.
+	(DECL_LANG_NRVO): Likewise.
+	(DECL_LANG_THUNKS): Likewise.
+	(DECL_LANG_FRAMEINFO): Likewise.
+	(SET_DECL_LANG_FRAME_FIELD): New setter macro, update all callers.
+	(SET_DECL_LANG_NRVO): Likewise.
+
+2016-09-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (d_build_builtins_module): Set DECL_LANG_SPECIFIC
+	before using any DECL_LANG accessor macros.
+	(maybe_set_builtin_1): Likewise.
+	* d-codegen.cc (maybe_set_intrinsic): Likewise.
+	(layout_aggregate_members): Likewise.
+	d-decls.cc (VarDeclaration::toSymbol): Likewise.
+	(FuncDeclaration::toThunkSymbol): Likewise.
+	(ClassDeclaration::toSymbol): Likewise.
+	(InterfaceDeclaration::toSymbol): Likewise.
+	(Module::toSymbol): Likewise.
+	(StructLiteralExp::toSymbol): Likewise.
+	(ClassReferenceExp::toSymbol): Likewise.
+	(ClassDeclaration::toVtblSymbol): Likewise.
+	(AggregateDeclaration::toInitializer): Likewise.
+	(EnumDeclaration::toInitializer): Likewise.
+
+2016-09-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-tree.h (DECL_LANG_IDENTIFIER): New macro accessor, use instead of
+	direct field accesses.
+	(DECL_LANG_PRETTY_NAME): Likewise.
+	(DECL_LANG_READONLY): Likewise.
+	(DECL_LANG_INITIAL): Likewise.
+	(DECL_LANG_TREE): Likewise.
+	(DECL_LANG_FRAME_FIELD): Likewise.
+	(DECL_LANG_NRVO): Likewise.
+	(DECL_LANG_THUNKS): Likewise.
+	(DECL_LANG_FRAMEINFO): Likewise.
+
+2016-09-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* imports.cc (ImportVisitor::visit(ScopeDsymbol)): New visit method.
+
+2016-09-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-todt.cc (ArrayInitializer::toDt): Update to use build_expr.
+	* d-codegen.cc (d_array_value): Don't override default const and
+	static bits for array constructors.
+
+2016-09-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (lower_struct_comparison): Don't compare vectors in the
+	same way as integers.
+
+2016-09-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-todt.cc (Type::toDt): Remove function, inline into callers.
+	(TypeVector::toDt): Likewise.
+	(TypeSArray::toDt): Likewise.
+	(TypeStruct::toDt): Likewise.
+
+2016-09-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (FuncDeclaration::toSymbol): Save current module decl
+	before calling function semantic.
+	* d-objfile.cc (FuncDeclaration::toObjFile): Likewise.
+
+2016-09-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* types.cc: Document and reformat file.
+
+2016-09-10  Johannes Pfau  <johannespfau@gmail.com>
+
+	* d-objfile.cc (setup_symbol_storage): Setup TREE_PUBLIC before
+	calling decl_default_tls_model.
+	* d-typeinfo.cc (TypeInfoVisitor::find_field): Move method...
+	* d-codegen.cc (find_aggregate_field): here.
+	* d-objfile.cc (build_simple_function): Extract some code into new
+	function.
+	(build_simple_function_decl): Extracted from build_simple_function.
+	* d-objfile.cc (build_moduleinfo): Split into emit_moduleinfo_hooks
+	and emit_modref_hooks.
+	(build_dso_registry_var): New function.
+	(emit_dso_registry_cdtor): Likewise.
+	(emit_dso_registry_helpers): Likewise.
+	(emit_dso_registry_hooks): Likewise.
+	(emit_moduleinfo_hooks): Only emit hooks if required druntime functions
+	are available.
+	* d-objfile.cc (Module::genmoduleinfo): Rename to
+	build_moduleinfo_symbol.
+	(emit_moduleinfo_hooks): rename to Module::genmoduleinfo.
+	(Module::genmoduleinfo): only call build_moduleinfo_symbol when
+	emitting module info registry code.
+	* d-spec.c (lang_specific_driver): Add -shared-libphobos option,
+	default to static libphobos.
+	* d-lang.opt: Likewise.
+	* d-spec.c: Rename libgphobos2 to libgphobos.
+
+2016-07-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (get_frameinfo): Use hasNestedFrameRefs to determine
+	whether a frame should be created.
+
+2016-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-objfile.cc (FuncDeclaration::toObjFile): Always convert the
+	DECL_RESULT of NRVO-capable functions into reference decls.
+
+2016-06-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-attribs.c (handle_nonnull_attribute): Accept the nonnull
+	attribute in type-generic builtins.
+	* d-codegen.cc (d_build_call): Check AGGREGATE_TYPE_P before testing
+	for aggregate_value_p.
+
+2016-06-20  Johannes Pfau  <johannespfau@gmail.com>
+
+	* d-lang.cc (d_handle_option): Add new -ftransition=dip25 and
+	-fmax-error-messages switches.
+	* lang.opt: Likewise.
+
+2016-06-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (get_decl_tree): Remove assert for RESULT_DECL.
+	(convert_for_argument): Handle lazy arguments early.
+	(argument_reference_p): Handle types marked TREE_ADDRESSABLE.
+	(lvalue_p): Add case for TARGET_EXPR.
+	(d_mark_addressable): Likewise.
+	(build_assign): Likewise.
+	(compound_expr): Likewise.
+	(build_target_expr): New function.
+	(d_build_call): Always set CALL_EXPR_RETURN_SLOT_OPT for all calls
+	that return an aggregate in memory.
+	* d-decls.cc (VarDeclaration::toSymbol): Handle reference parameters.
+	* d-lang.cc (d_gimplify_expr): Handle taking address of constructor.
+	* d-objfile.cc (FuncDeclaration::toObjFile): Handle reference return.
+	* expr.cc (ExprVisitor::visit(AssignExp)): Mark LHS as addressable if
+	RHS assignment is a returned aggregate.
+	* types.cc (TypeVisitor::visit(TypeStruct)): Mark the RECORD_TYPE of
+	non-trivial structs as TREE_ADDRESSABLE.
+	(TypeVisitor::visit(TypeClass)): Mark all classes as TREE_ADDRESSABLE.
+	(TypeVisitor::visit(TypeFunction)): Don't set TREE_ADDRESSABLE.
+	(TypeVisitor::visit(TypeDelegate)): Likewise.
+
+2016-06-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (lvalue_p): Add more cases to look for.
+	(build_address): Mark expression as addressable after stabilizing.
+	(d_mark_addressable): Remove special cases.
+	(d_mark_used): Add cases for other kinds of DECLs.
+	(build_struct_comparison): Stabilize before saving.
+	(modify_expr): Remove overload.  Updated all callers.
+	(build_vinit): Remove function.  Updated all callers to use ...
+	(build_assign): ... New function.
+	(lvalue_p): Remove tests in default case.
+	* expr.cc (build_expr_dtor): Rewrite assignments to elide a temporary.
+
+2016-06-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (make_temp): Rename to d_save_expr.
+	(maybe_make_temp): Remove function.
+	Updated all callers to use d_save_expr().
+	(vcompound_expr): Remove function.
+	Updated all callers to use compound_expr().
+	(maybe_compound_expr): Likewise.
+	(maybe_vcompound_expr): Likewise.
+	(vmodify_expr): Remove function.
+	Updated all callers to use modify_expr().
+	(lvalue_p): New function.
+
+2016-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (add_stmt): Don't add statements without side effects.
+	Push each COMPOUND_EXPR as a separate statement.
+	(build_local_temp): Use input_location.
+	(create_temporary_var): Likewise.
+	(d_has_side_effects): Remove function.
+	Updated all callers to use TREE_SIDE_EFFECTS.
+	(stabilize_expr): New function.
+	Updated all routines that check for COMPOUND_EXPR to use it.
+	* expr.cc (ExprVisitor::visit(EqualExp)): Use maybe_make_temp to save
+	expressions.  Use build_boolop for constructed conditions.
+	(ExprVisitor::visit(CatAssignExp)): Stabilize RHS before assignment.
+	(ExprVisitor::visit(NewExp)): Don't always create SAVE_EXPR.
+	(ExprVisitor::visit(AssocArrayLiteralExp)): Likewise.
+	(ExprVisitor::visit(ArrayLiteralExp)): Evaluate elements before
+	appending to constructor fields.
+	(ExprVisitor::visit(StructLiteralExp)): Likewise.
+
+2016-06-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-convert.cc (d_build_truthvalue_op): Fold truthvalue operation.
+	(d_truthvalue_conversion): Use zero constant of expression type.
+
+2016-06-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_address): Handle ERROR_MARK and COMPOUND_EXPR.
+	(build_nop): Likewise.
+	(indirect_ref): Likewise.
+	(build_deref): Likewise.
+	(d_build_call): Only create temporaries if more than one argument has
+	side effects.
+	* expr.cc (get_compound_value): Remove function.
+	(build_expr_dtor): Wrap cleanups in a TRY_FINALLY_EXPR only if the
+	expression has side effects.
+
+2016-06-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (D_GLUE_OBJS): Remove d-typinf.o, add typeinfo.o.
+	* d-codegen.cc (build_typeinfo): Move to ...
+	* typeinfo.cc: ... here.  New file.
+	* d-objfile.cc (TypeInfoDeclaration::toObjFile): Use layout_typeinfo.
+	* d-todt.cc (verify_structsize): Remove function.
+	(TypeInfoDeclaration::toDt): Remove function and overrides.
+	* d-typinf.cc: Remove file.  Contents moved to typeinfo.cc.
+	* expr.cc (ExprVisitor::visit(DeleteExp)): Use build_typeinfo.
+	(ExprVisitor::visit(NewExp)): Likewise.
+
+2016-06-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dfrontend: Update to D front-end version 2.068.
+	* d-codegen.cc (insert_type_modifiers): Don't build TYPE_QUAL_VOLATILE
+	types.  Set TYPE_SHARED instead.
+	(insert_aggregate_field): Propagate TYPE_SHARED to TREE_ADDRESSABLE.
+	(array_bounds_check): Use BOUNDSCHECK interface.
+	* d-lang.cc (d_init_options): Likewise.
+	(d_init): Likewise.
+	(d_handle_option): Likewise.
+	(d_post_options): Likewise.
+	* d-decls.cc (VarDeclaration::toSymbol): Propagate TYPE_SHARED_to
+	TREE_ADDRESSABLE.
+	* d-objfile.cc (ClassDeclaration::toObjFile): Make overload shadowing
+	an error.  Remove call to _d_hidden_func.
+	(TypeInfoDeclaration::toObjFile): Updated template emission rules.
+	(FuncDeclaration::toObjFile): Likewise.
+	* d-port.cc (Port::readwordLE): New function.
+	(Port::readwordBE): New function.
+	(Port::readlongLE): New function.
+	(Port::readlongBE): New function.
+	* d-todt.cc (dt_container2): Handle error_mark_node.
+	(dt_container): Likewise.
+	(TypeInfoStructDeclaration::toDt): Updated template emission rules.
+	* d-typinf.cc (genTypeInfo): Likewise.
+	(getTypeInfo): Remove function.
+	(getTypeInfoType): New function.
+	(isSpeculativeType): New function.
+	* d-tree.h (TYPE_SHARED): New macro.
+	* expr.cc (ExprVisitor::visit(CondExp)): Don't generate dtors in
+	condition expression.
+	(ExprVisitor::visit(AssignExp)): Update for frontend changes.
+	(ExprVisitor::visit(DeleteExp)): Likewise.
+	(ExprVisitor::visit(CallExp)): Likewise.
+	(ExprVisitor::visit(DelegateExp)): Likewise.
+	(ExprVisitor::visit(TypeidExp)): New function.
+	* lang.opt (bounds_check_set_manually): Remove variable.
+	(ftransition=complex): New option.
+	* runtime.def (HIDDEN_FUNC): Remove runtime function.
+
+2016-06-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_alignment_field): New function.
+	(build_struct_literal): Update signature, updated all callers.
+	Add anonymous fields to fill alignment holes in constructor.
+	(fill_alignment_field): Remove function.
+	(fill_alignment_holes): Remove function.
+	(finish_aggregate_type): Don't add anonymous fields.
+
+2016-06-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (d_build_call): Separate parameter to pass from it's
+	construction expression.
+	* expr.cc (build_dtor_list): New function.
+	(get_compound_value): New function.
+	(build_expr_dtor): Update to use helper functions.
+	(build_return_dtor): New function.
+	* toir.cc (IRVisitor::visit(ReturnStatement)): Use it.
+
+2016-06-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_deref): Handle ERROR_MARK nodes early.
+	(build_array_index): Likewise.
+
+2016-05-29  Johannes Pfau  <johannespfau@gmail.com>
+
+	* toir.cc (IRVisitor::visit(SwitchStatement)): Set correct type for the
+	string table for switch(string) statements.
+
+2016-05-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (convert_expr): Return empty constructor for null to
+	associative array conversions.
+	* expr.cc (ExprVisitor::visit(NullExp)): Likewise.
+
+2016-05-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_struct_literal): Don't set TREE_STATIC.
+	(build_boolop): Remove side effects from aggregate types only.
+	* expr.cc (ExprVisitor::visit(ArrayLiteralExp)): Don't check
+	initializer_constant_valid_p until after constructor is built.
+	(ExprVisitor::visit(StructLiteralExp)): Likewise.
+
+2016-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* expr.cc (ExprVisitor::visit(AssignExp)): Build the rhs constructor
+	before the lhs declaration.
+	(ExprVisitor::visit(DeclarationExp)): Compile the declaration and
+	initializer before pushing it to vars_in_scope.
+	(build_expr_dtor): Compound all dtors in reverse.
+
+2016-05-16  Johannes Pfau  <johannespfau@gmail.com>
+
+	* expr.cc (ExprVisitor::visit(IdentityExp*)): Remove side-effects
+	before comparing two floating point types.
+	* d-codegen.cc (build_struct_comparison): Remove side-effects
+	before comparing two values.
+	(build_boolop): Likewise.
+
+2016-05-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-todt.cc (Expression::toDt): Remove function and all overrides.
+	Update all callers to use build_expr.
+	* expr.cc (ExprVisitor::visit(SymOffExp)): Move check for non-constant
+	expressions in static initializer data to ...
+	(build_expr): ... here.
+	* toir.cc (IRVisitor::visit(SwitchStatement)): Build array of indexes
+	directly using build_artificial_decl.
+
+2016-05-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* expr.cc (ExprVisitor::visit(IdentityExp*)): Remove side-effects
+	before comparing two dynamic arrays.
+
+2016-05-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (get_decl_tree): First check if cfun is set.
+	* d-todt.cc (StructLiteralExp::toDt): Update call to build_expr.
+	(SymOffExp::toDt): Likewise.
+	(VarExp::toDt): Likewise.
+	(FuncExp::toDt): Likewise.
+	(VectorExp::toDt): Likewise.
+	* expr.cc (ExprVisitor::visit(SymbolExp)): Remove function.
+	(ExprVisitor::visit(SymOffExp)): New function.
+	(ExprVisitor::visit(VarExp)): New function.
+	(ExprVisitor::visit(StructLiteralExp)): Don't return static
+	initializer symbol if constant literal requested.
+
+2016-05-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_struct_literal): Maybe set TREE_CONSTANT or
+	TREE_STATIC on the returned constructor.
+	Allow building struct literals with initializer list out of order.
+	Add check and error when initializer overlaps previous field.
+	Don't explicitly set empty initializers for anonymous aggregates or
+	artificial fields.
+
+2016-05-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_array_from_val): New function.
+	* expr.cc (ExprVisitor::visit(StructLiteralExp)): Use it.
+
+2016-05-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (convert_expr): Use build_nop to cast between two
+	static arrays of the same size.
+	* d-todt.cc (IntegerExp::toDt): Update call to build_expr.
+	(RealExp::toDt): Likewise.
+	(ComplexExp::toDt): Likewise.
+	(StringExp::toDt): Likewise.
+	(NullExp::toDt): Use build_expr to generate initializer.
+	(ArrayLiteralExp::toDt): Likewise.
+	(CastExp::toDt): Likewise.
+	(ClassReferenceExp::toDt): Likewise.
+	(ClassReferenceExp::toDtI): Remove function.
+	* expr.cc (ExprVisitor::visit(CastExp)): Forward constp to the next
+	leaf expression in the tree.
+	(ExprVisitor::visit(AddrExp)): Likewise.
+	(ExprVisitor::visit(FuncExp)): Likewise.
+	(ExprVisitor::visit(ArrayLiteralExp)): Likewise.
+	(ExprVisitor::visit(StructLiteralExp)): Likewise.
+	(ExprVisitor::visit(VectorExp)): Likewise.
+	(ExprVisitor::visit(ClassReferenceExp)): Adjust reference for constp.
+
+2016-05-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-objfile.cc (get_unique_name): Remove function.
+	(build_artificial_decl): New function.
+	(d_finish_symbol): Use build_artificial_decl.
+	(build_moduleinfo): Likewise.
+	* d-decls.cc (StructLiteralExp::toSymbol): Likewise.
+	(ClassReferenceExp::toSymbol): Likewise.
+
+2016-05-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* expr.cc (ExprVisitor::visit(BinExp)): New function.
+	(ExprVisitor::visit(XorExp)): Remove function.
+	(ExprVisitor::visit(OrExp)): Likewise.
+	(ExprVisitor::visit(AndExp)): Likewise.
+	(ExprVisitor::visit(UshrExp)): Likewise.
+	(ExprVisitor::visit(ShrExp)): Likewise.
+	(ExprVisitor::visit(ShlExp)): Likewise.
+	(ExprVisitor::visit(ModExp)): Likewise.
+	(ExprVisitor::visit(DivExp)): Likewise.
+	(ExprVisitor::visit(MulExp)): Likewise.
+	(ExprVisitor::visit(MinExp)): Likewise.
+	(ExprVisitor::visit(AddExp)): Likewise.
+	(ExprVisitor::visit(BinAssignExp)): New function.
+	(ExprVisitor::visit(XorAssignExp)): Remove function.
+	(ExprVisitor::visit(OrAssignExp)): Likewise.
+	(ExprVisitor::visit(AndAssignExp)): Likewise.
+	(ExprVisitor::visit(ShrAssignExp)): Likewise.
+	(ExprVisitor::visit(ShlAssignExp)): Likewise.
+	(ExprVisitor::visit(ModAssignExp)): Likewise.
+	(ExprVisitor::visit(DivAssignExp)): Likewise.
+	(ExprVisitor::visit(MulAssignExp)): Likewise.
+	(ExprVisitor::visit(PowAssignExp)): Likewise.
+	(ExprVisitor::visit(MinAssignExp)): Likewise.
+	(ExprVisitor::visit(AddAssignExp)): Likewise.
+
+2016-05-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* expr.cc (ExprVisitor::ExprVisitor): Update signature.
+	(ExprVisitor::visit(AddrExp)): Handle constant expressions.
+	(ExprVisitor::visit(FuncExp)): Likewise.
+	(ExprVisitor::visit(ComplexExp)): Likewise.
+	(ExprVisitor::visit(StringExp)): Likewise.
+	(ExprVisitor::visit(ArrayLiteralExp)): Likewise.
+	(ExprVisitor::visit(StructLiteralExp)): Likewise.
+	(ExprVisitor::visit(NullExp)): Likewise.
+	(ExprVisitor::visit(ClassReferenceExp)): Likewise.
+	(build_expr): Update signature.
+
+2016-05-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (D_GLUE_OBJS): Add d/expr.o.
+	Remove d/d-elem.o
+	* d-codegen.cc (size_mult_expr): New function.
+	* d-tree.h (build_expr): New function, update all callers to toElem.
+	(build_expr_dtor): New function, update all callers to toElemDtor.
+	* expr.cc: New file.
+	* d-elem.cc: Remove file.
+
+2016-05-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-target.cc (Target::init): Target::realpad value should be size
+	minus precision.
+
+2016-04-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (finish_aggregate_type): Use SET_TYPE_ALIGN.
+	* types.cc (TypeVisitor::visit(TypeStruct)): Likewise.
+	* d-decls.cc (ClassDeclaration::toVtblSymbol): Use SET_DECL_ALIGN.
+	* d-objfile.cc (d_finish_symbol): Likewise.
+	* d-target.cc (Target::fieldalign): Likewise.
+
+2016-04-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-todt.cc (TypeSArray::toDtElem): Remove special handling for
+	arrays of vectors.
+
+2016-04-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (build_dtype): Make function static.
+	* d-lang.cc (d_init_exceptions): Remove function.
+	* d-codegen.h: Move visitor declarations to ...
+	* d-tree.h: ... here.
+	(lang_decl): Remove `d_` prefix from fields.
+	(lang_type): Likewise.
+	* d-lang.cc (build_d_type_lang_specific): Rename to build_lang_type.
+	(build_d_decl_lang_specific): Rename to build_lang_decl.
+	* imports.cc: Update includes.
+
+2016-03-29  Johannes Pfau  <johannespfau@gmail.com>
+
+	* d-objfile.cc (d_comdat_linkage): Rewrite template duplicate
+	handling to generate only one backend tree for all duplicates.
+	(FuncDeclaration::toObjFile): Likewise.
+	(VarDeclaration::toObjFile): Likewise.
+	* d-decls.cc (FuncDeclaration::toSymbol): Likewise.
+	(VarDeclaration::toSymbol): Likewise.
+	* d-objfile.cc (get_template_storage_info): Extract function from
+	setup_symbol_storage.
+	(setup_symbol_storage): Likewise.
+	* d-tree.h (lang_identifier): Add field for Dsymbol.
+	(IDENTIFIER_LANG_SPECIFIC): New macro.
+	(IDENTIFIER_DSYMBOL): Likewise.
+
+2016-03-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (fill_alignment_field): Call layout_decl on field.
+	(finish_aggregate_type): Add assertion that TYPE_MODE is equal.
+
+2016-03-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (convert_expr): Replace call build_integer_cst with
+	size_int.
+	(convert_for_assignment): Likewise.
+	(build_struct_comparison): Likewise.
+	(d_assert_call): Likewise.
+	* d-elem.cc (IdentityExp::toElem): Likewise.
+	(AssignExp::toElem): Likewise.
+	(IndexExp::toElem): Likewise.
+	(SymbolExp::toElem): Likewise.
+	(NewExp::toElem): Likewise.
+	(ArrayLiteralExp::toElem): Likewise.
+	(AssocArrayLiteralExp::toElem): Likewise.
+
+2016-03-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-tree.h (CLASS_TYPE_P): New macro.
+	* d-codegen.cc (build_struct_literal): Check RECORD_OR_UNION_TYPE_P
+	before testing ANON_AGGR_TYPE_P.
+	(fill_alignment_field): New function.
+	(fill_alignment_holes): New function.
+	(finish_aggregate_type): Call fill_alignment_holes before computing
+	backend type mode.
+
+2016-03-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-tree.h (D_METHOD_CALL_EXPR): Removed `D_' prefix from macro,
+	updated all callers.
+	(D_TYPE_IMAGINARY_FLOAT): Likewise.
+	(D_LABEL_VARIABLE_CASE): Likewise.
+	* d-codegen.cc (build_delegate_cst): Always return valid constructor.
+	(get_object_method): Remove function.
+	(build_vindex_ref): New function.
+	* d-elem.cc (FuncExp::toElem): Use the real function pointer type when
+	converting to delegate.
+	(CallExp::toElem): Handle setting up virtual functions directly.
+	(DelegateExp::toElem): Likewise.
+	(DotVarExp::toElem): Remove handling of virtual functions.
+
+2016-03-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.h (lang_dtype): Remove function.
+	(lang_ddecl): Remove function.
+	* d-tree.h (TYPE_LANG_FRONTEND): New macro, replace all uses of
+	lang_dtype function.
+	(DECL_LANG_FRONTEND): New macro.
+	* d-attribs.c: Update includes.
+	* d-builtins.cc: Likewise.
+	* d-codegen.cc: Likewise.
+	* d-incpath.cc: Likewise.
+	* d-lang.cc: Likewise.
+	* d-objfile.cc: Likewise.
+
+2016-03-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.h (function_type_p): Remove function.
+	* d-codegen.cc (d_build_call): Use FUNC_OR_METHOD_P macro.
+	(build_bounds_condition): Update signature.
+	(d_assert_call): Likewise.
+	(insert_aggregate_field): Likewise.
+	* d-objfile.cc (get_linemap): Likewise.
+	* d-lang.h: Remove file, updated all includes.  Moved forward
+	declarations of types and functions to ...
+	* d-tree.h: ... here.
+
+2016-03-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (d_checked_index): Remove function.
+	(d_bounds_condition): Remove function.
+	(build_bounds_condition): New function.
+	* d-elem.cc (IndexExp::toElem): Use build_bounds_condition.
+	(SliceExp::toElem): Likewise.
+	(EqualExp::toElem): Convert expressions to dynamic arrays when
+	inlining comparison.  Don't pass zero length arrays to memcmp.
+
+2016-03-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (d_array_convert): New function overload.
+	* d-elem.cc (CatExp::toElem): Call new runtime function _d_arraycatnTX
+	when flattening multiple concatenations.
+	(NewExp::toElem): Update call construction for new signatures of
+	runtime functions _d_newarraymTX and _d_newarraymiTX.
+	* runtime.def (NEWARRAYMTX): Update signature.
+	(NEWARRAYMITX): Likewise,
+	(ARRAYCATNT): Remove runtime function.
+	(ARRAYCATNTX): New runtime function.
+
+2016-03-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* imports.cc (ImportVisitor::visit(Declaration)): Don't assume toSymbol
+	method will cache it's result.
+
+2016-03-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dfrontend: Update root library to 2.068.
+	* Make-lang.in (D_DMD_OBJS): Add newdelete.o
+	* d-target.cc (Target::classinfosize): New variable, replaces all uses
+	of global CLASSINFO_SIZE.
+	(Target::init): Initialize it.
+	* d-decls.cc (ClassInfoDeclaration::toSymbol): Remove function.
+
+2016-03-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dfrontend: Update to D front-end version 2.067.
+	* Make-lang.in (D_DMD_OBJS): Add new frontend sources.
+	* d-builtins.cc (d_build_builtins_module): Update signature.
+	(maybe_set_builtin): Rename to d_maybe_set_builtin, update signature.
+	(d_gcc_magic_module): Remove function.
+	* d-codegen.cc (expand_volatile_load): New function.
+	(expand_volatile_store): New function.
+	(expand_intrinsic): Handle volatileLoad and volatileStore intrinsics.
+	* d-decls.cc (Module::toModuleAssert): Remove function.
+	(Module::toModuleUnittest): Remove function.
+	(Module::toModuleArray): Remove function.
+	(TypeAArray::aaGetSymbol): Remove function.
+	* d-elem.cc (AssignExp::toElem): Call _d_arrayassign_{l,r} when
+	generating dynamic array assignment.
+	(IndexExp::toElem): Call _aaGetY when indexing an associative array.
+	(SliceExp::toElem): Use known CTFE result to check whether bounds
+	checks are necessary.
+	(DeleteExp::toElem): Call _d_delstruct when deleting a struct pointer.
+	(Expression::toElemDtor): Don't run cleanup of temporary if it's
+	constructor thrown an exception.
+	(NewExp::toElem): Handle special construction of new() arguments.
+	* d-glue.cc (Loc::Loc): Update signature.
+	(error): Likewise.
+	(toInitializer): New function.
+	* d-lang.cc (d_handle_option): Replace deprecated handlers.
+	(d_post_options): Set flag_max_errors.
+	(d_parse_file): Process any modules marked as builtin.
+	* d-objfile.cc (ClassDeclaration::toObjFile): Don't write out ctors
+	in the vtable marked @disable.
+	* d-target.cc (Target::loadModule): New function.
+	(Target::checkVectorType): New function.
+	* d-specs.c (lang_specific_driver): Handle -v option.
+	* lang-specs.h: Pass -v option to to frontend.
+
+2016-03-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* imports.cc: New file.
+	* d-decls.cc (Dsymbol::toImport): Remove function, update all callers
+	to use build_import_decl.
+
+2016-03-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-objfile.cc (gcc_attribute_p): New function.
+	(output_declaration_p): Inline into FuncDeclaration::ObjFile.
+	(unnest_function): Likewise.
+	(FuncDeclaration::toObjFile): Remove named parameter, update all
+	callers to ignore it.
+	(d_comdat_group): Use DECL_ASSEMBLER_NAME for the comdat group.
+	(d_comdat_linkage): Catch duplicate instantiations of templates, put
+	them in the same comdat group.
+	(setup_symbol_storage): Mark templates not to be written as abstract.
+	(d_finish_function): Don't send DECL_ABSTRACT_P functions to backend.
+	(d_finish_compilation): Mark all symbols as needed.
+
+	* d-objfile.cc: Remove redundant bool parameter from all lowering
+	routines for symbols, update all callers.
+
+2016-02-22  Eugene Wissner <belka@caraus.de>
+
+	* d-lang.cc (d_init): Remove short_double parameter from
+	build_common_tree_nodes.
+
+2016-02-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* intrinsics.def: Split signature macros into three groups.
+	Attributes, types, and helper generators.
+	* d-elem.cc (needsPostblit): Change signature to return boolean,
+	updated all callers.
+	(AssignExp::toElem): Don't assign destination to a temporary in
+	arraycopy call.
+	* toir.cc (IRVisior::visit(ThrowStatement)): Use NOP_EXPR cast to
+	convert thrown exception to Object.
+	(IRVisitor::visit(TryCatchStatement)): Use NOP_EXPR cast to convert
+	caught Object to thrown exception.
+	* d-codegen.cc (void_okay_p): Lazily build the convert to type.
+	* d-lang.cc (parse_int): Remove function.
+	(d_handle_option): Use integral_argument to parse numbers.
+
+	* d-codegen.cc (lower_struct_comparison): Built custom type if
+	lang_hooks.types.type_for_mode returns nothing.
+	* d-lang.cc (d_type_for_mode): Always support cent/ucent modes.
+	(d_type_for_size): Add support for cent/ucent precision types.
+	(d_signed_or_unsigned_type): Always support cent/ucent precisions.
+
+	* d-codegen.cc (d_build_call): Remove type promotion handling for
+	variadic arguments.
+	(expand_intrinsic_vaarg): Likewise.
+	* d-lang.cc (d_type_promotes_to): Likewise.
+
+	* d-elem.cc (AddrExp::toElem): Take address of the static const symbol
+	for the struct literal,  not the const constructor.
+	(CallExp::toElem): Don't pass generated static struct literal symbol
+	as the object parameter for DotVar call expressions.
+
+	* d-codegen.cc (type_va_array): New function.
+	(declaration_type_kind): Remove function.
+	(declaration_reference_p): New function, update all callers of
+	declaration_type_kind.
+	(argument_type_kind): Remove function.
+	(argument_reference_p): New function, update all callers of
+	argument_type_kind.
+	(build_address): Remove special handling of static array va_list.
+	* d-codegen.h (type_kind): Remove enum.
+
+2016-02-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_condition): New function.  Update all callers
+	that generate a COND_EXPR that returns a value to use it.
+	(build_vcondition): New function.  Update all callers that generate a
+	void COND_EXPR to use it.
+	* toir.cc (IRVisitor::visit(DoStatement)): Build a COND_EXPR instead
+	of an EXIT_EXPR to break from the loop.
+	(IRVisitor::visit(ForStatement)): Likewise.
+
+2016-02-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-elem.cc: Remove redundant IRState parameter from all lowering
+	routines for expressions, update all callers.
+
+2016-02-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_array_set): Use POSTINCREMENT_EXPR to adjust
+	array pointer.
+	(identity_compare_p): New function.
+	(build_struct_memcmp): Refactor into ...
+	(lower_struct_comparison): ... New function.
+	(build_struct_comparison): New function.
+	(build_array_struct_comparison): New function.
+	* d-elem.cc (IdentityExp::toElem): Use build_struct_comparison for
+	RECORD_TYPE values.
+	(EqualExp::toElem): Likewise.
+	Use memcmp for array of structs that pass test for identity_compare_p,
+	or fallback to build_array_struct_comparison.
+	(NewExp::toElem): Remove setting of StructLiteralExp::fillHoles.
+	(StructLiteralExp::toElem): Ignore StructLiteralExp::fillHoles, unless
+	building a union literal.
+
+2016-02-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-elem.cc (AssignExp::toElem): Pass parameters for arraycopy and
+	arrayassign in the correct order.
+
+2016-01-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* longdouble.h (longdouble): Use one contiguous array for the
+	real_value data payload.
+
+2016-01-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* toir.cc (IRVisitor::visit (ExtAsmStatement): Do validation of input
+	and output constraints, marking operands as addressable if requested.
+
+2016-01-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (empty_aggregate_p): New function.
+	(d_build_call): Don't pass empty aggregates by value.
+	(build_struct_memcmp): Don't compare empty aggregates by value.
+	* d-elem.cc (IdentityExp::toElem): Likewise.
+	(EqualExp::toElem): Likewise.
+	* (StructLiteralExp::toElem): Don't create temporaries or initialize
+	holes for empty	aggregates.
+	* d-lang.cc (empty_modify_p): New function.
+	(d_gimplify_expr): Remove assignments that involve empty aggregates.
+
+2016-01-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (d_builtin_type): Define DEF_FUNCTION_TYPE_9,
+	DEF_FUNCTION_TYPE_10, and DEF_FUNCTION_TYPE_11.
+	(d_init_builtins): Likewise.
+	* d-longdouble.cc (machineMode): Remove function.
+	(longdouble::init): Don't use initialize real format by reference.
+	(longdouble::operator+): Use real_arithmetic instead of
+	REAL_ARITHMETIC.
+	(longdouble::operator-): Likewise.
+	(longdouble::operator*): Likewise.
+	(longdouble::operator/): Likewise.
+	(longdouble::operator%): Likewise.
+	* d-port.cc (Port::isSignallingNan): Use REAL_VALUE_ISSIGNALING_NAN.
+	(Port::fequal): Use real_identical instead of REAL_VALUES_IDENTICAL.
+	* d-target.cc: Include stor-layout.h header.
+	* lang.opt: Remove documentation for switches defined elsewhere.
+
+2016-01-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (get_libcall): Use set_call_expr_flags to apply runtime
+	function attributes.
+	* d-codegen.h (LibCallFlag): Remove type.
+	* runtime.def: Replace LibCallFlag with ECF everywhere.
+
+
+Copyright (C) 2016 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

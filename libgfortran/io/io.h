@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -961,8 +961,8 @@ internal_proto(free_ionml);
 static inline void
 inc_waiting_locked (gfc_unit *u)
 {
-#ifdef HAVE_SYNC_FETCH_AND_ADD
-  (void) __sync_fetch_and_add (&u->waiting, 1);
+#ifdef HAVE_ATOMIC_FETCH_ADD
+  (void) __atomic_fetch_add (&u->waiting, 1, __ATOMIC_RELAXED);
 #else
   u->waiting++;
 #endif
@@ -971,8 +971,20 @@ inc_waiting_locked (gfc_unit *u)
 static inline int
 predec_waiting_locked (gfc_unit *u)
 {
-#ifdef HAVE_SYNC_FETCH_AND_ADD
-  return __sync_add_and_fetch (&u->waiting, -1);
+#ifdef HAVE_ATOMIC_FETCH_ADD
+  /* Note that the pattern
+
+     if (predec_waiting_locked (u) == 0)
+         // destroy u
+	 
+     could be further optimized by making this be an __ATOMIC_RELEASE,
+     and then inserting a
+
+     __atomic_thread_fence (__ATOMIC_ACQUIRE);
+
+     inside the branch before destroying.  But for now, lets keep it
+     simple.  */
+  return __atomic_add_fetch (&u->waiting, -1, __ATOMIC_ACQ_REL);
 #else
   return --u->waiting;
 #endif
@@ -981,8 +993,8 @@ predec_waiting_locked (gfc_unit *u)
 static inline void
 dec_waiting_unlocked (gfc_unit *u)
 {
-#ifdef HAVE_SYNC_FETCH_AND_ADD
-  (void) __sync_fetch_and_add (&u->waiting, -1);
+#ifdef HAVE_ATOMIC_FETCH_ADD
+  (void) __atomic_fetch_add (&u->waiting, -1, __ATOMIC_RELAXED);
 #else
   __gthread_mutex_lock (&unit_lock);
   u->waiting--;

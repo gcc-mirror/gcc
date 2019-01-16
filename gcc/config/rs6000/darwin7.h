@@ -1,5 +1,5 @@
 /* Target definitions for Darwin 7.x (Mac OS X) systems.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,6 +27,11 @@ along with GCC; see the file COPYING3.  If not see
 #define LIB_SPEC "%{!static:\
   %:version-compare(!< 10.3 mmacosx-version-min= -lmx)\
   -lSystem}"
+
+/* This generation of tools (specifically the archive tool) did not
+   export weak symbols from the TOC. */
+#undef TARGET_WEAK_NOT_IN_ARCHIVE_TOC
+#define TARGET_WEAK_NOT_IN_ARCHIVE_TOC 1
 
 #undef DEF_MIN_OSX_VERSION
 #define DEF_MIN_OSX_VERSION "10.3.9"

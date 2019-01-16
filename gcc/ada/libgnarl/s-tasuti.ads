@@ -111,7 +111,8 @@ package System.Tasking.Utilities is
    --  The effect is to exit one level of ATC nesting.
 
    procedure Abort_One_Task (Self_ID : Task_Id; T : Task_Id);
-   --  Similar to Locked_Abort_To_Level (Self_ID, T, 0), but:
+   --  Similar to Locked_Abort_To_Level (Self_ID, T, Level_Completed_Task),
+   --  but:
    --    (1) caller should be holding no locks
    --    (2) may be called for tasks that have not yet been activated
    --    (3) always aborts whole task

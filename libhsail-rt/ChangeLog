@@ -1,3 +1,13 @@
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* configure.ac: Remove AC_PREREQ.
+	* Makefile.in, aclocal.m4, configure: Regenerate.
+
 2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
 	* include/internal/phsa-rt.h: Whitespace cleanup.
@@ -119,7 +129,7 @@
 	* rt/segment.c: Likewise.
 	* rt/workitems.c: Likewise.
 
-Copyright (C) 2017-2018 Free Software Foundation, Inc.
+Copyright (C) 2017-2019 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

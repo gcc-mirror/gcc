@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC for IA-32.
-   Copyright (C) 1988-2018 Free Software Foundation, Inc.
+   Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -170,6 +170,12 @@ extern void x86_function_profiler (FILE *, int);
 extern void x86_emit_floatuns (rtx [2]);
 extern void ix86_emit_fp_unordered_jump (rtx);
 
+extern void ix86_emit_i387_sinh (rtx, rtx);
+extern void ix86_emit_i387_cosh (rtx, rtx);
+extern void ix86_emit_i387_tanh (rtx, rtx);
+extern void ix86_emit_i387_asinh (rtx, rtx);
+extern void ix86_emit_i387_acosh (rtx, rtx);
+extern void ix86_emit_i387_atanh (rtx, rtx);
 extern void ix86_emit_i387_log1p (rtx, rtx);
 extern void ix86_emit_i387_round (rtx, rtx);
 extern void ix86_emit_swdivsf (rtx, rtx, rtx, machine_mode);
@@ -235,6 +241,9 @@ extern void ix86_expand_sse2_abs (rtx, rtx);
 /* In i386-c.c  */
 extern void ix86_target_macros (void);
 extern void ix86_register_pragmas (void);
+
+/* In i386-d.c  */
+extern void ix86_d_target_versions (void);
 
 /* In winnt.c  */
 extern void i386_pe_unique_section (tree, int);

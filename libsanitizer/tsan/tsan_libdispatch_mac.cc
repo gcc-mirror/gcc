@@ -23,6 +23,11 @@
 #include <dispatch/dispatch.h>
 #include <pthread.h>
 
+// DISPATCH_NOESCAPE is not defined prior to XCode 8.
+#ifndef DISPATCH_NOESCAPE
+#define DISPATCH_NOESCAPE
+#endif
+
 typedef long long_t;  // NOLINT
 
 namespace __tsan {
@@ -178,11 +183,8 @@ static void invoke_and_release_block(void *param) {
   TSAN_INTERCEPTOR(void, name, dispatch_queue_t q,                           \
                    DISPATCH_NOESCAPE dispatch_block_t block) {               \
     SCOPED_TSAN_INTERCEPTOR(name, q, block);                                 \
-    SCOPED_TSAN_INTERCEPTOR_USER_CALLBACK_START();                           \
-    dispatch_block_t heap_block = Block_copy(block);                         \
-    SCOPED_TSAN_INTERCEPTOR_USER_CALLBACK_END();                             \
     tsan_block_context_t new_context = {                                     \
-        q, heap_block, &invoke_and_release_block, false, true, barrier, 0};  \
+        q, block, &invoke_block, false, true, barrier, 0};                   \
     Release(thr, pc, (uptr)&new_context);                                    \
     SCOPED_TSAN_INTERCEPTOR_USER_CALLBACK_START();                           \
     REAL(name##_f)(q, &new_context, dispatch_callback_wrap);                 \
@@ -520,9 +522,9 @@ TSAN_INTERCEPTOR(dispatch_data_t, dispatch_data_create, const void *buffer,
     return REAL(dispatch_data_create)(buffer, size, q, destructor);
 
   if (destructor == DISPATCH_DATA_DESTRUCTOR_FREE)
-    destructor = ^(void) { WRAP(free)((void *)buffer); };
+    destructor = ^(void) { WRAP(free)((void *)(uintptr_t)buffer); };
   else if (destructor == DISPATCH_DATA_DESTRUCTOR_MUNMAP)
-    destructor = ^(void) { WRAP(munmap)((void *)buffer, size); };
+    destructor = ^(void) { WRAP(munmap)((void *)(uintptr_t)buffer, size); };
 
   SCOPED_TSAN_INTERCEPTOR_USER_CALLBACK_START();
   dispatch_block_t heap_block = Block_copy(destructor);

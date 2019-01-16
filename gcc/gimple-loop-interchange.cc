@@ -1,5 +1,5 @@
 /* Loop interchange.
-   Copyright (C) 2017-2018 Free Software Foundation, Inc.
+   Copyright (C) 2017-2019 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
 This file is part of GCC.
@@ -1645,7 +1645,7 @@ tree_loop_interchange::interchange (vec<data_reference_p> datarefs,
     }
   simple_dce_from_worklist (m_dce_seeds);
 
-  if (changed_p)
+  if (changed_p && dump_enabled_p ())
     dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
 		     "loops interchanged in loop nest\n");
 

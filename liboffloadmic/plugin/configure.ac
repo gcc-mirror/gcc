@@ -29,7 +29,6 @@
 # Process this file with autoconf to produce a configure script, like so:
 # aclocal -I ../.. -I ../../config && autoconf && automake
 
-AC_PREREQ([2.64])
 AC_INIT([Intel MIC Offload Plugin], [1.0], ,[libgomp-plugin-intelmic])
 
 AC_CONFIG_AUX_DIR(../..)

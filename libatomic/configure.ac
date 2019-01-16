@@ -1,5 +1,5 @@
 # Process this file with autoreconf to produce a configure script.
-#  Copyright (C) 2012-2018 Free Software Foundation, Inc.
+#  Copyright (C) 2012-2019 Free Software Foundation, Inc.
 #
 #  This file is part of the GNU Atomic Library (libatomic).
 #
@@ -22,7 +22,6 @@
 #  see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #  <http://www.gnu.org/licenses/>.
 
-AC_PREREQ(2.59)
 AC_INIT([GNU Atomic Library], 1.0,,[libatomic])
 AC_CONFIG_HEADER(auto-config.h)
 

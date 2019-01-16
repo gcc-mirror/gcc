@@ -1,5 +1,5 @@
 /* Compiler driver program that can handle many languages.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -408,6 +408,7 @@ static const char *pass_through_libs_spec_func (int, const char **);
 static const char *replace_extension_spec_func (int, const char **);
 static const char *greater_than_spec_func (int, const char **);
 static const char *debug_level_greater_than_spec_func (int, const char **);
+static const char *find_fortran_preinclude_file (int, const char **);
 static char *convert_white_space (char *);
 
 /* The Specs Language
@@ -1305,6 +1306,7 @@ static const struct compiler default_compilers[] =
   {".f08", "#Fortran", 0, 0, 0}, {".F08", "#Fortran", 0, 0, 0},
   {".r", "#Ratfor", 0, 0, 0},
   {".go", "#Go", 0, 1, 0},
+  {".d", "#D", 0, 1, 0}, {".dd", "#D", 0, 1, 0}, {".di", "#D", 0, 1, 0},
   /* Next come the entries for C.  */
   {".c", "@c", 0, 0, 1},
   {"@c",
@@ -1646,6 +1648,7 @@ static const struct spec_function static_spec_functions[] =
   { "replace-extension",	replace_extension_spec_func },
   { "gt",			greater_than_spec_func },
   { "debug-level-gt",		debug_level_greater_than_spec_func },
+  { "fortran-preinclude-file",	find_fortran_preinclude_file},
 #ifdef EXTRA_SPEC_FUNCTIONS
   EXTRA_SPEC_FUNCTIONS
 #endif
@@ -3998,6 +4001,11 @@ driver_handle_option (struct gcc_options *opts,
 
     case OPT_fdiagnostics_color_:
       diagnostic_color_init (dc, value);
+      break;
+
+    case OPT_fdiagnostics_format_:
+      diagnostic_output_format_init (dc,
+				     (enum diagnostics_output_format)value);
       break;
 
     case OPT_Wa_:
@@ -7955,7 +7963,7 @@ driver::maybe_print_and_exit () const
     {
       printf (_("%s %s%s\n"), progname, pkgversion_string,
 	      version_string);
-      printf ("Copyright %s 2018 Free Software Foundation, Inc.\n",
+      printf ("Copyright %s 2019 Free Software Foundation, Inc.\n",
 	      _("(C)"));
       fputs (_("This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"),
@@ -9887,6 +9895,23 @@ debug_level_greater_than_spec_func (int argc, const char **argv)
 
   return NULL;
 }
+
+/* The function takes 2 arguments: OPTION name and file name.
+   When the FILE is found by find_file, return OPTION=path_to_file.  */
+
+static const char *
+find_fortran_preinclude_file (int argc, const char **argv)
+{
+  if (argc != 2)
+    return NULL;
+
+  const char *path = find_a_file (&include_prefixes, argv[1], R_OK, true);
+  if (path != NULL)
+    return concat (argv[0], path, NULL);
+
+  return NULL;
+}
+
 
 /* Insert backslash before spaces in ORIG (usually a file path), to 
    avoid being broken by spec parser.

@@ -67,5 +67,5 @@ void test4(struct a *A, unsigned LONG b)
     }
 }
 /* long index not hoisted for avr target PR 36561 */
-/* { dg-final { scan-tree-dump-times "Executing store motion of" 8 "lim2" { xfail { "avr-*-*" } } } } */
-/* { dg-final { scan-tree-dump-times "Executing store motion of" 6 "lim2" { target { "avr-*-*" } } } } */
+/* { dg-final { scan-tree-dump-times "Executing store motion of" 8 "lim2" { xfail { avr-*-* msp430-*-* } } } } */
+/* { dg-final { scan-tree-dump-times "Executing store motion of" 6 "lim2" { target { avr-*-* msp430-*-* } } } } */

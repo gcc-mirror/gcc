@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,7 +27,7 @@ __udivmodhi4(unsigned short num, unsigned short den, int modwanted)
   unsigned short bit = 1;
   unsigned short res = 0;
 
-  while (den < num && bit && !(den & (1L<<31)))
+  while (den < num && bit && !(den & (1U<<15)))
     {
       den <<=1;
       bit <<=1;

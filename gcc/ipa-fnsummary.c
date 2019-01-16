@@ -1,5 +1,5 @@
 /* Function summary pass.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -1969,9 +1969,9 @@ fp_expression_p (gimple *stmt)
 static void
 analyze_function_body (struct cgraph_node *node, bool early)
 {
-  sreal time = 0;
+  sreal time = PARAM_VALUE (PARAM_UNINLINED_FUNCTION_TIME);
   /* Estimate static overhead for function prologue/epilogue and alignment. */
-  int size = 2;
+  int size = PARAM_VALUE (PARAM_UNINLINED_FUNCTION_INSNS);
   /* Benefits are scaled by probability of elimination that is in range
      <0,2>.  */
   basic_block bb;
@@ -1990,7 +1990,9 @@ analyze_function_body (struct cgraph_node *node, bool early)
   gcc_assert (cfun == my_function);
 
   memset(&fbi, 0, sizeof(fbi));
+  vec_free (info->conds);
   info->conds = NULL;
+  vec_free (info->size_time_table);
   info->size_time_table = NULL;
 
   /* When optimizing and analyzing for IPA inliner, initialize loop optimizer
@@ -2032,7 +2034,10 @@ analyze_function_body (struct cgraph_node *node, bool early)
   info->account_size_time (0, 0, bb_predicate, bb_predicate);
 
   bb_predicate = predicate::not_inlined ();
-  info->account_size_time (2 * ipa_fn_summary::size_scale, 0, bb_predicate,
+  info->account_size_time (PARAM_VALUE (PARAM_UNINLINED_FUNCTION_INSNS)
+			   * ipa_fn_summary::size_scale,
+			   PARAM_VALUE (PARAM_UNINLINED_FUNCTION_TIME),
+			   bb_predicate,
 		           bb_predicate);
 
   if (fbi.info)
@@ -2178,6 +2183,17 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	      es->call_stmt_time = this_time;
 	      es->loop_depth = bb_loop_depth (bb);
 	      edge_set_predicate (edge, &bb_predicate);
+	      if (edge->speculative)
+		{
+		  cgraph_edge *direct, *indirect;
+		  ipa_ref *ref;
+		  edge->speculative_call_info (direct, indirect, ref);
+		  gcc_assert (direct == edge);
+	          ipa_call_summary *es2
+			 = ipa_call_summaries->get_create (indirect);
+		  ipa_call_summaries->duplicate (edge, indirect,
+						 es, es2);
+		}
 	    }
 
 	  /* TODO: When conditional jump or swithc is known to be constant, but
@@ -2221,12 +2237,12 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		    {
 		      predicate ip = bb_predicate & predicate::not_inlined ();
 		      info->account_size_time (this_size * prob,
-					       (this_time * prob) / 2, ip,
+					       (final_time * prob) / 2, ip,
 					       p);
 		    }
 		  if (prob != 2)
 		    info->account_size_time (this_size * (2 - prob),
-					     (this_time * (2 - prob) / 2),
+					     (final_time * (2 - prob) / 2),
 					     bb_predicate,
 					     p);
 		}
@@ -2405,7 +2421,11 @@ compute_fn_summary (struct cgraph_node *node, bool early)
       node->local.can_change_signature = false;
       es->call_stmt_size = eni_size_weights.call_cost;
       es->call_stmt_time = eni_time_weights.call_cost;
-      info->account_size_time (ipa_fn_summary::size_scale * 2, 2, t, t);
+      info->account_size_time (ipa_fn_summary::size_scale
+			       * PARAM_VALUE
+				 (PARAM_UNINLINED_FUNCTION_THUNK_INSNS),
+			       PARAM_VALUE
+				 (PARAM_UNINLINED_FUNCTION_THUNK_TIME), t, t);
       t = predicate::not_inlined ();
       info->account_size_time (2 * ipa_fn_summary::size_scale, 0, t, t);
       ipa_update_overall_fn_summary (node);
@@ -2489,7 +2509,8 @@ compute_fn_summary (struct cgraph_node *node, bool early)
      ipa_update_overall_fn_summary but because computation happens in
      different order the roundoff errors result in slight changes.  */
   ipa_update_overall_fn_summary (node);
-  gcc_assert (info->size == info->self_size);
+  /* In LTO mode we may have speculative edges set.  */
+  gcc_assert (in_lto_p || info->size == info->self_size);
 }
 
 
@@ -2859,6 +2880,9 @@ remap_edge_change_prob (struct cgraph_edge *inlined_edge,
       struct ipa_call_summary *inlined_es
 	= ipa_call_summaries->get (inlined_edge);
 
+      if (es->param.length () == 0)
+	return;
+
       for (i = 0; i < ipa_get_cs_argument_count (args); i++)
 	{
 	  struct ipa_jump_func *jfunc = ipa_get_ith_jump_func (args, i);
@@ -3193,27 +3217,45 @@ ipa_fn_summary_generate (void)
 /* Write inline summary for edge E to OB.  */
 
 static void
-read_ipa_call_summary (struct lto_input_block *ib, struct cgraph_edge *e)
+read_ipa_call_summary (struct lto_input_block *ib, struct cgraph_edge *e,
+		       bool prevails)
 {
-  struct ipa_call_summary *es = ipa_call_summaries->get_create (e);
+  struct ipa_call_summary *es = prevails
+				? ipa_call_summaries->get_create (e) : NULL;
   predicate p;
   int length, i;
 
-  es->call_stmt_size = streamer_read_uhwi (ib);
-  es->call_stmt_time = streamer_read_uhwi (ib);
-  es->loop_depth = streamer_read_uhwi (ib);
+  int size = streamer_read_uhwi (ib);
+  int time = streamer_read_uhwi (ib);
+  int depth = streamer_read_uhwi (ib);
+
+  if (es)
+    {
+      es->call_stmt_size = size;
+      es->call_stmt_time = time;
+      es->loop_depth = depth;
+    }
 
   bitpack_d bp = streamer_read_bitpack (ib);
-  es->is_return_callee_uncaptured = bp_unpack_value (&bp, 1);
+  if (es)
+    es->is_return_callee_uncaptured = bp_unpack_value (&bp, 1);	
+  else
+    bp_unpack_value (&bp, 1);	
 
   p.stream_in (ib);
-  edge_set_predicate (e, &p);
+  if (es)
+    edge_set_predicate (e, &p);
   length = streamer_read_uhwi (ib);
-  if (length)
+  if (length && es && e->possibly_call_in_translation_unit_p ())
     {
       es->param.safe_grow_cleared (length);
       for (i = 0; i < length; i++)
 	es->param[i].change_prob = streamer_read_uhwi (ib);
+    }
+  else
+    {
+      for (i = 0; i < length; i++)
+	streamer_read_uhwi (ib);
     }
 }
 
@@ -3254,19 +3296,34 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
       encoder = file_data->symtab_node_encoder;
       node = dyn_cast<cgraph_node *> (lto_symtab_encoder_deref (encoder,
 								index));
-      info = ipa_fn_summaries->get_create (node);
+      info = node->prevailing_p () ? ipa_fn_summaries->get_create (node) : NULL;
 
-      info->estimated_stack_size
-	= info->estimated_self_stack_size = streamer_read_uhwi (&ib);
-      info->size = info->self_size = streamer_read_uhwi (&ib);
-      info->time = sreal::stream_in (&ib);
+      int stack_size = streamer_read_uhwi (&ib);
+      int size = streamer_read_uhwi (&ib);
+      sreal time = sreal::stream_in (&ib);
+
+      if (info)
+	{
+	  info->estimated_stack_size
+	    = info->estimated_self_stack_size = stack_size;
+	  info->size = info->self_size = size;
+	  info->time = time;
+	}
 
       bp = streamer_read_bitpack (&ib);
-      info->inlinable = bp_unpack_value (&bp, 1);
-      info->fp_expressions = bp_unpack_value (&bp, 1);
+      if (info)
+	{
+          info->inlinable = bp_unpack_value (&bp, 1);
+          info->fp_expressions = bp_unpack_value (&bp, 1);
+	}
+      else
+	{
+          bp_unpack_value (&bp, 1);
+          bp_unpack_value (&bp, 1);
+	}
 
       count2 = streamer_read_uhwi (&ib);
-      gcc_assert (!info->conds);
+      gcc_assert (!info || !info->conds);
       for (j = 0; j < count2; j++)
 	{
 	  struct condition c;
@@ -3279,10 +3336,11 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	  c.by_ref = bp_unpack_value (&bp, 1);
 	  if (c.agg_contents)
 	    c.offset = streamer_read_uhwi (&ib);
-	  vec_safe_push (info->conds, c);
+	  if (info)
+	    vec_safe_push (info->conds, c);
 	}
       count2 = streamer_read_uhwi (&ib);
-      gcc_assert (!info->size_time_table);
+      gcc_assert (!info || !info->size_time_table);
       for (j = 0; j < count2; j++)
 	{
 	  struct size_time_entry e;
@@ -3292,19 +3350,23 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	  e.exec_predicate.stream_in (&ib);
 	  e.nonconst_predicate.stream_in (&ib);
 
-	  vec_safe_push (info->size_time_table, e);
+	  if (info)
+	    vec_safe_push (info->size_time_table, e);
 	}
 
       p.stream_in (&ib);
-      set_hint_predicate (&info->loop_iterations, p);
+      if (info)
+        set_hint_predicate (&info->loop_iterations, p);
       p.stream_in (&ib);
-      set_hint_predicate (&info->loop_stride, p);
+      if (info)
+        set_hint_predicate (&info->loop_stride, p);
       p.stream_in (&ib);
-      set_hint_predicate (&info->array_index, p);
+      if (info)
+        set_hint_predicate (&info->array_index, p);
       for (e = node->callees; e; e = e->next_callee)
-	read_ipa_call_summary (&ib, e);
+	read_ipa_call_summary (&ib, e, info != NULL);
       for (e = node->indirect_calls; e; e = e->next_callee)
-	read_ipa_call_summary (&ib, e);
+	read_ipa_call_summary (&ib, e, info != NULL);
     }
 
   lto_free_section_data (file_data, LTO_section_ipa_fn_summary, NULL, data,
@@ -3563,10 +3625,7 @@ public:
   virtual unsigned int execute (function *)
     {
       ipa_free_fn_summary ();
-      /* Early optimizations may make function unreachable.  We can not
-	 remove unreachable functions as part of the early opts pass because
-	 TODOs are run before subpasses.  Do it here.  */
-      return small_p ? TODO_remove_functions | TODO_dump_symtab : 0;
+      return 0;
     }
 
 private:

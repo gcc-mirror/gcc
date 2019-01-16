@@ -1,5 +1,5 @@
 /* Diagnostic subroutines for printing source-code
-   Copyright (C) 1999-2018 Free Software Foundation, Inc.
+   Copyright (C) 1999-2019 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -777,11 +777,11 @@ compatible_locations_p (location_t loc_a, location_t loc_b)
 	  /* Expand each location towards the spelling location, and
 	     recurse.  */
 	  const line_map_macro *macro_map = linemap_check_macro (map_a);
-	  source_location loc_a_toward_spelling
+	  location_t loc_a_toward_spelling
 	    = linemap_macro_map_loc_unwind_toward_spelling (line_table,
 							    macro_map,
 							    loc_a);
-	  source_location loc_b_toward_spelling
+	  location_t loc_b_toward_spelling
 	    = linemap_macro_map_loc_unwind_toward_spelling (line_table,
 							    macro_map,
 							    loc_b);
@@ -818,56 +818,6 @@ fixit_cmp (const void *p_a, const void *p_b)
   const fixit_hint * hint_b = *static_cast<const fixit_hint * const *> (p_b);
   return hint_a->get_start_loc () - hint_b->get_start_loc ();
 }
-
-/* Get the number of digits in the decimal representation
-   of VALUE.  */
-
-static int
-num_digits (int value)
-{
-  /* Perhaps simpler to use log10 for this, but doing it this way avoids
-     using floating point.  */
-  gcc_assert (value >= 0);
-
-  if (value == 0)
-    return 1;
-
-  int digits = 0;
-  while (value > 0)
-    {
-      digits++;
-      value /= 10;
-    }
-  return digits;
-}
-
-
-#if CHECKING_P
-
-/* Selftest for num_digits.  */
-
-static void
-test_num_digits ()
-{
-  ASSERT_EQ (1, num_digits (0));
-  ASSERT_EQ (1, num_digits (9));
-  ASSERT_EQ (2, num_digits (10));
-  ASSERT_EQ (2, num_digits (99));
-  ASSERT_EQ (3, num_digits (100));
-  ASSERT_EQ (3, num_digits (999));
-  ASSERT_EQ (4, num_digits (1000));
-  ASSERT_EQ (4, num_digits (9999));
-  ASSERT_EQ (5, num_digits (10000));
-  ASSERT_EQ (5, num_digits (99999));
-  ASSERT_EQ (6, num_digits (100000));
-  ASSERT_EQ (6, num_digits (999999));
-  ASSERT_EQ (7, num_digits (1000000));
-  ASSERT_EQ (7, num_digits (9999999));
-  ASSERT_EQ (8, num_digits (10000000));
-  ASSERT_EQ (8, num_digits (99999999));
-}
-
-#endif /* #if CHECKING_P */
 
 /* Implementation of class layout.  */
 
@@ -3761,7 +3711,6 @@ void
 diagnostic_show_locus_c_tests ()
 {
   test_line_span ();
-  test_num_digits ();
 
   test_layout_range_for_single_point ();
   test_layout_range_for_single_line ();

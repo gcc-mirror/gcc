@@ -1,5 +1,5 @@
 /* CFG cleanup for trees.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -529,7 +529,7 @@ remove_forwarder_block (basic_block bb)
 	       gsi_next (&psi))
 	    {
 	      gphi *phi = psi.phi ();
-	      source_location l = gimple_phi_arg_location_from_edge (phi, succ);
+	      location_t l = gimple_phi_arg_location_from_edge (phi, succ);
 	      tree def = gimple_phi_arg_def (phi, succ->dest_idx);
 	      add_phi_arg (phi, unshare_expr (def), s, l);
 	    }
@@ -1082,7 +1082,7 @@ remove_forwarder_block_with_phi (basic_block bb)
 	{
 	  gphi *phi = gsi.phi ();
 	  tree def = gimple_phi_arg_def (phi, succ->dest_idx);
-	  source_location locus = gimple_phi_arg_location_from_edge (phi, succ);
+	  location_t locus = gimple_phi_arg_location_from_edge (phi, succ);
 
 	  if (TREE_CODE (def) == SSA_NAME)
 	    {

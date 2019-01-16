@@ -1,5 +1,5 @@
 /* Read and write coverage files, and associated functionality.
-   Copyright (C) 1990-2018 Free Software Foundation, Inc.
+   Copyright (C) 1990-2019 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -74,6 +74,7 @@ struct counts_entry : pointer_hash <counts_entry>
   unsigned lineno_checksum;
   unsigned cfg_checksum;
   gcov_type *counts;
+  unsigned n_counts;
 
   /* hash_table support.  */
   static inline hashval_t hash (const counts_entry *);
@@ -260,6 +261,7 @@ read_counts_file (void)
 	      entry->lineno_checksum = lineno_checksum;
 	      entry->cfg_checksum = cfg_checksum;
 	      entry->counts = XCNEWVEC (gcov_type, n_counts);
+	      entry->n_counts = n_counts;
 	    }
 	  else if (entry->lineno_checksum != lineno_checksum
 		   || entry->cfg_checksum != cfg_checksum)
@@ -295,7 +297,7 @@ read_counts_file (void)
 
 gcov_type *
 get_coverage_counts (unsigned counter, unsigned cfg_checksum,
-		     unsigned lineno_checksum)
+		     unsigned lineno_checksum, unsigned int n_counts)
 {
   counts_entry *entry, elt;
 
@@ -327,7 +329,7 @@ get_coverage_counts (unsigned counter, unsigned cfg_checksum,
   else
     {
       gcc_assert (coverage_node_map_initialized_p ());
-      elt.ident = cgraph_node::get (cfun->decl)->profile_id;
+      elt.ident = cgraph_node::get (current_function_decl)->profile_id;
     }
   elt.ctr = counter;
   entry = counts_hash->find (&elt);
@@ -344,21 +346,31 @@ get_coverage_counts (unsigned counter, unsigned cfg_checksum,
       return NULL;
     }
   
-  if (entry->cfg_checksum != cfg_checksum)
+  if (entry->cfg_checksum != cfg_checksum || entry->n_counts != n_counts)
     {
       static int warned = 0;
       bool warning_printed = false;
 
-      warning_printed =
-	warning_at (DECL_SOURCE_LOCATION (current_function_decl),
-		    OPT_Wcoverage_mismatch,
-		    "the control flow of function %qD does not match "
-		    "its profile data (counter %qs)", current_function_decl,
-		    ctr_names[counter]);
+      if (entry->n_counts != n_counts)
+	warning_printed =
+	  warning_at (DECL_SOURCE_LOCATION (current_function_decl),
+		      OPT_Wcoverage_mismatch,
+		      "number of counters in profile data for function %qD "
+		      "does not match "
+		      "its profile data (counter %qs, expected %i and have %i)",
+		      current_function_decl,
+		      ctr_names[counter], entry->n_counts, n_counts);
+      else
+	warning_printed =
+	  warning_at (DECL_SOURCE_LOCATION (current_function_decl),
+		      OPT_Wcoverage_mismatch,
+		      "the control flow of function %qD does not match "
+		      "its profile data (counter %qs)", current_function_decl,
+		      ctr_names[counter]);
       if (warning_printed && dump_enabled_p ())
 	{
 	  dump_user_location_t loc
-	    = dump_user_location_t::from_location_t (input_location);
+	    = dump_user_location_t::from_function_decl (current_function_decl);
           dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
                            "use -Wno-error=coverage-mismatch to tolerate "
                            "the mismatch but performance may drop if the "
@@ -639,7 +651,9 @@ coverage_begin_function (unsigned lineno_checksum, unsigned cfg_checksum)
   expanded_location endloc = expand_location (cfun->function_end_locus);
 
   /* Function can start in a single file and end in another one.  */
-  gcov_write_unsigned (endloc.file == xloc.file ? endloc.line : xloc.line);
+  int end_line = endloc.file == xloc.file ? endloc.line : xloc.line;
+  gcc_assert (xloc.line <= end_line);
+  gcov_write_unsigned (end_line);
   gcov_write_length (offset);
 
   return !gcov_is_error ();

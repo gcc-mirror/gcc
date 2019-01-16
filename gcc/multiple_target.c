@@ -2,7 +2,7 @@
 
    Contributed by Evgeny Stupachenko <evstupac@gmail.com>
 
-   Copyright (C) 2015-2018 Free Software Foundation, Inc.
+   Copyright (C) 2015-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -162,8 +162,8 @@ create_dispatcher_calls (struct cgraph_node *node)
     }
 
   symtab->change_decl_assembler_name (node->decl,
-				      clone_function_name (node->decl,
-							   "default"));
+				      clone_function_name_numbered (
+					  node->decl, "default"));
 
   /* FIXME: copy of cgraph_node::make_local that should be cleaned up
 	    in next stage1.  */
@@ -312,8 +312,8 @@ create_target_clone (cgraph_node *node, bool definition, char *name)
       new_node = cgraph_node::get_create (new_decl);
       /* Generate a new name for the new version.  */
       symtab->change_decl_assembler_name (new_node->decl,
-					  clone_function_name (node->decl,
-							       name));
+					  clone_function_name_numbered (
+					      node->decl, name));
     }
   return new_node;
 }

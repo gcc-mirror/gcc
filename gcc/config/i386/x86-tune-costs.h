@@ -1,5 +1,5 @@
 /* Costs of operations of individual x86 CPUs.
-   Copyright (C) 1988-2018 Free Software Foundation, Inc.
+   Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1273,6 +1273,133 @@ struct processor_costs znver1_cost = {
   "16",					/* Func alignment.  */
 };
 
+/*  ZNVER2 has optimized REP instruction for medium sized blocks, but for
+    very small blocks it is better to use loop.  For large blocks, libcall
+    can do nontemporary accesses and beat inline considerably.  */
+static stringop_algs znver2_memcpy[2] = {
+  {libcall, {{6, loop, false}, {14, unrolled_loop, false},
+	     {-1, rep_prefix_4_byte, false}}},
+  {libcall, {{16, loop, false}, {8192, rep_prefix_8_byte, false},
+	     {-1, libcall, false}}}};
+static stringop_algs znver2_memset[2] = {
+  {libcall, {{8, loop, false}, {24, unrolled_loop, false},
+	     {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
+  {libcall, {{48, unrolled_loop, false}, {8192, rep_prefix_8_byte, false},
+	     {-1, libcall, false}}}};
+
+struct processor_costs znver2_cost = {
+  COSTS_N_INSNS (1),			/* cost of an add instruction.  */
+  COSTS_N_INSNS (1),			/* cost of a lea instruction.  */
+  COSTS_N_INSNS (1),			/* variable shift costs.  */
+  COSTS_N_INSNS (1),			/* constant shift costs.  */
+  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI.  */
+   COSTS_N_INSNS (3),			/* 				 HI.  */
+   COSTS_N_INSNS (3),			/*				 SI.  */
+   COSTS_N_INSNS (3),			/*				 DI.  */
+   COSTS_N_INSNS (3)},			/*			other.  */
+  0,					/* cost of multiply per each bit
+					   set.  */
+   /* Depending on parameters, idiv can get faster on ryzen.  This is upper
+      bound.  */
+  {COSTS_N_INSNS (16),			/* cost of a divide/mod for QI.  */
+   COSTS_N_INSNS (22),			/* 			    HI.  */
+   COSTS_N_INSNS (30),			/*			    SI.  */
+   COSTS_N_INSNS (45),			/*			    DI.  */
+   COSTS_N_INSNS (45)},			/*			    other.  */
+  COSTS_N_INSNS (1),			/* cost of movsx.  */
+  COSTS_N_INSNS (1),			/* cost of movzx.  */
+  8,					/* "large" insn.  */
+  9,					/* MOVE_RATIO.  */
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2.  */
+
+  /* reg-reg moves are done by renaming and thus they are even cheaper than
+     1 cycle.  Because reg-reg move cost is 2 and following tables correspond
+     to doubles of latencies, we do not model this correctly.  It does not
+     seem to make practical difference to bump prices up even more.  */
+  6,					/* cost for loading QImode using
+					   movzbl.  */
+  {6, 6, 6},				/* cost of loading integer registers
+					   in QImode, HImode and SImode.
+					   Relative to reg-reg move (2).  */
+  {8, 8, 8},				/* cost of storing integer
+					   registers.  */
+  2,					/* cost of reg,reg fld/fst.  */
+  {6, 6, 16},				/* cost of loading fp registers
+					   in SFmode, DFmode and XFmode.  */
+  {8, 8, 16},				/* cost of storing fp registers
+					   in SFmode, DFmode and XFmode.  */
+  2,					/* cost of moving MMX register.  */
+  {6, 6},				/* cost of loading MMX registers
+					   in SImode and DImode.  */
+  {8, 8},				/* cost of storing MMX registers
+					   in SImode and DImode.  */
+  2, 3, 6,				/* cost of moving XMM,YMM,ZMM
+					   register.  */
+  {6, 6, 6, 10, 20},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit.  */
+  {6, 6, 6, 10, 20},			/* cost of unaligned loads.  */
+  {8, 8, 8, 8, 16},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit.  */
+  {8, 8, 8, 8, 16},			/* cost of unaligned stores.  */
+  6, 6,					/* SSE->integer and integer->SSE
+					   moves.  */
+  /* VGATHERDPD is 23 uops and throughput is 9, VGATHERDPD is 35 uops,
+     throughput 12.  Approx 9 uops do not depend on vector size and every load
+     is 7 uops.  */
+  18, 8,				/* Gather load static, per_elt.  */
+  18, 10,				/* Gather store static, per_elt.  */
+  32,					/* size of l1 cache.  */
+  512,					/* size of l2 cache.  */
+  64,					/* size of prefetch block.  */
+  /* New AMD processors never drop prefetches; if they cannot be performed
+     immediately, they are queued.  We set number of simultaneous prefetches
+     to a large constant to reflect this (it probably is not a good idea not
+     to limit number of prefetches at all, as their execution also takes some
+     time).  */
+  100,					/* number of parallel prefetches.  */
+  3,					/* Branch cost.  */
+  COSTS_N_INSNS (5),			/* cost of FADD and FSUB insns.  */
+  COSTS_N_INSNS (5),			/* cost of FMUL instruction.  */
+  /* Latency of fdiv is 8-15.  */
+  COSTS_N_INSNS (15),			/* cost of FDIV instruction.  */
+  COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
+  COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
+  /* Latency of fsqrt is 4-10.  */
+  COSTS_N_INSNS (10),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (3),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (3),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (4),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (5),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (5),			/* cost of FMA SD instruction.  */
+  COSTS_N_INSNS (10),			/* cost of DIVSS instruction.  */
+  /* 9-13.  */
+  COSTS_N_INSNS (13),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (10),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (15),			/* cost of SQRTSD instruction.  */
+  /* Zen can execute 4 integer operations per cycle.  FP operations
+     take 3 cycles and it can execute 2 integer additions and 2
+     multiplications thus reassociation may make sense up to with of 6.
+     SPEC2k6 bencharks suggests
+     that 4 works better than 6 probably due to register pressure.
+
+     Integer vector operations are taken by FP unit and execute 3 vector
+     plus/minus operations per cycle but only one multiply.  This is adjusted
+     in ix86_reassociation_width.  */
+  4, 4, 3, 6,				/* reassoc int, fp, vec_int, vec_fp.  */
+  znver2_memcpy,
+  znver2_memset,
+  COSTS_N_INSNS (4),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (2),			/* cond_not_taken_branch_cost.  */
+  "16",					/* Loop alignment.  */
+  "16",					/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "16",					/* Func alignment.  */
+};
+
 /* skylake_cost should produce code tuned for Skylake familly of CPUs.  */
 static stringop_algs skylake_memcpy[2] =   {
   {libcall, {{1024, rep_prefix_4_byte, true}, {-1, libcall, false}}},
@@ -1988,7 +2115,7 @@ struct processor_costs intel_cost = {
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
 
-  COSTS_N_INSNS (8),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
   COSTS_N_INSNS (8),			/* cost of ADDSS/SD SUBSS/SD insns.  */
   COSTS_N_INSNS (8),			/* cost of MULSS instruction.  */
   COSTS_N_INSNS (8),			/* cost of MULSD instruction.  */

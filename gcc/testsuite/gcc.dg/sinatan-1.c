@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-Ofast" } */
+/* { dg-add-options ieee } */
 
 extern float sinf (float);
 extern float cosf (float);

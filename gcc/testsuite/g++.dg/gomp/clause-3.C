@@ -86,18 +86,18 @@ foo (int x)
 #pragma omp p for linear (t) // { dg-error "predetermined 'threadprivate'" }
   for (i = 0; i < 10; i++)
     ;
-#pragma omp p shared (c) // { dg-error "predetermined 'shared'" }
+#pragma omp p shared (c)
     ;
-#pragma omp p private (c) // { dg-error "predetermined 'shared'" }
+#pragma omp p private (c) // { dg-error "may appear only in 'shared' or 'firstprivate' clauses" }
     ;
 #pragma omp p firstprivate (c)
     ;
-#pragma omp p for lastprivate (c) // { dg-error "predetermined 'shared'" }
+#pragma omp p for lastprivate (c) // { dg-error "may appear only in 'shared' or 'firstprivate' clauses" }
   for (i = 0; i < 10; i++)
     ;
-#pragma omp p reduction (*:c) // { dg-error "predetermined 'shared'" }
+#pragma omp p reduction (*:c) // { dg-error "may appear only in 'shared' or 'firstprivate' clauses" }
     ;
-#pragma omp p for linear (c:2) // { dg-error "predetermined 'shared'" }
+#pragma omp p for linear (c:2) // { dg-error "may appear only in 'shared' or 'firstprivate' clauses" }
   for (i = 0; i < 10; i++)
     ;
 }

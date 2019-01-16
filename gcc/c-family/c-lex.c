@@ -1,5 +1,5 @@
 /* Mainly the interface between cpplib and the C front ends.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -237,7 +237,7 @@ fe_file_change (const line_map_ordinary *new_map)
 }
 
 static void
-cb_def_pragma (cpp_reader *pfile, source_location loc)
+cb_def_pragma (cpp_reader *pfile, location_t loc)
 {
   /* Issue a warning message if we have been asked to do so.  Ignore
      unknown pragmas in system headers unless an explicit
@@ -265,7 +265,7 @@ cb_def_pragma (cpp_reader *pfile, source_location loc)
 
 /* #define callback for DWARF and DWARF2 debug info.  */
 static void
-cb_define (cpp_reader *pfile, source_location loc, cpp_hashnode *node)
+cb_define (cpp_reader *pfile, location_t loc, cpp_hashnode *node)
 {
   const struct line_map *map = linemap_lookup (line_table, loc);
   (*debug_hooks->define) (SOURCE_LINE (linemap_check_ordinary (map), loc),
@@ -274,7 +274,7 @@ cb_define (cpp_reader *pfile, source_location loc, cpp_hashnode *node)
 
 /* #undef callback for DWARF and DWARF2 debug info.  */
 static void
-cb_undef (cpp_reader * ARG_UNUSED (pfile), source_location loc,
+cb_undef (cpp_reader * ARG_UNUSED (pfile), location_t loc,
 	  cpp_hashnode *node)
 {
   const struct line_map *map = linemap_lookup (line_table, loc);
@@ -356,7 +356,9 @@ c_common_has_attribute (cpp_reader *pfile)
 		       || is_attribute_p ("nodiscard", attr_name)
 		       || is_attribute_p ("fallthrough", attr_name))
 		result = 201603;
-	      else if (is_attribute_p ("no_unique_address", attr_name))
+	      else if (is_attribute_p ("no_unique_address", attr_name)
+		       || is_attribute_p ("likely", attr_name)
+		       || is_attribute_p ("unlikely", attr_name))
 		result = 201803;
 	      if (result)
 		attr_name = NULL_TREE;

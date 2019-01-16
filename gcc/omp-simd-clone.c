@@ -1,6 +1,6 @@
 /* OMP constructs' SIMD clone supporting code.
 
-Copyright (C) 2005-2018 Free Software Foundation, Inc.
+Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -444,7 +444,8 @@ simd_clone_create (struct cgraph_node *old_node)
     {
       tree old_decl = old_node->decl;
       tree new_decl = copy_node (old_node->decl);
-      DECL_NAME (new_decl) = clone_function_name (old_decl, "simdclone");
+      DECL_NAME (new_decl) = clone_function_name_numbered (old_decl,
+							   "simdclone");
       SET_DECL_ASSEMBLER_NAME (new_decl, DECL_NAME (new_decl));
       SET_DECL_RTL (new_decl, NULL);
       DECL_STATIC_CONSTRUCTOR (new_decl) = 0;
@@ -833,11 +834,8 @@ ipa_simd_modify_stmt_ops (tree *tp, int *walk_subtrees, void *data)
   struct ipa_parm_adjustment *cand = NULL;
   if (TREE_CODE (*tp) == PARM_DECL)
     cand = ipa_get_adjustment_candidate (&tp, NULL, info->adjustments, true);
-  else
-    {
-      if (TYPE_P (*tp))
-	*walk_subtrees = 0;
-    }
+  else if (TYPE_P (*tp))
+    *walk_subtrees = 0;
 
   tree repl = NULL_TREE;
   if (cand)
@@ -996,6 +994,8 @@ ipa_simd_modify_function_body (struct cgraph_node *node,
 	  if (greturn *return_stmt = dyn_cast <greturn *> (stmt))
 	    {
 	      tree retval = gimple_return_retval (return_stmt);
+	      edge e = find_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun));
+	      e->flags |= EDGE_FALLTHRU;
 	      if (!retval)
 		{
 		  gsi_remove (&gsi, true);
@@ -1013,6 +1013,21 @@ ipa_simd_modify_function_body (struct cgraph_node *node,
 	  if (info.modified)
 	    {
 	      update_stmt (stmt);
+	      /* If the above changed the var of a debug bind into something
+		 different, remove the debug stmt.  We could also for all the
+		 replaced parameters add VAR_DECLs for debug info purposes,
+		 add debug stmts for those to be the simd array accesses and
+		 replace debug stmt var operand with that var.  Debugging of
+		 vectorized loops doesn't work too well, so don't bother for
+		 now.  */
+	      if ((gimple_debug_bind_p (stmt)
+		   && !DECL_P (gimple_debug_bind_get_var (stmt)))
+		  || (gimple_debug_source_bind_p (stmt)
+		      && !DECL_P (gimple_debug_source_bind_get_var (stmt))))
+		{
+		  gsi_remove (&gsi, true);
+		  continue;
+		}
 	      if (maybe_clean_eh_stmt (stmt))
 		gimple_purge_dead_eh_edges (gimple_bb (stmt));
 	    }
@@ -1137,14 +1152,9 @@ simd_clone_adjust (struct cgraph_node *node)
       incr_bb = create_empty_bb (orig_exit);
       incr_bb->count = profile_count::zero ();
       add_bb_to_loop (incr_bb, body_bb->loop_father);
-      /* The succ of orig_exit was EXIT_BLOCK_PTR_FOR_FN (cfun), with an empty
-	 flag.  Set it now to be a FALLTHRU_EDGE.  */
-      gcc_assert (EDGE_COUNT (orig_exit->succs) == 1);
-      EDGE_SUCC (orig_exit, 0)->flags |= EDGE_FALLTHRU;
-      for (unsigned i = 0;
-	   i < EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds); ++i)
+      while (EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds))
 	{
-	  edge e = EDGE_PRED (EXIT_BLOCK_PTR_FOR_FN (cfun), i);
+	  edge e = EDGE_PRED (EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
 	  redirect_edge_succ (e, incr_bb);
 	  incr_bb->count += e->count ();
 	}

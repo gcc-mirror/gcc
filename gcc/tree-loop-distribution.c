@@ -1,5 +1,5 @@
 /* Loop distribution.
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by Georges-Andre Silber <Georges-Andre.Silber@ensmp.fr>
    and Sebastian Pop <sebastian.pop@amd.com>.
 
@@ -3139,10 +3139,11 @@ pass_loop_distribution::execute (function *fun)
 	  if (nb_generated_loops + nb_generated_calls > 0)
 	    {
 	      changed = true;
-	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS,
-			       loc, "Loop%s %d distributed: split to %d loops "
-			       "and %d library calls.\n", str, loop->num,
-			       nb_generated_loops, nb_generated_calls);
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_OPTIMIZED_LOCATIONS,
+				 loc, "Loop%s %d distributed: split to %d loops "
+				 "and %d library calls.\n", str, loop->num,
+				 nb_generated_loops, nb_generated_calls);
 
 	      break;
 	    }

@@ -1,5 +1,5 @@
 ; Options for the C, ObjC, C++ and ObjC++ front ends.
-; Copyright (C) 2003-2018 Free Software Foundation, Inc.
+; Copyright (C) 2003-2019 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -481,7 +481,12 @@ C C++ ObjC ObjC++ CPP(cpp_warn_deprecated) CppReason(CPP_W_DEPRECATED) Var(warn_
 Warn if a deprecated compiler feature, class, method, or field is used.
 
 Wdeprecated-copy
-C++ ObjC++ Var(warn_deprecated_copy) Warning LangEnabledBy(C++ ObjC++, Wall)
+C++ ObjC++ Var(warn_deprecated_copy) Warning LangEnabledBy(C++ ObjC++, Wextra)
+Mark implicitly-declared copy operations as deprecated if the class has a
+user-provided copy operation.
+
+Wdeprecated-copy-dtor
+C++ ObjC++ Var(warn_deprecated_copy, 2) Warning
 Mark implicitly-declared copy operations as deprecated if the class has a
 user-provided copy operation or destructor.
 
@@ -619,6 +624,10 @@ Warn whenever attributes are ignored.
 Wincompatible-pointer-types
 C ObjC Var(warn_incompatible_pointer_types) Init(1) Warning
 Warn when there is a conversion between pointers that have incompatible types.
+
+Waddress-of-packed-member
+C ObjC C++ ObjC++ Var(warn_address_of_packed_member) Init(1) Warning
+Warn when the address of packed member of struct or union is taken.
 
 Winit-self
 C ObjC C++ ObjC++ Var(warn_init_self) Warning LangEnabledBy(C++ ObjC++,Wall)

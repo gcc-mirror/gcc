@@ -1,5 +1,5 @@
 /* Internal functions.
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2577,6 +2577,15 @@ expand_BUILTIN_EXPECT (internal_fn, gcall *stmt)
 
 static void
 expand_VA_ARG (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
+/* IFN_VEC_CONVERT is supposed to be expanded at pass_lower_vector.  So this
+   dummy function should never be called.  */
+
+static void
+expand_VEC_CONVERT (internal_fn, gcall *)
 {
   gcc_unreachable ();
 }

@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "selftest.h"
 
 /* FIXME: Only for PROP_loops, but cgraph shouldn't have to know about this.  */
 #include "tree-pass.h"
@@ -3764,5 +3765,106 @@ cgraph_edge::sreal_frequency ()
 			       ? caller->global.inlined_to->count
 			       : caller->count);
 }
+
+
+/* During LTO stream in this can be used to check whether call can possibly
+   be internal to the current translation unit.  */
+
+bool
+cgraph_edge::possibly_call_in_translation_unit_p (void)
+{
+  gcc_checking_assert (in_lto_p && caller->prevailing_p ());
+
+  /* While incremental linking we may end up getting function body later.  */
+  if (flag_incremental_link == INCREMENTAL_LINK_LTO)
+    return true;
+
+  /* We may be smarter here and avoid stremaing in indirect calls we can't
+     track, but that would require arranging stremaing the indirect call
+     summary first.  */
+  if (!callee)
+    return true;
+
+  /* If calle is local to the original translation unit, it will be defined.  */
+  if (!TREE_PUBLIC (callee->decl) && !DECL_EXTERNAL (callee->decl))
+    return true;
+
+  /* Otherwise we need to lookup prevailing symbol (symbol table is not merged,
+     yet) and see if it is a definition.  In fact we may also resolve aliases,
+     but that is probably not too important.  */
+  symtab_node *node = callee;
+  for (int n = 10; node->previous_sharing_asm_name && n ; n--)
+    node = node->previous_sharing_asm_name;
+  if (node->previous_sharing_asm_name)
+    node = symtab_node::get_for_asmname (DECL_ASSEMBLER_NAME (callee->decl));
+  gcc_assert (TREE_PUBLIC (node->decl));
+  return node->get_availability () >= AVAIL_AVAILABLE;
+}
+
+/* A stashed copy of "symtab" for use by selftest::symbol_table_test.
+   This needs to be a global so that it can be a GC root, and thus
+   prevent the stashed copy from being garbage-collected if the GC runs
+   during a symbol_table_test.  */
+
+symbol_table *saved_symtab;
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* class selftest::symbol_table_test.  */
+
+/* Constructor.  Store the old value of symtab, and create a new one.  */
+
+symbol_table_test::symbol_table_test ()
+{
+  gcc_assert (saved_symtab == NULL);
+  saved_symtab = symtab;
+  symtab = new (ggc_cleared_alloc <symbol_table> ()) symbol_table ();
+}
+
+/* Destructor.  Restore the old value of symtab.  */
+
+symbol_table_test::~symbol_table_test ()
+{
+  gcc_assert (saved_symtab != NULL);
+  symtab = saved_symtab;
+  saved_symtab = NULL;
+}
+
+/* Verify that symbol_table_test works.  */
+
+static void
+test_symbol_table_test ()
+{
+  /* Simulate running two selftests involving symbol tables.  */
+  for (int i = 0; i < 2; i++)
+    {
+      symbol_table_test stt;
+      tree test_decl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL,
+				   get_identifier ("test_decl"),
+				   build_function_type_list (void_type_node,
+							     NULL_TREE));
+      cgraph_node *node = cgraph_node::get_create (test_decl);
+      gcc_assert (node);
+
+      /* Verify that the node has order 0 on both iterations,
+	 and thus that nodes have predictable dump names in selftests.  */
+      ASSERT_EQ (node->order, 0);
+      ASSERT_STREQ (node->dump_name (), "test_decl/0");
+    }
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+cgraph_c_tests ()
+{
+  test_symbol_table_test ();
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P */
 
 #include "gt-cgraph.h"

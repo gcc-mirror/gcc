@@ -1,3 +1,37 @@
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+	* gccgo.texi: Bump @copyrights-go year.
+
+2018-11-27  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::function): Handle function_only_inline
+	flag.
+
+2018-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* go-gcc-diagnostics.cc: Replace "source_location" with "location_t".
+	* go-gcc.cc: Likewise.
+	* go-linemap.cc: Likewise.
+	* go-location.h: Likewise.
+	* gofrontend/README: Likewise.
+
+2018-10-31  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::write_global_definitions): Don't call
+	gimplify_function_tree.  Instead call allocate_struct_function if
+	necessary.
+
+2018-10-29  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::function): Change to use a single flags
+	parameter.
+
+2018-10-29  Ian Lance Taylor  <iant@golang.org>
+
+	* go-linemap.cc (Gcc_linemap::location_file): New method.
+
 2018-10-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* Make-lang.in (selftest-go): New.
@@ -1559,7 +1593,7 @@
 
 	Go frontend added to gcc repository.
 
-Copyright (C) 2010-2018 Free Software Foundation, Inc.
+Copyright (C) 2010-2019 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

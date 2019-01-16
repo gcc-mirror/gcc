@@ -1,6 +1,6 @@
 /* Write the GIMPLE representation to a file stream.
 
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
    Re-implemented by Diego Novillo <dnovillo@google.com>
 
@@ -306,7 +306,6 @@ lto_is_streamable (tree expr)
      name version in lto_output_tree_ref (see output_ssa_names).  */
   return !is_lang_specific (expr)
 	 && code != SSA_NAME
-	 && code != CALL_EXPR
 	 && code != LANG_TYPE
 	 && code != MODIFY_EXPR
 	 && code != INIT_EXPR
@@ -1147,7 +1146,6 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
       hstate.add_flag (TYPE_STRING_FLAG (t));
       /* TYPE_NO_FORCE_BLK is private to stor-layout and need
  	 no streaming.  */
-      hstate.add_flag (TYPE_NEEDS_CONSTRUCTING (t));
       hstate.add_flag (TYPE_PACKED (t));
       hstate.add_flag (TYPE_RESTRICT (t));
       hstate.add_flag (TYPE_USER_ALIGN (t));
@@ -1357,6 +1355,8 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 	  val = OMP_CLAUSE_PROC_BIND_KIND (t);
 	  break;
 	case OMP_CLAUSE_REDUCTION:
+	case OMP_CLAUSE_TASK_REDUCTION:
+	case OMP_CLAUSE_IN_REDUCTION:
 	  val = OMP_CLAUSE_REDUCTION_CODE (t);
 	  break;
 	default:

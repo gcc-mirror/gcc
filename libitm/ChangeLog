@@ -1,3 +1,42 @@
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* libitm.texi: Bump @copying's copyright year.
+
+2018-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88482
+	* eh_cpp.cc (__cxa_throw): Change DEST argument type from
+	void * to void (*) (void *).
+	(_ITM_cxa_throw): Likewise.
+	* libitm.h (_ITM_cxa_throw): Likewise.
+	* libitm.texi (_ITM_cxa_throw): Likewise.
+
+2018-12-13  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/powerpc/target.h (htm_available):  Add support for
+	PPC_FEATURE2_HTM_NO_SUSPEND.  Use __builtin_cpu_supports if available.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* Makefile.am: Include multilib.am.
+	(AUTOMAKE_OPTIONS): Add info-in-builddir.
+	(CLEANFILES): Remove libitm.info.
+	* configure.ac: Remove AC_PREREQ.
+	* testsuite/Makefile.am (RUNTEST): Remove quotes.
+	* Makefile.in, aclocal.m4, configure, testsuite/Makefile.in:
+	Regenerate.
+
+2018-10-30  Nicholas Krause <xerofoify@gmail.com>
+
+	PR libitm/86293
+	* method-serial.cc: Mark varible as potentially unused
+	to silence warning.
+
 2018-08-03  Sergei Trofimovich  <slyfox@gentoo.org>
 
 	* config/sh/sjlj.S: Adjust to use PIC vs normal code to avoid
@@ -2126,7 +2165,7 @@
 
 	* Initial commit.
 
-Copyright (C) 2008-2018 Free Software Foundation, Inc.
+Copyright (C) 2008-2019 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

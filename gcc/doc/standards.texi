@@ -1,4 +1,4 @@
-@c Copyright (C) 2000-2018 Free Software Foundation, Inc.
+@c Copyright (C) 2000-2019 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -319,6 +319,12 @@ described in HSA Programmer's Reference Manual version 1.0.1. This
 capability is typically utilized to implement the HSA runtime API's HSAIL 
 finalization extension for a gcc supported processor. HSA standards are
 freely available at @uref{http://www.hsafoundation.com/standards/}.
+
+@section D language
+
+GCC supports the D 2.0 programming language.  The D language itself is
+currently defined by its reference implementation and supporting language
+specification, described at @uref{https://dlang.org/spec/spec.html}.
 
 @section References for Other Languages
 

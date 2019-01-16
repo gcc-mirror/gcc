@@ -1,4 +1,5 @@
-LIB2ADD = $(srcdir)/udivmod.c \
+LIB2ADD = $(srcdir)/divmod.c \
+	  $(srcdir)/udivmod.c \
 	  $(srcdir)/udivmodsi4.c \
 	  $(srcdir)/udivhi3.c \
 	  $(srcdir)/udivmodhi4.c \
@@ -7,4 +8,5 @@ LIB2ADD = $(srcdir)/udivmod.c \
 	  $(srcdir)/memmove.c \
 	  $(srcdir)/memset.c
 
-HOST_LIBGCC2_CFLAGS += -O2
+# Small machine, optimize for size
+HOST_LIBGCC2_CFLAGS += -Os

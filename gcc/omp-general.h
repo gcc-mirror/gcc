@@ -1,7 +1,7 @@
 /* General types and functions that are uselful for processing of OpenMP,
    OpenACC and similar directivers at various stages of compilation.
 
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -62,7 +62,7 @@ struct omp_for_data
   tree tiling;  /* Tiling values (if non null).  */
   int collapse;  /* Collapsed loops, 1 for a non-collapsed loop.  */
   int ordered;
-  bool have_nowait, have_ordered, simd_schedule;
+  bool have_nowait, have_ordered, simd_schedule, have_reductemp;
   unsigned char sched_modifiers;
   enum omp_clause_schedule_kind sched_kind;
   struct omp_for_data_loop *loops;
@@ -88,5 +88,17 @@ extern tree oacc_get_fn_attrib (tree fn);
 extern bool offloading_function_p (tree fn);
 extern int oacc_get_fn_dim_size (tree fn, int axis);
 extern int oacc_get_ifn_dim_arg (const gimple *stmt);
+
+enum omp_requires {
+  OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER = 0xf,
+  OMP_REQUIRES_UNIFIED_ADDRESS = 0x10,
+  OMP_REQUIRES_UNIFIED_SHARED_MEMORY = 0x20,
+  OMP_REQUIRES_DYNAMIC_ALLOCATORS = 0x40,
+  OMP_REQUIRES_REVERSE_OFFLOAD = 0x80,
+  OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER_USED = 0x100,
+  OMP_REQUIRES_TARGET_USED = 0x200
+};
+
+extern GTY(()) enum omp_requires omp_requires_mask;
 
 #endif /* GCC_OMP_GENERAL_H */

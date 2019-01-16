@@ -7,7 +7,7 @@
 
 
 @copying
-Copyright @copyright{} 2011-2018 Free Software Foundation, Inc.
+Copyright @copyright{} 2011-2019 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2 or
@@ -269,7 +269,7 @@ transactions.
 void _ITM_commitTransactionEH(void *exc_ptr) ITM_REGPARM;
 void *_ITM_cxa_allocate_exception (size_t);
 void _ITM_cxa_free_exception (void *exc_ptr);
-void _ITM_cxa_throw (void *obj, void *tinfo, void *dest);
+void _ITM_cxa_throw (void *obj, void *tinfo, void (*dest) (void *));
 void *_ITM_cxa_begin_catch (void *exc_ptr);
 void _ITM_cxa_end_catch (void);
 @end example

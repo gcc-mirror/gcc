@@ -36,7 +36,9 @@ asan_files = \
 	asan_new_delete.cc \
 	asan_poisoning.cc \
 	asan_posix.cc \
+	asan_premap_shadow.cc \
 	asan_report.cc \
+	asan_rtems.cc \
 	asan_rtl.cc \
 	asan_shadow_setup.cc \
 	asan_stack.cc \

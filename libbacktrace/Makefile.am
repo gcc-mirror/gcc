@@ -1,5 +1,5 @@
 # Makefile.am -- Backtrace Makefile.
-# Copyright (C) 2012-2018 Free Software Foundation, Inc.
+# Copyright (C) 2012-2019 Free Software Foundation, Inc.
 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -89,6 +89,82 @@ check_PROGRAMS =
 TESTS = $(check_PROGRAMS)
 
 if NATIVE
+check_LTLIBRARIES = libbacktrace_alloc.la
+
+libbacktrace_alloc_la_SOURCES = $(libbacktrace_la_SOURCES)
+libbacktrace_alloc_la_LIBADD = $(BACKTRACE_FILE) $(FORMAT_FILE) read.lo alloc.lo
+
+libbacktrace_alloc_la_DEPENDENCIES = $(libbacktrace_alloc_la_LIBADD)
+
+check_LTLIBRARIES += libbacktrace_noformat.la
+
+libbacktrace_noformat_la_SOURCES = $(libbacktrace_la_SOURCES)
+libbacktrace_noformat_la_LIBADD = $(BACKTRACE_FILE) $(VIEW_FILE) $(ALLOC_FILE)
+
+libbacktrace_noformat_la_DEPENDENCIES = $(libbacktrace_noformat_la_LIBADD)
+
+xcoff_%.c: xcoff.c
+	SEARCH='#error "Unknown BACKTRACE_XCOFF_SIZE"'; \
+	REPLACE='#undef BACKTRACE_XCOFF_SIZE\
+	#define BACKTRACE_XCOFF_SIZE'; \
+	$(SED) "s/^$$SEARCH\$$/$$REPLACE $*/" \
+		$(srcdir)/xcoff.c \
+		> $@
+
+test_elf_SOURCES = test_format.c testlib.c
+test_elf_LDADD = libbacktrace_noformat.la elf.lo
+
+check_PROGRAMS += test_elf
+
+test_xcoff_32_SOURCES = test_format.c testlib.c
+test_xcoff_32_LDADD = libbacktrace_noformat.la xcoff_32.lo
+
+check_PROGRAMS += test_xcoff_32
+
+test_xcoff_64_SOURCES = test_format.c testlib.c
+test_xcoff_64_LDADD = libbacktrace_noformat.la xcoff_64.lo
+
+check_PROGRAMS += test_xcoff_64
+
+test_pecoff_SOURCES = test_format.c testlib.c
+test_pecoff_LDADD = libbacktrace_noformat.la pecoff.lo
+
+check_PROGRAMS += test_pecoff
+
+test_unknown_SOURCES = test_format.c testlib.c
+test_unknown_LDADD = libbacktrace_noformat.la unknown.lo
+
+check_PROGRAMS += test_unknown
+
+unittest_SOURCES = unittest.c testlib.c
+unittest_LDADD = libbacktrace.la
+
+check_PROGRAMS += unittest
+
+unittest_alloc_SOURCES = $(unittest_SOURCES)
+unittest_alloc_LDADD = libbacktrace_alloc.la
+
+check_PROGRAMS += unittest_alloc
+
+check_LTLIBRARIES += libbacktrace_instrumented_alloc.la
+
+libbacktrace_instrumented_alloc_la_SOURCES = $(libbacktrace_la_SOURCES)
+libbacktrace_instrumented_alloc_la_LIBADD = $(BACKTRACE_FILE) $(FORMAT_FILE) \
+	read.lo instrumented_alloc.lo
+
+libbacktrace_instrumented_alloc_la_DEPENDENCIES = \
+	$(libbacktrace_instrumented_alloc_la_LIBADD)
+
+instrumented_alloc.lo: alloc.c
+
+allocfail_SOURCES = allocfail.c testlib.c
+allocfail_LDADD = libbacktrace_instrumented_alloc.la
+
+check_PROGRAMS += allocfail
+
+allocfail.sh: allocfail
+
+TESTS += allocfail.sh
 
 btest_SOURCES = btest.c testlib.c
 btest_CFLAGS = $(AM_CFLAGS) -g -O
@@ -96,26 +172,50 @@ btest_LDADD = libbacktrace.la
 
 check_PROGRAMS += btest
 
+btest_alloc_SOURCES = $(btest_SOURCES)
+btest_alloc_CFLAGS = $(btest_CFLAGS)
+btest_alloc_LDADD = libbacktrace_alloc.la
+
+check_PROGRAMS += btest_alloc
+
 stest_SOURCES = stest.c
 stest_LDADD = libbacktrace.la
 
 check_PROGRAMS += stest
 
+stest_alloc_SOURCES = $(stest_SOURCES)
+stest_alloc_LDADD = libbacktrace_alloc.la
+
+check_PROGRAMS += stest_alloc
+
 ztest_SOURCES = ztest.c testlib.c
 ztest_CFLAGS = -DSRCDIR=\"$(srcdir)\"
 ztest_LDADD = libbacktrace.la
+ztest_alloc_LDADD = libbacktrace_alloc.la
 
 if HAVE_ZLIB
 ztest_LDADD += -lz
+ztest_alloc_LDADD += -lz
 endif
 ztest_LDADD += $(CLOCK_GETTIME_LINK)
+ztest_alloc_LDADD += $(CLOCK_GETTIME_LINK)
 
 check_PROGRAMS += ztest
+
+ztest_alloc_SOURCES = $(ztest_SOURCES)
+ztest_alloc_CFLAGS = $(ztest_CFLAGS)
+
+check_PROGRAMS += ztest_alloc
 
 edtest_SOURCES = edtest.c edtest2_build.c testlib.c
 edtest_LDADD = libbacktrace.la
 
 check_PROGRAMS += edtest
+
+edtest_alloc_SOURCES = $(edtest_SOURCES)
+edtest_alloc_LDADD = libbacktrace_alloc.la
+
+check_PROGRAMS += edtest_alloc
 
 edtest2_build.c: gen_edtest2_build; @true
 gen_edtest2_build: $(srcdir)/edtest2.c
@@ -130,6 +230,12 @@ check_PROGRAMS += ttest
 ttest_SOURCES = ttest.c testlib.c
 ttest_CFLAGS = $(AM_CFLAGS) -pthread
 ttest_LDADD = libbacktrace.la
+
+check_PROGRAMS += ttest_alloc
+
+ttest_alloc_SOURCES = $(ttest_SOURCES)
+ttest_alloc_CFLAGS = $(ttest_CFLAGS)
+ttest_alloc_LDADD = libbacktrace_alloc.la
 
 endif HAVE_PTHREAD
 
@@ -156,6 +262,18 @@ ctesta_LDFLAGS = -Wl,--compress-debug-sections=zlib-gabi
 ctesta_LDADD = libbacktrace.la
 
 check_PROGRAMS += ctestg ctesta
+
+ctestg_alloc_SOURCES = $(ctestg_SOURCES)
+ctestg_alloc_CFLAGS = $(ctestg_CFLAGS)
+ctestg_alloc_LDFLAGS = $(ctestg_LDFLAGS)
+ctestg_alloc_LDADD = libbacktrace_alloc.la
+
+ctesta_alloc_SOURCES = $(ctesta_SOURCES)
+ctesta_alloc_CFLAGS = $(ctesta_CFLAGS)
+ctesta_alloc_LDFLAGS = $(ctesta_LDFLAGS)
+ctesta_alloc_LDADD = libbacktrace_alloc.la
+
+check_PROGRAMS += ctestg_alloc ctesta_alloc
 
 endif
 
@@ -195,3 +313,4 @@ state.lo: config.h backtrace.h backtrace-supported.h internal.h
 unknown.lo: config.h backtrace.h internal.h
 xcoff.lo: config.h backtrace.h internal.h
 
+include $(top_srcdir)/../multilib.am

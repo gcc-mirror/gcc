@@ -1,4 +1,5 @@
 // { dg-do compile { target c++14 } }
+// { dg-options -w }
 
 template<typename CharT, CharT... String>
   int

@@ -1,6 +1,6 @@
 // -*- C++ -*- header.
 
-// Copyright (C) 2008-2018 Free Software Foundation, Inc.
+// Copyright (C) 2008-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -355,7 +355,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	// Use a fake, minimally aligned pointer.
 	return __atomic_is_lock_free(sizeof(_M_i),
-	    reinterpret_cast<void *>(-__alignof(_M_i)));
+	    reinterpret_cast<void *>(-_S_alignment));
       }
 
       bool
@@ -363,7 +363,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	// Use a fake, minimally aligned pointer.
 	return __atomic_is_lock_free(sizeof(_M_i),
-	    reinterpret_cast<void *>(-__alignof(_M_i)));
+	    reinterpret_cast<void *>(-_S_alignment));
       }
 
       _GLIBCXX_ALWAYS_INLINE void

@@ -1,5 +1,5 @@
 /* Header file for High-level loop manipulation functions.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -37,7 +37,7 @@ checking_verify_loop_closed_ssa (bool verify_ssa_p, struct loop *loop = NULL)
     verify_loop_closed_ssa (verify_ssa_p, loop);
 }
 
-extern basic_block split_loop_exit_edge (edge);
+extern basic_block split_loop_exit_edge (edge, bool = false);
 extern basic_block ip_end_pos (struct loop *);
 extern basic_block ip_normal_pos (struct loop *);
 extern void standard_iv_increment_position (struct loop *,

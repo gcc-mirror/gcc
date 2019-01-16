@@ -9,7 +9,7 @@ typedef struct bar {
 
 void foo (TYPE *p, TYPE *q) { *p = *q; }
 
-/* { dg-final { scan-assembler     "lxvd2x"   } } */
-/* { dg-final { scan-assembler     "stxvd2x"  } } */
+/* { dg-final { scan-assembler-times {\mld\M} 2 } } */
+/* { dg-final { scan-assembler-times {\mstd\M} 2 } } */
 /* { dg-final { scan-assembler-not "xxpermdi" } } */
 

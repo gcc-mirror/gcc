@@ -1,4 +1,4 @@
-/* rintq.c -- __float128 version of s_rint.c.
+/* s_rintl.c -- long double version of s_rint.c.
  * Conversion to IEEE quad long double by Jakub Jelinek, jj@ultra.linux.cz.
  */
 
@@ -13,6 +13,10 @@
  * ====================================================
  */
 
+#if defined(LIBM_SCCS) && !defined(lint)
+static char rcsid[] = "$NetBSD: $";
+#endif
+
 /*
  * rintq(x)
  * Return x rounded to integral value according to the prevailing
@@ -23,16 +27,17 @@
  *	Inexact flag raised if x not equal to rintq(x).
  */
 
+#define NO_MATH_REDIRECT
+
 #include "quadmath-imp.h"
 
 static const __float128
 TWO112[2]={
-  5.19229685853482762853049632922009600E+33Q, /* 0x406F000000000000, 0 */
- -5.19229685853482762853049632922009600E+33Q  /* 0xC06F000000000000, 0 */
+  5.19229685853482762853049632922009600E+33L, /* 0x406F000000000000, 0 */
+ -5.19229685853482762853049632922009600E+33L  /* 0xC06F000000000000, 0 */
 };
 
-__float128
-rintq (__float128 x)
+__float128 rintq(__float128 x)
 {
 	int64_t i0,j0,sx;
 	uint64_t i1 __attribute__ ((unused));

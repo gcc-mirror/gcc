@@ -1,5 +1,5 @@
 /* Definitions for c-common.c.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -102,7 +102,8 @@ enum rid
   RID_ASM,       RID_TYPEOF,   RID_ALIGNOF,  RID_ATTRIBUTE,  RID_VA_ARG,
   RID_EXTENSION, RID_IMAGPART, RID_REALPART, RID_LABEL,      RID_CHOOSE_EXPR,
   RID_TYPES_COMPATIBLE_P,      RID_BUILTIN_COMPLEX,	     RID_BUILTIN_SHUFFLE,
-  RID_BUILTIN_TGMATH,
+  RID_BUILTIN_CONVERTVECTOR,   RID_BUILTIN_TGMATH,
+  RID_BUILTIN_HAS_ATTRIBUTE,
   RID_DFLOAT32, RID_DFLOAT64, RID_DFLOAT128,
 
   /* TS 18661-3 keywords, in the same sequence as the TI_* values.  */
@@ -798,7 +799,7 @@ extern void finish_fname_decls (void);
 extern const char *fname_as_string (int);
 extern tree fname_decl (location_t, unsigned, tree);
 
-extern int check_user_alignment (const_tree, bool);
+extern int check_user_alignment (const_tree, bool, bool);
 extern bool check_function_arguments (location_t loc, const_tree, const_tree,
 				      int, tree *, vec<location_t> *);
 extern void check_function_arguments_recurse (void (*)
@@ -808,7 +809,8 @@ extern void check_function_arguments_recurse (void (*)
 					      unsigned HOST_WIDE_INT);
 extern bool check_builtin_function_arguments (location_t, vec<location_t>,
 					      tree, int, tree *);
-extern void check_function_format (tree, int, tree *, vec<location_t> *);
+extern void check_function_format (const_tree, tree, int, tree *,
+				   vec<location_t> *);
 extern bool attribute_fallthrough_p (tree);
 extern tree handle_format_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_format_arg_attribute (tree *, tree, tree, int, bool *);
@@ -999,6 +1001,7 @@ extern bool lvalue_p (const_tree);
 extern bool vector_targets_convertible_p (const_tree t1, const_tree t2);
 extern bool vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note);
 extern tree c_build_vec_perm_expr (location_t, tree, tree, tree, bool = true);
+extern tree c_build_vec_convert (location_t, tree, location_t, tree, bool = true);
 
 extern void init_c_lex (void);
 
@@ -1149,18 +1152,21 @@ enum c_omp_region_type
 };
 
 extern tree c_finish_omp_master (location_t, tree);
-extern tree c_finish_omp_taskgroup (location_t, tree);
+extern tree c_finish_omp_taskgroup (location_t, tree, tree);
 extern tree c_finish_omp_critical (location_t, tree, tree, tree);
 extern tree c_finish_omp_ordered (location_t, tree, tree);
 extern void c_finish_omp_barrier (location_t);
 extern tree c_finish_omp_atomic (location_t, enum tree_code, enum tree_code,
-				 tree, tree, tree, tree, tree, bool, bool,
-				 bool = false);
-extern void c_finish_omp_flush (location_t);
+				 tree, tree, tree, tree, tree, bool,
+				 enum omp_memory_order, bool = false);
+extern bool c_omp_depend_t_p (tree);
+extern void c_finish_omp_depobj (location_t, tree, enum omp_clause_depend_kind,
+				 tree);
+extern void c_finish_omp_flush (location_t, int);
 extern void c_finish_omp_taskwait (location_t);
 extern void c_finish_omp_taskyield (location_t);
 extern tree c_finish_omp_for (location_t, enum tree_code, tree, tree, tree,
-			      tree, tree, tree, tree);
+			      tree, tree, tree, tree, bool);
 extern bool c_omp_check_loop_iv (tree, tree, walk_tree_lh);
 extern bool c_omp_check_loop_iv_exprs (location_t, tree, tree, tree, tree,
 				       walk_tree_lh);
@@ -1263,7 +1269,8 @@ extern void constant_expression_error (tree);
 extern void overflow_warning (location_t, tree, tree = NULL_TREE);
 extern void warn_logical_operator (location_t, enum tree_code, tree,
 				   enum tree_code, tree, enum tree_code, tree);
-extern void warn_tautological_cmp (location_t, enum tree_code, tree, tree);
+extern void warn_tautological_cmp (const op_location_t &, enum tree_code,
+				   tree, tree);
 extern void warn_logical_not_parentheses (location_t, enum tree_code, tree,
 					  tree);
 extern bool warn_if_unused_value (const_tree, location_t);
@@ -1277,6 +1284,7 @@ extern void c_do_switch_warnings (splay_tree, location_t, tree, tree, bool,
 				  bool);
 extern void warn_for_omitted_condop (location_t, tree);
 extern bool warn_for_restrict (unsigned, tree *, unsigned);
+extern void warn_for_address_or_pointer_of_packed_member (bool, tree, tree);
 
 /* Places where an lvalue, or modifiable lvalue, may be required.
    Used to select diagnostic messages in lvalue_error and
@@ -1326,6 +1334,19 @@ extern int parse_tm_stmt_attr (tree, int);
 extern int tm_attr_to_mask (tree);
 extern tree tm_mask_to_attr (int);
 extern tree find_tm_attribute (tree);
+extern const struct attribute_spec::exclusions attr_cold_hot_exclusions[];
+
+/* A bitmap of flags to positional_argument.  */
+enum posargflags {
+  /* Consider positional attribute argument value zero valid.  */
+  POSARG_ZERO = 1,
+  /* Consider positional attribute argument value valid if it refers
+     to the ellipsis (i.e., beyond the last typed argument).  */
+  POSARG_ELLIPSIS = 2
+};
+
+extern tree positional_argument (const_tree, const_tree, tree, tree_code,
+				 int = 0, int = posargflags ());
 
 extern enum flt_eval_method
 excess_precision_mode_join (enum flt_eval_method, enum flt_eval_method);
@@ -1338,6 +1359,7 @@ extern void maybe_suggest_missing_token_insertion (rich_location *richloc,
 						   enum cpp_ttype token_type,
 						   location_t prev_token_loc);
 extern tree braced_list_to_string (tree, tree);
+extern bool has_attribute (location_t, tree, tree, tree (*)(tree));
 
 #if CHECKING_P
 namespace selftest {

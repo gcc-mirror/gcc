@@ -1,3 +1,13 @@
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* configure.ac: Remove AC_PREREQ.  Use AC_LANG_SOURCE.
+	* Makefile.in, aclocal.m4, config.h.in, configure: Regenerate.
+
 2018-05-30  Jan Hubicka  <jh@suse.cz>
 
 	* lto-plugin.c: (non_claimed_files): New static var.

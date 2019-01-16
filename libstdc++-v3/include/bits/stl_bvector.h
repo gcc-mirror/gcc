@@ -1,6 +1,6 @@
 // vector<bool> specialization -*- C++ -*-
 
-// Copyright (C) 2001-2018 Free Software Foundation, Inc.
+// Copyright (C) 2001-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -473,8 +473,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	: public _Bit_alloc_type, public _Bvector_impl_data
 	{
 	public:
-	  _Bvector_impl()
-	    _GLIBCXX_NOEXCEPT_IF( noexcept(_Bit_alloc_type()) )
+	  _Bvector_impl() _GLIBCXX_NOEXCEPT_IF(
+		is_nothrow_default_constructible<_Bit_alloc_type>::value)
 	  : _Bit_alloc_type()
 	  { }
 

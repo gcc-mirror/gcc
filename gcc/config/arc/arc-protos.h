@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Synopsys DesignWare ARC cpu.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -45,6 +45,8 @@ extern bool compact_memory_operand_p (rtx, machine_mode, bool, bool);
 extern int arc_return_address_register (unsigned int);
 extern unsigned int arc_compute_function_type (struct function *);
 extern bool arc_is_uncached_mem_p (rtx);
+extern bool gen_operands_ldd_std (rtx *operands, bool load, bool commute);
+extern bool arc_check_multi (rtx, bool);
 #endif /* RTX_CODE */
 
 extern unsigned int arc_compute_frame_size (int);
@@ -107,7 +109,7 @@ extern bool arc_legitimize_reload_address (rtx *, machine_mode, int, int);
 extern void arc_secondary_reload_conv (rtx, rtx, rtx, bool);
 extern void arc_cpu_cpp_builtins (cpp_reader *);
 extern bool arc_store_addr_hazard_p (rtx_insn *, rtx_insn *);
-extern rtx arc_eh_return_address_location (void);
+extern void arc_eh_return_address_location (rtx);
 extern bool arc_is_jli_call_p (rtx);
 extern void arc_file_end (void);
 extern bool arc_is_secure_call_p (rtx);

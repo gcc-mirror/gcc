@@ -12,11 +12,12 @@
 
 
 #include "sanitizer_common/sanitizer_platform.h"
-#if SANITIZER_LINUX || SANITIZER_FREEBSD
+#if SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD
 
 #include "sanitizer_common/sanitizer_common.h"
 #include "sanitizer_common/sanitizer_libc.h"
 #include "sanitizer_common/sanitizer_linux.h"
+#include "sanitizer_common/sanitizer_platform_limits_netbsd.h"
 #include "sanitizer_common/sanitizer_platform_limits_posix.h"
 #include "sanitizer_common/sanitizer_posix.h"
 #include "sanitizer_common/sanitizer_procmaps.h"
@@ -165,11 +166,11 @@ static void MapRodata() {
   fd_t fd = openrv;
   // Fill the file with kShadowRodata.
   const uptr kMarkerSize = 512 * 1024 / sizeof(u64);
-  InternalScopedBuffer<u64> marker(kMarkerSize);
+  InternalMmapVector<u64> marker(kMarkerSize);
   // volatile to prevent insertion of memset
   for (volatile u64 *p = marker.data(); p < marker.data() + kMarkerSize; p++)
     *p = kShadowRodata;
-  internal_write(fd, marker.data(), marker.size());
+  internal_write(fd, marker.data(), marker.size() * sizeof(u64));
   // Map the file into memory.
   uptr page = internal_mmap(0, GetPageSizeCached(), PROT_READ | PROT_WRITE,
                             MAP_PRIVATE | MAP_ANONYMOUS, fd, 0);
@@ -188,8 +189,9 @@ static void MapRodata() {
       // Assume it's .rodata
       char *shadow_start = (char *)MemToShadow(segment.start);
       char *shadow_end = (char *)MemToShadow(segment.end);
-      for (char *p = shadow_start; p < shadow_end; p += marker.size()) {
-        internal_mmap(p, Min<uptr>(marker.size(), shadow_end - p),
+      for (char *p = shadow_start; p < shadow_end;
+           p += marker.size() * sizeof(u64)) {
+        internal_mmap(p, Min<uptr>(marker.size() * sizeof(u64), shadow_end - p),
                       PROT_READ, MAP_PRIVATE | MAP_FIXED, fd, 0);
       }
     }
@@ -208,17 +210,33 @@ void InitializePlatformEarly() {
   vmaSize =
     (MostSignificantSetBitIndex(GET_CURRENT_FRAME()) + 1);
 #if defined(__aarch64__)
+# if !SANITIZER_GO
   if (vmaSize != 39 && vmaSize != 42 && vmaSize != 48) {
     Printf("FATAL: ThreadSanitizer: unsupported VMA range\n");
-    Printf("FATAL: Found %d - Supported 39, 42 and 48\n", vmaSize);
+    Printf("FATAL: Found %zd - Supported 39, 42 and 48\n", vmaSize);
     Die();
   }
+#else
+  if (vmaSize != 48) {
+    Printf("FATAL: ThreadSanitizer: unsupported VMA range\n");
+    Printf("FATAL: Found %zd - Supported 48\n", vmaSize);
+    Die();
+  }
+#endif
 #elif defined(__powerpc64__)
+# if !SANITIZER_GO
   if (vmaSize != 44 && vmaSize != 46 && vmaSize != 47) {
     Printf("FATAL: ThreadSanitizer: unsupported VMA range\n");
-    Printf("FATAL: Found %d - Supported 44, 46, and 47\n", vmaSize);
+    Printf("FATAL: Found %zd - Supported 44, 46, and 47\n", vmaSize);
     Die();
   }
+# else
+  if (vmaSize != 46 && vmaSize != 47) {
+    Printf("FATAL: ThreadSanitizer: unsupported VMA range\n");
+    Printf("FATAL: Found %zd - Supported 46, and 47\n", vmaSize);
+    Die();
+  }
+# endif
 #endif
 #endif
 }
@@ -399,4 +417,4 @@ void cur_thread_finalize() {
 
 }  // namespace __tsan
 
-#endif  // SANITIZER_LINUX || SANITIZER_FREEBSD
+#endif  // SANITIZER_LINUX || SANITIZER_FREEBSD || SANITIZER_NETBSD

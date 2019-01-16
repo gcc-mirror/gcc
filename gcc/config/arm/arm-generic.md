@@ -1,5 +1,5 @@
 ;; Generic ARM Pipeline Description
-;; Copyright (C) 2003-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2003-2019 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -116,25 +116,23 @@
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "ldsched" "no")
 	    (ior (eq_attr "mul32" "yes")
-		 (eq_attr "mul64" "yes"))))
+		 (eq_attr "widen_mul64" "yes"))))
   "core*16")
 
 (define_insn_reservation "mult_ldsched_strongarm" 3
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "ldsched" "yes") 
-	    (and (eq_attr "tune"
-		  "strongarm,strongarm110,strongarm1100,strongarm1110")
+	    (and (eq_attr "tune" "strongarm")
 		 (ior (eq_attr "mul32" "yes")
-		      (eq_attr "mul64" "yes")))))
+		      (eq_attr "widen_mul64" "yes")))))
   "core*2")
 
 (define_insn_reservation "mult_ldsched" 4
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "ldsched" "yes") 
-	    (and (eq_attr "tune"
-		  "!strongarm,strongarm110,strongarm1100,strongarm1110")
+	    (and (eq_attr "tune" "!strongarm")
 	         (ior (eq_attr "mul32" "yes")
-		      (eq_attr "mul64" "yes")))))
+		      (eq_attr "widen_mul64" "yes")))))
   "core*4")
 
 (define_insn_reservation "multi_cycle" 32
@@ -143,7 +141,7 @@
             (and (eq_attr "type" "!load_byte,load_4,load_8,load_12,load_16,\
                                   store_4,store_8,store_12,store_16")
 		 (not (ior (eq_attr "mul32" "yes")
-			   (eq_attr "mul64" "yes"))))))
+			   (eq_attr "widen_mul64" "yes"))))))
   "core*32")
 
 (define_insn_reservation "single_cycle" 1

@@ -10,7 +10,7 @@
 
 @copying
 @c man begin COPYRIGHT
-Copyright @copyright{} 1987-2018 Free Software Foundation, Inc.
+Copyright @copyright{} 1987-2019 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -958,10 +958,7 @@ prevent the file from ever being read again, by either @samp{#import} or
 @samp{#import} and @samp{#include} to refer to the same header file.
 
 Another way to prevent a header file from being included more than once
-is with the @samp{#pragma once} directive.  If @samp{#pragma once} is
-seen when scanning a header file, that file will never be read again, no
-matter what.
-
+is with the @samp{#pragma once} directive (@pxref{Pragmas}).  
 @samp{#pragma once} does not have the problems that @samp{#import} does,
 but it is not recognized by all preprocessors, so you cannot rely on it
 in a portable program.
@@ -1133,6 +1130,9 @@ header, no matter where it was found.  Code that comes before the
 @samp{#pragma} in the file is not affected.  @code{@w{#pragma GCC
 system_header}} has no effect in the primary source file.
 @end itemize
+
+On some targets, such as RS/6000 AIX, GCC implicitly surrounds all
+system headers with an @samp{extern "C"} block when compiling as C++.
 
 @node Macros
 @chapter Macros
@@ -3550,12 +3550,14 @@ idea of the directory containing the current file.
 @node Pragmas
 @chapter Pragmas
 
+@cindex pragma directive
+
 The @samp{#pragma} directive is the method specified by the C standard
 for providing additional information to the compiler, beyond what is
 conveyed in the language itself.  The forms of this directive
 (commonly known as @dfn{pragmas}) specified by C standard are prefixed with 
 @code{STDC}.  A C compiler is free to attach any meaning it likes to other 
-pragmas.  All GNU-defined, supported pragmas have been given a
+pragmas.  Most GNU-defined, supported pragmas have been given a
 @code{GCC} prefix.
 
 @cindex @code{_Pragma}
@@ -3657,6 +3659,12 @@ contained in the pragma must be a single string literal.  Similarly,
 @code{#pragma GCC error "message"} issues an error message.  Unlike
 the @samp{#warning} and @samp{#error} directives, these pragmas can be
 embedded in preprocessor macros using @samp{_Pragma}.
+
+@item #pragma once
+If @code{#pragma once} is seen when scanning a header file, that
+file will never be read again, no matter what.  It is a less-portable
+alternative to using @samp{#ifndef} to guard the contents of header files
+against multiple inclusions.
 
 @end ftable
 

@@ -4,5 +4,5 @@
 program three_body
   real, parameter :: n = 2, d = 2
   real, dimension(n,d) :: x  ! { dg-error "Expecting a scalar INTEGER" }
-  x(1,:) = (/ 1.0, 0.0 /)    ! { dg-error "Unclassifiable" }
+  x(1,:) = (/ 1.0, 0.0 /)
 end program three_body

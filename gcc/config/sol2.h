@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC for any
    Solaris 2 system.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -138,6 +138,9 @@ along with GCC; see the file COPYING3.  If not see
 #define DEF_ARCH64_SPEC(__str) "%{!m32:" __str "}"
 #endif
 
+/* Solaris needs -fasynchronous-unwind-tables to generate unwind info.  */
+#define ASAN_CC1_SPEC "%{%:sanitize(address):-fasynchronous-unwind-tables}"
+
 /* It's safe to pass -s always, even if -g is not used.  Those options are
    handled by both Sun as and GNU as.  */
 #define ASM_SPEC_BASE \
@@ -230,6 +233,36 @@ along with GCC; see the file COPYING3.  If not see
 #define STARTFILE_VTV_SPEC ""
 #define ENDFILE_VTV_SPEC ""
 #endif /* !ENABLE_VTABLE_VERIFY */
+
+/* Link -lasan early on the command line.  For -static-libasan, don't link
+   it for -shared link, the executable should be compiled with -static-libasan
+   in that case, and for executable link with --{,no-}whole-archive around
+   it to force everything into the executable.  */
+
+#ifndef USE_GNU_LD
+#define LD_WHOLE_ARCHIVE_OPTION "-z allextract"
+#define LD_NO_WHOLE_ARCHIVE_OPTION "-z defaultextract"
+#else
+#define LD_WHOLE_ARCHIVE_OPTION "--whole-archive"
+#define LD_NO_WHOLE_ARCHIVE_OPTION "--no-whole-archive"
+#endif
+
+/* Allow rejecting -fsanitize=address, e.g. for specific multilibs.  */
+#ifndef ASAN_REJECT_SPEC
+#define ASAN_REJECT_SPEC ""
+#endif
+
+#define LIBASAN_EARLY_SPEC ASAN_REJECT_SPEC \
+  " %{!shared:libasan_preinit%O%s} \
+    %{static-libasan:%{!shared: -Bstatic "\
+    LD_WHOLE_ARCHIVE_OPTION " -lasan " LD_NO_WHOLE_ARCHIVE_OPTION \
+    "-Bdynamic}}%{!static-libasan:-lasan}"
+
+/* Error out on -fsanitize=thread|leak.  */
+#define LIBTSAN_EARLY_SPEC "\
+  %e:-fsanitize=thread is not supported in this configuration"
+#define LIBLSAN_EARLY_SPEC "\
+  %e:-fsanitize=leak is not supported in this configuration"
 
 /* We don't use the standard svr4 STARTFILE_SPEC because it's wrong for us.  */
 #undef STARTFILE_SPEC
@@ -364,7 +397,7 @@ along with GCC; see the file COPYING3.  If not see
 #define SYSROOT_SPEC "-z sysroot=%R"
 #endif
 
-#ifndef USE_GLD
+#if !defined(USE_GLD) && defined(ENABLE_SHARED_LIBGCC)
 /* With Sun ld, use mapfile to enforce direct binding to libgcc_s unwinder.  */
 #define LINK_LIBGCC_MAPFILE_SPEC \
   "%{shared|shared-libgcc:-M %slibgcc-unwind.map}"

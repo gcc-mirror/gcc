@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 architecture.
-;; Copyright (C) 2009-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2019 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -113,6 +113,18 @@
 (define_predicate "aarch64_plus_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_plus_immediate")))
+
+(define_predicate "aarch64_plushi_immediate"
+  (match_code "const_int")
+{
+  HOST_WIDE_INT val = INTVAL (op);
+  /* The HImode value must be zero-extendable to an SImode plus_operand.  */
+  return ((val & 0xfff) == val || sext_hwi (val & 0xf000, 16) == val);
+})
+
+(define_predicate "aarch64_plushi_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "aarch64_plushi_immediate")))
 
 (define_predicate "aarch64_pluslong_immediate"
   (and (match_code "const_int")

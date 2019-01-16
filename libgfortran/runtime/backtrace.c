@@ -1,4 +1,4 @@
-/* Copyright (C) 2006-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by François-Xavier Coudert
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -146,14 +146,23 @@ full_callback (void *data, uintptr_t pc, const char *filename,
 void
 show_backtrace (bool in_signal_handler)
 {
+  /* Note that libbacktrace allows the state to be accessed from
+     multiple threads, so we don't need to use a TLS variable for the
+     state here.  */
+  static struct backtrace_state *lbstate_saved;
   struct backtrace_state *lbstate;
   struct mystate state = { 0, false, in_signal_handler };
- 
-  lbstate = backtrace_create_state (NULL, __gthread_active_p (),
-				    error_callback, NULL);
 
-  if (lbstate == NULL)
-    return;
+  lbstate = __atomic_load_n (&lbstate_saved, __ATOMIC_RELAXED);
+  if (!lbstate)
+    {
+      lbstate = backtrace_create_state (NULL, __gthread_active_p (),
+					error_callback, NULL);
+      if (lbstate)
+	__atomic_store_n (&lbstate_saved, lbstate, __ATOMIC_RELAXED);
+      else
+	return;
+    }
 
   if (!BACKTRACE_SUPPORTED || (in_signal_handler && BACKTRACE_USES_MALLOC))
     {

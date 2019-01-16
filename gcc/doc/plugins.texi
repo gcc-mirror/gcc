@@ -1,4 +1,4 @@
-@c Copyright (C) 2009-2018 Free Software Foundation, Inc.
+@c Copyright (C) 2009-2019 Free Software Foundation, Inc.
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -331,7 +331,7 @@ used to tell if an object is marked, or is about to  be collected.  The
 @code{gt_clear_cache} overloads which some types define may also be of use in
 managing weak references.
 
-Some plugins may need to add extra GGC root tables, e.g. to handle their own
+Some plugins may need to add extra GGC root tables, e.g.@: to handle their own
 @code{GTY}-ed data. This can be done with the @code{PLUGIN_REGISTER_GGC_ROOTS}
 pseudo-event with a null callback and the extra root table (of type @code{struct
 ggc_root_tab*}) as @code{user_data}.  Running the
@@ -471,7 +471,7 @@ When a pass is first added to one of the pass lists, the event
 @section Building GCC plugins
 
 If plugins are enabled, GCC installs the headers needed to build a
-plugin (somewhere in the installation tree, e.g. under
+plugin (somewhere in the installation tree, e.g.@: under
 @file{/usr/local}).  In particular a @file{plugin/include} directory
 is installed, containing all the header files needed to build plugins.
 

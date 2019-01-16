@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for playing back recorded API calls.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -686,7 +686,7 @@ public:
 
   recording::location *get_recording_loc () const { return m_recording_loc; }
 
-  source_location m_srcloc;
+  location_t m_srcloc;
 
 private:
   recording::location *m_recording_loc;

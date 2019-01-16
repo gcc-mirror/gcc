@@ -4,4 +4,4 @@
 /* { dg-options "-fident" } */
 int i;
 
-/* { dg-final { scan-assembler "GCC: " } } */
+/* { dg-final { scan-assembler "GCC: " { xfail powerpc-ibm-aix* powerpc*-*-darwin* } } } */

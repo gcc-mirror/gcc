@@ -1,5 +1,5 @@
 /* Code for RTL transformations to satisfy insn constraints.
-   Copyright (C) 2010-2018 Free Software Foundation, Inc.
+   Copyright (C) 2010-2019 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
    This file is part of GCC.
@@ -359,14 +359,20 @@ address_eliminator::address_eliminator (struct address_info *ad)
   if (m_base_loc != NULL)
     {
       m_base_reg = *m_base_loc;
-      lra_eliminate_reg_if_possible (m_base_loc);
+      /* If we have non-legitimate address which is decomposed not in
+	 the way we expected, don't do elimination here.  In such case
+	 the address will be reloaded and elimination will be done in
+	 reload insn finally.  */
+      if (REG_P (m_base_reg))
+	lra_eliminate_reg_if_possible (m_base_loc);
       if (m_ad->base_term2 != NULL)
 	*m_ad->base_term2 = *m_ad->base_term;
     }
   if (m_index_loc != NULL)
     {
       m_index_reg = *m_index_loc;
-      lra_eliminate_reg_if_possible (m_index_loc);
+      if (REG_P (m_index_reg))
+	lra_eliminate_reg_if_possible (m_index_loc);
     }
 }
 
@@ -2146,9 +2152,32 @@ process_alt_operands (int only_alternative)
 		      }
 		    else
 		      {
-			/* Operands don't match.  Both operands must
-			   allow a reload register, otherwise we
-			   cannot make them match.  */
+			/* Operands don't match.  If the operands are
+			   different user defined explicit hard registers,
+			   then we cannot make them match.  */
+			if ((REG_P (*curr_id->operand_loc[nop])
+			     || SUBREG_P (*curr_id->operand_loc[nop]))
+			    && (REG_P (*curr_id->operand_loc[m])
+				|| SUBREG_P (*curr_id->operand_loc[m])))
+			  {
+			    rtx nop_reg = *curr_id->operand_loc[nop];
+			    if (SUBREG_P (nop_reg))
+			      nop_reg = SUBREG_REG (nop_reg);
+			    rtx m_reg = *curr_id->operand_loc[m];
+			    if (SUBREG_P (m_reg))
+			      m_reg = SUBREG_REG (m_reg);
+
+			    if (REG_P (nop_reg)
+				&& HARD_REGISTER_P (nop_reg)
+				&& REG_USERVAR_P (nop_reg)
+				&& REG_P (m_reg)
+				&& HARD_REGISTER_P (m_reg)
+				&& REG_USERVAR_P (m_reg))
+			      break;
+			  }
+
+			/* Both operands must allow a reload register,
+			   otherwise we cannot make them match.  */
 			if (curr_alt[m] == NO_REGS)
 			  break;
 			/* Retroactively mark the operand we had to
@@ -2910,18 +2939,31 @@ process_alt_operands (int only_alternative)
 		if (first_conflict_j < 0)
 		  first_conflict_j = j;
 		last_conflict_j = j;
+		/* Both the earlyclobber operand and conflicting operand
+		   cannot both be user defined hard registers.  */
+		if (HARD_REGISTER_P (operand_reg[i])
+		    && REG_USERVAR_P (operand_reg[i])
+		    && operand_reg[j] != NULL_RTX
+		    && HARD_REGISTER_P (operand_reg[j])
+		    && REG_USERVAR_P (operand_reg[j]))
+		  fatal_insn ("unable to generate reloads for "
+			      "impossible constraints:", curr_insn);
 	      }
 	  if (last_conflict_j < 0)
 	    continue;
-	  /* If earlyclobber operand conflicts with another
-	     non-matching operand which is actually the same register
-	     as the earlyclobber operand, it is better to reload the
-	     another operand as an operand matching the earlyclobber
-	     operand can be also the same.  */
-	  if (first_conflict_j == last_conflict_j
-	      && operand_reg[last_conflict_j] != NULL_RTX
-	      && ! curr_alt_match_win[last_conflict_j]
-	      && REGNO (operand_reg[i]) == REGNO (operand_reg[last_conflict_j]))
+
+	  /* If an earlyclobber operand conflicts with another non-matching
+	     operand (ie, they have been assigned the same hard register),
+	     then it is better to reload the other operand, as there may
+	     exist yet another operand with a matching constraint associated
+	     with the earlyclobber operand.  However, if one of the operands
+	     is an explicit use of a hard register, then we must reload the
+	     other non-hard register operand.  */
+	  if (HARD_REGISTER_P (operand_reg[i])
+	      || (first_conflict_j == last_conflict_j
+		  && operand_reg[last_conflict_j] != NULL_RTX
+		  && !curr_alt_match_win[last_conflict_j]
+		  && !HARD_REGISTER_P (operand_reg[last_conflict_j])))
 	    {
 	      curr_alt_win[last_conflict_j] = false;
 	      curr_alt_dont_inherit_ops[curr_alt_dont_inherit_ops_num++]
@@ -3898,6 +3940,7 @@ curr_insn_transform (bool check_only_p)
 	fatal_insn ("unable to generate reloads for:", curr_insn);
       error_for_asm (curr_insn,
 		     "inconsistent operand constraints in an %<asm%>");
+      lra_asm_error_p = true;
       /* Avoid further trouble with this insn.  Don't generate use
 	 pattern here as we could use the insn SP offset.  */
       lra_set_insn_deleted (curr_insn);
@@ -5454,7 +5497,9 @@ lra_copy_reg_equiv (unsigned int new_regno, unsigned int original_regno)
    ORIGINAL_REGNO.  NEXT_USAGE_INSNS specifies which instruction in
    the EBB next uses ORIGINAL_REGNO; it has the same form as the
    "insns" field of usage_insns.  If TO is not NULL, we don't use
-   usage_insns, we put restore insns after TO insn.
+   usage_insns, we put restore insns after TO insn.  It is a case when
+   we call it from lra_split_hard_reg_for, outside the inheritance
+   pass.
 
    The transformations look like:
 
@@ -5610,16 +5655,18 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
       && mode == PSEUDO_REGNO_MODE (original_regno))
     lra_copy_reg_equiv (new_regno, original_regno);
   lra_reg_info[new_regno].restore_rtx = regno_reg_rtx[original_regno];
-  bitmap_set_bit (&check_only_regs, new_regno);
-  bitmap_set_bit (&check_only_regs, original_regno);
   bitmap_set_bit (&lra_split_regs, new_regno);
   if (to != NULL)
     {
+      lra_assert (next_usage_insns == NULL);
       usage_insn = to;
       after_p = TRUE;
     }
   else
     {
+      /* We need check_only_regs only inside the inheritance pass.  */
+      bitmap_set_bit (&check_only_regs, new_regno);
+      bitmap_set_bit (&check_only_regs, original_regno);
       after_p = usage_insns[original_regno].after_p;
       for (;;)
 	{
@@ -6605,11 +6652,11 @@ lra_inheritance (void)
 	   inherit_in_ebb.  */
 	update_ebb_live_info (BB_HEAD (start_bb), BB_END (bb));
     }
-  bitmap_clear (&ebb_global_regs);
-  bitmap_clear (&temp_bitmap);
-  bitmap_clear (&live_regs);
-  bitmap_clear (&invalid_invariant_regs);
-  bitmap_clear (&check_only_regs);
+  bitmap_release (&ebb_global_regs);
+  bitmap_release (&temp_bitmap);
+  bitmap_release (&live_regs);
+  bitmap_release (&invalid_invariant_regs);
+  bitmap_release (&check_only_regs);
   free (usage_insns);
 
   timevar_pop (TV_LRA_INHERITANCE);

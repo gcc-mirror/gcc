@@ -1,5 +1,5 @@
 /* Description of pass structure
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -107,6 +107,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_local_fn_summary);
   POP_INSERT_PASSES ()
 
+  NEXT_PASS (pass_ipa_remove_symbols);
   NEXT_PASS (pass_ipa_oacc);
   PUSH_INSERT_PASSES_WITHIN (pass_ipa_oacc)
       NEXT_PASS (pass_ipa_pta);
@@ -265,6 +266,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_tree_unswitch);
 	  NEXT_PASS (pass_scev_cprop);
 	  NEXT_PASS (pass_loop_split);
+	  NEXT_PASS (pass_loop_versioning);
 	  NEXT_PASS (pass_loop_jam);
 	  /* All unswitching, final value replacement and splitting can expose
 	     empty loops.  Remove them now.  */
@@ -458,6 +460,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_reload);
       NEXT_PASS (pass_postreload);
       PUSH_INSERT_PASSES_WITHIN (pass_postreload)
+	  NEXT_PASS (pass_postreload_jump);
 	  NEXT_PASS (pass_postreload_cse);
 	  NEXT_PASS (pass_gcse2);
 	  NEXT_PASS (pass_split_after_reload);

@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in arm.c and pe.c
-   Copyright (C) 1999-2018 Free Software Foundation, Inc.
+   Copyright (C) 1999-2019 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@arm.com)
    Minor hacks by Nick Clifton (nickc@cygnus.com)
 
@@ -28,7 +28,7 @@ extern enum unwind_info_type arm_except_unwind_info (struct gcc_options *);
 extern int use_return_insn (int, rtx);
 extern bool use_simple_return_p (void);
 extern enum reg_class arm_regno_class (int);
-extern void arm_load_pic_register (unsigned long);
+extern void arm_load_pic_register (unsigned long, rtx);
 extern int arm_volatile_func (void);
 extern void arm_expand_prologue (void);
 extern void arm_expand_epilogue (bool);
@@ -69,7 +69,7 @@ extern int const_ok_for_dimode_op (HOST_WIDE_INT, enum rtx_code);
 extern int arm_split_constant (RTX_CODE, machine_mode, rtx,
 			       HOST_WIDE_INT, rtx, rtx, int);
 extern int legitimate_pic_operand_p (rtx);
-extern rtx legitimize_pic_address (rtx, machine_mode, rtx);
+extern rtx legitimize_pic_address (rtx, machine_mode, rtx, rtx, bool);
 extern rtx legitimize_tls_address (rtx, rtx);
 extern bool arm_legitimate_address_p (machine_mode, rtx, bool);
 extern int arm_legitimate_address_outer_p (machine_mode, rtx, RTX_CODE, int);
@@ -375,6 +375,9 @@ extern void arm_lang_object_attributes_init (void);
 extern void arm_register_target_pragmas (void);
 extern void arm_cpu_cpp_builtins (struct cpp_reader *);
 
+/* Defined in arm-d.c  */
+extern void arm_d_target_versions (void);
+
 extern bool arm_is_constant_pool_ref (rtx);
 
 /* The bits in this mask specify which instruction scheduling options should
@@ -495,6 +498,16 @@ struct arm_build_target
 
 extern struct arm_build_target arm_active_target;
 
+/* Table entry for a CPU alias.  */
+struct cpu_alias
+{
+  /* The alias name.  */
+  const char *const name;
+  /* True if the name should be displayed in help text listing cpu names.  */
+  bool visible;
+};
+
+/* Table entry for an architectural feature extension.  */
 struct cpu_arch_extension
 {
   /* Feature name.  */
@@ -508,6 +521,7 @@ struct cpu_arch_extension
   const enum isa_feature isa_bits[isa_num_bits];
 };
 
+/* Common elements of both CPU and architectural options.  */
 struct cpu_arch_option
 {
   /* Name for this option.  */
@@ -518,6 +532,7 @@ struct cpu_arch_option
   enum isa_feature isa_bits[isa_num_bits];
 };
 
+/* Table entry for an architecture entry.  */
 struct arch_option
 {
   /* Common option fields.  */
@@ -532,10 +547,13 @@ struct arch_option
   enum processor_type tune_id;
 };
 
+/* Table entry for a CPU entry.  */
 struct cpu_option
 {
   /* Common option fields.  */
   cpu_arch_option common;
+  /* List of aliases for this CPU.  */
+  const struct cpu_alias *aliases;
   /* Architecture upon which this CPU is based.  */
   enum arch_type arch;
 };

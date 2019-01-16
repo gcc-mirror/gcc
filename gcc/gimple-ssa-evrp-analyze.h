@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2016-2018 Free Software Foundation, Inc.
+   Copyright (C) 2016-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 class evrp_range_analyzer
 {
  public:
-  evrp_range_analyzer (void);
+  evrp_range_analyzer (bool update_global_ranges);
   ~evrp_range_analyzer (void)
   {
     delete vr_values;
@@ -70,6 +70,9 @@ class evrp_range_analyzer
 
   /* STACK holds the old VR.  */
   auto_vec<std::pair <tree, value_range*> > stack;
+
+  /* True if we are updating global ranges, false otherwise.  */
+  bool m_update_global_ranges;
 };
 
 #endif /* GCC_GIMPLE_SSA_EVRP_ANALYZE_H */

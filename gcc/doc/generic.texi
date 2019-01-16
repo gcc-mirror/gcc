@@ -1,4 +1,4 @@
-@c Copyright (C) 2004-2018 Free Software Foundation, Inc.
+@c Copyright (C) 2004-2019 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -1274,6 +1274,7 @@ the byte offset of the field, but should not be used directly; call
 @subsection Unary and Binary Expressions
 @tindex NEGATE_EXPR
 @tindex ABS_EXPR
+@tindex ABSU_EXPR
 @tindex BIT_NOT_EXPR
 @tindex TRUTH_NOT_EXPR
 @tindex PREDECREMENT_EXPR
@@ -1370,6 +1371,11 @@ or complex abs of a complex value, use the @code{BUILT_IN_CABS},
 @code{BUILT_IN_CABSF} or @code{BUILT_IN_CABSL} builtins, as used
 to implement the C99 @code{cabs}, @code{cabsf} and @code{cabsl}
 built-in functions.
+
+@item ABSU_EXPR
+These nodes represent the absolute value of the single operand in
+equivalent unsigned type such that @code{ABSU_EXPR} of TYPE_MIN is
+well defined.
 
 @item BIT_NOT_EXPR
 These nodes represent bitwise complement, and will always have integral

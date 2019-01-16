@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++17" }
 // { dg-do run }
 
-// Copyright (C) 2016-2018 Free Software Foundation, Inc.
+// Copyright (C) 2016-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -354,7 +354,7 @@ void test_hash()
   {
     struct A
     {
-      operator int()
+      operator string()
       {
         throw nullptr;
       }
@@ -362,7 +362,7 @@ void test_hash()
     variant<int, string> v;
     try
       {
-        v.emplace<0>(A{});
+        v.emplace<1>(A{});
       }
     catch (nullptr_t)
       {

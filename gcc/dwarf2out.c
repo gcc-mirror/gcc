@@ -1,5 +1,5 @@
 /* Output Dwarf2 format symbol table information from GCC.
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
    Contributed by Gary Funck (gary@intrepid.com).
    Derived from DWARF 1 implementation of Ron Guilmette (rfg@monkeys.com).
    Extensively modified by Jason Merrill (jason@cygnus.com).
@@ -968,6 +968,8 @@ dwarf2out_do_cfi_startproc (bool second)
   rtx ref;
 
   fprintf (asm_out_file, "\t.cfi_startproc\n");
+
+  targetm.asm_out.post_cfi_startproc (asm_out_file, current_function_decl);
 
   /* .cfi_personality and .cfi_lsda are only relevant to DWARF2
      eh unwinders.  */
@@ -4616,12 +4618,13 @@ indirect_string_hasher::equal (indirect_string_node *x1, const char *x2)
 
 static struct indirect_string_node *
 find_AT_string_in_table (const char *str,
-			 hash_table<indirect_string_hasher> *table)
+			 hash_table<indirect_string_hasher> *table,
+			 enum insert_option insert = INSERT)
 {
   struct indirect_string_node *node;
 
   indirect_string_node **slot
-    = table->find_slot_with_hash (str, htab_hash_string (str), INSERT);
+    = table->find_slot_with_hash (str, htab_hash_string (str), insert);
   if (*slot == NULL)
     {
       node = ggc_cleared_alloc<indirect_string_node> ();
@@ -4638,12 +4641,12 @@ find_AT_string_in_table (const char *str,
 /* Add STR to the indirect string hash table.  */
 
 static struct indirect_string_node *
-find_AT_string (const char *str)
+find_AT_string (const char *str, enum insert_option insert = INSERT)
 {
   if (! debug_str_hash)
     debug_str_hash = hash_table<indirect_string_hasher>::create_ggc (10);
 
-  return find_AT_string_in_table (str, debug_str_hash);
+  return find_AT_string_in_table (str, debug_str_hash, insert);
 }
 
 /* Add a string attribute value to a DIE.  */
@@ -5435,6 +5438,16 @@ is_ada (void)
   unsigned int lang = get_AT_unsigned (comp_unit_die (), DW_AT_language);
 
   return lang == DW_LANG_Ada95 || lang == DW_LANG_Ada83;
+}
+
+/* Return TRUE if the language is D.  */
+
+static inline bool
+is_dlang (void)
+{
+  unsigned int lang = get_AT_unsigned (comp_unit_die (), DW_AT_language);
+
+  return lang == DW_LANG_D;
 }
 
 /* Remove the specified attribute if present.  Return TRUE if removal
@@ -9013,8 +9026,9 @@ build_abbrev_table (dw_die_ref die, external_ref_hash_type *extern_map)
 	struct external_ref *ref_p;
 	gcc_assert (AT_ref (a)->comdat_type_p || AT_ref (a)->die_id.die_symbol);
 
-	ref_p = lookup_external_ref (extern_map, c);
-	if (ref_p->stub && ref_p->stub != die)
+	if (is_type_die (c)
+	    && (ref_p = lookup_external_ref (extern_map, c))
+	    && ref_p->stub && ref_p->stub != die)
 	  change_AT_die_ref (a, ref_p->stub);
 	else
 	  /* We aren't changing this reference, so mark it external.  */
@@ -13138,6 +13152,8 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	       && TYPE_PRECISION (sizetype) == TYPE_PRECISION (size_type_node)
 	       && TYPE_UNSIGNED (sizetype) == TYPE_UNSIGNED (size_type_node))
 	qualified_type = size_type_node;
+      if (type == sizetype)
+	type = qualified_type;
     }
 
   /* If we do, then we can just use its DIE, if it exists.  */
@@ -14429,13 +14445,6 @@ const_ok_for_output_1 (rtx rtl)
   if (CONST_POLY_INT_P (rtl))
     return false;
 
-  if (targetm.const_not_ok_for_debug_p (rtl))
-    {
-      expansion_failed (NULL_TREE, rtl,
-			"Expression rejected for debug by the backend.\n");
-      return false;
-    }
-
   /* FIXME: Refer to PR60655. It is possible for simplification
      of rtl expressions in var tracking to produce such expressions.
      We should really identify / validate expressions
@@ -14448,6 +14457,41 @@ const_ok_for_output_1 (rtx rtl)
     case NOT:
     case NEG:
       return false;
+    case PLUS:
+      {
+	/* Make sure SYMBOL_REFs/UNSPECs are at most in one of the
+	   operands.  */
+	subrtx_var_iterator::array_type array;
+	bool first = false;
+	FOR_EACH_SUBRTX_VAR (iter, array, XEXP (rtl, 0), ALL)
+	  if (SYMBOL_REF_P (*iter)
+	      || LABEL_P (*iter)
+	      || GET_CODE (*iter) == UNSPEC)
+	    {
+	      first = true;
+	      break;
+	    }
+	if (!first)
+	  return true;
+	FOR_EACH_SUBRTX_VAR (iter, array, XEXP (rtl, 1), ALL)
+	  if (SYMBOL_REF_P (*iter)
+	      || LABEL_P (*iter)
+	      || GET_CODE (*iter) == UNSPEC)
+	    return false;
+	return true;
+      }
+    case MINUS:
+      {
+	/* Disallow negation of SYMBOL_REFs or UNSPECs when they
+	   appear in the second operand of MINUS.  */
+	subrtx_var_iterator::array_type array;
+	FOR_EACH_SUBRTX_VAR (iter, array, XEXP (rtl, 1), ALL)
+	  if (SYMBOL_REF_P (*iter)
+	      || LABEL_P (*iter)
+	      || GET_CODE (*iter) == UNSPEC)
+	    return false;
+	return true;
+      }
     default:
       return true;
     }
@@ -15591,6 +15635,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	 pool.  */
     case CONST:
     case SYMBOL_REF:
+    case UNSPEC:
       if (!is_a <scalar_int_mode> (mode, &int_mode)
 	  || (GET_MODE_SIZE (int_mode) > DWARF2_ADDR_SIZE
 #ifdef POINTERS_EXTEND_UNSIGNED
@@ -15598,6 +15643,39 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 #endif
 	      ))
 	break;
+
+      if (GET_CODE (rtl) == UNSPEC)
+	{
+	  /* If delegitimize_address couldn't do anything with the UNSPEC, we
+	     can't express it in the debug info.  This can happen e.g. with some
+	     TLS UNSPECs.  Allow UNSPECs formerly from CONST that the backend
+	     approves.  */
+	  bool not_ok = false;
+	  subrtx_var_iterator::array_type array;
+	  FOR_EACH_SUBRTX_VAR (iter, array, rtl, ALL)
+	    if (*iter != rtl && !CONSTANT_P (*iter))
+	      {
+		not_ok = true;
+		break;
+	      }
+
+	  if (not_ok)
+	    break;
+
+	  FOR_EACH_SUBRTX_VAR (iter, array, rtl, ALL)
+	    if (!const_ok_for_output_1 (*iter))
+	      {
+		not_ok = true;
+		break;
+	      }
+
+	  if (not_ok)
+	    break;
+
+	  rtl = gen_rtx_CONST (GET_MODE (rtl), rtl);
+	  goto symref;
+	}
+
       if (GET_CODE (rtl) == SYMBOL_REF
 	  && SYMBOL_REF_TLS_MODEL (rtl) != TLS_MODEL_NONE)
 	{
@@ -16266,7 +16344,6 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
     case VEC_CONCAT:
     case VEC_DUPLICATE:
     case VEC_SERIES:
-    case UNSPEC:
     case HIGH:
     case FMA:
     case STRICT_LOW_PART:
@@ -16275,9 +16352,6 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
     case CLRSB:
     case CLOBBER:
     case CLOBBER_HIGH:
-      /* If delegitimize_address couldn't do anything with the UNSPEC, we
-	 can't express it in the debug info.  This can happen e.g. with some
-	 TLS UNSPECs.  */
       break;
 
     case CONST_STRING:
@@ -16731,7 +16805,15 @@ secname_for_decl (const_tree decl)
       && DECL_SECTION_NAME (decl))
     secname = DECL_SECTION_NAME (decl);
   else if (current_function_decl && DECL_SECTION_NAME (current_function_decl))
-    secname = DECL_SECTION_NAME (current_function_decl);
+    {
+      if (in_cold_section_p)
+	{
+	  section *sec = current_function_section ();
+	  if (sec->common.flags & SECTION_NAMED)
+	    return sec->named.name;
+	}
+      secname = DECL_SECTION_NAME (current_function_decl);
+    }
   else if (cfun && in_cold_section_p)
     secname = crtl->subsections.cold_section_label;
   else
@@ -18966,7 +19048,6 @@ field_byte_offset (const_tree decl, struct vlr_context *ctx,
   if (TREE_CODE (DECL_FIELD_BIT_OFFSET (decl)) != INTEGER_CST)
     return NULL;
 
-#ifdef PCC_BITFIELD_TYPE_MATTERS
   /* We used to handle only constant offsets in all cases.  Now, we handle
      properly dynamic byte offsets only when PCC bitfield type doesn't
      matter.  */
@@ -19081,7 +19162,6 @@ field_byte_offset (const_tree decl, struct vlr_context *ctx,
       tree_result = wide_int_to_tree (sizetype, object_offset_in_bytes);
     }
   else
-#endif /* PCC_BITFIELD_TYPE_MATTERS */
     tree_result = byte_position (decl);
 
   if (ctx->variant_part_offset != NULL_TREE)
@@ -24256,6 +24336,7 @@ gen_producer_string (void)
       case OPT_fdiagnostics_show_labels:
       case OPT_fdiagnostics_show_line_numbers:
       case OPT_fdiagnostics_color_:
+      case OPT_fdiagnostics_format_:
       case OPT_fverbose_asm:
       case OPT____:
       case OPT__sysroot_:
@@ -24450,6 +24531,8 @@ gen_compile_unit_die (const char *filename)
 	language = DW_LANG_ObjC;
       else if (strcmp (language_string, "GNU Objective-C++") == 0)
 	language = DW_LANG_ObjC_plus_plus;
+      else if (strcmp (language_string, "GNU D") == 0)
+	language = DW_LANG_D;
       else if (dwarf_version >= 5 || !dwarf_strict)
 	{
 	  if (strcmp (language_string, "GNU Go") == 0)
@@ -24517,6 +24600,7 @@ gen_inheritance_die (tree binfo, tree access, tree type,
 
 /* Return whether DECL is a FIELD_DECL that represents the variant part of a
    structure.  */
+
 static bool
 is_variant_part (tree decl)
 {
@@ -24530,17 +24614,8 @@ is_variant_part (tree decl)
 static tree
 analyze_discr_in_predicate (tree operand, tree struct_type)
 {
-  bool continue_stripping = true;
-  while (continue_stripping)
-    switch (TREE_CODE (operand))
-      {
-      CASE_CONVERT:
-	operand = TREE_OPERAND (operand, 0);
-	break;
-      default:
-	continue_stripping = false;
-	break;
-      }
+  while (CONVERT_EXPR_P (operand))
+    operand = TREE_OPERAND (operand, 0);
 
   /* Match field access to members of struct_type only.  */
   if (TREE_CODE (operand) == COMPONENT_REF
@@ -24758,6 +24833,19 @@ analyze_variants_discr (tree variant_part_decl,
 		goto abort;
 
 	      new_node->dw_discr_range = true;
+	    }
+
+	  else if ((candidate_discr
+		      = analyze_discr_in_predicate (match_expr, struct_type))
+		   && TREE_TYPE (candidate_discr) == boolean_type_node)
+	    {
+	      /* We are matching:  <discr_field> for a boolean discriminant.
+		 This sub-expression matches boolean_true_node.  */
+	      new_node = ggc_cleared_alloc<dw_discr_list_node> ();
+	      if (!get_discr_value (boolean_true_node,
+				    &new_node->dw_discr_lower_bound))
+		goto abort;
+	      new_node->dw_discr_range = false;
 	    }
 
 	  else
@@ -26034,7 +26122,7 @@ declare_in_namespace (tree thing, dw_die_ref context_die)
 
   if (ns_context != context_die)
     {
-      if (is_fortran ())
+      if (is_fortran () || is_dlang ())
 	return ns_context;
       if (DECL_P (thing))
 	gen_decl_die (thing, NULL, NULL, ns_context);
@@ -26057,7 +26145,7 @@ gen_namespace_die (tree decl, dw_die_ref context_die)
     {
       /* Output a real namespace or module.  */
       context_die = setup_namespace_context (decl, comp_unit_die ());
-      namespace_die = new_die (is_fortran ()
+      namespace_die = new_die (is_fortran () || is_dlang ()
 			       ? DW_TAG_module : DW_TAG_namespace,
 			       context_die, decl);
       /* For Fortran modules defined in different CU don't add src coords.  */
@@ -26123,7 +26211,7 @@ gen_decl_die (tree decl, tree origin, struct vlr_context *ctx,
       break;
 
     case CONST_DECL:
-      if (!is_fortran () && !is_ada ())
+      if (!is_fortran () && !is_ada () && !is_dlang ())
 	{
 	  /* The individual enumerators of an enum type get output when we output
 	     the Dwarf representation of the relevant enum type itself.  */
@@ -26389,7 +26477,7 @@ dwarf2out_early_global_decl (tree decl)
 		 enough so that it lands in its own context.  This avoids type
 		 pruning issues later on.  */
 	      if (context_die == NULL || is_declaration_die (context_die))
-		dwarf2out_decl (context);
+		dwarf2out_early_global_decl (context);
 	    }
 
 	  /* Emit an abstract origin of a function first.  This happens
@@ -26723,7 +26811,7 @@ dwarf2out_decl (tree decl)
     case CONST_DECL:
       if (debug_info_level <= DINFO_LEVEL_TERSE)
 	return;
-      if (!is_fortran () && !is_ada ())
+      if (!is_fortran () && !is_ada () && !is_dlang ())
 	return;
       if (TREE_STATIC (decl) && decl_function_context (decl))
 	context_die = lookup_decl_die (DECL_CONTEXT (decl));
@@ -28068,7 +28156,19 @@ output_macinfo_op (macinfo_entry *ref)
       break;
     case DW_MACRO_define_strp:
     case DW_MACRO_undef_strp:
-      node = find_AT_string (ref->info);
+      /* NB: dwarf2out_finish performs:
+	   1. save_macinfo_strings
+	   2. hash table traverse of index_string
+	   3. output_macinfo -> output_macinfo_op
+	   4. output_indirect_strings
+		-> hash table traverse of output_index_string
+
+	 When output_macinfo_op is called, all index strings have been
+	 added to hash table by save_macinfo_strings and we can't pass
+	 INSERT to find_slot_with_hash which may expand hash table, even
+	 if no insertion is needed, and change hash table traverse order
+	 between index_string and output_index_string.  */
+      node = find_AT_string (ref->info, NO_INSERT);
       gcc_assert (node
 		  && (node->form == DW_FORM_strp
 		      || node->form == dwarf_FORM (DW_FORM_strx)));
@@ -29126,6 +29226,7 @@ prune_unused_types_walk_local_classes (dw_die_ref die)
     case DW_TAG_structure_type:
     case DW_TAG_union_type:
     case DW_TAG_class_type:
+    case DW_TAG_interface_type:
       break;
 
     case DW_TAG_subprogram:
@@ -29159,6 +29260,7 @@ prune_unused_types_walk (dw_die_ref die)
     case DW_TAG_structure_type:
     case DW_TAG_union_type:
     case DW_TAG_class_type:
+    case DW_TAG_interface_type:
       if (die->die_perennial_p)
 	break;
 
@@ -29185,7 +29287,6 @@ prune_unused_types_walk (dw_die_ref die)
     case DW_TAG_volatile_type:
     case DW_TAG_typedef:
     case DW_TAG_array_type:
-    case DW_TAG_interface_type:
     case DW_TAG_friend:
     case DW_TAG_enumeration_type:
     case DW_TAG_subroutine_type:
@@ -31168,6 +31269,8 @@ dwarf2out_finish (const char *filename)
     FOR_EACH_CHILD (die, c, gcc_assert (! c->die_mark));
   }
 #endif
+  for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
+    resolve_addr (ctnode->root_die);
   resolve_addr (comp_unit_die ());
   move_marked_base_types ();
 

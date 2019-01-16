@@ -1,5 +1,5 @@
 /* Interprocedural constant propagation
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
    Contributed by Razya Ladelsky <RAZYA@il.ibm.com> and Martin Jambor
    <mjambor@suse.cz>
@@ -191,7 +191,7 @@ public:
   /* Depth first search number and low link for topological sorting of
      values.  */
   int dfs, low_link;
-  /* True if this valye is currently on the topo-sort stack.  */
+  /* True if this value is currently on the topo-sort stack.  */
   bool on_stack;
 
   ipcp_value()
@@ -307,18 +307,18 @@ private:
 class ipcp_vr_lattice
 {
 public:
-  value_range m_vr;
+  value_range_base m_vr;
 
   inline bool bottom_p () const;
   inline bool top_p () const;
   inline bool set_to_bottom ();
-  bool meet_with (const value_range *p_vr);
+  bool meet_with (const value_range_base *p_vr);
   bool meet_with (const ipcp_vr_lattice &other);
   void init () { gcc_assert (m_vr.undefined_p ()); }
   void print (FILE * f);
 
 private:
-  bool meet_with_1 (const value_range *other_vr);
+  bool meet_with_1 (const value_range_base *other_vr);
 };
 
 /* Structure containing lattices for a parameter itself and for pieces of
@@ -375,6 +375,9 @@ static profile_count max_count;
 /* Original overall size of the program.  */
 
 static long overall_size, max_new_size;
+
+/* Node name to unique clone suffix number map.  */
+static hash_map<const char *, unsigned> *clone_num_suffixes;
 
 /* Return the param lattices structure corresponding to the Ith formal
    parameter of the function described by INFO.  */
@@ -539,6 +542,9 @@ print_all_lattices (FILE * f, bool dump_sources, bool dump_benefits)
       struct ipa_node_params *info;
 
       info = IPA_NODE_REF (node);
+      /* Skip constprop clones since we don't make lattices for them.  */
+      if (info->ipcp_orig_node)
+	continue;
       fprintf (f, "  Node: %s:\n", node->dump_name ());
       count = ipa_get_param_count (info);
       for (i = 0; i < count; i++)
@@ -877,7 +883,7 @@ ipcp_lattice<valtype>::set_contains_variable ()
   return ret;
 }
 
-/* Set all aggegate lattices in PLATS to bottom and return true if they were
+/* Set all aggregate lattices in PLATS to bottom and return true if they were
    not previously set as such.  */
 
 static inline bool
@@ -888,7 +894,7 @@ set_agg_lats_to_bottom (struct ipcp_param_lattices *plats)
   return ret;
 }
 
-/* Mark all aggegate lattices in PLATS as containing an unknown value and
+/* Mark all aggregate lattices in PLATS as containing an unknown value and
    return true if they were not previously marked as such.  */
 
 static inline bool
@@ -905,11 +911,11 @@ ipcp_vr_lattice::meet_with (const ipcp_vr_lattice &other)
   return meet_with_1 (&other.m_vr);
 }
 
-/* Meet the current value of the lattice with value ranfge described by VR
+/* Meet the current value of the lattice with value range described by VR
    lattice.  */
 
 bool
-ipcp_vr_lattice::meet_with (const value_range *p_vr)
+ipcp_vr_lattice::meet_with (const value_range_base *p_vr)
 {
   return meet_with_1 (p_vr);
 }
@@ -918,7 +924,7 @@ ipcp_vr_lattice::meet_with (const value_range *p_vr)
    OTHER_VR lattice.  Return TRUE if anything changed.  */
 
 bool
-ipcp_vr_lattice::meet_with_1 (const value_range *other_vr)
+ipcp_vr_lattice::meet_with_1 (const value_range_base *other_vr)
 {
   if (bottom_p ())
     return false;
@@ -926,9 +932,9 @@ ipcp_vr_lattice::meet_with_1 (const value_range *other_vr)
   if (other_vr->varying_p ())
     return set_to_bottom ();
 
-  value_range save (m_vr);
+  value_range_base save (m_vr);
   m_vr.union_ (other_vr);
-  return !m_vr.ignore_equivs_equal_p (save);
+  return !m_vr.equal_p (save);
 }
 
 /* Return true if value range information in the lattice is yet unknown.  */
@@ -1327,7 +1333,7 @@ ipa_value_from_jfunc (struct ipa_node_params *info, struct ipa_jump_func *jfunc,
     return NULL_TREE;
 }
 
-/* Determie whether JFUNC evaluates to single known polymorphic context, given
+/* Determine whether JFUNC evaluates to single known polymorphic context, given
    that INFO describes the caller node or the one it is inlined to, CS is the
    call graph edge corresponding to JFUNC and CSIDX index of the described
    parameter.  */
@@ -1871,12 +1877,13 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
    the result is a range or an anti-range.  */
 
 static bool
-ipa_vr_operation_and_type_effects (value_range *dst_vr, value_range *src_vr,
+ipa_vr_operation_and_type_effects (value_range_base *dst_vr,
+				   value_range_base *src_vr,
 				   enum tree_code operation,
 				   tree dst_type, tree src_type)
 {
-  *dst_vr = value_range ();
-  extract_range_from_unary_expr (dst_vr, operation, dst_type, src_vr, src_type);
+  extract_range_from_unary_expr (dst_vr, operation, dst_type,
+				 src_vr, src_type);
   if (dst_vr->varying_p () || dst_vr->undefined_p ())
     return false;
   return true;
@@ -1915,7 +1922,7 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
 
 	  if (src_lats->m_value_range.bottom_p ())
 	    return dest_lat->set_to_bottom ();
-	  value_range vr;
+	  value_range_base vr;
 	  if (ipa_vr_operation_and_type_effects (&vr,
 						 &src_lats->m_value_range.m_vr,
 						 operation, param_type,
@@ -1932,12 +1939,12 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
 	  if (TREE_OVERFLOW_P (val))
 	    val = drop_tree_overflow (val);
 
-	  value_range tmpvr (VR_RANGE, val, val);
+	  value_range_base tmpvr (VR_RANGE, val, val);
 	  return dest_lat->meet_with (&tmpvr);
 	}
     }
 
-  value_range vr;
+  value_range_base vr;
   if (jfunc->m_vr
       && ipa_vr_operation_and_type_effects (&vr, jfunc->m_vr, NOP_EXPR,
 					    param_type,
@@ -2375,7 +2382,7 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 
   t = NULL;
 
-  /* Try to work out value of virtual table pointer value in replacemnets.  */
+  /* Try to work out value of virtual table pointer value in replacements.  */
   if (!t && agg_reps && !ie->indirect_info->by_ref)
     {
       while (agg_reps)
@@ -3715,9 +3722,11 @@ update_profiling_info (struct cgraph_node *orig_node,
   new_sum = orig_node_count.combine_with_ipa_count (new_sum);
   orig_node->count = remainder;
 
+  profile_count::adjust_for_ipa_scaling (&new_sum, &orig_node_count);
   for (cs = new_node->callees; cs; cs = cs->next_callee)
     cs->count = cs->count.apply_scale (new_sum, orig_node_count);
 
+  profile_count::adjust_for_ipa_scaling (&remainder, &orig_node_count);
   for (cs = orig_node->callees; cs; cs = cs->next_callee)
     cs->count = cs->count.apply_scale (remainder, orig_node_count);
 
@@ -3828,8 +3837,13 @@ create_specialized_node (struct cgraph_node *node,
 	}
     }
 
+  unsigned &suffix_counter = clone_num_suffixes->get_or_insert (
+			       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (
+				 node->decl)));
   new_node = node->create_virtual_clone (callers, replace_trees,
-					 args_to_skip, "constprop");
+					 args_to_skip, "constprop",
+					 suffix_counter);
+  suffix_counter++;
 
   bool have_self_recursive_calls = !self_recursive_calls.is_empty ();
   for (unsigned j = 0; j < self_recursive_calls.length (); j++)
@@ -4591,7 +4605,7 @@ ipcp_val_agg_replacement_ok_p (ipa_agg_replacement_value *aggvals,
   return false;
 }
 
-/* Return true if offset is minus one because source of a polymorphic contect
+/* Return true if offset is minus one because source of a polymorphic context
    cannot be an aggregate value.  */
 
 DEBUG_FUNCTION bool
@@ -4602,7 +4616,7 @@ ipcp_val_agg_replacement_ok_p (ipa_agg_replacement_value *,
   return offset == -1;
 }
 
-/* Decide wheter to create a special version of NODE for value VAL of parameter
+/* Decide whether to create a special version of NODE for value VAL of parameter
    at the given INDEX.  If OFFSET is -1, the value is for the parameter itself,
    otherwise it is stored at the given OFFSET of the parameter.  KNOWN_CSTS,
    KNOWN_CONTEXTS and KNOWN_AGGS describe the other already known values.  */
@@ -5043,6 +5057,7 @@ ipcp_driver (void)
 
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();
+  clone_num_suffixes = new hash_map<const char *, unsigned>;
 
   if (dump_file)
     {
@@ -5064,6 +5079,7 @@ ipcp_driver (void)
   ipcp_store_vr_results ();
 
   /* Free all IPCP structures.  */
+  delete clone_num_suffixes;
   free_toporder_info (&topo);
   delete edge_clone_summaries;
   edge_clone_summaries = NULL;

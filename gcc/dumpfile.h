@@ -1,5 +1,5 @@
 /* Definitions for the shared dumpfile.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -385,6 +385,38 @@ struct dump_impl_location_t
   const char *m_function;
 };
 
+/* A bundle of metadata for describing a dump message:
+   (a) the dump_flags
+   (b) the source location within the compiler/plugin.
+
+   The constructors use default parameters so that (b) gets sets up
+   automatically.
+
+   Hence you can pass in e.g. MSG_NOTE, and the dump call
+   will automatically record where in GCC's source code the
+   dump was emitted from.  */
+
+class dump_metadata_t
+{
+ public:
+  dump_metadata_t (dump_flags_t dump_flags,
+		   const dump_impl_location_t &impl_location
+		     = dump_impl_location_t ())
+  : m_dump_flags (dump_flags),
+    m_impl_location (impl_location)
+  {
+  }
+
+  dump_flags_t get_dump_flags () const { return m_dump_flags; }
+
+  const dump_impl_location_t &
+  get_impl_location () const { return m_impl_location; }
+
+ private:
+  dump_flags_t m_dump_flags;
+  dump_impl_location_t m_impl_location;
+};
+
 /* A bundle of information for describing the location of a dump message:
    (a) the source location and hotness within the user's code, together with
    (b) the source location within the compiler/plugin.
@@ -521,27 +553,30 @@ dump_enabled_p (void)
    to minimize the work done for the common case where dumps
    are disabled.  */
 
-extern void dump_printf (dump_flags_t, const char *, ...)
+extern void dump_printf (const dump_metadata_t &, const char *, ...)
   ATTRIBUTE_GCC_DUMP_PRINTF (2, 3);
 
-extern void dump_printf_loc (dump_flags_t, const dump_location_t &,
+extern void dump_printf_loc (const dump_metadata_t &, const dump_user_location_t &,
 			     const char *, ...)
   ATTRIBUTE_GCC_DUMP_PRINTF (3, 0);
 extern void dump_function (int phase, tree fn);
 extern void dump_basic_block (dump_flags_t, basic_block, int);
-extern void dump_generic_expr_loc (dump_flags_t, const dump_location_t &,
+extern void dump_generic_expr_loc (const dump_metadata_t &,
+				   const dump_user_location_t &,
 				   dump_flags_t, tree);
-extern void dump_generic_expr (dump_flags_t, dump_flags_t, tree);
-extern void dump_gimple_stmt_loc (dump_flags_t, const dump_location_t &,
+extern void dump_generic_expr (const dump_metadata_t &, dump_flags_t, tree);
+extern void dump_gimple_stmt_loc (const dump_metadata_t &,
+				  const dump_user_location_t &,
 				  dump_flags_t, gimple *, int);
-extern void dump_gimple_stmt (dump_flags_t, dump_flags_t, gimple *, int);
-extern void dump_gimple_expr_loc (dump_flags_t, const dump_location_t &,
+extern void dump_gimple_stmt (const dump_metadata_t &, dump_flags_t, gimple *, int);
+extern void dump_gimple_expr_loc (const dump_metadata_t &,
+				  const dump_user_location_t &,
 				  dump_flags_t, gimple *, int);
-extern void dump_gimple_expr (dump_flags_t, dump_flags_t, gimple *, int);
-extern void dump_symtab_node (dump_flags_t, symtab_node *);
+extern void dump_gimple_expr (const dump_metadata_t &, dump_flags_t, gimple *, int);
+extern void dump_symtab_node (const dump_metadata_t &, symtab_node *);
 
 template<unsigned int N, typename C>
-void dump_dec (dump_flags_t, const poly_int<N, C> &);
+void dump_dec (const dump_metadata_t &, const poly_int<N, C> &);
 extern void dump_dec (dump_flags_t, const poly_wide_int &, signop);
 extern void dump_hex (dump_flags_t, const poly_wide_int &);
 
@@ -551,7 +586,9 @@ extern void dumpfile_ensure_any_optinfo_are_flushed ();
    leading to a dump message.  */
 
 extern unsigned int get_dump_scope_depth ();
-extern void dump_begin_scope (const char *name, const dump_location_t &loc);
+extern void dump_begin_scope (const char *name,
+			      const dump_user_location_t &user_location,
+			      const dump_impl_location_t &impl_location);
 extern void dump_end_scope ();
 
 /* Implementation detail of the AUTO_DUMP_SCOPE macro below.
@@ -563,10 +600,13 @@ extern void dump_end_scope ();
 class auto_dump_scope
 {
  public:
-  auto_dump_scope (const char *name, dump_location_t loc)
+  auto_dump_scope (const char *name,
+		   const dump_user_location_t &user_location,
+		   const dump_impl_location_t &impl_location
+		   = dump_impl_location_t ())
   {
     if (dump_enabled_p ())
-      dump_begin_scope (name, loc);
+      dump_begin_scope (name, user_location, impl_location);
   }
   ~auto_dump_scope ()
   {
@@ -576,7 +616,7 @@ class auto_dump_scope
 };
 
 /* A macro for calling:
-     dump_begin_scope (NAME, LOC);
+     dump_begin_scope (NAME, USER_LOC);
    via an RAII object, thus printing "=== MSG ===\n" to the dumpfile etc,
    and then calling
      dump_end_scope ();
@@ -587,8 +627,8 @@ class auto_dump_scope
    top level implicitly default to MSG_PRIORITY_USER_FACING, whereas those
    in a nested scope implicitly default to MSG_PRIORITY_INTERNALS.  */
 
-#define AUTO_DUMP_SCOPE(NAME, LOC) \
-  auto_dump_scope scope (NAME, LOC)
+#define AUTO_DUMP_SCOPE(NAME, USER_LOC) \
+  auto_dump_scope scope (NAME, USER_LOC)
 
 extern void dump_function (int phase, tree fn);
 extern void print_combine_total_stats (void);

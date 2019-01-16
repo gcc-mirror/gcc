@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2018 Free Software Foundation, Inc.
+# Copyright (C) 1997-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -296,6 +296,9 @@ foreach option {
     mcount-ra-address
     odd-spreg
     msa
+    loongson-mmi
+    loongson-ext
+    loongson-ext2
 } {
     lappend mips_option_groups $option "-m(no-|)$option"
 }
@@ -883,6 +886,12 @@ proc mips-dg-init {} {
 	    "-mno-msa"
 	    #endif
 
+	    #ifdef __mips_loongson_mmi
+	    "-mloongson-mmi"
+	    #else
+	    "-mno-loongson-mmi"
+	    #endif
+
 	    0
 	};
     } 0]
@@ -1045,6 +1054,19 @@ proc mips-dg-options { args } {
     mips_option_dependency options "-mno-plt" "addressing=unknown"
     mips_option_dependency options "-mabicalls" "-G0"
     mips_option_dependency options "-mno-gpopt" "-mexplicit-relocs"
+
+    if { [check_configured_with "with-arch=loongson3a"] 
+	 || [check_configured_with "with-arch=gs464"]
+	 || [check_configured_with "with-arch=gs464e"]
+	 || [check_configured_with "with-arch=gs264e"] } {
+	mips_option_dependency options "-msoft-float" "-mno-loongson-mmi"
+	mips_option_dependency options "-mips16" "-mno-loongson-mmi"
+	mips_option_dependency options "-mips16" "-mno-loongson-ext"
+	mips_option_dependency options "-mips16" "-mno-loongson-ext2"
+	mips_option_dependency options "-mmicromips" "-mno-loongson-mmi"
+	mips_option_dependency options "-mmicromips" "-mno-loongson-ext"
+	mips_option_dependency options "-mmicromips" "-mno-loongson-ext2"
+    }
 
     # Work out information about the current ABI.
     set abi_test_option_p [mips_test_option_p options abi]

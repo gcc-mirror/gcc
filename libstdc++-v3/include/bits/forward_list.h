@@ -1,6 +1,6 @@
 // <forward_list.h> -*- C++ -*-
 
-// Copyright (C) 2008-2018 Free Software Foundation, Inc.
+// Copyright (C) 2008-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -293,7 +293,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_Fwd_list_node_base _M_head;
 
 	_Fwd_list_impl()
-	  noexcept( noexcept(_Node_alloc_type()) )
+	  noexcept(is_nothrow_default_constructible<_Node_alloc_type>::value)
 	: _Node_alloc_type(), _M_head()
 	{ }
 
@@ -809,7 +809,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return *__front->_M_valptr();
       }
 
-      // 23.3.4.5 modiﬁers:
+      // 23.3.4.5 modifiers:
 
       /**
        *  @brief  Constructs object in %forward_list at the front of the

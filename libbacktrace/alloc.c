@@ -1,5 +1,5 @@
 /* alloc.c -- Memory allocation without mmap.
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 Redistribution and use in source and binary forms, with or without
@@ -145,12 +145,23 @@ backtrace_vector_release (struct backtrace_state *state ATTRIBUTE_UNUSED,
 			  backtrace_error_callback error_callback,
 			  void *data)
 {
+  vec->alc = 0;
+
+  if (vec->size == 0)
+    {
+      /* As of C17, realloc with size 0 is marked as an obsolescent feature, use
+	 free instead.  */
+      free (vec->base);
+      vec->base = NULL;
+      return 1;
+    }
+
   vec->base = realloc (vec->base, vec->size);
   if (vec->base == NULL)
     {
       error_callback (data, "realloc", errno);
       return 0;
     }
-  vec->alc = 0;
+
   return 1;
 }

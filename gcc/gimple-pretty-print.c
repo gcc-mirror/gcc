@@ -1,5 +1,5 @@
 /* Pretty formatting of GIMPLE statements and expressions.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com> and
    Diego Novillo <dnovillo@google.com>
 
@@ -1554,6 +1554,35 @@ dump_gimple_omp_single (pretty_printer *buffer, gomp_single *gs,
     }
 }
 
+/* Dump a GIMPLE_OMP_TASKGROUP tuple on the pretty_printer BUFFER.  */
+
+static void
+dump_gimple_omp_taskgroup (pretty_printer *buffer, gimple *gs,
+			   int spc, dump_flags_t flags)
+{
+  if (flags & TDF_RAW)
+    {
+      dump_gimple_fmt (buffer, spc, flags, "%G <%+BODY <%S>%nCLAUSES <", gs,
+		       gimple_omp_body (gs));
+      dump_omp_clauses (buffer, gimple_omp_taskgroup_clauses (gs), spc, flags);
+      dump_gimple_fmt (buffer, spc, flags, " >");
+    }
+  else
+    {
+      pp_string (buffer, "#pragma omp taskgroup");
+      dump_omp_clauses (buffer, gimple_omp_taskgroup_clauses (gs), spc, flags);
+      if (!gimple_seq_empty_p (gimple_omp_body (gs)))
+	{
+	  newline_and_indent (buffer, spc + 2);
+	  pp_left_brace (buffer);
+	  pp_newline (buffer);
+	  dump_gimple_seq (buffer, gimple_omp_body (gs), spc + 4, flags);
+	  newline_and_indent (buffer, spc + 2);
+	  pp_right_brace (buffer);
+	}
+    }
+}
+
 /* Dump a GIMPLE_OMP_TARGET tuple on the pretty_printer BUFFER.  */
 
 static void
@@ -1712,7 +1741,7 @@ dump_gimple_omp_sections (pretty_printer *buffer, gomp_sections *gs,
     }
 }
 
-/* Dump a GIMPLE_OMP_{MASTER,TASKGROUP,ORDERED,SECTION} tuple on the
+/* Dump a GIMPLE_OMP_{MASTER,ORDERED,SECTION} tuple on the
    pretty_printer BUFFER.  */
 
 static void
@@ -2019,6 +2048,8 @@ dump_gimple_asm (pretty_printer *buffer, gasm *gs, int spc, dump_flags_t flags)
       pp_string (buffer, "__asm__");
       if (gimple_asm_volatile_p (gs))
 	pp_string (buffer, " __volatile__");
+      if (gimple_asm_inline_p (gs))
+	pp_string (buffer, " __inline__");
       if (gimple_asm_nlabels (gs))
 	pp_string (buffer, " goto");
       pp_string (buffer, "(\"");
@@ -2301,6 +2332,8 @@ dump_gimple_omp_task (pretty_printer *buffer, gomp_task *gs, int spc,
       gimple_seq body;
       if (gimple_omp_task_taskloop_p (gs))
 	pp_string (buffer, "#pragma omp taskloop");
+      else if (gimple_omp_task_taskwait_p (gs))
+	pp_string (buffer, "#pragma omp taskwait");
       else
 	pp_string (buffer, "#pragma omp task");
       dump_omp_clauses (buffer, gimple_omp_task_clauses (gs), spc, flags);
@@ -2353,8 +2386,8 @@ dump_gimple_omp_atomic_load (pretty_printer *buffer, gomp_atomic_load *gs,
   else
     {
       pp_string (buffer, "#pragma omp atomic_load");
-      if (gimple_omp_atomic_seq_cst_p (gs))
-	pp_string (buffer, " seq_cst");
+      dump_omp_atomic_memory_order (buffer,
+				    gimple_omp_atomic_memory_order (gs));
       if (gimple_omp_atomic_need_value_p (gs))
 	pp_string (buffer, " [needed]");
       newline_and_indent (buffer, spc + 2);
@@ -2385,9 +2418,10 @@ dump_gimple_omp_atomic_store (pretty_printer *buffer,
     }
   else
     {
-      pp_string (buffer, "#pragma omp atomic_store ");
-      if (gimple_omp_atomic_seq_cst_p (gs))
-	pp_string (buffer, "seq_cst ");
+      pp_string (buffer, "#pragma omp atomic_store");
+      dump_omp_atomic_memory_order (buffer,
+				    gimple_omp_atomic_memory_order (gs));
+      pp_space (buffer);
       if (gimple_omp_atomic_need_value_p (gs))
 	pp_string (buffer, "[needed] ");
       pp_left_paren (buffer);
@@ -2569,8 +2603,11 @@ pp_gimple_stmt_1 (pretty_printer *buffer, gimple *gs, int spc,
       pp_string (buffer, "GIMPLE_SECTIONS_SWITCH");
       break;
 
-    case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_TASKGROUP:
+      dump_gimple_omp_taskgroup (buffer, gs, spc, flags);
+      break;
+
+    case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_GRID_BODY:
       dump_gimple_omp_block (buffer, gs, spc, flags);

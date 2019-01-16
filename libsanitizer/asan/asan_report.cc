@@ -82,7 +82,7 @@ static void PrintZoneForPointer(uptr ptr, uptr zone_ptr,
 bool ParseFrameDescription(const char *frame_descr,
                            InternalMmapVector<StackVarDescr> *vars) {
   CHECK(frame_descr);
-  char *p;
+  const char *p;
   // This string is created by the compiler and has the following form:
   // "n alloc_1 alloc_2 ... alloc_n"
   // where alloc_i looks like "offset size len ObjectName"
@@ -132,6 +132,10 @@ class ScopedInErrorReport {
   }
 
   ~ScopedInErrorReport() {
+    if (halt_on_error_ && !__sanitizer_acquire_crash_state()) {
+      asanThreadRegistry().Unlock();
+      return;
+    }
     ASAN_ON_ERROR();
     if (current_error_.IsValid()) current_error_.Print();
 
@@ -150,7 +154,7 @@ class ScopedInErrorReport {
 
     // Copy the message buffer so that we could start logging without holding a
     // lock that gets aquired during printing.
-    InternalScopedBuffer<char> buffer_copy(kErrorMessageBufferSize);
+    InternalMmapVector<char> buffer_copy(kErrorMessageBufferSize);
     {
       BlockingMutexLock l(&error_message_buf_mutex);
       internal_memcpy(buffer_copy.data(),
@@ -200,7 +204,7 @@ class ScopedInErrorReport {
   bool halt_on_error_;
 };
 
-ErrorDescription ScopedInErrorReport::current_error_;
+ErrorDescription ScopedInErrorReport::current_error_(LINKER_INITIALIZED);
 
 void ReportDeadlySignal(const SignalContext &sig) {
   ScopedInErrorReport in_report(/*fatal*/ true);
@@ -214,11 +218,12 @@ void ReportDoubleFree(uptr addr, BufferedStackTrace *free_stack) {
   in_report.ReportError(error);
 }
 
-void ReportNewDeleteSizeMismatch(uptr addr, uptr delete_size,
+void ReportNewDeleteTypeMismatch(uptr addr, uptr delete_size,
+                                 uptr delete_alignment,
                                  BufferedStackTrace *free_stack) {
   ScopedInErrorReport in_report;
-  ErrorNewDeleteSizeMismatch error(GetCurrentTidOrInvalid(), free_stack, addr,
-                                   delete_size);
+  ErrorNewDeleteTypeMismatch error(GetCurrentTidOrInvalid(), free_stack, addr,
+                                   delete_size, delete_alignment);
   in_report.ReportError(error);
 }
 
@@ -248,6 +253,62 @@ void ReportSanitizerGetAllocatedSizeNotOwned(uptr addr,
   ScopedInErrorReport in_report;
   ErrorSanitizerGetAllocatedSizeNotOwned error(GetCurrentTidOrInvalid(), stack,
                                                addr);
+  in_report.ReportError(error);
+}
+
+void ReportCallocOverflow(uptr count, uptr size, BufferedStackTrace *stack) {
+  ScopedInErrorReport in_report(/*fatal*/ true);
+  ErrorCallocOverflow error(GetCurrentTidOrInvalid(), stack, count, size);
+  in_report.ReportError(error);
+}
+
+void ReportPvallocOverflow(uptr size, BufferedStackTrace *stack) {
+  ScopedInErrorReport in_report(/*fatal*/ true);
+  ErrorPvallocOverflow error(GetCurrentTidOrInvalid(), stack, size);
+  in_report.ReportError(error);
+}
+
+void ReportInvalidAllocationAlignment(uptr alignment,
+                                      BufferedStackTrace *stack) {
+  ScopedInErrorReport in_report(/*fatal*/ true);
+  ErrorInvalidAllocationAlignment error(GetCurrentTidOrInvalid(), stack,
+                                        alignment);
+  in_report.ReportError(error);
+}
+
+void ReportInvalidAlignedAllocAlignment(uptr size, uptr alignment,
+                                        BufferedStackTrace *stack) {
+  ScopedInErrorReport in_report(/*fatal*/ true);
+  ErrorInvalidAlignedAllocAlignment error(GetCurrentTidOrInvalid(), stack,
+                                          size, alignment);
+  in_report.ReportError(error);
+}
+
+void ReportInvalidPosixMemalignAlignment(uptr alignment,
+                                         BufferedStackTrace *stack) {
+  ScopedInErrorReport in_report(/*fatal*/ true);
+  ErrorInvalidPosixMemalignAlignment error(GetCurrentTidOrInvalid(), stack,
+                                           alignment);
+  in_report.ReportError(error);
+}
+
+void ReportAllocationSizeTooBig(uptr user_size, uptr total_size, uptr max_size,
+                                BufferedStackTrace *stack) {
+  ScopedInErrorReport in_report(/*fatal*/ true);
+  ErrorAllocationSizeTooBig error(GetCurrentTidOrInvalid(), stack, user_size,
+                                  total_size, max_size);
+  in_report.ReportError(error);
+}
+
+void ReportRssLimitExceeded(BufferedStackTrace *stack) {
+  ScopedInErrorReport in_report(/*fatal*/ true);
+  ErrorRssLimitExceeded error(GetCurrentTidOrInvalid(), stack);
+  in_report.ReportError(error);
+}
+
+void ReportOutOfMemory(uptr requested_size, BufferedStackTrace *stack) {
+  ScopedInErrorReport in_report(/*fatal*/ true);
+  ErrorOutOfMemory error(GetCurrentTidOrInvalid(), stack, requested_size);
   in_report.ReportError(error);
 }
 

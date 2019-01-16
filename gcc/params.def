@@ -1,5 +1,5 @@
 /* params.def - Run-time parameters.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
 This file is part of GCC.
@@ -82,6 +82,38 @@ DEFPARAM (PARAM_MAX_INLINE_INSNS_AUTO,
 	  "max-inline-insns-auto",
 	  "The maximum number of instructions when automatically inlining.",
 	  30, 0, 0)
+
+DEFPARAM (PARAM_MAX_INLINE_INSNS_SMALL,
+	  "max-inline-insns-small",
+	  "The maximum number of instructions when automatically inlining small functions.",
+	  0, 0, 0)
+
+DEFPARAM (PARAM_MAX_INLINE_INSNS_SIZE,
+	  "max-inline-insns-size",
+	  "The maximum number of instructions when inlining for size.",
+	  0, 0, 0)
+
+DEFPARAM (PARAM_UNINLINED_FUNCTION_INSNS,
+	  "uninlined-function-insns",
+	  "Instruction accounted for function prologue, epilogue and other"
+	  " overhead.",
+	  2, 0, 0)
+
+DEFPARAM (PARAM_UNINLINED_FUNCTION_TIME,
+	  "uninlined-function-time",
+	  "Time accounted for function prologue, epilogue and other"
+	  " overhead.",
+	  0, 0, 0)
+
+DEFPARAM (PARAM_UNINLINED_FUNCTION_THUNK_INSNS,
+	  "uninlined-thunk-insns",
+	  "Instruction accounted for function thunk overhead.",
+	  2, 0, 0)
+
+DEFPARAM (PARAM_UNINLINED_FUNCTION_THUNK_TIME,
+	  "uninlined-thunk-time",
+	  "Time accounted for function thunk overhead.",
+	  2, 0, 0)
 
 DEFPARAM (PARAM_MAX_INLINE_INSNS_RECURSIVE,
 	  "max-inline-insns-recursive",
@@ -397,13 +429,13 @@ DEFPARAM(PARAM_SMS_LOOP_AVERAGE_COUNT_THRESHOLD,
 DEFPARAM(HOT_BB_COUNT_FRACTION,
 	 "hot-bb-count-fraction",
 	 "Select fraction of the maximal count of repetitions of basic block in program given basic "
-	 "block needs to have to be considered hot (used in non-LTO mode)",
+	 "block needs to have to be considered hot (used in non-LTO mode).",
 	 10000, 0, 0)
 DEFPARAM(HOT_BB_COUNT_WS_PERMILLE,
 	 "hot-bb-count-ws-permille",
          "A basic block profile count is considered hot if it contributes to "
          "the given permillage of the entire profiled execution (used in LTO mode).",
-	 999, 0, 1000)
+	 990, 0, 1000)
 DEFPARAM(HOT_BB_FREQUENCY_FRACTION,
 	 "hot-bb-frequency-fraction",
 	 "Select fraction of the maximal frequency of executions of basic block in function given basic block needs to have to be considered hot.",
@@ -1103,7 +1135,7 @@ DEFPARAM (PARAM_IPA_MAX_AA_STEPS,
 DEFPARAM (PARAM_LTO_PARTITIONS,
 	  "lto-partitions",
 	  "Number of partitions the program should be split to.",
-	  32, 1, 0)
+	  128, 1, 0)
 
 DEFPARAM (MIN_PARTITION_SIZE,
 	  "lto-min-partition",
@@ -1359,6 +1391,24 @@ DEFPARAM(PARAM_AVOID_FMA_MAX_BITS,
 	 "avoid-fma-max-bits",
 	 "Maximum number of bits for which we avoid creating FMAs.",
 	 0, 0, 512)
+
+DEFPARAM(PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT,
+	 "logical-op-non-short-circuit",
+	 "True if a non-short-circuit operation is optimal.",
+	 -1, -1, 1)
+
+DEFPARAM(PARAM_LOOP_VERSIONING_MAX_INNER_INSNS,
+	 "loop-versioning-max-inner-insns",
+	 "The maximum number of instructions in an inner loop that is being"
+	 " considered for versioning.",
+	 200, 0, 0)
+
+DEFPARAM(PARAM_LOOP_VERSIONING_MAX_OUTER_INSNS,
+	 "loop-versioning-max-outer-insns",
+	 "The maximum number of instructions in an outer loop that is being"
+	 " considered for versioning, on top of the instructions in inner"
+	 " loops.",
+	 100, 0, 0)
 
 /*
 

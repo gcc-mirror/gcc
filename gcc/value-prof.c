@@ -1,5 +1,5 @@
 /* Transformations based on profile information for values.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -627,11 +627,6 @@ gimple_value_profile_transformations (void)
   gimple_stmt_iterator gsi;
   bool changed = false;
 
-  /* Autofdo does its own transformations for indirect calls,
-     and otherwise does not support value profiling.  */
-  if (flag_auto_profile)
-    return false;
-
   FOR_EACH_BB_FN (bb, cfun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -1193,7 +1188,7 @@ init_node_map (bool local)
   cgraph_node_map = new hash_map<profile_id_hash, cgraph_node *>;
 
   FOR_EACH_DEFINED_FUNCTION (n)
-    if (n->has_gimple_body_p ())
+    if (n->has_gimple_body_p () || n->thunk.thunk_p)
       {
 	cgraph_node **val;
 	if (local)

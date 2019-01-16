@@ -109,4 +109,4 @@ contains
   call RunTPTests()
   end program
 
-! { dg-final { scan-ipa-dump "Inlined tp_sum into runtptests" "inline" } }
+! { dg-final { scan-ipa-dump "Inlined tp_sum/\[0-9\]+ into runtptests/\[0-9\]+" "inline" } }

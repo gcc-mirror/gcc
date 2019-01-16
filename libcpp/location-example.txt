@@ -20,213 +20,258 @@ extern int foo ();
 
 
 The undocumented -fdump-internal-locations option outputs this information
-to stderr, showing what each source_location value means.  Source code
-lines are quoted, showing both per-line source_location values and
-per-line&column source_location values (written vertically under the
+to stderr, showing what each location_t value means.  Source code
+lines are quoted, showing both per-line location_t values and
+per-line&column location_t values (written vertically under the
 corresponding character of source code).
 
 VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
 RESERVED LOCATIONS
-  source_location interval: 0 <= loc < 2
+  location_t interval: 0 <= loc < 2
 
 ORDINARY MAP: 0
-  source_location interval: 32 <= loc < 64
+  location_t interval: 32 <= loc < 64
   file: test.c
   starting at line: 1
-  column bits: 12
+  column and range bits: 12
+  column bits: 7
   range bits: 5
+  reason: 0 (LC_ENTER)
+  included from location: 0
 test.c:  1|loc:   32|#include "test.h"
                     |69269258258148147
                     |46802468024680246
 
 ORDINARY MAP: 1
-  source_location interval: 64 <= loc < 96
+  location_t interval: 64 <= loc < 96
   file: <built-in>
   starting at line: 0
+  column and range bits: 0
   column bits: 0
   range bits: 0
+  reason: 2 (LC_RENAME)
+  included from location: 0
 
 ORDINARY MAP: 2
-  source_location interval: 96 <= loc < 128
+  location_t interval: 96 <= loc < 128
   file: <command-line>
   starting at line: 0
+  column and range bits: 0
   column bits: 0
   range bits: 0
+  reason: 2 (LC_RENAME)
+  included from location: 0
 
 ORDINARY MAP: 3
-  source_location interval: 128 <= loc < 160128
+  location_t interval: 128 <= loc < 250240
   file: /usr/include/stdc-predef.h
   starting at line: 1
-  column bits: 12
+  column and range bits: 12
+  column bits: 7
   range bits: 5
+  reason: 0 (LC_ENTER)
+  included from location: 127 (in ordinary map 2)
 (contents of /usr/include/stdc-predef.h snipped for brevity)
 
 ORDINARY MAP: 4
-  source_location interval: 160128 <= loc < 160160
+  location_t interval: 250240 <= loc < 250272
   file: <command-line>
   starting at line: 32
-  column bits: 12
+  column and range bits: 12
+  column bits: 7
   range bits: 5
+  reason: 1 (LC_LEAVE)
+  included from location: 0
 
 ORDINARY MAP: 5
-  source_location interval: 160160 <= loc < 164256
+  location_t interval: 250272 <= loc < 254368
   file: test.c
   starting at line: 1
-  column bits: 12
+  column and range bits: 12
+  column bits: 7
   range bits: 5
-test.c:  1|loc:160160|#include "test.h"
-                    |00000000000000000
-                    |12223334445556667
-                    |92582581481470470
-                    |24680246802468024
+  reason: 2 (LC_RENAME)
+  included from location: 0
+test.c:  1|loc:250272|#include "test.h"
+                     |00000000000000000
+                     |33344445556667778
+                     |03603692692582581
+                     |46802468024680246
 
 ORDINARY MAP: 6
-  source_location interval: 164256 <= loc < 173280
+  location_t interval: 254368 <= loc < 266720
   file: test.h
   starting at line: 1
-  column bits: 12
+  column and range bits: 12
+  column bits: 7
   range bits: 5
-test.h:  1|loc:164256|extern int foo ();
-                    |444444444444444444
-                    |233344455566677788
-                    |825814814704703603
-                    |802468024680246802
-test.h:  2|loc:168352|
-                    |
-                    |
-                    |
-                    |
-test.h:  3|loc:172448|#define PLUS(A, B) A + B
-                    |222222222222222223333333
-                    |455566677788889990001112
-                    |814704703603692692582581
-                    |024680246802468024680246
+  reason: 0 (LC_ENTER)
+  included from location: 250272 (in ordinary map 5)
+test.h:  1|loc:254368|extern int foo ();
+                     |444444444444444444
+                     |444455566677788899
+                     |036926925825814814
+                     |024680246802468024
+test.h:  2|loc:258464|
+                     |
+                     |
+                     |
+                     |
+test.h:  3|loc:262560|#define PLUS(A, B) A + B
+                     |222222222222233333333333
+                     |566677788899900011122223
+                     |925825814814704703603692
+                     |246802468024680246802468
+test.h:  4|loc:266656|
+                     |
+                     |
+                     |
+                     |
 
 ORDINARY MAP: 7
-  source_location interval: 173280 <= loc < 202016
+  location_t interval: 266720 <= loc < 299520
   file: test.c
   starting at line: 2
-  column bits: 12
+  column and range bits: 12
+  column bits: 7
   range bits: 5
-test.c:  2|loc:173280|
-                    |
-                    |
-                    |
-                    |
-test.c:  3|loc:177376|int
-                    |777
-                    |444
-                    |047
-                    |802
-test.c:  4|loc:181472|main (int argc, char **argv)
-                    |1111111111111111222222222222
-                    |5556666777888999000111222333
-                    |0360369269258258148147047036
-                    |4680246802468024680246802468
-test.c:  5|loc:185568|{
-                    |5
-                    |6
-                    |0
-                    |0
-test.c:  6|loc:189664|  int a = PLUS (1,2);
-                    |999999999900000000000
-                    |677788899900011122233
-                    |926925825814814704703
-                    |680246802468024680246
-test.c:  7|loc:193760|  int b = PLUS (3,4);
-                    |333333344444444444444
-                    |788899900011122233344
-                    |925825814814704703603
-                    |246802468024680246802
-test.c:  8|loc:197856|  return 0;
-                    |77778888888
-                    |89990001112
-                    |82581481470
-                    |80246802468
-test.c:  9|loc:201952|}
-                    |1
-                    |9
-                    |8
-                    |4
+  reason: 1 (LC_LEAVE)
+  included from location: 0
+test.c:  2|loc:266720|
+                     |
+                     |
+                     |
+                     |
+test.c:  3|loc:270816|int
+                     |000
+                     |889
+                     |481
+                     |802
+test.c:  4|loc:274912|main (int argc, char **argv)
+                     |4455555555555555555555555555
+                     |9900011122223334445556667778
+                     |4704703603692692582581481470
+                     |4680246802468024680246802468
+test.c:  5|loc:279008|{
+                     |9
+                     |0
+                     |4
+                     |0
+test.c:  6|loc:283104|  int a = PLUS (1,2);
+                     |333333333333333333333
+                     |112222333444555666777
+                     |360369269258258148147
+                     |680246802468024680246
+test.c:  7|loc:287200|  int b = PLUS (3,4);
+                     |777777777777777777777
+                     |222333444555666777888
+                     |369269258258148147047
+                     |246802468024680246802
+test.c:  8|loc:291296|  return 0;
+                     |11111111111
+                     |33344455566
+                     |26925825814
+                     |80246802468
+test.c:  9|loc:295392|}
+                     |5
+                     |4
+                     |2
+                     |4
+test.c: 10|loc:299488|
+                     |
+                     |
+                     |
+                     |
 
 UNALLOCATED LOCATIONS
-  source_location interval: 202016 <= loc < 2147483633
+  location_t interval: 299520 <= loc < 2147483632
 
-MACRO 1: PLUS (7 tokens)
-  source_location interval: 2147483633 <= loc < 2147483640
-test.c:7:11: note: expansion point is location 194115
-   int b = PLUS (3,4);
-           ^~~~
-
-  map->start_location: 2147483633
+MACRO 3: PLUS (7 tokens)
+  location_t interval: 2147483632 <= loc < 2147483639
+test.c:7:11: note: expansion point is location 287555
+    7 |   int b = PLUS (3,4);
+      |           ^~~~
+  map->start_location: 2147483632
   macro_locations:
-    0: 194304, 173088
-test.c:7:17: note: token 0 has x-location == 194304
-   int b = PLUS (3,4);
-                 ^
+    0: 287744, 263200
+test.c:7:17: note: token 0 has x-location == 287744
+    7 |   int b = PLUS (3,4);
+      |                 ^
+test.c:7:17: note: token 0 has y-location == 263200
+    1: 263264, 263264
+In file included from test.c:1:
+test.h:3:22: note: token 1 has x-location == y-location == 263264
+    3 | #define PLUS(A, B) A + B
+      |                      ^
+    2: 287808, 263328
+test.c:7:19: note: token 2 has x-location == 287808
+    7 |   int b = PLUS (3,4);
+      |                   ^
+test.c:7:19: note: token 2 has y-location == 263328
+    3: 0, 0
+cc1: note: token 3 has x-location == y-location == 0
+    4: 0, 0
+cc1: note: token 4 has x-location == y-location == 0
+    5: 0, 0
+cc1: note: token 5 has x-location == y-location == 0
+    6: 0, 0
+cc1: note: token 6 has x-location == y-location == 0
 
-test.c:7:17: note: token 0 has y-location == 173088
-    1: 173152, 173152
-In file included from test.c:1:0:
-test.h:3:22: note: token 1 has x-location == y-location == 173152
- #define PLUS(A, B) A + B
-                      ^
-
-    2: 194368, 173216
-test.c:7:19: note: token 2 has x-location == 194368
-   int b = PLUS (3,4);
-                   ^
-
-test.c:7:19: note: token 2 has y-location == 173216
-    3: 0, 2947526575
-cc1: note: token 3 has x-location == 0
-cc1: note: token 3 has y-location == 2947526575
-    4: 2947526575, 2947526575
-x-location == y-location == 2947526575 encodes token # 800042942
-    5: 2947526575, 2947526575
-x-location == y-location == 2947526575 encodes token # 800042942
-    6: 2947526575, 2947526575
-x-location == y-location == 2947526575 encodes token # 800042942
-
-MACRO 0: PLUS (7 tokens)
-  source_location interval: 2147483640 <= loc < 2147483647
-test.c:6:11: note: expansion point is location 190019
-   int a = PLUS (1,2);
-           ^~~~
-
-  map->start_location: 2147483640
+MACRO 2: PLUS (7 tokens)
+  location_t interval: 2147483639 <= loc < 2147483646
+test.c:6:11: note: expansion point is location 283459
+    6 |   int a = PLUS (1,2);
+      |           ^~~~
+  map->start_location: 2147483639
   macro_locations:
-    0: 190208, 173088
-test.c:6:17: note: token 0 has x-location == 190208
-   int a = PLUS (1,2);
-                 ^
+    0: 283648, 263200
+test.c:6:17: note: token 0 has x-location == 283648
+    6 |   int a = PLUS (1,2);
+      |                 ^
+test.c:6:17: note: token 0 has y-location == 263200
+    1: 263264, 263264
+In file included from test.c:1:
+test.h:3:22: note: token 1 has x-location == y-location == 263264
+    3 | #define PLUS(A, B) A + B
+      |                      ^
+    2: 283712, 263328
+test.c:6:19: note: token 2 has x-location == 283712
+    6 |   int a = PLUS (1,2);
+      |                   ^
+test.c:6:19: note: token 2 has y-location == 263328
+    3: 0, 0
+cc1: note: token 3 has x-location == y-location == 0
+    4: 0, 0
+cc1: note: token 4 has x-location == y-location == 0
+    5: 0, 0
+cc1: note: token 5 has x-location == y-location == 0
+    6: 0, 0
+cc1: note: token 6 has x-location == y-location == 0
 
-test.c:6:17: note: token 0 has y-location == 173088
-    1: 173152, 173152
-In file included from test.c:1:0:
-test.h:3:22: note: token 1 has x-location == y-location == 173152
- #define PLUS(A, B) A + B
-                      ^
+MACRO 1: __GCC_IEC_559_COMPLEX (1 tokens)
+  location_t interval: 2147483646 <= loc < 2147483647
+In file included from <command-line>:31:
+/usr/include/stdc-predef.h:45:6: note: expansion point is location 180564
+   45 | # if __GCC_IEC_559_COMPLEX > 0
+      |      ^~~~~~~~~~~~~~~~~~~~~
+  map->start_location: 2147483646
+  macro_locations:
+    0: 1, 1
+<built-in>: note: token 0 has x-location == y-location == 1
 
-    2: 190272, 173216
-test.c:6:19: note: token 2 has x-location == 190272
-   int a = PLUS (1,2);
-                   ^
+MACRO 0: __GCC_IEC_559 (1 tokens)
+  location_t interval: 2147483647 <= loc < 2147483648
+/usr/include/stdc-predef.h:37:6: note: expansion point is location 147788
+   37 | # if __GCC_IEC_559 > 0
+      |      ^~~~~~~~~~~~~
+  map->start_location: 2147483647
+  macro_locations:
+    0: 1, 1
+<built-in>: note: token 0 has x-location == y-location == 1
 
-test.c:6:19: note: token 2 has y-location == 173216
-    3: 0, 2947526575
-cc1: note: token 3 has x-location == 0
-cc1: note: token 3 has y-location == 2947526575
-    4: 2947526575, 2947526575
-x-location == y-location == 2947526575 encodes token # 800042935
-    5: 2947526575, 2947526575
-x-location == y-location == 2947526575 encodes token # 800042935
-    6: 2947526575, 2947526575
-x-location == y-location == 2947526575 encodes token # 800042935
-
-MAX_SOURCE_LOCATION
-  source_location interval: 2147483647 <= loc < 2147483648
+MAX_LOCATION_T
+  location_t interval: 2147483647 <= loc < 2147483648
 
 AD-HOC LOCATIONS
-  source_location interval: 2147483648 <= loc < 4294967295
+  location_t interval: 2147483648 <= loc < 4294967295
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

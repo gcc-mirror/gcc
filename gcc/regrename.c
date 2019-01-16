@@ -1,5 +1,5 @@
 /* Register renaming for the GNU compiler.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -231,7 +231,7 @@ create_new_chain (unsigned this_regno, unsigned this_nregs, rtx *loc,
   struct du_chain *this_du;
   int nregs;
 
-  memset (head, 0, sizeof *head);
+  memset ((void *)head, 0, sizeof *head);
   head->next_chain = open_chains;
   head->regno = this_regno;
   head->nregs = this_nregs;

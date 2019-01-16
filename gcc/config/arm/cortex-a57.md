@@ -1,5 +1,5 @@
 ;; ARM Cortex-A57 pipeline description
-;; Copyright (C) 2014-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2019 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -328,7 +328,7 @@
 (define_insn_reservation "cortex_a57_mult32" 3
   (and (eq_attr "tune" "cortexa57")
        (ior (eq_attr "mul32" "yes")
-	    (eq_attr "mul64" "yes")))
+	    (eq_attr "widen_mul64" "yes")))
   "ca57_mx")
 
 ;; Integer divide

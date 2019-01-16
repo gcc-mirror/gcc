@@ -304,6 +304,28 @@ read_encoded_value (struct _Unwind_Context *context, uint8_t encoding,
   return p;
 }
 
+static inline int
+value_size (uint8_t encoding)
+{
+  switch (encoding & 0x0f)
+    {
+      case DW_EH_PE_sdata2:
+      case DW_EH_PE_udata2:
+        return 2;
+      case DW_EH_PE_sdata4:
+      case DW_EH_PE_udata4:
+        return 4;
+      case DW_EH_PE_sdata8:
+      case DW_EH_PE_udata8:
+        return 8;
+      case DW_EH_PE_absptr:
+        return sizeof(uintptr);
+      default:
+        break;
+    }
+  abort ();
+}
+
 /* The rest of this code is really similar to gcc/unwind-c.c and
    libjava/exception.cc.  */
 
@@ -372,6 +394,12 @@ parse_lsda_header (struct _Unwind_Context *context, const unsigned char *p,
 #define CONTINUE_UNWINDING return _URC_CONTINUE_UNWIND
 #endif
 
+#ifdef __ARM_EABI_UNWINDER__
+#define STOP_UNWINDING _URC_FAILURE
+#else
+#define STOP_UNWINDING _URC_NORMAL_STOP
+#endif
+
 #ifdef __USING_SJLJ_EXCEPTIONS__
 #define PERSONALITY_FUNCTION    __gccgo_personality_sj0
 #define __builtin_eh_return_data_regno(x) x
@@ -416,6 +444,9 @@ PERSONALITY_FUNCTION (int version,
   switch (state & _US_ACTION_MASK)
     {
     case _US_VIRTUAL_UNWIND_FRAME:
+      if (state & _UA_FORCE_UNWIND)
+        /* We are called from _Unwind_Backtrace.  No handler to run.  */
+        CONTINUE_UNWINDING;
       actions = _UA_SEARCH_PHASE;
       break;
 
@@ -562,4 +593,245 @@ PERSONALITY_FUNCTION (int version,
   _Unwind_SetGR (context, __builtin_eh_return_data_regno (1), 0);
   _Unwind_SetIP (context, landing_pad);
   return _URC_INSTALL_CONTEXT;
+}
+
+// A dummy personality function, which doesn't capture any exception
+// and simply passes by. This is used for functions that don't
+// capture exceptions but need LSDA for stack maps.
+_Unwind_Reason_Code
+__gccgo_personality_dummy (int, _Unwind_Action, _Unwind_Exception_Class,
+		      struct _Unwind_Exception *, struct _Unwind_Context *)
+  __attribute__ ((no_split_stack));
+
+_Unwind_Reason_Code
+__gccgo_personality_dummy (int version __attribute__ ((unused)),
+		      _Unwind_Action actions __attribute__ ((unused)),
+		      _Unwind_Exception_Class exception_class __attribute__ ((unused)),
+		      struct _Unwind_Exception *ue_header __attribute__ ((unused)),
+		      struct _Unwind_Context *context __attribute__ ((unused)))
+{
+  CONTINUE_UNWINDING;
+}
+
+// A sentinel value for Go functions.
+// A function is a Go function if it has LSDA, which has type info,
+// and the first (dummy) landing pad's type info is a pointer to
+// this value.
+#define GO_FUNC_SENTINEL ((uint64)'G' | ((uint64)'O'<<8) | \
+                          ((uint64)'.'<<16) | ((uint64)'.'<<24) | \
+                          ((uint64)'F'<<32) | ((uint64)'U'<<40) | \
+                          ((uint64)'N'<<48) | ((uint64)'C'<<56))
+
+struct _stackmap {
+  uint32 len;
+  uint8 data[1]; // variabe length
+};
+
+extern void
+  runtime_scanstackblockwithmap (uintptr ip, uintptr sp, uintptr size, uint8 *ptrmask, void* gcw)
+  __asm__ (GOSYM_PREFIX "runtime.scanstackblockwithmap");
+
+#define FOUND        0
+#define NOTFOUND_OK  1
+#define NOTFOUND_BAD 2
+
+// Helper function to search for stack maps in the unwinding records of a frame.
+// If found, populate ip, sp, and stackmap. Returns the #define'd values above.
+static int
+findstackmaps (struct _Unwind_Context *context, _Unwind_Ptr *ip, _Unwind_Ptr *sp, struct _stackmap **stackmap)
+{
+  lsda_header_info info;
+  const unsigned char *language_specific_data, *p, *action_record;
+  bool first;
+  struct _stackmap *stackmap1;
+  _Unwind_Ptr ip1;
+  int ip_before_insn = 0;
+  _sleb128_t index;
+  int size;
+
+#ifdef __ARM_EABI_UNWINDER__
+  {
+    _Unwind_Control_Block *ucbp;
+    ucbp = (_Unwind_Control_Block *) _Unwind_GetGR (context, 12);
+    if (*ucbp->pr_cache.ehtp & (1u << 31))
+      // The "compact" model is used, with one of the predefined
+      // personality functions. It doesn't have standard LSDA.
+      return NOTFOUND_OK;
+  }
+#endif
+
+  language_specific_data = (const unsigned char *)
+    _Unwind_GetLanguageSpecificData (context);
+
+  /* If no LSDA, then there is no stack maps.  */
+  if (! language_specific_data)
+    return NOTFOUND_OK;
+
+  p = parse_lsda_header (context, language_specific_data, &info);
+
+  if (info.TType == NULL)
+    return NOTFOUND_OK;
+
+#ifdef HAVE_GETIPINFO
+  ip1 = _Unwind_GetIPInfo (context, &ip_before_insn);
+#else
+  ip1 = _Unwind_GetIP (context);
+#endif
+  if (! ip_before_insn)
+    --ip1;
+
+  size = value_size (info.ttype_encoding);
+
+  action_record = NULL;
+  first = true;
+
+  /* Search the call-site table for the action associated with this IP.  */
+  while (p < info.action_table)
+    {
+      _Unwind_Ptr cs_start, cs_len, cs_lp;
+      _uleb128_t cs_action;
+
+      /* Note that all call-site encodings are "absolute" displacements.  */
+      p = read_encoded_value (0, info.call_site_encoding, p, &cs_start);
+      p = read_encoded_value (0, info.call_site_encoding, p, &cs_len);
+      p = read_encoded_value (0, info.call_site_encoding, p, &cs_lp);
+      p = read_uleb128 (p, &cs_action);
+
+      if (first)
+        {
+          // For a Go function, the first entry points to the sentinel value.
+          // Check this here.
+          const unsigned char *p1, *action1;
+          uint64 *x;
+
+          if (!cs_action)
+            return NOTFOUND_OK;
+
+          action1 = info.action_table + cs_action - 1;
+          read_sleb128 (action1, &index);
+          p1 = info.TType - index*size;
+          read_encoded_value (context, info.ttype_encoding, p1, (_Unwind_Ptr*)&x);
+          if (x == NULL || *x != GO_FUNC_SENTINEL)
+            return NOTFOUND_OK;
+
+          first = false;
+          continue;
+        }
+
+      /* The table is sorted, so if we've passed the ip, stop.  */
+      if (ip1 < info.Start + cs_start)
+        return NOTFOUND_BAD;
+      else if (ip1 < info.Start + cs_start + cs_len)
+        {
+          if (cs_action)
+            action_record = info.action_table + cs_action - 1;
+          break;
+        }
+    }
+
+  if (action_record == NULL)
+    return NOTFOUND_BAD;
+
+  read_sleb128 (action_record, &index);
+  p = info.TType - index*size;
+  read_encoded_value (context, info.ttype_encoding, p, (_Unwind_Ptr*)&stackmap1);
+  if (stackmap1 == NULL)
+    return NOTFOUND_BAD;
+
+  if (ip != NULL)
+    *ip = ip1;
+  if (sp != NULL)
+    *sp = _Unwind_GetCFA (context);
+  if (stackmap != NULL)
+    *stackmap = stackmap1;
+  return FOUND;
+}
+
+// Callback function to scan a stack frame with stack maps.
+// It skips non-Go functions.
+static _Unwind_Reason_Code
+scanstackwithmap_callback (struct _Unwind_Context *context, void *arg)
+{
+  struct _stackmap *stackmap;
+  _Unwind_Ptr ip, sp;
+  G* gp;
+  void *gcw = arg;
+
+  switch (findstackmaps (context, &ip, &sp, &stackmap))
+    {
+      case NOTFOUND_OK:
+        // Not a Go function. Skip this frame.
+        return _URC_NO_REASON;
+      case NOTFOUND_BAD:
+        {
+          // No stack map found.
+          // If we're scanning from the signal stack, the goroutine
+          // may be not stopped at a safepoint. Allow this case.
+          gp = runtime_g ();
+          if (gp != gp->m->gsignal)
+            {
+              // TODO: print gp, pc, sp
+              runtime_throw ("no stack map");
+            }
+          return STOP_UNWINDING;
+        }
+      case FOUND:
+        break;
+      default:
+        abort ();
+    }
+
+  runtime_scanstackblockwithmap (ip, sp, (uintptr)(stackmap->len) * sizeof(uintptr), stackmap->data, gcw);
+
+  return _URC_NO_REASON;
+}
+
+// Scan the stack with stack maps. Return whether the scan
+// succeeded.
+bool
+scanstackwithmap (void *gcw)
+{
+  _Unwind_Reason_Code code;
+  runtime_xadd (&__go_runtime_in_callers, 1);
+  code = _Unwind_Backtrace (scanstackwithmap_callback, gcw);
+  runtime_xadd (&__go_runtime_in_callers, -1);
+  return code == _URC_END_OF_STACK;
+}
+
+// Returns whether stack map is enabled.
+bool
+usestackmaps ()
+{
+  return runtime_usestackmaps;
+}
+
+// Callback function to probe if a stack frame has stack maps.
+static _Unwind_Reason_Code
+probestackmaps_callback (struct _Unwind_Context *context,
+                         void *arg __attribute__ ((unused)))
+{
+  switch (findstackmaps (context, NULL, NULL, NULL))
+    {
+      case NOTFOUND_OK:
+      case NOTFOUND_BAD:
+        return _URC_NO_REASON;
+      case FOUND:
+        break;
+      default:
+        abort ();
+    }
+
+  // Found a stack map. No need to keep unwinding.
+  runtime_usestackmaps = true;
+  return STOP_UNWINDING;
+}
+
+// Try to find a stack map, store the result in global variable runtime_usestackmaps.
+// Called in start-up time from Go code, so there is a Go frame on the stack.
+bool
+probestackmaps ()
+{
+  runtime_usestackmaps = false;
+  _Unwind_Backtrace (probestackmaps_callback, NULL);
+  return runtime_usestackmaps;
 }

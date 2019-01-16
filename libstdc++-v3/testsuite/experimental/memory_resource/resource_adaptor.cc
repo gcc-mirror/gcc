@@ -2,7 +2,7 @@
 // { dg-require-cstdint "" }
 // { dg-xfail-run-if "PR libstdc++/77691" { { i?86-*-solaris2.* x86_64-*-solaris2.* } && ilp32 } }
 
-// Copyright (C) 2016-2018 Free Software Foundation, Inc.
+// Copyright (C) 2016-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

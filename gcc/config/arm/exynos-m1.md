@@ -1,5 +1,5 @@
 ;; Samsung Exynos M1 pipeline description
-;; Copyright (C) 2014-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2019 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -417,7 +417,7 @@
 
 (define_insn_reservation "exynos_m1_mlal" 4
   (and (eq_attr "tune" "exynosm1")
-       (eq_attr "mul64" "yes"))
+       (eq_attr "widen_mul64" "yes"))
   "em1_alu, em1_c")
 
 ;; Integer divide

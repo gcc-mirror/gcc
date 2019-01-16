@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    For ARM with ELF obj format.
-   Copyright (C) 1995-2018 Free Software Foundation, Inc.
+   Copyright (C) 1995-2019 Free Software Foundation, Inc.
    Contributed by Philip Blundell <philb@gnu.org> and
    Catherine Moore <clm@cygnus.com>
    
@@ -137,7 +137,7 @@
 
 /* Horrible hack: We want to prevent some libgcc routines being included
    for some multilibs.  The condition should match the one in
-   libgcc/config/arm/lib1funcs.S.  */
+   libgcc/config/arm/lib1funcs.S and libgcc/config/arm/t-elf.  */
 #if __ARM_ARCH_ISA_ARM || __ARM_ARCH_ISA_THUMB != 1
 #undef L_fixdfsi
 #undef L_fixunsdfsi

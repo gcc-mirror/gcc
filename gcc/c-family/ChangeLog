@@ -1,3 +1,312 @@
+2019-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85052
+	* c-common.h (enum rid): Add RID_BUILTIN_CONVERTVECTOR.
+	(c_build_vec_convert): Declare.
+	* c-common.c (c_build_vec_convert): New function.
+
+2019-01-04  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88546
+	* c-attribs.c (handle_copy_attribute): Avoid copying attribute leaf.
+	Handle C++ empty throw specification and C11 _Noreturn.
+	(has_attribute): Also handle C11 _Noreturn.
+
+2019-01-04  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88363
+	* c-attribs.c (positional_argument): Also accept enumerated types.
+
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2018-12-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/51628
+	* c-common.h (warn_for_address_or_pointer_of_packed_member): New.
+	* c-warn.c (check_alignment_of_packed_member): New function.
+	(check_address_of_packed_member): Likewise.
+	(check_and_warn_address_of_packed_member): Likewise.
+	(warn_for_address_or_pointer_of_packed_member): Likewise.
+	* c.opt: Add -Wno-address-of-packed-member.
+
+2018-12-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/87504
+	* c-warn.c (get_outermost_macro_expansion): New function.
+	(spelled_the_same_p): Use it to unwind the macro expansions, and
+	compare the outermost macro in each nested expansion, rather than
+	the innermost.
+
+2018-12-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/87504
+	* c-common.h (warn_tautological_cmp): Convert 1st param from
+	location_t to const op_location_t &.
+	* c-warn.c (find_array_ref_with_const_idx_r): Call fold_for_warn
+	when testing for INTEGER_CST.
+	(warn_tautological_bitwise_comparison): Convert 1st param from
+	location_t to const op_location_t &; use it to build a
+	binary_op_rich_location, and use this.
+	(spelled_the_same_p): New function.
+	(warn_tautological_cmp): Convert 1st param from location_t to
+	const op_location_t &.  Warn for macro expansions if
+	spelled_the_same_p.  Use binary_op_rich_location.
+
+2018-12-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/43064
+	PR c++/43486
+	* c-common.c (unsafe_conversion_p): Fold any location wrapper.
+	(verify_tree): Handle location wrappers.
+	(c_common_truthvalue_conversion): Strip any location wrapper.
+	Handle CONST_DECL.
+	(fold_offsetof): Strip any location wrapper.
+	(complete_array_type): Likewise for initial_value.
+	(convert_vector_to_array_for_subscript): Call fold_for_warn on the
+	index before checking for INTEGER_CST.
+	* c-pretty-print.c (c_pretty_printer::primary_expression): Don't
+	print parentheses around location wrappers.
+	* c-warn.c (warn_logical_operator): Call fold_for_warn on op_right
+	before checking for INTEGER_CST.
+	(warn_tautological_bitwise_comparison): Call
+	tree_strip_any_location_wrapper on lhs, rhs, and bitop's operand
+	before checking for INTEGER_CST.
+	(readonly_error): Strip any location wrapper.
+	(warn_array_subscript_with_type_char): Strip location wrappers
+	before checking for INTEGER_CST.  Use the location of the index if
+	available.
+
+2018-12-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88136 - -Wdeprecated-copy false positives
+	* c.opt (Wdeprecated-copy-dtor): New.
+	(Wdeprecated-copy): Move to -Wextra.
+
+2018-11-29  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88172
+	PR testsuite/88208
+	* c-attribs.c (common_handle_aligned_attribute): Silently avoid setting
+	alignments to values less than the target requires.
+	(has_attribute): For attribute aligned consider both the attribute
+	and the alignment bits.
+	* c-common.c (c_init_attributes): Optionally issue a warning for
+	zero alignment.
+
+2018-11-28  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88065
+	PR c/87297
+	* c-warn.c (sizeof_pointer_memaccess_warning): Bail if source
+	or destination is an error.
+
+2018-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88215
+	* c-ubsan.c: Include langhooks.h.
+	(ubsan_instrument_division): Change gcc_assert that main variants
+	of op0 and op1 types are equal to gcc_checking_assert that the
+	main variants are compatible types.
+
+2018-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c: Include stringpool.h.
+	(has_static_fields): Return false for incomplete types.
+	(is_tagged_type): Likewise.
+	(has_nontrivial_methods): Likewise.
+	(dump_ada_node) <INTEGER_TYPE>: Deal specifically with __int128.
+	(struct overloaded_name_hash): New structure.
+	(struct overloaded_name_hasher): Likewise.
+	(overloaded_names): New global variable.
+	(init_overloaded_names): New static function.
+	(overloaded_name_p): New predicate.
+	(dump_ada_declaration) <TYPE_DECL>: Tidy up and set TREE_VISITED
+	on the TYPE_STUB_DECL of the original type of a typedef, if any.
+	<FUNCTION_DECL>: Bail out for an unsupported overloaded name.
+	Remove always-true condition and dump forward types.
+	(dump_ada_specs): Delete overloaded_names.
+
+2018-11-20  Martin Sebor  <msebor@redhat.com>
+
+	* c-attribs.c (type_for_vector_size): New function.
+	(type_valid_for_vector_size): Same.
+	(handle_vector_size_attribute): Move code to the functions above
+	and call them.
+	(validate_attribute, has_attribute): New functions.
+	* c-common.h (has_attribute): Declare.
+	(rid): Add RID_HAS_ATTRIBUTE_EXPRESSION.
+	* c-common.c (c_common_resword): Same.
+
+2018-11-16  Jason Merrill  <jason@redhat.com>
+
+	* c-lex.c (c_common_has_attribute): Handle likely/unlikely.
+	* c-attribs.c (attr_cold_hot_exclusions): Make public.
+
+2018-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/87854
+	* c-common.c (fix_string_type): Reject string literals larger than
+	TYPE_MAX_VALUE (ssizetype) bytes.
+
+2018-11-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/87541
+	PR c++/87542
+	* c-attribs.c (positional_argument): New function.
+	(handle_alloc_size_attribute): Use it and simplify.
+	(handle_alloc_align_attribute): Same.
+	(handle_assume_aligned_attribute): Same.
+	(handle_nonnull_attribute): Same.
+	* c-common.c (check_function_arguments): Pass fntype to
+	check_function_format.
+	* c-common.h (check_function_format): Add an argument.
+	(PosArgFlags, positional_argument): Declare new type and function.
+	* c-format.c (decode_format_attr): Add arguments.
+	(check_format_string, get_constant): Same.
+	(convert_format_name_to_system_name): Adjust.
+
+2018-11-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/19165
+	* c-opts.c (c_diagnostic_finalizer): Add diagnostic_t param.
+
+2018-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	P1236R1 - Signed integers are two's complement
+	* c-warn.c (maybe_warn_shift_overflow): Don't warn for c++2a.
+	* c-ubsan.c (ubsan_instrument_shift): Make signed shifts
+	with in-range second operand well defined for -std=c++2a.
+
+	PR other/88007
+	* c-common.c (parse_optimize_options): Allocate option string from
+	opts_obstack rather than as GC memory.  Move the allocation after
+	warning for invalid option.
+
+2018-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (c_get_substring_location): Update for renaming of
+	get_source_location_for_substring to get_location_within_string.
+	* c-lex.c: Replace "source_location" with "location_t".
+	* c-opts.c: Likewise.
+	* c-ppoutput.c: Likewise.
+
+2018-11-13  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/81824
+	* c-attribs.c (handle_copy_attribute): Exclude inlining attributes.
+	(handle_tls_model_attribute): Improve diagnostics.
+
+2018-11-12  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define
+	__cpp_impl_destroying_delete.
+
+	* c-cppbuiltin.c (c_cpp_builtins): Change __cpp_explicit_bool to
+	__cpp_conditional_explicit.
+
+2018-11-09  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/81824
+	* c-attribs.c (handle_copy_attribute): New function.
+
+2018-11-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c/87795
+	* c-common.c (check_user_alignment): Use MAX_OFILE_ALIGNMENT.
+
+2018-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_finish_omp_taskgroup): Add CLAUSES argument.
+	(c_finish_omp_atomic): Replace bool SEQ_CST argument with
+	enum omp_memory_order MEMORY_ORDER.
+	(c_finish_omp_flush): Add MO argument.
+	(c_omp_depend_t_p, c_finish_omp_depobj): Declare.
+	(c_finish_omp_for): Add FINAL_P argument.
+	* c-omp.c: Include memmodel.h.
+	(c_finish_omp_taskgroup): Add CLAUSES argument.  Set
+	OMP_TASKGROUP_CLAUSES to it.
+	(c_finish_omp_atomic): Replace bool SEQ_CST argument with
+	enum omp_memory_order MEMORY_ORDER.  Set OMP_ATOMIC_MEMORY_ORDER
+	instead of OMP_ATOMIC_SEQ_CST.
+	(c_omp_depend_t_p, c_finish_omp_depobj): New functions.
+	(c_finish_omp_flush): Add MO argument, if not MEMMODEL_LAST, emit
+	__atomic_thread_fence call with the given value.
+	(check_omp_for_incr_expr): Formatting fixes.
+	(c_finish_omp_for): Add FINAL_P argument.  Allow NE_EXPR
+	even in OpenMP loops, diagnose if NE_EXPR and incr expression
+	is not constant expression 1 or -1.  Transform NE_EXPR loops
+	with iterators pointers to VLA into LT_EXPR or GT_EXPR loops.
+	(c_omp_check_loop_iv_r): Look for orig decl of C++ range for
+	loops too.
+	(c_omp_split_clauses): Add support for combined
+	#pragma omp parallel master and
+	#pragma omp {,parallel }master taskloop{, simd} constructs.
+	Handle OMP_CLAUSE_IN_REDUCTION.  Handle OMP_CLAUSE_REDUCTION_TASK.
+	Handle OMP_CLAUSE_NONTEMPORAL.  Handle splitting OMP_CLAUSE_IF
+	also to OMP_SIMD.  Copy OMP_CLAUSE_LASTPRIVATE_CONDITIONAL.
+	(c_omp_predetermined_sharing): Don't return
+	OMP_CLAUSE_DEFAULT_SHARED for const qualified decls.
+	* c-pragma.c (omp_pragmas): Add PRAGMA_OMP_DEPOBJ and
+	PRAGMA_OMP_REQUIRES.
+	* c-pragma.h (enum pragma_kind): Likewise.
+	(enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_NONTEMPORAL
+	and PRAGMA_OMP_CLAUSE_{IN,TASK}_REDUCTION.
+
+2018-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (gcc_dump_printf_char_table): Add entry for %f.
+
+2018-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (local_cgraph_node_ptr_node): New variable.
+	(gcc_dump_printf_char_table): Add entry for %C.
+	(get_pointer_to_named_type): New function, taken from the handling
+	code for "gimple *" from...
+	(init_dynamic_diag_info): ...here.  Add handling for
+	"cgraph_node *".
+	* c-format.h (T_CGRAPH_NODE): New.
+
+2018-10-19  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Add
+	__cpp_nontype_template_parameter_class.
+
+2018-10-31  Nathan Sidwell  <nathan@acm.org>
+
+	* c-opts.c (c_finish_options): Force command line macro
+	location.  Refactor to avoid repeating main debug hook.
+	(push_command_line_include): Clarify comment.
+
+	* c-opts.c (c_finish_options): Adjust cpp_force_token_locations call.
+
+2018-10-30  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/87041
+	* c-format.c (check_format_types): Avoid diagnosing null pointer
+	arguments to printf-family of functions.
+
+2018-10-30  Marek Polacek  <polacek@redhat.com>
+
+	Implement P0892R2, explicit(bool).
+	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_explicit_bool.
+
+2018-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* name-hint.h (name_hint::take_deferred): New member function.
+
+2018-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/56856
+	* c-common.c (check_function_sentinel): Call fold_for_warn on the
+	argument.
+	(check_function_restrict): Rename param "argarray" to
+	"unfolded_argarray", and make a copy named "argarray", calling
+	fold_for_warn on each argument.
+	(check_function_arguments): Add note about responsibility for
+	folding the arguments.
+
 2018-10-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.c (flag_isoc2x): New variable.
@@ -9449,7 +9758,7 @@
 	* c-common.c: Include gt-c-family-c-common.h.
 	* c-pragma.c: Include gt-c-family-c-pragma.h.
 
-Copyright (C) 2010-2018 Free Software Foundation, Inc.
+Copyright (C) 2010-2019 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -3,7 +3,7 @@
 // { dg-require-normal-mode "" }
 // { dg-require-effective-target cxx11-abi }
 
-// Copyright (C) 2015-2018 Free Software Foundation, Inc.
+// Copyright (C) 2015-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,7 +42,7 @@ void testc(const std::list<short>& l)
 
 int main()
 {
-#if _GLIBCXX_USE_DUAL_ABI
+#if ! __NO_INLINE__
   std::list<short> l;
   testm(l);
   testc(l);

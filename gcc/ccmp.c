@@ -1,5 +1,5 @@
 /* Conditional compare related functions
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -94,7 +94,6 @@ ccmp_tree_comparison_p (tree t, basic_block bb)
 static bool
 ccmp_candidate_p (gimple *g)
 {
-  tree rhs;
   tree lhs, op0, op1;
   gimple *gs0, *gs1;
   tree_code tcode;
@@ -103,20 +102,18 @@ ccmp_candidate_p (gimple *g)
   if (!g)
     return false;
 
-  rhs = gimple_assign_rhs_to_tree (g);
-  tcode = TREE_CODE (rhs);
+  tcode = gimple_assign_rhs_code (g);
   if (tcode != BIT_AND_EXPR && tcode != BIT_IOR_EXPR)
     return false;
 
   lhs = gimple_assign_lhs (g);
-  op0 = TREE_OPERAND (rhs, 0);
-  op1 = TREE_OPERAND (rhs, 1);
-  bb = gimple_bb (g);
-
+  op0 = gimple_assign_rhs1 (g);
+  op1 = gimple_assign_rhs2 (g);
   if ((TREE_CODE (op0) != SSA_NAME) || (TREE_CODE (op1) != SSA_NAME)
       || !has_single_use (lhs))
     return false;
 
+  bb = gimple_bb (g);
   gs0 = get_gimple_for_ssa_name (op0); /* gs0 may be NULL */
   gs1 = get_gimple_for_ssa_name (op1); /* gs1 may be NULL */
 

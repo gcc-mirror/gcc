@@ -1,3 +1,28 @@
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/88429
+	* configure.ac (default_gnatlib_target): Set to gnatlib instead of
+	gnatlib-plain if --disable-shared.
+	* configure: Regenerate.
+	* Makefile.in (all): Replace gnatlib prerequisite with libada.
+	(ADA_RTS_SUBDIR): Delete.
+	(libada): New target, renamed from...
+	(gnatlib): ...this.  Merge with other library targets.
+	(gnatlib-plain): Delete.
+	(install-gnatlib): Rename to...
+	(install-libada): ...this.
+	(install): Replace install-gnatlib prerequisite with install-libada.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* configure.ac: Remove AC_PREREQ.
+	* configure: Regenerate.
+
 2018-04-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/85384
@@ -405,7 +430,7 @@
 
 	* New directory, new ChangeLog.
 
-Copyright (C) 2003-2018 Free Software Foundation, Inc.
+Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 This ChangeLog is free software; the Free Software Foundation gives
 unlimited permission to copy, distribute, and modify it.

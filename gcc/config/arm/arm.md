@@ -1,5 +1,5 @@
 ;;- Machine description for ARM for GNU compiler
-;;  Copyright (C) 1991-2018 Free Software Foundation, Inc.
+;;  Copyright (C) 1991-2019 Free Software Foundation, Inc.
 ;;  Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
 ;;  and Martin Simmons (@harleqn.co.uk).
 ;;  More major hacks by Richard Earnshaw (rearnsha@arm.com).
@@ -384,7 +384,7 @@
 (define_attr "generic_sched" "yes,no"
   (const (if_then_else
           (ior (eq_attr "tune" "fa526,fa626,fa606te,fa626te,fmp626,fa726te,\
-                                arm926ejs,arm1020e,arm1026ejs,arm1136js,\
+                                arm926ejs,arm10e,arm1026ejs,arm1136js,\
                                 arm1136jfs,cortexa5,cortexa7,cortexa8,\
                                 cortexa9,cortexa12,cortexa15,cortexa17,\
                                 cortexa53,cortexa57,cortexm4,cortexm7,\
@@ -396,7 +396,7 @@
 (define_attr "generic_vfp" "yes,no"
   (const (if_then_else
 	  (and (eq_attr "fpu" "vfp")
-	       (eq_attr "tune" "!arm1020e,arm1022e,cortexa5,cortexa7,\
+	       (eq_attr "tune" "!arm10e,cortexa5,cortexa7,\
                                 cortexa8,cortexa9,cortexa53,cortexm4,\
                                 cortexm7,marvell_pj4,xgene1")
 	       (eq_attr "tune_cortexr4" "no"))
@@ -5831,6 +5831,11 @@
     case 1:
     case 2:
       return \"#\";
+    case 3:
+      /* Cannot load it directly, split to load it via MOV / MOVT.  */
+      if (!MEM_P (operands[1]) && arm_disable_literal_pool)
+	return \"#\";
+      /* Fall through.  */
     default:
       return output_move_double (operands, true, NULL);
     }
@@ -6021,7 +6026,8 @@
       operands[1] = legitimize_pic_address (operands[1], SImode,
 					    (!can_create_pseudo_p ()
 					     ? operands[0]
-					     : 0));
+					     : NULL_RTX), NULL_RTX,
+					    false /*compute_now*/);
   }
   "
 )
@@ -6128,7 +6134,7 @@
   [(set (match_operand:SI 0 "arm_general_register_operand" "")
        (match_operand:SI 1 "general_operand" ""))]
   "TARGET_USE_MOVT && GET_CODE (operands[1]) == SYMBOL_REF
-   && !flag_pic && !target_word_relocations
+   && !target_word_relocations
    && !arm_tls_referenced_p (operands[1])"
   [(clobber (const_int 0))]
 {
@@ -6309,7 +6315,7 @@
   /* r3 is clobbered by set/longjmp, so we can use it as a scratch
      register.  */
   if (arm_pic_register != INVALID_REGNUM)
-    arm_load_pic_register (1UL << 3);
+    arm_load_pic_register (1UL << 3, NULL_RTX);
   DONE;
 }")
 
@@ -6939,6 +6945,20 @@
 	     operands[1] = force_reg (SFmode, operands[1]);
         }
     }
+
+  /* Cannot load it directly, generate a load with clobber so that it can be
+     loaded via GPR with MOV / MOVT.  */
+  if (arm_disable_literal_pool
+      && (REG_P (operands[0]) || SUBREG_P (operands[0]))
+      && CONST_DOUBLE_P (operands[1])
+      && TARGET_HARD_FLOAT
+      && !vfp3_const_double_rtx (operands[1]))
+    {
+      rtx clobreg = gen_reg_rtx (SFmode);
+      emit_insn (gen_no_literal_pool_sf_immediate (operands[0], operands[1],
+						   clobreg));
+      DONE;
+    }
   "
 )
 
@@ -6966,16 +6986,40 @@
    && TARGET_SOFT_FLOAT
    && (!MEM_P (operands[0])
        || register_operand (operands[1], SFmode))"
-  "@
-   mov%?\\t%0, %1
-   ldr%?\\t%0, %1\\t%@ float
-   str%?\\t%1, %0\\t%@ float"
+{
+  switch (which_alternative)
+    {
+    case 0: return \"mov%?\\t%0, %1\";
+    case 1:
+      /* Cannot load it directly, split to load it via MOV / MOVT.  */
+      if (!MEM_P (operands[1]) && arm_disable_literal_pool)
+	return \"#\";
+      return \"ldr%?\\t%0, %1\\t%@ float\";
+    case 2: return \"str%?\\t%1, %0\\t%@ float\";
+    default: gcc_unreachable ();
+    }
+}
   [(set_attr "predicable" "yes")
    (set_attr "type" "mov_reg,load_4,store_4")
    (set_attr "arm_pool_range" "*,4096,*")
    (set_attr "thumb2_pool_range" "*,4094,*")
    (set_attr "arm_neg_pool_range" "*,4084,*")
    (set_attr "thumb2_neg_pool_range" "*,0,*")]
+)
+
+;; Splitter for the above.
+(define_split
+  [(set (match_operand:SF 0 "s_register_operand")
+	(match_operand:SF 1 "const_double_operand"))]
+  "arm_disable_literal_pool && TARGET_SOFT_FLOAT"
+  [(const_int 0)]
+{
+  long buf;
+  real_to_target (&buf, CONST_DOUBLE_REAL_VALUE (operands[1]), SFmode);
+  rtx cst = gen_int_mode (buf, SImode);
+  emit_move_insn (simplify_gen_subreg (SImode, operands[0], SFmode, 0), cst);
+  DONE;
+}
 )
 
 (define_expand "movdf"
@@ -6995,6 +7039,21 @@
           if (!REG_P (operands[0]))
 	    operands[1] = force_reg (DFmode, operands[1]);
         }
+    }
+
+  /* Cannot load it directly, generate a load with clobber so that it can be
+     loaded via GPR with MOV / MOVT.  */
+  if (arm_disable_literal_pool
+      && (REG_P (operands[0]) || SUBREG_P (operands[0]))
+      && CONSTANT_P (operands[1])
+      && TARGET_HARD_FLOAT
+      && !arm_const_double_rtx (operands[1])
+      && !(TARGET_VFP_DOUBLE && vfp3_const_double_rtx (operands[1])))
+    {
+      rtx clobreg = gen_reg_rtx (DFmode);
+      emit_insn (gen_no_literal_pool_df_immediate (operands[0], operands[1],
+						   clobreg));
+      DONE;
     }
   "
 )
@@ -7055,6 +7114,11 @@
     case 1:
     case 2:
       return \"#\";
+    case 3:
+      /* Cannot load it directly, split to load it via MOV / MOVT.  */
+      if (!MEM_P (operands[1]) && arm_disable_literal_pool)
+	return \"#\";
+      /* Fall through.  */
     default:
       return output_move_double (operands, true, NULL);
     }
@@ -7065,6 +7129,24 @@
    (set_attr "thumb2_pool_range" "*,*,*,1018,*")
    (set_attr "arm_neg_pool_range" "*,*,*,1004,*")
    (set_attr "thumb2_neg_pool_range" "*,*,*,0,*")]
+)
+
+;; Splitter for the above.
+(define_split
+  [(set (match_operand:DF 0 "s_register_operand")
+	(match_operand:DF 1 "const_double_operand"))]
+  "arm_disable_literal_pool && TARGET_SOFT_FLOAT"
+  [(const_int 0)]
+{
+  long buf[2];
+  int order = BYTES_BIG_ENDIAN ? 1 : 0;
+  real_to_target (buf, CONST_DOUBLE_REAL_VALUE (operands[1]), DFmode);
+  unsigned HOST_WIDE_INT ival = zext_hwi (buf[order], 32);
+  ival |= (zext_hwi (buf[1 - order], 32) << 32);
+  rtx cst = gen_int_mode (ival, DImode);
+  emit_move_insn (simplify_gen_subreg (DImode, operands[0], DFmode, 0), cst);
+  DONE;
+}
 )
 
 
@@ -8632,6 +8714,164 @@
 }
   [(set_attr "type" "multiple")
    (set_attr "conds" "clob")]
+)
+
+;; Named patterns for stack smashing protection.
+(define_expand "stack_protect_combined_set"
+  [(parallel
+     [(set (match_operand:SI 0 "memory_operand" "")
+	   (unspec:SI [(match_operand:SI 1 "guard_operand" "")]
+		      UNSPEC_SP_SET))
+      (clobber (match_scratch:SI 2 ""))
+      (clobber (match_scratch:SI 3 ""))])]
+  ""
+  ""
+)
+
+;; Use a separate insn from the above expand to be able to have the mem outside
+;; the operand #1 when register allocation comes. This is needed to avoid LRA
+;; try to reload the guard since we need to control how PIC access is done in
+;; the -fpic/-fPIC case (see COMPUTE_NOW parameter when calling
+;; legitimize_pic_address ()).
+(define_insn_and_split "*stack_protect_combined_set_insn"
+  [(set (match_operand:SI 0 "memory_operand" "=m,m")
+	(unspec:SI [(mem:SI (match_operand:SI 1 "guard_addr_operand" "X,X"))]
+		   UNSPEC_SP_SET))
+   (clobber (match_scratch:SI 2 "=&l,&r"))
+   (clobber (match_scratch:SI 3 "=&l,&r"))]
+  ""
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0) (unspec:SI [(mem:SI (match_dup 2))]
+					    UNSPEC_SP_SET))
+	      (clobber (match_dup 2))])]
+  "
+{
+  if (flag_pic)
+    {
+      /* Forces recomputing of GOT base now.  */
+      legitimize_pic_address (operands[1], SImode, operands[2], operands[3],
+			      true /*compute_now*/);
+    }
+  else
+    {
+      if (address_operand (operands[1], SImode))
+	operands[2] = operands[1];
+      else
+	{
+	  rtx mem = XEXP (force_const_mem (SImode, operands[1]), 0);
+	  emit_move_insn (operands[2], mem);
+	}
+    }
+}"
+  [(set_attr "arch" "t1,32")]
+)
+
+(define_insn "*stack_protect_set_insn"
+  [(set (match_operand:SI 0 "memory_operand" "=m,m")
+	(unspec:SI [(mem:SI (match_operand:SI 1 "register_operand" "+&l,&r"))]
+	 UNSPEC_SP_SET))
+   (clobber (match_dup 1))]
+  ""
+  "@
+   ldr\\t%1, [%1]\;str\\t%1, %0\;movs\t%1,#0
+   ldr\\t%1, [%1]\;str\\t%1, %0\;mov\t%1,#0"
+  [(set_attr "length" "8,12")
+   (set_attr "conds" "clob,nocond")
+   (set_attr "type" "multiple")
+   (set_attr "arch" "t1,32")]
+)
+
+(define_expand "stack_protect_combined_test"
+  [(parallel
+     [(set (pc)
+	   (if_then_else
+		(eq (match_operand:SI 0 "memory_operand" "")
+		    (unspec:SI [(match_operand:SI 1 "guard_operand" "")]
+			       UNSPEC_SP_TEST))
+		(label_ref (match_operand 2))
+		(pc)))
+      (clobber (match_scratch:SI 3 ""))
+      (clobber (match_scratch:SI 4 ""))
+      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  ""
+)
+
+;; Use a separate insn from the above expand to be able to have the mem outside
+;; the operand #1 when register allocation comes. This is needed to avoid LRA
+;; try to reload the guard since we need to control how PIC access is done in
+;; the -fpic/-fPIC case (see COMPUTE_NOW parameter when calling
+;; legitimize_pic_address ()).
+(define_insn_and_split "*stack_protect_combined_test_insn"
+  [(set (pc)
+	(if_then_else
+		(eq (match_operand:SI 0 "memory_operand" "m,m")
+		    (unspec:SI [(mem:SI (match_operand:SI 1 "guard_addr_operand" "X,X"))]
+			       UNSPEC_SP_TEST))
+		(label_ref (match_operand 2))
+		(pc)))
+   (clobber (match_scratch:SI 3 "=&l,&r"))
+   (clobber (match_scratch:SI 4 "=&l,&r"))
+   (clobber (reg:CC CC_REGNUM))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+{
+  rtx eq;
+
+  if (flag_pic)
+    {
+      /* Forces recomputing of GOT base now.  */
+      legitimize_pic_address (operands[1], SImode, operands[3], operands[4],
+			      true /*compute_now*/);
+    }
+  else
+    {
+      if (address_operand (operands[1], SImode))
+	operands[3] = operands[1];
+      else
+	{
+	  rtx mem = XEXP (force_const_mem (SImode, operands[1]), 0);
+	  emit_move_insn (operands[3], mem);
+	}
+    }
+  if (TARGET_32BIT)
+    {
+      emit_insn (gen_arm_stack_protect_test_insn (operands[4], operands[0],
+						  operands[3]));
+      rtx cc_reg = gen_rtx_REG (CC_Zmode, CC_REGNUM);
+      eq = gen_rtx_EQ (CC_Zmode, cc_reg, const0_rtx);
+      emit_jump_insn (gen_arm_cond_branch (operands[2], eq, cc_reg));
+    }
+  else
+    {
+      emit_insn (gen_thumb1_stack_protect_test_insn (operands[4], operands[0],
+						     operands[3]));
+      eq = gen_rtx_EQ (VOIDmode, operands[4], const0_rtx);
+      emit_jump_insn (gen_cbranchsi4 (eq, operands[4], const0_rtx,
+				      operands[2]));
+    }
+  DONE;
+}
+  [(set_attr "arch" "t1,32")]
+)
+
+(define_insn "arm_stack_protect_test_insn"
+  [(set (reg:CC_Z CC_REGNUM)
+	(compare:CC_Z (unspec:SI [(match_operand:SI 1 "memory_operand" "m,m")
+				  (mem:SI (match_operand:SI 2 "register_operand" "+l,r"))]
+				 UNSPEC_SP_TEST)
+		      (const_int 0)))
+   (clobber (match_operand:SI 0 "register_operand" "=&l,&r"))
+   (clobber (match_dup 2))]
+  "TARGET_32BIT"
+  "ldr\t%0, [%2]\;ldr\t%2, %1\;eors\t%0, %2, %0"
+  [(set_attr "length" "8,12")
+   (set_attr "conds" "set")
+   (set_attr "type" "multiple")
+   (set_attr "arch" "t,32")]
 )
 
 (define_expand "casesi"

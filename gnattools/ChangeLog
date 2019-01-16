@@ -1,3 +1,37 @@
+2018-11-19  Alexandre Oliva <oliva@adacore.com>
+
+	PR ada/81878
+	* configure.ac (default_gnattools_target): Do not mistake
+	just-built host tools as native in cross-back toolchains.
+	* configure: Rebuilt.
+
+2018-11-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/81878
+	Revert
+	2018-10-29  Tamar Christina  <tamar.christina@arm.com>
+
+	PR ada/81878
+	* Makefile.in (TOOLS_FLAGS_TO_PASS_NATIVE): Add -B ../../.
+
+	2017-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR ada/81878
+	* Makefile.in (CXX_LFLAGS): Remove.
+	(TOOLS_FLAGS_TO_PASS_NATIVE): Pass $(CXX) as CXX.
+	(TOOLS_FLAGS_TO_PASS_RE): Likewise.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* configure.ac: Remove AC_PREREQ.
+	* configure: Regenerate.
+
+2018-10-29  Tamar Christina  <tamar.christina@arm.com>
+
+	PR ada/81878
+	* Makefile.in (TOOLS_FLAGS_TO_PASS_NATIVE): Add -B ../../.
+
 2017-08-17  Richard Biener  <rguenther@suse.de>
 
 	PR ada/81878

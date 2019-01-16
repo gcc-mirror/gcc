@@ -2,7 +2,7 @@
 ; Generated automatically by parsecpu.awk from arm-cpus.in.
 ; Do not edit.
 
-; Copyright (C) 2011-2018 Free Software Foundation, Inc.
+; Copyright (C) 2011-2019 Free Software Foundation, Inc.
 
 ; This file is part of GCC.
 
@@ -34,15 +34,6 @@ EnumValue
 Enum(processor_type) String(strongarm) Value( TARGET_CPU_strongarm)
 
 EnumValue
-Enum(processor_type) String(strongarm110) Value( TARGET_CPU_strongarm110)
-
-EnumValue
-Enum(processor_type) String(strongarm1100) Value( TARGET_CPU_strongarm1100)
-
-EnumValue
-Enum(processor_type) String(strongarm1110) Value( TARGET_CPU_strongarm1110)
-
-EnumValue
 Enum(processor_type) String(fa526) Value( TARGET_CPU_fa526)
 
 EnumValue
@@ -52,16 +43,7 @@ EnumValue
 Enum(processor_type) String(arm7tdmi) Value( TARGET_CPU_arm7tdmi)
 
 EnumValue
-Enum(processor_type) String(arm7tdmi-s) Value( TARGET_CPU_arm7tdmis)
-
-EnumValue
 Enum(processor_type) String(arm710t) Value( TARGET_CPU_arm710t)
-
-EnumValue
-Enum(processor_type) String(arm720t) Value( TARGET_CPU_arm720t)
-
-EnumValue
-Enum(processor_type) String(arm740t) Value( TARGET_CPU_arm740t)
 
 EnumValue
 Enum(processor_type) String(arm9) Value( TARGET_CPU_arm9)
@@ -70,46 +52,16 @@ EnumValue
 Enum(processor_type) String(arm9tdmi) Value( TARGET_CPU_arm9tdmi)
 
 EnumValue
-Enum(processor_type) String(arm920) Value( TARGET_CPU_arm920)
-
-EnumValue
 Enum(processor_type) String(arm920t) Value( TARGET_CPU_arm920t)
-
-EnumValue
-Enum(processor_type) String(arm922t) Value( TARGET_CPU_arm922t)
-
-EnumValue
-Enum(processor_type) String(arm940t) Value( TARGET_CPU_arm940t)
-
-EnumValue
-Enum(processor_type) String(ep9312) Value( TARGET_CPU_ep9312)
 
 EnumValue
 Enum(processor_type) String(arm10tdmi) Value( TARGET_CPU_arm10tdmi)
 
 EnumValue
-Enum(processor_type) String(arm1020t) Value( TARGET_CPU_arm1020t)
-
-EnumValue
 Enum(processor_type) String(arm9e) Value( TARGET_CPU_arm9e)
 
 EnumValue
-Enum(processor_type) String(arm946e-s) Value( TARGET_CPU_arm946es)
-
-EnumValue
-Enum(processor_type) String(arm966e-s) Value( TARGET_CPU_arm966es)
-
-EnumValue
-Enum(processor_type) String(arm968e-s) Value( TARGET_CPU_arm968es)
-
-EnumValue
 Enum(processor_type) String(arm10e) Value( TARGET_CPU_arm10e)
-
-EnumValue
-Enum(processor_type) String(arm1020e) Value( TARGET_CPU_arm1020e)
-
-EnumValue
-Enum(processor_type) String(arm1022e) Value( TARGET_CPU_arm1022e)
 
 EnumValue
 Enum(processor_type) String(xscale) Value( TARGET_CPU_xscale)
@@ -283,6 +235,9 @@ EnumValue
 Enum(processor_type) String(cortex-a76) Value( TARGET_CPU_cortexa76)
 
 EnumValue
+Enum(processor_type) String(ares) Value( TARGET_CPU_ares)
+
+EnumValue
 Enum(processor_type) String(cortex-a75.cortex-a55) Value( TARGET_CPU_cortexa75cortexa55)
 
 EnumValue
@@ -377,19 +332,22 @@ EnumValue
 Enum(arm_arch) String(armv8.4-a) Value(24)
 
 EnumValue
-Enum(arm_arch) String(armv8-m.base) Value(25)
+Enum(arm_arch) String(armv8.5-a) Value(25)
 
 EnumValue
-Enum(arm_arch) String(armv8-m.main) Value(26)
+Enum(arm_arch) String(armv8-m.base) Value(26)
 
 EnumValue
-Enum(arm_arch) String(armv8-r) Value(27)
+Enum(arm_arch) String(armv8-m.main) Value(27)
 
 EnumValue
-Enum(arm_arch) String(iwmmxt) Value(28)
+Enum(arm_arch) String(armv8-r) Value(28)
 
 EnumValue
-Enum(arm_arch) String(iwmmxt2) Value(29)
+Enum(arm_arch) String(iwmmxt) Value(29)
+
+EnumValue
+Enum(arm_arch) String(iwmmxt2) Value(30)
 
 Enum
 Name(arm_fpu) Type(enum fpu_type)

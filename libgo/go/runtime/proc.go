@@ -528,6 +528,8 @@ func schedinit() {
 
 	sched.maxmcount = 10000
 
+	usestackmaps = probestackmaps()
+
 	mallocinit()
 	mcommoninit(_g_.m)
 	cpuinit() // must run before alginit
@@ -891,7 +893,49 @@ loop:
 		case _Gcopystack:
 		// Stack being switched. Go around again.
 
-		case _Grunnable, _Gsyscall, _Gwaiting:
+		case _Gsyscall:
+			if usestackmaps {
+				// Claim goroutine by setting scan bit.
+				// Racing with execution or readying of gp.
+				// The scan bit keeps them from running
+				// the goroutine until we're done.
+				if castogscanstatus(gp, s, s|_Gscan) {
+					if gp.scanningself {
+						// Don't try to scan the stack
+						// if the goroutine is going to do
+						// it itself.
+						// FIXME: can this happen?
+						restartg(gp)
+						break
+					}
+					if !gp.gcscandone {
+						// Send a signal to let the goroutine scan
+						// itself. This races with enter/exitsyscall.
+						// If the goroutine is not stopped at a safepoint,
+						// it will not scan the stack and we'll try again.
+						mp := gp.m
+						noteclear(&mp.scannote)
+						gp.scangcw = uintptr(unsafe.Pointer(gcw))
+						tgkill(getpid(), _pid_t(mp.procid), _SIGURG)
+
+						// Wait for gp to scan its own stack.
+						notesleep(&mp.scannote)
+
+						if !gp.gcscandone {
+							// The signal delivered at a bad time.
+							// Try again.
+							restartg(gp)
+							break
+						}
+					}
+					restartg(gp)
+					break loop
+				}
+				break
+			}
+			fallthrough
+
+		case _Grunnable, _Gwaiting:
 			// Claim goroutine by setting scan bit.
 			// Racing with execution or readying of gp.
 			// The scan bit keeps them from running
@@ -954,6 +998,11 @@ loop:
 
 // The GC requests that this routine be moved from a scanmumble state to a mumble state.
 func restartg(gp *g) {
+	if gp.scang != 0 || gp.scangcw != 0 {
+		print("g ", gp.goid, "is being scanned scang=", gp.scang, " scangcw=", gp.scangcw, "\n")
+		throw("restartg: being scanned")
+	}
+
 	s := readgstatus(gp)
 	switch s {
 	default:

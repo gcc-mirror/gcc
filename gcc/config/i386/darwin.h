@@ -1,5 +1,5 @@
 /* Target definitions for x86 running Darwin.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -111,10 +111,6 @@ extern int darwin_emit_branch_islands;
 /* On Darwin, the stack is 128-bit aligned at the point of every call.
    Failure to ensure this will lead to a crash in the system libraries
    or dynamic loader.  */
-#undef STACK_BOUNDARY
-#define STACK_BOUNDARY \
- ((profile_flag || (TARGET_64BIT && ix86_abi == MS_ABI)) \
-  ? 128 : BITS_PER_WORD)
 
 #undef MAIN_STACK_BOUNDARY
 #define MAIN_STACK_BOUNDARY 128
@@ -222,6 +218,11 @@ extern int darwin_emit_branch_islands;
             fprintf (FILE, "\t%s %d\n", ALIGN_ASM_OP, (LOG)); \
         }				\
     } while (0)
+
+/* Darwin x86 assemblers support the .ident directive.  */
+
+#undef TARGET_ASM_OUTPUT_IDENT
+#define TARGET_ASM_OUTPUT_IDENT default_asm_output_ident_directive
 
 /* Darwin profiling -- call mcount.  */
 #undef FUNCTION_PROFILER

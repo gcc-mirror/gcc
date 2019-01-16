@@ -105,46 +105,53 @@ void elim_global_arrays (int i)
   /* Verify that the expression involving the strlen call as well
      as whatever depends on it is eliminated  from the test output.
      All these expressions must be trivially true.  */
-  ELIM_TRUE (strlen (a7_3[0]) < sizeof a7_3[0]);
-  ELIM_TRUE (strlen (a7_3[1]) < sizeof a7_3[1]);
-  ELIM_TRUE (strlen (a7_3[6]) < sizeof a7_3[6]);
-  ELIM_TRUE (strlen (a7_3[i]) < sizeof a7_3[i]);
+  ELIM_TRUE (strlen (a7_3[0]) < sizeof a7_3);
+  ELIM_TRUE (strlen (a7_3[1]) < sizeof a7_3 - sizeof *a7_3);
+  ELIM_TRUE (strlen (a7_3[6]) < sizeof a7_3 - 5 * sizeof *a7_3);
+  ELIM_TRUE (strlen (a7_3[i]) < sizeof a7_3);
 
-  ELIM_TRUE (strlen (a5_7[0]) < sizeof a5_7[0]);
-  ELIM_TRUE (strlen (a5_7[1]) < sizeof a5_7[1]);
-  ELIM_TRUE (strlen (a5_7[4]) < sizeof a5_7[4]);
-  ELIM_TRUE (strlen (a5_7[i]) < sizeof a5_7[0]);
+  ELIM_TRUE (strlen (a5_7[0]) < sizeof a5_7);
+  ELIM_TRUE (strlen (a5_7[1]) < sizeof a5_7 - sizeof *a5_7);
+  ELIM_TRUE (strlen (a5_7[4]) < sizeof a5_7 - 3 * sizeof *a5_7);
+  ELIM_TRUE (strlen (a5_7[i]) < sizeof a5_7);
 
-  ELIM_TRUE (strlen (ax_3[0]) < sizeof ax_3[0]);
-  ELIM_TRUE (strlen (ax_3[1]) < sizeof ax_3[1]);
-  ELIM_TRUE (strlen (ax_3[9]) < sizeof ax_3[9]);
-  ELIM_TRUE (strlen (ax_3[i]) < sizeof ax_3[i]);
+  /* Even when treating a multi-dimensional array as a single string
+     the length must be less DIFF_MAX - (ax_3[i] - ax_3[0]) but GCC
+     doesn't do that computation yet so avoid testing it.  */
+  ELIM_TRUE (strlen (ax_3[0]) < DIFF_MAX);
+  ELIM_TRUE (strlen (ax_3[1]) < DIFF_MAX);
+  ELIM_TRUE (strlen (ax_3[9]) < DIFF_MAX);
+  ELIM_TRUE (strlen (ax_3[i]) < DIFF_MAX);
 
   ELIM_TRUE (strlen (a3) < sizeof a3);
   ELIM_TRUE (strlen (a7) < sizeof a7);
 
   ELIM_TRUE (strlen (ax) != DIFF_MAX);
-  ELIM_TRUE (strlen (ax) != DIFF_MAX - 1);
-  ELIM_TRUE (strlen (ax) < DIFF_MAX - 1);
+  /* ELIM_TRUE (strlen (ax) != DIFF_MAX - 1); */
+  /* ELIM_TRUE (strlen (ax) < DIFF_MAX - 1); */
 }
 
 void elim_pointer_to_arrays (void)
 {
-  ELIM_TRUE (strlen (*pa7) < 7);
-  ELIM_TRUE (strlen (*pa5) < 5);
-  ELIM_TRUE (strlen (*pa3) < 3);
+  /* Unfortunately, GCC cannot be trusted not to misuse a pointer
+     to a smaller array to point to an object of a bigger type so
+     the strlen range optimization must assume each array pointer
+     points effectively to an array of an unknown bound.  */
+  ELIM_TRUE (strlen (*pa7) < DIFF_MAX);
+  ELIM_TRUE (strlen (*pa5) < DIFF_MAX);
+  ELIM_TRUE (strlen (*pa3) < DIFF_MAX);
 
-  ELIM_TRUE (strlen ((*pa7_3)[0]) < 3);
-  ELIM_TRUE (strlen ((*pa7_3)[1]) < 3);
-  ELIM_TRUE (strlen ((*pa7_3)[6]) < 3);
+  ELIM_TRUE (strlen ((*pa7_3)[0]) < DIFF_MAX);
+  ELIM_TRUE (strlen ((*pa7_3)[1]) < DIFF_MAX);
+  ELIM_TRUE (strlen ((*pa7_3)[6]) < DIFF_MAX);
 
-  ELIM_TRUE (strlen ((*pax_3)[0]) < 3);
-  ELIM_TRUE (strlen ((*pax_3)[1]) < 3);
-  ELIM_TRUE (strlen ((*pax_3)[9]) < 3);
+  ELIM_TRUE (strlen ((*pax_3)[0]) < DIFF_MAX);
+  ELIM_TRUE (strlen ((*pax_3)[1]) < DIFF_MAX);
+  ELIM_TRUE (strlen ((*pax_3)[9]) < DIFF_MAX);
 
-  ELIM_TRUE (strlen ((*pa5_7)[0]) < 7);
-  ELIM_TRUE (strlen ((*pa5_7)[1]) < 7);
-  ELIM_TRUE (strlen ((*pa5_7)[4]) < 7);
+  ELIM_TRUE (strlen ((*pa5_7)[0]) < DIFF_MAX);
+  ELIM_TRUE (strlen ((*pa5_7)[1]) < DIFF_MAX);
+  ELIM_TRUE (strlen ((*pa5_7)[4]) < DIFF_MAX);
 }
 
 void elim_global_arrays_and_strings (int i)
@@ -176,65 +183,33 @@ void elim_global_arrays_and_strings (int i)
 
 void elim_member_arrays_obj (int i)
 {
-  ELIM_TRUE (strlen (ma0_3_5_7[0][0][0].a3) < 3);
-  ELIM_TRUE (strlen (ma0_3_5_7[0][0][1].a3) < 3);
-  ELIM_TRUE (strlen (ma0_3_5_7[0][0][2].a3) < 3);
-  ELIM_TRUE (strlen (ma0_3_5_7[0][0][6].a3) < 3);
+  ELIM_TRUE (strlen (ma0_3_5_7[0][0][0].a3) < sizeof ma0_3_5_7);
+  ELIM_TRUE (strlen (ma0_3_5_7[0][0][1].a3) < sizeof ma0_3_5_7);
+  ELIM_TRUE (strlen (ma0_3_5_7[0][0][2].a3) < sizeof ma0_3_5_7);
+  ELIM_TRUE (strlen (ma0_3_5_7[0][0][6].a3) < sizeof ma0_3_5_7);
 
-  ELIM_TRUE (strlen (ma0_3_5_7[1][0][0].a3) < 3);
-  ELIM_TRUE (strlen (ma0_3_5_7[2][0][1].a3) < 3);
+  ELIM_TRUE (strlen (ma0_3_5_7[1][0][0].a3) < sizeof ma0_3_5_7);
+  ELIM_TRUE (strlen (ma0_3_5_7[2][0][1].a3) < sizeof ma0_3_5_7);
 
-  ELIM_TRUE (strlen (ma0_3_5_7[1][1][0].a3) < 3);
-  ELIM_TRUE (strlen (ma0_3_5_7[2][4][6].a3) < 3);
+  ELIM_TRUE (strlen (ma0_3_5_7[1][1][0].a3) < sizeof ma0_3_5_7);
+  ELIM_TRUE (strlen (ma0_3_5_7[2][4][6].a3) < sizeof ma0_3_5_7);
 
-  ELIM_TRUE (strlen (ma0_3_5_7[0][0][0].a5) < 5);
-  ELIM_TRUE (strlen (ma0_3_5_7[0][0][1].a5) < 5);
-  ELIM_TRUE (strlen (ma0_3_5_7[0][0][2].a5) < 5);
-  ELIM_TRUE (strlen (ma0_3_5_7[0][0][6].a5) < 5);
+  ELIM_TRUE (strlen (ma0_3_5_7[0][0][0].a5) < sizeof ma0_3_5_7);
+  ELIM_TRUE (strlen (ma0_3_5_7[0][0][1].a5) < sizeof ma0_3_5_7);
+  ELIM_TRUE (strlen (ma0_3_5_7[0][0][2].a5) < sizeof ma0_3_5_7);
+  ELIM_TRUE (strlen (ma0_3_5_7[0][0][6].a5) < sizeof ma0_3_5_7);
 
-  ELIM_TRUE (strlen (ma0_3_5_7[1][0][0].a5) < 5);
-  ELIM_TRUE (strlen (ma0_3_5_7[2][0][1].a5) < 5);
+  ELIM_TRUE (strlen (ma0_3_5_7[1][0][0].a5) < sizeof ma0_3_5_7);
+  ELIM_TRUE (strlen (ma0_3_5_7[2][0][1].a5) < sizeof ma0_3_5_7);
 
-  ELIM_TRUE (strlen (ma0_3_5_7[1][1][0].a5) < 5);
-  ELIM_TRUE (strlen (ma0_3_5_7[2][4][6].a5) < 5);
+  ELIM_TRUE (strlen (ma0_3_5_7[1][1][0].a5) < sizeof ma0_3_5_7);
+  ELIM_TRUE (strlen (ma0_3_5_7[2][4][6].a5) < sizeof ma0_3_5_7);
 
-  ELIM_TRUE (strlen (ma0_3_5_7[0][0][0].a7_3[0]) < 3);
-  ELIM_TRUE (strlen (ma0_3_5_7[2][4][6].a7_3[2]) < 3);
+  ELIM_TRUE (strlen (ma0_3_5_7[0][0][0].a7_3[0]) < sizeof ma0_3_5_7);
+  ELIM_TRUE (strlen (ma0_3_5_7[2][4][6].a7_3[2]) < sizeof ma0_3_5_7);
 
-  ELIM_TRUE (strlen (ma0_3_5_7[0][0][0].a5_7[0]) < 7);
-  ELIM_TRUE (strlen (ma0_3_5_7[2][4][6].a5_7[4]) < 7);
-}
-
-void elim_member_arrays_ptr (struct MemArrays0 *ma0,
-			     struct MemArraysX *max,
-			     struct MemArrays7 *ma7,
-			     int i)
-{
-  ELIM_TRUE (strlen (ma0->a7_3[0]) < 3);
-  ELIM_TRUE (strlen (ma0->a7_3[1]) < 3);
-  ELIM_TRUE (strlen (ma0->a7_3[6]) < 3);
-  ELIM_TRUE (strlen (ma0->a7_3[6]) < 3);
-  ELIM_TRUE (strlen (ma0->a7_3[i]) < 3);
-  ELIM_TRUE (strlen (ma0->a7_3[i]) < 3);
-
-  ELIM_TRUE (strlen (ma0->a5_7[0]) < 7);
-  ELIM_TRUE (strlen (ma0[0].a5_7[0]) < 7);
-  ELIM_TRUE (strlen (ma0[1].a5_7[0]) < 7);
-  ELIM_TRUE (strlen (ma0[1].a5_7[4]) < 7);
-  ELIM_TRUE (strlen (ma0[9].a5_7[0]) < 7);
-  ELIM_TRUE (strlen (ma0[9].a5_7[4]) < 7);
-
-  ELIM_TRUE (strlen (ma0->a3) < sizeof ma0->a3);
-  ELIM_TRUE (strlen (ma0->a5) < sizeof ma0->a5);
-  ELIM_TRUE (strlen (ma0->a0) < DIFF_MAX - 1);
-
-  ELIM_TRUE (strlen (max->a3) < sizeof max->a3);
-  ELIM_TRUE (strlen (max->a5) < sizeof max->a5);
-  ELIM_TRUE (strlen (max->ax) < DIFF_MAX - 1);
-
-  ELIM_TRUE (strlen (ma7->a3) < sizeof max->a3);
-  ELIM_TRUE (strlen (ma7->a5) < sizeof max->a5);
-  ELIM_TRUE (strlen (ma7->a7) < DIFF_MAX - 1);
+  ELIM_TRUE (strlen (ma0_3_5_7[0][0][0].a5_7[0]) < sizeof ma0_3_5_7);
+  ELIM_TRUE (strlen (ma0_3_5_7[2][4][6].a5_7[4]) < sizeof ma0_3_5_7);
 }
 
 
@@ -255,10 +230,26 @@ void keep_global_arrays (int i)
   KEEP (strlen (a5_7[4]) < 6);
   KEEP (strlen (a5_7[i]) < 6);
 
+  /* Verify also that tests (and strlen calls) are not eliminated
+     for results greater than what would the size of the innermost
+     array suggest might be possible (in case the element array is
+     not nul-terminated), even though such calls are undefined.  */
+  KEEP (strlen (a5_7[0]) > sizeof a5_7 - 2);
+  KEEP (strlen (a5_7[1]) > sizeof a5_7 - sizeof a5_7[1] - 2);
+  KEEP (strlen (a5_7[i]) > sizeof a5_7 - 2);
+
   KEEP (strlen (ax_3[0]) < 2);
   KEEP (strlen (ax_3[1]) < 2);
   KEEP (strlen (ax_3[2]) < 2);
   KEEP (strlen (ax_3[i]) < 2);
+
+  /* Here again, verify that the ax_3 matrix is treated essentially
+     as a flat array of unknown bound for the benefit of all the
+     undefined code out there that might rely on it.  */
+  KEEP (strlen (ax_3[0]) > 3);
+  KEEP (strlen (ax_3[1]) > 9);
+  KEEP (strlen (ax_3[2]) > 99);
+  KEEP (strlen (ax_3[i]) > 999);
 
   KEEP (strlen (a3) < 2);
   KEEP (strlen (a7) < 6);
@@ -274,24 +265,48 @@ void keep_global_arrays (int i)
   KEEP (strlen (ax) < 1);
 }
 
-void keep_pointer_to_arrays (void)
+void keep_pointer_to_arrays (int i)
 {
   KEEP (strlen (*pa7) < 6);
   KEEP (strlen (*pa5) < 4);
   KEEP (strlen (*pa3) < 2);
 
+  /* Since GCC cannot be trusted not to misuse a pointer to a smaller
+     array to point to an object of a larger type verify that the bound
+     in a pointer to an array of a known bound isn't relied on for
+     the strlen range optimization.  If GCC is fixed to avoid these
+     misuses these tests can be removed.  */
+  KEEP (strlen (*pa7) > sizeof *pa7);
+  KEEP (strlen (*pa5) > sizeof *pa5);
+  KEEP (strlen (*pa3) > sizeof *pa3);
+
   KEEP (strlen ((*pa7_3)[0]) < 2);
   KEEP (strlen ((*pa7_3)[1]) < 2);
   KEEP (strlen ((*pa7_3)[6]) < 2);
+  KEEP (strlen ((*pa7_3)[i]) < 2);
+
+  /* Same as above.  */
+  KEEP (strlen ((*pa7_3)[0]) > sizeof *pa7_3);
+  KEEP (strlen ((*pa7_3)[i]) > sizeof *pa7_3);
 
   KEEP (strlen ((*pax_3)[0]) < 2);
   KEEP (strlen ((*pax_3)[1]) < 2);
   KEEP (strlen ((*pax_3)[9]) < 2);
+  KEEP (strlen ((*pax_3)[i]) < 2);
+
+  /* Same as above.  */
+  KEEP (strlen ((*pax_3)[0]) > 3);
+  KEEP (strlen ((*pax_3)[i]) > 333);
 
   KEEP (strlen ((*pa5_7)[0]) < 6);
   KEEP (strlen ((*pa5_7)[1]) < 6);
   KEEP (strlen ((*pa5_7)[4]) < 6);
-}
+  KEEP (strlen ((*pa5_7)[i]) < 6);
+
+  /* Same as above.  */
+  KEEP (strlen ((*pa5_7)[0]) > sizeof *pa5_7);
+  KEEP (strlen ((*pa5_7)[i]) > sizeof *pa5_7);
+ }
 
 void keep_global_arrays_and_strings (int i)
 {
@@ -306,6 +321,12 @@ void keep_global_arrays_and_strings (int i)
   KEEP (strlen (i < 0 ? a7 : "123") < 5);
   KEEP (strlen (i < 0 ? a7 : "123456") < 6);
   KEEP (strlen (i < 0 ? a7 : "1234567") < 6);
+
+  /* Verify that a matrix is treated as a flat array even in a conditional
+     expression (i.e., don't assume that a7_3[0] is nul-terminated, even
+     though calling strlen() on such an array is undefined).  */
+  KEEP (strlen (i < 0 ? a7_3[0] : "") > 7);
+  KEEP (strlen (i < 0 ? a7_3[i] : "") > 7);
 }
 
 void keep_member_arrays_obj (int i)
@@ -337,6 +358,12 @@ void keep_member_arrays_obj (int i)
 
   KEEP (strlen (ma0_3_5_7[0][0][0].a5_7[0]) < 6);
   KEEP (strlen (ma0_3_5_7[2][4][6].a5_7[4]) < 6);
+
+  /* Again, verify that the .a3 array isn't assumed to necessarily
+     be nul-terminated.  */
+  KEEP (strlen (ma0_3_5_7[0][0][0].a3) > 2);
+  KEEP (strlen (ma0_3_5_7[0][0][6].a3) > 2);
+  KEEP (strlen (ma0_3_5_7[0][0][i].a3) > 2);
 }
 
 void keep_member_arrays_ptr (struct MemArrays0 *ma0,
@@ -353,6 +380,11 @@ void keep_member_arrays_ptr (struct MemArrays0 *ma0,
   KEEP (strlen (ma0->a7_3[i]) < 2);
   KEEP (strlen (ma0->a7_3[i]) < 2);
 
+  /* Again, verify that the member array isn't assumed to necessarily
+     be nul-terminated.  */
+  KEEP (strlen (ma0->a7_3[0]) > sizeof ma0->a7_3);
+  KEEP (strlen (ma0->a7_3[i]) > sizeof ma0->a7_3);
+
   KEEP (strlen (ma0->a5_7[0]) < 5);
   KEEP (strlen (ma0[0].a5_7[0]) < 5);
   KEEP (strlen (ma0[1].a5_7[0]) < 5);
@@ -360,6 +392,9 @@ void keep_member_arrays_ptr (struct MemArrays0 *ma0,
   KEEP (strlen (ma0[9].a5_7[4]) < 5);
   KEEP (strlen (ma0[i].a5_7[4]) < 5);
   KEEP (strlen (ma0[i].a5_7[i]) < 5);
+
+  /* Same as above.  */
+  KEEP (strlen (ma0[i].a5_7[i]) > sizeof ma0[i].a5_7);
 
   KEEP (strlen (ma0->a0) < DIFF_MAX - 2);
   KEEP (strlen (ma0->a0) < 999);
@@ -389,5 +424,5 @@ void keep_pointers (const char *s)
 /* { dg-final { scan-tree-dump-times "call_in_true_branch_not_eliminated_" 0 "optimized" } }
    { dg-final { scan-tree-dump-times "call_in_false_branch_not_eliminated_" 0 "optimized" } }
 
-   { dg-final { scan-tree-dump-times "call_made_in_true_branch_on_line_1\[0-9\]\[0-9\]\[0-9\]" 92 "optimized" } }
-   { dg-final { scan-tree-dump-times "call_made_in_false_branch_on_line_1\[0-9\]\[0-9\]\[0-9\]" 92 "optimized" } } */
+   { dg-final { scan-tree-dump-times "call_made_in_true_branch_on_line_1\[0-9\]\[0-9\]\[0-9\]" 119 "optimized" } }
+   { dg-final { scan-tree-dump-times "call_made_in_false_branch_on_line_1\[0-9\]\[0-9\]\[0-9\]" 119 "optimized" } } */

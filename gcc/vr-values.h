@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2016-2018 Free Software Foundation, Inc.
+   Copyright (C) 2016-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -75,7 +75,7 @@ class vr_values
   bool vrp_stmt_computes_nonzero (gimple *);
   bool op_with_boolean_value_range_p (tree);
   bool check_for_binary_op_overflow (enum tree_code, tree, tree, tree, bool *);
-  value_range get_vr_for_comparison (int);
+  value_range *get_vr_for_comparison (int, value_range *);
   tree compare_name_with_value (enum tree_code, tree, tree, bool *, bool);
   tree compare_names (enum tree_code, tree, tree, bool *);
   bool two_valued_val_range_p (tree, tree *, tree *);

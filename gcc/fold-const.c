@@ -1,5 +1,5 @@
 /* Fold a constant sub-tree into a single node for C-compiler
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1911,19 +1911,23 @@ size_binop_loc (location_t loc, enum tree_code code, tree arg0, tree arg1)
       /* And some specific cases even faster than that.  */
       if (code == PLUS_EXPR)
 	{
-	  if (integer_zerop (arg0) && !TREE_OVERFLOW (arg0))
+	  if (integer_zerop (arg0)
+	      && !TREE_OVERFLOW (tree_strip_any_location_wrapper (arg0)))
 	    return arg1;
-	  if (integer_zerop (arg1) && !TREE_OVERFLOW (arg1))
+	  if (integer_zerop (arg1)
+	      && !TREE_OVERFLOW (tree_strip_any_location_wrapper (arg1)))
 	    return arg0;
 	}
       else if (code == MINUS_EXPR)
 	{
-	  if (integer_zerop (arg1) && !TREE_OVERFLOW (arg1))
+	  if (integer_zerop (arg1)
+	      && !TREE_OVERFLOW (tree_strip_any_location_wrapper (arg1)))
 	    return arg0;
 	}
       else if (code == MULT_EXPR)
 	{
-	  if (integer_onep (arg0) && !TREE_OVERFLOW (arg0))
+	  if (integer_onep (arg0)
+	      && !TREE_OVERFLOW (tree_strip_any_location_wrapper (arg0)))
 	    return arg1;
 	}
 
@@ -2938,6 +2942,9 @@ combine_comparisons (location_t loc,
 int
 operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 {
+  STRIP_ANY_LOCATION_WRAPPER (arg0);
+  STRIP_ANY_LOCATION_WRAPPER (arg1);
+
   /* When checking, verify at the outermost operand_equal_p call that
      if operand_equal_p returns non-zero then ARG0 and ARG1 has the same
      hash value.  */
@@ -5572,12 +5579,15 @@ fold_range_test (location_t loc, enum tree_code code, tree type,
   /* On machines where the branch cost is expensive, if this is a
      short-circuited branch and the underlying object on both sides
      is the same, make a non-short-circuit operation.  */
-  else if (LOGICAL_OP_NON_SHORT_CIRCUIT
-	   && !flag_sanitize_coverage
-	   && lhs != 0 && rhs != 0
-	   && (code == TRUTH_ANDIF_EXPR
-	       || code == TRUTH_ORIF_EXPR)
-	   && operand_equal_p (lhs, rhs, 0))
+  bool logical_op_non_short_circuit = LOGICAL_OP_NON_SHORT_CIRCUIT;
+  if (PARAM_VALUE (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT) != -1)
+    logical_op_non_short_circuit
+      = PARAM_VALUE (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT);
+  if (logical_op_non_short_circuit
+      && !flag_sanitize_coverage
+      && lhs != 0 && rhs != 0
+      && (code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR)
+      && operand_equal_p (lhs, rhs, 0))
     {
       /* If simple enough, just rewrite.  Otherwise, make a SAVE_EXPR
 	 unless we are at top level or LHS contains a PLACEHOLDER_EXPR, in
@@ -8229,7 +8239,11 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
   if ((tem = fold_truth_andor_1 (loc, code, type, arg0, arg1)) != 0)
     return tem;
 
-  if (LOGICAL_OP_NON_SHORT_CIRCUIT
+  bool logical_op_non_short_circuit = LOGICAL_OP_NON_SHORT_CIRCUIT;
+  if (PARAM_VALUE (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT) != -1)
+    logical_op_non_short_circuit
+      = PARAM_VALUE (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT);
+  if (logical_op_non_short_circuit
       && !flag_sanitize_coverage
       && (code == TRUTH_AND_EXPR
           || code == TRUTH_ANDIF_EXPR
@@ -13673,6 +13687,8 @@ integer_valued_real_p (tree t, int depth)
 {
   if (t == error_mark_node)
     return false;
+
+  STRIP_ANY_LOCATION_WRAPPER (t);
 
   tree_code code = TREE_CODE (t);
   switch (TREE_CODE_CLASS (code))

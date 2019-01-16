@@ -1,3 +1,20 @@
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2018-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* libcc1plugin.cc: Replace "source_location" with "location_t".
+	(plugin_context::get_source_location): Rename to...
+	(plugin_context::get_location_t): ...this.
+	* libcp1plugin.cc: Likewise.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* configure.ac: Remove AC_PREREQ.
+	* Makefile.in, aclocal.m4, configure: Regenerate.
+
 2018-04-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/85384

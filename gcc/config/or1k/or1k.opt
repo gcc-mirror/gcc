@@ -1,0 +1,67 @@
+; OpenRISC command line options
+
+; Copyright (C) 2010-2019 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+; See the GCC internals manual (options.texi) for a description of
+; this file's format.
+
+; Please try to keep this file in ASCII collating order.
+
+mhard-div
+Target RejectNegative InverseMask(SOFT_DIV)
+Use hardware divide instructions, use -msoft-div for emulation.
+
+mhard-mul
+Target RejectNegative InverseMask(SOFT_MUL).
+Use hardware multiply instructions, use -msoft-mul for emulation.
+
+mcmov
+Target RejectNegative Mask(CMOV)
+Allows generation of binaries which use the l.cmov instruction.  If your target
+does not support this the compiler will generate the equivalent using set and
+branch.
+
+mror
+Target RejectNegative Mask(ROR)
+Allows generation of binaries which use the l.rori instructions.
+
+msext
+Target RejectNegative Mask(SEXT)
+Allows generation of binaries which use sign-extension instructions.  If your
+target does not support this the compiler will use memory loads to perform sign
+extension.
+
+msfimm
+Target RejectNegative Mask(SFIMM)
+Allows generation of binaries which use l.sf*i instructions.  If your target
+does not support this the compiler will generate instructions to store the
+immediate to a register first.
+
+mshftimm
+Target RejectNegative Mask(SHFTIMM)
+Allows generation of binaries which support shifts and rotate instructions
+supporting immediate arguments, for example l.rori.
+
+msoft-div
+Target RejectNegative Mask(SOFT_DIV)
+Use divide emulation.
+
+msoft-mul
+Target RejectNegative Mask(SOFT_MUL).
+Use multiply emulation.

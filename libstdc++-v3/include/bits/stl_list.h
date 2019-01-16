@@ -1,6 +1,6 @@
 // List implementation -*- C++ -*-
 
-// Copyright (C) 2001-2018 Free Software Foundation, Inc.
+// Copyright (C) 2001-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -372,7 +372,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       {
 	__detail::_List_node_header _M_node;
 
-	_List_impl() _GLIBCXX_NOEXCEPT_IF( noexcept(_Node_alloc_type()) )
+	_List_impl() _GLIBCXX_NOEXCEPT_IF(
+	    is_nothrow_default_constructible<_Node_alloc_type>::value)
 	: _Node_alloc_type()
 	{ }
 

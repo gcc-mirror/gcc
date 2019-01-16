@@ -6,7 +6,7 @@
 /* { dg-final { scan-assembler-not "movl\t%eax, %eax" } } */
 /* FIXME: We are still not able to optimize the modulo in f1/f2, only manage
    one.  */
-/* { dg-final { scan-assembler-times "movl\t%edx, %edx" 2 } } */
+/* { dg-final { scan-assembler-times "movl\t%edx" 2 } } */
 
 void
 f1 (unsigned int a, unsigned int b)

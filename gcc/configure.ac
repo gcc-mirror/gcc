@@ -1,7 +1,7 @@
 # configure.ac for GCC
 # Process this file with autoconf to generate a configuration script.
 
-# Copyright (C) 1997-2018 Free Software Foundation, Inc.
+# Copyright (C) 1997-2019 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -23,7 +23,6 @@
 # Initialization and sanity checks
 # --------------------------------
 
-AC_PREREQ(2.64)
 AC_INIT
 AC_CONFIG_SRCDIR(tree.c)
 AC_CONFIG_HEADER(auto-host.h:config.in)
@@ -450,11 +449,11 @@ if test "$GCC" = yes; then
   # -fno-strict-aliasing *and* is older than GCC 4.3.
   CXXFLAGS="$CXXFLAGS -fno-strict-aliasing"
   AC_MSG_CHECKING([whether $CXX is affected by placement new aliasing bug])
-  AC_COMPILE_IFELSE([
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 #if (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3)
 #error compiler not affected by placement new aliasing bug
 #endif
-],
+])],
     [AC_MSG_RESULT([yes]); aliasing_flags='-fno-strict-aliasing'],
     [AC_MSG_RESULT([no])])
 
@@ -1611,12 +1610,12 @@ case ${host} in
   powerpc*-*-darwin*)
     AC_CACHE_CHECK([whether mcontext_t fields have underscores],
       gcc_cv_mcontext_underscores,
-      AC_COMPILE_IFELSE([
+      AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 #include <sys/cdefs.h>
 #include <sys/signal.h>
 #include <ucontext.h>
 int main() { mcontext_t m; if (m->ss.srr0) return 0; return 0; }
-],
+])],
 	gcc_cv_mcontext_underscores=no, gcc_cv_mcontext_underscores=yes))
       if test $gcc_cv_mcontext_underscores = yes; then
         AC_DEFINE(HAS_MCONTEXT_T_UNDERSCORES,,dnl
@@ -1752,6 +1751,7 @@ AC_SUBST(build_subdir)
 
 tm_file="${tm_file} defaults.h"
 tm_p_file="${tm_p_file} tm-preds.h"
+tm_d_file="${tm_d_file} defaults.h"
 host_xm_file="auto-host.h ansidecl.h ${host_xm_file}"
 build_xm_file="${build_auto} ansidecl.h ${build_xm_file}"
 # We don't want ansidecl.h in target files, write code there in ISO/GNU C.
@@ -1981,6 +1981,21 @@ for f in $tm_p_file; do
     * )
        tm_p_file_list="${tm_p_file_list} \$(srcdir)/config/$f"
        tm_p_include_list="${tm_p_include_list} config/$f"
+  esac
+done
+
+tm_d_file_list=
+tm_d_include_list="options.h insn-constants.h"
+for f in $tm_d_file; do
+  case $f in
+    defaults.h )
+       tm_d_file_list="${tm_d_file_list} \$(srcdir)/$f"
+       tm_d_include_list="${tm_d_include_list} $f"
+       ;;
+    * )
+       tm_d_file_list="${tm_d_file_list} \$(srcdir)/config/$f"
+       tm_d_include_list="${tm_d_include_list} config/$f"
+       ;;
   esac
 done
 
@@ -2499,6 +2514,23 @@ else
 	AC_MSG_RESULT($gcc_cv_readelf)
 fi
 
+# Figure out what otool we will be using.
+AS_VAR_SET_IF(gcc_cv_otool,, [
+if test -x otool$build_exeext; then
+	gcc_cv_otool=./otool$build_exeext
+elif ( set dummy $OTOOL_FOR_TARGET; test -x $[2] ); then
+        gcc_cv_otool="$OTOOL_FOR_TARGET"
+else
+        AC_PATH_PROG(gcc_cv_otool, $OTOOL_FOR_TARGET)
+fi])
+
+AC_MSG_CHECKING(what otool to use)
+if test x$gcc_cv_otool = x; then
+	AC_MSG_RESULT(not found)
+else
+	AC_MSG_RESULT($gcc_cv_otool)
+fi
+
 # Figure out what assembler alignment features are present.
 gcc_GAS_CHECK_FEATURE([.balign and .p2align], gcc_cv_as_balign_and_p2align,
  [2,6,0],,
@@ -2888,8 +2920,7 @@ gcc_GAS_CHECK_FEATURE([cfi personality directive],
 	.cfi_personality 0, symbol
 	.cfi_endproc])
 AC_DEFINE_UNQUOTED(HAVE_GAS_CFI_PERSONALITY_DIRECTIVE,
-  [`if test $gcc_cv_as_cfi_personality_directive = yes;
-    then echo 1; else echo 0; fi`],
+  [`if test $gcc_cv_as_cfi_personality_directive = yes; then echo 1; else echo 0; fi`],
   [Define 0/1 if your assembler supports .cfi_personality.])
 
 gcc_GAS_CHECK_FEATURE([cfi sections directive],
@@ -2916,8 +2947,7 @@ gcc_GAS_CHECK_FEATURE([cfi sections directive],
 esac])
 GCC_TARGET_TEMPLATE(HAVE_GAS_CFI_SECTIONS_DIRECTIVE)
 AC_DEFINE_UNQUOTED(HAVE_GAS_CFI_SECTIONS_DIRECTIVE,
-  [`if test $gcc_cv_as_cfi_sections_directive = yes;
-    then echo 1; else echo 0; fi`],
+  [`if test $gcc_cv_as_cfi_sections_directive = yes; then echo 1; else echo 0; fi`],
   [Define 0/1 if your assembler supports .cfi_sections.])
 
 # GAS versions up to and including 2.11.0 may mis-optimize
@@ -3460,6 +3490,18 @@ foo:	.long	25
 	tls_first_minor=20
 	tls_as_opt='--fatal-warnings'
 	;;
+  or1k*-*-*)
+    conftest_s='
+	.section ".tdata","awT",@progbits
+foo:	.long	25
+	.text
+	l.movhi	r3, tpoffha(foo)
+	l.add	r3, r3, r10
+	l.lwz	r4, tpofflo(foo)(r3)'
+    tls_first_major=2
+    tls_first_minor=30
+    tls_as_opt=--fatal-warnings
+    ;;
   powerpc-ibm-aix*)
     conftest_s='
 	.extern __get_tpointer
@@ -4064,11 +4106,6 @@ EOF
     ;;
 
   sparc*-*-*)
-    gcc_GAS_CHECK_FEATURE([.register], gcc_cv_as_sparc_register_op,,,
-      [.register %g2, #scratch],,
-      [AC_DEFINE(HAVE_AS_REGISTER_PSEUDO_OP, 1,
-		[Define if your assembler supports .register.])])
-
     gcc_GAS_CHECK_FEATURE([-relax option], gcc_cv_as_sparc_relax,,
       [-relax], [.text],,
       [AC_DEFINE(HAVE_AS_RELAX_OPTION, 1,
@@ -4537,7 +4574,8 @@ gd:
 [	.text
 	addl r15 = @ltoffx(x#), gp
 	;;
-	ld8.mov r16 = [[r15]], x#],,
+	ld8.mov r16 = [[r15]], x#
+],,
     [AC_DEFINE(HAVE_AS_LTOFFX_LDXMOV_RELOCS, 1,
 	  [Define if your assembler supports ltoffx and ldxmov relocations.])])
 
@@ -4626,6 +4664,12 @@ LCF0:
       [ .reloc .,R_PPC64_ENTRY; nop],,
       [AC_DEFINE(HAVE_AS_ENTRY_MARKERS, 1,
 	  [Define if your assembler supports the R_PPC64_ENTRY relocation.])])
+
+    gcc_GAS_CHECK_FEATURE([plt sequence marker support],
+      gcc_cv_as_powerpc_pltseq_markers, [2,31,0],-a32 --fatal-warnings,
+      [ .reloc .,R_PPC_PLTSEQ; nop],,
+      [AC_DEFINE(HAVE_AS_PLTSEQ, 1,
+	  [Define if your assembler supports R_PPC*_PLTSEQ relocations.])])
 
     case $target in
       *-*-aix*)
@@ -4825,6 +4869,12 @@ pointers into PC-relative form.])
       [	.machine z13+vx ],,
       [AC_DEFINE(HAVE_AS_ARCHITECTURE_MODIFIERS, 1,
 	  [Define if your assembler supports architecture modifiers.])])
+    gcc_GAS_CHECK_FEATURE([vector load/store alignment hints],
+      gcc_cv_as_s390_vector_loadstore_alignment_hints, [2,31,0],,
+      [	vl %v24,0(%r15),3 ],,
+      [AC_DEFINE(HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS, 1,
+	  [Define if your assembler supports vl/vst/vlm/vstm with an optional alignment hint argument.])])
+
     ;;
 esac
 
@@ -4874,6 +4924,10 @@ if test x"$insn" != x; then
   [elf,2,11,0],, [$conftest_s],
   [if test x$gcc_cv_objdump != x \
    && $gcc_cv_objdump -h conftest.o 2> /dev/null \
+      | grep debug_line > /dev/null 2>&1; then
+     gcc_cv_as_dwarf2_debug_line=yes
+   elif test x$gcc_cv_otool != x \
+   && $gcc_cv_otool -l conftest.o 2> /dev/null \
       | grep debug_line > /dev/null 2>&1; then
      gcc_cv_as_dwarf2_debug_line=yes
    fi])
@@ -5521,7 +5575,7 @@ AC_MSG_CHECKING(linker mapfile support for clearing hardware capabilities)
 saved_LDFLAGS="$LDFLAGS"
 for clearcap_map in sol2-clearcapv2.map sol2-clearcap.map; do
   LDFLAGS="$saved_LDFLAGS -Wl,-M,${srcdir}/config/$clearcap_map"
-  AC_LINK_IFELSE([int main(void) {return 0;}],
+  AC_LINK_IFELSE([AC_LANG_SOURCE([int main(void) {return 0;}])],
     [gcc_cv_ld_clearcap=yes; break], [gcc_cv_ld_clearcap=no])
 done
 LDFLAGS="$saved_LDFLAGS"
@@ -6343,6 +6397,8 @@ AC_SUBST(tm_include_list)
 AC_SUBST(tm_defines)
 AC_SUBST(tm_p_file_list)
 AC_SUBST(tm_p_include_list)
+AC_SUBST(tm_d_file_list)
+AC_SUBST(tm_d_include_list)
 AC_SUBST(xm_file_list)
 AC_SUBST(xm_include_list)
 AC_SUBST(xm_defines)
@@ -6350,6 +6406,7 @@ AC_SUBST(use_gcc_stdint)
 AC_SUBST(c_target_objs)
 AC_SUBST(cxx_target_objs)
 AC_SUBST(fortran_target_objs)
+AC_SUBST(d_target_objs)
 AC_SUBST(target_cpu_default)
 
 AC_SUBST_FILE(language_hooks)
@@ -6486,7 +6543,7 @@ AC_CACHE_CHECK([for -fno-PIE option],
   [gcc_cv_c_no_fpie],
   [saved_CXXFLAGS="$CXXFLAGS"
    CXXFLAGS="$CXXFLAGS -fno-PIE"
-   AC_COMPILE_IFELSE([int main(void) {return 0;}],
+   AC_COMPILE_IFELSE([AC_LANG_SOURCE([int main(void) {return 0;}])],
      [gcc_cv_c_no_fpie=yes],
      [gcc_cv_c_no_fpie=no])
    CXXFLAGS="$saved_CXXFLAGS"])
@@ -6500,7 +6557,7 @@ AC_CACHE_CHECK([for -no-pie option],
   [gcc_cv_no_pie],
   [saved_LDFLAGS="$LDFLAGS"
    LDFLAGS="$LDFLAGS -no-pie"
-   AC_LINK_IFELSE([int main(void) {return 0;}],
+   AC_LINK_IFELSE([AC_LANG_SOURCE([int main(void) {return 0;}])],
      [gcc_cv_no_pie=yes],
      [gcc_cv_no_pie=no])
    LDFLAGS="$saved_LDFLAGS"])

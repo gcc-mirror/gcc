@@ -1,5 +1,5 @@
 /* Array things
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1246,7 +1246,9 @@ done:
 	{
 	  c = gfc_constructor_first (head);
 	  for (; c; c = gfc_constructor_next (c))
-	    gfc_convert_type (c->expr, &ts, 1);
+	    if (!gfc_convert_type (c->expr, &ts, 1)
+		&& c->expr->ts.type != BT_UNKNOWN)
+	      return MATCH_ERROR;
 	}
     }
   else

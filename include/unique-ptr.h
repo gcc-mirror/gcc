@@ -1,6 +1,6 @@
 /* gnu::unique_ptr, a simple std::unique_ptr replacement for C++03.
 
-   Copyright (C) 2007-2018 Free Software Foundation, Inc.
+   Copyright (C) 2007-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -336,13 +336,13 @@ operator>= (const detail::unique_ptr_base<T, D> &x,
 { return !(x < y); }
 
 /* std::move "emulation".  This is as simple as it can be -- no
-   attempt is made to emulate rvalue references.  Instead relies on
-   the fact that gnu::unique_ptr has move semantics like
-   std::auto_ptr.  I.e., copy/assignment actually moves.  */
+   attempt is made to emulate rvalue references.  This relies on T
+   having move semantics like std::auto_ptr.
+   I.e., copy/assignment actually moves.  */
 
-template<typename T, typename D>
-unique_ptr<T, D>
-move (unique_ptr<T, D> v)
+template<typename T>
+const T&
+move (T& v)
 {
   return v;
 }

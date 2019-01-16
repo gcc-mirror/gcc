@@ -1,5 +1,5 @@
 /* Part of CPP library.  (Precompiled header reading/writing.)
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -437,7 +437,7 @@ _cpp_restore_pushed_macros (cpp_reader *r, FILE *f)
 	    return 0;
 
 	  p->definition = defn;
-	  if (fread (&(p->line), sizeof (source_location), 1, f) != 1)
+	  if (fread (&(p->line), sizeof (location_t), 1, f) != 1)
 	    return 0;
 	  defnlen = 0;
 	  if (fread (&defnlen, sizeof (defnlen), 1, f) != 1)
@@ -501,7 +501,7 @@ _cpp_save_pushed_macros (cpp_reader *r, FILE *f)
 	  if (fwrite (&defnlen, sizeof (size_t), 1, f) != 1
 	      || fwrite (pp[i]->definition, defnlen, 1, f) != 1)
 	    return 0;
-	  if (fwrite (&(pp[i]->line), sizeof (source_location), 1, f) != 1)
+	  if (fwrite (&(pp[i]->line), sizeof (location_t), 1, f) != 1)
 	    return 0;
 	  defnlen = 0;
 	  defnlen |= (pp[i]->syshdr != 0 ? 1 : 0);

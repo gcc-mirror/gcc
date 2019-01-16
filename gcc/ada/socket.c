@@ -90,10 +90,27 @@ extern int __gnat_hostent_h_addrtype (struct hostent *);
 extern int __gnat_hostent_h_length (struct hostent *);
 extern char * __gnat_hostent_h_addr (struct hostent *, int);
 
+extern int __gnat_getaddrinfo(
+  const char *node,
+  const char *service,
+  const struct addrinfo *hints,
+  struct addrinfo **res);
+int __gnat_getnameinfo(
+  const struct sockaddr *sa, socklen_t salen,
+  char *host, size_t hostlen,
+  char *serv, size_t servlen, int flags);
+extern void __gnat_freeaddrinfo(struct addrinfo *res);
+extern const char * __gnat_gai_strerror(int errcode);
+
 #ifndef HAVE_INET_PTON
 extern int  __gnat_inet_pton (int, const char *, void *);
 #endif
-
+
+#ifndef HAVE_INET_NTOP
+extern const char *
+__gnat_inet_ntop(int, const void *, char *, socklen_t);
+#endif
+
 /* Disable the sending of SIGPIPE for writes on a broken stream */
 
 void
@@ -112,7 +129,7 @@ __gnat_disable_all_sigpipes (void)
   (void) signal (SIGPIPE, SIG_IGN);
 #endif
 }
-
+
 #if defined (_WIN32) || defined (__vxworks)
 /*
  * Signalling FDs operations are implemented in Ada for these platforms
@@ -128,7 +145,7 @@ int
 __gnat_create_signalling_fds (int *fds) {
   return pipe (fds);
 }
-
+
 /*
  * Read one byte of data from rsig, the read end of a pair of signalling fds
  * created by __gnat_create_signalling_fds.
@@ -138,7 +155,7 @@ __gnat_read_signalling_fd (int rsig) {
   char c;
   return read (rsig, &c, 1);
 }
-
+
 /*
  * Write one byte of data to wsig, the write end of a pair of signalling fds
  * created by __gnat_create_signalling_fds.
@@ -148,7 +165,7 @@ __gnat_write_signalling_fd (int wsig) {
   char c = 0;
   return write (wsig, &c, 1);
 }
-
+
 /*
  * Close one end of a pair of signalling fds
  */
@@ -157,7 +174,7 @@ __gnat_close_signalling_fd (int sig) {
   (void) close (sig);
 }
 #endif
-
+
 /*
  * Handling of gethostbyname, gethostbyaddr, getservbyname and getservbyport
  * =========================================================================
@@ -369,7 +386,7 @@ __gnat_getservbyport (int port, const char *proto,
   return 0;
 }
 #endif
-
+
 /* Find the largest socket in the socket set SET. This is needed for
    `select'.  LAST is the maximum value for the largest socket. This hint is
    used to avoid scanning very large socket sets.  On return, LAST is the
@@ -572,6 +589,41 @@ __gnat_inet_pton (int af, const char *src, void *dst) {
 }
 #endif
 
+#ifndef HAVE_INET_NTOP
+
+const char *
+__gnat_inet_ntop(int af, const void *src, char *dst, socklen_t size)
+{
+#ifdef _WIN32
+  struct sockaddr_storage ss;
+  int sslen = sizeof ss;
+  memset(&ss, 0, sslen);
+  ss.ss_family = af;
+
+  switch (af) {
+    case AF_INET6:
+      ((struct sockaddr_in6 *)&ss)->sin6_addr = *(struct in6_addr *)src;
+      break;
+    case AF_INET:
+      ((struct sockaddr_in *)&ss)->sin_addr = *(struct in_addr *)src;
+      break;
+    default:
+      errno = EAFNOSUPPORT;
+      return NULL;
+  }
+
+  DWORD sz = size;
+
+  if (WSAAddressToStringA((struct sockaddr*)&ss, sslen, 0, dst, &sz) != 0) {
+     return NULL;
+  }
+  return dst;
+#else
+  return NULL;
+#endif
+}
+#endif
+
 /*
  * Accessor functions for struct hostent.
  */
@@ -649,5 +701,106 @@ __gnat_servent_s_proto (struct servent * s)
 {
   return s->s_proto;
 }
+
+#if defined(AF_INET6) && !defined(__rtems__)
+
+#if defined (__vxworks)
+#define getaddrinfo ipcom_getaddrinfo
+#define getnameinfo ipcom_getnameinfo
+#define freeaddrinfo ipcom_freeaddrinfo
+#endif
+
+int __gnat_getaddrinfo(
+  const char *node,
+  const char *service,
+  const struct addrinfo *hints,
+  struct addrinfo **res)
+{
+  return getaddrinfo(node, service, hints, res);
+}
+
+int __gnat_getnameinfo(
+  const struct sockaddr *sa, socklen_t salen,
+  char *host, size_t hostlen,
+  char *serv, size_t servlen, int flags)
+{
+  return getnameinfo(sa, salen, host, hostlen, serv, servlen, flags);
+}
+
+void __gnat_freeaddrinfo(struct addrinfo *res) {
+   freeaddrinfo(res);
+}
+
+const char * __gnat_gai_strerror(int errcode) {
+#if defined(_WIN32) ||  defined(__vxworks)
+  // gai_strerror thread usafe on Windows and is not available on some vxWorks
+  // versions
+
+  switch (errcode) {
+    case EAI_AGAIN:
+      return "Temporary failure in name resolution.";
+    case EAI_BADFLAGS:
+      return "Invalid value for ai_flags.";
+    case EAI_FAIL:
+      return "Nonrecoverable failure in name resolution.";
+    case EAI_FAMILY:
+      return "The ai_family member is not supported.";
+    case EAI_MEMORY:
+      return "Memory allocation failure.";
+#ifdef EAI_NODATA
+    // Could be not defined under the vxWorks
+    case EAI_NODATA:
+      return "No address associated with nodename.";
+#endif
+#if EAI_NODATA != EAI_NONAME
+    /* with mingw64 runtime EAI_NODATA and EAI_NONAME have the same value.
+       This applies to both win32 and win64 */
+    case EAI_NONAME:
+      return "Neither nodename nor servname provided, or not known.";
+#endif
+    case EAI_SERVICE:
+      return "The servname parameter is not supported for ai_socktype.";
+    case EAI_SOCKTYPE:
+      return "The ai_socktype member is not supported.";
+#ifdef EAI_SYSTEM
+    // Could be not defined, at least on Windows
+    case EAI_SYSTEM:
+      return "System error returned in errno";
+#endif
+    default:
+      return "Unknown error.";
+    }
+#else
+   return gai_strerror(errcode);
+#endif
+}
+
+#else
+
+int __gnat_getaddrinfo(
+  const char *node,
+  const char *service,
+  const struct addrinfo *hints,
+  struct addrinfo **res)
+{
+  return -1;
+}
+
+int __gnat_getnameinfo(
+  const struct sockaddr *sa, socklen_t salen,
+  char *host, size_t hostlen,
+  char *serv, size_t servlen, int flags)
+{
+  return -1;
+}
+
+void __gnat_freeaddrinfo(struct addrinfo *res) {
+}
+
+const char * __gnat_gai_strerror(int errcode) {
+   return "getaddinfo functions family is not supported";
+}
+
+#endif
 
 #endif /* defined(HAVE_SOCKETS) */

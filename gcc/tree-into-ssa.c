@@ -1,5 +1,5 @@
 /* Rewrite a program in Normal form into SSA.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -2119,7 +2119,7 @@ rewrite_update_phi_arguments (basic_block bb)
           /* Update the argument if there is a reaching def.  */
 	  if (reaching_def)
 	    {
-	      source_location locus;
+	      location_t locus;
 	      int arg_i = PHI_ARG_INDEX_FROM_USE (arg_p);
 
 	      SET_USE (arg_p, reaching_def);

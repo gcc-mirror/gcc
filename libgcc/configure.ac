@@ -13,7 +13,6 @@ sinclude(../config/gthr.m4)
 sinclude(../config/sjlj.m4)
 sinclude(../config/cet.m4)
 
-AC_PREREQ(2.64)
 AC_INIT([GNU C Runtime Library], 1.0,,[libgcc])
 AC_CONFIG_SRCDIR([static-object.mk])
 
@@ -229,7 +228,8 @@ GCC_AC_ENABLE_DECIMAL_FLOAT([$host])
 
 # Check for fixed-point support.
 AC_CACHE_CHECK([whether fixed-point is supported], [libgcc_cv_fixed_point],
-	       [AC_COMPILE_IFELSE([_Sat _Fract x;], [libgcc_cv_fixed_point=yes],
+	       [AC_COMPILE_IFELSE([AC_LANG_SOURCE([_Sat _Fract x;])],
+	       			  [libgcc_cv_fixed_point=yes],
 				  [libgcc_cv_fixed_point=no])])
 fixed_point=$libgcc_cv_fixed_point
 AC_SUBST(fixed_point)
@@ -270,11 +270,11 @@ AC_MSG_RESULT([$target_thread_file])
 # Check for assembler CFI support.
 AC_CACHE_CHECK([whether assembler supports CFI directives], [libgcc_cv_cfi],
 	       [AC_COMPILE_IFELSE(
-[asm("\n\
+[AC_LANG_SOURCE([asm("\n\
 	.text\n\
 	.cfi_startproc\n\
 	.cfi_personality 0, symbol\n\
-	.cfi_endproc");],
+	.cfi_endproc");])],
   [libgcc_cv_cfi=yes],
   [libgcc_cv_cfi=no])])
 
@@ -296,9 +296,10 @@ mips*-*-*)
   AC_CACHE_CHECK([whether the target is hard-float],
 		 [libgcc_cv_mips_hard_float],
 		 [AC_COMPILE_IFELSE(
-    [#ifndef __mips_hard_float
+    [AC_LANG_SOURCE([#ifndef __mips_hard_float
      #error FOO
-     #endif],
+     #endif
+    ])],
     [libgcc_cv_mips_hard_float=yes],
     [libgcc_cv_mips_hard_float=no])])
 esac
@@ -395,7 +396,7 @@ powerpc*-*-linux*)
   AC_CACHE_CHECK([for PowerPC ISA 2.06 to build __float128 libraries],
 		 [libgcc_cv_powerpc_float128],
 		 [AC_COMPILE_IFELSE(
-    [vector double dadd (vector double a, vector double b) { return a + b; }],
+    [AC_LANG_SOURCE([vector double dadd (vector double a, vector double b) { return a + b; }])],
     [libgcc_cv_powerpc_float128=yes],
     [libgcc_cv_powerpc_float128=no])])
 
@@ -403,7 +404,7 @@ powerpc*-*-linux*)
   AC_CACHE_CHECK([for PowerPC ISA 3.0 to build hardware __float128 libraries],
 		 [libgcc_cv_powerpc_float128_hw],
 		 [AC_COMPILE_IFELSE(
-    [#include <sys/auxv.h>
+    [AC_LANG_SOURCE([#include <sys/auxv.h>
      #ifndef AT_PLATFORM
      #error "AT_PLATFORM is not defined"
      #endif
@@ -418,7 +419,7 @@ powerpc*-*-linux*)
      }
      void *add_resolver (void) { return (void *) add; }
      __float128 add_ifunc (__float128, __float128)
-	__attribute__ ((__ifunc__ ("add_resolver")));],
+	__attribute__ ((__ifunc__ ("add_resolver")));])],
     [libgcc_cv_powerpc_float128_hw=yes],
     [libgcc_cv_powerpc_float128_hw=no])])
   CFLAGS="$saved_CFLAGS"

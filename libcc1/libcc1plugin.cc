@@ -1,5 +1,5 @@
 /* Library interface to C front end
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -187,15 +187,15 @@ struct plugin_context : public cc1_plugin::connection
     return t;
   }
 
-  source_location get_source_location (const char *filename,
-				       unsigned int line_number)
+  location_t get_location_t (const char *filename,
+			     unsigned int line_number)
   {
     if (filename == NULL)
       return UNKNOWN_LOCATION;
 
     filename = intern_filename (filename);
     linemap_add (line_table, LC_ENTER, false, filename, line_number);
-    source_location loc = linemap_line_start (line_table, line_number, 0);
+    location_t loc = linemap_line_start (line_table, line_number, 0);
     linemap_add (line_table, LC_LEAVE, false, NULL, 0);
     return loc;
   }
@@ -397,7 +397,7 @@ plugin_build_decl (cc1_plugin::connection *self,
       abort ();
     }
 
-  source_location loc = ctx->get_source_location (filename, line_number);
+  location_t loc = ctx->get_location_t (filename, line_number);
 
   decl = build_decl (loc, code, identifier, sym_type);
   TREE_USED (decl) = 1;
@@ -448,7 +448,7 @@ plugin_tagbind (cc1_plugin::connection *self,
 {
   plugin_context *ctx = static_cast<plugin_context *> (self);
   tree t = convert_in (tagged_type), x;
-  c_pushtag (ctx->get_source_location (filename, line_number),
+  c_pushtag (ctx->get_location_t (filename, line_number),
 	     get_identifier (name), t);
 
   /* Propagate the newly-added type name so that previously-created
@@ -884,7 +884,7 @@ plugin_build_constant (cc1_plugin::connection *self, gcc_type type_in,
   tree type = convert_in (type_in);
 
   cst = build_int_cst (type, value);
-  decl = build_decl (ctx->get_source_location (filename, line_number),
+  decl = build_decl (ctx->get_location_t (filename, line_number),
 		     CONST_DECL, get_identifier (name), type);
   DECL_INITIAL (decl) = cst;
   pushdecl_safe (decl);

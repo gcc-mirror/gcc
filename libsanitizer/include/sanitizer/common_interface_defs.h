@@ -63,6 +63,11 @@ extern "C" {
   void __sanitizer_unaligned_store32(void *p, uint32_t x);
   void __sanitizer_unaligned_store64(void *p, uint64_t x);
 
+  // Returns 1 on the first call, then returns 0 thereafter.  Called by the tool
+  // to ensure only one report is printed when multiple errors occur
+  // simultaneously.
+  int __sanitizer_acquire_crash_state();
+
   // Annotate the current state of a contiguous container, such as
   // std::vector, std::string or similar.
   // A contiguous container is a container that keeps all of its elements
@@ -113,10 +118,16 @@ extern "C" {
       const void *beg, const void *mid, const void *end);
 
   // Print the stack trace leading to this call. Useful for debugging user code.
-  void __sanitizer_print_stack_trace();
+  void __sanitizer_print_stack_trace(void);
 
   // Symbolizes the supplied 'pc' using the format string 'fmt'.
   // Outputs at most 'out_buf_size' bytes into 'out_buf'.
+  // If 'out_buf' is not empty then output is zero or more non empty C strings
+  // followed by single empty C string. Multiple strings can be returned if PC
+  // corresponds to inlined function. Inlined frames are printed in the order
+  // from "most-inlined" to the "least-inlined", so the last frame should be the
+  // not inlined function.
+  // Inlined frames can be removed with 'symbolize_inline_frames=0'.
   // The format syntax is described in
   // lib/sanitizer_common/sanitizer_stacktrace_printer.h.
   void __sanitizer_symbolize_pc(void *pc, const char *fmt, char *out_buf,

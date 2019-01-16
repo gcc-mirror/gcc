@@ -1,5 +1,5 @@
 ;; ARM Cortex-A9 pipeline description
-;; Copyright (C) 2008-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2008-2019 Free Software Foundation, Inc.
 ;; Originally written by CodeSourcery for VFP.
 ;;
 ;; Rewritten by Ramana Radhakrishnan <ramana.radhakrishnan@arm.com>

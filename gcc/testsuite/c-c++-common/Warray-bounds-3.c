@@ -326,7 +326,11 @@ void test_strcpy_bounds (char *d, const char *s)
 
 struct MA
 {
+#if __SIZEOF_INT__ == 2
+  long i;
+#else
   int i;
+#endif
   char a5[5];
   char a11[11];
 };

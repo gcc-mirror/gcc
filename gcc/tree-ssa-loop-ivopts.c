@@ -1,5 +1,5 @@
 /* Induction variable optimizations.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -543,7 +543,7 @@ struct ivopts_data
 {
   /* The currently optimized loop.  */
   struct loop *current_loop;
-  source_location loop_loc;
+  location_t loop_loc;
 
   /* Numbers of iterations for all exits of the current loop.  */
   hash_map<edge, tree_niter_desc *> *niters;

@@ -1,7 +1,7 @@
 \input texinfo @c -*-texinfo-*-
 @setfilename gccbrig.info
 @settitle The GNU BRIG (HSAIL) Compiler
-@set copyrights-brig 2017-2018
+@set copyrights-brig 2017-2019
 
 @c Merge the standard indexes into a single one.
 @syncodeindex fn cp

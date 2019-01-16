@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 1991-2018 Free Software Foundation, Inc.
+   Copyright (C) 1991-2019 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -46,6 +46,9 @@ extern char arm_arch_name[];
 
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS() arm_cpu_cpp_builtins (pfile)
+
+/* Target CPU versions for D.  */
+#define TARGET_D_CPU_VERSIONS arm_d_target_versions
 
 #include "config/arm/arm-opts.h"
 
@@ -122,7 +125,8 @@ extern tree arm_fp16_type_node;
 /* Use hardware floating point instructions. */
 #define TARGET_HARD_FLOAT	(arm_float_abi != ARM_FLOAT_ABI_SOFT	\
 				 && bitmap_bit_p (arm_active_target.isa, \
-						  isa_bit_vfpv2))
+						  isa_bit_vfpv2) \
+				 && TARGET_32BIT)
 #define TARGET_SOFT_FLOAT	(!TARGET_HARD_FLOAT)
 /* User has permitted use of FP instructions, if they exist for this
    target.  */
@@ -211,7 +215,7 @@ extern tree arm_fp16_type_node;
 #define TARGET_NEON_RDMA (TARGET_NEON && arm_arch8_1)
 
 /* Supports the Dot Product AdvSIMD extensions.  */
-#define TARGET_DOTPROD (TARGET_NEON					\
+#define TARGET_DOTPROD (TARGET_NEON && TARGET_VFP5			\
 			&& bitmap_bit_p (arm_active_target.isa,		\
 					isa_bit_dotprod)		\
 			&& arm_arch8_2)

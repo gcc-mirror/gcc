@@ -1,5 +1,5 @@
 // go-gcc.cc -- Go frontend to gcc IR.
-// Copyright (C) 2011-2018 Free Software Foundation, Inc.
+// Copyright (C) 2011-2019 Free Software Foundation, Inc.
 // Contributed by Ian Lance Taylor, Google.
 
 // This file is part of GCC.
@@ -482,9 +482,7 @@ class Gcc_backend : public Backend
 
   Bfunction*
   function(Btype* fntype, const std::string& name, const std::string& asm_name,
-           bool is_visible, bool is_declaration, bool is_inlinable,
-           bool disable_split_stack, bool does_not_return,
-	   bool in_unique_section, Location);
+	   unsigned int flags, Location);
 
   Bstatement*
   function_defer_statement(Bfunction* function, Bexpression* undefer,
@@ -2245,9 +2243,9 @@ Gcc_backend::switch_statement(
     {
       if (pc->empty())
 	{
-	  source_location loc = (*ps != NULL
-                                 ? EXPR_LOCATION((*ps)->get_tree())
-                                 : UNKNOWN_LOCATION);
+	  location_t loc = (*ps != NULL
+			    ? EXPR_LOCATION((*ps)->get_tree())
+			    : UNKNOWN_LOCATION);
 	  tree label = create_artificial_label(loc);
 	  tree c = build_case_label(NULL_TREE, NULL_TREE, label);
 	  append_to_statement_list(c, &stmt_list);
@@ -2261,7 +2259,7 @@ Gcc_backend::switch_statement(
 	      tree t = (*pcv)->get_tree();
 	      if (t == error_mark_node)
 		return this->error_statement();
-	      source_location loc = EXPR_LOCATION(t);
+	      location_t loc = EXPR_LOCATION(t);
 	      tree label = create_artificial_label(loc);
 	      tree c = build_case_label((*pcv)->get_tree(), NULL_TREE, label);
 	      append_to_statement_list(c, &stmt_list);
@@ -3047,10 +3045,8 @@ Gcc_backend::label_address(Blabel* label, Location location)
 
 Bfunction*
 Gcc_backend::function(Btype* fntype, const std::string& name,
-                      const std::string& asm_name, bool is_visible,
-                      bool is_declaration, bool is_inlinable,
-                      bool disable_split_stack, bool does_not_return,
-		      bool in_unique_section, Location location)
+                      const std::string& asm_name, unsigned int flags,
+		      Location location)
 {
   tree functype = fntype->get_tree();
   if (functype != error_mark_node)
@@ -3065,9 +3061,9 @@ Gcc_backend::function(Btype* fntype, const std::string& name,
   tree decl = build_decl(location.gcc_location(), FUNCTION_DECL, id, functype);
   if (! asm_name.empty())
     SET_DECL_ASSEMBLER_NAME(decl, get_identifier_from_string(asm_name));
-  if (is_visible)
+  if ((flags & function_is_visible) != 0)
     TREE_PUBLIC(decl) = 1;
-  if (is_declaration)
+  if ((flags & function_is_declaration) != 0)
     DECL_EXTERNAL(decl) = 1;
   else
     {
@@ -3079,17 +3075,22 @@ Gcc_backend::function(Btype* fntype, const std::string& name,
       DECL_CONTEXT(resdecl) = decl;
       DECL_RESULT(decl) = resdecl;
     }
-  if (!is_inlinable)
+  if ((flags & function_is_inlinable) == 0)
     DECL_UNINLINABLE(decl) = 1;
-  if (disable_split_stack)
+  if ((flags & function_no_split_stack) != 0)
     {
       tree attr = get_identifier ("no_split_stack");
       DECL_ATTRIBUTES(decl) = tree_cons(attr, NULL_TREE, NULL_TREE);
     }
-  if (does_not_return)
+  if ((flags & function_does_not_return) != 0)
     TREE_THIS_VOLATILE(decl) = 1;
-  if (in_unique_section)
+  if ((flags & function_in_unique_section) != 0)
     resolve_unique_section(decl, 0, 1);
+  if ((flags & function_only_inline) != 0)
+    {
+      DECL_EXTERNAL(decl) = 1;
+      DECL_DECLARED_INLINE_P(decl) = 1;
+    }
 
   go_preserve_from_gc(decl);
   return new Bfunction(decl);
@@ -3250,7 +3251,8 @@ Gcc_backend::write_global_definitions(
       if (decl != error_mark_node)
         {
           go_preserve_from_gc(decl);
-          gimplify_function_tree(decl);
+	  if (DECL_STRUCT_FUNCTION(decl) == NULL)
+	    allocate_struct_function(decl, false);
           cgraph_node::finalize_function(decl, true);
 
           defs[i] = decl;

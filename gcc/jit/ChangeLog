@@ -1,3 +1,16 @@
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2018-11-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/19165
+	* dummy-frontend.c (jit_begin_diagnostic): Add diagnostic_t param.
+
+2018-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.c: Replace "source_location" with "location_t".
+
 2018-10-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* Make-lang.in (selftest-jit): New.
@@ -2606,7 +2619,7 @@
 
 	* Initial creation
 
-Copyright (C) 2013-2018 Free Software Foundation, Inc.
+Copyright (C) 2013-2019 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -1,5 +1,5 @@
 /* Subroutines common to both C and C++ pretty-printers.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -1260,9 +1260,14 @@ c_pretty_printer::primary_expression (tree e)
 
     default:
       /* FIXME:  Make sure we won't get into an infinite loop.  */
-      pp_c_left_paren (this);
-      expression (e);
-      pp_c_right_paren (this);
+      if (location_wrapper_p (e))
+	expression (e);
+      else
+	{
+	  pp_c_left_paren (this);
+	  expression (e);
+	  pp_c_right_paren (this);
+	}
       break;
     }
 }

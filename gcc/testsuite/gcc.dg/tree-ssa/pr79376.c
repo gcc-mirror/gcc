@@ -40,7 +40,18 @@ void test_arrays (int i, struct Arrays *a)
 
     int n = __builtin_snprintf (0, 0, "%-s", s);
 
-    ASSERT (0 <= n && n < 3);
+    /* Since it's undefined to pass an unterminated array to a %s
+       directive it would be valid to assume that S above is not
+       longer than sizeof (A->A3) but the optimization isn't done
+       because the GIMPLE representation of the %s argument isn't
+       suffficiently reliable not to confuse it for some other
+       array.  The argument length is therefore assumed to be in
+       the range [0, PTRDIFF_MAX - 2] and the sprintf result to be
+       as big as INT_MAX and possibly even negative if the function
+       were to fail due to a single directive resulting in more than
+       the 4,095 byte maximum required to be supported.
+       ASSERT (0 <= n && n < 3);
+    */
 
     ASSERT_MAYBE (0 == n);
     ASSERT_MAYBE (1 == n);
@@ -52,7 +63,7 @@ void test_arrays (int i, struct Arrays *a)
 
     int n = __builtin_snprintf (0, 0, "%-s", s);
 
-    ASSERT (0 <= n && n < 5);
+    /* ASSERT (0 <= n && n < 5); */
 
     ASSERT_MAYBE (0 == n);
     ASSERT_MAYBE (1 == n);
@@ -69,7 +80,7 @@ void test_string_and_array (int i, struct Arrays *a)
 
     int n = __builtin_snprintf (0, 0, "%-s", s);
 
-    ASSERT (0 <= n && n < 3);
+    /* ASSERT (0 <= n && n < 3); */
 
     ASSERT_MAYBE (0 == n);
     ASSERT_MAYBE (1 == n);
@@ -81,7 +92,7 @@ void test_string_and_array (int i, struct Arrays *a)
 
     int n = __builtin_snprintf (0, 0, "%-s", s);
 
-    ASSERT (0 <= n && n < 5);
+    /* ASSERT (0 <= n && n < 5); */
 
     ASSERT_MAYBE (0 == n);
     ASSERT_MAYBE (1 == n);
@@ -95,7 +106,7 @@ void test_string_and_array (int i, struct Arrays *a)
 
     int n = __builtin_snprintf (0, 0, "%-s", s);
 
-    ASSERT (0 <= n && n < 5);
+    /* ASSERT (0 <= n && n < 5); */
 
     ASSERT_MAYBE (0 == n);
     ASSERT_MAYBE (1 == n);

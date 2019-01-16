@@ -4,12 +4,7 @@
 
 void* allocate(std::size_t n)
 {
-  return std::allocate<char>().allocate(n); // { dg-error ".allocate. is not a member of .std." }
-  // { dg-message "suggested alternative: .allocator." "" { target *-*-* } .-1 }
-  /* { dg-begin-multiline-output "" }
-   return std::allocate<char>().allocate(n);
-               ^~~~~~~~
-     { dg-end-multiline-output "" } */ 
+  return std::allocate<char>().allocate(n); // { dg-error ".allocate. is not a member of .std.; did you mean 'allocator'\\?" }
   /* { dg-begin-multiline-output "" }
    return std::allocate<char>().allocate(n);
                ^~~~~~~~
@@ -22,12 +17,7 @@ void* allocate(std::size_t n)
 
 void* test_2(std::size_t n)
 {
-  return std::alocator<char>().allocate(n); // { dg-error ".alocator. is not a member of .std." }
-  // { dg-message "suggested alternative: .allocator." "" { target *-*-* } .-1 }
-  /* { dg-begin-multiline-output "" }
-   return std::alocator<char>().allocate(n);
-               ^~~~~~~~
-     { dg-end-multiline-output "" } */ 
+  return std::alocator<char>().allocate(n); // { dg-error ".alocator. is not a member of .std.; did you mean 'allocator'\\?" }
   /* { dg-begin-multiline-output "" }
    return std::alocator<char>().allocate(n);
                ^~~~~~~~

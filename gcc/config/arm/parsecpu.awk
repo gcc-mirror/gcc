@@ -1,5 +1,5 @@
 # Manipulate the CPU, FPU and architecture descriptions for ARM.
-# Copyright (C) 2017-2018 Free Software Foundation, Inc.
+# Copyright (C) 2017-2019 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -62,7 +62,7 @@ function boilerplate (style) {
     print cc "Generated automatically by parsecpu.awk from arm-cpus.in."
     print cc "Do not edit."
     print ""
-    print cc "Copyright (C) 2011-2018 Free Software Foundation, Inc."
+    print cc "Copyright (C) 2011-2019 Free Software Foundation, Inc."
     print ""
     print cc "This file is part of GCC."
     print ""
@@ -261,6 +261,18 @@ function gen_comm_data () {
 	    print "  { NULL, false, false, {isa_nobit}}"
 	    print "};\n"
 	}
+
+	if (cpus[n] in cpu_aliases) {
+	    print "static const cpu_alias cpu_aliastab_" \
+		cpu_cnames[cpus[n]] "[] = {"
+	    naliases = split (cpu_aliases[cpus[n]], aliases)
+	    for (alias = 1; alias <= naliases; alias++) {
+		print "  { \"" aliases[alias] "\", " \
+		    cpu_alias_visible[cpus[n],aliases[alias]] "},"
+	    }
+	    print "  { NULL, false}"
+	    print "};\n"
+	}
     }
 
     print "const cpu_option all_cores[] ="
@@ -295,12 +307,16 @@ function gen_comm_data () {
 	}
 	print_isa_bits_for(all_isa_bits, "      ")
 	print "\n    },"
+	# aliases
+	if (cpus[n] in cpu_aliases) {
+	    print "    cpu_aliastab_" cpu_cnames[cpus[n]] ","
+	} else print "    NULL,"
 	# arch
 	print "    TARGET_ARCH_" arch_cnames[feats[1]]
 	print "  },"
     }
 
-    print "  {{NULL, NULL, {isa_nobit}}, TARGET_ARCH_arm_none}"
+    print "  {{NULL, NULL, {isa_nobit}}, NULL, TARGET_ARCH_arm_none}"
     print "};"
 
     narchs = split (arch_list, archs)
@@ -486,13 +502,17 @@ function gen_opt () {
 function check_cpu (name) {
     exts = split (name, extensions, "+")
 
-    if (! (extensions[1] in cpu_cnames)) {
-	return "error"
+    cpu_name = extensions[1]
+    if (! (cpu_name in cpu_cnames)) {
+	if (! (cpu_name in cpu_all_aliases)) {
+	    return "error"
+	}
+	cpu_name = cpu_all_aliases[cpu_name]
     }
 
     for (n = 2; n <= exts; n++) {
-	if (!((extensions[1], extensions[n]) in cpu_opt_remove)	\
-	    && !((extensions[1], extensions[n]) in cpu_optaliases)) {
+	if (!((cpu_name, extensions[n]) in cpu_opt_remove)	\
+	    && !((cpu_name, extensions[n]) in cpu_optaliases)) {
 	    return "error"
 	}
     }
@@ -642,12 +662,44 @@ BEGIN {
     toplevel()
     cpu_name = $3
     parse_ok = 1
+    if (cpu_name in cpu_cnames) {
+	fatal(cpu_name " is already defined")
+    }
+    if (cpu_name in cpu_all_aliases) {
+	fatal(cpu_name " has already been defined as an alias")
+    }
 }
 
 /^[ 	]*cname / {
     if (NF != 2) fatal("syntax: cname <identifier>")
     if (cpu_name == "") fatal("\"cname\" outside of cpu block")
     cpu_cnames[cpu_name] = $2
+    parse_ok = 1
+}
+
+/^[ 	]*alias / {
+    if (NF < 2) fatal("syntax: alias <name>+")
+    if (cpu_name == "") fatal("\"alias\" outside of cpu block")
+    alias_count = NF
+    for (n = 2; n <= alias_count; n++) {
+	visible = "true"
+	alias = $n
+	if (alias ~ /^!.*/) {
+	    visible = "false"
+	    gsub(/^!/, "", alias)
+	}
+	if (alias in cpu_cnames) {
+	    fatal(alias " is already defined as a cpu name")
+	}
+	if (n == 2) {
+	    cpu_aliases[cpu_name] = alias
+	} else cpu_aliases[cpu_name] = cpu_aliases[cpu_name] " " alias
+	cpu_alias_visible[cpu_name,alias] = visible
+	if (alias in cpu_all_aliases) {
+	    fatal(alias " is already an alias for " cpu_all_aliases[alias])
+	}
+	cpu_all_aliases[alias] = cpu_name
+    }
     parse_ok = 1
 }
 

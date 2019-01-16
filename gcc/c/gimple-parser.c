@@ -1,5 +1,5 @@
 /* Parser for GIMPLE.
-   Copyright (C) 2016-2018 Free Software Foundation, Inc.
+   Copyright (C) 2016-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -806,6 +806,7 @@ c_parser_gimple_call_internal (c_parser *parser)
      identifier
      constant
      string-literal
+     constructor
      gimple-call-internal
 
 */
@@ -934,7 +935,7 @@ c_parser_gimple_postfix_expression (c_parser *parser)
 	    }
 	  else if (strcmp (IDENTIFIER_POINTER (id), "_Literal") == 0)
 	    {
-	      /* _Literal '(' type-name ')' [ '-' ] constant */
+	      /* _Literal '(' type-name ')' ( [ '-' ] constant | constructor ) */
 	      c_parser_consume_token (parser);
 	      tree type = NULL_TREE;
 	      if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
@@ -946,28 +947,90 @@ c_parser_gimple_postfix_expression (c_parser *parser)
 		  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 					     "expected %<)%>");
 		}
-	      bool neg_p;
-	      if ((neg_p = c_parser_next_token_is (parser, CPP_MINUS)))
-		c_parser_consume_token (parser);
-	      tree val = c_parser_gimple_postfix_expression (parser).value;
-	      if (! type
-		  || ! val
-		  || val == error_mark_node
-		  || ! CONSTANT_CLASS_P (val))
+	      if (! type)
 		{
 		  c_parser_error (parser, "invalid _Literal");
 		  return expr;
 		}
-	      if (neg_p)
+	      if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
 		{
-		  val = const_unop (NEGATE_EXPR, TREE_TYPE (val), val);
-		  if (! val)
+		  c_parser_consume_token (parser);
+		  if (!AGGREGATE_TYPE_P (type)
+		      && !VECTOR_TYPE_P (type))
+		    {
+		      c_parser_error (parser, "invalid type for _Literal with "
+				      "constructor");
+		      c_parser_skip_until_found (parser, CPP_CLOSE_BRACE,
+						 "expected %<}%>");
+		      return expr;
+		    }
+		  vec<constructor_elt, va_gc> *v = NULL;
+		  bool constant_p = true;
+		  if (VECTOR_TYPE_P (type)
+		      && !c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
+		    {
+		      vec_alloc (v, TYPE_VECTOR_SUBPARTS (type).to_constant ());
+		      do
+			{
+			  tree val
+			    = c_parser_gimple_postfix_expression (parser).value;
+			  if (! val
+			      || val == error_mark_node
+			      || (! CONSTANT_CLASS_P (val)
+				  && ! SSA_VAR_P (val)))
+			    {
+			      c_parser_error (parser, "invalid _Literal");
+			      return expr;
+			    }
+			  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, val);
+			  if (! CONSTANT_CLASS_P (val))
+			    constant_p = false;
+			  if (c_parser_next_token_is (parser, CPP_COMMA))
+			    c_parser_consume_token (parser);
+			  else
+			    break;
+			}
+		      while (1);
+		    }
+		  if (c_parser_require (parser, CPP_CLOSE_BRACE,
+					"expected %<}%>"))
+		    {
+		      if (v && constant_p)
+			expr.value = build_vector_from_ctor (type, v);
+		      else
+			expr.value = build_constructor (type, v);
+		    }
+		  else
+		    {
+		      c_parser_skip_until_found (parser, CPP_CLOSE_BRACE,
+						 "expected %<}%>");
+		      return expr;
+		    }
+		}
+	      else
+		{
+		  bool neg_p;
+		  if ((neg_p = c_parser_next_token_is (parser, CPP_MINUS)))
+		    c_parser_consume_token (parser);
+		  tree val = c_parser_gimple_postfix_expression (parser).value;
+		  if (! val
+		      || val == error_mark_node
+		      || ! CONSTANT_CLASS_P (val))
 		    {
 		      c_parser_error (parser, "invalid _Literal");
 		      return expr;
 		    }
+		  if (neg_p)
+		    {
+		      val = const_unop (NEGATE_EXPR, TREE_TYPE (val), val);
+		      if (! val)
+			{
+			  c_parser_error (parser, "invalid _Literal");
+			  return expr;
+			}
+		    }
+		  expr.value = fold_convert (type, val);
 		}
-	      expr.value = fold_convert (type, val);
 	      return expr;
 	    }
 
@@ -1643,7 +1706,7 @@ c_finish_gimple_return (location_t loc, tree retval)
 
   /* Use the expansion point to handle cases such as returning NULL
      in a function returning void.  */
-  source_location xloc = expansion_point_location_if_in_system_header (loc);
+  location_t xloc = expansion_point_location_if_in_system_header (loc);
 
   if (TREE_THIS_VOLATILE (current_function_decl))
     warning_at (xloc, 0,

@@ -1,5 +1,5 @@
 /* RTL-level loop invariant motion.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2201,7 +2201,7 @@ calculate_loop_reg_pressure (void)
 	    }
 	}
     }
-  bitmap_clear (&curr_regs_live);
+  bitmap_release (&curr_regs_live);
   if (flag_ira_region == IRA_REGION_MIXED
       || flag_ira_region == IRA_REGION_ALL)
     FOR_EACH_LOOP (loop, 0)

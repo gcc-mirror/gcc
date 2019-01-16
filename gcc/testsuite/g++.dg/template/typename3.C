@@ -3,5 +3,5 @@
 
 template <class A>
 struct B {
- typedef A::C::D E;  // { dg-error "" }
+ typedef A::C::D E;  // { dg-error "" "" { target c++17_down } }
 };

@@ -1,5 +1,5 @@
 # Makefile for libada.
-#   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+#   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 # <http://www.gnu.org/licenses/>.
 
 # Default target; must be first.
-all: gnatlib
+all: libada
 	$(MULTIDO) $(AM_MAKEFLAGS) DO=all multi-do # $(MAKE)
 
 .PHONY: all
@@ -70,7 +70,6 @@ target_noncanonical:=@target_noncanonical@
 version := $(shell @get_gcc_base_ver@ $(srcdir)/../gcc/BASE-VER)
 libsubdir := $(libdir)/gcc/$(target_noncanonical)/$(version)$(MULTISUBDIR)
 ADA_RTS_DIR=$(GCC_DIR)/ada/rts$(subst /,_,$(MULTISUBDIR))
-ADA_RTS_SUBDIR=./rts$(subst /,_,$(MULTISUBDIR))
 
 # exeext should not be used because it's the *host* exeext.  We're building
 # a *target* library, aren't we?!?  Likewise for CC.  Still, provide bogus
@@ -96,20 +95,12 @@ LIBADA_FLAGS_TO_PASS = \
 	"GCC_FOR_TARGET=$(CC)" \
         "CFLAGS=$(CFLAGS)"
 
-# Rules to build gnatlib.
-.PHONY: gnatlib gnatlib-plain gnatlib-sjlj gnatlib-zcx gnatlib-shared osconstool
-gnatlib: @default_gnatlib_target@
+.PHONY: libada gnatlib gnatlib-shared gnatlib-sjlj gnatlib-zcx osconstool
 
-gnatlib-plain: osconstool $(GCC_DIR)/ada/Makefile
-	test -f stamp-libada || \
-	$(MAKE) -C $(GCC_DIR)/ada $(LIBADA_FLAGS_TO_PASS) gnatlib \
-	&& touch stamp-libada
-	-rm -rf adainclude
-	-rm -rf adalib
-	$(LN_S_RECURSIVE) $(ADA_RTS_DIR) adainclude
-	$(LN_S_RECURSIVE) $(ADA_RTS_DIR) adalib
+# Rules to build and install libada.
+libada: @default_gnatlib_target@
 
-gnatlib-sjlj gnatlib-zcx gnatlib-shared: osconstool $(GCC_DIR)/ada/Makefile
+gnatlib gnatlib-shared gnatlib-sjlj gnatlib-zcx: osconstool $(GCC_DIR)/ada/Makefile
 	test -f stamp-libada || \
 	$(MAKE) -C $(GCC_DIR)/ada $(LIBADA_FLAGS_TO_PASS) $@ \
 	&& touch stamp-libada
@@ -121,7 +112,7 @@ gnatlib-sjlj gnatlib-zcx gnatlib-shared: osconstool $(GCC_DIR)/ada/Makefile
 osconstool:
 	$(MAKE) -C $(GCC_DIR)/ada $(LIBADA_FLAGS_TO_PASS) ./bldtools/oscons/xoscons
 
-install-gnatlib: $(GCC_DIR)/ada/Makefile
+install-libada: $(GCC_DIR)/ada/Makefile
 	$(MAKE) -C $(GCC_DIR)/ada $(LIBADA_FLAGS_TO_PASS) install-gnatlib
 
 # Check uninstalled version.
@@ -148,7 +139,7 @@ TAGS:
 .PHONY: check installcheck info dvi pdf html
 
 # Installation rules.
-install: install-gnatlib
+install: install-libada
 	$(MULTIDO) $(AM_MAKEFLAGS) DO=install multi-do # $(MAKE)
 
 install-strip: install

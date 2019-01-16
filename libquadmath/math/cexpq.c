@@ -1,5 +1,5 @@
-/* Return value of complex exponential function for complex __float128 value.
-   Copyright (C) 1997-2012 Free Software Foundation, Inc.
+/* Return value of complex exponential function for a float type.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -19,11 +19,6 @@
 
 #include "quadmath-imp.h"
 
-#ifdef HAVE_FENV_H
-# include <fenv.h>
-#endif
-
-
 __complex128
 cexpq (__complex128 x)
 {
@@ -31,23 +26,23 @@ cexpq (__complex128 x)
   int rcls = fpclassifyq (__real__ x);
   int icls = fpclassifyq (__imag__ x);
 
-  if (__builtin_expect (rcls >= QUADFP_ZERO, 1))
+  if (__glibc_likely (rcls >= QUADFP_ZERO))
     {
       /* Real part is finite.  */
-      if (__builtin_expect (icls >= QUADFP_ZERO, 1))
+      if (__glibc_likely (icls >= QUADFP_ZERO))
 	{
 	  /* Imaginary part is finite.  */
 	  const int t = (int) ((FLT128_MAX_EXP - 1) * M_LN2q);
 	  __float128 sinix, cosix;
 
-	  if (__builtin_expect (icls != QUADFP_SUBNORMAL, 1))
+	  if (__glibc_likely (fabsq (__imag__ x) > FLT128_MIN))
 	    {
 	      sincosq (__imag__ x, &sinix, &cosix);
 	    }
 	  else
 	    {
 	      sinix = __imag__ x;
-	      cosix = 1.0Q;
+	      cosix = 1;
 	    }
 
 	  if (__real__ x > t)
@@ -75,6 +70,7 @@ cexpq (__complex128 x)
 	      __real__ retval = exp_val * cosix;
 	      __imag__ retval = exp_val * sinix;
 	    }
+	  math_check_force_underflow_complex (retval);
 	}
       else
 	{
@@ -83,18 +79,16 @@ cexpq (__complex128 x)
 	  __real__ retval = nanq ("");
 	  __imag__ retval = nanq ("");
 
-#ifdef HAVE_FENV_H
 	  feraiseexcept (FE_INVALID);
-#endif
 	}
     }
-  else if (__builtin_expect (rcls == QUADFP_INFINITE, 1))
+  else if (__glibc_likely (rcls == QUADFP_INFINITE))
     {
       /* Real part is infinite.  */
-      if (__builtin_expect (icls >= QUADFP_ZERO, 1))
+      if (__glibc_likely (icls >= QUADFP_ZERO))
 	{
 	  /* Imaginary part is finite.  */
-	  __float128 value = signbitq (__real__ x) ? 0.0Q : HUGE_VALQ;
+	  __float128 value = signbitq (__real__ x) ? 0 : HUGE_VALQ;
 
 	  if (icls == QUADFP_ZERO)
 	    {
@@ -106,14 +100,14 @@ cexpq (__complex128 x)
 	    {
 	      __float128 sinix, cosix;
 
-	      if (__builtin_expect (icls != QUADFP_SUBNORMAL, 1))
+	      if (__glibc_likely (fabsq (__imag__ x) > FLT128_MIN))
 		{
 		  sincosq (__imag__ x, &sinix, &cosix);
 		}
 	      else
 		{
 		  sinix = __imag__ x;
-		  cosix = 1.0Q;
+		  cosix = 1;
 		}
 
 	      __real__ retval = copysignq (value, cosix);
@@ -123,29 +117,28 @@ cexpq (__complex128 x)
       else if (signbitq (__real__ x) == 0)
 	{
 	  __real__ retval = HUGE_VALQ;
-	  __imag__ retval = nanq ("");
-
-#ifdef HAVE_FENV_H
-	  if (icls == QUADFP_INFINITE)
-	    feraiseexcept (FE_INVALID);
-#endif
+	  __imag__ retval = __imag__ x - __imag__ x;
 	}
       else
 	{
-	  __real__ retval = 0.0Q;
-	  __imag__ retval = copysignq (0.0Q, __imag__ x);
+	  __real__ retval = 0;
+	  __imag__ retval = copysignq (0, __imag__ x);
 	}
     }
   else
     {
-      /* If the real part is NaN the result is NaN + iNaN.  */
+      /* If the real part is NaN the result is NaN + iNaN unless the
+	 imaginary part is zero.  */
       __real__ retval = nanq ("");
-      __imag__ retval = nanq ("");
+      if (icls == QUADFP_ZERO)
+	__imag__ retval = __imag__ x;
+      else
+	{
+	  __imag__ retval = nanq ("");
 
-#ifdef HAVE_FENV_H
-      if (rcls != QUADFP_NAN || icls != QUADFP_NAN)
-	feraiseexcept (FE_INVALID);
-#endif
+	  if (rcls != QUADFP_NAN || icls != QUADFP_NAN)
+	    feraiseexcept (FE_INVALID);
+	}
     }
 
   return retval;

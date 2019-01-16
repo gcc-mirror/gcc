@@ -1,5 +1,5 @@
 /* Array translation routines
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -2077,6 +2077,9 @@ get_array_ctor_var_strlen (stmtblock_t *block, gfc_expr * expr, tree * len)
 	  *len = gfc_conv_mpz_to_tree_type (char_len, gfc_charlen_type_node);
 	  mpz_clear (char_len);
 	  return;
+
+	case REF_INQUIRY:
+	  break;
 
 	default:
 	 gcc_unreachable ();

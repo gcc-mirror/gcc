@@ -1,5 +1,5 @@
 /* Vector API for GNU compiler.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
    Contributed by Nathan Sidwell <nathan@codesourcery.com>
    Re-implemented in C++ by Diego Novillo <dnovillo@google.com>
 
@@ -195,7 +195,7 @@ struct vec_prefix
 
   /* Memory allocation support routines in vec.c.  */
   void register_overhead (void *, size_t, size_t CXX_MEM_STAT_INFO);
-  void release_overhead (void *, size_t, bool CXX_MEM_STAT_INFO);
+  void release_overhead (void *, size_t, size_t, bool CXX_MEM_STAT_INFO);
   static unsigned calculate_allocation (vec_prefix *, unsigned, bool);
   static unsigned calculate_allocation_1 (unsigned, unsigned);
 
@@ -276,12 +276,14 @@ inline void
 va_heap::reserve (vec<T, va_heap, vl_embed> *&v, unsigned reserve, bool exact
 		  MEM_STAT_DECL)
 {
+  size_t elt_size = sizeof (T);
   unsigned alloc
     = vec_prefix::calculate_allocation (v ? &v->m_vecpfx : 0, reserve, exact);
   gcc_checking_assert (alloc);
 
   if (GATHER_STATISTICS && v)
-    v->m_vecpfx.release_overhead (v, v->allocated (), false);
+    v->m_vecpfx.release_overhead (v, elt_size * v->allocated (),
+				  v->allocated (), false);
 
   size_t size = vec<T, va_heap, vl_embed>::embedded_size (alloc);
   unsigned nelem = v ? v->length () : 0;
@@ -289,7 +291,7 @@ va_heap::reserve (vec<T, va_heap, vl_embed> *&v, unsigned reserve, bool exact
   v->embedded_init (alloc, nelem);
 
   if (GATHER_STATISTICS)
-    v->m_vecpfx.register_overhead (v, alloc, nelem PASS_MEM_STAT);
+    v->m_vecpfx.register_overhead (v, alloc, elt_size PASS_MEM_STAT);
 }
 
 
@@ -299,11 +301,13 @@ template<typename T>
 void
 va_heap::release (vec<T, va_heap, vl_embed> *&v)
 {
+  size_t elt_size = sizeof (T);
   if (v == NULL)
     return;
 
   if (GATHER_STATISTICS)
-    v->m_vecpfx.release_overhead (v, v->allocated (), true);
+    v->m_vecpfx.release_overhead (v, elt_size * v->allocated (),
+				  v->allocated (), true);
   ::free (v);
   v = NULL;
 }
@@ -1684,7 +1688,7 @@ template<typename T>
 inline void
 vec<T, va_heap, vl_ptr>::splice (const vec<T, va_heap, vl_ptr> &src)
 {
-  if (src.m_vec)
+  if (src.length ())
     m_vec->splice (*(src.m_vec));
 }
 

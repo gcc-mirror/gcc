@@ -1,6 +1,6 @@
 /* Convert language-specific tree expression to rtl instructions,
    for GNU compiler.
-   Copyright (C) 1988-2018 Free Software Foundation, Inc.
+   Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -262,6 +262,8 @@ mark_discarded_use (tree expr)
        expressions.  */
   if (expr == NULL_TREE)
     return expr;
+
+  STRIP_ANY_LOCATION_WRAPPER (expr);
 
   switch (TREE_CODE (expr))
     {

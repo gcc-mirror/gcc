@@ -1,3 +1,94 @@
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+	* libquadmath.texi: Bump @copying's copyright year.
+
+2018-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/88430
+	* quadmath_weak.h (__qmath2): Add __quadmath_throw.
+
+2018-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* quadmath-imp.h (ieee854_float128): Use mantissa0, mantissa1,
+	mantissa2 and mantissa3 fields instead of mant_high and mant_low.
+	Change nan field to ieee_nan.
+	* update-quadmath.py (update_sources): Also update fmaq.c.
+	* math/nanq.c (nanq): Use ieee_nan field of union.
+	Zero-initialize f.  Set quiet_nan field.
+	* printf/flt1282mpn.c, printf/printf_fphex.c, strtod/mpn2flt128.c,
+	strtod/strtoflt128.c: Use mantissa0, mantissa1, mantissa2 and
+	mantissa3 fields.  Use ieee_nan and quiet_nan field.
+	* math/fmaq.c: Regenerate from glibc sources with
+	update-quadmath.py.
+
+2018-11-05  Joseph Myers  <joseph@codesourcery.com>
+
+	PR libquadmath/68686
+	* Makefile.am: (libquadmath_la_SOURCES): Remove math/isinf_nsq.c.
+	Add math/exp2q.c math/issignalingq.c math/lgammaq_neg.c
+	math/lgammaq_product.c math/tanq_kernel.c math/tgammaq_product.c
+	math/casinhq_kernel.c.
+	* Makefile.in: Regenerate.
+	* libquadmath.texi (exp2q, issignalingq): Document.
+	* quadmath-imp.h: Include <errno.h>, <limits.h>, <stdbool.h> and
+	<fenv.h>.
+	(HIGH_ORDER_BIT_IS_SET_FOR_SNAN, FIX_FLT128_LONG_CONVERT_OVERFLOW)
+	(FIX_FLT128_LLONG_CONVERT_OVERFLOW, __quadmath_kernel_tanq)
+	(__quadmath_gamma_productq, __quadmath_gammaq_r)
+	(__quadmath_lgamma_negq, __quadmath_lgamma_productq)
+	(__quadmath_lgammaq_r, __quadmath_kernel_casinhq, mul_splitq)
+	(math_check_force_underflow_complex, __glibc_likely)
+	(__glibc_unlikely, struct rm_ctx, SET_RESTORE_ROUNDF128)
+	(libc_feholdsetround_ctx, libc_feresetround_ctx): New.
+	(feraiseexcept, fenv_t, feholdexcept, fesetround, feupdateenv)
+	(fesetenv, fetestexcept, feclearexcept): Define if not supported
+	through <fenv.h>.
+	(__quadmath_isinf_nsq): Remove.
+	* quadmath.h (exp2q, issignalingq): New.
+	* quadmath.map (QUADMATH_1.2): New.
+	* quadmath_weak.h (exp2q, issignalingq): New.
+	* update-quadmath.py: New file.
+	* math/isinf_nsq.c: Remove file.
+	* math/casinhq_kernel.c, math/exp2q.c, math/expq_table.h,
+	math/issignalingq.c, math/lgammaq_neg.c, math/lgammaq_product.c,
+	math/tanq_kernel.c, math/tgammaq_product.c: New files.  Generated
+	from glibc sources with update-quadmath.py.
+	* math/acoshq.c, math/acosq.c, math/asinhq.c, math/asinq.c,
+	math/atan2q.c, math/atanhq.c, math/atanq.c, math/cacoshq.c,
+	math/cacosq.c, math/casinhq.c, math/casinq.c, math/catanhq.c,
+	math/catanq.c, math/cbrtq.c, math/ccoshq.c, math/ceilq.c,
+	math/cexpq.c, math/cimagq.c, math/clog10q.c, math/clogq.c,
+	math/conjq.c, math/copysignq.c, math/coshq.c, math/cosq.c,
+	math/cosq_kernel.c, math/cprojq.c, math/crealq.c, math/csinhq.c,
+	math/csinq.c, math/csqrtq.c, math/ctanhq.c, math/ctanq.c,
+	math/erfq.c, math/expm1q.c, math/expq.c, math/fabsq.c,
+	math/fdimq.c, math/finiteq.c, math/floorq.c, math/fmaxq.c,
+	math/fminq.c, math/fmodq.c, math/frexpq.c, math/hypotq.c,
+	math/ilogbq.c, math/isinfq.c, math/isnanq.c, math/j0q.c,
+	math/j1q.c, math/jnq.c, math/ldexpq.c, math/lgammaq.c,
+	math/llrintq.c, math/llroundq.c, math/log10q.c, math/log1pq.c,
+	math/log2q.c, math/logbq.c, math/logq.c, math/lrintq.c,
+	math/lroundq.c, math/modfq.c, math/nearbyintq.c,
+	math/nextafterq.c, math/powq.c, math/remainderq.c, math/remquoq.c,
+	math/rintq.c, math/roundq.c, math/scalblnq.c, math/scalbnq.c,
+	math/signbitq.c, math/sincos_table.c, math/sincosq.c,
+	math/sincosq_kernel.c, math/sinhq.c, math/sinq.c,
+	math/sinq_kernel.c, math/tanhq.c, math/tanq.c, math/tgammaq.c,
+	math/truncq.c, math/x2y2m1q.c: Regenerate from glibc sources with
+	update-quadmath.py.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* Makefile.am: Include multilib.am.
+	(AUTOMAKE_OPTIONS): Remove 1.8.  Add info-in-builddir.
+	(all-local): Define outside conditional code.
+	(CLEANFILES): Remove libquadmath.info.
+	* configure.ac: Remove AC_PREREQ.
+	* Makefile.in, aclocal.m4, config.h.in, configure: Regenerate.
+
 2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure: Regenerated.

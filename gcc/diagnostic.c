@@ -1,5 +1,5 @@
 /* Language-independent diagnostic subroutines for the GNU Compiler Collection
-   Copyright (C) 1999-2018 Free Software Foundation, Inc.
+   Copyright (C) 1999-2019 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -131,6 +131,28 @@ diagnostic_set_caret_max_width (diagnostic_context *context, int value)
   context->caret_max_width = value;
 }
 
+/* Default implementation of final_cb.  */
+
+static void
+default_diagnostic_final_cb (diagnostic_context *context)
+{
+  /* Some of the errors may actually have been warnings.  */
+  if (diagnostic_kind_count (context, DK_WERROR))
+    {
+      /* -Werror was given.  */
+      if (context->warning_as_error_requested)
+	pp_verbatim (context->printer,
+		     _("%s: all warnings being treated as errors"),
+		     progname);
+      /* At least one -Werror= was given.  */
+      else
+	pp_verbatim (context->printer,
+		     _("%s: some warnings being treated as errors"),
+		     progname);
+      pp_newline_and_flush (context->printer);
+    }
+}
+
 /* Initialize the diagnostic message outputting machinery.  */
 void
 diagnostic_initialize (diagnostic_context *context, int n_opts)
@@ -185,6 +207,7 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->diagnostic_group_emission_count = 0;
   context->begin_group_cb = NULL;
   context->end_group_cb = NULL;
+  context->final_cb = default_diagnostic_final_cb;
 }
 
 /* Maybe initialize the color support. We require clients to do this
@@ -220,21 +243,8 @@ diagnostic_color_init (diagnostic_context *context, int value /*= -1 */)
 void
 diagnostic_finish (diagnostic_context *context)
 {
-  /* Some of the errors may actually have been warnings.  */
-  if (diagnostic_kind_count (context, DK_WERROR))
-    {
-      /* -Werror was given.  */
-      if (context->warning_as_error_requested)
-	pp_verbatim (context->printer,
-		     _("%s: all warnings being treated as errors"),
-		     progname);
-      /* At least one -Werror= was given.  */
-      else
-	pp_verbatim (context->printer,
-		     _("%s: some warnings being treated as errors"),
-		     progname);
-      pp_newline_and_flush (context->printer);
-    }
+  if (context->final_cb)
+    context->final_cb (context);
 
   diagnostic_file_cache_fini ();
 
@@ -642,7 +652,8 @@ default_diagnostic_start_span_fn (diagnostic_context *context,
 
 void
 default_diagnostic_finalizer (diagnostic_context *context,
-			      diagnostic_info *diagnostic)
+			      diagnostic_info *diagnostic,
+			      diagnostic_t)
 {
   diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind);
   pp_destroy_prefix (context->printer);
@@ -794,12 +805,12 @@ print_parseable_fixits (pretty_printer *pp, rich_location *richloc)
   for (unsigned i = 0; i < richloc->get_num_fixit_hints (); i++)
     {
       const fixit_hint *hint = richloc->get_fixit_hint (i);
-      source_location start_loc = hint->get_start_loc ();
+      location_t start_loc = hint->get_start_loc ();
       expanded_location start_exploc = expand_location (start_loc);
       pp_string (pp, "fix-it:");
       print_escaped_string (pp, start_exploc.file);
       /* For compatibility with clang, print as a half-open range.  */
-      source_location next_loc = hint->get_next_loc ();
+      location_t next_loc = hint->get_next_loc ();
       expanded_location next_exploc = expand_location (next_loc);
       pp_printf (pp, ":{%i:%i-%i:%i}:",
 		 start_exploc.line, start_exploc.column,
@@ -1006,7 +1017,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   pp_output_formatted_text (context->printer);
   if (context->show_option_requested)
     print_option_information (context, diagnostic, orig_diag_kind);
-  (*diagnostic_finalizer (context)) (context, diagnostic);
+  (*diagnostic_finalizer (context)) (context, diagnostic, orig_diag_kind);
   if (context->parseable_fixits_p)
     {
       print_parseable_fixits (context->printer, diagnostic->richloc);
@@ -1022,6 +1033,27 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   context->lock--;
 
   return true;
+}
+
+/* Get the number of digits in the decimal representation of VALUE.  */
+
+int
+num_digits (int value)
+{
+  /* Perhaps simpler to use log10 for this, but doing it this way avoids
+     using floating point.  */
+  gcc_assert (value >= 0);
+
+  if (value == 0)
+    return 1;
+
+  int digits = 0;
+  while (value > 0)
+    {
+      digits++;
+      value /= 10;
+    }
+  return digits;
 }
 
 /* Given a partial pathname as input, return another pathname that
@@ -1164,6 +1196,20 @@ emit_diagnostic (diagnostic_t kind, location_t location, int opt,
   va_start (ap, gmsgid);
   rich_location richloc (line_table, location);
   bool ret = diagnostic_impl (&richloc, opt, gmsgid, &ap, kind);
+  va_end (ap);
+  return ret;
+}
+
+/* As above, but for rich_location *.  */
+
+bool
+emit_diagnostic (diagnostic_t kind, rich_location *richloc, int opt,
+		 const char *gmsgid, ...)
+{
+  auto_diagnostic_group d;
+  va_list ap;
+  va_start (ap, gmsgid);
+  bool ret = diagnostic_impl (richloc, opt, gmsgid, &ap, kind);
   va_end (ap);
   return ret;
 }
@@ -1774,6 +1820,29 @@ test_diagnostic_get_location_text ()
   progname = old_progname;
 }
 
+/* Selftest for num_digits.  */
+
+static void
+test_num_digits ()
+{
+  ASSERT_EQ (1, num_digits (0));
+  ASSERT_EQ (1, num_digits (9));
+  ASSERT_EQ (2, num_digits (10));
+  ASSERT_EQ (2, num_digits (99));
+  ASSERT_EQ (3, num_digits (100));
+  ASSERT_EQ (3, num_digits (999));
+  ASSERT_EQ (4, num_digits (1000));
+  ASSERT_EQ (4, num_digits (9999));
+  ASSERT_EQ (5, num_digits (10000));
+  ASSERT_EQ (5, num_digits (99999));
+  ASSERT_EQ (6, num_digits (100000));
+  ASSERT_EQ (6, num_digits (999999));
+  ASSERT_EQ (7, num_digits (1000000));
+  ASSERT_EQ (7, num_digits (9999999));
+  ASSERT_EQ (8, num_digits (10000000));
+  ASSERT_EQ (8, num_digits (99999999));
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -1785,6 +1854,8 @@ diagnostic_c_tests ()
   test_print_parseable_fixits_remove ();
   test_print_parseable_fixits_replace ();
   test_diagnostic_get_location_text ();
+  test_num_digits ();
+
 }
 
 } // namespace selftest

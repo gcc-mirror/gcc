@@ -1,5 +1,5 @@
 /* Vector API for GNU compiler.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
    Contributed by Nathan Sidwell <nathan@codesourcery.com>
    Re-implemented in C++ by Diego Novillo <dnovillo@google.com>
 
@@ -52,13 +52,14 @@ vnull vNULL;
 struct vec_usage: public mem_usage
 {
   /* Default constructor.  */
-  vec_usage (): m_items (0), m_items_peak (0) {}
+  vec_usage (): m_items (0), m_items_peak (0), m_element_size (0) {}
 
   /* Constructor.  */
   vec_usage (size_t allocated, size_t times, size_t peak,
-	     size_t items, size_t items_peak)
+	     size_t items, size_t items_peak, size_t element_size)
     : mem_usage (allocated, times, peak),
-    m_items (items), m_items_peak (items_peak) {}
+    m_items (items), m_items_peak (items_peak),
+    m_element_size (element_size) {}
 
   /* Sum the usage with SECOND usage.  */
   vec_usage
@@ -68,7 +69,7 @@ struct vec_usage: public mem_usage
 		      m_times + second.m_times,
 		      m_peak + second.m_peak,
 		      m_items + second.m_items,
-		      m_items_peak + second.m_items_peak);
+		      m_items_peak + second.m_items_peak, 0);
   }
 
   /* Dump usage coupled to LOC location, where TOTAL is sum of all rows.  */
@@ -81,10 +82,16 @@ struct vec_usage: public mem_usage
 
     s[48] = '\0';
 
-    fprintf (stderr, "%-48s %10li:%4.1f%%%10li%10li:%4.1f%%%11li%11li\n", s,
-	     (long)m_allocated, m_allocated * 100.0 / total.m_allocated,
-	     (long)m_peak, (long)m_times, m_times * 100.0 / total.m_times,
-	     (long)m_items, (long)m_items_peak);
+    fprintf (stderr,
+	     "%-48s %10" PRIu64 PRsa (10) ":%4.1f%%" PRsa (9) "%10" PRIu64
+	     ":%4.1f%%" PRsa (10) PRsa (10) "\n",
+	     s,
+	     (uint64_t)m_element_size,
+	     SIZE_AMOUNT (m_allocated),
+	     m_allocated * 100.0 / total.m_allocated,
+	     SIZE_AMOUNT (m_peak), (uint64_t)m_times,
+	     m_times * 100.0 / total.m_times,
+	     SIZE_AMOUNT (m_items), SIZE_AMOUNT (m_items_peak));
   }
 
   /* Dump footer.  */
@@ -92,8 +99,9 @@ struct vec_usage: public mem_usage
   dump_footer ()
   {
     print_dash_line ();
-    fprintf (stderr, "%s%55li%25li%17li\n", "Total", (long)m_allocated,
-	     (long)m_times, (long)m_items);
+    fprintf (stderr, "%s" PRsa (64) PRsa (25) PRsa (16) "\n",
+	     "Total", SIZE_AMOUNT (m_allocated),
+	     SIZE_AMOUNT (m_times), SIZE_AMOUNT (m_items));
     print_dash_line ();
   }
 
@@ -101,8 +109,8 @@ struct vec_usage: public mem_usage
   static inline void
   dump_header (const char *name)
   {
-    fprintf (stderr, "%-48s %11s%15s%10s%17s%11s\n", name, "Leak", "Peak",
-	     "Times", "Leak items", "Peak items");
+    fprintf (stderr, "%-48s %10s%11s%16s%10s%17s%11s\n", name, "sizeof(T)",
+	     "Leak", "Peak", "Times", "Leak items", "Peak items");
     print_dash_line ();
   }
 
@@ -110,6 +118,8 @@ struct vec_usage: public mem_usage
   size_t m_items;
   /* Peak value of number of allocated items.  */
   size_t m_items_peak;
+  /* Size of element of the vector.  */
+  size_t m_element_size;
 };
 
 /* Vector memory description.  */
@@ -118,12 +128,14 @@ static mem_alloc_description <vec_usage> vec_mem_desc;
 /* Account the overhead.  */
 
 void
-vec_prefix::register_overhead (void *ptr, size_t size, size_t elements
-			       MEM_STAT_DECL)
+vec_prefix::register_overhead (void *ptr, size_t elements,
+			       size_t element_size MEM_STAT_DECL)
 {
   vec_mem_desc.register_descriptor (ptr, VEC_ORIGIN, false
 				    FINAL_PASS_MEM_STAT);
-  vec_usage *usage = vec_mem_desc.register_instance_overhead (size, ptr);
+  vec_usage *usage
+    = vec_mem_desc.register_instance_overhead (elements * element_size, ptr);
+  usage->m_element_size = element_size;
   usage->m_items += elements;
   if (usage->m_items_peak < usage->m_items)
     usage->m_items_peak = usage->m_items;
@@ -132,15 +144,16 @@ vec_prefix::register_overhead (void *ptr, size_t size, size_t elements
 /* Notice that the memory allocated for the vector has been freed.  */
 
 void
-vec_prefix::release_overhead (void *ptr, size_t size, bool in_dtor
-			      MEM_STAT_DECL)
+vec_prefix::release_overhead (void *ptr, size_t size, size_t elements,
+			      bool in_dtor MEM_STAT_DECL)
 {
   if (!vec_mem_desc.contains_descriptor_for_instance (ptr))
     vec_mem_desc.register_descriptor (ptr, VEC_ORIGIN,
 				      false FINAL_PASS_MEM_STAT);
-  vec_mem_desc.release_instance_overhead (ptr, size, in_dtor);
+  vec_usage *usage = vec_mem_desc.release_instance_overhead (ptr, size,
+							     in_dtor);
+  usage->m_items -= elements;
 }
-
 
 /* Calculate the number of slots to reserve a vector, making sure that
    it is of at least DESIRED size by growing ALLOC exponentially.  */

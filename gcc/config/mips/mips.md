@@ -1,5 +1,5 @@
 ;;  Mips.md	     Machine Description for MIPS based processors
-;;  Copyright (C) 1989-2018 Free Software Foundation, Inc.
+;;  Copyright (C) 1989-2019 Free Software Foundation, Inc.
 ;;  Contributed by   A. Lichnewsky, lich@inria.inria.fr
 ;;  Changes by       Michael Meissner, meissner@osf.org
 ;;  64-bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -37,7 +37,9 @@
   74kf3_2
   loongson_2e
   loongson_2f
-  loongson_3a
+  gs464
+  gs464e
+  gs264e
   m4k
   octeon
   octeon2
@@ -834,9 +836,9 @@
 (define_mode_iterator MOVE64
   [DI DF
    (V2SF "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT")
-   (V2SI "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS")
-   (V4HI "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS")
-   (V8QI "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS")])
+   (V2SI "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI")
+   (V4HI "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI")
+   (V8QI "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI")])
 
 ;; 128-bit modes for which we provide move patterns on 64-bit targets.
 (define_mode_iterator MOVE128 [TI TF])
@@ -863,9 +865,9 @@
   [(DF "!TARGET_64BIT && TARGET_DOUBLE_FLOAT")
    (DI "!TARGET_64BIT && TARGET_DOUBLE_FLOAT")
    (V2SF "!TARGET_64BIT && TARGET_PAIRED_SINGLE_FLOAT")
-   (V2SI "!TARGET_64BIT && TARGET_LOONGSON_VECTORS")
-   (V4HI "!TARGET_64BIT && TARGET_LOONGSON_VECTORS")
-   (V8QI "!TARGET_64BIT && TARGET_LOONGSON_VECTORS")
+   (V2SI "!TARGET_64BIT && TARGET_LOONGSON_MMI")
+   (V4HI "!TARGET_64BIT && TARGET_LOONGSON_MMI")
+   (V8QI "!TARGET_64BIT && TARGET_LOONGSON_MMI")
    (TF "TARGET_64BIT && TARGET_FLOAT64")])
 
 ;; In GPR templates, a string like "<d>subu" will expand to "subu" in the
@@ -1173,7 +1175,9 @@
 (include "9000.md")
 (include "10000.md")
 (include "loongson2ef.md")
-(include "loongson3a.md")
+(include "gs464.md")
+(include "gs464e.md")
+(include "gs264e.md")
 (include "octeon.md")
 (include "sb1.md")
 (include "sr71k.md")
@@ -1599,7 +1603,7 @@
 {
   rtx lo;
 
-  if (TARGET_LOONGSON_2EF || TARGET_LOONGSON_3A || ISA_HAS_R6<D>MUL)
+  if (TARGET_LOONGSON_2EF || TARGET_LOONGSON_EXT || ISA_HAS_R6<D>MUL)
     emit_insn (gen_mul<mode>3_mul3_nohilo (operands[0], operands[1],
 					   operands[2]));
   else if (ISA_HAS_<D>MUL3)
@@ -1622,11 +1626,11 @@
   [(set (match_operand:GPR 0 "register_operand" "=d")
         (mult:GPR (match_operand:GPR 1 "register_operand" "d")
                   (match_operand:GPR 2 "register_operand" "d")))]
-  "TARGET_LOONGSON_2EF || TARGET_LOONGSON_3A || ISA_HAS_R6<D>MUL"
+  "TARGET_LOONGSON_2EF || TARGET_LOONGSON_EXT || ISA_HAS_R6<D>MUL"
 {
   if (TARGET_LOONGSON_2EF)
     return "<d>multu.g\t%0,%1,%2";
-  else if (TARGET_LOONGSON_3A)
+  else if (TARGET_LOONGSON_EXT)
     return "gs<d>multu\t%0,%1,%2";
   else
     return "<d>mul\t%0,%1,%2";
@@ -3016,11 +3020,11 @@
   [(set (match_operand:GPR 0 "register_operand" "=&d")
 	(any_div:GPR (match_operand:GPR 1 "register_operand" "d")
 		     (match_operand:GPR 2 "register_operand" "d")))]
-  "TARGET_LOONGSON_2EF || TARGET_LOONGSON_3A || ISA_HAS_R6<D>DIV"
+  "TARGET_LOONGSON_2EF || TARGET_LOONGSON_EXT || ISA_HAS_R6<D>DIV"
   {
     if (TARGET_LOONGSON_2EF)
       return mips_output_division ("<d>div<u>.g\t%0,%1,%2", operands);
-    else if (TARGET_LOONGSON_3A)
+    else if (TARGET_LOONGSON_EXT)
       return mips_output_division ("gs<d>div<u>\t%0,%1,%2", operands);
     else
       return mips_output_division ("<d>div<u>\t%0,%1,%2", operands);
@@ -3032,11 +3036,11 @@
   [(set (match_operand:GPR 0 "register_operand" "=&d")
 	(any_mod:GPR (match_operand:GPR 1 "register_operand" "d")
 		     (match_operand:GPR 2 "register_operand" "d")))]
-  "TARGET_LOONGSON_2EF || TARGET_LOONGSON_3A || ISA_HAS_R6<D>DIV"
+  "TARGET_LOONGSON_2EF || TARGET_LOONGSON_EXT || ISA_HAS_R6<D>DIV"
   {
     if (TARGET_LOONGSON_2EF)
       return mips_output_division ("<d>mod<u>.g\t%0,%1,%2", operands);
-    else if (TARGET_LOONGSON_3A)
+    else if (TARGET_LOONGSON_EXT)
       return mips_output_division ("gs<d>mod<u>\t%0,%1,%2", operands);
     else
       return mips_output_division ("<d>mod<u>\t%0,%1,%2", operands);
@@ -3145,6 +3149,23 @@
   "<d>clz\t%0,%1"
   [(set_attr "type" "clz")
    (set_attr "mode" "<MODE>")])
+
+;;
+;;  ...................
+;;
+;;  Count trailing zeroes.
+;;
+;;  ...................
+;;
+
+(define_insn "ctz<mode>2"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+	(ctz:GPR (match_operand:GPR 1 "register_operand" "d")))]
+  "ISA_HAS_CTZ_CTO"
+  "<d>ctz\t%0,%1"
+  [(set_attr "type" "clz")
+   (set_attr "mode" "<MODE>")])
+
 
 ;;
 ;;  ...................
@@ -7136,13 +7157,20 @@
 	     (match_operand 2 "const_int_operand" "n"))]
   "ISA_HAS_PREFETCH && TARGET_EXPLICIT_RELOCS"
 {
-  if (TARGET_LOONGSON_2EF || TARGET_LOONGSON_3A)
+  if (TARGET_LOONGSON_2EF || TARGET_LOONGSON_EXT)
     {
-      /* Loongson 2[ef] and Loongson 3a use load to $0 for prefetching.  */
+      /* Loongson 2[ef] and Loongson ext use load to $0 for prefetching.  */
       if (TARGET_64BIT)
-        return "ld\t$0,%a0";
+	return "ld\t$0,%a0";
       else
-        return "lw\t$0,%a0";
+	return "lw\t$0,%a0";
+    }
+  /* Loongson ext2 implementation pref instructions.  */
+  if (TARGET_LOONGSON_EXT2)
+    {
+      operands[1] = mips_loongson_ext2_prefetch_cookie (operands[1],
+							operands[2]);
+      return "pref\t%1, %a0";
     }
   operands[1] = mips_prefetch_cookie (operands[1], operands[2]);
   return "pref\t%1,%a0";
@@ -7156,6 +7184,21 @@
 	     (match_operand 3 "const_int_operand" "n"))]
   "ISA_HAS_PREFETCHX && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
 {
+  if (TARGET_LOONGSON_EXT)
+    {
+      /* Loongson Loongson ext use index load to $0 for prefetching.  */
+      if (TARGET_64BIT)
+	return "gsldx\t$0,0(%0,%1)";
+      else
+	return "gslwx\t$0,0(%0,%1)";
+    }
+  /* Loongson ext2 implementation pref instructions.  */
+  if (TARGET_LOONGSON_EXT2)
+    {
+      operands[2] = mips_loongson_ext2_prefetch_cookie (operands[2],
+							operands[3]);
+      return "prefx\t%2,%1(%0)";
+    }
   operands[2] = mips_prefetch_cookie (operands[2], operands[3]);
   return "prefx\t%2,%1(%0)";
 }
@@ -7690,8 +7733,8 @@
 ; microMIPS patterns.
 (include "micromips.md")
 
-; ST-Microelectronics Loongson-2E/2F-specific patterns.
-(include "loongson.md")
+; Loongson MultiMedia extensions Instructions (MMI) patterns.
+(include "loongson-mmi.md")
 
 ; The MIPS MSA Instructions.
 (include "mips-msa.md")

@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2018 Free Software Foundation, Inc.
+// Copyright (C) 2015-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,9 +21,9 @@
 // Ensure the library only uses the __name__ form for attributes.
 // Don't test 'const' and 'noreturn' because they are reserved anyway.
 #define abi_tag 1
-#define always_inline 1
 #ifndef __APPLE__
-// darwin headers use this, see PR 64883
+// darwin headers use these, see PR 64883
+# define always_inline 1
 # define visibility 1
 #endif
 #define packed 1

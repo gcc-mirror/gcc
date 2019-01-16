@@ -1,5 +1,5 @@
 /* Support routines for Splitting Paths to loop backedges
-   Copyright (C) 2015-2018 Free Software Foundation, Inc.
+   Copyright (C) 2015-2019 Free Software Foundation, Inc.
    Contributed by Ajit Kumar Agarwal <ajitkum@xilinx.com>.
 
  This file is part of GCC.
@@ -195,6 +195,52 @@ is_feasible_trace (basic_block bb)
 			fprintf (dump_file,
 				 "Block %d appears to be a join point for "
 				 "if-convertable diamond.\n",
+				 bb->index);
+		      return false;
+		    }
+		}
+	    }
+	}
+    }
+
+  /* Canonicalize the form.  */
+  if (num_stmts_in_pred1 == 0 && num_stmts_in_pred2 == 1)
+    {
+      std::swap (pred1, pred2);
+      std::swap (num_stmts_in_pred1, num_stmts_in_pred2);
+    }
+
+  /* Another variant.  This one is half-diamond.  */
+  if (num_stmts_in_pred1 == 1 && num_stmts_in_pred2 == 0
+      && dominated_by_p (CDI_DOMINATORS, pred1, pred2))
+    {
+      gimple *stmt1 = last_and_only_stmt (pred1);
+
+      /* The only statement in PRED1 must be an assignment that is
+	 not a good candidate for if-conversion.   This may need some
+	 generalization.  */
+      if (stmt1 && gimple_code (stmt1) == GIMPLE_ASSIGN)
+	{
+	  enum tree_code code1 = gimple_assign_rhs_code (stmt1);
+
+	  if (!poor_ifcvt_candidate_code (code1))
+	    {
+	      tree lhs1 = gimple_assign_lhs (stmt1);
+	      tree rhs1 = gimple_assign_rhs1 (stmt1);
+
+	      gimple_stmt_iterator gsi;
+	      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+		{
+		  gimple *phi = gsi_stmt (gsi);
+		  if ((gimple_phi_arg_def (phi, 0) == lhs1
+		       && gimple_phi_arg_def (phi, 1) == rhs1)
+		      || (gimple_phi_arg_def (phi, 1) == lhs1
+			  && gimple_phi_arg_def (phi, 0) == rhs1))
+		    {
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			fprintf (dump_file,
+				 "Block %d appears to be a join point for "
+				 "if-convertable half-diamond.\n",
 				 bb->index);
 		      return false;
 		    }

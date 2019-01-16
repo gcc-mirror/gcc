@@ -1,3 +1,14 @@
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* Makefile.am: Include multilib.am.
+	(AUTOMAKE_OPTIONS): Add info-in-builddir.
+	(CLEANFILES): Remove doc/libffi.info.
+	* configure.ac: Remove AC_PREREQ.
+	* Makefile.in, aclocal.m4, configure, fficonfig.h.in,
+	include/Makefile.in, man/Makefile.in, testsuite/Makefile.in:
+	Regenerate.
+
 2018-08-15  Andreas Schwab  <schwab@suse.de>
 
 	Backport of RISC-V support for libffi go closures

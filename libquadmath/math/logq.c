@@ -1,12 +1,12 @@
-/*							logq.c
+/*							logll.c
  *
- * Natural logarithm for __float128 precision.
+ * Natural logarithm for 128-bit long double precision.
  *
  *
  *
  * SYNOPSIS:
  *
- * __float128 x, y, logq();
+ * long double x, y, logq();
  *
  * y = logq( x );
  *
@@ -42,7 +42,7 @@
  *
  */
 
-/* Copyright 2001 by Stephen L. Moshier <moshier@na-net.ornl.gov> 
+/* Copyright 2001 by Stephen L. Moshier <moshier@na-net.ornl.gov>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -55,8 +55,8 @@
     Lesser General Public License for more details.
 
     You should have received a copy of the GNU Lesser General Public
-    License along with this library; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA */
+    License along with this library; if not, see
+    <http://www.gnu.org/licenses/>.  */
 
 #include "quadmath-imp.h"
 
@@ -183,7 +183,7 @@ static const __float128
   ln2b = 1.4286068203094172321214581765680755001344E-6Q;
 
 __float128
-logq (__float128 x)
+logq(__float128 x)
 {
   __float128 z, y, w;
   ieee854_float128 u, t;
@@ -240,11 +240,11 @@ logq (__float128 x)
   /* On this interval the table is not used due to cancellation error.  */
   if ((x <= 1.0078125Q) && (x >= 0.9921875Q))
     {
-      if (x == 1.0Q)
-	return 0.0Q;
-      z = x - 1.0Q;
+      if (x == 1)
+	return 0;
+      z = x - 1;
       k = 64;
-      t.value  = 1.0Q;
+      t.value  = 1;
       e = 0;
     }
   else
@@ -252,7 +252,7 @@ logq (__float128 x)
       /* log(u) = log( t u/t ) = log(t) + log(u/t)
 	 log(t) is tabulated in the lookup table.
 	 Express log(u/t) = log(1+z),  where z = u/t - 1 = (u-t)/t.
-         cf. Cody & Waite. */
+	 cf. Cody & Waite. */
       z = (u.value - t.value) / t.value;
     }
   /* Series expansion of log(1+z).  */
@@ -274,7 +274,7 @@ logq (__float128 x)
   y += e * ln2b;  /* Base 2 exponent offset times ln(2).  */
   y += z;
   y += logtbl[k-26]; /* log(t) - (t-1) */
-  y += (t.value - 1.0Q);
+  y += (t.value - 1);
   y += e * ln2a;
   return y;
 }

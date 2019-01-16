@@ -6,6 +6,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_cortex_m } */
 /* { dg-require-effective-target arm_thumb2_ok } */
+/* { dg-skip-if "-mslow-flash-data and -mword-relocations incompatible" { *-*-* } { "-mword-relocations" } } */
 /* { dg-options "-O2 -mthumb -mslow-flash-data" } */
 
 float sf;

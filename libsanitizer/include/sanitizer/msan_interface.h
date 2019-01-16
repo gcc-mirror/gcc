@@ -29,10 +29,10 @@ extern "C" {
   int __msan_origin_is_descendant_or_same(uint32_t this_id, uint32_t prev_id);
 
   /* Returns non-zero if tracking origins. */
-  int __msan_get_track_origins();
+  int __msan_get_track_origins(void);
 
   /* Returns the origin id of the latest UMR in the calling thread. */
-  uint32_t __msan_get_umr_origin();
+  uint32_t __msan_get_umr_origin(void);
 
   /* Make memory region fully initialized (without changing its contents). */
   void __msan_unpoison(const volatile void *a, size_t size);
@@ -80,7 +80,7 @@ extern "C" {
   void __msan_dump_shadow(const volatile void *x, size_t size);
 
   /* Returns true if running under a dynamic tool (DynamoRio-based). */
-  int  __msan_has_dynamic_component();
+  int  __msan_has_dynamic_component(void);
 
   /* Tell MSan about newly allocated memory (ex.: custom allocator).
      Memory will be marked uninitialized, with origin at the call site. */
@@ -91,7 +91,7 @@ extern "C" {
 
   /* This function may be optionally provided by user and should return
      a string containing Msan runtime options. See msan_flags.h for details. */
-  const char* __msan_default_options();
+  const char* __msan_default_options(void);
 
   /* Deprecated. Call __sanitizer_set_death_callback instead. */
   void __msan_set_death_callback(void (*callback)(void));
@@ -102,6 +102,14 @@ extern "C" {
      copy. Source and destination regions can overlap. */
   void __msan_copy_shadow(const volatile void *dst, const volatile void *src,
                           size_t size);
+
+  /* Disables uninitialized memory checks in interceptors. */
+  void __msan_scoped_disable_interceptor_checks(void);
+
+  /* Re-enables uninitialized memory checks in interceptors after a previous
+     call to __msan_scoped_disable_interceptor_checks. */
+  void __msan_scoped_enable_interceptor_checks(void);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

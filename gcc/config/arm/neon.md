@@ -1,5 +1,5 @@
 ;; ARM NEON coprocessor Machine Description
-;; Copyright (C) 2006-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2019 Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;
 ;; This file is part of GCC.
@@ -619,6 +619,38 @@
 		    (const_string "neon_fp_mul_s<q>")
                     (const_string "neon_mul_<V_elem_ch><q>")))]
 )
+
+/* Perform division using multiply-by-reciprocal.
+   Reciprocal is calculated using Newton-Raphson method.
+   Enabled with -funsafe-math-optimizations -freciprocal-math
+   and disabled for -Os since it increases code size .  */
+
+(define_expand "div<mode>3"
+  [(set (match_operand:VCVTF 0 "s_register_operand" "=w")
+        (div:VCVTF (match_operand:VCVTF 1 "s_register_operand" "w")
+		  (match_operand:VCVTF 2 "s_register_operand" "w")))]
+  "TARGET_NEON && !optimize_size
+   && flag_reciprocal_math"
+  {
+    rtx rec = gen_reg_rtx (<MODE>mode);
+    rtx vrecps_temp = gen_reg_rtx (<MODE>mode);
+
+    /* Reciprocal estimate.  */
+    emit_insn (gen_neon_vrecpe<mode> (rec, operands[2]));
+
+    /* Perform 2 iterations of newton-raphson method.  */
+    for (int i = 0; i < 2; i++)
+      {
+	emit_insn (gen_neon_vrecps<mode> (vrecps_temp, rec, operands[2]));
+	emit_insn (gen_mul<mode>3 (rec, rec, vrecps_temp));
+      }
+
+    /* We now have reciprocal in rec, perform operands[0] = operands[1] * rec.  */
+    emit_insn (gen_mul<mode>3 (operands[0], operands[1], rec));
+    DONE;
+  }
+)
+
 
 (define_insn "mul<mode>3add<mode>_neon"
   [(set (match_operand:VDQW 0 "s_register_operand" "=w")
@@ -4790,7 +4822,7 @@ if (BYTES_BIG_ENDIAN)
   DONE;
 })
 
-(define_insn "neon_vext<mode>"
+(define_insn "@neon_vext<mode>"
   [(set (match_operand:VDQX 0 "s_register_operand" "=w")
 	(unspec:VDQX [(match_operand:VDQX 1 "s_register_operand" "w")
 		      (match_operand:VDQX 2 "s_register_operand" "w")
@@ -4804,7 +4836,7 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_ext<q>")]
 )
 
-(define_insn "neon_vrev64<mode>"
+(define_insn "@neon_vrev64<mode>"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w")
 	(unspec:VDQ [(match_operand:VDQ 1 "s_register_operand" "w")]
                     UNSPEC_VREV64))]
@@ -4813,7 +4845,7 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_rev<q>")]
 )
 
-(define_insn "neon_vrev32<mode>"
+(define_insn "@neon_vrev32<mode>"
   [(set (match_operand:VX 0 "s_register_operand" "=w")
 	(unspec:VX [(match_operand:VX 1 "s_register_operand" "w")]
                    UNSPEC_VREV32))]
@@ -4822,7 +4854,7 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_rev<q>")]
 )
 
-(define_insn "neon_vrev16<mode>"
+(define_insn "@neon_vrev16<mode>"
   [(set (match_operand:VE 0 "s_register_operand" "=w")
 	(unspec:VE [(match_operand:VE 1 "s_register_operand" "w")]
                    UNSPEC_VREV16))]
@@ -5278,7 +5310,7 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_tbl4")]
 )
 
-(define_expand "neon_vtrn<mode>_internal"
+(define_expand "@neon_vtrn<mode>_internal"
   [(parallel
     [(set (match_operand:VDQWH 0 "s_register_operand")
 	  (unspec:VDQWH [(match_operand:VDQWH 1 "s_register_operand")
@@ -5304,7 +5336,7 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_permute<q>")]
 )
 
-(define_expand "neon_vzip<mode>_internal"
+(define_expand "@neon_vzip<mode>_internal"
   [(parallel
     [(set (match_operand:VDQWH 0 "s_register_operand")
 	  (unspec:VDQWH [(match_operand:VDQWH 1 "s_register_operand")
@@ -5330,7 +5362,7 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_zip<q>")]
 )
 
-(define_expand "neon_vuzp<mode>_internal"
+(define_expand "@neon_vuzp<mode>_internal"
   [(parallel
     [(set (match_operand:VDQWH 0 "s_register_operand")
 	  (unspec:VDQWH [(match_operand:VDQWH 1 "s_register_operand")

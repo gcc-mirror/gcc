@@ -1,5 +1,5 @@
 /* Operations with affine combinations of trees.
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -348,25 +348,6 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
 	  tree_to_aff_combination (toffset, type, &tmp);
 	  aff_combination_add (comb, &tmp);
 	}
-      return;
-
-    case MEM_REF:
-      if (TREE_CODE (TREE_OPERAND (expr, 0)) == ADDR_EXPR)
-	tree_to_aff_combination (TREE_OPERAND (TREE_OPERAND (expr, 0), 0),
-				 type, comb);
-      else if (integer_zerop (TREE_OPERAND (expr, 1)))
-	{
-	  aff_combination_elt (comb, type, expr);
-	  return;
-	}
-      else
-	aff_combination_elt (comb, type,
-			     build2 (MEM_REF, TREE_TYPE (expr),
-				     TREE_OPERAND (expr, 0),
-				     build_int_cst
-				      (TREE_TYPE (TREE_OPERAND (expr, 1)), 0)));
-      tree_to_aff_combination (TREE_OPERAND (expr, 1), sizetype, &tmp);
-      aff_combination_add (comb, &tmp);
       return;
 
     CASE_CONVERT:
@@ -721,21 +702,39 @@ aff_combination_expand (aff_tree *comb ATTRIBUTE_UNUSED,
       if (TREE_CODE_CLASS (code) == tcc_reference)
 	continue;
 
-      if (!*cache)
-	*cache = new hash_map<tree, name_expansion *>;
-      name_expansion **slot = &(*cache)->get_or_insert (e);
-      exp = *slot;
-
+      name_expansion **slot = NULL;
+      if (*cache)
+	slot = (*cache)->get (name);
+      exp = slot ? *slot : NULL;
       if (!exp)
 	{
+	  /* Only bother to handle cases tree_to_aff_combination will.  */
+	  switch (code)
+	    {
+	    case POINTER_PLUS_EXPR:
+	    case PLUS_EXPR:
+	    case MINUS_EXPR:
+	    case MULT_EXPR:
+	    case NEGATE_EXPR:
+	    case BIT_NOT_EXPR:
+	    CASE_CONVERT:
+	      rhs = gimple_assign_rhs_to_tree (def);
+	      break;
+	    case ADDR_EXPR:
+	    case INTEGER_CST:
+	    case POLY_INT_CST:
+	      rhs = gimple_assign_rhs1 (def);
+	      break;
+	    default:
+	      continue;
+	    }
+	  tree_to_aff_combination (rhs, TREE_TYPE (name), &current);
 	  exp = XNEW (struct name_expansion);
 	  exp->in_progress = 1;
-	  *slot = exp;
-	  rhs = gimple_assign_rhs_to_tree (def);
-	  if (e != name)
-	    rhs = fold_convert (type, rhs);
-
-	  tree_to_aff_combination_expand (rhs, comb->type, &current, cache);
+	  if (!*cache)
+	    *cache = new hash_map<tree, name_expansion *>;
+	  (*cache)->put (name, exp);
+	  aff_combination_expand (&current, cache);
 	  exp->expansion = current;
 	  exp->in_progress = 0;
 	}
@@ -746,6 +745,8 @@ aff_combination_expand (aff_tree *comb ATTRIBUTE_UNUSED,
 	  gcc_assert (!exp->in_progress);
 	  current = exp->expansion;
 	}
+      if (!useless_type_conversion_p (comb->type, current.type))
+	aff_combination_convert (&current, comb->type);
 
       /* Accumulate the new terms to TO_ADD, so that we do not modify
 	 COMB while traversing it; include the term -coef * E, to remove

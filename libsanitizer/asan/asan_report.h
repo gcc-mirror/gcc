@@ -10,6 +10,9 @@
 // ASan-private header for error reporting functions.
 //===----------------------------------------------------------------------===//
 
+#ifndef ASAN_REPORT_H
+#define ASAN_REPORT_H
+
 #include "asan_allocator.h"
 #include "asan_internal.h"
 #include "asan_thread.h"
@@ -45,7 +48,8 @@ bool ParseFrameDescription(const char *frame_descr,
 void ReportGenericError(uptr pc, uptr bp, uptr sp, uptr addr, bool is_write,
                         uptr access_size, u32 exp, bool fatal);
 void ReportDeadlySignal(const SignalContext &sig);
-void ReportNewDeleteSizeMismatch(uptr addr, uptr delete_size,
+void ReportNewDeleteTypeMismatch(uptr addr, uptr delete_size,
+                                 uptr delete_alignment,
                                  BufferedStackTrace *free_stack);
 void ReportDoubleFree(uptr addr, BufferedStackTrace *free_stack);
 void ReportFreeNotMalloced(uptr addr, BufferedStackTrace *free_stack);
@@ -55,6 +59,18 @@ void ReportAllocTypeMismatch(uptr addr, BufferedStackTrace *free_stack,
 void ReportMallocUsableSizeNotOwned(uptr addr, BufferedStackTrace *stack);
 void ReportSanitizerGetAllocatedSizeNotOwned(uptr addr,
                                              BufferedStackTrace *stack);
+void ReportCallocOverflow(uptr count, uptr size, BufferedStackTrace *stack);
+void ReportPvallocOverflow(uptr size, BufferedStackTrace *stack);
+void ReportInvalidAllocationAlignment(uptr alignment,
+                                      BufferedStackTrace *stack);
+void ReportInvalidAlignedAllocAlignment(uptr size, uptr alignment,
+                                        BufferedStackTrace *stack);
+void ReportInvalidPosixMemalignAlignment(uptr alignment,
+                                         BufferedStackTrace *stack);
+void ReportAllocationSizeTooBig(uptr user_size, uptr total_size, uptr max_size,
+                                BufferedStackTrace *stack);
+void ReportRssLimitExceeded(BufferedStackTrace *stack);
+void ReportOutOfMemory(uptr requested_size, BufferedStackTrace *stack);
 void ReportStringFunctionMemoryRangesOverlap(const char *function,
                                              const char *offset1, uptr length1,
                                              const char *offset2, uptr length2,
@@ -77,3 +93,4 @@ void ReportMacCfReallocUnknown(uptr addr, uptr zone_ptr,
                                BufferedStackTrace *stack);
 
 }  // namespace __asan
+#endif  // ASAN_REPORT_H

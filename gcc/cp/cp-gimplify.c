@@ -1,6 +1,6 @@
 /* C++-specific tree lowering bits; see also c-gimplify.c and tree-gimple.c.
 
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@redhat.com>
 
 This file is part of GCC.
@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
+#include "gcc-rich-location.h"
 
 /* Forward declarations.  */
 
@@ -158,6 +159,26 @@ genericize_eh_spec_block (tree *stmt_p)
   TREE_NO_WARNING (TREE_OPERAND (*stmt_p, 1)) = true;
 }
 
+/* Return the first non-compound statement in STMT.  */
+
+tree
+first_stmt (tree stmt)
+{
+  switch (TREE_CODE (stmt))
+    {
+    case STATEMENT_LIST:
+      if (tree_statement_list_node *p = STATEMENT_LIST_HEAD (stmt))
+	return first_stmt (p->stmt);
+      return void_node;
+
+    case BIND_EXPR:
+      return first_stmt (BIND_EXPR_BODY (stmt));
+
+    default:
+      return stmt;
+    }
+}
+
 /* Genericize an IF_STMT by turning it into a COND_EXPR.  */
 
 static void
@@ -170,6 +191,24 @@ genericize_if_stmt (tree *stmt_p)
   cond = IF_COND (stmt);
   then_ = THEN_CLAUSE (stmt);
   else_ = ELSE_CLAUSE (stmt);
+
+  if (then_ && else_)
+    {
+      tree ft = first_stmt (then_);
+      tree fe = first_stmt (else_);
+      br_predictor pr;
+      if (TREE_CODE (ft) == PREDICT_EXPR
+	  && TREE_CODE (fe) == PREDICT_EXPR
+	  && (pr = PREDICT_EXPR_PREDICTOR (ft)) == PREDICT_EXPR_PREDICTOR (fe)
+	  && (pr == PRED_HOT_LABEL || pr == PRED_COLD_LABEL))
+	{
+	  gcc_rich_location richloc (EXPR_LOC_OR_LOC (ft, locus));
+	  richloc.add_range (EXPR_LOC_OR_LOC (fe, locus));
+	  warning_at (&richloc, OPT_Wattributes,
+		      "both branches of %<if%> statement marked as %qs",
+		      predictor_name (pr));
+	}
+    }
 
   if (!then_)
     then_ = build_empty_stmt (locus);
@@ -1178,6 +1217,8 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	    *walk_subtrees = 0;
 	  break;
 	case OMP_CLAUSE_REDUCTION:
+	case OMP_CLAUSE_IN_REDUCTION:
+	case OMP_CLAUSE_TASK_REDUCTION:
 	  /* Don't dereference an invisiref in reduction clause's
 	     OMP_CLAUSE_DECL either.  OMP_CLAUSE_REDUCTION_{INIT,MERGE}
 	     still needs to be genericized.  */
@@ -1986,10 +2027,10 @@ cxx_omp_predetermined_sharing_1 (tree decl)
 	return OMP_CLAUSE_DEFAULT_SHARED;
     }
 
-  /* Const qualified vars having no mutable member are predetermined
-     shared.  */
-  if (cxx_omp_const_qual_no_mutable (decl))
-    return OMP_CLAUSE_DEFAULT_SHARED;
+  /* this may not be specified in data-sharing clauses, still we need
+     to predetermined it firstprivate.  */
+  if (decl == current_class_ptr)
+    return OMP_CLAUSE_DEFAULT_FIRSTPRIVATE;
 
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
 }
@@ -2077,7 +2118,7 @@ cxx_omp_disregard_value_expr (tree decl, bool shared)
 
 /* Fold expression X which is used as an rvalue if RVAL is true.  */
 
-static tree
+tree
 cp_fold_maybe_rvalue (tree x, bool rval)
 {
   while (true)
@@ -2100,7 +2141,7 @@ cp_fold_maybe_rvalue (tree x, bool rval)
 
 /* Fold expression X which is used as an rvalue.  */
 
-static tree
+tree
 cp_fold_rvalue (tree x)
 {
   return cp_fold_maybe_rvalue (x, true);
@@ -2128,6 +2169,20 @@ cp_fully_fold (tree x)
 	x = TREE_OPERAND (x, 0);
     }
   return cp_fold_rvalue (x);
+}
+
+/* Likewise, but also fold recursively, which cp_fully_fold doesn't perform
+   in some cases.  */
+
+tree
+cp_fully_fold_init (tree x)
+{
+  if (processing_template_decl)
+    return x;
+  x = cp_fully_fold (x);
+  hash_set<tree> pset;
+  cp_walk_tree (&x, cp_fold_r, &pset, NULL);
+  return x;
 }
 
 /* c-common interface to cp_fold.  If IN_INIT, this is in a static initializer
@@ -2276,6 +2331,7 @@ cp_fold (tree x)
 	    {
 	      val = TREE_OPERAND (val, 0);
 	      STRIP_NOPS (val);
+	      val = maybe_constant_value (val);
 	      if (TREE_CODE (val) == INTEGER_CST)
 		return fold_offsetof (op0, TREE_TYPE (x));
 	    }
@@ -2670,6 +2726,60 @@ cp_fold (tree x)
     fold_cache->put (x, x);
 
   return x;
+}
+
+/* Look up either "hot" or "cold" in attribute list LIST.  */
+
+tree
+lookup_hotness_attribute (tree list)
+{
+  for (; list; list = TREE_CHAIN (list))
+    {
+      tree name = get_attribute_name (list);
+      if (is_attribute_p ("hot", name)
+	  || is_attribute_p ("cold", name)
+	  || is_attribute_p ("likely", name)
+	  || is_attribute_p ("unlikely", name))
+	break;
+    }
+  return list;
+}
+
+/* Remove both "hot" and "cold" attributes from LIST.  */
+
+static tree
+remove_hotness_attribute (tree list)
+{
+  list = remove_attribute ("hot", list);
+  list = remove_attribute ("cold", list);
+  list = remove_attribute ("likely", list);
+  list = remove_attribute ("unlikely", list);
+  return list;
+}
+
+/* If [[likely]] or [[unlikely]] appear on this statement, turn it into a
+   PREDICT_EXPR.  */
+
+tree
+process_stmt_hotness_attribute (tree std_attrs)
+{
+  if (std_attrs == error_mark_node)
+    return std_attrs;
+  if (tree attr = lookup_hotness_attribute (std_attrs))
+    {
+      tree name = get_attribute_name (attr);
+      bool hot = (is_attribute_p ("hot", name)
+		  || is_attribute_p ("likely", name));
+      tree pred = build_predict_expr (hot ? PRED_HOT_LABEL : PRED_COLD_LABEL,
+				      hot ? TAKEN : NOT_TAKEN);
+      SET_EXPR_LOCATION (pred, input_location);
+      add_stmt (pred);
+      if (tree other = lookup_hotness_attribute (TREE_CHAIN (attr)))
+	warning (OPT_Wattributes, "ignoring attribute %qE after earlier %qE",
+		 get_attribute_name (other), name);
+      std_attrs = remove_hotness_attribute (std_attrs);
+    }
+  return std_attrs;
 }
 
 #include "gt-cp-cp-gimplify.h"

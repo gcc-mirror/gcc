@@ -23,33 +23,43 @@ extern void * __splitstack_find_context (void *context[10], size_t *, void **,
 extern void scanstackblock(void *addr, uintptr size, void *gcw)
   __asm__("runtime.scanstackblock");
 
-void doscanstack(G*, void*)
-  __asm__("runtime.doscanstack");
-
-static void doscanstack1(G*, void*)
+static bool doscanstack1(G*, void*)
   __attribute__ ((noinline));
 
 // Scan gp's stack, passing stack chunks to scanstackblock.
-void doscanstack(G *gp, void* gcw) {
+bool doscanstack(G *gp, void* gcw) {
 	// Save registers on the stack, so that if we are scanning our
 	// own stack we will see them.
-	__builtin_unwind_init();
-	flush_registers_to_secondary_stack();
+	if (!runtime_usestackmaps) {
+		__builtin_unwind_init();
+		flush_registers_to_secondary_stack();
+	}
 
-	doscanstack1(gp, gcw);
+	return doscanstack1(gp, gcw);
 }
 
 // Scan gp's stack after saving registers.
-static void doscanstack1(G *gp, void *gcw) {
+static bool doscanstack1(G *gp, void *gcw) {
 #ifdef USING_SPLIT_STACK
 	void* sp;
 	size_t spsize;
 	void* next_segment;
 	void* next_sp;
 	void* initial_sp;
+	G* _g_;
 
-	if (gp == runtime_g()) {
+	_g_ = runtime_g();
+	if (runtime_usestackmaps) {
+		// If stack map is enabled, we get here only when we can unwind
+		// the stack being scanned. That is, either we are scanning our
+		// own stack, or we are scanning through a signal handler.
+		__go_assert((_g_ == gp) || ((_g_ == gp->m->gsignal) && (gp == gp->m->curg)));
+		return scanstackwithmap(gcw);
+	}
+	if (_g_ == gp) {
 		// Scanning our own stack.
+		// If we are on a signal stack, it can unwind through the signal
+		// handler and see the g stack, so just scan our own stack.
 		sp = __splitstack_find(nil, nil, &spsize, &next_segment,
 				       &next_sp, &initial_sp);
 	} else {
@@ -95,7 +105,7 @@ static void doscanstack1(G *gp, void *gcw) {
 		// The goroutine is usually asleep (the world is stopped).
 		bottom = (void*)gp->gcnextsp;
 		if(bottom == nil)
-			return;
+			return true;
 		nextsp2 = (void*)gp->gcnextsp2;
 	}
 	top = (byte*)(void*)(gp->gcinitialsp) + gp->gcstacksize;
@@ -111,4 +121,5 @@ static void doscanstack1(G *gp, void *gcw) {
 			scanstackblock(initialsp2, (uintptr)(nextsp2 - initialsp2), gcw);
 	}
 #endif
+	return true;
 }

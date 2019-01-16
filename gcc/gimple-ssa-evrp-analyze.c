@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -42,7 +42,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "vr-values.h"
 #include "gimple-ssa-evrp-analyze.h"
 
-evrp_range_analyzer::evrp_range_analyzer () : stack (10)
+evrp_range_analyzer::evrp_range_analyzer (bool update_global_ranges)
+  : stack (10), m_update_global_ranges (update_global_ranges)
 {
   edge e;
   edge_iterator ei;
@@ -97,7 +98,7 @@ evrp_range_analyzer::try_find_new_range (tree name,
 	  && vrp_operand_equal_p (old_vr->max (), vr.max ()))
 	return NULL;
       value_range *new_vr = vr_values->allocate_value_range ();
-      *new_vr = vr;
+      new_vr->move (&vr);
       return new_vr;
     }
   return NULL;
@@ -107,6 +108,8 @@ evrp_range_analyzer::try_find_new_range (tree name,
 void
 evrp_range_analyzer::set_ssa_range_info (tree lhs, value_range *vr)
 {
+  gcc_assert (m_update_global_ranges);
+
   /* Set the SSA with the value range.  */
   if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
     {
@@ -209,10 +212,11 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	      value_range *old_vr = get_value_range (vrs[i].first);
 	      value_range tem (old_vr->kind (), old_vr->min (), old_vr->max ());
 	      tem.intersect (vrs[i].second);
-	      if (tem.ignore_equivs_equal_p (*old_vr))
+	      if (tem.equal_p (*old_vr, /*ignore_equivs=*/true))
 		continue;
 	      push_value_range (vrs[i].first, vrs[i].second);
 	      if (is_fallthru
+		  && m_update_global_ranges
 		  && all_uses_feed_or_dominated_by_stmt (vrs[i].first, stmt))
 		{
 		  set_ssa_range_info (vrs[i].first, vrs[i].second);
@@ -252,7 +256,7 @@ evrp_range_analyzer::record_ranges_from_phis (basic_block bb)
 	vr_values->extract_range_from_phi_node (phi, &vr_result);
       else
 	{
-	  set_value_range_to_varying (&vr_result);
+	  vr_result.set_varying ();
 	  /* When we have an unvisited executable predecessor we can't
 	     use PHI arg ranges which may be still UNDEFINED but have
 	     to use VARYING for them.  But we can still resort to
@@ -267,7 +271,8 @@ evrp_range_analyzer::record_ranges_from_phis (basic_block bb)
       vr_values->update_value_range (lhs, &vr_result);
 
       /* Set the SSA with the value range.  */
-      set_ssa_range_info (lhs, &vr_result);
+      if (m_update_global_ranges)
+	set_ssa_range_info (lhs, &vr_result);
     }
 }
 
@@ -309,7 +314,8 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt, bool temporary)
 	      /* Case one.  We can just update the underlying range
 		 information as well as the global information.  */
 	      vr_values->update_value_range (output, &vr);
-	      set_ssa_range_info (output, &vr);
+	      if (m_update_global_ranges)
+		set_ssa_range_info (output, &vr);
 	    }
 	  else
 	    {
@@ -319,8 +325,8 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt, bool temporary)
 		 also have to be very careful about sharing the underlying
 		 bitmaps.  Ugh.  */
 	      value_range *new_vr = vr_values->allocate_value_range ();
-	      *new_vr = vr;
-	      new_vr->equiv_clear ();
+	      new_vr->set (vr.kind (), vr.min (), vr.max ());
+	      vr.equiv_clear ();
 	      push_value_range (output, new_vr);
 	    }
 	}

@@ -68,18 +68,26 @@ void
 bar (void)
 {
   int i;
-  #pragma omp for schedule (nonmonotonic: static, 2)	/* { dg-error ".nonmonotonic. modifier specified for .static. schedule kind" } */
+  #pragma omp for schedule (nonmonotonic: static, 2)
   for (i = 0; i < 64; i++)
     ;
-  #pragma omp for schedule (nonmonotonic : static)	/* { dg-error ".nonmonotonic. modifier specified for .static. schedule kind" } */
+  #pragma omp for schedule (nonmonotonic : static)
   for (i = 0; i < 64; i++)
     ;
-  #pragma omp for schedule (nonmonotonic : runtime)	/* { dg-error ".nonmonotonic. modifier specified for .runtime. schedule kind" } */
+  #pragma omp for schedule (nonmonotonic : runtime)
   for (i = 0; i < 64; i++)
     ;
-  #pragma omp for schedule (nonmonotonic : auto)	/* { dg-error ".nonmonotonic. modifier specified for .auto. schedule kind" } */
+  #pragma omp for schedule (nonmonotonic : auto)
   for (i = 0; i < 64; i++)
     ;
+  #pragma omp for schedule (nonmonotonic : static) ordered	/* { dg-error ".nonmonotonic. schedule modifier specified together with .ordered. clause" } */
+  for (i = 0; i < 64; i++)
+    #pragma omp ordered
+      ;
+  #pragma omp for ordered schedule (nonmonotonic: static, 4)	/* { dg-error ".nonmonotonic. schedule modifier specified together with .ordered. clause" } */
+  for (i = 0; i < 64; i++)
+    #pragma omp ordered
+      ;
   #pragma omp for schedule (nonmonotonic : dynamic) ordered	/* { dg-error ".nonmonotonic. schedule modifier specified together with .ordered. clause" } */
   for (i = 0; i < 64; i++)
     #pragma omp ordered
@@ -95,6 +103,12 @@ bar (void)
       #pragma omp ordered depend(source)
     }
   #pragma omp for ordered(1) schedule(nonmonotonic : guided, 2)	/* { dg-error ".nonmonotonic. schedule modifier specified together with .ordered. clause" } */
+  for (i = 0; i < 64; i++)
+    {
+      #pragma omp ordered depend(source)
+      #pragma omp ordered depend(sink: i - 1)
+    }
+  #pragma omp for schedule(nonmonotonic : runtime) ordered(1)	/* { dg-error ".nonmonotonic. schedule modifier specified together with .ordered. clause" } */
   for (i = 0; i < 64; i++)
     {
       #pragma omp ordered depend(source)

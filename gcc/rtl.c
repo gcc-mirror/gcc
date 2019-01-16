@@ -1,5 +1,5 @@
 /* RTL utility routines.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -148,10 +148,10 @@ const char * const reg_note_name[REG_NOTE_MAX] =
 #undef DEF_REG_NOTE
 };
 
-static int rtx_alloc_counts[(int) LAST_AND_UNUSED_RTX_CODE];
-static int rtx_alloc_sizes[(int) LAST_AND_UNUSED_RTX_CODE];
-static int rtvec_alloc_counts;
-static int rtvec_alloc_sizes;
+static size_t rtx_alloc_counts[(int) LAST_AND_UNUSED_RTX_CODE];
+static size_t rtx_alloc_sizes[(int) LAST_AND_UNUSED_RTX_CODE];
+static size_t rtvec_alloc_counts;
+static size_t rtvec_alloc_sizes;
 
 
 /* Allocate an rtx vector of N elements.
@@ -785,10 +785,20 @@ classify_insn (rtx x)
   return INSN;
 }
 
+/* Comparator of indices based on rtx_alloc_counts.  */
+
+static int
+rtx_count_cmp (const void *p1, const void *p2)
+{
+  const unsigned *n1 = (const unsigned *)p1;
+  const unsigned *n2 = (const unsigned *)p2;
+
+  return rtx_alloc_counts[*n1] - rtx_alloc_counts[*n2];
+}
+
 void
 dump_rtx_statistics (void)
 {
-  int i;
   int total_counts = 0;
   int total_sizes = 0;
 
@@ -798,27 +808,41 @@ dump_rtx_statistics (void)
       return;
     }
 
-  fprintf (stderr, "\nRTX Kind               Count      Bytes\n");
-  fprintf (stderr, "---------------------------------------\n");
-  for (i = 0; i < LAST_AND_UNUSED_RTX_CODE; i++)
-    if (rtx_alloc_counts[i])
-      {
-        fprintf (stderr, "%-20s %7d %10d\n", GET_RTX_NAME (i),
-                 rtx_alloc_counts[i], rtx_alloc_sizes[i]);
-        total_counts += rtx_alloc_counts[i];
-        total_sizes += rtx_alloc_sizes[i];
-      }
+  fprintf (stderr, "\nRTX Kind                   Count     Bytes\n");
+  fprintf (stderr, "-------------------------------------------\n");
+
+  auto_vec<unsigned> indices (LAST_AND_UNUSED_RTX_CODE);
+  for (unsigned i = 0; i < LAST_AND_UNUSED_RTX_CODE; i++)
+    indices.quick_push (i);
+  indices.qsort (rtx_count_cmp);
+
+  for (unsigned i = 0; i < LAST_AND_UNUSED_RTX_CODE; i++)
+    {
+      unsigned j = indices[i];
+      if (rtx_alloc_counts[j])
+	{
+	  fprintf (stderr, "%-24s " PRsa (6) " " PRsa (9) "\n",
+		   GET_RTX_NAME (j),
+		   SIZE_AMOUNT (rtx_alloc_counts[j]),
+		   SIZE_AMOUNT (rtx_alloc_sizes[j]));
+	  total_counts += rtx_alloc_counts[j];
+	  total_sizes += rtx_alloc_sizes[j];
+	}
+    }
+
   if (rtvec_alloc_counts)
     {
-      fprintf (stderr, "%-20s %7d %10d\n", "rtvec",
-               rtvec_alloc_counts, rtvec_alloc_sizes);
+      fprintf (stderr, "%-24s " PRsa (6) " " PRsa (9) "\n", "rtvec",
+	       SIZE_AMOUNT (rtvec_alloc_counts),
+	       SIZE_AMOUNT (rtvec_alloc_sizes));
       total_counts += rtvec_alloc_counts;
       total_sizes += rtvec_alloc_sizes;
     }
-  fprintf (stderr, "---------------------------------------\n");
-  fprintf (stderr, "%-20s %7d %10d\n",
-           "Total", total_counts, total_sizes);
-  fprintf (stderr, "---------------------------------------\n");
+  fprintf (stderr, "-----------------------------------------------\n");
+  fprintf (stderr, "%-24s " PRsa (6) " " PRsa (9) "\n",
+	   "Total", SIZE_AMOUNT (total_counts),
+	   SIZE_AMOUNT (total_sizes));
+  fprintf (stderr, "-----------------------------------------------\n");
 }
 
 #if defined ENABLE_RTL_CHECKING && (GCC_VERSION >= 2007)

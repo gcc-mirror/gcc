@@ -1,5 +1,5 @@
 /* Definitions for CPP library.
-   Copyright (C) 1995-2018 Free Software Foundation, Inc.
+   Copyright (C) 1995-2019 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
 This program is free software; you can redistribute it and/or modify it
@@ -240,8 +240,10 @@ struct GTY(()) cpp_identifier {
 /* A preprocessing token.  This has been carefully packed and should
    occupy 16 bytes on 32-bit hosts and 24 bytes on 64-bit hosts.  */
 struct GTY(()) cpp_token {
-  source_location src_loc;	/* Location of first char of token,
-				   together with range of full token.  */
+
+  /* Location of first char of token, together with range of full token.  */
+  location_t src_loc;
+
   ENUM_BITFIELD(cpp_ttype) type : CHAR_BIT;  /* token type */
   unsigned short flags;		/* flags - see above */
 
@@ -624,12 +626,12 @@ struct cpp_callbacks
   void (*file_change) (cpp_reader *, const line_map_ordinary *);
 
   void (*dir_change) (cpp_reader *, const char *);
-  void (*include) (cpp_reader *, source_location, const unsigned char *,
+  void (*include) (cpp_reader *, location_t, const unsigned char *,
 		   const char *, int, const cpp_token **);
-  void (*define) (cpp_reader *, source_location, cpp_hashnode *);
-  void (*undef) (cpp_reader *, source_location, cpp_hashnode *);
-  void (*ident) (cpp_reader *, source_location, const cpp_string *);
-  void (*def_pragma) (cpp_reader *, source_location);
+  void (*define) (cpp_reader *, location_t, cpp_hashnode *);
+  void (*undef) (cpp_reader *, location_t, cpp_hashnode *);
+  void (*ident) (cpp_reader *, location_t, const cpp_string *);
+  void (*def_pragma) (cpp_reader *, location_t);
   int (*valid_pch) (cpp_reader *, const char *, int);
   void (*read_pch) (cpp_reader *, const char *, int, const char *);
   missing_header_cb missing_header;
@@ -649,14 +651,14 @@ struct cpp_callbacks
 
   /* Callbacks for when a macro is expanded, or tested (whether
      defined or not at the time) in #ifdef, #ifndef or "defined".  */
-  void (*used_define) (cpp_reader *, source_location, cpp_hashnode *);
-  void (*used_undef) (cpp_reader *, source_location, cpp_hashnode *);
+  void (*used_define) (cpp_reader *, location_t, cpp_hashnode *);
+  void (*used_undef) (cpp_reader *, location_t, cpp_hashnode *);
   /* Called before #define and #undef or other macro definition
      changes are processed.  */
   void (*before_define) (cpp_reader *);
   /* Called whenever a macro is expanded or tested.
      Second argument is the location of the start of the current expansion.  */
-  void (*used) (cpp_reader *, source_location, cpp_hashnode *);
+  void (*used) (cpp_reader *, location_t, cpp_hashnode *);
 
   /* Callback to identify whether an attribute exists.  */
   int (*has_attribute) (cpp_reader *);
@@ -676,7 +678,7 @@ struct cpp_callbacks
      The content contains the opening slash-star (or slash-slash),
      and for C-style comments contains the closing star-slash.  For
      C++-style comments it does not include the terminating newline.  */
-  void (*comment) (cpp_reader *, source_location, const unsigned char *,
+  void (*comment) (cpp_reader *, location_t, const unsigned char *,
 		   size_t);
 
   /* Callback for filename remapping in __FILE__ and __BASE_FILE__ macro
@@ -753,7 +755,7 @@ struct GTY(()) cpp_macro {
   } GTY ((desc ("%1.kind == cmk_assert"))) parm;
 
   /* Definition line number.  */
-  source_location line;
+  location_t line;
 
   /* Number of tokens in body, or bytes for traditional macros.  */
   /* Do we really need 2^32-1 range here?  */
@@ -844,9 +846,9 @@ enum cpp_builtin_type
 };
 
 #define CPP_HASHNODE(HNODE)	((cpp_hashnode *) (HNODE))
-#define HT_NODE(NODE)		((ht_identifier *) (NODE))
-#define NODE_LEN(NODE)		HT_LEN (&(NODE)->ident)
-#define NODE_NAME(NODE)		HT_STR (&(NODE)->ident)
+#define HT_NODE(NODE)		(&(NODE)->ident)
+#define NODE_LEN(NODE)		HT_LEN (HT_NODE (NODE))
+#define NODE_NAME(NODE)		HT_STR (HT_NODE (NODE))
 
 /* The common part of an identifier node shared amongst all 3 C front
    ends.  Also used to store CPP identifiers, which are a superset of
@@ -884,13 +886,13 @@ struct GTY(()) cpp_hashnode {
 
 class cpp_string_location_reader {
  public:
-  cpp_string_location_reader (source_location src_loc,
+  cpp_string_location_reader (location_t src_loc,
 			      line_maps *line_table);
 
   source_range get_next ();
 
  private:
-  source_location m_loc;
+  location_t m_loc;
   int m_offset_per_column;
   line_maps *m_line_table;
 };
@@ -995,7 +997,7 @@ extern int cpp_avoid_paste (cpp_reader *, const cpp_token *,
 			    const cpp_token *);
 extern const cpp_token *cpp_get_token (cpp_reader *);
 extern const cpp_token *cpp_get_token_with_location (cpp_reader *,
-						     source_location *);
+						     location_t *);
 inline bool cpp_user_macro_p (const cpp_hashnode *node)
 {
   return node->type == NT_USER_MACRO;
@@ -1017,7 +1019,10 @@ inline bool cpp_fun_like_macro_p (cpp_hashnode *node)
 
 extern const unsigned char *cpp_macro_definition (cpp_reader *,
 						  cpp_hashnode *);
-extern source_location cpp_macro_definition_location (cpp_hashnode *);
+inline location_t cpp_macro_definition_location (cpp_hashnode *node)
+{
+  return node->value.macro->line;
+}
 extern void _cpp_backup_tokens (cpp_reader *, unsigned int);
 extern const cpp_token *cpp_peek_token (cpp_reader *, int);
 
@@ -1123,7 +1128,7 @@ struct cpp_num
 /* Classify a CPP_NUMBER token.  The return value is a combination of
    the flags from the above sets.  */
 extern unsigned cpp_classify_number (cpp_reader *, const cpp_token *,
-				     const char **, source_location);
+				     const char **, location_t);
 
 /* Return the classification flags for a float suffix.  */
 extern unsigned int cpp_interpret_float_suffix (cpp_reader *, const char *,
@@ -1162,30 +1167,30 @@ extern bool cpp_errno (cpp_reader *, enum cpp_diagnostic_level,
 /* Similarly, but with "FILENAME: " instead of "MSGID: ", where
    the filename is not localized.  */
 extern bool cpp_errno_filename (cpp_reader *, enum cpp_diagnostic_level,
-				const char *filename, source_location loc);
+				const char *filename, location_t loc);
 
 /* Same as cpp_error, except additionally specifies a position as a
    (translation unit) physical line and physical column.  If the line is
    zero, then no location is printed.  */
 extern bool cpp_error_with_line (cpp_reader *, enum cpp_diagnostic_level,
-				 source_location, unsigned,
+				 location_t, unsigned,
 				 const char *msgid, ...)
   ATTRIBUTE_PRINTF_5;
 extern bool cpp_warning_with_line (cpp_reader *, enum cpp_warning_reason,
-				   source_location, unsigned,
+				   location_t, unsigned,
 				   const char *msgid, ...)
   ATTRIBUTE_PRINTF_5;
 extern bool cpp_pedwarning_with_line (cpp_reader *, enum cpp_warning_reason,
-				      source_location, unsigned,
+				      location_t, unsigned,
 				      const char *msgid, ...)
   ATTRIBUTE_PRINTF_5;
 extern bool cpp_warning_with_line_syshdr (cpp_reader *, enum cpp_warning_reason,
-					  source_location, unsigned,
+					  location_t, unsigned,
 					  const char *msgid, ...)
   ATTRIBUTE_PRINTF_5;
 
 extern bool cpp_error_at (cpp_reader * pfile, enum cpp_diagnostic_level,
-			  source_location src_loc, const char *msgid, ...)
+			  location_t src_loc, const char *msgid, ...)
   ATTRIBUTE_PRINTF_4;
 
 extern bool cpp_error_at (cpp_reader * pfile, enum cpp_diagnostic_level,
@@ -1216,7 +1221,7 @@ typedef struct
   char *comment;
 
   /* source location for the given comment.  */
-  source_location sloc;
+  location_t sloc;
 } cpp_comment;
 
 /* Structure holding all comments for a given cpp_reader.  */
@@ -1255,7 +1260,7 @@ extern unsigned char *cpp_quote_string (unsigned char *, const unsigned char *,
 
 /* In files.c */
 extern bool cpp_included (cpp_reader *, const char *);
-extern bool cpp_included_before (cpp_reader *, const char *, source_location);
+extern bool cpp_included_before (cpp_reader *, const char *, location_t);
 extern void cpp_make_system_header (cpp_reader *, int, int);
 extern bool cpp_push_include (cpp_reader *, const char *);
 extern bool cpp_push_default_include (cpp_reader *, const char *);
@@ -1278,7 +1283,7 @@ extern int cpp_read_state (cpp_reader *, const char *, FILE *,
 			   struct save_macro_data *);
 
 /* In lex.c */
-extern void cpp_force_token_locations (cpp_reader *, source_location *);
+extern void cpp_force_token_locations (cpp_reader *, location_t);
 extern void cpp_stop_forcing_token_locations (cpp_reader *);
 
 /* In expr.c */

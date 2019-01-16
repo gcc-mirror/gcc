@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC, for SPARC running Solaris 2
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@netcom.com).
    Additional changes by David V. Henkel-Wallace (gumby@cygnus.com).
 
@@ -237,7 +237,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 %{m64:%{m32:%emay not use both -m32 and -m64}} \
 %{m64:-mptr64 -mstack-bias -mno-v8plus \
   %{!mcpu*:-%{!mv8plus:mcpu=v9}}} \
-"
+" ASAN_CC1_SPEC
 #else
 #define CC1_SPEC "\
 %{m32:%{m64:%emay not use both -m32 and -m64}} \
@@ -245,7 +245,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   %{!mcpu*:%{!mv8plus:-mcpu=v9}}} \
 %{mv8plus:-m32 -mptr32 -mno-stack-bias \
   %{!mcpu*:-mcpu=v9}} \
-"
+" ASAN_CC1_SPEC
 #endif
 
 /* Support for a compile-time default CPU, et cetera.  The rules are:
@@ -322,6 +322,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define ENDFILE_ARCH_SPEC ""
 
+/* -fsanitize=address is currently only supported for 32-bit.  */
+#define ASAN_REJECT_SPEC \
+  DEF_ARCH64_SPEC("%e:-fsanitize=address is not supported in this configuration")
 
 
 /* Register the Solaris-specific #pragma directives.  */

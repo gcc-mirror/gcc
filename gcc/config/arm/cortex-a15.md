@@ -1,5 +1,5 @@
 ;; ARM Cortex-A15 pipeline description
-;; Copyright (C) 2011-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2019 Free Software Foundation, Inc.
 ;;
 ;; Written by Matthew Gretton-Dann <matthew.gretton-dann@arm.com>
 
@@ -105,7 +105,7 @@
 ;; 64-bit multiplies
 (define_insn_reservation "cortex_a15_mult64" 4
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "mul64" "yes"))
+       (eq_attr "widen_mul64" "yes"))
   "ca15_issue1,ca15_mx*2")
 
 ;; Integer divide

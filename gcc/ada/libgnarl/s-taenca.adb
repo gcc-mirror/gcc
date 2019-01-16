@@ -615,7 +615,7 @@ package body System.Tasking.Entry_Calls is
       Call    : Entry_Call_Link)
    is
    begin
-      pragma Assert (Self_ID.ATC_Nesting_Level > 0);
+      pragma Assert (Self_ID.ATC_Nesting_Level > Level_No_ATC_Occurring);
       pragma Assert (Call.Mode = Asynchronous_Call);
 
       STPO.Write_Lock (Self_ID);

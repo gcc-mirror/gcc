@@ -1,4 +1,4 @@
-# Copyright (C) 2002-2018 Free Software Foundation, Inc.
+# Copyright (C) 2002-2019 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -22,5 +22,9 @@ $(srcdir)/config/mips/mips-tables.opt: $(srcdir)/config/mips/genopt.sh \
 		$(srcdir)/config/mips/mips-tables.opt
 
 frame-header-opt.o: $(srcdir)/config/mips/frame-header-opt.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+mips-d.o: $(srcdir)/config/mips/mips-d.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)

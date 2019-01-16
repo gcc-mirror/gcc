@@ -1,5 +1,5 @@
 /* Target Definitions for NVPTX.
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
    This file is part of GCC.
@@ -218,6 +218,15 @@ struct GTY(()) machine_function
   int return_mode; /* Return mode of current fn.
 		      (machine_mode not defined yet.) */
   rtx axis_predicate[2]; /* Neutering predicates.  */
+  int axis_dim[2]; /* Maximum number of threads on each axis, dim[0] is
+		      vector_length, dim[1] is num_workers.  */
+  bool axis_dim_init_p;
+  rtx bcast_partition; /* Register containing the size of each
+			  vector's partition of share-memory used to
+			  broadcast state.  */
+  rtx red_partition; /* Similar to bcast_partition, except for vector
+			reductions.  */
+  rtx sync_bar; /* Synchronization barrier ID for vectors.  */
   rtx unisimt_master; /* 'Master lane index' for -muniform-simt.  */
   rtx unisimt_predicate; /* Predicate for -muniform-simt.  */
   rtx unisimt_location; /* Mask location for -muniform-simt.  */

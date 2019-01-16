@@ -1,5 +1,5 @@
 /* Expand builtin functions.
-   Copyright (C) 1988-2018 Free Software Foundation, Inc.
+   Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -57,10 +57,48 @@ extern bool get_pointer_alignment_1 (tree, unsigned int *,
 				     unsigned HOST_WIDE_INT *);
 extern unsigned int get_pointer_alignment (tree);
 extern unsigned string_length (const void*, unsigned, unsigned);
+
 struct c_strlen_data
 {
+  /* [MINLEN, MAXBOUND, MAXLEN] is a range describing the length of
+     one or more strings of possibly unknown length.  For a single
+     string of known length the range is a constant where
+     MINLEN == MAXBOUND == MAXLEN holds.
+     For other strings, MINLEN is the length of the shortest known
+     string.  MAXBOUND is the length of a string that could be stored
+     in the largest array referenced by the expression.  MAXLEN is
+     the length of the longest sequence of non-zero bytes
+     in an object referenced by the expression.  For such strings,
+     MINLEN <= MAXBOUND <= MAXLEN holds.  For example, given:
+       struct A { char a[7], b[]; };
+       extern struct A *p;
+       n = strlen (p->a);
+     the computed range will be [0, 6, ALL_ONES].
+     However, for a conditional expression involving a string
+     of known length and an array of unknown bound such as
+       n = strlen (i ? p->b : "123");
+     the range will be [3, 3, ALL_ONES].
+     MINLEN != 0 && MAXLEN == ALL_ONES indicates that MINLEN is
+     the length of the shortest known string and implies that
+     the shortest possible string referenced by the expression may
+     actually be the empty string.  This distinction is useful for
+     diagnostics.  get_range_strlen() return value distinguishes
+     between these two cases.
+     As the tighter (and more optimistic) bound, MAXBOUND is suitable
+     for diagnostics but not for optimization.
+     As the more conservative bound, MAXLEN is intended to be used
+     for optimization.  */
+  tree minlen;
+  tree maxlen;
+  tree maxbound;
+  /* When non-null, NONSTR refers to the declaration known to store
+     an unterminated constant character array, as in:
+     const char s[] = { 'a', 'b', 'c' };
+     It is used to diagnose uses of such arrays in functions such as
+     strlen() that expect a nul-terminated string as an argument.  */
   tree decl;
-  tree len;
+  /* Non-constant offset from the beginning of a string not accounted
+     for in the length range.  Used to improve diagnostics.  */
   tree off;
 };
 

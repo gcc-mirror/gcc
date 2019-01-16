@@ -246,10 +246,19 @@ package body Exp_Unst is
    -----------------------
 
    function Needs_Fat_Pointer (E : Entity_Id) return Boolean is
+      Typ : Entity_Id;
    begin
-      return Is_Formal (E)
-        and then Is_Array_Type (Etype (E))
-        and then not Is_Constrained (Etype (E));
+      if Is_Formal (E) then
+         Typ := Etype (E);
+         if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
+            Typ := Full_View (Typ);
+         end if;
+
+         return Is_Array_Type (Typ)
+           and then not Is_Constrained (Typ);
+      else
+         return False;
+      end if;
    end Needs_Fat_Pointer;
 
    ----------------
@@ -431,7 +440,7 @@ package body Exp_Unst is
       Urefs.Init;
 
       Build_Tables : declare
-         Current_Subprogram : Entity_Id;
+         Current_Subprogram : Entity_Id := Empty;
          --  When we scan a subprogram body, we set Current_Subprogram to the
          --  corresponding entity. This gets recursively saved and restored.
 
@@ -752,20 +761,17 @@ package body Exp_Unst is
             procedure Register_Subprogram (E : Entity_Id; Bod : Node_Id) is
                L : constant Nat := Get_Level (Subp, E);
 
-            --  Subprograms declared in tasks and protected types cannot
-            --  be eliminated because calls to them may be in other units,
-            --  so they must be treated as reachable.
-
             begin
-               --  Subprograms declared in tasks and protected types cannot
-               --  be eliminated because calls to them may be in other units,
-               --  so they must be treated as reachable.
+               --  Subprograms declared in tasks and protected types cannot be
+               --  eliminated because calls to them may be in other units, so
+               --  they must be treated as reachable.
 
                Subps.Append
                  ((Ent           => E,
                    Bod           => Bod,
                    Lev           => L,
-                   Reachable     => In_Synchronized_Unit (E),
+                   Reachable     => In_Synchronized_Unit (E)
+                                      or else Address_Taken (E),
                    Uplevel_Ref   => L,
                    Declares_AREC => False,
                    Uents         => No_Elist,
@@ -1154,9 +1160,9 @@ package body Exp_Unst is
                      return Skip;
                   end if;
 
-               --  Pragmas and component declarations can be ignored.
-               --  Quantified expressions are expanded into explicit loops
-               --  and the original epression must be ignored.
+               --  Pragmas and component declarations are ignored. Quantified
+               --  expressions are expanded into explicit loops and the
+               --  original epression must be ignored.
 
                when N_Component_Declaration
                   | N_Pragma
@@ -1389,10 +1395,10 @@ package body Exp_Unst is
 
                         --  If this entity was marked reachable because it is
                         --  in a task or protected type, there may not appear
-                        --  to be any calls to it, which would normally
-                        --  adjust the levels of the parent subprograms.
-                        --  So we need to be sure that the uplevel reference
-                        --  of that entity takes into account possible calls.
+                        --  to be any calls to it, which would normally adjust
+                        --  the levels of the parent subprograms. So we need to
+                        --  be sure that the uplevel reference of that entity
+                        --  takes into account possible calls.
 
                         if In_Synchronized_Unit (SUBF.Ent)
                           and then SUBT.Lev < SUBI.Uplevel_Ref
@@ -1408,9 +1414,9 @@ package body Exp_Unst is
                   --  We do not add types to this list, only actual references
                   --  to objects that will be referenced uplevel, and we use
                   --  the flag Is_Uplevel_Referenced_Entity to avoid making
-                  --  duplicate entries in the list.
-                  --  Discriminants are also excluded, only the enclosing
-                  --  object can appear in the list.
+                  --  duplicate entries in the list. Discriminants are also
+                  --  excluded, only the enclosing object can appear in the
+                  --  list.
 
                   if not Is_Uplevel_Referenced_Entity (URJ.Ent)
                     and then Ekind (URJ.Ent) /= E_Discriminant
@@ -1750,8 +1756,8 @@ package body Exp_Unst is
                      --  Declaration nodes for the AREC entities we build
 
                   begin
-                     --  Build list of component declarations for ARECnT
-                     --  and load System.Address.
+                     --  Build list of component declarations for ARECnT and
+                     --  load System.Address.
 
                      Clist := Empty_List;
 
@@ -2009,10 +2015,11 @@ package body Exp_Unst is
                                     Attr := Name_Address;
                                  end if;
 
-                                 Rhs :=  Make_Attribute_Reference (Loc,
-                                         Prefix         =>
-                                           New_Occurrence_Of (Ent, Loc),
-                                         Attribute_Name => Attr);
+                                 Rhs :=
+                                  Make_Attribute_Reference (Loc,
+                                    Prefix         =>
+                                      New_Occurrence_Of (Ent, Loc),
+                                    Attribute_Name => Attr);
 
                                  --  If the entity is an unconstrained formal
                                  --  we wrap the attribute reference in an
@@ -2024,15 +2031,15 @@ package body Exp_Unst is
                                  if Is_Formal (Ent)
                                    and then not Is_Constrained (Etype (Ent))
                                  then
-                                    --  Find target component and its type.
+                                    --  Find target component and its type
 
                                     Comp := First_Component (STJ.ARECnT);
                                     while Chars (Comp) /= Chars (Ent) loop
                                        Comp := Next_Component (Comp);
                                     end loop;
 
-                                    Rhs := Unchecked_Convert_To (
-                                              Etype (Comp), Rhs);
+                                    Rhs :=
+                                      Unchecked_Convert_To (Etype (Comp), Rhs);
                                  end if;
 
                                  Asn :=
@@ -2168,6 +2175,21 @@ package body Exp_Unst is
                --  and inline.adb fail in unnesting mode.
 
                if No (STJR.ARECnF) then
+                  goto Continue;
+               end if;
+
+               --  If this is a reference to a global constant, use its value
+               --  rather than create a reference. It is more efficient and
+               --  furthermore indispensable if the context requires a
+               --  constant, such as a branch of a case statement.
+
+               if Ekind (UPJ.Ent) = E_Constant
+                 and then Is_True_Constant (UPJ.Ent)
+                 and then Present (Constant_Value (UPJ.Ent))
+                 and then Is_Static_Expression (Constant_Value (UPJ.Ent))
+               then
+                  Rewrite (UPJ.Ref,
+                    New_Copy_Tree (Constant_Value (UPJ.Ent)));
                   goto Continue;
                end if;
 

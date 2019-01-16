@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2018 Free Software Foundation, Inc.
+ * Copyright (C) 2007-2019 Free Software Foundation, Inc.
  *
  * This file is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -125,6 +125,10 @@
 #define bit_XSAVEOPT	(1 << 0)
 #define bit_XSAVEC	(1 << 1)
 #define bit_XSAVES	(1 << 3)
+
+/* PT sub leaf (%eax == 14, %ecx == 0) */
+/* %ebx */
+#define bit_PTWRITE	(1 << 4)
 
 /* Signatures for different CPU implementations as returned in uses
    of cpuid with level 0.  */

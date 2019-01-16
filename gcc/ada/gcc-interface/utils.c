@@ -973,6 +973,7 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
      Note that we rely on the pointer equality created here for
      TYPE_NAME to look through conversions in various places.  */
   TYPE_NAME (new_type) = TYPE_NAME (type);
+  TYPE_PACKED (new_type) = 1;
   TYPE_JUSTIFIED_MODULAR_P (new_type) = TYPE_JUSTIFIED_MODULAR_P (type);
   TYPE_CONTAINS_TEMPLATE_P (new_type) = TYPE_CONTAINS_TEMPLATE_P (type);
   TYPE_REVERSE_STORAGE_ORDER (new_type) = TYPE_REVERSE_STORAGE_ORDER (type);
@@ -1018,7 +1019,7 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
   for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     {
       tree new_field_type = TREE_TYPE (field);
-      tree new_field, new_size;
+      tree new_field, new_field_size;
 
       if (RECORD_OR_UNION_TYPE_P (new_field_type)
 	  && !TYPE_FAT_POINTER_P (new_field_type)
@@ -1034,14 +1035,15 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
 	  && !TYPE_FAT_POINTER_P (new_field_type)
 	  && !TYPE_CONTAINS_TEMPLATE_P (new_field_type)
 	  && TYPE_ADA_SIZE (new_field_type))
-	new_size = TYPE_ADA_SIZE (new_field_type);
+	new_field_size = TYPE_ADA_SIZE (new_field_type);
       else
-	new_size = DECL_SIZE (field);
+	new_field_size = DECL_SIZE (field);
 
+      /* This is a layout with full representation, alignment and size clauses
+	 so we simply pass 0 as PACKED like gnat_to_gnu_field in this case.  */
       new_field
 	= create_field_decl (DECL_NAME (field), new_field_type, new_type,
-			     new_size, bit_position (field),
-			     TYPE_PACKED (type),
+			     new_field_size, bit_position (field), 0,
 			     !DECL_NONADDRESSABLE_P (field));
 
       DECL_INTERNAL_P (new_field) = DECL_INTERNAL_P (field);
@@ -1896,6 +1898,14 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 	    DECL_BIT_FIELD (field) = 0;
 	}
 
+      /* Clear DECL_BIT_FIELD_TYPE for a variant part at offset 0, it's simply
+	 not supported by the DECL_BIT_FIELD_REPRESENTATIVE machinery because
+	 the variant part is always the last field in the list.  */
+      if (DECL_INTERNAL_P (field)
+	  && TREE_CODE (TREE_TYPE (field)) == QUAL_UNION_TYPE
+	  && integer_zerop (pos))
+	DECL_BIT_FIELD_TYPE (field) = NULL_TREE;
+
       /* If we still have DECL_BIT_FIELD set at this point, we know that the
 	 field is technically not addressable.  Except that it can actually
 	 be addressed if it is BLKmode and happens to be properly aligned.  */
@@ -2725,9 +2735,9 @@ create_field_decl (tree name, tree type, tree record_type, tree size, tree pos,
 	size = round_up (size, BITS_PER_UNIT);
     }
 
-  /* If we may, according to ADDRESSABLE, make a bitfield if a size is
+  /* If we may, according to ADDRESSABLE, make a bitfield when the size is
      specified for two reasons: first if the size differs from the natural
-     size.  Second, if the alignment is insufficient.  There are a number of
+     size; second, if the alignment is insufficient.  There are a number of
      ways the latter can be true.
 
      We never make a bitfield if the type of the field has a nonconstant size,
@@ -2735,7 +2745,7 @@ create_field_decl (tree name, tree type, tree record_type, tree size, tree pos,
 
      We do *preventively* make a bitfield when there might be the need for it
      but we don't have all the necessary information to decide, as is the case
-     of a field with no specified position in a packed record.
+     of a field in a packed record.
 
      We also don't look at STRICT_ALIGNMENT here, and rely on later processing
      in layout_decl or finish_record_type to clear the bit_field indication if
@@ -3225,12 +3235,9 @@ create_subprog_decl (tree name, tree asm_name, tree type, tree param_decl_list,
 
   DECL_ARTIFICIAL (subprog_decl) = artificial_p;
   DECL_EXTERNAL (subprog_decl) = extern_flag;
+  DECL_FUNCTION_IS_DEF (subprog_decl) = definition;
+  DECL_IGNORED_P (subprog_decl) = !debug_info_p;
   TREE_PUBLIC (subprog_decl) = public_flag;
-
-  if (!debug_info_p)
-    DECL_IGNORED_P (subprog_decl) = 1;
-  if (definition)
-    DECL_FUNCTION_IS_DEF (subprog_decl) = 1;
 
   switch (inline_status)
     {
@@ -3238,7 +3245,7 @@ create_subprog_decl (tree name, tree asm_name, tree type, tree param_decl_list,
       DECL_UNINLINABLE (subprog_decl) = 1;
       break;
 
-    case is_disabled:
+    case is_default:
       break;
 
     case is_required:
@@ -3259,9 +3266,15 @@ create_subprog_decl (tree name, tree asm_name, tree type, tree param_decl_list,
 
       /* ... fall through ... */
 
-    case is_enabled:
+    case is_prescribed:
+      DECL_DISREGARD_INLINE_LIMITS (subprog_decl) = 1;
+
+      /* ... fall through ... */
+
+    case is_requested:
       DECL_DECLARED_INLINE_P (subprog_decl) = 1;
-      DECL_NO_INLINE_WARNING_P (subprog_decl) = artificial_p;
+      if (!Debug_Generated_Code)
+	DECL_NO_INLINE_WARNING_P (subprog_decl) = artificial_p;
       break;
 
     default:
@@ -4348,12 +4361,13 @@ convert (tree type, tree expr)
 						TYPE_MIN_VALUE (etype))));
 
   /* If the input is a justified modular type, we need to extract the actual
-     object before converting it to any other type with the exceptions of an
-     unconstrained array or of a mere type variant.  It is useful to avoid the
-     extraction and conversion in the type variant case because it could end
-     up replacing a VAR_DECL expr by a constructor and we might be about the
-     take the address of the result.  */
+     object before converting it to an other type with the exceptions of an
+     [unconstrained] array or a mere type variant.  It is useful to avoid
+     the extraction and conversion in these cases because it could end up
+     replacing a VAR_DECL by a constructor and we might be about the take
+     the address of the result.  */
   if (ecode == RECORD_TYPE && TYPE_JUSTIFIED_MODULAR_P (etype)
+      && code != ARRAY_TYPE
       && code != UNCONSTRAINED_ARRAY_TYPE
       && TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (etype))
     return

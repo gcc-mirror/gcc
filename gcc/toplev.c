@@ -1,5 +1,5 @@
 /* Top level of GCC compilers (cc1, cc1plus, etc.)
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "dumpfile.h"
 #include "ipa-fnsummary.h"
+#include "dump-context.h"
 #include "optinfo-emit-json.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
@@ -488,7 +489,7 @@ compile_file (void)
   if (lang_hooks.decls.post_compilation_parsing_cleanups)
     lang_hooks.decls.post_compilation_parsing_cleanups ();
 
-  optimization_records_finish ();
+  dump_context::get ().finish_any_json_writer ();
 
   if (seen_error ())
     return;
@@ -989,7 +990,7 @@ output_stack_usage (void)
       stack_usage += current_function_dynamic_stack_size;
     }
 
-  if (flag_stack_usage)
+  if (stack_usage_file)
     {
       expanded_location loc
 	= expand_location (DECL_SOURCE_LOCATION (current_function_decl));
@@ -1934,7 +1935,7 @@ lang_dependent_init (const char *name)
       init_asm_output (name);
 
       /* If stack usage information is desired, open the output file.  */
-      if (flag_stack_usage)
+      if (flag_stack_usage && !flag_generate_lto)
 	stack_usage_file = open_auxiliary_file ("su");
     }
 
@@ -2131,7 +2132,10 @@ do_compile ()
 
       timevar_start (TV_PHASE_SETUP);
 
-      optimization_records_start ();
+      if (flag_save_optimization_record)
+	{
+	  dump_context::get ().set_json_writer (new optrecord_json_writer ());
+	}
 
       /* This must be run always, because it is needed to compute the FP
 	 predefined macros, such as __LDBL_MAX__, for targets using non

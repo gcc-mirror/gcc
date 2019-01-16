@@ -1,6 +1,6 @@
 # GCC Makefile fragment for Synopsys DesignWare ARC
 
-# Copyright (C) 2007-2018 Free Software Foundation, Inc.
+# Copyright (C) 2007-2019 Free Software Foundation, Inc.
 # Contributor: Joern Rennecke <joern.rennecke@embecosm.com>
 #              on behalf of Synopsys Inc.
 
@@ -21,7 +21,7 @@
 
 CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = arc/lib1funcs.S
-LIB1ASMFUNCS = _mulsi3 _umulsidi3  _umulsi3_highpart \
+LIB1ASMFUNCS = _mulsi3 _umulsidi3  _umulsi3_highpart _muldi3 \
   _udivsi3 _divsi3 _umodsi3 _modsi3 \
   _divmod_tools _clzsi2 \
   _millicodethunk_st _millicodethunk_ld _millicodethunk_ret \

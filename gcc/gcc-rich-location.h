@@ -1,5 +1,5 @@
 /* Declarations relating to class gcc_rich_location
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,7 +28,7 @@ class gcc_rich_location : public rich_location
   /* Constructors.  */
 
   /* Constructing from a location.  */
-  gcc_rich_location (source_location loc, const range_label *label = NULL)
+  gcc_rich_location (location_t loc, const range_label *label = NULL)
   : rich_location (line_table, loc, label)
   {
   }
@@ -160,6 +160,63 @@ class range_label_for_type_mismatch : public range_label
  protected:
   tree m_labelled_type;
   tree m_other_type;
+};
+
+/* Subclass of range_label for labelling the type of EXPR when reporting
+   a type mismatch between EXPR and OTHER_EXPR.
+   Either or both of EXPR and OTHER_EXPR could be NULL.  */
+
+class maybe_range_label_for_tree_type_mismatch : public range_label
+{
+ public:
+  maybe_range_label_for_tree_type_mismatch (tree expr, tree other_expr)
+  : m_expr (expr), m_other_expr (other_expr)
+  {
+  }
+
+  label_text get_text (unsigned range_idx) const FINAL OVERRIDE;
+
+ private:
+  tree m_expr;
+  tree m_other_expr;
+};
+
+struct op_location_t;
+
+/* A subclass of rich_location for showing problems with binary operations.
+
+   If enough location information is available, the ctor will make a
+   3-location rich_location of the form:
+
+     arg_0 op arg_1
+     ~~~~~ ^~ ~~~~~
+       |        |
+       |        arg1 type
+       arg0 type
+
+   labelling the types of the arguments if SHOW_TYPES is true.
+
+   Otherwise, it will fall back to a 1-location rich_location using the
+   compound location within LOC:
+
+     arg_0 op arg_1
+     ~~~~~~^~~~~~~~
+
+   for which we can't label the types.  */
+
+class binary_op_rich_location : public gcc_rich_location
+{
+ public:
+  binary_op_rich_location (const op_location_t &loc,
+			   tree arg0, tree arg1,
+			   bool show_types);
+
+ private:
+  static bool use_operator_loc_p (const op_location_t &loc,
+				  tree arg0, tree arg1);
+
+  maybe_range_label_for_tree_type_mismatch m_label_for_arg0;
+  maybe_range_label_for_tree_type_mismatch m_label_for_arg1;
 };
 
 #endif /* GCC_RICH_LOCATION_H */

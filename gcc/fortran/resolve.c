@@ -1,5 +1,5 @@
 /* Perform type resolution on the various structures.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -4004,7 +4004,7 @@ resolve_operator (gfc_expr *e)
 	  if (op2->ts.type != e->ts.type || op2->ts.kind != e->ts.kind)
 	    gfc_convert_type (op2, &e->ts, 1);
 	  e = logical_to_bitwise (e);
-	  return resolve_function (e);
+	  break;
 	}
 
       sprintf (msg, _("Operands of logical operator %%<%s%%> at %%L are %s/%s"),
@@ -4020,7 +4020,7 @@ resolve_operator (gfc_expr *e)
 	  e->ts.type = BT_INTEGER;
 	  e->ts.kind = op1->ts.kind;
 	  e = logical_to_bitwise (e);
-	  return resolve_function (e);
+	  break;
 	}
 
       if (op1->ts.type == BT_LOGICAL)
@@ -4740,6 +4740,7 @@ find_array_spec (gfc_expr *e)
 	break;
 
       case REF_SUBSTRING:
+      case REF_INQUIRY:
 	break;
       }
 
@@ -4962,13 +4963,13 @@ gfc_resolve_substring_charlen (gfc_expr *e)
 
   for (char_ref = e->ref; char_ref; char_ref = char_ref->next)
     {
-      if (char_ref->type == REF_SUBSTRING)
-      	break;
+      if (char_ref->type == REF_SUBSTRING || char_ref->type == REF_INQUIRY)
+	break;
       if (char_ref->type == REF_COMPONENT)
 	ts = &char_ref->u.c.component->ts;
     }
 
-  if (!char_ref)
+  if (!char_ref || char_ref->type == REF_INQUIRY)
     return;
 
   gcc_assert (char_ref->next == NULL);
@@ -5056,6 +5057,7 @@ resolve_ref (gfc_expr *expr)
 	break;
 
       case REF_COMPONENT:
+      case REF_INQUIRY:
 	break;
 
       case REF_SUBSTRING:
@@ -5129,6 +5131,7 @@ resolve_ref (gfc_expr *expr)
 	  break;
 
 	case REF_SUBSTRING:
+	case REF_INQUIRY:
 	  break;
 	}
 
@@ -5407,7 +5410,7 @@ resolve_variable (gfc_expr *e)
      the ts' type of the component refs is still array valued, which
      can't be translated that way.  */
   if (sym->assoc && e->rank == 0 && e->ref && sym->ts.type == BT_CLASS
-      && sym->assoc->target->ts.type == BT_CLASS
+      && sym->assoc->target && sym->assoc->target->ts.type == BT_CLASS
       && CLASS_DATA (sym->assoc->target)->as)
     {
       gfc_ref *ref = e->ref;
@@ -7233,6 +7236,7 @@ resolve_deallocate_expr (gfc_expr *e)
 	  break;
 
 	case REF_SUBSTRING:
+	case REF_INQUIRY:
 	  allocatable = 0;
 	  break;
 	}
@@ -7525,6 +7529,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
 		break;
 
 	      case REF_SUBSTRING:
+	      case REF_INQUIRY:
 		allocatable = 0;
 		pointer = 0;
 		break;
@@ -8710,7 +8715,8 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
     {
       /* target's rank is 0, but the type of the sym is still array valued,
 	 which has to be corrected.  */
-      if (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->as)
+      if (sym->ts.type == BT_CLASS
+	  && CLASS_DATA (sym) && CLASS_DATA (sym)->as)
 	{
 	  gfc_array_spec *as;
 	  symbol_attribute attr;
@@ -9380,10 +9386,7 @@ resolve_transfer (gfc_code *code)
   if (dt && dt->dt_io_kind->value.iokind != M_INQUIRE
       && (ts->type == BT_DERIVED || ts->type == BT_CLASS))
     {
-      if (ts->type == BT_DERIVED || ts->type == BT_CLASS)
-	derived = ts->u.derived;
-      else
-	derived = ts->u.derived->components->ts.u.derived;
+      derived = ts->u.derived;
 
       /* Determine when to use the formatted DTIO procedure.  */
       if (dt && (dt->format_expr || dt->format_label))
@@ -10634,6 +10637,11 @@ get_temp_from_expr (gfc_expr *e, gfc_namespace *ns)
   gfc_get_sym_tree (name, ns, &tmp, false);
   gfc_add_type (tmp->n.sym, &e->ts, NULL);
 
+  if (e->expr_type == EXPR_CONSTANT && e->ts.type == BT_CHARACTER)
+    tmp->n.sym->ts.u.cl->length = gfc_get_int_expr (gfc_charlen_int_kind,
+						    NULL,
+						    e->value.character.length);
+
   as = NULL;
   ref = NULL;
   aref = NULL;
@@ -11415,10 +11423,11 @@ start:
 	      t = gfc_check_vardef_context (e, false, false, false,
 					    _("pointer assignment"));
 	    gfc_free_expr (e);
+
+	    t = gfc_check_pointer_assign (code->expr1, code->expr2, !t) && t;
+
 	    if (!t)
 	      break;
-
-	    gfc_check_pointer_assign (code->expr1, code->expr2);
 
 	    /* Assigning a class object always is a regular assign.  */
 	    if (code->expr2->ts.type == BT_CLASS
@@ -11538,7 +11547,7 @@ start:
 	case EXEC_ENDFILE:
 	case EXEC_REWIND:
 	case EXEC_FLUSH:
-	  if (!gfc_resolve_filepos (code->ext.filepos))
+	  if (!gfc_resolve_filepos (code->ext.filepos, &code->loc))
 	    break;
 
 	  resolve_branch (code->ext.filepos->err, code);
@@ -12265,13 +12274,8 @@ deferred_requirements (gfc_symbol *sym)
 static bool
 resolve_fl_variable (gfc_symbol *sym, int mp_flag)
 {
-  int no_init_flag, automatic_flag;
-  gfc_expr *e;
-  const char *auto_save_msg;
-  bool saved_specification_expr;
-
-  auto_save_msg = "Automatic object %qs at %L cannot have the "
-		  "SAVE attribute";
+  const char *auto_save_msg = "Automatic object %qs at %L cannot have the "
+			      "SAVE attribute";
 
   if (!resolve_fl_var_and_proc (sym, mp_flag))
     return false;
@@ -12279,7 +12283,7 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
   /* Set this flag to check that variables are parameters of all entries.
      This check is effected by the call to gfc_resolve_expr through
      is_non_constant_shape_array.  */
-  saved_specification_expr = specification_expr;
+  bool saved_specification_expr = specification_expr;
   specification_expr = true;
 
   if (sym->ns->proc_name
@@ -12306,7 +12310,13 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
     {
       /* Make sure that character string variables with assumed length are
 	 dummy arguments.  */
-      e = sym->ts.u.cl->length;
+      gfc_expr *e = NULL;
+
+      if (sym->ts.u.cl)
+	e = sym->ts.u.cl->length;
+      else
+	return false;
+
       if (e == NULL && !sym->attr.dummy && !sym->attr.result
 	  && !sym->ts.deferred && !sym->attr.select_type_temporary
 	  && !sym->attr.omp_udr_artificial_var)
@@ -12351,7 +12361,7 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
     apply_default_init_local (sym); /* Try to apply a default initialization.  */
 
   /* Determine if the symbol may not have an initializer.  */
-  no_init_flag = automatic_flag = 0;
+  int no_init_flag = 0, automatic_flag = 0;
   if (sym->attr.allocatable || sym->attr.external || sym->attr.dummy
       || sym->attr.intrinsic || sym->attr.result)
     no_init_flag = 1;
@@ -12481,7 +12491,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
      module procedures are excluded by 2.2.3.3 - i.e., they are not
      externally accessible and can access all the objects accessible in
      the host.  */
-  if (!(sym->ns->parent
+  if (!(sym->ns->parent && sym->ns->parent->proc_name
 	&& sym->ns->parent->proc_name->attr.flavor == FL_MODULE)
       && gfc_check_symbol_access (sym))
     {
@@ -12535,6 +12545,9 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
     {
       gfc_error ("Function %qs at %L cannot have an initializer",
 		 sym->name, &sym->declared_at);
+
+      /* Make sure no second error is issued for this.  */
+      sym->value->error = 1;
       return false;
     }
 
@@ -15483,7 +15496,10 @@ check_data_variable (gfc_data_variable *var, locus *where)
     e = e->value.function.actual->expr;
 
   if (e->expr_type != EXPR_VARIABLE)
-    gfc_internal_error ("check_data_variable(): Bad expression");
+    {
+      gfc_error ("Expecting definable entity near %L", where);
+      return false;
+    }
 
   sym = e->symtree->n.sym;
 
@@ -15491,6 +15507,7 @@ check_data_variable (gfc_data_variable *var, locus *where)
     {
       gfc_error ("BLOCK DATA element %qs at %L must be in COMMON",
 		 sym->name, &sym->declared_at);
+      return false;
     }
 
   if (e->ref == NULL && sym->as)

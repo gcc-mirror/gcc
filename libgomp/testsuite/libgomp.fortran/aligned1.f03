@@ -52,11 +52,11 @@
   ! Attempt to create 64-byte aligned allocatable
   do i = 1, 64
     allocate (c(1023 + i))
-    if (iand (loc (c(1)), 63) == 0) exit
+    if (iand (int(loc(c(1)),8), 63_8) == 0) exit
     deallocate (c)
     allocate (b(i)%a(1023 + i))
     allocate (c(1023 + i))
-    if (iand (loc (c(1)), 63) == 0) exit
+    if (iand (int(loc(c(1)),8), 63_8) == 0) exit
     deallocate (c)
   end do
   if (allocated (c)) then

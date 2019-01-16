@@ -1,5 +1,5 @@
 /* Common hooks for AArch64.
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -220,10 +220,13 @@ static const struct arch_to_arch_name all_architectures[] =
 
 /* Parse the architecture extension string STR and update ISA_FLAGS
    with the architecture features turned on or off.  Return a
-   aarch64_parse_opt_result describing the result.  */
+   aarch64_parse_opt_result describing the result.
+   When the STR string contains an invalid extension,
+   a copy of the string is created and stored to INVALID_EXTENSION.  */
 
 enum aarch64_parse_opt_result
-aarch64_parse_extension (const char *str, unsigned long *isa_flags)
+aarch64_parse_extension (const char *str, unsigned long *isa_flags,
+			 std::string *invalid_extension)
 {
   /* The extension string is parsed left to right.  */
   const struct aarch64_option_extension *opt = NULL;
@@ -274,6 +277,8 @@ aarch64_parse_extension (const char *str, unsigned long *isa_flags)
       if (opt->name == NULL)
 	{
 	  /* Extension not found in list.  */
+	  if (invalid_extension)
+	    *invalid_extension = std::string (str, len);
 	  return AARCH64_PARSE_INVALID_FEATURE;
 	}
 
@@ -281,6 +286,16 @@ aarch64_parse_extension (const char *str, unsigned long *isa_flags)
     };
 
   return AARCH64_PARSE_OK;
+}
+
+/* Append all architecture extension candidates to the CANDIDATES vector.  */
+
+void
+aarch64_get_all_extension_candidates (auto_vec<const char *> *candidates)
+{
+  const struct aarch64_option_extension *opt;
+  for (opt = all_extensions; opt->name != NULL; opt++)
+    candidates->safe_push (opt->name);
 }
 
 /* Return a string representation of ISA_FLAGS.  DEFAULT_ARCH_FLAGS
@@ -370,7 +385,7 @@ aarch64_rewrite_selected_cpu (const char *name)
     fatal_error (input_location, "unknown value %qs for -mcpu", name);
 
   unsigned long extensions = p_to_a->flags;
-  aarch64_parse_extension (extension_str.c_str (), &extensions);
+  aarch64_parse_extension (extension_str.c_str (), &extensions, NULL);
 
   std::string outstr = a_to_an->arch_name
 	+ aarch64_get_extension_string_for_isa_flags (extensions,

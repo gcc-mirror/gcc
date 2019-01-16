@@ -1,6 +1,6 @@
 !  OpenACC Runtime Library Definitions.
 
-!  Copyright (C) 2014-2018 Free Software Foundation, Inc.
+!  Copyright (C) 2014-2019 Free Software Foundation, Inc.
 
 !  Contributed by Tobias Burnus <burnus@net-b.de>
 !              and Mentor Embedded.
@@ -332,6 +332,150 @@ module openacc_internal
       logical acc_is_present_array_h
       type (*), dimension (..), contiguous :: a
     end function
+
+    subroutine acc_copyin_async_32_h (a, len, async)
+      use iso_c_binding, only: c_int32_t
+      use openacc_kinds, only: acc_handle_kind
+      !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+      type (*), dimension (*) :: a
+      integer (c_int32_t) len
+      integer (acc_handle_kind) async
+    end subroutine
+
+    subroutine acc_copyin_async_64_h (a, len, async)
+      use iso_c_binding, only: c_int64_t
+      use openacc_kinds, only: acc_handle_kind
+      !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+      type (*), dimension (*) :: a
+      integer (c_int64_t) len
+      integer (acc_handle_kind) async
+    end subroutine
+
+    subroutine acc_copyin_async_array_h (a, async)
+      use openacc_kinds, only: acc_handle_kind
+      type (*), dimension (..), contiguous :: a
+      integer (acc_handle_kind) async
+    end subroutine
+
+    subroutine acc_create_async_32_h (a, len, async)
+      use iso_c_binding, only: c_int32_t
+      use openacc_kinds, only: acc_handle_kind
+      !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+      type (*), dimension (*) :: a
+      integer (c_int32_t) len
+      integer (acc_handle_kind) async
+    end subroutine
+
+    subroutine acc_create_async_64_h (a, len, async)
+      use iso_c_binding, only: c_int64_t
+      use openacc_kinds, only: acc_handle_kind
+      !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+      type (*), dimension (*) :: a
+      integer (c_int64_t) len
+      integer (acc_handle_kind) async
+    end subroutine
+
+    subroutine acc_create_async_array_h (a, async)
+      use openacc_kinds, only: acc_handle_kind
+      type (*), dimension (..), contiguous :: a
+      integer (acc_handle_kind) async
+    end subroutine
+
+    subroutine acc_copyout_async_32_h (a, len, async)
+      use iso_c_binding, only: c_int32_t
+      use openacc_kinds, only: acc_handle_kind
+      !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+      type (*), dimension (*) :: a
+      integer (c_int32_t) len
+      integer (acc_handle_kind) async
+    end subroutine
+
+    subroutine acc_copyout_async_64_h (a, len, async)
+      use iso_c_binding, only: c_int64_t
+      use openacc_kinds, only: acc_handle_kind
+      !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+      type (*), dimension (*) :: a
+      integer (c_int64_t) len
+      integer (acc_handle_kind) async
+    end subroutine
+
+    subroutine acc_copyout_async_array_h (a, async)
+      use openacc_kinds, only: acc_handle_kind
+      type (*), dimension (..), contiguous :: a
+      integer (acc_handle_kind) async
+    end subroutine
+
+    subroutine acc_delete_async_32_h (a, len, async)
+      use iso_c_binding, only: c_int32_t
+      use openacc_kinds, only: acc_handle_kind
+      !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+      type (*), dimension (*) :: a
+      integer (c_int32_t) len
+      integer (acc_handle_kind) async
+    end subroutine
+
+    subroutine acc_delete_async_64_h (a, len, async)
+      use iso_c_binding, only: c_int64_t
+      use openacc_kinds, only: acc_handle_kind
+      !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+      type (*), dimension (*) :: a
+      integer (c_int64_t) len
+      integer (acc_handle_kind) async
+    end subroutine
+
+    subroutine acc_delete_async_array_h (a, async)
+      use openacc_kinds, only: acc_handle_kind
+      type (*), dimension (..), contiguous :: a
+      integer (acc_handle_kind) async
+    end subroutine
+
+    subroutine acc_update_device_async_32_h (a, len, async)
+      use iso_c_binding, only: c_int32_t
+      use openacc_kinds, only: acc_handle_kind
+      !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+      type (*), dimension (*) :: a
+      integer (c_int32_t) len
+      integer (acc_handle_kind) async
+    end subroutine
+
+    subroutine acc_update_device_async_64_h (a, len, async)
+      use iso_c_binding, only: c_int64_t
+      use openacc_kinds, only: acc_handle_kind
+      !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+      type (*), dimension (*) :: a
+      integer (c_int64_t) len
+      integer (acc_handle_kind) async
+    end subroutine
+
+    subroutine acc_update_device_async_array_h (a, async)
+      use openacc_kinds, only: acc_handle_kind
+      type (*), dimension (..), contiguous :: a
+      integer (acc_handle_kind) async
+    end subroutine
+
+    subroutine acc_update_self_async_32_h (a, len, async)
+      use iso_c_binding, only: c_int32_t
+      use openacc_kinds, only: acc_handle_kind
+      !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+      type (*), dimension (*) :: a
+      integer (c_int32_t) len
+      integer (acc_handle_kind) async
+    end subroutine
+
+    subroutine acc_update_self_async_64_h (a, len, async)
+      use iso_c_binding, only: c_int64_t
+      use openacc_kinds, only: acc_handle_kind
+      !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+      type (*), dimension (*) :: a
+      integer (c_int64_t) len
+      integer (acc_handle_kind) async
+    end subroutine
+
+    subroutine acc_update_self_async_array_h (a, async)
+      use openacc_kinds, only: acc_handle_kind
+      type (*), dimension (..), contiguous :: a
+      integer (acc_handle_kind) async
+    end subroutine
   end interface
 
   interface
@@ -510,6 +654,60 @@ module openacc_internal
       type (*), dimension (*) :: a
       integer (c_size_t), value :: len
     end function
+
+    subroutine acc_copyin_async_l (a, len, async) &
+        bind (C, name = "acc_copyin_async")
+      use iso_c_binding, only: c_size_t, c_int
+      !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+      type (*), dimension (*) :: a
+      integer (c_size_t), value :: len
+      integer (c_int), value :: async
+    end subroutine
+
+    subroutine acc_create_async_l (a, len, async) &
+        bind (C, name = "acc_create_async")
+      use iso_c_binding, only: c_size_t, c_int
+      !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+      type (*), dimension (*) :: a
+      integer (c_size_t), value :: len
+      integer (c_int), value :: async
+    end subroutine
+
+    subroutine acc_copyout_async_l (a, len, async) &
+        bind (C, name = "acc_copyout_async")
+      use iso_c_binding, only: c_size_t, c_int
+      !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+      type (*), dimension (*) :: a
+      integer (c_size_t), value :: len
+      integer (c_int), value :: async
+    end subroutine
+
+    subroutine acc_delete_async_l (a, len, async) &
+        bind (C, name = "acc_delete_async")
+      use iso_c_binding, only: c_size_t, c_int
+      !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+      type (*), dimension (*) :: a
+      integer (c_size_t), value :: len
+      integer (c_int), value :: async
+    end subroutine
+
+    subroutine acc_update_device_async_l (a, len, async) &
+        bind (C, name = "acc_update_device_async")
+      use iso_c_binding, only: c_size_t, c_int
+      !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+      type (*), dimension (*) :: a
+      integer (c_size_t), value :: len
+      integer (c_int), value :: async
+    end subroutine
+
+    subroutine acc_update_self_async_l (a, len, async) &
+        bind (C, name = "acc_update_self_async")
+      use iso_c_binding, only: c_size_t, c_int
+      !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+      type (*), dimension (*) :: a
+      integer (c_size_t), value :: len
+      integer (c_int), value :: async
+    end subroutine
   end interface
 end module
 
@@ -529,6 +727,8 @@ module openacc
   public :: acc_copyin, acc_present_or_copyin, acc_pcopyin, acc_create
   public :: acc_present_or_create, acc_pcreate, acc_copyout, acc_delete
   public :: acc_update_device, acc_update_self, acc_is_present
+  public :: acc_copyin_async, acc_create_async, acc_copyout_async
+  public :: acc_delete_async, acc_update_device_async, acc_update_self_async
 
   integer, parameter :: openacc_version = 201306
 
@@ -693,6 +893,42 @@ module openacc
 
   ! acc_memcpy_to_device: Only available in C/C++
   ! acc_memcpy_from_device: Only available in C/C++
+
+  interface acc_copyin_async
+    procedure :: acc_copyin_async_32_h
+    procedure :: acc_copyin_async_64_h
+    procedure :: acc_copyin_async_array_h
+  end interface
+
+  interface acc_create_async
+    procedure :: acc_create_async_32_h
+    procedure :: acc_create_async_64_h
+    procedure :: acc_create_async_array_h
+  end interface
+
+  interface acc_copyout_async
+    procedure :: acc_copyout_async_32_h
+    procedure :: acc_copyout_async_64_h
+    procedure :: acc_copyout_async_array_h
+  end interface
+
+  interface acc_delete_async
+    procedure :: acc_delete_async_32_h
+    procedure :: acc_delete_async_64_h
+    procedure :: acc_delete_async_array_h
+  end interface
+
+  interface acc_update_device_async
+    procedure :: acc_update_device_async_32_h
+    procedure :: acc_update_device_async_64_h
+    procedure :: acc_update_device_async_array_h
+  end interface
+
+  interface acc_update_self_async
+    procedure :: acc_update_self_async_32_h
+    procedure :: acc_update_self_async_64_h
+    procedure :: acc_update_self_async_array_h
+  end interface
 
 end module
 
@@ -1078,3 +1314,189 @@ function acc_is_present_array_h (a)
   type (*), dimension (..), contiguous :: a
   acc_is_present_array_h = acc_is_present_l (a, sizeof (a)) == 1
 end function
+
+subroutine acc_copyin_async_32_h (a, len, async)
+  use iso_c_binding, only: c_int32_t, c_size_t, c_int
+  use openacc_internal, only: acc_copyin_async_l
+  use openacc_kinds, only: acc_handle_kind
+  !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+  type (*), dimension (*) :: a
+  integer (c_int32_t) len
+  integer (acc_handle_kind) async
+  call acc_copyin_async_l (a, int (len, kind = c_size_t), int (async, kind = c_int))
+end subroutine
+
+subroutine acc_copyin_async_64_h (a, len, async)
+  use iso_c_binding, only: c_int64_t, c_size_t, c_int
+  use openacc_internal, only: acc_copyin_async_l
+  use openacc_kinds, only: acc_handle_kind
+  !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+  type (*), dimension (*) :: a
+  integer (c_int64_t) len
+  integer (acc_handle_kind) async
+  call acc_copyin_async_l (a, int (len, kind = c_size_t), int (async, kind = c_int))
+end subroutine
+
+subroutine acc_copyin_async_array_h (a, async)
+  use iso_c_binding, only: c_int
+  use openacc_internal, only: acc_copyin_async_l
+  use openacc_kinds, only: acc_handle_kind
+  type (*), dimension (..), contiguous :: a
+  integer (acc_handle_kind) async
+  call acc_copyin_async_l (a, sizeof (a), int (async, kind = c_int))
+end subroutine
+
+subroutine acc_create_async_32_h (a, len, async)
+  use iso_c_binding, only: c_int32_t, c_size_t, c_int
+  use openacc_internal, only: acc_create_async_l
+  use openacc_kinds, only: acc_handle_kind
+  !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+  type (*), dimension (*) :: a
+  integer (c_int32_t) len
+  integer (acc_handle_kind) async
+  call acc_create_async_l (a, int (len, kind = c_size_t), int (async, kind = c_int))
+end subroutine
+
+subroutine acc_create_async_64_h (a, len, async)
+  use iso_c_binding, only: c_int64_t, c_size_t, c_int
+  use openacc_internal, only: acc_create_async_l
+  use openacc_kinds, only: acc_handle_kind
+  !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+  type (*), dimension (*) :: a
+  integer (c_int64_t) len
+  integer (acc_handle_kind) async
+  call acc_create_async_l (a, int (len, kind = c_size_t), int (async, kind = c_int))
+end subroutine
+
+subroutine acc_create_async_array_h (a, async)
+  use iso_c_binding, only: c_int
+  use openacc_internal, only: acc_create_async_l
+  use openacc_kinds, only: acc_handle_kind
+  type (*), dimension (..), contiguous :: a
+  integer (acc_handle_kind) async
+  call acc_create_async_l (a, sizeof (a), int (async, kind = c_int))
+end subroutine
+
+subroutine acc_copyout_async_32_h (a, len, async)
+  use iso_c_binding, only: c_int32_t, c_size_t, c_int
+  use openacc_internal, only: acc_copyout_async_l
+  use openacc_kinds, only: acc_handle_kind
+  !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+  type (*), dimension (*) :: a
+  integer (c_int32_t) len
+  integer (acc_handle_kind) async
+  call acc_copyout_async_l (a, int (len, kind = c_size_t), int (async, kind = c_int))
+end subroutine
+
+subroutine acc_copyout_async_64_h (a, len, async)
+  use iso_c_binding, only: c_int64_t, c_size_t, c_int
+  use openacc_internal, only: acc_copyout_async_l
+  use openacc_kinds, only: acc_handle_kind
+  !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+  type (*), dimension (*) :: a
+  integer (c_int64_t) len
+  integer (acc_handle_kind) async
+  call acc_copyout_async_l (a, int (len, kind = c_size_t), int (async, kind = c_int))
+end subroutine
+
+subroutine acc_copyout_async_array_h (a, async)
+  use iso_c_binding, only: c_int
+  use openacc_internal, only: acc_copyout_async_l
+  use openacc_kinds, only: acc_handle_kind
+  type (*), dimension (..), contiguous :: a
+  integer (acc_handle_kind) async
+  call acc_copyout_async_l (a, sizeof (a), int (async, kind = c_int))
+end subroutine
+
+subroutine acc_delete_async_32_h (a, len, async)
+  use iso_c_binding, only: c_int32_t, c_size_t, c_int
+  use openacc_internal, only: acc_delete_async_l
+  use openacc_kinds, only: acc_handle_kind
+  !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+  type (*), dimension (*) :: a
+  integer (c_int32_t) len
+  integer (acc_handle_kind) async
+  call acc_delete_async_l (a, int (len, kind = c_size_t), int (async, kind = c_int))
+end subroutine
+
+subroutine acc_delete_async_64_h (a, len, async)
+  use iso_c_binding, only: c_int64_t, c_size_t, c_int
+  use openacc_internal, only: acc_delete_async_l
+  use openacc_kinds, only: acc_handle_kind
+  !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+  type (*), dimension (*) :: a
+  integer (c_int64_t) len
+  integer (acc_handle_kind) async
+  call acc_delete_async_l (a, int (len, kind = c_size_t), int (async, kind = c_int))
+end subroutine
+
+subroutine acc_delete_async_array_h (a, async)
+  use iso_c_binding, only: c_int
+  use openacc_internal, only: acc_delete_async_l
+  use openacc_kinds, only: acc_handle_kind
+  type (*), dimension (..), contiguous :: a
+  integer (acc_handle_kind) async
+  call acc_delete_async_l (a, sizeof (a), int (async, kind = c_int))
+end subroutine
+
+subroutine acc_update_device_async_32_h (a, len, async)
+  use iso_c_binding, only: c_int32_t, c_size_t, c_int
+  use openacc_internal, only: acc_update_device_async_l
+  use openacc_kinds, only: acc_handle_kind
+  !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+  type (*), dimension (*) :: a
+  integer (c_int32_t) len
+  integer (acc_handle_kind) async
+  call acc_update_device_async_l (a, int (len, kind = c_size_t), int (async, kind = c_int))
+end subroutine
+
+subroutine acc_update_device_async_64_h (a, len, async)
+  use iso_c_binding, only: c_int64_t, c_size_t, c_int
+  use openacc_internal, only: acc_update_device_async_l
+  use openacc_kinds, only: acc_handle_kind
+  !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+  type (*), dimension (*) :: a
+  integer (c_int64_t) len
+  integer (acc_handle_kind) async
+  call acc_update_device_async_l (a, int (len, kind = c_size_t), int (async, kind = c_int))
+end subroutine
+
+subroutine acc_update_device_async_array_h (a, async)
+  use iso_c_binding, only: c_int
+  use openacc_internal, only: acc_update_device_async_l
+  use openacc_kinds, only: acc_handle_kind
+  type (*), dimension (..), contiguous :: a
+  integer (acc_handle_kind) async
+  call acc_update_device_async_l (a, sizeof (a), int (async, kind = c_int))
+end subroutine
+
+subroutine acc_update_self_async_32_h (a, len, async)
+  use iso_c_binding, only: c_int32_t, c_size_t, c_int
+  use openacc_internal, only: acc_update_self_async_l
+  use openacc_kinds, only: acc_handle_kind
+  !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+  type (*), dimension (*) :: a
+  integer (c_int32_t) len
+  integer (acc_handle_kind) async
+  call acc_update_self_async_l (a, int (len, kind = c_size_t), int (async, kind = c_int))
+end subroutine
+
+subroutine acc_update_self_async_64_h (a, len, async)
+  use iso_c_binding, only: c_int64_t, c_size_t, c_int
+  use openacc_internal, only: acc_update_self_async_l
+  use openacc_kinds, only: acc_handle_kind
+  !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+  type (*), dimension (*) :: a
+  integer (c_int64_t) len
+  integer (acc_handle_kind) async
+  call acc_update_self_async_l (a, int (len, kind = c_size_t), int (async, kind = c_int))
+end subroutine
+
+subroutine acc_update_self_async_array_h (a, async)
+  use iso_c_binding, only: c_int
+  use openacc_internal, only: acc_update_self_async_l
+  use openacc_kinds, only: acc_handle_kind
+  type (*), dimension (..), contiguous :: a
+  integer (acc_handle_kind) async
+  call acc_update_self_async_l (a, sizeof (a), int (async, kind = c_int))
+end subroutine

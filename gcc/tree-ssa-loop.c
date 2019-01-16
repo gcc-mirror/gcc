@@ -1,5 +1,5 @@
 /* Loop optimizations over tree-ssa.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -436,8 +436,7 @@ const pass_data pass_data_scev_cprop =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_cleanup_cfg
-    | TODO_update_ssa_only_virtuals ), /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_scev_cprop : public gimple_opt_pass
@@ -449,9 +448,23 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_tree_scev_cprop; }
-  virtual unsigned int execute (function *) { return scev_const_prop (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_scev_cprop
+
+unsigned
+pass_scev_cprop::execute (function *)
+{
+  struct loop *loop;
+  bool any = false;
+
+  /* Perform final value replacement in loops, in case the replacement
+     expressions are cheap.  */
+  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+    any |= final_value_replacement_loop (loop);
+
+  return any ? TODO_cleanup_cfg | TODO_update_ssa_only_virtuals : 0;
+}
 
 } // anon namespace
 

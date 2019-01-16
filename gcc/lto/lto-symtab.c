@@ -1,5 +1,5 @@
 /* LTO symbol table.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -374,8 +374,9 @@ lto_symtab_merge (symtab_node *prevailing, symtab_node *entry)
 	 int a[]={1,2,3};
 	 here the first declaration is COMMON
 	 and sizeof(a) == sizeof (int).  */
-	else if (TREE_CODE (type) == ARRAY_TYPE)
-	  return (TYPE_SIZE (decl) == TYPE_SIZE (TREE_TYPE (type)));
+	else if (TREE_CODE (type) != ARRAY_TYPE
+		 || (TYPE_SIZE (type) != TYPE_SIZE (TREE_TYPE (type))))
+	  return false;
       }
 
   return true;
@@ -696,10 +697,21 @@ lto_symtab_merge_decls_2 (symtab_node *first, bool diagnosed_p)
 	{
 	  bool diag = false;
 	  if (level & 2)
-	    diag = warning_at (DECL_SOURCE_LOCATION (decl),
-			       OPT_Wodr,
-			       "%qD violates the C++ One Definition Rule ",
-			       decl);
+	    {
+	      /* Silence warning for method and variables which belong
+	         to types which already have ODR violation reported.  Complaining
+		 once is enough.  */
+	      if (TREE_CODE (decl) != FUNCTION_DECL
+		  || TREE_CODE (TREE_TYPE (decl)) != METHOD_TYPE
+		  || !TYPE_METHOD_BASETYPE (TREE_TYPE (decl))
+		  || !odr_type_p (TYPE_METHOD_BASETYPE (TREE_TYPE (decl)))
+		  || !odr_type_violation_reported_p 
+			(TYPE_METHOD_BASETYPE (TREE_TYPE (decl))))
+		diag = warning_at (DECL_SOURCE_LOCATION (decl),
+				   OPT_Wodr,
+				   "%qD violates the C++ One Definition Rule",
+				   decl);
+	    }
 	  if (!diag && (level & 1))
 	    diag = warning_at (DECL_SOURCE_LOCATION (decl),
 			       OPT_Wlto_type_mismatch,
@@ -894,10 +906,11 @@ lto_symtab_merge_symbols_1 (symtab_node *prevailing)
        e = next)
     {
       next = e->next_sharing_asm_name;
-
-      if (!lto_symtab_symbol_p (e))
-	continue;
       cgraph_node *ce = dyn_cast <cgraph_node *> (e);
+
+      if ((!TREE_PUBLIC (e->decl) && !DECL_EXTERNAL (e->decl))
+	  || (ce != NULL && ce->global.inlined_to))
+	continue;
       symtab_node *to = symtab_node::get (lto_symtab_prevailing_decl (e->decl));
 
       /* No matter how we are going to deal with resolution, we will ultimately

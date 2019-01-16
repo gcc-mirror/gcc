@@ -1,3 +1,18 @@
+2018-11-07  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+        * configure: Regenerated.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	Merge from binutils-gdb:
+	2018-06-19  Simon Marchi  <simon.marchi@ericsson.com>
+
+	* configure.ac: Add AC_USE_SYSTEM_EXTENSIONS, remove AC_PREREQ.
+	* configure: Re-generate.
+	* config.h.in: Re-generate.
+	* aclocal.m4: Re-generate.
+
 2018-09-18  Simon Marchi  <simon.marchi@ericsson.com>
 
 	* libgnuintl.h (_INTL_MAY_RETURN_STRING_ARG, gettext, dgettext,

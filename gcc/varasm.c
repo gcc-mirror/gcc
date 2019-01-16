@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1974,7 +1974,7 @@ assemble_zeros (unsigned HOST_WIDE_INT size)
 /* Assemble an alignment pseudo op for an ALIGN-bit boundary.  */
 
 void
-assemble_align (int align)
+assemble_align (unsigned int align)
 {
   if (align > BITS_PER_UNIT)
     {
@@ -2733,10 +2733,24 @@ integer_asm_op (int size, int aligned_p)
       return targetm.asm_out.byte_op;
     case 2:
       return ops->hi;
+    case 3:
+      return ops->psi;
     case 4:
       return ops->si;
+    case 5:
+    case 6:
+    case 7:
+      return ops->pdi;
     case 8:
       return ops->di;
+    case 9:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+    case 14:
+    case 15:
+      return ops->pti;
     case 16:
       return ops->ti;
     default:

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for 64 bit PowerPC linux.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -369,6 +369,8 @@ extern int dot_symbols;
 #define TARGET_OS_CPP_BUILTINS()			\
   do							\
     {							\
+      if (strcmp (rs6000_abi_name, "linux") == 0)	\
+	GNU_USER_TARGET_OS_CPP_BUILTINS();		\
       if (TARGET_64BIT)					\
 	{						\
 	  builtin_define ("__PPC__");			\
@@ -390,6 +392,19 @@ extern int dot_symbols;
 	}						\
     }							\
   while (0)
+
+#define GNU_USER_TARGET_D_OS_VERSIONS()		\
+    do {					\
+	builtin_version ("linux");		\
+	if (OPTION_GLIBC)			\
+	  builtin_version ("CRuntime_Glibc");	\
+	else if (OPTION_UCLIBC)			\
+	  builtin_version ("CRuntime_UClibc");	\
+	else if (OPTION_BIONIC)			\
+	  builtin_version ("CRuntime_Bionic");	\
+	else if (OPTION_MUSL)			\
+	  builtin_version ("CRuntime_Musl");	\
+    } while (0)
 
 #undef  CPP_OS_DEFAULT_SPEC
 #define CPP_OS_DEFAULT_SPEC "%(cpp_os_linux) %(include_extra)"
@@ -425,31 +440,12 @@ extern int dot_symbols;
 ":%(dynamic_linker_prefix)/lib64/ld64.so.1}"
 #endif
 
+#undef MUSL_DYNAMIC_LINKER32
 #define MUSL_DYNAMIC_LINKER32 \
   "/lib/ld-musl-powerpc" MUSL_DYNAMIC_LINKER_E "%{msoft-float:-sf}.so.1"
+#undef MUSL_DYNAMIC_LINKER64
 #define MUSL_DYNAMIC_LINKER64 \
   "/lib/ld-musl-powerpc64" MUSL_DYNAMIC_LINKER_E "%{msoft-float:-sf}.so.1"
-
-#define UCLIBC_DYNAMIC_LINKER32 "/lib/ld-uClibc.so.0"
-#define UCLIBC_DYNAMIC_LINKER64 "/lib/ld64-uClibc.so.0"
-#if DEFAULT_LIBC == LIBC_UCLIBC
-#define CHOOSE_DYNAMIC_LINKER(G, U, M) \
-  "%{mglibc:" G ";:%{mmusl:" M ";:" U "}}"
-#elif DEFAULT_LIBC == LIBC_GLIBC
-#define CHOOSE_DYNAMIC_LINKER(G, U, M) \
-  "%{muclibc:" U ";:%{mmusl:" M ";:" G "}}"
-#elif DEFAULT_LIBC == LIBC_MUSL
-#define CHOOSE_DYNAMIC_LINKER(G, U, M) \
-  "%{mglibc:" G ";:%{muclibc:" U ";:" M "}}"
-#else
-#error "Unsupported DEFAULT_LIBC"
-#endif
-#define GNU_USER_DYNAMIC_LINKER32 \
-  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER32, UCLIBC_DYNAMIC_LINKER32, \
-			 MUSL_DYNAMIC_LINKER32)
-#define GNU_USER_DYNAMIC_LINKER64 \
-  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER64, UCLIBC_DYNAMIC_LINKER64, \
-			 MUSL_DYNAMIC_LINKER64)
 
 #undef  DEFAULT_ASM_ENDIAN
 #if (TARGET_DEFAULT & MASK_LITTLE_ENDIAN)
@@ -481,6 +477,13 @@ extern int dot_symbols;
     %{rdynamic:-export-dynamic} \
     -dynamic-linker " GNU_USER_DYNAMIC_LINKER64 "}}} \
   %(link_os_extra_spec64)"
+
+/* Use gnu-user.h LINK_GCC_SEQUENCE_SPEC for linux.  */
+#undef LINK_GCC_C_SEQUENCE_SPEC
+#define	LINK_GCC_C_SEQUENCE_SPEC \
+  "%{mads|myellowknife|mmvme|msim:%G %L %G;" \
+  "!mcall-*|mcall-linux:" GNU_USER_TARGET_LINK_GCC_C_SEQUENCE_SPEC ";" \
+  ":%G %L %G}"
 
 #undef  TOC_SECTION_ASM_OP
 #define TOC_SECTION_ASM_OP \
@@ -569,8 +572,10 @@ extern int dot_symbols;
    we also do this for floating-point constants.  We actually can only
    do this if the FP formats of the target and host machines are the
    same, but we can't check that since not every file that uses
-   the macros includes real.h.  We also do this when we can write the
-   entry into the TOC and the entry is not larger than a TOC entry.  */
+   the macros includes real.h.  We also do this when we can write an
+   integer into the TOC and the entry is not larger than a TOC entry,
+   but not for -mcmodel=medium where we'll use a toc-relative load for
+   constants outside the TOC.  */
 
 #undef  ASM_OUTPUT_SPECIAL_POOL_ENTRY_P
 #define ASM_OUTPUT_SPECIAL_POOL_ENTRY_P(X, MODE)			\
@@ -580,6 +585,7 @@ extern int dot_symbols;
 	   && GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF)		\
        || GET_CODE (X) == LABEL_REF					\
        || (GET_CODE (X) == CONST_INT 					\
+	   && TARGET_CMODEL != CMODEL_MEDIUM				\
 	   && GET_MODE_BITSIZE (MODE) <= GET_MODE_BITSIZE (Pmode))	\
        || (GET_CODE (X) == CONST_DOUBLE					\
 	   && ((TARGET_64BIT						\

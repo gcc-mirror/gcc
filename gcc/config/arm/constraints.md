@@ -1,5 +1,5 @@
 ;; Constraint definitions for ARM and Thumb
-;; Copyright (C) 2006-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2019 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.
@@ -31,9 +31,10 @@
 ;; 'H' was previously used for FPA.
 
 ;; The following multi-letter normal constraints have been used:
-;; in ARM/Thumb-2 state: Da, Db, Dc, Dd, Dn, Dl, DL, Do, Dv, Dy, Di, Dt, Dp, Dz
+;; in ARM/Thumb-2 state: Da, Db, Dc, Dd, Dn, Dl, DL, Do, Dv, Dy, Di, Dt, Dp,
+;;			 Dz, Tu
 ;; in Thumb-1 state: Pa, Pb, Pc, Pd, Pe
-;; in Thumb-2 state: Pj, PJ, Ps, Pt, Pu, Pv, Pw, Px, Py
+;; in Thumb-2 state: Ha, Pj, PJ, Ps, Pt, Pu, Pv, Pw, Px, Py, Pz
 ;; in all states: Pf
 
 ;; The following memory constraints have been used:
@@ -234,6 +235,12 @@
  (and (match_code "const_double")
       (match_test "TARGET_32BIT && arm_const_double_rtx (op)")))
 
+(define_constraint "Ha"
+  "@internal In ARM / Thumb-2 a float constant iff literal pools are allowed."
+  (and (match_code "const_double")
+       (match_test "satisfies_constraint_E (op)")
+       (match_test "!arm_disable_literal_pool")))
+
 (define_constraint "Dz"
  "@internal
   In ARM/Thumb-2 state a vector of constant zeros."
@@ -350,6 +357,12 @@
   (and (match_code "const_double")
        (match_test "TARGET_32BIT
 		    && vfp3_const_double_for_bits (op) > 0")))
+
+(define_constraint "Tu"
+  "@internal In ARM / Thumb-2 an integer constant iff literal pools are
+   allowed."
+  (and (match_test "CONSTANT_P (op)")
+       (match_test "!arm_disable_literal_pool")))
 
 (define_register_constraint "Ts" "(arm_restrict_it) ? LO_REGS : GENERAL_REGS"
  "For arm_restrict_it the core registers @code{r0}-@code{r7}.  GENERAL_REGS otherwise.")

@@ -27,3 +27,6 @@ f (void)
 
 /* Should still diagnose incompatible prototype for strcmp.  */
 int strcmp (void); /* { dg-error "conflict" } */
+
+/* { dg-prune-output "\\\[-Wbuiltin-declaration-mismatch]" }
+   { dg-prune-output "\\\[-Wint-conversion]" } */

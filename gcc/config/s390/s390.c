@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IBM S/390 and zSeries
-   Copyright (C) 1999-2018 Free Software Foundation, Inc.
+   Copyright (C) 1999-2019 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com) and
                   Andreas Krebbel (Andreas.Krebbel@de.ibm.com).
@@ -2731,6 +2731,17 @@ s390_safe_attr_type (rtx_insn *insn)
     return TYPE_NONE;
 }
 
+/* Return attribute relative_long of insn.  */
+
+static bool
+s390_safe_relative_long_p (rtx_insn *insn)
+{
+  if (recog_memoized (insn) >= 0)
+    return get_attr_relative_long (insn) == RELATIVE_LONG_YES;
+  else
+    return false;
+}
+
 /* Return true if DISP is a valid short displacement.  */
 
 static bool
@@ -3415,6 +3426,11 @@ s390_register_move_cost (machine_mode mode,
       || (reg_classes_intersect_p (from, FP_REGS)
 	  && reg_classes_intersect_p (to, GENERAL_REGS)))
     return 10;
+
+  /* We usually do not want to copy via CC.  */
+  if (reg_classes_intersect_p (from, CC_REGS)
+       || reg_classes_intersect_p (to, CC_REGS))
+    return 5;
 
   return 1;
 }
@@ -4171,6 +4187,20 @@ s390_check_symref_alignment (rtx addr, HOST_WIDE_INT alignment)
 
   if (GET_CODE (symref) == SYMBOL_REF)
     {
+      /* s390_encode_section_info is not called for anchors, since they don't
+	 have corresponding VAR_DECLs.  Therefore, we cannot rely on
+	 SYMBOL_FLAG_NOTALIGN{2,4,8}_P returning useful information.  */
+      if (SYMBOL_REF_ANCHOR_P (symref))
+	{
+	  HOST_WIDE_INT block_offset = SYMBOL_REF_BLOCK_OFFSET (symref);
+	  unsigned int block_alignment = (SYMBOL_REF_BLOCK (symref)->alignment
+					  / BITS_PER_UNIT);
+
+	  gcc_assert (block_offset >= 0);
+	  return ((block_offset & (alignment - 1)) == 0
+		  && block_alignment >= alignment);
+	}
+
       /* We have load-relative instructions for 2-byte, 4-byte, and
 	 8-byte alignment so allow only these.  */
       switch (alignment)
@@ -7582,6 +7612,8 @@ print_operand_address (FILE *file, rtx addr)
    CODE specified the format flag.  The following format flags
    are recognized:
 
+    'A': On z14 or higher: If operand is a mem print the alignment
+	 hint usable with vl/vst prefixed by a comma.
     'C': print opcode suffix for branch condition.
     'D': print opcode suffix for inverse branch condition.
     'E': print opcode suffix for branch on index instruction.
@@ -7619,6 +7651,17 @@ print_operand (FILE *file, rtx x, int code)
 
   switch (code)
     {
+    case 'A':
+#ifdef HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS
+      if (TARGET_Z14 && MEM_P (x))
+	{
+	  if (MEM_ALIGN (x) >= 128)
+	    fprintf (file, ",4");
+	  else if (MEM_ALIGN (x) == 64)
+	    fprintf (file, ",3");
+	}
+#endif
+      return;
     case 'C':
       fprintf (file, s390_branch_condition_mnemonic (x, FALSE));
       return;
@@ -8097,11 +8140,8 @@ s390_first_cycle_multipass_dfa_lookahead (void)
   return 4;
 }
 
-/* Annotate every literal pool reference in X by an UNSPEC_LTREF expression.
-   Fix up MEMs as required.  */
-
 static void
-annotate_constant_pool_refs (rtx *x)
+annotate_constant_pool_refs_1 (rtx *x)
 {
   int i, j;
   const char *fmt;
@@ -8180,26 +8220,31 @@ annotate_constant_pool_refs (rtx *x)
     {
       if (fmt[i] == 'e')
 	{
-	  annotate_constant_pool_refs (&XEXP (*x, i));
+	  annotate_constant_pool_refs_1 (&XEXP (*x, i));
 	}
       else if (fmt[i] == 'E')
 	{
 	  for (j = 0; j < XVECLEN (*x, i); j++)
-	    annotate_constant_pool_refs (&XVECEXP (*x, i, j));
+	    annotate_constant_pool_refs_1 (&XVECEXP (*x, i, j));
 	}
     }
 }
 
-/* Find an annotated literal pool symbol referenced in RTX X,
-   and store it at REF.  Will abort if X contains references to
-   more than one such pool symbol; multiple references to the same
-   symbol are allowed, however.
-
-   The rtx pointed to by REF must be initialized to NULL_RTX
-   by the caller before calling this routine.  */
+/* Annotate every literal pool reference in INSN by an UNSPEC_LTREF expression.
+   Fix up MEMs as required.
+   Skip insns which support relative addressing, because they do not use a base
+   register.  */
 
 static void
-find_constant_pool_ref (rtx x, rtx *ref)
+annotate_constant_pool_refs (rtx_insn *insn)
+{
+  if (s390_safe_relative_long_p (insn))
+    return;
+  annotate_constant_pool_refs_1 (&PATTERN (insn));
+}
+
+static void
+find_constant_pool_ref_1 (rtx x, rtx *ref)
 {
   int i, j;
   const char *fmt;
@@ -8231,21 +8276,37 @@ find_constant_pool_ref (rtx x, rtx *ref)
     {
       if (fmt[i] == 'e')
 	{
-	  find_constant_pool_ref (XEXP (x, i), ref);
+	  find_constant_pool_ref_1 (XEXP (x, i), ref);
 	}
       else if (fmt[i] == 'E')
 	{
 	  for (j = 0; j < XVECLEN (x, i); j++)
-	    find_constant_pool_ref (XVECEXP (x, i, j), ref);
+	    find_constant_pool_ref_1 (XVECEXP (x, i, j), ref);
 	}
     }
 }
 
-/* Replace every reference to the annotated literal pool
-   symbol REF in X by its base plus OFFSET.  */
+/* Find an annotated literal pool symbol referenced in INSN,
+   and store it at REF.  Will abort if INSN contains references to
+   more than one such pool symbol; multiple references to the same
+   symbol are allowed, however.
+
+   The rtx pointed to by REF must be initialized to NULL_RTX
+   by the caller before calling this routine.
+
+   Skip insns which support relative addressing, because they do not use a base
+   register.  */
 
 static void
-replace_constant_pool_ref (rtx *x, rtx ref, rtx offset)
+find_constant_pool_ref (rtx_insn *insn, rtx *ref)
+{
+  if (s390_safe_relative_long_p (insn))
+    return;
+  find_constant_pool_ref_1 (PATTERN (insn), ref);
+}
+
+static void
+replace_constant_pool_ref_1 (rtx *x, rtx ref, rtx offset)
 {
   int i, j;
   const char *fmt;
@@ -8276,14 +8337,27 @@ replace_constant_pool_ref (rtx *x, rtx ref, rtx offset)
     {
       if (fmt[i] == 'e')
 	{
-	  replace_constant_pool_ref (&XEXP (*x, i), ref, offset);
+	  replace_constant_pool_ref_1 (&XEXP (*x, i), ref, offset);
 	}
       else if (fmt[i] == 'E')
 	{
 	  for (j = 0; j < XVECLEN (*x, i); j++)
-	    replace_constant_pool_ref (&XVECEXP (*x, i, j), ref, offset);
+	    replace_constant_pool_ref_1 (&XVECEXP (*x, i, j), ref, offset);
 	}
     }
+}
+
+/* Replace every reference to the annotated literal pool
+   symbol REF in INSN by its base plus OFFSET.
+   Skip insns which support relative addressing, because they do not use a base
+   register.  */
+
+static void
+replace_constant_pool_ref (rtx_insn *insn, rtx ref, rtx offset)
+{
+  if (s390_safe_relative_long_p (insn))
+    return;
+  replace_constant_pool_ref_1 (&PATTERN (insn), ref, offset);
 }
 
 /* We keep a list of constants which we have to add to internal
@@ -8686,7 +8760,7 @@ s390_mainpool_start (void)
       if (NONJUMP_INSN_P (insn) || CALL_P (insn))
 	{
 	  rtx pool_ref = NULL_RTX;
-	  find_constant_pool_ref (PATTERN (insn), &pool_ref);
+	  find_constant_pool_ref (insn, &pool_ref);
 	  if (pool_ref)
 	    {
 	      rtx constant = get_pool_constant (pool_ref);
@@ -8773,7 +8847,7 @@ s390_mainpool_finish (struct constant_pool *pool)
       if (NONJUMP_INSN_P (insn) || CALL_P (insn))
 	{
 	  rtx addr, pool_ref = NULL_RTX;
-	  find_constant_pool_ref (PATTERN (insn), &pool_ref);
+	  find_constant_pool_ref (insn, &pool_ref);
 	  if (pool_ref)
 	    {
 	      if (s390_execute_label (insn))
@@ -8782,7 +8856,7 @@ s390_mainpool_finish (struct constant_pool *pool)
 		addr = s390_find_constant (pool, get_pool_constant (pool_ref),
 						 get_pool_mode (pool_ref));
 
-	      replace_constant_pool_ref (&PATTERN (insn), pool_ref, addr);
+	      replace_constant_pool_ref (insn, pool_ref, addr);
 	      INSN_CODE (insn) = -1;
 	    }
 	}
@@ -8816,7 +8890,7 @@ s390_chunkify_start (void)
       if (NONJUMP_INSN_P (insn) || CALL_P (insn))
 	{
 	  rtx pool_ref = NULL_RTX;
-	  find_constant_pool_ref (PATTERN (insn), &pool_ref);
+	  find_constant_pool_ref (insn, &pool_ref);
 	  if (pool_ref)
 	    {
 	      rtx constant = get_pool_constant (pool_ref);
@@ -8973,7 +9047,7 @@ s390_chunkify_finish (struct constant_pool *pool_list)
       if (NONJUMP_INSN_P (insn) || CALL_P (insn))
 	{
 	  rtx addr, pool_ref = NULL_RTX;
-	  find_constant_pool_ref (PATTERN (insn), &pool_ref);
+	  find_constant_pool_ref (insn, &pool_ref);
 	  if (pool_ref)
 	    {
 	      if (s390_execute_label (insn))
@@ -8983,7 +9057,7 @@ s390_chunkify_finish (struct constant_pool *pool_list)
 					   get_pool_constant (pool_ref),
 					   get_pool_mode (pool_ref));
 
-	      replace_constant_pool_ref (&PATTERN (insn), pool_ref, addr);
+	      replace_constant_pool_ref (insn, pool_ref, addr);
 	      INSN_CODE (insn) = -1;
 	    }
 	}
@@ -10576,7 +10650,7 @@ pass_s390_early_mach::execute (function *fun)
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn))
       {
-	annotate_constant_pool_refs (&PATTERN (insn));
+	annotate_constant_pool_refs (insn);
 	df_insn_rescan (insn);
       }
   return 0;
@@ -10597,7 +10671,7 @@ make_pass_s390_early_mach (gcc::context *ctxt)
 static rtx
 s390_prologue_plus_offset (rtx target, rtx reg, rtx offset, bool frame_related_p)
 {
-  rtx insn;
+  rtx_insn *insn;
   rtx orig_offset = offset;
 
   gcc_assert (REG_P (target));
@@ -10631,7 +10705,7 @@ s390_prologue_plus_offset (rtx target, rtx reg, rtx offset, bool frame_related_p
 
       if (!CONST_INT_P (offset))
 	{
-	  annotate_constant_pool_refs (&PATTERN (insn));
+	  annotate_constant_pool_refs (insn);
 
 	  if (frame_related_p)
 	    add_reg_note (insn, REG_FRAME_RELATED_EXPR,
@@ -11071,7 +11145,7 @@ s390_emit_prologue (void)
       rtx_insn *insns = s390_load_got ();
 
       for (rtx_insn *insn = insns; insn; insn = NEXT_INSN (insn))
-	annotate_constant_pool_refs (&PATTERN (insn));
+	annotate_constant_pool_refs (insn);
 
       emit_insn (insns);
     }
@@ -11135,7 +11209,8 @@ s390_emit_epilogue (bool sibcall)
     }
   else
     {
-      rtx insn, frame_off, cfa;
+      rtx_insn *insn;
+      rtx frame_off, cfa;
 
       offset = area_bottom < 0 ? -area_bottom : 0;
       frame_off = GEN_INT (cfun_frame_layout.frame_size - offset);
@@ -11144,9 +11219,11 @@ s390_emit_epilogue (bool sibcall)
 			 gen_rtx_PLUS (Pmode, frame_pointer, frame_off));
       if (DISP_IN_RANGE (INTVAL (frame_off)))
 	{
-	  insn = gen_rtx_SET (frame_pointer,
-			      gen_rtx_PLUS (Pmode, frame_pointer, frame_off));
-	  insn = emit_insn (insn);
+	  rtx set;
+
+	  set = gen_rtx_SET (frame_pointer,
+			     gen_rtx_PLUS (Pmode, frame_pointer, frame_off));
+	  insn = emit_insn (set);
 	}
       else
 	{
@@ -11154,7 +11231,7 @@ s390_emit_epilogue (bool sibcall)
 	    frame_off = force_const_mem (Pmode, frame_off);
 
 	  insn = emit_insn (gen_add2_insn (frame_pointer, frame_off));
-	  annotate_constant_pool_refs (&PATTERN (insn));
+	  annotate_constant_pool_refs (insn);
 	}
       add_reg_note (insn, REG_CFA_ADJUST_CFA, cfa);
       RTX_FRAME_RELATED_P (insn) = 1;
@@ -16274,6 +16351,11 @@ s390_case_values_threshold (void)
 
 #undef TARGET_CASE_VALUES_THRESHOLD
 #define TARGET_CASE_VALUES_THRESHOLD s390_case_values_threshold
+
+/* Use only short displacement, since long displacement is not available for
+   the floating point instructions.  */
+#undef TARGET_MAX_ANCHOR_OFFSET
+#define TARGET_MAX_ANCHOR_OFFSET 0xfff
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

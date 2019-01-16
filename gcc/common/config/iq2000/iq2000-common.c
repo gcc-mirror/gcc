@@ -1,5 +1,5 @@
 /* Common hooks for Vitesse IQ2000.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

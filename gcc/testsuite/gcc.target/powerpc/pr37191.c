@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-options "-O3 -mpower8-vector" } */
-/* { dg-require-effective-target lp64 } */
 /* { dg-require-effective-target p8vector_hw } */
 
 #define NO_WARN_X86_INTRINSICS 1

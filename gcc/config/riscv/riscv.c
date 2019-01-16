@@ -1,5 +1,5 @@
 /* Subroutines used for code generation for RISC-V.
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
    Based on MIPS target for GNU compiler.
 
@@ -236,6 +236,11 @@ bool riscv_slow_unaligned_access_p;
 
 /* Stack alignment to assume/maintain.  */
 unsigned riscv_stack_boundary;
+
+/* If non-zero, this is an offset to be added to SP to redefine the CFA
+   when restoring the FP register from the stack.  Only valid when generating
+   the epilogue.  */
+static int epilogue_cfa_sp_offset;
 
 /* Which tuning parameters to use.  */
 static const struct riscv_tune_info *tune_info;
@@ -2877,7 +2882,7 @@ riscv_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
       src = adjust_address (src, BLKmode, offset);
       dest = adjust_address (dest, BLKmode, offset);
       move_by_pieces (dest, src, length - offset,
-		      MIN (MEM_ALIGN (src), MEM_ALIGN (dest)), 0);
+		      MIN (MEM_ALIGN (src), MEM_ALIGN (dest)), RETURN_BEGIN);
     }
 }
 
@@ -3627,8 +3632,15 @@ riscv_restore_reg (rtx reg, rtx mem)
   rtx insn = riscv_emit_move (reg, mem);
   rtx dwarf = NULL_RTX;
   dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
-  REG_NOTES (insn) = dwarf;
 
+  if (epilogue_cfa_sp_offset && REGNO (reg) == HARD_FRAME_POINTER_REGNUM)
+    {
+      rtx cfa_adjust_rtx = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+					 GEN_INT (epilogue_cfa_sp_offset));
+      dwarf = alloc_reg_note (REG_CFA_DEF_CFA, cfa_adjust_rtx, dwarf);
+    }
+
+  REG_NOTES (insn) = dwarf;
   RTX_FRAME_RELATED_P (insn) = 1;
 }
 
@@ -3877,6 +3889,9 @@ riscv_expand_epilogue (int style)
       return;
     }
 
+  /* Reset the epilogue cfa info before starting to emit the epilogue.  */
+  epilogue_cfa_sp_offset = 0;
+
   /* Move past any dynamic stack allocations.  */
   if (cfun->calls_alloca)
     {
@@ -3940,6 +3955,12 @@ riscv_expand_epilogue (int style)
       RTX_FRAME_RELATED_P (insn) = 1;
 
       REG_NOTES (insn) = dwarf;
+    }
+  else if (frame_pointer_needed)
+    {
+      /* Tell riscv_restore_reg to emit dwarf to redefine CFA when restoring
+	 old value of FP.  */
+      epilogue_cfa_sp_offset = step2;
     }
 
   if (use_restore_libcall)

@@ -1,6 +1,5 @@
 /* { dg-do run } */
 /* { dg-options "-O3 -mpower8-vector -Wno-psabi" } */
-/* { dg-require-effective-target lp64 } */
 /* { dg-require-effective-target p8vector_hw } */
 
 #ifndef CHECK_H
@@ -45,15 +44,14 @@ TEST (void)
       } 
 
   if (check_union128i_d (u, e))
-#if DEBUG
     {
+#if DEBUG
       printf ("sse2_test_psrld_2; check_union128i_d failed\n");
       printf ("\tsrld\t([%x,%x,%x,%x], [%llx,%llx]\n", s.a[0], s.a[1], s.a[2],
 	      s.a[3], c.a[0], c.a[1]);
       printf ("\t ->\t [%x,%x,%x,%x]\n", u.a[0], u.a[1], u.a[2], u.a[3]);
       printf ("\texpect\t [%x,%x,%x,%x]\n", e[0], e[1], e[2], e[3]);
-    }
-#else
-    abort ();
 #endif
+      abort ();
+    }
 }

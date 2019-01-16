@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -252,6 +252,10 @@ struct tune_params
   const struct cpu_vector_cost *vec_costs;
   const struct cpu_branch_cost *branch_costs;
   const struct cpu_approx_modes *approx_modes;
+  /* Width of the SVE registers or SVE_NOT_IMPLEMENTED if not applicable.
+     Only used for tuning decisions, does not disable VLA
+     vectorization.  */
+  enum aarch64_sve_vector_bits_enum sve_width;
   int memmov_cost;
   int issue_rate;
   unsigned int fusible_ops;
@@ -467,6 +471,7 @@ bool aarch64_split_dimode_const_store (rtx, rtx);
 bool aarch64_symbolic_address_p (rtx);
 bool aarch64_uimm12_shift (HOST_WIDE_INT);
 bool aarch64_use_return_insn_p (void);
+bool aarch64_use_simple_return_insn_p (void);
 const char *aarch64_mangle_builtin_type (const_tree);
 const char *aarch64_output_casesi (rtx *);
 
@@ -525,7 +530,7 @@ void aarch64_subvti_scratch_regs (rtx, rtx, rtx *,
 				  rtx *, rtx *,
 				  rtx *, rtx *, rtx *);
 void aarch64_expand_subvti (rtx, rtx, rtx,
-			    rtx, rtx, rtx, rtx);
+			    rtx, rtx, rtx, rtx, bool);
 
 
 /* Initialize builtins for SIMD intrinsics.  */
@@ -552,6 +557,8 @@ void aarch64_split_simd_move (rtx, rtx);
 /* Check for a legitimate floating point constant for FMOV.  */
 bool aarch64_float_const_representable_p (rtx);
 
+extern int aarch64_epilogue_uses (int);
+
 #if defined (RTX_CODE)
 void aarch64_gen_unlikely_cbranch (enum rtx_code, machine_mode cc_mode,
 				   rtx label_ref);
@@ -563,10 +570,7 @@ rtx aarch64_load_tp (rtx);
 
 void aarch64_expand_compare_and_swap (rtx op[]);
 void aarch64_split_compare_and_swap (rtx op[]);
-void aarch64_gen_atomic_cas (rtx, rtx, rtx, rtx, rtx);
 
-bool aarch64_atomic_ldop_supported_p (enum rtx_code);
-void aarch64_gen_atomic_ldop (enum rtx_code, rtx, rtx, rtx, rtx, rtx);
 void aarch64_split_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx, rtx);
 
 bool aarch64_gen_adjusted_ldpstp (rtx *, bool, scalar_mode, RTX_CODE);
@@ -616,9 +620,14 @@ bool aarch64_handle_option (struct gcc_options *, struct gcc_options *,
 			     const struct cl_decoded_option *, location_t);
 const char *aarch64_rewrite_selected_cpu (const char *name);
 enum aarch64_parse_opt_result aarch64_parse_extension (const char *,
-						       unsigned long *);
+						       unsigned long *,
+						       std::string *);
+void aarch64_get_all_extension_candidates (auto_vec<const char *> *candidates);
 std::string aarch64_get_extension_string_for_isa_flags (unsigned long,
 							unsigned long);
+
+/* Defined in aarch64-d.c  */
+extern void aarch64_d_target_versions (void);
 
 rtl_opt_pass *make_pass_fma_steering (gcc::context *);
 rtl_opt_pass *make_pass_track_speculation (gcc::context *);

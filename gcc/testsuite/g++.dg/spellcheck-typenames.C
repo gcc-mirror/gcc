@@ -9,12 +9,7 @@ void test_2 (singed char e); // { dg-error "21: variable or field 'test_2' decla
  void test_2 (singed char e);
                      ^~~~
    { dg-end-multiline-output "" } */
-// { dg-message "14: 'singed' was not declared in this scope" "" { target *-*-* } 7 }
-/* { dg-begin-multiline-output "" }
- void test_2 (singed char e);
-              ^~~~~~
-   { dg-end-multiline-output "" } */
-// { dg-message "14: suggested alternative: 'signed'" "" { target *-*-* } 7 }
+// { dg-message "14: 'singed' was not declared in this scope; did you mean 'signed'\\?" "" { target *-*-* } 7 }
 /* { dg-begin-multiline-output "" }
  void test_2 (singed char e);
               ^~~~~~
@@ -26,8 +21,7 @@ void test_3 (car e); // { dg-error "14: variable or field 'test_3' declared void
  void test_3 (car e);
               ^~~
    { dg-end-multiline-output "" } */
-// { dg-message "14: 'car' was not declared in this scope" "" { target *-*-* } 24 }
-// { dg-message "14: suggested alternative: 'char'" "" { target *-*-* } 24 }
+// { dg-message "14: 'car' was not declared in this scope; did you mean 'char'\\?" "" { target *-*-* } 19 }
 /* { dg-begin-multiline-output "" }
  void test_3 (car e);
               ^~~

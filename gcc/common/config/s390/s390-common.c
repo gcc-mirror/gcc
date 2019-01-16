@@ -1,5 +1,5 @@
 /* Common hooks for IBM S/390 and zSeries.
-   Copyright (C) 1999-2018 Free Software Foundation, Inc.
+   Copyright (C) 1999-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -74,6 +74,9 @@ s390_option_init_struct (struct gcc_options *opts)
   /* By default, always emit DWARF-2 unwind info.  This allows debugging
      without maintaining a stack frame back-chain.  */
   opts->x_flag_asynchronous_unwind_tables = 1;
+
+  /* Enable section anchors by default.  */
+  opts->x_flag_section_anchors = 1;
 }
 
 /* Implement TARGET_HANDLE_OPTION.  */

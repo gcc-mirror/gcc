@@ -11,13 +11,16 @@
 //===----------------------------------------------------------------------===//
 #include "interception/interception.h"
 #include "sanitizer_common/sanitizer_allocator.h"
+#include "sanitizer_common/sanitizer_allocator_report.h"
 #include "sanitizer_common/sanitizer_internal_defs.h"
 #include "tsan_interceptors.h"
+#include "tsan_rtl.h"
 
 using namespace __tsan;  // NOLINT
 
 namespace std {
 struct nothrow_t {};
+enum class align_val_t: __sanitizer::uptr {};
 }  // namespace std
 
 DECLARE_REAL(void *, malloc, uptr size)
@@ -31,7 +34,25 @@ DECLARE_REAL(void, free, void *ptr)
   {  \
     SCOPED_INTERCEPTOR_RAW(mangled_name, size); \
     p = user_alloc(thr, pc, size); \
-    if (!nothrow && UNLIKELY(!p)) DieOnFailure::OnOOM(); \
+    if (!nothrow && UNLIKELY(!p)) { \
+      GET_STACK_TRACE_FATAL(thr, pc); \
+      ReportOutOfMemory(size, &stack); \
+    } \
+  }  \
+  invoke_malloc_hook(p, size);  \
+  return p;
+
+#define OPERATOR_NEW_BODY_ALIGN(mangled_name, nothrow) \
+  if (cur_thread()->in_symbolizer) \
+    return InternalAlloc(size, nullptr, (uptr)align); \
+  void *p = 0; \
+  {  \
+    SCOPED_INTERCEPTOR_RAW(mangled_name, size); \
+    p = user_memalign(thr, pc, (uptr)align, size); \
+    if (!nothrow && UNLIKELY(!p)) { \
+      GET_STACK_TRACE_FATAL(thr, pc); \
+      ReportOutOfMemory(size, &stack); \
+    } \
   }  \
   invoke_malloc_hook(p, size);  \
   return p;
@@ -58,6 +79,36 @@ SANITIZER_INTERFACE_ATTRIBUTE
 void *operator new[](__sanitizer::uptr size, std::nothrow_t const&);
 void *operator new[](__sanitizer::uptr size, std::nothrow_t const&) {
   OPERATOR_NEW_BODY(_ZnamRKSt9nothrow_t, true /*nothrow*/);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void *operator new(__sanitizer::uptr size, std::align_val_t align);
+void *operator new(__sanitizer::uptr size, std::align_val_t align) {
+  OPERATOR_NEW_BODY_ALIGN(_ZnwmSt11align_val_t, false /*nothrow*/);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void *operator new[](__sanitizer::uptr size, std::align_val_t align);
+void *operator new[](__sanitizer::uptr size, std::align_val_t align) {
+  OPERATOR_NEW_BODY_ALIGN(_ZnamSt11align_val_t, false /*nothrow*/);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void *operator new(__sanitizer::uptr size, std::align_val_t align,
+                   std::nothrow_t const&);
+void *operator new(__sanitizer::uptr size, std::align_val_t align,
+                   std::nothrow_t const&) {
+  OPERATOR_NEW_BODY_ALIGN(_ZnwmSt11align_val_tRKSt9nothrow_t,
+                          true /*nothrow*/);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void *operator new[](__sanitizer::uptr size, std::align_val_t align,
+                     std::nothrow_t const&);
+void *operator new[](__sanitizer::uptr size, std::align_val_t align,
+                     std::nothrow_t const&) {
+  OPERATOR_NEW_BODY_ALIGN(_ZnamSt11align_val_tRKSt9nothrow_t,
+                          true /*nothrow*/);
 }
 
 #define OPERATOR_DELETE_BODY(mangled_name) \
@@ -90,4 +141,58 @@ SANITIZER_INTERFACE_ATTRIBUTE
 void operator delete[](void *ptr, std::nothrow_t const&);
 void operator delete[](void *ptr, std::nothrow_t const&) {
   OPERATOR_DELETE_BODY(_ZdaPvRKSt9nothrow_t);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void operator delete(void *ptr, __sanitizer::uptr size) NOEXCEPT;
+void operator delete(void *ptr, __sanitizer::uptr size) NOEXCEPT {
+  OPERATOR_DELETE_BODY(_ZdlPvm);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void operator delete[](void *ptr, __sanitizer::uptr size) NOEXCEPT;
+void operator delete[](void *ptr, __sanitizer::uptr size) NOEXCEPT {
+  OPERATOR_DELETE_BODY(_ZdaPvm);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void operator delete(void *ptr, std::align_val_t align) NOEXCEPT;
+void operator delete(void *ptr, std::align_val_t align) NOEXCEPT {
+  OPERATOR_DELETE_BODY(_ZdlPvSt11align_val_t);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void operator delete[](void *ptr, std::align_val_t align) NOEXCEPT;
+void operator delete[](void *ptr, std::align_val_t align) NOEXCEPT {
+  OPERATOR_DELETE_BODY(_ZdaPvSt11align_val_t);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void operator delete(void *ptr, std::align_val_t align, std::nothrow_t const&);
+void operator delete(void *ptr, std::align_val_t align, std::nothrow_t const&) {
+  OPERATOR_DELETE_BODY(_ZdlPvSt11align_val_tRKSt9nothrow_t);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void operator delete[](void *ptr, std::align_val_t align,
+                       std::nothrow_t const&);
+void operator delete[](void *ptr, std::align_val_t align,
+                       std::nothrow_t const&) {
+  OPERATOR_DELETE_BODY(_ZdaPvSt11align_val_tRKSt9nothrow_t);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void operator delete(void *ptr, __sanitizer::uptr size,
+                     std::align_val_t align) NOEXCEPT;
+void operator delete(void *ptr, __sanitizer::uptr size,
+                     std::align_val_t align) NOEXCEPT {
+  OPERATOR_DELETE_BODY(_ZdlPvmSt11align_val_t);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void operator delete[](void *ptr, __sanitizer::uptr size,
+                       std::align_val_t align) NOEXCEPT;
+void operator delete[](void *ptr, __sanitizer::uptr size,
+                       std::align_val_t align) NOEXCEPT {
+  OPERATOR_DELETE_BODY(_ZdaPvmSt11align_val_t);
 }

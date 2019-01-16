@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2019 Free Software Foundation, Inc.
    Contributed by Alexander Monakov <amonakov@ispras.ru>
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -46,20 +46,6 @@ omp_get_num_devices (void)
 }
 
 int
-omp_get_num_teams (void)
-{
-  return gomp_num_teams_var + 1;
-}
-
-int
-omp_get_team_num (void)
-{
-  int ctaid;
-  asm ("mov.u32 %0, %%ctaid.x;" : "=r" (ctaid));
-  return ctaid;
-}
-
-int
 omp_is_initial_device (void)
 {
   /* NVPTX is an accelerator-only target.  */
@@ -69,6 +55,4 @@ omp_is_initial_device (void)
 ialias (omp_set_default_device)
 ialias (omp_get_default_device)
 ialias (omp_get_num_devices)
-ialias (omp_get_num_teams)
-ialias (omp_get_team_num)
 ialias (omp_is_initial_device)

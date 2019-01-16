@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Vxworks PowerPC version.
-   Copyright (C) 1996-2018 Free Software Foundation, Inc.
+   Copyright (C) 1996-2019 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
 
 This file is part of GCC.
@@ -116,7 +116,7 @@ VXWORKS_ADDITIONAL_CPP_SPEC
 #undef SDATA_DEFAULT_SIZE
 #define SDATA_DEFAULT_SIZE (TARGET_VXWORKS_RTP ? 8 : 0)
 
-/* Enforce 16bytes alignment for the stack pointer, to permit general
+/* Enforce 16-byte alignment for the stack pointer, to permit general
    compliance with e.g. Altivec instructions requirements.  Make sure
    this isn't overruled by the EABI constraints.  */
 
@@ -127,6 +127,17 @@ VXWORKS_ADDITIONAL_CPP_SPEC
 #define PREFERRED_STACK_BOUNDARY STACK_BOUNDARY
 
 #undef  ABI_STACK_BOUNDARY
+
+#undef RS6000_STARTING_FRAME_OFFSET
+#define RS6000_STARTING_FRAME_OFFSET					\
+  (cfun->calls_alloca							\
+   ? RS6000_ALIGN (crtl->outgoing_args_size + RS6000_SAVE_AREA, 16)	\
+   : (RS6000_ALIGN (crtl->outgoing_args_size, 16) + RS6000_SAVE_AREA))
+
+#undef STACK_DYNAMIC_OFFSET
+#define STACK_DYNAMIC_OFFSET(FUNDECL)					\
+   RS6000_ALIGN (crtl->outgoing_args_size.to_constant ()		\
+		 + STACK_POINTER_OFFSET, 16)
 
 #undef SUBSUBTARGET_OVERRIDE_OPTIONS
 #define SUBSUBTARGET_OVERRIDE_OPTIONS		\

@@ -1,13 +1,13 @@
-/*                                                      log2q.c
- *      Base 2 logarithm for __float128 precision
+/*                                                      log2l.c
+ *      Base 2 logarithm, 128-bit long double precision
  *
  *
  *
  * SYNOPSIS:
  *
- * __float128 x, y, log2q();
+ * long double x, y, log2l();
  *
- * y = log2q( x );
+ * y = log2l( x );
  *
  *
  *
@@ -56,8 +56,7 @@
     Lesser General Public License for more details.
 
     You should have received a copy of the GNU Lesser General Public
-    License along with this library; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA 
+    License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "quadmath-imp.h"
@@ -97,7 +96,7 @@ static const __float128 Q[12] =
   9.147150349299596453976674231612674085381E3Q,
   9.104928120962988414618126155557301584078E2Q,
   4.839208193348159620282142911143429644326E1Q
-/* 1.000000000000000000000000000000000000000E0Q, */
+/* 1.000000000000000000000000000000000000000E0L, */
 };
 
 /* Coefficients for log(x) = z + z^3 P(z^2)/Q(z^2),
@@ -123,7 +122,7 @@ static const __float128 S[6] =
  -5.748542087379434595104154610899551484314E4Q,
   3.998526750980007367835804959888064681098E3Q,
  -1.186359407982897997337150403816839480438E2Q
-/* 1.000000000000000000000000000000000000000E0Q, */
+/* 1.000000000000000000000000000000000000000E0L, */
 };
 
 static const __float128
@@ -181,14 +180,14 @@ log2q (__float128 x)
 /* Test for domain */
   GET_FLT128_WORDS64 (hx, lx, x);
   if (((hx & 0x7fffffffffffffffLL) | lx) == 0)
-    return (-1.0Q / fabsq (x));		/* log2l(+-0)=-inf  */
+    return (-1 / fabsq (x));		/* log2l(+-0)=-inf  */
   if (hx < 0)
     return (x - x) / (x - x);
   if (hx >= 0x7fff000000000000LL)
     return (x + x);
 
-  if (x == 1.0Q)
-    return 0.0Q;
+  if (x == 1)
+    return 0;
 
 /* separate mantissa from exponent */
 
@@ -227,11 +226,11 @@ log2q (__float128 x)
   if (x < SQRTH)
     {
       e -= 1;
-      x = 2.0 * x - 1.0Q;	/*  2x - 1  */
+      x = 2.0 * x - 1;	/*  2x - 1  */
     }
   else
     {
-      x = x - 1.0Q;
+      x = x - 1;
     }
   z = x * x;
   y = x * (z * neval (x, P, 12) / deval (x, Q, 11));

@@ -23,4 +23,4 @@ int foo(S *s)
   return next->v;
 }
 
-/* { dg-final { scan-tree-dump "Hoisting adjacent loads" "phiopt1" } } */
+/* { dg-final { scan-tree-dump "Hoisting adjacent loads" "phiopt2" } } */

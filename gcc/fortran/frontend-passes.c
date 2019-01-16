@@ -1,5 +1,5 @@
 /* Pass manager for Fortran front end.
-   Copyright (C) 2010-2018 Free Software Foundation, Inc.
+   Copyright (C) 2010-2019 Free Software Foundation, Inc.
    Contributed by Thomas König.
 
 This file is part of GCC.
@@ -190,7 +190,8 @@ check_locus_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
 {
   current_code = c;
   if (c && *c && (((*c)->loc.nextc == NULL) || ((*c)->loc.lb == NULL)))
-    gfc_warning_internal (0, "No location in statement");
+    gfc_warning_internal (0, "Inconsistent internal state: "
+			  "No location in statement");
 
   return 0;
 }
@@ -205,7 +206,8 @@ check_locus_expr (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 {
 
   if (e && *e && (((*e)->where.nextc == NULL || (*e)->where.lb == NULL)))
-    gfc_warning_internal (0, "No location in expression near %L",
+    gfc_warning_internal (0, "Inconsistent internal state: "
+			  "No location in expression near %L",
 			  &((*current_code)->loc));
   return 0;
 }
@@ -636,23 +638,27 @@ constant_string_length (gfc_expr *e)
 	return gfc_copy_expr(length);
     }
 
-  /* Return length of substring, if constant. */
+  /* See if there is a substring. If it has a constant length, return
+     that and NULL otherwise.  */
   for (ref = e->ref; ref; ref = ref->next)
     {
-      if (ref->type == REF_SUBSTRING
-	  && gfc_dep_difference (ref->u.ss.end, ref->u.ss.start, &value))
+      if (ref->type == REF_SUBSTRING)
 	{
-	  res = gfc_get_constant_expr (BT_INTEGER, gfc_charlen_int_kind,
-				       &e->where);
+	  if (gfc_dep_difference (ref->u.ss.end, ref->u.ss.start, &value))
+	    {
+	      res = gfc_get_constant_expr (BT_INTEGER, gfc_charlen_int_kind,
+					   &e->where);
 
-	  mpz_add_ui (res->value.integer, value, 1);
-	  mpz_clear (value);
-	  return res;
+	      mpz_add_ui (res->value.integer, value, 1);
+	      mpz_clear (value);
+	      return res;
+	    }
+	  else
+	    return NULL;
 	}
     }
 
   /* Return length of char symbol, if constant.  */
-
   if (e->symtree && e->symtree->n.sym->ts.u.cl
       && e->symtree->n.sym->ts.u.cl->length
       && e->symtree->n.sym->ts.u.cl->length->expr_type == EXPR_CONSTANT)
@@ -1767,6 +1773,10 @@ combine_array_constructor (gfc_expr *e)
   if (iterator_level > 0)
     return false;
 
+  /* WHERE also doesn't work.  */
+  if (in_where > 0)
+    return false;
+
   op1 = e->value.op.op1;
   op2 = e->value.op.op2;
 
@@ -1853,84 +1863,6 @@ combine_array_constructor (gfc_expr *e)
   return true;
 }
 
-/* Change (-1)**k into 1-ishift(iand(k,1),1) and
- 2**k into ishift(1,k) */
-
-static bool
-optimize_power (gfc_expr *e)
-{
-  gfc_expr *op1, *op2;
-  gfc_expr *iand, *ishft;
-
-  if (e->ts.type != BT_INTEGER)
-    return false;
-
-  op1 = e->value.op.op1;
-
-  if (op1 == NULL || op1->expr_type != EXPR_CONSTANT)
-    return false;
-
-  if (mpz_cmp_si (op1->value.integer, -1L) == 0)
-    {
-      gfc_free_expr (op1);
-
-      op2 = e->value.op.op2;
-
-      if (op2 == NULL)
-	return false;
-
-      iand = gfc_build_intrinsic_call (current_ns, GFC_ISYM_IAND,
-				       "_internal_iand", e->where, 2, op2,
-				       gfc_get_int_expr (e->ts.kind,
-							 &e->where, 1));
-
-      ishft = gfc_build_intrinsic_call (current_ns, GFC_ISYM_ISHFT,
-					"_internal_ishft", e->where, 2, iand,
-					gfc_get_int_expr (e->ts.kind,
-							  &e->where, 1));
-
-      e->value.op.op = INTRINSIC_MINUS;
-      e->value.op.op1 = gfc_get_int_expr (e->ts.kind, &e->where, 1);
-      e->value.op.op2 = ishft;
-      return true;
-    }
-  else if (mpz_cmp_si (op1->value.integer, 2L) == 0)
-    {
-      gfc_free_expr (op1);
-
-      op2 = e->value.op.op2;
-      if (op2 == NULL)
-	return false;
-
-      ishft = gfc_build_intrinsic_call (current_ns, GFC_ISYM_ISHFT,
-					"_internal_ishft", e->where, 2,
-					gfc_get_int_expr (e->ts.kind,
-							  &e->where, 1),
-					op2);
-      *e = *ishft;
-      return true;
-    }
-
-  else if (mpz_cmp_si (op1->value.integer, 1L) == 0)
-    {
-      op2 = e->value.op.op2;
-      if (op2 == NULL)
-	return false;
-
-      gfc_free_expr (op1);
-      gfc_free_expr (op2);
-
-      e->expr_type = EXPR_CONSTANT;
-      e->value.op.op1 = NULL;
-      e->value.op.op2 = NULL;
-      mpz_init_set_si (e->value.integer, 1);
-      /* Typespec and location are still OK.  */
-      return true;
-    }
-
-  return false;
-}
-
 /* Recursive optimization of operators.  */
 
 static bool
@@ -1990,9 +1922,6 @@ optimize_op (gfc_expr *e)
     case INTRINSIC_TIMES:
     case INTRINSIC_DIVIDE:
       return combine_array_constructor (e) || changed;
-
-    case INTRINSIC_POWER:
-      return optimize_power (e);
 
     default:
       break;
@@ -5035,6 +4964,7 @@ gfc_expr_walker (gfc_expr **e, walk_expr_fn_t exprfn, void *data)
 		    break;
 
 		  case REF_COMPONENT:
+		  case REF_INQUIRY:
 		    break;
 		  }
 	      }

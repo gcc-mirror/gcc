@@ -1,5 +1,5 @@
 /* CPP Library.
-   Copyright (C) 1986-2018 Free Software Foundation, Inc.
+   Copyright (C) 1986-2019 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -264,7 +264,7 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   pfile->pushed_macros = 0;
 
   /* Do not force token locations by default.  */
-  pfile->forced_token_location_p = NULL;
+  pfile->forced_token_location = 0;
 
   /* Initialize source_date_epoch to -2 (not yet set).  */
   pfile->source_date_epoch = (time_t) -2;
@@ -633,7 +633,7 @@ cpp_post_options (cpp_reader *pfile)
 const char *
 cpp_read_main_file (cpp_reader *pfile, const char *fname)
 {
-  const source_location loc = 0;
+  const location_t loc = 0;
 
   if (CPP_OPTION (pfile, deps.style) != DEPS_NONE)
     {

@@ -1,5 +1,5 @@
 ;; GCC machine description for MMX and 3dNOW! instructions
-;; Copyright (C) 2005-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2019 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -208,9 +208,9 @@
 	   ]
 	   (const_string "DI")))
    (set (attr "preferred_for_speed")
-     (cond [(eq_attr "alternative" "10,15")
+     (cond [(eq_attr "alternative" "9,15")
 	      (symbol_ref "TARGET_INTER_UNIT_MOVES_FROM_VEC")
-	    (eq_attr "alternative" "11,16")
+	    (eq_attr "alternative" "10,16")
 	      (symbol_ref "TARGET_INTER_UNIT_MOVES_TO_VEC")
 	   ]
 	   (symbol_ref "true")))])

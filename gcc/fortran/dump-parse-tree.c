@@ -1,5 +1,5 @@
 /* Parse tree dumper
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Steven Bosscher
 
 This file is part of GCC.
@@ -306,6 +306,23 @@ show_ref (gfc_ref *p)
 	fputc (':', dumpfile);
 	show_expr (p->u.ss.end);
 	fputc (')', dumpfile);
+	break;
+
+      case REF_INQUIRY:
+	switch (p->u.i)
+	{
+	  case INQUIRY_KIND:
+	    fprintf (dumpfile, " INQUIRY_KIND ");
+	    break;
+	  case INQUIRY_LEN:
+	    fprintf (dumpfile, " INQUIRY_LEN ");
+	    break;
+	  case INQUIRY_RE:
+	    fprintf (dumpfile, " INQUIRY_RE ");
+	    break;
+	  case INQUIRY_IM:
+	    fprintf (dumpfile, " INQUIRY_IM ");
+	}
 	break;
 
       default:
@@ -3167,7 +3184,7 @@ write_decl (gfc_typespec *ts, gfc_array_spec *as, const char *sym_name,
 
   fputs (sym_name, dumpfile);
   fputs (post, dumpfile);
-    
+
   if (rok == T_WARN)
     fprintf (dumpfile," /* WARNING: Converting '%s' to interoperable type */",
 	     gfc_typename (ts));

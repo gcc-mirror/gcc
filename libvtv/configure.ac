@@ -1,7 +1,6 @@
 # -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.64])
 AC_INIT([GNU Vtable Verification Runtime Library], 1.0,,[libvtv])
 #AC_INIT(package-unused, version-unused, libvtv)
 AC_CONFIG_SRCDIR([vtv_rts.h])

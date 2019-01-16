@@ -1,6 +1,6 @@
 ; Options for the MIPS port of the compiler
 ;
-; Copyright (C) 2005-2018 Free Software Foundation, Inc.
+; Copyright (C) 2005-2019 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -165,6 +165,10 @@ mfix-r4400
 Target Report Mask(FIX_R4400)
 Work around certain R4400 errata.
 
+mfix-r5900
+Target Report Mask(FIX_R5900)
+Work around the R5900 short loop erratum.
+
 mfix-rm7000
 Target Report Var(TARGET_FIX_RM7000)
 Work around certain RM7000 errata.
@@ -300,7 +304,7 @@ Target Report Mask(MICROMIPS)
 Use microMIPS instructions.
 
 mmsa
-Target Report Var(TARGET_MSA)
+Target Report Mask(MSA)
 Use MIPS MSA Extension instructions.
 
 mmt
@@ -459,3 +463,15 @@ Enum(mips_cb_setting) String(optimal) Value(MIPS_CB_OPTIMAL)
 
 EnumValue
 Enum(mips_cb_setting) String(always) Value(MIPS_CB_ALWAYS)
+
+mloongson-mmi
+Target Report Mask(LOONGSON_MMI)
+Use Loongson MultiMedia extensions Instructions (MMI) instructions.
+
+mloongson-ext
+Target Report Mask(LOONGSON_EXT)
+Use Loongson EXTension (EXT) instructions.
+
+mloongson-ext2
+Target Report Mask(LOONGSON_EXT2)
+Use Loongson EXTension R2 (EXT2) instructions.

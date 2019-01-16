@@ -1,5 +1,5 @@
 /* Various declarations for language-independent pretty-print subroutines.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -330,6 +330,7 @@ pp_get_prefix (const pretty_printer *pp) { return pp->prefix; }
       pp_string (PP, pp_buffer (PP)->digit_buffer);		\
     }								\
   while (0)
+#define pp_double(PP, F)       pp_scalar (PP, "%f", F)
 #define pp_pointer(PP, P)      pp_scalar (PP, "%p", P)
 
 #define pp_identifier(PP, ID)  pp_string (PP, (pp_translate_identifiers (PP) \

@@ -1,5 +1,5 @@
 /* Functions to support a pool of allocatable objects
-   Copyright (C) 1997-2018 Free Software Foundation, Inc.
+   Copyright (C) 1997-2019 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@cgsoftware.com>
 
 This file is part of GCC.
@@ -63,12 +63,16 @@ struct pool_usage: public mem_usage
   {
     char *location_string = loc->to_string ();
 
-    fprintf (stderr, "%-32s%-48s %6li%10li:%5.1f%%%10li%10li:%5.1f%%%12li\n",
-	     m_pool_name, location_string, (long)m_instances,
-	     (long)m_allocated, get_percent (m_allocated, total.m_allocated),
-	     (long)m_peak, (long)m_times,
+    fprintf (stderr, "%-32s%-48s " PRsa(5) PRsa(9) ":%5.1f%%"
+	     PRsa(9) PRsa(9) ":%5.1f%%%12" PRIu64 "\n",
+	     m_pool_name, location_string,
+	     SIZE_AMOUNT (m_instances),
+	     SIZE_AMOUNT (m_allocated),
+	     get_percent (m_allocated, total.m_allocated),
+	     SIZE_AMOUNT (m_peak),
+	     SIZE_AMOUNT (m_times),
 	     get_percent (m_times, total.m_times),
-	     (long)m_element_size);
+	     (uint64_t)m_element_size);
 
     free (location_string);
   }
@@ -87,8 +91,8 @@ struct pool_usage: public mem_usage
   dump_footer ()
   {
     print_dash_line ();
-    fprintf (stderr, "%s%82li%10li\n", "Total", (long)m_instances,
-	     (long)m_allocated);
+    fprintf (stderr, "%s" PRsa(82) PRsa(10) "\n", "Total",
+	     SIZE_AMOUNT (m_instances), SIZE_AMOUNT (m_allocated));
     print_dash_line ();
   }
 
@@ -256,6 +260,7 @@ base_pool_allocator <TBlockAllocator>::initialize ()
   size_t size = m_size;
 
   gcc_checking_assert (m_name);
+  gcc_checking_assert (m_size);
 
   /* Make size large enough to store the list header.  */
   if (size < sizeof (allocation_pool_list*))

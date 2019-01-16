@@ -1,5 +1,5 @@
 /* Vectorizer
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -130,6 +130,8 @@ struct _slp_tree {
      scalar elements in one scalar iteration (GROUP_SIZE) multiplied by VF
      divided by vector size.  */
   unsigned int vec_stmts_size;
+  /* Reference count in the SLP graph.  */
+  unsigned int refcnt;
   /* Whether the scalar computations use two different operators.  */
   bool two_operators;
   /* The DEF type of this node.  */
@@ -773,7 +775,7 @@ struct dr_vec_info {
   int misalignment;
   /* The byte alignment that we'd ideally like the reference to have,
      and the value that misalignment is measured against.  */
-  int target_alignment;
+  poly_uint64 target_alignment;
   /* If true the alignment of base_decl needs to be increased.  */
   bool base_misaligned;
   tree base_decl;
@@ -1279,7 +1281,7 @@ vect_known_alignment_in_bytes (dr_vec_info *dr_info)
   if (DR_MISALIGNMENT (dr_info) == DR_MISALIGNMENT_UNKNOWN)
     return TYPE_ALIGN_UNIT (TREE_TYPE (DR_REF (dr_info->dr)));
   if (DR_MISALIGNMENT (dr_info) == 0)
-    return DR_TARGET_ALIGNMENT (dr_info);
+    return known_alignment (DR_TARGET_ALIGNMENT (dr_info));
   return DR_MISALIGNMENT (dr_info) & -DR_MISALIGNMENT (dr_info);
 }
 
@@ -1479,8 +1481,11 @@ extern void vect_remove_stores (stmt_vec_info);
 extern opt_result vect_analyze_stmt (stmt_vec_info, bool *, slp_tree,
 				     slp_instance, stmt_vector_for_cost *);
 extern bool vectorizable_condition (stmt_vec_info, gimple_stmt_iterator *,
-				    stmt_vec_info *, tree, int, slp_tree,
+				    stmt_vec_info *, bool, slp_tree,
 				    stmt_vector_for_cost *);
+extern bool vectorizable_shift (stmt_vec_info, gimple_stmt_iterator *,
+				stmt_vec_info *, slp_tree,
+				stmt_vector_for_cost *);
 extern void vect_get_load_cost (stmt_vec_info, int, bool,
 				unsigned int *, unsigned int *,
 				stmt_vector_for_cost *,
@@ -1498,7 +1503,7 @@ extern opt_result vect_get_vector_types_for_stmt (stmt_vec_info, tree *,
 extern opt_tree vect_get_mask_type_for_stmt (stmt_vec_info);
 
 /* In tree-vect-data-refs.c.  */
-extern bool vect_can_force_dr_alignment_p (const_tree, unsigned int);
+extern bool vect_can_force_dr_alignment_p (const_tree, poly_uint64);
 extern enum dr_alignment_support vect_supportable_dr_alignment
                                            (dr_vec_info *, bool);
 extern tree vect_get_smallest_scalar_type (stmt_vec_info, HOST_WIDE_INT *,

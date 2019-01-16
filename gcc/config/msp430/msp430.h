@@ -1,5 +1,5 @@
 /* GCC backend definitions for the TI MSP430 Processor
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -159,6 +159,11 @@ extern const char * msp430_select_hwmult_lib (int, const char **);
 #define PTR_SIZE			(TARGET_LARGE ? 4 : 2)
 #define	POINTERS_EXTEND_UNSIGNED	1
 
+/* TARGET_VTABLE_ENTRY_ALIGN defaults to POINTER_SIZE, which is 20 for
+   TARGET_LARGE.  Pointer alignment is always 16 for MSP430, so set explicitly
+   here.  */
+#define TARGET_VTABLE_ENTRY_ALIGN 16
+
 #define ADDR_SPACE_NEAR	1
 #define ADDR_SPACE_FAR	2
 
@@ -241,10 +246,15 @@ enum reg_class
   0x00000000,		   \
   0x00001000,		   \
   0x00002000,		   \
-  0x0000fff2,		   \
+  0x0000fff3,		   \
   0x0001ffff		   \
 }
 
+/* GENERAL_REGS just means that the "g" and "r" constraints can use these
+   registers.
+   Even though R0 (PC) and R1 (SP) are not "general" in that they can be used
+   for any purpose by the register allocator, they are general in that they can
+   be used by any instruction in any addressing mode.  */
 #define GENERAL_REGS			GEN_REGS
 #define BASE_REG_CLASS  		GEN_REGS
 #define INDEX_REG_CLASS			GEN_REGS
@@ -259,7 +269,9 @@ enum reg_class
 
 #define FIRST_PSEUDO_REGISTER 		17
 
-#define REGNO_REG_CLASS(REGNO)          ((REGNO) < 17 \
+#define REGNO_REG_CLASS(REGNO)		(REGNO != 2 \
+					 && REGNO != 3 \
+					 && REGNO < 17 \
 					 ? GEN_REGS : NO_REGS)
 
 #define TRAMPOLINE_SIZE			4 /* FIXME */

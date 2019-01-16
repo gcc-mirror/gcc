@@ -1,5 +1,5 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988-2018 Free Software Foundation, Inc.
+   Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -604,6 +604,7 @@ static tree grokparms (struct c_arg_info *, bool);
 static void layout_array_type (tree);
 static void warn_defaults_to (location_t, int, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
+static const char *header_for_builtin_fn (enum built_in_function);
 
 /* T is a statement.  Add it to the statement-tree.  This is the
    C/ObjC version--C++ has a slightly different version of this
@@ -1887,12 +1888,25 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	    *oldtypep = oldtype = trytype;
 	  else
 	    {
+	      const char *header
+		= header_for_builtin_fn (DECL_FUNCTION_CODE (olddecl));
+	      location_t loc = DECL_SOURCE_LOCATION (newdecl);
+	      if (warning_at (loc, OPT_Wbuiltin_declaration_mismatch,
+			      "conflicting types for built-in function %q+D; "
+			      "expected %qT",
+			      newdecl, oldtype)
+		  && header)
+		{
+		  /* Suggest the right header to include as the preferred
+		     solution rather than the spelling of the declaration.  */
+		  rich_location richloc (line_table, loc);
+		  maybe_add_include_fixit (&richloc, header, true);
+		  inform (&richloc,
+			  "%qD is declared in header %qs", olddecl, header);
+		}
 	      /* If types don't match for a built-in, throw away the
 		 built-in.  No point in calling locate_old_decl here, it
 		 won't print anything.  */
-	      warning (OPT_Wbuiltin_declaration_mismatch,
-		       "conflicting types for built-in function %q+D",
-		       newdecl);
 	      return false;
 	    }
 	}
@@ -2026,15 +2040,33 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	 can't validate the argument list) the built-in definition is
 	 overridden, but optionally warn this was a bad choice of name.  */
       if (fndecl_built_in_p (olddecl)
-	  && !C_DECL_DECLARED_BUILTIN (olddecl)
-	  && (!TREE_PUBLIC (newdecl)
-	      || (DECL_INITIAL (newdecl)
-		  && !prototype_p (TREE_TYPE (newdecl)))))
+	  && !C_DECL_DECLARED_BUILTIN (olddecl))
 	{
-	  warning (OPT_Wshadow, "declaration of %q+D shadows "
-		   "a built-in function", newdecl);
-	  /* Discard the old built-in function.  */
-	  return false;
+	  if (!TREE_PUBLIC (newdecl)
+	      || (DECL_INITIAL (newdecl)
+		  && !prototype_p (TREE_TYPE (newdecl))))
+	    {
+	      warning_at (DECL_SOURCE_LOCATION (newdecl),
+			  OPT_Wshadow, "declaration of %qD shadows "
+			  "a built-in function", newdecl);
+	      /* Discard the old built-in function.  */
+	      return false;
+	    }
+
+	  if (!prototype_p (TREE_TYPE (newdecl)))
+	    {
+	      /* Set for built-ins that take no arguments.  */
+	      bool func_void_args = false;
+	      if (tree at = TYPE_ARG_TYPES (oldtype))
+		func_void_args = VOID_TYPE_P (TREE_VALUE (at));
+
+	      if (extra_warnings && !func_void_args)
+		warning_at (DECL_SOURCE_LOCATION (newdecl),
+			    OPT_Wbuiltin_declaration_mismatch,
+			    "declaration of built-in function %qD without "
+			    "a prototype; expected %qT",
+			    newdecl, TREE_TYPE (olddecl));
+	    }
 	}
 
       if (DECL_INITIAL (newdecl))
@@ -3150,27 +3182,27 @@ implicit_decl_warning (location_t loc, tree id, tree olddecl)
 
   if (flag_isoc99)
     {
-      if (hint)
+      if (const char *suggestion = hint.suggestion ())
 	{
 	  gcc_rich_location richloc (loc);
-	  richloc.add_fixit_replace (hint.suggestion ());
+	  richloc.add_fixit_replace (suggestion);
 	  warned = pedwarn (&richloc, OPT_Wimplicit_function_declaration,
 			    "implicit declaration of function %qE;"
 			    " did you mean %qs?",
-			    id, hint.suggestion ());
+			    id, suggestion);
 	}
       else
 	warned = pedwarn (loc, OPT_Wimplicit_function_declaration,
 			  "implicit declaration of function %qE", id);
     }
-  else if (hint)
+  else if (const char *suggestion = hint.suggestion ())
     {
       gcc_rich_location richloc (loc);
-      richloc.add_fixit_replace (hint.suggestion ());
+      richloc.add_fixit_replace (suggestion);
       warned = warning_at
 	(&richloc, OPT_Wimplicit_function_declaration,
 	 G_("implicit declaration of function %qE; did you mean %qs?"),
-	 id, hint.suggestion ());
+	 id, suggestion);
     }
   else
     warned = warning_at (loc, OPT_Wimplicit_function_declaration,
@@ -3513,14 +3545,14 @@ undeclared_variable (location_t loc, tree id)
   if (current_function_decl == NULL_TREE)
     {
       name_hint guessed_id = lookup_name_fuzzy (id, FUZZY_LOOKUP_NAME, loc);
-      if (guessed_id)
+      if (const char *suggestion = guessed_id.suggestion ())
 	{
 	  gcc_rich_location richloc (loc);
-	  richloc.add_fixit_replace (guessed_id.suggestion ());
+	  richloc.add_fixit_replace (suggestion);
 	  error_at (&richloc,
 		    "%qE undeclared here (not in a function);"
 		    " did you mean %qs?",
-		    id, guessed_id.suggestion ());
+		    id, suggestion);
 	}
       else
 	error_at (loc, "%qE undeclared here (not in a function)", id);
@@ -3531,14 +3563,14 @@ undeclared_variable (location_t loc, tree id)
       if (!objc_diagnose_private_ivar (id))
 	{
 	  name_hint guessed_id = lookup_name_fuzzy (id, FUZZY_LOOKUP_NAME, loc);
-	  if (guessed_id)
+	  if (const char *suggestion = guessed_id.suggestion ())
 	    {
 	      gcc_rich_location richloc (loc);
-	      richloc.add_fixit_replace (guessed_id.suggestion ());
+	      richloc.add_fixit_replace (suggestion);
 	      error_at (&richloc,
 			"%qE undeclared (first use in this function);"
 			" did you mean %qs?",
-			id, guessed_id.suggestion ());
+			id, suggestion);
 	    }
 	  else
 	    error_at (loc, "%qE undeclared (first use in this function)", id);
@@ -9955,7 +9987,7 @@ build_null_declspecs (void)
    SPECS, returning SPECS.  */
 
 struct c_declspecs *
-declspecs_add_addrspace (source_location location,
+declspecs_add_addrspace (location_t location,
 			 struct c_declspecs *specs, addr_space_t as)
 {
   specs->non_sc_seen_p = true;
@@ -9978,7 +10010,7 @@ declspecs_add_addrspace (source_location location,
    returning SPECS.  */
 
 struct c_declspecs *
-declspecs_add_qual (source_location loc,
+declspecs_add_qual (location_t loc,
 		    struct c_declspecs *specs, tree qual)
 {
   enum rid i;
@@ -10895,7 +10927,7 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
    declaration specifiers SPECS, returning SPECS.  */
 
 struct c_declspecs *
-declspecs_add_scspec (source_location loc,
+declspecs_add_scspec (location_t loc,
 		      struct c_declspecs *specs,
 		      tree scspec)
 {
@@ -11014,7 +11046,7 @@ declspecs_add_scspec (source_location loc,
    returning SPECS.  */
 
 struct c_declspecs *
-declspecs_add_attrs (source_location loc, struct c_declspecs *specs, tree attrs)
+declspecs_add_attrs (location_t loc, struct c_declspecs *specs, tree attrs)
 {
   specs->attrs = chainon (attrs, specs->attrs);
   specs->locations[cdw_attributes] = loc;
@@ -11026,15 +11058,18 @@ declspecs_add_attrs (source_location loc, struct c_declspecs *specs, tree attrs)
    alignment is ALIGN) to the declaration specifiers SPECS, returning
    SPECS.  */
 struct c_declspecs *
-declspecs_add_alignas (source_location loc,
+declspecs_add_alignas (location_t loc,
 		       struct c_declspecs *specs, tree align)
 {
-  int align_log;
   specs->alignas_p = true;
   specs->locations[cdw_alignas] = loc;
   if (align == error_mark_node)
     return specs;
-  align_log = check_user_alignment (align, true);
+
+  /* Only accept the alignment if it's valid and greater than
+     the current one.  Zero is invalid but by C11 required to
+     be silently ignored.  */
+  int align_log = check_user_alignment (align, false, /* warn_zero = */false);
   if (align_log > specs->align_log)
     specs->align_log = align_log;
   return specs;

@@ -1,5 +1,5 @@
 ;; Machine description for SPARC.
-;; Copyright (C) 1987-2018 Free Software Foundation, Inc.
+;; Copyright (C) 1987-2019 Free Software Foundation, Inc.
 ;; Contributed by Michael Tiemann (tiemann@cygnus.com)
 ;; 64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
 ;; at Cygnus Support.
@@ -104,6 +104,9 @@
 
 (define_c_enum "unspecv" [
   UNSPECV_BLOCKAGE
+
+  UNSPECV_SPECULATION_BARRIER
+
   UNSPECV_PROBE_STACK_RANGE
 
   UNSPECV_FLUSHW
@@ -7308,6 +7311,14 @@ visl")
   ""
   ""
   [(set_attr "length" "0")])
+
+;; We use membar #Sync for the speculation barrier on V9.
+
+(define_insn "speculation_barrier"
+  [(unspec_volatile [(const_int 0)] UNSPECV_SPECULATION_BARRIER)]
+  "TARGET_V9"
+  "membar\t64"
+  [(set_attr "type" "multi")])
 
 (define_expand "probe_stack"
   [(set (match_operand 0 "memory_operand" "") (const_int 0))]

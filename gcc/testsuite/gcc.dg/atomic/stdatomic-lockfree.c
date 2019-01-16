@@ -5,7 +5,7 @@
 #include <stdatomic.h>
 #include <stdint.h>
 
-extern void abort ();
+extern void abort (void);
 
 _Atomic _Bool aba;
 atomic_bool abt;

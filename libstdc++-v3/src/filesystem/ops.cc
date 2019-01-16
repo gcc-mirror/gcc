@@ -1,6 +1,6 @@
 // Filesystem TS operations -*- C++ -*-
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,6 +24,8 @@
 
 #ifndef _GLIBCXX_USE_CXX11_ABI
 # define _GLIBCXX_USE_CXX11_ABI 1
+# define NEED_DO_COPY_FILE
+# define NEED_DO_SPACE
 #endif
 
 #include <experimental/filesystem>
@@ -243,7 +245,6 @@ namespace
 
   using std::filesystem::is_not_found_errno;
   using std::filesystem::file_time;
-  using std::filesystem::do_copy_file;
 #endif // _GLIBCXX_HAVE_SYS_STAT_H
 
 } // namespace
@@ -423,6 +424,19 @@ fs::create_directories(const path& p, error_code& ec) noexcept
       ec = std::make_error_code(errc::invalid_argument);
       return false;
     }
+
+  file_status st = symlink_status(p, ec);
+  if (is_directory(st))
+    return false;
+  else if (ec && !status_known(st))
+    return false;
+  else if (exists(st))
+    {
+      if (!ec)
+	ec = std::make_error_code(std::errc::not_a_directory);
+      return false;
+    }
+
   std::stack<path> missing;
   path pp = p;
 
@@ -431,24 +445,29 @@ fs::create_directories(const path& p, error_code& ec) noexcept
       ec.clear();
       const auto& filename = pp.filename();
       if (!is_dot(filename) && !is_dotdot(filename))
-	missing.push(pp);
-      pp.remove_filename();
+	{
+	  missing.push(std::move(pp));
+	  pp = missing.top().parent_path();
+	}
+      else
+	pp = pp.parent_path();
     }
 
   if (ec || missing.empty())
     return false;
 
+  bool created;
   do
     {
       const path& top = missing.top();
-      create_directory(top, ec);
-      if (ec && is_directory(top))
-	ec.clear();
+      created = create_directory(top, ec);
+      if (ec)
+	return false;
       missing.pop();
     }
-  while (!missing.empty() && !ec);
+  while (!missing.empty());
 
-  return missing.empty();
+  return created;
 }
 
 namespace
@@ -1157,7 +1176,7 @@ fs::space(const path& p, error_code& ec) noexcept
 #else
   auto str = p.c_str();
 #endif
-  std::filesystem::do_space(str, info.capacity, info.free, info.available, ec);
+  fs::do_space(str, info.capacity, info.free, info.available, ec);
   return info;
 }
 

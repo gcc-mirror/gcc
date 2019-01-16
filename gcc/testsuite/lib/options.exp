@@ -1,4 +1,4 @@
-# Copyright (C) 2009-2018 Free Software Foundation, Inc.
+# Copyright (C) 2009-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,11 +26,14 @@ if { [ishost "*-*-cygwin*"] } {
 }
 
 # Run the LANGUAGE compiler with GCC_OPTIONS and inspect the compiler
-# output to make sure that they match the newline-separated patterns
-# in COMPILER_PATTERNS but not the patterns in COMPILER_NON_PATTERNS.
-# In case of failure, xfail if XFAIL is nonempty.
+# output excluding EXCLUDE lines to make sure that they match the
+# newline-separated patterns in COMPILER_PATTERNS but not the patterns in
+# COMPILER_NON_PATTERNS.  In case of failure, xfail if XFAIL is nonempty.
 
-proc check_for_options {language gcc_options compiler_patterns compiler_non_patterns expected_failure} {
+proc check_for_options_with_filter { language gcc_options exclude \
+					 compiler_patterns \
+					 compiler_non_patterns \
+					 expected_failure } {
     set filename test-[pid]
     set fd [open $filename.c w]
     puts $fd "int main (void) { return 0; }"
@@ -47,6 +50,21 @@ proc check_for_options {language gcc_options compiler_patterns compiler_non_patt
     set gcc_output [gcc_target_compile $filename.c $filename.x executable $gcc_options]
     remote_file build delete $filename.c $filename.x $filename.gcno
 
+    if { $exclude != "" } {
+	set lines [split $gcc_output "\n"]
+	set gcc_output ""
+	foreach line $lines {
+	    if {[regexp -line -- "$exclude" $line]} {
+		continue
+	    }
+	    if { $gcc_output == "" } {
+		set gcc_output "$line"
+	    } else {
+		set gcc_output "$gcc_output\n$line"
+	    }
+	}	
+   }
+    
     # Verify that COMPILER_PATTERRNS appear in gcc output.
     foreach pattern [split $compiler_patterns "\n"] {
 	if {$pattern != ""} {
@@ -78,4 +96,12 @@ proc check_for_options {language gcc_options compiler_patterns compiler_non_patt
 	    }
 	}
     }
+}
+
+# As check_for_options_with_filter, but without the EXCLUDE parameter.
+
+proc check_for_options { language gcc_options compiler_patterns \
+			     compiler_non_patterns expected_failure } {
+    check_for_options_with_filter $language $gcc_options "" $compiler_patterns \
+	$compiler_non_patterns $expected_failure
 }

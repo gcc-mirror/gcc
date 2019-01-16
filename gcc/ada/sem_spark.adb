@@ -230,8 +230,8 @@ package body Sem_SPARK is
       --------------------
 
       procedure Perm_Mismatch
-        (Exp_Perm, Act_Perm  : Perm_Kind;
-         N                   : Node_Id);
+        (Exp_Perm, Act_Perm : Perm_Kind;
+         N                  : Node_Id);
       --  Issues a continuation error message about a mismatch between a
       --  desired permission Exp_Perm and a permission obtained Act_Perm. N
       --  is the node on which the error is reported.
@@ -863,7 +863,6 @@ package body Sem_SPARK is
    -----------------------
 
    procedure Check_Declaration (Decl : Node_Id) is
-
       Target_Ent : constant Entity_Id := Defining_Identifier (Decl);
       Target_Typ : Node_Id renames Etype (Target_Ent);
 
@@ -1653,7 +1652,7 @@ package body Sem_SPARK is
 
       if Present (Iteration_Scheme (Loop_N)) then
          declare
-            Exit_Env  : constant Perm_Env_Access := new Perm_Env;
+            Exit_Env : constant Perm_Env_Access := new Perm_Env;
 
          begin
             Copy_Env (From => Current_Perm_Env, To => Exit_Env.all);

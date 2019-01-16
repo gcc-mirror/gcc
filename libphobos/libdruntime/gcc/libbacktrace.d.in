@@ -1,0 +1,73 @@
+// GNU D Compiler bindings for the stack backtrace functions.
+// Copyright (C) 2013-2019 Free Software Foundation, Inc.
+
+// GCC is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 3, or (at your option) any later
+// version.
+
+// GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+module gcc.libbacktrace;
+
+/*
+ * Part of backtrace-supported.h: These are platform specific variables.
+ * They are obtained via the configure script
+ */
+
+enum BACKTRACE_SUPPORTED = @BACKTRACE_SUPPORTED@;
+enum BACKTRACE_USES_MALLOC = @BACKTRACE_USES_MALLOC@;
+enum BACKTRACE_SUPPORTS_THREADS = @BACKTRACE_SUPPORTS_THREADS@;
+
+/*
+ * libbacktrace.h
+ */
+
+static if (BACKTRACE_SUPPORTED)
+{
+    import core.stdc.stddef, core.stdc.stdio, core.stdc.stdint;
+
+extern(C):
+    struct backtrace_state {}
+
+    alias extern(C) void function(void* data, const(char)* msg, int errnum)
+        backtrace_error_callback;
+
+    backtrace_state* backtrace_create_state(const(char)* filename, int threaded,
+                                            backtrace_error_callback error_callback, void* data) nothrow;
+
+    alias extern(C) int function(void* data, uintptr_t pc, const(char)* filename, int lineno, const(char)* func)
+        backtrace_full_callback;
+
+    int backtrace_full(backtrace_state* state, int skip, backtrace_full_callback callback,
+                       backtrace_error_callback error_callback, void* data) nothrow;
+
+    alias extern(C) int function(void* data, uintptr_t pc)
+        backtrace_simple_callback;
+
+    int backtrace_simple(backtrace_state* state, int skip, backtrace_simple_callback callback,
+                         backtrace_error_callback error_callback, void* data) nothrow;
+
+    void backtrace_print(backtrace_state* state, int skip, FILE* file) nothrow;
+
+    int backtrace_pcinfo(backtrace_state* state, uintptr_t pc, backtrace_full_callback callback,
+                         backtrace_error_callback error_callback,    void* data) nothrow;
+
+    alias extern(C) void function(void* data, uintptr_t pc, const(char)* symname, uintptr_t symval)
+        backtrace_syminfo_callback;
+
+    int backtrace_syminfo(backtrace_state *state, uintptr_t pc, backtrace_syminfo_callback callback,
+                          backtrace_error_callback error_callback, void* data) nothrow;
+}

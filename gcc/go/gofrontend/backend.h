@@ -699,26 +699,48 @@ class Backend
   virtual Bfunction*
   error_function() = 0;
 
+  // Bit flags to pass to the function method.
+
+  // Set if the function should be visible outside of the current
+  // compilation unit.
+  static const unsigned int function_is_visible = 1 << 0;
+
+  // Set if this is a function declaration rather than a definition;
+  // the definition will be in another compilation unit.
+  static const unsigned int function_is_declaration = 1 << 1;
+
+  // Set if the function can be inlined.  This is normally set, but is
+  // false for functions that may not be inlined because they call
+  // recover and must be visible for correct panic recovery.
+  static const unsigned int function_is_inlinable = 1 << 2;
+
+  // Set if the function may not split the stack.  This is set for the
+  // implementation of recover itself, among other things.
+  static const unsigned int function_no_split_stack = 1 << 3;
+
+  // Set if the function does not return.  This is set for the
+  // implementation of panic.
+  static const unsigned int function_does_not_return = 1 << 4;
+
+  // Set if the function should be put in a unique section if
+  // possible.  This is used for field tracking.
+  static const unsigned int function_in_unique_section = 1 << 5;
+
+  // Set if the function should be available for inlining in the
+  // backend, but should not be emitted as a standalone function.  Any
+  // call to the function that is not inlined should be treated as a
+  // call to a function defined in a different compilation unit.  This
+  // is like a C99 function marked inline but not extern.
+  static const unsigned int function_only_inline = 1 << 6;
+
   // Declare or define a function of FNTYPE.
-  // NAME is the Go name of the function. ASM_NAME, if not the empty string, is
-  // the name that should be used in the symbol table; this will be non-empty if
-  // a magic extern comment is used.
-  // IS_VISIBLE is true if this function should be visible outside of the
-  // current compilation unit. IS_DECLARATION is true if this is a function
-  // declaration rather than a definition; the function definition will be in
-  // another compilation unit.
-  // IS_INLINABLE is true if the function can be inlined.
-  // DISABLE_SPLIT_STACK is true if this function may not split the stack; this
-  // is used for the implementation of recover.
-  // DOES_NOT_RETURN is true for a function that does not return; this is used
-  // for the implementation of panic.
-  // IN_UNIQUE_SECTION is true if this function should be put into a unique
-  // location if possible; this is used for field tracking.
+  // NAME is the Go name of the function.  ASM_NAME, if not the empty
+  // string, is the name that should be used in the symbol table; this
+  // will be non-empty if a magic extern comment is used.  FLAGS is
+  // bit flags described above.
   virtual Bfunction*
   function(Btype* fntype, const std::string& name, const std::string& asm_name,
-           bool is_visible, bool is_declaration, bool is_inlinable,
-           bool disable_split_stack, bool does_not_return,
-	   bool in_unique_section, Location) = 0;
+	   unsigned int flags, Location) = 0;
 
   // Create a statement that runs all deferred calls for FUNCTION.  This should
   // be a statement that looks like this in C++:

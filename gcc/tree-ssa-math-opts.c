@@ -1,5 +1,5 @@
 /* Global, SSA-based optimizations using mathematical identities.
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -652,8 +652,12 @@ optimize_recip_sqrt (gimple_stmt_iterator *def_gsi, tree def)
 	  print_gimple_stmt (dump_file, stmt, 0, TDF_NONE);
 	  fprintf (dump_file, "with new division\n");
 	}
-      gimple_assign_set_lhs (stmt, sqr_ssa_name);
-      gimple_assign_set_rhs2 (stmt, a);
+      stmt
+	= gimple_build_assign (sqr_ssa_name, gimple_assign_rhs_code (stmt),
+			       gimple_assign_rhs1 (stmt), a);
+      gsi_insert_before (def_gsi, stmt, GSI_SAME_STMT);
+      gsi_remove (def_gsi, true);
+      *def_gsi = gsi_for_stmt (stmt);
       fold_stmt_inplace (def_gsi);
       update_stmt (stmt);
 
@@ -704,7 +708,7 @@ optimize_recip_sqrt (gimple_stmt_iterator *def_gsi, tree def)
 
       gimple *new_stmt
 	= gimple_build_assign (x, MULT_EXPR,
-				orig_sqrt_ssa_name, sqr_ssa_name);
+			       orig_sqrt_ssa_name, sqr_ssa_name);
       gsi_insert_after (def_gsi, new_stmt, GSI_NEW_STMT);
       update_stmt (stmt);
     }
@@ -715,6 +719,8 @@ optimize_recip_sqrt (gimple_stmt_iterator *def_gsi, tree def)
       gsi_remove (&gsi2, true);
       release_defs (stmt);
     }
+  else
+    release_ssa_name (x);
 }
 
 /* Look for floating-point divisions among DEF's uses, and try to
@@ -951,6 +957,7 @@ pass_cse_reciprocals::execute (function *fun)
 	      stmt = gsi_stmt (gsi);
 	      if (flag_unsafe_math_optimizations
 		  && is_gimple_assign (stmt)
+		  && gimple_assign_lhs (stmt) == def
 		  && !stmt_can_throw_internal (cfun, stmt)
 		  && gimple_assign_rhs_code (stmt) == RDIV_EXPR)
 		optimize_recip_sqrt (&gsi, def);

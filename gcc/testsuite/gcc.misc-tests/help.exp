@@ -1,4 +1,4 @@
-# Copyright (C) 2005-2018 Free Software Foundation, Inc.
+# Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -63,6 +63,8 @@ check_for_options c "-v --help" "" {are likely to\n  -std} ""
 # Try various --help= classes and qualifiers.
 check_for_options c "--help=optimizers" "-O" "  -g  " ""
 check_for_options c "--help=params" "maximum number of" "-Wunsafe-loop-optimizations" ""
+check_for_options_with_filter c "--help=params" \
+    "^The --param option recognizes the following as parameters:$" "" {[^.]$} ""
 check_for_options c "--help=C" "-ansi" "-gnatO" ""
 check_for_options c {--help=C++} {-std=c\+\+} "-gnatO" ""
 check_for_options c "--help=common" "-dumpbase" "-gnatO" ""
@@ -115,7 +117,7 @@ check_for_options c "--help=joined,undocumented" "" "" ""
 # subsystem.  Do this one help class at a time to make it easier to
 # find the source a failure.
 
-foreach cls { "ada" "c" "c++" "fortran" "go" \
+foreach cls { "ada" "c" "c++" "d" "fortran" "go" \
 		    "optimizers" "param" "target" "warnings" } {
 
     check_for_options c "--help=$cls" "" "^ +-.*\[^:.\]$" ""

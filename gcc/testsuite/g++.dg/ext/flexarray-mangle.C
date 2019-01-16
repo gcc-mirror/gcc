@@ -4,7 +4,7 @@
 
 struct A {
   int n;
-  char a[];   // { dg-warning "forbids flexible array member" }
+  char a[];   // { dg-warning "8:ISO C\\+\\+ forbids flexible array member" }
 };
 
 // Declare but do not define function templates.

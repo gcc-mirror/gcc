@@ -1,5 +1,5 @@
 /* Configuration file for Linux Android targets.
-   Copyright (C) 2008-2018 Free Software Foundation, Inc.
+   Copyright (C) 2008-2019 Free Software Foundation, Inc.
    Contributed by Doug Kwan (dougkwan@google.com)
    Rewritten by CodeSourcery, Inc.
 
@@ -23,6 +23,12 @@
     do {							\
 	if (TARGET_ANDROID)					\
 	  builtin_define ("__ANDROID__");			\
+    } while (0)
+
+#define ANDROID_TARGET_D_OS_VERSIONS()				\
+    do {							\
+	if (TARGET_ANDROID)					\
+	  builtin_version ("Android");				\
     } while (0)
 
 #if ANDROID_DEFAULT

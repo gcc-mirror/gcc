@@ -1,5 +1,5 @@
 /* Check functions
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -148,6 +148,21 @@ int_or_real_or_char_check_f2003 (gfc_expr *e, int n)
   return true;
 }
 
+/* Check that an expression is an intrinsic type.  */
+static bool
+intrinsic_type_check (gfc_expr *e, int n)
+{
+  if (e->ts.type != BT_INTEGER && e->ts.type != BT_REAL
+      && e->ts.type != BT_COMPLEX && e->ts.type != BT_CHARACTER
+      && e->ts.type != BT_LOGICAL)
+    {
+      gfc_error ("%qs argument of %qs intrinsic at %L must be of intrinsic type",
+		 gfc_current_intrinsic_arg[n]->name,
+		 gfc_current_intrinsic, &e->where);
+      return false;
+    }
+  return true;
+}
 
 /* Check that an expression is real or complex.  */
 
@@ -2153,6 +2168,21 @@ gfc_check_dprod (gfc_expr *x, gfc_expr *y)
 }
 
 
+static bool
+boz_args_check(gfc_expr *i, gfc_expr *j)
+{
+  if (i->is_boz && j->is_boz)
+    {
+      gfc_error ("Arguments of %qs at %L and %L cannot both be BOZ "
+		 "literal constants", gfc_current_intrinsic, &i->where,
+		 &j->where);
+      return false;
+
+    }
+  return true;
+}
+
+
 bool
 gfc_check_dshift (gfc_expr *i, gfc_expr *j, gfc_expr *shift)
 {
@@ -2162,12 +2192,8 @@ gfc_check_dshift (gfc_expr *i, gfc_expr *j, gfc_expr *shift)
   if (!type_check (j, 1, BT_INTEGER))
     return false;
 
-  if (i->is_boz && j->is_boz)
-    {
-      gfc_error ("%<I%> at %L and %<J%>' at %L cannot both be BOZ literal "
-		   "constants", &i->where, &j->where);
-      return false;
-    }
+  if (!boz_args_check (i, j))
+    return false;
 
   if (!i->is_boz && !j->is_boz && !same_type_check (i, 0, j, 1))
     return false;
@@ -2467,7 +2493,7 @@ gfc_check_i (gfc_expr *i)
 
 
 bool
-gfc_check_iand (gfc_expr *i, gfc_expr *j)
+gfc_check_iand_ieor_ior (gfc_expr *i, gfc_expr *j)
 {
   if (!type_check (i, 0, BT_INTEGER))
     return false;
@@ -2475,10 +2501,16 @@ gfc_check_iand (gfc_expr *i, gfc_expr *j)
   if (!type_check (j, 1, BT_INTEGER))
     return false;
 
+  if (!boz_args_check (i, j))
+    return false;
+
+  if (i->is_boz) i->ts.kind = j->ts.kind;
+  if (j->is_boz) j->ts.kind = i->ts.kind;
+
   if (i->ts.kind != j->ts.kind)
     {
-      if (!gfc_notify_std (GFC_STD_GNU, "Different type kinds at %L",
-			   &i->where))
+      gfc_error ("Arguments of %qs have different kind type parameters "
+		 "at %L", gfc_current_intrinsic, &i->where);
 	return false;
     }
 
@@ -2593,26 +2625,6 @@ gfc_check_idnint (gfc_expr *a)
 
 
 bool
-gfc_check_ieor (gfc_expr *i, gfc_expr *j)
-{
-  if (!type_check (i, 0, BT_INTEGER))
-    return false;
-
-  if (!type_check (j, 1, BT_INTEGER))
-    return false;
-
-  if (i->ts.kind != j->ts.kind)
-    {
-      if (!gfc_notify_std (GFC_STD_GNU, "Different type kinds at %L",
-			   &i->where))
-	return false;
-    }
-
-  return true;
-}
-
-
-bool
 gfc_check_index (gfc_expr *string, gfc_expr *substring, gfc_expr *back,
 		 gfc_expr *kind)
 {
@@ -2664,27 +2676,6 @@ gfc_check_intconv (gfc_expr *x)
 
   return true;
 }
-
-
-bool
-gfc_check_ior (gfc_expr *i, gfc_expr *j)
-{
-  if (!type_check (i, 0, BT_INTEGER))
-    return false;
-
-  if (!type_check (j, 1, BT_INTEGER))
-    return false;
-
-  if (i->ts.kind != j->ts.kind)
-    {
-      if (!gfc_notify_std (GFC_STD_GNU, "Different type kinds at %L",
-			   &i->where))
-	return false;
-    }
-
-  return true;
-}
-
 
 bool
 gfc_check_ishft (gfc_expr *i, gfc_expr *shift)
@@ -3345,6 +3336,82 @@ gfc_check_minloc_maxloc (gfc_actual_arglist *ap)
   return true;
 }
 
+/* Check function for findloc.  Mostly like gfc_check_minloc_maxloc
+   above, with the additional "value" argument.  */
+
+bool
+gfc_check_findloc (gfc_actual_arglist *ap)
+{
+  gfc_expr *a, *v, *m, *d, *k, *b;
+
+  a = ap->expr;
+  if (!intrinsic_type_check (a, 0) || !array_check (a, 0))
+    return false;
+
+  v = ap->next->expr;
+  if (!scalar_check (v,1))
+    return false;
+
+  /* Check if the type is compatible.  */
+
+  if ((a->ts.type == BT_LOGICAL && v->ts.type != BT_LOGICAL)
+      || (a->ts.type != BT_LOGICAL && v->ts.type == BT_LOGICAL))
+    {
+      gfc_error ("Argument %qs of %qs intrinsic at %L must be in type "
+		 "conformance to argument %qs at %L",
+		 gfc_current_intrinsic_arg[0]->name,
+		 gfc_current_intrinsic, &a->where,
+		 gfc_current_intrinsic_arg[1]->name, &v->where);
+    }
+	 
+  d = ap->next->next->expr;
+  m = ap->next->next->next->expr;
+  k = ap->next->next->next->next->expr;
+  b = ap->next->next->next->next->next->expr;
+
+  if (b)
+    {
+      if (!type_check (b, 5, BT_LOGICAL) || !scalar_check (b,4))
+	return false;
+    }
+  else
+    {
+      b = gfc_get_logical_expr (gfc_logical_4_kind, NULL, 0);
+      ap->next->next->next->next->next->expr = b;
+    }
+
+  if (m == NULL && d != NULL && d->ts.type == BT_LOGICAL
+      && ap->next->name == NULL)
+    {
+      m = d;
+      d = NULL;
+      ap->next->next->expr = NULL;
+      ap->next->next->next->expr = m;
+    }
+
+  if (!dim_check (d, 2, false))
+    return false;
+
+  if (!dim_rank_check (d, a, 0))
+    return false;
+
+  if (m != NULL && !type_check (m, 3, BT_LOGICAL))
+    return false;
+
+  if (m != NULL
+      && !gfc_check_conformance (a, m,
+				 "arguments '%s' and '%s' for intrinsic %s",
+				 gfc_current_intrinsic_arg[0]->name,
+				 gfc_current_intrinsic_arg[3]->name,
+				 gfc_current_intrinsic))
+    return false;
+
+  if (!kind_check (k, 1, BT_INTEGER))
+    return false;
+
+  return true;
+}
+
 
 /* Similar to minloc/maxloc, the argument list might need to be
    reordered for the MINVAL, MAXVAL, PRODUCT, and SUM intrinsics.  The
@@ -3493,6 +3560,12 @@ gfc_check_merge_bits (gfc_expr *i, gfc_expr *j, gfc_expr *mask)
   if (!type_check (j, 1, BT_INTEGER))
     return false;
 
+  if (!boz_args_check (i, j))
+    return false;
+
+  if (i->is_boz) i->ts.kind = j->ts.kind;
+  if (j->is_boz) j->ts.kind = i->ts.kind;
+
   if (!type_check (mask, 2, BT_INTEGER))
     return false;
 
@@ -3501,6 +3574,8 @@ gfc_check_merge_bits (gfc_expr *i, gfc_expr *j, gfc_expr *mask)
 
   if (!same_type_check (i, 0, mask, 2))
     return false;
+
+  if (mask->is_boz) mask->ts.kind = i->ts.kind;
 
   return true;
 }
@@ -6425,6 +6500,17 @@ gfc_check_ttynam_sub (gfc_expr *unit, gfc_expr *name)
 
 
 bool
+gfc_check_is_contiguous (gfc_expr *array)
+{
+  if (!array_check (array, 0))
+    return false;
+
+  return true;
+}
+
+
+
+bool
 gfc_check_isatty (gfc_expr *unit)
 {
   if (unit == NULL)
@@ -6627,6 +6713,12 @@ gfc_check_and (gfc_expr *i, gfc_expr *j)
 
   if (!scalar_check (j, 1))
     return false;
+
+  if (!boz_args_check (i, j))
+    return false;
+
+  if (i->is_boz) i->ts.kind = j->ts.kind;
+  if (j->is_boz) j->ts.kind = i->ts.kind;
 
   return true;
 }

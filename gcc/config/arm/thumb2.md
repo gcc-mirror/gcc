@@ -1,5 +1,5 @@
 ;; ARM Thumb-2 Machine Description
-;; Copyright (C) 2007-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2019 Free Software Foundation, Inc.
 ;; Written by CodeSourcery, LLC.
 ;;
 ;; This file is part of GCC.
@@ -252,16 +252,26 @@
   "TARGET_THUMB2 && !TARGET_IWMMXT && !TARGET_HARD_FLOAT
    && (   register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
-  "@
-   mov%?\\t%0, %1
-   mov%?\\t%0, %1
-   mov%?\\t%0, %1
-   mvn%?\\t%0, #%B1
-   movw%?\\t%0, %1
-   ldr%?\\t%0, %1
-   ldr%?\\t%0, %1
-   str%?\\t%1, %0
-   str%?\\t%1, %0"
+{
+  switch (which_alternative)
+    {
+    case 0:
+    case 1:
+    case 2:
+      return \"mov%?\\t%0, %1\";
+    case 3: return \"mvn%?\\t%0, #%B1\";
+    case 4: return \"movw%?\\t%0, %1\";
+    case 5:
+    case 6:
+      /* Cannot load it directly, split to load it via MOV / MOVT.  */
+      if (!MEM_P (operands[1]) && arm_disable_literal_pool)
+	return \"#\";
+      return \"ldr%?\\t%0, %1\";
+    case 7:
+    case 8: return \"str%?\\t%1, %0\";
+    default: gcc_unreachable ();
+    }
+}
   [(set_attr "type" "mov_reg,mov_imm,mov_imm,mvn_imm,mov_imm,load_4,load_4,store_4,store_4")
    (set_attr "length" "2,4,2,4,4,4,4,4,4")
    (set_attr "predicable" "yes")

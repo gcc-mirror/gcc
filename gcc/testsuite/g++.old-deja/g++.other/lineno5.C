@@ -15,6 +15,5 @@ namespace tmp {
 
 class A {
   public:
-  int kaka(tmp::B = b);		// { dg-error "" } no b in scope
-  // { dg-message "suggested alternative" "suggested alternative" { target *-*-* } .-1 }
+  int kaka(tmp::B = b);		// { dg-error "'b' was not declared in this scope; did you mean 'tmp::b'" }
 };

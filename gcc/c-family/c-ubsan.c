@@ -1,5 +1,5 @@
 /* UndefinedBehaviorSanitizer, undefined behavior detector.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
    Contributed by Marek Polacek <polacek@redhat.com>
 
 This file is part of GCC.
@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
+#include "langhooks.h"
 
 /* Instrument division by zero and INT_MIN / -1.  If not instrumenting,
    return NULL_TREE.  */
@@ -44,8 +45,9 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
   /* At this point both operands should have the same type,
      because they are already converted to RESULT_TYPE.
      Use TYPE_MAIN_VARIANT since typedefs can confuse us.  */
-  gcc_assert (TYPE_MAIN_VARIANT (TREE_TYPE (op0))
-	      == TYPE_MAIN_VARIANT (TREE_TYPE (op1)));
+  tree top0 = TYPE_MAIN_VARIANT (type);
+  tree top1 = TYPE_MAIN_VARIANT (TREE_TYPE (op1));
+  gcc_checking_assert (lang_hooks.types_compatible_p (top0, top1));
 
   op0 = unshare_expr (op0);
   op1 = unshare_expr (op1);
@@ -134,7 +136,10 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
   if (TYPE_OVERFLOW_WRAPS (type0)
       || maybe_ne (GET_MODE_BITSIZE (TYPE_MODE (type0)),
 		   TYPE_PRECISION (type0))
-      || !sanitize_flags_p (SANITIZE_SHIFT_BASE))
+      || !sanitize_flags_p (SANITIZE_SHIFT_BASE)
+      /* In C++2a and later, shifts are well defined except when
+	 the second operand is not within bounds.  */
+      || cxx_dialect >= cxx2a)
     ;
 
   /* For signed x << y, in C99/C11, the following:

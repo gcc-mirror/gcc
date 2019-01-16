@@ -1,5 +1,5 @@
 /* Default error handlers for CPP Library.
-   Copyright (C) 1986-2018 Free Software Foundation, Inc.
+   Copyright (C) 1986-2019 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -52,7 +52,7 @@ cpp_diagnostic (cpp_reader * pfile, enum cpp_diagnostic_level level,
 		enum cpp_warning_reason reason,
 		const char *msgid, va_list *ap)
 {
-  source_location src_loc;
+  location_t src_loc;
 
   if (CPP_OPTION (pfile, traditional))
     {
@@ -150,7 +150,7 @@ ATTRIBUTE_FPTR_PRINTF(6,0)
 static bool
 cpp_diagnostic_with_line (cpp_reader * pfile, enum cpp_diagnostic_level level,
 			  enum cpp_warning_reason reason,
-			  source_location src_loc, unsigned int column,
+			  location_t src_loc, unsigned int column,
 			  const char *msgid, va_list *ap)
 {
   bool ret;
@@ -169,7 +169,7 @@ cpp_diagnostic_with_line (cpp_reader * pfile, enum cpp_diagnostic_level level,
 
 bool
 cpp_error_with_line (cpp_reader *pfile, enum cpp_diagnostic_level level,
-		     source_location src_loc, unsigned int column,
+		     location_t src_loc, unsigned int column,
 		     const char *msgid, ...)
 {
   va_list ap;
@@ -188,7 +188,7 @@ cpp_error_with_line (cpp_reader *pfile, enum cpp_diagnostic_level level,
 
 bool
 cpp_warning_with_line (cpp_reader *pfile, enum cpp_warning_reason reason,
-		       source_location src_loc, unsigned int column,
+		       location_t src_loc, unsigned int column,
 		       const char *msgid, ...)
 {
   va_list ap;
@@ -207,7 +207,7 @@ cpp_warning_with_line (cpp_reader *pfile, enum cpp_warning_reason reason,
 
 bool
 cpp_pedwarning_with_line (cpp_reader *pfile, enum cpp_warning_reason reason,
-			  source_location src_loc, unsigned int column,
+			  location_t src_loc, unsigned int column,
 			  const char *msgid, ...)
 {
   va_list ap;
@@ -227,7 +227,7 @@ cpp_pedwarning_with_line (cpp_reader *pfile, enum cpp_warning_reason reason,
 
 bool
 cpp_warning_with_line_syshdr (cpp_reader *pfile, enum cpp_warning_reason reason,
-			      source_location src_loc, unsigned int column,
+			      location_t src_loc, unsigned int column,
 			      const char *msgid, ...)
 {
   va_list ap;
@@ -247,7 +247,7 @@ cpp_warning_with_line_syshdr (cpp_reader *pfile, enum cpp_warning_reason reason,
 
 bool
 cpp_error_at (cpp_reader * pfile, enum cpp_diagnostic_level level,
-	      source_location src_loc, const char *msgid, ...)
+	      location_t src_loc, const char *msgid, ...)
 {
   va_list ap;
   bool ret;
@@ -298,7 +298,7 @@ cpp_errno (cpp_reader *pfile, enum cpp_diagnostic_level level,
 bool
 cpp_errno_filename (cpp_reader *pfile, enum cpp_diagnostic_level level,
 		    const char *filename,
-		    source_location loc)
+		    location_t loc)
 {
   if (filename[0] == '\0')
     filename = _("stdout");

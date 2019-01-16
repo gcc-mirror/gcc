@@ -1,5 +1,5 @@
 /* Gimple Represented as Polyhedra.
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@inria.fr>.
 
 This file is part of GCC.
@@ -410,7 +410,8 @@ graphite_transform_loops (void)
 	  continue;
 
 	changed = true;
-	if (graphite_regenerate_ast_isl (scop))
+	if (graphite_regenerate_ast_isl (scop)
+	    && dump_enabled_p ())
 	  {
 	    dump_user_location_t loc = find_loop_location
 	      (scops[i]->scop_info->region.entry->dest->loop_father);

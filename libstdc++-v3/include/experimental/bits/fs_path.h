@@ -1,6 +1,6 @@
 // Class filesystem::path -*- C++ -*-
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -125,7 +125,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     template<typename _Tp1, typename _Tp2 = void>
       using _Path = typename
-	std::enable_if<__and_<__not_<is_same<_Tp1, path>>,
+	std::enable_if<__and_<__not_<is_same<typename remove_cv<_Tp1>::type,
+					     path>>,
+			      __not_<is_void<_Tp1>>,
 			      __constructible_from<_Tp1, _Tp2>>::value,
 		       path>::type;
 

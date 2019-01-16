@@ -1,5 +1,5 @@
 /* Loop header copying on trees.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -33,6 +33,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-ssa-scopedtables.h"
 #include "tree-ssa-threadedge.h"
+#include "tree-ssa-sccvn.h"
+#include "tree-phinodes.h"
+#include "ssa-iterators.h"
 #include "params.h"
 
 /* Duplicates headers of loops if they are small enough, so that the statements
@@ -49,7 +52,6 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
 				int *limit)
 {
   gimple_stmt_iterator bsi;
-  gimple *last;
 
   gcc_assert (!header->aux);
 
@@ -98,8 +100,8 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
       return false;
     }
 
-  last = last_stmt (header);
-  if (gimple_code (last) != GIMPLE_COND)
+  gcond *last = dyn_cast <gcond *> (last_stmt (header));
+  if (!last)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
@@ -108,10 +110,24 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
       return false;
     }
 
-  /* Count number of instructions and punt on calls.  */
+  for (gphi_iterator psi = gsi_start_phis (header); !gsi_end_p (psi);
+       gsi_next (&psi))
+    {
+      gphi *phi = psi.phi ();
+      tree res = gimple_phi_result (phi);
+      if (INTEGRAL_TYPE_P (TREE_TYPE (res))
+	  || POINTER_TYPE_P (TREE_TYPE (res)))
+	gimple_set_uid (phi, 1 /* IV */);
+      else
+	gimple_set_uid (phi, 0);
+    }
+
+  /* Count number of instructions and punt on calls.
+     Populate stmts INV/IV flag to later apply heuristics to the
+     kind of conditions we want to copy.  */
   for (bsi = gsi_start_bb (header); !gsi_end_p (bsi); gsi_next (&bsi))
     {
-      last = gsi_stmt (bsi);
+      gimple *last = gsi_stmt (bsi);
 
       if (gimple_code (last) == GIMPLE_LABEL)
 	continue;
@@ -141,7 +157,52 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
 		     header->index);
 	  return false;
 	}
+
+      /* Classify the stmt based on whether its computation is based
+         on a IV or whether it is invariant in the loop.  */
+      gimple_set_uid (last, 0);
+      if (!gimple_vuse (last))
+	{
+	  bool inv = true;
+	  bool iv = false;
+	  ssa_op_iter i;
+	  tree op;
+	  FOR_EACH_SSA_TREE_OPERAND (op, last, i, SSA_OP_USE)
+	    if (!SSA_NAME_IS_DEFAULT_DEF (op)
+		&& flow_bb_inside_loop_p (loop,
+					  gimple_bb (SSA_NAME_DEF_STMT (op))))
+	      {
+		if (!(gimple_uid (SSA_NAME_DEF_STMT (op)) & 2 /* INV */))
+		  inv = false;
+		if (gimple_uid (SSA_NAME_DEF_STMT (op)) & 1 /* IV */)
+		  iv = true;
+	      }
+	  gimple_set_uid (last, (iv ? 1 : 0) | (inv ? 2 : 0));
+	}
     }
+
+  /* If the condition tests a non-IV loop variant we do not want to rotate
+     the loop further.  Unless this is the original loop header.  */
+  tree lhs = gimple_cond_lhs (last);
+  tree rhs = gimple_cond_rhs (last);
+  if (header != loop->header
+      && ((TREE_CODE (lhs) == SSA_NAME
+	   && !SSA_NAME_IS_DEFAULT_DEF (lhs)
+	   && flow_bb_inside_loop_p (loop, gimple_bb (SSA_NAME_DEF_STMT (lhs)))
+	   && gimple_uid (SSA_NAME_DEF_STMT (lhs)) == 0)
+	  || (TREE_CODE (rhs) == SSA_NAME
+	      && !SSA_NAME_IS_DEFAULT_DEF (rhs)
+	      && flow_bb_inside_loop_p (loop,
+					gimple_bb (SSA_NAME_DEF_STMT (rhs)))
+	      && gimple_uid (SSA_NAME_DEF_STMT (rhs)) == 0)))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "  Not duplicating bb %i: condition based on non-IV loop"
+		 "variant.\n", header->index);
+      return false;
+    }
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "    Will duplicate bb %i\n", header->index); 
   return true;
@@ -297,11 +358,13 @@ ch_base::copy_headers (function *fun)
   bool changed = false;
 
   if (number_of_loops (fun) <= 1)
-      return 0;
+    return 0;
 
   bbs = XNEWVEC (basic_block, n_basic_blocks_for_fn (fun));
   copied_bbs = XNEWVEC (basic_block, n_basic_blocks_for_fn (fun));
   bbs_size = n_basic_blocks_for_fn (fun);
+
+  auto_vec<std::pair<edge, loop_p> > copied;
 
   FOR_EACH_LOOP (loop, 0)
     {
@@ -340,11 +403,6 @@ ch_base::copy_headers (function *fun)
 	  bbs[n_bbs++] = header;
 	  gcc_assert (bbs_size > n_bbs);
 	  header = exit->dest;
-	  /* Make sure to stop copying after we copied the first exit test.
-	     Without further heuristics we do not want to rotate the loop
-	     any further.  */
-	  if (loop_exits_from_bb_p (loop, exit->src))
-	    break;
 	}
 
       if (!exit)
@@ -371,6 +429,7 @@ ch_base::copy_headers (function *fun)
 	  fprintf (dump_file, "Duplication failed.\n");
 	  continue;
 	}
+      copied.safe_push (std::make_pair (entry, loop));
 
       /* If the loop has the form "for (i = j; i < j + 10; i++)" then
 	 this copying can introduce a case where we rely on undefined
@@ -422,7 +481,28 @@ ch_base::copy_headers (function *fun)
     }
 
   if (changed)
-    update_ssa (TODO_update_ssa);
+    {
+      update_ssa (TODO_update_ssa);
+      /* After updating SSA form perform CSE on the loop header
+	 copies.  This is esp. required for the pass before
+	 vectorization since nothing cleans up copied exit tests
+	 that can now be simplified.  CSE from the entry of the
+	 region we copied till all loop exit blocks but not
+	 entering the loop itself.  */
+      for (unsigned i = 0; i < copied.length (); ++i)
+	{
+	  edge entry = copied[i].first;
+	  loop_p loop = copied[i].second;
+	  vec<edge> exit_edges = get_loop_exit_edges (loop);
+	  bitmap exit_bbs = BITMAP_ALLOC (NULL);
+	  for (unsigned j = 0; j < exit_edges.length (); ++j)
+	    bitmap_set_bit (exit_bbs, exit_edges[j]->dest->index);
+	  bitmap_set_bit (exit_bbs, loop->header->index);
+	  do_rpo_vn (cfun, entry, exit_bbs);
+	  BITMAP_FREE (exit_bbs);
+	  exit_edges.release ();
+	}
+    }
   free (bbs);
   free (copied_bbs);
 
@@ -473,24 +553,13 @@ pass_ch_vect::process_loop_p (struct loop *loop)
   if (loop->dont_vectorize)
     return false;
 
-  if (!do_while_loop_p (loop))
-    return true;
-
- /* The vectorizer won't handle anything with multiple exits, so skip.  */
+  /* The vectorizer won't handle anything with multiple exits, so skip.  */
   edge exit = single_exit (loop);
   if (!exit)
     return false;
 
-  /* Copy headers iff there looks to be code in the loop after the exit block,
-     i.e. the exit block has an edge to another block (besides the latch,
-     which should be empty).  */
-  edge_iterator ei;
-  edge e;
-  FOR_EACH_EDGE (e, ei, exit->src->succs)
-    if (!loop_exit_edge_p (loop, e)
-	&& e->dest != loop->header
-	&& e->dest != loop->latch)
-      return true;
+  if (!do_while_loop_p (loop))
+    return true;
 
   return false;
 }

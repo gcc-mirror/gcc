@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2018 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2019 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -137,6 +137,9 @@ Joerg Brunsmann for Java compiler hacking and help with the GCJ FAQ@.
 @item
 Joe Buck for his direction via the steering committee from its creation
 to 2013.
+
+@item
+Iain Buclaw for the D frontend.
 
 @item
 Craig Burley for leadership of the G77 Fortran effort.

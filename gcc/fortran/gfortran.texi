@@ -1,7 +1,7 @@
 \input texinfo  @c -*-texinfo-*-
 @c %**start of header
 @setfilename gfortran.info
-@set copyrights-gfortran 1999-2018
+@set copyrights-gfortran 1999-2019
 
 @include gcc-common.texi
 
@@ -418,9 +418,17 @@ statement, the included file is not preprocessed.  To preprocess included
 files, use the equivalent preprocessor statement @code{#include}.
 
 If GNU Fortran invokes the preprocessor, @code{__GFORTRAN__}
-is defined and @code{__GNUC__}, @code{__GNUC_MINOR__} and
+is defined.  The macros @code{__GNUC__}, @code{__GNUC_MINOR__} and
 @code{__GNUC_PATCHLEVEL__} can be used to determine the version of the
 compiler.  See @ref{Top,,Overview,cpp,The C Preprocessor} for details.
+
+GNU Fortran supports a number of @code{INTEGER} and @code{REAL} kind types
+in additional to the kind types required by the Fortran standard.
+The availability of any given kind type is architecture dependent.  The
+following pre-defined preprocessor macros can be used to conditional
+include code for these additional kind types: @code{__GFC_INTEGER_1__},
+@code{__GFC_INTEGER_2__}, @code{__GFC_INTEGER_8__}, @code{__GFC_INTEGER_16__},
+@code{__GFC_REAL_10__}, and @code{__GFC_REAL_16__}.
 
 While CPP is the de-facto standard for preprocessing Fortran code,
 Part 3 of the Fortran 95 standard (ISO/IEC 1539-3:1998) defines
@@ -1479,7 +1487,7 @@ contains a negative number, then there is a preceding subrecord.
 
 In the most simple case, with only one subrecord per logical record,
 both record markers contain the number of bytes of user data in the
-record,
+record.
 
 The format for unformatted sequential data can be duplicated using
 unformatted stream, as shown in the example program for an unformatted

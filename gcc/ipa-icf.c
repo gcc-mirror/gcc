@@ -1,5 +1,5 @@
 /* Interprocedural Identical Code Folding pass
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
 
    Contributed by Jan Hubicka <hubicka@ucw.cz> and Martin Liska <mliska@suse.cz>
 
@@ -3117,6 +3117,22 @@ sem_item_optimizer::traverse_congruence_split (congruence_class * const &cls,
   return true;
 }
 
+/* Compare function for sorting pairs in do_congruence_step_f.  */
+
+int
+sem_item_optimizer::sort_congruence_split (const void *a_, const void *b_)
+{
+  const std::pair<congruence_class *, bitmap> *a
+    = (const std::pair<congruence_class *, bitmap> *)a_;
+  const std::pair<congruence_class *, bitmap> *b
+    = (const std::pair<congruence_class *, bitmap> *)b_;
+  if (a->first->id < b->first->id)
+    return -1;
+  else if (a->first->id > b->first->id)
+    return 1;
+  return 0;
+}
+
 /* Tests if a class CLS used as INDEXth splits any congruence classes.
    Bitmap stack BMSTACK is used for bitmap allocation.  */
 
@@ -3157,13 +3173,20 @@ sem_item_optimizer::do_congruence_step_for_index (congruence_class *cls,
 	}
     }
 
+  auto_vec<std::pair<congruence_class *, bitmap> > to_split;
+  to_split.reserve_exact (split_map.elements ());
+  for (hash_map <congruence_class *, bitmap>::iterator i = split_map.begin ();
+       i != split_map.end (); ++i)
+    to_split.safe_push (*i);
+  to_split.qsort (sort_congruence_split);
+
   traverse_split_pair pair;
   pair.optimizer = this;
   pair.cls = cls;
 
   splitter_class_removed = false;
-  split_map.traverse <traverse_split_pair *,
-		      sem_item_optimizer::traverse_congruence_split> (&pair);
+  for (unsigned i = 0; i < to_split.length (); ++i)
+    traverse_congruence_split (to_split[i].first, to_split[i].second, &pair);
 
   /* Bitmap clean-up.  */
   split_map.traverse <traverse_split_pair *,

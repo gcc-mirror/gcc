@@ -1,5 +1,5 @@
 /* GCC Quad-Precision Math Library
-   Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2010-2018 Free Software Foundation, Inc.
    Written by Tobias Burnus  <burnus@net-b.de>
 
 This file is part of the libquadmath library.
@@ -25,7 +25,8 @@ Boston, MA 02110-1301, USA.  */
 
 #if SUPPORTS_WEAK
 # define __qmath2(name,name2,type) \
-  static __typeof(type) name __attribute__ ((__weakref__(#name2)));
+  static __typeof(type) name __attribute__ ((__weakref__(#name2))) \
+			__quadmath_throw;
 # define __qmath_(name) __qmath_ ## name
 #else
 # define __qmath2(name,name2,type)
@@ -50,6 +51,7 @@ __qmath3 (coshq)
 __qmath3 (cosq)
 __qmath3 (erfq)
 __qmath3 (erfcq)
+__qmath3 (exp2q)
 __qmath3 (expq)
 __qmath3 (expm1q)
 __qmath3 (fabsq)
@@ -65,6 +67,7 @@ __qmath3 (hypotq)
 __qmath3 (ilogbq)
 __qmath3 (isinfq)
 __qmath3 (isnanq)
+__qmath3 (issignalingq)
 __qmath3 (j0q)
 __qmath3 (j1q)
 __qmath3 (jnq)

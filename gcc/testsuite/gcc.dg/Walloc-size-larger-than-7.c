@@ -1,5 +1,6 @@
 /* PR middle-end/82063 - issues with arguments enabled by -Wall
    { dg-do compile }
+   { dg-require-effective-target size32plus }
    { dg-options "-O -Walloc-size-larger-than=1GB -ftrack-macro-expansion=0" } */
 
 void sink (void*);

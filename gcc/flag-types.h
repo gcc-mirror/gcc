@@ -1,5 +1,5 @@
 /* Compilation switch flag type definitions for GCC.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -121,6 +121,14 @@ enum stack_reuse_level
   SR_NONE,
   SR_NAMED_VARS,
   SR_ALL
+};
+
+/* The live patching level.  */
+enum live_patching_level
+{
+  LIVE_PATCHING_NONE = 0,
+  LIVE_PATCHING_INLINE_ONLY_STATIC,
+  LIVE_PATCHING_INLINE_CLONE
 };
 
 /* The algorithm used for basic block reordering.  */

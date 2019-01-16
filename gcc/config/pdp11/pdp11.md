@@ -1,5 +1,5 @@
 ;;- Machine description for the pdp11 for GNU C compiler
-;; Copyright (C) 1994-2018 Free Software Foundation, Inc.
+;; Copyright (C) 1994-2019 Free Software Foundation, Inc.
 ;; Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 ;; This file is part of GCC.
@@ -26,6 +26,7 @@
     UNSPECV_BLOCKAGE
     UNSPECV_SETD
     UNSPECV_SETI
+    UNSPECV_MOVMEM
   ])
 
 (define_constants
@@ -33,22 +34,21 @@
    ;; Register numbers
    (R0_REGNUM     	  0)
    (RETVAL_REGNUM     	  0)
-   (HARD_FRAME_POINTER_REGNUM  5)
+   (FRAME_POINTER_REGNUM  5)
    (STACK_POINTER_REGNUM  6)
    (PC_REGNUM             7)
    (AC0_REGNUM            8)
    (AC3_REGNUM            11)
    (AC4_REGNUM            12)
    (AC5_REGNUM            13)
-   ;; The next two are not physical registers but are used for addressing
-   ;; arguments.
-   (FRAME_POINTER_REGNUM  14)
-   (ARG_POINTER_REGNUM    15)
+   ;; The next one is not a physical register but is used for
+   ;; addressing arguments.
+   (ARG_POINTER_REGNUM    14)
    ;; Condition code registers
-   (CC_REGNUM             16)
-   (FCC_REGNUM            17)
+   (CC_REGNUM             15)
+   (FCC_REGNUM            16)
    ;; End of hard registers
-   (FIRST_PSEUDO_REGISTER 18)
+   (FIRST_PSEUDO_REGISTER 17)
    
    ;; Branch offset limits, as byte offsets from (pc).  That is NOT
    ;; the same thing as "instruction address" -- it is for backward
@@ -178,12 +178,7 @@
   DONE;
 })
 
-(define_expand "return"
-  [(return)]
-  "reload_completed && !frame_pointer_needed && pdp11_sp_frame_offset () == 0"
-  "")
-
-(define_insn "*rts"
+(define_insn "rtspc"
   [(return)]
   ""
   "rts\tpc")
@@ -248,6 +243,78 @@
    cmp<PDPint:isfx>\t%0,%1
    cmp<PDPint:isfx>\t%0,%1"
   [(set_attr "length" "2,2,4,4,4,6")])
+
+;; Two word compare
+(define_insn "cmpsi"
+  [(set (reg:CC CC_REGNUM)
+	(compare:CC (match_operand:SI 0 "general_operand" "rDQi")
+		    (match_operand:SI 1 "general_operand" "rDQi")))]
+  ""
+{
+  rtx inops[2];
+  rtx exops[2][2];
+  rtx lb[1];
+  
+  inops[0] = operands[0];
+  inops[1] = operands[1];
+  pdp11_expand_operands (inops, exops, 2, 2, NULL, big);
+  lb[0] = gen_label_rtx ();
+  
+  if (CONST_INT_P (exops[0][1]) && INTVAL (exops[0][1]) == 0)
+   output_asm_insn ("tst\t%0", exops[0]);
+  else
+   output_asm_insn ("cmp\t%0,%1", exops[0]);
+  output_asm_insn ("bne\t%l0", lb);
+  if (CONST_INT_P (exops[1][1]) && INTVAL (exops[1][1]) == 0)
+   output_asm_insn ("tst\t%0", exops[1]);
+  else
+   output_asm_insn ("cmp\t%0,%1", exops[1]);
+  output_asm_label (lb[0]);
+  fputs (":\n", asm_out_file);
+
+  return "";
+}
+  [(set (attr "length")
+	(symbol_ref "pdp11_cmp_length (operands, 2)"))
+   (set_attr "base_cost" "0")])
+
+;; Four word compare
+(define_insn "cmpdi"
+  [(set (reg:CC CC_REGNUM)
+	(compare:CC (match_operand:DI 0 "general_operand" "rDQi")
+		    (match_operand:DI 1 "general_operand" "rDQi")))]
+  ""
+{
+  rtx inops[4];
+  rtx exops[4][2];
+  rtx lb[1];
+  int i;
+  
+  inops[0] = operands[0];
+  inops[1] = operands[1];
+  pdp11_expand_operands (inops, exops, 2, 4, NULL, big);
+  lb[0] = gen_label_rtx ();
+
+  for (i = 0; i < 3; i++)
+    {
+      if (CONST_INT_P (exops[i][1]) && INTVAL (exops[i][1]) == 0)
+        output_asm_insn ("tst\t%0", exops[i]);
+      else
+        output_asm_insn ("cmp\t%0,%1", exops[i]);
+       output_asm_insn ("bne\t%l0", lb);
+     }
+  if (CONST_INT_P (exops[3][1]) && INTVAL (exops[3][1]) == 0)
+   output_asm_insn ("tst\t%0", exops[3]);
+  else
+   output_asm_insn ("cmp\t%0,%1", exops[3]);
+  output_asm_label (lb[0]);
+   fputs (":\n", asm_out_file);
+
+  return "";
+}
+  [(set (attr "length")
+	(symbol_ref "pdp11_cmp_length (operands, 2)"))
+   (set_attr "base_cost" "0")])
 
 ;; sob instruction
 ;;
@@ -368,8 +435,8 @@
 (define_insn_and_split "cbranch<mode>4"
   [(set (pc)
 	(if_then_else (match_operator 0 "ordered_comparison_operator"
-		       [(match_operand:PDPint 1 "general_operand" "g")
-			(match_operand:PDPint 2 "general_operand" "g")])
+		       [(match_operand:QHSDint 1 "general_operand" "g")
+			(match_operand:QHSDint 2 "general_operand" "g")])
 		      (label_ref (match_operand 3 "" ""))
 		      (pc)))]
   ""
@@ -473,12 +540,19 @@
   "* return output_move_multiple (operands);"
   [(set_attr "length" "4,6,8,16")])
 
+;; That long string of "Z" constraints enforces the restriction that
+;; a register source and auto increment or decrement destination must
+;; not use the same register, because that case is not consistently
+;; implemented across the PDP11 models.
+;; TODO: the same should be applied to insn like add, but this is not
+;; necessary yet because the incdec optimization pass does not apply
+;; that optimization to 3-operand insns at the moment.
 (define_insn "mov<mode>"
-  [(set (match_operand:PDPint 0 "nonimmediate_operand" "=rR,rR,Q,Q")
-	(match_operand:PDPint 1 "general_operand" "rRN,Qi,rRN,Qi"))]
+  [(set (match_operand:PDPint 0 "nonimmediate_operand" "=rR,Za,Zb,Zc,Zd,Ze,Zf,Zg,rD,rR,Q,Q")
+	(match_operand:PDPint 1 "general_operand" "RN,Z0,Z1,Z2,Z3,Z4,Z5,Z6,r,Qi,rRN,Qi"))]
   ""
   ""
-  [(set_attr "length" "2,4,4,6")])
+  [(set_attr "length" "2,2,2,2,2,2,2,2,2,4,4,6")])
 
 ;; This splits all the integer moves: DI and SI modes as well as
 ;; the simple machine operations.
@@ -493,8 +567,8 @@
   
 ;; MOV clears V
 (define_insn "*mov<mode>_<cc_cc>"
-  [(set (match_operand:PDPint 0 "nonimmediate_operand" "=rR,rR,Q,Q")
-	(match_operand:PDPint 1 "general_operand" "rRN,Qi,rRN,Qi"))
+  [(set (match_operand:PDPint 0 "nonimmediate_operand" "=rR,Za,Zb,Zc,Zd,Ze,Zf,Zg,rD,rR,Q,Q")
+	(match_operand:PDPint 1 "general_operand" "RN,Z0,Z1,Z2,Z3,Z4,Z5,Z6,r,Qi,rRN,Qi"))
    (clobber (reg:CC CC_REGNUM))]
   "reload_completed"
   "*
@@ -504,7 +578,7 @@
 
   return \"mov<PDPint:isfx>\t%1,%0\";
 }"
-  [(set_attr "length" "2,4,4,6")])
+  [(set_attr "length" "2,2,2,2,2,2,2,2,2,4,4,6")])
 
 ;; movdf has unusually complicated condition code handling, because
 ;; load (into float register) updates the FCC, while store (from
@@ -591,18 +665,98 @@
 
 ;; Expand a block move.  We turn this into a move loop.
 (define_expand "movmemhi"
-  [(match_operand:BLK 0 "general_operand" "=g")
-   (match_operand:BLK 1 "general_operand" "g")
-   (match_operand:HI 2 "immediate_operand" "i")
-   (match_operand:HI 3 "immediate_operand" "i")]
+  [(parallel [(unspec_volatile [(const_int 0)] UNSPECV_MOVMEM)
+	      (match_operand:BLK 0 "general_operand" "=g")
+	      (match_operand:BLK 1 "general_operand" "g")
+	      (match_operand:HI 2 "immediate_operand" "i")
+	      (match_operand:HI 3 "immediate_operand" "i")
+	      (clobber (mem:BLK (scratch)))
+	      (clobber (match_dup 0))
+	      (clobber (match_dup 1))
+	      (clobber (match_dup 2))])]
   ""
   "
 {
-  if (INTVAL (operands[2]) != 0)
-    expand_block_move (operands);
-  DONE;
+  int count;
+  count = INTVAL (operands[2]);
+  if (count == 0)
+    DONE;
+  if (INTVAL (operands [3]) >= 2 && (count & 1) == 0)
+    count >>= 1;
+  else
+    operands[3] = const1_rtx;
+  operands[2] = copy_to_mode_reg (HImode,
+                                  gen_rtx_CONST_INT (HImode, count));
+
+  /* Load BLKmode MEM addresses into scratch registers.  */
+  operands[0] = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
+  operands[1] = copy_to_mode_reg (Pmode, XEXP (operands[1], 0));
 }")
 
+;; Expand a block move.  We turn this into a move loop.
+(define_insn_and_split "movmemhi1"
+  [(unspec_volatile [(const_int 0)] UNSPECV_MOVMEM)
+   (match_operand:HI 0 "register_operand" "+r")
+   (match_operand:HI 1 "register_operand" "+r")
+   (match_operand:HI 2 "register_operand" "+r")
+   (match_operand:HI 3 "immediate_operand" "i")
+   (clobber (mem:BLK (scratch)))
+   (clobber (match_dup 0))
+   (clobber (match_dup 1))
+   (clobber (match_dup 2))]
+  ""
+  "#"
+  "reload_completed"
+  [(parallel [(unspec_volatile [(const_int 0)] UNSPECV_MOVMEM)
+	      (match_dup 0)
+	      (match_dup 1)
+	      (match_dup 2)
+	      (match_dup 3)
+	      (clobber (mem:BLK (scratch)))
+	      (clobber (match_dup 0))
+	      (clobber (match_dup 1))
+	      (clobber (match_dup 2))
+	      (clobber (reg:CC CC_REGNUM))])]
+  "")
+
+(define_insn "movmemhi_nocc"
+  [(unspec_volatile [(const_int 0)] UNSPECV_MOVMEM)
+   (match_operand:HI 0 "register_operand" "+r")
+   (match_operand:HI 1 "register_operand" "+r")
+   (match_operand:HI 2 "register_operand" "+r")
+   (match_operand:HI 3 "immediate_operand" "i")
+   (clobber (mem:BLK (scratch)))
+   (clobber (match_dup 0))
+   (clobber (match_dup 1))
+   (clobber (match_dup 2))
+   (clobber (reg:CC CC_REGNUM))]
+  "reload_completed"
+  "*
+{
+  rtx lb[2];
+  
+  lb[0] = operands[2];
+  lb[1] = gen_label_rtx ();
+  
+  output_asm_label (lb[1]);
+  fputs (\":\n\", asm_out_file);
+  if (INTVAL (operands[3]) > 1)
+    output_asm_insn (\"mov\t(%1)+,(%0)+\", operands);
+  else
+    output_asm_insn (\"movb\t(%1)+,(%0)+\", operands);
+  if (TARGET_40_PLUS)
+    output_asm_insn (\"sob\t%0,%l1\", lb);
+  else
+    {
+      output_asm_insn (\"dec\t%0\", lb);
+      output_asm_insn (\"bne\t%l1\", lb);
+    }
+  return \"\";
+}"
+  [(set (attr "length")
+	(if_then_else (match_test "TARGET_40_PLUS")
+		      (const_int 4)
+		      (const_int 6)))])
 
 ;;- truncation instructions
 
@@ -659,7 +813,8 @@
         emit_move_insn (r, const0_rtx);
         DONE;
       }
-    else if (!rtx_equal_p (operands[0], operands[1]))
+    else if (!REG_P (operands[1]) ||
+             REGNO (operands[0]) != REGNO (operands[1]))
       {
         /* Alternatives 2 and 3 */
         emit_move_insn (operands[0], const0_rtx);
@@ -975,22 +1130,22 @@
   
   inops[0] = operands[0];
   inops[1] = operands[2];
-  pdp11_expand_operands (inops, exops, 2, NULL, either);
+  pdp11_expand_operands (inops, exops, 2, 4, NULL, big);
   
-  if (!CONSTANT_P (exops[0][1]) || INTVAL (exops[0][1]) != 0)
+  if (!CONST_INT_P (exops[0][1]) || INTVAL (exops[0][1]) != 0)
     output_asm_insn (\"add\t%1,%0\", exops[0]);
-  if (!CONSTANT_P (exops[1][1]) || INTVAL (exops[1][1]) != 0)
+  if (!CONST_INT_P (exops[1][1]) || INTVAL (exops[1][1]) != 0)
   {
     output_asm_insn (\"add\t%1,%0\", exops[1]);
     output_asm_insn (\"adc\t%0\", exops[0]);
   }
-  if (!CONSTANT_P (exops[2][1]) || INTVAL (exops[2][1]) != 0)
+  if (!CONST_INT_P (exops[2][1]) || INTVAL (exops[2][1]) != 0)
   {
     output_asm_insn (\"add\t%1,%0\", exops[2]);
     output_asm_insn (\"adc\t%0\", exops[1]);
     output_asm_insn (\"adc\t%0\", exops[0]);
   }
-  if (!CONSTANT_P (exops[3][1]) || INTVAL (exops[3][1]) != 0)
+  if (!CONST_INT_P (exops[3][1]) || INTVAL (exops[3][1]) != 0)
   {
     output_asm_insn (\"add\t%1,%0\", exops[3]);
     output_asm_insn (\"adc\t%0\", exops[2]);
@@ -1037,11 +1192,11 @@
   
   inops[0] = operands[0];
   inops[1] = operands[2];
-  pdp11_expand_operands (inops, exops, 2, NULL, either);
+  pdp11_expand_operands (inops, exops, 2, 2, NULL, big);
   
-  if (!CONSTANT_P (exops[0][1]) || INTVAL (exops[0][1]) != 0)
+  if (!CONST_INT_P (exops[0][1]) || INTVAL (exops[0][1]) != 0)
     output_asm_insn (\"add\t%1,%0\", exops[0]);
-  if (!CONSTANT_P (exops[1][1]) || INTVAL (exops[1][1]) != 0)
+  if (!CONST_INT_P (exops[1][1]) || INTVAL (exops[1][1]) != 0)
   {
     output_asm_insn (\"add\t%1,%0\", exops[1]);
     output_asm_insn (\"adc\t%0\", exops[0]);
@@ -1169,22 +1324,22 @@
   
   inops[0] = operands[0];
   inops[1] = operands[2];
-  pdp11_expand_operands (inops, exops, 2, NULL, either);
+  pdp11_expand_operands (inops, exops, 2, 4, NULL, big);
   
-  if (!CONSTANT_P (exops[0][1]) || INTVAL (exops[0][1]) != 0)
+  if (!CONST_INT_P (exops[0][1]) || INTVAL (exops[0][1]) != 0)
     output_asm_insn (\"sub\t%1,%0\", exops[0]);
-  if (!CONSTANT_P (exops[1][1]) || INTVAL (exops[1][1]) != 0)
+  if (!CONST_INT_P (exops[1][1]) || INTVAL (exops[1][1]) != 0)
   {
     output_asm_insn (\"sub\t%1,%0\", exops[1]);
     output_asm_insn (\"sbc\t%0\", exops[0]);
   }
-  if (!CONSTANT_P (exops[2][1]) || INTVAL (exops[2][1]) != 0)
+  if (!CONST_INT_P (exops[2][1]) || INTVAL (exops[2][1]) != 0)
   {
     output_asm_insn (\"sub\t%1,%0\", exops[2]);
     output_asm_insn (\"sbc\t%0\", exops[1]);
     output_asm_insn (\"sbc\t%0\", exops[0]);
   }
-  if (!CONSTANT_P (exops[3][1]) || INTVAL (exops[3][1]) != 0)
+  if (!CONST_INT_P (exops[3][1]) || INTVAL (exops[3][1]) != 0)
   {
     output_asm_insn (\"sub\t%1,%0\", exops[3]);
     output_asm_insn (\"sbc\t%0\", exops[2]);
@@ -1222,11 +1377,11 @@
   
   inops[0] = operands[0];
   inops[1] = operands[2];
-  pdp11_expand_operands (inops, exops, 2, NULL, either);
+  pdp11_expand_operands (inops, exops, 2, 2, NULL, big);
   
-  if (!CONSTANT_P (exops[0][1]) || INTVAL (exops[0][1]) != 0)
+  if (!CONST_INT_P (exops[0][1]) || INTVAL (exops[0][1]) != 0)
     output_asm_insn (\"sub\t%1,%0\", exops[0]);
-  if (!CONSTANT_P (exops[1][1]) || INTVAL (exops[1][1]) != 0)
+  if (!CONST_INT_P (exops[1][1]) || INTVAL (exops[1][1]) != 0)
   {
     output_asm_insn (\"sub\t%1,%0\", exops[1]);
     output_asm_insn (\"sbc\t%0\", exops[0]);
@@ -1702,9 +1857,11 @@
    (clobber (reg:CC CC_REGNUM))]
   "reload_completed"
   {
+    rtx inops[2];
     rtx exops[4][2];
-    
-    pdp11_expand_operands (operands, exops, 1, NULL, either);
+
+    inops[0] = operands[0];
+    pdp11_expand_operands (inops, exops, 1, 4, NULL, big);
   
     output_asm_insn (\"com\t%0\", exops[3]);
     output_asm_insn (\"com\t%0\", exops[2]);
@@ -1738,9 +1895,11 @@
    (clobber (reg:CC CC_REGNUM))]
   "reload_completed"
   {
-    rtx exops[2][2];
-    
-    pdp11_expand_operands (operands, exops, 1, NULL, either);
+    rtx inops[2];
+    rtx exops[4][2];
+
+    inops[0] = operands[0];
+    pdp11_expand_operands (inops, exops, 1, 2, NULL, big);
   
     output_asm_insn (\"com\t%0\", exops[1]);
     output_asm_insn (\"com\t%0\", exops[0]);
@@ -2046,10 +2205,13 @@
    (clobber (reg:CC CC_REGNUM))]
   ""
   {
+    rtx inops[2];
     rtx exops[2][2];
     rtx t;
-  
-    pdp11_expand_operands (operands, exops, 2, NULL, either);
+
+    inops[0] = operands[0];
+    inops[1] = operands[1];
+    pdp11_expand_operands (inops, exops, 2, 2, NULL, either);
 
     t = exops[0][0];
     exops[0][0] = exops[1][0];

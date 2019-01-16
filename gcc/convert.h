@@ -1,5 +1,5 @@
 /* Definition of functions in convert.c.
-   Copyright (C) 1993-2018 Free Software Foundation, Inc.
+   Copyright (C) 1993-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -39,5 +39,7 @@ extern inline tree convert_to_real_nofold (tree t, tree x)
 { return convert_to_real_maybe_fold (t, x, false); }
 extern inline tree convert_to_complex_nofold (tree t, tree x)
 { return convert_to_complex_maybe_fold (t, x, false); }
+
+extern tree preserve_any_location_wrapper (tree result, tree orig_expr);
 
 #endif /* GCC_CONVERT_H */

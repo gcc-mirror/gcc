@@ -1,5 +1,5 @@
 /* Loop autoparallelization.
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr> 
    Zdenek Dvorak <dvorakz@suse.cz> and Razya Ladelsky <razya@il.ibm.com>.
 
@@ -1041,7 +1041,7 @@ create_phi_for_local_result (reduction_info **slot, struct loop *loop)
   gphi *new_phi;
   basic_block store_bb, continue_bb;
   tree local_res;
-  source_location locus;
+  location_t locus;
 
   /* STORE_BB is the block where the phi
      should be stored.  It is the destination of the loop exit.
@@ -1130,7 +1130,8 @@ create_call_for_reduction_1 (reduction_info **slot, struct clsn_data *clsn_data)
 
   tmp_load = create_tmp_var (TREE_TYPE (TREE_TYPE (addr)));
   tmp_load = make_ssa_name (tmp_load);
-  load = gimple_build_omp_atomic_load (tmp_load, addr);
+  load = gimple_build_omp_atomic_load (tmp_load, addr,
+				       OMP_MEMORY_ORDER_RELAXED);
   SSA_NAME_DEF_STMT (tmp_load) = load;
   gsi = gsi_start_bb (new_bb);
   gsi_insert_after (&gsi, load, GSI_NEW_STMT);
@@ -1146,7 +1147,9 @@ create_call_for_reduction_1 (reduction_info **slot, struct clsn_data *clsn_data)
   name = force_gimple_operand_gsi (&gsi, x, true, NULL_TREE, true,
 				   GSI_CONTINUE_LINKING);
 
-  gsi_insert_after (&gsi, gimple_build_omp_atomic_store (name), GSI_NEW_STMT);
+  gimple *store = gimple_build_omp_atomic_store (name,
+						 OMP_MEMORY_ORDER_RELAXED);
+  gsi_insert_after (&gsi, store, GSI_NEW_STMT);
   return 1;
 }
 
@@ -2128,7 +2131,7 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
   for (gphi_iterator gpi = gsi_start_phis (ex_bb);
        !gsi_end_p (gpi); gsi_next (&gpi))
     {
-      source_location locus;
+      location_t locus;
       gphi *phi = gpi.phi ();
       tree def = PHI_ARG_DEF_FROM_EDGE (phi, exit);
       gimple *def_stmt = SSA_NAME_DEF_STMT (def);
@@ -3406,13 +3409,16 @@ parallelize_loops (bool oacc_kernels_p)
       changed = true;
       skip_loop = loop->inner;
 
-      dump_user_location_t loop_loc = find_loop_location (loop);
-      if (loop->inner)
-	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loop_loc,
-			 "parallelizing outer loop %d\n", loop->num);
-      else
-	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loop_loc,
-			 "parallelizing inner loop %d\n", loop->num);
+      if (dump_enabled_p ())
+	{
+	  dump_user_location_t loop_loc = find_loop_location (loop);
+	  if (loop->inner)
+	    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loop_loc,
+			     "parallelizing outer loop %d\n", loop->num);
+	  else
+	    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loop_loc,
+			     "parallelizing inner loop %d\n", loop->num);
+	}
 
       gen_parallel_loop (loop, &reduction_list,
 			 n_threads, &niter_desc, oacc_kernels_p);

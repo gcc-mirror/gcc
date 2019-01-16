@@ -1,5 +1,5 @@
 /* Convert a program in SSA form into Normal form.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
    Contributed by Andrew Macleod <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -143,7 +143,7 @@ struct elim_graph
   auto_vec<int> edge_list;
 
   /* Source locus on each edge */
-  auto_vec<source_location> edge_locus;
+  auto_vec<location_t> edge_locus;
 
   /* Visited vector.  */
   auto_sbitmap visited;
@@ -162,7 +162,7 @@ struct elim_graph
   auto_vec<tree> const_copies;
 
   /* Source locations for any constant copies.  */
-  auto_vec<source_location> copy_locus;
+  auto_vec<location_t> copy_locus;
 };
 
 
@@ -238,7 +238,7 @@ emit_partition_copy (rtx dest, rtx src, int unsignedsrcp, tree sizeexp)
 /* Insert a copy instruction from partition SRC to DEST onto edge E.  */
 
 static void
-insert_partition_copy_on_edge (edge e, int dest, int src, source_location locus)
+insert_partition_copy_on_edge (edge e, int dest, int src, location_t locus)
 {
   tree var;
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -272,7 +272,7 @@ insert_partition_copy_on_edge (edge e, int dest, int src, source_location locus)
    onto edge E.  */
 
 static void
-insert_value_copy_on_edge (edge e, int dest, tree src, source_location locus)
+insert_value_copy_on_edge (edge e, int dest, tree src, location_t locus)
 {
   rtx dest_rtx, seq, x;
   machine_mode dest_mode, src_mode;
@@ -333,7 +333,7 @@ insert_value_copy_on_edge (edge e, int dest, tree src, source_location locus)
 
 static void
 insert_rtx_to_part_on_edge (edge e, int dest, rtx src, int unsignedsrcp,
-			    source_location locus)
+			    location_t locus)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -367,7 +367,7 @@ insert_rtx_to_part_on_edge (edge e, int dest, rtx src, int unsignedsrcp,
    onto edge E.  */
 
 static void
-insert_part_to_rtx_on_edge (edge e, rtx dest, int src, source_location locus)
+insert_part_to_rtx_on_edge (edge e, rtx dest, int src, location_t locus)
 {
   tree var;
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -444,7 +444,7 @@ elim_graph_add_node (elim_graph *g, int node)
 /* Add the edge PRED->SUCC to graph G.  */
 
 static inline void
-elim_graph_add_edge (elim_graph *g, int pred, int succ, source_location locus)
+elim_graph_add_edge (elim_graph *g, int pred, int succ, location_t locus)
 {
   g->edge_list.safe_push (pred);
   g->edge_list.safe_push (succ);
@@ -456,7 +456,7 @@ elim_graph_add_edge (elim_graph *g, int pred, int succ, source_location locus)
    return the successor node.  -1 is returned if there is no such edge.  */
 
 static inline int
-elim_graph_remove_succ_edge (elim_graph *g, int node, source_location *locus)
+elim_graph_remove_succ_edge (elim_graph *g, int node, location_t *locus)
 {
   int y;
   unsigned x;
@@ -556,7 +556,7 @@ eliminate_build (elim_graph *g)
   for (gsi = gsi_start_phis (g->e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gphi *phi = gsi.phi ();
-      source_location locus;
+      location_t locus;
 
       p0 = var_to_partition (g->map, gimple_phi_result (phi));
       /* Ignore results which are not in partitions.  */
@@ -597,7 +597,7 @@ static void
 elim_forward (elim_graph *g, int T)
 {
   int S;
-  source_location locus;
+  location_t locus;
 
   bitmap_set_bit (g->visited, T);
   FOR_EACH_ELIM_GRAPH_SUCC (g, T, S, locus,
@@ -615,7 +615,7 @@ static int
 elim_unvisited_predecessor (elim_graph *g, int T)
 {
   int P;
-  source_location locus;
+  location_t locus;
 
   FOR_EACH_ELIM_GRAPH_PRED (g, T, P, locus,
     {
@@ -631,7 +631,7 @@ static void
 elim_backward (elim_graph *g, int T)
 {
   int P;
-  source_location locus;
+  location_t locus;
 
   bitmap_set_bit (g->visited, T);
   FOR_EACH_ELIM_GRAPH_PRED (g, T, P, locus,
@@ -666,7 +666,7 @@ static void
 elim_create (elim_graph *g, int T)
 {
   int P, S;
-  source_location locus;
+  location_t locus;
 
   if (elim_unvisited_predecessor (g, T))
     {
@@ -741,7 +741,7 @@ eliminate_phi (edge e, elim_graph *g)
     {
       int dest;
       tree src;
-      source_location locus;
+      location_t locus;
 
       src = g->const_copies.pop ();
       dest = g->const_dests.pop ();
@@ -1171,15 +1171,19 @@ insert_backedge_copies (void)
 	    {
 	      tree arg = gimple_phi_arg_def (phi, i);
 	      edge e = gimple_phi_arg_edge (phi, i);
+	      /* We are only interested in copies emitted on critical
+                 backedges.  */
+	      if (!(e->flags & EDGE_DFS_BACK)
+		  || !EDGE_CRITICAL_P (e))
+		continue;
 
 	      /* If the argument is not an SSA_NAME, then we will need a
-		 constant initialization.  If the argument is an SSA_NAME with
-		 a different underlying variable then a copy statement will be
-		 needed.  */
-	      if ((e->flags & EDGE_DFS_BACK)
-		  && (TREE_CODE (arg) != SSA_NAME
-		      || SSA_NAME_VAR (arg) != SSA_NAME_VAR (result)
-		      || trivially_conflicts_p (bb, result, arg)))
+		 constant initialization.  If the argument is an SSA_NAME then
+		 a copy statement may be needed.  First handle the case
+		 where we cannot insert before the argument definition.  */
+	      if (TREE_CODE (arg) != SSA_NAME
+		  || (gimple_code (SSA_NAME_DEF_STMT (arg)) == GIMPLE_PHI
+		      && trivially_conflicts_p (bb, result, arg)))
 		{
 		  tree name;
 		  gassign *stmt;
@@ -1225,6 +1229,34 @@ insert_backedge_copies (void)
 		  else
 		    gsi_insert_after (&gsi2, stmt, GSI_NEW_STMT);
 		  SET_PHI_ARG_DEF (phi, i, name);
+		}
+	      /* Insert a copy before the definition of the backedge value
+		 and adjust all conflicting uses.  */
+	      else if (trivially_conflicts_p (bb, result, arg))
+		{
+		  gimple *def = SSA_NAME_DEF_STMT (arg);
+		  if (gimple_nop_p (def)
+		      || gimple_code (def) == GIMPLE_PHI)
+		    continue;
+		  tree name = copy_ssa_name (result);
+		  gimple *stmt = gimple_build_assign (name, result);
+		  imm_use_iterator imm_iter;
+		  gimple *use_stmt;
+		  /* The following matches trivially_conflicts_p.  */
+		  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, result)
+		    {
+		      if (gimple_bb (use_stmt) != bb
+			  || (gimple_code (use_stmt) != GIMPLE_PHI
+			      && (maybe_renumber_stmts_bb (bb), true)
+			      && gimple_uid (use_stmt) > gimple_uid (def)))
+			{
+			  use_operand_p use;
+			  FOR_EACH_IMM_USE_ON_STMT (use, imm_iter)
+			    SET_USE (use, name);
+			}
+		    }
+		  gimple_stmt_iterator gsi = gsi_for_stmt (def);
+		  gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
 		}
 	    }
 	}

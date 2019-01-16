@@ -1,6 +1,6 @@
 // Components for manipulating non-owning sequences of characters -*- C++ -*-
 
-// Copyright (C) 2013-2018 Free Software Foundation, Inc.
+// Copyright (C) 2013-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -227,7 +227,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__sv = __tmp;
       }
 
-
       // [string.view.ops], string operations:
 
       size_type
@@ -236,14 +235,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__glibcxx_requires_string_len(__str, __n);
 	__pos = _M_check(__pos, "basic_string_view::copy");
 	const size_type __rlen = std::min(__n, _M_len - __pos);
-	for (auto __begin = this->_M_str + __pos,
-	     __end = __begin + __rlen; __begin != __end;)
-	  *__str++ = *__begin++;
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 2777. basic_string_view::copy should use char_traits::copy
+	traits_type::copy(__str, data() + __pos, __rlen);
 	return __rlen;
       }
 
       constexpr basic_string_view
-      substr(size_type __pos, size_type __n = npos) const noexcept(false)
+      substr(size_type __pos = 0, size_type __n = npos) const noexcept(false)
       {
 	__pos = _M_check(__pos, "basic_string_view::substr");
 	const size_type __rlen = std::min(__n, _M_len - __pos);
@@ -386,6 +385,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return this->find_last_not_of(__str, __pos,
 				      traits_type::length(__str));
       }
+
+#if __cplusplus > 201703L
+      constexpr bool
+      starts_with(basic_string_view __x) const noexcept
+      { return this->substr(0, __x.size()) == __x; }
+
+      constexpr bool
+      starts_with(_CharT __x) const noexcept
+      { return !this->empty() && traits_type::eq(this->front(), __x); }
+
+      constexpr bool
+      starts_with(const _CharT* __x) const noexcept
+      { return this->starts_with(basic_string_view(__x)); }
+
+      constexpr bool
+      ends_with(basic_string_view __x) const noexcept
+      {
+	return this->size() >= __x.size()
+	    && this->compare(this->size() - __x.size(), npos, __x) == 0;
+      }
+
+      constexpr bool
+      ends_with(_CharT __x) const noexcept
+      { return !this->empty() && traits_type::eq(this->back(), __x); }
+
+      constexpr bool
+      ends_with(const _CharT* __x) const noexcept
+      { return this->ends_with(basic_string_view(__x)); }
+#endif // C++20
 
       constexpr size_type
       _M_check(size_type __pos, const char* __s) const noexcept(false)

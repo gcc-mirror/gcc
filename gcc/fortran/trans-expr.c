@@ -1,5 +1,5 @@
 /* Expression translation
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -2510,6 +2510,40 @@ conv_parent_component_references (gfc_se * se, gfc_ref * ref)
   conv_parent_component_references (se, &parent);
 }
 
+
+static void
+conv_inquiry (gfc_se * se, gfc_ref * ref, gfc_expr *expr, gfc_typespec *ts)
+{
+  tree res = se->expr;
+
+  switch (ref->u.i)
+    {
+    case INQUIRY_RE:
+      res = fold_build1_loc (input_location, REALPART_EXPR,
+			     TREE_TYPE (TREE_TYPE (res)), res);
+      break;
+
+    case INQUIRY_IM:
+      res = fold_build1_loc (input_location, IMAGPART_EXPR,
+			     TREE_TYPE (TREE_TYPE (res)), res);
+      break;
+
+    case INQUIRY_KIND:
+      res = build_int_cst (gfc_typenode_for_spec (&expr->ts),
+			   ts->kind);
+      break;
+
+    case INQUIRY_LEN:
+      res = fold_convert (gfc_typenode_for_spec (&expr->ts),
+			  se->string_length);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+  se->expr = res;
+}
+
 /* Return the contents of a variable. Also handles reference/pointer
    variables (all Fortran pointer references are implicit).  */
 
@@ -2720,6 +2754,7 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
       gcc_assert (se->string_length);
     }
 
+  gfc_typespec *ts = &sym->ts;
   while (ref)
     {
       switch (ref->type)
@@ -2740,6 +2775,7 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 	  break;
 
 	case REF_COMPONENT:
+	  ts = &ref->u.c.component->ts;
 	  if (first_time && is_classarray && sym->attr.dummy
 	      && se->descriptor_only
 	      && !CLASS_DATA (sym)->attr.allocatable
@@ -2765,6 +2801,10 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 	case REF_SUBSTRING:
 	  gfc_conv_substring (se, ref, expr->ts.kind,
 			      expr->symtree->name, &expr->where);
+	  break;
+
+	case REF_INQUIRY:
+	  conv_inquiry (se, ref, expr, ts);
 	  break;
 
 	default:
@@ -3015,6 +3055,83 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
       && expr->value.op.op2->expr_type == EXPR_CONSTANT)
     if (gfc_conv_cst_int_power (se, lse.expr, rse.expr))
       return;
+
+  if (INTEGER_CST_P (lse.expr)
+      && TREE_CODE (TREE_TYPE (rse.expr)) == INTEGER_TYPE)
+    {
+      wi::tree_to_wide_ref wlhs = wi::to_wide (lse.expr);
+      HOST_WIDE_INT v;
+      v = wlhs.to_shwi ();
+      if (v == 1)
+	{
+	  /* 1**something is always 1.  */
+	  se->expr = build_int_cst (TREE_TYPE (lse.expr), 1);
+	  return;
+	}
+      else if (v == 2 || v == 4 || v == 8 || v == 16)
+	{
+	  /* 2**n = 1<<n, 4**n = 1<<(n+n), 8**n = 1 <<(3*n), 16**n =
+	   1<<(4*n), but we have to make sure to return zero if the
+	   number of bits is too large. */
+	  tree lshift;
+	  tree type;
+	  tree shift;
+	  tree ge;
+	  tree cond;
+	  tree num_bits;
+	  tree cond2;
+
+	  type = TREE_TYPE (lse.expr);
+
+	  if (v == 2)
+	    shift = rse.expr;
+	  else if (v == 4)
+	    shift = fold_build2_loc (input_location, PLUS_EXPR,
+				     TREE_TYPE (rse.expr),
+				       rse.expr, rse.expr);
+	  else if (v == 8)
+	    shift = fold_build2_loc (input_location, MULT_EXPR,
+				     TREE_TYPE (rse.expr),
+				     build_int_cst (TREE_TYPE (rse.expr), 3),
+				     rse.expr);
+	  else if (v == 16)
+	    shift = fold_build2_loc (input_location, MULT_EXPR,
+				     TREE_TYPE (rse.expr),
+				     build_int_cst (TREE_TYPE (rse.expr), 4),
+				     rse.expr);
+	  else
+	    gcc_unreachable ();
+
+	  lshift = fold_build2_loc (input_location, LSHIFT_EXPR, type,
+				    build_int_cst (type, 1), shift);
+	  ge = fold_build2_loc (input_location, GE_EXPR, logical_type_node,
+				rse.expr, build_int_cst (type, 0));
+	  cond = fold_build3_loc (input_location, COND_EXPR, type, ge, lshift,
+				 build_int_cst (type, 0));
+	  num_bits = build_int_cst (TREE_TYPE (rse.expr), TYPE_PRECISION (type));
+	  cond2 = fold_build2_loc (input_location, GE_EXPR, logical_type_node,
+				   rse.expr, num_bits);
+	  se->expr = fold_build3_loc (input_location, COND_EXPR, type, cond2,
+				      build_int_cst (type, 0), cond);
+	  return;
+	}
+      else if (v == -1)
+	{
+	  /* (-1)**n is 1 - ((n & 1) << 1) */
+	  tree type;
+	  tree tmp;
+
+	  type = TREE_TYPE (lse.expr);
+	  tmp = fold_build2_loc (input_location, BIT_AND_EXPR, type,
+				 rse.expr, build_int_cst (type, 1));
+	  tmp = fold_build2_loc (input_location, LSHIFT_EXPR, type,
+				 tmp, build_int_cst (type, 1));
+	  tmp = fold_build2_loc (input_location, MINUS_EXPR, type,
+				 build_int_cst (type, 1), tmp);
+	  se->expr = tmp;
+	  return;
+	}
+    }
 
   gfc_int4_type_node = gfc_get_int_type (4);
 
@@ -4135,6 +4252,7 @@ gfc_apply_interface_mapping_to_ref (gfc_interface_mapping * mapping,
 	break;
 
       case REF_COMPONENT:
+      case REF_INQUIRY:
 	break;
 
       case REF_SUBSTRING:
@@ -5642,17 +5760,21 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	     array-descriptor actual to array-descriptor dummy, see
 	     PR 41911 for why a check has to be inserted.
 	     fsym == NULL is checked as intrinsics required the descriptor
-	     but do not always set fsym.  */
+	     but do not always set fsym.  
+	     Also, it is necessary to pass a NULL pointer to library routines
+	     which usually ignore optional arguments, so they can handle
+	     these themselves.  */
 	  if (e->expr_type == EXPR_VARIABLE
 	      && e->symtree->n.sym->attr.optional
-	      && ((e->rank != 0 && elemental_proc)
-		  || e->representation.length || e->ts.type == BT_CHARACTER
-		  || (e->rank != 0
-		      && (fsym == NULL
-			  || (fsym-> as
-			      && (fsym->as->type == AS_ASSUMED_SHAPE
-				  || fsym->as->type == AS_ASSUMED_RANK
-			      	  || fsym->as->type == AS_DEFERRED))))))
+	      && (((e->rank != 0 && elemental_proc)
+		   || e->representation.length || e->ts.type == BT_CHARACTER
+		   || (e->rank != 0
+		       && (fsym == NULL
+			   || (fsym->as
+			       && (fsym->as->type == AS_ASSUMED_SHAPE
+				   || fsym->as->type == AS_ASSUMED_RANK
+				   || fsym->as->type == AS_DEFERRED)))))
+		  || se->ignore_optional))
 	    gfc_conv_missing_dummy (&parmse, e, fsym ? fsym->ts : e->ts,
 				    e->representation.length);
 	}
@@ -8111,7 +8233,7 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr, bool add_clobber)
 	  gfc_add_block_to_block (&se->pre, &se->post);
 	  se->expr = var;
 	}
-      else if (add_clobber)
+      else if (add_clobber && expr->ref == NULL)
 	{
 	  tree clobber;
 	  tree var;

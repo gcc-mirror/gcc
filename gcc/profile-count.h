@@ -1,5 +1,5 @@
 /* Profile counter container type.
-   Copyright (C) 2017-2018 Free Software Foundation, Inc.
+   Copyright (C) 2017-2019 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -447,8 +447,12 @@ public:
     {
       profile_probability ret = *this * cprob;
       /* The following is equivalent to:
-         *this = cprob.invert () * *this / ret.invert ();  */
-      *this = (*this - ret) / ret.invert ();
+         *this = cprob.invert () * *this / ret.invert ();
+	 Avoid scaling when overall outcome is supposed to be always.
+	 Without knowing that one is inverse of toher, the result would be
+	 conservative.  */
+      if (!(*this == profile_probability::always ()))
+        *this = (*this - ret) / ret.invert ();
       return ret;
     }
 
@@ -641,8 +645,8 @@ public:
      type to hold various extra stages.  */
 
   static const int n_bits = 61;
-private:
   static const uint64_t max_count = ((uint64_t) 1 << n_bits) - 2;
+private:
   static const uint64_t uninitialized_count = ((uint64_t) 1 << n_bits) - 1;
 
   uint64_t m_val : n_bits;
@@ -879,7 +883,7 @@ public:
       if (other == profile_count::zero ())
 	return true;
       if (*this == profile_count::zero ())
-	return !(other == profile_count::zero ());
+	return (other == profile_count::zero ());
       gcc_checking_assert (compatible_p (other));
       return m_val >= other.m_val;
     }

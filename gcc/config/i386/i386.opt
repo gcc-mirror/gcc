@@ -1,6 +1,6 @@
 ; Options for the IA-32 and AMD64 ports of the compiler.
 
-; Copyright (C) 2005-2018 Free Software Foundation, Inc.
+; Copyright (C) 2005-2019 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -785,6 +785,10 @@ mwbnoinvd
 Target Report Mask(ISA_WBNOINVD) Var(ix86_isa_flags2) Save
 Support WBNOINVD built-in functions and code generation.
 
+mptwrite
+Target Report Mask(ISA_PTWRITE) Var(ix86_isa_flags2) Save
+Support PTWRITE built-in functions and code generation.
+
 msgx
 Target Report Mask(ISA_SGX) Var(ix86_isa_flags2) Save
 Support SGX built-in functions and code generation.
@@ -930,6 +934,14 @@ Target Report Var(flag_nop_mcount)
 Generate mcount/__fentry__ calls as nops. To activate they need to be
 patched in.
 
+mfentry-name=
+Target RejectNegative Joined Var(fentry_name)
+Set name of __fentry__ symbol called at function entry.
+
+mfentry-section=
+Target RejectNegative Joined Var(fentry_section)
+Set name of section to record mrecord-mcount calls.
+
 mskip-rax-setup
 Target Report Var(flag_skip_rax_setup)
 Skip setting up RAX register when passing variable arguments.
@@ -1016,6 +1028,11 @@ Target Report Undocumented Var(flag_cet_switch) Init(0)
 Turn on CET instrumentation for switch statements that use a jump table and
 an indirect jump.
 
+mmanual-endbr
+Target Report Var(flag_manual_endbr) Init(0)
+Insert ENDBR instruction at function entry only via cf_check attribute
+for CET instrumentation.
+
 mforce-indirect-call
 Target Report Var(flag_force_indirect_call) Init(0)
 Make all function calls indirect.
@@ -1063,3 +1080,24 @@ Support WAITPKG built-in functions and code generation.
 mcldemote
 Target Report Mask(ISA_CLDEMOTE) Var(ix86_isa_flags2) Save
 Support CLDEMOTE built-in functions and code generation.
+
+minstrument-return=
+Target Report RejectNegative Joined Enum(instrument_return) Var(ix86_instrument_return) Init(instrument_return_none)
+Instrument function exit in instrumented functions with __fentry__.
+
+Enum
+Name(instrument_return) Type(enum instrument_return)
+Known choices for return instrumentation with -minstrument-return=
+
+EnumValue
+Enum(instrument_return) String(none) Value(instrument_return_none)
+
+EnumValue
+Enum(instrument_return) String(call) Value(instrument_return_call)
+
+EnumValue
+Enum(instrument_return) String(nop5) Value(instrument_return_nop5)
+
+mrecord-return
+Target Report Var(ix86_flag_record_return) Init(0)
+Generate a __return_loc section pointing to all return instrumentation code.

@@ -1,5 +1,5 @@
 /* Tree switch conversion for GNU compiler.
-   Copyright (C) 2017 Free Software Foundation, Inc.
+   Copyright (C) 2017-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -566,7 +566,7 @@ struct switch_decision_tree
   basic_block emit_case_nodes (basic_block bb, tree index,
 			       case_tree_node *node,
 			       profile_probability default_prob,
-			       tree index_type);
+			       tree index_type, location_t);
 
   /* Take an ordered list of case nodes
      and transform them into a near optimal binary tree,
@@ -594,13 +594,15 @@ struct switch_decision_tree
   static basic_block emit_cmp_and_jump_insns (basic_block bb, tree op0,
 					      tree op1, tree_code comparison,
 					      basic_block label_bb,
-					      profile_probability prob);
+					      profile_probability prob,
+					      location_t);
 
   /* Generate code to jump to LABEL if OP0 and OP1 are equal in mode MODE.
      PROB is the probability of jumping to LABEL_BB.  */
   static basic_block do_jump_if_equal (basic_block bb, tree op0, tree op1,
 				       basic_block label_bb,
-				       profile_probability prob);
+				       profile_probability prob,
+				       location_t);
 
   /* Reset the aux field of all outgoing edges of switch basic block.  */
   static inline void reset_out_edges_aux (gswitch *swtch);

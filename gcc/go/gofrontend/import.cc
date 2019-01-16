@@ -744,8 +744,9 @@ Import::import_func(Package* package)
   Typed_identifier_list* results;
   bool is_varargs;
   bool nointerface;
-  Function::import_func(this, &name, &receiver,
-			&parameters, &results, &is_varargs, &nointerface);
+  std::string body;
+  Function::import_func(this, &name, &receiver, &parameters, &results,
+			&is_varargs, &nointerface, &body);
   Function_type *fntype = Type::make_function_type(receiver, parameters,
 						   results, this->location_);
   if (is_varargs)
@@ -788,6 +789,8 @@ Import::import_func(Package* package)
 
   if (nointerface)
     no->func_declaration_value()->set_nointerface();
+  if (!body.empty() && !no->func_declaration_value()->has_imported_body())
+    no->func_declaration_value()->set_imported_body(this, body);
 
   return no;
 }
@@ -883,41 +886,9 @@ Import::read_type()
   if (c == '>')
     {
       // A reference to a type defined earlier.
-
-      if (index >= 0 && !this->type_data_.empty())
-	{
-	  if (static_cast<size_t>(index) >= this->type_offsets_.size())
-	    {
-	      go_error_at(this->location_,
-			  ("error in import data at %d: "
-			   "bad type index %d >= %d"),
-			  stream->pos(), index,
-			  static_cast<int>(this->type_offsets_.size()));
-	      stream->set_saw_error();
-	      return Type::make_error_type();
-	    }
-
-	  if (this->types_[index] == NULL)
-	    {
-	      if (!this->parse_type(index))
-		return Type::make_error_type();
-	    }
-	}
-
-      if (index < 0
-	  ? (static_cast<size_t>(- index) >= this->builtin_types_.size()
-	     || this->builtin_types_[- index] == NULL)
-	  : (static_cast<size_t>(index) >= this->types_.size()
-	     || this->types_[index] == NULL))
-	{
-	  go_error_at(this->location_,
-		      "error in import data at %d: bad type index %d",
-		      stream->pos(), index);
-	  stream->set_saw_error();
-	  return Type::make_error_type();
-	}
-
-      return index < 0 ? this->builtin_types_[- index] : this->types_[index];
+      bool parsed;
+      return this->type_for_index(index, "import data", stream->pos(),
+				  &parsed);
     }
 
   if (this->version_ >= EXPORT_FORMAT_V3)
@@ -1123,6 +1094,49 @@ Import::read_named_type(int index)
   return type;
 }
 
+// Return the type given an index.  Set *PARSED if we parsed it here.
+
+Type*
+Import::type_for_index(int index, const std::string& input_name,
+		       size_t input_offset, bool* parsed)
+{
+  *parsed = false;
+  if (index >= 0 && !this->type_data_.empty())
+    {
+      if (static_cast<size_t>(index) >= this->type_offsets_.size())
+	{
+	  go_error_at(this->location_,
+		      "error in %s at %lu: bad type index %d >= %d",
+		      input_name.c_str(),
+		      static_cast<unsigned long>(input_offset),
+		      index, static_cast<int>(this->type_offsets_.size()));
+	  return Type::make_error_type();
+	}
+
+      if (this->types_[index] == NULL)
+	{
+	  if (!this->parse_type(index))
+	    return Type::make_error_type();
+	  *parsed = true;
+	}
+    }
+
+  if (index < 0
+      ? (static_cast<size_t>(- index) >= this->builtin_types_.size()
+	 || this->builtin_types_[- index] == NULL)
+      : (static_cast<size_t>(index) >= this->types_.size()
+	 || this->types_[index] == NULL))
+    {
+      go_error_at(this->location_,
+		  "error in %s at %lu: bad type index %d",
+		  input_name.c_str(),
+		  static_cast<unsigned long>(input_offset), index);
+      return Type::make_error_type();
+    }
+
+  return index < 0 ? this->builtin_types_[- index] : this->types_[index];
+}
+
 // Read an escape note.
 
 std::string
@@ -1211,7 +1225,7 @@ Import::read_identifier()
   while (true)
     {
       c = stream->peek_char();
-      if (c == -1 || c == ' ' || c == '\n' || c == ';')
+      if (c == -1 || c == ' ' || c == '\n' || c == ';' || c == ')')
 	break;
       ret += c;
       stream->advance(1);
@@ -1228,6 +1242,24 @@ Import::read_name()
   if (ret == "?")
     ret.clear();
   return ret;
+}
+
+// Read LENGTH bytes from the stream.
+
+std::string
+Import::read(size_t length)
+{
+  const char* data;
+  if (!this->stream_->peek(length, &data))
+    {
+      if (!this->stream_->saw_error())
+	go_error_at(this->location_, "import error at %d: expected %d bytes",
+		    this->stream_->pos(), static_cast<int>(length));
+      this->stream_->set_saw_error();
+      return "";
+    }
+  this->advance(length);
+  return std::string(data, length);
 }
 
 // Turn a string into a integer with appropriate error handling.
@@ -1376,4 +1408,108 @@ Stream_from_file::do_advance(size_t skip)
       else
 	this->data_.clear();
     }
+}
+
+// Class Import_function_body.
+
+// The name of the function we are parsing.
+
+const std::string&
+Import_function_body::name() const
+{
+  return this->named_object_->name();
+}
+
+// Class Import_function_body.
+
+// Require that the next bytes match STR, issuing an error if not.
+// Advance past the string.
+
+void
+Import_function_body::require_c_string(const char* str)
+{
+  if (!this->match_c_string(str))
+    {
+      if (!this->saw_error_)
+	go_error_at(this->location(),
+		    "invalid export data for %qs: expected %qs at %lu",
+		    this->name().c_str(), str,
+		    static_cast<unsigned long>(this->off_));
+      this->saw_error_ = true;
+      return;
+    }
+  this->advance(strlen(str));
+}
+
+// Read an identifier.
+
+std::string
+Import_function_body::read_identifier()
+{
+  size_t start = this->off_;
+  for (size_t i = start; i < this->body_.length(); i++)
+    {
+      int c = static_cast<unsigned char>(this->body_[i]);
+      if (c == ' ' || c == '\n' || c == ';' || c == ')')
+	{
+	  this->off_ = i;
+	  return this->body_.substr(start, i - start);
+	}
+    }
+  this->off_ = this->body_.length();
+  return this->body_.substr(start);
+}
+
+// Read a type.
+
+Type*
+Import_function_body::read_type()
+{
+  this->require_c_string("<type ");
+  size_t start = this->off_;
+  size_t i;
+  int c = '\0';
+  for (i = start; i < this->body_.length(); ++i)
+    {
+      c = static_cast<unsigned char>(this->body_[i]);
+      if (c != '-' && (c < '0' || c > '9'))
+	break;
+    }
+  this->off_ = i + 1;
+
+  char *end;
+  long val = strtol(this->body_.substr(start, i - start).c_str(), &end, 10);
+  if (*end != '\0' || i > 0x7fffffff)
+    {
+      if (!this->saw_error_)
+	go_error_at(this->location(),
+		    "invalid export data for %qs: expected integer at %lu",
+		    this->name().c_str(),
+		    static_cast<unsigned long>(start));
+      this->saw_error_ = true;
+      return Type::make_error_type();
+    }
+
+  if (c != '>')
+    {
+      if (!this->saw_error_)
+	go_error_at(this->location(),
+		    "invalid export data for %qs: expected %<>%> at %lu",
+		    this->name().c_str(),
+		    static_cast<unsigned long>(i));
+      this->saw_error_ = true;
+      return Type::make_error_type();
+    }
+
+  bool parsed;
+  Type* type = this->imp_->type_for_index(static_cast<int>(val), this->name(),
+					  static_cast<unsigned long>(start),
+					  &parsed);
+
+  // If we just read this type's information, its methods will not
+  // have been finalized.  Do that now.
+  if (parsed)
+    this->gogo_->finalize_methods_for_type(type);
+
+  return type;
 }

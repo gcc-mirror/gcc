@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC for IA-32.
-   Copyright (C) 1988-2018 Free Software Foundation, Inc.
+   Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -191,6 +191,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_WAITPKG_P(x)	TARGET_ISA_WAITPKG_P(x)
 #define TARGET_CLDEMOTE	TARGET_ISA_CLDEMOTE
 #define TARGET_CLDEMOTE_P(x) TARGET_ISA_CLDEMOTE_P(x)
+#define TARGET_PTWRITE	TARGET_ISA_PTWRITE
+#define TARGET_PTWRITE_P(x)	TARGET_ISA_PTWRITE_P(x)
 
 #define TARGET_LP64	TARGET_ABI_64
 #define TARGET_LP64_P(x)	TARGET_ABI_64_P(x)
@@ -405,6 +407,7 @@ extern const struct processor_costs ix86_size_cost;
 #define TARGET_CANNONLAKE (ix86_tune == PROCESSOR_CANNONLAKE)
 #define TARGET_ICELAKE_CLIENT (ix86_tune == PROCESSOR_ICELAKE_CLIENT)
 #define TARGET_ICELAKE_SERVER (ix86_tune == PROCESSOR_ICELAKE_SERVER)
+#define TARGET_CASCADELAKE (ix86_tune == PROCESSOR_CASCADELAKE)
 #define TARGET_INTEL (ix86_tune == PROCESSOR_INTEL)
 #define TARGET_GENERIC (ix86_tune == PROCESSOR_GENERIC)
 #define TARGET_AMDFAM10 (ix86_tune == PROCESSOR_AMDFAM10)
@@ -415,6 +418,7 @@ extern const struct processor_costs ix86_size_cost;
 #define TARGET_BTVER1 (ix86_tune == PROCESSOR_BTVER1)
 #define TARGET_BTVER2 (ix86_tune == PROCESSOR_BTVER2)
 #define TARGET_ZNVER1 (ix86_tune == PROCESSOR_ZNVER1)
+#define TARGET_ZNVER2 (ix86_tune == PROCESSOR_ZNVER2)
 
 /* Feature tests against the various tunings.  */
 enum ix86_tune_indices {
@@ -718,6 +722,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /* Target Pragmas.  */
 #define REGISTER_TARGET_PRAGMAS() ix86_register_pragmas ()
 
+/* Target CPU versions for D.  */
+#define TARGET_D_CPU_VERSIONS ix86_d_target_versions
+
 #ifndef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu) "
 #endif
@@ -803,8 +810,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define PARM_BOUNDARY BITS_PER_WORD
 
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
-#define STACK_BOUNDARY \
- (TARGET_64BIT && ix86_abi == MS_ABI ? 128 : BITS_PER_WORD)
+#define STACK_BOUNDARY (TARGET_64BIT_MS_ABI ? 128 : BITS_PER_WORD)
 
 /* Stack boundary of the main function guaranteed by OS.  */
 #define MAIN_STACK_BOUNDARY (TARGET_64BIT ? 128 : 32)
@@ -2035,6 +2041,12 @@ do {							\
 
 #define REGISTER_NAMES HI_REGISTER_NAMES
 
+#define QI_REGISTER_NAMES \
+{"al", "dl", "cl", "bl", "sil", "dil", "bpl", "spl"}
+
+#define QI_HIGH_REGISTER_NAMES \
+{"ah", "dh", "ch", "bh"}
+
 /* Table of additional register names to use in user input.  */
 
 #define ADDITIONAL_REGISTER_NAMES						\
@@ -2044,6 +2056,7 @@ do {							\
   { "rax", AX_REG }, { "rdx", DX_REG }, { "rcx", CX_REG }, { "rbx", BX_REG },	\
   { "rsi", SI_REG }, { "rdi", DI_REG }, { "rbp", BP_REG }, { "rsp", SP_REG },	\
   { "al", AX_REG }, { "dl", DX_REG }, { "cl", CX_REG }, { "bl", BX_REG },	\
+  { "sil", SI_REG }, { "dil", DI_REG }, { "bpl", BP_REG }, { "spl", SP_REG },	\
   { "ah", AX_REG }, { "dh", DX_REG }, { "ch", CX_REG }, { "bh", BX_REG },	\
   { "ymm0", XMM0_REG }, { "ymm1", XMM1_REG }, { "ymm2", XMM2_REG }, { "ymm3", XMM3_REG }, \
   { "ymm4", XMM4_REG }, { "ymm5", XMM5_REG }, { "ymm6", XMM6_REG }, { "ymm7", XMM7_REG }, \
@@ -2062,20 +2075,6 @@ do {							\
   { "zmm24", XMM24_REG }, { "zmm25", XMM25_REG }, { "zmm26", XMM26_REG }, { "zmm27", XMM27_REG }, \
   { "zmm28", XMM28_REG }, { "zmm29", XMM29_REG }, { "zmm30", XMM30_REG }, { "zmm31", XMM31_REG }  \
 }
-
-/* Note we are omitting these since currently I don't know how
-to get gcc to use these, since they want the same but different
-number as al, and ax.
-*/
-
-#define QI_REGISTER_NAMES \
-{"al", "dl", "cl", "bl", "sil", "dil", "bpl", "spl",}
-
-/* These parallel the array above, and can be used to access bits 8:15
-   of regs 0 through 3.  */
-
-#define QI_HIGH_REGISTER_NAMES \
-{"ah", "dh", "ch", "bh", }
 
 /* How to renumber registers for dbx and gdb.  */
 
@@ -2256,6 +2255,7 @@ enum processor_type
   PROCESSOR_CANNONLAKE,
   PROCESSOR_ICELAKE_CLIENT,
   PROCESSOR_ICELAKE_SERVER,
+  PROCESSOR_CASCADELAKE,
   PROCESSOR_INTEL,
   PROCESSOR_GEODE,
   PROCESSOR_K6,
@@ -2269,11 +2269,12 @@ enum processor_type
   PROCESSOR_BTVER1,
   PROCESSOR_BTVER2,
   PROCESSOR_ZNVER1,
+  PROCESSOR_ZNVER2,
   PROCESSOR_max
 };
 
 #if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)
-extern const char *const processor_names[PROCESSOR_max];
+extern const char *const processor_names[];
 
 #include "wide-int-bitmask.h"
 
@@ -2351,6 +2352,7 @@ const wide_int_bitmask PTA_RDPID (0, HOST_WIDE_INT_1U << 6);
 const wide_int_bitmask PTA_PCONFIG (0, HOST_WIDE_INT_1U << 7);
 const wide_int_bitmask PTA_WBNOINVD (0, HOST_WIDE_INT_1U << 8);
 const wide_int_bitmask PTA_WAITPKG (0, HOST_WIDE_INT_1U << 9);
+const wide_int_bitmask PTA_PTWRITE (0, HOST_WIDE_INT_1U << 10);
 
 const wide_int_bitmask PTA_CORE2 = PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2
   | PTA_SSE3 | PTA_SSSE3 | PTA_CX16 | PTA_FXSR;
@@ -2370,6 +2372,7 @@ const wide_int_bitmask PTA_SKYLAKE = PTA_BROADWELL | PTA_CLFLUSHOPT
 const wide_int_bitmask PTA_SKYLAKE_AVX512 = PTA_SKYLAKE | PTA_AVX512F
   | PTA_AVX512CD | PTA_AVX512VL | PTA_AVX512BW | PTA_AVX512DQ | PTA_PKU
   | PTA_CLWB;
+const wide_int_bitmask PTA_CASCADELAKE = PTA_SKYLAKE_AVX512 | PTA_AVX512VNNI;
 const wide_int_bitmask PTA_CANNONLAKE = PTA_SKYLAKE | PTA_AVX512F
   | PTA_AVX512CD | PTA_AVX512VL | PTA_AVX512BW | PTA_AVX512DQ | PTA_PKU
   | PTA_AVX512VBMI | PTA_AVX512IFMA | PTA_SHA;
@@ -2386,7 +2389,7 @@ const wide_int_bitmask PTA_GOLDMONT = PTA_SILVERMONT | PTA_SHA | PTA_XSAVE
   | PTA_RDSEED | PTA_XSAVEC | PTA_XSAVES | PTA_CLFLUSHOPT | PTA_XSAVEOPT
   | PTA_FSGSBASE;
 const wide_int_bitmask PTA_GOLDMONT_PLUS = PTA_GOLDMONT | PTA_RDPID
-  | PTA_SGX;
+  | PTA_SGX | PTA_PTWRITE;
 const wide_int_bitmask PTA_TREMONT = PTA_GOLDMONT_PLUS | PTA_CLWB
   | PTA_GFNI;
 const wide_int_bitmask PTA_KNM = PTA_KNL | PTA_AVX5124VNNIW

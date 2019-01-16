@@ -1,6 +1,5 @@
 /* { dg-do run } */
 /* { dg-options "-O3 -mpower8-vector" } */
-/* { dg-require-effective-target lp64 } */
 /* { dg-require-effective-target p8vector_hw } */
 
 #define NO_WARN_X86_INTRINSICS 1
@@ -16,6 +15,7 @@
 #endif
 
 #include <xmmintrin.h>
+#include <smmintrin.h>
 
 static long long
 __attribute__((noinline, unused))
@@ -30,10 +30,16 @@ TEST (void)
   union128 s1;
   long long d;
   long long e;
+  union {
+	float f;
+	int i;
+  } u;
    
   s1.x = _mm_set_ps (344.4, 68.346, 43.35, 429496729501.4);
   d = test (s1.x); 
-  e = (long long)s1.a[0];  
+
+  u.i = _mm_extract_ps (s1.x, 0);
+  e = u.f;
 
   if (e != d)
     abort ();

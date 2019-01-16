@@ -1,5 +1,5 @@
 /* C-compiler utilities for types and variables storage layout
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1834,7 +1834,13 @@ compute_record_mode (tree type)
       /* If this field is the whole struct, remember its mode so
 	 that, say, we can put a double in a class into a DF
 	 register instead of forcing it to live in the stack.  */
-      if (simple_cst_equal (TYPE_SIZE (type), DECL_SIZE (field)))
+      if (simple_cst_equal (TYPE_SIZE (type), DECL_SIZE (field))
+	  /* Partial int types (e.g. __int20) may have TYPE_SIZE equal to
+	     wider types (e.g. int32), despite precision being less.  Ensure
+	     that the TYPE_MODE of the struct does not get set to the partial
+	     int mode if there is a wider type also in the struct.  */
+	  && known_gt (GET_MODE_PRECISION (DECL_MODE (field)),
+		       GET_MODE_PRECISION (mode)))
 	mode = DECL_MODE (field);
 
       /* With some targets, it is sub-optimal to access an aligned
@@ -1844,10 +1850,17 @@ compute_record_mode (tree type)
     }
 
   /* If we only have one real field; use its mode if that mode's size
-     matches the type's size.  This only applies to RECORD_TYPE.  This
-     does not apply to unions.  */
+     matches the type's size.  This generally only applies to RECORD_TYPE.
+     For UNION_TYPE, if the widest field is MODE_INT then use that mode.
+     If the widest field is MODE_PARTIAL_INT, and the union will be passed
+     by reference, then use that mode.  */
   poly_uint64 type_size;
-  if (TREE_CODE (type) == RECORD_TYPE
+  if ((TREE_CODE (type) == RECORD_TYPE
+       || (TREE_CODE (type) == UNION_TYPE
+	   && (GET_MODE_CLASS (mode) == MODE_INT
+	       || (GET_MODE_CLASS (mode) == MODE_PARTIAL_INT
+		   && targetm.calls.pass_by_reference (pack_cumulative_args (0),
+						       mode, type, 0)))))
       && mode != VOIDmode
       && poly_int_tree_p (TYPE_SIZE (type), &type_size)
       && known_eq (GET_MODE_BITSIZE (mode), type_size))

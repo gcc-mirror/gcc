@@ -1,5 +1,5 @@
 /* Interprocedural analyses.
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -182,7 +182,7 @@ struct GTY (()) ipa_jump_func
   /* Information about value range, containing valid data only when vr_known is
      true.  The pointed to structure is shared betweed different jump
      functions.  Use ipa_set_jfunc_vr to set this field.  */
-  struct value_range *m_vr;
+  struct value_range_base *m_vr;
 
   enum jump_func_type type;
   /* Represents a value of a jump function.  pass_through is used only in jump

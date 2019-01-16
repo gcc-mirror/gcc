@@ -1,5 +1,5 @@
 /* Target definitions for Darwin (Mac OS X) systems.
-   Copyright (C) 1989-2018 Free Software Foundation, Inc.
+   Copyright (C) 1989-2019 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -510,11 +510,6 @@ extern GTY(()) int darwin_ms_struct;
 /* Darwin has the pthread routines in libSystem, which every program
    links to, so there's no need for weak-ness for that.  */
 #define GTHREAD_USE_WEAK 0
-
-/* The Darwin linker doesn't want coalesced symbols to appear in
-   a static archive's table of contents. */
-#undef TARGET_WEAK_NOT_IN_ARCHIVE_TOC
-#define TARGET_WEAK_NOT_IN_ARCHIVE_TOC 1
 
 /* On Darwin, we don't (at the time of writing) have linkonce sections
    with names, so it's safe to make the class data not comdat.  */

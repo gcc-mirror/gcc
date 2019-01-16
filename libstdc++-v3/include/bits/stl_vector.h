@@ -1,6 +1,6 @@
 // Vector implementation -*- C++ -*-
 
-// Copyright (C) 2001-2018 Free Software Foundation, Inc.
+// Copyright (C) 2001-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -125,7 +125,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       struct _Vector_impl
 	: public _Tp_alloc_type, public _Vector_impl_data
       {
-	_Vector_impl() _GLIBCXX_NOEXCEPT_IF( noexcept(_Tp_alloc_type()) )
+	_Vector_impl() _GLIBCXX_NOEXCEPT_IF(
+	    is_nothrow_default_constructible<_Tp_alloc_type>::value)
 	: _Tp_alloc_type()
 	{ }
 
@@ -424,10 +425,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     private:
 #if __cplusplus >= 201103L
       static constexpr bool __use_relocate =
-	noexcept(std::__relocate_object_a(
-			std::addressof(*std::declval<pointer>()),
-			std::addressof(*std::declval<pointer>()),
-			std::declval<_Tp_alloc_type&>()));
+	noexcept(std::__relocate_a(std::declval<pointer>(),
+				   std::declval<pointer>(),
+				   std::declval<pointer>(),
+				   std::declval<_Tp_alloc_type&>()));
 #endif
 
     protected:

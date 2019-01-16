@@ -135,6 +135,16 @@ m'name`'rtype_qual`_'atype_code` ('rtype` * const restrict retarray,
   index_type n;
   int mask_kind;
 
+  if (mask == NULL)
+    {
+#ifdef HAVE_BACK_ARG    
+      name`'rtype_qual`_'atype_code (retarray, array, back, len);
+#else
+      name`'rtype_qual`_'atype_code (retarray, array, len);
+#endif
+      return;
+    }
+
   rank = GFC_DESCRIPTOR_RANK (array);
   if (rank <= 0)
     runtime_error ("Rank of array needs to be > 0");
@@ -261,7 +271,7 @@ void
   index_type n;
   'rtype_name *dest;
 
-  if (*mask)
+  if (mask == NULL || *mask)
     {
 #ifdef HAVE_BACK_ARG    
       name`'rtype_qual`_'atype_code (retarray, array, back, len);

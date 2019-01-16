@@ -1,5 +1,5 @@
 /* Optimize by combining instructions for GNU compiler.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1698,9 +1698,13 @@ update_rsp_from_reg_equal (reg_stat_type *rsp, rtx_insn *insn, const_rtx set,
   /* Don't call nonzero_bits if it cannot change anything.  */
   if (rsp->nonzero_bits != HOST_WIDE_INT_M1U)
     {
-      bits = nonzero_bits (src, nonzero_bits_mode);
+      machine_mode mode = GET_MODE (x);
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && HWI_COMPUTABLE_MODE_P (mode))
+	mode = nonzero_bits_mode;
+      bits = nonzero_bits (src, mode);
       if (reg_equal && bits)
-	bits &= nonzero_bits (reg_equal, nonzero_bits_mode);
+	bits &= nonzero_bits (reg_equal, mode);
       rsp->nonzero_bits |= bits;
     }
 
@@ -2349,7 +2353,12 @@ cant_combine_insn_p (rtx_insn *insn)
     dest = SUBREG_REG (dest);
   if (REG_P (src) && REG_P (dest)
       && ((HARD_REGISTER_P (src)
-	   && ! TEST_HARD_REG_BIT (fixed_reg_set, REGNO (src)))
+	   && ! TEST_HARD_REG_BIT (fixed_reg_set, REGNO (src))
+#ifdef LEAF_REGISTERS
+	   && ! LEAF_REGISTERS [REGNO (src)])
+#else
+	   )
+#endif
 	  || (HARD_REGISTER_P (dest)
 	      && ! TEST_HARD_REG_BIT (fixed_reg_set, REGNO (dest))
 	      && targetm.class_likely_spilled_p (REGNO_REG_CLASS (REGNO (dest))))))
@@ -4945,7 +4954,7 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 	}
 
       /* If we have a PLUS whose second operand is a constant and the
-	 address is not valid, perhaps will can split it up using
+	 address is not valid, perhaps we can split it up using
 	 the machine-specific way to split large constants.  We use
 	 the first pseudo-reg (one of the virtual regs) as a placeholder;
 	 it will not remain in the result.  */
@@ -4960,7 +4969,7 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 
 	  /* This should have produced two insns, each of which sets our
 	     placeholder.  If the source of the second is a valid address,
-	     we can make put both sources together and make a split point
+	     we can put both sources together and make a split point
 	     in the middle.  */
 
 	  if (seq
@@ -5001,14 +5010,51 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 		}
 	    }
 
+	  /* If that didn't work and we have a nested plus, like:
+	     ((REG1 * CONST1) + REG2) + CONST2 and (REG1 + REG2) + CONST2
+	     is valid address, try to split (REG1 * CONST1).  */
+	  if (GET_CODE (XEXP (XEXP (x, 0), 0)) == PLUS
+	      && !OBJECT_P (XEXP (XEXP (XEXP (x, 0), 0), 0))
+	      && OBJECT_P (XEXP (XEXP (XEXP (x, 0), 0), 1))
+	      && ! (GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == SUBREG
+		    && OBJECT_P (SUBREG_REG (XEXP (XEXP (XEXP (x, 0),
+							 0), 0)))))
+	    {
+	      rtx tem = XEXP (XEXP (XEXP (x, 0), 0), 0);
+	      XEXP (XEXP (XEXP (x, 0), 0), 0) = reg;
+	      if (memory_address_addr_space_p (GET_MODE (x), XEXP (x, 0),
+					       MEM_ADDR_SPACE (x)))
+		{
+		  XEXP (XEXP (XEXP (x, 0), 0), 0) = tem;
+		  return &XEXP (XEXP (XEXP (x, 0), 0), 0);
+		}
+	      XEXP (XEXP (XEXP (x, 0), 0), 0) = tem;
+	    }
+	  else if (GET_CODE (XEXP (XEXP (x, 0), 0)) == PLUS
+		   && OBJECT_P (XEXP (XEXP (XEXP (x, 0), 0), 0))
+		   && !OBJECT_P (XEXP (XEXP (XEXP (x, 0), 0), 1))
+		   && ! (GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1)) == SUBREG
+			 && OBJECT_P (SUBREG_REG (XEXP (XEXP (XEXP (x, 0),
+							      0), 1)))))
+	    {
+	      rtx tem = XEXP (XEXP (XEXP (x, 0), 0), 1);
+	      XEXP (XEXP (XEXP (x, 0), 0), 1) = reg;
+	      if (memory_address_addr_space_p (GET_MODE (x), XEXP (x, 0),
+					       MEM_ADDR_SPACE (x)))
+		{
+		  XEXP (XEXP (XEXP (x, 0), 0), 1) = tem;
+		  return &XEXP (XEXP (XEXP (x, 0), 0), 1);
+		}
+	      XEXP (XEXP (XEXP (x, 0), 0), 1) = tem;
+	    }
+
 	  /* If that didn't work, perhaps the first operand is complex and
 	     needs to be computed separately, so make a split point there.
 	     This will occur on machines that just support REG + CONST
 	     and have a constant moved through some previous computation.  */
-
-	  else if (!OBJECT_P (XEXP (XEXP (x, 0), 0))
-		   && ! (GET_CODE (XEXP (XEXP (x, 0), 0)) == SUBREG
-			 && OBJECT_P (SUBREG_REG (XEXP (XEXP (x, 0), 0)))))
+	  if (!OBJECT_P (XEXP (XEXP (x, 0), 0))
+	      && ! (GET_CODE (XEXP (XEXP (x, 0), 0)) == SUBREG
+		    && OBJECT_P (SUBREG_REG (XEXP (XEXP (x, 0), 0)))))
 	    return &XEXP (XEXP (x, 0), 0);
 	}
 
@@ -5941,8 +5987,9 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 	    && known_eq (subreg_lowpart_offset (int_mode, int_op0_mode),
 			 SUBREG_BYTE (x))
 	    && HWI_COMPUTABLE_MODE_P (int_op0_mode)
-	    && (nonzero_bits (SUBREG_REG (x), int_op0_mode)
-		& GET_MODE_MASK (int_mode)) == 0)
+	    && ((nonzero_bits (SUBREG_REG (x), int_op0_mode)
+		 & GET_MODE_MASK (int_mode)) == 0)
+	    && !side_effects_p (SUBREG_REG (x)))
 	  return CONST0_RTX (int_mode);
       }
 
@@ -10187,6 +10234,7 @@ simplify_and_const_int (rtx x, scalar_int_mode mode, rtx varop,
 
 /* Given a REG X of mode XMODE, compute which bits in X can be nonzero.
    We don't care about bits outside of those defined in MODE.
+   We DO care about all the bits in MODE, even if XMODE is smaller than MODE.
 
    For most X this is simply GET_MODE_MASK (GET_MODE (MODE)), but if X is
    a shift, AND, or zero_extract, we can do better.  */
@@ -13331,6 +13379,7 @@ record_dead_and_set_regs_1 (rtx dest, const_rtx setter, void *data)
 	       && subreg_lowpart_p (SET_DEST (setter)))
 	record_value_for_reg (dest, record_dead_insn,
 			      WORD_REGISTER_OPERATIONS
+			      && word_register_operation_p (SET_SRC (setter))
 			      && paradoxical_subreg_p (SET_DEST (setter))
 			      ? SET_SRC (setter)
 			      : gen_lowpart (GET_MODE (dest),
@@ -14956,25 +15005,22 @@ make_more_copies (void)
 	  rtx set = single_set (insn);
 	  if (!set)
 	    continue;
-	  rtx src = SET_SRC (set);
+
 	  rtx dest = SET_DEST (set);
-	  if (dest == pc_rtx)
-	    continue;
-	  if (GET_CODE (src) == SUBREG)
-	    src = SUBREG_REG (src);
+	  if (!(REG_P (dest) && !HARD_REGISTER_P (dest)))
+	      continue;
+
+	  rtx src = SET_SRC (set);
 	  if (!(REG_P (src) && HARD_REGISTER_P (src)))
 	    continue;
 	  if (TEST_HARD_REG_BIT (fixed_reg_set, REGNO (src)))
 	    continue;
 
 	  rtx new_reg = gen_reg_rtx (GET_MODE (dest));
-	  rtx_insn *insn1 = gen_move_insn (new_reg, src);
-	  rtx_insn *insn2 = gen_move_insn (dest, new_reg);
-	  emit_insn_after (insn1, insn);
-	  emit_insn_after (insn2, insn1);
-	  delete_insn (insn);
-
-	  insn = insn2;
+	  rtx_insn *new_insn = gen_move_insn (new_reg, src);
+	  SET_SRC (set) = new_reg;
+	  emit_insn_before (new_insn, insn);
+	  df_insn_rescan (insn);
 	}
     }
 }
