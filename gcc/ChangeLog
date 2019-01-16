@@ -1,3 +1,12 @@
+2019-01-16  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from mainline
+	2018-12-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/88214
+	* ipa-prop.c (determine_locally_known_aggregate_parts): Make sure
+	we check pointers against pointers.
+
 2019-01-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	Backported from mainline
