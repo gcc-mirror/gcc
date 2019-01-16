@@ -62,6 +62,7 @@ func runtime_AfterFork()
 func runtime_AfterForkInChild()
 
 // Implemented in clone_linux.c
+//go:noescape
 func rawClone(flags _C_ulong, child_stack *byte, ptid *Pid_t, ctid *Pid_t, regs unsafe.Pointer) _C_long
 
 // Fork, dup fd onto 0..len(fd), and exec(argv0, argvv, envv) in child.

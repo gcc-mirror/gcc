@@ -98,6 +98,7 @@ BEGIN {
     printf("// Automatically generated wrapper for %s/%s\n", gofnname, cfnname)
     if (!(cfnname in cfns)) {
         cfns[cfnname] = 1
+        printf("//go:noescape\n")
         printf("//extern %s\n", cfnname)
         printf("func c_%s(%s) %s\n", cfnname, cfnparams, cfnresult)
     }
