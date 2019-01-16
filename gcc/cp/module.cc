@@ -3346,7 +3346,7 @@ public:
     LOCATION = TDF_LINENO,  /* -lineno:Source location streaming.  */
     DEPEND = TDF_GRAPH,	/* -graph:Dependency graph construction.  */
     TREE = TDF_UID, 	/* -uid:Tree streaming.  */
-    GM = TDF_ALIAS,		/* -alias:Global Module.  */
+    MERGE = TDF_ALIAS,	/* -alias:Mergeable Entities.  */
     ELF = TDF_BLOCKS	/* -blocks:Elf data.  */
   };
 
@@ -7027,7 +7027,7 @@ trees_in::tree_node ()
 
 	if (existing)
 	  {
-	    dump (dumper::GM) && dump ("Deduping %N", existing);
+	    dump (dumper::MERGE) && dump ("Deduping %N", existing);
 	    if (tpl)
 	      DECL_TEMPLATE_RESULT (tpl) = res;
 	    if (type)
@@ -7054,7 +7054,7 @@ trees_in::tree_node ()
 void
 trees_in::record_skip_defn (tree defn, bool informed, bool existing)
 {
-  dump (dumper::GM)
+  dump (dumper::MERGE)
     && dump ("Recording %s skippable %C:%N",
 	     existing ? "existing" : "new", TREE_CODE (defn), defn);
 
@@ -7200,7 +7200,7 @@ trees_out::tree_mergeable (tree decl)
     }
 
   int tag = insert (decl);
-  dump (dumper::GM)
+  dump (dumper::MERGE)
     && dump ("Wrote:%d global decl %C:%N", tag, TREE_CODE (decl), decl);
 }
 
@@ -7280,7 +7280,7 @@ trees_in::tree_mergeable ()
 	  kind = "matched";
 	}
       int tag = insert (decl);
-      dump (dumper::GM)
+      dump (dumper::MERGE)
 	&& dump ("Read:%d %s mergeable decl %C:%N", tag, kind,
 		 TREE_CODE (decl), decl);
     }
@@ -9174,7 +9174,7 @@ module_state::is_skippable_defn (trees_in &in, tree defn, bool have_defn)
   tree top = topmost_decl (defn);
   if (int skip = in.is_skip_defn (top))
     {
-      dump (dumper::GM)
+      dump (dumper::MERGE)
 	&& dump ("Skipping definition %N%s",
 		 defn, skip < 0 ? " check ODR" : "");
       return skip;

@@ -1,6 +1,9 @@
 2019-01-16  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (dumper::GM): Rename to MERGE.  Update uses.
+
+	gcc/cp/
 	* cp-tree.h (module_name): Replace FULL parm with primary pointer.
 	* error.c (dump_module_suffix): Adjust.
 	* module.cc (module_state::fullname): Rename to flatname.
