@@ -1,3 +1,10 @@
+2019-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/88734
+	* config/aarch64/arm_neon.h: Fix #pragma GCC target syntax - replace
+	(("..."))) with ("...").  Use arch=armv8.2-a+sha3 instead of
+	arch=armv8.2-a+crypto for vsha512hq_u64 etc. intrinsics.
+
 2019-01-17  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/88273
