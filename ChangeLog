@@ -1,3 +1,14 @@
+2019-01-17  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+	    Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+	* contrib/config-list.mk: Add amdgcn-amdhsa.
+
 2019-01-16  Kewen Lin  <linkw@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.

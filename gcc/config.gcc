@@ -326,6 +326,10 @@ alpha*-*-*)
 	cpu_type=alpha
 	extra_options="${extra_options} g.opt"
 	;;
+amdgcn*)
+	cpu_type=gcn
+	use_gcc_stdint=wrap
+	;;
 am33_2.0-*-linux*)
 	cpu_type=mn10300
 	;;
@@ -1400,6 +1404,25 @@ ft32-*-elf)
 	gnu_ld=yes
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
 	tmake_file="${tmake_file} ft32/t-ft32"
+	;;
+amdgcn-*-amdhsa)
+	tm_file="elfos.h gcn/gcn-hsa.h gcn/gcn.h newlib-stdint.h"
+	tmake_file="gcn/t-gcn-hsa"
+	native_system_header_dir=/include
+	extra_modes=gcn/gcn-modes.def
+	extra_objs="${extra_objs} gcn-tree.o"
+	extra_gcc_objs="driver-gcn.o"
+	case "$host" in
+	x86_64*-*-linux-gnu )
+		if test "$ac_cv_search_dlopen" != no; then
+			extra_programs="${extra_programs} gcn-run\$(exeext)"
+		fi
+		;;
+	esac
+	if test x$enable_as_accelerator = xyes; then
+		extra_programs="${extra_programs} mkoffload\$(exeext)"
+		tm_file="${tm_file} gcn/offload.h"
+	fi
 	;;
 moxie-*-elf)
 	gas=yes
@@ -4085,6 +4108,24 @@ case "${target}" in
 			with_cpu="mcpu=$with_cpu"
 			;;
 		esac
+		;;
+
+	amdgcn-*-*)
+		supported_defaults="arch tune"
+
+		for which in arch tune; do
+			eval "val=\$with_$which"
+			case ${val} in
+			"" | carrizo | fiji | gfx900 )
+				# OK
+				;;
+			*)
+				echo "Unknown cpu used in --with-$which=$val." 1>&2
+				exit 1
+				;;
+			esac
+		done
+		[ "x$with_arch" = x ] && with_arch=fiji
 		;;
 
 	hppa*-*-*)
