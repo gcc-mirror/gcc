@@ -108,7 +108,10 @@ deletable_insn_p (rtx_insn *insn, bool fast, bitmap arg_stores)
       /* We can delete dead const or pure calls as long as they do not
          infinite loop.  */
       && (RTL_CONST_OR_PURE_CALL_P (insn)
-	  && !RTL_LOOPING_CONST_OR_PURE_CALL_P (insn)))
+	  && !RTL_LOOPING_CONST_OR_PURE_CALL_P (insn))
+      /* Don't delete calls that may throw if we cannot do so.  */
+      && ((cfun->can_delete_dead_exceptions && can_alter_cfg)
+	  || insn_nothrow_p (insn)))
     return find_call_stack_args (as_a <rtx_call_insn *> (insn), false,
 				 fast, arg_stores);
 
@@ -201,7 +204,9 @@ mark_insn (rtx_insn *insn, bool fast)
 	  && !df_in_progress
 	  && !SIBLING_CALL_P (insn)
 	  && (RTL_CONST_OR_PURE_CALL_P (insn)
-	      && !RTL_LOOPING_CONST_OR_PURE_CALL_P (insn)))
+	      && !RTL_LOOPING_CONST_OR_PURE_CALL_P (insn))
+	  && ((cfun->can_delete_dead_exceptions && can_alter_cfg)
+	      || insn_nothrow_p (insn)))
 	find_call_stack_args (as_a <rtx_call_insn *> (insn), true, fast, NULL);
     }
 }
