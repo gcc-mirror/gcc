@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O0 -fexceptions" } */
+/* { dg-require-effective-target exceptions } */
 
 #include <stdarg.h>
 

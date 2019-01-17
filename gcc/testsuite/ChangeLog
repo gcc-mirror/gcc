@@ -1,3 +1,42 @@
+2019-01-17  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	* c-c++-common/ubsan/pr71512-1.c: Require exceptions.
+	* c-c++-common/ubsan/pr71512-2.c: Require exceptions.
+	* gcc.c-torture/compile/pr34648.c: Require exceptions.
+	* gcc.c-torture/compile/pr41469.c: Require exceptions.
+	* gcc.dg/20111216-1.c: Require exceptions.
+	* gcc.dg/cleanup-10.c: Require exceptions.
+	* gcc.dg/cleanup-11.c: Require exceptions.
+	* gcc.dg/cleanup-12.c: Require exceptions.
+	* gcc.dg/cleanup-13.c: Require exceptions.
+	* gcc.dg/cleanup-5.c: Require exceptions.
+	* gcc.dg/cleanup-8.c: Require exceptions.
+	* gcc.dg/cleanup-9.c: Require exceptions.
+	* gcc.dg/gomp/pr29955.c: Require exceptions.
+	* gcc.dg/lto/pr52097_0.c: Require exceptions.
+	* gcc.dg/nested-func-5.c: Require exceptions.
+	* gcc.dg/pch/except-1.c: Require exceptions.
+	* gcc.dg/pch/valid-2.c: Require exceptions.
+	* gcc.dg/pr41470.c: Require exceptions.
+	* gcc.dg/pr42427.c: Require exceptions.
+	* gcc.dg/pr44545.c: Require exceptions.
+	* gcc.dg/pr47086.c: Require exceptions.
+	* gcc.dg/pr51481.c: Require exceptions.
+	* gcc.dg/pr51644.c: Require exceptions.
+	* gcc.dg/pr52046.c: Require exceptions.
+	* gcc.dg/pr54669.c: Require exceptions.
+	* gcc.dg/pr56424.c: Require exceptions.
+	* gcc.dg/pr64465.c: Require exceptions.
+	* gcc.dg/pr65802.c: Require exceptions.
+	* gcc.dg/pr67563.c: Require exceptions.
+	* gcc.dg/tree-ssa/pr41469-1.c: Require exceptions.
+	* gcc.dg/tree-ssa/ssa-dse-28.c: Require exceptions.
+	* gcc.dg/vect/pr46663.c: Require exceptions.
+	* lib/target-supports.exp (check_effective_target_exceptions): New.
+
 2019-01-17  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/88851

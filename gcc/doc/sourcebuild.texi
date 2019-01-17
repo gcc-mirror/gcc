@@ -2228,6 +2228,9 @@ Target uses @code{__cxa_atexit}.
 @item default_packed
 Target has packed layout of structure members by default.
 
+@item exceptions
+Target supports exceptions.
+
 @item fgraphite
 Target supports Graphite optimizations.
 
