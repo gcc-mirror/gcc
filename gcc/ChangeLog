@@ -1,3 +1,8 @@
+2019-01-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_gimplify_va_arg):
+	Handle split indirect COMPLEX_TYPE arguments.
+
 2019-01-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-ssa-isolate-paths.c (stmt_uses_name_in_undefined_way): Replace
