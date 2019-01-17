@@ -8779,6 +8779,14 @@ proc check_effective_target_offload_hsa { } {
     } "-foffload=hsa" ]
 }
 
+# Return 1 if the compiler has been configured with hsa offloading.
+
+proc check_effective_target_offload_gcn { } {
+    return [check_no_compiler_messages offload_gcn assembly {
+	int main () {return 0;}
+    } "-foffload=amdgcn-unknown-amdhsa" ]
+}
+
 # Return 1 if the target support -fprofile-update=atomic
 proc check_effective_target_profile_update_atomic {} {
     return [check_no_compiler_messages profile_update_atomic assembly {
@@ -9183,3 +9191,8 @@ foreach N {df} {
     }]
 }
 
+# Return 1 if this target uses an LLVM assembler and/or linker
+proc check_effective_target_llvm_binutils { } {
+    return [expr { [istarget amdgcn*-*-*]
+		   || [check_effective_target_offload_gcn] } ]
+}

@@ -2265,6 +2265,9 @@ Target uses GNU @command{ld}.
 Target keeps null pointer checks, either due to the use of
 @option{-fno-delete-null-pointer-checks} or hardwired into the target.
 
+@item llvm_binutils
+Target is using an LLVM assembler and/or linker, instead of GNU Binutils.
+
 @item lto
 Compiler has been configured to support link-time optimization (LTO).
 
@@ -2288,6 +2291,9 @@ Target uses natural alignment (aligned to type size) for types of
 
 @item nonpic
 Target does not generate PIC by default.
+
+@item offload_gcn
+Target has been configured for OpenACC/OpenMP offloading on AMD GCN.
 
 @item pie_enabled
 Target generates PIE by default.

@@ -1,4 +1,9 @@
 2019-01-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* doc/sourcebuild.texi: Document dg-require-effective-target
+	llvm_binutils and offload_gcn.
+
+2019-01-17  Andrew Stubbs  <ams@codesourcery.com>
 	    Kwok Cheung Yeung  <kcy@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 	    Tom de Vries  <tom@codesourcery.com>
