@@ -1,5 +1,13 @@
 2019-01-17  Wei Xiao  <wei3.xiao@intel.com>
 
+	* gcc.target/i386/avx512f-vfixupimmpd-2.c: Fix the test cases for
+	VFIXUPIMM* intrinsics.
+	* gcc.target/i386/avx512f-vfixupimmps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfixupimmsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfixupimmss-2.c: Ditto.
+
+2019-01-17  Wei Xiao  <wei3.xiao@intel.com>
+
 	PR target/88794
 	Revert:
 	2018-11-06  Wei Xiao  <wei3.xiao@intel.com>

@@ -2,7 +2,6 @@
 
 	PR target/88794
 	Revert:
-
 	2018-11-06  Wei Xiao  <wei3.xiao@intel.com>
 
 	* config/i386/avx512fintrin.h: Update VFIXUPIMM* intrinsics.
