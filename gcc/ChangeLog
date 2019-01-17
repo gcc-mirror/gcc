@@ -1,3 +1,11 @@
+2019-01-17  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* doc/extend.texi: Add four new prototypes for vec_ld and seven new
+	prototypes for vec_st.
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add entries
+	for scalar address type variants of altivec_vec_ld/altivec_vec_st,
+	mainly on signed/unsigned long long and double.
+
 2019-01-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR target/88861
