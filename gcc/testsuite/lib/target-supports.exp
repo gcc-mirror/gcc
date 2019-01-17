@@ -1176,7 +1176,8 @@ proc check_effective_target_pie { } {
 	 || [istarget *-*-dragonfly*]
 	 || [istarget *-*-freebsd*]
 	 || [istarget *-*-linux*]
-	 || [istarget *-*-gnu*] } {
+	 || [istarget *-*-gnu*]
+	 || [istarget *-*-amdhsa]} {
 	return 1;
     }
     if { [istarget *-*-solaris2.1\[1-9\]*] } {
