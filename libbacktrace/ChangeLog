@@ -1,3 +1,9 @@
+2019-01-17  Tom de Vries  <tdevries@suse.de>
+
+	* elf.c (elf_add): Add and handle with_buildid_data and
+	with_buildid_size parameters.  Handle .gnu_debugaltlink section.
+	(phdr_callback, backtrace_initialize): Add arguments to elf_add calls.
+
 2019-01-16  Tom de Vries  <tdevries@suse.de>
 
 	* dwarf.c (read_referenced_name_from_attr): New function.  Factor out
