@@ -1,5 +1,15 @@
 2019-01-17  Tom de Vries  <tdevries@suse.de>
 
+	* dwarf.c (enum attr_val_encoding): Add ATTR_VAL_NONE.
+	(read_attribute): Add altlink parameter.  Handle missing altlink for
+	DW_FORM_GNU_strp_alt and DW_FORM_GNU_ref_alt.
+	(find_address_ranges, build_address_map, build_dwarf_data): Add and
+	handle altlink parameter.
+	(read_referenced_name, read_function_entry): Add argument to
+	read_attribute call.
+
+2019-01-17  Tom de Vries  <tdevries@suse.de>
+
 	* dwarf.c (struct dwarf_data): Add altlink field.
 	(backtrace_dwarf_add): Add and handle fileline_altlink parameter.
 	* elf.c	(elf_add): Add argument to backtrace_dwarf_add call.
