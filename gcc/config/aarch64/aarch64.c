@@ -40,6 +40,7 @@
 #include "regs.h"
 #include "emit-rtl.h"
 #include "recog.h"
+#include "cgraph.h"
 #include "diagnostic.h"
 #include "insn-attr.h"
 #include "alias.h"
@@ -71,6 +72,7 @@
 #include "selftest.h"
 #include "selftest-rtl.h"
 #include "rtx-vector-builder.h"
+#include "intl.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -18480,6 +18482,151 @@ aarch64_estimated_poly_value (poly_int64 val)
   return val.coeffs[0] + val.coeffs[1] * over_128 / 128;
 }
 
+
+/* Return true for types that could be supported as SIMD return or
+   argument types.  */
+
+static bool
+supported_simd_type (tree t)
+{
+  if (SCALAR_FLOAT_TYPE_P (t) || INTEGRAL_TYPE_P (t) || POINTER_TYPE_P (t))
+    {
+      HOST_WIDE_INT s = tree_to_shwi (TYPE_SIZE_UNIT (t));
+      return s == 1 || s == 2 || s == 4 || s == 8;
+    }
+  return false;
+}
+
+/* Return true for types that currently are supported as SIMD return
+   or argument types.  */
+
+static bool
+currently_supported_simd_type (tree t, tree b)
+{
+  if (COMPLEX_FLOAT_TYPE_P (t))
+    return false;
+
+  if (TYPE_SIZE (t) != TYPE_SIZE (b))
+    return false;
+
+  return supported_simd_type (t);
+}
+
+/* Implement TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN.  */
+
+static int
+aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
+					struct cgraph_simd_clone *clonei,
+					tree base_type, int num)
+{
+  tree t, ret_type, arg_type;
+  unsigned int elt_bits, vec_bits, count;
+
+  if (!TARGET_SIMD)
+    return 0;
+
+  if (clonei->simdlen
+      && (clonei->simdlen < 2
+	  || clonei->simdlen > 1024
+	  || (clonei->simdlen & (clonei->simdlen - 1)) != 0))
+    {
+      warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		  "unsupported simdlen %d", clonei->simdlen);
+      return 0;
+    }
+
+  ret_type = TREE_TYPE (TREE_TYPE (node->decl));
+  if (TREE_CODE (ret_type) != VOID_TYPE
+      && !currently_supported_simd_type (ret_type, base_type))
+    {
+      if (TYPE_SIZE (ret_type) != TYPE_SIZE (base_type))
+	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		    "GCC does not currently support mixed size types "
+		    "for %<simd%> functions");
+      else if (supported_simd_type (ret_type))
+	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		    "GCC does not currently support return type %qT "
+		    "for %<simd%> functions", ret_type);
+      else
+	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		    "unsupported return type %qT for %<simd%> functions",
+		    ret_type);
+      return 0;
+    }
+
+  for (t = DECL_ARGUMENTS (node->decl); t; t = DECL_CHAIN (t))
+    {
+      arg_type = TREE_TYPE (t);
+
+      if (!currently_supported_simd_type (arg_type, base_type))
+	{
+	  if (TYPE_SIZE (arg_type) != TYPE_SIZE (base_type))
+	    warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+			"GCC does not currently support mixed size types "
+			"for %<simd%> functions");
+	  else
+	    warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+			"GCC does not currently support argument type %qT "
+			"for %<simd%> functions", arg_type);
+	  return 0;
+	}
+    }
+
+  clonei->vecsize_mangle = 'n';
+  clonei->mask_mode = VOIDmode;
+  elt_bits = GET_MODE_BITSIZE (SCALAR_TYPE_MODE (base_type));
+  if (clonei->simdlen == 0)
+    {
+      count = 2;
+      vec_bits = (num == 0 ? 64 : 128);
+      clonei->simdlen = vec_bits / elt_bits;
+    }
+  else
+    {
+      count = 1;
+      vec_bits = clonei->simdlen * elt_bits;
+      if (vec_bits != 64 && vec_bits != 128)
+	{
+	  warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		      "GCC does not currently support simdlen %d for type %qT",
+		      clonei->simdlen, base_type);
+	  return 0;
+	}
+    }
+  clonei->vecsize_int = vec_bits;
+  clonei->vecsize_float = vec_bits;
+  return count;
+}
+
+/* Implement TARGET_SIMD_CLONE_ADJUST.  */
+
+static void
+aarch64_simd_clone_adjust (struct cgraph_node *node)
+{
+  /* Add aarch64_vector_pcs target attribute to SIMD clones so they
+     use the correct ABI.  */
+
+  tree t = TREE_TYPE (node->decl);
+  TYPE_ATTRIBUTES (t) = make_attribute ("aarch64_vector_pcs", "default",
+					TYPE_ATTRIBUTES (t));
+}
+
+/* Implement TARGET_SIMD_CLONE_USABLE.  */
+
+static int
+aarch64_simd_clone_usable (struct cgraph_node *node)
+{
+  switch (node->simdclone->vecsize_mangle)
+    {
+    case 'n':
+      if (!TARGET_SIMD)
+	return -1;
+      return 0;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Target-specific selftests.  */
 
 #if CHECKING_P
@@ -18972,6 +19119,16 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE aarch64_attribute_table
+
+#undef TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN
+#define TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN \
+  aarch64_simd_clone_compute_vecsize_and_simdlen
+
+#undef TARGET_SIMD_CLONE_ADJUST
+#define TARGET_SIMD_CLONE_ADJUST aarch64_simd_clone_adjust
+
+#undef TARGET_SIMD_CLONE_USABLE
+#define TARGET_SIMD_CLONE_USABLE aarch64_simd_clone_usable
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS
