@@ -5343,11 +5343,11 @@ aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
 	{
 	  /* This is done to provide unwinding information for the stack
 	     adjustments we're about to do, however to prevent the optimizers
-	     from removing the R15 move and leaving the CFA note (which would be
+	     from removing the R11 move and leaving the CFA note (which would be
 	     very wrong) we tie the old and new stack pointer together.
 	     The tie will expand to nothing but the optimizers will not touch
 	     the instruction.  */
-	  rtx stack_ptr_copy = gen_rtx_REG (Pmode, R15_REGNUM);
+	  rtx stack_ptr_copy = gen_rtx_REG (Pmode, STACK_CLASH_SVE_CFA_REGNUM);
 	  emit_move_insn (stack_ptr_copy, stack_pointer_rtx);
 	  emit_insn (gen_stack_tie (stack_ptr_copy, stack_pointer_rtx));
 
@@ -5574,7 +5574,19 @@ aarch64_add_cfa_expression (rtx_insn *insn, unsigned int reg,
    to the stack we track as implicit probes are the FP/LR stores.
 
    For outgoing arguments we probe if the size is larger than 1KB, such that
-   the ABI specified buffer is maintained for the next callee.  */
+   the ABI specified buffer is maintained for the next callee.
+
+   The following registers are reserved during frame layout and should not be
+   used for any other purpose:
+
+   - r11: Used by stack clash protection when SVE is enabled.
+   - r12(EP0) and r13(EP1): Used as temporaries for stack adjustment.
+   - r14 and r15: Used for speculation tracking.
+   - r16(IP0), r17(IP1): Used by indirect tailcalls.
+   - r30(LR), r29(FP): Used by standard frame layout.
+
+   These registers must be avoided in frame layout related code unless the
+   explicit intention is to interact with one of the features listed above.  */
 
 /* Generate the prologue instructions for entry into a function.
    Establish the stack frame by decreasing the stack pointer with a
