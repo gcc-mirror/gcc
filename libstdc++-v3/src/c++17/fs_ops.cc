@@ -851,7 +851,49 @@ fs::equivalent(const path& p1, const path& p2, error_code& ec) noexcept
       ec.clear();
       if (is_other(s1) || is_other(s2))
 	return false;
+#if _GLIBCXX_FILESYSTEM_IS_WINDOWS
+      // st_ino is not set, so can't be used to distinguish files
+      if (st1.st_mode != st2.st_mode || st1.st_dev != st2.st_dev)
+	return false;
+
+      struct auto_handle {
+	explicit auto_handle(const path& p_)
+	: handle(CreateFileW(p_.c_str(), 0,
+	      FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+	      0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0))
+	{ }
+
+	~auto_handle()
+	{ if (*this) CloseHandle(handle); }
+
+	explicit operator bool() const
+	{ return handle != INVALID_HANDLE_VALUE; }
+
+	bool get_info()
+	{ return GetFileInformationByHandle(handle, &info); }
+
+	HANDLE handle;
+	BY_HANDLE_FILE_INFORMATION info;
+      };
+      auto_handle h1(p1);
+      auto_handle h2(p2);
+      if (!h1 || !h2)
+	{
+	  if (!h1 && !h2)
+	    ec.assign((int)GetLastError(), generic_category());
+	  return false;
+	}
+      if (!h1.get_info() || !h2.get_info())
+	{
+	  ec.assign((int)GetLastError(), generic_category());
+	  return false;
+	}
+      return h1.info.dwVolumeSerialNumber == h2.info.dwVolumeSerialNumber
+	&& h1.info.nFileIndexHigh == h2.info.nFileIndexHigh
+	&& h1.info.nFileIndexLow == h2.info.nFileIndexLow;
+#else
       return st1.st_dev == st2.st_dev && st1.st_ino == st2.st_ino;
+#endif
     }
   else if (!exists(s1) && !exists(s2))
     ec = std::make_error_code(std::errc::no_such_file_or_directory);
