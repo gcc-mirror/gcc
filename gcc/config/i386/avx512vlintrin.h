@@ -10242,131 +10242,143 @@ _mm256_maskz_shuffle_f32x4 (__mmask8 __U, __m256 __A, __m256 __B,
 
 extern __inline __m256d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_fixupimm_pd (__m256d __A, __m256i __B,
+_mm256_fixupimm_pd (__m256d __A, __m256d __B, __m256i __C,
 		    const int __imm)
-{
-  return (__m256d) __builtin_ia32_fixupimmpd256 ((__v4df) __A,
-						      (__v4di) __B,
-						      __imm);
-}
-
-extern __inline __m256d
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_fixupimm_pd (__m256d __W, __mmask8 __U, __m256d __A,
-			 __m256i __B, const int __imm)
 {
   return (__m256d) __builtin_ia32_fixupimmpd256_mask ((__v4df) __A,
-						      (__v4di) __B,
+						      (__v4df) __B,
+						      (__v4di) __C,
 						      __imm,
-						      (__v4df) __W,
+						      (__mmask8) -1);
+}
+
+extern __inline __m256d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_fixupimm_pd (__m256d __A, __mmask8 __U, __m256d __B,
+			 __m256i __C, const int __imm)
+{
+  return (__m256d) __builtin_ia32_fixupimmpd256_mask ((__v4df) __A,
+						      (__v4df) __B,
+						      (__v4di) __C,
+						      __imm,
 						      (__mmask8) __U);
 }
 
 extern __inline __m256d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_fixupimm_pd (__mmask8 __U, __m256d __A,
-			  __m256i __B, const int __imm)
+_mm256_maskz_fixupimm_pd (__mmask8 __U, __m256d __A, __m256d __B,
+			  __m256i __C, const int __imm)
 {
   return (__m256d) __builtin_ia32_fixupimmpd256_maskz ((__v4df) __A,
-						       (__v4di) __B,
+						       (__v4df) __B,
+						       (__v4di) __C,
 						       __imm,
 						       (__mmask8) __U);
 }
 
 extern __inline __m256
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_fixupimm_ps (__m256 __A, __m256i __B,
+_mm256_fixupimm_ps (__m256 __A, __m256 __B, __m256i __C,
 		    const int __imm)
 {
-  return (__m256) __builtin_ia32_fixupimmps256 ((__v8sf) __A,
-						     (__v8si) __B,
-						     __imm);
+  return (__m256) __builtin_ia32_fixupimmps256_mask ((__v8sf) __A,
+						     (__v8sf) __B,
+						     (__v8si) __C,
+						     __imm,
+						     (__mmask8) -1);
 }
 
 extern __inline __m256
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_fixupimm_ps (__m256 __W, __mmask8 __U, __m256 __A,
-			 __m256i __B, const int __imm)
+_mm256_mask_fixupimm_ps (__m256 __A, __mmask8 __U, __m256 __B,
+			 __m256i __C, const int __imm)
 {
   return (__m256) __builtin_ia32_fixupimmps256_mask ((__v8sf) __A,
-						     (__v8si) __B,
+						     (__v8sf) __B,
+						     (__v8si) __C,
 						     __imm,
-						     (__v8sf) __W,
 						     (__mmask8) __U);
 }
 
 extern __inline __m256
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_fixupimm_ps (__mmask8 __U, __m256 __A,
-			  __m256i __B, const int __imm)
+_mm256_maskz_fixupimm_ps (__mmask8 __U, __m256 __A, __m256 __B,
+			  __m256i __C, const int __imm)
 {
   return (__m256) __builtin_ia32_fixupimmps256_maskz ((__v8sf) __A,
-						      (__v8si) __B,
+						      (__v8sf) __B,
+						      (__v8si) __C,
 						      __imm,
 						      (__mmask8) __U);
 }
 
 extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_fixupimm_pd (__m128d __A, __m128i __B,
+_mm_fixupimm_pd (__m128d __A, __m128d __B, __m128i __C,
 		 const int __imm)
 {
-  return (__m128d) __builtin_ia32_fixupimmpd128 ((__v2df) __A,
-						      (__v2di) __B,
-						      __imm);
+  return (__m128d) __builtin_ia32_fixupimmpd128_mask ((__v2df) __A,
+						      (__v2df) __B,
+						      (__v2di) __C,
+						      __imm,
+						      (__mmask8) -1);
 }
 
 extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_fixupimm_pd (__m128d __W, __mmask8 __U, __m128d __A,
-		      __m128i __B, const int __imm)
+_mm_mask_fixupimm_pd (__m128d __A, __mmask8 __U, __m128d __B,
+		      __m128i __C, const int __imm)
 {
   return (__m128d) __builtin_ia32_fixupimmpd128_mask ((__v2df) __A,
-						      (__v2di) __B,
+						      (__v2df) __B,
+						      (__v2di) __C,
 						      __imm,
-						      (__v2df) __W,
 						      (__mmask8) __U);
 }
 
 extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_fixupimm_pd (__mmask8 __U, __m128d __A,
-		       __m128i __B, const int __imm)
+_mm_maskz_fixupimm_pd (__mmask8 __U, __m128d __A, __m128d __B,
+		       __m128i __C, const int __imm)
 {
   return (__m128d) __builtin_ia32_fixupimmpd128_maskz ((__v2df) __A,
-						       (__v2di) __B,
+						       (__v2df) __B,
+						       (__v2di) __C,
 						       __imm,
 						       (__mmask8) __U);
 }
 
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_fixupimm_ps (__m128 __A, __m128i __B, const int __imm)
+_mm_fixupimm_ps (__m128 __A, __m128 __B, __m128i __C, const int __imm)
 {
-  return (__m128) __builtin_ia32_fixupimmps128 ((__v4sf) __A,
-						     (__v4si) __B,
-						     __imm);
+  return (__m128) __builtin_ia32_fixupimmps128_mask ((__v4sf) __A,
+						     (__v4sf) __B,
+						     (__v4si) __C,
+						     __imm,
+						     (__mmask8) -1);
 }
 
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_fixupimm_ps (__m128 __W, __mmask8 __U, __m128 __A,
-		      __m128i __B, const int __imm)
+_mm_mask_fixupimm_ps (__m128 __A, __mmask8 __U, __m128 __B,
+		      __m128i __C, const int __imm)
 {
   return (__m128) __builtin_ia32_fixupimmps128_mask ((__v4sf) __A,
-						     (__v4si) __B,
+						     (__v4sf) __B,
+						     (__v4si) __C,
 						     __imm,
-						     (__v4sf) __W,
 						     (__mmask8) __U);
 }
 
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_fixupimm_ps (__mmask8 __U, __m128 __A,
-		       __m128i __B, const int __imm)
+_mm_maskz_fixupimm_ps (__mmask8 __U, __m128 __A, __m128 __B,
+		       __m128i __C, const int __imm)
 {
   return (__m128) __builtin_ia32_fixupimmps128_maskz ((__v4sf) __A,
-						      (__v4si) __B,
+						      (__v4sf) __B,
+						      (__v4si) __C,
 						      __imm,
 						      (__mmask8) __U);
 }
@@ -12645,74 +12657,78 @@ _mm256_permutex_pd (__m256d __X, const int __M)
 					   (__v4sf)(__m128)_mm_setzero_ps (),   \
                                            (__mmask8)(U)))
 
-#define _mm256_fixupimm_pd(X, Y, C)                                          \
+#define _mm256_fixupimm_pd(X, Y, Z, C)                                          \
   ((__m256d)__builtin_ia32_fixupimmpd256_mask ((__v4df)(__m256d)(X),		\
-					       (__v4di)(__m256i)(Y), (int)(C),	\
+					       (__v4df)(__m256d)(Y),		\
+					       (__v4di)(__m256i)(Z), (int)(C),	\
 					       (__mmask8)(-1)))
 
-#define _mm256_mask_fixupimm_pd(W, U, X, Y, C)                                  \
+#define _mm256_mask_fixupimm_pd(X, U, Y, Z, C)                                  \
    ((__m256d)__builtin_ia32_fixupimmpd256_mask ((__v4df)(__m256d)(X),           \
-						(__v4di)(__m256i)(Y), (int)(C), \
-						(__v4df)(__m256d)(W),           \
+						(__v4df)(__m256d)(Y),           \
+						(__v4di)(__m256i)(Z), (int)(C), \
 						(__mmask8)(U)))
 
-#define _mm256_maskz_fixupimm_pd(U, X, Y, C)                                 \
+#define _mm256_maskz_fixupimm_pd(U, X, Y, Z, C)                                 \
    ((__m256d)__builtin_ia32_fixupimmpd256_maskz ((__v4df)(__m256d)(X),          \
-						 (__v4di)(__m256i)(Y),          \
-						 (int)(C),\
+						 (__v4df)(__m256d)(Y),          \
+						 (__v4di)(__m256i)(Z), (int)(C),\
 						 (__mmask8)(U)))
 
-#define _mm256_fixupimm_ps(X, Y, C)						\
+#define _mm256_fixupimm_ps(X, Y, Z, C)						\
   ((__m256)__builtin_ia32_fixupimmps256_mask ((__v8sf)(__m256)(X),		\
-					      (__v8si)(__m256i)(Y), (int)(C),	\
+					      (__v8sf)(__m256)(Y),		\
+					      (__v8si)(__m256i)(Z), (int)(C),	\
 					      (__mmask8)(-1)))
 
 
-#define _mm256_mask_fixupimm_ps(W, U, X, Y, C)                                  \
+#define _mm256_mask_fixupimm_ps(X, U, Y, Z, C)                                  \
     ((__m256)__builtin_ia32_fixupimmps256_mask ((__v8sf)(__m256)(X),            \
-						(__v8si)(__m256i)(Y), (int)(C), \
-						(__v8sf)(__m256)(W),            \
+						(__v8sf)(__m256)(Y),            \
+						(__v8si)(__m256i)(Z), (int)(C), \
 						(__mmask8)(U)))
 
-#define _mm256_maskz_fixupimm_ps(U, X, Y, C)                                 \
+#define _mm256_maskz_fixupimm_ps(U, X, Y, Z, C)                                 \
     ((__m256)__builtin_ia32_fixupimmps256_maskz ((__v8sf)(__m256)(X),           \
-						 (__v8si)(__m256i)(Y),           \
-						 (int)(C),\
+						 (__v8sf)(__m256)(Y),           \
+						 (__v8si)(__m256i)(Z), (int)(C),\
 						 (__mmask8)(U)))
 
-#define _mm_fixupimm_pd(X, Y, C)						\
+#define _mm_fixupimm_pd(X, Y, Z, C)						\
   ((__m128d)__builtin_ia32_fixupimmpd128_mask ((__v2df)(__m128d)(X),		\
-					       (__v2di)(__m128i)(Y), (int)(C), 	\
+					       (__v2df)(__m128d)(Y),		\
+					       (__v2di)(__m128i)(Z), (int)(C), 	\
 					       (__mmask8)(-1)))
 
 
-#define _mm_mask_fixupimm_pd(W, U, X, Y, C)                                       \
+#define _mm_mask_fixupimm_pd(X, U, Y, Z, C)                                       \
      ((__m128d)__builtin_ia32_fixupimmpd128_mask ((__v2df)(__m128d)(X),           \
-						  (__v2di)(__m128i)(Y), (int)(C), \
-						  (__v2df)(__m128d)(W),           \
+						  (__v2df)(__m128d)(Y),           \
+						  (__v2di)(__m128i)(Z), (int)(C), \
 						  (__mmask8)(U)))
 
-#define _mm_maskz_fixupimm_pd(U, X, Y, C)                                      \
+#define _mm_maskz_fixupimm_pd(U, X, Y, Z, C)                                      \
      ((__m128d)__builtin_ia32_fixupimmpd128_maskz ((__v2df)(__m128d)(X),          \
-						   (__v2di)(__m128i)(Y),          \
-						   (int)(C),\
+						   (__v2df)(__m128d)(Y),          \
+						   (__v2di)(__m128i)(Z), (int)(C),\
 						   (__mmask8)(U)))
 
-#define _mm_fixupimm_ps(X, Y, C)						\
+#define _mm_fixupimm_ps(X, Y, Z, C)						\
    ((__m128)__builtin_ia32_fixupimmps128_mask ((__v4sf)(__m128)(X),		\
-					       (__v4si)(__m128i)(Y), (int)(C), 	\
+					       (__v4sf)(__m128)(Y),		\
+					       (__v4si)(__m128i)(Z), (int)(C), 	\
 					       (__mmask8)(-1)))
 
-#define _mm_mask_fixupimm_ps(W, U, X, Y, C)                                      \
+#define _mm_mask_fixupimm_ps(X, U, Y, Z, C)                                      \
       ((__m128)__builtin_ia32_fixupimmps128_mask ((__v4sf)(__m128)(X),           \
-						  (__v4si)(__m128i)(Y), (int)(C),\
-						  (__v4sf)(__m128)(W),           \
+						  (__v4sf)(__m128)(Y),           \
+						  (__v4si)(__m128i)(Z), (int)(C),\
 						  (__mmask8)(U)))
 
-#define _mm_maskz_fixupimm_ps(U, X, Y, C)                                      \
+#define _mm_maskz_fixupimm_ps(U, X, Y, Z, C)                                      \
       ((__m128)__builtin_ia32_fixupimmps128_maskz ((__v4sf)(__m128)(X),           \
-						   (__v4si)(__m128i)(Y),           \
-						   (int)(C),\
+						   (__v4sf)(__m128)(Y),           \
+						   (__v4si)(__m128i)(Z), (int)(C),\
 						   (__mmask8)(U)))
 
 #define _mm256_mask_srli_epi32(W, U, A, B)				\
