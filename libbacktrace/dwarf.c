@@ -143,6 +143,8 @@ enum attr_val_encoding
   ATTR_VAL_REF_UNIT,
   /* An offset to other data within the .dwarf_info section.  */
   ATTR_VAL_REF_INFO,
+  /* An offset to other data within the alt .dwarf_info section.  */
+  ATTR_VAL_REF_ALT_INFO,
   /* An offset to data in some other section.  */
   ATTR_VAL_REF_SECTION,
   /* A type signature.  */
@@ -858,7 +860,7 @@ read_attribute (enum dwarf_form form, struct dwarf_buf *buf,
 	  val->encoding = ATTR_VAL_NONE;
 	  return 1;
 	}
-      val->encoding = ATTR_VAL_REF_SECTION;
+      val->encoding = ATTR_VAL_REF_ALT_INFO;
       return 1;
     case DW_FORM_GNU_strp_alt:
       {
@@ -2199,6 +2201,19 @@ read_referenced_name_from_attr (struct dwarf_data *ddata, struct unit *u,
   if (val->encoding == ATTR_VAL_UINT
       || val->encoding == ATTR_VAL_REF_UNIT)
     return read_referenced_name (ddata, u, val->u.uint, error_callback, data);
+
+  if (val->encoding == ATTR_VAL_REF_ALT_INFO)
+    {
+      struct unit *alt_unit
+	= find_unit (ddata->altlink->units, ddata->altlink->units_count,
+		     val->u.uint);
+      if (alt_unit == NULL)
+	return NULL;
+
+      uint64_t offset = val->u.uint - alt_unit->low_offset;
+      return read_referenced_name (ddata->altlink, alt_unit, offset,
+				   error_callback, data);
+    }
 
   return NULL;
 }
