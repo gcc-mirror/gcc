@@ -2522,6 +2522,10 @@ Add the flags needed to define macro STACK_SIZE and set it to the stack size
 limit associated with the @ref{stack_size_et,,@code{stack_size} effective
 target}.
 
+@item sqrt_insn
+Add the target-specific flags needed to enable hardware square root
+instructions, if any.
+
 @item tls
 Add the target-specific flags needed to use thread-local storage.
 @end table
