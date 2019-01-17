@@ -363,7 +363,7 @@ proc gcc-dg-prune { system text } {
 
     # Complain about blank lines in the output (PR other/69006)
     global allow_blank_lines
-    if { !$allow_blank_lines } {
+    if { !$allow_blank_lines && ![check_effective_target_llvm_binutils]} {
 	set num_blank_lines [llength [regexp -all -inline "\n\n" $text]]
 	if { $num_blank_lines } {
 	    global testname_with_flags
