@@ -3438,10 +3438,9 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
     }
 
   /* In a lambda within a template, wait until instantiation
-     time to implicitly capture.  */
+     time to implicitly capture a dependent type.  */
   if (context == containing_function
-      && DECL_TEMPLATE_INFO (containing_function)
-      && uses_template_parms (DECL_TI_ARGS (containing_function)))
+      && dependent_type_p (TREE_TYPE (decl)))
     return decl;
 
   if (lambda_expr && VAR_P (decl)
