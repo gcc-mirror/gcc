@@ -697,8 +697,6 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
   tree destvar, srcvar;
   location_t loc = gimple_location (stmt);
 
-  bool nowarn = gimple_no_warning_p (stmt);
-
   /* If the LEN parameter is a constant zero or in range where
      the only valid value is zero, return DEST.  */
   if (size_must_be_zero_p (len))
@@ -766,12 +764,16 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	  unsigned ilen = tree_to_uhwi (len);
 	  if (pow2p_hwi (ilen))
 	    {
-	      /* Detect invalid bounds and overlapping copies and issue
-		 either -Warray-bounds or -Wrestrict.  */
-	      if (!nowarn
-		  && check_bounds_or_overlap (as_a <gcall *>(stmt),
-					      dest, src, len, len))
-	      	gimple_set_no_warning (stmt, true);
+	      /* Detect out-of-bounds accesses without issuing warnings.
+		 Avoid folding out-of-bounds copies but to avoid false
+		 positives for unreachable code defer warning until after
+		 DCE has worked its magic.
+		 -Wrestrict is still diagnosed.  */
+	      if (int warning = check_bounds_or_overlap (as_a <gcall *>(stmt),
+							 dest, src, len, len,
+							 false, false))
+		if (warning != OPT_Wrestrict)
+		  return false;
 
 	      scalar_int_mode mode;
 	      tree type = lang_hooks.types.type_for_size (ilen * 8, 1);
@@ -1038,10 +1040,16 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	    }
 	}
 
-      /* Detect invalid bounds and overlapping copies and issue either
-	 -Warray-bounds or -Wrestrict.  */
-      if (!nowarn)
-	check_bounds_or_overlap (as_a <gcall *>(stmt), dest, src, len, len);
+      /* Same as above, detect out-of-bounds accesses without issuing
+	 warnings.  Avoid folding out-of-bounds copies but to avoid
+	 false positives for unreachable code defer warning until
+	 after DCE has worked its magic.
+	 -Wrestrict is still diagnosed.  */
+      if (int warning = check_bounds_or_overlap (as_a <gcall *>(stmt),
+						 dest, src, len, len,
+						 false, false))
+	if (warning != OPT_Wrestrict)
+	  return false;
 
       gimple *new_stmt;
       if (is_gimple_reg_type (TREE_TYPE (srcvar)))

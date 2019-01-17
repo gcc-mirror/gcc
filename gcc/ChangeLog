@@ -1,3 +1,20 @@
+2019-01-17  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/88800
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Avoid checking
+	NO_WARNING bit here.  Avoid folding out-of-bounds calls.
+	* gimple-ssa-warn-restrict.c (maybe_diag_offset_bounds): Remove
+	redundant argument.  Add new argument and issue diagnostics under
+	its control.  Detect out-of-bounds access even with warnings
+	disabled.
+	(check_bounds_or_overlap): Change return type.  Add argument.
+	(wrestrict_dom_walker::check_call): Adjust.
+	* gimple-ssa-warn-restrict.h (check_bounds_or_overlap): Add argument.
+	* tree-ssa-strlen.c (handle_builtin_strcpy): Adjust to change in
+	check_bounds_or_overlap's return value.
+	(handle_builtin_stxncpy): Same.
+	(handle_builtin_strcat): Same.
+
 2019-01-17  Andrew Stubbs  <ams@codesourcery.com>
 	    Kwok Cheung Yeung  <kcy@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
