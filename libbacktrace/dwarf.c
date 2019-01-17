@@ -843,14 +843,23 @@ read_attribute (enum dwarf_form form, struct dwarf_buf *buf,
       val->encoding = ATTR_VAL_REF_SECTION;
       return 1;
     case DW_FORM_GNU_strp_alt:
-      val->u.uint = read_offset (buf, is_dwarf64);
-      if (altlink == NULL)
-	{
-	  val->encoding = ATTR_VAL_NONE;
-	  return 1;
-	}
-      val->encoding = ATTR_VAL_REF_SECTION;
-      return 1;
+      {
+	uint64_t offset;
+	offset = read_offset (buf, is_dwarf64);
+	if (altlink == NULL)
+	  {
+	    val->encoding = ATTR_VAL_NONE;
+	    return 1;
+	  }
+	if (offset >= altlink->dwarf_str_size)
+	  {
+	    dwarf_buf_error (buf, "DW_FORM_GNU_strp_alt out of range");
+	    return 0;
+	  }
+	val->encoding = ATTR_VAL_STRING;
+	val->u.string = (const char *) altlink->dwarf_str + offset;
+	return 1;
+      }
     default:
       dwarf_buf_error (buf, "unrecognized DWARF form");
       return 0;
