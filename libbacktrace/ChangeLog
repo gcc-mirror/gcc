@@ -1,6 +1,15 @@
 2019-01-17  Tom de Vries  <tdevries@suse.de>
 
 	PR libbacktrace/82857
+	* configure.ac (DWZ): Set with AC_CHECK_PROG.
+	(HAVE_DWZ): Set with AM_CONDITIONAL.
+	* configure: Regenerate.
+	* Makefile.am (TESTS): Add btest_dwz.
+	* Makefile.in: Regenerate.
+
+2019-01-17  Tom de Vries  <tdevries@suse.de>
+
+	PR libbacktrace/82857
 	* dwarf.c (enum attr_val_encoding): Add ATTR_VAL_REF_ALT_INFO.
 	(read_attribute): Handle DW_FORM_GNU_ref_alt using
 	ATTR_VAL_REF_ALT_INFO.
