@@ -1,3 +1,14 @@
+2019-01-17  Wei Xiao  <wei3.xiao@intel.com>
+
+	PR target/88794
+	Revert:
+	2018-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/88489
+	* config/i386/sse.md (UNSPEC_SFIXUPIMM): New unspec enumerator.
+	(avx512f_sfixupimm<mode><mask_name><round_saeonly_name>): Use it
+	instead of UNSPEC_FIXUPIMM.
+
 2019-01-17  Richard Biener  <rguenther@suse.de>
 
 	PR lto/86736
