@@ -1,5 +1,6 @@
 /* { dg-lto-do link } */
 /* { dg-lto-options { { -O -flto -fexceptions -fnon-call-exceptions --param allow-store-data-races=0 } } } */
+/* { dg-require-effective-target exceptions } */
 
 typedef struct { unsigned int e0 : 16; } s1;
 typedef struct { unsigned int e0 : 16; } s2;
