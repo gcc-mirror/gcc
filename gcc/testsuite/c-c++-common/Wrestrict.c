@@ -636,7 +636,7 @@ void test_strcpy_cst (ptrdiff_t i)
   T ("012", a, a + 3);
   /* The following doesn't overlap but it should trigger -Wstringop-overflow
      for reading past the end.  */
-  T ("012", a, a + sizeof a);
+  T ("012", a, a + sizeof a);     /* { dg-warning "\\\[-Wstringop-overflow" "pr81437" { xfail *-*-* } } */
 
   /* The terminating nul written to d[2] overwrites s[0].  */
   T ("0123", a, a + 2);           /* { dg-warning "accessing 3 bytes at offsets 0 and 2 overlaps 1 byte at offset 2" } */
@@ -651,9 +651,9 @@ void test_strcpy_cst (ptrdiff_t i)
   T ("012", a + 2, a);            /* { dg-warning "accessing 4 bytes at offsets 2 and 0 overlaps 2 bytes at offset 2" "strcpy" } */
   T ("012", a + 3, a);            /* { dg-warning "accessing 4 bytes at offsets 3 and 0 overlaps 1 byte at offset 3" "strcpy" } */
   T ("012", a + 4, a);
-  /* The following doesn't overlap but it should trigger -Wstrinop-ovewrflow
+  /* The following doesn't overlap but it triggers -Wstringop-overflow
      for writing past the end.  */
-  T ("012", a + sizeof a, a);
+  T ("012", a + sizeof a, a);     /* { dg-warning "\\\[-Wstringop-overflow" } */
 }
 
 /* Exercise strcpy with constant or known arguments offset by a range.

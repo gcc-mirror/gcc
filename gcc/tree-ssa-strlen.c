@@ -1742,7 +1742,7 @@ handle_builtin_strcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
 
   if (const strinfo *chksi = olddsi ? olddsi : dsi)
     if (si
-	&& !check_bounds_or_overlap (stmt, chksi->ptr, si->ptr, NULL_TREE, len))
+	&& check_bounds_or_overlap (stmt, chksi->ptr, si->ptr, NULL_TREE, len))
       {
 	gimple_set_no_warning (stmt, true);
 	set_no_warning = true;
@@ -2214,7 +2214,7 @@ handle_builtin_stxncpy (built_in_function, gimple_stmt_iterator *gsi)
   else
     srcsize = NULL_TREE;
 
-  if (!check_bounds_or_overlap (stmt, dst, src, dstsize, srcsize))
+  if (check_bounds_or_overlap (stmt, dst, src, dstsize, srcsize))
     {
       gimple_set_no_warning (stmt, true);
       return;
@@ -2512,7 +2512,7 @@ handle_builtin_strcat (enum built_in_function bcode, gimple_stmt_iterator *gsi)
 
 	tree sptr = si && si->ptr ? si->ptr : src;
 
-	if (!check_bounds_or_overlap (stmt, dst, sptr, NULL_TREE, slen))
+	if (check_bounds_or_overlap (stmt, dst, sptr, NULL_TREE, slen))
 	  {
 	    gimple_set_no_warning (stmt, true);
 	    set_no_warning = true;
@@ -2622,7 +2622,7 @@ handle_builtin_strcat (enum built_in_function bcode, gimple_stmt_iterator *gsi)
 
       tree sptr = si && si->ptr ? si->ptr : src;
 
-      if (!check_bounds_or_overlap (stmt, dst, sptr, dstlen, srcsize))
+      if (check_bounds_or_overlap (stmt, dst, sptr, dstlen, srcsize))
 	{
 	  gimple_set_no_warning (stmt, true);
 	  set_no_warning = true;

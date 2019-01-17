@@ -1,3 +1,11 @@
+2019-01-17  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/88800
+	* c-c++-common/Wrestrict.c: Adjust.
+	* gcc.dg/Warray-bounds-37.c: New test.
+	* gcc.dg/builtin-memcpy-2.c: New test.
+	* gcc.dg/builtin-memcpy.c: New test.
+
 2019-01-17  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/88850
