@@ -281,6 +281,12 @@ struct unit
   /* The offset of UNIT_DATA from the start of the information for
      this compilation unit.  */
   size_t unit_data_offset;
+  /* Offset of the start of the compilation unit from the start of the
+     .debug_info section.  */
+  off_t low_offset;
+  /* Offset of the end of the compilation unit from the start of the
+     .debug_info section.  */
+  off_t high_offset;
   /* DWARF version.  */
   int version;
   /* Whether unit is DWARF64.  */
@@ -339,6 +345,14 @@ struct unit_addrs_vector
   size_t count;
 };
 
+/* A growable vector of compilation unit pointer.  */
+
+struct unit_vector
+{
+  struct backtrace_vector vec;
+  size_t count;
+};
+
 /* The information we need to map a PC to a file and line.  */
 
 struct dwarf_data
@@ -353,6 +367,10 @@ struct dwarf_data
   struct unit_addrs *addrs;
   /* Number of address ranges in list.  */
   size_t addrs_count;
+  /* A sorted list of units.  */
+  struct unit **units;
+  /* Number of units in the list.  */
+  size_t units_count;
   /* The unparsed .debug_info section.  */
   const unsigned char *dwarf_info;
   size_t dwarf_info_size;
@@ -866,6 +884,34 @@ read_attribute (enum dwarf_form form, struct dwarf_buf *buf,
     }
 }
 
+/* Compare a unit offset against a unit for bsearch.  */
+
+static int
+units_search (const void *vkey, const void *ventry)
+{
+  const off_t *key = (const off_t *) vkey;
+  const struct unit *entry = *((const struct unit *const *) ventry);
+  off_t offset;
+
+  offset = *key;
+  if (offset < entry->low_offset)
+    return -1;
+  else if (offset >= entry->high_offset)
+    return 1;
+  else
+    return 0;
+}
+
+/* Find a unit in PU containing OFFSET.  */
+
+static struct unit *
+find_unit (struct unit **pu, size_t units_count, off_t offset)
+{
+  struct unit **u;
+  u = bsearch (&offset, pu, units_count, sizeof (struct unit *), units_search);
+  return u == NULL ? NULL : *u;
+}
+
 /* Compare function_addrs for qsort.  When ranges are nested, make the
    smallest one sort last.  */
 
@@ -1298,7 +1344,8 @@ find_address_ranges (struct backtrace_state *state, uintptr_t base_address,
 		     size_t dwarf_ranges_size,
 		     int is_bigendian, struct dwarf_data *altlink,
 		     backtrace_error_callback error_callback, void *data,
-		     struct unit *u, struct unit_addrs_vector *addrs)
+		     struct unit *u, struct unit_addrs_vector *addrs,
+		     enum dwarf_tag *unit_tag)
 {
   while (unit_buf->left > 0)
     {
@@ -1320,6 +1367,9 @@ find_address_ranges (struct backtrace_state *state, uintptr_t base_address,
       abbrev = lookup_abbrev (&u->abbrevs, code, error_callback, data);
       if (abbrev == NULL)
 	return 0;
+
+      if (unit_tag != NULL)
+	*unit_tag = abbrev->tag;
 
       lowpc = 0;
       have_lowpc = 0;
@@ -1433,7 +1483,7 @@ find_address_ranges (struct backtrace_state *state, uintptr_t base_address,
 				    dwarf_str, dwarf_str_size,
 				    dwarf_ranges, dwarf_ranges_size,
 				    is_bigendian, altlink, error_callback, data,
-				    u, addrs))
+				    u, addrs, NULL))
 	    return 0;
 	}
     }
@@ -1453,7 +1503,8 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
 		   const unsigned char *dwarf_str, size_t dwarf_str_size,
 		   int is_bigendian, struct dwarf_data *altlink,
 		   backtrace_error_callback error_callback, void *data,
-		   struct unit_addrs_vector *addrs)
+		   struct unit_addrs_vector *addrs,
+		   struct unit_vector *unit_vec)
 {
   struct dwarf_buf info;
   struct backtrace_vector units;
@@ -1461,9 +1512,12 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
   size_t i;
   struct unit **pu;
   size_t prev_addrs_count;
+  off_t unit_offset = 0;
 
   memset (&addrs->vec, 0, sizeof addrs->vec);
+  memset (&unit_vec->vec, 0, sizeof unit_vec->vec);
   addrs->count = 0;
+  unit_vec->count = 0;
   prev_addrs_count = 0;
 
   /* Read through the .debug_info section.  FIXME: Should we use the
@@ -1492,6 +1546,7 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
       uint64_t abbrev_offset;
       int addrsize;
       struct unit *u;
+      enum dwarf_tag unit_tag;
 
       if (info.reported_underflow)
 	goto fail;
@@ -1534,6 +1589,9 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
 
       addrsize = read_byte (&unit_buf);
 
+      u->low_offset = unit_offset;
+      unit_offset += len + (is_dwarf64 ? 12 : 4);
+      u->high_offset = unit_offset;
       u->unit_data = unit_buf.buf;
       u->unit_data_len = unit_buf.left;
       u->unit_data_offset = unit_buf.buf - unit_data_start;
@@ -1555,13 +1613,13 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
 				dwarf_str, dwarf_str_size,
 				dwarf_ranges, dwarf_ranges_size,
 				is_bigendian, altlink, error_callback, data,
-				u, addrs))
+				u, addrs, &unit_tag))
 	goto fail;
 
       if (unit_buf.reported_underflow)
 	goto fail;
 
-      if (addrs->count > prev_addrs_count)
+      if (addrs->count > prev_addrs_count || unit_tag == DW_TAG_partial_unit)
 	prev_addrs_count = addrs->count;
       else
 	{
@@ -1576,11 +1634,8 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
   if (info.reported_underflow)
     goto fail;
 
-  // We only kept the list of units to free them on failure.  On
-  // success the units are retained, pointed to by the entries in
-  // addrs.
-  backtrace_vector_free (state, &units, error_callback, data);
-
+  unit_vec->vec = units;
+  unit_vec->count = units_count;
   return 1;
 
  fail:
@@ -3031,21 +3086,29 @@ build_dwarf_data (struct backtrace_state *state,
   struct unit_addrs_vector addrs_vec;
   struct unit_addrs *addrs;
   size_t addrs_count;
+  struct unit_vector units_vec;
+  struct unit **units;
+  size_t units_count;
   struct dwarf_data *fdata;
 
   if (!build_address_map (state, base_address, dwarf_info, dwarf_info_size,
 			  dwarf_abbrev, dwarf_abbrev_size, dwarf_ranges,
 			  dwarf_ranges_size, dwarf_str, dwarf_str_size,
 			  is_bigendian, altlink, error_callback, data,
-			  &addrs_vec))
+			  &addrs_vec, &units_vec))
     return NULL;
 
   if (!backtrace_vector_release (state, &addrs_vec.vec, error_callback, data))
     return NULL;
+  if (!backtrace_vector_release (state, &units_vec.vec, error_callback, data))
+    return NULL;
   addrs = (struct unit_addrs *) addrs_vec.vec.base;
+  units = (struct unit **) units_vec.vec.base;
   addrs_count = addrs_vec.count;
+  units_count = units_vec.count;
   backtrace_qsort (addrs, addrs_count, sizeof (struct unit_addrs),
 		   unit_addrs_compare);
+  /* No qsort for units required, already sorted.  */
 
   fdata = ((struct dwarf_data *)
 	   backtrace_alloc (state, sizeof (struct dwarf_data),
@@ -3058,6 +3121,8 @@ build_dwarf_data (struct backtrace_state *state,
   fdata->base_address = base_address;
   fdata->addrs = addrs;
   fdata->addrs_count = addrs_count;
+  fdata->units = units;
+  fdata->units_count = units_count;
   fdata->dwarf_info = dwarf_info;
   fdata->dwarf_info_size = dwarf_info_size;
   fdata->dwarf_line = dwarf_line;
