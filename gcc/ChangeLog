@@ -1,3 +1,10 @@
+2019-01-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-ssa-isolate-paths.c (stmt_uses_name_in_undefined_way): Replace
+	flag_non_call_exceptions with cfun->can_throw_non_call_exceptions.
+	(stmt_uses_0_or_null_in_undefined_way): Likewise.
+	* tree-ssa-alias.c (same_addr_size_stores_p): Likewise.
+
 2019-01-17  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/88851
