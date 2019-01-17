@@ -35,15 +35,10 @@
     (R11_REGNUM		11)
     (R12_REGNUM		12)
     (R13_REGNUM		13)
-    ;; Scratch registers for prologue/epilogue use.
-    (EP0_REGNUM		12)
-    (EP1_REGNUM		13)
     (R14_REGNUM		14)
     (R15_REGNUM		15)
     (R16_REGNUM		16)
-    (IP0_REGNUM		16)
     (R17_REGNUM		17)
-    (IP1_REGNUM		17)
     (R18_REGNUM		18)
     (R19_REGNUM		19)
     (R20_REGNUM		20)
@@ -57,7 +52,6 @@
     (R28_REGNUM		28)
     (R29_REGNUM		29)
     (R30_REGNUM		30)
-    (LR_REGNUM		30)
     (SP_REGNUM		31)
     (V0_REGNUM		32)
     (V1_REGNUM		33)
@@ -113,10 +107,20 @@
     (P13_REGNUM		81)
     (P14_REGNUM		82)
     (P15_REGNUM		83)
+    ;; Scratch register used by stack clash protection to calculate
+    ;; SVE CFA offsets during probing.
+    (STACK_CLASH_SVE_CFA_REGNUM 11)
+    ;; Scratch registers for prologue/epilogue use.
+    (EP0_REGNUM         12)
+    (EP1_REGNUM         13)
     ;; A couple of call-clobbered registers that we need to reserve when
     ;; tracking speculation this is not ABI, so is subject to change.
-    (SPECULATION_TRACKER_REGNUM 15)
     (SPECULATION_SCRATCH_REGNUM 14)
+    (SPECULATION_TRACKER_REGNUM 15)
+    ;; Scratch registers used in frame layout.
+    (IP0_REGNUM         16)
+    (IP1_REGNUM         17)
+    (LR_REGNUM          30)
   ]
 )
 

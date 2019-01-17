@@ -1,3 +1,8 @@
+2019-01-17  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/88851
+	* gcc.target/aarch64/stack-check-cfa-3.c: Update test.
+
 2019-01-17  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/86610
