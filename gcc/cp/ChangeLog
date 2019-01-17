@@ -1,5 +1,10 @@
 2019-01-17  Alexandre Oliva <aoliva@redhat.com>
 
+	PR c++/87768
+	* cp-tree.h (saved_scope): Add suppress_location_wrappers.
+	* name-lookup.c (do_push_to_top_level): Save and reset it.
+	(do_pop_from_top_level): Restore it.
+
 	PR c++/86648
 	* pt.c (make_template_placeholder): Use auto_identifier.
 	(is_auto): Drop CLASS_PLACEHOLDER_TEMPLATE test.

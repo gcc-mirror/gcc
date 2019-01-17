@@ -7133,6 +7133,7 @@ do_push_to_top_level (void)
   s->function_decl = current_function_decl;
   s->unevaluated_operand = cp_unevaluated_operand;
   s->inhibit_evaluation_warnings = c_inhibit_evaluation_warnings;
+  s->suppress_location_wrappers = suppress_location_wrappers;
   s->x_stmt_tree.stmts_are_full_exprs_p = true;
 
   scope_chain = s;
@@ -7143,6 +7144,7 @@ do_push_to_top_level (void)
   push_class_stack ();
   cp_unevaluated_operand = 0;
   c_inhibit_evaluation_warnings = 0;
+  suppress_location_wrappers = 0;
 }
 
 static void
@@ -7175,6 +7177,7 @@ do_pop_from_top_level (void)
   current_function_decl = s->function_decl;
   cp_unevaluated_operand = s->unevaluated_operand;
   c_inhibit_evaluation_warnings = s->inhibit_evaluation_warnings;
+  suppress_location_wrappers = s->suppress_location_wrappers;
 
   /* Make this saved_scope structure available for reuse by
      push_to_top_level.  */
