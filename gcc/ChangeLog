@@ -2,6 +2,20 @@
 
 	PR target/88794
 	Revert:
+	2018-11-12  Wei Xiao  <wei3.xiao@intel.com>
+
+	* config/i386/sse.md: Combine VFIXUPIMM* patterns
+	(<avx512>_fixupimm<mode>_maskz<round_saeonly_expand_name>): Update.
+	(<avx512>_fixupimm<mode><sd_maskz_name><round_saeonly_name>): Update.
+	(<avx512>_fixupimm<mode>_mask<round_saeonly_name>): Remove.
+	(avx512f_sfixupimm<mode>_maskz<round_saeonly_expand_name>): Update.
+	(avx512f_sfixupimm<mode><sd_maskz_name><round_saeonly_name>): Update.
+	(avx512f_sfixupimm<mode>_mask<round_saeonly_name>): Remove.
+
+2019-01-17  Wei Xiao  <wei3.xiao@intel.com>
+
+	PR target/88794
+	Revert:
 	2018-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88489
