@@ -1,5 +1,13 @@
 2019-01-17  Tom de Vries  <tdevries@suse.de>
 
+	PR libbacktrace/82857
+	* dwarf.c (enum attr_val_encoding): Add ATTR_VAL_REF_ALT_INFO.
+	(read_attribute): Handle DW_FORM_GNU_ref_alt using
+	ATTR_VAL_REF_ALT_INFO.
+	(read_referenced_name_from_attr): Handle DW_FORM_GNU_ref_alt.
+
+2019-01-17  Tom de Vries  <tdevries@suse.de>
+
 	* dwarf.c (struct unit): Add low_offset and high_offset fields.
 	(struct unit_vector): New type.
 	(struct dwarf_data): Add units and units_counts fields.
