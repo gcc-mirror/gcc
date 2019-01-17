@@ -25,4 +25,8 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp2" } } */
+/* On older powerpc hardware (POWER7 and earlier), the default flag
+   -mno-allow-movmisalign prevents vectorization.  On POWER8 and later,
+   when vect_hw_misalign is true, vectorization occurs.  */
+
+/* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp2" { target {{ ! powerpc*-*-* } || { powerpc*-*-* && vect_hw_misalign }} } } } */
