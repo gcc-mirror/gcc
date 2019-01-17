@@ -5,6 +5,28 @@
 	    Jan Hubicka  <hubicka@ucw.cz>
 	    Martin Jambor  <mjambor@suse.cz>
 
+	* common/config/gcn/gcn-common.c: New file.
+	* config/gcn/driver-gcn.c: New file.
+	* config/gcn/gcn-builtins.def: New file.
+	* config/gcn/gcn-hsa.h: New file.
+	* config/gcn/gcn-modes.def: New file.
+	* config/gcn/gcn-opts.h: New file.
+	* config/gcn/gcn-passes.def: New file.
+	* config/gcn/gcn-protos.h: New file.
+	* config/gcn/gcn-run.c: New file.
+	* config/gcn/gcn-tree.c: New file.
+	* config/gcn/gcn.c: New file.
+	* config/gcn/gcn.h: New file.
+	* config/gcn/gcn.opt: New file.
+	* config/gcn/t-gcn-hsa: New file.
+
+2019-01-17  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+	    Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Jambor  <mjambor@suse.cz>
+
 	* config/gcn/constraints.md: New file.
 	* config/gcn/gcn-valu.md: New file.
 	* config/gcn/gcn.md: New file.
