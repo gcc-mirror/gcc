@@ -1,3 +1,20 @@
+2019-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88881
+	* src/c++17/fs_ops.cc (canonical(const path&, error_code&))
+	[_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Normalize path, to match behaviour
+	of filesystem::exists.
+	(create_directories(const path&, error_code&)): Add assertions.
+	(status(const path&, error_code&)) [_GLIBCXX_FILESYSTEM_IS_WINDOWS]:
+	Add workaround for bug in _wstat for paths with trailing slash.
+	* testsuite/27_io/filesystem/operations/create_directories.cc: Adjust
+	for expected behaviour on mingw.
+	* testsuite/experimental/filesystem/operations/create_directories.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/operations/temp_directory_path.cc: Use
+	"TMP" instead of "TMPDIR" and clean environment before each test. Do
+	not test permissions on mingw targets.
+
 2019-01-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/abi/pre/gnu.ver (GLIBCXX_3.4.26): Add exports for fstream
