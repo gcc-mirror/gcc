@@ -6339,17 +6339,21 @@ convert_to_anonymous_field (location_t location, tree type, tree rhs)
    GMSGID identifies the message.
    The component name is taken from the spelling stack.  */
 
-static void
-error_init (location_t loc, const char *gmsgid)
+static void ATTRIBUTE_GCC_DIAG (2,0)
+error_init (location_t loc, const char *gmsgid, ...)
 {
   char *ofwhat;
 
   auto_diagnostic_group d;
 
   /* The gmsgid may be a format string with %< and %>. */
-  error_at (loc, gmsgid);
+  va_list ap;
+  va_start (ap, gmsgid);
+  bool warned = emit_diagnostic_valist (DK_ERROR, loc, -1, gmsgid, &ap);
+  va_end (ap);
+
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
-  if (*ofwhat)
+  if (*ofwhat && warned)
     inform (loc, "(near initialization for %qs)", ofwhat);
 }
 
@@ -7722,6 +7726,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	{
 	  struct c_expr expr;
 	  tree typ2 = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (inside_init)));
+	  bool incompat_string_cst = false;
 	  expr.value = inside_init;
 	  expr.original_code = (strict_string ? STRING_CST : ERROR_MARK);
 	  expr.original_type = NULL;
@@ -7738,27 +7743,18 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	  if (char_array)
 	    {
 	      if (typ2 != char_type_node)
-		{
-		  error_init (init_loc, "char-array initialized from wide "
-			      "string");
-		  return error_mark_node;
-		}
+		incompat_string_cst = true;
 	    }
-	  else
-	    {
-	      if (typ2 == char_type_node)
-		{
-		  error_init (init_loc, "wide character array initialized "
-			      "from non-wide string");
-		  return error_mark_node;
-		}
-	      else if (!comptypes(typ1, typ2))
-		{
-		  error_init (init_loc, "wide character array initialized "
-			      "from incompatible wide string");
-		  return error_mark_node;
-		}
-	    }
+	  else if (!comptypes (typ1, typ2))
+	    incompat_string_cst = true;
+
+          if (incompat_string_cst)
+            {
+	      error_init (init_loc, "cannot initialize array of %qT from "
+			  "a string literal with type array of %qT",
+			  typ1, typ2);
+	      return error_mark_node;
+            }
 
 	  if (TYPE_DOMAIN (type) != NULL_TREE
 	      && TYPE_SIZE (type) != NULL_TREE
