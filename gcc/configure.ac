@@ -1228,6 +1228,14 @@ LDEXP_LIB="$LIBS"
 LIBS="$save_LIBS"
 AC_SUBST(LDEXP_LIB)
 
+# Some systems need dlopen
+save_LIBS="$LIBS"
+LIBS=
+AC_SEARCH_LIBS(dlopen, dl)
+DL_LIB="$LIBS"
+LIBS="$save_LIBS"
+AC_SUBST(DL_LIB)
+
 # Use <inttypes.h> only if it exists,
 # doesn't clash with <sys/types.h>, declares intmax_t and defines
 # PRId64
