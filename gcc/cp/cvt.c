@@ -1175,6 +1175,16 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
       break;
 
     case CALL_EXPR:   /* We have a special meaning for volatile void fn().  */
+      /* cdtors may return this or void, depending on
+	 targetm.cxx.cdtor_returns_this, but this shouldn't affect our
+	 decisions here: neither nodiscard warnings (nodiscard cdtors
+	 are nonsensical), nor should any constexpr or template
+	 instantiations be affected by an ABI property that is, or at
+	 least ought to be transparent to the language.  */
+      if (tree fn = cp_get_callee_fndecl_nofold (expr))
+	if (DECL_CONSTRUCTOR_P (fn) || DECL_DESTRUCTOR_P (fn))
+	  return expr;
+
       maybe_warn_nodiscard (expr, implicit);
       break;
 
