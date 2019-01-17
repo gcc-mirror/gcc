@@ -8867,14 +8867,14 @@
    (match_operand:<avx512fmaskmode> 4 "register_operand")]
   "TARGET_AVX512F"
 {
-  emit_insn (gen_<avx512>_fixupimm<mode>_mask<round_saeonly_expand_name> (
+  emit_insn (gen_<avx512>_fixupimm<mode>_maskz_1<round_saeonly_expand_name> (
 	operands[0], operands[1], operands[2], operands[3],
 	CONST0_RTX (<MODE>mode), operands[4]
 	<round_saeonly_expand_operand5>));
   DONE;
 })
 
-(define_insn "<avx512>_fixupimm<mode><mask_name><round_saeonly_name>"
+(define_insn "<avx512>_fixupimm<mode><sd_maskz_name><round_saeonly_name>"
   [(set (match_operand:VF_AVX512VL 0 "register_operand" "=v")
         (unspec:VF_AVX512VL
           [(match_operand:VF_AVX512VL 1 "register_operand" "v")
@@ -8882,7 +8882,22 @@
            (match_operand:SI 3 "const_0_to_255_operand")]
            UNSPEC_FIXUPIMM))]
   "TARGET_AVX512F"
-  "vfixupimm<ssemodesuffix>\t{%3, <round_saeonly_mask_op4>%2, %1, %0<mask_operand4>|%0<mask_operand4>, %1, %2<round_saeonly_mask_op4>, %3}";
+  "vfixupimm<ssemodesuffix>\t{%3, <round_saeonly_sd_mask_op4>%2, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %2<round_saeonly_sd_mask_op4>, %3}";
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "<avx512>_fixupimm<mode>_mask<round_saeonly_name>"
+  [(set (match_operand:VF_AVX512VL 0 "register_operand" "=v")
+	(vec_merge:VF_AVX512VL
+          (unspec:VF_AVX512VL
+            [(match_operand:VF_AVX512VL 1 "register_operand" "v")
+             (match_operand:<sseintvecmode> 2 "nonimmediate_operand" "<round_saeonly_constraint>")
+             (match_operand:SI 3 "const_0_to_255_operand")]
+             UNSPEC_FIXUPIMM)
+	  (match_operand:VF_AVX512VL 4 "register_operand" "0")
+	  (match_operand:<avx512fmaskmode> 5 "register_operand" "Yk")))]
+  "TARGET_AVX512F"
+  "vfixupimm<ssemodesuffix>\t{%3, <round_saeonly_op6>%2, %1, %0%{%5%}|%0%{%5%}, %1, %2<round_saeonly_op6>, %3}";
   [(set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
@@ -8894,14 +8909,14 @@
    (match_operand:<avx512fmaskmode> 4 "register_operand")]
   "TARGET_AVX512F"
 {
-  emit_insn (gen_avx512f_sfixupimm<mode>_mask<round_saeonly_expand_name> (
+  emit_insn (gen_avx512f_sfixupimm<mode>_maskz_1<round_saeonly_expand_name> (
 	operands[0], operands[1], operands[2], operands[3],
 	CONST0_RTX (<MODE>mode), operands[4]
 	<round_saeonly_expand_operand5>));
   DONE;
 })
 
-(define_insn "avx512f_sfixupimm<mode><mask_name><round_saeonly_name>"
+(define_insn "avx512f_sfixupimm<mode><sd_maskz_name><round_saeonly_name>"
   [(set (match_operand:VF_128 0 "register_operand" "=v")
         (unspec:VF_128
           [(match_operand:VF_128 1 "register_operand" "v")
@@ -8909,7 +8924,22 @@
 	     (match_operand:SI 3 "const_0_to_255_operand")]
 	    UNSPEC_FIXUPIMM))]
    "TARGET_AVX512F"
-  "vfixupimm<ssescalarmodesuffix>\t{%3, <round_saeonly_mask_op4>%2, %1, %0<mask_operand4>|%0<mask_operand4>, %1, %<iptr>2<round_saeonly_mask_op4>, %3}";
+   "vfixupimm<ssescalarmodesuffix>\t{%3, <round_saeonly_sd_mask_op4>%2, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %<iptr>2<round_saeonly_sd_mask_op4>, %3}";
+   [(set_attr "prefix" "evex")
+   (set_attr "mode" "<ssescalarmode>")])
+
+(define_insn "avx512f_sfixupimm<mode>_mask<round_saeonly_name>"
+  [(set (match_operand:VF_128 0 "register_operand" "=v")
+	(vec_merge:VF_128
+	    (unspec:VF_128
+	       [(match_operand:VF_128 1 "register_operand" "v")
+		(match_operand:<sseintvecmode> 2 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")
+		(match_operand:SI 3 "const_0_to_255_operand")]
+	       UNSPEC_FIXUPIMM)
+	  (match_operand:VF_128 4 "register_operand" "0")
+	  (match_operand:<avx512fmaskmode> 5 "register_operand" "Yk")))]
+  "TARGET_AVX512F"
+  "vfixupimm<ssescalarmodesuffix>\t{%3, <round_saeonly_op6>%2, %1, %0%{%5%}|%0%{%5%}, %1, %<iptr>2<round_saeonly_op6>, %3}";
   [(set_attr "prefix" "evex")
    (set_attr "mode" "<ssescalarmode>")])
 
