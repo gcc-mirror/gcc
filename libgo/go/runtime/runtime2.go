@@ -70,6 +70,12 @@ const (
 	// stack is owned by the goroutine that put it in _Gcopystack.
 	_Gcopystack // 8
 
+	// _Gexitingsyscall means this goroutine is exiting from a
+	// system call. This is like _Gsyscall, but the GC should not
+	// scan its stack. Currently this is only used in exitsyscall0
+	// as a transient state when it drops the G.
+	_Gexitingsyscall // 9
+
 	// _Gscan combined with one of the above states other than
 	// _Grunning indicates that GC is scanning the stack. The
 	// goroutine is not executing user code and the stack is owned

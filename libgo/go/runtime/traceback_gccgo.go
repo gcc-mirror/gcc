@@ -122,13 +122,14 @@ func isExportedRuntime(name string) bool {
 }
 
 var gStatusStrings = [...]string{
-	_Gidle:      "idle",
-	_Grunnable:  "runnable",
-	_Grunning:   "running",
-	_Gsyscall:   "syscall",
-	_Gwaiting:   "waiting",
-	_Gdead:      "dead",
-	_Gcopystack: "copystack",
+	_Gidle:           "idle",
+	_Grunnable:       "runnable",
+	_Grunning:        "running",
+	_Gsyscall:        "syscall",
+	_Gwaiting:        "waiting",
+	_Gdead:           "dead",
+	_Gcopystack:      "copystack",
+	_Gexitingsyscall: "exiting syscall",
 }
 
 func goroutineheader(gp *g) {
