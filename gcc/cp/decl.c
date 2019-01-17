@@ -11287,35 +11287,37 @@ grokdeclarator (const cp_declarator *declarator,
 			  /* OK for C++11 lambdas.  */;
 			else if (cxx_dialect < cxx14)
 			  {
-			    error ("%qs function uses "
-				   "%<auto%> type specifier without trailing "
-				   "return type", name);
-			    inform (input_location, "deduced return type "
-				    "only available with -std=c++14 or "
-				    "-std=gnu++14");
+			    error_at (typespec_loc, "%qs function uses "
+				      "%<auto%> type specifier without "
+				      "trailing return type", name);
+			    inform (typespec_loc,
+				    "deduced return type only available "
+				    "with -std=c++14 or -std=gnu++14");
 			  }
 			else if (virtualp)
 			  {
-			    error ("virtual function cannot "
-				   "have deduced return type");
+			    error_at (typespec_loc, "virtual function "
+				      "cannot have deduced return type");
 			    virtualp = false;
 			  }
 		      }
 		    else if (!is_auto (type) && sfk != sfk_conversion)
 		      {
-			error ("%qs function with trailing return type has"
-			       " %qT as its type rather than plain %<auto%>",
-			       name, type);
+			error_at (typespec_loc, "%qs function with trailing "
+				  "return type has %qT as its type rather "
+				  "than plain %<auto%>", name, type);
 			return error_mark_node;
 		      }
 		    else if (is_auto (type) && AUTO_IS_DECLTYPE (type))
 		      {
 			if (funcdecl_p)
-			  error ("%qs function with trailing return type has "
-				 "%<decltype(auto)%> as its type rather than "
-				 "plain %<auto%>", name);
+			  error_at (typespec_loc,
+				    "%qs function with trailing return type "
+				    "has %<decltype(auto)%> as its type "
+				    "rather than plain %<auto%>", name);
 			else
-			  error ("invalid use of %<decltype(auto)%>");
+			  error_at (typespec_loc,
+				    "invalid use of %<decltype(auto)%>");
 			return error_mark_node;
 		      }
 		    tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node);
@@ -11359,11 +11361,13 @@ grokdeclarator (const cp_declarator *declarator,
 		    if (cxx_dialect < cxx11)
 		      /* Not using maybe_warn_cpp0x because this should
 			 always be an error.  */
-		      error ("trailing return type only available with "
-			     "-std=c++11 or -std=gnu++11");
+		      error_at (typespec_loc,
+				"trailing return type only available "
+				"with -std=c++11 or -std=gnu++11");
 		    else
-		      error ("%qs function with trailing return type not "
-			     "declared with %<auto%> type specifier", name);
+		      error_at (typespec_loc, "%qs function with trailing "
+				"return type not declared with %<auto%> "
+				"type specifier", name);
 		    return error_mark_node;
 		  }
 	      }
