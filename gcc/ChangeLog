@@ -1,3 +1,15 @@
+2019-01-17  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+	    Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* config/gcn/constraints.md: New file.
+	* config/gcn/gcn-valu.md: New file.
+	* config/gcn/gcn.md: New file.
+	* config/gcn/predicates.md: New file.
+
 2019-01-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-ssa-isolate-paths.c (stmt_uses_name_in_undefined_way): Replace
