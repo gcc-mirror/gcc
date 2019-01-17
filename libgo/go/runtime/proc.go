@@ -956,6 +956,10 @@ loop:
 				break loop
 			}
 
+		case _Gexitingsyscall:
+			// This is a transient state during which we should not scan its stack.
+			// Try again.
+
 		case _Gscanwaiting:
 			// newstack is doing a scan for us right now. Wait.
 
@@ -2635,8 +2639,8 @@ func park_m(gp *g) {
 		traceGoPark(_g_.m.waittraceev, _g_.m.waittraceskip)
 	}
 
-	casgstatus(gp, _Grunning, _Gwaiting)
 	dropg()
+	casgstatus(gp, _Grunning, _Gwaiting)
 
 	if _g_.m.waitunlockf != nil {
 		fn := *(*func(*g, unsafe.Pointer) bool)(unsafe.Pointer(&_g_.m.waitunlockf))
@@ -2660,8 +2664,8 @@ func goschedImpl(gp *g) {
 		dumpgstatus(gp)
 		throw("bad g status")
 	}
-	casgstatus(gp, _Grunning, _Grunnable)
 	dropg()
+	casgstatus(gp, _Grunning, _Grunnable)
 	lock(&sched.lock)
 	globrunqput(gp)
 	unlock(&sched.lock)
@@ -3054,8 +3058,9 @@ func exitsyscallfast_pidle() bool {
 func exitsyscall0(gp *g) {
 	_g_ := getg()
 
-	casgstatus(gp, _Gsyscall, _Grunnable)
+	casgstatus(gp, _Gsyscall, _Gexitingsyscall)
 	dropg()
+	casgstatus(gp, _Gexitingsyscall, _Grunnable)
 	lock(&sched.lock)
 	_p_ := pidleget()
 	if _p_ == nil {
