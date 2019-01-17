@@ -11074,7 +11074,9 @@ output_comp_unit (dw_die_ref die, int output_if_empty,
 static inline bool
 want_pubnames (void)
 {
-  if (debug_info_level <= DINFO_LEVEL_TERSE)
+  if (debug_info_level <= DINFO_LEVEL_TERSE
+      /* Names and types go to the early debug part only.  */
+      || in_lto_p)
     return false;
   if (debug_generate_pub_sections != -1)
     return debug_generate_pub_sections;

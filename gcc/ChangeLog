@@ -1,3 +1,9 @@
+2019-01-17  Richard Biener  <rguenther@suse.de>
+
+	PR lto/86736
+	* dwarf2out.c (want_pubnames): Never generate pubnames sections
+	and friends for the LTO part of debug info.
+
 2019-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/86214
