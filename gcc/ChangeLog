@@ -1,7 +1,13 @@
+2019-01-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-ssa-isolate-paths.c (stmt_uses_name_in_undefined_way): Replace
+	flag_non_call_exceptions with cfun->can_throw_non_call_exceptions.
+	(stmt_uses_0_or_null_in_undefined_way): Likewise.
+	* tree-ssa-alias.c (same_addr_size_stores_p): Likewise.
+
 2019-01-16  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	Backported from mainline
-
 	2019-01-03  Aaron Sawdey  <acsawdey@linux.ibm.com>
 	* config/rs6000/rs6000-string.c (expand_block_move): Don't use
 	unaligned vsx and avoid lxvd2x/stxvd2x.
@@ -19,8 +25,8 @@
 2019-01-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	Backported from mainline
-
 	2018-12-27  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-devirt.c (polymorphic_call_target_d): Add n_odr_types.
 	(polymorphic_call_target_hasher::hash): Hash it.
 	(polymorphic_call_target_hasher::equal): Compare it.
@@ -31,8 +37,8 @@
 2019-01-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	Backported from mainline
-
 	2019-01-02  Richard Biener  <rguenther@suse.de>
+
 	PR ipa/85574
 	* ipa-icf.h (sem_item_optimizer::sort_congruence_split): Declare.
 	* ipa-icf.c (sem_item_optimizer::sort_congruence_split): New
@@ -43,15 +49,14 @@
 2019-01-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	Backported from mainline
-
 	2019-01-03  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR tree-optimization/85574
 	* tree-ssa-uncprop.c (struct equiv_hash_elt): Remove unused
 	structure.
 	(struct ssa_equip_hash_traits): Declare.
 	(val_ssa_equiv): Use custom hash traits using operand_equal_p.
 
-	
 2019-01-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.md (*tablejump_sp32): Merge into...
