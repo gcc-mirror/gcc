@@ -144,7 +144,11 @@ fs::path
 fs::canonical(const path& p, error_code& ec)
 {
   path result;
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  const path pa = absolute(p.lexically_normal(), ec);
+#else
   const path pa = absolute(p, ec);
+#endif
   if (ec)
     return result;
 
@@ -483,6 +487,9 @@ fs::create_directories(const path& p, error_code& ec)
       return false;
     }
 
+  __glibcxx_assert(st.type() == file_type::not_found);
+  // !exists(p) so there must be at least one non-existent component in p.
+
   std::stack<path> missing;
   path pp = p;
 
@@ -525,6 +532,8 @@ fs::create_directories(const path& p, error_code& ec)
 	return false;
     }
   while (st.type() == file_type::not_found);
+
+  __glibcxx_assert(!missing.empty());
 
   bool created;
   do
@@ -1318,8 +1327,35 @@ fs::file_status
 fs::status(const fs::path& p, error_code& ec) noexcept
 {
   file_status status;
+  auto str = p.c_str();
+
+#if _GLIBCXX_FILESYSTEM_IS_WINDOWS
+#if ! defined __MINGW64_VERSION_MAJOR || __MINGW64_VERSION_MAJOR < 6
+  // stat() fails if there's a trailing slash (PR 88881)
+  path p2;
+  if (p.has_relative_path())
+    {
+      wstring_view s = p.native();
+      const auto len = s.find_last_not_of(L"/\\") + wstring_view::size_type(1);
+      if (len != 0 && len != s.length())
+	{
+	  __try
+	    {
+	      p2.assign(s.substr(0, len));
+	    }
+	  __catch(const bad_alloc&)
+	    {
+	      ec = std::make_error_code(std::errc::not_enough_memory);
+	      return status;
+	    }
+	  str = p2.c_str();
+	}
+    }
+#endif
+#endif
+
   stat_type st;
-  if (posix::stat(p.c_str(), &st))
+  if (posix::stat(str, &st))
     {
       int err = errno;
       ec.assign(err, std::generic_category());
