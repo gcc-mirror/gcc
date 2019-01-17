@@ -2638,8 +2638,8 @@ static int
 elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 	 uintptr_t base_address, backtrace_error_callback error_callback,
 	 void *data, fileline *fileline_fn, int *found_sym, int *found_dwarf,
-	 int exe, int debuginfo, const char *with_buildid_data,
-	 uint32_t with_buildid_size)
+	 struct dwarf_data **fileline_entry, int exe, int debuginfo,
+	 const char *with_buildid_data, uint32_t with_buildid_size)
 {
   struct backtrace_view ehdr_view;
   b_elf_ehdr ehdr;
@@ -3042,7 +3042,8 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 	    backtrace_release_view (state, &debugaltlink_view, error_callback,
 				    data);
 	  ret = elf_add (state, NULL, d, base_address, error_callback, data,
-			 fileline_fn, found_sym, found_dwarf, 0, 1, NULL, 0);
+			 fileline_fn, found_sym, found_dwarf, NULL, 0, 1, NULL,
+			 0);
 	  if (ret < 0)
 	    backtrace_close (d, error_callback, data);
 	  else
@@ -3080,7 +3081,8 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 	    backtrace_release_view (state, &debugaltlink_view, error_callback,
 				    data);
 	  ret = elf_add (state, NULL, d, base_address, error_callback, data,
-			 fileline_fn, found_sym, found_dwarf, 0, 1, NULL, 0);
+			 fileline_fn, found_sym, found_dwarf, NULL, 0, 1, NULL,
+			 0);
 	  if (ret < 0)
 	    backtrace_close (d, error_callback, data);
 	  else
@@ -3106,8 +3108,9 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 	  int ret;
 
 	  ret = elf_add (state, filename, d, base_address, error_callback, data,
-			 fileline_fn, found_sym, found_dwarf, 0, 1,
-			 debugaltlink_buildid_data, debugaltlink_buildid_size);
+			 fileline_fn, found_sym, found_dwarf, NULL,
+			 0, 1, debugaltlink_buildid_data,
+			 debugaltlink_buildid_size);
 	  backtrace_release_view (state, &debugaltlink_view, error_callback,
 				  data);
 	  debugaltlink_view_valid = 0;
@@ -3262,7 +3265,8 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 			    sections[DEBUG_STR].data,
 			    sections[DEBUG_STR].size,
 			    ehdr.e_ident[EI_DATA] == ELFDATA2MSB,
-			    error_callback, data, fileline_fn))
+			    error_callback, data, fileline_fn,
+			    fileline_entry))
     goto fail;
 
   *found_dwarf = 1;
@@ -3352,7 +3356,7 @@ phdr_callback (struct dl_phdr_info *info, size_t size ATTRIBUTE_UNUSED,
 
   if (elf_add (pd->state, filename, descriptor, info->dlpi_addr,
 	       pd->error_callback, pd->data, &elf_fileline_fn, pd->found_sym,
-	       &found_dwarf, 0, 0, NULL, 0))
+	       &found_dwarf, NULL, 0, 0, NULL, 0))
     {
       if (found_dwarf)
 	{
@@ -3380,7 +3384,8 @@ backtrace_initialize (struct backtrace_state *state, const char *filename,
   struct phdr_data pd;
 
   ret = elf_add (state, filename, descriptor, 0, error_callback, data,
-		 &elf_fileline_fn, &found_sym, &found_dwarf, 1, 0, NULL, 0);
+		 &elf_fileline_fn, &found_sym, &found_dwarf, NULL, 1, 0, NULL,
+		 0);
   if (!ret)
     return 0;
 
