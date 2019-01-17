@@ -1,5 +1,15 @@
 2019-01-17  Tom de Vries  <tdevries@suse.de>
 
+	* internal.h (backtrace_dwarf_add): Add fileline_entry parameter.
+	* dwarf.c (backtrace_dwarf_add): Add and handle fileline_entry parameter.
+	* elf.c	(elf_add): Add and handle fileline_entry parameter.  Add
+	argument to backtrace_dwarf_add call.
+	(phdr_callback, backtrace_initialize): Add argument to elf_add calls.
+	* pecoff.c (coff_add): Add argument to backtrace_dwarf_add call.
+	* xcoff.c (xcoff_add): Same.
+
+2019-01-17  Tom de Vries  <tdevries@suse.de>
+
 	* elf.c (elf_add): Add and handle with_buildid_data and
 	with_buildid_size parameters.  Handle .gnu_debugaltlink section.
 	(phdr_callback, backtrace_initialize): Add arguments to elf_add calls.
