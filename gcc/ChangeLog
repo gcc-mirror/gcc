@@ -1,3 +1,19 @@
+2018-01-17  Steve Ellcey  <sellcey@cavium.com>
+
+	* config/aarch64/aarch64.c (cgraph.h): New include.
+	(intl.h): New include.
+	(supported_simd_type): New function.
+	(currently_supported_simd_type): Ditto.
+	(aarch64_simd_clone_compute_vecsize_and_simdlen): Ditto.
+	(aarch64_simd_clone_adjust): Ditto.
+	(aarch64_simd_clone_usable): Ditto.
+	(TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN): New macro.
+	(TARGET_SIMD_CLONE_ADJUST): Ditto.
+	(TARGET_SIMD_CLONE_USABLE): Ditto.
+	* config/i386/i386.c (ix86_simd_clone_adjust): Add definition check.
+	* omp-simd-clone.c (expand_simd_clones): Add targetm.simd_clone.adjust
+	call.
+
 2019-01-17  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/88800

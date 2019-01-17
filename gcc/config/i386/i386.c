@@ -50636,6 +50636,11 @@ static void
 ix86_simd_clone_adjust (struct cgraph_node *node)
 {
   const char *str = NULL;
+
+  /* Attributes need to be adjusted for definitions, not declarations.  */
+  if (!node->definition)
+    return;
+
   gcc_assert (node->decl == cfun->decl);
   switch (node->simdclone->vecsize_mangle)
     {
