@@ -867,6 +867,7 @@ coff_add (struct backtrace_state *state, int descriptor,
 			    sections[DEBUG_STR].data,
 			    sections[DEBUG_STR].size,
 			    0, /* FIXME */
+			    NULL,
 			    error_callback, data, fileline_fn,
 			    NULL))
     goto fail;

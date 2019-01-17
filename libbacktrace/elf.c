@@ -3097,6 +3097,7 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
       debuglink_view_valid = 0;
     }
 
+  struct dwarf_data *fileline_altlink = NULL;
   if (debugaltlink_name != NULL)
     {
       int d;
@@ -3108,7 +3109,7 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 	  int ret;
 
 	  ret = elf_add (state, filename, d, base_address, error_callback, data,
-			 fileline_fn, found_sym, found_dwarf, NULL,
+			 fileline_fn, found_sym, found_dwarf, &fileline_altlink,
 			 0, 1, debugaltlink_buildid_data,
 			 debugaltlink_buildid_size);
 	  backtrace_release_view (state, &debugaltlink_view, error_callback,
@@ -3265,6 +3266,7 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 			    sections[DEBUG_STR].data,
 			    sections[DEBUG_STR].size,
 			    ehdr.e_ident[EI_DATA] == ELFDATA2MSB,
+			    fileline_altlink,
 			    error_callback, data, fileline_fn,
 			    fileline_entry))
     goto fail;
