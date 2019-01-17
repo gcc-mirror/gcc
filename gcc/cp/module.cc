@@ -2385,6 +2385,7 @@ public:
       current = worklist.length () ? worklist.pop () : NULL;
       return current;
     }
+    void connect (auto_vec<depset *> &);
   };
 
 public:
@@ -2492,6 +2493,7 @@ public:
   /* Read a tree node.  */
   tree tree_node ();
   tree tpl_parms ();
+  tree fn_parms ();
 
 public:
   /* Read a global module entity.  We expect very few mergeables per
@@ -2624,6 +2626,7 @@ public:
 public:
   void tree_node (tree);
   void tpl_parms (tree);
+  void fn_parms (tree);
 
 public:
   void tree_mergeable (tree);
@@ -7147,6 +7150,27 @@ trees_in::tpl_parms ()
   return nreverse (parms);
 }
 
+/* PARMS is a LIST whose TREE_VALUE is the type of the parm.  */
+
+void
+trees_out::fn_parms (tree parms)
+{
+  for (; parms; parms = TREE_CHAIN (parms))
+    tree_node (TREE_VALUE (parms));
+  tree_node (NULL_TREE);
+}
+
+tree
+trees_in::fn_parms ()
+{
+  tree parms = NULL_TREE;
+
+  while (tree parm = tree_node ())
+    parms = tree_cons (NULL_TREE, parm, parms);
+
+  return nreverse (parms);
+}
+
 /* DECL is a mergeable entity, write out information so we may locate
    an existing declaration /before/ reading in this declaration.  */
 
@@ -7182,7 +7206,7 @@ trees_out::tree_mergeable (tree decl)
     case FUNCTION_DECL:
       if (inner != decl)
 	tree_node (TREE_TYPE (TREE_TYPE (inner)));
-      tree_node (TYPE_ARG_TYPES (TREE_TYPE (inner)));
+      fn_parms (TYPE_ARG_TYPES (TREE_TYPE (inner)));
       break;
 
     case VAR_DECL:
@@ -7245,7 +7269,7 @@ trees_in::tree_mergeable (bool mod_mergeable)
 	case FUNCTION_DECL:
 	  if (inner != decl)
 	    ret = tree_node ();
-	  args = tree_node ();
+	  args = fn_parms ();
 	  break;
 
 	case VAR_DECL:
@@ -7541,7 +7565,7 @@ depset::hash::add_binding (tree ns, tree name, tree value, tree maybe_type)
       gcc_assert (!iter.hidden_p ());
 
       if (MAYBE_DECL_MODULE_OWNER (decl) == MODULE_NONE)
-	/* Ignore global module entities.  */
+	/* Ignore global module fragment entities.  */
 	continue;
 
       if ((TREE_CODE (decl) == VAR_DECL
@@ -7616,6 +7640,81 @@ depset::tarjan::connect (depset *v)
 	  result->quick_push (p);
 	}
       while (p != v);
+    }
+}
+
+/* Compare members of a cluster.  Order defn < decl < bind.  depsets
+   of the same kind can be arbitrary, but we want something
+   stable.  */
+
+static int
+cluster_cmp (const void *a_, const void *b_)
+{
+  depset *a = *(depset *const *)a_;
+  depset *b = *(depset *const *)b_;
+
+  bool is_defn = a->is_defn ();
+  if (is_defn != b->is_defn ())
+    /* Exactly one is a defn.  It comes first.  */
+    return is_defn ? -1 : +1;
+
+  if (!is_defn)
+    {
+      /* Neither is a defn, try order-by-decl.  */
+      bool is_decl = a->is_decl ();
+      if (is_decl != b->is_decl ())
+	/* Exactly one is a decl.  It comes first.  */
+	return is_decl ? -1 : +1;
+    }
+
+  /* They are both the same kind.  Order for qsort stability.  */
+  tree a_decl = a->get_decl ();
+  tree b_decl = b->get_decl ();
+
+  if (a_decl != b_decl)
+    /* Different decls, order by their UID.  */
+    return DECL_UID (a_decl) < DECL_UID (b_decl) ? -1 : +1;
+
+  /* Same decl.  They must be bindings.  Order by identifier hash
+     (hey, it's a consistent number).  */
+  gcc_checking_assert (a->is_binding ()
+		       && a->get_name () != b->get_name ());
+  return (IDENTIFIER_HASH_VALUE (a->get_name ())
+	  < IDENTIFIER_HASH_VALUE (b->get_name ())
+	  ? -1 : +1);
+}
+
+/* Reduce graph to SCCS clusters.  */
+
+void
+depset::hash::connect (auto_vec<depset *> &sccs)
+{
+  sccs.reserve (size ());
+
+  tarjan connector (sccs);
+  auto_vec<depset *> deps (size ());
+  iterator end (this->end ());
+  for (iterator iter (begin ()); iter != end; ++iter)
+    deps.quick_push (*iter);
+
+  /* Iteration over the hash table is an unspecified ordering.  While
+     that has advantages, it causes 2 problems.  Firstly repeatable
+     builds are tricky.  Secondly creating testcases that check
+     dependencies are correct by making sure a bad ordering would
+     happen if that was wrong.  We can use the same ordering as that
+     for clusters themselves.  */
+  deps.qsort (cluster_cmp);
+
+  while (deps.length ())
+    {
+      depset *v = deps.pop ();
+      dump (dumper::DEPEND) &&
+	(v->is_binding ()
+	 ? dump ("Connecting binding %P", v->get_decl (), v->get_name ())
+	 : dump ("Connecting %s %C:%N", v->is_decl () ? "declaration" : "definition",
+		 TREE_CODE (v->get_decl ()), v->get_decl ()));
+      if (!v->cluster)
+	connector.connect (v);
     }
 }
 
@@ -9799,47 +9898,6 @@ module_state::read_definition (trees_in &in, tree decl)
     }
 
   return false;
-}
-
-/* Compare members of a cluster.  Order defn < decl < bind.  depsets
-   of the same kind can be arbitrary, but we want something
-   stable.  */
-
-static int
-cluster_cmp (const void *a_, const void *b_)
-{
-  depset *a = *(depset *const *)a_;
-  depset *b = *(depset *const *)b_;
-
-  bool is_defn = a->is_defn ();
-  if (is_defn != b->is_defn ())
-    /* Exactly one is a defn.  It comes first.  */
-    return is_defn ? -1 : +1;
-
-  if (!is_defn)
-    {
-      /* Neither is a defn, try order-by-decl.  */
-      bool is_decl = a->is_decl ();
-      if (is_decl != b->is_decl ())
-	/* Exactly one is a decl.  It comes first.  */
-	return is_decl ? -1 : +1;
-    }
-
-  /* They are both the same kind.  Order for qsort stability.  */
-  tree a_decl = a->get_decl ();
-  tree b_decl = b->get_decl ();
-
-  if (a_decl != b_decl)
-    /* Different decls, order by their UID.  */
-    return DECL_UID (a_decl) < DECL_UID (b_decl) ? -1 : +1;
-
-  /* Same decl.  They must be bindings.  Order by identifier hash
-     (hey, it's a consistent number).  */
-  gcc_checking_assert (a->is_binding ()
-		       && a->get_name () != b->get_name ());
-  return (IDENTIFIER_HASH_VALUE (a->get_name ())
-	  < IDENTIFIER_HASH_VALUE (b->get_name ())
-	  ? -1 : +1);
 }
 
 /* Contents of a cluster.  */
@@ -12391,7 +12449,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
   /* Figure out remapped module numbers, which might elide
      partitions.  */
   bitmap partitions = NULL;
-  if (!is_partition ())
+  if (!is_legacy () && !is_partition ())
     partitions = BITMAP_GGC_ALLOC ();
 
   unsigned mod_hwm = MODULE_IMPORT_BASE;
@@ -12416,47 +12474,15 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	}
     }
 
-  unsigned crc = 0;
-  depset::hash table (200);
-
   /* Find the set of decls we must write out.  */
+  depset::hash table (DECL_NAMESPACE_BINDINGS (global_namespace)->size () * 8);
   add_writables (table, global_namespace, partitions);
-
   find_dependencies (table);
-
-  unsigned range_bits = prepare_locations ();
-
-  /* Find the SCCs. */
   auto_vec<depset *> sccs (table.size ());
+  table.connect (sccs);
 
-  {
-    depset::tarjan connector (sccs);
-    auto_vec<depset *> deps (table.size ());
-    depset::hash::iterator end (table.end ());
-    for (depset::hash::iterator iter (table.begin ()); iter != end; ++iter)
-      deps.quick_push (*iter);
-
-    /* Iteration over the hash table is an unspecified ordering.
-       While that has advantages, it causes 2 problems.  Firstly
-       repeatable builds are tricky.  Secondly creating testcases that
-       check dependencies are correct by making sure a bad ordering
-       would happen if that was wrong.  We can use the same ordering
-       as that for clusters themselves.  */
-    deps.qsort (cluster_cmp);
-
-    while (deps.length ())
-      {
-	depset *v = deps.pop ();
-	dump (dumper::DEPEND) &&
-	  (v->is_binding ()
-	   ? dump ("Connecting binding %P", v->get_decl (), v->get_name ())
-	   : dump ("Connecting %C:%N",
-		   TREE_CODE (v->get_decl ()), v->get_decl ()));
-	if (!v->cluster)
-	  connector.connect (v);
-      }
-  }
-
+  unsigned crc = 0;
+  unsigned range_bits = prepare_locations ();
   module_state_config config;
 
   config.imports = mod_hwm;

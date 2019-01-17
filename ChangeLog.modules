@@ -1,3 +1,12 @@
+2019-01-17  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (trees_{in,out}::fn_parms): New.
+	(trees_{in,out}::tree_mergeable): Call them.
+	(cluster_cmp): Move earlier.
+	(depset::hash::connect): New, broken out of ...
+	(module_state::write): ... here.  Call it.
+
 2019-01-16  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
