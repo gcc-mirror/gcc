@@ -187,7 +187,13 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
 
     case TEMPLATE_TYPE_PARM:
     case TEMPLATE_TEMPLATE_PARM:
-      if (TYPE_IDENTIFIER (t))
+      if (template_placeholder_p (t))
+	{
+	  t = TREE_TYPE (CLASS_PLACEHOLDER_TEMPLATE (t));
+	  pp_cxx_unqualified_id (pp, TYPE_IDENTIFIER (t));
+	  pp_string (pp, "<...auto...>");
+	}
+      else if (TYPE_IDENTIFIER (t))
 	pp_cxx_unqualified_id (pp, TYPE_IDENTIFIER (t));
       else
 	pp_cxx_canonical_template_parameter (pp, t);
