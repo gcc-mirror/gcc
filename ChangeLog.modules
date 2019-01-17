@@ -1,5 +1,20 @@
 2019-01-17  Nathan Sidwell  <nathan@acm.org>
 
+	Enable partition entity merging.
+	gcc/cp/
+	* module.cc (depset::hash): Add mergeable flag.
+	(trees_out::{tpl_parms,tree_mergeable}): Protect from not
+	streaming.
+	(depset::hash::add_dependency): Deal with mergeablility.
+	(depset::hash::add_mergeable): New.
+	(depset::hash::connect): Adjust dump.
+	(module_state::write_cluster): Sort mergeables.
+	(module_state::find_dependencies): Deal with mergeability.
+	(module_state::sort_mergeables): New.
+	gcc/testsuite/
+	* g++.dg/modules/scc-1.C: Adjust scans.
+	* g++.dg/modules/part-3_[cd].C: Remove xfails.
+
 	gcc/cp/
 	* module.cc (trees_{in,out}::fn_parms): New.
 	(trees_{in,out}::tree_mergeable): Call them.

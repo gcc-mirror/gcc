@@ -1,4 +1,4 @@
-// { dg-additional-options -fmodules-ts }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module-alias" }
 import foo;
 
 int main ()
@@ -7,9 +7,5 @@ int main ()
   return !(r == -75);
 }
 
-// { dg-prune-output "failed to read" }
-// { dg-prune-output "fatal error:" }
-// { dg-prune-output "compilation terminated" }
-
-// { dg-final { scan-lang-dump { Read:-[0-9] unique mergeable decl function_decl:'::frob'} module { xfail *-*-* } } }
-// { dg-final { scan-lang-dump {> Read:-[0-9] unique mergeable decl function_decl:'::foo'} module { xfail *-*-* } } }
+// { dg-final { scan-lang-dump { Read:-[0-9] unique mergeable decl function_decl:'::frob'} module } }
+// { dg-final { scan-lang-dump {> Read:-[0-9] unique mergeable decl function_decl:'::foo'} module } }

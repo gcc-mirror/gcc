@@ -2352,16 +2352,24 @@ public:
   public:
     vec<depset *> worklist;  /* Worklist of decls to walk.  */
     depset *current;         /* Current depset being depended.  */
+    bool mergeables;         /* Mergeables ordering only.  */
     bool sneakoscope;        /* Detecting dark magic (of a voldemort type).  */
 
   public:
-    hash (size_t size)
-      : parent (size), worklist (), current (NULL), sneakoscope (false)
+    hash (size_t size, bool mergeable = false)
+      : parent (size), worklist (), current (NULL),
+	mergeables (mergeable), sneakoscope (false)
     {
       worklist.reserve (size);
     }
     ~hash ()
     {
+    }
+
+  public:
+    bool is_mergeable () const 
+    {
+      return mergeables;
     }
 
   private:
@@ -2378,6 +2386,7 @@ public:
     depset *find (const key_type &);
 
   public:
+    void add_mergeable (tree decl);
     depset *add_dependency (tree decl, int kind);
     void add_binding (tree ns, tree name, tree value, tree maybe_type);
     depset *get_work ()
@@ -3030,6 +3039,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   static void add_writables (depset::hash &table, tree ns, bitmap partitions);
   /* Build dependency graph of hash table.  */
   void find_dependencies (depset::hash &table);
+  void sort_mergeables (auto_vec<tree> &mergeables);
 
   static void write_bindings (elf_out *to, depset::hash &table,
 			      unsigned *crc_ptr);
@@ -7104,15 +7114,19 @@ trees_out::tpl_parms (tree parms)
     {
       tree vec = TREE_VALUE (parms);
       unsigned len = TREE_VEC_LENGTH (vec);
-      u (len);
+      if (streaming_p ())
+	u (len);
       for (unsigned ix = 0; ix != len; ix++)
 	{
 	  tree val = TREE_VALUE (TREE_VEC_ELT (vec, ix));
 
-	  u (TREE_CODE (val));
-	  tree_node_specific (val);
-	  core_bools (val);
-	  bflush ();
+	  if (streaming_p ())
+	    {
+	      u (TREE_CODE (val));
+	      tree_node_specific (val);
+	      core_bools (val);
+	      bflush ();
+	    }
 
 	  if (TREE_CODE (val) == TEMPLATE_TYPE_PARM
 	      && TEMPLATE_TYPE_PARAMETER_PACK (val))
@@ -7123,7 +7137,8 @@ trees_out::tpl_parms (tree parms)
     }
 
   /* Mark end.  */
-  u (0);
+  if (streaming_p ())
+    u (0);
 }
 
 tree
@@ -7186,15 +7201,22 @@ trees_out::tree_mergeable (tree decl)
   unsigned is_mod = false;
   if (!module_legacy_p ())
     is_mod = MAYBE_DECL_MODULE_OWNER (decl) != MODULE_NONE;
-  u (is_mod);
 
-  state->write_location (*this, DECL_SOURCE_LOCATION (inner));
+  if (streaming_p ())
+    {
+      u (is_mod);
+
+      state->write_location (*this, DECL_SOURCE_LOCATION (inner));
+    }
 
  again:
-  u (TREE_CODE (inner));
-  tree_node_specific (inner);
-  core_bools (inner);
-  bflush ();
+  if (streaming_p ())
+    {
+      u (TREE_CODE (inner));
+      tree_node_specific (inner);
+      core_bools (inner);
+      bflush ();
+    }
 
   switch (TREE_CODE (inner))
     {
@@ -7217,10 +7239,13 @@ trees_out::tree_mergeable (tree decl)
 	{
 	  inner = TREE_TYPE (inner);
 	  gcc_assert (TYPE_MAIN_VARIANT (inner) == inner);
-	  u (TREE_CODE (inner));
-	  tree_node_specific (inner);
-	  core_bools (inner);
-	  bflush ();
+	  if (streaming_p ())
+	    {
+	      u (TREE_CODE (inner));
+	      tree_node_specific (inner);
+	      core_bools (inner);
+	      bflush ();
+	    }
 	}
       break;
 
@@ -7230,8 +7255,9 @@ trees_out::tree_mergeable (tree decl)
     }
 
   int tag = insert (decl);
-  dump (dumper::MERGE)
-    && dump ("Wrote:%d global decl %C:%N", tag, TREE_CODE (decl), decl);
+  if (streaming_p ())
+    dump (dumper::MERGE)
+      && dump ("Wrote:%d global decl %C:%N", tag, TREE_CODE (decl), decl);
 }
 
 void
@@ -7504,43 +7530,49 @@ depset::hash::find (const key_type &key)
 depset *
 depset::hash::add_dependency (tree decl, int kind)
 {
-  bool has_def = has_definition (decl);
+  bool has_def = !is_mergeable () && has_definition (decl);
   key_type key = defn_key (decl, has_def);
-  depset **slot = maybe_insert (key);
-  depset *dep = *slot;
 
-  if (!dep)
+  if (depset **slot = maybe_insert (key, !is_mergeable ()))
     {
-      *slot = dep = new depset (key);
-      worklist.safe_push (dep);
+      depset *dep = *slot;
 
-      if (kind >= 0
-	  && !(TREE_CODE (decl) == NAMESPACE_DECL
-	       && !DECL_NAMESPACE_ALIAS (decl)))
-	/* Any not-for-binding depset is not found by name.  */
-	dep->is_unnamed = true;
+      gcc_checking_assert (!is_mergeable () || kind >= 0);
+      if (!dep)
+	{
+	  *slot = dep = new depset (key);
+	  worklist.safe_push (dep);
+
+	  if (kind >= 0
+	      && !(TREE_CODE (decl) == NAMESPACE_DECL
+		   && !DECL_NAMESPACE_ALIAS (decl)))
+	    /* Any not-for-binding depset is not found by name.  */
+	    dep->is_unnamed = true;
+	}
+
+      dump (dumper::DEPEND)
+	&& dump ("%s on %s %C:%N added", kind < 0 ? "Binding" : "Dependency",
+		 dep->is_defn () ? "definition" : "declaration",
+		 TREE_CODE (decl), decl);
+
+      if (kind >= 0)
+	{
+	  if (dep->is_unnamed)
+	    current->refs_unnamed = true;
+	  current->deps.safe_push (dep);
+	  if (TREE_CODE (decl) == TYPE_DECL
+	      && UNSCOPED_ENUM_P (TREE_TYPE (decl))
+	      && CP_DECL_CONTEXT (current->get_decl ()) == TREE_TYPE (decl))
+	    /* Unscoped enum values are pushed into the containing
+	       scope.  Insert a dependency to the current binding, if it
+	       is one of the enum constants.  */
+	    dep->deps.safe_push (current);
+	}
+
+      return dep;
     }
-
-  dump (dumper::DEPEND)
-    && dump ("%s on %s %C:%N added", kind < 0 ? "Binding" : "Dependency",
-	     dep->is_defn () ? "definition" : "declaration",
-	     TREE_CODE (decl), decl);
-
-  if (kind >= 0)
-    {
-      if (dep->is_unnamed)
-	current->refs_unnamed = true;
-      current->deps.safe_push (dep);
-      if (TREE_CODE (decl) == TYPE_DECL
-	  && UNSCOPED_ENUM_P (TREE_TYPE (decl))
-	  && CP_DECL_CONTEXT (current->get_decl ()) == TREE_TYPE (decl))
-	/* Unscoped enum values are pushed into the containing
-	   scope.  Insert a dependency to the current binding, if it
-	   is one of the enum constants.  */
-	dep->deps.safe_push (current);
-    }
-
-  return dep;
+  else
+    return NULL;
 }
 
 /* VALUE is an overload of decls that is bound in this module.  Create
@@ -7552,6 +7584,7 @@ depset::hash::add_binding (tree ns, tree name, tree value, tree maybe_type)
 {
   depset *bind = new depset (binding_key (ns, name));
 
+  gcc_checking_assert (!is_mergeable ());
   unsigned count = maybe_type ? 1 : 0;
   for (ovl_iterator iter (value); iter; ++iter)
     count++;
@@ -7590,6 +7623,17 @@ depset::hash::add_binding (tree ns, tree name, tree value, tree maybe_type)
     insert (bind);
   else
     delete bind;
+}
+
+/* Add a mergeable decl into the dependency hash.  */
+void
+depset::hash::add_mergeable (tree decl)
+{
+  gcc_checking_assert (is_mergeable ());
+  key_type key = defn_key (decl, false);
+  depset *dep = new depset (key);
+  insert (dep);
+  worklist.safe_push (dep);
 }
 
 /* Core of TARJAN's algorithm to find Strongly Connected Components
@@ -7711,7 +7755,8 @@ depset::hash::connect (auto_vec<depset *> &sccs)
       dump (dumper::DEPEND) &&
 	(v->is_binding ()
 	 ? dump ("Connecting binding %P", v->get_decl (), v->get_name ())
-	 : dump ("Connecting %s %C:%N", v->is_decl () ? "declaration" : "definition",
+	 : dump ("Connecting %s %C:%N", is_mergeable () ? "mergeable "
+		 : v->is_decl () ? "declaration" : "definition",
 		 TREE_CODE (v->get_decl ()), v->get_decl ()));
       if (!v->cluster)
 	connector.connect (v);
@@ -9917,9 +9962,6 @@ void
 module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 			     unsigned &unnamed, unsigned *crc_ptr)
 {
-  trees_out sec (to, this);
-  sec.begin ();
-
   dump () && dump ("Writing SCC:%u %u depsets", scc[0]->section, size);
   dump.indent ();
 
@@ -9945,6 +9987,9 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	}
       else if (b->is_decl () || b->is_defn ())
 	{
+	  // FIXME: What about non-mergeable decls in this SCC that
+	  // are nevertheless referenced in locating the mergeable
+	  // decls?
 	  if (TREE_PUBLIC (CP_DECL_CONTEXT (decl)))
 	    {
 	      unsigned owner = MODULE_NONE;
@@ -9956,11 +10001,16 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		owner = (*modules)[owner]->remap;
 
 	      if (owner < MODULE_IMPORT_BASE)
-		if (owner == MODULE_NONE) // FIXME: remove test
-		  mergeables.safe_push (decl);
+		mergeables.safe_push (decl);
 	    }
 	}
     }
+
+  if (mergeables.length () > 1)
+    sort_mergeables (mergeables);
+
+  trees_out sec (to, this);
+  sec.begin ();
 
   if (refs_unnamed_p)
     /* We contain references to unnamed decls.  Seed those that are in
@@ -9993,11 +10043,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
   if (unsigned len = mergeables.length ())
     {
-      // FIXME: When more than one, we'll have to order them using
-      // tarjan too.  Don't forget about a nested type appearing in
-      // the types of another member of this set.  Ugh!
-      gcc_assert (len == 1);
-
       sec.u (ct_mergeable);
       sec.u (len);
       for (unsigned ix = 0; ix != len; ix++)
@@ -11945,22 +11990,56 @@ module_state::find_dependencies (depset::hash &table)
       tree decl = d->get_decl ();
       dump (dumper::DEPEND)
 	&& dump ("Dependencies of %s %C:%N",
-		 d->is_decl () ? "declaration" : "definition",
+		 table.is_mergeable () ? "mergeable"
+		 : d->is_decl () ? "declaration" : "definition",
 		 TREE_CODE (decl), decl);
       dump.indent ();
       walker.begin (&table);
-      walker.mark_node (decl);
-      if (d->is_defn ())
-	mark_definition (walker, decl);
-      /* Turn the Sneakoscope on when depending the decl.  */
-      table.sneakoscope = true;
-      walker.tree_ctx (decl, false, NULL_TREE);
-      table.sneakoscope = false;
-      if (d->is_defn ())
-	write_definition (walker, decl);
+      if (table.is_mergeable ())
+	walker.tree_mergeable (decl);
+      else
+	{
+	  walker.mark_node (decl);
+	  if (d->is_defn ())
+	    mark_definition (walker, decl);
+	  /* Turn the Sneakoscope on when depending the decl.  */
+	  table.sneakoscope = true;
+	  walker.tree_ctx (decl, false, NULL_TREE);
+	  table.sneakoscope = false;
+	  if (d->is_defn ())
+	    write_definition (walker, decl);
+	}
       walker.end ();
       dump.outdent ();
     }
+}
+
+/* When there are multiple mergeable members of a cluster, we must
+   order the dependent ones last.  Don't forget about a nested type
+   appearing in the types of another member of this set.  Ugh!  */
+
+void
+module_state::sort_mergeables (auto_vec<tree> &mergeables)
+{
+  depset::hash table (mergeables.length () * 2, true);
+
+  dump (dumper::MERGE) && dump ("Ordering %u mergeables", mergeables.length ());
+  dump.indent ();
+
+  for (unsigned ix = mergeables.length (); ix--;)
+    table.add_mergeable (mergeables[ix]);
+  find_dependencies (table);
+
+  auto_vec<depset *> sccs;
+  table.connect (sccs);
+
+  /* Each mergeable must be its own cluster.  */
+  gcc_assert (sccs.length () == mergeables.length ());
+
+  for (unsigned ix = mergeables.length (); ix--;)
+    mergeables[ix] = sccs[ix]->get_decl ();
+
+  dump.outdent ();
 }
 
 /* Compare bindings for two namespaces.  Those closer to :: are
