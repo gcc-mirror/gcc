@@ -33070,7 +33070,7 @@ vdotq_laneq_s32 (int32x4_t __r, int8x16_t __a, int8x16_t __b, const int __index)
 #pragma GCC pop_options
 
 #pragma GCC push_options
-#pragma GCC target(("arch=armv8.2-a+sm4"))
+#pragma GCC target ("arch=armv8.2-a+sm4")
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
@@ -33137,7 +33137,7 @@ vsm4ekeyq_u32 (uint32x4_t __a, uint32x4_t __b)
 #pragma GCC pop_options
 
 #pragma GCC push_options
-#pragma GCC target(("arch=armv8.2-a+crypto"))
+#pragma GCC target ("arch=armv8.2-a+sha3")
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
@@ -33299,10 +33299,10 @@ vbcaxq_s64 (int64x2_t __a, int64x2_t __b, int64x2_t __c)
 /* AdvSIMD Complex numbers intrinsics.  */
 
 #pragma GCC push_options
-#pragma GCC target(("arch=armv8.3-a"))
+#pragma GCC target ("arch=armv8.3-a")
 
 #pragma GCC push_options
-#pragma GCC target(("+fp16"))
+#pragma GCC target ("+fp16")
 __extension__ extern __inline float16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcadd_rot90_f16 (float16x4_t __a, float16x4_t __b)
@@ -33773,7 +33773,7 @@ vcmlaq_rot270_laneq_f32 (float32x4_t __r, float32x4_t __a, float32x4_t __b,
 #pragma GCC pop_options
 
 #pragma GCC push_options
-#pragma GCC target(("arch=armv8.2-a+fp16fml"))
+#pragma GCC target ("arch=armv8.2-a+fp16fml")
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
