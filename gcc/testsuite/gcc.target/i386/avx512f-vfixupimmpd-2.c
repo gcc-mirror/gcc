@@ -14,12 +14,12 @@
 
 
 static void
-CALC (double *r, double src, long long tbl)
+CALC (double *r, double dest, double src, long long tbl)
 {
   switch (tbl & 0xf)
     {
     case 0:
-      *r = src;
+      *r = dest;
       break;
     case 1:
       *r = src;
@@ -81,7 +81,7 @@ TEST (void)
 
 
   float vals[2] = { -10, 10 };
-  int controls[8] = {0x11111111, 0x77777777, 0x77777777, 0x88888888,
+  int controls[8] = {0, 0x11111111, 0x77777777, 0x88888888,
     0x99999999, 0xaaaaaaaa, 0xbbbbbbbb, 0xcccccccc};
 
   MASK_TYPE mask = MASK_VALUE;
@@ -96,7 +96,7 @@ TEST (void)
 	  res2.a[j] = DEFAULT_VALUE;
 	  res3.a[j] = DEFAULT_VALUE;
 
-	  CALC (&res_ref[j], s1.a[j], s2.a[j]);
+	  CALC (&res_ref[j], res1.a[j], s1.a[j], s2.a[j]);
 	}
 
       res1.x = INTRINSIC (_fixupimm_pd) (res1.x, s1.x, s2.x, 0);

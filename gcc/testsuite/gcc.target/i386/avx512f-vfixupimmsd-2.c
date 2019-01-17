@@ -10,12 +10,12 @@
 #include "avx512f-mask-type.h"
 
 void
-compute_fixupimmpd (double *r, double src, long long tbl)
+compute_fixupimmpd (double *r, double dest, double src, long long tbl)
 {
   switch (tbl & 0xf)
     {
     case 0:
-      *r = src;
+      *r = dest;
       break;
     case 1:
       *r = src;
@@ -76,7 +76,7 @@ avx512f_test (void)
   int i, j;
 
   float vals[2] = { -10, 10 };
-  int controls[10] = { 0x11111111,
+  int controls[10] = { 0,
     0x77777777, 0x88888888, 0x99999999,
     0xaaaaaaaa, 0xbbbbbbbb, 0xcccccccc,
     0xdddddddd, 0xeeeeeeee, 0xffffffff
@@ -98,7 +98,7 @@ avx512f_test (void)
       for (j = 0; j < 10; j++)
 	{
 	  s2.a[0] = controls[j];
-	  compute_fixupimmpd (&res_ref[0], s1.a[0], s2.a[0]);
+	  compute_fixupimmpd (&res_ref[0], res1.a[0], s1.a[0], s2.a[0]);
 
 	  res1.x = _mm_fixupimm_sd (res1.x, s1.x, s2.x, 0);
 	  res2.x = _mm_mask_fixupimm_sd (res2.x, mask, s1.x, s2.x, 0);
