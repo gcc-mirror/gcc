@@ -1,5 +1,10 @@
 2019-01-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/c++17/fs_ops.cc
+	(equivalent(const path&, const path&, error_code&))
+	[_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Use GetFileInformationByHandle to
+	compare files instead of relying on incomplete info returned by stat.
+
 	PR libstdc++/88884
 	* src/c++17/fs_ops.cc (absolute(const path&, error_code&)): Do nothing
 	if the path is already absolute.
