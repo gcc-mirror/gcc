@@ -1,5 +1,11 @@
 2019-01-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/88884
+	* src/c++17/fs_ops.cc (absolute(const path&, error_code&)): Do nothing
+	if the path is already absolute.
+	[_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Normalize root-directory.
+	[!_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Pass error_code to current_path.
+
 	PR libstdc++/88881
 	* src/c++17/fs_ops.cc (canonical(const path&, error_code&))
 	[_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Normalize path, to match behaviour
