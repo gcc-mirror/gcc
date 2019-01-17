@@ -1626,6 +1626,7 @@ struct GTY(()) saved_scope {
 
   int x_processing_template_decl;
   int x_processing_specialization;
+  int suppress_location_wrappers;
   BOOL_BITFIELD x_processing_explicit_instantiation : 1;
   BOOL_BITFIELD need_pop_function_context : 1;
 
