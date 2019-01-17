@@ -1315,6 +1315,7 @@ xcoff_add (struct backtrace_state *state, int descriptor, off_t offset,
 				dwsect[DWSECT_STR].data,
 				dwsect[DWSECT_STR].size,
 				1, /* big endian */
+				NULL,
 				error_callback, data, fileline_fn,
 				NULL))
 	goto fail;
