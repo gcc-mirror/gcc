@@ -26458,7 +26458,7 @@ make_auto (void)
 tree
 make_template_placeholder (tree tmpl)
 {
-  tree t = make_auto_1 (DECL_NAME (tmpl), true);
+  tree t = make_auto_1 (auto_identifier, true);
   CLASS_PLACEHOLDER_TEMPLATE (t) = tmpl;
   return t;
 }
@@ -27391,8 +27391,7 @@ is_auto (const_tree type)
 {
   if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
       && (TYPE_IDENTIFIER (type) == auto_identifier
-	  || TYPE_IDENTIFIER (type) == decltype_auto_identifier
-	  || CLASS_PLACEHOLDER_TEMPLATE (type)))
+	  || TYPE_IDENTIFIER (type) == decltype_auto_identifier))
     return true;
   else
     return false;
