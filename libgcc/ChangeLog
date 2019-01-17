@@ -1,3 +1,16 @@
+2019-01-17  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	* config.host: Recognize amdgcn*-*-amdhsa.
+	* config/gcn/crt0.c: New file.
+	* config/gcn/lib2-divmod-hi.c: New file.
+	* config/gcn/lib2-divmod.c: New file.
+	* config/gcn/lib2-gcn.h: New file.
+	* config/gcn/sfp-machine.h: New file.
+	* config/gcn/t-amdgcn: New file.
+
 2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/16615
