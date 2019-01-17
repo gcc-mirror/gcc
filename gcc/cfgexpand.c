@@ -470,6 +470,8 @@ add_stack_var_conflict (size_t x, size_t y)
 {
   struct stack_var *a = &stack_vars[x];
   struct stack_var *b = &stack_vars[y];
+  if (x == y)
+    return;
   if (!a->conflicts)
     a->conflicts = BITMAP_ALLOC (&stack_var_bitmap_obstack);
   if (!b->conflicts)

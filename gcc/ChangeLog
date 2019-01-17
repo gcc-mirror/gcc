@@ -1,5 +1,9 @@
 2019-01-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/86214
+	* cfgexpand.c (add_stack_var_conflict): Don't add any conflicts
+	if x == y.
+
 	PR rtl-optimization/88870
 	* dce.c (deletable_insn_p): Never delete const/pure calls that can
 	throw if we can't alter the cfg or delete dead exceptions.
