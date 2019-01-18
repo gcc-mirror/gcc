@@ -1,3 +1,9 @@
+2019-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/88734
+	* config/arm/arm_neon.h: Fix #pragma GCC target syntax - replace
+	(("..."))) with ("...").
+
 2019-01-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* doc/extend.texi (Built-in Functions for Memory Model Aware
