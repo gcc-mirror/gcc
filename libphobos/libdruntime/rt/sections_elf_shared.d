@@ -979,6 +979,8 @@ else version (RISCV32)
     enum TLS_DTV_OFFSET = 0x800;
 else version (RISCV64)
     enum TLS_DTV_OFFSET = 0x800;
+else version (HPPA)
+    enum TLS_DTV_OFFSET = 0x0;
 else version (SPARC)
     enum TLS_DTV_OFFSET = 0x0;
 else version (SPARC64)

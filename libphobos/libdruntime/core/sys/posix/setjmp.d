@@ -77,6 +77,20 @@ version (CRuntime_Glibc)
     {
         alias int[64] __jmp_buf;
     }
+    else version (HPPA)
+    {
+        struct __jmp_buf
+        {
+            int __r3;
+            int[15] __r4_r18;
+            int __r19;
+            int __r27;
+            int __sp;
+            int __rp;
+            int __pad1;
+            double[10] __fr12_fr21;
+        }
+    }
     else version (PPC)
     {
         alias int[64 + (12*4)] __jmp_buf;

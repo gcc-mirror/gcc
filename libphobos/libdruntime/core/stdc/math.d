@@ -26,6 +26,7 @@ else version (WatchOS)
 
 version (ARM)     version = ARM_Any;
 version (AArch64) version = ARM_Any;
+version (HPPA)    version = HPPA_Any;
 version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
@@ -141,6 +142,13 @@ else version (CRuntime_Glibc)
         enum int FP_ILOGBNAN      = int.min;
     }
     else version (ARM_Any)
+    {
+        ///
+        enum int FP_ILOGB0        = -int.max;
+        ///
+        enum int FP_ILOGBNAN      = int.max;
+    }
+    else version (HPPA_Any)
     {
         ///
         enum int FP_ILOGB0        = -int.max;
