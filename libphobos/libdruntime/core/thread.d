@@ -3254,7 +3254,9 @@ private void* getStackBottom() nothrow @nogc
         pthread_getattr_np(pthread_self(), &attr);
         pthread_attr_getstack(&attr, &addr, &size);
         pthread_attr_destroy(&attr);
-        return addr + size;
+        version (StackGrowsDown)
+            addr += size;
+        return addr;
     }
     else version (FreeBSD)
     {
@@ -3265,7 +3267,9 @@ private void* getStackBottom() nothrow @nogc
         pthread_attr_get_np(pthread_self(), &attr);
         pthread_attr_getstack(&attr, &addr, &size);
         pthread_attr_destroy(&attr);
-        return addr + size;
+        version (StackGrowsDown)
+            addr += size;
+        return addr;
     }
     else version (NetBSD)
     {
@@ -3276,7 +3280,9 @@ private void* getStackBottom() nothrow @nogc
         pthread_attr_get_np(pthread_self(), &attr);
         pthread_attr_getstack(&attr, &addr, &size);
         pthread_attr_destroy(&attr);
-        return addr + size;
+        version (StackGrowsDown)
+            addr += size;
+        return addr;
     }
     else version (Solaris)
     {
@@ -3293,7 +3299,9 @@ private void* getStackBottom() nothrow @nogc
         pthread_getattr_np(pthread_self(), &attr);
         pthread_attr_getstack(&attr, &addr, &size);
         pthread_attr_destroy(&attr);
-        return addr + size;
+        version (StackGrowsDown)
+            addr += size;
+        return addr;
     }
     else
         static assert(false, "Platform not supported.");
