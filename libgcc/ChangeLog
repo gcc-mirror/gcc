@@ -1,5 +1,12 @@
 2019-01-18  Martin Liska  <mliska@suse.cz>
 
+	* libgcov-driver.c (GCOV_PROF_PREFIX): Define.
+	(gcov_version): Use in gcov_error.
+	(merge_one_data): Likewise.
+	(dump_one_gcov): Likewise.
+
+2019-01-18  Martin Liska  <mliska@suse.cz>
+
 	* libgcov-driver.c (gcov_version_string): New function.
 	(gcov_version): Convert version integer into string.
 

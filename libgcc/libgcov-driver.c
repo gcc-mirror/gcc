@@ -53,6 +53,8 @@ static void gcov_error_exit (void);
 
 #include "gcov-io.c"
 
+#define GCOV_PROF_PREFIX "libgcov profiling error:%s:"
+
 struct gcov_fn_buffer
 {
   struct gcov_fn_buffer *next;
@@ -151,7 +153,7 @@ buffer_fn_data (const char *filename, const struct gcov_info *gi_ptr,
   return &fn_buffer->next;
 
 fail:
-  gcov_error ("profiling:%s:Function %u %s %u \n", filename, fn_ix,
+  gcov_error (GCOV_PROF_PREFIX "Function %u %s %u \n", filename, fn_ix,
               len ? "cannot allocate" : "counter mismatch", len ? len : ix);
 
   return (struct gcov_fn_buffer **)free_fn_data (gi_ptr, fn_buffer, ix);
@@ -195,7 +197,7 @@ gcov_version (struct gcov_info *ptr, gcov_unsigned_t version,
       GCOV_UNSIGNED2STRING (v, version);
       GCOV_UNSIGNED2STRING (e, GCOV_VERSION);
 
-      gcov_error ("profiling:%s:Version mismatch - expected %s (%.4s) "
+      gcov_error (GCOV_PROF_PREFIX "Version mismatch - expected %s (%.4s) "
 		  "got %s (%.4s)\n",
 		  filename? filename : ptr->filename,
 		  gcov_version_string (expected_string, e), e,
@@ -234,7 +236,7 @@ merge_one_data (const char *filename,
   if (length != gi_ptr->stamp)
     {
       /* Read from a different compilation.  Overwrite the file.  */
-      gcov_error ("profiling:%s:overwriting an existing profile data "
+      gcov_error (GCOV_PROF_PREFIX "overwriting an existing profile data "
 		  "with a different timestamp\n", filename);
       return 0;
     }
@@ -314,7 +316,7 @@ merge_one_data (const char *filename,
   if (tag)
     {
     read_mismatch:;
-      gcov_error ("profiling:%s:Merge mismatch for %s %u\n",
+      gcov_error (GCOV_PROF_PREFIX "Merge mismatch for %s %u\n",
                   filename, f_ix >= 0 ? "function" : "summary",
                   f_ix < 0 ? -1 - f_ix : f_ix);
       return -1;
@@ -322,7 +324,7 @@ merge_one_data (const char *filename,
   return 0;
 
 read_error:
-  gcov_error ("profiling:%s:%s merging\n", filename,
+  gcov_error (GCOV_PROF_PREFIX "%s merging\n", filename,
               error < 0 ? "Overflow": "Error");
   return -1;
 }
@@ -520,7 +522,8 @@ dump_one_gcov (struct gcov_info *gi_ptr, struct gcov_filename *gf,
       /* Merge data from file.  */
       if (tag != GCOV_DATA_MAGIC)
         {
-          gcov_error ("profiling:%s:Not a gcov data file\n", gf->filename);
+	  gcov_error (GCOV_PROF_PREFIX "Not a gcov data file\n",
+		      gf->filename);
           goto read_fatal;
         }
       error = merge_one_data (gf->filename, gi_ptr, &summary);
@@ -541,8 +544,8 @@ read_fatal:;
 
   if ((error = gcov_close ()))
     gcov_error (error  < 0 ?
-                "profiling:%s:Overflow writing\n" :
-                "profiling:%s:Error writing\n",
+		GCOV_PROF_PREFIX "Overflow writing\n" :
+		GCOV_PROF_PREFIX "Error writing\n",
                 gf->filename);
 }
 
