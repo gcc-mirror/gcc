@@ -1,3 +1,12 @@
+2019-01-18  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/88890
+	* mmapio.c (backtrace_get_view): Change size parameter to
+	uint64_t.  Check that value fits in size_t.
+	* read.c (backtrace_get_view): Likewise.
+	* internal.h (backtrace_get_view): Update declaration.
+	* elf.c (elf_add): Pass shstrhdr->sh_size to backtrace_get_view.
+
 2019-01-17  Tom de Vries  <tdevries@suse.de>
 
 	PR libbacktrace/82857
