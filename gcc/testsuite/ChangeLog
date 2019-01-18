@@ -1,3 +1,12 @@
+2019-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Reapply:
+	2018-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/88489
+	* gcc.target/i386/avx512vl-vfixupimmsd-2.c: New test.
+	* gcc.target/i386/avx512vl-vfixupimmss-2.c: New test.
+
 2019-01-18  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/88587
