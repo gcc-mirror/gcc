@@ -63,6 +63,19 @@ version (CRuntime_Glibc)
         }
     }
 }
+else version (OSX)
+{
+    struct aiocb
+    {
+        int aio_filedes;
+        off_t aio_offset;
+        void* aio_buf;   // volatile
+        size_t aio_nbytes;
+        int reqprio;
+        sigevent aio_sigevent;
+        int aio_lio_opcode;
+    }
+}
 else version (FreeBSD)
 {
     struct __aiocb_private
@@ -158,6 +171,15 @@ version (CRuntime_Glibc)
         AIO_ALLDONE
     }
 }
+else version (OSX)
+{
+    enum
+    {
+        AIO_ALLDONE = 0x1,
+        AIO_CANCELED = 0x2,
+        AIO_NOTCANCELED = 0x4,
+    }
+}
 else version (Solaris)
 {
     enum
@@ -187,6 +209,15 @@ version (CRuntime_Glibc)
         LIO_NOP
     }
 }
+else version (OSX)
+{
+    enum
+    {
+        LIO_NOP = 0x0,
+        LIO_READ = 0x1,
+        LIO_WRITE = 0x2,
+    }
+}
 else version (Solaris)
 {
     enum
@@ -213,6 +244,14 @@ version (CRuntime_Glibc)
     {
         LIO_WAIT,
         LIO_NOWAIT
+    }
+}
+else version (OSX)
+{
+    enum
+    {
+        LIO_NOWAIT = 0x1,
+        LIO_WAIT = 0x2,
     }
 }
 else version (Solaris)
