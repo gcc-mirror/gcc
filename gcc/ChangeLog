@@ -1,3 +1,8 @@
+2019-01-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_gimplify_va_arg):
+	Handle split indirect COMPLEX_TYPE arguments.
+
 2019-01-16  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from mainline
@@ -8,7 +13,7 @@
 	we check pointers against pointers.
 
 2019-01-09  Eric Botcazou  <ebotcazou@adacore.com>
-            James Clarke  <jrtc27@jrtc27.com>
+	    James Clarke  <jrtc27@jrtc27.com>
 
 	PR target/84010
 	* config/sparc/sparc.c (sparc_legitimize_tls_address): Only use Pmode
