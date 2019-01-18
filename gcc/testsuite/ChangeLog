@@ -1,3 +1,11 @@
+2019-01-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/88587
+	* g++.target/i386/pr88587.C (dg-do): Add { target ia32 }.
+	(dg-options): Replace -m32 with -fno-pic.
+	* gcc.target/i386/mvc13.c (dg-do): Add { target ia32 }.
+	(dg-options): Remove -m32.
+
 2019-01-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88903
