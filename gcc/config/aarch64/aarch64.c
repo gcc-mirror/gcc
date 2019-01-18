@@ -11409,6 +11409,41 @@ aarch64_override_options_internal (struct gcc_options *opts)
   if (opts->x_flag_strict_volatile_bitfields < 0 && abi_version_at_least (2))
     opts->x_flag_strict_volatile_bitfields = 1;
 
+  if (aarch64_stack_protector_guard == SSP_GLOBAL
+      && opts->x_aarch64_stack_protector_guard_offset_str)
+    {
+      error ("incompatible options -mstack-protector-guard=global and"
+	     "-mstack-protector-guard-offset=%qs",
+	     aarch64_stack_protector_guard_offset_str);
+    }
+
+  if (aarch64_stack_protector_guard == SSP_SYSREG
+      && !(opts->x_aarch64_stack_protector_guard_offset_str
+	   && opts->x_aarch64_stack_protector_guard_reg_str))
+    {
+      error ("both -mstack-protector-guard-offset and "
+	     "-mstack-protector-guard-reg must be used "
+	     "with -mstack-protector-guard=sysreg");
+    }
+
+  if (opts->x_aarch64_stack_protector_guard_reg_str)
+    {
+      if (strlen (opts->x_aarch64_stack_protector_guard_reg_str) > 100)
+	  error ("specify a system register with a small string length.");
+    }
+
+  if (opts->x_aarch64_stack_protector_guard_offset_str)
+    {
+      char *end;
+      const char *str = aarch64_stack_protector_guard_offset_str;
+      errno = 0;
+      long offs = strtol (aarch64_stack_protector_guard_offset_str, &end, 0);
+      if (!*str || *end || errno)
+	error ("%qs is not a valid offset in %qs", str,
+	       "-mstack-protector-guard-offset=");
+      aarch64_stack_protector_guard_offset = offs;
+    }
+
   initialize_aarch64_code_model (opts);
   initialize_aarch64_tls_size (opts);
 
@@ -18671,7 +18706,23 @@ aarch64_run_selftests (void)
 
 } // namespace selftest
 
+/* Implement TARGET_STACK_PROTECT_GUARD. In case of a
+   global variable based guard use the default else
+   return a null tree.  */
+static tree
+aarch64_stack_protect_guard (void)
+{
+  if (aarch64_stack_protector_guard == SSP_GLOBAL)
+    return default_stack_protect_guard ();
+
+  return NULL_TREE;
+}
+
+
 #endif /* #if CHECKING_P */
+
+#undef TARGET_STACK_PROTECT_GUARD
+#define TARGET_STACK_PROTECT_GUARD aarch64_stack_protect_guard
 
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST aarch64_address_cost
