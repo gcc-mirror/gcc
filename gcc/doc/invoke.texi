@@ -17090,6 +17090,12 @@ Disable the floating-point instructions.
 
 @item armv7-a
 @table @samp
+@item +mp
+The multiprocessing extension.
+
+@item +sec
+The security extension.
+
 @item +fp
 The VFPv3 floating-point instructions, with 16 double-precision
 registers.  The extension @samp{+vfpv3-d16} can be used as an alias
@@ -17518,11 +17524,11 @@ Enables the cryptographic instructions on @samp{cortex-a32},
 
 Additionally the @samp{generic-armv7-a} pseudo target defaults to
 VFPv3 with 16 double-precision registers.  It supports the following
-extension options: @samp{vfpv3-d16}, @samp{vfpv3},
-@samp{vfpv3-d16-fp16}, @samp{vfpv3-fp16}, @samp{vfpv4-d16},
-@samp{vfpv4}, @samp{neon}, @samp{neon-vfpv3}, @samp{neon-fp16},
-@samp{neon-vfpv4}.  The meanings are the same as for the extensions to
-@option{-march=armv7-a}.
+extension options: @samp{mp}, @samp{sec}, @samp{vfpv3-d16},
+@samp{vfpv3}, @samp{vfpv3-d16-fp16}, @samp{vfpv3-fp16},
+@samp{vfpv4-d16}, @samp{vfpv4}, @samp{neon}, @samp{neon-vfpv3},
+@samp{neon-fp16}, @samp{neon-vfpv4}.  The meanings are the same as for
+the extensions to @option{-march=armv7-a}.
 
 @option{-mcpu=generic-@var{arch}} is also permissible, and is
 equivalent to @option{-march=@var{arch} -mtune=generic-@var{arch}}.

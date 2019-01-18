@@ -87,6 +87,12 @@ define feature armv7em
 # Architecture rel 7.
 define feature armv7
 
+# MP extension to ArmV7-A
+define feature mp
+
+# SEC extension to ArmV7-A
+define feature sec
+
 # ARM division instructions.
 define feature adiv
 
@@ -237,7 +243,7 @@ define fgroup ARMv6m      armv4 thumb armv5t armv5te armv6 be8
 define fgroup ARMv7       ARMv6m thumb2 armv7
 
 define fgroup ARMv7a      ARMv7 notm armv6k
-define fgroup ARMv7ve     ARMv7a adiv tdiv lpae
+define fgroup ARMv7ve     ARMv7a adiv tdiv lpae mp sec
 define fgroup ARMv7r      ARMv7a tdiv
 define fgroup ARMv7m      ARMv7 tdiv
 define fgroup ARMv7em     ARMv7m armv7em
@@ -425,6 +431,8 @@ begin arch armv7-a
  base 7A
  profile A
  isa ARMv7a
+ option mp	       add mp
+ option sec	       add sec
 # fp => VFPv3-d16, simd => neon-vfpv3
  option fp	       add VFPv3 FP_DBL
  optalias vfpv3-d16    fp
@@ -968,6 +976,8 @@ begin cpu generic-armv7-a
  cname genericv7a
  tune flags LDSCHED
  architecture armv7-a+fp
+ option mp add mp
+ option sec add sec
  option vfpv3-d16 add VFPv3 FP_DBL
  option vfpv3 add VFPv3 FP_D32
  option vfpv3-d16-fp16 add VFPv3 FP_DBL fp16conv
@@ -987,7 +997,7 @@ end cpu generic-armv7-a
 begin cpu cortex-a5
  cname cortexa5
  tune flags LDSCHED
- architecture armv7-a+neon-fp16
+ architecture armv7-a+mp+sec+neon-fp16
  option nosimd remove ALL_SIMD
  option nofp remove ALL_FP
  costs cortex_a5
@@ -1009,7 +1019,7 @@ end cpu cortex-a7
 begin cpu cortex-a8
  cname cortexa8
  tune flags LDSCHED
- architecture armv7-a+simd
+ architecture armv7-a+sec+simd
  option nofp remove ALL_FP
  costs cortex_a8
  vendor 41
@@ -1019,7 +1029,7 @@ end cpu cortex-a8
 begin cpu cortex-a9
  cname cortexa9
  tune flags LDSCHED
- architecture armv7-a+neon-fp16
+ architecture armv7-a+mp+sec+neon-fp16
  option nosimd remove ALL_SIMD
  option nofp remove ALL_FP
  costs cortex_a9
@@ -1140,7 +1150,7 @@ end cpu cortex-m3
 
 begin cpu marvell-pj4
  tune flags LDSCHED
- architecture armv7-a
+ architecture armv7-a+mp+sec
  costs marvell_pj4
 end cpu marvell-pj4
 
