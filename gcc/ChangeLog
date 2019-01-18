@@ -1,3 +1,22 @@
+2019-01-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/88799
+	* config/arm/arm-cpus.in (mp): New feature.
+	(sec): New feature.
+	(fgroup ARMv7ve): Add mp and sec features.
+	(arch armv7-a): Add options to allow mp and sec extensions.
+	(cpu generic-armv7-a): Add options to allow mp and sec extensions.
+	(cpu cortex-a5, cpu cortex-7, cpu cortex-a9): Add mp and sec
+	extenstions to the base architecture.
+	(cpu cortex-a8): Add sec extension to the base architecture.
+	(cpu marvell-pj4): Add mp and sec extensions to the base architecture.
+	* config/arm/t-aprofile (MULTILIB_MATCHES): Map all armv7-a arch
+	variants down to the base v7-a varaint.
+	* config/arm/t-multilib (v7_a_arch_variants): New variable.
+	* doc/invoke.texi (ARM Options): Add +mp and +sec to the list
+	of permitted extensions for -march=armv7-a and for
+	-mcpu=generic-armv7-a.
+
 2019-01-18  Martin Liska  <mliska@suse.cz>
 
 	* params.def: Fix comment.
