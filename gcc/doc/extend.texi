@@ -11017,6 +11017,7 @@ they are not scaled by the size of the type to which the pointer points.
 
 @smallexample
 @{ *ptr @var{op}= val; return *ptr; @}
+@{ *ptr = ~(*ptr & val); return *ptr; @} // nand
 @end smallexample
 
 The object pointed to by the first argument must be of integer or pointer
@@ -11038,6 +11039,7 @@ the type to which the pointer points.
 
 @smallexample
 @{ tmp = *ptr; *ptr @var{op}= val; return tmp; @}
+@{ tmp = *ptr; *ptr = ~(*ptr & val); return tmp; @} // nand
 @end smallexample
 
 The same constraints on arguments apply as for the corresponding
