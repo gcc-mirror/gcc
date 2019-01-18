@@ -1,3 +1,9 @@
+2019-01-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/88799
+	* gcc.target/arm/multilib.exp (config "aprofile"): Add tests for
+	mp and sec extensions to armv7-a.
+
 2019-01-17  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/86610
