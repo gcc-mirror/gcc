@@ -1,3 +1,8 @@
+2019-01-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* doc/extend.texi (Built-in Functions for Memory Model Aware
+	Atomic Operations): Document atomic fetch and nand.
+
 2019-01-18  Martin Liska  <mliska@suse.cz>
 	    Richard Biener  <rguenther@suse.de>
 
