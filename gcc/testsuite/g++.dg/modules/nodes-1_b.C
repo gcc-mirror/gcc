@@ -3,7 +3,7 @@ import node;
 
 struct b
 {
-  int frob () 
+  int frob () const
   {
     return 0;
   }
@@ -16,5 +16,9 @@ int main ()
   thing.Frob ();
   if (!trait<b> ())
     return 1;
+
+  if (!ptrmemdata (other ()))
+    return 2;
+
   return 0;
 }

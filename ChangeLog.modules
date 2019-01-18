@@ -7,6 +7,12 @@
 	* g++.dg/modules/nodes-1_[ab].C: New.
 
 	gcc/cp/
+	* module.cc (trees_{in,out}::core_vals): Fix TYPE_CACHED_VALUES
+	handling. Stream ptrmem_cst.  Note userdef_literals unreachable.
+	gcc/testsuite/
+	* g++.dg/modules/nodes-1_[ab].C: Add prememdata
+
+	gcc/cp/
 	* module.cc (module_state::{read,write}_locations): Fix macro
 	expansion compression.
 

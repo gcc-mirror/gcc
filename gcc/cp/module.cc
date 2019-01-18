@@ -5078,8 +5078,8 @@ trees_out::core_vals (tree t)
       if (!RECORD_OR_UNION_CODE_P (code) && code != ENUMERAL_TYPE)
 	{
 	  /* Don't write the cached values vector.  */
-	  if (!TYPE_CACHED_VALUES_P (t))
-	    WT (t->type_non_common.values);
+	  WT (TYPE_CACHED_VALUES_P (t) ? NULL_TREE : t->type_non_common.values);
+
 	  /* POINTER and REFERENCE types hold NEXT_{PTR,REF}_TO */
 	  if (POINTER_TYPE_P (t))
 	    {
@@ -5100,6 +5100,7 @@ trees_out::core_vals (tree t)
 	    }
 	  else
 	    WT (t->type_non_common.minval);
+
 	  WT (t->type_non_common.maxval);
 	}
       WT (t->type_non_common.lang_1);
@@ -5198,7 +5199,7 @@ trees_out::core_vals (tree t)
       break;
       
     case TS_CP_PTRMEM:
-      gcc_unreachable (); // FIXME
+      WT (((lang_tree_node *)t)->ptrmem.member);
       break;
 
     case TS_CP_OVERLOAD:
@@ -5277,7 +5278,7 @@ trees_out::core_vals (tree t)
       break;
 
     case TS_CP_USERDEF_LITERAL:
-      gcc_unreachable (); // FIXME
+      gcc_unreachable (); /* Always expanded during parsing.  */
       break;
     }
 
@@ -5515,11 +5516,10 @@ trees_in::core_vals (tree t)
 	 things.  */
       if (!RECORD_OR_UNION_CODE_P (code) && code != ENUMERAL_TYPE)
 	{
-	  if (!TYPE_CACHED_VALUES_P (t))
-	    RT (t->type_non_common.values);
-	  else
-	    /* Clear the type cached values.  */
-	    TYPE_CACHED_VALUES_P (t) = 0;
+	  /* This is not clobbering TYPE_CACHED_VALUES, because this
+	     is a new type being read in, so there aren't any.  */
+	  gcc_checking_assert (!TYPE_CACHED_VALUES_P (t));
+	  RT (t->type_non_common.values);
 
 	  /* POINTER and REFERENCE types hold NEXT_{PTR,REF}_TO.  We
 	     store a marker there to indicate whether we're on the
@@ -5624,7 +5624,7 @@ trees_in::core_vals (tree t)
       break;
 
     case TS_CP_PTRMEM:
-      gcc_unreachable (); // FIXME
+      RT (((lang_tree_node *)t)->ptrmem.member);
       break;
 
     case TS_CP_OVERLOAD:
@@ -5695,8 +5695,7 @@ trees_in::core_vals (tree t)
       break;
 
     case TS_CP_USERDEF_LITERAL:
-      gcc_unreachable (); // FIXME
-      break;
+      return false;  /* Should never see.  */
     }
 
 #undef RT
