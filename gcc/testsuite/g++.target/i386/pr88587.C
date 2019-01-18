@@ -1,6 +1,6 @@
-/* { dg-do compile } */
+/* { dg-do compile { target ia32 } } */
 /* { dg-require-ifunc "" }  */
-/* { dg-options "-O -m32 -g -mno-sse -Wno-attributes" } */
+/* { dg-options "-O -fno-pic -g -mno-sse -Wno-attributes" } */
 
 __attribute__((target("default"),always_inline))
 void a()

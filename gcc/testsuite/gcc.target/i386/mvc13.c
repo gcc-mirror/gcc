@@ -1,6 +1,6 @@
-/* { dg-do compile } */
+/* { dg-do compile { target ia32 } } */
 /* { dg-require-ifunc "" } */
-/* { dg-options "-O -m32 -g -mno-sse" } */
+/* { dg-options "-O -g -mno-sse" } */
 
 __attribute__((target_clones("default,sse2")))
 void a()
