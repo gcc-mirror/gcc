@@ -5,6 +5,7 @@
 package runtime
 
 import (
+	"internal/cpu"
 	"runtime/internal/atomic"
 	"runtime/internal/sys"
 	"unsafe"
@@ -439,7 +440,12 @@ type g struct {
 	scang   uintptr // the g that wants to scan this g's stack (uintptr to avoid write barrier)
 	scangcw uintptr // gc worker for scanning stack (uintptr to avoid write barrier)
 
-	isSystemGoroutine bool // whether goroutine is a "system" goroutine
+	isSystemGoroutine    bool // whether goroutine is a "system" goroutine
+	isFinalizerGoroutine bool // whether goroutine is the finalizer goroutine
+
+	deferring          bool // whether we are running a deferred function
+	goexiting          bool // whether we are running Goexit
+	ranCgocallBackDone bool // whether we deferred CgocallBackDone
 
 	traceback uintptr // stack traceback buffer
 
@@ -463,6 +469,7 @@ type m struct {
 	caughtsig   guintptr // goroutine running during fatal signal
 	p           puintptr // attached p for executing go code (nil if not executing go code)
 	nextp       puintptr
+	oldp        puintptr // the p that was attached before executing a syscall
 	id          int64
 	mallocing   int32
 	throwing    int32
@@ -471,7 +478,6 @@ type m struct {
 	softfloat   int32
 	dying       int32
 	profilehz   int32
-	helpgc      int32
 	spinning    bool // m is out of work and is actively looking for work
 	blocked     bool // m is blocked on a note
 	inwb        bool // m is executing a write barrier
@@ -564,8 +570,10 @@ type p struct {
 	runnext guintptr
 
 	// Available G's (status == Gdead)
-	gfree    *g
-	gfreecnt int32
+	gFree struct {
+		gList
+		n int32
+	}
 
 	sudogcache []*sudog
 	sudogbuf   [128]*sudog
@@ -604,7 +612,7 @@ type p struct {
 
 	runSafePointFn uint32 // if 1, run sched.safePointFn at next safe point
 
-	pad [sys.CacheLineSize]byte
+	pad cpu.CacheLinePad
 }
 
 type schedt struct {
@@ -632,14 +640,27 @@ type schedt struct {
 	nmspinning uint32 // See "Worker thread parking/unparking" comment in proc.go.
 
 	// Global runnable queue.
-	runqhead guintptr
-	runqtail guintptr
+	runq     gQueue
 	runqsize int32
 
+	// disable controls selective disabling of the scheduler.
+	//
+	// Use schedEnableUser to control this.
+	//
+	// disable is protected by sched.lock.
+	disable struct {
+		// user disables scheduling of user goroutines.
+		user     bool
+		runnable gQueue // pending runnable Gs
+		n        int32  // length of runnable
+	}
+
 	// Global cache of dead G's.
-	gflock mutex
-	gfree  *g
-	ngfree int32
+	gFree struct {
+		lock mutex
+		list gList // Gs
+		n    int32
+	}
 
 	// Central cache of sudog structs.
 	sudoglock  mutex

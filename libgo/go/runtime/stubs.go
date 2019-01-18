@@ -84,12 +84,12 @@ func badsystemstack() {
 // used only when the caller knows that *ptr contains no heap pointers
 // because either:
 //
-// 1. *ptr is initialized memory and its type is pointer-free.
+// *ptr is initialized memory and its type is pointer-free, or
 //
-// 2. *ptr is uninitialized memory (e.g., memory that's being reused
-//    for a new allocation) and hence contains only "junk".
+// *ptr is uninitialized memory (e.g., memory that's being reused
+// for a new allocation) and hence contains only "junk".
 //
-// in memclr_*.s
+// The (CPU-specific) implementations of this function are in memclr_*.s.
 //go:noescape
 func memclrNoHeapPointers(ptr unsafe.Pointer, n uintptr)
 
@@ -164,7 +164,7 @@ func breakpoint()
 
 func asminit() {}
 
-//go:linkname reflectcall reflect.call
+//go:linkname reflectcall runtime.reflectcall
 //go:noescape
 func reflectcall(fntype *functype, fn *funcval, isInterface, isMethod bool, params, results *unsafe.Pointer)
 
@@ -454,3 +454,15 @@ var usestackmaps bool
 // probestackmaps detects whether there are stack maps.
 //go:linkname probestackmaps runtime.probestackmaps
 func probestackmaps() bool
+
+// For the math/bits packages for gccgo.
+//go:linkname getDivideError runtime.getDivideError
+func getDivideError() error {
+	return divideError
+}
+
+// For the math/bits packages for gccgo.
+//go:linkname getOverflowError runtime.getOverflowError
+func getOverflowError() error {
+	return overflowError
+}

@@ -13,7 +13,7 @@ uint32_t Load (uint32_t *ptr)
 uint32_t
 Load (uint32_t *ptr)
 {
-  return __atomic_load_n (ptr, __ATOMIC_ACQUIRE);
+  return __atomic_load_n (ptr, __ATOMIC_SEQ_CST);
 }
 
 void *Loadp (void *ptr)
@@ -23,7 +23,7 @@ void *Loadp (void *ptr)
 void *
 Loadp (void *ptr)
 {
-  return __atomic_load_n ((void **) ptr, __ATOMIC_ACQUIRE);
+  return __atomic_load_n ((void **) ptr, __ATOMIC_SEQ_CST);
 }
 
 uint64_t Load64 (uint64_t *ptr)
@@ -35,6 +35,16 @@ Load64 (uint64_t *ptr)
 {
   if (((uintptr_t) ptr & 7) != 0)
     panicmem ();
+  return __atomic_load_n (ptr, __ATOMIC_SEQ_CST);
+}
+
+uint32_t LoadAcq (uint32_t *ptr)
+  __asm__ (GOSYM_PREFIX "runtime..z2finternal..z2fatomic.LoadAcq")
+  __attribute__ ((no_split_stack));
+
+uint32_t
+LoadAcq (uint32_t *ptr)
+{
   return __atomic_load_n (ptr, __ATOMIC_ACQUIRE);
 }
 
@@ -45,7 +55,7 @@ uintptr_t Loaduintptr (uintptr_t *ptr)
 uintptr_t
 Loaduintptr (uintptr_t *ptr)
 {
-  return __atomic_load_n (ptr, __ATOMIC_ACQUIRE);
+  return __atomic_load_n (ptr, __ATOMIC_SEQ_CST);
 }
 
 uintgo Loaduint (uintgo *ptr)
@@ -55,7 +65,7 @@ uintgo Loaduint (uintgo *ptr)
 uintgo
 Loaduint (uintgo *ptr)
 {
-  return __atomic_load_n (ptr, __ATOMIC_ACQUIRE);
+  return __atomic_load_n (ptr, __ATOMIC_SEQ_CST);
 }
 
 int64_t Loadint64 (int64_t *ptr)
@@ -67,7 +77,7 @@ Loadint64 (int64_t *ptr)
 {
   if (((uintptr_t) ptr & 7) != 0)
     panicmem ();
-  return __atomic_load_n (ptr, __ATOMIC_ACQUIRE);
+  return __atomic_load_n (ptr, __ATOMIC_SEQ_CST);
 }
 
 uint32_t Xadd (uint32_t *ptr, int32_t delta)
@@ -188,6 +198,16 @@ Cas64 (uint64_t *ptr, uint64_t old, uint64_t new)
   return __atomic_compare_exchange_n (ptr, &old, new, false, __ATOMIC_SEQ_CST, __ATOMIC_RELAXED);
 }
 
+_Bool CasRel (uint32_t *ptr, uint32_t old, uint32_t new)
+  __asm__ (GOSYM_PREFIX "runtime..z2finternal..z2fatomic.CasRel")
+  __attribute__ ((no_split_stack));
+
+_Bool
+CasRel (uint32_t *ptr, uint32_t old, uint32_t new)
+{
+  return __atomic_compare_exchange_n (ptr, &old, new, false, __ATOMIC_RELEASE, __ATOMIC_RELAXED);
+}
+
 _Bool Casp1 (void **ptr, void *old, void *new)
   __asm__ (GOSYM_PREFIX "runtime..z2finternal..z2fatomic.Casp1")
   __attribute__ ((no_split_stack));
@@ -228,6 +248,16 @@ Store64 (uint64_t *ptr, uint64_t val)
   if (((uintptr_t) ptr & 7) != 0)
     panicmem ();
   __atomic_store_n (ptr, val, __ATOMIC_SEQ_CST);
+}
+
+void StoreRel (uint32_t *ptr, uint32_t val)
+  __asm__ (GOSYM_PREFIX "runtime..z2finternal..z2fatomic.StoreRel")
+  __attribute__ ((no_split_stack));
+
+void
+StoreRel (uint32_t *ptr, uint32_t val)
+{
+  __atomic_store_n (ptr, val, __ATOMIC_RELEASE);
 }
 
 void Storeuintptr (uintptr_t *ptr, uintptr_t val)

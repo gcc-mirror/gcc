@@ -15,6 +15,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"syscall"
 	"testing"
 )
 
@@ -92,6 +93,9 @@ var wincleantests = []PathTest{
 	{`//host/share/foo/../baz`, `\\host\share\baz`},
 	{`\\a\b\..\c`, `\\a\b\c`},
 	{`\\a\b`, `\\a\b`},
+	{`\\a\b\`, `\\a\b`},
+	{`\\folder\share\foo`, `\\folder\share\foo`},
+	{`\\folder\share\foo\`, `\\folder\share\foo`},
 }
 
 func TestClean(t *testing.T) {
@@ -274,6 +278,10 @@ var winjointests = []JoinTest{
 	{[]string{`C:`, `a`}, `C:a`},
 	{[]string{`C:`, `a\b`}, `C:a\b`},
 	{[]string{`C:`, `a`, `b`}, `C:a\b`},
+	{[]string{`C:`, ``, `b`}, `C:b`},
+	{[]string{`C:`, ``, ``, `b`}, `C:b`},
+	{[]string{`C:`, ``}, `C:.`},
+	{[]string{`C:`, ``, ``}, `C:.`},
 	{[]string{`C:.`, `a`}, `C:a`},
 	{[]string{`C:a`, `b`}, `C:a\b`},
 	{[]string{`C:a`, `b`, `d`}, `C:a\b\d`},
@@ -747,6 +755,11 @@ func TestIsAbs(t *testing.T) {
 		for _, test := range isabstests {
 			tests = append(tests, IsAbsTest{"c:" + test.path, test.isAbs})
 		}
+		// Test reserved names.
+		tests = append(tests, IsAbsTest{os.DevNull, true})
+		tests = append(tests, IsAbsTest{"NUL", true})
+		tests = append(tests, IsAbsTest{"nul", true})
+		tests = append(tests, IsAbsTest{"CON", true})
 	} else {
 		tests = isabstests
 	}
@@ -770,6 +783,18 @@ var EvalSymlinksTestDirs = []EvalSymlinksTest{
 	{"test/link1", "../test"},
 	{"test/link2", "dir"},
 	{"test/linkabs", "/"},
+	{"test/link4", "../test2"},
+	{"test2", "test/dir"},
+	// Issue 23444.
+	{"src", ""},
+	{"src/pool", ""},
+	{"src/pool/test", ""},
+	{"src/versions", ""},
+	{"src/versions/current", "../../version"},
+	{"src/versions/v1", ""},
+	{"src/versions/v1/modules", ""},
+	{"src/versions/v1/modules/test", "../../../pool/test"},
+	{"version", "src/versions/v1"},
 }
 
 var EvalSymlinksTests = []EvalSymlinksTest{
@@ -783,6 +808,8 @@ var EvalSymlinksTests = []EvalSymlinksTest{
 	{"test/dir/link3", "."},
 	{"test/link2/link3/test", "test"},
 	{"test/linkabs", "/"},
+	{"test/link4/..", "test"},
+	{"src/versions/current/modules/test", "src/pool/test"},
 }
 
 // simpleJoin builds a file name from the directory and path.
@@ -1047,7 +1074,7 @@ func TestAbs(t *testing.T) {
 	}
 
 	for _, path := range absTests {
-		path = strings.Replace(path, "$", root, -1)
+		path = strings.ReplaceAll(path, "$", root)
 		info, err := os.Stat(path)
 		if err != nil {
 			t.Errorf("%s: %s", path, err)
@@ -1348,4 +1375,31 @@ func testWalkSymlink(t *testing.T, mklink func(target, link string) error) {
 func TestWalkSymlink(t *testing.T) {
 	testenv.MustHaveSymlink(t)
 	testWalkSymlink(t, os.Symlink)
+}
+
+func TestIssue29372(t *testing.T) {
+	f, err := ioutil.TempFile("", "issue29372")
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.Close()
+	path := f.Name()
+	defer os.Remove(path)
+
+	pathSeparator := string(filepath.Separator)
+	tests := []string{
+		path + strings.Repeat(pathSeparator, 1),
+		path + strings.Repeat(pathSeparator, 2),
+		path + strings.Repeat(pathSeparator, 1) + ".",
+		path + strings.Repeat(pathSeparator, 2) + ".",
+		path + strings.Repeat(pathSeparator, 1) + "..",
+		path + strings.Repeat(pathSeparator, 2) + "..",
+	}
+
+	for i, test := range tests {
+		_, err = filepath.EvalSymlinks(test)
+		if err != syscall.ENOTDIR {
+			t.Fatalf("test#%d: want %q, got %q", i, syscall.ENOTDIR, err)
+		}
+	}
 }
