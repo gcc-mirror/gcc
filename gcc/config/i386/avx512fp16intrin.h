@@ -217,6 +217,257 @@ _mm_store_sh (void *__P, __m128h __A)
   *(_Float16 *) __P = ((__v8hf)__A)[0];
 }
 
+/* Intrinsics v[add,sub,mul,div]ph.  */
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_add_ph (__m512h __A, __m512h __B)
+{
+  return (__m512h) ((__v32hf) __A + (__v32hf) __B);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_add_ph (__m512h __A, __mmask32 __B, __m512h __C, __m512h __D)
+{
+  return __builtin_ia32_vaddph_v32hf_mask (__C, __D, __A, __B);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_add_ph (__mmask32 __A, __m512h __B, __m512h __C)
+{
+  return __builtin_ia32_vaddph_v32hf_mask (__B, __C,
+					   _mm512_setzero_ph (), __A);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_sub_ph (__m512h __A, __m512h __B)
+{
+  return (__m512h) ((__v32hf) __A - (__v32hf) __B);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_sub_ph (__m512h __A, __mmask32 __B, __m512h __C, __m512h __D)
+{
+  return __builtin_ia32_vsubph_v32hf_mask (__C, __D, __A, __B);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_sub_ph (__mmask32 __A, __m512h __B, __m512h __C)
+{
+  return __builtin_ia32_vsubph_v32hf_mask (__B, __C,
+					   _mm512_setzero_ph (), __A);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mul_ph (__m512h __A, __m512h __B)
+{
+  return (__m512h) ((__v32hf) __A * (__v32hf) __B);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_mul_ph (__m512h __A, __mmask32 __B, __m512h __C, __m512h __D)
+{
+  return __builtin_ia32_vmulph_v32hf_mask (__C, __D, __A, __B);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_mul_ph (__mmask32 __A, __m512h __B, __m512h __C)
+{
+  return __builtin_ia32_vmulph_v32hf_mask (__B, __C,
+					   _mm512_setzero_ph (), __A);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_div_ph (__m512h __A, __m512h __B)
+{
+  return (__m512h) ((__v32hf) __A / (__v32hf) __B);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_div_ph (__m512h __A, __mmask32 __B, __m512h __C, __m512h __D)
+{
+  return __builtin_ia32_vdivph_v32hf_mask (__C, __D, __A, __B);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_div_ph (__mmask32 __A, __m512h __B, __m512h __C)
+{
+  return __builtin_ia32_vdivph_v32hf_mask (__B, __C,
+					   _mm512_setzero_ph (), __A);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_add_round_ph (__m512h __A, __m512h __B, const int __C)
+{
+  return __builtin_ia32_vaddph_v32hf_mask_round (__A, __B,
+						 _mm512_setzero_ph (),
+						 (__mmask32) -1, __C);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_add_round_ph (__m512h __A, __mmask32 __B, __m512h __C,
+			  __m512h __D, const int __E)
+{
+  return __builtin_ia32_vaddph_v32hf_mask_round (__C, __D, __A, __B, __E);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_add_round_ph (__mmask32 __A, __m512h __B, __m512h __C,
+			   const int __D)
+{
+  return __builtin_ia32_vaddph_v32hf_mask_round (__B, __C,
+						 _mm512_setzero_ph (),
+						 __A, __D);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_sub_round_ph (__m512h __A, __m512h __B, const int __C)
+{
+  return __builtin_ia32_vsubph_v32hf_mask_round (__A, __B,
+						 _mm512_setzero_ph (),
+						 (__mmask32) -1, __C);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_sub_round_ph (__m512h __A, __mmask32 __B, __m512h __C,
+			  __m512h __D, const int __E)
+{
+  return __builtin_ia32_vsubph_v32hf_mask_round (__C, __D, __A, __B, __E);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_sub_round_ph (__mmask32 __A, __m512h __B, __m512h __C,
+			   const int __D)
+{
+  return __builtin_ia32_vsubph_v32hf_mask_round (__B, __C,
+						 _mm512_setzero_ph (),
+						 __A, __D);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mul_round_ph (__m512h __A, __m512h __B, const int __C)
+{
+  return __builtin_ia32_vmulph_v32hf_mask_round (__A, __B,
+						 _mm512_setzero_ph (),
+						 (__mmask32) -1, __C);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_mul_round_ph (__m512h __A, __mmask32 __B, __m512h __C,
+			  __m512h __D, const int __E)
+{
+  return __builtin_ia32_vmulph_v32hf_mask_round (__C, __D, __A, __B, __E);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_mul_round_ph (__mmask32 __A, __m512h __B, __m512h __C,
+			   const int __D)
+{
+  return __builtin_ia32_vmulph_v32hf_mask_round (__B, __C,
+						 _mm512_setzero_ph (),
+						 __A, __D);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_div_round_ph (__m512h __A, __m512h __B, const int __C)
+{
+  return __builtin_ia32_vdivph_v32hf_mask_round (__A, __B,
+						 _mm512_setzero_ph (),
+						 (__mmask32) -1, __C);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_div_round_ph (__m512h __A, __mmask32 __B, __m512h __C,
+			  __m512h __D, const int __E)
+{
+  return __builtin_ia32_vdivph_v32hf_mask_round (__C, __D, __A, __B, __E);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_div_round_ph (__mmask32 __A, __m512h __B, __m512h __C,
+			   const int __D)
+{
+  return __builtin_ia32_vdivph_v32hf_mask_round (__B, __C,
+						 _mm512_setzero_ph (),
+						 __A, __D);
+}
+#else
+#define _mm512_add_round_ph(A, B, C)					\
+  ((__m512h)__builtin_ia32_vaddph_v32hf_mask_round((A), (B),		\
+						   _mm512_setzero_ph (),\
+						   (__mmask32)-1, (C)))
+
+#define _mm512_mask_add_round_ph(A, B, C, D, E)			\
+  ((__m512h)__builtin_ia32_vaddph_v32hf_mask_round((C), (D), (A), (B), (E)))
+
+#define _mm512_maskz_add_round_ph(A, B, C, D)				\
+  ((__m512h)__builtin_ia32_vaddph_v32hf_mask_round((B), (C),		\
+						   _mm512_setzero_ph (),\
+						   (A), (D)))
+
+#define _mm512_sub_round_ph(A, B, C)					\
+  ((__m512h)__builtin_ia32_vsubph_v32hf_mask_round((A), (B),		\
+						   _mm512_setzero_ph (),\
+						   (__mmask32)-1, (C)))
+
+#define _mm512_mask_sub_round_ph(A, B, C, D, E)			\
+  ((__m512h)__builtin_ia32_vsubph_v32hf_mask_round((C), (D), (A), (B), (E)))
+
+#define _mm512_maskz_sub_round_ph(A, B, C, D)				\
+  ((__m512h)__builtin_ia32_vsubph_v32hf_mask_round((B), (C),		\
+						   _mm512_setzero_ph (),\
+						   (A), (D)))
+
+#define _mm512_mul_round_ph(A, B, C)					\
+  ((__m512h)__builtin_ia32_vmulph_v32hf_mask_round((A), (B),		\
+						   _mm512_setzero_ph (),\
+						   (__mmask32)-1, (C)))
+
+#define _mm512_mask_mul_round_ph(A, B, C, D, E)			\
+  ((__m512h)__builtin_ia32_vmulph_v32hf_mask_round((C), (D), (A), (B), (E)))
+
+#define _mm512_maskz_mul_round_ph(A, B, C, D)				\
+  ((__m512h)__builtin_ia32_vmulph_v32hf_mask_round((B), (C),		\
+						   _mm512_setzero_ph (),\
+						   (A), (D)))
+
+#define _mm512_div_round_ph(A, B, C)					\
+  ((__m512h)__builtin_ia32_vdivph_v32hf_mask_round((A), (B),		\
+						   _mm512_setzero_ph (),\
+						   (__mmask32)-1, (C)))
+
+#define _mm512_mask_div_round_ph(A, B, C, D, E)			\
+  ((__m512h)__builtin_ia32_vdivph_v32hf_mask_round((C), (D), (A), (B), (E)))
+
+#define _mm512_maskz_div_round_ph(A, B, C, D)				\
+  ((__m512h)__builtin_ia32_vdivph_v32hf_mask_round((B), (C),		\
+						   _mm512_setzero_ph (),\
+						   (A), (D)))
+#endif  /* __OPTIMIZE__  */
+
 #ifdef __DISABLE_AVX512FP16__
 #undef __DISABLE_AVX512FP16__
 #pragma GCC pop_options

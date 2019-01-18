@@ -772,6 +772,20 @@ test_2 (_mm_rcp28_round_ss, __m128, __m128, __m128, 8)
 test_2 (_mm_rsqrt28_round_sd, __m128d, __m128d, __m128d, 8)
 test_2 (_mm_rsqrt28_round_ss, __m128, __m128, __m128, 8)
 
+/* avx512fp16intrin.h */
+test_2 (_mm512_add_round_ph, __m512h, __m512h, __m512h, 8)
+test_2 (_mm512_sub_round_ph, __m512h, __m512h, __m512h, 8)
+test_2 (_mm512_mul_round_ph, __m512h, __m512h, __m512h, 8)
+test_2 (_mm512_div_round_ph, __m512h, __m512h, __m512h, 8)
+test_3 (_mm512_maskz_add_round_ph, __m512h, __mmask32, __m512h, __m512h, 8)
+test_3 (_mm512_maskz_sub_round_ph, __m512h, __mmask32, __m512h, __m512h, 8)
+test_3 (_mm512_maskz_mul_round_ph, __m512h, __mmask32, __m512h, __m512h, 8)
+test_3 (_mm512_maskz_div_round_ph, __m512h, __mmask32, __m512h, __m512h, 8)
+test_4 (_mm512_mask_add_round_ph, __m512h, __m512h, __mmask32, __m512h, __m512h, 8)
+test_4 (_mm512_mask_sub_round_ph, __m512h, __m512h, __mmask32, __m512h, __m512h, 8)
+test_4 (_mm512_mask_mul_round_ph, __m512h, __m512h, __mmask32, __m512h, __m512h, 8)
+test_4 (_mm512_mask_div_round_ph, __m512h, __m512h, __mmask32, __m512h, __m512h, 8)
+
 /* shaintrin.h */
 test_2 (_mm_sha1rnds4_epu32, __m128i, __m128i, __m128i, 1)
 

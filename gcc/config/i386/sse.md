@@ -298,6 +298,13 @@
   [(V16SF "TARGET_AVX512F") (V8SF "TARGET_AVX") V4SF
    (V8DF "TARGET_AVX512F") (V4DF "TARGET_AVX") (V2DF "TARGET_SSE2")])
 
+(define_mode_iterator VFH
+  [(V32HF "TARGET_AVX512FP16")
+   (V16HF "TARGET_AVX512FP16 && TARGET_AVX512VL")
+   (V8HF "TARGET_AVX512FP16 && TARGET_AVX512VL")
+   (V16SF "TARGET_AVX512F") (V8SF "TARGET_AVX") V4SF
+   (V8DF "TARGET_AVX512F") (V4DF "TARGET_AVX") (V2DF "TARGET_SSE2")])
+
 ;; 128- and 256-bit float vector modes
 (define_mode_iterator VF_128_256
   [(V8SF "TARGET_AVX") V4SF
@@ -320,6 +327,13 @@
 ;; All DFmode vector float modes
 (define_mode_iterator VF2
   [(V8DF "TARGET_AVX512F") (V4DF "TARGET_AVX") V2DF])
+
+;; All DFmode & HFmode vector float modes
+(define_mode_iterator VF2H
+  [(V32HF "TARGET_AVX512FP16")
+   (V16HF "TARGET_AVX512FP16 && TARGET_AVX512VL")
+   (V8HF "TARGET_AVX512FP16 && TARGET_AVX512VL")
+   (V8DF "TARGET_AVX512F") (V4DF "TARGET_AVX") V2DF])
 
 ;; 128- and 256-bit DF vector modes
 (define_mode_iterator VF2_128_256
@@ -885,6 +899,7 @@
    (V32HI "HI") (V16HI "QI") (V8HI  "QI") (V4HI "QI")
    (V16SI "QI") (V8SI  "QI") (V4SI  "QI")
    (V8DI  "QI") (V4DI  "QI") (V2DI  "QI")
+   (V32HF "HI") (V16HF "QI") (V8HF  "QI")
    (V16SF "QI") (V8SF  "QI") (V4SF  "QI")
    (V8DF  "QI") (V4DF  "QI") (V2DF  "QI")])
 
@@ -2032,18 +2047,18 @@
 })
 
 (define_expand "<insn><mode>3<mask_name><round_name>"
-  [(set (match_operand:VF 0 "register_operand")
-	(plusminus:VF
-	  (match_operand:VF 1 "<round_nimm_predicate>")
-	  (match_operand:VF 2 "<round_nimm_predicate>")))]
+  [(set (match_operand:VFH 0 "register_operand")
+	(plusminus:VFH
+	  (match_operand:VFH 1 "<round_nimm_predicate>")
+	  (match_operand:VFH 2 "<round_nimm_predicate>")))]
   "TARGET_SSE && <mask_mode512bit_condition> && <round_mode512bit_condition>"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
 (define_insn "*<insn><mode>3<mask_name><round_name>"
-  [(set (match_operand:VF 0 "register_operand" "=x,v")
-	(plusminus:VF
-	  (match_operand:VF 1 "<bcst_round_nimm_predicate>" "<comm>0,v")
-	  (match_operand:VF 2 "<bcst_round_nimm_predicate>" "xBm,<bcst_round_constraint>")))]
+  [(set (match_operand:VFH 0 "register_operand" "=x,v")
+	(plusminus:VFH
+	  (match_operand:VFH 1 "<bcst_round_nimm_predicate>" "<comm>0,v")
+	  (match_operand:VFH 2 "<bcst_round_nimm_predicate>" "xBm,<bcst_round_constraint>")))]
   "TARGET_SSE && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)
    && <mask_mode512bit_condition> && <round_mode512bit_condition>"
   "@
@@ -2121,18 +2136,18 @@
 })
 
 (define_expand "mul<mode>3<mask_name><round_name>"
-  [(set (match_operand:VF 0 "register_operand")
-	(mult:VF
-	  (match_operand:VF 1 "<round_nimm_predicate>")
-	  (match_operand:VF 2 "<round_nimm_predicate>")))]
+  [(set (match_operand:VFH 0 "register_operand")
+	(mult:VFH
+	  (match_operand:VFH 1 "<round_nimm_predicate>")
+	  (match_operand:VFH 2 "<round_nimm_predicate>")))]
   "TARGET_SSE && <mask_mode512bit_condition> && <round_mode512bit_condition>"
   "ix86_fixup_binary_operands_no_copy (MULT, <MODE>mode, operands);")
 
 (define_insn "*mul<mode>3<mask_name><round_name>"
-  [(set (match_operand:VF 0 "register_operand" "=x,v")
-	(mult:VF
-	  (match_operand:VF 1 "<bcst_round_nimm_predicate>" "%0,v")
-	  (match_operand:VF 2 "<bcst_round_nimm_predicate>" "xBm,<bcst_round_constraint>")))]
+  [(set (match_operand:VFH 0 "register_operand" "=x,v")
+	(mult:VFH
+	  (match_operand:VFH 1 "<bcst_round_nimm_predicate>" "%0,v")
+	  (match_operand:VFH 2 "<bcst_round_nimm_predicate>" "xBm,<bcst_round_constraint>")))]
   "TARGET_SSE && ix86_binary_operator_ok (MULT, <MODE>mode, operands)
    && <mask_mode512bit_condition> && <round_mode512bit_condition>"
   "@
@@ -2195,9 +2210,9 @@
    (set_attr "mode" "<ssescalarmode>")])
 
 (define_expand "div<mode>3"
-  [(set (match_operand:VF2 0 "register_operand")
-	(div:VF2 (match_operand:VF2 1 "register_operand")
-		 (match_operand:VF2 2 "vector_operand")))]
+  [(set (match_operand:VF2H 0 "register_operand")
+	(div:VF2H (match_operand:VF2H 1 "register_operand")
+		  (match_operand:VF2H 2 "vector_operand")))]
   "TARGET_SSE2")
 
 (define_expand "div<mode>3"
@@ -2236,10 +2251,10 @@
 })
 
 (define_insn "<sse>_div<mode>3<mask_name><round_name>"
-  [(set (match_operand:VF 0 "register_operand" "=x,v")
-	(div:VF
-	  (match_operand:VF 1 "register_operand" "0,v")
-	  (match_operand:VF 2 "<bcst_round_nimm_predicate>" "xBm,<bcst_round_constraint>")))]
+  [(set (match_operand:VFH 0 "register_operand" "=x,v")
+	(div:VFH
+	  (match_operand:VFH 1 "register_operand" "0,v")
+	  (match_operand:VFH 2 "<bcst_round_nimm_predicate>" "xBm,<bcst_round_constraint>")))]
   "TARGET_SSE && <mask_mode512bit_condition> && <round_mode512bit_condition>"
   "@
    div<ssemodesuffix>\t{%2, %0|%0, %2}

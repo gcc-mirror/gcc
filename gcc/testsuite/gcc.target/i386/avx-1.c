@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mavx2 -maes -mpclmul -mgfni -mavx512bw -mavx512fp16" } */
+/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mavx2 -maes -mpclmul -mgfni -mavx512bw -mavx512fp16 -mavx512vl" } */
 /* { dg-add-options bind_pic_locally } */
 
 #include <mm_malloc.h>
@@ -684,6 +684,12 @@
 #define __builtin_ia32_vpshld_v4si_mask(A, B, C, D, E)  __builtin_ia32_vpshld_v4si_mask(A, B, 1, D, E)
 #define __builtin_ia32_vpshld_v2di(A, B, C) __builtin_ia32_vpshld_v2di(A, B, 1)
 #define __builtin_ia32_vpshld_v2di_mask(A, B, C, D, E)  __builtin_ia32_vpshld_v2di_mask(A, B, 1, D, E)
+
+/* avx512fp16intrin.h */
+#define __builtin_ia32_vaddph_v32hf_mask_round(A, B, C, D, E) __builtin_ia32_vaddph_v32hf_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_vsubph_v32hf_mask_round(A, B, C, D, E) __builtin_ia32_vsubph_v32hf_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_vmulph_v32hf_mask_round(A, B, C, D, E) __builtin_ia32_vmulph_v32hf_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_vdivph_v32hf_mask_round(A, B, C, D, E) __builtin_ia32_vdivph_v32hf_mask_round(A, B, C, D, 8)
 
 /* vpclmulqdqintrin.h */
 #define __builtin_ia32_vpclmulqdq_v4di(A, B, C)  __builtin_ia32_vpclmulqdq_v4di(A, B, 1) 

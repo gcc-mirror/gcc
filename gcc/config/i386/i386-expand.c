@@ -10038,6 +10038,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16HI_FTYPE_V8SI_V8SI_V16HI_UHI:
     case V8HI_FTYPE_V4SI_V4SI_V8HI_UQI:
     case V4DF_FTYPE_V4DF_V4DI_V4DF_UQI:
+    case V32HF_FTYPE_V32HF_V32HF_V32HF_USI:
     case V8SF_FTYPE_V8SF_V8SI_V8SF_UQI:
     case V4SF_FTYPE_V4SF_V4SI_V4SF_UQI:
     case V2DF_FTYPE_V2DF_V2DI_V2DF_UQI:
@@ -10055,6 +10056,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V8HI_FTYPE_V8HI_V8HI_V8HI_UQI:
     case V8SI_FTYPE_V8SI_V8SI_V8SI_UQI:
     case V4SI_FTYPE_V4SI_V4SI_V4SI_UQI:
+    case V16HF_FTYPE_V16HF_V16HF_V16HF_UHI:
     case V8SF_FTYPE_V8SF_V8SF_V8SF_UQI:
     case V16QI_FTYPE_V16QI_V16QI_V16QI_UHI:
     case V16HI_FTYPE_V16HI_V16HI_V16HI_UHI:
@@ -10062,6 +10064,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V2DF_FTYPE_V2DF_V2DF_V2DF_UQI:
     case V4DI_FTYPE_V4DI_V4DI_V4DI_UQI:
     case V4DF_FTYPE_V4DF_V4DF_V4DF_UQI:
+    case V8HF_FTYPE_V8HF_V8HF_V8HF_UQI:
     case V4SF_FTYPE_V4SF_V4SF_V4SF_UQI:
     case V8DF_FTYPE_V8DF_V8DF_V8DF_UQI:
     case V8DF_FTYPE_V8DF_V8DI_V8DF_UQI:
@@ -10738,6 +10741,7 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case INT_FTYPE_V4SF_INT:
       nargs = 2;
       break;
+    case V32HF_FTYPE_V32HF_V32HF_INT:
     case V4SF_FTYPE_V4SF_UINT_INT:
     case V4SF_FTYPE_V4SF_UINT64_INT:
     case V2DF_FTYPE_V2DF_UINT64_INT:
@@ -10778,6 +10782,7 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case V2DF_FTYPE_V2DF_V2DF_V2DF_UQI_INT:
     case V4SF_FTYPE_V4SF_V4SF_V4SF_UQI_INT:
     case V16SF_FTYPE_V16SF_V16SF_V16SF_HI_INT:
+    case V32HF_FTYPE_V32HF_V32HF_V32HF_USI_INT:
     case V2DF_FTYPE_V2DF_V2DF_V2DF_QI_INT:
     case V2DF_FTYPE_V2DF_V4SF_V2DF_QI_INT:
     case V2DF_FTYPE_V2DF_V4SF_V2DF_UQI_INT:
