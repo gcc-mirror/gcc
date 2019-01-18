@@ -1,3 +1,18 @@
+2019-01-18  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+        * config/aarch64/aarch64-opts.h (enum stack_protector_guard): New
+        * config/aarch64/aarch64.c (aarch64_override_options_internal): Handle
+        and put in error checks for stack protector guard options.
+        (aarch64_stack_protect_guard): New.
+        (TARGET_STACK_PROTECT_GUARD): Define.
+        * config/aarch64/aarch64.md (UNSPEC_SSP_SYSREG): New.
+        (reg_stack_protect_address<mode>): New.
+        (stack_protect_set): Adjust for SSP_GLOBAL.
+        (stack_protect_test): Likewise.
+        * config/aarch64/aarch64.opt (-mstack-protector-guard-reg): New.
+        (-mstack-protector-guard): Likewise.
+        (-mstack-protector-guard-offset): Likewise.
+
 2019-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/86214
