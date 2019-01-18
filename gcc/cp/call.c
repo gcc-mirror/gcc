@@ -94,7 +94,7 @@ struct conversion {
   BOOL_BITFIELD bad_p : 1;
   /* If KIND is ck_ref_bind ck_base_conv, true to indicate that a
      temporary should be created to hold the result of the
-     conversion.  If KIND is ck_ambig, true if the context is
+     conversion.  If KIND is ck_ambig or ck_user, true means force
      copy-initialization.  */
   BOOL_BITFIELD need_temporary_p : 1;
   /* If KIND is ck_ptr or ck_pmem, true to indicate that a conversion
@@ -1560,6 +1560,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
       from = TREE_TYPE (expr);
     }
 
+  bool copy_list_init = false;
   if (expr && BRACE_ENCLOSED_INITIALIZER_P (expr))
     {
       maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
@@ -1582,7 +1583,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
       /* Otherwise, if T is a reference type, a prvalue temporary of the type
 	 referenced by T is copy-list-initialized, and the reference is bound
 	 to that temporary. */
-      CONSTRUCTOR_IS_DIRECT_INIT (expr) = false;
+      copy_list_init = true;
     skip:;
     }
 
@@ -1770,6 +1771,10 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
 
   if (conv->user_conv_p)
     {
+      if (copy_list_init)
+	/* Remember this was copy-list-initialization.  */
+	conv->need_temporary_p = true;
+
       /* If initializing the temporary used a conversion function,
 	 recalculate the second conversion sequence.  */
       for (conversion *t = conv; t; t = next_conversion (t))
@@ -6941,7 +6946,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	if (DECL_NONCONVERTING_P (convfn) && DECL_CONSTRUCTOR_P (convfn)
 	    && BRACE_ENCLOSED_INITIALIZER_P (expr)
 	    /* Unless this is for direct-list-initialization.  */
-	    && !CONSTRUCTOR_IS_DIRECT_INIT (expr)
+	    && (!CONSTRUCTOR_IS_DIRECT_INIT (expr) || convs->need_temporary_p)
 	    /* And in C++98 a default constructor can't be explicit.  */
 	    && cxx_dialect >= cxx11)
 	  {

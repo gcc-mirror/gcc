@@ -1,3 +1,10 @@
+2019-01-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88875 - error with explicit list constructor.
+	* call.c (reference_binding): Don't modify EXPR.  Set
+	need_temporary_p on the ck_user conversion for a temporary.
+	(convert_like_real): Check it.
+
 2019-01-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c/51628
