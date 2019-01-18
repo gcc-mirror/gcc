@@ -12,6 +12,7 @@ nothrow:
 
 version (ARM)     version = ARM_Any;
 version (AArch64) version = ARM_Any;
+version (HPPA)    version = HPPA_Any;
 version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
@@ -39,6 +40,30 @@ version (X86_Any)
     enum RTLD_DEEPBIND = 0x00008;
 
     // enum RTLD_GLOBAL = 0x00100; // POSIX
+    // enum RTLD_LOCAL = 0; // POSIX
+    enum RTLD_NODELETE = 0x01000;
+
+    static if (__USE_GNU)
+    {
+        RT DL_CALL_FCT(RT, Args...)(RT function(Args) fctp, auto ref Args args)
+        {
+            _dl_mcount_wrapper_check(cast(void*)fctp);
+            return fctp(args);
+        }
+
+        void _dl_mcount_wrapper_check(void* __selfpc);
+    }
+}
+else version (HPPA_Any)
+{
+    // http://sourceware.org/git/?p=glibc.git;a=blob;f=ports/sysdeps/hppa/bits/dlfcn.h
+    // enum RTLD_LAZY = 0x0001; // POSIX
+    // enum RTLD_NOW = 0x0002; // POSIX
+    enum RTLD_BINDING_MASK = 0x3;
+    enum RTLD_NOLOAD = 0x00004;
+    enum RTLD_DEEPBIND = 0x00008;
+
+    // enum RTLD_GLOBAL = 0x0004; // POSIX
     // enum RTLD_LOCAL = 0; // POSIX
     enum RTLD_NODELETE = 0x01000;
 
