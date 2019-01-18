@@ -1,3 +1,7 @@
+2019-01-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* s-oscons-tmplt.c (AF_INET6): Do not undefine for RTEMS.
+
 2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/16615
