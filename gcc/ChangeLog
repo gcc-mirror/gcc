@@ -1,3 +1,9 @@
+2019-01-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/88892
+	* config/rs6000/rs6000.md (*movsi_from_df): Allow only register
+	operands.
+
 2019-01-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88903
