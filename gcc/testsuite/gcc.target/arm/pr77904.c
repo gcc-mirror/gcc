@@ -4,7 +4,8 @@
 __attribute__ ((noinline, noclone)) void
 clobber_sp (void)
 {
-  __asm volatile ("" : : : "sp");
+  __asm volatile ("" : : : "sp"); /* { dg-warning "listing the stack pointer register 'sp' in a clobber list is deprecated" } */
+
 }
 
 int
