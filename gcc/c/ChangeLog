@@ -1,3 +1,10 @@
+2019-01-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/51628
+	PR c/88664
+	* c-typeck.c (convert_for_assignment): Upate the
+	warn_for_address_or_pointer_of_packed_member call.
+
 2019-01-16  Tom Honermann  <tom@honermann.net>
 	    Jason Merrill  <jason@redhat.com>
 

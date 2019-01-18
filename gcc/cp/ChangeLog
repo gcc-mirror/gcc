@@ -1,3 +1,11 @@
+2019-01-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/51628
+	PR c/88664
+	* call.c (convert_for_arg_passing): Upate the
+	warn_for_address_or_pointer_of_packed_member call.
+	* typeck.c (convert_for_assignment): Likewise.
+
 2019-01-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86205 - ICE with ?: of throw and template-id.

@@ -1,3 +1,18 @@
+2019-01-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/51628
+	PR c/88664
+	* c-common.h (warn_for_address_or_pointer_of_packed_member):
+	Remove the boolean argument.
+	* c-warn.c (check_address_of_packed_member): Renamed to ...
+	(check_address_or_pointer_of_packed_member): This.  Also
+	warn pointer conversion.
+	(check_and_warn_address_of_packed_member): Renamed to ...
+	(check_and_warn_address_or_pointer_of_packed_member): This.
+	Also warn pointer conversion.
+	(warn_for_address_or_pointer_of_packed_member): Remove the
+	boolean argument.  Don't check pointer conversion here.
+
 2019-01-15  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR inline-asm/52813
