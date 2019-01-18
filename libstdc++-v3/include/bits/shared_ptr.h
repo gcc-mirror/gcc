@@ -355,9 +355,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       // This constructor is non-standard, it is used by allocate_shared.
       template<typename _Alloc, typename... _Args>
-	shared_ptr(_Sp_make_shared_tag __tag, const _Alloc& __a,
-		   _Args&&... __args)
-	: __shared_ptr<_Tp>(__tag, __a, std::forward<_Args>(__args)...)
+	shared_ptr(_Sp_alloc_shared_tag<_Alloc> __tag, _Args&&... __args)
+	: __shared_ptr<_Tp>(__tag, std::forward<_Args>(__args)...)
 	{ }
 
       template<typename _Yp, typename _Alloc, typename... _Args>
@@ -699,7 +698,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline shared_ptr<_Tp>
     allocate_shared(const _Alloc& __a, _Args&&... __args)
     {
-      return shared_ptr<_Tp>(_Sp_make_shared_tag(), __a,
+      return shared_ptr<_Tp>(_Sp_alloc_shared_tag<_Alloc>{__a},
 			     std::forward<_Args>(__args)...);
     }
 
