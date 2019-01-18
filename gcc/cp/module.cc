@@ -4621,7 +4621,6 @@ trees_out::lang_decl_bools (tree t)
   WB (lang->u.base.concept_p);
   WB (lang->u.base.var_declared_inline_p);
   WB (lang->u.base.dependent_init_p);
-  // FIXME: is this handling of module_owner still correct?
   gcc_checking_assert ((*modules)[lang->u.base.module_owner]->remap
 		       < MODULE_IMPORT_BASE);
   WB (lang->u.base.module_owner != 0);
@@ -5125,7 +5124,8 @@ trees_out::core_vals (tree t)
 	   //  to contain TS_EXP.  I think this is a bug. */
 	   || TREE_CODE_CLASS (code) == tcc_expression
 	   || TREE_CODE_CLASS (code) == tcc_binary
-	   || TREE_CODE_CLASS (code) == tcc_unary)
+	   || TREE_CODE_CLASS (code) == tcc_unary
+	   || TREE_CODE_CLASS (code) == tcc_reference)
     for (unsigned ix = TREE_OPERAND_LENGTH (t); ix--;)
       WT (TREE_OPERAND (t, ix));
 
@@ -5211,7 +5211,9 @@ trees_out::core_vals (tree t)
       break;
 
     case TS_CP_BASELINK:
-      gcc_unreachable (); // FIXME
+      WT (((lang_tree_node *)t)->baselink.binfo);
+      WT (((lang_tree_node *)t)->baselink.functions);
+      WT (((lang_tree_node *)t)->baselink.access_binfo);
       break;
 
     case TS_CP_TEMPLATE_DECL:
@@ -5233,7 +5235,11 @@ trees_out::core_vals (tree t)
       break;
 
     case TS_CP_STATIC_ASSERT:
-      gcc_unreachable (); // FIXME
+      WT (((lang_tree_node *)t)->static_assertion.condition);
+      WT (((lang_tree_node *)t)->static_assertion.message);
+      if (streaming_p ())
+	state->write_location
+	  (*this, ((lang_tree_node *)t)->static_assertion.location);
       break;
 
     case TS_CP_ARGUMENT_PACK_SELECT:
@@ -5241,7 +5247,10 @@ trees_out::core_vals (tree t)
       break;
 
     case TS_CP_TRAIT_EXPR:
-      gcc_unreachable (); // FIXME
+      WT (((lang_tree_node *)t)->trait_expression.type1);
+      WT (((lang_tree_node *)t)->trait_expression.type2);
+      if (streaming_p ())
+	WU (((lang_tree_node *)t)->trait_expression.kind);
       break;
 
     case TS_CP_LAMBDA_EXPR:
@@ -5545,7 +5554,8 @@ trees_in::core_vals (tree t)
 	   /* See comment in trees_out::core_vals.  */
 	   || TREE_CODE_CLASS (code) == tcc_expression
 	   || TREE_CODE_CLASS (code) == tcc_binary
-	   || TREE_CODE_CLASS (code) == tcc_unary)
+	   || TREE_CODE_CLASS (code) == tcc_unary
+	   || TREE_CODE_CLASS (code) == tcc_reference)
     for (unsigned ix = TREE_OPERAND_LENGTH (t); ix--;)
       RT (TREE_OPERAND (t, ix));
 
@@ -5626,7 +5636,9 @@ trees_in::core_vals (tree t)
       return false;
 
     case TS_CP_BASELINK:
-      gcc_unreachable (); // FIXME
+      RT (((lang_tree_node *)t)->baselink.binfo);
+      RT (((lang_tree_node *)t)->baselink.functions);
+      RT (((lang_tree_node *)t)->baselink.access_binfo);
       break;
 
     case TS_CP_TEMPLATE_DECL:
@@ -5646,7 +5658,10 @@ trees_in::core_vals (tree t)
       return false; /* Should never see.  */
 
     case TS_CP_STATIC_ASSERT:
-      gcc_unreachable (); // FIXME
+      RT (((lang_tree_node *)t)->static_assertion.condition);
+      RT (((lang_tree_node *)t)->static_assertion.message);
+      ((lang_tree_node *)t)->static_assertion.location
+	= state->read_location (*this);
       break;
 
     case TS_CP_ARGUMENT_PACK_SELECT:
@@ -5654,7 +5669,9 @@ trees_in::core_vals (tree t)
       break;
 
     case TS_CP_TRAIT_EXPR:
-      gcc_unreachable (); // FIXME
+      RT (((lang_tree_node *)t)->trait_expression.type1);
+      RT (((lang_tree_node *)t)->trait_expression.type2);
+      RUC (cp_trait_kind, ((lang_tree_node *)t)->trait_expression.kind);
       break;
 
     case TS_CP_LAMBDA_EXPR:

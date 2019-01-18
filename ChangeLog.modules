@@ -1,6 +1,12 @@
 2019-01-18  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_{in,out}::core_vals): Stream tcc_reference,
+	baselink, static_assert, trait_expr.
+	gcc/testsuite/
+	* g++.dg/modules/nodes-1_[ab].C: New.
+
+	gcc/cp/
 	* module.cc (module_state::{read,write}_locations): Fix macro
 	expansion compression.
 
