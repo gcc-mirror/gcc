@@ -1,3 +1,32 @@
+2019-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87514
+	PR libstdc++/87520
+	PR libstdc++/88782
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.26): Export new symbol.
+	* include/bits/shared_ptr.h
+	(shared_ptr(_Sp_make_shared_tag, const Alloc&, Args&&...))
+	(allocate_shared): Change to use new tag type.
+	* include/bits/shared_ptr_base.h (_Sp_make_shared_tag::_S_eq):
+	Declare new member function.
+	(_Sp_alloc_shared_tag): Define new type.
+	(_Sp_counted_ptr_inplace): Declare __shared_count<_Lp> as a friend.
+	(_Sp_counted_ptr_inplace::_M_get_deleter) [!__cpp_rtti]: Use
+	_Sp_make_shared_tag::_S_eq to check type_info.
+	(__shared_count(Ptr, Deleter),__shared_count(Ptr, Deleter, Alloc)):
+	Constrain to prevent being called with _Sp_alloc_shared_tag.
+	(__shared_count(_Sp_make_shared_tag, const _Alloc&, Args&&...)):
+	Replace constructor with ...
+	(__shared_count(Tp*&, _Sp_alloc_shared_tag<_Alloc>, Args&&...)): Use
+	reference parameter so address of the new object can be returned to
+	the caller. Obtain the allocator from the tag type.
+	(__shared_ptr(_Sp_make_shared_tag, const Alloc&, Args&&...)): Replace
+	constructor with ...
+	(__shared_ptr(_Sp_alloc_shared_tag<Alloc>, Args&&...)): Pass _M_ptr
+	to the __shared_count constructor.
+	(__allocate_shared): Change to use new tag type.
+	* src/c++11/shared_ptr.cc (_Sp_make_shared_tag::_S_eq): Define.
+
 2019-01-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++17/fs_ops.cc

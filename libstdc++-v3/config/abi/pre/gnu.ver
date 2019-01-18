@@ -2235,6 +2235,9 @@ GLIBCXX_3.4.26 {
     _ZNSolsEDn;
     _ZNSt13basic_ostreamIwSt11char_traitsIwEElsEDn;
 
+    # _Sp_make_shared_tag::_S_eq
+    _ZNSt19_Sp_make_shared_tag5_S_eqERKSt9type_info;
+
 } GLIBCXX_3.4.25;
 
 # Symbols in the support library (libsupc++) have their own tag.
