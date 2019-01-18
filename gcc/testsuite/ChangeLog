@@ -1,3 +1,11 @@
+2018-01-17  Steve Ellcey  <sellcey@cavium.com>
+
+	PR fortran/88898
+	* gfortran.dg/gomp/declare-simd-2.f90: Add aarch64 target specifier to
+	warning checks.
+	* gfortran.dg/gomp/pr79154-1.f90: Ditto.
+	* gfortran.dg/gomp/pr83977.f90: Ditto.
+
 2019-01-17  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/88273
