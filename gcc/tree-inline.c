@@ -2190,6 +2190,40 @@ update_ssa_across_abnormal_edges (basic_block bb, basic_block ret_bb,
       }
 }
 
+/* Insert clobbers for automatic variables of inlined ID->src_fn
+   function at the start of basic block BB.  */
+
+static void
+add_clobbers_to_eh_landing_pad (basic_block bb, copy_body_data *id)
+{
+  tree var;
+  unsigned int i;
+  FOR_EACH_VEC_SAFE_ELT (id->src_cfun->local_decls, i, var)
+    if (VAR_P (var)
+	&& !DECL_HARD_REGISTER (var)
+	&& !TREE_THIS_VOLATILE (var)
+	&& !DECL_HAS_VALUE_EXPR_P (var)
+	&& !is_gimple_reg (var)
+	&& auto_var_in_fn_p (var, id->src_fn))
+      {
+	tree *t = id->decl_map->get (var);
+	if (!t)
+	  continue;
+	tree new_var = *t;
+	if (VAR_P (new_var)
+	    && !DECL_HARD_REGISTER (new_var)
+	    && !TREE_THIS_VOLATILE (new_var)
+	    && !DECL_HAS_VALUE_EXPR_P (new_var)
+	    && !is_gimple_reg (new_var)
+	    && auto_var_in_fn_p (new_var, id->dst_fn))
+	  {
+	    gimple_stmt_iterator gsi = gsi_after_labels (bb);
+	    tree clobber = build_clobber (TREE_TYPE (new_var));
+	    gimple *clobber_stmt = gimple_build_assign (new_var, clobber);
+	    gsi_insert_before (&gsi, clobber_stmt, GSI_NEW_STMT);
+	  }
+      }
+}
 
 /* Copy edges from BB into its copy constructed earlier, scale profile
    accordingly.  Edges will be taken care of later.  Assume aux
@@ -2232,7 +2266,7 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
   if (bb->index == ENTRY_BLOCK || bb->index == EXIT_BLOCK)
     return false;
 
-  /* When doing function splitting, we must decreate count of the return block
+  /* When doing function splitting, we must decrease count of the return block
      which was previously reachable by block we did not copy.  */
   if (single_succ_p (bb) && single_succ_edge (bb)->dest->index == EXIT_BLOCK)
     FOR_EACH_EDGE (old_edge, ei, bb->preds)
@@ -2317,8 +2351,16 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 	      e->probability = old_edge->probability;
 	    
           FOR_EACH_EDGE (e, ei, copy_stmt_bb->succs)
-	    if ((e->flags & EDGE_EH) && !e->probability.initialized_p ())
-	      e->probability = profile_probability::never ();
+	    if (e->flags & EDGE_EH)
+	      {
+		if (!e->probability.initialized_p ())
+		  e->probability = profile_probability::never ();
+		if (e->dest->index < id->add_clobbers_to_eh_landing_pads)
+		  {
+		    add_clobbers_to_eh_landing_pad (e->dest, id);
+		    id->add_clobbers_to_eh_landing_pads = 0;
+		  }
+	      }
         }
 
 
@@ -4565,6 +4607,8 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
   id->decl_map = new hash_map<tree, tree>;
   dst = id->debug_map;
   id->debug_map = NULL;
+  if (flag_stack_reuse != SR_NONE)
+    id->add_clobbers_to_eh_landing_pads = last_basic_block_for_fn (cfun);
 
   /* Record the function we are about to inline.  */
   id->src_fn = fn;
@@ -4872,6 +4916,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
     }
 
   id->assign_stmts.release ();
+  id->add_clobbers_to_eh_landing_pads = 0;
 
   /* Output the inlining info for this abstract function, since it has been
      inlined.  If we don't do this now, we can lose the information about the

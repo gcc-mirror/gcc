@@ -1,3 +1,14 @@
+2019-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/86214
+	* tree-inline.h (struct copy_body_data): Add
+	add_clobbers_to_eh_landing_pads member.
+	* tree-inline.c (add_clobbers_to_eh_landing_pad): New function.
+	(copy_edges_for_bb): Call it if EH edge destination is <
+	id->add_clobbers_to_eh_landing_pads.  Fix a comment typo.
+	(expand_call_inline): Set id->add_clobbers_to_eh_landing_pads
+	if flag_stack_reuse != SR_NONE and clear it afterwards.
+
 2019-01-18  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR target/85596
