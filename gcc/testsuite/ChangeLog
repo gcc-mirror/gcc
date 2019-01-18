@@ -1,3 +1,13 @@
+2019-01-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/51628
+	PR c/88664
+	* c-c++-common/pr51628-33.c: New test.
+	* c-c++-common/pr51628-35.c: New test.
+	* c-c++-common/pr88664-1.c: Likewise.
+	* c-c++-common/pr88664-2.c: Likewise.
+	* gcc.dg/pr51628-34.c: Likewise.
+
 2019-01-18  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/88799

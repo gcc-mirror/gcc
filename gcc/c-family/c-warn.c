@@ -2713,18 +2713,60 @@ check_alignment_of_packed_member (tree type, tree field)
   return NULL_TREE;
 }
 
-/* Return struct or union type if the right hand value, RHS, takes the
-   unaligned address of packed member of struct or union when assigning
-   to TYPE.  Otherwise, return NULL_TREE.  */
+/* Return struct or union type if the right hand value, RHS:
+   1. Is a pointer value which isn't aligned to a pointer type TYPE.
+   2. Is an address which takes the unaligned address of packed member
+      of struct or union when assigning to TYPE.
+   Otherwise, return NULL_TREE.  */
 
 static tree
-check_address_of_packed_member (tree type, tree rhs)
+check_address_or_pointer_of_packed_member (tree type, tree rhs)
 {
   if (INDIRECT_REF_P (rhs))
     rhs = TREE_OPERAND (rhs, 0);
 
   if (TREE_CODE (rhs) == ADDR_EXPR)
     rhs = TREE_OPERAND (rhs, 0);
+
+  if (POINTER_TYPE_P (type))
+    type = TREE_TYPE (type);
+
+  if (TREE_CODE (rhs) == PARM_DECL
+      || VAR_P (rhs)
+      || TREE_CODE (rhs) == CALL_EXPR)
+    {
+      if (TREE_CODE (rhs) == CALL_EXPR)
+	{
+	  rhs = CALL_EXPR_FN (rhs);	/* Pointer expression.  */
+	  if (rhs == NULL_TREE)
+	    return NULL_TREE;
+	  rhs = TREE_TYPE (rhs);	/* Pointer type.  */
+	  rhs = TREE_TYPE (rhs);	/* Function type.  */
+	}
+      tree rhstype = TREE_TYPE (rhs);
+      if ((POINTER_TYPE_P (rhstype)
+	   || TREE_CODE (rhstype) == ARRAY_TYPE)
+	  && TYPE_PACKED (TREE_TYPE (rhstype)))
+	{
+	  unsigned int type_align = TYPE_ALIGN_UNIT (type);
+	  unsigned int rhs_align = TYPE_ALIGN_UNIT (TREE_TYPE (rhstype));
+	  if ((rhs_align % type_align) != 0)
+	    {
+	      location_t location = EXPR_LOC_OR_LOC (rhs, input_location);
+	      warning_at (location, OPT_Waddress_of_packed_member,
+			  "converting a packed %qT pointer (alignment %d) "
+			  "to %qT (alignment %d) may result in an "
+			  "unaligned pointer value",
+			  rhstype, rhs_align, type, type_align);
+	      tree decl = TYPE_STUB_DECL (TREE_TYPE (rhstype));
+	      inform (DECL_SOURCE_LOCATION (decl), "defined here");
+	      decl = TYPE_STUB_DECL (type);
+	      if (decl)
+		inform (DECL_SOURCE_LOCATION (decl), "defined here");
+	    }
+	}
+      return NULL_TREE;
+    }
 
   tree context = NULL_TREE;
 
@@ -2744,18 +2786,56 @@ check_address_of_packed_member (tree type, tree rhs)
   return context;
 }
 
-/* Check and warn if the right hand value, RHS, takes the unaligned
-   address of packed member of struct or union when assigning to TYPE.  */
+/* Check and warn if the right hand value, RHS:
+   1. Is a pointer value which isn't aligned to a pointer type TYPE.
+   2. Is an address which takes the unaligned address of packed member
+      of struct or union when assigning to TYPE.
+ */
 
 static void
-check_and_warn_address_of_packed_member (tree type, tree rhs)
+check_and_warn_address_or_pointer_of_packed_member (tree type, tree rhs)
 {
-  if (TREE_CODE (rhs) != COND_EXPR)
-    {
-      while (TREE_CODE (rhs) == COMPOUND_EXPR)
-	rhs = TREE_OPERAND (rhs, 1);
+  bool nop_p;
 
-      tree context = check_address_of_packed_member (type, rhs);
+  while (TREE_CODE (rhs) == COMPOUND_EXPR)
+    rhs = TREE_OPERAND (rhs, 1);
+
+  tree orig_rhs = rhs;
+  STRIP_NOPS (rhs);
+  nop_p = orig_rhs != rhs;
+
+  if (TREE_CODE (rhs) == COND_EXPR)
+    {
+      /* Check the THEN path.  */
+      check_and_warn_address_or_pointer_of_packed_member
+	(type, TREE_OPERAND (rhs, 1));
+
+      /* Check the ELSE path.  */
+      check_and_warn_address_or_pointer_of_packed_member
+	(type, TREE_OPERAND (rhs, 2));
+    }
+  else
+    {
+      if (nop_p)
+	{
+	  switch (TREE_CODE (rhs))
+	    {
+	    case ADDR_EXPR:
+	      /* Address is taken.   */
+	    case PARM_DECL:
+	    case VAR_DECL:
+	      /* Pointer conversion.  */
+	      break;
+	    case CALL_EXPR:
+	      /* Function call. */
+	      break;
+	    default:
+	      return;
+	    }
+	}
+
+      tree context
+	= check_address_or_pointer_of_packed_member (type, rhs);
       if (context)
 	{
 	  location_t loc = EXPR_LOC_OR_LOC (rhs, input_location);
@@ -2764,26 +2844,17 @@ check_and_warn_address_of_packed_member (tree type, tree rhs)
 		      "in an unaligned pointer value",
 		      context);
 	}
-      return;
     }
-
-  /* Check the THEN path.  */
-  check_and_warn_address_of_packed_member (type, TREE_OPERAND (rhs, 1));
-
-  /* Check the ELSE path.  */
-  check_and_warn_address_of_packed_member (type, TREE_OPERAND (rhs, 2));
 }
 
 /* Warn if the right hand value, RHS:
-   1. For CONVERT_P == true, is a pointer value which isn't aligned to a
-      pointer type TYPE.
-   2. For CONVERT_P == false, is an address which takes the unaligned
-      address of packed member of struct or union when assigning to TYPE.
+   1. Is a pointer value which isn't aligned to a pointer type TYPE.
+   2. Is an address which takes the unaligned address of packed member
+      of struct or union when assigning to TYPE.
 */
 
 void
-warn_for_address_or_pointer_of_packed_member (bool convert_p, tree type,
-					      tree rhs)
+warn_for_address_or_pointer_of_packed_member (tree type, tree rhs)
 {
   if (!warn_address_of_packed_member)
     return;
@@ -2792,61 +2863,5 @@ warn_for_address_or_pointer_of_packed_member (bool convert_p, tree type,
   if (!POINTER_TYPE_P (type))
     return;
 
-  while (TREE_CODE (rhs) == COMPOUND_EXPR)
-    rhs = TREE_OPERAND (rhs, 1);
-
-  if (convert_p)
-    {
-      bool rhspointer_p;
-      tree rhstype;
-
-      /* Check the original type of RHS.  */
-      switch (TREE_CODE (rhs))
-	{
-	case PARM_DECL:
-	case VAR_DECL:
-	  rhstype = TREE_TYPE (rhs);
-	  rhspointer_p = POINTER_TYPE_P (rhstype);
-	  break;
-	case NOP_EXPR:
-	  rhs = TREE_OPERAND (rhs, 0);
-	  if (TREE_CODE (rhs) == ADDR_EXPR)
-	    rhs = TREE_OPERAND (rhs, 0);
-	  rhstype = TREE_TYPE (rhs);
-	  rhspointer_p = TREE_CODE (rhstype) == ARRAY_TYPE;
-	  break;
-	default:
-	  return;
-	}
-
-      if (rhspointer_p && TYPE_PACKED (TREE_TYPE (rhstype)))
-	{
-	  unsigned int type_align = TYPE_ALIGN_UNIT (TREE_TYPE (type));
-	  unsigned int rhs_align = TYPE_ALIGN_UNIT (TREE_TYPE (rhstype));
-	  if ((rhs_align % type_align) != 0)
-	    {
-	      location_t location = EXPR_LOC_OR_LOC (rhs, input_location);
-	      warning_at (location, OPT_Waddress_of_packed_member,
-			  "converting a packed %qT pointer (alignment %d) "
-			  "to %qT (alignment %d) may result in an "
-			  "unaligned pointer value",
-			  rhstype, rhs_align, type, type_align);
-	      tree decl = TYPE_STUB_DECL (TREE_TYPE (rhstype));
-	      inform (DECL_SOURCE_LOCATION (decl), "defined here");
-	      decl = TYPE_STUB_DECL (TREE_TYPE (type));
-	      if (decl)
-		inform (DECL_SOURCE_LOCATION (decl), "defined here");
-	    }
-	}
-    }
-  else
-    {
-      /* Get the type of the pointer pointing to.  */
-      type = TREE_TYPE (type);
-
-      if (TREE_CODE (rhs) == NOP_EXPR)
-	rhs = TREE_OPERAND (rhs, 0);
-
-      check_and_warn_address_of_packed_member (type, rhs);
-    }
+  check_and_warn_address_or_pointer_of_packed_member (type, rhs);
 }

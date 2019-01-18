@@ -1293,7 +1293,7 @@ extern void c_do_switch_warnings (splay_tree, location_t, tree, tree, bool,
 				  bool);
 extern void warn_for_omitted_condop (location_t, tree);
 extern bool warn_for_restrict (unsigned, tree *, unsigned);
-extern void warn_for_address_or_pointer_of_packed_member (bool, tree, tree);
+extern void warn_for_address_or_pointer_of_packed_member (tree, tree);
 
 /* Places where an lvalue, or modifiable lvalue, may be required.
    Used to select diagnostic messages in lvalue_error and
