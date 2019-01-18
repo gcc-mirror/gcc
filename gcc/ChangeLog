@@ -1,3 +1,10 @@
+2019-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88903
+	* tree-vect-stmts.c (vectorizable_shift): Verify we see all
+	scalar stmts a SLP shift amount is composed of when detecting
+	shifts by scalars.
+
 2019-01-18  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/88799

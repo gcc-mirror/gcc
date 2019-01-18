@@ -5540,6 +5540,16 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      if (!operand_equal_p (gimple_assign_rhs2 (slpstmt), op1, 0))
 		scalar_shift_arg = false;
 	    }
+
+	  /* For internal SLP defs we have to make sure we see scalar stmts
+	     for all vector elements.
+	     ???  For different vectors we could resort to a different
+	     scalar shift operand but code-generation below simply always
+	     takes the first.  */
+	  if (dt[1] == vect_internal_def
+	      && maybe_ne (nunits_out * SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node),
+			   stmts.length ()))
+	    scalar_shift_arg = false;
 	}
 
       /* If the shift amount is computed by a pattern stmt we cannot
