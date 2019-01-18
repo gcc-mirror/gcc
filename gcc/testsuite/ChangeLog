@@ -1,3 +1,8 @@
+2019-01-18  Ian Lance Taylor  <iant@golang.org>
+
+	* go.go-torture/execute/names-1.go: Stop using debug/xcoff, which
+	is no longer externally visible.
+
 2019-01-18  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/86926

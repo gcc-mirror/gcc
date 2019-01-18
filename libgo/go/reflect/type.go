@@ -419,6 +419,7 @@ const (
 	kindMask        = (1 << 5) - 1
 )
 
+// String returns the name of k.
 func (k Kind) String() string {
 	if int(k) < len(kindNames) {
 		return kindNames[k]
@@ -1904,7 +1905,7 @@ var structLookupCache struct {
 	m sync.Map
 }
 
-// isLetter returns true if a given 'rune' is classified as a Letter.
+// isLetter reports whether a given 'rune' is classified as a Letter.
 func isLetter(ch rune) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_' || ch >= utf8.RuneSelf && unicode.IsLetter(ch)
 }

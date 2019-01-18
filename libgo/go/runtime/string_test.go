@@ -243,6 +243,36 @@ func TestCompareTempString(t *testing.T) {
 	}
 }
 
+func TestStringIndexHaystack(t *testing.T) {
+	// See issue 25864.
+	haystack := []byte("hello")
+	needle := "ll"
+	n := testing.AllocsPerRun(1000, func() {
+		if strings.Index(string(haystack), needle) != 2 {
+			t.Fatalf("needle not found")
+		}
+	})
+	// was n != 0, changed for gccgo.
+	if n > 1 {
+		t.Fatalf("want 0 allocs, got %v", n)
+	}
+}
+
+func TestStringIndexNeedle(t *testing.T) {
+	// See issue 25864.
+	haystack := "hello"
+	needle := []byte("ll")
+	n := testing.AllocsPerRun(1000, func() {
+		if strings.Index(haystack, string(needle)) != 2 {
+			t.Fatalf("needle not found")
+		}
+	})
+	// was n != 0, changed for gccgo
+	if n > 1 {
+		t.Fatalf("want 0 allocs, got %v", n)
+	}
+}
+
 func TestStringOnStack(t *testing.T) {
 	s := ""
 	for i := 0; i < 3; i++ {

@@ -8,9 +8,9 @@ package gccgoimporter // import "go/internal/gccgoimporter"
 import (
 	"bytes"
 	"debug/elf"
-	"debug/xcoff"
 	"fmt"
 	"go/types"
+	"internal/xcoff"
 	"io"
 	"os"
 	"path/filepath"
@@ -99,7 +99,7 @@ func openExportFile(fpath string) (reader io.ReadSeeker, closer io.Closer, err e
 		reader = f
 		return
 
-	case archiveMagic:
+	case archiveMagic, aixbigafMagic:
 		reader, err = arExportData(f)
 		return
 
@@ -129,6 +129,7 @@ func openExportFile(fpath string) (reader io.ReadSeeker, closer io.Closer, err e
 		return
 	}
 
+	err = fmt.Errorf("%s: unrecognized file format", fpath)
 	return
 }
 

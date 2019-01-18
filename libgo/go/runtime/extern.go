@@ -50,19 +50,13 @@ It is a comma-separated list of name=val pairs setting these named variables:
 	gcshrinkstackoff: setting gcshrinkstackoff=1 disables moving goroutines
 	onto smaller stacks. In this mode, a goroutine's stack can only grow.
 
-	gcrescanstacks: setting gcrescanstacks=1 enables stack
-	re-scanning during the STW mark termination phase. This is
-	helpful for debugging if objects are being prematurely
-	garbage collected.
-
 	gcstoptheworld: setting gcstoptheworld=1 disables concurrent garbage collection,
 	making every garbage collection a stop-the-world event. Setting gcstoptheworld=2
 	also disables concurrent sweeping after the garbage collection finishes.
 
 	gctrace: setting gctrace=1 causes the garbage collector to emit a single line to standard
 	error at each collection, summarizing the amount of memory collected and the
-	length of the pause. Setting gctrace=2 emits the same summary but also
-	repeats each collection. The format of this line is subject to change.
+	length of the pause. The format of this line is subject to change.
 	Currently, it is:
 		gc # @#s #%: #+#+# ms clock, #+#/#/#+# ms cpu, #->#-># MB, # MB goal, # P
 	where the fields are as follows:
@@ -94,6 +88,11 @@ It is a comma-separated list of name=val pairs setting these named variables:
 		sys: #       MB mapped from the system
 		released: #  MB released to the system
 		consumed: #  MB allocated from the system
+
+	madvdontneed: setting madvdontneed=1 will use MADV_DONTNEED
+	instead of MADV_FREE on Linux when returning memory to the
+	kernel. This is less efficient, but causes RSS numbers to drop
+	more quickly.
 
 	memprofilerate: setting memprofilerate=X will update the value of runtime.MemProfileRate.
 	When set to 0 memory profiling is disabled.  Refer to the description of
@@ -206,6 +205,7 @@ func Version() string {
 
 // GOOS is the running program's operating system target:
 // one of darwin, freebsd, linux, and so on.
+// To view possible combinations of GOOS and GOARCH, run "go tool dist list".
 const GOOS string = sys.GOOS
 
 // GOARCH is the running program's architecture target:

@@ -21,7 +21,7 @@ import (
 // a given import path, or an error if no matching package is found.
 type Lookup func(path string) (io.ReadCloser, error)
 
-// For returns an Importer for importing from installed packages
+// ForCompiler returns an Importer for importing from installed packages
 // for the compilers "gc" and "gccgo", or for importing directly
 // from the source if the compiler argument is "source". In this
 // latter case, importing may fail under circumstances where the
@@ -40,10 +40,11 @@ type Lookup func(path string) (io.ReadCloser, error)
 // (not relative or absolute ones); it is assumed that the translation
 // to canonical import paths is being done by the client of the
 // importer.
-func For(compiler string, lookup Lookup) types.Importer {
+func ForCompiler(fset *token.FileSet, compiler string, lookup Lookup) types.Importer {
 	switch compiler {
 	case "gc":
 		return &gcimports{
+			fset:     fset,
 			packages: make(map[string]*types.Package),
 			lookup:   lookup,
 		}
@@ -68,11 +69,19 @@ func For(compiler string, lookup Lookup) types.Importer {
 			panic("source importer for custom import path lookup not supported (issue #13847).")
 		}
 
-		return srcimporter.New(&build.Default, token.NewFileSet(), make(map[string]*types.Package))
+		return srcimporter.New(&build.Default, fset, make(map[string]*types.Package))
 	}
 
 	// compiler not supported
 	return nil
+}
+
+// For calls ForCompiler with a new FileSet.
+//
+// Deprecated: use ForCompiler, which populates a FileSet
+// with the positions of objects created by the importer.
+func For(compiler string, lookup Lookup) types.Importer {
+	return ForCompiler(token.NewFileSet(), compiler, lookup)
 }
 
 // Default returns an Importer for the compiler that built the running binary.
@@ -84,6 +93,7 @@ func Default() types.Importer {
 // gc importer
 
 type gcimports struct {
+	fset     *token.FileSet
 	packages map[string]*types.Package
 	lookup   Lookup
 }
@@ -96,7 +106,7 @@ func (m *gcimports) ImportFrom(path, srcDir string, mode types.ImportMode) (*typ
 	if mode != 0 {
 		panic("mode must be 0")
 	}
-	return gcimporter.Import(m.packages, path, srcDir, m.lookup)
+	return gcimporter.Import(m.fset, m.packages, path, srcDir, m.lookup)
 }
 
 // gccgo importer

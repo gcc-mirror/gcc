@@ -373,31 +373,8 @@ go_cmd_cgo_files = \
 	$(cmdsrcdir)/cgo/util.go
 
 go_cmd_vet_files = \
-	$(cmdsrcdir)/vet/asmdecl.go \
-	$(cmdsrcdir)/vet/assign.go \
-	$(cmdsrcdir)/vet/atomic.go \
-	$(cmdsrcdir)/vet/bool.go \
-	$(cmdsrcdir)/vet/buildtag.go \
-	$(cmdsrcdir)/vet/cgo.go \
-	$(cmdsrcdir)/vet/composite.go \
-	$(cmdsrcdir)/vet/copylock.go \
-	$(cmdsrcdir)/vet/deadcode.go \
-	$(cmdsrcdir)/vet/dead.go \
 	$(cmdsrcdir)/vet/doc.go \
-	$(cmdsrcdir)/vet/httpresponse.go \
-	$(cmdsrcdir)/vet/lostcancel.go \
-	$(cmdsrcdir)/vet/main.go \
-	$(cmdsrcdir)/vet/method.go \
-	$(cmdsrcdir)/vet/nilfunc.go \
-	$(cmdsrcdir)/vet/print.go \
-	$(cmdsrcdir)/vet/rangeloop.go \
-	$(cmdsrcdir)/vet/shadow.go \
-	$(cmdsrcdir)/vet/shift.go \
-	$(cmdsrcdir)/vet/structtag.go \
-	$(cmdsrcdir)/vet/tests.go \
-	$(cmdsrcdir)/vet/types.go \
-	$(cmdsrcdir)/vet/unsafeptr.go \
-	$(cmdsrcdir)/vet/unused.go
+	$(cmdsrcdir)/vet/main.go
 
 go_cmd_buildid_files = \
 	$(cmdsrcdir)/buildid/buildid.go \
@@ -726,8 +703,8 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-@NATIVE_FALSE@install-exec-local:
 @NATIVE_FALSE@uninstall-local:
+@NATIVE_FALSE@install-exec-local:
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-generic clean-noinstPROGRAMS \
@@ -927,6 +904,7 @@ mostlyclean-local:
 @NATIVE_TRUE@	$(MKDIR_P) check-runtime-dir
 @NATIVE_TRUE@	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
 @NATIVE_TRUE@	LD_LIBRARY_PATH=`echo $${abs_libgodir}/.libs:$${LD_LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; \
+@NATIVE_TRUE@	export LD_LIBRARY_PATH; \
 @NATIVE_TRUE@	GOARCH=`$(abs_builddir)/go$(EXEEXT) env GOARCH`; \
 @NATIVE_TRUE@	GOOS=`$(abs_builddir)/go$(EXEEXT) env GOOS`; \
 @NATIVE_TRUE@	files=`$(SHELL) $(libgosrcdir)/../match.sh --goarch=$${GOARCH} --goos=$${GOOS} --srcdir=$(libgosrcdir)/runtime --extrafiles="$(libgodir)/runtime_sysinfo.go $(libgodir)/sigtab.go" --tag=libffi`; \
@@ -970,10 +948,11 @@ mostlyclean-local:
 # check-vet runs `go test cmd/vet` in our environment.
 @NATIVE_TRUE@check-vet: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 @NATIVE_TRUE@	rm -rf check-vet-dir cmd_vet-testlog
-@NATIVE_TRUE@	$(MKDIR_P) check-vet-dir/src/cmd/internal
+@NATIVE_TRUE@	$(MKDIR_P) check-vet-dir/src/cmd/internal check-vet-dir/src/cmd/vendor/golang.org/x
 @NATIVE_TRUE@	cp -r $(cmdsrcdir)/vet check-vet-dir/src/cmd/
 @NATIVE_TRUE@	cp -r $(cmdsrcdir)/internal/objabi check-vet-dir/src/cmd/internal
 @NATIVE_TRUE@	cp $(libgodir)/objabi.go check-vet-dir/src/cmd/internal/objabi/
+@NATIVE_TRUE@	cp -r $(libgosrcdir)/golang.org/x/tools check-vet-dir/src/cmd/vendor/golang.org/x/
 @NATIVE_TRUE@	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
 @NATIVE_TRUE@	abs_checkdir=`cd check-vet-dir && $(PWD_COMMAND)`; \
 @NATIVE_TRUE@	echo "cd check-vet-dir/src/cmd/vet && $(ECHO_ENV) GOPATH=$${abs_checkdir} $(abs_builddir)/go$(EXEEXT) test -test.short -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v" > cmd_vet-testlog

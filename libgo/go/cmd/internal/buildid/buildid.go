@@ -7,8 +7,8 @@ package buildid
 import (
 	"bytes"
 	"debug/elf"
-	"debug/xcoff"
 	"fmt"
+	"internal/xcoff"
 	"io"
 	"os"
 	"strconv"

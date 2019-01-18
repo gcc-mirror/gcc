@@ -217,8 +217,7 @@ toolexeclibgodebug_DATA = \
 	debug/gosym.gox \
 	debug/macho.gox \
 	debug/pe.gox \
-	debug/plan9obj.gox \
-	debug/xcoff.gox
+	debug/plan9obj.gox
 
 toolexeclibgoencodingdir = $(toolexeclibgodir)/encoding
 
@@ -394,8 +393,8 @@ toolexeclibgounicode_DATA = \
 # internal packages nothing will explicitly depend on them.
 # Force them to be built.
 noinst_DATA = \
-	golang_org/x/net/internal/nettest.gox \
-	golang_org/x/net/nettest.gox \
+	internal/x/net/internal/nettest.gox \
+	internal/x/net/nettest.gox \
 	internal/testenv.gox \
 	internal/trace.gox \
 	net/internal/socktest.gox \
@@ -536,7 +535,7 @@ cpugen.go: s-cpu; @true
 s-cpu: Makefile
 	rm -f cpugen.go.tmp
 	echo "package cpu" > cpugen.go.tmp
-	echo "const CacheLineSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) cachelinesize`" >> cpugen.go.tmp
+	echo "const CacheLinePadSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) cachelinesize`" >> cpugen.go.tmp
 	$(SHELL) $(srcdir)/mvifdiff.sh cpugen.go.tmp cpugen.go
 	$(STAMP) $@
 
@@ -554,7 +553,7 @@ s-objabi: Makefile
 	echo 'const defaultGOARCH = runtime.GOARCH' >> objabi.go.tmp
 	echo 'const defaultGO_EXTLINK_ENABLED = ``' >> objabi.go.tmp
 	echo 'const version = `'`cat $(srcdir)/VERSION | sed 1q`' '`$(GOC) --version | sed 1q`'`' >> objabi.go.tmp
-	echo 'const stackGuardMultiplier = 1' >> objabi.go.tmp
+	echo 'const stackGuardMultiplierDefault = 1' >> objabi.go.tmp
 	echo 'const goexperiment = ``' >> objabi.go.tmp
 	$(SHELL) $(srcdir)/mvifdiff.sh objabi.go.tmp objabi.go
 	$(STAMP) $@
@@ -715,16 +714,14 @@ PACKAGES = $(shell cat $(srcdir)/libgo-packages.txt)
 
 libgo_go_objs = \
 	$(addsuffix .lo,$(PACKAGES)) \
-	bytes/index.lo \
 	internal/bytealg/bytealg.lo \
 	reflect/makefunc_ffi_c.lo \
-	strings/index.lo \
 	$(syscall_lib_clone_lo) \
 	syscall/errno.lo \
 	syscall/signame.lo \
 	syscall/wait.lo \
-	$(golang_org_x_net_lif_lo) \
-	$(golang_org_x_net_route_lo) \
+	$(internal_x_net_lif_lo) \
+	$(internal_x_net_route_lo) \
 	log/syslog/syslog_c.lo \
 	$(os_lib_inotify_lo) \
 	runtime/internal/atomic_c.lo \
@@ -807,7 +804,7 @@ BUILDDEPS = \
 BUILDPACKAGE = \
 	$(MKDIR_P) $(@D); \
 	files=`echo $^ | sed -e 's/[^ ]*\.gox//g' -e 's/[^ ]*\.dep//'`; \
-	$(LTGOCOMPILE) -I . -c -fgo-pkgpath=`echo $@ | sed -e 's/.lo$$//' -e 's|golang_org|vendor/golang_org|'` $($(subst -,_,$(subst .,_,$(subst /,_,$@)))_GOCFLAGS) -o $@ $$files
+	$(LTGOCOMPILE) -I . -c -fgo-pkgpath=`echo $@ | sed -e 's/.lo$$//'` $($(subst -,_,$(subst .,_,$(subst /,_,$@)))_GOCFLAGS) -o $@ $$files
 
 # How to build a .gox file from a .lo file.
 # Matching .o file can either be in the same directory as the .lo (non-PIC
@@ -990,6 +987,7 @@ extra_check_libs_cmd_go_internal_cache = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_generate = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_get = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_load = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_lockedfile = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_imports = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_modconv = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_modfetch = $(abs_builddir)/libgotool.a
@@ -1007,13 +1005,7 @@ extra_check_libs_cmd_vet_internal_cfg = $(abs_builddir)/libgotool.a
 # FIXME: The following C files may as well move to the runtime
 # directory and be treated like other C files.
 
-# Use C code to speed up {bytes,strings}.IndexByte and friends.
-bytes/index.lo: go/bytes/indexbyte.c runtime.inc
-	@$(MKDIR_P) bytes
-	$(LTCOMPILE) -c -o $@ $(srcdir)/go/bytes/indexbyte.c
-strings/index.lo: go/strings/indexbyte.c runtime.inc
-	@$(MKDIR_P) strings
-	$(LTCOMPILE) -c -o $@ $(srcdir)/go/strings/indexbyte.c
+# Use C code to speed up internal/bytealg.IndexByte and friends.
 internal/bytealg/bytealg.lo: go/internal/bytealg/bytealg.c runtime.inc
 	@$(MKDIR_P) internal/bytealg
 	$(LTCOMPILE) -c -o $@ $(srcdir)/go/internal/bytealg/bytealg.c
@@ -1070,34 +1062,34 @@ endif
 
 if LIBGO_IS_BSD
 
-# Build golang_org/x/net/route only on BSD systems.
+# Build internal/x/net/route only on BSD systems.
 
-$(eval $(call PACKAGE_template,golang_org/x/net/route))
+$(eval $(call PACKAGE_template,internal/x/net/route))
 
-golang_org_x_net_route_lo = \
-	golang_org/x/net/route.lo
-golang_org_x_net_route_check = \
-	golang_org/x/net/route/check
+internal_x_net_route_lo = \
+	internal/x/net/route.lo
+internal_x_net_route_check = \
+	internal/x/net/route/check
 
 endif
 
 if LIBGO_IS_SOLARIS
 
-# Build golang_org/x/net/lif only on Solaris systems.
+# Build internal/x/net/lif only on Solaris systems.
 
-$(eval $(call PACKAGE_template,golang_org/x/net/lif))
+$(eval $(call PACKAGE_template,internal/x/net/lif))
 
-golang_org_x_net_lif_lo = \
-	golang_org/x/net/lif.lo
-golang_org_x_net_lif_check = \
-	golang_org/x/net/lif/check
+internal_x_net_lif_lo = \
+	internal/x/net/lif.lo
+internal_x_net_lif_check = \
+	internal_org/x/net/lif/check
 
 endif
 
 TPACKAGES = $(shell cat $(srcdir)/check-packages.txt)
 TEST_PACKAGES = $(addsuffix /check,$(TPACKAGES)) \
-	$(golang_org_x_net_lif_check) \
-	$(golang_org_x_net_route_check)
+	$(internal_x_net_lif_check) \
+	$(internal_x_net_route_check)
 
 check: check-tail
 check-recursive: check-head

@@ -377,7 +377,7 @@ func (b *Builder) build(a *Action) (err error) {
 			if b.NeedExport {
 				p.Export = a.built
 			}
-			if need&needCompiledGoFiles != 0 && b.loadCachedGoFiles(a) {
+			if need&needCompiledGoFiles != 0 && b.loadCachedSrcFiles(a) {
 				need &^= needCompiledGoFiles
 			}
 			// Otherwise, we need to write files to a.Objdir (needVet, needCgoHdr).
@@ -386,6 +386,13 @@ func (b *Builder) build(a *Action) (err error) {
 			cached = true
 			a.output = []byte{} // start saving output in case we miss any cache results
 		}
+
+		// Source files might be cached, even if the full action is not
+		// (e.g., go list -compiled -find).
+		if !cached && need&needCompiledGoFiles != 0 && b.loadCachedSrcFiles(a) {
+			need &^= needCompiledGoFiles
+		}
+
 		if need == 0 {
 			return nil
 		}
@@ -432,10 +439,6 @@ func (b *Builder) build(a *Action) (err error) {
 			return nil
 		}
 		return fmt.Errorf("missing or invalid binary-only package; expected file %q", a.Package.Target)
-	}
-
-	if p.Module != nil && !allowedVersion(p.Module.GoVersion) {
-		return fmt.Errorf("module requires Go %s", p.Module.GoVersion)
 	}
 
 	if err := b.Mkdir(a.Objdir); err != nil {
@@ -579,7 +582,13 @@ func (b *Builder) build(a *Action) (err error) {
 			b.cacheCgoHdr(a)
 		}
 	}
-	b.cacheGofiles(a, gofiles)
+
+	var srcfiles []string // .go and non-.go
+	srcfiles = append(srcfiles, gofiles...)
+	srcfiles = append(srcfiles, sfiles...)
+	srcfiles = append(srcfiles, cfiles...)
+	srcfiles = append(srcfiles, cxxfiles...)
+	b.cacheSrcFiles(a, srcfiles)
 
 	// Running cgo generated the cgo header.
 	need &^= needCgoHdr
@@ -591,11 +600,11 @@ func (b *Builder) build(a *Action) (err error) {
 
 	// Prepare Go vet config if needed.
 	if need&needVet != 0 {
-		buildVetConfig(a, gofiles)
+		buildVetConfig(a, srcfiles)
 		need &^= needVet
 	}
 	if need&needCompiledGoFiles != 0 {
-		if !b.loadCachedGoFiles(a) {
+		if !b.loadCachedSrcFiles(a) {
 			return fmt.Errorf("failed to cache compiled Go files")
 		}
 		need &^= needCompiledGoFiles
@@ -603,6 +612,12 @@ func (b *Builder) build(a *Action) (err error) {
 	if need == 0 {
 		// Nothing left to do.
 		return nil
+	}
+
+	// Collect symbol ABI requirements from assembly.
+	symabis, err := BuildToolchain.symabis(b, a, sfiles)
+	if err != nil {
+		return err
 	}
 
 	// Prepare Go import config.
@@ -638,14 +653,21 @@ func (b *Builder) build(a *Action) (err error) {
 
 	// Compile Go.
 	objpkg := objdir + "_pkg_.a"
-	ofile, out, err := BuildToolchain.gc(b, a, objpkg, icfg.Bytes(), len(sfiles) > 0, gofiles)
+	ofile, out, err := BuildToolchain.gc(b, a, objpkg, icfg.Bytes(), symabis, len(sfiles) > 0, gofiles)
 	if len(out) > 0 {
-		b.showOutput(a, a.Package.Dir, a.Package.Desc(), b.processOutput(out))
+		output := b.processOutput(out)
+		if p.Module != nil && !allowedVersion(p.Module.GoVersion) {
+			output += "note: module requires Go " + p.Module.GoVersion
+		}
+		b.showOutput(a, a.Package.Dir, a.Package.Desc(), output)
 		if err != nil {
 			return errPrintedOutput
 		}
 	}
 	if err != nil {
+		if p.Module != nil && !allowedVersion(p.Module.GoVersion) {
+			b.showOutput(a, a.Package.Dir, a.Package.Desc(), "note: module requires Go "+p.Module.GoVersion)
+		}
 		return err
 	}
 	if ofile != objpkg {
@@ -701,18 +723,8 @@ func (b *Builder) build(a *Action) (err error) {
 	// This is read by readGccgoArchive in cmd/internal/buildid/buildid.go.
 	if a.buildID != "" && cfg.BuildToolchainName == "gccgo" {
 		switch cfg.Goos {
-		case "android", "dragonfly", "freebsd", "linux", "netbsd", "openbsd", "solaris":
-			asmfile, err := b.gccgoBuildIDELFFile(a)
-			if err != nil {
-				return err
-			}
-			ofiles, err := BuildToolchain.asm(b, a, []string{asmfile})
-			if err != nil {
-				return err
-			}
-			objects = append(objects, ofiles...)
-		case "aix":
-			asmfile, err := b.gccgoBuildIDXCOFFFile(a)
+		case "aix", "android", "dragonfly", "freebsd", "linux", "netbsd", "openbsd", "solaris":
+			asmfile, err := b.gccgoBuildIDFile(a)
 			if err != nil {
 				return err
 			}
@@ -797,13 +809,13 @@ func (b *Builder) loadCachedCgoHdr(a *Action) bool {
 	return err == nil
 }
 
-func (b *Builder) cacheGofiles(a *Action, gofiles []string) {
+func (b *Builder) cacheSrcFiles(a *Action, srcfiles []string) {
 	c := cache.Default()
 	if c == nil {
 		return
 	}
 	var buf bytes.Buffer
-	for _, file := range gofiles {
+	for _, file := range srcfiles {
 		if !strings.HasPrefix(file, a.Objdir) {
 			// not generated
 			buf.WriteString("./")
@@ -818,7 +830,7 @@ func (b *Builder) cacheGofiles(a *Action, gofiles []string) {
 			return
 		}
 	}
-	c.PutBytes(cache.Subkey(a.actionID, "gofiles"), buf.Bytes())
+	c.PutBytes(cache.Subkey(a.actionID, "srcfiles"), buf.Bytes())
 }
 
 func (b *Builder) loadCachedVet(a *Action) bool {
@@ -826,34 +838,34 @@ func (b *Builder) loadCachedVet(a *Action) bool {
 	if c == nil {
 		return false
 	}
-	list, _, err := c.GetBytes(cache.Subkey(a.actionID, "gofiles"))
+	list, _, err := c.GetBytes(cache.Subkey(a.actionID, "srcfiles"))
 	if err != nil {
 		return false
 	}
-	var gofiles []string
+	var srcfiles []string
 	for _, name := range strings.Split(string(list), "\n") {
 		if name == "" { // end of list
 			continue
 		}
 		if strings.HasPrefix(name, "./") {
-			gofiles = append(gofiles, name[2:])
+			srcfiles = append(srcfiles, name[2:])
 			continue
 		}
 		if err := b.loadCachedObjdirFile(a, c, name); err != nil {
 			return false
 		}
-		gofiles = append(gofiles, a.Objdir+name)
+		srcfiles = append(srcfiles, a.Objdir+name)
 	}
-	buildVetConfig(a, gofiles)
+	buildVetConfig(a, srcfiles)
 	return true
 }
 
-func (b *Builder) loadCachedGoFiles(a *Action) bool {
+func (b *Builder) loadCachedSrcFiles(a *Action) bool {
 	c := cache.Default()
 	if c == nil {
 		return false
 	}
-	list, _, err := c.GetBytes(cache.Subkey(a.actionID, "gofiles"))
+	list, _, err := c.GetBytes(cache.Subkey(a.actionID, "srcfiles"))
 	if err != nil {
 		return false
 	}
@@ -878,10 +890,12 @@ func (b *Builder) loadCachedGoFiles(a *Action) bool {
 
 // vetConfig is the configuration passed to vet describing a single package.
 type vetConfig struct {
+	ID         string   // package ID (example: "fmt [fmt.test]")
 	Compiler   string   // compiler name (gc, gccgo)
 	Dir        string   // directory containing package
 	ImportPath string   // canonical import path ("package path")
 	GoFiles    []string // absolute paths to package source files
+	NonGoFiles []string // absolute paths to package non-Go files
 
 	ImportMap   map[string]string // map import path in source code to package path
 	PackageFile map[string]string // map package path to .a file with export data
@@ -893,15 +907,28 @@ type vetConfig struct {
 	SucceedOnTypecheckFailure bool // awful hack; see #18395 and below
 }
 
-func buildVetConfig(a *Action, gofiles []string) {
+func buildVetConfig(a *Action, srcfiles []string) {
+	// Classify files based on .go extension.
+	// srcfiles does not include raw cgo files.
+	var gofiles, nongofiles []string
+	for _, name := range srcfiles {
+		if strings.HasSuffix(name, ".go") {
+			gofiles = append(gofiles, name)
+		} else {
+			nongofiles = append(nongofiles, name)
+		}
+	}
+
 	// Pass list of absolute paths to vet,
 	// so that vet's error messages will use absolute paths,
 	// so that we can reformat them relative to the directory
 	// in which the go command is invoked.
 	vcfg := &vetConfig{
+		ID:          a.Package.ImportPath,
 		Compiler:    cfg.BuildToolchainName,
 		Dir:         a.Package.Dir,
 		GoFiles:     mkAbsFiles(a.Package.Dir, gofiles),
+		NonGoFiles:  mkAbsFiles(a.Package.Dir, nongofiles),
 		ImportPath:  a.Package.ImportPath,
 		ImportMap:   make(map[string]string),
 		PackageFile: make(map[string]string),
@@ -998,6 +1025,8 @@ func (b *Builder) vet(a *Action) error {
 		}
 	}
 
+	// TODO(adonovan): delete this when we use the new vet printf checker.
+	// https://github.com/golang/go/issues/28756
 	if vcfg.ImportMap["fmt"] == "" {
 		a1 := a.Deps[1]
 		vcfg.ImportMap["fmt"] = "fmt"
@@ -1621,6 +1650,25 @@ func (b *Builder) writeFile(file string, text []byte) error {
 	return ioutil.WriteFile(file, text, 0666)
 }
 
+// appendFile appends the text to file.
+func (b *Builder) appendFile(file string, text []byte) error {
+	if cfg.BuildN || cfg.BuildX {
+		b.Showcmd("", "cat >>%s << 'EOF' # internal\n%sEOF", file, text)
+	}
+	if cfg.BuildN {
+		return nil
+	}
+	f, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	if _, err = f.Write(text); err != nil {
+		return err
+	}
+	return f.Close()
+}
+
 // Install the cgo export header file, if there is one.
 func (b *Builder) installHeader(a *Action) error {
 	src := a.Objdir + "_cgo_install.h"
@@ -1671,8 +1719,8 @@ var objectMagic = [][]byte{
 	{0x00, 0x00, 0x8a, 0x97},                  // Plan 9 amd64
 	{0x00, 0x00, 0x06, 0x47},                  // Plan 9 arm
 	{0x00, 0x61, 0x73, 0x6D},                  // WASM
-	{0x01, 0xDF},                              // XCOFF32
-	{0x01, 0xF7},                              // XCOFF64
+	{0x01, 0xDF},                              // XCOFF 32bit
+	{0x01, 0xF7},                              // XCOFF 64bit
 }
 
 func isObject(s string) bool {
@@ -1720,14 +1768,14 @@ func (b *Builder) fmtcmd(dir string, format string, args ...interface{}) string 
 		if dir[len(dir)-1] == filepath.Separator {
 			dot += string(filepath.Separator)
 		}
-		cmd = strings.Replace(" "+cmd, " "+dir, dot, -1)[1:]
+		cmd = strings.ReplaceAll(" "+cmd, " "+dir, dot)[1:]
 		if b.scriptDir != dir {
 			b.scriptDir = dir
 			cmd = "cd " + dir + "\n" + cmd
 		}
 	}
 	if b.WorkDir != "" {
-		cmd = strings.Replace(cmd, b.WorkDir, "$WORK", -1)
+		cmd = strings.ReplaceAll(cmd, b.WorkDir, "$WORK")
 	}
 	return cmd
 }
@@ -1769,10 +1817,10 @@ func (b *Builder) showOutput(a *Action, dir, desc, out string) {
 	prefix := "# " + desc
 	suffix := "\n" + out
 	if reldir := base.ShortPath(dir); reldir != dir {
-		suffix = strings.Replace(suffix, " "+dir, " "+reldir, -1)
-		suffix = strings.Replace(suffix, "\n"+dir, "\n"+reldir, -1)
+		suffix = strings.ReplaceAll(suffix, " "+dir, " "+reldir)
+		suffix = strings.ReplaceAll(suffix, "\n"+dir, "\n"+reldir)
 	}
-	suffix = strings.Replace(suffix, " "+b.WorkDir, " $WORK", -1)
+	suffix = strings.ReplaceAll(suffix, " "+b.WorkDir, " $WORK")
 
 	if a != nil && a.output != nil {
 		a.output = append(a.output, prefix...)
@@ -1976,13 +2024,18 @@ func mkAbs(dir, f string) string {
 type toolchain interface {
 	// gc runs the compiler in a specific directory on a set of files
 	// and returns the name of the generated output file.
-	gc(b *Builder, a *Action, archive string, importcfg []byte, asmhdr bool, gofiles []string) (ofile string, out []byte, err error)
+	//
+	// TODO: This argument list is long. Consider putting it in a struct.
+	gc(b *Builder, a *Action, archive string, importcfg []byte, symabis string, asmhdr bool, gofiles []string) (ofile string, out []byte, err error)
 	// cc runs the toolchain's C compiler in a directory on a C file
 	// to produce an output file.
 	cc(b *Builder, a *Action, ofile, cfile string) error
 	// asm runs the assembler in a specific directory on specific files
 	// and returns a list of named output files.
 	asm(b *Builder, a *Action, sfiles []string) ([]string, error)
+	// symabis scans the symbol ABIs from sfiles and returns the
+	// path to the output symbol ABIs file, or "" if none.
+	symabis(b *Builder, a *Action, sfiles []string) (string, error)
 	// pack runs the archive packer in a specific directory to create
 	// an archive from a set of object files.
 	// typically it is run in the object directory.
@@ -2013,12 +2066,16 @@ func (noToolchain) linker() string {
 	return ""
 }
 
-func (noToolchain) gc(b *Builder, a *Action, archive string, importcfg []byte, asmhdr bool, gofiles []string) (ofile string, out []byte, err error) {
+func (noToolchain) gc(b *Builder, a *Action, archive string, importcfg []byte, symabis string, asmhdr bool, gofiles []string) (ofile string, out []byte, err error) {
 	return "", nil, noCompiler()
 }
 
 func (noToolchain) asm(b *Builder, a *Action, sfiles []string) ([]string, error) {
 	return nil, noCompiler()
+}
+
+func (noToolchain) symabis(b *Builder, a *Action, sfiles []string) (string, error) {
+	return "", noCompiler()
 }
 
 func (noToolchain) pack(b *Builder, a *Action, afile string, ofiles []string) error {
@@ -2092,14 +2149,37 @@ func (b *Builder) ccompile(a *Action, p *load.Package, outfile string, flags []s
 }
 
 // gccld runs the gcc linker to create an executable from a set of object files.
-func (b *Builder) gccld(p *load.Package, objdir, out string, flags []string, objs []string) error {
+func (b *Builder) gccld(p *load.Package, objdir, outfile string, flags []string, objs []string) error {
 	var cmd []string
 	if len(p.CXXFiles) > 0 || len(p.SwigCXXFiles) > 0 {
 		cmd = b.GxxCmd(p.Dir, objdir)
 	} else {
 		cmd = b.GccCmd(p.Dir, objdir)
 	}
-	return b.run(nil, p.Dir, p.ImportPath, b.cCompilerEnv(), cmd, "-o", out, objs, flags)
+
+	cmdargs := []interface{}{cmd, "-o", outfile, objs, flags}
+	dir := p.Dir
+	out, err := b.runOut(dir, b.cCompilerEnv(), cmdargs...)
+	if len(out) > 0 {
+		// Filter out useless linker warnings caused by bugs outside Go.
+		// See also cmd/link/internal/ld's hostlink method.
+		var save [][]byte
+		for _, line := range bytes.SplitAfter(out, []byte("\n")) {
+			// golang.org/issue/26073 - Apple Xcode bug
+			if bytes.Contains(line, []byte("ld: warning: text-based stub file")) {
+				continue
+			}
+			save = append(save, line)
+		}
+		out = bytes.Join(save, nil)
+		if len(out) > 0 {
+			b.showOutput(nil, dir, p.ImportPath, b.processOutput(out))
+			if err != nil {
+				err = errPrintedOutput
+			}
+		}
+	}
+	return err
 }
 
 // Grab these before main helpfully overwrites them.
@@ -2686,7 +2766,7 @@ func (b *Builder) swigDoIntSize(objdir string) (intsize string, err error) {
 
 	p := load.GoFilesPackage(srcs)
 
-	if _, _, e := BuildToolchain.gc(b, &Action{Mode: "swigDoIntSize", Package: p, Objdir: objdir}, "", nil, false, srcs); e != nil {
+	if _, _, e := BuildToolchain.gc(b, &Action{Mode: "swigDoIntSize", Package: p, Objdir: objdir}, "", nil, "", false, srcs); e != nil {
 		return "32", nil
 	}
 	return "64", nil
@@ -2884,7 +2964,7 @@ func useResponseFile(path string, argLen int) bool {
 	}
 
 	// On the Go build system, use response files about 10% of the
-	// time, just to excercise this codepath.
+	// time, just to exercise this codepath.
 	isBuilder := os.Getenv("GO_BUILDER_NAME") != ""
 	if isBuilder && rand.Intn(10) == 0 {
 		return true
