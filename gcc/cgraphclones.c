@@ -1012,6 +1012,11 @@ cgraph_node::create_version_clone (tree new_decl,
    If non-NULL BLOCK_TO_COPY determine what basic blocks to copy.
    If non_NULL NEW_ENTRY determine new entry BB of the clone.
 
+   If TARGET_ATTRIBUTES is non-null, when creating a new declaration,
+   add the attributes to DECL_ATTRIBUTES.  And call valid_attribute_p
+   that will promote value of the attribute DECL_FUNCTION_SPECIFIC_TARGET
+   of the declaration.
+
    Return the new version's cgraph node.  */
 
 cgraph_node *
@@ -1019,7 +1024,7 @@ cgraph_node::create_version_clone_with_body
   (vec<cgraph_edge *> redirect_callers,
    vec<ipa_replace_map *, va_gc> *tree_map, bitmap args_to_skip,
    bool skip_return, bitmap bbs_to_copy, basic_block new_entry_block,
-   const char *suffix)
+   const char *suffix, tree target_attributes)
 {
   tree old_decl = decl;
   cgraph_node *new_version_node = NULL;
@@ -1043,6 +1048,19 @@ cgraph_node::create_version_clone_with_body
   SET_DECL_RTL (new_decl, NULL);
 
   DECL_VIRTUAL_P (new_decl) = 0;
+
+  if (target_attributes)
+    {
+      DECL_ATTRIBUTES (new_decl) = target_attributes;
+
+      location_t saved_loc = input_location;
+      tree v = TREE_VALUE (target_attributes);
+      input_location = DECL_SOURCE_LOCATION (new_decl);
+      bool r = targetm.target_option.valid_attribute_p (new_decl, NULL, v, 0);
+      input_location = saved_loc;
+      if (!r)
+	return NULL;
+    }
 
   /* When the old decl was a con-/destructor make sure the clone isn't.  */
   DECL_STATIC_CONSTRUCTOR (new_decl) = 0;

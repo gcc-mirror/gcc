@@ -5479,6 +5479,10 @@ copy_decl_for_dup_finish (copy_body_data *id, tree decl, tree copy)
   if (CODE_CONTAINS_STRUCT (TREE_CODE (copy), TS_DECL_WRTL)
       && !TREE_STATIC (copy) && !DECL_EXTERNAL (copy))
     SET_DECL_RTL (copy, 0);
+  /* For vector typed decls make sure to update DECL_MODE according
+     to the new function context.  */
+  if (VECTOR_TYPE_P (TREE_TYPE (copy)))
+    SET_DECL_MODE (copy, TYPE_MODE (TREE_TYPE (copy)));
 
   /* These args would always appear unused, if not for this.  */
   TREE_USED (copy) = 1;
