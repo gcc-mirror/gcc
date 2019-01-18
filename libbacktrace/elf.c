@@ -2813,7 +2813,7 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
   shstr_size = shstrhdr->sh_size;
   shstr_off = shstrhdr->sh_offset;
 
-  if (!backtrace_get_view (state, descriptor, shstr_off, shstr_size,
+  if (!backtrace_get_view (state, descriptor, shstr_off, shstrhdr->sh_size,
 			   error_callback, data, &names_view))
     goto fail;
   names_view_valid = 1;

@@ -179,7 +179,7 @@ struct backtrace_view
 /* Create a view of SIZE bytes from DESCRIPTOR at OFFSET.  Store the
    result in *VIEW.  Returns 1 on success, 0 on error.  */
 extern int backtrace_get_view (struct backtrace_state *state, int descriptor,
-			       off_t offset, size_t size,
+			       off_t offset, uint64_t size,
 			       backtrace_error_callback error_callback,
 			       void *data, struct backtrace_view *view);
 
