@@ -1,5 +1,10 @@
 2019-01-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/86205 - ICE with ?: of throw and template-id.
+	* pt.c (resolve_nondeduced_context_or_error): Split out from...
+	* typeck.c (decay_conversion): ...here.
+	* call.c (build_conditional_expr_1): Use it.
+
 	PR c++/86740, ICE with constexpr if and nested generic lambdas.
 	* tree.c (cp_walk_subtrees): Handle LAMBDA_EXPR.
 

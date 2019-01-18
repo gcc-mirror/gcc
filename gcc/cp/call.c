@@ -5067,6 +5067,19 @@ build_conditional_expr_1 (const op_location_t &loc,
   arg3_type = unlowered_expr_type (arg3);
   if (VOID_TYPE_P (arg2_type) || VOID_TYPE_P (arg3_type))
     {
+      /* 'void' won't help in resolving an overloaded expression on the
+	 other side, so require it to resolve by itself.  */
+      if (arg2_type == unknown_type_node)
+	{
+	  arg2 = resolve_nondeduced_context_or_error (arg2, complain);
+	  arg2_type = TREE_TYPE (arg2);
+	}
+      if (arg3_type == unknown_type_node)
+	{
+	  arg3 = resolve_nondeduced_context_or_error (arg3, complain);
+	  arg3_type = TREE_TYPE (arg3);
+	}
+
       /* [expr.cond]
 
 	 One of the following shall hold:
