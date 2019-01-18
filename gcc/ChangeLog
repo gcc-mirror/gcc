@@ -1,3 +1,8 @@
+2019-01-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/85596
+	* doc/install.texi (with-multilib-list): Document for aarch64.
+
 2019-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88734
