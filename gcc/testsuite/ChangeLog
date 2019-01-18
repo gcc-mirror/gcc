@@ -1,3 +1,8 @@
+2019-01-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86926
+	* g++.dg/cpp1z/constexpr-lambda23.C: New test.
+
 2019-01-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/88587
