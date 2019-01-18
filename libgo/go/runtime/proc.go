@@ -3600,10 +3600,17 @@ func sigprof(pc uintptr, gp *g, mp *m) {
 		// To ensure a sane profile, walk through the frames in
 		// "stklocs" until we find the "runtime.sigtramp" frame, then
 		// report only those frames below the frame one down from
-		// that. If for some reason "runtime.sigtramp" is not present,
-		// don't make any changes.
+		// that. On systems that don't split stack, "sigtramp" can
+		// do a sibling call to "sigtrampgo", so use "sigtrampgo"
+		// if we don't find "sigtramp". If for some reason
+		// neither "runtime.sigtramp" nor "runtime.sigtrampgo" is
+		// present, don't make any changes.
 		framesToDiscard := 0
 		for i := 0; i < n; i++ {
+			if stklocs[i].function == "runtime.sigtrampgo" && i+2 < n {
+				framesToDiscard = i + 2
+				n -= framesToDiscard
+			}
 			if stklocs[i].function == "runtime.sigtramp" && i+2 < n {
 				framesToDiscard = i + 2
 				n -= framesToDiscard
