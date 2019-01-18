@@ -1,3 +1,10 @@
+2019-01-18  Martin Liska  <mliska@suse.cz>
+
+	* params.def: Fix comment.
+	* tree-profile.c (gimple_init_gcov_profiler): Bump function
+	name.
+	(gimple_gen_ic_func_profiler): Likewise.
+
 2019-01-18  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
         * config/aarch64/aarch64-opts.h (enum stack_protector_guard): New

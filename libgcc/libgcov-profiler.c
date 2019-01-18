@@ -296,7 +296,7 @@ __gcov_indirect_call_topn_profiler (gcov_type value, void* cur_func)
 }
 #endif
 
-#ifdef L_gcov_indirect_call_profiler_v2
+#ifdef L_gcov_indirect_call_profiler_v3
 
 /* These two variables are used to actually track caller and callee.  Keep
    them in TLS memory so races are not common (they are written to often).
@@ -318,7 +318,7 @@ struct indirect_call_tuple __gcov_indirect_call;
 
 /* Tries to determine the most common value among its inputs. */
 void
-__gcov_indirect_call_profiler_v2 (gcov_type value, void* cur_func)
+__gcov_indirect_call_profiler_v3 (gcov_type value, void* cur_func)
 {
   /* If the C++ virtual tables contain function descriptors then one
      function may have multiple descriptors and we need to dereference
