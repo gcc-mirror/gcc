@@ -1,3 +1,7 @@
+2019-01-18  Martin Sebor  <msebor@redhat.com>
+
+	* c-c++-common/attr-nonstring-3.c: Remove an xfail.
+
 2019-01-18  Ian Lance Taylor  <iant@golang.org>
 
 	* go.go-torture/execute/names-1.go: Stop using debug/xcoff, which
