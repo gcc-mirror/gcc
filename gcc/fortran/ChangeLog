@@ -1,3 +1,9 @@
+2019-01-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/88871
+	* resolve.c (resolve_ref): Fix logic for removal of
+	reference.
+
 2019-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/88902
