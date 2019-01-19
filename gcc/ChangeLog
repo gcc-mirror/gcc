@@ -1,3 +1,14 @@
+2019-01-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gimple-loop-versioning.cc (loop_versioning::dump_inner_likelihood):
+	New function, split out from...
+	(loop_versioning::analyze_stride): ...here.
+	(loop_versioning::find_per_loop_multiplication): Use gassign.
+	(loop_versioning::analyze_term_using_scevs): Return a success code.
+	(loop_versioning::analyze_arbitrary_term): New function.
+	(loop_versioning::analyze_address_fragment): Use
+	analyze_arbitrary_term if all else fails.
+
 2019-01-18  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/88892
