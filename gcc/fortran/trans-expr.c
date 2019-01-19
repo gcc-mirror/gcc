@@ -5828,6 +5828,13 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 					     INTENT_IN,
 					     fsym && fsym->attr.pointer);
 		}
+	      else if (fsym && fsym->attr.contiguous
+		       && !gfc_is_simply_contiguous (e, false, true))
+		{
+		  gfc_conv_subref_array_arg (&parmse, e, nodesc_arg,
+				fsym ? fsym->attr.intent : INTENT_INOUT,
+				fsym && fsym->attr.pointer);
+		}
 	      else
 		gfc_conv_array_parameter (&parmse, e, nodesc_arg, fsym,
 					  sym->name, NULL);
