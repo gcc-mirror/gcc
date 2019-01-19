@@ -1,3 +1,8 @@
+2019-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/88902
+	* gfortran.dg/pr88902.f90: New test.
+
 2019-01-18  Martin Sebor  <msebor@redhat.com>
 
 	* c-c++-common/attr-nonstring-3.c: Remove an xfail.
@@ -389,7 +394,7 @@
 
 2019-01-15  Paul Thomas  <pault@gcc.gnu.org>
 
-	* gfortran.dg/ISO_Fortran_binding_2.c : Change reference to
+	* gfortran.dg/ISO_Fortran_binding_2.c: Change reference to
 	ISO_Fortran_binding_2.h.
 
 2019-01-15  Marek Polacek  <polacek@redhat.com>
@@ -506,17 +511,17 @@
 
 2019-01-12  Paul Thomas  <pault@gcc.gnu.org>
 
-	* gfortran.dg/ISO_Fortran_binding_2.f90 : Remove because of
+	* gfortran.dg/ISO_Fortran_binding_2.f90: Remove because of
 	reports of ICEs.
-	* gfortran.dg/ISO_Fortran_binding_2.c : Ditto.
+	* gfortran.dg/ISO_Fortran_binding_2.c: Ditto.
 
 2019-01-12  Paul Thomas  <pault@gcc.gnu.org>
 
-	* gfortran.dg/ISO_Fortran_binding_1.f90 : New test.
-	* gfortran.dg/ISO_Fortran_binding_1.c : Auxilliary file for test.
-	* gfortran.dg/ISO_Fortran_binding_2.f90 : New test.
-	* gfortran.dg/ISO_Fortran_binding_2.c : Auxilliary file for test.
-	* gfortran.dg/bind_c_array_params_2.f90 : Change search string
+	* gfortran.dg/ISO_Fortran_binding_1.f90: New test.
+	* gfortran.dg/ISO_Fortran_binding_1.c: Auxilliary file for test.
+	* gfortran.dg/ISO_Fortran_binding_2.f90: New test.
+	* gfortran.dg/ISO_Fortran_binding_2.c: Auxilliary file for test.
+	* gfortran.dg/bind_c_array_params_2.f90: Change search string
 	for dump tree scan.
 
 2019-01-11  Steven G. Kargl  <kargl@gcc.gnu.org>

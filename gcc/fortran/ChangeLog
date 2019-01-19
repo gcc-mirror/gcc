@@ -1,3 +1,9 @@
+2019-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/88902
+	* trans-decl.c (gfc_get_symbol_decl): Don't add length to function
+	or parent function if it has been added there already.
+
 2019-01-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/43136
@@ -26,7 +32,7 @@
 2019-01-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/57992
-	* trans-array.c (gfc_conv_array_parameter):  Do not pack/unpack
+	* trans-array.c (gfc_conv_array_parameter): Do not pack/unpack
 	functions with contiguous results.
 
 2019-01-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
@@ -45,18 +51,18 @@
 
 2019-01-12  Paul Thomas  <pault@gcc.gnu.org>
 
-	* gfortran.texi : Add description in sections on TS 29113 and
+	* gfortran.texi: Add description in sections on TS 29113 and
 	further interoperability with C.
 	* trans-array.c (gfc_conv_descriptor_attribute): New function.
 	(gfc_get_dataptr_offset): Remove static function attribute.
-	* trans-array.h : Add prototypes for above functions.
-	* trans-decl.c : Add declarations for the library functions
+	* trans-array.h: Add prototypes for above functions.
+	* trans-decl.c: Add declarations for the library functions
 	cfi_desc_to_gfc_desc and gfc_desc_to_cfi_desc.
 	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): New function.
 	(gfc_conv_procedure_call): Call it for scalar and array actual
 	arguments, when the formal arguments are bind_c with assumed
 	shape or assumed rank.
-	* trans.h : External declarations for gfor_fndecl_cfi_to_gfc
+	* trans.h: External declarations for gfor_fndecl_cfi_to_gfc
 	and gfor_fndecl_gfc_to_cfi.
 
 2019-01-11  Steven G. Kargl  <kargl@gcc.gnu.org>
