@@ -1,3 +1,10 @@
+2019-01-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gfortran.dg/loop_versioning_1.f90: Bump the number of identified
+	inner strides.
+	* gfortran.dg/loop_versioning_9.f90: New test.
+	* gfortran.dg/loop_versioning_10.f90: Likewise.
+
 2019-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/88902
