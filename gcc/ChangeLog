@@ -1,3 +1,8 @@
+2019-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/aarch64/aarch64.c (aarch64_stack_protect_guard): Move
+	outside of #if CHECKING_P code.
+
 2019-01-19  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gimple-loop-versioning.cc (loop_versioning::dump_inner_likelihood):
