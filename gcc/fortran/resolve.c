@@ -5046,6 +5046,7 @@ resolve_ref (gfc_expr *expr)
   int current_part_dimension, n_components, seen_part_dimension;
   gfc_ref *ref, **prev;
   bool equal_length;
+  bool breakout;
 
   for (ref = expr->ref; ref; ref = ref->next)
     if (ref->type == REF_ARRAY && ref->u.ar.as == NULL)
@@ -5054,12 +5055,12 @@ resolve_ref (gfc_expr *expr)
 	break;
       }
 
-  
-  for (ref = expr->ref, prev = &expr->ref; ref; prev = &ref->next, ref = ref->next)
-    switch (ref->type)
+  breakout = false;
+  for (prev = &expr->ref; !breakout && *prev != NULL; prev = &(*prev)->next)
+    switch ((*prev)->type)
       {
       case REF_ARRAY:
-	if (!resolve_array_ref (&ref->u.ar))
+	if (!resolve_array_ref (&(*prev)->u.ar))
 	  return false;
 	break;
 
@@ -5069,17 +5070,20 @@ resolve_ref (gfc_expr *expr)
 
       case REF_SUBSTRING:
 	equal_length = false;
-	if (!resolve_substring (ref, &equal_length))
+	if (!resolve_substring (*prev, &equal_length))
 	  return false;
 
 	if (expr->expr_type != EXPR_SUBSTRING && equal_length)
 	  {
 	    /* Remove the reference and move the charlen, if any.  */
+	    ref = *prev;
 	    *prev = ref->next;
 	    ref->next = NULL;
 	    expr->ts.u.cl = ref->u.ss.length;
 	    ref->u.ss.length = NULL;
 	    gfc_free_ref_list (ref);
+	    if (*prev == NULL)
+	      breakout = true;
 	  }
 	break;
       }
