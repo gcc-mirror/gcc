@@ -18662,6 +18662,19 @@ aarch64_simd_clone_usable (struct cgraph_node *node)
     }
 }
 
+/* Implement TARGET_STACK_PROTECT_GUARD. In case of a
+   global variable based guard use the default else
+   return a null tree.  */
+static tree
+aarch64_stack_protect_guard (void)
+{
+  if (aarch64_stack_protector_guard == SSP_GLOBAL)
+    return default_stack_protect_guard ();
+
+  return NULL_TREE;
+}
+
+
 /* Target-specific selftests.  */
 
 #if CHECKING_P
@@ -18705,19 +18718,6 @@ aarch64_run_selftests (void)
 }
 
 } // namespace selftest
-
-/* Implement TARGET_STACK_PROTECT_GUARD. In case of a
-   global variable based guard use the default else
-   return a null tree.  */
-static tree
-aarch64_stack_protect_guard (void)
-{
-  if (aarch64_stack_protector_guard == SSP_GLOBAL)
-    return default_stack_protect_guard ();
-
-  return NULL_TREE;
-}
-
 
 #endif /* #if CHECKING_P */
 
