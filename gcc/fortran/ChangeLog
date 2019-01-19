@@ -1,3 +1,8 @@
+2019-01-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77960
+	* io.c (match_io_element): input-item cannot be an external function.
+ 
 2018-01-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	Paul Thomas  <pault@gcc.gnu.org>
 
