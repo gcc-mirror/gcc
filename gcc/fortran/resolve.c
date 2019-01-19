@@ -16673,7 +16673,7 @@ resolve_types (gfc_namespace *ns)
 
   gfc_traverse_ns (ns, resolve_values);
 
-  if (ns->save_all)
+  if (ns->save_all || !flag_automatic)
     gfc_save_all (ns);
 
   iter_stack = NULL;
