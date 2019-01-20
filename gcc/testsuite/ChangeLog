@@ -1,3 +1,7 @@
+2019-01-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/runnable.d: Add more tests for comparing complex types.
+
 2019-01-20  Johannes Pfau  <johannespfau@gmail.com>
 
 	* gdc.dg/runnable.d: Add tests for comparing complex types.

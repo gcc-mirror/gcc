@@ -798,14 +798,20 @@ identity_compare_p (StructDeclaration *sd)
   for (size_t i = 0; i < sd->fields.dim; i++)
     {
       VarDeclaration *vd = sd->fields[i];
+      Type *tb = vd->type->toBasetype ();
 
       /* Check inner data structures.  */
-      if (vd->type->ty == Tstruct)
+      if (tb->ty == Tstruct)
 	{
-	  TypeStruct *ts = (TypeStruct *) vd->type;
+	  TypeStruct *ts = (TypeStruct *) tb;
 	  if (!identity_compare_p (ts->sym))
 	    return false;
 	}
+
+      /* Check for types that may have padding.  */
+      if ((tb->ty == Tcomplex80 || tb->ty == Tfloat80 || tb->ty == Timaginary80)
+	  && Target::realpad != 0)
+	return false;
 
       if (offset <= vd->offset)
 	{
@@ -822,6 +828,20 @@ identity_compare_p (StructDeclaration *sd)
     return false;
 
   return true;
+}
+
+/* Build a floating-point identity comparison between T1 and T2, ignoring any
+   excessive padding in the type.  CODE is EQ_EXPR or NE_EXPR comparison.  */
+
+tree
+build_float_identity (tree_code code, tree t1, tree t2)
+{
+  tree tmemcmp = builtin_decl_explicit (BUILT_IN_MEMCMP);
+  tree size = size_int (TYPE_PRECISION (TREE_TYPE (t1)) / BITS_PER_UNIT);
+
+  tree result = build_call_expr (tmemcmp, 3, build_address (t1),
+				 build_address (t2), size);
+  return build_boolop (code, result, integer_zero_node);
 }
 
 /* Lower a field-by-field equality expression between T1 and T2 of type SD.
@@ -859,29 +879,45 @@ lower_struct_comparison (tree_code code, StructDeclaration *sd,
   for (size_t i = 0; i < sd->fields.dim; i++)
     {
       VarDeclaration *vd = sd->fields[i];
+      Type *type = vd->type->toBasetype ();
       tree sfield = get_symbol_decl (vd);
 
       tree t1ref = component_ref (t1, sfield);
       tree t2ref = component_ref (t2, sfield);
       tree tcmp;
 
-      if (vd->type->ty == Tstruct)
+      if (type->ty == Tstruct)
 	{
 	  /* Compare inner data structures.  */
-	  StructDeclaration *decl = ((TypeStruct *) vd->type)->sym;
+	  StructDeclaration *decl = ((TypeStruct *) type)->sym;
 	  tcmp = lower_struct_comparison (code, decl, t1ref, t2ref);
+	}
+      else if (type->ty != Tvector && type->isintegral ())
+	{
+	  /* Integer comparison, no special handling required.  */
+	  tcmp = build_boolop (code, t1ref, t2ref);
+	}
+      else if (type->ty != Tvector && type->isfloating ())
+	{
+	  /* Floating-point comparison, don't compare padding in type.  */
+	  if (!type->iscomplex ())
+	    tcmp = build_float_identity (code, t1ref, t2ref);
+	  else
+	    {
+	      tree req = build_float_identity (code, real_part (t1ref),
+					       real_part (t2ref));
+	      tree ieq = build_float_identity (code, imaginary_part (t1ref),
+					       imaginary_part (t2ref));
+
+	      tcmp = build_boolop (tcode, req, ieq);
+	    }
 	}
       else
 	{
-	  tree stype = build_ctype (vd->type);
+	  tree stype = build_ctype (type);
 	  opt_scalar_int_mode mode = int_mode_for_mode (TYPE_MODE (stype));
 
-	  if (vd->type->ty != Tvector && vd->type->isintegral ())
-	    {
-	      /* Integer comparison, no special handling required.  */
-	      tcmp = build_boolop (code, t1ref, t2ref);
-	    }
-	  else if (mode.exists ())
+	  if (mode.exists ())
 	    {
 	      /* Compare field bits as their corresponding integer type.
 		    *((T*) &t1) == *((T*) &t2)  */
