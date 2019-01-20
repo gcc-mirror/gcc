@@ -1535,6 +1535,27 @@ void test286()
 }
 
 /******************************************/
+// https://bugzilla.gdcproject.org/show_bug.cgi?id=309
+
+void test309()
+{
+    creal f1 = +0.0 + 0.0i;
+    creal f2 = +0.0 - 0.0i;
+    creal f3 = -0.0 + 0.0i;
+    creal f4 = +0.0 + 0.0i;
+
+    assert(f1 !is f2);
+    assert(f1 !is f3);
+    assert(f2 !is f3);
+    assert(f1 is f4);
+
+    assert(!(f1 is f2));
+    assert(!(f1 is f3));
+    assert(!(f2 is f3));
+    assert(!(f1 !is f4));
+}
+
+/******************************************/
 
 void main()
 {
@@ -1571,6 +1592,7 @@ void main()
     test273();
     test285();
     test286();
+    test309();
 
     printf("Success!\n");
 }
