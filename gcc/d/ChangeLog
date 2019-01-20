@@ -1,5 +1,10 @@
 2019-01-20  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	* d-builtins.cc (d_init_versions): Check value of
+	STACK_GROWS_DOWNWARD.
+
+2019-01-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	* d-codegen.cc (identity_compare_p): Return false if seen built-in
 	type with padding.
 	(build_float_identity): Moved here from expr.cc.
