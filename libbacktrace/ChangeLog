@@ -1,3 +1,7 @@
+2019-01-20  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* allocfail.c (main): Increase portability of printf statement.
+
 2019-01-18  Ian Lance Taylor  <iant@golang.org>
 
 	PR libbacktrace/88890
