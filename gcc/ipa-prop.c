@@ -746,13 +746,13 @@ param_type_may_change_p (tree function, tree arg, gimple *call)
    that does the heavy work which is usually unnecesary.  */
 
 static bool
-detect_type_change_from_memory_writes (tree arg, tree base, tree comp_type,
-				       gcall *call, struct ipa_jump_func *jfunc,
+detect_type_change_from_memory_writes (ipa_func_body_info *fbi, tree arg,
+				       tree base, tree comp_type, gcall *call,
+				       struct ipa_jump_func *jfunc,
 				       HOST_WIDE_INT offset)
 {
   struct prop_type_change_info tci;
   ao_ref ao;
-  bool entry_reached = false;
 
   gcc_checking_assert (DECL_P (arg)
 		       || TREE_CODE (arg) == MEM_REF
@@ -780,9 +780,11 @@ detect_type_change_from_memory_writes (tree arg, tree base, tree comp_type,
   tci.object = get_base_address (arg);
   tci.type_maybe_changed = false;
 
-  walk_aliased_vdefs (&ao, gimple_vuse (call), check_stmt_for_type_change,
-		      &tci, NULL, &entry_reached);
-  if (!tci.type_maybe_changed)
+  int walked
+    = walk_aliased_vdefs (&ao, gimple_vuse (call), check_stmt_for_type_change,
+			  &tci, NULL, NULL, fbi->aa_walk_budget + 1);
+
+  if (walked >= 0 && !tci.type_maybe_changed)
     return false;
 
   ipa_set_jf_unknown (jfunc);
@@ -796,8 +798,9 @@ detect_type_change_from_memory_writes (tree arg, tree base, tree comp_type,
    returned by get_ref_base_and_extent, as is the offset.  */
 
 static bool
-detect_type_change (tree arg, tree base, tree comp_type, gcall *call,
-		    struct ipa_jump_func *jfunc, HOST_WIDE_INT offset)
+detect_type_change (ipa_func_body_info *fbi, tree arg, tree base,
+		    tree comp_type, gcall *call, struct ipa_jump_func *jfunc,
+		    HOST_WIDE_INT offset)
 {
   if (!flag_devirtualize)
     return false;
@@ -807,7 +810,7 @@ detect_type_change (tree arg, tree base, tree comp_type, gcall *call,
 				   TREE_OPERAND (base, 0),
 				   call))
     return false;
-  return detect_type_change_from_memory_writes (arg, base, comp_type,
+  return detect_type_change_from_memory_writes (fbi, arg, base, comp_type,
 						call, jfunc, offset);
 }
 
@@ -816,7 +819,7 @@ detect_type_change (tree arg, tree base, tree comp_type, gcall *call,
    be zero).  */
 
 static bool
-detect_type_change_ssa (tree arg, tree comp_type,
+detect_type_change_ssa (ipa_func_body_info *fbi, tree arg, tree comp_type,
 			gcall *call, struct ipa_jump_func *jfunc)
 {
   gcc_checking_assert (TREE_CODE (arg) == SSA_NAME);
@@ -830,7 +833,7 @@ detect_type_change_ssa (tree arg, tree comp_type,
   arg = build2 (MEM_REF, ptr_type_node, arg,
 		build_int_cst (ptr_type_node, 0));
 
-  return detect_type_change_from_memory_writes (arg, arg, comp_type,
+  return detect_type_change_from_memory_writes (fbi, arg, arg, comp_type,
 						call, jfunc, 0);
 }
 
@@ -844,16 +847,6 @@ mark_modified (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef ATTRIBUTE_UNUSED,
   bool *b = (bool *) data;
   *b = true;
   return true;
-}
-
-/* Return true if we have already walked so many statements in AA that we
-   should really just start giving up.  */
-
-static bool
-aa_overwalked (struct ipa_func_body_info *fbi)
-{
-  gcc_checking_assert (fbi);
-  return fbi->aa_walked > (unsigned) PARAM_VALUE (PARAM_IPA_MAX_AA_STEPS);
 }
 
 /* Find the nearest valid aa status for parameter specified by INDEX that
@@ -922,28 +915,24 @@ parm_preserved_before_stmt_p (struct ipa_func_body_info *fbi, int index,
   if (TREE_READONLY (base))
     return true;
 
-  /* FIXME: FBI can be NULL if we are being called from outside
-     ipa_node_analysis or ipcp_transform_function, which currently happens
-     during inlining analysis.  It would be great to extend fbi's lifetime and
-     always have it.  Currently, we are just not afraid of too much walking in
-     that case.  */
-  if (fbi)
-    {
-      if (aa_overwalked (fbi))
-	return false;
-      paa = parm_bb_aa_status_for_bb (fbi, gimple_bb (stmt), index);
-      if (paa->parm_modified)
-	return false;
-    }
-  else
-    paa = NULL;
+  gcc_checking_assert (fbi);
+  paa = parm_bb_aa_status_for_bb (fbi, gimple_bb (stmt), index);
+  if (paa->parm_modified)
+    return false;
 
   gcc_checking_assert (gimple_vuse (stmt) != NULL_TREE);
   ao_ref_init (&refd, parm_load);
   int walked = walk_aliased_vdefs (&refd, gimple_vuse (stmt), mark_modified,
-				   &modified, NULL);
-  if (fbi)
-    fbi->aa_walked += walked;
+				   &modified, NULL, NULL,
+				   fbi->aa_walk_budget + 1);
+  if (walked < 0)
+    {
+      modified = true;
+      if (fbi)
+	fbi->aa_walk_budget = 0;
+    }
+  else if (fbi)
+    fbi->aa_walk_budget -= walked;
   if (paa && modified)
     paa->parm_modified = true;
   return !modified;
@@ -988,29 +977,24 @@ parm_ref_data_preserved_p (struct ipa_func_body_info *fbi,
   bool modified = false;
   ao_ref refd;
 
-  /* FIXME: FBI can be NULL if we are being called from outside
-     ipa_node_analysis or ipcp_transform_function, which currently happens
-     during inlining analysis.  It would be great to extend fbi's lifetime and
-     always have it.  Currently, we are just not afraid of too much walking in
-     that case.  */
-  if (fbi)
-    {
-      if (aa_overwalked (fbi))
-	return false;
-      paa = parm_bb_aa_status_for_bb (fbi, gimple_bb (stmt), index);
-      if (paa->ref_modified)
-	return false;
-    }
-  else
-    paa = NULL;
+  gcc_checking_assert (fbi);
+  paa = parm_bb_aa_status_for_bb (fbi, gimple_bb (stmt), index);
+  if (paa->ref_modified)
+    return false;
 
   gcc_checking_assert (gimple_vuse (stmt));
   ao_ref_init (&refd, ref);
   int walked = walk_aliased_vdefs (&refd, gimple_vuse (stmt), mark_modified,
-				   &modified, NULL);
-  if (fbi)
-    fbi->aa_walked += walked;
-  if (paa && modified)
+				   &modified, NULL, NULL,
+				   fbi->aa_walk_budget + 1);
+  if (walked < 0)
+    {
+      modified = true;
+      fbi->aa_walk_budget = 0;
+    }
+  else
+    fbi->aa_walk_budget -= walked;
+  if (modified)
     paa->ref_modified = true;
   return !modified;
 }
@@ -1030,8 +1014,7 @@ parm_ref_data_pass_through_p (struct ipa_func_body_info *fbi, int index,
      function because it is not goin to use it.  But do not cache the result
      either.  Also, no such calculations for non-pointers.  */
   if (!gimple_vuse (call)
-      || !POINTER_TYPE_P (TREE_TYPE (parm))
-      || aa_overwalked (fbi))
+      || !POINTER_TYPE_P (TREE_TYPE (parm)))
     return false;
 
   struct ipa_param_aa_status *paa = parm_bb_aa_status_for_bb (fbi,
@@ -1042,8 +1025,15 @@ parm_ref_data_pass_through_p (struct ipa_func_body_info *fbi, int index,
 
   ao_ref_init_from_ptr_and_size (&refd, parm, NULL_TREE);
   int walked = walk_aliased_vdefs (&refd, gimple_vuse (call), mark_modified,
-				   &modified, NULL);
-  fbi->aa_walked += walked;
+				   &modified, NULL, NULL,
+				   fbi->aa_walk_budget + 1);
+  if (walked < 0)
+    {
+      fbi->aa_walk_budget = 0;
+      modified = true;
+    }
+  else
+    fbi->aa_walk_budget -= walked;
   if (modified)
     paa->pt_modified = true;
   return !modified;
@@ -1851,7 +1841,8 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	  struct ipa_polymorphic_call_context context (cs->caller->decl,
 						       arg, cs->call_stmt,
 						       &instance);
-	  context.get_dynamic_type (instance, arg, NULL, cs->call_stmt);
+	  context.get_dynamic_type (instance, arg, NULL, cs->call_stmt,
+				    &fbi->aa_walk_budget);
 	  *ipa_get_ith_polymorhic_call_context (args, n) = context;
 	  if (!context.useless_p ())
 	    useful_context = true;
@@ -2324,7 +2315,7 @@ ipa_analyze_virtual_call_uses (struct ipa_func_body_info *fbi,
       anc_offset = 0;
       index = ipa_get_param_decl_index (info, SSA_NAME_VAR (obj));
       gcc_assert (index >= 0);
-      if (detect_type_change_ssa (obj, obj_type_ref_class (target),
+      if (detect_type_change_ssa (fbi, obj, obj_type_ref_class (target),
 				  call, &jfunc))
 	return;
     }
@@ -2340,7 +2331,7 @@ ipa_analyze_virtual_call_uses (struct ipa_func_body_info *fbi,
       index = ipa_get_param_decl_index (info,
 					SSA_NAME_VAR (TREE_OPERAND (expr, 0)));
       gcc_assert (index >= 0);
-      if (detect_type_change (obj, expr, obj_type_ref_class (target),
+      if (detect_type_change (fbi, obj, expr, obj_type_ref_class (target),
 			      call, &jfunc, anc_offset))
 	return;
     }
@@ -2388,7 +2379,8 @@ ipa_analyze_call_uses (struct ipa_func_body_info *fbi, gcall *call)
       cs->indirect_info->vptr_changed
 	= !context.get_dynamic_type (instance,
 				     OBJ_TYPE_REF_OBJECT (target),
-				     obj_type_ref_class (target), call);
+				     obj_type_ref_class (target), call,
+				     &fbi->aa_walk_budget);
       cs->indirect_info->context = context;
     }
 
@@ -2588,7 +2580,7 @@ ipa_analyze_node (struct cgraph_node *node)
   fbi.bb_infos = vNULL;
   fbi.bb_infos.safe_grow_cleared (last_basic_block_for_fn (cfun));
   fbi.param_count = ipa_get_param_count (info);
-  fbi.aa_walked = 0;
+  fbi.aa_walk_budget = PARAM_VALUE (PARAM_IPA_MAX_AA_STEPS);
 
   for (struct cgraph_edge *cs = node->callees; cs; cs = cs->next_callee)
     {
@@ -5157,7 +5149,7 @@ ipcp_transform_function (struct cgraph_node *node)
   fbi.bb_infos = vNULL;
   fbi.bb_infos.safe_grow_cleared (last_basic_block_for_fn (cfun));
   fbi.param_count = param_count;
-  fbi.aa_walked = 0;
+  fbi.aa_walk_budget = PARAM_VALUE (PARAM_IPA_MAX_AA_STEPS);
 
   vec_safe_grow_cleared (descriptors, param_count);
   ipa_populate_param_decls (node, *descriptors);

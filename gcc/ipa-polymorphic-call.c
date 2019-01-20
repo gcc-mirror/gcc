@@ -1554,13 +1554,18 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
 
    We do not include this analysis in the context analysis itself, because
    it needs memory SSA to be fully built and the walk may be expensive.
-   So it is not suitable for use withing fold_stmt and similar uses.  */
+   So it is not suitable for use withing fold_stmt and similar uses.
+
+   AA_WALK_BUDGET_P, if not NULL, is how statements we should allow
+   walk_aliased_vdefs to examine.  The value should be decremented by the
+   number of stetements we examined or set to zero if exhausted.  */
 
 bool
 ipa_polymorphic_call_context::get_dynamic_type (tree instance,
 						tree otr_object,
 						tree otr_type,
-						gimple *call)
+						gimple *call,
+						unsigned *aa_walk_budget_p)
 {
   struct type_change_info tci;
   ao_ref ao;
@@ -1723,8 +1728,13 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
   tci.speculative = 0;
   tci.seen_unanalyzed_store = false;
 
-  walk_aliased_vdefs (&ao, gimple_vuse (stmt), check_stmt_for_type_change,
-		      &tci, NULL, &function_entry_reached);
+  unsigned aa_walk_budget = 0;
+  if (aa_walk_budget_p)
+    aa_walk_budget = *aa_walk_budget_p + 1;
+
+  int walked
+   = walk_aliased_vdefs (&ao, gimple_vuse (stmt), check_stmt_for_type_change,
+			 &tci, NULL, &function_entry_reached, aa_walk_budget);
 
   /* If we did not find any type changing statements, we may still drop
      maybe_in_construction flag if the context already have outer type. 
@@ -1771,6 +1781,16 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
      we can safely ignore tci.speculative that is set on calls and give up
      only if there was dyanmic type store that may affect given variable
      (seen_unanalyzed_store)  */
+
+  if (walked < 0)
+    {
+      if (dump_file)
+	fprintf (dump_file, "  AA walk budget exhausted.\n");
+      *aa_walk_budget_p = 0;
+      return false;
+    }
+  else if (aa_walk_budget_p)
+    *aa_walk_budget_p -= walked;
 
   if (!tci.type_maybe_changed
       || (outer_type
