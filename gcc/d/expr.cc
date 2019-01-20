@@ -43,20 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "d-tree.h"
 
 
-/* Build a floating-point identity comparison between T1 and T2, ignoring any
-   excessive padding in the type.  CODE is EQ_EXPR or NE_EXPR comparison.  */
-
-static tree
-build_float_identity (tree_code code, tree t1, tree t2)
-{
-  tree tmemcmp = builtin_decl_explicit (BUILT_IN_MEMCMP);
-  tree size = size_int (TYPE_PRECISION (TREE_TYPE (t1)) / BITS_PER_UNIT);
-
-  tree result = build_call_expr (tmemcmp, 3, build_address (t1),
-				 build_address (t2), size);
-  return build_boolop (code, result, integer_zero_node);
-}
-
 /* Implements the visitor interface to build the GCC trees of all Expression
    AST classes emitted from the D Front-end.
    All visit methods accept one parameter E, which holds the frontend AST
