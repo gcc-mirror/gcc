@@ -5275,7 +5275,7 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	  ipa_polymorphic_call_context context (current_function_decl,
 						fn, stmt, &instance);
 	  context.get_dynamic_type (instance, OBJ_TYPE_REF_OBJECT (fn),
-				    otr_type, stmt);
+				    otr_type, stmt, NULL);
 	  bool final;
 	  vec <cgraph_node *> targets
 	      = possible_polymorphic_call_targets (obj_type_ref_class (fn),

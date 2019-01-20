@@ -1557,7 +1557,7 @@ public:
 
   /* Look for vtable stores or constructor calls to work out dynamic type
      of memory location.  */
-  bool get_dynamic_type (tree, tree, tree, gimple *);
+  bool get_dynamic_type (tree, tree, tree, gimple *, unsigned *);
 
   /* Make context non-speculative.  */
   void clear_speculation ();

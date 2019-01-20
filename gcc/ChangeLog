@@ -1,3 +1,43 @@
+2019-01-20  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/87615
+	* ipa-prop.h (struct ipa_func_body_info): Replaced field aa_walked
+	with aa_walk_budget.
+	* cgraph.h (ipa_polymorphic_call_context::get_dynamic_type): Add
+	aa_walk_budget_p parameter.
+	* ipa-fnsummary.c (unmodified_parm_1): New parameter fbi.  Limit AA
+	walk.  Updated all callers.
+	(unmodified_parm): New parameter fbi, pass it to unmodified_parm_1.
+	(eliminated_by_inlining_prob): New parameter fbi, pass it on to
+	unmodified_parm.
+	(will_be_nonconstant_expr_predicate): New parameter fbi, removed
+	parameter info.  Extract info from fbi.  Pass fbi to recursive calls
+	and to unmodified_parm.
+	(phi_result_unknown_predicate): New parameter fbi, removed parameter
+	info, updated call to will_be_nonconstant_expr_predicate.
+	(param_change_prob): New parameter fbi, limit AA walking.
+	(analyze_function_body): Initialize aa_walk_budget in fbi.  Update
+	calls to various above functions.
+	* ipa-polymorphic-call.c (get_dynamic_type): Add aa_walk_budget_p
+	parameter.  Use it to limit AA walking.
+	* ipa-prop.c (detect_type_change_from_memory_writes): New parameter
+	fbi, limit AA walk.
+	(detect_type_change): New parameter fbi, pass it on to
+	detect_type_change_from_memory_writes.
+	(detect_type_change_ssa): Likewise.
+	(aa_overwalked): Removed.
+	(parm_preserved_before_stmt_p): Assume fbi is never NULL, stream line
+	accordingly, adjust to the neew AA limiting scheme.
+	(parm_ref_data_preserved_p): Likewise.
+	(ipa_compute_jump_functions_for_edge): Adjust call to
+	get_dynamic_type.
+	(ipa_analyze_call_uses): Likewise.
+	(ipa_analyze_virtual_call_uses): Pass fbi to detect_type_change_ssa.
+	(ipa_analyze_node): Initialize aa_walk_budget.
+	(ipcp_transform_function): Likewise.
+	* tree-ssa-sccvn.c (eliminate_dom_walker::eliminate_stmt): Update call
+	to get_dynamic_type.
+
 2019-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/aarch64/aarch64.c (aarch64_stack_protect_guard): Move
