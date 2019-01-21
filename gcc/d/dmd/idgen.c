@@ -267,6 +267,9 @@ Msgtable msgtable[] =
     { "_ArrayEq", NULL },
     { "_ArrayPostblit", NULL },
     { "_ArrayDtor", NULL },
+    { "dup", NULL },
+    { "_aaApply", NULL },
+    { "_aaApply2", NULL },
 
     // For pragma's
     { "Pinline", "inline" },

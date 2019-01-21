@@ -264,14 +264,18 @@ void printCtfePerformanceStats()
 #endif
 }
 
-VarDeclaration *findParentVar(Expression *e);
-Expression *evaluateIfBuiltin(InterState *istate, Loc loc,
+static Expression *evaluateIfBuiltin(UnionExp *pue, InterState *istate, Loc loc,
     FuncDeclaration *fd, Expressions *arguments, Expression *pthis);
-Expression *evaluatePostblit(InterState *istate, Expression *e);
-Expression *evaluateDtor(InterState *istate, Expression *e);
-Expression *scrubReturnValue(Loc loc, Expression *e);
+static Expression *evaluatePostblit(InterState *istate, Expression *e);
+static Expression *evaluateDtor(InterState *istate, Expression *e);
 
-Expression *scrubCacheValue(Loc loc, Expression *e);
+static bool isEntirelyVoid(Expressions* elems);
+static Expression *scrubArray(Loc loc, Expressions *elems, bool structlit = false);
+static Expression *scrubStructLiteral(Loc loc, StructLiteralExp *sle);
+static Expression *scrubReturnValue(Loc loc, Expression *e);
+static Expression *scrubArrayCache(Expressions *elems);
+static Expression *scrubStructLiteralCache(StructLiteralExp *sle);
+static Expression *scrubCacheValue(Expression *e);
 
 
 /*************************************
@@ -635,8 +639,24 @@ void ctfeCompile(FuncDeclaration *fd)
  */
 Expression *ctfeInterpret(Expression *e)
 {
-    if (e->op == TOKerror)
+    switch (e->op)
+    {
+    case TOKint64:
+    case TOKfloat64:
+    case TOKcomplex80:
+    case TOKnull:
+    case TOKstring:
+        if (e->type->ty == Terror)
+            return new ErrorExp();
+        /* fall through */
+
+    case TOKerror:
         return e;
+
+    default:
+        break;
+    }
+
     assert(e->type);                    // Bugzilla 14642
     //assert(e->type->ty != Terror);    // FIXME
     if (e->type->ty == Terror)
@@ -710,6 +730,8 @@ Expression *ctfeInterpretForPragmaMsg(Expression *e)
 /*************************************
  * Attempt to interpret a function given the arguments.
  * Input:
+ *      pue        storage for result
+ *      fd         function being called
  *      istate     state for calling function (NULL if none)
  *      arguments  function arguments
  *      thisarg    'this', if a needThis() function, NULL if not.
@@ -718,8 +740,9 @@ Expression *ctfeInterpretForPragmaMsg(Expression *e)
  * or CTFEExp if function returned void.
  */
 
-static Expression *interpretFunction(FuncDeclaration *fd, InterState *istate, Expressions *arguments, Expression *thisarg)
+static Expression *interpretFunction(UnionExp *pue, FuncDeclaration *fd, InterState *istate, Expressions *arguments, Expression *thisarg)
 {
+    assert(pue);
     if (fd->semanticRun == PASSsemantic3)
     {
         fd->error("circular dependency. Functions cannot be interpreted while being compiled");
@@ -898,7 +921,7 @@ static Expression *interpretFunction(FuncDeclaration *fd, InterState *istate, Ex
             e = CTFEExp::cantexp;
             break;
         }
-        e = interpret(fd->fbody, &istatex);
+        e = interpret(pue, fd->fbody, &istatex);
 
         if (istatex.start)
         {
@@ -938,6 +961,8 @@ static Expression *interpretFunction(FuncDeclaration *fd, InterState *istate, Ex
     // If it generated an uncaught exception, report error.
     if (!istate && e->op == TOKthrownexception)
     {
+        if (e == pue->exp())
+            e = pue->copy();
         ((ThrownExceptionExp *)e)->generateUncaughtError();
         e = CTFEExp::cantexp;
     }
@@ -2004,7 +2029,8 @@ public:
         {
             // Normally this is already done by optimize()
             // Do it here in case optimize(WANTvalue) wasn't run before CTFE
-            result = new SymOffExp(e->loc, ((VarExp *)e->e1)->var, 0);
+            new(pue) SymOffExp(e->loc, ((VarExp *)e->e1)->var, 0);
+            result = pue->exp();
             result->type = e->type;
             return;
         }
@@ -2032,7 +2058,7 @@ public:
             return;
         }
 
-        Expression *er = interpret(e->e1, istate);
+        Expression *er = interpret(pue, e->e1, istate);
         if (exceptionOrCant(er))
             return;
         if (er == e->e1)
@@ -2042,6 +2068,7 @@ public:
         }
         else
         {
+            er = (er == pue->exp()) ? pue->copy() : er;
             new(pue) DelegateExp(e->loc, er, e->func, false);
             result = pue->exp();
             result->type = e->type;
@@ -2100,7 +2127,7 @@ public:
                     /* Bugzilla 14304: e is a value that is not yet owned by CTFE.
                      * Mark as "cached", and use it directly during interpretation.
                      */
-                    e = scrubCacheValue(v->loc, e);
+                    e = scrubCacheValue(e);
                     ctfeStack.saveGlobalConstant(v, e);
                 }
                 else
@@ -2236,7 +2263,7 @@ public:
              *  foo(s); // VarExp('s') will have const(S)
              */
             // A VarExp may include an implicit cast. It must be done explicitly.
-            result = paintTypeOntoLiteral(e->type, result);
+            result = paintTypeOntoLiteral(pue, e->type, result);
         }
     }
 
@@ -2363,7 +2390,7 @@ public:
         }
         if (Expression *ex = isExpression(e->obj))
         {
-            result = interpret(ex, istate);
+            result = interpret(pue, ex, istate);
             if (exceptionOrCant(ex))
                 return;
 
@@ -2493,9 +2520,8 @@ public:
                 result = CTFEExp::cantexp;
                 return;
             }
-            new(pue) ArrayLiteralExp(e->loc, basis, expsx);
+            new(pue) ArrayLiteralExp(e->loc, e->type, basis, expsx);
             ArrayLiteralExp *ale = (ArrayLiteralExp *)pue->exp();
-            ale->type = e->type;
             ale->ownedByCtfe = OWNEDctfe;
             result = ale;
         }
@@ -2505,7 +2531,10 @@ public:
             result = e;
         }
         else
-            result = copyLiteral(e).copy();
+        {
+            *pue = copyLiteral(e);
+            result = pue->exp();
+        }
     }
 
     void visit(AssocArrayLiteralExp *e)
@@ -2585,7 +2614,10 @@ public:
             result = ae;
         }
         else
-            result = copyLiteral(e).copy();
+        {
+            *pue = copyLiteral(e);
+            result = pue->exp();
+        }
     }
 
     void visit(StructLiteralExp *e)
@@ -2635,7 +2667,10 @@ public:
                     // Block assignment from inside struct literals
                     TypeSArray *tsa = (TypeSArray *)v->type;
                     size_t len = (size_t)tsa->dim->toInteger();
-                    ex = createBlockDuplicatedArrayLiteral(ex->loc, v->type, ex, len);
+                    UnionExp ue;
+                    ex = createBlockDuplicatedArrayLiteral(&ue, ex->loc, v->type, ex, len);
+                    if (ex == ue.exp())
+                        ex = ue.copy();
                 }
             }
 
@@ -2665,22 +2700,25 @@ public:
             result = sle;
         }
         else
-            result = copyLiteral(e).copy();
+        {
+            *pue = copyLiteral(e);
+            result = pue->exp();
+        }
     }
 
     // Create an array literal of type 'newtype' with dimensions given by
     // 'arguments'[argnum..$]
-    static Expression *recursivelyCreateArrayLiteral(Loc loc, Type *newtype, InterState *istate,
+    static Expression *recursivelyCreateArrayLiteral(UnionExp *pue, Loc loc, Type *newtype, InterState *istate,
         Expressions *arguments, int argnum)
     {
-        Expression *lenExpr = interpret((*arguments)[argnum], istate);
+        Expression *lenExpr = interpret(pue, (*arguments)[argnum], istate);
         if (exceptionOrCantInterpret(lenExpr))
             return lenExpr;
         size_t len = (size_t)(lenExpr->toInteger());
         Type *elemType = ((TypeArray *)newtype)->next;
         if (elemType->ty == Tarray && argnum < (int)arguments->dim - 1)
         {
-            Expression *elem = recursivelyCreateArrayLiteral(loc, elemType, istate,
+            Expression *elem = recursivelyCreateArrayLiteral(pue, loc, elemType, istate,
                 arguments, argnum + 1);
             if (exceptionOrCantInterpret(elem))
                 return elem;
@@ -2689,8 +2727,8 @@ public:
             elements->setDim(len);
             for (size_t i = 0; i < len; i++)
                  (*elements)[i] = copyLiteral(elem).copy();
-            ArrayLiteralExp *ae = new ArrayLiteralExp(loc, elements);
-            ae->type = newtype;
+            new(pue) ArrayLiteralExp(loc, newtype, elements);
+            ArrayLiteralExp *ae = (ArrayLiteralExp *)pue->exp();
             ae->ownedByCtfe = OWNEDctfe;
             return ae;
         }
@@ -2699,12 +2737,12 @@ public:
         {
             const unsigned ch = (unsigned)elemType->defaultInitLiteral(loc)->toInteger();
             const unsigned char sz = (unsigned char)elemType->size();
-            return createBlockDuplicatedStringLiteral(loc, newtype, ch, len, sz);
+            return createBlockDuplicatedStringLiteral(pue, loc, newtype, ch, len, sz);
         }
         else
         {
             Expression *el = interpret(elemType->defaultInitLiteral(loc), istate);
-            return createBlockDuplicatedArrayLiteral(loc, newtype, el, len);
+            return createBlockDuplicatedArrayLiteral(pue, loc, newtype, el, len);
         }
     }
 
@@ -2717,13 +2755,13 @@ public:
             return;
         }
 
-        result = interpret(e->argprefix, istate, ctfeNeedNothing);
-        if (exceptionOrCant(result))
+        Expression *epre = interpret(pue, e->argprefix, istate, ctfeNeedNothing);
+        if (exceptionOrCant(epre))
             return;
 
         if (e->newtype->ty == Tarray && e->arguments)
         {
-            result = recursivelyCreateArrayLiteral(e->loc, e->newtype, istate, e->arguments, 0);
+            result = recursivelyCreateArrayLiteral(pue, e->loc, e->newtype, istate, e->arguments, 0);
             return;
         }
         if (e->newtype->toBasetype()->ty == Tstruct)
@@ -2734,7 +2772,7 @@ public:
                 se = interpret(se, istate);
                 if (exceptionOrCant(se))
                     return;
-                result = interpretFunction(e->member, istate, e->arguments, se);
+                result = interpretFunction(pue, e->member, istate, e->arguments, se);
 
                 // Repaint as same as CallExp::interpret() does.
                 result->loc = e->loc;
@@ -2761,11 +2799,12 @@ public:
                 StructLiteralExp *se = new StructLiteralExp(e->loc, sd, exps, e->newtype);
                 se->type = e->newtype;
                 se->ownedByCtfe = OWNEDctfe;
-                result = interpret(se, istate);
+                result = interpret(pue, se, istate);
             }
             if (exceptionOrCant(result))
                 return;
-            new(pue) AddrExp(e->loc, result, e->type);
+            Expression *ev = (result == pue->exp()) ? pue->copy() : result;
+            new(pue) AddrExp(e->loc, ev, e->type);
             result = pue->exp();
             return;
         }
@@ -2809,13 +2848,14 @@ public:
             // We probably won't get away with this.
             StructLiteralExp *se = new StructLiteralExp(e->loc, (StructDeclaration *)cd, elems, e->newtype);
             se->ownedByCtfe = OWNEDctfe;
-            Expression *eref = new ClassReferenceExp(e->loc, se, e->type);
+            new(pue) ClassReferenceExp(e->loc, se, e->type);
+            Expression *eref = pue->exp();
             if (e->member)
             {
                 // Call constructor
                 if (!e->member->fbody)
                 {
-                    Expression *ctorfail = evaluateIfBuiltin(istate, e->loc, e->member, e->arguments, eref);
+                    Expression *ctorfail = evaluateIfBuiltin(pue, istate, e->loc, e->member, e->arguments, eref);
                     if (ctorfail)
                     {
                         if (exceptionOrCant(ctorfail))
@@ -2827,7 +2867,8 @@ public:
                     result = CTFEExp::cantexp;
                     return;
                 }
-                Expression *ctorfail = interpretFunction(e->member, istate, e->arguments, eref);
+                UnionExp ue;
+                Expression *ctorfail = interpretFunction(&ue, e->member, istate, e->arguments, eref);
                 if (exceptionOrCant(ctorfail))
                     return;
 
@@ -2855,8 +2896,7 @@ public:
             Expressions *elements = new Expressions();
             elements->setDim(1);
             (*elements)[0] = newval;
-            ArrayLiteralExp *ae = new ArrayLiteralExp(e->loc, elements);
-            ae->type = e->newtype->arrayOf();
+            ArrayLiteralExp *ae = new ArrayLiteralExp(e->loc, e->newtype->arrayOf(), elements);
             ae->ownedByCtfe = OWNEDctfe;
 
             IndexExp *ei = new IndexExp(e->loc, ae, new IntegerExp(Loc(), 0, Type::tsize_t));
@@ -3462,7 +3502,7 @@ public:
             assignAssocArrayElement(e->loc, existingAA, lastIndex, newval);
 
             // Determine the return value
-            result = ctfeCast(e->loc, e->type, e->type, fp && post ? oldval : newval);
+            result = ctfeCast(pue, e->loc, e->type, e->type, fp && post ? oldval : newval);
             return;
         }
         if (e1->op == TOKarraylength)
@@ -3474,9 +3514,12 @@ public:
              */
 
             // Determine the return value
-            result = ctfeCast(e->loc, e->type, e->type, fp && post ? oldval : newval);
+            result = ctfeCast(pue, e->loc, e->type, e->type, fp && post ? oldval : newval);
             if (exceptionOrCant(result))
                 return;
+
+            if (result == pue->exp())
+                result = pue->copy();
 
             size_t oldlen = (size_t)oldval->toInteger();
             size_t newlen = (size_t)newval->toInteger();
@@ -3511,15 +3554,21 @@ public:
 
         if (!isBlockAssignment)
         {
-            newval = ctfeCast(e->loc, e->type, e->type, newval);
+            newval = ctfeCast(pue, e->loc, e->type, e->type, newval);
             if (exceptionOrCant(newval))
                 return;
+            if (newval == pue->exp())
+                newval = pue->copy();
 
             // Determine the return value
             if (goal == ctfeNeedLvalue)     // Bugzilla 14371
                 result = e1;
             else
-                result = ctfeCast(e->loc, e->type, e->type, fp && post ? oldval : newval);
+            {
+                result = ctfeCast(pue, e->loc, e->type, e->type, fp && post ? oldval : newval);
+                if (result == pue->exp())
+                    result = pue->copy();
+            }
             if (exceptionOrCant(result))
                 return;
         }
@@ -3536,7 +3585,7 @@ public:
         {
             // Note that slice assignments don't support things like ++, so
             // we don't need to remember 'returnValue'.
-            result = interpretAssignToSlice(e, e1, newval, isBlockAssignment);
+            result = interpretAssignToSlice(pue, e, e1, newval, isBlockAssignment);
             if (exceptionOrCant(result))
                 return;
             if (e->e1->op == TOKslice)
@@ -3781,7 +3830,7 @@ public:
      * it returns aggregate[low..upp], except that as an optimisation,
      * if goal == ctfeNeedNothing, it will return NULL
      */
-    Expression *interpretAssignToSlice(BinExp *e,
+    Expression *interpretAssignToSlice(UnionExp *pue, BinExp *e,
         Expression *e1, Expression *newval, bool isBlockAssignment)
     {
         dinteger_t lowerbound;
@@ -3962,7 +4011,7 @@ public:
                 new IntegerExp(e->loc, firstIndex, Type::tsize_t),
                 new IntegerExp(e->loc, firstIndex + upperbound - lowerbound, Type::tsize_t));
             retslice->type = e->type;
-            return interpret(retslice, istate);
+            return interpret(pue, retslice, istate);
         }
         if (aggregate->op == TOKarrayliteral)
         {
@@ -4178,7 +4227,7 @@ public:
                 new IntegerExp(e->loc, firstIndex, Type::tsize_t),
                 new IntegerExp(e->loc, firstIndex + upperbound - lowerbound, Type::tsize_t));
             retslice->type = e->type;
-            return interpret(retslice, istate);
+            return interpret(pue, retslice, istate);
         }
 
         e->error("slice operation %s = %s cannot be evaluated at compile time",
@@ -4285,7 +4334,7 @@ public:
      *  relational sub-expressions can be negated, eg
      *  (!(q1 < p1) && p2 <= q2) is valid.
      */
-    void interpretFourPointerRelation(BinExp *e)
+    void interpretFourPointerRelation(UnionExp *pue, BinExp *e)
     {
         assert(e->op == TOKandand || e->op == TOKoror);
 
@@ -4311,12 +4360,16 @@ public:
         }
 
         //printf("FourPointerRelation %s\n", toChars());
+        UnionExp ue1;
+        UnionExp ue2;
+        UnionExp ue3;
+        UnionExp ue4;
 
         // Evaluate the first two pointers
-        p1 = interpret(p1, istate);
+        p1 = interpret(&ue1, p1, istate);
         if (exceptionOrCant(p1))
             return;
-        p2 = interpret(p2, istate);
+        p2 = interpret(&ue2, p2, istate);
         if (exceptionOrCant(p2))
             return;
         dinteger_t ofs1, ofs2;
@@ -4329,7 +4382,7 @@ public:
         {
             // Here it is either CANT_INTERPRET,
             // or an IsInside comparison returning false.
-            p3 = interpret(p3, istate);
+            p3 = interpret(&ue3, p3, istate);
             if (CTFEExp::isCantExp(p3))
                 return;
             // Note that it is NOT legal for it to throw an exception!
@@ -4338,7 +4391,7 @@ public:
                 except = p3;
             else
             {
-                p4 = interpret(p4, istate);
+                p4 = interpret(&ue4, p4, istate);
                 if (CTFEExp::isCantExp(p4))
                 {
                     result = p4;
@@ -4367,7 +4420,8 @@ public:
                 (dir1 != dir2 && pointToSameMemoryBlock(agg1, agg3) && pointToSameMemoryBlock(agg2, agg4)))
             {
                 // it's a legal two-sided comparison
-                result = new IntegerExp(e->loc, (e->op == TOKandand) ?  0 : 1, e->type);
+                new(pue) IntegerExp(e->loc, (e->op == TOKandand) ?  0 : 1, e->type);
+                result = pue->exp();
                 return;
             }
             // It's an invalid four-pointer comparison. Either the second
@@ -4393,25 +4447,24 @@ public:
             nott = !nott;
             ex = ((NotExp *)ex)->e1;
         }
-        TOK cmpop = ex->op;
-        if (nott)
-            cmpop = reverseRelation(cmpop);
-        int cmp = comparePointers(cmpop, agg1, ofs1, agg2, ofs2);
+        const TOK cmpop = nott ? reverseRelation(ex->op) : ex->op;
+        const int cmp = comparePointers(cmpop, agg1, ofs1, agg2, ofs2);
         // We already know this is a valid comparison.
         assert(cmp >= 0);
         if ((e->op == TOKandand && cmp == 1) ||
             (e->op == TOKoror   && cmp == 0))
         {
-            result = interpret(e->e2, istate);
+            result = interpret(pue, e->e2, istate);
             return;
         }
-        result = new IntegerExp(e->loc, (e->op == TOKandand) ? 0 : 1, e->type);
+        new(pue) IntegerExp(e->loc, (e->op == TOKandand) ? 0 : 1, e->type);
+        result = pue->exp();
     }
 
     void visit(AndAndExp *e)
     {
         // Check for an insidePointer expression, evaluate it if so
-        interpretFourPointerRelation(e);
+        interpretFourPointerRelation(pue, e);
         if (result)
             return;
 
@@ -4461,7 +4514,7 @@ public:
     void visit(OrOrExp *e)
     {
         // Check for an insidePointer expression, evaluate it if so
-        interpretFourPointerRelation(e);
+        interpretFourPointerRelation(pue, e);
         if (result)
             return;
 
@@ -4695,7 +4748,7 @@ public:
         }
 
         // Check for built-in functions
-        result = evaluateIfBuiltin(istate, e->loc, fd, e->arguments, pthis);
+        result = evaluateIfBuiltin(pue, istate, e->loc, fd, e->arguments, pthis);
         if (result)
             return;
 
@@ -4707,13 +4760,17 @@ public:
             return;
         }
 
-        result = interpretFunction(fd, istate, e->arguments, pthis);
+        result = interpretFunction(pue, fd, istate, e->arguments, pthis);
         if (result->op == TOKvoidexp)
             return;
         if (!exceptionOrCantInterpret(result))
         {
-            if (goal != ctfeNeedLvalue) // Peel off CTFE reference if it's unnesessary
-                result = interpret(result, istate);
+            if (goal != ctfeNeedLvalue) // Peel off CTFE reference if it's unnecessary
+            {
+                if (result == pue->exp())
+                    result = pue->copy();
+                result = interpret(pue, result, istate);
+            }
         }
         if (!exceptionOrCantInterpret(result))
         {
@@ -5306,17 +5363,37 @@ public:
 
     void visit(CatExp *e)
     {
-        Expression *e1 = interpret(e->e1, istate);
+        UnionExp ue1;
+        Expression *e1 = interpret(&ue1, e->e1, istate);
         if (exceptionOrCant(e1))
             return;
-        Expression *e2 = interpret(e->e2, istate);
+
+        UnionExp ue2;
+        Expression *e2 = interpret(&ue2, e->e2, istate);
         if (exceptionOrCant(e2))
             return;
+
         UnionExp e1tmp;
         e1 = resolveSlice(e1, &e1tmp);
+
         UnionExp e2tmp;
         e2 = resolveSlice(e2, &e2tmp);
-        result = ctfeCat(e->loc, e->type, e1, e2).copy();
+
+        /* e1 and e2 can't go on the stack because of x~[y] and [x]~y will
+         * result in [x,y] and then x or y is on the stack.
+         * But if they are both strings, we can, because it isn't the x~[y] case.
+         */
+        if (!(e1->op == TOKstring && e2->op == TOKstring))
+        {
+            if (e1 == ue1.exp())
+                e1 = ue1.copy();
+            if (e2 == ue2.exp())
+                e2 = ue2.copy();
+        }
+
+        *pue = ctfeCat(e->loc, e->type, e1, e2);
+        result = pue->exp();
+
         if (CTFEExp::isCantExp(result))
         {
             e->error("%s cannot be interpreted at compile time", e->toChars());
@@ -5375,7 +5452,7 @@ public:
 
             if (cd->dtor)
             {
-                result = interpretFunction(cd->dtor, istate, NULL, cre);
+                result = interpretFunction(pue, cd->dtor, istate, NULL, cre);
                 if (exceptionOrCant(result))
                     return;
             }
@@ -5406,7 +5483,7 @@ public:
 
                 if (sd->dtor)
                 {
-                    result = interpretFunction(sd->dtor, istate, NULL, sle);
+                    result = interpretFunction(pue, sd->dtor, istate, NULL, sle);
                     if (exceptionOrCant(result))
                         return;
                 }
@@ -5440,7 +5517,7 @@ public:
                     for (size_t i = 0; i < ale->elements->dim; i++)
                     {
                         Expression *el = (*ale->elements)[i];
-                        result = interpretFunction(sd->dtor, istate, NULL, el);
+                        result = interpretFunction(pue, sd->dtor, istate, NULL, el);
                         if (exceptionOrCant(result))
                             return;
                     }
@@ -5473,7 +5550,7 @@ public:
             if (e1->op == TOKint64)
             {
                 // Happens with Windows HANDLEs, for example.
-                result = paintTypeOntoLiteral(e->to, e1);
+                result = paintTypeOntoLiteral(pue, e->to, e1);
                 return;
             }
             bool castToSarrayPointer = false;
@@ -5516,13 +5593,14 @@ public:
 
             if (e1->op == TOKslice)
             {
-                if (((SliceExp *)e1)->e1->op == TOKnull)
+                SliceExp *se = (SliceExp *)e1;
+                if (se->e1->op == TOKnull)
                 {
-                    result = paintTypeOntoLiteral(e->type, ((SliceExp *)e1)->e1);
+                    result = paintTypeOntoLiteral(pue, e->type, se->e1);
                     return;
                 }
                 // Create a CTFE pointer &aggregate[1..2]
-                IndexExp *ei = new IndexExp(e->loc, ((SliceExp *)e1)->e1, ((SliceExp *)e1)->lwr);
+                IndexExp *ei = new IndexExp(e->loc, se->e1, se->lwr);
                 ei->type = e->type->nextOf();
                 new(pue) AddrExp(e->loc, ei, e->type);
                 result = pue->exp();
@@ -5541,7 +5619,6 @@ public:
             {
                 // type painting operation
                 IndexExp *ie = (IndexExp *)e1;
-                result = new IndexExp(e1->loc, ie->e1, ie->e2);
                 if (castBackFromVoid)
                 {
                     // get the original type. For strings, it's just the type...
@@ -5550,7 +5627,7 @@ public:
                     if (ie->e1->op == TOKarrayliteral && ie->e2->op == TOKint64)
                     {
                         ArrayLiteralExp *ale = (ArrayLiteralExp *)ie->e1;
-                        size_t indx = (size_t)ie->e2->toInteger();
+                        const size_t indx = (size_t)ie->e2->toInteger();
                         if (indx < ale->elements->dim)
                         {
                             Expression *xx = (*ale->elements)[indx];
@@ -5572,23 +5649,26 @@ public:
                         return;
                     }
                 }
+                new(pue) IndexExp(e1->loc, ie->e1, ie->e2);
+                result = pue->exp();
                 result->type = e->type;
                 return;
             }
             if (e1->op == TOKaddress)
             {
-                Type *origType = ((AddrExp *)e1)->e1->type;
+                AddrExp *ae = (AddrExp *)e1;
+                Type *origType = ae->e1->type;
                 if (isSafePointerCast(origType, pointee))
                 {
-                    new(pue) AddrExp(e->loc, ((AddrExp *)e1)->e1, e->type);
+                    new(pue) AddrExp(e->loc, ae->e1, e->type);
                     result = pue->exp();
                     return;
                 }
-                if (castToSarrayPointer && pointee->toBasetype()->ty == Tsarray && ((AddrExp *)e1)->e1->op == TOKindex)
+                if (castToSarrayPointer && pointee->toBasetype()->ty == Tsarray && ae->e1->op == TOKindex)
                 {
                     // &val[idx]
                     dinteger_t dim = ((TypeSArray *)pointee->toBasetype())->dim->toInteger();
-                    IndexExp *ie = (IndexExp *)((AddrExp *)e1)->e1;
+                    IndexExp *ie = (IndexExp *)ae->e1;
                     Expression *lwr = ie->e2;
                     Expression *upr = new IntegerExp(ie->e2->loc, ie->e2->toInteger() + dim, Type::tsize_t);
 
@@ -5669,7 +5749,7 @@ public:
             result = pue->exp();
             return;
         }
-        result = ctfeCast(e->loc, e->type, e->to, e1);
+        result = ctfeCast(pue, e->loc, e->type, e->to, e1);
     }
 
     void visit(AssertExp *e)
@@ -5708,20 +5788,30 @@ public:
     void visit(PtrExp *e)
     {
         // Check for int<->float and long<->double casts.
-        if (e->e1->op == TOKsymoff && ((SymOffExp *)e->e1)->offset == 0 && ((SymOffExp *)e->e1)->var->isVarDeclaration() && isFloatIntPaint(e->type, ((SymOffExp *)e->e1)->var->type))
+        if (e->e1->op == TOKsymoff)
         {
-            // *(cast(int*)&v), where v is a float variable
-            result = paintFloatInt(getVarExp(e->loc, istate, ((SymOffExp *)e->e1)->var, ctfeNeedRvalue), e->type);
-            return;
-        }
-        if (e->e1->op == TOKcast && ((CastExp *)e->e1)->e1->op == TOKaddress)
-        {
-            // *(cast(int*)&x), where x is a float expression
-            Expression *x = ((AddrExp *)(((CastExp *)e->e1)->e1))->e1;
-            if (isFloatIntPaint(e->type, x->type))
+            SymOffExp *soe = (SymOffExp *)e->e1;
+            if (soe->offset == 0 && soe->var->isVarDeclaration() && isFloatIntPaint(e->type, soe->var->type))
             {
-                result = paintFloatInt(interpret(x, istate), e->type);
+                // *(cast(int*)&v), where v is a float variable
+                result = paintFloatInt(pue, getVarExp(e->loc, istate, soe->var, ctfeNeedRvalue), e->type);
                 return;
+            }
+        }
+
+        if (e->e1->op == TOKcast)
+        {
+            CastExp *ce1 = (CastExp *)e->e1;
+            if (ce1->e1->op == TOKaddress)
+            {
+                AddrExp *ae11 = (AddrExp *)ce1->e1;
+                // *(cast(int*)&x), where x is a float expression
+                Expression *x = ae11->e1;
+                if (isFloatIntPaint(e->type, x->type))
+                {
+                    result = paintFloatInt(pue, interpret(x, istate), e->type);
+                    return;
+                }
             }
         }
 
@@ -5785,7 +5875,7 @@ public:
              */
             return;
         }
-        result = interpret(result, istate, goal);
+        result = interpret(pue, result, istate, goal);
         if (exceptionOrCant(result))
             return;
     }
@@ -5898,7 +5988,10 @@ public:
             // Block assignment from inside struct literals
             TypeSArray *tsa = (TypeSArray *)v->type;
             size_t len = (size_t)tsa->dim->toInteger();
-            result = createBlockDuplicatedArrayLiteral(ex->loc, v->type, ex, len);
+            UnionExp ue;
+            result = createBlockDuplicatedArrayLiteral(&ue, ex->loc, v->type, ex, len);
+            if (result == ue.exp())
+                result = ue.copy();
             (*se->elements)[i] = result;
         }
     }
@@ -6022,57 +6115,47 @@ Expression *interpret(Statement *s, InterState *istate)
     return result;
 }
 
-Expression *scrubArray(Loc loc, Expressions *elems, bool structlit = false);
-
-/* All results destined for use outside of CTFE need to have their CTFE-specific
+/**
+ * All results destined for use outside of CTFE need to have their CTFE-specific
  * features removed.
- * In particular, all slices must be resolved.
+ * In particular,
+ * 1. all slices must be resolved.
+ * 2. all .ownedByCtfe set to OWNEDcode
  */
 Expression *scrubReturnValue(Loc loc, Expression *e)
 {
     if (e->op == TOKclassreference)
     {
-        StructLiteralExp *se = ((ClassReferenceExp*)e)->value;
-        se->ownedByCtfe = OWNEDcode;
-        if (!(se->stageflags & stageScrub))
-        {
-            int old = se->stageflags;
-            se->stageflags |= stageScrub;
-            if (Expression *ex = scrubArray(loc, se->elements, true))
-                return ex;
-            se->stageflags = old;
-        }
+        StructLiteralExp *sle = ((ClassReferenceExp*)e)->value;
+        if (Expression *ex = scrubStructLiteral(loc, sle))
+            return ex;
     }
-    if (e->op == TOKvoid)
+    else if (e->op == TOKvoid)
     {
         error(loc, "uninitialized variable '%s' cannot be returned from CTFE", ((VoidInitExp *)e)->var->toChars());
         return new ErrorExp();
     }
+
     e = resolveSlice(e);
+
     if (e->op == TOKstructliteral)
     {
-        StructLiteralExp *se = (StructLiteralExp *)e;
-        se->ownedByCtfe = OWNEDcode;
-        if (!(se->stageflags & stageScrub))
-        {
-            int old = se->stageflags;
-            se->stageflags |= stageScrub;
-            if (Expression *ex = scrubArray(loc, se->elements, true))
-                return ex;
-            se->stageflags = old;
-        }
+        StructLiteralExp *sle = (StructLiteralExp *)e;
+        if (Expression *ex = scrubStructLiteral(loc, sle))
+            return ex;
     }
-    if (e->op == TOKstring)
+    else if (e->op == TOKstring)
     {
         ((StringExp *)e)->ownedByCtfe = OWNEDcode;
     }
-    if (e->op == TOKarrayliteral)
+    else if (e->op == TOKarrayliteral)
     {
-        ((ArrayLiteralExp *)e)->ownedByCtfe = OWNEDcode;
-        if (Expression *ex = scrubArray(loc, ((ArrayLiteralExp *)e)->elements))
+        ArrayLiteralExp *ale = (ArrayLiteralExp *)e;
+        ale->ownedByCtfe = OWNEDcode;
+        if (Expression *ex = scrubArray(loc, ale->elements))
             return ex;
     }
-    if (e->op == TOKassocarrayliteral)
+    else if (e->op == TOKassocarrayliteral)
     {
         AssocArrayLiteralExp *aae = (AssocArrayLiteralExp *)e;
         aae->ownedByCtfe = OWNEDcode;
@@ -6085,24 +6168,34 @@ Expression *scrubReturnValue(Loc loc, Expression *e)
     return e;
 }
 
+/* Returns: true if e is void,
+ * or is an array literal or struct literal of void elements.
+ */
+static bool isVoid(Expression *e)
+{
+    if (e->op == TOKvoid)
+        return true;
+
+    if (e->op == TOKarrayliteral)
+        return isEntirelyVoid(((ArrayLiteralExp *)e)->elements);
+
+    if (e->op == TOKstructliteral)
+        return isEntirelyVoid(((StructLiteralExp *)e)->elements);
+
+    return false;
+}
+
 // Return true if every element is either void,
 // or is an array literal or struct literal of void elements.
 bool isEntirelyVoid(Expressions *elems)
 {
     for (size_t i = 0; i < elems->dim; i++)
     {
-        Expression *m = (*elems)[i];
+        Expression *e = (*elems)[i];
         // It can be NULL for performance reasons,
         // see StructLiteralExp::interpret().
-        if (!m)
-            continue;
-
-        if (!(m->op == TOKvoid) &&
-            !(m->op == TOKarrayliteral && isEntirelyVoid(((ArrayLiteralExp *)m)->elements)) &&
-            !(m->op == TOKstructliteral && isEntirelyVoid(((StructLiteralExp *)m)->elements)))
-        {
+        if (e && !isVoid(e))
             return false;
-        }
     }
     return true;
 }
@@ -6112,102 +6205,116 @@ Expression *scrubArray(Loc loc, Expressions *elems, bool structlit)
 {
     for (size_t i = 0; i < elems->dim; i++)
     {
-        Expression *m = (*elems)[i];
+        Expression *e = (*elems)[i];
         // It can be NULL for performance reasons,
         // see StructLiteralExp::interpret().
-        if (!m)
+        if (!e)
             continue;
 
         // A struct .init may contain void members.
         // Static array members are a weird special case (bug 10994).
-        if (structlit &&
-            ((m->op == TOKvoid) ||
-             (m->op == TOKarrayliteral && m->type->ty == Tsarray && isEntirelyVoid(((ArrayLiteralExp *)m)->elements)) ||
-             (m->op == TOKstructliteral && isEntirelyVoid(((StructLiteralExp *)m)->elements))))
+        if (structlit && isVoid(e))
         {
-                m = NULL;
+            e = NULL;
         }
         else
         {
-            m = scrubReturnValue(loc, m);
-            if (CTFEExp::isCantExp(m) || m->op == TOKerror)
-                return m;
+            e = scrubReturnValue(loc, e);
+            if (CTFEExp::isCantExp(e) || e->op == TOKerror)
+                return e;
         }
-        (*elems)[i] = m;
+        (*elems)[i] = e;
     }
     return NULL;
 }
 
-Expression *scrubArrayCache(Loc loc, Expressions *elems);
-
-Expression *scrubCacheValue(Loc loc, Expression *e)
+Expression *scrubStructLiteral(Loc loc, StructLiteralExp *sle)
 {
+    sle->ownedByCtfe = OWNEDcode;
+    if (!(sle->stageflags & stageScrub))
+    {
+        const int old = sle->stageflags;
+        sle->stageflags |= stageScrub;       // prevent infinite recursion
+        if (Expression *ex = scrubArray(loc, sle->elements, true))
+            return ex;
+        sle->stageflags = old;
+    }
+    return NULL;
+}
+
+/**************************************
+ * Transitively set all .ownedByCtfe to OWNEDcache
+ */
+Expression *scrubCacheValue(Expression *e)
+{
+    if (!e)
+        return e;
+
     if (e->op == TOKclassreference)
     {
         StructLiteralExp *sle = ((ClassReferenceExp*)e)->value;
-        sle->ownedByCtfe = OWNEDcache;
-        if (!(sle->stageflags & stageScrub))
-        {
-            int old = sle->stageflags;
-            sle->stageflags |= stageScrub;
-            if (Expression *ex = scrubArrayCache(loc, sle->elements))
-                return ex;
-            sle->stageflags = old;
-        }
+        if (Expression *ex = scrubStructLiteralCache(sle))
+            return ex;
     }
-    if (e->op == TOKstructliteral)
+    else if (e->op == TOKstructliteral)
     {
         StructLiteralExp *sle = (StructLiteralExp *)e;
-        sle->ownedByCtfe = OWNEDcache;
-        if (!(sle->stageflags & stageScrub))
-        {
-            int old = sle->stageflags;
-            sle->stageflags |= stageScrub;
-            if (Expression *ex = scrubArrayCache(loc, sle->elements))
-                return ex;
-            sle->stageflags = old;
-        }
+        if (Expression *ex = scrubStructLiteralCache(sle))
+            return ex;
     }
-    if (e->op == TOKstring)
+    else if (e->op == TOKstring)
     {
         ((StringExp *)e)->ownedByCtfe = OWNEDcache;
     }
-    if (e->op == TOKarrayliteral)
+    else if (e->op == TOKarrayliteral)
     {
-        ((ArrayLiteralExp *)e)->ownedByCtfe = OWNEDcache;
-        if (Expression *ex = scrubArrayCache(loc, ((ArrayLiteralExp *)e)->elements))
+        ArrayLiteralExp *ale = (ArrayLiteralExp *)e;
+        ale->ownedByCtfe = OWNEDcache;
+        if (Expression *ex = scrubArrayCache(ale->elements))
             return ex;
     }
-    if (e->op == TOKassocarrayliteral)
+    else if (e->op == TOKassocarrayliteral)
     {
         AssocArrayLiteralExp *aae = (AssocArrayLiteralExp *)e;
         aae->ownedByCtfe = OWNEDcache;
-        if (Expression *ex = scrubArrayCache(loc, aae->keys))
+        if (Expression *ex = scrubArrayCache(aae->keys))
             return ex;
-        if (Expression *ex = scrubArrayCache(loc, aae->values))
+        if (Expression *ex = scrubArrayCache(aae->values))
             return ex;
     }
     return e;
 }
 
-Expression *scrubArrayCache(Loc loc, Expressions *elems)
+Expression *scrubArrayCache(Expressions *elems)
 {
     for (size_t i = 0; i < elems->dim; i++)
     {
-        Expression *m = (*elems)[i];
-        if (!m)
-            continue;
-        (*elems)[i] = scrubCacheValue(loc, m);
+        Expression *e = (*elems)[i];
+        (*elems)[i] = scrubCacheValue(e);
+    }
+    return NULL;
+}
+
+Expression *scrubStructLiteralCache(StructLiteralExp *sle)
+{
+    sle->ownedByCtfe = OWNEDcache;
+    if (!(sle->stageflags & stageScrub))
+    {
+        const int old = sle->stageflags;
+        sle->stageflags |= stageScrub;       // prevent infinite recursion
+        if (Expression *ex = scrubArrayCache(sle->elements))
+            return ex;
+        sle->stageflags = old;
     }
     return NULL;
 }
 
 /******************************* Special Functions ***************************/
 
-Expression *interpret_length(InterState *istate, Expression *earg)
+static Expression *interpret_length(UnionExp *pue, InterState *istate, Expression *earg)
 {
     //printf("interpret_length()\n");
-    earg = interpret(earg, istate);
+    earg = interpret(pue, earg, istate);
     if (exceptionOrCantInterpret(earg))
         return earg;
     dinteger_t len = 0;
@@ -6215,52 +6322,61 @@ Expression *interpret_length(InterState *istate, Expression *earg)
         len = ((AssocArrayLiteralExp *)earg)->keys->dim;
     else
         assert(earg->op == TOKnull);
-    Expression *e = new IntegerExp(earg->loc, len, Type::tsize_t);
-    return e;
+    new(pue) IntegerExp(earg->loc, len, Type::tsize_t);
+    return pue->exp();
 }
 
-Expression *interpret_keys(InterState *istate, Expression *earg, Type *returnType)
+static Expression *interpret_keys(UnionExp *pue, InterState *istate, Expression *earg, Type *returnType)
 {
-    earg = interpret(earg, istate);
+    earg = interpret(pue, earg, istate);
     if (exceptionOrCantInterpret(earg))
         return earg;
     if (earg->op == TOKnull)
-        return new NullExp(earg->loc, returnType);
+    {
+        new(pue) NullExp(earg->loc, earg->type);
+        return pue->exp();
+    }
     if (earg->op != TOKassocarrayliteral && earg->type->toBasetype()->ty != Taarray)
         return NULL;
     assert(earg->op == TOKassocarrayliteral);
     AssocArrayLiteralExp *aae = (AssocArrayLiteralExp *)earg;
-    ArrayLiteralExp *ae = new ArrayLiteralExp(aae->loc, aae->keys);
+    ArrayLiteralExp *ae = new ArrayLiteralExp(aae->loc, returnType, aae->keys);
     ae->ownedByCtfe = aae->ownedByCtfe;
-    ae->type = returnType;
-    return copyLiteral(ae).copy();
+    *pue = copyLiteral(ae);
+    return pue->exp();
 }
 
-Expression *interpret_values(InterState *istate, Expression *earg, Type *returnType)
+static Expression *interpret_values(UnionExp *pue, InterState *istate, Expression *earg, Type *returnType)
 {
-    earg = interpret(earg, istate);
+    earg = interpret(pue, earg, istate);
     if (exceptionOrCantInterpret(earg))
         return earg;
     if (earg->op == TOKnull)
-        return new NullExp(earg->loc, returnType);
+    {
+        new(pue) NullExp(earg->loc, earg->type);
+        return pue->exp();
+    }
     if (earg->op != TOKassocarrayliteral && earg->type->toBasetype()->ty != Taarray)
         return NULL;
     assert(earg->op == TOKassocarrayliteral);
     AssocArrayLiteralExp *aae = (AssocArrayLiteralExp *)earg;
-    ArrayLiteralExp *ae = new ArrayLiteralExp(aae->loc, aae->values);
+    ArrayLiteralExp *ae = new ArrayLiteralExp(aae->loc, returnType, aae->values);
     ae->ownedByCtfe = aae->ownedByCtfe;
-    ae->type = returnType;
     //printf("result is %s\n", e->toChars());
-    return copyLiteral(ae).copy();
+    *pue = copyLiteral(ae);
+    return pue->exp();
 }
 
-Expression *interpret_dup(InterState *istate, Expression *earg)
+Expression *interpret_dup(UnionExp *pue, InterState *istate, Expression *earg)
 {
-    earg = interpret(earg, istate);
+    earg = interpret(pue, earg, istate);
     if (exceptionOrCantInterpret(earg))
         return earg;
     if (earg->op == TOKnull)
-        return new NullExp(earg->loc, earg->type);
+    {
+        new(pue) NullExp(earg->loc, earg->type);
+        return pue->exp();
+    }
     if (earg->op != TOKassocarrayliteral && earg->type->toBasetype()->ty != Taarray)
         return NULL;
     assert(earg->op == TOKassocarrayliteral);
@@ -6278,13 +6394,16 @@ Expression *interpret_dup(InterState *istate, Expression *earg)
 }
 
 // signature is int delegate(ref Value) OR int delegate(ref Key, ref Value)
-Expression *interpret_aaApply(InterState *istate, Expression *aa, Expression *deleg)
+Expression *interpret_aaApply(UnionExp *pue, InterState *istate, Expression *aa, Expression *deleg)
 {
     aa = interpret(aa, istate);
     if (exceptionOrCantInterpret(aa))
         return aa;
     if (aa->op != TOKassocarrayliteral)
-        return new IntegerExp(deleg->loc, 0, Type::tsize_t);
+    {
+        new(pue) IntegerExp(deleg->loc, 0, Type::tsize_t);
+        return pue->exp();
+    }
 
     FuncDeclaration *fd = NULL;
     Expression *pthis = NULL;
@@ -6323,9 +6442,13 @@ Expression *interpret_aaApply(InterState *istate, Expression *aa, Expression *de
             evalue->type = t;
         }
         args[numParams - 1] = evalue;
-        if (numParams == 2) args[0] = ekey;
+        if (numParams == 2)
+            args[0] = ekey;
 
-        eresult = interpretFunction(fd, istate, &args, pthis);
+        UnionExp ue;
+        eresult = interpretFunction(&ue, fd, istate, &args, pthis);
+        if (eresult == ue.exp())
+            eresult = ue.copy();
         if (exceptionOrCantInterpret(eresult))
             return eresult;
 
@@ -6336,19 +6459,10 @@ Expression *interpret_aaApply(InterState *istate, Expression *aa, Expression *de
     return eresult;
 }
 
-// Helper function: given a function of type A[] f(...),
-// return A[].
-Type *returnedArrayType(FuncDeclaration *fd)
-{
-    assert(fd->type->ty == Tfunction);
-    assert(fd->type->nextOf()->ty == Tarray);
-    return ((TypeFunction *)fd->type)->nextOf();
-}
-
 /* Decoding UTF strings for foreach loops. Duplicates the functionality of
  * the twelve _aApplyXXn functions in aApply.d in the runtime.
  */
-Expression *foreachApplyUtf(InterState *istate, Expression *str, Expression *deleg, bool rvs)
+static Expression *foreachApplyUtf(UnionExp *pue, InterState *istate, Expression *str, Expression *deleg, bool rvs)
 {
     FuncDeclaration *fd = NULL;
     Expression *pthis = NULL;
@@ -6369,7 +6483,10 @@ Expression *foreachApplyUtf(InterState *istate, Expression *str, Expression *del
                                      : Type::tsize_t;
     size_t len = (size_t)resolveArrayLength(str);
     if (len == 0)
-        return new IntegerExp(deleg->loc, 0, indexType);
+    {
+        new(pue) IntegerExp(deleg->loc, 0, indexType);
+        return pue->exp();
+    }
 
     str = resolveSlice(str);
 
@@ -6584,7 +6701,10 @@ Expression *foreachApplyUtf(InterState *istate, Expression *str, Expression *del
 
             args[numParams - 1] = val;
 
-            eresult = interpretFunction(fd, istate, &args, pthis);
+            UnionExp ue;
+            eresult = interpretFunction(&ue, fd, istate, &args, pthis);
+            if (eresult == ue.exp())
+                eresult = ue.copy();
             if (exceptionOrCantInterpret(eresult))
                 return eresult;
             assert(eresult->op == TOKint64);
@@ -6598,7 +6718,7 @@ Expression *foreachApplyUtf(InterState *istate, Expression *str, Expression *del
 /* If this is a built-in function, return the interpreted result,
  * Otherwise, return NULL.
  */
-Expression *evaluateIfBuiltin(InterState *istate, Loc loc,
+Expression *evaluateIfBuiltin(UnionExp *pue, InterState *istate, Loc loc,
     FuncDeclaration *fd, Expressions *arguments, Expression *pthis)
 {
     Expression *e = NULL;
@@ -6631,21 +6751,31 @@ Expression *evaluateIfBuiltin(InterState *istate, Loc loc,
         if (firstarg && firstarg->type->toBasetype()->ty == Taarray)
         {
             TypeAArray *firstAAtype = (TypeAArray *)firstarg->type;
-            const char *id = fd->ident->toChars();
-            if (nargs == 1 && fd->ident == Id::aaLen)
-                return interpret_length(istate, firstarg);
-            if (nargs == 3 && !strcmp(id, "_aaApply"))
-                return interpret_aaApply(istate, firstarg, (Expression *)(arguments->data[2]));
-            if (nargs == 3 && !strcmp(id, "_aaApply2"))
-                return interpret_aaApply(istate, firstarg, (Expression *)(arguments->data[2]));
-            if (nargs == 1 && !strcmp(id, "keys") && !strcmp(fd->toParent2()->ident->toChars(), "object"))
-                return interpret_keys(istate, firstarg, firstAAtype->index->arrayOf());
-            if (nargs == 1 && !strcmp(id, "values") && !strcmp(fd->toParent2()->ident->toChars(), "object"))
-                return interpret_values(istate, firstarg, firstAAtype->nextOf()->arrayOf());
-            if (nargs == 1 && !strcmp(id, "rehash") && !strcmp(fd->toParent2()->ident->toChars(), "object"))
-                return interpret(firstarg, istate);
-            if (nargs == 1 && !strcmp(id, "dup") && !strcmp(fd->toParent2()->ident->toChars(), "object"))
-                return interpret_dup(istate, firstarg);
+            const Identifier *id = fd->ident;
+            if (nargs == 1)
+            {
+                if (fd->ident == Id::aaLen)
+                    return interpret_length(pue, istate, firstarg);
+
+                if (fd->toParent2()->ident == Id::object)
+                {
+                    if (id == Id::keys)
+                        return interpret_keys(pue, istate, firstarg, firstAAtype->index->arrayOf());
+                    if (id == Id::values)
+                        return interpret_values(pue, istate, firstarg, firstAAtype->nextOf()->arrayOf());
+                    if (id == Id::rehash)
+                        return interpret(pue, firstarg, istate);
+                    if (id == Id::dup)
+                        return interpret_dup(pue, istate, firstarg);
+                }
+            }
+            else // (nargs == 3)
+            {
+                if (id == Id::_aaApply)
+                    return interpret_aaApply(pue, istate, firstarg, (Expression *)(arguments->data[2]));
+                if (id == Id::_aaApply2)
+                    return interpret_aaApply(pue, istate, firstarg, (Expression *)(arguments->data[2]));
+            }
         }
     }
     if (pthis && !fd->fbody && fd->isCtorDeclaration() && fd->parent && fd->parent->parent && fd->parent->parent->ident == Id::object)
@@ -6693,7 +6823,7 @@ Expression *evaluateIfBuiltin(InterState *istate, Loc loc,
                 str = interpret(str, istate);
                 if (exceptionOrCantInterpret(str))
                     return str;
-                return foreachApplyUtf(istate, str, (*arguments)[1], rvs);
+                return foreachApplyUtf(pue, istate, str, (*arguments)[1], rvs);
             }
         }
     }
@@ -6723,7 +6853,10 @@ Expression *evaluatePostblit(InterState *istate, Expression *e)
     if (e->op == TOKstructliteral)
     {
         // e.__postblit()
-        e = interpretFunction(sd->postblit, istate, NULL, e);
+        UnionExp ue;
+        e = interpretFunction(&ue, sd->postblit, istate, NULL, e);
+        if (e == ue.exp())
+            e = ue.copy();
         if (exceptionOrCantInterpret(e))
             return e;
         return NULL;
@@ -6741,6 +6874,7 @@ Expression *evaluateDtor(InterState *istate, Expression *e)
     if (!sd->dtor)
         return NULL;
 
+    UnionExp ue;
     if (e->op == TOKarrayliteral)
     {
         ArrayLiteralExp *alex = (ArrayLiteralExp *)e;
@@ -6750,12 +6884,16 @@ Expression *evaluateDtor(InterState *istate, Expression *e)
     else if (e->op == TOKstructliteral)
     {
         // e.__dtor()
-        e = interpretFunction(sd->dtor, istate, NULL, e);
+        e = interpretFunction(&ue, sd->dtor, istate, NULL, e);
     }
     else
         assert(0);
     if (exceptionOrCantInterpret(e))
+    {
+        if (e == ue.exp())
+            e = ue.copy();
         return e;
+    }
     return NULL;
 }
 

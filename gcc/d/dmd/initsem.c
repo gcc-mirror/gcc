@@ -612,7 +612,7 @@ public:
                 assert((*elements)[i]->op != TOKerror);
             }
 
-            Expression *e = new ArrayLiteralExp(init->loc, elements);
+            Expression *e = new ArrayLiteralExp(init->loc, NULL, elements);
             ExpInitializer *ei = new ExpInitializer(init->loc, e);
             result = inferType(ei, sc);
             return;
@@ -857,8 +857,7 @@ public:
                             elements2->setDim(dim);
                             for (size_t j = 0; j < dim; j++)
                                 (*elements2)[j] = e;
-                            e = new ArrayLiteralExp(e->loc, elements2);
-                            e->type = tn;
+                            e = new ArrayLiteralExp(e->loc, tn, elements2);
                             (*elements)[i] = e;
                         }
                     }
@@ -877,8 +876,7 @@ public:
                 }
             }
 
-            Expression *e = new ArrayLiteralExp(init->loc, elements);
-            e->type = init->type;
+            Expression *e = new ArrayLiteralExp(init->loc, init->type, elements);
             result = e;
             return;
         }
@@ -902,8 +900,7 @@ public:
                 elements->setDim(d);
                 for (size_t i = 0; i < d; i++)
                     (*elements)[i] = e;
-                ArrayLiteralExp *ae = new ArrayLiteralExp(e->loc, elements);
-                ae->type = itype;
+                ArrayLiteralExp *ae = new ArrayLiteralExp(e->loc, itype, elements);
                 result = ae;
                 return;
             }

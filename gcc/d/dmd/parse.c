@@ -7020,7 +7020,7 @@ Expression *Parser::parsePrimaryExp()
             if (keys)
                 e = new AssocArrayLiteralExp(loc, keys, values);
             else
-                e = new ArrayLiteralExp(loc, values);
+                e = new ArrayLiteralExp(loc, NULL, values);
             break;
         }
 
