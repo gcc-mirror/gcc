@@ -1,3 +1,10 @@
+2019-01-21  Gergö Barany  <gergo@codesourcery.com>
+
+	* c-c++-common/goacc/kernels-conversion.c: New test.
+	* gfortran.dg/goacc/kernels-conversion.f95: Likewise.
+	* c-c++-common/goacc/if-clause-2.c: Update.
+	* gfortran.dg/goacc/kernels-tree.f95: Likewise.
+
 2019-01-30  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-c++-common/goacc/kernels-1.c: Add

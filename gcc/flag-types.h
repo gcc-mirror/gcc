@@ -374,6 +374,7 @@ enum cf_protection_level
 /* OpenACC 'kernels' constructs handling.  */
 enum openacc_kernels
 {
+  OPENACC_KERNELS_SPLIT,
   OPENACC_KERNELS_PARLOOPS
 };
 

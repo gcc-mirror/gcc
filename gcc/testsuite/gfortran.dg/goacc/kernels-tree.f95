@@ -1,5 +1,7 @@
 ! { dg-do compile } 
 ! { dg-additional-options "-fdump-tree-original" } 
+! { dg-additional-options "-fopenacc-kernels=split" }
+! { dg-additional-options "-fdump-tree-convert_oacc_kernels" }
 
 program test
   implicit none
@@ -34,3 +36,7 @@ end program test
 ! { dg-final { scan-tree-dump-times "map\\(alloc:t\\)" 1 "original" } } 
 
 ! { dg-final { scan-tree-dump-times "map\\(force_deviceptr:u\\)" 1 "original" } } 
+
+! Verify that the 'if' clause gets duplicated.
+! { dg-final { scan-tree-dump-times "#pragma omp target oacc_data_kernels if\\(" 1 "convert_oacc_kernels" } }
+! { dg-final { scan-tree-dump-times "#pragma omp target oacc_parallel_kernels_gang_single .* if\\(" 1 "convert_oacc_kernels" } }

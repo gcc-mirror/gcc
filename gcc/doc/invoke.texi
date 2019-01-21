@@ -199,7 +199,7 @@ in the following sections.
 -aux-info @var{filename}  -fallow-parameterless-variadic-functions @gol
 -fno-asm  -fno-builtin  -fno-builtin-@var{function}  -fgimple@gol
 -fhosted  -ffreestanding @gol
--fopenacc  -fopenacc-dim=@var{geom} @gol
+-fopenacc  -fopenacc-dim=@var{geom}  -fopenacc-kernels=@var{style} @gol
 -fopenmp  -fopenmp-simd @gol
 -fms-extensions  -fplan9-extensions  -fsso-struct=@var{endianness} @gol
 -fallow-single-precision  -fcond-mismatch  -flax-vector-conversions @gol
@@ -2257,6 +2257,17 @@ can be omitted to use a target-specific default value.  When deferring
 to runtime, the environment variable @var{GOMP_OPENACC_DIM} can be set.
 It has the same format as the option value, except that '-' is not
 permitted.
+
+@item -fopenacc-kernels=@var{style}
+@opindex fopenacc-kernels
+@cindex OpenACC accelerator programming
+Configure OpenACC 'kernels' constructs handling.
+With @option{-fopenacc-kernels=split}, OpenACC 'kernels' constructs
+are split into a sequence of compute constructs, each then handled
+individually.
+With @option{-fopenacc-kernels=parloops}, the whole OpenACC
+'kernels' constructs is handled by the @samp{parloops} pass.
+This is the default.
 
 @item -fopenmp
 @opindex fopenmp
