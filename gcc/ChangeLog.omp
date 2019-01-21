@@ -1,3 +1,14 @@
+2019-01-21  Gergö Barany  <gergo@codesourcery.com>
+
+	* Makefile.in: Add...
+	* omp-oacc-kernels.c: ... this new file for the kernels conversion
+	pass.
+	* flag-types.h (enum openacc_kernels): Add "split" style.  Adjust
+	all users.
+	* doc/invoke.texi (-fopenacc-kernels): Update.
+	* passes.def: Add pass_convert_oacc_kernels to pipeline.
+	* tree-pass.h (make_pass_convert_oacc_kernels): Add declaration.
+
 2019-01-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gimple.h (enum gf_mask): Add new target kinds

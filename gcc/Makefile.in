@@ -1430,6 +1430,7 @@ OBJS = \
 	omp-general.o \
 	omp-grid.o \
 	omp-low.o \
+	omp-oacc-kernels.o \
 	omp-simd-clone.o \
 	opt-problem.o \
 	optabs.o \
@@ -2558,6 +2559,7 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/omp-offload.c \
   $(srcdir)/omp-expand.c \
   $(srcdir)/omp-low.c \
+  $(srcdir)/omp-oacc-kernels.c \
   $(srcdir)/targhooks.c $(out_file) $(srcdir)/passes.c $(srcdir)/cgraphunit.c \
   $(srcdir)/cgraphclones.c \
   $(srcdir)/tree-phinodes.c \
