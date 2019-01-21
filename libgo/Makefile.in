@@ -1131,7 +1131,7 @@ extra_check_libs_cmd_vet_internal_cfg = $(abs_builddir)/libgotool.a
 @LIBGO_IS_SOLARIS_TRUE@	internal/x/net/lif.lo
 
 @LIBGO_IS_SOLARIS_TRUE@internal_x_net_lif_check = \
-@LIBGO_IS_SOLARIS_TRUE@	internal_org/x/net/lif/check
+@LIBGO_IS_SOLARIS_TRUE@	internal/x/net/lif/check
 
 TPACKAGES = $(shell cat $(srcdir)/check-packages.txt)
 TEST_PACKAGES = $(addsuffix /check,$(TPACKAGES)) \

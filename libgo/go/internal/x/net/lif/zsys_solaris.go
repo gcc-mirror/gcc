@@ -3,6 +3,8 @@
 
 package lif
 
+import "unsafe"
+
 const (
 	sysAF_UNSPEC = 0x0
 	sysAF_INET   = 0x2
@@ -67,7 +69,6 @@ const (
 
 type lifnum struct {
 	Family    uint16
-	Pad_cgo_0 [2]byte
 	Flags     int32
 	Count     int32
 }
@@ -81,16 +82,13 @@ type lifreq struct {
 
 type lifconf struct {
 	Family    uint16
-	Pad_cgo_0 [2]byte
 	Flags     int32
 	Len       int32
-	Pad_cgo_1 [4]byte
-	Lifcu     [8]byte
+	Lifcu     [unsafe.Sizeof(unsafe.Pointer(nil))]byte
 }
 
 type lifIfinfoReq struct {
 	Maxhops      uint8
-	Pad_cgo_0    [3]byte
 	Reachtime    uint32
 	Reachretrans uint32
 	Maxmtu       uint32

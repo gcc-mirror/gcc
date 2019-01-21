@@ -11,18 +11,12 @@ import (
 	"unsafe"
 )
 
-//go:cgo_import_dynamic libc_ioctl ioctl "libc.so"
-
-//go:linkname procIoctl libc_ioctl
-
-var procIoctl uintptr
-
-func sysvicall6(trap, nargs, a1, a2, a3, a4, a5, a6 uintptr) (uintptr, uintptr, syscall.Errno)
+//extern __go_ioctl_ptr
+func libc_ioctl(int32, int32, unsafe.Pointer) int32
 
 func ioctl(s, ioc uintptr, arg unsafe.Pointer) error {
-	_, _, errno := sysvicall6(uintptr(unsafe.Pointer(&procIoctl)), 3, s, ioc, uintptr(arg), 0, 0, 0)
-	if errno != 0 {
-		return error(errno)
+	if libc_ioctl(int32(s), int32(ioc), arg) < 0 {
+		return syscall.GetErrno()
 	}
 	return nil
 }

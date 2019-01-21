@@ -1082,7 +1082,7 @@ $(eval $(call PACKAGE_template,internal/x/net/lif))
 internal_x_net_lif_lo = \
 	internal/x/net/lif.lo
 internal_x_net_lif_check = \
-	internal_org/x/net/lif/check
+	internal/x/net/lif/check
 
 endif
 
