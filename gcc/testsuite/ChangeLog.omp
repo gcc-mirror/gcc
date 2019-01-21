@@ -1,3 +1,9 @@
+2019-01-21  Gergö Barany  <gergo@codesourcery.com>
+
+	* c-c++-common/goacc/kernels-conversion.c: Test automatically generated
+	async clauses.
+	* gfortran.dg/goacc/kernels-conversion.f95: Likewise.
+
 2019-01-23  Gergö Barany  <gergo@codesourcery.com>
 
 	* c-c++-common/goacc/kernels-conversion.c: Add test for conditionally

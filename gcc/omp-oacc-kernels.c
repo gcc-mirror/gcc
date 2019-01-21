@@ -66,7 +66,13 @@ along with GCC; see the file COPYING3.  If not see
      gang-parallelizable loop inside an if statement is "gang-serialized" by
      the transformation.
      The transformation visits loops inside such new gang-single-regions and
-     removes and warns about any gang annotations.  */
+     removes and warns about any gang annotations.
+   - In order to make the host wait only once for the whole region instead
+     of once per kernel launch, the new parallel and serial regions are
+     annotated async.  Unless the original kernels region was marked async,
+     the entire region ends with a wait construct.  If the original kernels
+     region was marked async, the generated async statements use the async
+     queue the kernels region was annotated with (possibly implicitly).  */
 
 /* Helper function for decompose_kernels_region_body.  If STMT contains a
    "top-level" OMP_FOR statement, returns a pointer to that statement;
@@ -671,6 +677,38 @@ maybe_build_inner_data_region (location_t loc, gimple *body,
   return body;
 }
 
+/* Helper function of decompose_kernels_region_body.  The statements in
+   REGION_BODY are expected to be decomposed parallel regions; add an
+   "async" clause to each.  Also add a "wait" pragma at the end of the
+   sequence.  */
+
+static void
+add_async_clauses_and_wait (location_t loc, gimple_seq *region_body)
+{
+  tree default_async_queue
+    = build_int_cst (integer_type_node, GOMP_ASYNC_NOVAL);
+  for (gimple_stmt_iterator gsi = gsi_start (*region_body);
+       !gsi_end_p (gsi);
+       gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      tree target_clauses = gimple_omp_target_clauses (stmt);
+      tree new_async_clause = build_omp_clause (loc, OMP_CLAUSE_ASYNC);
+      OMP_CLAUSE_OPERAND (new_async_clause, 0) = default_async_queue;
+      OMP_CLAUSE_CHAIN (new_async_clause) = target_clauses;
+      target_clauses = new_async_clause;
+      gimple_omp_target_set_clauses (as_a <gomp_target *> (stmt),
+				     target_clauses);
+    }
+  /* A "#pragma acc wait" is just a call GOACC_wait (acc_async_sync, 0).  */
+  tree wait_fn = builtin_decl_explicit (BUILT_IN_GOACC_WAIT);
+  tree sync_arg = build_int_cst (integer_type_node, GOMP_ASYNC_SYNC);
+  gimple *wait_call = gimple_build_call (wait_fn, 2,
+					 sync_arg, integer_zero_node);
+  gimple_set_location (wait_call, loc);
+  gimple_seq_add_stmt (region_body, wait_call);
+}
+
 /* Auxiliary analysis of the body of a kernels region, to determine for each
    OpenACC loop whether it is control-dependent (i.e., not necessarily
    executed every time the kernels region is entered) or not.
@@ -885,10 +923,12 @@ decompose_kernels_region_body (gimple *kernels_region, tree kernels_clauses)
      except that the num_gangs, num_workers, and vector_length clauses will
      only be added to loop regions.  The other regions are "gang-single" and
      get an explicit num_gangs(1) clause.  So separate out the num_gangs,
-     num_workers, and vector_length clauses here.  */
+     num_workers, and vector_length clauses here.
+     Also check for the presence of an async clause but do not remove it
+     from the kernels clauses.  */
   tree num_gangs_clause = NULL, num_workers_clause = NULL,
        vector_length_clause = NULL;
-  tree prev_clause = NULL, next_clause = NULL;
+  tree prev_clause = NULL, next_clause = NULL, async_clause = NULL;
   tree parallel_clauses = kernels_clauses;
   for (tree c = parallel_clauses; c; c = next_clause)
     {
@@ -922,6 +962,8 @@ decompose_kernels_region_body (gimple *kernels_region, tree kernels_clauses)
 	}
       else
 	prev_clause = c;
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ASYNC)
+	async_clause = c;
     }
 
   gimple *kernels_body = gimple_omp_body (kernels_region);
@@ -1084,6 +1126,14 @@ decompose_kernels_region_body (gimple *kernels_region, tree kernels_clauses)
 	= make_gang_single_region (loc, gang_single_seq, kernels_clauses);
       gimple_seq_add_stmt (&region_body, single_region);
     }
+
+  /* We want to launch these kernels asynchronously.  If the original
+     kernels region had an async clause, this is done automatically because
+     that async clause was copied to the individual regions we created.
+     Otherwise, add an async clause to each newly created region, as well as
+     a wait directive at the end.  */
+  if (async_clause == NULL)
+    add_async_clauses_and_wait (loc, &region_body);
 
   tree kernels_locals = gimple_bind_vars (as_a <gbind *> (kernels_body));
   gimple *body = gimple_build_bind (kernels_locals, region_body,
