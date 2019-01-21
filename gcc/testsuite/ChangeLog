@@ -1,3 +1,9 @@
+2019-01-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c/88928
+	* c-c++-common/Waddress-of-packed-member-1.c: New test case.
+	* gcc.dg/pr88928.c: New test case.
+
 2019-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/utf-array.c: Allow wchar_t to be printed as

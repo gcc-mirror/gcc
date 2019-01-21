@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "c-family/c-indentation.h"
 #include "calls.h"
+#include "stor-layout.h"
 
 /* Print a warning if a constant expression had overflow in folding.
    Invoke this function on every expression that the language
@@ -2688,25 +2689,26 @@ warn_for_multistatement_macros (location_t body_loc, location_t next_loc,
 }
 
 /* Return struct or union type if the alignment of data memeber, FIELD,
-   is less than the alignment of TYPE.  Otherwise, return NULL_TREE.  */
+   is less than the alignment of TYPE.  Otherwise, return NULL_TREE.
+   If RVALUE is true, only arrays evaluate to pointers.  */
 
 static tree
-check_alignment_of_packed_member (tree type, tree field)
+check_alignment_of_packed_member (tree type, tree field, bool rvalue)
 {
   /* Check alignment of the data member.  */
   if (TREE_CODE (field) == FIELD_DECL
-      && (DECL_PACKED (field)
-	  || TYPE_PACKED (TREE_TYPE (field))))
+      && (DECL_PACKED (field) || TYPE_PACKED (TREE_TYPE (field)))
+      && (!rvalue || TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE))
     {
       /* Check the expected alignment against the field alignment.  */
-      unsigned int type_align = TYPE_ALIGN (type);
+      unsigned int type_align = min_align_of_type (type);
       tree context = DECL_CONTEXT (field);
-      unsigned int record_align = TYPE_ALIGN (context);
-      if ((record_align % type_align) != 0)
+      unsigned int record_align = min_align_of_type (context);
+      if (record_align < type_align)
 	return context;
       tree field_off = byte_position (field);
       if (!multiple_of_p (TREE_TYPE (field_off), field_off,
-			  size_int (type_align / BITS_PER_UNIT)))
+			  size_int (type_align)))
 	return context;
     }
 
@@ -2722,19 +2724,27 @@ check_alignment_of_packed_member (tree type, tree field)
 static tree
 check_address_or_pointer_of_packed_member (tree type, tree rhs)
 {
+  bool rvalue = true;
+
   if (INDIRECT_REF_P (rhs))
     rhs = TREE_OPERAND (rhs, 0);
 
   if (TREE_CODE (rhs) == ADDR_EXPR)
-    rhs = TREE_OPERAND (rhs, 0);
+    {
+      rhs = TREE_OPERAND (rhs, 0);
+      rvalue = false;
+    }
 
-  if (POINTER_TYPE_P (type))
-    type = TREE_TYPE (type);
+  if (!POINTER_TYPE_P (type))
+    return NULL_TREE;
+
+  type = TREE_TYPE (type);
 
   if (TREE_CODE (rhs) == PARM_DECL
       || VAR_P (rhs)
       || TREE_CODE (rhs) == CALL_EXPR)
     {
+      tree rhstype = TREE_TYPE (rhs);
       if (TREE_CODE (rhs) == CALL_EXPR)
 	{
 	  rhs = CALL_EXPR_FN (rhs);	/* Pointer expression.  */
@@ -2742,24 +2752,30 @@ check_address_or_pointer_of_packed_member (tree type, tree rhs)
 	    return NULL_TREE;
 	  rhs = TREE_TYPE (rhs);	/* Pointer type.  */
 	  rhs = TREE_TYPE (rhs);	/* Function type.  */
+	  rhstype = TREE_TYPE (rhs);
+	  if (!POINTER_TYPE_P (rhstype))
+	    return NULL_TREE;
+	  rvalue = true;
 	}
-      tree rhstype = TREE_TYPE (rhs);
-      if ((POINTER_TYPE_P (rhstype)
-	   || TREE_CODE (rhstype) == ARRAY_TYPE)
-	  && TYPE_PACKED (TREE_TYPE (rhstype)))
+      if (rvalue && POINTER_TYPE_P (rhstype))
+	rhstype = TREE_TYPE (rhstype);
+      while (TREE_CODE (rhstype) == ARRAY_TYPE)
+	rhstype = TREE_TYPE (rhstype);
+      if (TYPE_PACKED (rhstype))
 	{
-	  unsigned int type_align = TYPE_ALIGN_UNIT (type);
-	  unsigned int rhs_align = TYPE_ALIGN_UNIT (TREE_TYPE (rhstype));
-	  if ((rhs_align % type_align) != 0)
+	  unsigned int type_align = min_align_of_type (type);
+	  unsigned int rhs_align = min_align_of_type (rhstype);
+	  if (rhs_align < type_align)
 	    {
 	      location_t location = EXPR_LOC_OR_LOC (rhs, input_location);
 	      warning_at (location, OPT_Waddress_of_packed_member,
 			  "converting a packed %qT pointer (alignment %d) "
-			  "to %qT (alignment %d) may result in an "
+			  "to a %qT pointer (alignment %d) may result in an "
 			  "unaligned pointer value",
 			  rhstype, rhs_align, type, type_align);
-	      tree decl = TYPE_STUB_DECL (TREE_TYPE (rhstype));
-	      inform (DECL_SOURCE_LOCATION (decl), "defined here");
+	      tree decl = TYPE_STUB_DECL (rhstype);
+	      if (decl)
+		inform (DECL_SOURCE_LOCATION (decl), "defined here");
 	      decl = TYPE_STUB_DECL (type);
 	      if (decl)
 		inform (DECL_SOURCE_LOCATION (decl), "defined here");
@@ -2776,7 +2792,7 @@ check_address_or_pointer_of_packed_member (tree type, tree rhs)
       if (TREE_CODE (rhs) == COMPONENT_REF)
 	{
 	  tree field = TREE_OPERAND (rhs, 1);
-	  context = check_alignment_of_packed_member (type, field);
+	  context = check_alignment_of_packed_member (type, field, rvalue);
 	  if (context)
 	    break;
 	}
