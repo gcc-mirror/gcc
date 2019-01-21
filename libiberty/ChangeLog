@@ -1,3 +1,7 @@
+2019-01-21  Tom Tromey  <tom@tromey.com>
+
+	* splay-tree.c (splay_tree_remove): Delete the key if necessary.
+
 2019-01-14  Tom Honermann  <tom@honermann.net>
 
 	* cp-demangle.c (cplus_demangle_builtin_types)
