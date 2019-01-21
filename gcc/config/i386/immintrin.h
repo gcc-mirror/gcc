@@ -38,6 +38,16 @@
 
 #include <wmmintrin.h>
 
+#include <fxsrintrin.h>
+
+#include <xsaveintrin.h>
+
+#include <xsaveoptintrin.h>
+
+#include <xsavesintrin.h>
+
+#include <xsavecintrin.h>
+
 #include <avxintrin.h>
 
 #include <avx2intrin.h>
@@ -119,6 +129,20 @@
 #include <waitpkgintrin.h>
 
 #include <cldemoteintrin.h>
+
+#include <rdseedintrin.h>
+
+#include <prfchwintrin.h>
+
+#include <adxintrin.h>
+
+#include <clwbintrin.h>
+
+#include <clflushoptintrin.h>
+
+#include <wbnoinvdintrin.h>
+
+#include <pkuintrin.h>
 
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
