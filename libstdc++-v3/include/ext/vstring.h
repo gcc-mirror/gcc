@@ -518,7 +518,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Returns true if the %string is empty.  Equivalent to 
        *  <code>*this == ""</code>.
        */
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const _GLIBCXX_NOEXCEPT
       { return this->size() == 0; }
 

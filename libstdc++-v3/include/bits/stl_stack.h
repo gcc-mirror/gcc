@@ -181,7 +181,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        *  Returns true if the %stack is empty.
        */
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const
       { return c.empty(); }
 

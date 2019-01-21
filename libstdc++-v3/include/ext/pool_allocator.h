@@ -188,7 +188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       destroy(pointer __p) { __p->~_Tp(); }
 #endif
 
-      pointer
+      _GLIBCXX_NODISCARD pointer
       allocate(size_type __n, const void* = 0);
 
       void
@@ -210,7 +210,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __pool_alloc<_Tp>::_S_force_new;
 
   template<typename _Tp>
-    _Tp*
+    _GLIBCXX_NODISCARD _Tp*
     __pool_alloc<_Tp>::allocate(size_type __n, const void*)
     {
       pointer __ret = 0;

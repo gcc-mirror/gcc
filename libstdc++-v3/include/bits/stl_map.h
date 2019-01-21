@@ -459,7 +459,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /** Returns true if the %map is empty.  (Thus begin() would equal
        *  end().)
       */
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const _GLIBCXX_NOEXCEPT
       { return _M_t.empty(); }
 

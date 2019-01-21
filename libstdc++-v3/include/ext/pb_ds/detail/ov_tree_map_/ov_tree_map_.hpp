@@ -239,7 +239,7 @@ namespace __gnu_pbds
       inline size_type
       max_size() const;
 
-      inline bool
+      _GLIBCXX_NODISCARD inline bool
       empty() const;
 
       inline size_type

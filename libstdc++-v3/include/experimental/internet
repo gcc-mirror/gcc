@@ -1049,7 +1049,7 @@ namespace ip
 
     iterator begin() const noexcept { return _M_begin; }
     iterator end() const noexcept { return _M_end; }
-    bool empty() const noexcept { return _M_begin == _M_end; }
+    _GLIBCXX_NODISCARD bool empty() const noexcept { return _M_begin == _M_end; }
 
     size_t
     size() const noexcept { return _M_end->to_uint() - _M_begin->to_uint(); }
@@ -1093,7 +1093,7 @@ namespace ip
 
     iterator begin() const noexcept { return _M_begin; }
     iterator end() const noexcept { return _M_end; }
-    bool empty() const noexcept { return _M_begin == _M_end; }
+    _GLIBCXX_NODISCARD bool empty() const noexcept { return _M_begin == _M_end; }
 
     iterator
     find(const address_v6& __addr) const noexcept
@@ -1721,7 +1721,7 @@ namespace ip
       // size:
       size_type size() const noexcept { return _M_size; }
       size_type max_size() const noexcept { return _M_results.max_size(); }
-      bool empty() const noexcept { return _M_results.empty(); }
+      _GLIBCXX_NODISCARD bool empty() const noexcept { return _M_results.empty(); }
 
       // element access:
       const_iterator begin() const { return _M_results.begin(); }
