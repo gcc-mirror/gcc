@@ -1,5 +1,9 @@
 2019-01-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/88949
+	* optimize.c (cxx_copy_decl): New function.
+	(clone_body): Use it instead of copy_decl_no_change.
+
 	PR sanitizer/88901
 	* typeck.c (cp_build_binary_op): Don't instrument
 	SANITIZE_POINTER_COMPARE if processing_template_decl.
