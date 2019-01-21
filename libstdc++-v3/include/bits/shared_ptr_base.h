@@ -501,8 +501,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct _Sp_make_shared_tag
   {
   private:
-    template<typename _Tp, _Lock_policy _Lp>
-      friend class __shared_ptr;
     template<typename _Tp, typename _Alloc, _Lock_policy _Lp>
       friend class _Sp_counted_ptr_inplace;
 
@@ -513,6 +511,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return reinterpret_cast<const type_info&>(__tag);
     }
   };
+
+  template<typename _Alloc>
+    struct _Sp_alloc_shared_tag
+    {
+      const _Alloc& _M_a;
+    };
 
   template<typename _Tp, typename _Alloc, _Lock_policy _Lp>
     class _Sp_counted_ptr_inplace final : public _Sp_counted_base<_Lp>
@@ -559,7 +563,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	this->~_Sp_counted_ptr_inplace();
       }
 
-      // Sneaky trick so __shared_ptr can get the managed pointer.
+    private:
+      friend class __shared_count<_Lp>; // To be able to call _M_ptr().
+
+      // No longer used, but code compiled against old libstdc++ headers
+      // might still call it from __shared_ptr ctor to get the pointer out.
       virtual void*
       _M_get_deleter(const std::type_info& __ti) noexcept override
       {
@@ -572,11 +580,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// might pass this instead:
 	else if (__ti == typeid(_Sp_make_shared_tag))
 	  return const_cast<typename remove_cv<_Tp>::type*>(_M_ptr());
+#else
+	// Cannot detect a real type_info object. If the linker keeps a
+	// definition of this function compiled with -fno-rtti then callers
+	// that have RTTI enabled and pass a real type_info object will get
+	// a null pointer returned.
 #endif
 	return nullptr;
       }
 
-    private:
       _Tp* _M_ptr() noexcept { return _M_impl._M_storage._M_ptr(); }
 
       _Impl _M_impl;
@@ -592,6 +604,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<_Lock_policy _Lp>
     class __shared_count
     {
+      template<typename _Tp>
+	struct __not_alloc_shared_tag { using type = void; };
+
+      template<typename _Tp>
+	struct __not_alloc_shared_tag<_Sp_alloc_shared_tag<_Tp>> { };
+
     public:
       constexpr __shared_count() noexcept : _M_pi(0)
       { }
@@ -621,12 +639,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: __shared_count(__p, __sp_array_delete{}, allocator<void>())
 	{ }
 
-      template<typename _Ptr, typename _Deleter>
+      template<typename _Ptr, typename _Deleter,
+	       typename = typename __not_alloc_shared_tag<_Deleter>::type>
 	__shared_count(_Ptr __p, _Deleter __d)
 	: __shared_count(__p, std::move(__d), allocator<void>())
 	{ }
 
-      template<typename _Ptr, typename _Deleter, typename _Alloc>
+      template<typename _Ptr, typename _Deleter, typename _Alloc,
+	       typename = typename __not_alloc_shared_tag<_Deleter>::type>
 	__shared_count(_Ptr __p, _Deleter __d, _Alloc __a) : _M_pi(0)
 	{
 	  typedef _Sp_counted_deleter<_Ptr, _Deleter, _Alloc, _Lp> _Sp_cd_type;
@@ -647,18 +667,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Tp, typename _Alloc, typename... _Args>
-	__shared_count(_Sp_make_shared_tag, _Tp*, const _Alloc& __a,
+	__shared_count(_Tp*& __p, _Sp_alloc_shared_tag<_Alloc> __a,
 		       _Args&&... __args)
-	: _M_pi(0)
 	{
 	  typedef _Sp_counted_ptr_inplace<_Tp, _Alloc, _Lp> _Sp_cp_type;
-	  typename _Sp_cp_type::__allocator_type __a2(__a);
+	  typename _Sp_cp_type::__allocator_type __a2(__a._M_a);
 	  auto __guard = std::__allocate_guarded(__a2);
 	  _Sp_cp_type* __mem = __guard.get();
-	  ::new (__mem) _Sp_cp_type(std::move(__a),
-				    std::forward<_Args>(__args)...);
-	  _M_pi = __mem;
+	  auto __pi = ::new (__mem)
+	    _Sp_cp_type(__a._M_a, std::forward<_Args>(__args)...);
 	  __guard = nullptr;
+	  _M_pi = __pi;
+	  __p = __pi->_M_ptr();
 	}
 
 #if _GLIBCXX_USE_DEPRECATED
@@ -1318,17 +1338,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     protected:
       // This constructor is non-standard, it is used by allocate_shared.
       template<typename _Alloc, typename... _Args>
-	__shared_ptr(_Sp_make_shared_tag __tag, const _Alloc& __a,
-		     _Args&&... __args)
-	: _M_ptr(), _M_refcount(__tag, (_Tp*)0, __a,
-				std::forward<_Args>(__args)...)
-	{
-	  // _M_ptr needs to point to the newly constructed object.
-	  // This relies on _Sp_counted_ptr_inplace::_M_get_deleter.
-	  void* __p = _M_refcount._M_get_deleter(_Sp_make_shared_tag::_S_ti());
-	  _M_ptr = static_cast<_Tp*>(__p);
-	  _M_enable_shared_from_this_with(_M_ptr);
-	}
+	__shared_ptr(_Sp_alloc_shared_tag<_Alloc> __tag, _Args&&... __args)
+	: _M_ptr(), _M_refcount(_M_ptr, __tag, std::forward<_Args>(__args)...)
+	{ _M_enable_shared_from_this_with(_M_ptr); }
 
       template<typename _Tp1, _Lock_policy _Lp1, typename _Alloc,
 	       typename... _Args>
@@ -1823,7 +1835,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline __shared_ptr<_Tp, _Lp>
     __allocate_shared(const _Alloc& __a, _Args&&... __args)
     {
-      return __shared_ptr<_Tp, _Lp>(_Sp_make_shared_tag(), __a,
+      return __shared_ptr<_Tp, _Lp>(_Sp_alloc_shared_tag<_Alloc>{__a},
 				    std::forward<_Args>(__args)...);
     }
 
