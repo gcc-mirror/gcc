@@ -1189,23 +1189,26 @@ void ScopeDsymbol::importScope(Dsymbol *s, Prot protection)
     }
 }
 
+#define BITS_PER_INDEX (sizeof(size_t) * CHAR_BIT)
+
 static void bitArraySet(BitArray *array, size_t idx)
 {
-    array->ptr[idx / (sizeof(size_t) * CHAR_BIT)] |= 1ULL << (idx & (sizeof(size_t) * CHAR_BIT - 1));
+    array->ptr[idx / BITS_PER_INDEX] |= 1ULL << (idx % BITS_PER_INDEX);
 }
 
 static bool bitArrayGet(BitArray *array, size_t idx)
 {
-    return (array->ptr[idx / (sizeof(size_t) * CHAR_BIT)] & (1ULL << (idx & (sizeof(size_t) * CHAR_BIT - 1)))) != 0;
+    const size_t boffset = idx % BITS_PER_INDEX;
+    return (array->ptr[idx / BITS_PER_INDEX] & (1ULL << boffset)) >> boffset;
 }
 
 static void bitArrayLength(BitArray *array, size_t len)
 {
-    size_t obytes = (array->len + CHAR_BIT - 1) / CHAR_BIT;
-    size_t nbytes = (len + CHAR_BIT - 1) / CHAR_BIT;
-
-    if (obytes < nbytes)
+    if (array->len < len)
     {
+        const size_t obytes = (array->len + BITS_PER_INDEX - 1) / BITS_PER_INDEX;
+        const size_t nbytes = (len + BITS_PER_INDEX - 1) / BITS_PER_INDEX;
+
         if (!array->ptr)
             array->ptr = (size_t *)mem.xmalloc(nbytes * sizeof(size_t));
         else
@@ -1213,8 +1216,9 @@ static void bitArrayLength(BitArray *array, size_t len)
 
         for (size_t i = obytes; i < nbytes; i++)
             array->ptr[i] = 0;
+
+        array->len = nbytes * BITS_PER_INDEX;
     }
-    array->len = len;
 }
 
 void ScopeDsymbol::addAccessiblePackage(Package *p, Prot protection)

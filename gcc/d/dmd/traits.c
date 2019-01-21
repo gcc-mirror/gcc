@@ -479,8 +479,7 @@ Expression *pointerBitmap(TraitsExp *e)
     for (d_uns64 i = 0; i < cntdata; i++)
         exps->push(new IntegerExp(e->loc, data[(size_t)i], Type::tsize_t));
 
-    ArrayLiteralExp* ale = new ArrayLiteralExp(e->loc, exps);
-    ale->type = Type::tsize_t->sarrayOf(cntdata + 1);
+    ArrayLiteralExp* ale = new ArrayLiteralExp(e->loc, Type::tsize_t->sarrayOf(cntdata + 1), exps);
     return ale;
 }
 

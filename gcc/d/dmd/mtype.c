@@ -2324,16 +2324,11 @@ Identifier *Type::getTypeInfoIdent()
     size_t namelen = 19 + sizeof(len) * 3 + len + 1;
     char *name = namelen <= sizeof(namebuf) ? namebuf : (char *)mem.xmalloc(namelen);
 
-    sprintf(name, "_D%lluTypeInfo_%s6__initZ", (unsigned long long) 9 + len, buf.data);
+    int length = sprintf(name, "_D%lluTypeInfo_%s6__initZ", (unsigned long long) 9 + len, buf.data);
     //printf("%p, deco = %s, name = %s\n", this, deco, name);
-    assert(strlen(name) < namelen);     // don't overflow the buffer
+    assert(0 < length && length < namelen);     // don't overflow the buffer
 
-    size_t off = 0;
-#ifndef IN_GCC
-    if (global.params.isOSX || (global.params.isWindows && !global.params.is64bit))
-        ++off;                 // C mangling will add '_' back in
-#endif
-    Identifier *id = Identifier::idPool(name + off);
+    Identifier *id = Identifier::idPool(name, length);
 
     if (name != namebuf)
         free(name);
@@ -4340,8 +4335,7 @@ Expression *TypeSArray::defaultInitLiteral(Loc loc)
     elements->setDim(d);
     for (size_t i = 0; i < d; i++)
         (*elements)[i] = NULL;
-    ArrayLiteralExp *ae = new ArrayLiteralExp(Loc(), elementinit, elements);
-    ae->type = this;
+    ArrayLiteralExp *ae = new ArrayLiteralExp(Loc(), this, elementinit, elements);
     return ae;
 }
 
