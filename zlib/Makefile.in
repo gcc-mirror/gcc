@@ -161,8 +161,8 @@ am__objects_1 = libz_a-adler32.$(OBJEXT) libz_a-compress.$(OBJEXT) \
 @TARGET_LIBRARY_FALSE@am_libz_a_OBJECTS = $(am__objects_1)
 libz_a_OBJECTS = $(am_libz_a_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
-libzgcj_convenience_la_LIBADD =
-am__libzgcj_convenience_la_SOURCES_DIST = adler32.c compress.c crc32.c \
+libz_convenience_la_LIBADD =
+am__libz_convenience_la_SOURCES_DIST = adler32.c compress.c crc32.c \
 	crc32.h deflate.c deflate.h gzguts.h gzread.c gzclose.c \
 	gzwrite.c gzlib.c infback.c inffast.c inffast.h inffixed.h \
 	inflate.c inflate.h inftrees.c inftrees.h trees.c trees.h \
@@ -170,14 +170,14 @@ am__libzgcj_convenience_la_SOURCES_DIST = adler32.c compress.c crc32.c \
 am__objects_2 = adler32.lo compress.lo crc32.lo deflate.lo gzread.lo \
 	gzclose.lo gzwrite.lo gzlib.lo infback.lo inffast.lo \
 	inflate.lo inftrees.lo trees.lo uncompr.lo zutil.lo
-@TARGET_LIBRARY_TRUE@am_libzgcj_convenience_la_OBJECTS =  \
+@TARGET_LIBRARY_TRUE@am_libz_convenience_la_OBJECTS =  \
 @TARGET_LIBRARY_TRUE@	$(am__objects_2)
-libzgcj_convenience_la_OBJECTS = $(am_libzgcj_convenience_la_OBJECTS)
+libz_convenience_la_OBJECTS = $(am_libz_convenience_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-@TARGET_LIBRARY_TRUE@am_libzgcj_convenience_la_rpath =
+@TARGET_LIBRARY_TRUE@am_libz_convenience_la_rpath =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -212,9 +212,9 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libz_a_SOURCES) $(libzgcj_convenience_la_SOURCES)
+SOURCES = $(libz_a_SOURCES) $(libz_convenience_la_SOURCES)
 DIST_SOURCES = $(am__libz_a_SOURCES_DIST) \
-	$(am__libzgcj_convenience_la_SOURCES_DIST)
+	$(am__libz_convenience_la_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -378,7 +378,6 @@ srcdir = @srcdir@
 sysconfdir = @sysconfdir@
 target = @target@
 target_alias = @target_alias@
-target_all = @target_all@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
@@ -395,8 +394,8 @@ infback.c inffast.c inffast.h inffixed.h inflate.c \
 inflate.h inftrees.c inftrees.h trees.c trees.h uncompr.c zconf.h \
 zconf.h.in zlib.h zutil.c zutil.h
 
-@TARGET_LIBRARY_TRUE@noinst_LTLIBRARIES = libzgcj_convenience.la
-@TARGET_LIBRARY_TRUE@libzgcj_convenience_la_SOURCES = $(ZLIB_SOURCES)
+@TARGET_LIBRARY_TRUE@noinst_LTLIBRARIES = libz_convenience.la
+@TARGET_LIBRARY_TRUE@libz_convenience_la_SOURCES = $(ZLIB_SOURCES)
 @TARGET_LIBRARY_FALSE@toolexeclib_LIBRARIES = libz.a
 @TARGET_LIBRARY_FALSE@libz_a_SOURCES = $(ZLIB_SOURCES)
 @TARGET_LIBRARY_FALSE@libz_a_CFLAGS = $(AM_CFLAGS) $(PICFLAG)
@@ -534,8 +533,8 @@ clean-noinstLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
-libzgcj_convenience.la: $(libzgcj_convenience_la_OBJECTS) $(libzgcj_convenience_la_DEPENDENCIES) $(EXTRA_libzgcj_convenience_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(LINK) $(am_libzgcj_convenience_la_rpath) $(libzgcj_convenience_la_OBJECTS) $(libzgcj_convenience_la_LIBADD) $(LIBS)
+libz_convenience.la: $(libz_convenience_la_OBJECTS) $(libz_convenience_la_DEPENDENCIES) $(EXTRA_libz_convenience_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(LINK) $(am_libz_convenience_la_rpath) $(libz_convenience_la_OBJECTS) $(libz_convenience_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
