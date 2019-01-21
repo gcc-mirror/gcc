@@ -1,3 +1,8 @@
+2019-01-21  Gergö Barany  <gergo@codesourcery.com>
+
+	* omp-oacc-kernels.c (add_async_clauses_and_wait): New function...
+	(decompose_kernels_region_body): ... called from here.
+
 2019-01-23  Gergö Barany  <gergo@codesourcery.com>
 
 	* omp-oacc-kernels.c (add_parent_or_loop_num_clause): New function.

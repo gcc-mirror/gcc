@@ -47,5 +47,10 @@ end program main
 ! { dg-final { scan-tree-dump-times "oacc_parallel_kernels_parallelized" 3 "convert_oacc_kernels" } }
 ! { dg-final { scan-tree-dump-times "oacc_parallel_kernels_gang_single" 2 "convert_oacc_kernels" } }
 
+! Each of the parallel regions is async, and there is a final call to
+! __builtin_GOACC_wait.
+! { dg-final { scan-tree-dump-times "oacc_parallel_kernels.* async\(-1\)" 5 "convert_oacc_kernels" } }
+! { dg-final { scan-tree-dump-times "__builtin_GOACC_wait" 1 "convert_oacc_kernels" } }
+
 ! Check that the original kernels region is removed.
 ! { dg-final { scan-tree-dump-not "oacc_kernels" "convert_oacc_kernels" } }
