@@ -1,3 +1,10 @@
+2019-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88934
+	* tree-vect-slp.c (vect_mask_constant_operand_p): Always look
+	at the possibly non-constant operand.
+	(vect_get_constant_vectors): Adjust.
+
 2019-01-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/71659

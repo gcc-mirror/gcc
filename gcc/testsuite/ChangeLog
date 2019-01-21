@@ -1,3 +1,8 @@
+2019-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88934
+	* gfortran.dg/pr88934.f90: New testcase.
+
 2019-01-20  Ulrich Drepper  <drepper@redhat.com>
 
 	Fix after C++ P0600 implementation.
