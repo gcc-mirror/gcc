@@ -1,3 +1,10 @@
+2019-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/88901
+	* typeck.c (cp_build_binary_op): Don't instrument
+	SANITIZE_POINTER_COMPARE if processing_template_decl.
+	(pointer_diff): Similarly for SANITIZE_POINTER_SUBTRACT.
+
 2019-01-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/88875 - error with explicit list constructor.
