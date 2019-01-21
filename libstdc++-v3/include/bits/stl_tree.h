@@ -1027,7 +1027,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       rend() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(begin()); }
 
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const _GLIBCXX_NOEXCEPT
       { return _M_impl._M_node_count == 0; }
 

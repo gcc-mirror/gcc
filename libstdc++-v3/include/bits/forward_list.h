@@ -774,7 +774,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Returns true if the %forward_list is empty.  (Thus begin() would
        *  equal end().)
        */
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const noexcept
       { return this->_M_impl._M_head._M_next == nullptr; }
 

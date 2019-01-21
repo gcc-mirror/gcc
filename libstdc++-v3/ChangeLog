@@ -1,3 +1,92 @@
+2019-01-20  Ulrich Drepper  <drepper@redhat.com>
+
+	Implement C++20 P0600r1.
+	* include/backward/hash_map: Add nodiscard attribute to empty.
+	* include/backward/hash_set: Likewise.
+	* backward/hashtable.h: Likewise.
+	* include/bits/basic_string.h: Likewise.
+	* include/bits/forward_list.h: Likewise.
+	* include/bits/hashtable.h: Likewise.
+	* include/bits/regex.h: Likewise.
+	* include/bits/stl_deque.h: Likewise.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_queue.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/stl_stack.h: Likewise.
+	* include/bits/stl_tree.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+	* include/bits/unordered_map.h: Likewise.
+	* include/bits/unordered_set.h: Likewise.
+	* include/debug/array: Likewise.
+	* include/experimental/any: Likewise.
+	* include/experimental/bits/fs_path.h: Likewise.
+	* include/experimental/internet: Likewise.
+	* include/experimental/string_view: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/info_fn_imps.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/binary_heap_/binary_heap_.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/binary_heap_/info_fn_imps.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/cc_ht_map_.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/info_fn_imps.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/size_fn_imps.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/gp_ht_map_.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/info_fn_imps.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	info_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	left_child_next_sibling_heap_.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/info_fn_imps.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/lu_map_.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/ov_tree_map_/info_fn_imps.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/ov_tree_map_/ov_tree_map_.hp:
+	Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/info_fn_imps.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/pat_trie_.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/rc.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/tree_trace_base.hpp: Likewise.
+	* include/ext/pb_ds/trie_policy.hpp: Likewise.
+	* include/ext/rope: Likewise.
+	* include/ext/slist: Likewise.
+	* include/ext/vstring.h: Likewise.
+	* include/profile/array: Likewise.
+	* include/std/array: Likewise.
+	* include/tr1/array: Likewise.
+	* include/tr1/hashtable.h: Likewise.
+	* include/tr1/regex: Likewise.
+	* include/tr2/dynamic_bitset: Likewise.
+	* include/bits/alloc_traits.h: Add nodiscard attribute to
+	allocate.
+	* include/experimental/memory_resource: Likewise.
+	* include/ext/alloc_traits.h: Likewise.
+	* include/ext/array_allocator.h: Likewise.
+	* include/ext/bitmap_allocator.h: Likewise.
+	* include/ext/debug_allocator.h: Likewise.
+	* include/ext/extptr_allocator.h: Likewise.
+	* include/ext/mt_allocator.h: Likewise.
+	* include/ext/new_allocator.h: Likewise.
+	* include/ext/pool_allocator.h: Likewise.
+	* include/ext/throw_allocator.h: Likewise.
+	* include/std/scoped_allocator: Likewise.
+	* libsupc++/eh_alloc.cc: Likewise.
+	* include/std/future: Add nodiscard attribute to async.
+	* libsupc++/new: Add nodiscard attribute to new.
+
 2019-01-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/87514

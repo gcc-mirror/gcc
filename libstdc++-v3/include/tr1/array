@@ -119,7 +119,7 @@ namespace tr1
       size_type 
       max_size() const { return _Nm; }
 
-      bool 
+      _GLIBCXX_NODISCARD bool 
       empty() const { return size() == 0; }
 
       // Element access.

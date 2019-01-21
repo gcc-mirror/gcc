@@ -829,7 +829,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       address(const_reference __x) const _GLIBCXX_NOEXCEPT
       { return std::__addressof(__x); }
 
-      pointer
+      _GLIBCXX_NODISCARD pointer
       allocate(size_type __n, std::allocator<void>::const_pointer hint = 0)
       {
 	if (__n > this->max_size())

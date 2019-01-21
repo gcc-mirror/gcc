@@ -1,3 +1,8 @@
+2019-01-20  Ulrich Drepper  <drepper@redhat.com>
+
+	Fix after C++ P0600 implementation.
+	* g++.dg/init/new39.C: Don't just ignore result of new.
+
 2019-01-20  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* gdc.dg/runnable.d: Add more tests for comparing complex types.

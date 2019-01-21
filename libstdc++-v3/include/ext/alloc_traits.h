@@ -128,7 +128,7 @@ template<typename _Alloc, typename = typename _Alloc::value_type>
     typedef typename _Alloc::size_type              size_type;
     typedef typename _Alloc::difference_type        difference_type;
 
-    static pointer
+    _GLIBCXX_NODISCARD static pointer
     allocate(_Alloc& __a, size_type __n)
     { return __a.allocate(__n); }
 

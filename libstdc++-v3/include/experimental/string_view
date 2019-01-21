@@ -169,7 +169,7 @@ inline namespace fundamentals_v1
 		/ sizeof(value_type) / 4;
       }
 
-      constexpr bool
+      _GLIBCXX_NODISCARD constexpr bool
       empty() const noexcept
       { return this->_M_len == 0; }
 

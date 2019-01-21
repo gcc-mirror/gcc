@@ -301,7 +301,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Calls @c a.allocate(n)
       */
-      static pointer
+      _GLIBCXX_NODISCARD static pointer
       allocate(_Alloc& __a, size_type __n)
       { return __a.allocate(__n); }
 
@@ -316,7 +316,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Returns <tt> a.allocate(n, hint) </tt> if that expression is
        *  well-formed, otherwise returns @c a.allocate(n)
       */
-      static pointer
+      _GLIBCXX_NODISCARD static pointer
       allocate(_Alloc& __a, size_type __n, const_void_pointer __hint)
       { return _S_allocate(__a, __n, __hint, 0); }
 
@@ -439,7 +439,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Calls @c a.allocate(n)
       */
-      static pointer
+      _GLIBCXX_NODISCARD static pointer
       allocate(allocator_type& __a, size_type __n)
       { return __a.allocate(__n); }
 
@@ -453,7 +453,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Returns <tt> a.allocate(n, hint) </tt>
       */
-      static pointer
+      _GLIBCXX_NODISCARD static pointer
       allocate(allocator_type& __a, size_type __n, const_void_pointer __hint)
       { return __a.allocate(__n, __hint); }
 

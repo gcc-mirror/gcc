@@ -86,7 +86,7 @@ namespace
     public:
       pool();
 
-      void *allocate (std::size_t);
+      _GLIBCXX_NODISCARD void *allocate (std::size_t);
       void free (void *);
 
       bool in_pool (void *);

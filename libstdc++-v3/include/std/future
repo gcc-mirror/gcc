@@ -1703,7 +1703,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// async
   template<typename _Fn, typename... _Args>
-    future<__async_result_of<_Fn, _Args...>>
+    _GLIBCXX_NODISCARD future<__async_result_of<_Fn, _Args...>>
     async(launch __policy, _Fn&& __fn, _Args&&... __args)
     {
       std::shared_ptr<__future_base::_State_base> __state;
@@ -1736,7 +1736,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// async, potential overload
   template<typename _Fn, typename... _Args>
-    inline future<__async_result_of<_Fn, _Args...>>
+    _GLIBCXX_NODISCARD inline future<__async_result_of<_Fn, _Args...>>
     async(_Fn&& __fn, _Args&&... __args)
     {
       return std::async(launch::async|launch::deferred,
