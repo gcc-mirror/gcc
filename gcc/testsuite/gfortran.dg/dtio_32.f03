@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options="-w" }
+! { dg-options "-w" }
 ! PR fortran/79383
 ! Contributed by Walt Brainerd <walt.brainerd at gmail dot com>
 module dollar_mod

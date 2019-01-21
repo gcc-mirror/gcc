@@ -7,4 +7,4 @@ program main
   write (unit=line,fmt='(9i3)') matmul(A,B)
   if (line /= '  5  7  9  5  7  9  5  7  9') STOP 1
 end program main
-!  dg-final { scan-tree-dump-times "matmul_i4" 0 "original" } }
+! { dg-final { scan-tree-dump-times "matmul_i4" 0 "original" } }
