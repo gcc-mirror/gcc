@@ -1,3 +1,8 @@
+2019-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/utf-array.c: Allow wchar_t to be printed as
+	{long ,short ,}{unsigned ,}int.
+
 2019-01-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88934
