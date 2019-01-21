@@ -1,3 +1,13 @@
+2019-01-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c/88928
+	* c-warn.c (check_alignment_of_packed_member): Add a boolean parameter
+	for rvalue context.  Handle rvalues correctly.  Use min_align_of_type
+	instead of TYPE_ALIGN.
+	(check_address_or_pointer_of_packed_member): Handle rvalues coorrectly.
+	Use min_align_of_type instead of TYPE_ALIGN_UNIT.  Check for NULL
+	pointer from TYPE_STUB_DECL.
+
 2019-01-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88934
