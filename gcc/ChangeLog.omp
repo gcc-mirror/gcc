@@ -1,5 +1,18 @@
 2019-01-21  Gergö Barany  <gergo@codesourcery.com>
 
+	* omp-oacc-kernels.c (top_level_omp_for_in_stmt): New function.
+	(make_gang_single_region): Likewise.
+	(transform_kernels_loop_clauses, make_gang_parallel_loop_region):
+	Likewise.
+	(flatten_binds): Likewise.
+	(make_data_region_try_statement): Likewise.
+	(maybe_build_inner_data_region): Likewise.
+	(decompose_kernels_region_body): Likewise.
+	(transform_kernels_region): Delegate to decompose_kernels_region_body
+	and make_data_region_try_statement.
+
+2019-01-21  Gergö Barany  <gergo@codesourcery.com>
+
 	* Makefile.in: Add...
 	* omp-oacc-kernels.c: ... this new file for the kernels conversion
 	pass.

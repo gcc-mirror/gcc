@@ -1,5 +1,11 @@
 2019-01-21  Gergö Barany  <gergo@codesourcery.com>
 
+	* c-c++-common/goacc/kernels-conversion.c: Test for a gang-single
+	region.
+	* gfortran.dg/goacc/kernels-conversion.f95: Likewise.
+
+2019-01-21  Gergö Barany  <gergo@codesourcery.com>
+
 	* c-c++-common/goacc/kernels-conversion.c: New test.
 	* gfortran.dg/goacc/kernels-conversion.f95: Likewise.
 	* c-c++-common/goacc/if-clause-2.c: Update.
