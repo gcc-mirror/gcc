@@ -1,3 +1,26 @@
+2019-01-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/71659
+	* config/i386/adxintrin.h: Just check _IMMINTRIN_H_INCLUDED.
+	* config/i386/clflushoptintrin.h: Check _IMMINTRIN_H_INCLUDED
+	instead of _X86INTRIN_H_INCLUDED.
+	* onfig/i386/clwbintrin.h: Likewise.
+	* config/i386/pkuintrin.h: Likewise.
+	* config/i386/prfchwintrin.h: Likewise.
+	* config/i386/rdseedintrin.h: Likewise.
+	* config/i386/wbnoinvdintrin.h: Likewise.
+	* config/i386/xsavecintrin.h: Likewise.
+	* config/i386/xsavesintrin.h: Likewise.
+	* config/i386/fxsrintrin.h: Enable _IMMINTRIN_H_INCLUDED check.
+	* config/i386/xsaveintrin.h: Likewise.
+	* config/i386/xsaveoptintrin.h: Likewise.
+	* config/i386/x86intrin.h: Move "#include" <rdseedintrin.h>,
+	<prfchwintrin.h>, <fxsrintrin.h>, <xsaveintrin.h>,
+	<xsaveoptintrin.h>, <adxintrin.h>, <clwbintrin.h>,
+	<clflushoptintrin.h>, <xsavesintrin.h>, <xsavecintrin.h>,
+	<wbnoinvdintrin.h> and <pkuintrin.h> to ...
+	* config/i386/immintrin.h: Here.
+
 2019-01-20  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/87615
