@@ -1,3 +1,8 @@
+2019-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/88901
+	* g++.dg/asan/pr88901.C: New test.
+
 2019-01-21  Tamar Christina  <tamar.christina@arm.com>
 
 	* g++.dg/vect/simd-clone-7.cc: Fix assembler scan.
