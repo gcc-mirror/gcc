@@ -1,4 +1,4 @@
-! { dg-do }
+! { dg-do run }
 !
 ! Test the fix for PR71880 in which the string length for 'p'
 ! was not set for the pointer assignment.

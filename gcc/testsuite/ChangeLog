@@ -1,3 +1,22 @@
+2019-01-21  Manfred Schwarbi  <manfred99@gmx.ch>
+
+	* class_66.f90: Fix a dg directive.
+	* debug/pr35154-stabs.f: Likewise.
+	* dec_d_lines_3.f: Likewise.
+	* dec_d_lines_3.f: Likewise.
+	* dec_structure_12.f90: Likewise.
+	* dec_structure_15.f90: Likewise.
+	* deferred_character_31.f90: Likewise.
+	* dtio_31.f03: Likewise.
+	* dtio_32.f03: Likewise.
+	* extends_11.f03: Likewise.
+	* integer_plus.f90: Likewise.
+	* pdt_25.f03: Likewise.
+	* pr58968.f: Likewise.
+	* pr78259.f90: Likewise.
+	* vect/vect-2.f90: Likewise.
+	* matmul_const.f90: Likewise.
+
 2019-01-21  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/88938
