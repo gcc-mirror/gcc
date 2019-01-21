@@ -1,4 +1,4 @@
-2019-01-21  Manfred Schwarbi  <manfred99@gmx.ch>
+2019-01-21  Manfred Schwarb  <manfred99@gmx.ch>
 
 	* class_66.f90: Fix a dg directive.
 	* debug/pr35154-stabs.f: Likewise.
