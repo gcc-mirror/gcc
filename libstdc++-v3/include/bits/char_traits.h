@@ -230,9 +230,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static _GLIBCXX_ALWAYS_INLINE constexpr bool
     __constant_string_p(const _CharT* __s)
     {
+#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+      (void) __s;
+      // In constexpr contexts all strings should be constant.
+      return __builtin_is_constant_evaluated();
+#else
       while (__builtin_constant_p(*__s) && *__s)
 	__s++;
       return __builtin_constant_p(*__s);
+#endif
     }
 
   /**
@@ -247,10 +253,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static _GLIBCXX_ALWAYS_INLINE constexpr bool
     __constant_char_array_p(const _CharT* __a, size_t __n)
     {
+#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+      (void) __a;
+      (void) __n;
+      // In constexpr contexts all character arrays should be constant.
+      return __builtin_is_constant_evaluated();
+#else
       size_t __i = 0;
       while (__builtin_constant_p(__a[__i]) && __i < __n)
 	__i++;
       return __i == __n;
+#endif
     }
 #endif
 

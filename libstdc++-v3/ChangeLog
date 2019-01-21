@@ -1,3 +1,10 @@
+2019-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/86590
+	* include/bits/char_traits.h (__constant_string_p,
+	__constant_char_array_p): Use __builtin_is_constant_evaluated if
+	available.
+
 2019-01-20  Ulrich Drepper  <drepper@redhat.com>
 
 	Implement C++20 P0600r1.
