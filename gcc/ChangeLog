@@ -1,5 +1,12 @@
 2019-01-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/88905
+	* optabs.c (add_equal_note): Add op0_mode argument, use it instead of
+	GET_MODE (op0).
+	(expand_binop_directly, expand_doubleword_clz,
+	expand_doubleword_popcount, expand_ctz, expand_ffs,
+	expand_unop_direct, maybe_emit_unop_insn): Adjust callers.
+
 	PR rtl-optimization/49429
 	PR target/49454
 	PR rtl-optimization/86334

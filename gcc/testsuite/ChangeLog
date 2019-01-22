@@ -1,5 +1,8 @@
 2019-01-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/88905
+	* gcc.dg/pr88905.c: New test.
+
 	PR rtl-optimization/49429
 	PR target/49454
 	PR rtl-optimization/86334
