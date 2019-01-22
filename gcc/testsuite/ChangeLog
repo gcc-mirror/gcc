@@ -1,5 +1,8 @@
 2019-01-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/88965
+	* gcc.target/powerpc/pr88965.c: New test.
+
 	PR middle-end/88968
 	* c-c++-common/gomp/atomic-23.c: New test.
 
