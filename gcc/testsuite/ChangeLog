@@ -1,3 +1,8 @@
+2019-01-22  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR rtl-optimization/87763
+	* gcc.dg/vect/vect-nop-move.c: Fix testcase on AArch64.
+
 2019-01-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/88954
