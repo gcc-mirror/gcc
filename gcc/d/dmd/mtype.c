@@ -2326,7 +2326,7 @@ Identifier *Type::getTypeInfoIdent()
 
     int length = sprintf(name, "_D%lluTypeInfo_%s6__initZ", (unsigned long long) 9 + len, buf.data);
     //printf("%p, deco = %s, name = %s\n", this, deco, name);
-    assert(0 < length && length < namelen);     // don't overflow the buffer
+    assert(0 < length && (size_t)length < namelen);     // don't overflow the buffer
 
     Identifier *id = Identifier::idPool(name, length);
 
