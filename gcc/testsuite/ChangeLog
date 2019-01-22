@@ -1,3 +1,8 @@
+2019-01-22  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* g++.dg/cpp0x/pr86397-1.C: Add -fdelete-null-pointer-checks.
+	* g++.dg/cpp0x/pr86397-2.C: Likewise.
+
 2019-01-22  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/88469
