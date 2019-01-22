@@ -1,5 +1,10 @@
 2019-01-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/88965
+	* config/rs6000/rs6000.c: Include tree-vrp.h and tree-ssanames.h.
+	(rs6000_gimple_fold_builtin): If MEM_REF address doesn't satisfy
+	is_gimple_mem_ref_addr predicate, force it into a SSA_NAME first.
+
 	PR middle-end/88968
 	* gimplify.c (gimplify_omp_atomic): Handle bitfield atomics with
 	non-integral DECL_BIT_FIELD_REPRESENTATIVEs.
