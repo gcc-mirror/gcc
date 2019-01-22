@@ -6634,7 +6634,7 @@ arm_needs_doubleword_align (machine_mode mode, const_tree type)
 	  ret = -1;
       }
     else if (TREE_CODE (field) == FIELD_DECL
-	     && DECL_BIT_FIELD (field)
+	     && DECL_BIT_FIELD_TYPE (field)
 	     && TYPE_ALIGN (DECL_BIT_FIELD_TYPE (field)) > PARM_BOUNDARY)
       ret2 = 1;
 

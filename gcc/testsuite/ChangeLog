@@ -1,3 +1,9 @@
+2019-01-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/88469
+	* gcc.target/arm/aapcs/bitfield2.c: New test.
+	* gcc.target/arm/aapcs/bitfield3.c: New test.
+
 2019-01-22  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR rtl-optimization/87763
