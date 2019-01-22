@@ -1,5 +1,9 @@
 2019-01-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/88904
+	* cfgcleanup.c (thread_jump): Verify cond2 doesn't mention
+	any nonequal registers before processing BB_END (b).
+
 	PR target/88905
 	* optabs.c (add_equal_note): Add op0_mode argument, use it instead of
 	GET_MODE (op0).
