@@ -4,6 +4,8 @@
 
 package runtime
 
+import "internal/cpu"
+
 var randomNumber uint32
 
 func archauxv(tag, val uintptr) {
@@ -14,5 +16,9 @@ func archauxv(tag, val uintptr) {
 		// it as a byte array.
 		randomNumber = uint32(startupRandomData[4]) | uint32(startupRandomData[5])<<8 |
 			uint32(startupRandomData[6])<<16 | uint32(startupRandomData[7])<<24
+	case _AT_HWCAP:
+		cpu.HWCap = uint(val)
+	case _AT_HWCAP2:
+		cpu.HWCap2 = uint(val)
 	}
 }
