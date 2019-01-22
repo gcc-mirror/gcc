@@ -1824,6 +1824,8 @@ number_of_iterations_cond (struct loop *loop,
   tree tem = fold_binary (code, boolean_type_node, iv0->base, iv1->base);
   if (tem && integer_zerop (tem))
     {
+      if (!every_iteration)
+	return false;
       niter->niter = build_int_cst (unsigned_type_for (type), 0);
       niter->max = 0;
       return true;

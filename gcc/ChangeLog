@@ -1,5 +1,10 @@
 2019-01-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/88044
+	* tree-ssa-loop-niter.c (number_of_iterations_cond): If condition
+	is false in the first iteration, but !every_iteration, return false
+	instead of true with niter->niter zero.
+
 	PR rtl-optimization/88904
 	* cfgcleanup.c (thread_jump): Verify cond2 doesn't mention
 	any nonequal registers before processing BB_END (b).
