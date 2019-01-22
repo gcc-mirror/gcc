@@ -1,3 +1,14 @@
+2019-01-22  Manfred Schwarb  <manfred99@gmx.ch>
+
+	* gfortran.dg/array_function_5.f90: Fix a dg directive.
+	* gfortran.dg/block_16.f08: Likewise.
+	* gfortran.dg/dec_structure_14.f90: Likewise.
+	* gfortran.dg/namelist_96.f90: Likewise.
+	* gfortran.dg/newunit_5.f90.f90: Moved to
+	* gfortran.dg/newunit_5.f90: here.
+	* gfortran.dg/pdt_28.f03: Likewise.
+	* gfortran.dg/spread_simplify_1.f90: Likewise.
+
 2019-01-22  Tamar Christina  <tamar.christina@arm.com>
 
 	PR/tree-optimization 88903

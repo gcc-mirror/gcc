@@ -1,4 +1,4 @@
-! { dg-do run )
+! { dg-do run }
 ! PR83525 Combination of newunit and internal unit was failing.
 program main
   integer :: funit
