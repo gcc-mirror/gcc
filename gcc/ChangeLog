@@ -1,3 +1,11 @@
+2019-01-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_analyze_loop_operations): Use
+	auto_vec for cost vector to fix memleak.
+	(vectorize_fold_left_reduction): Properly gather SLP defs.
+	(vectorizable_comparison): Do not swap operands to properly
+	gather SLP defs.
+
 2019-01-22  Alan Modra  <amodra@gmail.com>
 
 	PR target/88614

@@ -9258,6 +9258,7 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
        BITOP2 (rhs1 BITOP1 rhs2) or
        rhs1 BITOP2 (BITOP1 rhs2)
      depending on bitop1 and bitop2 arity.  */
+  bool swap_p = false;
   if (VECTOR_BOOLEAN_TYPE_P (vectype))
     {
       if (code == GT_EXPR)
@@ -9274,15 +9275,13 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	{
 	  bitop1 = BIT_NOT_EXPR;
 	  bitop2 = BIT_AND_EXPR;
-	  std::swap (rhs1, rhs2);
-	  std::swap (dts[0], dts[1]);
+	  swap_p = true;
 	}
       else if (code == LE_EXPR)
 	{
 	  bitop1 = BIT_NOT_EXPR;
 	  bitop2 = BIT_IOR_EXPR;
-	  std::swap (rhs1, rhs2);
-	  std::swap (dts[0], dts[1]);
+	  swap_p = true;
 	}
       else
 	{
@@ -9349,6 +9348,8 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      vect_get_slp_defs (ops, slp_node, &vec_defs);
 	      vec_oprnds1 = vec_defs.pop ();
 	      vec_oprnds0 = vec_defs.pop ();
+	      if (swap_p)
+		std::swap (vec_oprnds0, vec_oprnds1);
 	    }
 	  else
 	    {
@@ -9368,6 +9369,8 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
       if (!slp_node)
 	{
+	  if (swap_p)
+	    std::swap (vec_rhs1, vec_rhs2);
 	  vec_oprnds0.quick_push (vec_rhs1);
 	  vec_oprnds1.quick_push (vec_rhs2);
 	}
