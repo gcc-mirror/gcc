@@ -1,3 +1,25 @@
+2019-01-22  Hongtao Liu  <hongtao.liu@intel.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/88909
+	* config/i386/i386-builtin.def: Add mask2 to all builtin
+	initializations.  Merge ARGS2 and SPECIAL_ARGS2 into ARGS and
+	SPECIAL_ARGS.
+	* config/i386/i386.c (BDESC): Add mask2 to the definition.
+	(BDESC_FIRST): Likewise.
+	(define_builtin): Add an argument for mask2.  Updated to handle
+	both ix86_isa_flags and ix86_isa_flags2.
+	(define_builtin_const): Likewise.
+	(define_builtin_pure): Likewise.
+	(define_builtin2): Deleted.
+	(define_builtin_const2): Likewise.
+	(builtin_description): Add a member, mask2.
+	(bdesc_*): Add mask2 to builtin initializations.
+	(ix86_init_mmx_sse_builtins): Update calls to def_builtin,
+	def_builtin_const and def_builtin_pure.  Remove SPECIAL_ARGS2
+	support.
+	(ix86_get_builtin_func_type): Remove SPECIAL_ARGS2 support.
+
 2019-01-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/88954
