@@ -1,3 +1,13 @@
+2019-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/49429
+	PR target/49454
+	PR rtl-optimization/86334
+	PR target/88906
+	* expr.c (emit_block_move_hints): Move marking of MEM_EXPRs
+	addressable from here...
+	(emit_block_op_via_libcall): ... to here.
+
 2019-01-22  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop.c (vect_analyze_loop_operations): Use
