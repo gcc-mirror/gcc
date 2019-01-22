@@ -6598,7 +6598,9 @@ arm_init_cumulative_args (CUMULATIVE_ARGS *pcum, tree fntype,
     }
 }
 
-/* Return 1 if double word alignment is required for argument passing.
+/* Return 2 if double word alignment is required for argument passing,
+   but wasn't required before the fix for PR88469.
+   Return 1 if double word alignment is required for argument passing.
    Return -1 if double word alignment used to be required for argument
    passing before PR77728 ABI fix, but is not required anymore.
    Return 0 if double word alignment is not required and wasn't requried
@@ -6618,7 +6620,8 @@ arm_needs_doubleword_align (machine_mode mode, const_tree type)
     return TYPE_ALIGN (TREE_TYPE (type)) > PARM_BOUNDARY;
 
   int ret = 0;
-  /* Record/aggregate types: Use greatest member alignment of any member.  */ 
+  int ret2 = 0;
+  /* Record/aggregate types: Use greatest member alignment of any member.  */
   for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     if (DECL_ALIGN (field) > PARM_BOUNDARY)
       {
@@ -6630,6 +6633,13 @@ arm_needs_doubleword_align (machine_mode mode, const_tree type)
 	     Make sure we can warn about that with -Wpsabi.  */
 	  ret = -1;
       }
+    else if (TREE_CODE (field) == FIELD_DECL
+	     && DECL_BIT_FIELD (field)
+	     && TYPE_ALIGN (DECL_BIT_FIELD_TYPE (field)) > PARM_BOUNDARY)
+      ret2 = 1;
+
+  if (ret2)
+    return 2;
 
   return ret;
 }
@@ -6695,7 +6705,12 @@ arm_function_arg (cumulative_args_t pcum_v, machine_mode mode,
 	inform (input_location, "parameter passing for argument of type "
 		"%qT changed in GCC 7.1", type);
       else if (res > 0)
-	pcum->nregs++;
+	{
+	  pcum->nregs++;
+	  if (res > 1 && warn_psabi)
+	    inform (input_location, "parameter passing for argument of type "
+		    "%qT changed in GCC 9.1", type);
+	}
     }
 
   /* Only allow splitting an arg between regs and memory if all preceding
@@ -6722,6 +6737,9 @@ arm_function_arg_boundary (machine_mode mode, const_tree type)
   if (res < 0 && warn_psabi)
     inform (input_location, "parameter passing for argument of type %qT "
 	    "changed in GCC 7.1", type);
+  if (res > 1 && warn_psabi)
+    inform (input_location, "parameter passing for argument of type "
+	    "%qT changed in GCC 9.1", type);
 
   return res > 0 ? DOUBLEWORD_ALIGNMENT : PARM_BOUNDARY;
 }
@@ -26999,7 +27017,13 @@ arm_setup_incoming_varargs (cumulative_args_t pcum_v,
 	    inform (input_location, "parameter passing for argument of "
 		    "type %qT changed in GCC 7.1", type);
 	  else if (res > 0)
-	    nregs++;
+	    {
+	      nregs++;
+	      if (res > 1 && warn_psabi)
+		inform (input_location,
+			"parameter passing for argument of type "
+			"%qT changed in GCC 9.1", type);
+	    }
 	}
     }
   else
