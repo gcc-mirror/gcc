@@ -20,5 +20,8 @@ int main ()
   if (!ptrmemdata (other ()))
     return 2;
 
+  if (ptrmemfn (b ()))
+    return 2;
+
   return 0;
 }

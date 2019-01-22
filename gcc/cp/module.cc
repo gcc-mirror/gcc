@@ -2437,7 +2437,8 @@ enum tree_tag {
   tt_tinfo_var,		/* Typeinfo object. */
   tt_tinfo_typedef,	/* Typeinfo typedef.  */
   tt_primary_type,	/* TYPE_DECL for an implicit typedef.  */
-  tt_secondary_type,	/* */
+  tt_secondary_type,	/* Qualified type for an implicit typedef.  */
+  tt_ptrmem_type,	/* Pointer to member type.  */
   tt_named_decl,  	/* Named decl. */
   tt_namespace,		/* Namespace reference.  */
   tt_inst,		/* A template instantiation.  */
@@ -5079,6 +5080,7 @@ trees_out::core_vals (tree t)
 	{
 	  /* Don't write the cached values vector.  */
 	  WT (TYPE_CACHED_VALUES_P (t) ? NULL_TREE : t->type_non_common.values);
+	  WT (t->type_non_common.maxval);
 
 	  /* POINTER and REFERENCE types hold NEXT_{PTR,REF}_TO */
 	  if (POINTER_TYPE_P (t))
@@ -5100,10 +5102,12 @@ trees_out::core_vals (tree t)
 	    }
 	  else
 	    WT (t->type_non_common.minval);
-
-	  WT (t->type_non_common.maxval);
 	}
-      WT (t->type_non_common.lang_1);
+
+      /* Pointers use lang slot for caching pointer to member fn
+	 record_type.  */
+      if (TREE_CODE (t) != POINTER_TYPE)
+	WT (t->type_non_common.lang_1);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_LIST))
@@ -5520,20 +5524,25 @@ trees_in::core_vals (tree t)
 	     is a new type being read in, so there aren't any.  */
 	  gcc_checking_assert (!TYPE_CACHED_VALUES_P (t));
 	  RT (t->type_non_common.values);
+	  RT (t->type_non_common.maxval);
 
 	  /* POINTER and REFERENCE types hold NEXT_{PTR,REF}_TO.  We
 	     store a marker there to indicate whether we're on the
 	     referred to type's pointer/reference to list.  */
 	  RT (t->type_non_common.minval);
-	  if (POINTER_TYPE_P (t) && t->type_non_common.minval
-	      && t->type_non_common.minval != t)
+	  if (POINTER_TYPE_P (t))
 	    {
-	      t->type_non_common.minval = NULL_TREE;
-	      set_overrun ();
+	      if (t->type_non_common.minval
+		  && t->type_non_common.minval != t)
+		{
+		  t->type_non_common.minval = NULL_TREE;
+		  set_overrun ();
+		}
 	    }
-	  RT (t->type_non_common.maxval);
 	}
-      RT (t->type_non_common.lang_1);
+
+      if (TREE_CODE (t) != POINTER_TYPE)
+	RT (t->type_non_common.lang_1);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_LIST))
@@ -6416,7 +6425,18 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
   if (ref == WK_body)
     return true;
 
-  if (tree name = TYPE_NAME (type))
+  if (TYPE_PTRMEMFUNC_P (type))
+    {
+      tree fn_type = TYPE_PTRMEMFUNC_FN_TYPE (type);
+      if (streaming_p ())
+	i (tt_ptrmem_type);
+      tree_node (fn_type);
+      int tag = insert (type);
+      if (streaming_p ())
+	dump (dumper::TREE) && dump ("Writen:%d ptrmem type", tag);
+      return false;
+    }
+  else if (tree name = TYPE_NAME (type))
     if (DECL_IMPLICIT_TYPEDEF_P (name))
       {
 	/* A new named type -> tt_named_type.  */
@@ -6711,6 +6731,22 @@ trees_in::tree_node ()
 	res = TREE_TYPE (res);
       else
 	res = tree_node ();
+      break;
+
+    case tt_ptrmem_type:
+      /* A pointer to member function.  */
+      {
+	tree type = tree_node ();
+	if (type && TREE_CODE (type) == POINTER_TYPE
+	    && TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE)
+	  {
+	    res = build_ptrmemfunc_type (type);
+	    int tag = insert (res);
+	    dump (dumper::TREE) && dump ("Created:%d ptrmem type", tag);
+	  }
+	else
+	  set_overrun ();
+      }
       break;
 
     case tt_tinfo_var:

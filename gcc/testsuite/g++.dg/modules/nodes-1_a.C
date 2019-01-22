@@ -38,3 +38,9 @@ export inline bool ptrmemdata (other const &obj)
 
   return (obj.*ptr) == 5;
 }
+
+export template<typename T> int ptrmemfn (T const &obj)
+{
+  int (T::*ptr) () const = &T::frob;
+  return (obj.*ptr) ();
+}

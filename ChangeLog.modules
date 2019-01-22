@@ -1,3 +1,13 @@
+2019-01-22  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (tree_tag): Add tt_ptrmem_type.
+	(trees_{in,out}::core_vals): Don't scrog pointer's ptrmem cache.
+	(trees_out::tree_type): Stream pointers to member functions.
+	(trees_in::tree_node): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/nodes-1_[ab].C: More.
+
 2019-01-18  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
