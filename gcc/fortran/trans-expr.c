@@ -3060,59 +3060,20 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
       && TREE_CODE (TREE_TYPE (rse.expr)) == INTEGER_TYPE)
     {
       wi::tree_to_wide_ref wlhs = wi::to_wide (lse.expr);
-      HOST_WIDE_INT v;
+      HOST_WIDE_INT v, w;
+      int kind, ikind, bit_size;
+
       v = wlhs.to_shwi ();
+      w = abs (v);
+
+      kind = expr->value.op.op1->ts.kind;
+      ikind = gfc_validate_kind (BT_INTEGER, kind, false);
+      bit_size = gfc_integer_kinds[ikind].bit_size;
+
       if (v == 1)
 	{
 	  /* 1**something is always 1.  */
 	  se->expr = build_int_cst (TREE_TYPE (lse.expr), 1);
-	  return;
-	}
-      else if (v == 2 || v == 4 || v == 8 || v == 16)
-	{
-	  /* 2**n = 1<<n, 4**n = 1<<(n+n), 8**n = 1 <<(3*n), 16**n =
-	   1<<(4*n), but we have to make sure to return zero if the
-	   number of bits is too large. */
-	  tree lshift;
-	  tree type;
-	  tree shift;
-	  tree ge;
-	  tree cond;
-	  tree num_bits;
-	  tree cond2;
-
-	  type = TREE_TYPE (lse.expr);
-
-	  if (v == 2)
-	    shift = rse.expr;
-	  else if (v == 4)
-	    shift = fold_build2_loc (input_location, PLUS_EXPR,
-				     TREE_TYPE (rse.expr),
-				       rse.expr, rse.expr);
-	  else if (v == 8)
-	    shift = fold_build2_loc (input_location, MULT_EXPR,
-				     TREE_TYPE (rse.expr),
-				     build_int_cst (TREE_TYPE (rse.expr), 3),
-				     rse.expr);
-	  else if (v == 16)
-	    shift = fold_build2_loc (input_location, MULT_EXPR,
-				     TREE_TYPE (rse.expr),
-				     build_int_cst (TREE_TYPE (rse.expr), 4),
-				     rse.expr);
-	  else
-	    gcc_unreachable ();
-
-	  lshift = fold_build2_loc (input_location, LSHIFT_EXPR, type,
-				    build_int_cst (type, 1), shift);
-	  ge = fold_build2_loc (input_location, GE_EXPR, logical_type_node,
-				rse.expr, build_int_cst (type, 0));
-	  cond = fold_build3_loc (input_location, COND_EXPR, type, ge, lshift,
-				 build_int_cst (type, 0));
-	  num_bits = build_int_cst (TREE_TYPE (rse.expr), TYPE_PRECISION (type));
-	  cond2 = fold_build2_loc (input_location, GE_EXPR, logical_type_node,
-				   rse.expr, num_bits);
-	  se->expr = fold_build3_loc (input_location, COND_EXPR, type, cond2,
-				      build_int_cst (type, 0), cond);
 	  return;
 	}
       else if (v == -1)
@@ -3129,6 +3090,69 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
 	  tmp = fold_build2_loc (input_location, MINUS_EXPR, type,
 				 build_int_cst (type, 1), tmp);
 	  se->expr = tmp;
+	  return;
+	}
+      else if (w > 0 && ((w & (w-1)) == 0) && ((w >> (bit_size-1)) == 0))
+	{
+	  /* Here v is +/- 2**e.  The further simplification uses
+	     2**n = 1<<n, 4**n = 1<<(n+n), 8**n = 1 <<(3*n), 16**n =
+	     1<<(4*n), etc., but we have to make sure to return zero
+	     if the number of bits is too large. */
+	  tree lshift;
+	  tree type;
+	  tree shift;
+	  tree ge;
+	  tree cond;
+	  tree num_bits;
+	  tree cond2;
+	  tree tmp1;
+
+	  type = TREE_TYPE (lse.expr);
+
+	  if (w == 2)
+	    shift = rse.expr;
+	  else if (w == 4)
+	    shift = fold_build2_loc (input_location, PLUS_EXPR,
+				     TREE_TYPE (rse.expr),
+				       rse.expr, rse.expr);
+	  else
+	    {
+	      /* use popcount for fast log2(w) */
+	      int e = wi::popcount (w-1);
+	      shift = fold_build2_loc (input_location, MULT_EXPR,
+				       TREE_TYPE (rse.expr),
+				       build_int_cst (TREE_TYPE (rse.expr), e),
+				       rse.expr);
+	    }
+
+	  lshift = fold_build2_loc (input_location, LSHIFT_EXPR, type,
+				    build_int_cst (type, 1), shift);
+	  ge = fold_build2_loc (input_location, GE_EXPR, logical_type_node,
+				rse.expr, build_int_cst (type, 0));
+	  cond = fold_build3_loc (input_location, COND_EXPR, type, ge, lshift,
+				 build_int_cst (type, 0));
+	  num_bits = build_int_cst (TREE_TYPE (rse.expr), TYPE_PRECISION (type));
+	  cond2 = fold_build2_loc (input_location, GE_EXPR, logical_type_node,
+				   rse.expr, num_bits);
+	  tmp1 = fold_build3_loc (input_location, COND_EXPR, type, cond2,
+				  build_int_cst (type, 0), cond);
+	  if (v > 0)
+	    {
+	      se->expr = tmp1;
+	    }
+	  else
+	    {
+	      /* for v < 0, calculate v**n = |v|**n * (-1)**n */
+	      tree tmp2;
+	      tmp2 = fold_build2_loc (input_location, BIT_AND_EXPR, type,
+				      rse.expr, build_int_cst (type, 1));
+	      tmp2 = fold_build2_loc (input_location, LSHIFT_EXPR, type,
+				      tmp2, build_int_cst (type, 1));
+	      tmp2 = fold_build2_loc (input_location, MINUS_EXPR, type,
+				      build_int_cst (type, 1), tmp2);
+	      se->expr = fold_build2_loc (input_location, MULT_EXPR, type,
+					  tmp1, tmp2);
+	    }
 	  return;
 	}
     }
