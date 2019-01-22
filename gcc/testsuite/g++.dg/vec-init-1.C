@@ -2,6 +2,7 @@
    parallel of two symbol_refs.  */
 
 /* { dg-do compile } */
+/* { dg-require-effective-target fpic } */
 /* { dg-options "-O3 -fPIC" } */
 
 
