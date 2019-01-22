@@ -1,5 +1,5 @@
 ! { dg-do run }
-! ( dg-options "-fbounds-check" }
+! { dg-options "-fbounds-check" }
 !
 ! Test the fix for PR83731, where the following failed on the check for the
 ! value of the parameter 'k'.
