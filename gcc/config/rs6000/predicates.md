@@ -984,11 +984,18 @@
   (and (match_code "symbol_ref")
        (match_test "RS6000_SYMBOL_REF_TLS_P (op)")))
 
-;; Return 1 for the UNSPEC used in TLS call operands
+;; Return 1 for the CONST_INT or UNSPEC second CALL operand.
+;; Prevents unwanted substitution of the unspec got_reg arg.
 (define_predicate "unspec_tls"
-  (match_code "unspec")
+  (match_code "const_int,unspec")
 {
-  return XINT (op, 1) == UNSPEC_TLSGD || XINT (op, 1) == UNSPEC_TLSLD;
+  if (CONST_INT_P (op))
+    return 1;
+  if (XINT (op, 1) == UNSPEC_TLSGD)
+    return REG_P (XVECEXP (op, 0, 1));
+  if (XINT (op, 1) == UNSPEC_TLSLD)
+    return REG_P (XVECEXP (op, 0, 0));
+  return 0;
 })
 
 ;; Return 1 if the operand, used inside a MEM, is a valid first argument
