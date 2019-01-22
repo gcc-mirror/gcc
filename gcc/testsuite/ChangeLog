@@ -1,3 +1,9 @@
+2019-01-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/88954
+	* gcc.target/i386/pr88954-1.c: New test.
+	* gcc.target/i386/pr88954-2.c: Likewise.
+
 2019-01-22  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/88469
