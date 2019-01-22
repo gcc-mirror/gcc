@@ -1,3 +1,9 @@
+2019-01-22  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/88938
+	* config/i386/i386.c (ix86_expand_builtin) [case IX86_BUILTIN_BEXTRI32,
+	case IX86_BUILTIN_BEXTRI64]: Sanitize operands.
+
 2019-01-18  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/88799
@@ -112,7 +118,7 @@
 	(*branch<P:mode>): ...this.
 
 2019-01-09  Eric Botcazou  <ebotcazou@adacore.com>
-            James Clarke  <jrtc27@jrtc27.com>
+	    James Clarke  <jrtc27@jrtc27.com>
 
 	PR target/84010
 	* config/sparc/sparc.c (sparc_legitimize_tls_address): Only use Pmode
@@ -1602,7 +1608,7 @@
 
 	Backport from mainline
 	2018-07-31  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
-	
+
 	PR middle-end/86705
 	* gcc/cfgexpand.c (set_parm_rtl): Use the alignment of Pmode when
 	MAX_SUPPORTED_STACK_ALIGNMENT would otherwise be exceeded by the
