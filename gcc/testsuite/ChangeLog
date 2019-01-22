@@ -1,3 +1,23 @@
+2019-01-22  Manfred Schwarb  <manfred99@gmx.ch>
+
+	* gfortran.dg/array_function_5.f90: : Fix a dg directive.
+	* gfortran.dg/class_66.f90: Likewise.
+	* gfortran.dg/dec_structure_12.f90: Likewise.
+	* gfortran.dg/dec_structure_14.f90: Likewise.
+	* gfortran.dg/dec_structure_15.f90: Likewise.
+	* gfortran.dg/dtio_31.f03: Likewise.
+	* gfortran.dg/dtio_32.f03: Likewise.
+	* gfortran.dg/extends_11.f03: Likewise.
+	* gfortran.dg/integer_plus.f90: Likewise.
+	* gfortran.dg/matmul_const.f90: Likewise.
+	* gfortran.dg/namelist_96.f90: Likewise.
+	* gfortran.dg/pdt_25.f03: Likewise.
+	* gfortran.dg/pdt_28.f03: Likewise.
+	* gfortran.dg/pr58968.f: Likewise.
+	* gfortran.dg/pr78259.f90: Likewise.
+	* gfortran.dg/debug/pr35154-stabs.f: Likewise.
+	* gfortran.dg/vect/vect-2.f90: Likewise.
+
 2019-01-22  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/88938
