@@ -15189,10 +15189,14 @@ ix86_force_load_from_GOT_p (rtx x)
 {
   return ((TARGET_64BIT || HAVE_AS_IX86_GOT32X)
 	  && !TARGET_PECOFF && !TARGET_MACHO
-	  && !flag_plt && !flag_pic
+	  && !flag_pic
 	  && ix86_cmodel != CM_LARGE
 	  && GET_CODE (x) == SYMBOL_REF
 	  && SYMBOL_REF_FUNCTION_P (x)
+	  && (!flag_plt
+	      || (SYMBOL_REF_DECL (x)
+		  && lookup_attribute ("noplt",
+				       DECL_ATTRIBUTES (SYMBOL_REF_DECL (x)))))
 	  && !SYMBOL_REF_LOCAL_P (x));
 }
 
