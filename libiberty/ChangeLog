@@ -1,3 +1,10 @@
+2019-01-22  Nidal Faour  <nidal.faour@wdc.com>
+
+	PR lto/88422
+	* simple-object.c (O_BINARY): Define if not already defined.
+	(simple_object_copy_lto_debug_sections): Create file in binary
+	mode.
+
 2019-01-21  Tom Tromey  <tom@tromey.com>
 
 	* splay-tree.c (splay_tree_remove): Delete the key if necessary.
