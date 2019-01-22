@@ -1,3 +1,22 @@
+2018-01-22  Steve Ellcey  <sellcey@marvell.com>
+
+	c-c++-common/gomp/pr60823-1.c: Change aarch64-*-* target
+	to aarch64*-*-* target.
+	c-c++-common/gomp/pr60823-3.c: Ditto.
+	g++.dg/gomp/declare-simd-1.C: Ditto.
+	g++.dg/gomp/declare-simd-3.C: Ditto.
+	g++.dg/gomp/declare-simd-4.C: Ditto.
+	g++.dg/gomp/declare-simd-7.C: Ditto.
+	g++.dg/gomp/pr88182.C: Ditto.
+	gcc.dg/gomp/declare-simd-1.c: Ditto.
+	gcc.dg/gomp/declare-simd-3.c: Ditto.
+	gcc.dg/gomp/pr59669-2.c: Ditto.
+	gcc.dg/gomp/pr87895-1.c: Ditto.
+	gcc.dg/gomp/simd-clones-2.c: Ditto.
+	gfortran.dg/gomp/declare-simd-2.f90: Ditto.
+	gfortran.dg/gomp/pr79154-1.f90: Ditto.
+	gfortran.dg/gomp/pr83977.f90: Ditto.
+
 2019-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88965

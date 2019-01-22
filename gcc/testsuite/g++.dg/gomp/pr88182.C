@@ -18,7 +18,7 @@ foo (double c1, double c2)
     }
   return res;
 }
-// { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64-*-* } .-15 }
+// { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-15 }
 
 __attribute__((noinline, noclone)) void
 bar (double *x, double *y)
