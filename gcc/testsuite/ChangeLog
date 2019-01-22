@@ -1,3 +1,12 @@
+2019-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/49429
+	PR target/49454
+	PR rtl-optimization/86334
+	PR target/88906
+	* gcc.target/i386/pr86334.c: New test.
+	* gcc.target/i386/pr88906.c: New test.
+
 2019-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88949
