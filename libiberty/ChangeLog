@@ -1,3 +1,10 @@
+2019-01-22  Nidal Faour  <nidal.faour@wdc.com>
+
+	PR lto/88422
+	* simple-object.c (O_BINARY): Define if not already defined.
+	(simple_object_copy_lto_debug_sections): Create file in binary
+	mode.
+
 2018-07-26  Release Manager
 
 	* GCC 8.2.0 released.
