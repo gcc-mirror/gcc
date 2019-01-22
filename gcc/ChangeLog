@@ -1,3 +1,30 @@
+2019-01-22  Alan Modra  <amodra@gmail.com>
+
+	PR target/88614
+	* config/rs6000/predicates.md (unspec_tls): Ensure GOT reg
+	stays a reg.  Allow a const_int.
+	* config/rs6000/rs6000-protos.h (rs6000_output_tlsargs): Declare.
+	* config/rs6000/rs6000.h (IS_V4_FP_ARGS): Define.
+	(IS_NOMARK_TLSGETADDR): Define.
+	* config/rs6000/rs6000.c (edit_tls_call_insn): Delete.
+	(rs6000_output_tlsargs): New function.
+	(rs6000_legitimize_tls_address): Don't say a !TARGET_TLS_MARKERS
+	__tls_get_addr call takes an arg.
+	(rs6000_call_sysv): Generate sysv4 secure plt call pattern here..
+	* config/rs6000/rs6000.md (call_nonlocal_sysv): ..rather than here,
+	delete split..
+	(call_value_nonlocal_sysv): ..or here, delete split.
+	(tls_gdld_nomark): Delete.
+	(call_value_indirect_nonlocal_sysv): Use unspec_tls as operand2
+	predicate.  Call rs6000_output_tlsargs.  Adjust length to suit.
+	(call_value_nonlocal_sysv): Likewise.
+	(call_value_nonlocal_sysv_secure): Likewise.
+	(call_value_nonlocal_aix): Likewise.
+	(call_value_indirect_aix): Likewise.
+	(call_value_indirect_elfv2): Likewise.
+	(call_value_local32, call_value_local64): Disable for no-mark tls.
+	(call_value_local_aix): Likewise.
+
 2019-01-21  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/88938
