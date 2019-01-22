@@ -1,3 +1,8 @@
+2019-01-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (parc_delegitimize_address): Recognize the GOT
+	register and decoded HIGH/LO_SUM combinations for labels in PIC mode.
+
 2019-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/88044
