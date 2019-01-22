@@ -1470,8 +1470,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 
   DUMP_VECT_SCOPE ("vect_analyze_loop_operations");
 
-  stmt_vector_for_cost cost_vec;
-  cost_vec.create (2);
+  auto_vec<stmt_info_for_cost> cost_vec;
 
   for (i = 0; i < nbbs; i++)
     {
@@ -1581,7 +1580,6 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
     } /* bbs */
 
   add_stmt_costs (loop_vinfo->target_cost_data, &cost_vec);
-  cost_vec.release ();
 
   /* All operations in the loop are either irrelevant (deal with loop
      control, or dead), or only used outside the loop and can be moved
@@ -5742,8 +5740,14 @@ vectorize_fold_left_reduction (stmt_vec_info stmt_info,
   auto_vec<tree> vec_oprnds0;
   if (slp_node)
     {
-      vect_get_vec_defs (op0, NULL_TREE, stmt_info, &vec_oprnds0, NULL,
-			 slp_node);
+      auto_vec<vec<tree> > vec_defs (2);
+      auto_vec<tree> sops(2);
+      sops.quick_push (ops[0]);
+      sops.quick_push (ops[1]);
+      vect_get_slp_defs (sops, slp_node, &vec_defs);
+      vec_oprnds0.safe_splice (vec_defs[1 - reduc_index]);
+      vec_defs[0].release ();
+      vec_defs[1].release ();
       group_size = SLP_TREE_SCALAR_STMTS (slp_node).length ();
       scalar_dest_def_info = SLP_TREE_SCALAR_STMTS (slp_node)[group_size - 1];
     }
