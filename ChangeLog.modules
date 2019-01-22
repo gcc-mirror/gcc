@@ -1,6 +1,14 @@
 2019-01-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-objcp-common.c (cp_common_init_ts): Set TYPE_PACK_EXPANSION
+	and TYPE_ARGUMENT_PACK correctly.
+	* module.c (trees_in::finish_type): Special case pack types and
+	bound parms.
+	gcc/testsuite/
+	* g++.dg/modules/var-tpl-1_[ab].C: New.
+
+	gcc/cp/
 	* module.cc (tree_tag): Add tt_ptrmem_type.
 	(trees_{in,out}::core_vals): Don't scrog pointer's ptrmem cache.
 	(trees_out::tree_type): Stream pointers to member functions.
