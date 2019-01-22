@@ -892,6 +892,10 @@ scop_detection::graphite_can_represent_scev (sese_l scop, tree scev)
 	return false;
       return graphite_can_represent_scev (scop, CHREC_LEFT (scev));
 
+    case ADDR_EXPR:
+      /* We cannot encode addresses for ISL.  */
+      return false;
+
     default:
       break;
     }
