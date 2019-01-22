@@ -236,4 +236,4 @@ func matchStructArgType(pass *analysis.Pass, t printfArgType, typ *types.Struct,
 	return true
 }
 
-var archSizes = types.SizesFor("gc", build.Default.GOARCH)
+var archSizes = types.SizesFor("gccgo", build.Default.GOARCH)
