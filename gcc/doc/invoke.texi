@@ -9746,7 +9746,7 @@ enabled.
 @opindex fsplit-paths
 Split paths leading to loop backedges.  This can improve dead code
 elimination and common subexpression elimination.  This is enabled by
-default at @option{-O2} and above.
+default at @option{-O3} and above.
 
 @item -fsplit-ivs-in-unroller
 @opindex fsplit-ivs-in-unroller

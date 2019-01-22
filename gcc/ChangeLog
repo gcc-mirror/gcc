@@ -1,3 +1,7 @@
+2019-01-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* doc/invoke.texi (-fsplit-paths): This is enabled by default at -O3.
+
 2019-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88965
