@@ -1,3 +1,11 @@
+2019-01-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/88469
+	* gcc.target/arm/aapcs/bitfield1.c: New test.
+	* gcc.target/arm/aapcs/overalign_rec1.c: New test.
+	* gcc.target/arm/aapcs/overalign_rec2.c: New test.
+	* gcc.target/arm/aapcs/overalign_rec3.c: New test.
+
 2019-01-22  Manfred Schwarb  <manfred99@gmx.ch>
 
 	* gfortran.dg/array_function_5.f90: Fix a dg directive.

@@ -1,3 +1,13 @@
+2019-01-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/88469
+	* config/arm/arm.c (arm_needs_doubleword_align): Return 2 if a record's
+	alignment is dominated by a bitfield with 64-bit aligned base type.
+	(arm_function_arg): Emit a warning if the alignment has changed since
+	earlier GCC releases.
+	(arm_function_arg_boundary): Likewise.
+	(arm_setup_incoming_varargs): Likewise.
+
 2019-01-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88862
