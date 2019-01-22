@@ -1,3 +1,9 @@
+2019-01-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/88579
+	* trans-expr.c (gfc_conv_power_op): Handle cases of (2**e) ** integer
+	and (- 2**e) ** integer.
+
 2019-01-19  Dominique d'Humieres  <dominiq@gcc.gnu.org>
 
 	PR fortran/37835
@@ -8,7 +14,7 @@
 
 	PR fortran/77960
 	* io.c (match_io_element): input-item cannot be an external function.
- 
+
 2018-01-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	Paul Thomas  <pault@gcc.gnu.org>
 
