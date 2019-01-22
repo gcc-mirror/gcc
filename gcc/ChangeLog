@@ -1,3 +1,9 @@
+2019-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88862
+	* graphite-scop-detection.c
+	(scop_detection::graphite_can_represent_scev): Reject ADDR_EXPR.
+
 2019-01-22  Andrew Stubbs  <ams@codesourcery.com>
 
 	* doc/extend.tex (AMD GCN Function Attributes): New section.
