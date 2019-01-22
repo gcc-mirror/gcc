@@ -271,7 +271,7 @@ func typeCheckCgoSourceFiles(fset *token.FileSet, pkg *types.Package, files []*a
 			return importMap[path], nil
 		}),
 		// TODO(adonovan): Sizes should probably be provided by analysis.Pass.
-		Sizes: types.SizesFor("gc", build.Default.GOARCH),
+		Sizes: types.SizesFor("gccgo", build.Default.GOARCH),
 		Error: func(error) {}, // ignore errors (e.g. unused import)
 	}
 

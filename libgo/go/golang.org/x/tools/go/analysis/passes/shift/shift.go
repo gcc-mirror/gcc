@@ -125,4 +125,4 @@ var (
 	uintptrBitSize = 8 * archSizes.Sizeof(types.Typ[types.Uintptr])
 )
 
-var archSizes = types.SizesFor("gc", build.Default.GOARCH)
+var archSizes = types.SizesFor("gccgo", build.Default.GOARCH)
