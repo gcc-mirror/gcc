@@ -1,3 +1,9 @@
+2019-01-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88740
+	* testsuite/util/testsuite_hooks.h [stderr] (VERIFY): Use fprintf to
+	write to stderr instead of using printf.
+
 2019-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/86590
