@@ -1,3 +1,9 @@
+2019-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87064
+	* config/rs6000/vsx.md (*vsx_reduc_<VEC_reduc_name>_v2df_scalar):
+	Disable for little endian.
+
 2019-01-22  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/88469
