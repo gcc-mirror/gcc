@@ -2393,6 +2393,7 @@ GCC plugins may provide their own attributes.
 @menu
 * Common Function Attributes::
 * AArch64 Function Attributes::
+* AMD GCN Function Attributes::
 * ARC Function Attributes::
 * ARM Function Attributes::
 * AVR Function Attributes::
@@ -3953,6 +3954,96 @@ Note that CPU tuning options and attributes such as the @option{-mcpu=},
 @option{-mtune=} do not inhibit inlining unless the CPU specified by the
 @option{-mcpu=} option or the @code{cpu=} attribute conflicts with the
 architectural feature rules specified above.
+
+@node AMD GCN Function Attributes
+@subsection AMD GCN Function Attributes
+
+These function attributes are supported by the AMD GCN back end:
+
+@table @code
+@item amdgpu_hsa_kernel
+@cindex @code{amdgpu_hsa_kernel} function attribute, AMD GCN
+This attribute indicates that the corresponding function should be compiled as
+a kernel function, that is an entry point that can be invoked from the host
+via the HSA runtime library.  By default functions are only callable only from
+other GCN functions.
+
+This attribute is implicitly applied to any function named @code{main}, using
+default parameters.
+
+Kernel functions may return an integer value, which will be written to a
+conventional place within the HSA "kernargs" region.
+
+The attribute parameters configure what values are passed into the kernel
+function by the GPU drivers, via the initial register state.  Some values are
+used by the compiler, and therefore forced on.  Enabling other options may
+break assumptions in the compiler and/or run-time libraries.
+
+@table @code
+@item private_segment_buffer
+Set @code{enable_sgpr_private_segment_buffer} flag.  Always on (required to
+locate the stack).
+
+@item dispatch_ptr
+Set @code{enable_sgpr_dispatch_ptr} flag.  Always on (required to locate the
+launch dimensions).
+
+@item queue_ptr
+Set @code{enable_sgpr_queue_ptr} flag.  Always on (required to convert address
+spaces).
+
+@item kernarg_segment_ptr
+Set @code{enable_sgpr_kernarg_segment_ptr} flag.  Always on (required to
+locate the kernel arguments, "kernargs").
+
+@item dispatch_id
+Set @code{enable_sgpr_dispatch_id} flag.
+
+@item flat_scratch_init
+Set @code{enable_sgpr_flat_scratch_init} flag.
+
+@item private_segment_size
+Set @code{enable_sgpr_private_segment_size} flag.
+
+@item grid_workgroup_count_X
+Set @code{enable_sgpr_grid_workgroup_count_x} flag.  Always on (required to
+use OpenACC/OpenMP).
+
+@item grid_workgroup_count_Y
+Set @code{enable_sgpr_grid_workgroup_count_y} flag.
+
+@item grid_workgroup_count_Z
+Set @code{enable_sgpr_grid_workgroup_count_z} flag.
+
+@item workgroup_id_X
+Set @code{enable_sgpr_workgroup_id_x} flag.
+
+@item workgroup_id_Y
+Set @code{enable_sgpr_workgroup_id_y} flag.
+
+@item workgroup_id_Z
+Set @code{enable_sgpr_workgroup_id_z} flag.
+
+@item workgroup_info
+Set @code{enable_sgpr_workgroup_info} flag.
+
+@item private_segment_wave_offset
+Set @code{enable_sgpr_private_segment_wave_byte_offset} flag.  Always on
+(required to locate the stack).
+
+@item work_item_id_X
+Set @code{enable_vgpr_workitem_id} parameter.  Always on (can't be disabled).
+
+@item work_item_id_Y
+Set @code{enable_vgpr_workitem_id} parameter.  Always on (required to enable
+vectorization.)
+
+@item work_item_id_Z
+Set @code{enable_vgpr_workitem_id} parameter.  Always on (required to use
+OpenACC/OpenMP).
+
+@end table
+@end table
 
 @node ARC Function Attributes
 @subsection ARC Function Attributes
