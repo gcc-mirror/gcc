@@ -645,6 +645,9 @@ Objective-C and Objective-C++ Dialects}.
 -mfp-mode=@var{mode}  -mvect-double  -max-vect-align=@var{num} @gol
 -msplit-vecmove-early  -m1reg-@var{reg}}
 
+@emph{AMD GCN Options}
+@gccoptlist{-march=@var{gpu} -mtune=@var{gpu} -mstack-size=@var{bytes}}
+
 @emph{ARC Options}
 @gccoptlist{-mbarrel-shifter  -mjli-always @gol
 -mcpu=@var{cpu}  -mA6  -mARC600  -mA7  -mARC700 @gol
@@ -15481,6 +15484,7 @@ platform.
 @menu
 * AArch64 Options::
 * Adapteva Epiphany Options::
+* AMD GCN Options::
 * ARC Options::
 * ARM Options::
 * AVR Options::
@@ -16118,6 +16122,41 @@ Allowable values for @var{reg} are @samp{r43} and @samp{r63},
 which specify use of that register as a fixed register,
 and @samp{none}, which means that no register is used for this
 purpose.  The default is @option{-m1reg-none}.
+
+@end table
+
+@node AMD GCN Options
+@subsection AMD GCN Options
+@cindex AMD GCN Options
+
+These options are defined specifically for the AMD GCN port.
+
+@table @gcctabopt
+
+@item -march=@var{gpu}
+@opindex march
+@itemx -mtune=@var{gpu}
+@opindex mtune
+Set architecture type or tuning for @var{gpu}. Supported values for @var{gpu}
+are
+
+@table @samp
+@opindex fiji
+@item fiji
+Compile for GCN3 Fiji devices (gfx803).
+
+@item gfx900
+Compile for GCN5 Vega 10 devices (gfx900).
+
+@end table
+
+@item -mstack-size=@var{bytes}
+@opindex mstack-size
+Specify how many @var{bytes} of stack space will be requested for each GPU
+thread (wave-front).  Beware that there may be many threads and limited memory
+available.  The size of the stack allocation may also have an impact on
+run-time performance.  The default is 32KB when using OpenACC or OpenMP, and
+1MB otherwise.
 
 @end table
 
