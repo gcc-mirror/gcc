@@ -764,10 +764,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   r = build2 (INIT_EXPR, TREE_TYPE (coro_fp), coro_fp, allocated);
   add_stmt (r);
 
-  tree gro = build_lang_decl (VAR_DECL, get_identifier ("coro.gro"),
-			      fn_return_type);
-  DECL_CONTEXT (gro) = current_scope ();
-  r = build_stmt (fn_start, DECL_EXPR, gro);
   /* Test for NULL and quit.  */
 
   tree cfra_label = get_identifier ("coro.frame.active");
@@ -787,10 +783,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree ckz = build2 (EQ_EXPR, boolean_type_node, coro_fp, ckk);
   r = build3 (COND_EXPR, void_type_node, ckz, early_ret_list, empty_list);
   add_stmt (r);
-  TREE_CHAIN (gro) = varlist; varlist = gro;
 
-  /* Collected the scope vars we need ... */
-  BIND_EXPR_VARS (bind) = nreverse (varlist);
   cfra_label = build_stmt (fn_start, LABEL_EXPR, cfra_label);
   add_stmt (cfra_label);
 
@@ -861,6 +854,18 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 				tf_warning_or_error);
   add_stmt (r);
 
+  /* Set up a new bind context for the GRO.  */
+  tree gro_context_bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
+  add_stmt (gro_context_bind);
+  tree gro_context_body = push_stmt_list ();
+  
+  tree gro = build_lang_decl (VAR_DECL, get_identifier ("coro.gro"),
+			      fn_return_type);
+  DECL_CONTEXT (gro) = current_scope ();
+  r = build_stmt (fn_start, DECL_EXPR, gro);
+  add_stmt (r);
+  BIND_EXPR_VARS (gro_context_bind) = gro;
+
   tree gro_meth = lookup_promise_member (orig, "get_return_object",
 				    fn_start, true /*musthave*/);
   r = build_new_method_call (p, gro_meth,
@@ -868,8 +873,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 			     NULL, tf_warning_or_error);
   // init our actual var.
   r = build2 (INIT_EXPR, TREE_TYPE (gro), gro, TREE_OPERAND (r, 1));
-  r = maybe_cleanup_point_expr_void (r);
   r = build_stmt (fn_start, EXPR_STMT, r);
+  r = maybe_cleanup_point_expr_void (r);
   add_stmt (r);
 
   tree start_label = get_identifier ("coro.start");
@@ -987,6 +992,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   r = build_stmt (input_location, LABEL_EXPR, ret_label);
   add_stmt (r);
 
+  /* done.  */
   bool no_warning;
   r = check_return_expr (rvalue (gro), &no_warning);
   r = build_stmt (input_location, RETURN_EXPR, r);
@@ -994,16 +1000,18 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   r = maybe_cleanup_point_expr_void (r);
   add_stmt (r);
 
-  /* Exit points.  */
-  tree del_promise_label = get_identifier ("coro.delete.retval");
-  del_promise_label = define_label (input_location, del_promise_label);
-  r = build_stmt (input_location, LABEL_EXPR, del_promise_label);
+#if CLANG_DOES_THIS_BUT_IT_SEEMS_UNREACHABLE
+  tree del_gro_label = get_identifier ("coro.destroy.retval");
+  del_gro_label = define_label (input_location, del_gro_label);
+  r = build_stmt (input_location, LABEL_EXPR, del_gro_label);
   add_stmt (r);
 
   r = build_special_member_call(gro, complete_dtor_identifier, NULL,
 				fn_return_type, LOOKUP_NORMAL,
 				tf_warning_or_error);
   add_stmt (r);
+#endif
+  BIND_EXPR_BODY (gro_context_bind) = pop_stmt_list (gro_context_body);
   BIND_EXPR_BODY (ramp_bind) = pop_stmt_list (ramp_body);
 
   tree del_frame_label = get_identifier ("coro.delete.frame");
