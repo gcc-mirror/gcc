@@ -1,3 +1,13 @@
+2019-01-23  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (trees_in::finish_type): Don't speciual case
+	TYPE_PACKs.
+	* pt.c (template_parm_to_arg, coerce_template_parameter_pack)
+	(make_argument_pack, tsubst_template_args, tsubst)
+	(type_unification_real, unify_pack_expansion): Set
+	TYPE_STRUCTURAL_EQUALITY for type packs.
+
 2019-01-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

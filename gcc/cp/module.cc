@@ -7464,12 +7464,6 @@ trees_in::finish_type (tree type)
       dump (dumper::TREE) && dump ("Adding template type %p with canonical %p",
 				   (void *)type, (void *)canon);
     }
-  else if (TREE_CODE (type) == TYPE_PACK_EXPANSION
-	   || TREE_CODE (type) == TYPE_ARGUMENT_PACK
-	   || TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM)
-    {
-      /* Not canonicalized.  */
-    }
   else if (!TYPE_STRUCTURAL_EQUALITY_P (type)
 	   && !RECORD_OR_UNION_CODE_P (TREE_CODE (type))
 	   && TREE_CODE (type) != ENUMERAL_TYPE
