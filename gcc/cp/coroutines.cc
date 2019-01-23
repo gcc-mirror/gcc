@@ -727,16 +727,29 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   coro_frame_type = finish_struct (coro_frame_type, NULL_TREE);
 
+  tree ramp_label = get_identifier ("ramp.start");
+  ramp_label = define_label (fn_start, ramp_label);
+  
+/* Ramp: */
+  ramp_label = build_stmt (fn_start, LABEL_EXPR, ramp_label);
+  add_stmt (ramp_label);
+
   /* Now build the ramp function pieces.  */
-  tree bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
-  add_stmt (bind);
-  BIND_EXPR_BODY (bind) = push_stmt_list ();
+  tree ramp_bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
+  add_stmt (ramp_bind);
+  tree ramp_body = push_stmt_list ();
+  tree empty_list = build_empty_stmt (fn_start);
 
   tree coro_fp = build_lang_decl (VAR_DECL, get_identifier ("coro.frameptr"),
 				  coro_frame_ptr);
   DECL_CONTEXT (coro_fp) = current_scope ();
   tree r = build_stmt (fn_start, DECL_EXPR, coro_fp);
   add_stmt (r);
+  tree varlist = coro_fp;
+
+  /* Collected the scope vars we need ... */
+  BIND_EXPR_VARS (ramp_bind) = nreverse (varlist);
+
   /* Allocate the frame.  This is the "real version"...
   tree allocated
     = build_call_expr_internal_loc (fn_start, IFN_CO_FRAME,
@@ -750,7 +763,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   allocated = build1 (CONVERT_EXPR, coro_frame_ptr, allocated);
   r = build2 (INIT_EXPR, TREE_TYPE (coro_fp), coro_fp, allocated);
   add_stmt (r);
-  tree varlist = coro_fp;
 
   tree gro = build_lang_decl (VAR_DECL, get_identifier ("coro.gro"),
 			      fn_return_type);
@@ -992,6 +1004,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 				fn_return_type, LOOKUP_NORMAL,
 				tf_warning_or_error);
   add_stmt (r);
+  BIND_EXPR_BODY (ramp_bind) = pop_stmt_list (ramp_body);
 
   tree del_frame_label = get_identifier ("coro.delete.frame");
   del_frame_label = define_label (input_location, del_frame_label);

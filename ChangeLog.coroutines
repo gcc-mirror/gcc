@@ -1,5 +1,10 @@
 2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/cp/coroutines.cc (morph_fn_to_coro): Adjust the ramp function
+	bind to remove the GRO and to rename.
+
+2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/cp/coroutines.cc (morph_fn_to_coro): Add a "suspended" field
 	to the coro frame and initialise it.
 
