@@ -237,7 +237,31 @@ cuda_map_create (size_t size)
 static void
 cuda_map_destroy (struct cuda_map *map)
 {
-  CUDA_CALL_ASSERT (cuMemFree, map->d);
+  if (map->active)
+    /* Possible reasons for the map to be still active:
+       - the associated async kernel might still be running.
+       - the associated async kernel might have finished, but the
+         corresponding event that should trigger the pop_map has not been
+	 processed by event_gc.
+       - the associated sync kernel might have aborted
+
+       The async cases could happen if the user specified an async region
+       without adding a corresponding wait that is guaranteed to be executed
+       (before returning from main, or in an atexit handler).
+       We do not want to deallocate a device pointer that is still being
+       used, so skip it.
+
+       In the sync case, the device pointer is no longer used, but deallocating
+       it using cuMemFree will not succeed, so skip it.
+
+       TODO: Handle this in a more constructive way, by f.i. waiting for streams
+       to finish before de-allocating them (PR88981), or by ensuring the CUDA
+       lib atexit handler is called before rather than after the libgomp plugin
+       atexit handler (PR83795).  */
+    ;
+  else
+    CUDA_CALL_ASSERT (cuMemFree, map->d);
+
   free (map);
 }
 
@@ -268,7 +292,6 @@ static bool
 map_fini (struct ptx_stream *s)
 {
   assert (s->map->next == NULL);
-  assert (!s->map->active);
 
   cuda_map_destroy (s->map);
 
