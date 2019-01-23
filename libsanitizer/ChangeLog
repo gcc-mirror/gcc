@@ -1,6 +1,11 @@
+2019-01-23  Jonny Grant  <jg@jguk.org>
+
+	PR sanitizer/89010
+	* libsanitizer/README.gcc: Update to current https URLs.
+
 2018-12-27  Martin Liska  <mliska@suse.cz>
 
-  PR sanitizer/86229
+	PR sanitizer/86229
 	* asan/asan_errors.cc (ErrorAllocTypeMismatch::Print): Cherry
 	pick rL350085.
 	* asan/asan_errors.h (struct ErrorAllocTypeMismatch): Likewise.
