@@ -561,6 +561,7 @@ expand_co_awaits (tree *fnbody, tree coro_fp, tree resume_idx,
   void (*__resume)(struct _R_frame *);
   void (*__destroy)(struct _R_frame *);
   struct coro1::promise_type __p;
+  bool frame_needs_free; // free the coro frame mem if set.
   short __resume_at; // this is where clang puts it - but it's a smaller entity.
   coro1::suspend_never_prt __is;
   (maybe) handle_type i_hand;
@@ -689,6 +690,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree promise_name = get_identifier ("__p");
   decl = build_decl (fn_start, FIELD_DECL, promise_name, promise_type);
   DECL_CHAIN (decl) = decls; decls = decl;
+  tree fnf_name = get_identifier ("__frame_needs_free");
+  decl = build_decl (fn_start, FIELD_DECL, fnf_name, boolean_type_node);
+  DECL_CHAIN (decl) = decls; decls = decl;
   tree resume_idx_name = get_identifier ("__resume_at");
   decl = build_decl (fn_start, FIELD_DECL, resume_idx_name,
 		     short_unsigned_type_node);
@@ -774,7 +778,20 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   cfra_label = build_stmt (fn_start, LABEL_EXPR, cfra_label);
   add_stmt (cfra_label);
 
+  /* deref the frame pointer, to use in member access code.  */
   tree deref_fp = build_x_arrow (fn_start, coro_fp, tf_warning_or_error);
+
+  /* For now, we always assume that this needs destruction, there's no impl.
+     for frame allocation elision.  */
+  tree fnf_m = lookup_member (coro_frame_type, fnf_name, 1, 0,
+			      tf_warning_or_error);
+  tree fnf_x = build_class_member_access_expr (deref_fp, fnf_m, NULL_TREE,
+					       false, tf_warning_or_error);
+  r = build2 (INIT_EXPR, boolean_type_node, fnf_x, boolean_true_node);
+  r = build1 (CONVERT_EXPR, void_type_node, r);
+  r = build_stmt (fn_start, EXPR_STMT, r);
+  r = maybe_cleanup_point_expr_void (r);
+  add_stmt (r);
   /* Put the resumer and destroyer functions in.  */
 
   tree actor_addr = build1 (ADDR_EXPR, act_des_fn_ptr, actor);

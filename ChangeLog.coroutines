@@ -1,5 +1,12 @@
 2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/cp/coroutines.cc (morph_fn_to_coro): Add a "frame needs free"
+	field to the coro frame and set it true once malloc has set it. In
+	this case of course, it's always true - but at some later time the
+	elision of the frame allocation will make it meaningful.
+
+2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/cp/coroutines.cc (morph_fn_to_coro): Use malloc in the ramp
 	to generate the coro frame for now.  Make the ramp function check
 	for NULL return and bail early if so.
