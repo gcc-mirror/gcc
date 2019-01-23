@@ -930,6 +930,72 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   DECL_SAVED_TREE (actor) = pop_stmt_list (actor_outer);
 }
 
+/* The prototype 'destroy' function :
+   frame->__resume_at |= 1;
+   actor (frame);
+*/
+static void
+build_destroy_fn (location_t loc, tree coro_frame_type,
+		  tree destroy, tree actor)
+{
+  /* One param, the coro frame pointer.  */
+  tree coro_frame_ptr = build_pointer_type (coro_frame_type);
+  tree destr_fp = build_lang_decl (PARM_DECL, get_identifier ("frame_ptr"),
+  				   coro_frame_ptr);
+  DECL_CONTEXT (destr_fp) = destroy;
+  DECL_ARG_TYPE (destr_fp) = type_passed_as (coro_frame_ptr);
+  DECL_ARGUMENTS (destroy) = destr_fp;
+
+  /* A void return.  */
+  tree resdecl = build_decl (loc, RESULT_DECL, 0, void_type_node);
+  DECL_ARTIFICIAL (resdecl) = 1;
+  DECL_IGNORED_P (resdecl) = 1;
+  DECL_RESULT (destroy) = resdecl;
+  TREE_STATIC (destroy) = 1;
+
+  tree destr_outer = push_stmt_list ();
+  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
+  tree dstr_stmt = begin_compound_stmt (BCS_FN_BODY);
+
+  tree destr_bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
+  add_stmt (destr_bind);
+  tree destr_body = push_stmt_list ();
+
+  tree destr_frame = build1 (INDIRECT_REF, coro_frame_type, destr_fp);
+
+  tree resume_idx_name = get_identifier ("__resume_at");
+  tree rat_field = lookup_member (coro_frame_type, resume_idx_name, 1, 0,
+				  tf_warning_or_error);
+  tree rat = build3 (COMPONENT_REF, short_unsigned_type_node, destr_frame,
+		     rat_field, NULL_TREE);
+
+  /* _resume_at |= 1 */
+  tree dstr_idx = build2 (BIT_IOR_EXPR, short_unsigned_type_node, rat,
+			  build_int_cst (short_unsigned_type_node, 1));
+  tree r = build2 (MODIFY_EXPR, short_unsigned_type_node, rat, dstr_idx);
+  r = build1 (CONVERT_EXPR, void_type_node, r);
+  r = build_stmt (loc, EXPR_STMT, r);
+  r = maybe_cleanup_point_expr_void (r);
+  add_stmt (r);
+
+  /* So .. call the actor ..  */
+  r = build_call_expr_loc (loc, actor, 1, destr_fp);
+  r = build_stmt (loc, EXPR_STMT, r);
+  r = maybe_cleanup_point_expr_void (r);
+  add_stmt (r);
+
+  /* done. */
+  r = build_stmt (loc, RETURN_EXPR, NULL);
+  r = maybe_cleanup_point_expr_void (r);
+  add_stmt (r);
+
+  destr_body = pop_stmt_list (destr_body);
+  BIND_EXPR_BODY (destr_bind) = destr_body;
+
+  finish_compound_stmt (dstr_stmt);
+  DECL_SAVED_TREE (destroy) = pop_stmt_list (destr_outer);
+}
+
 /* Here we:
    a) Check that the function and promise type are valid for a
       coroutine.
@@ -1317,6 +1383,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   /* Actor...  */
   build_actor_fn (fn_start, coro_frame_type, actor, fnbody, orig);
+  
+  /* Destroyer ... */
+  build_destroy_fn (fn_start, coro_frame_type, destroy, actor);
 
   pop_deferring_access_checks ();
 

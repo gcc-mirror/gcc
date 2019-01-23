@@ -1,5 +1,10 @@
 2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/cp/coroutines.cc (build_destroy_fn): New.
+	(morph_fn_to_coro): Use destroy function builder.
+
+2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/cp/coroutines.cc (USE_SWITCH_CO_YIELD_GUARD): New.
 	(create_anon_label_with_ctx): New.
 	(co_await_expander): Add alternate codepath generation selected
