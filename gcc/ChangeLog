@@ -1,3 +1,10 @@
+2019-01-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR driver/89014
+	* config/aarch64/driver-aarch64.c (host_detect_local_cpu): Fix
+	use-after-free of the result of
+	aarch64_get_extension_string_for_isa_flags.
+
 2019-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/44715
