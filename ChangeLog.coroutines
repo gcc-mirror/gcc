@@ -1,5 +1,9 @@
 2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/passes.def: Move coroutine IFN expansion to post LTO.
+
+2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/coroutine-passes.c: Update header use.
 	(first_vuser, move_edge_and_update_vdef): New helper functions.
 	(execute_expand_coro_ifns): Try to minimise early scan for CO_XXX

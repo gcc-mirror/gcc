@@ -42,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_lower_eh);
   NEXT_PASS (pass_build_cfg);
   NEXT_PASS (pass_warn_function_return);
-  NEXT_PASS (pass_coroutine_expand_ifns);
   NEXT_PASS (pass_expand_omp);
   NEXT_PASS (pass_sprintf_length, false);
   NEXT_PASS (pass_walloca, /*strict_mode_p=*/true);
@@ -177,6 +176,7 @@ along with GCC; see the file COPYING3.  If not see
   /* These passes are run after IPA passes on every function that is being
      output to the assembler file.  */
   INSERT_PASSES_AFTER (all_passes)
+  NEXT_PASS (pass_coroutine_expand_ifns);
   NEXT_PASS (pass_fixup_cfg);
   NEXT_PASS (pass_lower_eh_dispatch);
   NEXT_PASS (pass_oacc_device_lower);
