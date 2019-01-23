@@ -1,6 +1,5 @@
 ! Test OpenACC 'kernels' construct decomposition.
 
-! { dg-additional-options "-fopenacc-kernels=split" }
 ! { dg-additional-options "-fopt-info-optimized-omp" }
 ! { dg-additional-options "-O2" } for "parloops".
 

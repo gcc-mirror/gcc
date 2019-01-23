@@ -1,6 +1,5 @@
 ! { dg-do compile } 
 ! { dg-additional-options "-fdump-tree-original" } 
-! { dg-additional-options "-fopenacc-kernels=split" }
 ! { dg-additional-options "-fdump-tree-convert_oacc_kernels" }
 
 program test

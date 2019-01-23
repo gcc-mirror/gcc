@@ -688,7 +688,7 @@ Fortran LTO Joined Var(flag_openacc_dims)
 ; Documented in C
 
 fopenacc-kernels=
-Fortran RejectNegative Joined Enum(openacc_kernels) Var(flag_openacc_kernels) Init(OPENACC_KERNELS_PARLOOPS)
+Fortran RejectNegative Joined Enum(openacc_kernels) Var(flag_openacc_kernels) Init(OPENACC_KERNELS_SPLIT)
 ; Documented in C
 
 fopenmp
