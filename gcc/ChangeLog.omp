@@ -1,3 +1,13 @@
+2019-01-23  Gergö Barany  <gergo@codesourcery.com>
+
+	* omp-oacc-kernels.c (control_flow_regions): New class.
+	(control_flow_regions::control_flow_regions): New constructor.
+	(control_flow_regions::is_unconditional_oacc_for_loop): New method.
+	(control_flow_regions::find_rep): Likewise.
+	(control_flow_regions::union_reps): Likewise.
+	(control_flow_regions::compute_regions): Likewise.
+	(decompose_kernels_region_body): Use test for conditional execution.
+
 2019-01-21  Gergö Barany  <gergo@codesourcery.com>
 
 	* omp-oacc-kernels.c (top_level_omp_for_in_stmt): New function.
