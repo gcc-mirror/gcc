@@ -1,3 +1,23 @@
+2019-01-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gimple.h (enum gf_mask): Add new target kinds
+	GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED,
+	GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE, and
+	GF_OMP_TARGET_KIND_OACC_DATA_KERNELS.
+	(is_gimple_omp_oacc): Handle new target kinds.
+	(is_gimple_omp_offloaded): Likewise.
+	* gimple-pretty-print.c (dump_gimple_omp_target): Likewise.
+	* omp-expand.c (expand_omp_target): Likewise.
+	(build_omp_regions_1): Likewise.
+	(omp_make_gimple_edges): Likewise.
+	* omp-low.c (is_oacc_parallel_or_serial): Likewise.
+	(was_originally_oacc_kernels): New function.
+	(scan_omp_for): Update check for illegal nesting.
+	(check_omp_nesting_restrictions): Handle new target kinds.
+	(lower_oacc_reductions): Likewise.
+	(lower_omp_target): Likewise.
+	* omp-offload.c (execute_oacc_device_lower): Likewise.
+
 2019-01-30  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* flag-types.h (enum openacc_kernels): New type.
