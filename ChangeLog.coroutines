@@ -1,5 +1,10 @@
 2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/cp/decl.c (emit_coro_helper): New.
+	(finish_function): Emit the actor (resume) and destroy functions.
+
+2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/cp/coroutines.cc (build_destroy_fn): New.
 	(morph_fn_to_coro): Use destroy function builder.
 

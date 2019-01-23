@@ -15922,6 +15922,27 @@ add_return_star_this_fixit (gcc_rich_location *richloc, tree fndecl)
 				       indent);
 }
 
+static void
+emit_coro_helper (tree helper)
+{
+  /* This is a partial set of the operations done by finish_function()
+     plus emitting the result.  */
+  set_cfun (NULL);
+  current_function_decl = helper;
+  begin_scope (sk_function_parms, NULL);
+  store_parm_decls (DECL_ARGUMENTS (helper));
+  announce_function (helper);
+  allocate_struct_function (helper, false);
+  cfun->language = ggc_cleared_alloc<language_function> ();
+  poplevel (1, 0, 1);
+  maybe_save_function_definition (helper);
+  cp_fold_function (helper);
+  DECL_CONTEXT (DECL_RESULT (helper)) = helper;
+  BLOCK_SUPERCONTEXT (DECL_INITIAL (helper)) = helper;
+  cp_genericize (helper);
+  expand_or_defer_fn (helper);
+}
+
 /* Finish up a function declaration and compile that function
    all the way to assembler language output.  The free the storage
    for the function definition. INLINE_P is TRUE if we just
@@ -16210,6 +16231,13 @@ finish_function (bool inline_p)
       f->bindings = NULL;
       f->extern_decl_map = NULL;
       f->infinite_loops = NULL;
+    }
+
+  /* Emit the resumer and destroyer functions now.  */
+  if (coro_p)
+    {
+      emit_coro_helper (resumer);
+      emit_coro_helper (destroyer);
     }
 
   /* We're leaving the context of this function, so zap cfun.  It's still in
