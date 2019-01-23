@@ -5137,18 +5137,30 @@ trees_out::core_vals (tree t)
     for (unsigned ix = TREE_VEC_LENGTH (t); ix--;)
       WT (TREE_VEC_ELT (t, ix));
 
-  if (TREE_CODE_CLASS (code) == tcc_vl_exp)
-    for (unsigned ix = VL_EXP_OPERAND_LENGTH (t); --ix;)
-      WT (TREE_OPERAND (t, ix));
-  else if (CODE_CONTAINS_STRUCT (code, TS_EXP)
-	   // FIXME:For some reason, some tcc_expression nodes do not claim
-	   //  to contain TS_EXP.  I think this is a bug. */
-	   || TREE_CODE_CLASS (code) == tcc_expression
-	   || TREE_CODE_CLASS (code) == tcc_binary
-	   || TREE_CODE_CLASS (code) == tcc_unary
-	   || TREE_CODE_CLASS (code) == tcc_reference)
-    for (unsigned ix = TREE_OPERAND_LENGTH (t); ix--;)
-      WT (TREE_OPERAND (t, ix));
+  if (CODE_CONTAINS_STRUCT (code, TS_EXP)
+      // FIXME: remove these tests
+      || TREE_CODE_CLASS (code) == tcc_vl_exp
+      || TREE_CODE_CLASS (code) == tcc_expression
+      || TREE_CODE_CLASS (code) == tcc_binary
+      || TREE_CODE_CLASS (code) == tcc_unary
+      || TREE_CODE_CLASS (code) == tcc_reference)
+    {
+
+      // FIXME:Write locus.
+      if (false && streaming_p ())
+	state->write_location (*this, t->exp.locus);
+      bool vl = TREE_CODE_CLASS (code) == tcc_vl_exp;
+      for (unsigned ix = (vl ? VL_EXP_OPERAND_LENGTH (t)
+			  : TREE_OPERAND_LENGTH (t)); ix-- != vl;)
+	WT (TREE_OPERAND (t, ix));
+    }
+  else
+    /* The CODE_CONTAINS tables were inaccurate when I started.  */
+    gcc_checking_assert (TREE_CODE_CLASS (code) != tcc_expression
+			 && TREE_CODE_CLASS (code) != tcc_binary
+			 && TREE_CODE_CLASS (code) != tcc_unary
+			 && TREE_CODE_CLASS (code) != tcc_reference
+			 && TREE_CODE_CLASS (code) != tcc_vl_exp);
 
   if (CODE_CONTAINS_STRUCT (code, TS_SSA_NAME))
     gcc_unreachable (); /* Should not see.  */
@@ -5571,17 +5583,19 @@ trees_in::core_vals (tree t)
     for (unsigned ix = TREE_VEC_LENGTH (t); ix--;)
       RT (TREE_VEC_ELT (t, ix));
 
-  if (TREE_CODE_CLASS (code) == tcc_vl_exp)
-    for (unsigned ix = VL_EXP_OPERAND_LENGTH (t); --ix;)
-      RT (TREE_OPERAND (t, ix));
-  else if (CODE_CONTAINS_STRUCT (code, TS_EXP)
-	   /* See comment in trees_out::core_vals.  */
-	   || TREE_CODE_CLASS (code) == tcc_expression
-	   || TREE_CODE_CLASS (code) == tcc_binary
-	   || TREE_CODE_CLASS (code) == tcc_unary
-	   || TREE_CODE_CLASS (code) == tcc_reference)
-    for (unsigned ix = TREE_OPERAND_LENGTH (t); ix--;)
-      RT (TREE_OPERAND (t, ix));
+  if (CODE_CONTAINS_STRUCT (code, TS_EXP)
+      || TREE_CODE_CLASS (code) == tcc_vl_exp
+      || TREE_CODE_CLASS (code) == tcc_expression
+      || TREE_CODE_CLASS (code) == tcc_binary
+      || TREE_CODE_CLASS (code) == tcc_unary
+      || TREE_CODE_CLASS (code) == tcc_reference)
+    {
+      // FIXME:t->exp.locus = state->read_location (*this);
+      bool vl = TREE_CODE_CLASS (code) == tcc_vl_exp;
+      for (unsigned ix = (vl ? VL_EXP_OPERAND_LENGTH (t)
+			  : TREE_OPERAND_LENGTH (t)); ix-- != vl;)
+	RT (TREE_OPERAND (t, ix));
+    }
 
   if (CODE_CONTAINS_STRUCT (code, TS_SSA_NAME))
     return false;

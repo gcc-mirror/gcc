@@ -1,5 +1,8 @@
 2019-01-23  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_{in,out}::core_vals): Adjust expression streaming.
+
 	Fix TS_CONTAINS_STRUCT for tcc_expression.
 	gcc/
 	(MARK_TS_EXP): New.
