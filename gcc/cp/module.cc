@@ -4924,8 +4924,7 @@ trees_out::core_vals (tree t)
 	}
 
       if (TREE_CODE (t) != RECORD_TYPE
-	  && TREE_CODE (t) != UNION_TYPE
-	  && (true || TREE_CODE (t) != ENUMERAL_TYPE)) // FIXME
+	  && TREE_CODE (t) != UNION_TYPE)
 	{
 	  WT (t->type_common.size);
 	  WT (t->type_common.size_unit);
@@ -4941,9 +4940,10 @@ trees_out::core_vals (tree t)
 	WT (t->typed.type);
       else if (streaming_p ())
 	{
-	  // FIXME it'd be nice if we could make TREE_TYPE of the
-	  // enum's underlying type point to the original integral
-	  // type.
+	  // Unscoped enums have an integral type, but with a
+	  // restricted precision.  The type's name matches one of the
+	  // known integer types.
+
 	  tree type = t->typed.type;
 	  int precision = TYPE_PRECISION (type);
 	  unsigned itk;
@@ -4952,6 +4952,7 @@ trees_out::core_vals (tree t)
 	    if (integer_types[itk]
 		&& DECL_NAME (TYPE_NAME (integer_types[itk])) == name)
 	      break;
+	  gcc_assert (itk != itk_none);
 	  WU (itk);
 	  WU (precision);
 	}
@@ -5363,8 +5364,7 @@ trees_in::core_vals (tree t)
       RU (t->type_common.align);
 
       if (TREE_CODE (t) != RECORD_TYPE
-	  && TREE_CODE (t) != UNION_TYPE
-	  && (true || TREE_CODE (t) != ENUMERAL_TYPE)) // FIXME
+	  && TREE_CODE (t) != UNION_TYPE)
 	{
 	  RT (t->type_common.size);
 	  RT (t->type_common.size_unit);
@@ -6673,8 +6673,7 @@ trees_out::tree_node (tree t)
     }
 
   if (ref == WK_normal && TREE_CODE (t) == INTEGER_CST
-      && TREE_CODE (TREE_TYPE (t)) == ENUMERAL_TYPE
-      && !UNSCOPED_ENUM_P (TREE_TYPE (t)))
+      && !TREE_OVERFLOW (t) && SCOPED_ENUM_P (TREE_TYPE (t)))
     {
       unsigned ix = 0;
       for (tree values = TYPE_VALUES (TREE_TYPE (t));
@@ -9915,7 +9914,7 @@ void
 module_state::mark_enum_def (trees_out &out, tree decl)
 {
   tree type = TREE_TYPE (decl);
-  if (!UNSCOPED_ENUM_P (type))
+  if (SCOPED_ENUM_P (type))
     for (tree values = TYPE_VALUES (type); values; values = TREE_CHAIN (values))
       {
 	tree cst = TREE_VALUE (values);
