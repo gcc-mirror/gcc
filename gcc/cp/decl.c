@@ -15933,7 +15933,7 @@ tree
 finish_function (bool inline_p)
 {
   tree fndecl = current_function_decl;
-  tree fntype, ctype = NULL_TREE;
+  tree fntype, ctype = NULL_TREE, resumer = NULL_TREE, destroyer = NULL_TREE;
   bool coro_p = flag_coroutines
 		&& !processing_template_decl
 		&& DECL_COROUTINE_P (fndecl);
@@ -15964,9 +15964,12 @@ finish_function (bool inline_p)
 
   if (coro_p)
     {
-      fndecl = morph_fn_to_coro (fndecl);
-      if (fndecl == NULL_TREE)
-        return error_mark_node;
+      if (!morph_fn_to_coro (fndecl, &resumer, &destroyer))
+        {
+	  fprintf (stderr, "*** FAILED to morph\n");
+	  return error_mark_node;
+        }
+
 #if NO_EH_YET
       if (use_eh_spec_block (fndecl))
 	finish_eh_spec_block (TYPE_RAISES_EXCEPTIONS

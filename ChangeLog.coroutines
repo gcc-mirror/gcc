@@ -1,5 +1,14 @@
 2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/cp/coroutines.cc (morph_fn_to_coro): Adjust function interface
+	to allow return of generated function bodies.  Declare resumer and
+	destroyer functions.
+	* gcc/cp/cp-tree.h (morph_fn_to_coro): Adjust interface.
+	* gcc/cp/decl.c (finish_function): Allow for the morph routine
+	to return function decls for the resume and destroy functions.
+
+2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/cp/decl.c (finish_function): Break out condition for doing
 	coroutine expansion.
 

@@ -571,22 +571,22 @@ expand_co_awaits (tree *fnbody, tree coro_fp, tree resume_idx,
  };
 
 */
-tree
-morph_fn_to_coro (tree orig)
+bool
+morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 {
   if (! orig || TREE_CODE (orig) != FUNCTION_DECL)
-    return orig;
+    return false;
 
   gcc_assert (orig == current_function_decl);
 
   if (! coro_function_valid_p (orig))
-    return NULL_TREE;
+    return false;
 
   /* We can't validly get here with an empty statement list, since there's no
      way for the FE to decide it's a coroutine in the absence of any code.  */
   tree fnbody = pop_stmt_list (DECL_SAVED_TREE (orig));
   if (fnbody == NULL_TREE)
-    return orig;
+    return false;
 
   /* We don't have the locus of the opening brace - it's filled in later (and
      there doesn't really seem to be any easy way to get at it).
@@ -613,7 +613,7 @@ morph_fn_to_coro (tree orig)
 						     fn_start,
 						     true /*musthave*/);
   if (! initial_suspend_meth || initial_suspend_meth == error_mark_node)
-    return orig;
+    return false;
 
   tree initial_suspend_type = TREE_TYPE (TREE_TYPE (initial_suspend_meth));
   if (TREE_CODE (initial_suspend_type) != RECORD_TYPE)
@@ -624,23 +624,38 @@ morph_fn_to_coro (tree orig)
                (MAYBE_BASELINK_FUNCTIONS (initial_suspend_meth)),
 	      "declared here");
       /* FIXME: Match clang wording.  */
-      return orig;
+      return false;
     }
   tree final_suspend_meth = lookup_promise_member (orig, "final_suspend",
 						   fn_start,
 						   true /*musthave*/);
   if (! final_suspend_meth || final_suspend_meth == error_mark_node)
-    return orig;
+    return false;
 
   tree final_suspend_type = TREE_TYPE (TREE_TYPE (final_suspend_meth));
   if (TREE_CODE (final_suspend_type) != RECORD_TYPE)
     {
       error_at (fn_start, "the final suspend type needs to be an aggregate");
       /* FIXME: Match clang wording, add a note to the definition.  */
-      return orig;
+      return false;
     }
 
   /* Types we need to define.  */
+  /* Figure out the bits we need to generate names for the outlined things
+     For consistency this needs to behave the same way as
+     ASM_FORMAT_PRIVATE_NAME does. */
+  tree nm = DECL_NAME (orig);
+  const char *sep, *pfx = "";
+#ifndef NO_DOT_IN_LABEL
+  sep = ".";
+#else
+# ifndef NO_DOLLAR_IN_LABEL
+  sep = "$"
+# else
+  sep = "_";
+  pfx = "__";
+# endif
+#endif
 
   tree coro_frame_type = xref_tag (record_type, get_identifier ("_R_frame"),
 				   ts_current, false);
@@ -649,6 +664,20 @@ morph_fn_to_coro (tree orig)
   tree act_des_fn_type = build_function_type_list (void_type_node,
 						   coro_frame_ptr, NULL_TREE);
   tree act_des_fn_ptr = build_pointer_type (act_des_fn_type);
+
+  /* Declare the actor function.  */
+  char *an = ACONCAT ((pfx, IDENTIFIER_POINTER (nm), sep, "actor", (char*)0));
+  tree actor_name = get_identifier (an);
+  tree actor = build_lang_decl (FUNCTION_DECL, actor_name, act_des_fn_type);
+  DECL_CONTEXT (actor) = DECL_CONTEXT (orig);
+  DECL_INITIAL (actor) = error_mark_node;
+
+  /* Declare the destroyer function.  */
+  char *dn = ACONCAT ((pfx, IDENTIFIER_POINTER (nm), sep, "destroy", (char*)0));
+  tree destr_name = get_identifier (dn);
+  tree destroy = build_lang_decl (FUNCTION_DECL, destr_name, act_des_fn_type);
+  DECL_CONTEXT (destroy) = DECL_CONTEXT (orig);
+  DECL_INITIAL (destroy) = error_mark_node;
 
    /* Build our dummy coro frame layout.  */
   coro_frame_type = begin_class_definition (coro_frame_type);
@@ -719,6 +748,34 @@ morph_fn_to_coro (tree orig)
   BIND_EXPR_VARS (bind) = nreverse (varlist);
 
   tree deref_fp = build_x_arrow (fn_start, coro_fp, tf_warning_or_error);
+  /* Put the resumer and destroyer functions in.  */
+
+  tree actor_addr = build1 (ADDR_EXPR, act_des_fn_ptr, actor);
+  tree resume_m = lookup_member (coro_frame_type, resume_name,
+				     /*protect*/1,  /*want_type*/ 0,
+				     tf_warning_or_error);
+  tree resume_x = build_class_member_access_expr (deref_fp, resume_m,
+						  NULL_TREE, false,
+						  tf_warning_or_error);
+  r = build2 (INIT_EXPR, act_des_fn_ptr, resume_x, actor_addr);
+  r = build1 (CONVERT_EXPR, void_type_node, r);
+  r = build_stmt (fn_start, EXPR_STMT, r);
+  r = maybe_cleanup_point_expr_void (r);
+  add_stmt (r);
+
+  tree destroy_addr = build1 (ADDR_EXPR, act_des_fn_ptr, destroy);
+  tree destroy_m = lookup_member (coro_frame_type, destroy_name,
+				     /*protect*/1,  /*want_type*/ 0,
+				     tf_warning_or_error);
+  tree destroy_x = build_class_member_access_expr (deref_fp, destroy_m,
+						  NULL_TREE, false,
+						  tf_warning_or_error);
+  r = build2 (INIT_EXPR, act_des_fn_ptr, destroy_x, destroy_addr);
+  r = build1 (CONVERT_EXPR, void_type_node, r);
+  r = build_stmt (fn_start, EXPR_STMT, r);
+  r = maybe_cleanup_point_expr_void (r);
+  add_stmt (r);
+
   tree promise_m = lookup_member (coro_frame_type, promise_name,
 				  /*protect*/1,  /*want_type*/ 0,
 				  tf_warning_or_error);
@@ -902,7 +959,9 @@ morph_fn_to_coro (tree orig)
 			      del_promise_label, ret_label);
 
   DECL_SAVED_TREE (orig) = newbody;
-  return orig;
+  *resumer = actor;
+  *destroyer = destroy;
+  return true;
 }
 
 bool
