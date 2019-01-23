@@ -2895,21 +2895,24 @@ static void
 expand_CO_FRAME (internal_fn, gcall *)
 {
   /* should be expanded before here!  */
-  gcc_unreachable ();
+  fprintf (stderr, "Unexpanded CO_FRAME\n");
+  //gcc_unreachable ();
 }
 
 static void
 expand_CO_YIELD (internal_fn, gcall *)
 {
   /* should be expanded before here!  */
-  gcc_unreachable ();
+  fprintf (stderr, "Unexpanded CO_YIELD\n");
+  //gcc_unreachable ();
 }
 
 static void
 expand_CO_ACTOR (internal_fn, gcall *)
 {
   /* should be expanded before here!  */
-  gcc_unreachable ();
+  fprintf (stderr, "Unexpanded CO_ACTOR\n");
+  //gcc_unreachable ();
 }
 
 /* Expand a call to FN using the operands in STMT.  FN has a single

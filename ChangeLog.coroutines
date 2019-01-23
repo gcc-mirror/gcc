@@ -1,5 +1,13 @@
 2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/internal-fn.def (CO_ACTOR, CO_YIELD): Make LEAF.
+	Reorder defs to keep NOP at the end.
+	* gcc/internal-fn.c (expand_CO_FRAME, expand_CO_YIELD,
+	expand_CO_ACTOR): Don't ICE if they are not expanded, but print an
+	error for now.
+
+2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/cp/decl.c (emit_coro_helper): New.
 	(finish_function): Emit the actor (resume) and destroy functions.
 
