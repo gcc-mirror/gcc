@@ -5140,7 +5140,7 @@ trees_out::core_vals (tree t)
   if (CODE_CONTAINS_STRUCT (code, TS_EXP))
     {
       // FIXME:Write locus.
-      if (false && streaming_p ())
+      if (streaming_p ())
 	state->write_location (*this, t->exp.locus);
       bool vl = TREE_CODE_CLASS (code) == tcc_vl_exp;
       for (unsigned ix = (vl ? VL_EXP_OPERAND_LENGTH (t)
@@ -5580,7 +5580,7 @@ trees_in::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_EXP))
     {
-      // FIXME:t->exp.locus = state->read_location (*this);
+      t->exp.locus = state->read_location (*this);
       bool vl = TREE_CODE_CLASS (code) == tcc_vl_exp;
       for (unsigned ix = (vl ? VL_EXP_OPERAND_LENGTH (t)
 			  : TREE_OPERAND_LENGTH (t)); ix-- != vl;)
