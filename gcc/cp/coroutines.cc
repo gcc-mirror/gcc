@@ -562,6 +562,7 @@ expand_co_awaits (tree *fnbody, tree coro_fp, tree resume_idx,
   void (*__destroy)(struct _R_frame *);
   struct coro1::promise_type __p;
   bool frame_needs_free; // free the coro frame mem if set.
+  bool __suspended; // set if we're suspended (use for lib. check mode).
   short __resume_at; // this is where clang puts it - but it's a smaller entity.
   coro1::suspend_never_prt __is;
   (maybe) handle_type i_hand;
@@ -693,6 +694,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree fnf_name = get_identifier ("__frame_needs_free");
   decl = build_decl (fn_start, FIELD_DECL, fnf_name, boolean_type_node);
   DECL_CHAIN (decl) = decls; decls = decl;
+  tree susp_name = get_identifier ("__suspended");
+  decl = build_decl (fn_start, FIELD_DECL, susp_name, boolean_type_node);
+  DECL_CHAIN (decl) = decls; decls = decl;
   tree resume_idx_name = get_identifier ("__resume_at");
   decl = build_decl (fn_start, FIELD_DECL, resume_idx_name,
 		     short_unsigned_type_node);
@@ -792,6 +796,18 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   r = build_stmt (fn_start, EXPR_STMT, r);
   r = maybe_cleanup_point_expr_void (r);
   add_stmt (r);
+
+  /* We're not suspended.  */
+  tree susp_m = lookup_member (coro_frame_type, susp_name, 1, 0,
+			      tf_warning_or_error);
+  tree susp_x = build_class_member_access_expr (deref_fp, susp_m, NULL_TREE,
+					       false, tf_warning_or_error);
+  r = build2 (INIT_EXPR, boolean_type_node, susp_x, boolean_false_node);
+  r = build1 (CONVERT_EXPR, void_type_node, r);
+  r = build_stmt (fn_start, EXPR_STMT, r);
+  r = maybe_cleanup_point_expr_void (r);
+  add_stmt (r);
+
   /* Put the resumer and destroyer functions in.  */
 
   tree actor_addr = build1 (ADDR_EXPR, act_des_fn_ptr, actor);

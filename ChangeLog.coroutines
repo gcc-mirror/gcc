@@ -1,5 +1,10 @@
 2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/cp/coroutines.cc (morph_fn_to_coro): Add a "suspended" field
+	to the coro frame and initialise it.
+
+2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/cp/coroutines.cc (morph_fn_to_coro): Add a "frame needs free"
 	field to the coro frame and set it true once malloc has set it. In
 	this case of course, it's always true - but at some later time the
