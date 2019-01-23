@@ -1,5 +1,15 @@
 2019-01-23  Nathan Sidwell  <nathan@acm.org>
 
+	Fix TS_CONTAINS_STRUCT for tcc_expression.
+	gcc/
+	(MARK_TS_EXP): New.
+	gcc/c-family/
+	* c-common.c (c_common_init_ts): Use MARK_TS_EXP. Mark
+	SIZEOF_EXPR.
+	gcc/cp/
+	* cp-objcp-common.c (cp_common_init_ts): MARK_TS_EXP for
+	tcc_expression nodes.  Call c_common_init_ts.
+
 	gcc/cp/
 	* module.cc (trees_{in,out}::core_vals): Clean up enumeral type
 	handling.
