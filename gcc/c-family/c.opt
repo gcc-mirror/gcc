@@ -1417,7 +1417,7 @@ C++ ObjC++ Joined RejectNegative UInteger Var(constexpr_loop_limit) Init(262144)
 -fconstexpr-loop-limit=<number>	Specify maximum constexpr loop iteration count.
 
 fcoroutines
-C++ ObjC++ Var(flag_coroutines)
+C++ ObjC++ LTO Var(flag_coroutines)
 Enable C++ coroutines (experimental).
 
 fcoroutines-ts

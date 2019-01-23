@@ -1,5 +1,10 @@
 2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/c-family/c.opt (flag_coroutines): Have this recognised by
+	LTO too.
+
+2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/passes.def: Move coroutine IFN expansion to post LTO.
 
 2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
