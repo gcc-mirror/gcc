@@ -1,3 +1,10 @@
+2019-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88757 - qualified name treated wrongly as type.
+	* parser.c (cp_parser_direct_declarator): Don't treat qualified-ids
+	in parameter-list as types if name lookup for declarator-id didn't
+	find one or more function templates.
+
 2019-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/44715

@@ -21098,6 +21098,33 @@ cp_parser_direct_declarator (cp_parser* parser,
 
 	    if (pack_expansion_p)
 	      maybe_warn_variadic_templates ();
+
+	    /* We're looking for this case in [temp.res]:
+	       A qualified-id is assumed to name a type if [...]
+	       - it is a decl-specifier of the decl-specifier-seq of a
+		 parameter-declaration in a declarator of a function or
+		 function template declaration, ... */
+	    if (cxx_dialect >= cxx2a
+		&& (flags & CP_PARSER_FLAGS_TYPENAME_OPTIONAL)
+		&& declarator->kind == cdk_id
+		/* ...whose declarator-id is qualified.  */
+		&& qualifying_scope != NULL_TREE
+		&& !at_class_scope_p ()
+		&& cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
+	      {
+		/* Now we have something like
+		   template <typename T> int C::x(S::p);
+		   which can be a function template declaration or a
+		   variable template definition.  If name lookup for
+		   the declarator-id C::x finds one or more function
+		   templates, assume S::p to name a type.  Otherwise,
+		   don't.  */
+		tree decl
+		  = cp_parser_lookup_name_simple (parser, unqualified_name,
+						  token->location);
+		if (!is_overloaded_fn (decl))
+		  flags &= ~CP_PARSER_FLAGS_TYPENAME_OPTIONAL;
+	      }
 	  }
 
 	handle_declarator:;
