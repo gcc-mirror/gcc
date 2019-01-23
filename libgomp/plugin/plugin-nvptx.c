@@ -296,35 +296,46 @@ map_pop (struct ptx_stream *s)
 static CUdeviceptr
 map_push (struct ptx_stream *s, size_t size)
 {
-  struct cuda_map *map = NULL, *t = NULL;
+  struct cuda_map *map = NULL;
+  struct cuda_map **t;
 
   assert (s);
   assert (s->map);
 
-  /* Each PTX stream requires a separate data region to store the
-     launch arguments for cuLaunchKernel.  Allocate a new
-     cuda_map and push it to the end of the list.  */
+  /* Select an element to push.  */
   if (s->map->active)
-    {
-      map = cuda_map_create (size);
-
-      for (t = s->map; t->next != NULL; t = t->next)
-	;
-
-      t->next = map;
-    }
-  else if (s->map->size < size)
-    {
-      cuda_map_destroy (s->map);
-      map = cuda_map_create (size);
-    }
+    map = cuda_map_create (size);
   else
-    map = s->map;
+    {
+      /* Pop the inactive front element.  */
+      struct cuda_map *pop = s->map;
+      s->map = pop->next;
+      pop->next = NULL;
 
-  s->map = map;
-  s->map->active = true;
+      if (pop->size < size)
+	{
+	  cuda_map_destroy (pop);
 
-  return s->map->d;
+	  map = cuda_map_create (size);
+	}
+      else
+	map = pop;
+    }
+
+  /* Check that the element is as expected.  */
+  assert (map->next == NULL);
+  assert (!map->active);
+
+  /* Mark the element active.  */
+  map->active = true;
+
+  /* Push the element to the back of the list.  */
+  for (t = &s->map; (*t) != NULL; t = &(*t)->next)
+    ;
+  assert (t != NULL && *t == NULL);
+  *t = map;
+
+  return map->d;
 }
 
 /* Target data function launch information.  */
