@@ -5137,15 +5137,8 @@ trees_out::core_vals (tree t)
     for (unsigned ix = TREE_VEC_LENGTH (t); ix--;)
       WT (TREE_VEC_ELT (t, ix));
 
-  if (CODE_CONTAINS_STRUCT (code, TS_EXP)
-      // FIXME: remove these tests
-      || TREE_CODE_CLASS (code) == tcc_vl_exp
-      || TREE_CODE_CLASS (code) == tcc_expression
-      || TREE_CODE_CLASS (code) == tcc_binary
-      || TREE_CODE_CLASS (code) == tcc_unary
-      || TREE_CODE_CLASS (code) == tcc_reference)
+  if (CODE_CONTAINS_STRUCT (code, TS_EXP))
     {
-
       // FIXME:Write locus.
       if (false && streaming_p ())
 	state->write_location (*this, t->exp.locus);
@@ -5160,6 +5153,7 @@ trees_out::core_vals (tree t)
 			 && TREE_CODE_CLASS (code) != tcc_binary
 			 && TREE_CODE_CLASS (code) != tcc_unary
 			 && TREE_CODE_CLASS (code) != tcc_reference
+			 && TREE_CODE_CLASS (code) != tcc_comparison
 			 && TREE_CODE_CLASS (code) != tcc_vl_exp);
 
   if (CODE_CONTAINS_STRUCT (code, TS_SSA_NAME))
@@ -5583,12 +5577,7 @@ trees_in::core_vals (tree t)
     for (unsigned ix = TREE_VEC_LENGTH (t); ix--;)
       RT (TREE_VEC_ELT (t, ix));
 
-  if (CODE_CONTAINS_STRUCT (code, TS_EXP)
-      || TREE_CODE_CLASS (code) == tcc_vl_exp
-      || TREE_CODE_CLASS (code) == tcc_expression
-      || TREE_CODE_CLASS (code) == tcc_binary
-      || TREE_CODE_CLASS (code) == tcc_unary
-      || TREE_CODE_CLASS (code) == tcc_reference)
+  if (CODE_CONTAINS_STRUCT (code, TS_EXP))
     {
       // FIXME:t->exp.locus = state->read_location (*this);
       bool vl = TREE_CODE_CLASS (code) == tcc_vl_exp;
