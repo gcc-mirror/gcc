@@ -1,5 +1,5 @@
 // { dg-module-do run }
-// { dg-additional-options "-fmodules-ts" }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module-uid" }
 export module enUm;
 // { dg-module-bmi "enUm" }
 
@@ -16,3 +16,15 @@ export enum class Ben
   Two = 2,
   Three
 };
+
+export inline Ben func1 ()
+{
+  return Ben::Three;
+}
+
+export inline Ben func2 ()
+{
+  return Ben (4);
+}
+
+// { dg-final { scan-lang-dump {Written enum value '::Ben'\[2\]} module } }

@@ -1,6 +1,14 @@
 2019-01-23  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (tree_tag): Add tt_enum_int.
+	(trees_out::mark_node): Allow marking non-decls.
+	(trees_{in,out}::tree_node): Serialize enum values.
+	(module_state::mark_enum_def): Mark enum int_csts.
+	gcc/testsuite/
+	* g++.dg/modules/enum_1_[ab].C: Test serialization.
+
+	gcc/cp/
 	* module.cc (trees_in::finish_type): Don't speciual case
 	TYPE_PACKs.
 	* pt.c (template_parm_to_arg, coerce_template_parameter_pack)
