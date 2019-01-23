@@ -1,5 +1,10 @@
 2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/c-family/c-common.h (D_CXX_CHAR8_T_FLAGS): Clean up stray
+	character committed in error.
+
+2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
+
 	Merge trunk r268188.
 	* gcc/configure: Regenerated.
 	* gcc/c-family/c-common.h (D_CXX_COROUTINES): Adjust for new entry.

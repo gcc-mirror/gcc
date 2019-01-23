@@ -433,7 +433,7 @@ extern machine_mode c_default_pointer_mode;
 #define D_CXX_COROUTINES 0x4000  /* In C++, only with coroutines TS.  */
 
 #define D_CXX_CONCEPTS_FLAGS D_CXXONLY | D_CXX_CONCEPTS
-p#define D_CXX_CHAR8_T_FLAGS D_CXXONLY | D_CXX_CHAR8_T
+#define D_CXX_CHAR8_T_FLAGS D_CXXONLY | D_CXX_CHAR8_T
 #define D_CXX_COROUTINES_FLAGS (D_CXXONLY | D_CXX_COROUTINES)
 
 /* The reserved keyword table.  */
