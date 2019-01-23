@@ -1,5 +1,13 @@
 2019-01-23  Tom de Vries  <tdevries@suse.de>
 
+	PR target/88941
+	PR target/88939
+	* plugin/plugin-nvptx.c (cuda_map_destroy): Handle map->active case.
+	(map_fini): Remove "assert (!s->map->active)".
+	* testsuite/libgomp.oacc-c-c++-common/pr88941.c: New test.
+
+2019-01-23  Tom de Vries  <tdevries@suse.de>
+
 	PR target/87835
 	* plugin/plugin-nvptx.c (map_push): Fix adding of allocated element.
 	* testsuite/libgomp.oacc-c-c++-common/pr87835.c: New test.
