@@ -15934,6 +15934,9 @@ finish_function (bool inline_p)
 {
   tree fndecl = current_function_decl;
   tree fntype, ctype = NULL_TREE;
+  bool coro_p = flag_coroutines
+		&& !processing_template_decl
+		&& DECL_COROUTINE_P (fndecl);
 
   /* When we get some parse errors, we can end up without a
      current_function_decl, so cope.  */
@@ -15959,9 +15962,7 @@ finish_function (bool inline_p)
      error_mark_node.  */
   gcc_assert (DECL_INITIAL (fndecl) == error_mark_node);
 
-  if (flag_coroutines
-      && !processing_template_decl
-      && DECL_COROUTINE_P (fndecl))
+  if (coro_p)
     {
       fndecl = morph_fn_to_coro (fndecl);
       if (fndecl == NULL_TREE)
