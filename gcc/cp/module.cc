@@ -5154,6 +5154,7 @@ trees_out::core_vals (tree t)
 			 && TREE_CODE_CLASS (code) != tcc_unary
 			 && TREE_CODE_CLASS (code) != tcc_reference
 			 && TREE_CODE_CLASS (code) != tcc_comparison
+			 && TREE_CODE_CLASS (code) != tcc_statement
 			 && TREE_CODE_CLASS (code) != tcc_vl_exp);
 
   if (CODE_CONTAINS_STRUCT (code, TS_SSA_NAME))
