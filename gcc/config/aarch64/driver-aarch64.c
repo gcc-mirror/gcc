@@ -178,7 +178,6 @@ host_detect_local_cpu (int argc, const char **argv)
   unsigned int variants[2] = { ALL_VARIANTS, ALL_VARIANTS };
   unsigned int n_variants = 0;
   bool processed_exts = false;
-  const char *ext_string = "";
   unsigned long extension_flags = 0;
   unsigned long default_flags = 0;
 
@@ -348,11 +347,12 @@ host_detect_local_cpu (int argc, const char **argv)
   if (tune)
     return res;
 
-  ext_string
-    = aarch64_get_extension_string_for_isa_flags (extension_flags,
-						  default_flags).c_str ();
-
-  res = concat (res, ext_string, NULL);
+  {
+    std::string extension
+      = aarch64_get_extension_string_for_isa_flags (extension_flags,
+						    default_flags);
+    res = concat (res, extension.c_str (), NULL);
+  }
 
   return res;
 
