@@ -1669,7 +1669,7 @@ C ObjC C++ ObjC++ LTO Joined Var(flag_openacc_dims)
 Specify default OpenACC compute dimensions.
 
 fopenacc-kernels=
-C ObjC C++ ObjC++ RejectNegative Joined Enum(openacc_kernels) Var(flag_openacc_kernels) Init(OPENACC_KERNELS_PARLOOPS)
+C ObjC C++ ObjC++ RejectNegative Joined Enum(openacc_kernels) Var(flag_openacc_kernels) Init(OPENACC_KERNELS_SPLIT)
 -fopenacc-kernels=[split|parloops]	Configure OpenACC 'kernels' constructs handling.
 
 Enum

@@ -2195,9 +2195,9 @@ Configure OpenACC 'kernels' constructs handling.
 With @option{-fopenacc-kernels=split}, OpenACC 'kernels' constructs
 are split into a sequence of compute constructs, each then handled
 individually.
+This is the default.
 With @option{-fopenacc-kernels=parloops}, the whole OpenACC
 'kernels' constructs is handled by the @samp{parloops} pass.
-This is the default.
 
 @item -fopenmp
 @opindex fopenmp

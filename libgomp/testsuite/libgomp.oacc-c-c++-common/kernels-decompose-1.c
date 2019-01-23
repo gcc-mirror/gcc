@@ -1,4 +1,3 @@
-/* { dg-additional-options "-fopenacc-kernels=split" } */
 /* { dg-additional-options "-fopt-info-optimized-omp" } */
 
 #undef NDEBUG
@@ -15,7 +14,7 @@ int main()
     int c = 234; /* { dg-warning "note: beginning .gang-single. region in OpenACC .kernels. construct" } */
 
 #pragma acc loop independent gang /* { dg-warning "note: assigned OpenACC gang loop parallelism" } */
-    /* { dg-warning "note: parallelized loop nest in OpenACC .kernels. construct" "" { target *-*-* } 17 } */
+    /* { dg-warning "note: parallelized loop nest in OpenACC .kernels. construct" "" { target *-*-* } 16 } */
     for (int i = 0; i < N; ++i)
       b[i] = c;
 

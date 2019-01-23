@@ -1,4 +1,5 @@
-/* Test the output of "-fopt-info-optimized-omp".  */
+/* Test the output of "-fopt-info-optimized-omp" for OpenACC 'parallel'
+   constructs.  */
 
 /* { dg-additional-options "-fopt-info-optimized-omp" } */
 

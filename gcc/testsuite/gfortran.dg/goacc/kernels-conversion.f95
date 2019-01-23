@@ -1,4 +1,3 @@
-! { dg-additional-options "-fopenacc-kernels=split" }
 ! { dg-additional-options "-fdump-tree-convert_oacc_kernels" }
 
 program main
@@ -50,9 +49,11 @@ end program main
 ! parallelized loop region; and three "old-style" kernel regions.
 ! { dg-final { scan-tree-dump-times "oacc_parallel_kernels_gang_single" 1 "convert_oacc_kernels" } }
 ! { dg-final { scan-tree-dump-times "oacc_parallel_kernels_parallelized" 1 "convert_oacc_kernels" } }
-! { dg-final { scan-tree-dump-times "oacc_kernels" 3 "convert_oacc_kernels" } }
+! { dg-final { scan-tree-dump-times "oacc_kernels " 3 "convert_oacc_kernels" } }
 
 ! Each of the parallel regions is async, and there is a final call to
 ! __builtin_GOACC_wait.
-! { dg-final { scan-tree-dump-times "oacc_parallel_kernels.* async\(-1\)" 5 "convert_oacc_kernels" } }
+! { dg-final { scan-tree-dump-times "oacc_kernels async\\(-1\\)" 3 "convert_oacc_kernels" } }
+! { dg-final { scan-tree-dump-times "oacc_parallel_kernels_gang_single async\\(-1\\)" 1 "convert_oacc_kernels" } }
+! { dg-final { scan-tree-dump-times "oacc_parallel_kernels_parallelized async\\(-1\\)" 1 "convert_oacc_kernels" } }
 ! { dg-final { scan-tree-dump-times "__builtin_GOACC_wait" 1 "convert_oacc_kernels" } }

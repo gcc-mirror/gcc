@@ -1,3 +1,7 @@
+2019-01-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/invoke.texi (-fopenacc-kernels): Update.
+
 2019-01-24  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* omp-oacc-kernels.c (adjust_region_code_walk_stmt_fn)

@@ -1,3 +1,21 @@
+2019-01-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c:
+	Update.
+	* testsuite/libgomp.oacc-c-c++-common/avoid-offloading-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/avoid-offloading-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/avoid-offloading-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/avoid-offloading-1.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/avoid-offloading-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/avoid-offloading-3.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/initialize_kernels_loops.f90:
+	Likewise.
+
 2019-01-24  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c: New
