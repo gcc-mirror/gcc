@@ -4997,37 +4997,49 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define_insn "sse2_cvtpi2pd"
-  [(set (match_operand:V2DF 0 "register_operand" "=x,x")
-	(float:V2DF (match_operand:V2SI 1 "nonimmediate_operand" "y,m")))]
+  [(set (match_operand:V2DF 0 "register_operand" "=v,x")
+	(float:V2DF (match_operand:V2SI 1 "nonimmediate_operand" "vBm,?!y")))]
   "TARGET_SSE2"
-  "cvtpi2pd\t{%1, %0|%0, %1}"
+  "@
+   %vcvtdq2pd\t{%1, %0|%0, %1}
+   cvtpi2pd\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
-   (set_attr "unit" "mmx,*")
-   (set_attr "prefix_data16" "1,*")
+   (set_attr "unit" "*,mmx")
+   (set_attr "prefix_data16" "*,1")
+   (set_attr "prefix" "maybe_vex,*")
    (set_attr "mode" "V2DF")])
 
 (define_insn "sse2_cvtpd2pi"
-  [(set (match_operand:V2SI 0 "register_operand" "=y")
-	(unspec:V2SI [(match_operand:V2DF 1 "nonimmediate_operand" "xm")]
+  [(set (match_operand:V2SI 0 "register_operand" "=v,?!y")
+	(unspec:V2SI [(match_operand:V2DF 1 "nonimmediate_operand" "vBm,xm")]
 		     UNSPEC_FIX_NOTRUNC))]
   "TARGET_SSE2"
-  "cvtpd2pi\t{%1, %0|%0, %1}"
+  "@
+   * return TARGET_AVX ? \"vcvtpd2dq{x}\t{%1, %0|%0, %1}\" : \"cvtpd2dq\t{%1, %0|%0, %1}\";
+   cvtpd2pi\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
-   (set_attr "unit" "mmx")
+   (set_attr "unit" "*,mmx")
+   (set_attr "amdfam10_decode" "double")
+   (set_attr "athlon_decode" "vector")
    (set_attr "bdver1_decode" "double")
-   (set_attr "btver2_decode" "direct")
-   (set_attr "prefix_data16" "1")
-   (set_attr "mode" "DI")])
+   (set_attr "prefix_data16" "*,1")
+   (set_attr "prefix" "maybe_vex,*")
+   (set_attr "mode" "TI")])
 
 (define_insn "sse2_cvttpd2pi"
-  [(set (match_operand:V2SI 0 "register_operand" "=y")
-	(fix:V2SI (match_operand:V2DF 1 "nonimmediate_operand" "xm")))]
+  [(set (match_operand:V2SI 0 "register_operand" "=v,?!y")
+	(fix:V2SI (match_operand:V2DF 1 "nonimmediate_operand" "vBm,xm")))]
   "TARGET_SSE2"
-  "cvttpd2pi\t{%1, %0|%0, %1}"
+  "@
+   * return TARGET_AVX ? \"vcvttpd2dq{x}\t{%1, %0|%0, %1}\" : \"cvttpd2dq\t{%1, %0|%0, %1}\";
+   cvttpd2pi\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
-   (set_attr "unit" "mmx")
+   (set_attr "unit" "*,mmx")
+   (set_attr "amdfam10_decode" "double")
+   (set_attr "athlon_decode" "vector")
    (set_attr "bdver1_decode" "double")
-   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_data16" "*,1")
+   (set_attr "prefix" "maybe_vex,*")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_cvtsi2sd"
