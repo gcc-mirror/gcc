@@ -445,8 +445,8 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
 			   boolean_type_node, ready_cond);
 
   tree body_list = NULL;
-  tree susp_idx = build_int_cst (integer_type_node, data->index);
-  r = build2_loc (loc, MODIFY_EXPR, integer_type_node,
+  tree susp_idx = build_int_cst (short_unsigned_type_node, data->index);
+  r = build2_loc (loc, MODIFY_EXPR, short_unsigned_type_node,
 		  data->resume_idx, susp_idx);
   r = maybe_cleanup_point_expr_void (r);
   append_to_statement_list (r, &body_list);
@@ -561,7 +561,7 @@ expand_co_awaits (tree *fnbody, tree coro_fp, tree resume_idx,
   void (*__resume)(struct _R_frame *);
   void (*__destroy)(struct _R_frame *);
   struct coro1::promise_type __p;
-  int __resume_at; // this is where clang puts it - but it's a smaller entity.
+  short __resume_at; // this is where clang puts it - but it's a smaller entity.
   coro1::suspend_never_prt __is;
   (maybe) handle_type i_hand;
   coro1::suspend_always_prt __fs;
@@ -690,7 +690,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   decl = build_decl (fn_start, FIELD_DECL, promise_name, promise_type);
   DECL_CHAIN (decl) = decls; decls = decl;
   tree resume_idx_name = get_identifier ("__resume_at");
-  decl = build_decl (fn_start, FIELD_DECL, resume_idx_name, integer_type_node);
+  decl = build_decl (fn_start, FIELD_DECL, resume_idx_name,
+		     short_unsigned_type_node);
   DECL_CHAIN (decl) = decls; decls = decl;
   // TODO: decide if we need to preserve things across initial susp.
   tree init_susp_name = get_identifier ("__is");
@@ -806,15 +807,17 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   start_label = build_stmt (fn_start, LABEL_EXPR, start_label);
   add_stmt (start_label);
 
-  /* Initialise the resume_idx_name to -1, not started.  */
+  /* Initialise the resume_idx_name to 0, meaning "not started".  */
   tree resume_idx_m = lookup_member (coro_frame_type, resume_idx_name,
 				     /*protect*/1,  /*want_type*/ 0,
 				     tf_warning_or_error);
   tree resume_idx = build_class_member_access_expr (deref_fp, resume_idx_m,
 						    NULL_TREE, false,
 						    tf_warning_or_error);
-  r = build2 (INIT_EXPR, integer_type_node, resume_idx, integer_minus_one_node);
+  r = build_int_cst (short_unsigned_type_node, 0);
+  r = build2 (INIT_EXPR, short_unsigned_type_node, resume_idx, r);
   r = build_stmt (fn_start, EXPR_STMT, r);
+  r = maybe_cleanup_point_expr_void (r);
   add_stmt (r);
 
   /* Get a reference to the initial suspend var in the frame.

@@ -1,5 +1,10 @@
 2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/cp/coroutines.cc (co_await_expander): Make the resume index
+	unsigned short.  (expand_co_awaits, morph_fn_to_coro): Likewise.
+
+2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/cp/coroutines.cc (morph_fn_to_coro): Adjust function interface
 	to allow return of generated function bodies.  Declare resumer and
 	destroyer functions.
