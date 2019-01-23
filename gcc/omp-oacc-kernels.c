@@ -385,6 +385,208 @@ maybe_build_inner_data_region (location_t loc, gimple *body,
   return body;
 }
 
+/* Auxiliary analysis of the body of a kernels region, to determine for each
+   OpenACC loop whether it is control-dependent (i.e., not necessarily
+   executed every time the kernels region is entered) or not.
+   We say that a loop is control-dependent if there is some cond, switch, or
+   goto statement that jumps over it, forwards or backwards.  For example,
+   if the loop is controlled by an if statement, then a jump to the true
+   block, the false block, or from one of those blocks to the control flow
+   join point will necessarily jump over the loop.
+   This analysis implements an ad-hoc union-find data structure classifying
+   statements into "control-flow regions" as follows: Most statements are in
+   the same region as their predecessor, except that each OpenACC loop is in
+   a region of its own, and each OpenACC loop's successor starts a new
+   region.  We then unite the regions of any statements linked by jumps,
+   placing any cond, switch, or goto statement in the same region as its
+   target label(s).
+   In the end, control dependence of OpenACC loops can be determined by
+   comparing their immediate predecessor and successor statements' regions.
+   A jump crosses the loop if and only if the predecessor and successor are
+   in the same region.  (If there is no predecessor or successor, the loop
+   is executed unconditionally.)
+   The methods in this class identify statements by their index in the
+   kernels region's body.  */
+
+class control_flow_regions
+{
+  public:
+    /* Initialize an instance and pre-compute the control-flow region
+       information for the statement sequence SEQ.  */
+    control_flow_regions (gimple_seq seq);
+
+    /* Return true if the STMT with the given index IDX in the analyzed
+       statement sequence is an unconditionally executed OpenACC loop.  */
+    bool is_unconditional_oacc_for_loop (gimple *stmt, size_t idx);
+
+  private:
+    /* Find the region representative for the statement identified by index
+       STMT_IDX.  */
+    size_t find_rep (size_t stmt_idx);
+
+    /* Union the regions containing the statements represented by
+       representatives A and B.  */
+    void union_reps (size_t a, size_t b);
+
+    /* Helper for the constructor.  Performs the actual computation of the
+       control-flow regions in the statement sequence SEQ.  */
+    void compute_regions (gimple_seq seq);
+
+    /* The mapping from statement indices to region representatives.  */
+    vec <size_t> representatives;
+
+    /* A cache mapping statement indices to a flag indicating whether the
+       statement is a top level OpenACC for loop.  */
+    vec <bool> omp_for_loops;
+};
+
+control_flow_regions::control_flow_regions (gimple_seq seq)
+{
+  representatives.create (1);
+  omp_for_loops.create (1);
+  compute_regions (seq);
+}
+
+bool
+control_flow_regions::is_unconditional_oacc_for_loop (gimple *stmt, size_t idx)
+{
+  if (top_level_omp_for_in_stmt (stmt) == NULL)
+    /* Not an OpenACC for loop.  */
+    return false;
+  if (idx == 0 || idx == representatives.length () - 1)
+    /* The first or last statement in the kernels region.  This means that
+       there is no room before or after it for a jump or a label.  Thus
+       there cannot be a jump across it, so it is unconditional.  */
+    return true;
+  /* Otherwise, the loop is unconditional if the statements before and after
+     it are in different control flow regions.  Scan forward and backward,
+     skipping over neighboring OpenACC for loops, to find these preceding
+     statements.  */
+  size_t prev_index = idx - 1;
+  while (prev_index > 0 && omp_for_loops [prev_index] == true)
+    prev_index--;
+  /* If all preceding statements are also OpenACC loops, all of these are
+     unconditional.  */
+  if (prev_index == 0)
+    return true;
+  size_t succ_index = idx + 1;
+  while (succ_index < omp_for_loops.length ()
+         && omp_for_loops [succ_index] == true)
+    succ_index++;
+  /* If all following statements are also OpenACC loops, all of these are
+     unconditional.  */
+  if (succ_index == omp_for_loops.length ())
+    return true;
+  return (find_rep (prev_index) != find_rep (succ_index));
+}
+
+size_t
+control_flow_regions::find_rep (size_t stmt_idx)
+{
+  size_t rep = stmt_idx, aux = stmt_idx;
+  /* Find the root representative of this statement.  */
+  while (representatives[rep] != rep)
+    rep = representatives[rep];
+  /* Compress the path from the original statement to the representative.  */
+  while (representatives[aux] != rep)
+    {
+      size_t tmp = representatives[aux];
+      representatives[aux] = rep;
+      aux = tmp;
+    }
+  return rep;
+}
+
+void
+control_flow_regions::union_reps (size_t a, size_t b)
+{
+  a = find_rep (a);
+  b = find_rep (b);
+  representatives[b] = a;
+}
+
+void
+control_flow_regions::compute_regions (gimple_seq seq)
+{
+  hash_map <gimple *, size_t> control_flow_reps;
+  hash_map <tree, size_t> label_reps;
+  size_t current_region = 0, idx = 0;
+
+  /* In a first pass, assign an initial region to each statement.  Except in
+     the case of OpenACC loops, each statement simply gets the same region
+     representative as its predecessor.  */
+  for (gimple_stmt_iterator gsi = gsi_start (seq);
+       !gsi_end_p (gsi);
+       gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      gimple *omp_for = top_level_omp_for_in_stmt (stmt);
+      omp_for_loops.safe_push (omp_for != NULL);
+      if (omp_for != NULL)
+        {
+          /* Assign a new region to this loop and to its successor.  */
+          current_region = idx;
+          representatives.safe_push (current_region);
+          current_region++;
+        }
+      else
+        {
+          representatives.safe_push (current_region);
+          /* Remember any jumps and labels for the second pass below.  */
+          if (gimple_code (stmt) == GIMPLE_COND
+              || gimple_code (stmt) == GIMPLE_SWITCH
+              || gimple_code (stmt) == GIMPLE_GOTO)
+            control_flow_reps.put (stmt, current_region);
+          else if (gimple_code (stmt) == GIMPLE_LABEL)
+            label_reps.put (gimple_label_label (as_a <glabel *> (stmt)),
+                            current_region);
+        }
+      idx++;
+    }
+  gcc_assert (representatives.length () == omp_for_loops.length ());
+
+  /* Revisit all the control flow statements and union the region of each
+     cond, switch, or goto statement with the target labels' regions.  */
+  for (hash_map <gimple *, size_t>::iterator it = control_flow_reps.begin ();
+       it != control_flow_reps.end ();
+       ++it)
+    {
+      gimple *stmt = (*it).first;
+      size_t stmt_rep = (*it).second;
+      switch (gimple_code (stmt))
+        {
+          tree label;
+          unsigned int n;
+
+        case GIMPLE_COND:
+          label = gimple_cond_true_label (as_a <gcond *> (stmt));
+          union_reps (stmt_rep, *label_reps.get (label));
+          label = gimple_cond_false_label (as_a <gcond *> (stmt));
+          union_reps (stmt_rep, *label_reps.get (label));
+          break;
+
+        case GIMPLE_SWITCH:
+          n = gimple_switch_num_labels (as_a <gswitch *> (stmt));
+          for (unsigned int i = 0; i < n; i++)
+            {
+              tree switch_case
+                = gimple_switch_label (as_a <gswitch *> (stmt), i);
+              label = CASE_LABEL (switch_case);
+              union_reps (stmt_rep, *label_reps.get (label));
+            }
+          break;
+
+        case GIMPLE_GOTO:
+          label = gimple_goto_dest (stmt);
+          union_reps (stmt_rep, *label_reps.get (label));
+          break;
+
+        default:
+          gcc_unreachable ();
+        }
+    }
+}
+
 /* Decompose the body of the KERNELS_REGION, which was originally annotated
    with the KERNELS_CLAUSES, into a series of parallel regions.  */
 
@@ -486,9 +688,14 @@ decompose_kernels_region_body (gimple *kernels_region, tree kernels_clauses)
      separated from the loop.  */
   bool only_simple_assignments = true;
 
+  /* Precompute the control flow region information to determine whether an
+     OpenACC loop is executed conditionally or unconditionally.  */
+  control_flow_regions cf_regions (body_sequence);
+
   /* Iterate over the statements in the kernels region's body.  */
+  size_t idx = 0;
   gimple_stmt_iterator gsi, gsi_n;
-  for (gsi = gsi_start (body_sequence); !gsi_end_p (gsi); gsi = gsi_n)
+  for (gsi = gsi_start (body_sequence); !gsi_end_p (gsi); gsi = gsi_n, idx++)
     {
       /* Advance the iterator here because otherwise it would be invalidated
          by moving statements below.  */
@@ -497,7 +704,8 @@ decompose_kernels_region_body (gimple *kernels_region, tree kernels_clauses)
 
       gimple *stmt = gsi_stmt (gsi);
       gimple *omp_for = top_level_omp_for_in_stmt (stmt);
-      if (omp_for != NULL)
+      if (omp_for != NULL
+          && cf_regions.is_unconditional_oacc_for_loop (stmt, idx))
         {
           /* This is an OMP for statement, put it into a parallel region.
              But first, construct a gang-single region containing any
@@ -532,8 +740,8 @@ decompose_kernels_region_body (gimple *kernels_region, tree kernels_clauses)
         }
       else
         {
-          /* This is not an OMP for statement, so it will be put into a
-             gang-single region.  */
+          /* This is not an unconditional OMP for statement, so it will be
+             put into a gang-single region.  */
           gimple_seq_add_stmt (&gang_single_seq, stmt);
           /* Is this a simple assignment? We call it simple if it is an
              assignment to an artificial local variable.  This captures
