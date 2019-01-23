@@ -1,3 +1,11 @@
+2019-01-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcc/88931
+	* gcc.dg/torture/fp-int-convert-timode-1.c: New test.
+	* gcc.dg/torture/fp-int-convert-timode-2.c: Likewise.
+	* gcc.dg/torture/fp-int-convert-timode-3.c: Likewise.
+	* gcc.dg/torture/fp-int-convert-timode-4.c: Likewise.
+
 2019-01-23  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/88998
