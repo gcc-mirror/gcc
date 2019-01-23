@@ -242,14 +242,15 @@ genericize_cp_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
   tree exit = NULL;
   tree stmt_list = NULL;
 
-  blab = begin_bc_block (bc_break, start_locus);
-  clab = begin_bc_block (bc_continue, start_locus);
-
   protected_set_expr_location (incr, start_locus);
 
   cp_walk_tree (&cond, cp_genericize_r, data, NULL);
-  cp_walk_tree (&body, cp_genericize_r, data, NULL);
   cp_walk_tree (&incr, cp_genericize_r, data, NULL);
+
+  blab = begin_bc_block (bc_break, start_locus);
+  clab = begin_bc_block (bc_continue, start_locus);
+
+  cp_walk_tree (&body, cp_genericize_r, data, NULL);
   *walk_subtrees = 0;
 
   if (cond && TREE_CODE (cond) != INTEGER_CST)
