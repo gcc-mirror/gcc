@@ -1,5 +1,5 @@
 /* Check offloaded function's attributes and classification for unparallelized
-   OpenACC kernels.  */
+   OpenACC 'kernels'.  */
 
 /* { dg-additional-options "--param openacc-kernels=decompose" } */
 
@@ -22,9 +22,8 @@ extern unsigned int *__restrict a;
 extern unsigned int *__restrict b;
 extern unsigned int *__restrict c;
 
-/* An "extern"al mapping of loop iterations/array indices makes the loop
-   unparallelizable.  */
 extern unsigned int f (unsigned int);
+#pragma acc routine (f) seq
 
 void KERNELS ()
 {
@@ -36,6 +35,8 @@ void KERNELS ()
   /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_compute1 } */
   /* { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
   for (unsigned int i = 0; i < N; i++)
+    /* An "extern"al mapping of loop iterations/array indices makes the loop
+       unparallelizable.  */
     c[i] = a[f (i)] + b[f (i)];
 }
 

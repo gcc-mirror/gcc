@@ -1,5 +1,5 @@
 /* Check offloaded function's attributes and classification for OpenACC
-   kernels.  */
+   'kernels'.  */
 
 /* { dg-additional-options "--param openacc-kernels=decompose" } */
 
