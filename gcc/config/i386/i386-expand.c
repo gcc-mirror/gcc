@@ -15535,14 +15535,22 @@ void ix86_emit_swsqrtsf (rtx res, rtx a, machine_mode mode, bool recip)
 	}
     }
 
+  mthree = force_reg (mode, mthree);
+
   /* e0 = x0 * a */
   emit_insn (gen_rtx_SET (e0, gen_rtx_MULT (mode, x0, a)));
-  /* e1 = e0 * x0 */
-  emit_insn (gen_rtx_SET (e1, gen_rtx_MULT (mode, e0, x0)));
 
-  /* e2 = e1 - 3. */
-  mthree = force_reg (mode, mthree);
-  emit_insn (gen_rtx_SET (e2, gen_rtx_PLUS (mode, e1, mthree)));
+  if (TARGET_FMA || TARGET_AVX512F)
+    emit_insn (gen_rtx_SET (e2,
+			    gen_rtx_FMA (mode, e0, x0, mthree)));
+  else
+    {
+      /* e1 = e0 * x0 */
+      emit_insn (gen_rtx_SET (e1, gen_rtx_MULT (mode, e0, x0)));
+
+      /* e2 = e1 - 3. */
+      emit_insn (gen_rtx_SET (e2, gen_rtx_PLUS (mode, e1, mthree)));
+    }
 
   mhalf = force_reg (mode, mhalf);
   if (recip)
