@@ -1,5 +1,14 @@
 2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/testsuite/g++.dg/coroutines/torture/
+	coro-torture.exp: New.
+	* gcc/testsuite/g++.dg/coroutines/torture/
+	co-ret-void-is-suspend.C: New.
+	* gcc/testsuite/g++.dg/coroutines/torture/
+	co-ret-void-is-ready.C: New.
+
+2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/testsuite/g++.dg/coroutines/coro.h: Update this to move
 	closer to the actual experimental/coroutines header we will need.
 	At present, enough support for initial co_return cases.  Rename
