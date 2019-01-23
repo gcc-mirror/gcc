@@ -1,3 +1,10 @@
+2019-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/88964
+	* gimple-loop-interchange.cc (loop_cand::analyze_induction_var): Use
+	build_zero_cst instead of build_int_cst.  Return false for loop
+	invariants which honor signed zeros.
+
 2019-01-22  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* doc/invoke.texi (-fsplit-paths): This is enabled by default at -O3.
