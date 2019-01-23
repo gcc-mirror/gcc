@@ -181,7 +181,11 @@ is_oacc_parallel_or_serial (omp_context *ctx)
 	  && ((gimple_omp_target_kind (ctx->stmt)
 	       == GF_OMP_TARGET_KIND_OACC_PARALLEL)
 	      || (gimple_omp_target_kind (ctx->stmt)
-		  == GF_OMP_TARGET_KIND_OACC_SERIAL)));
+		  == GF_OMP_TARGET_KIND_OACC_SERIAL)
+	      || (gimple_omp_target_kind (ctx->stmt)
+		  == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED)
+	      || (gimple_omp_target_kind (ctx->stmt)
+		  == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE)));
 }
 
 /* Return true if CTX corresponds to an oacc kernels region.  */
@@ -193,6 +197,22 @@ is_oacc_kernels (omp_context *ctx)
   return ((outer_type == GIMPLE_OMP_TARGET)
 	  && (gimple_omp_target_kind (ctx->stmt)
 	      == GF_OMP_TARGET_KIND_OACC_KERNELS));
+}
+
+/* Return true if CTX corresponds to an oacc region that was generated from
+   an original kernels region that has been lowered to parallel regions.  */
+
+static bool
+was_originally_oacc_kernels (omp_context *ctx)
+{
+  enum gimple_code outer_type = gimple_code (ctx->stmt);
+  return ((outer_type == GIMPLE_OMP_TARGET)
+	  && ((gimple_omp_target_kind (ctx->stmt)
+	       == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED)
+	      || (gimple_omp_target_kind (ctx->stmt)
+		  == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE)
+	      || (gimple_omp_target_kind (ctx->stmt)
+		  == GF_OMP_TARGET_KIND_OACC_DATA_KERNELS)));
 }
 
 /* If DECL is the artificial dummy VAR_DECL created for non-static
@@ -2561,7 +2581,8 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
     {
       omp_context *tgt = enclosing_target_ctx (outer_ctx);
 
-      if (!tgt || is_oacc_parallel_or_serial (tgt))
+      if (!tgt || (is_oacc_parallel_or_serial (tgt)
+                    && !was_originally_oacc_kernels (tgt)))
 	for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
 	  {
 	    char const *check = NULL;
@@ -3128,6 +3149,8 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 		  case GF_OMP_TARGET_KIND_OACC_PARALLEL:
 		  case GF_OMP_TARGET_KIND_OACC_KERNELS:
 		  case GF_OMP_TARGET_KIND_OACC_SERIAL:
+		  case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+		  case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
 		    ok = true;
 		    break;
 
@@ -3583,6 +3606,11 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	      stmt_name = "enter/exit data"; break;
 	    case GF_OMP_TARGET_KIND_OACC_HOST_DATA: stmt_name = "host_data";
 	      break;
+	    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+	    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
+	    case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
+	      /* These three cases arise from kernels conversion.  */
+	      stmt_name = "kernels"; break;
 	    default: gcc_unreachable ();
 	    }
 	  switch (gimple_omp_target_kind (ctx->stmt))
@@ -3598,6 +3626,11 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	    case GF_OMP_TARGET_KIND_OACC_DATA: ctx_stmt_name = "data"; break;
 	    case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
 	      ctx_stmt_name = "host_data"; break;
+	    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+	    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
+	    case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
+	      /* These three cases arise from kernels conversion.  */
+	      ctx_stmt_name = "kernels"; break;
 	    default: gcc_unreachable ();
 	    }
 
@@ -6136,7 +6169,11 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 		    if ((gimple_omp_target_kind (probe->stmt)
 			 != GF_OMP_TARGET_KIND_OACC_PARALLEL)
 			&& (gimple_omp_target_kind (probe->stmt)
-			    != GF_OMP_TARGET_KIND_OACC_SERIAL))
+			    != GF_OMP_TARGET_KIND_OACC_SERIAL)
+			&& (gimple_omp_target_kind (probe->stmt)
+			    != GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED)
+			&& (gimple_omp_target_kind (probe->stmt)
+			    != GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE))
 		      goto do_lookup;
 
 		    cls = gimple_omp_target_clauses (probe->stmt);
@@ -9805,11 +9842,14 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
     case GF_OMP_TARGET_KIND_OACC_UPDATE:
     case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
     case GF_OMP_TARGET_KIND_OACC_DECLARE:
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
       data_region = false;
       break;
     case GF_OMP_TARGET_KIND_DATA:
     case GF_OMP_TARGET_KIND_OACC_DATA:
     case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
+    case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
       data_region = true;
       break;
     default:
