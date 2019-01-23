@@ -1,3 +1,9 @@
+2019-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89008
+	* tree-ssa-reassoc.c (eliminate_using_constants): For * 0 do
+	not leave another stray operand.
+
 2019-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* BASE-VER: Bump to 9.0.1.

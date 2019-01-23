@@ -1,3 +1,8 @@
+2019-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89008
+	* gcc.dg/torture/pr89008.c: New testcase.
+
 2019-01-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/opt4.ads: New test.
