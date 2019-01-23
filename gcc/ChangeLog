@@ -1,3 +1,9 @@
+2019-01-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cgraphunit.c (cgraph_node::expand_thunk): When expanding a GIMPLE
+	thunk that returns by reference, use the type of the return object
+	of the thunk instead of that of the alias to build the dereference.
+
 2019-01-23  Vineet Gupta  <vgupta@synopsys.com>
 
 	* config/arc/atomic.md: Add operand to DMB instruction.
