@@ -26,6 +26,6 @@ main (int, char **)
   m.insert ({1, 1});
   assert (m.load_factor () <= m.max_load_factor ());
 
-  assert (d == 3);
+  assert (d == 3.0);
   return 0;
 }
