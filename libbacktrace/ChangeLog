@@ -1,3 +1,9 @@
+2019-01-23  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (struct unit): Use size_t for low_offset/high_offset fields.
+	(units_search, find_unit): Use size_t for offset.
+	(build_address_map): Use size_t for unit_offset.
+
 2019-01-20  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* allocfail.c (main): Increase portability of printf statement.
