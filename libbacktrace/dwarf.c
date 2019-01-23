@@ -285,10 +285,10 @@ struct unit
   size_t unit_data_offset;
   /* Offset of the start of the compilation unit from the start of the
      .debug_info section.  */
-  off_t low_offset;
+  size_t low_offset;
   /* Offset of the end of the compilation unit from the start of the
      .debug_info section.  */
-  off_t high_offset;
+  size_t high_offset;
   /* DWARF version.  */
   int version;
   /* Whether unit is DWARF64.  */
@@ -891,9 +891,9 @@ read_attribute (enum dwarf_form form, struct dwarf_buf *buf,
 static int
 units_search (const void *vkey, const void *ventry)
 {
-  const off_t *key = (const off_t *) vkey;
+  const size_t *key = (const size_t *) vkey;
   const struct unit *entry = *((const struct unit *const *) ventry);
-  off_t offset;
+  size_t offset;
 
   offset = *key;
   if (offset < entry->low_offset)
@@ -907,7 +907,7 @@ units_search (const void *vkey, const void *ventry)
 /* Find a unit in PU containing OFFSET.  */
 
 static struct unit *
-find_unit (struct unit **pu, size_t units_count, off_t offset)
+find_unit (struct unit **pu, size_t units_count, size_t offset)
 {
   struct unit **u;
   u = bsearch (&offset, pu, units_count, sizeof (struct unit *), units_search);
@@ -1514,7 +1514,7 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
   size_t i;
   struct unit **pu;
   size_t prev_addrs_count;
-  off_t unit_offset = 0;
+  size_t unit_offset = 0;
 
   memset (&addrs->vec, 0, sizeof addrs->vec);
   memset (&unit_vec->vec, 0, sizeof unit_vec->vec);
