@@ -1,5 +1,15 @@
 2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/coroutine-passes.c: Update header use.
+	(first_vuser, move_edge_and_update_vdef): New helper functions.
+	(execute_expand_coro_ifns): Try to minimise early scan for CO_XXX
+	functions, since this has to be executed for all fns.
+	Move dummy edges for the dispatcher to their real targets for any
+	YIELD points that remain.  Elide others. Arrange to update DOM and
+	VSSA.
+
+2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/internal-fn.def (CO_ACTOR, CO_YIELD): Make LEAF.
 	Reorder defs to keep NOP at the end.
 	* gcc/internal-fn.c (expand_CO_FRAME, expand_CO_YIELD,
