@@ -1,6 +1,8 @@
-// Copyright 2017 The Go Authors. All rights reserved.
+// Copyright 2018 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
+// +build aix
 
 package runtime
 
@@ -55,17 +57,16 @@ func semacreate(mp *m) {
 func semasleep(ns int64) int32 {
 	_m_ := getg().m
 	if ns >= 0 {
-		const CLOCK_REALTIME int64 = 9
 		var ts timespec
 
-		if clock_gettime(CLOCK_REALTIME, &ts) != 0 {
+		if clock_gettime(_CLOCK_REALTIME, &ts) != 0 {
 			throw("clock_gettime")
 		}
-		ts.tv_sec += timespec_sec_t(ns / 1000000000)
-		ts.tv_nsec += timespec_nsec_t(ns % 1000000000)
-		if ts.tv_nsec >= 1000000000 {
-			ts.tv_sec += timespec_sec_t(1)
-			ts.tv_nsec -= timespec_nsec_t(1000000000)
+		ts.tv_sec += ns / 1e9
+		ts.tv_nsec += ns % 1e9
+		if ts.tv_nsec >= 1e9 {
+			ts.tv_sec++
+			ts.tv_nsec -= 1e9
 		}
 
 		if sem_timedwait((*semt)(unsafe.Pointer(_m_.mos.waitsema)), &ts) != 0 {
@@ -73,6 +74,7 @@ func semasleep(ns int64) int32 {
 			if err == _ETIMEDOUT || err == _EAGAIN || err == _EINTR {
 				return -1
 			}
+			println("sem_timedwait err ", err, " ts.tv_sec ", ts.tv_sec, " ts.tv_nsec ", ts.tv_nsec, " ns ", ns, " id ", _m_.id)
 			throw("sem_timedwait")
 		}
 		return 0
@@ -96,3 +98,8 @@ func semawakeup(mp *m) {
 		throw("sem_post")
 	}
 }
+
+const (
+	_CLOCK_REALTIME  = 9
+	_CLOCK_MONOTONIC = 10
+)

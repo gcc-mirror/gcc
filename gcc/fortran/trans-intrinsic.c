@@ -1432,7 +1432,7 @@ conv_expr_ref_to_caf_ref (stmtblock_t *block, gfc_expr *expr)
 			  gcc_assert (end != NULL_TREE);
 			  /* Multiply with the product of array's stride and
 			     the step of the ref to a virtual upper bound.
-			     We can not compute the actual upper bound here or
+			     We cannot compute the actual upper bound here or
 			     the caflib would compute the extend
 			     incorrectly.  */
 			  end = fold_build2 (MULT_EXPR, gfc_array_index_type,
@@ -2825,6 +2825,79 @@ gfc_conv_intrinsic_rank (gfc_se *se, gfc_expr *expr)
   se->expr = gfc_conv_descriptor_rank (argse.expr);
   se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind),
 			   se->expr);
+}
+
+
+static void
+gfc_conv_intrinsic_is_contiguous (gfc_se * se, gfc_expr * expr)
+{
+  gfc_expr *arg;
+  gfc_ss *ss;
+  gfc_se argse;
+  tree desc, tmp, stride, extent, cond;
+  int i;
+  tree fncall0;
+  gfc_array_spec *as;
+
+  arg = expr->value.function.actual->expr;
+
+  if (arg->ts.type == BT_CLASS)
+    gfc_add_class_array_ref (arg);
+
+  ss = gfc_walk_expr (arg);
+  gcc_assert (ss != gfc_ss_terminator);
+  gfc_init_se (&argse, NULL);
+  argse.data_not_needed = 1;
+  gfc_conv_expr_descriptor (&argse, arg);
+
+  as = gfc_get_full_arrayspec_from_expr (arg);
+
+  /* Create:  stride[0] == 1 && stride[1] == extend[0]*stride[0] && ...
+     Note in addition that zero-sized arrays don't count as contiguous.  */
+
+  if (as && as->type == AS_ASSUMED_RANK)
+    {
+      /* Build the call to is_contiguous0.  */
+      argse.want_pointer = 1;
+      gfc_conv_expr_descriptor (&argse, arg);
+      gfc_add_block_to_block (&se->pre, &argse.pre);
+      gfc_add_block_to_block (&se->post, &argse.post);
+      desc = gfc_evaluate_now (argse.expr, &se->pre);
+      fncall0 = build_call_expr_loc (input_location,
+				     gfor_fndecl_is_contiguous0, 1, desc);
+      se->expr = fncall0;
+      se->expr = convert (logical_type_node, se->expr);
+    }
+  else
+    {
+      gfc_add_block_to_block (&se->pre, &argse.pre);
+      gfc_add_block_to_block (&se->post, &argse.post);
+      desc = gfc_evaluate_now (argse.expr, &se->pre);
+  
+      stride = gfc_conv_descriptor_stride_get (desc, gfc_rank_cst[0]);
+      cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
+			      stride, build_int_cst (TREE_TYPE (stride), 1));
+
+      for (i = 0; i < expr->value.function.actual->expr->rank - 1; i++)
+	{
+	  tmp = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[i]);
+	  extent = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[i]);
+	  extent = fold_build2_loc (input_location, MINUS_EXPR,
+				    gfc_array_index_type, extent, tmp);
+	  extent = fold_build2_loc (input_location, PLUS_EXPR,
+				    gfc_array_index_type, extent,
+				    gfc_index_one_node);
+	  tmp = gfc_conv_descriptor_stride_get (desc, gfc_rank_cst[i]);
+	  tmp = fold_build2_loc (input_location, MULT_EXPR, TREE_TYPE (tmp),
+				 tmp, extent);
+	  stride = gfc_conv_descriptor_stride_get (desc, gfc_rank_cst[i+1]);
+	  tmp = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
+				 stride, tmp);
+	  cond = fold_build2_loc (input_location, TRUTH_AND_EXPR,
+				  boolean_type_node, cond, tmp);
+	}
+      se->expr = convert (gfc_typenode_for_spec (&expr->ts), cond);
+    }
 }
 
 
@@ -9729,6 +9802,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_IS_IOSTAT_EOR:
       gfc_conv_has_intvalue (se, expr, LIBERROR_EOR);
+      break;
+
+    case GFC_ISYM_IS_CONTIGUOUS:
+      gfc_conv_intrinsic_is_contiguous (se, expr);
       break;
 
     case GFC_ISYM_ISNAN:

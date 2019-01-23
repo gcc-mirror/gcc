@@ -725,6 +725,12 @@ d_post_options (const char ** fn)
 	global.params.useSwitchError = false;
     }
 
+  /* Turn off partitioning unless it was explicitly requested, as it doesn't
+     work with D exception chaining, where EH handler uses LSDA to determine
+     whether two thrown exception are in the same context.  */
+  if (!global_options_set.x_flag_reorder_blocks_and_partition)
+    global_options.x_flag_reorder_blocks_and_partition = 0;
+
   /* Error about use of deprecated features.  */
   if (global.params.useDeprecated == DIAGNOSTICinform
       && global.params.warnings == DIAGNOSTICerror)

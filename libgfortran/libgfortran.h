@@ -1375,6 +1375,11 @@ typedef GFC_ARRAY_DESCRIPTOR (void) array_t;
 extern index_type size0 (const array_t * array); 
 iexport_proto(size0);
 
+/* is_contiguous.c */
+
+extern GFC_LOGICAL_4 is_contiguous0 (const array_t * const restrict array); 
+iexport_proto(is_contiguous0);
+
 /* bounds.c */
 
 extern void bounds_equal_extents (array_t *, array_t *, const char *,

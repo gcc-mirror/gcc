@@ -3610,6 +3610,16 @@ match_io_element (io_kind k, gfc_code **cpp)
       m = gfc_match_variable (&expr, 0);
       if (m == MATCH_NO)
 	gfc_error ("Expected variable in READ statement at %C");
+
+      if (m == MATCH_YES
+	  && expr->expr_type == EXPR_VARIABLE
+	  && expr->symtree->n.sym->attr.external)
+	{
+	  gfc_error ("Expecting variable or io-implied-do at %L",
+		     &expr->where);
+	  m = MATCH_ERROR;
+	}
+
     }
   else
     {
@@ -4619,7 +4629,7 @@ gfc_match_inquire (void)
       && ((mpz_get_si (inquire->unit->value.integer) == GFC_INTERNAL_UNIT4)
       || (mpz_get_si (inquire->unit->value.integer) == GFC_INTERNAL_UNIT)))
     {
-      gfc_error ("UNIT number in INQUIRE statement at %L can not "
+      gfc_error ("UNIT number in INQUIRE statement at %L cannot "
 		 "be %d", &loc, (int) mpz_get_si (inquire->unit->value.integer));
       goto cleanup;
     }

@@ -82,7 +82,7 @@ go_field_alignment (tree t)
 }
 
 /* This is called by the Go frontend proper if the unsafe package was
-   imported.  When that happens we can not do type-based alias
+   imported.  When that happens we cannot do type-based alias
    analysis.  */
 
 void

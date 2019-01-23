@@ -442,6 +442,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       OVL_HIDDEN_P (in OVERLOAD)
       SWITCH_STMT_NO_BREAK_P (in SWITCH_STMT)
       LAMBDA_EXPR_CAPTURE_OPTIMIZED (in LAMBDA_EXPR)
+      IMPLICIT_CONV_EXPR_BRACED_INIT (in IMPLICIT_CONV_EXPR)
    3: (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
@@ -1626,6 +1627,7 @@ struct GTY(()) saved_scope {
 
   int x_processing_template_decl;
   int x_processing_specialization;
+  int suppress_location_wrappers;
   BOOL_BITFIELD x_processing_explicit_instantiation : 1;
   BOOL_BITFIELD need_pop_function_context : 1;
 
@@ -4237,7 +4239,12 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define IMPLICIT_CONV_EXPR_NONTYPE_ARG(NODE) \
   (TREE_LANG_FLAG_1 (IMPLICIT_CONV_EXPR_CHECK (NODE)))
 
-/* Nonzero means that an object of this type can not be initialized using
+/* True if NODE represents a conversion for braced-init-list in a
+   template.  Set by perform_implicit_conversion_flags.  */
+#define IMPLICIT_CONV_EXPR_BRACED_INIT(NODE) \
+  (TREE_LANG_FLAG_2 (IMPLICIT_CONV_EXPR_CHECK (NODE)))
+
+/* Nonzero means that an object of this type cannot be initialized using
    an initializer list.  */
 #define CLASSTYPE_NON_AGGREGATE(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->non_aggregate)
@@ -5482,6 +5489,8 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 #define LOOKUP_NO_NON_INTEGRAL (LOOKUP_NO_RVAL_BIND << 1)
 /* Used for delegating constructors in order to diagnose self-delegation.  */
 #define LOOKUP_DELEGATING_CONS (LOOKUP_NO_NON_INTEGRAL << 1)
+/* Allow initialization of a flexible array members.  */
+#define LOOKUP_ALLOW_FLEXARRAY_INIT (LOOKUP_DELEGATING_CONS << 1)
 
 #define LOOKUP_NAMESPACES_ONLY(F)  \
   (((F) & LOOKUP_PREFER_NAMESPACES) && !((F) & LOOKUP_PREFER_TYPES))
@@ -6850,6 +6859,7 @@ extern tree get_template_innermost_arguments	(const_tree);
 extern tree get_template_argument_pack_elems	(const_tree);
 extern tree get_function_template_decl		(const_tree);
 extern tree resolve_nondeduced_context		(tree, tsubst_flags_t);
+extern tree resolve_nondeduced_context_or_error	(tree, tsubst_flags_t);
 extern hashval_t iterative_hash_template_arg (tree arg, hashval_t val);
 extern tree coerce_template_parms               (tree, tree, tree);
 extern tree coerce_template_parms               (tree, tree, tree, tsubst_flags_t);
@@ -7170,6 +7180,8 @@ extern void maybe_add_lambda_conv_op            (tree);
 extern bool is_lambda_ignored_entity            (tree);
 extern bool lambda_static_thunk_p		(tree);
 extern tree finish_builtin_launder		(location_t, tree,
+						 tsubst_flags_t);
+extern tree cp_build_vec_convert		(tree, location_t, tree,
 						 tsubst_flags_t);
 extern void start_lambda_scope			(tree);
 extern void record_lambda_scope			(tree);
@@ -7514,6 +7526,7 @@ extern tree store_init_value			(tree, tree, vec<tree, va_gc>**, int);
 extern tree split_nonconstant_init		(tree, tree);
 extern bool check_narrowing			(tree, tree, tsubst_flags_t,
 						 bool = false);
+extern bool ordinary_char_type_p		(tree);
 extern tree digest_init				(tree, tree, tsubst_flags_t);
 extern tree digest_init_flags			(tree, tree, int, tsubst_flags_t);
 extern tree digest_nsdmi_init		        (tree, tree, tsubst_flags_t);

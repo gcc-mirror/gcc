@@ -4933,6 +4933,14 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
 	}
       break;
 
+    case LAMBDA_EXPR:
+      /* Don't walk into the body of the lambda, but the capture initializers
+	 are part of the enclosing context.  */
+      for (tree cap = LAMBDA_EXPR_CAPTURE_LIST (*tp); cap;
+	   cap = TREE_CHAIN (cap))
+	WALK_SUBTREE (TREE_VALUE (cap));
+      break;
+
     default:
       return NULL_TREE;
     }
@@ -5022,6 +5030,7 @@ char_type_p (tree type)
   return (same_type_p (type, char_type_node)
 	  || same_type_p (type, unsigned_char_type_node)
 	  || same_type_p (type, signed_char_type_node)
+	  || same_type_p (type, char8_type_node)
 	  || same_type_p (type, char16_type_node)
 	  || same_type_p (type, char32_type_node)
 	  || same_type_p (type, wchar_type_node));

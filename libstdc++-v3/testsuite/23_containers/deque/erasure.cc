@@ -21,6 +21,12 @@
 #include <deque>
 #include <testsuite_hooks.h>
 
+#ifndef __cpp_lib_erase_if
+# error "Feature-test macro for erase_if missing"
+#elif __cpp_lib_erase_if < 201811
+# error "Feature-test macro for erase_if has wrong value"
+#endif
+
 void
 test01()
 {

@@ -1685,6 +1685,7 @@ expand_simd_clones (struct cgraph_node *node)
 	    simd_clone_adjust (n);
 	  else
 	    {
+	      targetm.simd_clone.adjust (n);
 	      simd_clone_adjust_return_type (n);
 	      simd_clone_adjust_argument_types (n);
 	    }

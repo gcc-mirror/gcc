@@ -1,0 +1,26 @@
+The files in this directory where noted are part of the DRuntime
+and Phobos library.
+
+DRuntime is the low-level runtime library backing the D programming
+language, hosted at https://github.com/dlang/druntime/.
+
+Phobos is the standard library for the D Programming Language, hosted
+at https://github.com/dlang/phobos/.
+
+The following sources and directories are part of DRuntime:
+  libdruntime/core/
+  libdruntime/gc/
+  libdruntime/gcstub/
+  libdruntime/object.d
+  libdruntime/rt/
+
+The following sources and directories are part of Phobos:
+  src/etc/
+  src/index.d
+  src/std/
+
+To report a bug or look up known issues with the runtime or standard
+library please visit the issue tracker at https://issues.dlang.org/.
+
+All changes to either of these libraries should go through the
+upstream repository first, then merged back to GCC.

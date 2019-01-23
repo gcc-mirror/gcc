@@ -1489,6 +1489,16 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 #define CALL_LONG		0x00000008	/* always call indirect */
 #define CALL_LIBCALL		0x00000010	/* libcall */
 
+#define IS_V4_FP_ARGS(OP) \
+  ((INTVAL (OP) & (CALL_V4_CLEAR_FP_ARGS | CALL_V4_SET_FP_ARGS)) != 0)
+
+/* Whether OP is an UNSPEC used in !TARGET_TLS_MARKER calls.  */
+#define IS_NOMARK_TLSGETADDR(OP)		\
+  (!TARGET_TLS_MARKERS				\
+   && GET_CODE (OP) == UNSPEC			\
+   && (XINT (OP, 1) == UNSPEC_TLSGD		\
+       || XINT (OP, 1) == UNSPEC_TLSLD))
+
 /* We don't have prologue and epilogue functions to save/restore
    everything for most ABIs.  */
 #define WORLD_SAVE_P(INFO) 0

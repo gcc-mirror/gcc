@@ -1,3 +1,303 @@
+2019-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/44715
+	* cp-gimplify.c (genericize_cp_loop): Call begin_bc_block only
+	after genericizing cond and incr expressions.
+
+	PR c++/88984
+	* cp-gimplify.c (genericize_switch_stmt): Move cond genericization
+	before the begin_bc_block call.
+
+2019-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87893 - constexpr ctor ICE on ARM.
+	PR c++/88293 - ICE with comma expression.
+	* constexpr.c (initialized_type): Don't shortcut non-void type.
+	Handle COMPOUND_EXPR.
+	(cxx_eval_outermost_constant_expr): Return early for void type.
+
+2019-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88949
+	* optimize.c (cxx_copy_decl): New function.
+	(clone_body): Use it instead of copy_decl_no_change.
+
+	PR sanitizer/88901
+	* typeck.c (cp_build_binary_op): Don't instrument
+	SANITIZE_POINTER_COMPARE if processing_template_decl.
+	(pointer_diff): Similarly for SANITIZE_POINTER_SUBTRACT.
+
+2019-01-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88875 - error with explicit list constructor.
+	* call.c (reference_binding): Don't modify EXPR.  Set
+	need_temporary_p on the ck_user conversion for a temporary.
+	(convert_like_real): Check it.
+
+2019-01-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/51628
+	PR c/88664
+	* call.c (convert_for_arg_passing): Upate the
+	warn_for_address_or_pointer_of_packed_member call.
+	* typeck.c (convert_for_assignment): Likewise.
+
+2019-01-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86205 - ICE with ?: of throw and template-id.
+	* pt.c (resolve_nondeduced_context_or_error): Split out from...
+	* typeck.c (decay_conversion): ...here.
+	* call.c (build_conditional_expr_1): Use it.
+
+	PR c++/86740, ICE with constexpr if and nested generic lambdas.
+	* tree.c (cp_walk_subtrees): Handle LAMBDA_EXPR.
+
+2019-01-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Use typespec_loc in error messages
+	about 'auto' and trailing return type.
+
+2019-01-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/88699
+	* class.c (add_method): Don't use DECL_DESTRUCTOR_P on
+	USING_DECLs.
+
+2019-01-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/86610
+	* semantics.c (process_outer_var_ref): Only skip dependent types
+	in templates.
+
+2019-01-17  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/87768
+	* cp-tree.h (saved_scope): Add suppress_location_wrappers.
+	* name-lookup.c (do_push_to_top_level): Save and reset it.
+	(do_pop_from_top_level): Restore it.
+
+	PR c++/86648
+	* pt.c (make_template_placeholder): Use auto_identifier.
+	(is_auto): Drop CLASS_PLACEHOLDER_TEMPLATE test.
+	* error.c (dump_type): Handle template placeholders.
+	* cxx-pretty-print.c (pp_cx_unqualified_id): Likewise.
+
+	PR c++/88146
+	* cvt.c (convert_to_void): Handle all cdtor calls as if
+	returning void.
+
+2019-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Use locations[ds_storage_class] in
+	error messages about ill-formed uses of mutable.
+
+2019-01-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/78244 - narrowing conversion in template not detected.
+	* call.c (perform_implicit_conversion_flags): Set
+	IMPLICIT_CONV_EXPR_BRACED_INIT.
+	* cp-tree.h (IMPLICIT_CONV_EXPR_BRACED_INIT): New.
+	* pt.c (tsubst_copy_and_build): Use it.
+
+2019-01-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/88795
+	* pt.c (build_deduction_guide): Bail out if tsubst_arg_types
+	fails.
+
+2019-01-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (start_decl): Improve error location.
+	* decl2.c (grokfield): Likewise.
+
+2019-01-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Move further up the location_t loc
+	declaration and use the location when building a TYPE_DECL for
+	a typedef name.
+	* decl2.c (grokbitfield): Use DECL_SOURCE_LOCATION in the error
+	about an ill-formed bit-field as typedef.
+
+2019-01-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88830 - ICE with abstract class.
+	* decl2.c (maybe_emit_vtables): Check CLASSTYPE_LAZY_DESTRUCTOR.
+	Fix formatting.
+
+	PR c++/88825 - ICE with bogus function return type deduction.
+	* typeck.c (can_do_nrvo_p): Check error_mark_node.
+
+2019-01-14  Tom Honermann  <tom@honermann.net>
+
+	Implement P0482R5, char8_t: A type for UTF-8 characters and strings
+	* cvt.c (type_promotes_to): Handle char8_t promotion.
+	* decl.c (grokdeclarator): Handle invalid type specifier
+	combinations involving char8_t.
+	* lex.c (init_reswords): Add char8_t as a reserved word.
+	* mangle.c (write_builtin_type): Add name mangling for char8_t (Du).
+	* parser.c (cp_keyword_starts_decl_specifier_p)
+	(cp_parser_simple_type_specifier): Recognize char8_t as a simple
+	type specifier.
+	(cp_parser_string_literal): Use char8_array_type_node for the type
+	of CPP_UTF8STRING.
+	(cp_parser_set_decl_spec_type): Tolerate char8_t typedefs in system
+	headers.
+	* rtti.c (emit_support_tinfos): type_info support for char8_t.
+	* tree.c (char_type_p): Recognize char8_t as a character type.
+	* typeck.c (string_conv_p): Handle conversions of u8 string
+	literals of char8_t type.
+	(check_literal_operator_args): Handle UDLs with u8 string literals
+	of char8_t type.
+	* typeck2.c (ordinary_char_type_p): New.
+	(digest_init_r): Disallow initializing a char array with a u8 string
+	literal.
+
+2019-01-14  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/88263
+	* decl2.c (get_tls_wrapper_fn): Use DECL_SOURCE_LOCATION
+	as location of the TLS wrapper.
+
+2019-01-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (cp_finish_decl): Improve error location.
+	* decl2.c (grokfield): Likewise, improve two locations.
+
+2019-01-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88692, c++/87882 - -Wredundant-move false positive with *this.
+	* typeck.c (maybe_warn_pessimizing_move): Return if ARG isn't
+	ADDR_EXPR.
+
+2019-01-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88312 - pack expansion of decltype.
+	* pt.c (instantiation_dependent_r): A template non-type parameter
+	pack is instantiation-dependent.
+
+2019-01-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88613 - ICE with use of const var in lambda.
+	* expr.c (mark_use): Fix location wrapper handling.
+	* cp-gimplify.c (cp_fold_maybe_rvalue): Call mark_rvalue_use.
+
+2019-01-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR C++/88114
+	* decl2.c (maybe_emit_vtables): If needed, generate code for
+	the destructor of an abstract class.
+	(mark_used): Update comment for older function-name change.
+
+2019-01-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (start_decl): Improve error location.
+	(grokdeclarator): Likewise, improve two locations.
+
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
+	* cp-tree.h: Mechanically replace "can not" with "cannot".
+	* parser.c: Likewise.
+	* pt.c: Likewise.
+
+2019-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grok_reference_init): Improve error location.
+	(grokdeclarator): Likewise, improve two locations.
+
+2019-01-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88538 - braced-init-list in template-argument-list.
+	* parser.c (cp_parser_template_argument): Handle braced-init-list when
+	in C++20.
+
+	PR c++/88548 - this accepted in static member functions.
+	* parser.c (cp_debug_parser): Adjust printing of
+	local_variables_forbidden_p.
+	(cp_parser_new): Set local_variables_forbidden_p to 0 rather than false.
+	(cp_parser_primary_expression): When checking
+	local_variables_forbidden_p, use THIS_FORBIDDEN or
+	LOCAL_VARS_FORBIDDEN.
+	(cp_parser_lambda_body): Update the type of
+	local_variables_forbidden_p.  Set it to 0 rather than false.
+	(cp_parser_condition): Adjust call to cp_parser_declarator.
+	(cp_parser_explicit_instantiation): Likewise.
+	(cp_parser_init_declarator): Likewise.
+	(cp_parser_declarator): New parameter.  Use it.
+	(cp_parser_direct_declarator): New parameter.  Use it to set
+	local_variables_forbidden_p.  Adjust call to cp_parser_declarator.
+	(cp_parser_type_id_1): Adjust call to cp_parser_declarator.
+	(cp_parser_parameter_declaration): Likewise.
+	(cp_parser_default_argument): Update the type of
+	local_variables_forbidden_p.  Set it to LOCAL_VARS_AND_THIS_FORBIDDEN
+	rather than true.
+	(cp_parser_member_declaration): Tell cp_parser_declarator if we saw
+	'static' or 'friend'.
+	(cp_parser_exception_declaration): Adjust call to cp_parser_declarator.
+	(cp_parser_late_parsing_default_args): Update the type of
+	local_variables_forbidden_p.  Set it to LOCAL_VARS_AND_THIS_FORBIDDEN
+	rather than true.
+	(cp_parser_cache_defarg): Adjust call to cp_parser_declarator.
+	(cp_parser_objc_class_ivars): Likewise.
+	(cp_parser_objc_struct_declaration): Likewise.
+	(cp_parser_omp_for_loop_init): Likewise.
+	* parser.h (cp_parser): Change the type of local_variables_forbidden_p
+	to unsigned char.
+	(LOCAL_VARS_FORBIDDEN, LOCAL_VARS_AND_THIS_FORBIDDEN, THIS_FORBIDDEN):
+	Define.
+
+2019-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (start_decl): Improve permerror location.
+
+2019-01-08  Jonathan Wakely  <jwakely@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88554
+	* decl.c (finish_function): For -Wreturn-type don't add a return *this;
+	fixit hint if current_class_ref is NULL.  Use a single if instead of
+	two nested ones.
+
+2019-01-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (start_decl): Improve two error_at locations.
+	(expand_static_init): Likewise.
+
+2019-01-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88741 - wrong error with initializer-string.
+	* decl.c (cp_complete_array_type): Strip any location wrappers.
+
+2019-01-07  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/88261
+	PR c++/69338
+	PR c++/69696
+	PR c++/69697
+	* cp-tree.h (LOOKUP_ALLOW_FLEXARRAY_INIT): New flag value.
+	* typeck2.c (digest_init_r): Raise an error for non-static
+	initialization of a flexible array member.
+	(process_init_constructor, massage_init_elt,
+	process_init_constructor_array, process_init_constructor_record,
+	process_init_constructor_union, process_init_constructor): Add the
+	flags parameter and pass it thru.
+	(store_init_value): Pass LOOKUP_ALLOW_FLEXARRAY_INIT parameter to
+	digest_init_flags for static decls.
+
+2019-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85052
+	* cp-tree.h (cp_build_vec_convert): Declare.
+	* parser.c (cp_parser_postfix_expression): Parse
+	__builtin_convertvector.
+	* constexpr.c: Include fold-const-call.h.
+	(cxx_eval_internal_function): Handle IFN_VEC_CONVERT.
+	(potential_constant_expression_1): Likewise.
+	* semantics.c (cp_build_vec_convert): New function.
+	* pt.c (tsubst_copy_and_build): Handle CALL_EXPR to
+	IFN_VEC_CONVERT.
+
 2019-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88636

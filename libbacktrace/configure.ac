@@ -78,6 +78,9 @@ case "$AWK" in
 "") AC_MSG_ERROR([can't build without awk]) ;;
 esac
 
+AC_CHECK_PROG(DWZ, dwz, dwz)
+AM_CONDITIONAL(HAVE_DWZ, test "$DWZ" != "")
+
 LT_INIT
 AM_PROG_LIBTOOL
 

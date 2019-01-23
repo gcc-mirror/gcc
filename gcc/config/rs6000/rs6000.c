@@ -81,6 +81,8 @@
 #include "case-cfn-macros.h"
 #include "ppc-auxv.h"
 #include "tree-ssa-propagate.h"
+#include "tree-vrp.h"
+#include "tree-ssanames.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -2197,7 +2199,8 @@ rs6000_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 /* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  */
 
 static bool
-rs6000_hard_regno_call_part_clobbered (unsigned int regno, machine_mode mode)
+rs6000_hard_regno_call_part_clobbered (rtx_insn *insn ATTRIBUTE_UNUSED,
+				       unsigned int regno, machine_mode mode)
 {
   if (TARGET_32BIT
       && TARGET_POWERPC64
@@ -8118,7 +8121,7 @@ legitimate_lo_sum_address_p (machine_mode mode, rtx x, int strict)
 	 recognizes some LO_SUM addresses as valid although this
 	 function says opposite.  In most cases, LRA through different
 	 transformations can generate correct code for address reloads.
-	 It can not manage only some LO_SUM cases.  So we need to add
+	 It cannot manage only some LO_SUM cases.  So we need to add
 	 code analogous to one in rs6000_legitimize_reload_address for
 	 LOW_SUM here saying that some addresses are still valid.  */
       large_toc_ok = (lra_in_progress && TARGET_CMODEL != CMODEL_SMALL
@@ -8388,14 +8391,17 @@ rs6000_delegitimize_address (rtx orig_x)
 {
   rtx x, y, offset;
 
+  if (GET_CODE (orig_x) == UNSPEC && XINT (orig_x, 1) == UNSPEC_FUSION_GPR)
+    orig_x = XVECEXP (orig_x, 0, 0);
+
   orig_x = delegitimize_mem_from_attrs (orig_x);
+
   x = orig_x;
   if (MEM_P (x))
     x = XEXP (x, 0);
 
   y = x;
-  if (TARGET_CMODEL != CMODEL_SMALL
-      && GET_CODE (y) == LO_SUM)
+  if (TARGET_CMODEL != CMODEL_SMALL && GET_CODE (y) == LO_SUM)
     y = XEXP (y, 1);
 
   offset = NULL_RTX;
@@ -8407,8 +8413,7 @@ rs6000_delegitimize_address (rtx orig_x)
       y = XEXP (y, 0);
     }
 
-  if (GET_CODE (y) == UNSPEC
-      && XINT (y, 1) == UNSPEC_TOCREL)
+  if (GET_CODE (y) == UNSPEC && XINT (y, 1) == UNSPEC_TOCREL)
     {
       y = XVECEXP (y, 0, 0);
 
@@ -8435,8 +8440,7 @@ rs6000_delegitimize_address (rtx orig_x)
       && GET_CODE (XEXP (orig_x, 1)) == CONST)
     {
       y = XEXP (XEXP (orig_x, 1), 0);
-      if (GET_CODE (y) == UNSPEC
-	  && XINT (y, 1) == UNSPEC_MACHOPIC_OFFSET)
+      if (GET_CODE (y) == UNSPEC && XINT (y, 1) == UNSPEC_MACHOPIC_OFFSET)
 	return XVECEXP (y, 0, 0);
     }
 
@@ -8624,35 +8628,39 @@ rs6000_legitimize_tls_address_aix (rtx addr, enum tls_model model)
   return dest;
 }
 
-/* Mess with a call, to make it look like the tls_gdld insns when
-   !TARGET_TLS_MARKERS.  These insns have an extra unspec to
-   differentiate them from standard calls, because they need to emit
-   the arg setup insns as well as the actual call.  That keeps the
-   arg setup insns immediately adjacent to the branch and link.  */
+/* Output arg setup instructions for a !TARGET_TLS_MARKERS
+   __tls_get_addr call.  */
 
-static void
-edit_tls_call_insn (rtx arg)
+void
+rs6000_output_tlsargs (rtx *operands)
 {
-  rtx call_insn = last_call_insn ();
-  if (!TARGET_TLS_MARKERS)
+  /* Set up operands for output_asm_insn, without modifying OPERANDS.  */
+  rtx op[3];
+
+  /* The set dest of the call, ie. r3, which is also the first arg reg.  */
+  op[0] = operands[0];
+  /* The TLS symbol from global_tlsarg stashed as CALL operand 2.  */
+  op[1] = XVECEXP (operands[2], 0, 0);
+  if (XINT (operands[2], 1) == UNSPEC_TLSGD)
     {
-      rtx patt = PATTERN (call_insn);
-      gcc_assert (GET_CODE (patt) == PARALLEL);
-      rtvec orig = XVEC (patt, 0);
-      rtvec v = rtvec_alloc (GET_NUM_ELEM (orig) + 1);
-      gcc_assert (GET_NUM_ELEM (orig) > 0);
-      /* The (set (..) (call (mem ..))).  */
-      RTVEC_ELT (v, 0) = RTVEC_ELT (orig, 0);
-      /* The extra unspec.  */
-      RTVEC_ELT (v, 1) = arg;
-      /* All other assorted call pattern pieces.  */
-      for (int i = 1; i < GET_NUM_ELEM (orig); i++)
-	RTVEC_ELT (v, i + 1) = RTVEC_ELT (orig, i);
-      XVEC (patt, 0) = v;
+      /* The GOT register.  */
+      op[2] = XVECEXP (operands[2], 0, 1);
+      if (TARGET_CMODEL != CMODEL_SMALL)
+	output_asm_insn ("addis %0,%2,%1@got@tlsgd@ha\n\t"
+			 "addi %0,%0,%1@got@tlsgd@l", op);
+      else
+	output_asm_insn ("addi %0,%2,%1@got@tlsgd", op);
     }
-  if (DEFAULT_ABI == ABI_V4 && TARGET_SECURE_PLT && flag_pic)
-    use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn),
-	     pic_offset_table_rtx);
+  else if (XINT (operands[2], 1) == UNSPEC_TLSLD)
+    {
+      if (TARGET_CMODEL != CMODEL_SMALL)
+	output_asm_insn ("addis %0,%1,%&@got@tlsld@ha\n\t"
+			 "addi %0,%0,%&@got@tlsld@l", op);
+      else
+	output_asm_insn ("addi %0,%1,%&@got@tlsld", op);
+    }
+  else
+    gcc_unreachable ();
 }
 
 /* Passes the tls arg value for global dynamic and local dynamic
@@ -8755,40 +8763,35 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	{
 	  rtx arg = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, addr, got),
 				    UNSPEC_TLSGD);
+	  tga = rs6000_tls_get_addr ();
 	  global_tlsarg = arg;
-	  rtx argreg = const0_rtx;
 	  if (TARGET_TLS_MARKERS)
 	    {
-	      argreg = gen_rtx_REG (Pmode, 3);
+	      rtx argreg = gen_rtx_REG (Pmode, 3);
 	      emit_insn (gen_rtx_SET (argreg, arg));
+	      emit_library_call_value (tga, dest, LCT_CONST, Pmode,
+				       argreg, Pmode);
 	    }
-
-	  tga = rs6000_tls_get_addr ();
-	  emit_library_call_value (tga, dest, LCT_CONST, Pmode,
-				   argreg, Pmode);
+	  else
+	    emit_library_call_value (tga, dest, LCT_CONST, Pmode);
 	  global_tlsarg = NULL_RTX;
-
-	  edit_tls_call_insn (arg);
 	}
       else if (model == TLS_MODEL_LOCAL_DYNAMIC)
 	{
-	  rtx arg = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, got),
-				    UNSPEC_TLSLD);
-	  global_tlsarg = arg;
-	  rtx argreg = const0_rtx;
-	  if (TARGET_TLS_MARKERS)
-	    {
-	      argreg = gen_rtx_REG (Pmode, 3);
-	      emit_insn (gen_rtx_SET (argreg, arg));
-	    }
-
+	  rtx arg = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, got), UNSPEC_TLSLD);
 	  tga = rs6000_tls_get_addr ();
 	  tmp1 = gen_reg_rtx (Pmode);
-	  emit_library_call_value (tga, tmp1, LCT_CONST, Pmode,
-				   argreg, Pmode);
+	  global_tlsarg = arg;
+	  if (TARGET_TLS_MARKERS)
+	    {
+	      rtx argreg = gen_rtx_REG (Pmode, 3);
+	      emit_insn (gen_rtx_SET (argreg, arg));
+	      emit_library_call_value (tga, tmp1, LCT_CONST, Pmode,
+				       argreg, Pmode);
+	    }
+	  else
+	    emit_library_call_value (tga, tmp1, LCT_CONST, Pmode);
 	  global_tlsarg = NULL_RTX;
-
-	  edit_tls_call_insn (arg);
 
 	  if (rs6000_tls_size == 16)
 	    {
@@ -15851,6 +15854,13 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 					  arg1_type, temp_addr,
 					  build_int_cst (arg1_type, -16));
 	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	if (!is_gimple_mem_ref_addr (aligned_addr))
+	  {
+	    tree t = make_ssa_name (TREE_TYPE (aligned_addr));
+	    gimple *g = gimple_build_assign (t, aligned_addr);
+	    gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	    aligned_addr = t;
+	  }
 	/* Use the build2 helper to set up the mem_ref.  The MEM_REF could also
 	   take an offset, but since we've already incorporated the offset
 	   above, here we just pass in a zero.  */
@@ -15896,6 +15906,13 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 					  arg2_type, temp_addr,
 					  build_int_cst (arg2_type, -16));
 	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	if (!is_gimple_mem_ref_addr (aligned_addr))
+	  {
+	    tree t = make_ssa_name (TREE_TYPE (aligned_addr));
+	    gimple *g = gimple_build_assign (t, aligned_addr);
+	    gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	    aligned_addr = t;
+	  }
 	/* The desired gimple result should be similar to:
 	   MEM[(__vector floatD.1407 *)_1] = vf1D.2697;  */
 	gimple *g
@@ -15933,6 +15950,13 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	tree temp_addr = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
 				       arg1_type, arg1, temp_offset);
 	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	if (!is_gimple_mem_ref_addr (temp_addr))
+	  {
+	    tree t = make_ssa_name (TREE_TYPE (temp_addr));
+	    gimple *g = gimple_build_assign (t, temp_addr);
+	    gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	    temp_addr = t;
+	  }
 	/* Use the build2 helper to set up the mem_ref.  The MEM_REF could also
 	   take an offset, but since we've already incorporated the offset
 	   above, here we just pass in a zero.  */
@@ -15969,6 +15993,13 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	tree temp_addr = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
 				       arg2_type, arg2, temp_offset);
 	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	if (!is_gimple_mem_ref_addr (temp_addr))
+	  {
+	    tree t = make_ssa_name (TREE_TYPE (temp_addr));
+	    gimple *g = gimple_build_assign (t, temp_addr);
+	    gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	    temp_addr = t;
+	  }
 	gimple *g;
 	g = gimple_build_assign (build2 (MEM_REF, align_stype, temp_addr,
 					 build_int_cst (arg2_type, 0)), arg0);
@@ -28982,7 +29013,7 @@ rs6000_output_function_epilogue (FILE *file)
 	 length fields that follow.  However, if you omit the optional
 	 fields, the assembler outputs zeros for all optional fields
 	 anyways, giving each variable length field is minimum length
-	 (as defined in sys/debug.h).  Thus we can not use the .tbtab
+	 (as defined in sys/debug.h).  Thus we cannot use the .tbtab
 	 pseudo-op at all.  */
 
       /* An all-zero word flags the start of the tbtab, for debuggers
@@ -37918,9 +37949,10 @@ rs6000_call_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 {
   rtx func = func_desc;
   rtx func_addr;
-  rtx call[3];
+  rtx call[4];
   rtx insn;
   rtx abi_reg = NULL_RTX;
+  int n;
 
   if (global_tlsarg)
     tlsarg = global_tlsarg;
@@ -37968,9 +38000,16 @@ rs6000_call_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
     call[0] = gen_rtx_SET (value, call[0]);
 
   call[1] = gen_rtx_USE (VOIDmode, cookie);
-  call[2] = gen_hard_reg_clobber (Pmode, LR_REGNO);
+  n = 2;
+  if (TARGET_SECURE_PLT
+      && flag_pic
+      && GET_CODE (func_addr) == SYMBOL_REF
+      && !SYMBOL_REF_LOCAL_P (func_addr))
+    call[n++] = gen_rtx_USE (VOIDmode, pic_offset_table_rtx);
 
-  insn = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (3, call));
+  call[n++] = gen_hard_reg_clobber (Pmode, LR_REGNO);
+
+  insn = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (n, call));
   insn = emit_call_insn (insn);
   if (abi_reg)
     use_reg (&CALL_INSN_FUNCTION_USAGE (insn), abi_reg);

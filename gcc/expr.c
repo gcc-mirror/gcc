@@ -1550,7 +1550,7 @@ compare_by_pieces (rtx arg0, rtx arg1, unsigned HOST_WIDE_INT len,
    ALIGN is the maximum alignment we can assume they have.
    METHOD describes what kind of copy this is, and what mechanisms may be used.
    MIN_SIZE is the minimal size of block to move
-   MAX_SIZE is the maximal size of block to move, if it can not be represented
+   MAX_SIZE is the maximal size of block to move, if it cannot be represented
    in unsigned HOST_WIDE_INT, than it is mask of all ones.
 
    Return the address of the new block, if memcpy is called and returns it,
@@ -1631,14 +1631,6 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
       if (may_use_call < 0)
 	return pc_rtx;
 
-      /* Since x and y are passed to a libcall, mark the corresponding
-	 tree EXPR as addressable.  */
-      tree y_expr = MEM_EXPR (y);
-      tree x_expr = MEM_EXPR (x);
-      if (y_expr)
-	mark_addressable (y_expr);
-      if (x_expr)
-	mark_addressable (x_expr);
       retval = emit_block_copy_via_libcall (x, y, size,
 					    method == BLOCK_OP_TAILCALL);
     }
@@ -1789,7 +1781,7 @@ emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align,
 	  if (nops >= 8)
 	    {
 	      create_integer_operand (&ops[6], min_size);
-	      /* If we can not represent the maximal size,
+	      /* If we cannot represent the maximal size,
 		 make parameter NULL.  */
 	      if ((HOST_WIDE_INT) max_size != -1)
 	        create_integer_operand (&ops[7], max_size);
@@ -1798,7 +1790,7 @@ emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align,
 	    }
 	  if (nops == 9)
 	    {
-	      /* If we can not represent the maximal size,
+	      /* If we cannot represent the maximal size,
 		 make parameter NULL.  */
 	      if ((HOST_WIDE_INT) probable_max_size != -1)
 	        create_integer_operand (&ops[8], probable_max_size);
@@ -1883,6 +1875,15 @@ emit_block_op_via_libcall (enum built_in_function fncode, rtx dst, rtx src,
   rtx dst_addr, src_addr;
   tree call_expr, dst_tree, src_tree, size_tree;
   machine_mode size_mode;
+
+  /* Since dst and src are passed to a libcall, mark the corresponding
+     tree EXPR as addressable.  */
+  tree dst_expr = MEM_EXPR (dst);
+  tree src_expr = MEM_EXPR (src);
+  if (dst_expr)
+    mark_addressable (dst_expr);
+  if (src_expr)
+    mark_addressable (src_expr);
 
   dst_addr = copy_addr_to_reg (XEXP (dst, 0));
   dst_addr = convert_memory_address (ptr_mode, dst_addr);
@@ -3144,7 +3145,7 @@ set_storage_via_setmem (rtx object, rtx size, rtx val, unsigned int align,
 	  if (nops >= 8)
 	    {
 	      create_integer_operand (&ops[6], min_size);
-	      /* If we can not represent the maximal size,
+	      /* If we cannot represent the maximal size,
 		 make parameter NULL.  */
 	      if ((HOST_WIDE_INT) max_size != -1)
 	        create_integer_operand (&ops[7], max_size);
@@ -3153,7 +3154,7 @@ set_storage_via_setmem (rtx object, rtx size, rtx val, unsigned int align,
 	    }
 	  if (nops == 9)
 	    {
-	      /* If we can not represent the maximal size,
+	      /* If we cannot represent the maximal size,
 		 make parameter NULL.  */
 	      if ((HOST_WIDE_INT) probable_max_size != -1)
 	        create_integer_operand (&ops[8], probable_max_size);

@@ -236,7 +236,7 @@ def find_changed_funs(hunk):
 
     change = line and re.match(r'^[-+!][^-]', line)
 
-    # Top-level comment can not belong to function
+    # Top-level comment cannot belong to function
     if re.match(r'^[-+! ]\/\*', line):
       fn = None
 

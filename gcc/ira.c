@@ -233,7 +233,7 @@ along with GCC; see the file COPYING3.  If not see
 	 more profitable than memory usage.
 
        * Popping the allocnos from the stack and assigning them hard
-         registers.  If IRA can not assign a hard register to an
+         registers.  If IRA cannot assign a hard register to an
          allocno and the allocno is coalesced, IRA undoes the
          coalescing and puts the uncoalesced allocnos onto the stack in
          the hope that some such allocnos will get a hard register
@@ -937,7 +937,7 @@ setup_uniform_class_p (void)
       ira_uniform_class_p[cl] = false;
       if (ira_class_hard_regs_num[cl] == 0)
 	continue;
-      /* We can not use alloc_reg_class_subclasses here because move
+      /* We cannot use alloc_reg_class_subclasses here because move
 	 cost hooks does not take into account that some registers are
 	 unavailable for the subtarget.  E.g. for i686, INT_SSE_REGS
 	 is element of alloc_reg_class_subclasses for GENERAL_REGS
@@ -966,7 +966,7 @@ setup_uniform_class_p (void)
    IRA_IMPORTANT_CLASSES, and IRA_IMPORTANT_CLASSES_NUM.
 
    Target may have many subtargets and not all target hard registers can
-   be used for allocation, e.g. x86 port in 32-bit mode can not use
+   be used for allocation, e.g. x86 port in 32-bit mode cannot use
    hard registers introduced in x86-64 like r8-r15).  Some classes
    might have the same allocatable hard registers, e.g.  INDEX_REGS
    and GENERAL_REGS in x86 port in 32-bit mode.  To decrease different
@@ -3506,7 +3506,7 @@ update_equiv_regs (void)
 	      rtx_insn_list *list;
 
 	      /* If we have already processed this pseudo and determined it
-		 can not have an equivalence, then honor that decision.  */
+		 cannot have an equivalence, then honor that decision.  */
 	      if (reg_equiv[regno].no_equiv)
 		continue;
 
@@ -5390,7 +5390,7 @@ ira (FILE *f)
   if (ira_conflicts_p && ! ira_use_lra_p)
     /* Opposite to reload pass, LRA does not use any conflict info
        from IRA.  We don't rebuild conflict info for LRA (through
-       ira_flattening call) and can not use the check here.  We could
+       ira_flattening call) and cannot use the check here.  We could
        rebuild this info for LRA in the check mode but there is a risk
        that code generated with the check and without it will be a bit
        different.  Calling ira_flattening in any mode would be a

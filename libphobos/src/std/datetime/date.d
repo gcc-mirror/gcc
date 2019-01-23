@@ -2154,32 +2154,6 @@ public:
         assert(idt - duration == DateTime(1999, 7, 6, 12, 30, 21));
     }
 
-    // Explicitly undocumented. It will be removed in January 2018. @@@DEPRECATED_2018-01@@@
-    deprecated("Use Duration instead of TickDuration.")
-    DateTime opBinary(string op)(in TickDuration td) const @safe pure nothrow @nogc
-        if (op == "+" || op == "-")
-    {
-        DateTime retval = this;
-        immutable seconds = td.seconds;
-        mixin("return retval._addSeconds(" ~ op ~ "seconds);");
-    }
-
-    deprecated @safe unittest
-    {
-        // This probably only runs in cases where gettimeofday() is used, but it's
-        // hard to do this test correctly with variable ticksPerSec.
-        if (TickDuration.ticksPerSec == 1_000_000)
-        {
-            auto dt = DateTime(Date(1999, 7, 6), TimeOfDay(12, 30, 33));
-
-            assert(dt + TickDuration.from!"usecs"(7_000_000) == DateTime(Date(1999, 7, 6), TimeOfDay(12, 30, 40)));
-            assert(dt + TickDuration.from!"usecs"(-7_000_000) == DateTime(Date(1999, 7, 6), TimeOfDay(12, 30, 26)));
-
-            assert(dt - TickDuration.from!"usecs"(-7_000_000) == DateTime(Date(1999, 7, 6), TimeOfDay(12, 30, 40)));
-            assert(dt - TickDuration.from!"usecs"(7_000_000) == DateTime(Date(1999, 7, 6), TimeOfDay(12, 30, 26)));
-        }
-    }
-
 
     /++
         Gives the result of adding or subtracting a duration from this
@@ -2198,19 +2172,14 @@ public:
             duration = The duration to add to or subtract from this
                        $(LREF DateTime).
       +/
-    ref DateTime opOpAssign(string op, D)(in D duration) @safe pure nothrow @nogc
-        if ((op == "+" || op == "-") &&
-           (is(Unqual!D == Duration) ||
-            is(Unqual!D == TickDuration)))
+    ref DateTime opOpAssign(string op)(Duration duration) @safe pure nothrow @nogc
+        if (op == "+" || op == "-")
     {
+        import core.time : convert;
         import std.format : format;
 
         DateTime retval = this;
-
-        static if (is(Unqual!D == Duration))
-            immutable hnsecs = duration.total!"hnsecs";
-        else static if (is(Unqual!D == TickDuration))
-            immutable hnsecs = duration.hnsecs;
+        immutable hnsecs = duration.total!"hnsecs";
 
         mixin(format(`return _addSeconds(convert!("hnsecs", "seconds")(%shnsecs));`, op));
     }
@@ -2296,48 +2265,6 @@ public:
         static assert(!__traits(compiles, idt += duration));
         static assert(!__traits(compiles, cdt -= duration));
         static assert(!__traits(compiles, idt -= duration));
-    }
-
-    // Explicitly undocumented. It will be removed in January 2018. @@@DEPRECATED_2018-01@@@
-    deprecated("Use Duration instead of TickDuration.")
-    ref DateTime opOpAssign(string op)(TickDuration td) @safe pure nothrow @nogc
-        if (op == "+" || op == "-")
-    {
-        DateTime retval = this;
-        immutable seconds = td.seconds;
-        mixin("return _addSeconds(" ~ op ~ "seconds);");
-    }
-
-    deprecated @safe unittest
-    {
-        // This probably only runs in cases where gettimeofday() is used, but it's
-        // hard to do this test correctly with variable ticksPerSec.
-        if (TickDuration.ticksPerSec == 1_000_000)
-        {
-            {
-                auto dt = DateTime(Date(1999, 7, 6), TimeOfDay(12, 30, 33));
-                dt += TickDuration.from!"usecs"(7_000_000);
-                assert(dt == DateTime(Date(1999, 7, 6), TimeOfDay(12, 30, 40)));
-            }
-
-            {
-                auto dt = DateTime(Date(1999, 7, 6), TimeOfDay(12, 30, 33));
-                dt += TickDuration.from!"usecs"(-7_000_000);
-                assert(dt == DateTime(Date(1999, 7, 6), TimeOfDay(12, 30, 26)));
-            }
-
-            {
-                auto dt = DateTime(Date(1999, 7, 6), TimeOfDay(12, 30, 33));
-                dt -= TickDuration.from!"usecs"(-7_000_000);
-                assert(dt == DateTime(Date(1999, 7, 6), TimeOfDay(12, 30, 40)));
-            }
-
-            {
-                auto dt = DateTime(Date(1999, 7, 6), TimeOfDay(12, 30, 33));
-                dt -= TickDuration.from!"usecs"(7_000_000);
-                assert(dt == DateTime(Date(1999, 7, 6), TimeOfDay(12, 30, 26)));
-            }
-        }
     }
 
 
@@ -6127,32 +6054,6 @@ public:
         assert(idate - duration == Date(1999, 6, 24));
     }
 
-    // Explicitly undocumented. It will be removed in January 2018. @@@DEPRECATED_2018-01@@@
-    deprecated("Use Duration instead of TickDuration.")
-    Date opBinary(string op)(TickDuration td) const @safe pure nothrow @nogc
-        if (op == "+" || op == "-")
-    {
-        Date retval = this;
-        immutable days = convert!("hnsecs", "days")(td.hnsecs);
-        mixin("return retval._addDays(" ~ op ~ "days);");
-    }
-
-    deprecated @safe unittest
-    {
-        // This probably only runs in cases where gettimeofday() is used, but it's
-        // hard to do this test correctly with variable ticksPerSec.
-        if (TickDuration.ticksPerSec == 1_000_000)
-        {
-            auto date = Date(1999, 7, 6);
-
-            assert(date + TickDuration.from!"usecs"(86_400_000_000) == Date(1999, 7, 7));
-            assert(date + TickDuration.from!"usecs"(-86_400_000_000) == Date(1999, 7, 5));
-
-            assert(date - TickDuration.from!"usecs"(-86_400_000_000) == Date(1999, 7, 7));
-            assert(date - TickDuration.from!"usecs"(86_400_000_000) == Date(1999, 7, 5));
-        }
-    }
-
 
     /++
         Gives the result of adding or subtracting a $(REF Duration, core,time)
@@ -6232,47 +6133,6 @@ public:
         date -= duration;
         static assert(!__traits(compiles, cdate -= duration));
         static assert(!__traits(compiles, idate -= duration));
-    }
-
-    // Explicitly undocumented. It will be removed in January 2018. @@@DEPRECATED_2018-01@@@
-    deprecated("Use Duration instead of TickDuration.")
-    ref Date opOpAssign(string op)(TickDuration td) @safe pure nothrow @nogc
-        if (op == "+" || op == "-")
-    {
-        immutable days = convert!("seconds", "days")(td.seconds);
-        mixin("return _addDays(" ~ op ~ "days);");
-    }
-
-    deprecated @safe unittest
-    {
-        // This probably only runs in cases where gettimeofday() is used, but it's
-        // hard to do this test correctly with variable ticksPerSec.
-        if (TickDuration.ticksPerSec == 1_000_000)
-        {
-            {
-                auto date = Date(1999, 7, 6);
-                date += TickDuration.from!"usecs"(86_400_000_000);
-                assert(date == Date(1999, 7, 7));
-            }
-
-            {
-                auto date = Date(1999, 7, 6);
-                date += TickDuration.from!"usecs"(-86_400_000_000);
-                assert(date == Date(1999, 7, 5));
-            }
-
-            {
-                auto date = Date(1999, 7, 6);
-                date -= TickDuration.from!"usecs"(-86_400_000_000);
-                assert(date == Date(1999, 7, 7));
-            }
-
-            {
-                auto date = Date(1999, 7, 6);
-                date -= TickDuration.from!"usecs"(86_400_000_000);
-                assert(date == Date(1999, 7, 5));
-            }
-        }
     }
 
 
@@ -8660,32 +8520,6 @@ public:
         assert(itod - duration == TimeOfDay(1, 30, 33));
     }
 
-    // Explicitly undocumented. It will be removed in January 2018. @@@DEPRECATED_2018-01@@@
-    deprecated("Use Duration instead of TickDuration.")
-    TimeOfDay opBinary(string op)(TickDuration td) const @safe pure nothrow @nogc
-        if (op == "+" || op == "-")
-    {
-        TimeOfDay retval = this;
-        immutable seconds = td.seconds;
-        mixin("return retval._addSeconds(" ~ op ~ "seconds);");
-    }
-
-    deprecated @safe unittest
-    {
-        // This probably only runs in cases where gettimeofday() is used, but it's
-        // hard to do this test correctly with variable ticksPerSec.
-        if (TickDuration.ticksPerSec == 1_000_000)
-        {
-            auto tod = TimeOfDay(12, 30, 33);
-
-            assert(tod + TickDuration.from!"usecs"(7_000_000) == TimeOfDay(12, 30, 40));
-            assert(tod + TickDuration.from!"usecs"(-7_000_000) == TimeOfDay(12, 30, 26));
-
-            assert(tod - TickDuration.from!"usecs"(-7_000_000) == TimeOfDay(12, 30, 40));
-            assert(tod - TickDuration.from!"usecs"(7_000_000) == TimeOfDay(12, 30, 26));
-        }
-    }
-
 
     /++
         Gives the result of adding or subtracting a $(REF Duration, core,time)
@@ -8753,47 +8587,6 @@ public:
         static assert(!__traits(compiles, itod += duration));
         static assert(!__traits(compiles, ctod -= duration));
         static assert(!__traits(compiles, itod -= duration));
-    }
-
-    // Explicitly undocumented. It will be removed in January 2018. @@@DEPRECATED_2018-01@@@
-    deprecated("Use Duration instead of TickDuration.")
-    ref TimeOfDay opOpAssign(string op)(TickDuration td) @safe pure nothrow @nogc
-        if (op == "+" || op == "-")
-    {
-        immutable seconds = td.seconds;
-        mixin("return _addSeconds(" ~ op ~ "seconds);");
-    }
-
-    deprecated @safe unittest
-    {
-        // This probably only runs in cases where gettimeofday() is used, but it's
-        // hard to do this test correctly with variable ticksPerSec.
-        if (TickDuration.ticksPerSec == 1_000_000)
-        {
-            {
-                auto tod = TimeOfDay(12, 30, 33);
-                tod += TickDuration.from!"usecs"(7_000_000);
-                assert(tod == TimeOfDay(12, 30, 40));
-            }
-
-            {
-                auto tod = TimeOfDay(12, 30, 33);
-                tod += TickDuration.from!"usecs"(-7_000_000);
-                assert(tod == TimeOfDay(12, 30, 26));
-            }
-
-            {
-                auto tod = TimeOfDay(12, 30, 33);
-                tod -= TickDuration.from!"usecs"(-7_000_000);
-                assert(tod == TimeOfDay(12, 30, 40));
-            }
-
-            {
-                auto tod = TimeOfDay(12, 30, 33);
-                tod -= TickDuration.from!"usecs"(7_000_000);
-                assert(tod == TimeOfDay(12, 30, 26));
-            }
-        }
     }
 
 
@@ -9771,12 +9564,8 @@ private:
                                              is(typeof(U.init -= Duration.init) == U) &&
                                              is(typeof(
                                              {
-                                                 // Until the overload with TickDuration is removed, this is ambiguous.
-                                                 //alias add = U.opOpAssign!"+";
-                                                 //alias sub = U.opOpAssign!"-";
-                                                 U u;
-                                                 auto ref add() { return u += Duration.init; }
-                                                 auto ref sub() { return u -= Duration.init; }
+                                                 alias add = U.opOpAssign!"+";
+                                                 alias sub = U.opOpAssign!"-";
                                                  alias FA = FunctionAttribute;
                                                  static assert((functionAttributes!add & FA.ref_) != 0);
                                                  static assert((functionAttributes!sub & FA.ref_) != 0);

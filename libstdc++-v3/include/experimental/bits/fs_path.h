@@ -365,7 +365,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     // query
 
-    bool empty() const noexcept { return _M_pathname.empty(); }
+    _GLIBCXX_NODISCARD bool empty() const noexcept { return _M_pathname.empty(); }
     bool has_root_name() const;
     bool has_root_directory() const;
     bool has_root_path() const;

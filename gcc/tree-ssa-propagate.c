@@ -339,7 +339,7 @@ ssa_propagation_engine::simulate_block (basic_block block)
       /* Note that we have simulated this block.  */
       block->flags |= BB_VISITED;
 
-      /* We can not predict when abnormal and EH edges will be executed, so
+      /* We cannot predict when abnormal and EH edges will be executed, so
 	 once a block is considered executable, we consider any
 	 outgoing abnormal edges as executable.
 

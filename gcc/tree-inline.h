@@ -122,6 +122,10 @@ struct copy_body_data
   /* True if the location information will need to be reset.  */
   bool reset_location;
 
+  /* Replace error_mark_node as upper bound of array types with
+     an uninitialized VAR_DECL temporary.  */
+  bool adjust_array_error_bounds;
+
   /* A function to be called when duplicating BLOCK nodes.  */
   void (*transform_lang_insert_block) (tree);
 
@@ -151,6 +155,12 @@ struct copy_body_data
   /* A list of addressable local variables remapped into the caller
      when inlining a call within an OpenMP SIMD-on-SIMT loop.  */
   vec<tree> *dst_simt_vars;
+
+  /* If clobbers for local variables from the inline function
+     that need to live in memory should be added to EH landing pads
+     outside of the inlined function, this should be the number
+     of basic blocks in the caller before inlining.  Zero otherwise.  */
+  int add_clobbers_to_eh_landing_pads;
 };
 
 /* Weights of constructions for estimate_num_insns.  */

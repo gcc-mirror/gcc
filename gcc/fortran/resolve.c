@@ -1089,7 +1089,7 @@ resolve_common_blocks (gfc_symtree *common_root)
 	       sym->name, &common_root->n.common->where, &sym->declared_at);
 
   if (sym->attr.external)
-    gfc_error ("COMMON block %qs at %L can not have the EXTERNAL attribute",
+    gfc_error ("COMMON block %qs at %L cannot have the EXTERNAL attribute",
 	       sym->name, &common_root->n.common->where);
 
   if (sym->attr.intrinsic)
@@ -1685,8 +1685,6 @@ is_illegal_recursion (gfc_symbol* sym, gfc_namespace* context)
   if (sym->attr.flavor == FL_PROGRAM
       || gfc_fl_struct (sym->attr.flavor))
     return false;
-
-  gcc_assert (sym->attr.flavor == FL_PROCEDURE);
 
   /* If we've got an ENTRY, find real procedure.  */
   if (sym->attr.entry && sym->ns->entries)
@@ -4875,7 +4873,7 @@ resolve_array_ref (gfc_array_ref *ar)
 
 
 static bool
-resolve_substring (gfc_ref *ref)
+resolve_substring (gfc_ref *ref, bool *equal_length)
 {
   int k = gfc_validate_kind (BT_INTEGER, gfc_charlen_int_kind, false);
 
@@ -4946,6 +4944,13 @@ resolve_substring (gfc_ref *ref)
 		     &ref->u.ss.end->where);
 	  return false;
 	}
+      /*  If the substring has the same length as the original
+	  variable, the reference itself can be deleted.  */
+
+      if (ref->u.ss.length != NULL
+	  && compare_bound (ref->u.ss.end, ref->u.ss.length->length) == CMP_EQ
+	  && compare_bound_int (ref->u.ss.start, 1) == CMP_EQ)
+	*equal_length = true;
     }
 
   return true;
@@ -5039,7 +5044,9 @@ static bool
 resolve_ref (gfc_expr *expr)
 {
   int current_part_dimension, n_components, seen_part_dimension;
-  gfc_ref *ref;
+  gfc_ref *ref, **prev;
+  bool equal_length;
+  bool breakout;
 
   for (ref = expr->ref; ref; ref = ref->next)
     if (ref->type == REF_ARRAY && ref->u.ar.as == NULL)
@@ -5048,11 +5055,12 @@ resolve_ref (gfc_expr *expr)
 	break;
       }
 
-  for (ref = expr->ref; ref; ref = ref->next)
-    switch (ref->type)
+  breakout = false;
+  for (prev = &expr->ref; !breakout && *prev != NULL; prev = &(*prev)->next)
+    switch ((*prev)->type)
       {
       case REF_ARRAY:
-	if (!resolve_array_ref (&ref->u.ar))
+	if (!resolve_array_ref (&(*prev)->u.ar))
 	  return false;
 	break;
 
@@ -5061,8 +5069,22 @@ resolve_ref (gfc_expr *expr)
 	break;
 
       case REF_SUBSTRING:
-	if (!resolve_substring (ref))
+	equal_length = false;
+	if (!resolve_substring (*prev, &equal_length))
 	  return false;
+
+	if (expr->expr_type != EXPR_SUBSTRING && equal_length)
+	  {
+	    /* Remove the reference and move the charlen, if any.  */
+	    ref = *prev;
+	    *prev = ref->next;
+	    ref->next = NULL;
+	    expr->ts.u.cl = ref->u.ss.length;
+	    ref->u.ss.length = NULL;
+	    gfc_free_ref_list (ref);
+	    if (*prev == NULL)
+	      breakout = true;
+	  }
 	break;
       }
 
@@ -9319,7 +9341,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	default_case->next = if_st;
     }
 
-  /* Resolve the internal code.  This can not be done earlier because
+  /* Resolve the internal code.  This cannot be done earlier because
      it requires that the sym->assoc of selectors is set already.  */
   gfc_current_ns = ns;
   gfc_resolve_blocks (code->block, gfc_current_ns);
@@ -9453,7 +9475,7 @@ resolve_transfer (gfc_code *code)
 	  return;
 	}
 
-      /* C_PTR and C_FUNPTR have private components which means they can not
+      /* C_PTR and C_FUNPTR have private components which means they cannot
          be printed.  However, if -std=gnu and not -pedantic, allow
          the component to be printed to help debugging.  */
       if (ts->u.derived->ts.f90_type == BT_VOID)
@@ -11791,11 +11813,12 @@ gfc_verify_binding_labels (gfc_symbol *sym)
 		 sym->binding_label, &sym->declared_at, &gsym->where);
       /* Clear the binding label to prevent checking multiple times.  */
       sym->binding_label = NULL;
-
+      return;
     }
-  else if (sym->attr.flavor == FL_VARIABLE && module
-	   && (strcmp (module, gsym->mod_name) != 0
-	       || strcmp (sym->name, gsym->sym_name) != 0))
+
+  if (sym->attr.flavor == FL_VARIABLE && module
+      && (strcmp (module, gsym->mod_name) != 0
+	  || strcmp (sym->name, gsym->sym_name) != 0))
     {
       /* This can only happen if the variable is defined in a module - if it
 	 isn't the same module, reject it.  */
@@ -11804,14 +11827,16 @@ gfc_verify_binding_labels (gfc_symbol *sym)
 		 sym->name, module, sym->binding_label,
 		 &sym->declared_at, &gsym->where, gsym->mod_name);
       sym->binding_label = NULL;
+      return;
     }
-  else if ((sym->attr.function || sym->attr.subroutine)
-	   && ((gsym->type != GSYM_SUBROUTINE && gsym->type != GSYM_FUNCTION)
-	       || (gsym->defined && sym->attr.if_source != IFSRC_IFBODY))
-	   && sym != gsym->ns->proc_name
-	   && (module != gsym->mod_name
-	       || strcmp (gsym->sym_name, sym->name) != 0
-	       || (module && strcmp (module, gsym->mod_name) != 0)))
+
+  if ((sym->attr.function || sym->attr.subroutine)
+      && ((gsym->type != GSYM_SUBROUTINE && gsym->type != GSYM_FUNCTION)
+	   || (gsym->defined && sym->attr.if_source != IFSRC_IFBODY))
+      && (sym != gsym->ns->proc_name && sym->attr.entry == 0)
+      && (module != gsym->mod_name
+	  || strcmp (gsym->sym_name, sym->name) != 0
+	  || (module && strcmp (module, gsym->mod_name) != 0)))
     {
       /* Print an error if the procedure is defined multiple times; we have to
 	 exclude references to the same procedure via module association or
@@ -15311,7 +15336,7 @@ resolve_symbol (gfc_symbol *sym)
 	  for (; formal; formal = formal->next)
 	    if (formal->sym && formal->sym->attr.flavor == FL_NAMELIST)
 	      {
-		gfc_error ("Namelist %qs can not be an argument to "
+		gfc_error ("Namelist %qs cannot be an argument to "
 			   "subroutine or function at %L",
 			   formal->sym->name, &sym->declared_at);
 		return;
@@ -15344,7 +15369,7 @@ resolve_symbol (gfc_symbol *sym)
   /* Set the formal_arg_flag so that check_conflict will not throw
      an error for host associated variables in the specification
      expression for an array_valued function.  */
-  if (sym->attr.function && sym->as)
+  if ((sym->attr.function || sym->attr.result) && sym->as)
     formal_arg_flag = true;
 
   saved_specification_expr = specification_expr;
@@ -16648,7 +16673,7 @@ resolve_types (gfc_namespace *ns)
 
   gfc_traverse_ns (ns, resolve_values);
 
-  if (ns->save_all)
+  if (ns->save_all || !flag_automatic)
     gfc_save_all (ns);
 
   iter_stack = NULL;

@@ -1629,7 +1629,7 @@ extern const char * const reg_note_name[];
    are passed to the function.
      CLOBBER expressions document the registers explicitly clobbered
    by this CALL_INSN.
-     Pseudo registers can not be mentioned in this list.  */
+     Pseudo registers cannot be mentioned in this list.  */
 #define CALL_INSN_FUNCTION_USAGE(INSN)	XEXP(INSN, 7)
 
 /* The label-number of a code-label.  The assembler label

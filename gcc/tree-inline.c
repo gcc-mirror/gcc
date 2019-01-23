@@ -523,11 +523,27 @@ remap_type_1 (tree type, copy_body_data *id)
 
       if (TYPE_MAIN_VARIANT (new_tree) != new_tree)
 	{
-	  gcc_checking_assert (TYPE_DOMAIN (type) == TYPE_DOMAIN (TYPE_MAIN_VARIANT (type)));
+	  gcc_checking_assert (TYPE_DOMAIN (type)
+			       == TYPE_DOMAIN (TYPE_MAIN_VARIANT (type)));
 	  TYPE_DOMAIN (new_tree) = TYPE_DOMAIN (TYPE_MAIN_VARIANT (new_tree));
 	}
       else
-	TYPE_DOMAIN (new_tree) = remap_type (TYPE_DOMAIN (new_tree), id);
+        {
+	  TYPE_DOMAIN (new_tree) = remap_type (TYPE_DOMAIN (new_tree), id);
+	  /* For array bounds where we have decided not to copy over the bounds
+	     variable which isn't used in OpenMP/OpenACC region, change them to
+	     an uninitialized VAR_DECL temporary.  */
+	  if (TYPE_MAX_VALUE (TYPE_DOMAIN (new_tree)) == error_mark_node
+	      && id->adjust_array_error_bounds
+	      && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != error_mark_node)
+	    {
+	      tree v = create_tmp_var (TREE_TYPE (TYPE_DOMAIN (new_tree)));
+	      DECL_ATTRIBUTES (v)
+		= tree_cons (get_identifier ("omp dummy var"), NULL_TREE,
+			     DECL_ATTRIBUTES (v));
+	      TYPE_MAX_VALUE (TYPE_DOMAIN (new_tree)) = v;
+	    }
+        }
       break;
 
     case RECORD_TYPE:
@@ -615,7 +631,7 @@ remap_type (tree type, copy_body_data *id)
 static bool
 can_be_nonlocal (tree decl, copy_body_data *id)
 {
-  /* We can not duplicate function decls.  */
+  /* We cannot duplicate function decls.  */
   if (TREE_CODE (decl) == FUNCTION_DECL)
     return true;
 
@@ -2174,6 +2190,40 @@ update_ssa_across_abnormal_edges (basic_block bb, basic_block ret_bb,
       }
 }
 
+/* Insert clobbers for automatic variables of inlined ID->src_fn
+   function at the start of basic block BB.  */
+
+static void
+add_clobbers_to_eh_landing_pad (basic_block bb, copy_body_data *id)
+{
+  tree var;
+  unsigned int i;
+  FOR_EACH_VEC_SAFE_ELT (id->src_cfun->local_decls, i, var)
+    if (VAR_P (var)
+	&& !DECL_HARD_REGISTER (var)
+	&& !TREE_THIS_VOLATILE (var)
+	&& !DECL_HAS_VALUE_EXPR_P (var)
+	&& !is_gimple_reg (var)
+	&& auto_var_in_fn_p (var, id->src_fn))
+      {
+	tree *t = id->decl_map->get (var);
+	if (!t)
+	  continue;
+	tree new_var = *t;
+	if (VAR_P (new_var)
+	    && !DECL_HARD_REGISTER (new_var)
+	    && !TREE_THIS_VOLATILE (new_var)
+	    && !DECL_HAS_VALUE_EXPR_P (new_var)
+	    && !is_gimple_reg (new_var)
+	    && auto_var_in_fn_p (new_var, id->dst_fn))
+	  {
+	    gimple_stmt_iterator gsi = gsi_after_labels (bb);
+	    tree clobber = build_clobber (TREE_TYPE (new_var));
+	    gimple *clobber_stmt = gimple_build_assign (new_var, clobber);
+	    gsi_insert_before (&gsi, clobber_stmt, GSI_NEW_STMT);
+	  }
+      }
+}
 
 /* Copy edges from BB into its copy constructed earlier, scale profile
    accordingly.  Edges will be taken care of later.  Assume aux
@@ -2216,7 +2266,7 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
   if (bb->index == ENTRY_BLOCK || bb->index == EXIT_BLOCK)
     return false;
 
-  /* When doing function splitting, we must decreate count of the return block
+  /* When doing function splitting, we must decrease count of the return block
      which was previously reachable by block we did not copy.  */
   if (single_succ_p (bb) && single_succ_edge (bb)->dest->index == EXIT_BLOCK)
     FOR_EACH_EDGE (old_edge, ei, bb->preds)
@@ -2301,8 +2351,16 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 	      e->probability = old_edge->probability;
 	    
           FOR_EACH_EDGE (e, ei, copy_stmt_bb->succs)
-	    if ((e->flags & EDGE_EH) && !e->probability.initialized_p ())
-	      e->probability = profile_probability::never ();
+	    if (e->flags & EDGE_EH)
+	      {
+		if (!e->probability.initialized_p ())
+		  e->probability = profile_probability::never ();
+		if (e->dest->index < id->add_clobbers_to_eh_landing_pads)
+		  {
+		    add_clobbers_to_eh_landing_pad (e->dest, id);
+		    id->add_clobbers_to_eh_landing_pads = 0;
+		  }
+	      }
         }
 
 
@@ -2778,7 +2836,7 @@ copy_cfg_body (copy_body_data * id,
 	    && bb->index != ENTRY_BLOCK
 	    && bb->index != EXIT_BLOCK)
 	  maybe_move_debug_stmts_to_successors (id, (basic_block) bb->aux);
-	/* Update call edge destinations.  This can not be done before loop
+	/* Update call edge destinations.  This cannot be done before loop
 	   info is updated, because we may split basic blocks.  */
 	if (id->transform_call_graph_edges == CB_CGE_DUPLICATE
 	    && bb->index != ENTRY_BLOCK
@@ -2796,7 +2854,7 @@ copy_cfg_body (copy_body_data * id,
 	maybe_move_debug_stmts_to_successors (id,
 					      BASIC_BLOCK_FOR_FN (cfun, last));
       BASIC_BLOCK_FOR_FN (cfun, last)->aux = NULL;
-      /* Update call edge destinations.  This can not be done before loop
+      /* Update call edge destinations.  This cannot be done before loop
 	 info is updated, because we may split basic blocks.  */
       if (id->transform_call_graph_edges == CB_CGE_DUPLICATE)
 	redirect_all_calls (id, BASIC_BLOCK_FOR_FN (cfun, last));
@@ -3527,7 +3585,7 @@ copy_forbidden (struct function *fun)
 static const char *inline_forbidden_reason;
 
 /* A callback for walk_gimple_seq to handle statements.  Returns non-null
-   iff a function can not be inlined.  Also sets the reason why. */
+   iff a function cannot be inlined.  Also sets the reason why. */
 
 static tree
 inline_forbidden_p_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
@@ -4549,6 +4607,8 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
   id->decl_map = new hash_map<tree, tree>;
   dst = id->debug_map;
   id->debug_map = NULL;
+  if (flag_stack_reuse != SR_NONE)
+    id->add_clobbers_to_eh_landing_pads = last_basic_block_for_fn (cfun);
 
   /* Record the function we are about to inline.  */
   id->src_fn = fn;
@@ -4856,6 +4916,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
     }
 
   id->assign_stmts.release ();
+  id->add_clobbers_to_eh_landing_pads = 0;
 
   /* Output the inlining info for this abstract function, since it has been
      inlined.  If we don't do this now, we can lose the information about the
@@ -5463,6 +5524,10 @@ copy_decl_for_dup_finish (copy_body_data *id, tree decl, tree copy)
   if (CODE_CONTAINS_STRUCT (TREE_CODE (copy), TS_DECL_WRTL)
       && !TREE_STATIC (copy) && !DECL_EXTERNAL (copy))
     SET_DECL_RTL (copy, 0);
+  /* For vector typed decls make sure to update DECL_MODE according
+     to the new function context.  */
+  if (VECTOR_TYPE_P (TREE_TYPE (copy)))
+    SET_DECL_MODE (copy, TYPE_MODE (TREE_TYPE (copy)));
 
   /* These args would always appear unused, if not for this.  */
   TREE_USED (copy) = 1;

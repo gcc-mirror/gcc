@@ -1,3 +1,42 @@
+2019-01-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/51628
+	PR c/88664
+	* c-typeck.c (convert_for_assignment): Upate the
+	warn_for_address_or_pointer_of_packed_member call.
+
+2019-01-16  Tom Honermann  <tom@honermann.net>
+	    Jason Merrill  <jason@redhat.com>
+
+	* c-typeck.c (digest_init): Revised the error message produced for
+	ill-formed cases of array initialization with a string literal.
+	(error_init): Make variadic.
+
+2019-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (convert_for_assignment): Fix a comment typo.
+
+2019-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/88701
+	* c-decl.c (build_compound_literal): If not TREE_STATIC, only pushdecl
+	if current_function_decl is non-NULL.
+
+2019-01-07  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/88720
+	PR c/88726
+	* c-decl.c (pop_scope): Use TREE_PUBLIC and b->nested to determine
+	whether a function is nested, not DECL_EXTERNAL.  Diagnose inline
+	functions declared but never defined only for external scope, not
+	for other scopes.
+
+2019-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85052
+	* c-parser.c (c_parser_postfix_expression): Parse
+	__builtin_convertvector.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

@@ -1407,7 +1407,7 @@ analyze_insn_to_expand_var (struct loop *loop, rtx_insn *insn)
     }
 
   /* Hmm, this is a bit paradoxical.  We know that INSN is a valid insn
-     in MD.  But if there is no optab to generate the insn, we can not
+     in MD.  But if there is no optab to generate the insn, we cannot
      perform the variable expansion.  This can happen if an MD provides
      an insn but not a named pattern to generate it, for example to avoid
      producing code that needs additional mode switches like for x87/mmx.

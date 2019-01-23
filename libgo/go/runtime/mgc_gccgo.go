@@ -146,7 +146,7 @@ func registerGCRoots(r *gcRootList) {
 // and carries on.
 func checkPreempt() {
 	gp := getg()
-	if !gp.preempt || gp != gp.m.curg || gp.m.locks != 0 || gp.m.mallocing != 0 || gp.m.preemptoff != "" {
+	if !gp.preempt || gp != gp.m.curg || gp.m.locks != 0 || gp.m.mallocing != 0 || gp.m.preemptoff != "" || gp.m.incgo {
 		return
 	}
 
@@ -165,9 +165,6 @@ func checkPreempt() {
 			mp := acquirem()
 			gcw := &gp.m.p.ptr().gcw
 			scanstack(gp, gcw)
-			if gcBlackenPromptly {
-				gcw.dispose()
-			}
 			releasem(mp)
 			gp.gcscandone = true
 		}

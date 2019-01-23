@@ -287,7 +287,7 @@
 ; CLOB means that the condition codes are altered in an undefined manner, if
 ;   they are altered at all
 ;
-; UNCONDITIONAL means the instruction can not be conditionally executed and
+; UNCONDITIONAL means the instruction cannot be conditionally executed and
 ;   that the instruction does not use or alter the condition codes.
 ;
 ; NOCOND means that the instruction does not use or alter the condition
@@ -7406,7 +7406,7 @@
 )
 
 ;; DImode comparisons.  The generic code generates branches that
-;; if-conversion can not reduce to a conditional compare, so we do
+;; if-conversion cannot reduce to a conditional compare, so we do
 ;; that directly.
 
 (define_insn_and_split "*arm_cmpdi_insn"

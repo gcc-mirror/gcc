@@ -10,7 +10,7 @@ AC_INIT(package-unused, version-unused,, libgo)
 AC_CONFIG_SRCDIR(Makefile.am)
 AC_CONFIG_HEADER(config.h)
 
-libtool_VERSION=13:0:0
+libtool_VERSION=14:0:0
 AC_SUBST(libtool_VERSION)
 
 AM_ENABLE_MULTILIB(, ..)
@@ -153,7 +153,7 @@ AC_SUBST(go_include)
 # All known GOOS values.  This is the union of all operating systems
 # supported by the gofrontend and all operating systems supported by
 # the gc toolchain.
-ALLGOOS="aix android darwin dragonfly freebsd irix linux netbsd openbsd plan9 rtems solaris windows"
+ALLGOOS="aix android darwin dragonfly freebsd hurd irix js linux netbsd openbsd plan9 rtems solaris windows"
 
 is_darwin=no
 is_freebsd=no

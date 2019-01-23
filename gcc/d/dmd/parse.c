@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2018 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -7020,7 +7020,7 @@ Expression *Parser::parsePrimaryExp()
             if (keys)
                 e = new AssocArrayLiteralExp(loc, keys, values);
             else
-                e = new ArrayLiteralExp(loc, values);
+                e = new ArrayLiteralExp(loc, NULL, values);
             break;
         }
 

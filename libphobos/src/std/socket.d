@@ -57,12 +57,8 @@ import std.internal.cstring;
 
 version (Windows)
 {
-    version (GNU) {}
-    else
-    {
-        pragma (lib, "ws2_32.lib");
-        pragma (lib, "wsock32.lib");
-    }
+    pragma (lib, "ws2_32.lib");
+    pragma (lib, "wsock32.lib");
 
     import core.sys.windows.windows, std.windows.syserror;
     public import core.sys.windows.winsock2;

@@ -421,7 +421,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   if (boundary_p && node->analyzed
       && node->get_partitioning_class () == SYMBOL_PARTITION)
     {
-      /* Inline clones can not be part of boundary.  
+      /* Inline clones cannot be part of boundary.  
          gcc_assert (!node->global.inlined_to);  
 
 	 FIXME: At the moment they can be, when partition contains an inline

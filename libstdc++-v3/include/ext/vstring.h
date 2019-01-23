@@ -518,7 +518,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Returns true if the %string is empty.  Equivalent to 
        *  <code>*this == ""</code>.
        */
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const _GLIBCXX_NOEXCEPT
       { return this->size() == 0; }
 
@@ -2960,6 +2960,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #endif // C++11
 
-#include "vstring.tcc" 
+#include <ext/vstring.tcc>
 
 #endif /* _VSTRING_H */

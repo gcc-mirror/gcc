@@ -273,15 +273,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       struct duration_values
       {
 	static constexpr _Rep
-	zero()
+	zero() noexcept
 	{ return _Rep(0); }
 
 	static constexpr _Rep
-	max()
+	max() noexcept
 	{ return numeric_limits<_Rep>::max(); }
 
 	static constexpr _Rep
-	min()
+	min() noexcept
 	{ return numeric_limits<_Rep>::lowest(); }
       };
 
@@ -428,15 +428,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	// 20.11.5.4 special values
 	static constexpr duration
-	zero()
+	zero() noexcept
 	{ return duration(duration_values<rep>::zero()); }
 
 	static constexpr duration
-	min()
+	min() noexcept
 	{ return duration(duration_values<rep>::min()); }
 
 	static constexpr duration
-	max()
+	max() noexcept
 	{ return duration(duration_values<rep>::max()); }
 
       private:
@@ -666,11 +666,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	// special values
 	static constexpr time_point
-	min()
+	min() noexcept
 	{ return time_point(duration::min()); }
 
 	static constexpr time_point
-	max()
+	max() noexcept
 	{ return time_point(duration::max()); }
 
       private:

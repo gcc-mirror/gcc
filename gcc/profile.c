@@ -1218,7 +1218,7 @@ branch_prob (bool thunk)
      various transformations.  */
   if (thunk)
     {
-      /* At stream in time we do not have CFG, so we can not do checksums.  */
+      /* At stream in time we do not have CFG, so we cannot do checksums.  */
       cfg_checksum = 0;
       lineno_checksum = 0;
     }

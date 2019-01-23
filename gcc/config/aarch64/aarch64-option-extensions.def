@@ -108,4 +108,19 @@ AARCH64_OPT_EXTENSION("sve", AARCH64_FL_SVE, AARCH64_FL_FP | AARCH64_FL_SIMD | A
 /* Enabling/Disabling "profile" does not enable/disable any other feature.  */
 AARCH64_OPT_EXTENSION("profile", AARCH64_FL_PROFILE, 0, 0, "")
 
+/* Enabling/Disabling "rng" only changes "rng".  */
+AARCH64_OPT_EXTENSION("rng", AARCH64_FL_RNG, 0, 0, "")
+
+/* Enabling/Disabling "memtag" only changes "memtag".  */
+AARCH64_OPT_EXTENSION("memtag", AARCH64_FL_MEMTAG, 0, 0, "")
+
+/* Enabling/Disabling "sb" only changes "sb".  */
+AARCH64_OPT_EXTENSION("sb", AARCH64_FL_SB, 0, 0, "")
+
+/* Enabling/Disabling "ssbs" only changes "ssbs".  */
+AARCH64_OPT_EXTENSION("ssbs", AARCH64_FL_SSBS, 0, 0, "")
+
+/* Enabling/Disabling "predres" only changes "predres".  */
+AARCH64_OPT_EXTENSION("predres", AARCH64_FL_PREDRES, 0, 0, "")
+
 #undef AARCH64_OPT_EXTENSION

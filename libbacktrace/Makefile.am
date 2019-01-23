@@ -178,6 +178,20 @@ btest_alloc_LDADD = libbacktrace_alloc.la
 
 check_PROGRAMS += btest_alloc
 
+if HAVE_DWZ
+
+%_dwz: %
+	rm -f $@ $@_common.debug
+	cp $< $@_1
+	cp $< $@_2
+	$(DWZ) -m $@_common.debug $@_1 $@_2
+	rm -f $@_2
+	mv $@_1 $@
+
+TESTS += btest_dwz
+
+endif HAVE_DWZ
+
 stest_SOURCES = stest.c
 stest_LDADD = libbacktrace.la
 

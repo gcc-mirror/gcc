@@ -351,3 +351,24 @@ void test15789()
 {
     test15789a(0);
 }
+
+/**************************************/
+// 7030
+
+extern(C++)
+{
+    struct T
+    {
+        void foo(int) const;
+        void bar(int);
+        static __gshared int boo;
+    }
+}
+
+version (Posix)
+{
+    static assert(T.foo.mangleof == "_ZNK1T3fooEi");
+    static assert(T.bar.mangleof == "_ZN1T3barEi");
+    static assert(T.boo.mangleof == "_ZN1T3booE");
+}
+

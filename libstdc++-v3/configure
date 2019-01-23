@@ -81038,6 +81038,62 @@ $as_echo "#define HAVE_SYMLINK 1" >>confdefs.h
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_symlink" >&5
 $as_echo "$glibcxx_cv_symlink" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for truncate" >&5
+$as_echo_n "checking for truncate... " >&6; }
+    if ${glibcxx_cv_truncate+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+        if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <unistd.h>
+int
+main ()
+{
+truncate("", 99);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_truncate=yes
+else
+  glibcxx_cv_truncate=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <unistd.h>
+int
+main ()
+{
+truncate("", 99);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_truncate=yes
+else
+  glibcxx_cv_truncate=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+    if test $glibcxx_cv_truncate = yes; then
+
+$as_echo "#define HAVE_TRUNCATE 1" >>confdefs.h
+
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_truncate" >&5
+$as_echo "$glibcxx_cv_truncate" >&6; }
     CXXFLAGS="$ac_save_CXXFLAGS"
     ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'

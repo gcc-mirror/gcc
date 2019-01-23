@@ -137,6 +137,6 @@ verify_code (gcc_jit_context *ctxt, gcc_jit_result *result)
      bounds of the iteration variable. Specifically, verify that some
      variable is known to be in the range negative infinity to some
      expression based on param "n" (actually n-1).  */
-  CHECK_STRING_CONTAINS (dump_vrp1, ": [-INF, n_");
+  CHECK_STRING_CONTAINS (dump_vrp1, "[-INF, n_");
   free (dump_vrp1);
 }

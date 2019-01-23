@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fexceptions" } */
+/* { dg-require-effective-target exceptions } */
 
 static void
 emit_package (int p1)

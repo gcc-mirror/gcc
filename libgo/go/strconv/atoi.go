@@ -44,7 +44,7 @@ const intSize = 32 << (^uint(0) >> 63)
 // IntSize is the size in bits of an int or uint value.
 const IntSize = intSize
 
-const maxUint64 = (1<<64 - 1)
+const maxUint64 = 1<<64 - 1
 
 // ParseUint is like ParseInt but for unsigned numbers.
 func ParseUint(s string, base int, bitSize int) (uint64, error) {
@@ -198,7 +198,7 @@ func ParseInt(s string, base int, bitSize int) (i int64, err error) {
 	return n, nil
 }
 
-// Atoi returns the result of ParseInt(s, 10, 0) converted to type int.
+// Atoi is equivalent to ParseInt(s, 10, 0), converted to type int.
 func Atoi(s string) (int, error) {
 	const fnAtoi = "Atoi"
 

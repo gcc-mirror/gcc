@@ -2009,13 +2009,7 @@ decay_conversion (tree exp,
   if (type == error_mark_node)
     return error_mark_node;
 
-  exp = resolve_nondeduced_context (exp, complain);
-  if (type_unknown_p (exp))
-    {
-      if (complain & tf_error)
-	cxx_incomplete_type_error (exp, TREE_TYPE (exp));
-      return error_mark_node;
-    }
+  exp = resolve_nondeduced_context_or_error (exp, complain);
 
   code = TREE_CODE (type);
 
@@ -2216,6 +2210,7 @@ string_conv_p (const_tree totype, const_tree exp, int warn)
 
   t = TREE_TYPE (totype);
   if (!same_type_p (t, char_type_node)
+      && !same_type_p (t, char8_type_node)
       && !same_type_p (t, char16_type_node)
       && !same_type_p (t, char32_type_node)
       && !same_type_p (t, wchar_type_node))
@@ -5238,6 +5233,7 @@ cp_build_binary_op (const op_location_t &location,
 	}
 
       if ((code0 == POINTER_TYPE || code1 == POINTER_TYPE)
+	  && !processing_template_decl
 	  && sanitize_flags_p (SANITIZE_POINTER_COMPARE))
 	{
 	  op0 = save_expr (op0);
@@ -5655,7 +5651,8 @@ pointer_diff (location_t loc, tree op0, tree op1, tree ptrtype,
   else
     inttype = restype;
 
-  if (sanitize_flags_p (SANITIZE_POINTER_SUBTRACT))
+  if (!processing_template_decl
+      && sanitize_flags_p (SANITIZE_POINTER_SUBTRACT))
     {
       op0 = save_expr (op0);
       op1 = save_expr (op1);
@@ -9074,7 +9071,7 @@ convert_for_assignment (tree type, tree rhs,
     }
 
   if (complain & tf_warning)
-    warn_for_address_or_pointer_of_packed_member (false, type, rhs);
+    warn_for_address_or_pointer_of_packed_member (type, rhs);
 
   return perform_implicit_conversion_flags (strip_top_quals (type), rhs,
 					    complain, flags);
@@ -9342,6 +9339,8 @@ is_std_move_p (tree fn)
 static bool
 can_do_nrvo_p (tree retval, tree functype)
 {
+  if (functype == error_mark_node)
+    return false;
   if (retval)
     STRIP_ANY_LOCATION_WRAPPER (retval);
   tree result = DECL_RESULT (current_function_decl);
@@ -9412,8 +9411,9 @@ maybe_warn_pessimizing_move (tree retval, tree functype)
 	{
 	  tree arg = CALL_EXPR_ARG (fn, 0);
 	  STRIP_NOPS (arg);
-	  if (TREE_CODE (arg) == ADDR_EXPR)
-	    arg = TREE_OPERAND (arg, 0);
+	  if (TREE_CODE (arg) != ADDR_EXPR)
+	    return;
+	  arg = TREE_OPERAND (arg, 0);
 	  arg = convert_from_reference (arg);
 	  /* Warn if we could do copy elision were it not for the move.  */
 	  if (can_do_nrvo_p (arg, functype))
@@ -10299,6 +10299,7 @@ check_literal_operator_args (const_tree decl,
 	      t = TYPE_MAIN_VARIANT (t);
 	      if ((maybe_raw_p = same_type_p (t, char_type_node))
 		  || same_type_p (t, wchar_type_node)
+		  || same_type_p (t, char8_type_node)
 		  || same_type_p (t, char16_type_node)
 		  || same_type_p (t, char32_type_node))
 		{
@@ -10330,6 +10331,8 @@ check_literal_operator_args (const_tree decl,
 	  else if (same_type_p (t, char_type_node))
 	    max_arity = 1;
 	  else if (same_type_p (t, wchar_type_node))
+	    max_arity = 1;
+	  else if (same_type_p (t, char8_type_node))
 	    max_arity = 1;
 	  else if (same_type_p (t, char16_type_node))
 	    max_arity = 1;

@@ -94,7 +94,7 @@ struct conversion {
   BOOL_BITFIELD bad_p : 1;
   /* If KIND is ck_ref_bind ck_base_conv, true to indicate that a
      temporary should be created to hold the result of the
-     conversion.  If KIND is ck_ambig, true if the context is
+     conversion.  If KIND is ck_ambig or ck_user, true means force
      copy-initialization.  */
   BOOL_BITFIELD need_temporary_p : 1;
   /* If KIND is ck_ptr or ck_pmem, true to indicate that a conversion
@@ -1560,6 +1560,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
       from = TREE_TYPE (expr);
     }
 
+  bool copy_list_init = false;
   if (expr && BRACE_ENCLOSED_INITIALIZER_P (expr))
     {
       maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
@@ -1582,7 +1583,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
       /* Otherwise, if T is a reference type, a prvalue temporary of the type
 	 referenced by T is copy-list-initialized, and the reference is bound
 	 to that temporary. */
-      CONSTRUCTOR_IS_DIRECT_INIT (expr) = false;
+      copy_list_init = true;
     skip:;
     }
 
@@ -1770,6 +1771,10 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
 
   if (conv->user_conv_p)
     {
+      if (copy_list_init)
+	/* Remember this was copy-list-initialization.  */
+	conv->need_temporary_p = true;
+
       /* If initializing the temporary used a conversion function,
 	 recalculate the second conversion sequence.  */
       for (conversion *t = conv; t; t = next_conversion (t))
@@ -5077,6 +5082,19 @@ build_conditional_expr_1 (const op_location_t &loc,
   arg3_type = unlowered_expr_type (arg3);
   if (VOID_TYPE_P (arg2_type) || VOID_TYPE_P (arg3_type))
     {
+      /* 'void' won't help in resolving an overloaded expression on the
+	 other side, so require it to resolve by itself.  */
+      if (arg2_type == unknown_type_node)
+	{
+	  arg2 = resolve_nondeduced_context_or_error (arg2, complain);
+	  arg2_type = TREE_TYPE (arg2);
+	}
+      if (arg3_type == unknown_type_node)
+	{
+	  arg3 = resolve_nondeduced_context_or_error (arg3, complain);
+	  arg3_type = TREE_TYPE (arg3);
+	}
+
       /* [expr.cond]
 
 	 One of the following shall hold:
@@ -6940,7 +6958,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	if (DECL_NONCONVERTING_P (convfn) && DECL_CONSTRUCTOR_P (convfn)
 	    && BRACE_ENCLOSED_INITIALIZER_P (expr)
 	    /* Unless this is for direct-list-initialization.  */
-	    && !CONSTRUCTOR_IS_DIRECT_INIT (expr)
+	    && (!CONSTRUCTOR_IS_DIRECT_INIT (expr) || convs->need_temporary_p)
 	    /* And in C++98 a default constructor can't be explicit.  */
 	    && cxx_dialect >= cxx11)
 	  {
@@ -7643,7 +7661,7 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
     }
 
   if (complain & tf_warning)
-    warn_for_address_or_pointer_of_packed_member (false, type, val);
+    warn_for_address_or_pointer_of_packed_member (type, val);
 
   return val;
 }
@@ -11030,6 +11048,8 @@ perform_implicit_conversion_flags (tree type, tree expr,
       expr = build1 (IMPLICIT_CONV_EXPR, type, expr);
       if (!(flags & LOOKUP_ONLYCONVERTING))
 	IMPLICIT_CONV_EXPR_DIRECT_INIT (expr) = true;
+      if (flags & LOOKUP_NO_NARROWING)
+	IMPLICIT_CONV_EXPR_BRACED_INIT (expr) = true;
     }
   else
     expr = convert_like (conv, expr, complain);

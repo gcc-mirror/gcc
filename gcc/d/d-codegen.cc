@@ -448,6 +448,42 @@ extract_from_method_call (tree t, tree& callee, tree& object)
   callee = CONSTRUCTOR_ELT (t, 1)->value;
 }
 
+/* Build a typeof(null) constant of type TYPE.  Handles certain special case
+   conversions, where the underlying type is an aggregate with a nullable
+   interior pointer.  */
+
+tree
+build_typeof_null_value (Type *type)
+{
+  Type *tb = type->toBasetype ();
+  tree value;
+
+  /* For dynamic arrays, set length and pointer fields to zero.  */
+  if (tb->ty == Tarray)
+    value = d_array_value (build_ctype (type), size_int (0), null_pointer_node);
+
+  /* For associative arrays, set the pointer field to null.  */
+  else if (tb->ty == Taarray)
+    {
+      tree ctype = build_ctype (type);
+      gcc_assert (TYPE_ASSOCIATIVE_ARRAY (ctype));
+
+      value = build_constructor_single (ctype, TYPE_FIELDS (ctype),
+					null_pointer_node);
+    }
+
+  /* For delegates, set the frame and function pointer fields to null.  */
+  else if (tb->ty == Tdelegate)
+    value = build_delegate_cst (null_pointer_node, null_pointer_node, type);
+
+  /* Simple zero constant for all other types.  */
+  else
+    value = build_zero_cst (build_ctype (type));
+
+  TREE_CONSTANT (value) = 1;
+  return value;
+}
+
 /* Build a dereference into the virtual table for OBJECT to retrieve
    a function pointer of type FNTYPE at position INDEX.  */
 
@@ -762,14 +798,20 @@ identity_compare_p (StructDeclaration *sd)
   for (size_t i = 0; i < sd->fields.dim; i++)
     {
       VarDeclaration *vd = sd->fields[i];
+      Type *tb = vd->type->toBasetype ();
 
       /* Check inner data structures.  */
-      if (vd->type->ty == Tstruct)
+      if (tb->ty == Tstruct)
 	{
-	  TypeStruct *ts = (TypeStruct *) vd->type;
+	  TypeStruct *ts = (TypeStruct *) tb;
 	  if (!identity_compare_p (ts->sym))
 	    return false;
 	}
+
+      /* Check for types that may have padding.  */
+      if ((tb->ty == Tcomplex80 || tb->ty == Tfloat80 || tb->ty == Timaginary80)
+	  && Target::realpad != 0)
+	return false;
 
       if (offset <= vd->offset)
 	{
@@ -786,6 +828,20 @@ identity_compare_p (StructDeclaration *sd)
     return false;
 
   return true;
+}
+
+/* Build a floating-point identity comparison between T1 and T2, ignoring any
+   excessive padding in the type.  CODE is EQ_EXPR or NE_EXPR comparison.  */
+
+tree
+build_float_identity (tree_code code, tree t1, tree t2)
+{
+  tree tmemcmp = builtin_decl_explicit (BUILT_IN_MEMCMP);
+  tree size = size_int (TYPE_PRECISION (TREE_TYPE (t1)) / BITS_PER_UNIT);
+
+  tree result = build_call_expr (tmemcmp, 3, build_address (t1),
+				 build_address (t2), size);
+  return build_boolop (code, result, integer_zero_node);
 }
 
 /* Lower a field-by-field equality expression between T1 and T2 of type SD.
@@ -823,29 +879,45 @@ lower_struct_comparison (tree_code code, StructDeclaration *sd,
   for (size_t i = 0; i < sd->fields.dim; i++)
     {
       VarDeclaration *vd = sd->fields[i];
+      Type *type = vd->type->toBasetype ();
       tree sfield = get_symbol_decl (vd);
 
       tree t1ref = component_ref (t1, sfield);
       tree t2ref = component_ref (t2, sfield);
       tree tcmp;
 
-      if (vd->type->ty == Tstruct)
+      if (type->ty == Tstruct)
 	{
 	  /* Compare inner data structures.  */
-	  StructDeclaration *decl = ((TypeStruct *) vd->type)->sym;
+	  StructDeclaration *decl = ((TypeStruct *) type)->sym;
 	  tcmp = lower_struct_comparison (code, decl, t1ref, t2ref);
+	}
+      else if (type->ty != Tvector && type->isintegral ())
+	{
+	  /* Integer comparison, no special handling required.  */
+	  tcmp = build_boolop (code, t1ref, t2ref);
+	}
+      else if (type->ty != Tvector && type->isfloating ())
+	{
+	  /* Floating-point comparison, don't compare padding in type.  */
+	  if (!type->iscomplex ())
+	    tcmp = build_float_identity (code, t1ref, t2ref);
+	  else
+	    {
+	      tree req = build_float_identity (code, real_part (t1ref),
+					       real_part (t2ref));
+	      tree ieq = build_float_identity (code, imaginary_part (t1ref),
+					       imaginary_part (t2ref));
+
+	      tcmp = build_boolop (tcode, req, ieq);
+	    }
 	}
       else
 	{
-	  tree stype = build_ctype (vd->type);
+	  tree stype = build_ctype (type);
 	  opt_scalar_int_mode mode = int_mode_for_mode (TYPE_MODE (stype));
 
-	  if (vd->type->ty != Tvector && vd->type->isintegral ())
-	    {
-	      /* Integer comparison, no special handling required.  */
-	      tcmp = build_boolop (code, t1ref, t2ref);
-	    }
-	  else if (mode.exists ())
+	  if (mode.exists ())
 	    {
 	      /* Compare field bits as their corresponding integer type.
 		    *((T*) &t1) == *((T*) &t2)  */

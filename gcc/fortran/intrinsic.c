@@ -211,6 +211,7 @@ do_ts29113_check (gfc_intrinsic_sym *specific, gfc_actual_arglist *arg)
 	       && specific->id != GFC_ISYM_SIZE
 	       && specific->id != GFC_ISYM_SIZEOF
 	       && specific->id != GFC_ISYM_UBOUND
+	       && specific->id != GFC_ISYM_IS_CONTIGUOUS
 	       && specific->id != GFC_ISYM_C_LOC)
 	{
 	  gfc_error ("Assumed-type argument at %L is not permitted as actual"
@@ -2234,6 +2235,14 @@ add_functions (void)
 	     ut, BT_INTEGER, di, REQUIRED);
 
   make_generic ("isatty", GFC_ISYM_ISATTY, GFC_STD_GNU);
+
+  add_sym_1 ("is_contiguous", GFC_ISYM_IS_CONTIGUOUS, CLASS_INQUIRY, ACTUAL_NO,
+	     BT_LOGICAL, dl, GFC_STD_F2008,
+	     gfc_check_is_contiguous, gfc_simplify_is_contiguous,
+	     gfc_resolve_is_contiguous,
+	     ar, BT_REAL, dr, REQUIRED);
+
+  make_generic ("is_contiguous", GFC_ISYM_IS_CONTIGUOUS, GFC_STD_F2008);
 
   add_sym_1 ("is_iostat_end", GFC_ISYM_IS_IOSTAT_END,
 	     CLASS_ELEMENTAL, ACTUAL_NO, BT_LOGICAL, dl, GFC_STD_F2003,

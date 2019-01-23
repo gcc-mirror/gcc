@@ -6289,6 +6289,18 @@ do_xor (gfc_expr *result, gfc_expr *e)
 }
 
 
+gfc_expr *
+gfc_simplify_is_contiguous (gfc_expr *array)
+{
+  if (gfc_is_simply_contiguous (array, false, true))
+    return gfc_get_logical_expr (gfc_default_logical_kind, &array->where, 1);
+
+  if (gfc_is_not_contiguous (array))
+    return gfc_get_logical_expr (gfc_default_logical_kind, &array->where, 0);
+    
+  return NULL;
+}
+
 
 gfc_expr *
 gfc_simplify_parity (gfc_expr *e, gfc_expr *dim)
@@ -7560,7 +7572,8 @@ gfc_simplify_spread (gfc_expr *source, gfc_expr *dim_expr, gfc_expr *ncopies_exp
 	return NULL;
     }
 
-  if (source->expr_type == EXPR_CONSTANT)
+  if (source->expr_type == EXPR_CONSTANT
+      || source->expr_type == EXPR_STRUCTURE)
     {
       gcc_assert (dim == 0);
 

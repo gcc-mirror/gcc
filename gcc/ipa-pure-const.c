@@ -878,9 +878,12 @@ check_retval_uses (tree retval, gimple *stmt)
 }
 
 static bool
-malloc_candidate_p_1 (function *fun, tree retval, gimple *ret_stmt, bool ipa)
+malloc_candidate_p_1 (function *fun, tree retval, gimple *ret_stmt, bool ipa,
+		      bitmap visited)
 {
   cgraph_node *node = cgraph_node::get_create (fun->decl);
+  if (!bitmap_set_bit (visited, SSA_NAME_VERSION (retval)))
+    return true;
 
   if (!check_retval_uses (retval, ret_stmt))
     DUMP_AND_RETURN("Return value has uses outside return stmt"
@@ -925,7 +928,7 @@ malloc_candidate_p_1 (function *fun, tree retval, gimple *ret_stmt, bool ipa)
 	    gimple *arg_def = SSA_NAME_DEF_STMT (arg);
 	    if (is_a<gphi *> (arg_def))
 	      {
-		if (!malloc_candidate_p_1 (fun, arg, phi, ipa))
+		if (!malloc_candidate_p_1 (fun, arg, phi, ipa, visited))
 		    DUMP_AND_RETURN ("nested phi fail")
 		continue;
 	      }
@@ -971,6 +974,7 @@ malloc_candidate_p (function *fun, bool ipa)
       || !flag_delete_null_pointer_checks)
     return false;
 
+  auto_bitmap visited;
   FOR_EACH_EDGE (e, ei, exit_block->preds)
     {
       gimple_stmt_iterator gsi = gsi_last_bb (e->src);
@@ -987,7 +991,7 @@ malloc_candidate_p (function *fun, bool ipa)
 	  || TREE_CODE (TREE_TYPE (retval)) != POINTER_TYPE)
 	DUMP_AND_RETURN("Return value is not SSA_NAME or not a pointer type.")
 
-      if (!malloc_candidate_p_1 (fun, retval, ret_stmt, ipa))
+      if (!malloc_candidate_p_1 (fun, retval, ret_stmt, ipa, visited))
 	return false;
     }
 
@@ -1087,7 +1091,7 @@ end:
 		if (!finite_loop_p (loop))
 		  {
 		    if (dump_file)
-		      fprintf (dump_file, "    can not prove finiteness of "
+		      fprintf (dump_file, "    cannot prove finiteness of "
 			       "loop %i\n", loop->num);
 		    l->looping =true;
 		    break;
@@ -1186,7 +1190,7 @@ pure_const_generate_summary (void)
 
   /* Process all of the functions.
 
-     We process AVAIL_INTERPOSABLE functions.  We can not use the results
+     We process AVAIL_INTERPOSABLE functions.  We cannot use the results
      by default, but the info can be used at LTO with -fwhole-program or
      when function got cloned and the clone is AVAILABLE.  */
 
@@ -1792,8 +1796,8 @@ propagate_nothrow (void)
 				   function_or_virtual_thunk_symbol (&avail,
 								     e->caller);
 
-		  /* We can use info about the callee only if we know it can
-		     not be interposed.
+		  /* We can use info about the callee only if we know it
+		     cannot be interposed.
 		     When callee is compiled with non-call exceptions we also
 		     must check that the declaration is bound to current
 		     body as other semantically equivalent body may still
@@ -2292,7 +2296,7 @@ pass_nothrow::execute (function *)
 
   node = cgraph_node::get (current_function_decl);
 
-  /* We run during lowering, we can not really use availability yet.  */
+  /* We run during lowering, we cannot really use availability yet.  */
   if (cgraph_node::get (current_function_decl)->get_availability ()
       <= AVAIL_INTERPOSABLE)
     {

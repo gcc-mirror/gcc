@@ -3145,7 +3145,7 @@ can_implement_as_sibling_call_p (tree exp,
     }
 
 #ifdef REG_PARM_STACK_SPACE
-  /* If outgoing reg parm stack space changes, we can not do sibcall.  */
+  /* If outgoing reg parm stack space changes, we cannot do sibcall.  */
   if (OUTGOING_REG_PARM_STACK_SPACE (funtype)
       != OUTGOING_REG_PARM_STACK_SPACE (TREE_TYPE (current_function_decl))
       || (reg_parm_stack_space != REG_PARM_STACK_SPACE (current_function_decl)))
@@ -4294,7 +4294,7 @@ expand_call (tree exp, rtx target, int ignore)
 
 	  emit_move_insn (temp, valreg);
 
-	  /* The return value from a malloc-like function can not alias
+	  /* The return value from a malloc-like function cannot alias
 	     anything else.  */
 	  last = get_last_insn ();
 	  add_reg_note (last, REG_NOALIAS, temp);

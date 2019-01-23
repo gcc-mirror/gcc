@@ -294,7 +294,8 @@ create_new_asm_name (char *old_asm_name, char *new_asm_name)
 /*  Creates target clone of NODE.  */
 
 static cgraph_node *
-create_target_clone (cgraph_node *node, bool definition, char *name)
+create_target_clone (cgraph_node *node, bool definition, char *name,
+		     tree attributes)
 {
   cgraph_node *new_node;
 
@@ -303,13 +304,16 @@ create_target_clone (cgraph_node *node, bool definition, char *name)
       new_node = node->create_version_clone_with_body (vNULL, NULL,
     						       NULL, false,
 						       NULL, NULL,
-						       name);
+						       name, attributes);
+      if (new_node == NULL)
+	return NULL;
       new_node->force_output = true;
     }
   else
     {
       tree new_decl = copy_node (node->decl);
       new_node = cgraph_node::get_create (new_decl);
+      DECL_ATTRIBUTES (new_decl) = attributes;
       /* Generate a new name for the new version.  */
       symtab->change_decl_assembler_name (new_node->decl,
 					  clone_function_name_numbered (
@@ -400,22 +404,16 @@ expand_target_clones (struct cgraph_node *node, bool definition)
 
       create_new_asm_name (attr, suffix);
       /* Create new target clone.  */
-      cgraph_node *new_node = create_target_clone (node, definition, suffix);
+      tree attributes = make_attribute ("target", attr,
+					DECL_ATTRIBUTES (node->decl));
+
+      cgraph_node *new_node = create_target_clone (node, definition, suffix,
+						   attributes);
+      if (new_node == NULL)
+	return false;
       new_node->local.local = false;
       XDELETEVEC (suffix);
 
-      /* Set new attribute for the clone.  */
-      tree attributes = make_attribute ("target", attr,
-					DECL_ATTRIBUTES (new_node->decl));
-      DECL_ATTRIBUTES (new_node->decl) = attributes;
-      location_t saved_loc = input_location;
-      input_location = DECL_SOURCE_LOCATION (node->decl);
-      if (!targetm.target_option.valid_attribute_p (new_node->decl, NULL,
-						    TREE_VALUE (attributes),
-						    0))
-	return false;
-
-      input_location = saved_loc;
       decl2_v = new_node->function_version ();
       if (decl2_v != NULL)
         continue;
@@ -442,13 +440,7 @@ expand_target_clones (struct cgraph_node *node, bool definition)
 				    DECL_ATTRIBUTES (node->decl));
   DECL_ATTRIBUTES (node->decl) = attributes;
   node->local.local = false;
-  location_t saved_loc = input_location;
-  input_location = DECL_SOURCE_LOCATION (node->decl);
-  bool ret
-    = targetm.target_option.valid_attribute_p (node->decl, NULL,
-					       TREE_VALUE (attributes), 0);
-  input_location = saved_loc;
-  return ret;
+  return true;
 }
 
 /* When NODE is a target clone, consider all callees and redirect

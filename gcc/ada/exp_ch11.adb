@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,9 +63,10 @@ package body Exp_Ch11 is
    --  N is the node on which the warning is placed.
 
    procedure Warn_If_No_Propagation (N : Node_Id);
-   --  Called for an exception raise that is not a local raise (and thus can
-   --  not be optimized to a goto). Issues warning if No_Exception_Propagation
-   --  restriction is set. N is the node for the raise or equivalent call.
+   --  Called for an exception raise that is not a local raise (and thus
+   --  cannot be optimized to a goto). Issues warning if
+   --  No_Exception_Propagation restriction is set.
+   --  N is the node for the raise or equivalent call.
 
    ---------------------------
    -- Expand_At_End_Handler --

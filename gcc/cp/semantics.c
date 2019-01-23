@@ -3473,10 +3473,9 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
     }
 
   /* In a lambda within a template, wait until instantiation
-     time to implicitly capture.  */
+     time to implicitly capture a dependent type.  */
   if (context == containing_function
-      && DECL_TEMPLATE_INFO (containing_function)
-      && uses_template_parms (DECL_TI_ARGS (containing_function)))
+      && dependent_type_p (TREE_TYPE (decl)))
     return decl;
 
   if (lambda_expr && VAR_P (decl)
@@ -9966,6 +9965,28 @@ finish_builtin_launder (location_t loc, tree arg, tsubst_flags_t complain)
     arg = orig_arg;
   return build_call_expr_internal_loc (loc, IFN_LAUNDER,
 				       TREE_TYPE (arg), 1, arg);
+}
+
+/* Finish __builtin_convertvector (arg, type).  */
+
+tree
+cp_build_vec_convert (tree arg, location_t loc, tree type,
+		      tsubst_flags_t complain)
+{
+  if (error_operand_p (type))
+    return error_mark_node;
+  if (error_operand_p (arg))
+    return error_mark_node;
+
+  tree ret = NULL_TREE;
+  if (!type_dependent_expression_p (arg) && !dependent_type_p (type))
+    ret = c_build_vec_convert (cp_expr_loc_or_loc (arg, input_location), arg,
+			       loc, type, (complain & tf_error) != 0);
+
+  if (!processing_template_decl)
+    return ret;
+
+  return build_call_expr_internal_loc (loc, IFN_VEC_CONVERT, type, 1, arg);
 }
 
 #include "gt-cp-semantics.h"

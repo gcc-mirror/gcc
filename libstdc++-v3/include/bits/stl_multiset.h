@@ -406,7 +406,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
       ///  Returns true if the %set is empty.
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const _GLIBCXX_NOEXCEPT
       { return _M_t.empty(); }
 

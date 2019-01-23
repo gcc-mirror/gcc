@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2018 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -479,8 +479,7 @@ Expression *pointerBitmap(TraitsExp *e)
     for (d_uns64 i = 0; i < cntdata; i++)
         exps->push(new IntegerExp(e->loc, data[(size_t)i], Type::tsize_t));
 
-    ArrayLiteralExp* ale = new ArrayLiteralExp(e->loc, exps);
-    ale->type = Type::tsize_t->sarrayOf(cntdata + 1);
+    ArrayLiteralExp* ale = new ArrayLiteralExp(e->loc, Type::tsize_t->sarrayOf(cntdata + 1), exps);
     return ale;
 }
 

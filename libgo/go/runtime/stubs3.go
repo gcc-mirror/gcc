@@ -7,6 +7,7 @@
 // +build !nacl
 // +build !freebsd
 // +build !darwin
+// +build !aix
 
 package runtime
 

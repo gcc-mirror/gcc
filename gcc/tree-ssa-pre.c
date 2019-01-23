@@ -1262,7 +1262,7 @@ get_representative_for (const pre_expr e, basic_block b = NULL)
   switch (e->kind)
     {
     case NAME:
-      return VN_INFO (PRE_EXPR_NAME (e))->valnum;
+      return PRE_EXPR_NAME (e);
     case CONSTANT:
       return PRE_EXPR_CONSTANT (e);
     case NARY:

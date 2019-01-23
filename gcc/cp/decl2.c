@@ -820,7 +820,8 @@ grokfield (const cp_declarator *declarator,
 
   if (TREE_CODE (value) == TYPE_DECL && init)
     {
-      error ("typedef %qD is initialized (use decltype instead)", value);
+      error_at (cp_expr_loc_or_loc (init, DECL_SOURCE_LOCATION (value)),
+		"typedef %qD is initialized (use decltype instead)", value);
       init = NULL_TREE;
     }
 
@@ -924,12 +925,14 @@ grokfield (const cp_declarator *declarator,
 	  else
 	    {
 	      gcc_assert (TREE_CODE (TREE_TYPE (value)) == FUNCTION_TYPE);
+	      location_t iloc
+		= cp_expr_loc_or_loc (init, DECL_SOURCE_LOCATION (value));
 	      if (friendp)
-		error ("initializer specified for friend function %qD",
-		       value);
+		error_at (iloc, "initializer specified for friend "
+			  "function %qD", value);
 	      else
-		error ("initializer specified for static member function %qD",
-		       value);
+		error_at (iloc, "initializer specified for static "
+			  "member function %qD", value);
 	    }
 	}
       else if (TREE_CODE (value) == FIELD_DECL)
@@ -1036,7 +1039,8 @@ grokbitfield (const cp_declarator *declarator,
 
   if (TREE_CODE (value) == TYPE_DECL)
     {
-      error ("cannot declare %qD to be a bit-field type", value);
+      error_at (DECL_SOURCE_LOCATION (value),
+		"cannot declare %qD to be a bit-field type", value);
       return NULL_TREE;
     }
 
@@ -2219,6 +2223,17 @@ maybe_emit_vtables (tree ctype)
 	  last = current;
 	}
     }
+
+  /* For abstract classes, the destructor has been removed from the
+     vtable (in class.c's build_vtbl_initializer).  For a compiler-
+     generated destructor, it hence might not have been generated in
+     this translation unit - and with '#pragma interface' it might
+     never get generated.  */
+  if (CLASSTYPE_PURE_VIRTUALS (ctype)
+      && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (ctype)
+      && !CLASSTYPE_LAZY_DESTRUCTOR (ctype)
+      && DECL_DEFAULTED_IN_CLASS_P (CLASSTYPE_DESTRUCTOR (ctype)))
+    note_vague_linkage_fn (CLASSTYPE_DESTRUCTOR (ctype));
 
   /* Since we're writing out the vtable here, also write the debug
      info.  */
@@ -3433,7 +3448,9 @@ get_tls_wrapper_fn (tree var)
       tree type = non_reference (TREE_TYPE (var));
       type = build_reference_type (type);
       tree fntype = build_function_type (type, void_list_node);
-      fn = build_lang_decl (FUNCTION_DECL, sname, fntype);
+
+      fn = build_lang_decl_loc (DECL_SOURCE_LOCATION (var),
+				FUNCTION_DECL, sname, fntype);
       SET_DECL_LANGUAGE (fn, lang_c);
       TREE_PUBLIC (fn) = TREE_PUBLIC (var);
       DECL_ARTIFICIAL (fn) = true;
@@ -5497,7 +5514,7 @@ mark_used (tree decl, tsubst_flags_t complain)
 	 within the body of a function so as to avoid collecting live data
 	 on the stack (such as overload resolution candidates).
 
-         We could just let cp_write_global_declarations handle synthesizing
+         We could just let c_parse_final_cleanups handle synthesizing
          this function by adding it to deferred_fns, but doing
          it at the use site produces better error messages.  */
       ++function_depth;

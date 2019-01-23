@@ -1354,7 +1354,7 @@ nds32_emit_adjust_frame (rtx to_reg, rtx from_reg, int adjust_value)
       frame_adjust_insn = emit_insn (frame_adjust_insn);
 
       /* Because (tmp_reg <- full_value) may be split into two
-	 rtl patterns, we can not set its RTX_FRAME_RELATED_P.
+	 rtl patterns, we cannot set its RTX_FRAME_RELATED_P.
 	 We need to construct another (sp <- sp + full_value)
 	 and then insert it into sp_adjust_insn's reg note to
 	 represent a frame related expression.
@@ -5352,7 +5352,7 @@ nds32_can_use_return_insn (void)
   int sp_adjust;
 
   /* Prior to reloading, we can't tell how many registers must be saved.
-     Thus we can not determine whether this function has null epilogue.  */
+     Thus we cannot determine whether this function has null epilogue.  */
   if (!reload_completed)
     return 0;
 

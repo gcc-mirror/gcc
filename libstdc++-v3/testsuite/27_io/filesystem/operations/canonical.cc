@@ -52,28 +52,30 @@ test01()
   compare_paths( p2, p );
   VERIFY( !ec );
 
+  const auto root = fs::absolute("/");
+
   ec = bad_ec;
   p = "/";
   p = canonical( p, ec );
-  compare_paths( p, "/" );
+  compare_paths( p, root );
   VERIFY( !ec );
 
   ec = bad_ec;
   p = "/.";
   p = canonical( p, ec );
-  compare_paths( p, "/" );
+  compare_paths( p, root );
   VERIFY( !ec );
 
   ec = bad_ec;
   p = "/..";
   p = canonical( p, ec );
-  compare_paths( p, "/" );
+  compare_paths( p, root );
   VERIFY( !ec );
 
   ec = bad_ec;
   p = "/../.././.";
   p = canonical( p, ec );
-  compare_paths( p, "/" );
+  compare_paths( p, root );
   VERIFY( !ec );
 }
 
@@ -101,7 +103,6 @@ test02()
 #endif
 }
 
-
 void
 test03()
 {
@@ -111,22 +112,28 @@ test03()
   fs::path foo = dir/"foo", bar = dir/"bar";
   fs::create_directory(foo);
   fs::create_directory(bar);
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  // No symlink support
+  const fs::path baz = dir/"foo\\\\..\\bar///";
+#else
   fs::create_symlink("../bar", foo/"baz");
+  const fs::path baz = dir/"foo//./baz///";
+#endif
 
   auto dirc = canonical(dir);
   auto barc = canonical(bar);
 
   auto p1 = fs::canonical(dir/"foo//.///..//./");
   compare_paths( p1, dirc );
-  auto p2 = fs::canonical(dir/"foo//./baz///..//./");
+  auto p2 = fs::canonical(baz/"..//./");
   compare_paths( p2, dirc );
-  auto p3 = fs::canonical(dir/"foo//./baz////./");
+  auto p3 = fs::canonical(baz/"./");
   compare_paths( p3, barc );
-  auto p4 = fs::canonical(dir/"foo//./baz///..//./bar");
+  auto p4 = fs::canonical(baz/"..//./bar");
   compare_paths( p4, barc );
-  auto p5 = fs::canonical(dir/"foo//./baz///..//./bar/");
+  auto p5 = fs::canonical(baz/"..//./bar/");
   compare_paths( p5, p4 );
-  auto p6 = fs::canonical(dir/"foo//./baz///..//./bar/.");
+  auto p6 = fs::canonical(baz/"..//./bar/.");
   compare_paths( p6, p4 );
 
   remove_all(dir);

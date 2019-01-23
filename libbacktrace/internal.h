@@ -179,7 +179,7 @@ struct backtrace_view
 /* Create a view of SIZE bytes from DESCRIPTOR at OFFSET.  Store the
    result in *VIEW.  Returns 1 on success, 0 on error.  */
 extern int backtrace_get_view (struct backtrace_state *state, int descriptor,
-			       off_t offset, size_t size,
+			       off_t offset, uint64_t size,
 			       backtrace_error_callback error_callback,
 			       void *data, struct backtrace_view *view);
 
@@ -286,6 +286,8 @@ extern int backtrace_initialize (struct backtrace_state *state,
 				 void *data,
 				 fileline *fileline_fn);
 
+struct dwarf_data;
+
 /* Add file/line information for a DWARF module.  */
 
 extern int backtrace_dwarf_add (struct backtrace_state *state,
@@ -301,8 +303,10 @@ extern int backtrace_dwarf_add (struct backtrace_state *state,
 				const unsigned char *dwarf_str,
 				size_t dwarf_str_size,
 				int is_bigendian,
+				struct dwarf_data *fileline_altlink,
 				backtrace_error_callback error_callback,
-				void *data, fileline *fileline_fn);
+				void *data, fileline *fileline_fn,
+				struct dwarf_data **fileline_entry);
 
 /* A test-only hook for elf_uncompress_zdebug.  */
 

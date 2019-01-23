@@ -2,7 +2,7 @@
 /* { dg-additional-options "-foffload=-fdump-tree-oaccdevlow" } */
 /* We default to warp size 32 for the vector length, so the GOMP_OPENACC_DIM has
    no effect.  */
-/* { dg-set-target-env-var "GOMP_OPENACC_DIM" "-:-:128" } */
+/* { dg-set-target-env-var "GOMP_OPENACC_DIM" "::128" } */
 /* { dg-set-target-env-var "GOMP_DEBUG" "1" } */
 
 

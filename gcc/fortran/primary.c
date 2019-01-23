@@ -1570,7 +1570,7 @@ match_actual_arg (gfc_expr **result)
 	  gfc_set_sym_referenced (sym);
 	  if (sym->attr.flavor == FL_NAMELIST)
 	    {
-	      gfc_error ("Namelist %qs can not be an argument at %L",
+	      gfc_error ("Namelist %qs cannot be an argument at %L",
 	      sym->name, &where);
 	      break;
 	    }
@@ -3598,7 +3598,7 @@ gfc_match_rvalue (gfc_expr **result)
       /* F08:C612.  */
       if (gfc_peek_ascii_char() == '%')
 	{
-	  gfc_error ("The leftmost part-ref in a data-ref can not be a "
+	  gfc_error ("The leftmost part-ref in a data-ref cannot be a "
 		     "function reference at %C");
 	  m = MATCH_ERROR;
 	}

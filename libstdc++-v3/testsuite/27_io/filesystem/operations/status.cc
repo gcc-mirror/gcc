@@ -56,6 +56,11 @@ test02()
 void
 test03()
 {
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  // No permissions support
+  return;
+#endif
+
   fs::path dir = __gnu_test::nonexistent_path();
   fs::create_directory(dir);
   __gnu_test::scoped_file d(dir, __gnu_test::scoped_file::adopt_file);

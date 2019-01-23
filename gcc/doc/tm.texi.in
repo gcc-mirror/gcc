@@ -1707,6 +1707,10 @@ of @code{CALL_USED_REGISTERS}.
 @cindex call-saved register
 @hook TARGET_HARD_REGNO_CALL_PART_CLOBBERED
 
+@hook TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS
+
+@hook TARGET_RETURN_CALL_WITH_MAX_CLOBBERS
+
 @findex fixed_regs
 @findex call_used_regs
 @findex global_regs

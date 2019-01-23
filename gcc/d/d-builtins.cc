@@ -417,9 +417,8 @@ d_init_versions (void)
   if (!targetm.have_tls)
     VersionCondition::addPredefinedGlobalIdent ("GNU_EMUTLS");
 
-#ifdef STACK_GROWS_DOWNWARD
-  VersionCondition::addPredefinedGlobalIdent ("GNU_StackGrowsDown");
-#endif
+  if (STACK_GROWS_DOWNWARD)
+    VersionCondition::addPredefinedGlobalIdent ("GNU_StackGrowsDown");
 
   /* Should define this anyway to set us apart from the competition.  */
   VersionCondition::addPredefinedGlobalIdent ("GNU_InlineAsm");

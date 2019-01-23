@@ -442,6 +442,11 @@ void getTraceback(G*, G*) __asm__(GOSYM_PREFIX "runtime.getTraceback");
 // goroutine stored in the traceback field, which is me.
 void getTraceback(G* me, G* gp)
 {
+	M* holdm;
+
+	holdm = gp->m;
+	gp->m = me->m;
+
 #ifdef USING_SPLIT_STACK
 	__splitstack_getcontext((void*)(&me->stackcontext[0]));
 #endif
@@ -450,6 +455,8 @@ void getTraceback(G* me, G* gp)
 	if (gp->traceback != 0) {
 		runtime_gogo(gp);
 	}
+
+	gp->m = holdm;
 }
 
 // Do a stack trace of gp, and then restore the context to
@@ -459,17 +466,11 @@ void
 gtraceback(G* gp)
 {
 	Traceback* traceback;
-	M* holdm;
 
 	traceback = (Traceback*)gp->traceback;
 	gp->traceback = 0;
-	holdm = gp->m;
-	if(holdm != nil && holdm != g->m)
-		runtime_throw("gtraceback: m is not nil");
-	gp->m = traceback->gp->m;
 	traceback->c = runtime_callers(1, traceback->locbuf,
 		sizeof traceback->locbuf / sizeof traceback->locbuf[0], false);
-	gp->m = holdm;
 	runtime_gogo(traceback->gp);
 }
 
@@ -481,8 +482,13 @@ void doscanstackswitch(G*, G*) __asm__(GOSYM_PREFIX "runtime.doscanstackswitch")
 void
 doscanstackswitch(G* me, G* gp)
 {
+	M* holdm;
+
 	__go_assert(me->entry == nil);
 	me->fromgogo = false;
+
+	holdm = gp->m;
+	gp->m = me->m;
 
 #ifdef USING_SPLIT_STACK
 	__splitstack_getcontext((void*)(&me->stackcontext[0]));
@@ -506,6 +512,8 @@ doscanstackswitch(G* me, G* gp)
 
 	if (gp->scang != 0)
 		runtime_gogo(gp);
+
+	gp->m = holdm;
 }
 
 // Do a stack scan, then switch back to the g that triggers this scan.
@@ -514,21 +522,15 @@ static void
 gscanstack(G *gp)
 {
 	G *oldg, *oldcurg;
-	M* holdm;
 
 	oldg = (G*)gp->scang;
 	oldcurg = oldg->m->curg;
-	holdm = gp->m;
-	if(holdm != nil && holdm != g->m)
-		runtime_throw("gscanstack: m is not nil");
 	oldg->m->curg = gp;
-	gp->m = oldg->m;
 	gp->scang = 0;
 
 	doscanstack(gp, (void*)gp->scangcw);
 
 	gp->scangcw = 0;
-	gp->m = holdm;
 	oldg->m->curg = oldcurg;
 	runtime_gogo(oldg);
 }

@@ -1136,7 +1136,7 @@ record_equivalences_from_phis (basic_block bb)
 	  t = dom_valueize (t);
 
 	  /* If T is an SSA_NAME and its associated edge is a backedge,
-	     then quit as we can not utilize this equivalence.  */
+	     then quit as we cannot utilize this equivalence.  */
 	  if (TREE_CODE (t) == SSA_NAME
 	      && (gimple_phi_arg_edge (phi, i)->flags & EDGE_DFS_BACK))
 	    break;
@@ -1376,7 +1376,7 @@ cprop_into_successor_phis (basic_block bb,
 	continue;
 
       /* We may have an equivalence associated with this edge.  While
-	 we can not propagate it into non-dominated blocks, we can
+	 we cannot propagate it into non-dominated blocks, we can
 	 propagate them into PHIs in non-dominated blocks.  */
 
       /* Push the unwind marker so we can reset the const and copies
@@ -1521,7 +1521,7 @@ eliminate_redundant_computations (gimple_stmt_iterator* gsi,
   else
     def = gimple_get_lhs (stmt);
 
-  /* Certain expressions on the RHS can be optimized away, but can not
+  /* Certain expressions on the RHS can be optimized away, but cannot
      themselves be entered into the hash tables.  */
   if (! def
       || TREE_CODE (def) != SSA_NAME

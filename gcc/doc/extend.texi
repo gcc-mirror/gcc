@@ -213,7 +213,14 @@ statement expression is part of a larger expression then it is
 unspecified which other subexpressions of that expression have been
 evaluated except where the language definition requires certain
 subexpressions to be evaluated before or after the statement
-expression.  In any case, as with a function call, the evaluation of a
+expression.  A @code{break} or @code{continue} statement inside of
+a statement expression used in @code{while}, @code{do} or @code{for}
+loop or @code{switch} statement condition
+or @code{for} statement init or increment expressions jumps to an
+outer loop or @code{switch} statement if any (otherwise it is an error),
+rather than to the loop or @code{switch} statement in whose condition
+or init or increment expression it appears.
+In any case, as with a function call, the evaluation of a
 statement expression is not interleaved with the evaluation of other
 parts of the containing expression.  For example,
 
@@ -2393,6 +2400,7 @@ GCC plugins may provide their own attributes.
 @menu
 * Common Function Attributes::
 * AArch64 Function Attributes::
+* AMD GCN Function Attributes::
 * ARC Function Attributes::
 * ARM Function Attributes::
 * AVR Function Attributes::
@@ -3953,6 +3961,96 @@ Note that CPU tuning options and attributes such as the @option{-mcpu=},
 @option{-mtune=} do not inhibit inlining unless the CPU specified by the
 @option{-mcpu=} option or the @code{cpu=} attribute conflicts with the
 architectural feature rules specified above.
+
+@node AMD GCN Function Attributes
+@subsection AMD GCN Function Attributes
+
+These function attributes are supported by the AMD GCN back end:
+
+@table @code
+@item amdgpu_hsa_kernel
+@cindex @code{amdgpu_hsa_kernel} function attribute, AMD GCN
+This attribute indicates that the corresponding function should be compiled as
+a kernel function, that is an entry point that can be invoked from the host
+via the HSA runtime library.  By default functions are only callable only from
+other GCN functions.
+
+This attribute is implicitly applied to any function named @code{main}, using
+default parameters.
+
+Kernel functions may return an integer value, which will be written to a
+conventional place within the HSA "kernargs" region.
+
+The attribute parameters configure what values are passed into the kernel
+function by the GPU drivers, via the initial register state.  Some values are
+used by the compiler, and therefore forced on.  Enabling other options may
+break assumptions in the compiler and/or run-time libraries.
+
+@table @code
+@item private_segment_buffer
+Set @code{enable_sgpr_private_segment_buffer} flag.  Always on (required to
+locate the stack).
+
+@item dispatch_ptr
+Set @code{enable_sgpr_dispatch_ptr} flag.  Always on (required to locate the
+launch dimensions).
+
+@item queue_ptr
+Set @code{enable_sgpr_queue_ptr} flag.  Always on (required to convert address
+spaces).
+
+@item kernarg_segment_ptr
+Set @code{enable_sgpr_kernarg_segment_ptr} flag.  Always on (required to
+locate the kernel arguments, "kernargs").
+
+@item dispatch_id
+Set @code{enable_sgpr_dispatch_id} flag.
+
+@item flat_scratch_init
+Set @code{enable_sgpr_flat_scratch_init} flag.
+
+@item private_segment_size
+Set @code{enable_sgpr_private_segment_size} flag.
+
+@item grid_workgroup_count_X
+Set @code{enable_sgpr_grid_workgroup_count_x} flag.  Always on (required to
+use OpenACC/OpenMP).
+
+@item grid_workgroup_count_Y
+Set @code{enable_sgpr_grid_workgroup_count_y} flag.
+
+@item grid_workgroup_count_Z
+Set @code{enable_sgpr_grid_workgroup_count_z} flag.
+
+@item workgroup_id_X
+Set @code{enable_sgpr_workgroup_id_x} flag.
+
+@item workgroup_id_Y
+Set @code{enable_sgpr_workgroup_id_y} flag.
+
+@item workgroup_id_Z
+Set @code{enable_sgpr_workgroup_id_z} flag.
+
+@item workgroup_info
+Set @code{enable_sgpr_workgroup_info} flag.
+
+@item private_segment_wave_offset
+Set @code{enable_sgpr_private_segment_wave_byte_offset} flag.  Always on
+(required to locate the stack).
+
+@item work_item_id_X
+Set @code{enable_vgpr_workitem_id} parameter.  Always on (can't be disabled).
+
+@item work_item_id_Y
+Set @code{enable_vgpr_workitem_id} parameter.  Always on (required to enable
+vectorization.)
+
+@item work_item_id_Z
+Set @code{enable_vgpr_workitem_id} parameter.  Always on (required to use
+OpenACC/OpenMP).
+
+@end table
+@end table
 
 @node ARC Function Attributes
 @subsection ARC Function Attributes
@@ -9441,6 +9539,15 @@ When the compiler selects which registers to use to represent input and output
 operands, it does not use any of the clobbered registers. As a result, 
 clobbered registers are available for any use in the assembler code.
 
+Another restriction is that the clobber list should not contain the
+stack pointer register.  This is because the compiler requires the
+value of the stack pointer to be the same after an @code{asm}
+statement as it was on entry to the statement.  However, previous
+versions of GCC did not enforce this rule and allowed the stack
+pointer to appear in the list, with unclear semantics.  This behavior
+is deprecated and listing the stack pointer may become an error in
+future versions of GCC@.
+
 Here is a realistic example for the VAX showing the use of clobbered 
 registers: 
 
@@ -10054,7 +10161,7 @@ register.
 
 @subsubheading Declaring the variable
 
-Global register variables can not have initial values, because an
+Global register variables cannot have initial values, because an
 executable file has no means to supply initial contents for a register.
 
 When selecting a register, choose one that is normally saved and 
@@ -10596,6 +10703,33 @@ to and from other datatypes of the same size).
 You cannot operate between vectors of different lengths or different
 signedness without a cast.
 
+@findex __builtin_convertvector
+Vector conversion is available using the
+@code{__builtin_convertvector (vec, vectype)}
+function.  @var{vec} must be an expression with integral or floating
+vector type and @var{vectype} an integral or floating vector type with the
+same number of elements.  The result has @var{vectype} type and value of
+a C cast of every element of @var{vec} to the element type of @var{vectype}.
+
+Consider the following example,
+@smallexample
+typedef int v4si __attribute__ ((vector_size (16)));
+typedef float v4sf __attribute__ ((vector_size (16)));
+typedef double v4df __attribute__ ((vector_size (32)));
+typedef unsigned long long v4di __attribute__ ((vector_size (32)));
+
+v4si a = @{1,-2,3,-4@};
+v4sf b = @{1.5f,-2.5f,3.f,7.f@};
+v4di c = @{1ULL,5ULL,0ULL,10ULL@};
+v4sf d = __builtin_convertvector (a, v4sf); /* d is @{1.f,-2.f,3.f,-4.f@} */
+/* Equivalent of:
+   v4sf d = @{ (float)a[0], (float)a[1], (float)a[2], (float)a[3] @}; */
+v4df e = __builtin_convertvector (a, v4df); /* e is @{1.,-2.,3.,-4.@} */
+v4df f = __builtin_convertvector (b, v4df); /* f is @{1.5,-2.5,3.,7.@} */
+v4si g = __builtin_convertvector (f, v4si); /* g is @{1,-2,3,7@} */
+v4si h = __builtin_convertvector (c, v4si); /* h is @{1,5,0,10@} */
+@end smallexample
+
 @node Offsetof
 @section Support for @code{offsetof}
 @findex __builtin_offsetof
@@ -10981,6 +11115,7 @@ they are not scaled by the size of the type to which the pointer points.
 
 @smallexample
 @{ *ptr @var{op}= val; return *ptr; @}
+@{ *ptr = ~(*ptr & val); return *ptr; @} // nand
 @end smallexample
 
 The object pointed to by the first argument must be of integer or pointer
@@ -11002,6 +11137,7 @@ the type to which the pointer points.
 
 @smallexample
 @{ tmp = *ptr; *ptr @var{op}= val; return tmp; @}
+@{ tmp = *ptr; *ptr = ~(*ptr & val); return tmp; @} // nand
 @end smallexample
 
 The same constraints on arguments apply as for the corresponding
@@ -18424,6 +18560,10 @@ vector double vec_div (vector double, vector double);
 vector long vec_div (vector long, vector long);
 vector unsigned long vec_div (vector unsigned long, vector unsigned long);
 vector double vec_floor (vector double);
+vector signed long long vec_ld (int, const vector signed long long *);
+vector signed long long vec_ld (int, const signed long long *);
+vector unsigned long long vec_ld (int, const vector unsigned long long *);
+vector unsigned long long vec_ld (int, const unsigned long long *);
 vector __int128 vec_ld (int, const vector __int128 *);
 vector unsigned __int128 vec_ld (int, const vector unsigned __int128 *);
 vector __int128 vec_ld (int, const __int128 *);
@@ -18502,6 +18642,13 @@ vector signed long vec_splats (signed long);
 vector unsigned long vec_splats (unsigned long);
 vector float vec_sqrt (vector float);
 vector double vec_sqrt (vector double);
+void vec_st (vector signed long long, int, vector signed long long *);
+void vec_st (vector signed long long, int, signed long long *);
+void vec_st (vector unsigned long long, int, vector unsigned long long *);
+void vec_st (vector unsigned long long, int, unsigned long long *);
+void vec_st (vector bool long long, int, vector bool long long *);
+void vec_st (vector bool long long, int, signed long long *);
+void vec_st (vector bool long long, int, unsigned long long *);
 void vec_st (vector double, int, vector double *);
 void vec_st (vector double, int, double *);
 vector double vec_sub (vector double, vector double);
@@ -22370,10 +22517,14 @@ bit-fields.  See the Solaris man page for @code{cmn_err} for more information.
 @node Darwin Format Checks
 @subsection Darwin Format Checks
 
-Darwin targets support the @code{CFString} (or @code{__CFString__}) in the format
-attribute context.  Declarations made with such attribution are parsed for correct syntax
-and format argument types.  However, parsing of the format string itself is currently undefined
-and is not carried out by this version of the compiler.
+In addition to the full set of format archetypes (attribute format style
+arguments such as @code{printf}, @code{scanf}, @code{strftime}, and
+@code{strfmon}), Darwin targets also support the @code{CFString} (or
+@code{__CFString__}) archetype in the @code{format} attribute.
+Declarations with this archetype are parsed for correct syntax
+and argument types.  However, parsing of the format string itself and
+validating arguments against it in calls to such functions is currently
+not performed.
 
 Additionally, @code{CFStringRefs} (defined by the @code{CoreFoundation} headers) may
 also be used as format arguments.  Note that the relevant headers are only likely to be

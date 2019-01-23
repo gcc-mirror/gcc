@@ -9,6 +9,7 @@ package os
 import (
 	"internal/poll"
 	"internal/syscall/unix"
+	"io"
 	"runtime"
 	"syscall"
 )
@@ -116,23 +117,39 @@ func newFile(fd uintptr, name string, kind newFileKind) *File {
 
 	pollable := kind == kindOpenFile || kind == kindPipe || kind == kindNonBlock
 
-	// Don't try to use kqueue with regular files on FreeBSD.
-	// It crashes the system unpredictably while running all.bash.
-	// Issue 19093.
 	// If the caller passed a non-blocking filedes (kindNonBlock),
 	// we assume they know what they are doing so we allow it to be
 	// used with kqueue.
-	if runtime.GOOS == "freebsd" && kind == kindOpenFile {
-		pollable = false
-	}
-
-	// On Darwin, kqueue does not work properly with fifos:
-	// closing the last writer does not cause a kqueue event
-	// for any readers. See issue #24164.
-	if runtime.GOOS == "darwin" && kind == kindOpenFile {
+	if kind == kindOpenFile {
 		var st syscall.Stat_t
-		if err := syscall.Fstat(fdi, &st); err == nil && st.Mode&syscall.S_IFMT == syscall.S_IFIFO {
+		switch runtime.GOOS {
+		case "freebsd":
+			// On FreeBSD before 10.4 it used to crash the
+			// system unpredictably while running all.bash.
+			// When we stop supporting FreeBSD 10 we can merge
+			// this into the dragonfly/netbsd/openbsd case.
+			// Issue 27619.
 			pollable = false
+
+		case "dragonfly", "netbsd", "openbsd":
+			// Don't try to use kqueue with regular files on *BSDs.
+			// On FreeBSD a regular file is always
+			// reported as ready for writing.
+			// On Dragonfly, NetBSD and OpenBSD the fd is signaled
+			// only once as ready (both read and write).
+			// Issue 19093.
+			if err := syscall.Fstat(fdi, &st); err == nil && st.Mode&syscall.S_IFMT == syscall.S_IFREG {
+				pollable = false
+			}
+
+		case "darwin":
+			// In addition to the behavior described above for regular files,
+			// on Darwin, kqueue does not work properly with fifos:
+			// closing the last writer does not cause a kqueue event
+			// for any readers. See issue #24164.
+			if err := syscall.Fstat(fdi, &st); err == nil && (st.Mode&syscall.S_IFMT == syscall.S_IFIFO || st.Mode&syscall.S_IFMT == syscall.S_IFREG) {
+				pollable = false
+			}
 		}
 	}
 
@@ -230,21 +247,21 @@ func (file *file) close() error {
 		return syscall.EINVAL
 	}
 	var err error
-	if e := file.pfd.Close(); e != nil {
-		if e == poll.ErrFileClosing {
-			e = ErrClosed
-		}
-		err = &PathError{"close", file.name, e}
-	}
-
 	if file.dirinfo != nil {
 		syscall.Entersyscall()
 		i := libc_closedir(file.dirinfo.dir)
 		errno := syscall.GetErrno()
 		syscall.Exitsyscall()
 		file.dirinfo = nil
-		if i < 0 && err == nil {
+		if i < 0 && errno != 0 {
 			err = &PathError{"closedir", file.name, errno}
+		}
+	} else {
+		if e := file.pfd.Close(); e != nil {
+			if e == poll.ErrFileClosing {
+				e = ErrClosed
+			}
+			err = &PathError{"close", file.name, e}
 		}
 	}
 
@@ -367,4 +384,31 @@ func Symlink(oldname, newname string) error {
 		return &LinkError{"symlink", oldname, newname, e}
 	}
 	return nil
+}
+
+func (f *File) readdir(n int) (fi []FileInfo, err error) {
+	dirname := f.name
+	if dirname == "" {
+		dirname = "."
+	}
+	names, err := f.Readdirnames(n)
+	fi = make([]FileInfo, 0, len(names))
+	for _, filename := range names {
+		fip, lerr := lstat(dirname + "/" + filename)
+		if IsNotExist(lerr) {
+			// File disappeared between readdir + stat.
+			// Just treat it as if it didn't exist.
+			continue
+		}
+		if lerr != nil {
+			return fi, lerr
+		}
+		fi = append(fi, fip)
+	}
+	if len(fi) == 0 && err == nil && n > 0 {
+		// Per File.Readdir, the slice must be non-empty or err
+		// must be non-nil if n > 0.
+		err = io.EOF
+	}
+	return fi, err
 }

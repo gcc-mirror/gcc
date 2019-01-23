@@ -630,7 +630,7 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 		   || attr->select_type_temporary || attr->associate_var;
 
   if (!attr->class_ok)
-    /* We can not build the class container yet.  */
+    /* We cannot build the class container yet.  */
     return true;
 
   /* Determine the name of the encapsulating type.  */
@@ -2846,7 +2846,10 @@ gfc_find_vtab (gfc_typespec *ts)
     case BT_DERIVED:
       return gfc_find_derived_vtab (ts->u.derived);
     case BT_CLASS:
-      return gfc_find_derived_vtab (ts->u.derived->components->ts.u.derived);
+      if (ts->u.derived->components && ts->u.derived->components->ts.u.derived)
+	return gfc_find_derived_vtab (ts->u.derived->components->ts.u.derived);
+      else
+	return NULL;
     default:
       return find_intrinsic_vtab (ts);
     }

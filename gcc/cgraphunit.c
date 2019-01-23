@@ -1051,7 +1051,7 @@ analyze_functions (bool first_time)
   symtab->state = CONSTRUCTION;
   input_location = UNKNOWN_LOCATION;
 
-  /* Ugly, but the fixup can not happen at a time same body alias is created;
+  /* Ugly, but the fixup cannot happen at a time same body alias is created;
      C++ FE is confused about the COMDAT groups being right.  */
   if (symtab->cpp_implicit_aliases_done)
     FOR_EACH_SYMBOL (node)
@@ -1916,10 +1916,9 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	      restmp = gimple_fold_indirect_ref (resdecl);
 	      if (!restmp)
 		restmp = build2 (MEM_REF,
-				 TREE_TYPE (TREE_TYPE (DECL_RESULT (alias))),
+				 TREE_TYPE (TREE_TYPE (resdecl)),
 				 resdecl,
-				 build_int_cst (TREE_TYPE
-				   (DECL_RESULT (alias)), 0));
+				 build_int_cst (TREE_TYPE (resdecl), 0));
 	    }
 	  else if (!is_gimple_reg_type (restype))
 	    {

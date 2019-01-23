@@ -674,7 +674,7 @@ struct target_hard_regs {
      with the local stack frame are safe, but scant others.  */
   HARD_REG_SET x_regs_invalidated_by_call;
 
-  /* Call used hard registers which can not be saved because there is no
+  /* Call used hard registers which cannot be saved because there is no
      insn for this.  */
   HARD_REG_SET x_no_caller_save_reg_set;
 

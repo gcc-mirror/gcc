@@ -604,7 +604,7 @@ compile_file (void)
   invoke_plugin_callbacks (PLUGIN_FINISH_UNIT, NULL);
 
   /* This must be at the end.  Some target ports emit end of file directives
-     into the assembly file here, and hence we can not output anything to the
+     into the assembly file here, and hence we cannot output anything to the
      assembly file after this point.  */
   targetm.asm_out.file_end ();
 
@@ -1730,7 +1730,7 @@ process_options (void)
       flag_stack_clash_protection = 0;
     }
 
-  /* We can not support -fstack-check= and -fstack-clash-protection at
+  /* We cannot support -fstack-check= and -fstack-clash-protection at
      the same time.  */
   if (flag_stack_check != NO_STACK_CHECK && flag_stack_clash_protection)
     {

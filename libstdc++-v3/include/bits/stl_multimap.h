@@ -452,7 +452,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // capacity
       /** Returns true if the %multimap is empty.  */
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const _GLIBCXX_NOEXCEPT
       { return _M_t.empty(); }
 

@@ -30,6 +30,7 @@ nothrow:
 
 version (ARM)     version = ARM_Any;
 version (AArch64) version = ARM_Any;
+version (HPPA)    version = HPPA_Any;
 version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
@@ -92,6 +93,17 @@ version (GNUFP)
         }
 
         alias fexcept_t = ushort;
+    }
+    // https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/hppa/bits/fenv.h
+    else version (HPPA_Any)
+    {
+        struct fenv_t
+        {
+            uint    __status_word;
+            uint[7] __exception;
+        }
+
+        alias fexcept_t = uint;
     }
     // https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/mips/bits/fenv.h
     else version (MIPS_Any)
@@ -573,6 +585,28 @@ else
             FE_UPWARD       = 0x400000, ///
             FE_DOWNWARD     = 0x800000, ///
             FE_TOWARDZERO   = 0xC00000, ///
+        }
+    }
+    else version (HPPA_Any)
+    {
+        // Define bits representing the exception.
+        enum
+        {
+            FE_INEXACT      = 0x01, ///
+            FE_UNDERFLOW    = 0x02, ///
+            FE_OVERFLOW     = 0x04, ///
+            FE_DIVBYZERO    = 0x08, ///
+            FE_INVALID      = 0x10, ///
+            FE_ALL_EXCEPT   = 0x1F, ///
+        }
+
+        // The HPPA FPU supports all of the four defined rounding modes.
+        enum
+        {
+            FE_TONEAREST    =   0x0, ///
+            FE_TOWARDZERO   = 0x200, ///
+            FE_UPWARD       = 0x400, ///
+            FE_DOWNWARD     = 0x600, ///
         }
     }
     else version (MIPS_Any)

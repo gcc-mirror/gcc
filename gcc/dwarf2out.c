@@ -11074,7 +11074,9 @@ output_comp_unit (dw_die_ref die, int output_if_empty,
 static inline bool
 want_pubnames (void)
 {
-  if (debug_info_level <= DINFO_LEVEL_TERSE)
+  if (debug_info_level <= DINFO_LEVEL_TERSE
+      /* Names and types go to the early debug part only.  */
+      || in_lto_p)
     return false;
   if (debug_generate_pub_sections != -1)
     return debug_generate_pub_sections;
@@ -14445,13 +14447,6 @@ const_ok_for_output_1 (rtx rtl)
   if (CONST_POLY_INT_P (rtl))
     return false;
 
-  if (targetm.const_not_ok_for_debug_p (rtl))
-    {
-      expansion_failed (NULL_TREE, rtl,
-			"Expression rejected for debug by the backend.\n");
-      return false;
-    }
-
   /* FIXME: Refer to PR60655. It is possible for simplification
      of rtl expressions in var tracking to produce such expressions.
      We should really identify / validate expressions
@@ -15660,8 +15655,17 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	  bool not_ok = false;
 	  subrtx_var_iterator::array_type array;
 	  FOR_EACH_SUBRTX_VAR (iter, array, rtl, ALL)
-	    if ((*iter != rtl && !CONSTANT_P (*iter))
-		|| !const_ok_for_output_1 (*iter))
+	    if (*iter != rtl && !CONSTANT_P (*iter))
+	      {
+		not_ok = true;
+		break;
+	      }
+
+	  if (not_ok)
+	    break;
+
+	  FOR_EACH_SUBRTX_VAR (iter, array, rtl, ALL)
+	    if (!const_ok_for_output_1 (*iter))
 	      {
 		not_ok = true;
 		break;
@@ -25044,7 +25048,7 @@ gen_member_die (tree type, dw_die_ref context_die)
      the TREE node representing the appropriate (containing) type.  */
 
   /* First output info about the base classes.  */
-  if (binfo)
+  if (binfo && early_dwarf)
     {
       vec<tree, va_gc> *accesses = BINFO_BASE_ACCESSES (binfo);
       int i;

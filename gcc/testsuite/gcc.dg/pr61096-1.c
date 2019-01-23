@@ -19,9 +19,9 @@ struct g
   struct f f; /* { dg-warning "invalid use of structure with flexible array member" } */
 };
 
-char w1[] = L"foo"; /* { dg-error "13:char-array initialized from wide string" } */
-__WCHAR_TYPE__ w2[] = "foo"; /* { dg-error "23:wide character array initialized from non-wide string" } */
-__WCHAR_TYPE__ w3[] = U"foo"; /* { dg-error "23:wide character array initialized from incompatible wide string" } */
+char w1[] = L"foo"; /* { dg-error "13:array of .char. from a string literal with type array of" } */
+__WCHAR_TYPE__ w2[] = "foo"; /* { dg-error "23:from a string literal with type array of .char." } */
+__WCHAR_TYPE__ w3[] = U"foo"; /* { dg-error "23:from a string literal with type array of" } */
 schar a1[] = "foo"; /* { dg-error "14:array of inappropriate type initialized from string constant" } */
 int a2[] = (int[]) { 1 }; /* { dg-warning "12:initializer element is not constant" } */
 

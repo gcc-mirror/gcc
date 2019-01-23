@@ -1377,7 +1377,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Returns true if the %deque is empty.  (Thus begin() would
        *  equal end().)
        */
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const _GLIBCXX_NOEXCEPT
       { return this->_M_impl._M_finish == this->_M_impl._M_start; }
 

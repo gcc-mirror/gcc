@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2018 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -6632,8 +6632,7 @@ public:
                 if (tb2->ty == Tarray || tb2->ty == Tsarray)
                 {
                     // Make e2 into [e2]
-                    exp->e2 = new ArrayLiteralExp(exp->e2->loc, exp->e2);
-                    exp->e2->type = exp->type;
+                    exp->e2 = new ArrayLiteralExp(exp->e2->loc, exp->type, exp->e2);
                 }
                 result = exp->optimize(WANTvalue);
                 return;
@@ -6669,8 +6668,7 @@ public:
                 if (tb1->ty == Tarray || tb1->ty == Tsarray)
                 {
                     // Make e1 into [e1]
-                    exp->e1 = new ArrayLiteralExp(exp->e1->loc, exp->e1);
-                    exp->e1->type = exp->type;
+                    exp->e1 = new ArrayLiteralExp(exp->e1->loc, exp->type, exp->e1);
                 }
                 result = exp->optimize(WANTvalue);
                 return;

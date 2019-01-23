@@ -30,6 +30,7 @@ else version (WatchOS)
 
 version (ARM)     version = ARM_Any;
 version (AArch64) version = ARM_Any;
+version (HPPA)    version = HPPA_Any;
 version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
@@ -153,6 +154,19 @@ version (CRuntime_Glibc)
         enum O_SYNC         = 0x101000; // octal 04010000
         enum O_DSYNC        = 0x1000;   // octal   010000
         enum O_RSYNC        = O_SYNC;
+    }
+    else version (HPPA_Any)
+    {
+        enum O_CREAT        = 0x00100;  // octal    04000
+        enum O_EXCL         = 0x00400;  // octal     0200
+        enum O_NOCTTY       = 0x20000;  // octal     0400
+        enum O_TRUNC        = 0x00200;  // octal    01000
+
+        enum O_APPEND       = 0x00008;  // octal      010
+        enum O_NONBLOCK     = 0x10004;  // octal  0200004
+        enum O_SYNC         = 0x48000;  // octal 01100000
+        enum O_DSYNC        = 0x40000;  // octal 01000000
+        enum O_RSYNC        = 0x80000;  // octal 02000000
     }
     else version (MIPS_Any)
     {

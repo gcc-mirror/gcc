@@ -1,5 +1,6 @@
 /* PR middle-end/81824 - Warn for missing attributes with function aliases
    { dg-do compile }
+   { dg-require-alias "" }
    { dg-options "-Wall" } */
 
 #define ATTR(list)   __attribute__ (list)

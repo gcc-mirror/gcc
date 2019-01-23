@@ -140,7 +140,7 @@ record_temporary_equivalences_from_phis (edge e,
       tree dst = gimple_phi_result (phi);
 
       /* If the desired argument is not the same as this PHI's result
-	 and it is set by a PHI in E->dest, then we can not thread
+	 and it is set by a PHI in E->dest, then we cannot thread
 	 through E->dest.  */
       if (src != dst
 	  && TREE_CODE (src) == SSA_NAME
@@ -253,13 +253,13 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
 	continue;
 
       /* If the statement has volatile operands, then we assume we
-	 can not thread through this block.  This is overly
+	 cannot thread through this block.  This is overly
 	 conservative in some ways.  */
       if (gimple_code (stmt) == GIMPLE_ASM
 	  && gimple_asm_volatile_p (as_a <gasm *> (stmt)))
 	return NULL;
 
-      /* If the statement is a unique builtin, we can not thread
+      /* If the statement is a unique builtin, we cannot thread
 	 through here.  */
       if (gimple_code (stmt) == GIMPLE_CALL
 	  && gimple_call_internal_p (stmt)
@@ -906,7 +906,7 @@ thread_around_empty_blocks (edge taken_edge,
   tree cond;
 
   /* The key property of these blocks is that they need not be duplicated
-     when threading.  Thus they can not have visible side effects such
+     when threading.  Thus they cannot have visible side effects such
      as PHI nodes.  */
   if (!gsi_end_p (gsi_start_phis (bb)))
     return false;

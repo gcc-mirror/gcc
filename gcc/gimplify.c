@@ -11969,9 +11969,36 @@ gimplify_omp_atomic (tree *expr_p, gimple_seq *pre_p)
   loadstmt = gimple_build_omp_atomic_load (tmp_load, addr,
 					   OMP_ATOMIC_MEMORY_ORDER (*expr_p));
   gimplify_seq_add_stmt (pre_p, loadstmt);
-  if (rhs && gimplify_expr (&rhs, pre_p, NULL, is_gimple_val, fb_rvalue)
-      != GS_ALL_DONE)
-    return GS_ERROR;
+  if (rhs)
+    {
+      /* BIT_INSERT_EXPR is not valid for non-integral bitfield
+	 representatives.  Use BIT_FIELD_REF on the lhs instead.  */
+      if (TREE_CODE (rhs) == BIT_INSERT_EXPR
+	  && !INTEGRAL_TYPE_P (TREE_TYPE (tmp_load)))
+	{
+	  tree bitpos = TREE_OPERAND (rhs, 2);
+	  tree op1 = TREE_OPERAND (rhs, 1);
+	  tree bitsize;
+	  tree tmp_store = tmp_load;
+	  if (TREE_CODE (*expr_p) == OMP_ATOMIC_CAPTURE_OLD)
+	    tmp_store = get_initialized_tmp_var (tmp_load, pre_p, NULL);
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (op1)))
+	    bitsize = bitsize_int (TYPE_PRECISION (TREE_TYPE (op1)));
+	  else
+	    bitsize = TYPE_SIZE (TREE_TYPE (op1));
+	  gcc_assert (TREE_OPERAND (rhs, 0) == tmp_load);
+	  tree t = build2_loc (EXPR_LOCATION (rhs),
+			       MODIFY_EXPR, void_type_node,
+			       build3_loc (EXPR_LOCATION (rhs), BIT_FIELD_REF,
+					   TREE_TYPE (op1), tmp_store, bitsize,
+					   bitpos), op1);
+	  gimplify_and_add (t, pre_p);
+	  rhs = tmp_store;
+	}
+      if (gimplify_expr (&rhs, pre_p, NULL, is_gimple_val, fb_rvalue)
+	  != GS_ALL_DONE)
+	return GS_ERROR;
+    }
 
   if (TREE_CODE (*expr_p) == OMP_ATOMIC_READ)
     rhs = tmp_load;

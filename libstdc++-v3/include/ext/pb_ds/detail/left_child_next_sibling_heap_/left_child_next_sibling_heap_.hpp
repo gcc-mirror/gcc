@@ -144,7 +144,7 @@ namespace __gnu_pbds
 
       ~left_child_next_sibling_heap();
 
-      inline bool
+      _GLIBCXX_NODISCARD inline bool
       empty() const;
 
       inline size_type

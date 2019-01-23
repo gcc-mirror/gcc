@@ -2473,10 +2473,12 @@ write_builtin_type (tree type)
       break;
 
     case INTEGER_TYPE:
-      /* TYPE may still be wchar_t, char16_t, or char32_t, since that
+      /* TYPE may still be wchar_t, char8_t, char16_t, or char32_t, since that
 	 isn't in integer_type_nodes.  */
       if (type == wchar_type_node)
 	write_char ('w');
+      else if (type == char8_type_node)
+	write_string ("Du");
       else if (type == char16_type_node)
 	write_string ("Ds");
       else if (type == char32_type_node)

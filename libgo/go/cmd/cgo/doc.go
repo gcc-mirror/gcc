@@ -413,6 +413,8 @@ type in Go are instead represented by a uintptr. Those include:
 	jobjectArray
 	jweak
 
+3. The EGLDisplay type from the EGL API.
+
 These types are uintptr on the Go side because they would otherwise
 confuse the Go garbage collector; they are sometimes not really
 pointers but data structures encoded in a pointer type. All operations
@@ -426,6 +428,11 @@ from Go 1.9 and earlier, use the cftype or jni rewrites in the Go fix tool:
 	go tool fix -r jni <pkg>
 
 It will replace nil with 0 in the appropriate places.
+
+The EGLDisplay case were introduced in Go 1.12. Use the egl rewrite
+to auto-update code from Go 1.11 and earlier:
+
+	go tool fix -r egl <pkg>
 
 Using cgo directly
 
@@ -826,6 +833,10 @@ The directives are:
 	symbol. The optional <remote> specifies the symbol's name and
 	possibly version in the dynamic library, and the optional "<library>"
 	names the specific library where the symbol should be found.
+
+	On AIX, the library pattern is slightly different. It must be
+	"lib.a/obj.o" with obj.o the member of this library exporting
+	this symbol.
 
 	In the <remote>, # or @ can be used to introduce a symbol version.
 

@@ -1539,7 +1539,7 @@ emit_support_tinfos (void)
   {
     &void_type_node,
     &boolean_type_node,
-    &wchar_type_node, &char16_type_node, &char32_type_node,
+    &wchar_type_node, &char8_type_node, &char16_type_node, &char32_type_node,
     &char_type_node, &signed_char_type_node, &unsigned_char_type_node,
     &short_integer_type_node, &short_unsigned_type_node,
     &integer_type_node, &unsigned_type_node,

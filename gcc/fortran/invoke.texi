@@ -1112,7 +1112,7 @@ time.  This option is implied by @option{-Wall}.
 @item -Wdo-subscript
 @opindex @code{Wdo-subscript}
 Warn if an array subscript inside a DO loop could lead to an
-out-of-bounds access even if the compiler can not prove that the
+out-of-bounds access even if the compiler cannot prove that the
 statement is actually executed, in cases like
 @smallexample
   real a(3)
@@ -1376,6 +1376,9 @@ provide this option under the name @option{-static} or @option{-save}.)
 The default, which is @option{-fautomatic}, uses the stack for local
 variables smaller than the value given by @option{-fmax-stack-var-size}.
 Use the option @option{-frecursive} to use no static memory. 
+
+Local variables or arrays having an explicit @code{SAVE} attribute are
+silently ignored unless the @option{-pedantic} option is added.
 
 @item -ff2c
 @opindex ff2c

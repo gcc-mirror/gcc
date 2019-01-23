@@ -350,7 +350,7 @@ int main ()
     int gangs_min, gangs_max, workers_min, workers_max, vectors_min, vectors_max;
     gangs_min = workers_min = vectors_min = INT_MAX;
     gangs_max = workers_max = vectors_max = INT_MIN;
-#pragma acc parallel copy (vectors_actual) /* { dg-warning "using vector_length \\(32\\), ignoring 2097152" "" { target openacc_nvidia_accel_configured } } */ \
+#pragma acc parallel copy (vectors_actual) /* { dg-warning "using vector_length \\(1024\\), ignoring 2097152" "" { target openacc_nvidia_accel_configured } } */ \
   vector_length (VECTORS)
     {
       if (acc_on_device (acc_device_host))
@@ -361,7 +361,7 @@ int main ()
       else if (acc_on_device (acc_device_nvidia))
 	{
 	  /* The GCC nvptx back end enforces vector_length (32).  */
-	  vectors_actual = 32;
+	  vectors_actual = 1024;
 	}
       else
 	__builtin_abort ();

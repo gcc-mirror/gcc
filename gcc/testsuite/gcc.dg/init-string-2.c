@@ -28,8 +28,8 @@ uchar a8[] = "foo"; /* { dg-error "string constant" "a8" } */
 const schar a9[] = "foo"; /* { dg-error "string constant" "a9" } */
 short a10[] = L"foo"; /* { dg-error "string constant" "a10" } */
 const sshrt a11[] = L"foo"; /* { dg-error "string constant" "a11" } */
-char a12[] = L"foo"; /* { dg-error "from wide string" "a12" } */
-wchar_t a13[] = "foo"; /* { dg-error "non-wide string" "a13" } */
+char a12[] = L"foo"; /* { dg-error "from a string literal with type array of" "a12" } */
+wchar_t a13[] = "foo"; /* { dg-error "from a string literal with type array of .char." "a13" } */
 
 char b0[] = { "foo" };
 const signed char b2[4] = { "foo" };
@@ -43,8 +43,8 @@ uchar b8[] = { "foo" }; /* { dg-error "string constant" "b8" } */
 const schar b9[] = { "foo" }; /* { dg-error "string constant" "b9" } */
 short b10[] = { L"foo" }; /* { dg-error "string constant" "b10" } */
 const sshrt b11[] = { L"foo" }; /* { dg-error "string constant" "b11" } */
-char b12[] = { L"foo" }; /* { dg-error "from wide string" "b12" } */
-wchar_t b13[] = { "foo" }; /* { dg-error "non-wide string" "b13" } */
+char b12[] = { L"foo" }; /* { dg-error "from a string literal with type array of" "b12" } */
+wchar_t b13[] = { "foo" }; /* { dg-error "from a string literal with type array of .char." "b13" } */
 
 struct s { signed char a[10]; int b; ushrt c[10]; };
 

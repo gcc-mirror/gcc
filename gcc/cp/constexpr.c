@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ubsan.h"
 #include "gimple-fold.h"
 #include "timevar.h"
+#include "fold-const-call.h"
 
 static bool verify_constant (tree, bool, bool *, bool *);
 #define VERIFY_CONSTANT(X)						\
@@ -1449,6 +1450,20 @@ cxx_eval_internal_function (const constexpr_ctx *ctx, tree t,
       return cxx_eval_constant_expression (ctx, CALL_EXPR_ARG (t, 0),
 					   false, non_constant_p, overflow_p);
 
+    case IFN_VEC_CONVERT:
+      {
+	tree arg = cxx_eval_constant_expression (ctx, CALL_EXPR_ARG (t, 0),
+						 false, non_constant_p,
+						 overflow_p);
+	if (TREE_CODE (arg) == VECTOR_CST)
+	  return fold_const_call (CFN_VEC_CONVERT, TREE_TYPE (t), arg);
+	else
+	  {
+	    *non_constant_p = true;
+	    return t;
+	  }
+      }
+
     default:
       if (!ctx->quiet)
 	error_at (cp_expr_loc_or_loc (t, input_location),
@@ -2833,9 +2848,7 @@ initialized_type (tree t)
   if (TYPE_P (t))
     return t;
   tree type = TREE_TYPE (t);
-  if (!VOID_TYPE_P (type))
-    /* No need to look deeper.  */;
-  else if (TREE_CODE (t) == CALL_EXPR)
+  if (TREE_CODE (t) == CALL_EXPR)
     {
       /* A constructor call has void type, so we need to look deeper.  */
       tree fn = get_function_named_in_call (t);
@@ -2843,6 +2856,8 @@ initialized_type (tree t)
 	  && DECL_CXX_CONSTRUCTOR_P (fn))
 	type = DECL_CONTEXT (fn);
     }
+  else if (TREE_CODE (t) == COMPOUND_EXPR)
+    return initialized_type (TREE_OPERAND (t, 1));
   else if (TREE_CODE (t) == AGGR_INIT_EXPR)
     type = TREE_TYPE (AGGR_INIT_EXPR_SLOT (t));
   return cv_unqualified (type);
@@ -5046,6 +5061,8 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 
   tree type = initialized_type (t);
   tree r = t;
+  if (VOID_TYPE_P (type))
+    return t;
   if (AGGREGATE_TYPE_P (type) || VECTOR_TYPE_P (type))
     {
       /* In C++14 an NSDMI can participate in aggregate initialization,
@@ -5623,7 +5640,9 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		case IFN_SUB_OVERFLOW:
 		case IFN_MUL_OVERFLOW:
 		case IFN_LAUNDER:
+		case IFN_VEC_CONVERT:
 		  bail = false;
+		  break;
 
 		default:
 		  break;

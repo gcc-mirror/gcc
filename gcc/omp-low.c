@@ -872,6 +872,7 @@ new_omp_context (gimple *stmt, omp_context *outer_ctx)
     }
 
   ctx->cb.decl_map = new hash_map<tree, tree>;
+  ctx->cb.adjust_array_error_bounds = true;
 
   return ctx;
 }

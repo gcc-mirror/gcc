@@ -61,6 +61,7 @@ class Map_construction_expression;
 class Type_guard_expression;
 class Heap_expression;
 class Receive_expression;
+class Slice_value_expression;
 class Conditional_expression;
 class Compound_expression;
 class Numeric_constant;
@@ -840,6 +841,12 @@ class Expression
   Receive_expression*
   receive_expression()
   { return this->convert<Receive_expression, EXPRESSION_RECEIVE>(); }
+
+  // If this is a slice value expression, return the Slice_valiue_expression
+  // structure.  Otherwise, return NULL.
+  Slice_value_expression*
+  slice_value_expression()
+  { return this->convert<Slice_value_expression, EXPRESSION_SLICE_VALUE>(); }
 
   // If this is a conditional expression, return the Conditional_expression
   // structure.  Otherwise, return NULL.
@@ -3953,6 +3960,56 @@ class Receive_expression : public Expression
   Expression* channel_;
   // A temporary reference to the variable storing the received data.
   Temporary_statement* temp_receiver_;
+};
+
+// An expression that represents a slice value: a struct with value pointer,
+// length, and capacity fields.
+
+class Slice_value_expression : public Expression
+{
+ public:
+  Slice_value_expression(Type* type, Expression* valmem, Expression* len,
+                         Expression* cap, Location location)
+    : Expression(EXPRESSION_SLICE_VALUE, location),
+      type_(type), valmem_(valmem), len_(len), cap_(cap)
+  { }
+
+  // The memory holding the values in the slice.  The type should be a
+  // pointer to the element value of the slice.
+  Expression*
+  valmem() const
+  { return this->valmem_; }
+
+ protected:
+  int
+  do_traverse(Traverse*);
+
+  Type*
+  do_type()
+  { return this->type_; }
+
+  void
+  do_determine_type(const Type_context*)
+  { }
+
+  Expression*
+  do_copy();
+
+  Bexpression*
+  do_get_backend(Translate_context* context);
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
+ private:
+  // The type of the slice value.
+  Type* type_;
+  // The memory holding the values in the slice.
+  Expression* valmem_;
+  // The length of the slice.
+  Expression* len_;
+  // The capacity of the slice.
+  Expression* cap_;
 };
 
 // Conditional expressions.

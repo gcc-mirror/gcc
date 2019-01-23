@@ -1047,7 +1047,7 @@ extern const struct s390_processor processor_table[];
 
 /* Target pragma.  */
 
-/* resolve_overloaded_builtin can not be defined the normal way since
+/* resolve_overloaded_builtin cannot be defined the normal way since
    it is defined in code which technically belongs to the
    front-end.  */
 #define REGISTER_TARGET_PRAGMAS()		\

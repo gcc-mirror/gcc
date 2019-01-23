@@ -1925,7 +1925,7 @@ explicit_class_specialization_p (tree type)
 }
 
 /* Print the list of functions at FNS, going through all the overloads
-   for each element of the list.  Alternatively, FNS can not be a
+   for each element of the list.  Alternatively, FNS cannot be a
    TREE_LIST, in which case it will be printed together with all the
    overloads.
 
@@ -18210,6 +18210,8 @@ tsubst_copy_and_build (tree t,
 	int flags = LOOKUP_IMPLICIT;
 	if (IMPLICIT_CONV_EXPR_DIRECT_INIT (t))
 	  flags = LOOKUP_NORMAL;
+	if (IMPLICIT_CONV_EXPR_BRACED_INIT (t))
+	  flags |= LOOKUP_NO_NARROWING;
 	RETURN (perform_implicit_conversion_flags (type, expr, complain,
 						  flags));
       }
@@ -18811,6 +18813,27 @@ tsubst_copy_and_build (tree t,
 		ret = finish_builtin_launder (cp_expr_loc_or_loc (t,
 							       input_location),
 					      (*call_args)[0], complain);
+	      break;
+
+	    case IFN_VEC_CONVERT:
+	      gcc_assert (nargs == 1);
+	      if (vec_safe_length (call_args) != 1)
+		{
+		  error_at (cp_expr_loc_or_loc (t, input_location),
+			    "wrong number of arguments to "
+			    "%<__builtin_convertvector%>");
+		  ret = error_mark_node;
+		  break;
+		}
+	      ret = cp_build_vec_convert ((*call_args)[0], input_location,
+					  tsubst (TREE_TYPE (t), args,
+						  complain, in_decl),
+					  complain);
+	      if (TREE_CODE (ret) == VIEW_CONVERT_EXPR)
+		{
+		  release_tree_vector (call_args);
+		  RETURN (ret);
+		}
 	      break;
 
 	    default:
@@ -21124,6 +21147,21 @@ resolve_nondeduced_context (tree orig_expr, tsubst_flags_t complain)
   return orig_expr;
 }
 
+/* As above, but error out if the expression remains overloaded.  */
+
+tree
+resolve_nondeduced_context_or_error (tree exp, tsubst_flags_t complain)
+{
+  exp = resolve_nondeduced_context (exp, complain);
+  if (type_unknown_p (exp))
+    {
+      if (complain & tf_error)
+	cxx_incomplete_type_error (exp, TREE_TYPE (exp));
+      return error_mark_node;
+    }
+  return exp;
+}
+
 /* Subroutine of resolve_overloaded_unification; does deduction for a single
    overload.  Fills TARGS with any deduced arguments, or error_mark_node if
    different overloads deduce different arguments for a given parm.
@@ -22044,7 +22082,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
       /* If the argument deduction results is a METHOD_TYPE,
          then there is a problem.
          METHOD_TYPE doesn't map to any real C++ type the result of
-	 the deduction can not be of that type.  */
+	 the deduction cannot be of that type.  */
       if (TREE_CODE (arg) == METHOD_TYPE)
 	return unify_method_type_error (explain_p, arg);
 
@@ -25715,6 +25753,8 @@ instantiation_dependent_r (tree *tp, int *walk_subtrees,
     case TEMPLATE_PARM_INDEX:
       if (dependent_type_p (TREE_TYPE (*tp)))
 	return *tp;
+      if (TEMPLATE_PARM_PARAMETER_PACK (*tp))
+	return *tp;
       /* We'll check value-dependence separately.  */
       return NULL_TREE;
 
@@ -26433,7 +26473,7 @@ make_auto (void)
 tree
 make_template_placeholder (tree tmpl)
 {
-  tree t = make_auto_1 (DECL_NAME (tmpl), true);
+  tree t = make_auto_1 (auto_identifier, true);
   CLASS_PLACEHOLDER_TEMPLATE (t) = tmpl;
   return t;
 }
@@ -26909,6 +26949,8 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
 	  targs = template_parms_to_args (tparms);
 	  fparms = tsubst_arg_types (fparms, tsubst_args, NULL_TREE,
 				     complain, ctor);
+	  if (fparms == error_mark_node)
+	    ok = false;
 	  fargs = tsubst (fargs, tsubst_args, complain, ctor);
 	  if (ci)
 	    ci = tsubst_constraint_info (ci, tsubst_args, complain, ctor);
@@ -27364,8 +27406,7 @@ is_auto (const_tree type)
 {
   if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
       && (TYPE_IDENTIFIER (type) == auto_identifier
-	  || TYPE_IDENTIFIER (type) == decltype_auto_identifier
-	  || CLASS_PLACEHOLDER_TEMPLATE (type)))
+	  || TYPE_IDENTIFIER (type) == decltype_auto_identifier))
     return true;
   else
     return false;

@@ -24,8 +24,7 @@
 // backend.h.
 
 static void
-get_backend_struct_fields(Gogo* gogo, const Struct_field_list* fields,
-			  bool use_placeholder,
+get_backend_struct_fields(Gogo* gogo, Struct_type* type, bool use_placeholder,
 			  std::vector<Backend::Btyped_identifier>* bfields);
 
 static void
@@ -1162,8 +1161,7 @@ Type::get_backend_placeholder(Gogo* gogo)
       // struct field.
       {
 	std::vector<Backend::Btyped_identifier> bfields;
-	get_backend_struct_fields(gogo, this->struct_type()->fields(),
-				  true, &bfields);
+	get_backend_struct_fields(gogo, this->struct_type(), true, &bfields);
 	bt = gogo->backend()->struct_type(bfields);
       }
       break;
@@ -5841,6 +5839,25 @@ Struct_type::do_needs_key_update()
   return false;
 }
 
+// Return whether computing the hash value of an instance of this
+// struct type might panic.
+
+bool
+Struct_type::do_hash_might_panic()
+{
+  const Struct_field_list* fields = this->fields_;
+  if (fields == NULL)
+    return false;
+  for (Struct_field_list::const_iterator pf = fields->begin();
+       pf != fields->end();
+       ++pf)
+    {
+      if (pf->type()->hash_might_panic())
+	return true;
+    }
+  return false;
+}
+
 // Return whether this struct type is permitted to be in the heap.
 
 bool
@@ -6140,12 +6157,14 @@ Struct_type::interface_method_table(Interface_type* interface,
 // backend.h.
 
 static void
-get_backend_struct_fields(Gogo* gogo, const Struct_field_list* fields,
-			  bool use_placeholder,
+get_backend_struct_fields(Gogo* gogo, Struct_type* type, bool use_placeholder,
 			  std::vector<Backend::Btyped_identifier>* bfields)
 {
+  const Struct_field_list* fields = type->fields();
   bfields->resize(fields->size());
   size_t i = 0;
+  int64_t lastsize = 0;
+  bool saw_nonzero = false;
   for (Struct_field_list::const_iterator p = fields->begin();
        p != fields->end();
        ++p, ++i)
@@ -6155,8 +6174,24 @@ get_backend_struct_fields(Gogo* gogo, const Struct_field_list* fields,
 			     ? p->type()->get_backend_placeholder(gogo)
 			     : p->type()->get_backend(gogo));
       (*bfields)[i].location = p->location();
+      lastsize = gogo->backend()->type_size((*bfields)[i].btype);
+      if (lastsize != 0)
+        saw_nonzero = true;
     }
   go_assert(i == fields->size());
+  if (saw_nonzero && lastsize == 0)
+    {
+      // For nonzero-sized structs which end in a zero-sized thing, we add
+      // an extra byte of padding to the type. This padding ensures that
+      // taking the address of the zero-sized thing can't manufacture a
+      // pointer to the next object in the heap. See issue 9401.
+      size_t n = fields->size();
+      bfields->resize(n + 1);
+      (*bfields)[n].name = "_";
+      (*bfields)[n].btype = Type::lookup_integer_type("uint8")->get_backend(gogo);
+      (*bfields)[n].location = (*bfields)[n-1].location;
+      type->set_has_padding();
+    }
 }
 
 // Get the backend representation for a struct type.
@@ -6165,7 +6200,7 @@ Btype*
 Struct_type::do_get_backend(Gogo* gogo)
 {
   std::vector<Backend::Btyped_identifier> bfields;
-  get_backend_struct_fields(gogo, this->fields_, false, &bfields);
+  get_backend_struct_fields(gogo, this, false, &bfields);
   return gogo->backend()->struct_type(bfields);
 }
 
@@ -7963,21 +7998,18 @@ Map_type::make_map_type_descriptor_type()
       Type* ptdt = Type::make_type_descriptor_ptr_type();
       Type* uint8_type = Type::lookup_integer_type("uint8");
       Type* uint16_type = Type::lookup_integer_type("uint16");
-      Type* bool_type = Type::lookup_bool_type();
+      Type* uint32_type = Type::lookup_integer_type("uint32");
 
       Struct_type* sf =
-	Type::make_builtin_struct_type(11,
+	Type::make_builtin_struct_type(8,
 				       "", tdt,
 				       "key", ptdt,
 				       "elem", ptdt,
 				       "bucket", ptdt,
 				       "keysize", uint8_type,
-				       "indirectkey", bool_type,
 				       "valuesize", uint8_type,
-				       "indirectvalue", bool_type,
 				       "bucketsize", uint16_type,
-				       "reflexivekey", bool_type,
-				       "needkeyupdate", bool_type);
+				       "flags", uint32_type);
 
       ret = Type::make_builtin_named_type("MapType", sf);
     }
@@ -7995,6 +8027,7 @@ Map_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   Type* mtdt = Map_type::make_map_type_descriptor_type();
   Type* uint8_type = Type::lookup_integer_type("uint8");
   Type* uint16_type = Type::lookup_integer_type("uint16");
+  Type* uint32_type = Type::lookup_integer_type("uint32");
 
   int64_t keysize;
   if (!this->key_type_->backend_type_size(gogo, &keysize))
@@ -8062,11 +8095,6 @@ Map_type::do_type_descriptor(Gogo* gogo, Named_type* name)
     vals->push_back(Expression::make_integer_int64(keysize, uint8_type, bloc));
 
   ++p;
-  go_assert(p->is_field_name("indirectkey"));
-  vals->push_back(Expression::make_boolean(keysize > Map_type::max_key_size,
-					   bloc));
-
-  ++p;
   go_assert(p->is_field_name("valuesize"));
   if (valsize > Map_type::max_val_size)
     vals->push_back(Expression::make_integer_int64(ptrsize, uint8_type, bloc));
@@ -8074,24 +8102,26 @@ Map_type::do_type_descriptor(Gogo* gogo, Named_type* name)
     vals->push_back(Expression::make_integer_int64(valsize, uint8_type, bloc));
 
   ++p;
-  go_assert(p->is_field_name("indirectvalue"));
-  vals->push_back(Expression::make_boolean(valsize > Map_type::max_val_size,
-					   bloc));
-
-  ++p;
   go_assert(p->is_field_name("bucketsize"));
   vals->push_back(Expression::make_integer_int64(bucketsize, uint16_type,
 						 bloc));
 
   ++p;
-  go_assert(p->is_field_name("reflexivekey"));
-  vals->push_back(Expression::make_boolean(this->key_type_->is_reflexive(),
-					   bloc));
-
-  ++p;
-  go_assert(p->is_field_name("needkeyupdate"));
-  vals->push_back(Expression::make_boolean(this->key_type_->needs_key_update(),
-					   bloc));
+  go_assert(p->is_field_name("flags"));
+  // As with the other fields, the flag bits must match the reflect
+  // and runtime packages.
+  unsigned long flags = 0;
+  if (keysize > Map_type::max_key_size)
+    flags |= 1;
+  if (valsize > Map_type::max_val_size)
+    flags |= 2;
+  if (this->key_type_->is_reflexive())
+    flags |= 4;
+  if (this->key_type_->needs_key_update())
+    flags |= 8;
+  if (this->key_type_->hash_might_panic())
+    flags |= 16;
+  vals->push_back(Expression::make_integer_ul(flags, uint32_type, bloc));
 
   ++p;
   go_assert(p == fields->end());
@@ -10504,8 +10534,7 @@ Named_type::convert(Gogo* gogo)
     case TYPE_STRUCT:
       {
 	std::vector<Backend::Btyped_identifier> bfields;
-	get_backend_struct_fields(gogo, base->struct_type()->fields(),
-				  true, &bfields);
+	get_backend_struct_fields(gogo, base->struct_type(), true, &bfields);
 	if (!gogo->backend()->set_placeholder_struct_type(bt, bfields))
 	  bt = gogo->backend()->error_type();
       }

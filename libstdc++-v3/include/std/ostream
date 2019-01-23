@@ -245,6 +245,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator<<(const void* __p)
       { return _M_insert(__p); }
 
+#if __cplusplus >= 201703L
+      __ostream_type&
+      operator<<(nullptr_t)
+      { return *this << "nullptr"; }
+#endif
+
       /**
        *  @brief  Extracting from another streambuf.
        *  @param  __sb  A pointer to a streambuf

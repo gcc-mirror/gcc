@@ -384,7 +384,7 @@ extension are also run through preprocessing.
 This manual specifically documents the Fortran front end, which handles
 the programming language's syntax and semantics.  The aspects of GCC
 which relate to the optimization passes and the back-end code generation
-are documented in the GCC manual; see 
+are documented in the GCC manual; see
 @ref{Top,,Introduction,gcc,Using the GNU Compiler Collection (GCC)}.
 The two manuals together provide a complete reference for the GNU
 Fortran compiler.
@@ -446,11 +446,11 @@ to preprocess such files (@uref{http://www.daniellnagle.com/coco.html}).
 @cindex Fortran 77
 @cindex @command{g77}
 
-The GNU Fortran compiler is the successor to @command{g77}, the Fortran 
-77 front end included in GCC prior to version 4.  It is an entirely new 
-program that has been designed to provide Fortran 95 support and 
-extensibility for future Fortran language standards, as well as providing 
-backwards compatibility for Fortran 77 and nearly all of the GNU language 
+The GNU Fortran compiler is the successor to @command{g77}, the Fortran
+77 front end included in GCC prior to version 4.  It is an entirely new
+program that has been designed to provide Fortran 95 support and
+extensibility for future Fortran language standards, as well as providing
+backwards compatibility for Fortran 77 and nearly all of the GNU language
 extensions supported by @command{g77}.
 
 
@@ -490,10 +490,10 @@ change in future versions of GCC.  See
 @uref{https://gcc.gnu.org/wiki/OpenACC} for more information.
 
 At present, the GNU Fortran compiler passes the
-@uref{http://www.fortran-2000.com/ArnaudRecipes/fcvs21_f95.html, 
+@uref{http://www.fortran-2000.com/ArnaudRecipes/fcvs21_f95.html,
 NIST Fortran 77 Test Suite}, and produces acceptable results on the
 @uref{http://www.netlib.org/lapack/faq.html#1.21, LAPACK Test Suite}.
-It also provides respectable performance on 
+It also provides respectable performance on
 the @uref{http://www.polyhedron.com/fortran-compiler-comparisons/polyhedron-benchmark-suite,
 Polyhedron Fortran
 compiler benchmarks} and the
@@ -668,7 +668,7 @@ This is the default.
 @section @env{GFORTRAN_UNBUFFERED_PRECONNECTED}---Do not buffer I/O on preconnected units
 
 The environment variable named @env{GFORTRAN_UNBUFFERED_PRECONNECTED} controls
-whether I/O on a preconnected unit (i.e.@: STDOUT or STDERR) is unbuffered.  If 
+whether I/O on a preconnected unit (i.e.@: STDOUT or STDERR) is unbuffered.  If
 the first letter is @samp{y}, @samp{Y} or @samp{1}, I/O is unbuffered.  This
 will slow down small sequential reads and writes.  If the first letter
 is @samp{n}, @samp{N} or @samp{0}, I/O is buffered.  This is the default.
@@ -733,7 +733,7 @@ A missing mode for an exception is taken to mean @code{BIG_ENDIAN}.
 Examples of values for @env{GFORTRAN_CONVERT_UNIT} are:
 @itemize @w{}
 @item @code{'big_endian'}  Do all unformatted I/O in big_endian mode.
-@item @code{'little_endian;native:10-20,25'}  Do all unformatted I/O 
+@item @code{'little_endian;native:10-20,25'}  Do all unformatted I/O
 in little_endian mode, except for units 10 to 20 and 25, which are in
 native format.
 @item @code{'10-20'}  Units 10 to 20 are big-endian, the rest is native.
@@ -834,7 +834,7 @@ initialization are available.
 
 @item The @code{ASSOCIATE} construct.
 
-@item Interoperability with C including enumerations, 
+@item Interoperability with C including enumerations,
 
 @item In structure constructors the components with default values may be
 omitted.
@@ -999,7 +999,7 @@ about the current Fortran 2008 implementation status.  In particular, the
 following is implemented.
 
 @itemize
-@item The @option{-std=f2008} option and support for the file extensions 
+@item The @option{-std=f2008} option and support for the file extensions
 @file{.f08} and @file{.F08}.
 
 @item The @code{OPEN} statement now supports the @code{NEWUNIT=} option,
@@ -1103,8 +1103,6 @@ arrays are supported for named constants (@code{PARAMETER}).
 @node Fortran 2018 status
 @section Status of Fortran 2018 support
 
-So far very little work has been done to support Fortran 2018.
-
 @itemize
 @item ERROR STOP in a PURE procedure
 An @code{ERROR STOP} statement is permitted in a @code{PURE}
@@ -1143,8 +1141,12 @@ attribute is compatible with TS 29113.
 
 @item Assumed types (@code{TYPE(*)}).
 
-@item Assumed-rank (@code{DIMENSION(..)}). However, the array descriptor
-of the TS is not yet supported.
+@item Assumed-rank (@code{DIMENSION(..)}).
+
+@item ISO_Fortran_binding (now in Fortran 2018 18.4) is implemented such that
+conversion of the array descriptor for assumed type or assumed rank arrays is
+done in the library. The include file ISO_Fortran_binding.h is can be found in
+@code{~prefix/lib/gcc/$target/$version}.
 @end itemize
 
 
@@ -1300,7 +1302,7 @@ being called from a multi-threaded program.
 
 The GNU Fortran runtime library, (@code{libgfortran}), supports being
 called concurrently from multiple threads with the following
-exceptions. 
+exceptions.
 
 During library initialization, the C @code{getenv} function is used,
 which need not be thread-safe.  Similarly, the @code{getenv}
@@ -1430,7 +1432,7 @@ processor dependent.  GNU Fortran behaves as follows:
 @cindex file, symbolic link
 
 This section documents the behavior of GNU Fortran for file operations on
-symbolic links, on systems that support them. 
+symbolic links, on systems that support them.
 
 @itemize
 
@@ -1469,8 +1471,8 @@ are four-byte integers by default, and eight-byte integers if the
 compability only) is in effect.
 
 The representation of the record markers is that of unformatted files
-given with the @option{-fconvert} option, the @xref{CONVERT specifier}
-on the open statement or the @xref{GFORTRAN_CONVERT_UNIT} environment
+given with the @option{-fconvert} option, the @ref{CONVERT specifier}
+in an open statement or the @ref{GFORTRAN_CONVERT_UNIT} environment
 variable.
 
 The maximum number of bytes of user data in a subrecord is 2147483639
@@ -1497,7 +1499,7 @@ record containing a single subrecord:
 program main
   use iso_fortran_env, only: int32
   implicit none
-  integer(int32) :: i 
+  integer(int32) :: i
   real, dimension(10) :: a, b
   call random_number(a)
   open (10,file='test.dat',form='unformatted',access='stream')
@@ -1725,7 +1727,7 @@ PROGRAM test_print
 END PROGRAM test_print
 @end smallexample
 
-Expanded namelist reads are permitted.  This causes an error if 
+Expanded namelist reads are permitted.  This causes an error if
 @option{-std=f95} is used.  In the following example, the first element
 of the array will be given the value 0.00 and the two succeeding
 elements will be given the values 1.00 and 2.00.
@@ -1988,7 +1990,7 @@ pointer in order to increment it.  Consider the following example:
         real pointee(10)
         pointer (ipt, pointee)
         ipt = loc (target)
-        ipt = ipt + 1       
+        ipt = ipt + 1
 @end smallexample
 The last statement does not set @code{ipt} to the address of
 @code{target(1)}, as it would in C pointer arithmetic.  Adding @code{1}
@@ -2120,13 +2122,13 @@ portable.
 @cindex OpenMP
 
 OpenMP (Open Multi-Processing) is an application programming
-interface (API) that supports multi-platform shared memory 
-multiprocessing programming in C/C++ and Fortran on many 
+interface (API) that supports multi-platform shared memory
+multiprocessing programming in C/C++ and Fortran on many
 architectures, including Unix and Microsoft Windows platforms.
 It consists of a set of compiler directives, library routines,
 and environment variables that influence run-time behavior.
 
-GNU Fortran strives to be compatible to the 
+GNU Fortran strives to be compatible to the
 @uref{http://openmp.org/wp/openmp-specifications/,
 OpenMP Application Program Interface v4.5}.
 
@@ -2169,7 +2171,7 @@ if the stacksize is limited.
 @item
 On glibc-based systems, OpenMP enabled applications cannot be statically
 linked due to limitations of the underlying pthreads-implementation.  It
-might be possible to get a working solution if 
+might be possible to get a working solution if
 @command{-Wl,--whole-archive -lpthread -Wl,--no-whole-archive} is added
 to the command line.  However, this is not supported by @command{gcc} and
 thus not recommended.
@@ -2213,20 +2215,20 @@ change in future versions of GCC.  See
 @cindex @code{%REF}
 @cindex @code{%LOC}
 
-GNU Fortran supports argument list functions @code{%VAL}, @code{%REF} 
-and @code{%LOC} statements, for backward compatibility with g77. 
-It is recommended that these should be used only for code that is 
-accessing facilities outside of GNU Fortran, such as operating system 
-or windowing facilities.  It is best to constrain such uses to isolated 
-portions of a program--portions that deal specifically and exclusively 
-with low-level, system-dependent facilities.  Such portions might well 
-provide a portable interface for use by the program as a whole, but are 
-themselves not portable, and should be thoroughly tested each time they 
+GNU Fortran supports argument list functions @code{%VAL}, @code{%REF}
+and @code{%LOC} statements, for backward compatibility with g77.
+It is recommended that these should be used only for code that is
+accessing facilities outside of GNU Fortran, such as operating system
+or windowing facilities.  It is best to constrain such uses to isolated
+portions of a program--portions that deal specifically and exclusively
+with low-level, system-dependent facilities.  Such portions might well
+provide a portable interface for use by the program as a whole, but are
+themselves not portable, and should be thoroughly tested each time they
 are rebuilt using a new compiler or version of a compiler.
 
-@code{%VAL} passes a scalar argument by value, @code{%REF} passes it by 
-reference and @code{%LOC} passes its memory location.  Since gfortran 
-already passes scalar arguments by reference, @code{%REF} is in effect 
+@code{%VAL} passes a scalar argument by value, @code{%REF} passes it by
+reference and @code{%LOC} passes its memory location.  Since gfortran
+already passes scalar arguments by reference, @code{%REF} is in effect
 a do-nothing.  @code{%LOC} has the same effect as a Fortran pointer.
 
 An example of passing an argument by value to a C subroutine foo.:
@@ -2384,7 +2386,7 @@ following shows some examples:
 @example
 structure /appointment/
   ! nested structure definition: app_time is an array of two 'time'
-  structure /time/ app_time (2) 
+  structure /time/ app_time (2)
     integer(1) hour, minute
   end structure
   character(10) memo
@@ -2970,7 +2972,7 @@ with the following:
 @smallexample
 c     Variable declaration
       CHARACTER(LEN=20) FMT
-c     
+c
 c     Other code here...
 c
       WRITE(FMT,'("(I", I0, ")")') N+1
@@ -2983,7 +2985,7 @@ or with:
 @smallexample
 c     Variable declaration
       CHARACTER(LEN=20) FMT
-c     
+c
 c     Other code here...
 c
       WRITE(FMT,*) N+1
@@ -3430,11 +3432,14 @@ and constraints, it adds assumed-type (@code{TYPE(*)}) and assumed-rank
 assumed-shape, assumed-rank and deferred-shape arrays, including
 allocatables and pointers.
 
-Note: Currently, GNU Fortran does not support the array descriptor
+Note: Currently, GNU Fortran does not use internally the array descriptor
 (dope vector) as specified in the Technical Specification, but uses
-an array descriptor with different fields. The Chasm Language
-Interoperability Tools, @url{http://chasm-interop.sourceforge.net/},
-provide an interface to GNU Fortran's array descriptor.
+an array descriptor with different fields. Assumed type and assumed rank
+formal arguments are converted in the library to the specified form. The
+ISO_Fortran_binding API functions (also Fortran 2018 18.4) are implemented
+in libgfortran. Alternatively, the Chasm Language Interoperability Tools,
+@url{http://chasm-interop.sourceforge.net/}, provide an interface to GNU
+Fortran's array descriptor.
 
 The Technical Specification adds the following new features, which
 are supported by GNU Fortran:
@@ -5735,7 +5740,7 @@ ideas and significant help to the GNU Fortran project
 The following people have contributed bug reports,
 smaller or larger patches,
 and much needed feedback and encouragement for the
-GNU Fortran project: 
+GNU Fortran project:
 
 @itemize @minus
 @item Bill Clodius

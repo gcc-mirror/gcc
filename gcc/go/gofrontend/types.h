@@ -635,6 +635,12 @@ class Type
   needs_key_update()
   { return this->do_needs_key_update(); }
 
+  // Return whether the hash function of this type might panic.  This
+  // is only called for types used as a key in a map type.
+  bool
+  hash_might_panic()
+  { return this->do_hash_might_panic(); }
+
   // Whether the type is permitted in the heap.
   bool
   in_heap()
@@ -1071,6 +1077,10 @@ class Type
 
   virtual bool
   do_needs_key_update()
+  { return false; }
+
+  virtual bool
+  do_hash_might_panic()
   { return false; }
 
   virtual bool
@@ -2432,7 +2442,7 @@ class Struct_type : public Type
   Struct_type(Struct_field_list* fields, Location location)
     : Type(TYPE_STRUCT),
       fields_(fields), location_(location), all_methods_(NULL),
-      is_struct_incomparable_(false)
+      is_struct_incomparable_(false), has_padding_(false)
   { }
 
   // Return the field NAME.  This only looks at local fields, not at
@@ -2552,6 +2562,17 @@ class Struct_type : public Type
   set_is_struct_incomparable()
   { this->is_struct_incomparable_ = true; }
 
+  // Return whether this struct's backend type has padding, due to
+  // trailing zero-sized field.
+  bool
+  has_padding() const
+  { return this->has_padding_; }
+
+  // Record that this struct's backend type has padding.
+  void
+  set_has_padding()
+  { this->has_padding_ = true; }
+
   // Write the hash function for this type.
   void
   write_hash_function(Gogo*, Named_type*, Function_type*, Function_type*);
@@ -2588,6 +2609,9 @@ class Struct_type : public Type
 
   bool
   do_needs_key_update();
+
+  bool
+  do_hash_might_panic();
 
   bool
   do_in_heap();
@@ -2656,6 +2680,9 @@ class Struct_type : public Type
   // True if this is a generated struct that is not considered to be
   // comparable.
   bool is_struct_incomparable_;
+  // True if this struct's backend type has padding, due to trailing
+  // zero-sized field.
+  bool has_padding_;
 };
 
 // The type of an array.
@@ -2763,6 +2790,10 @@ class Array_type : public Type
   bool
   do_needs_key_update()
   { return this->element_type_->needs_key_update(); }
+
+  bool
+  do_hash_might_panic()
+  { return this->length_ != NULL && this->element_type_->hash_might_panic(); }
 
   bool
   do_in_heap()
@@ -3154,6 +3185,11 @@ class Interface_type : public Type
   // contains a float.
   bool
   do_needs_key_update()
+  { return true; }
+
+  // Hashing an unhashable type stored in an interface might panic.
+  bool
+  do_hash_might_panic()
   { return true; }
 
   unsigned int

@@ -1797,7 +1797,7 @@ protected:
       static int _S_compare(const _RopeRep* __x, const _RopeRep* __y);
       
     public:
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const
       { return 0 == this->_M_tree_ptr; }
       

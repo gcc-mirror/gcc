@@ -5658,7 +5658,7 @@ free_lang_data_in_decl (tree decl, struct free_lang_data_d *fld)
 	 use for middle-end.
 
 	 It would make more sense if frontends set TREE_ADDRESSABLE to 0 only
-	 for public objects that indeed can not be adressed, but it is not
+	 for public objects that indeed cannot be adressed, but it is not
 	 the case.  Set the flag to true so we do not get merge failures for
 	 i.e. virtual tables between units that take address of it and
 	 units that don't.  */
@@ -8455,6 +8455,8 @@ build_function_type (tree value_type, tree arg_types)
   bool any_structural_p, any_noncanonical_p;
   tree canon_argtypes;
 
+  gcc_assert (arg_types != error_mark_node);
+
   if (TREE_CODE (value_type) == FUNCTION_TYPE)
     {
       error ("function return type cannot be function");
@@ -11229,6 +11231,45 @@ initializer_zerop (const_tree init, bool *nonzero /* = NULL */)
     }
 }
 
+/* Return true if EXPR is an initializer expression in which every element
+   is a constant that is numerically equal to 0 or 1.  The elements do not
+   need to be equal to each other.  */
+
+bool
+initializer_each_zero_or_onep (const_tree expr)
+{
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+
+  switch (TREE_CODE (expr))
+    {
+    case INTEGER_CST:
+      return integer_zerop (expr) || integer_onep (expr);
+
+    case REAL_CST:
+      return real_zerop (expr) || real_onep (expr);
+
+    case VECTOR_CST:
+      {
+	unsigned HOST_WIDE_INT nelts = vector_cst_encoded_nelts (expr);
+	if (VECTOR_CST_STEPPED_P (expr)
+	    && !TYPE_VECTOR_SUBPARTS (TREE_TYPE (expr)).is_constant (&nelts))
+	  return false;
+
+	for (unsigned int i = 0; i < nelts; ++i)
+	  {
+	    tree elt = vector_cst_elt (expr, i);
+	    if (!initializer_each_zero_or_onep (elt))
+	      return false;
+	  }
+
+	return true;
+      }
+
+    default:
+      return false;
+    }
+}
+
 /* Check if vector VEC consists of all the equal elements and
    that the number of elements corresponds to the type of VEC.
    The function returns first element of the vector
@@ -11299,6 +11340,38 @@ uniform_integer_cst_p (tree t)
     }
 
   return NULL_TREE;
+}
+
+/* If VECTOR_CST T has a single nonzero element, return the index of that
+   element, otherwise return -1.  */
+
+int
+single_nonzero_element (const_tree t)
+{
+  unsigned HOST_WIDE_INT nelts;
+  unsigned int repeat_nelts;
+  if (VECTOR_CST_NELTS (t).is_constant (&nelts))
+    repeat_nelts = nelts;
+  else if (VECTOR_CST_NELTS_PER_PATTERN (t) == 2)
+    {
+      nelts = vector_cst_encoded_nelts (t);
+      repeat_nelts = VECTOR_CST_NPATTERNS (t);
+    }
+  else
+    return -1;
+
+  int res = -1;
+  for (unsigned int i = 0; i < nelts; ++i)
+    {
+      tree elt = vector_cst_elt (t, i);
+      if (!integer_zerop (elt) && !real_zerop (elt))
+	{
+	  if (res >= 0 || i >= repeat_nelts)
+	    return -1;
+	  res = i;
+	}
+    }
+  return res;
 }
 
 /* Build an empty statement at location LOC.  */
@@ -11672,7 +11745,10 @@ int_cst_value (const_tree x)
 
 /* If TYPE is an integral or pointer type, return an integer type with
    the same precision which is unsigned iff UNSIGNEDP is true, or itself
-   if TYPE is already an integer type of signedness UNSIGNEDP.  */
+   if TYPE is already an integer type of signedness UNSIGNEDP.
+   If TYPE is a floating-point type, return an integer type with the same
+   bitsize and with the signedness given by UNSIGNEDP; this is useful
+   when doing bit-level operations on a floating-point value.  */
 
 tree
 signed_or_unsigned_type_for (int unsignedp, tree type)
@@ -11702,17 +11778,23 @@ signed_or_unsigned_type_for (int unsignedp, tree type)
       return build_complex_type (inner2);
     }
 
-  if (!INTEGRAL_TYPE_P (type)
-      && !POINTER_TYPE_P (type)
-      && TREE_CODE (type) != OFFSET_TYPE)
+  unsigned int bits;
+  if (INTEGRAL_TYPE_P (type)
+      || POINTER_TYPE_P (type)
+      || TREE_CODE (type) == OFFSET_TYPE)
+    bits = TYPE_PRECISION (type);
+  else if (TREE_CODE (type) == REAL_TYPE)
+    bits = GET_MODE_BITSIZE (SCALAR_TYPE_MODE (type));
+  else
     return NULL_TREE;
 
-  return build_nonstandard_integer_type (TYPE_PRECISION (type), unsignedp);
+  return build_nonstandard_integer_type (bits, unsignedp);
 }
 
 /* If TYPE is an integral or pointer type, return an integer type with
    the same precision which is unsigned, or itself if TYPE is already an
-   unsigned integer type.  */
+   unsigned integer type.  If TYPE is a floating-point type, return an
+   unsigned integer type with the same bitsize as TYPE.  */
 
 tree
 unsigned_type_for (tree type)
@@ -11722,7 +11804,8 @@ unsigned_type_for (tree type)
 
 /* If TYPE is an integral or pointer type, return an integer type with
    the same precision which is signed, or itself if TYPE is already a
-   signed integer type.  */
+   signed integer type.  If TYPE is a floating-point type, return a
+   signed integer type with the same bitsize as TYPE.  */
 
 tree
 signed_type_for (tree type)
@@ -14158,7 +14241,7 @@ verify_type (const_tree t)
       debug_tree (ct);
       error_found = true;
     }
-  /* Method and function types can not be used to address memory and thus
+  /* Method and function types cannot be used to address memory and thus
      TYPE_CANONICAL really matters only for determining useless conversions.
 
      FIXME: C++ FE produce declarations of builtin functions that are not
@@ -14166,7 +14249,7 @@ verify_type (const_tree t)
   else if (TREE_CODE (t) == FUNCTION_TYPE)
     ;
   else if (t != ct
-	   /* FIXME: gimple_canonical_types_compatible_p can not compare types
+	   /* FIXME: gimple_canonical_types_compatible_p cannot compare types
 	      with variably sized arrays because their sizes possibly
 	      gimplified to different variables.  */
 	   && !variably_modified_type_p (ct, NULL)
