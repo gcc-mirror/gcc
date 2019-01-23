@@ -729,10 +729,16 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   DECL_CONTEXT (coro_fp) = current_scope ();
   tree r = build_stmt (fn_start, DECL_EXPR, coro_fp);
   add_stmt (r);
+  /* Allocate the frame.  This is the "real version"...
   tree allocated
     = build_call_expr_internal_loc (fn_start, IFN_CO_FRAME,
 				    build_pointer_type (void_type_node), 1,
-				    TYPE_SIZE_UNIT (coro_frame_type));
+				    coro_fp);
+  .. and this is a temporary one until we do heap allocation elision. */
+  tree allocated
+    = build_call_expr_loc (fn_start,
+			   builtin_decl_explicit (BUILT_IN_MALLOC), 1,
+			   TYPE_SIZE_UNIT (coro_frame_type));
   allocated = build1 (CONVERT_EXPR, coro_frame_ptr, allocated);
   r = build2 (INIT_EXPR, TREE_TYPE (coro_fp), coro_fp, allocated);
   add_stmt (r);
@@ -742,11 +748,31 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 			      fn_return_type);
   DECL_CONTEXT (gro) = current_scope ();
   r = build_stmt (fn_start, DECL_EXPR, gro);
+  /* Test for NULL and quit.  */
+
+  tree cfra_label = get_identifier ("coro.frame.active");
+  cfra_label = define_label (fn_start, cfra_label);
+
+  tree early_ret_list = NULL;
+  r = build_stmt (input_location, RETURN_EXPR, NULL);
+  TREE_NO_WARNING (r) |= 1; /* We don't want a warning about this.  */
+  r = maybe_cleanup_point_expr_void (r);
+  append_to_statement_list (r, &early_ret_list);
+
+  tree goto_st = NULL;
+  r = build1 (GOTO_EXPR, void_type_node, cfra_label);
+  append_to_statement_list (r, &goto_st);
+
+  tree ckk = build1 (CONVERT_EXPR, coro_frame_ptr, integer_zero_node);
+  tree ckz = build2 (EQ_EXPR, boolean_type_node, coro_fp, ckk);
+  r = build3 (COND_EXPR, void_type_node, ckz, early_ret_list, empty_list);
   add_stmt (r);
   TREE_CHAIN (gro) = varlist; varlist = gro;
 
   /* Collected the scope vars we need ... */
   BIND_EXPR_VARS (bind) = nreverse (varlist);
+  cfra_label = build_stmt (fn_start, LABEL_EXPR, cfra_label);
+  add_stmt (cfra_label);
 
   tree deref_fp = build_x_arrow (fn_start, coro_fp, tf_warning_or_error);
   /* Put the resumer and destroyer functions in.  */

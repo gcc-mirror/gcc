@@ -1,5 +1,11 @@
 2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/cp/coroutines.cc (morph_fn_to_coro): Use malloc in the ramp
+	to generate the coro frame for now.  Make the ramp function check
+	for NULL return and bail early if so.
+
+2019-01-23  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/cp/coroutines.cc (co_await_expander): Make the resume index
 	unsigned short.  (expand_co_awaits, morph_fn_to_coro): Likewise.
 
