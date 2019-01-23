@@ -260,7 +260,7 @@ cuda_map_destroy (struct cuda_map *map)
        atexit handler (PR83795).  */
     ;
   else
-    CUDA_CALL_ASSERT (cuMemFree, map->d);
+    CUDA_CALL_NOCHECK (cuMemFree, map->d);
 
   free (map);
 }
@@ -1164,7 +1164,7 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
   struct ptx_stream *dev_str;
   void *kargs[1];
   void *hp;
-  CUdeviceptr dp;
+  CUdeviceptr dp = 0;
   struct nvptx_thread *nvthd = nvptx_thread ();
   int warp_size = nvthd->ptx_dev->warp_size;
   const char *maybe_abort_msg = "(perhaps abort was called)";
@@ -1361,23 +1361,27 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 			   dims[GOMP_DIM_VECTOR]);
     }
 
-  /* This reserves a chunk of a pre-allocated page of memory mapped on both
-     the host and the device. HP is a host pointer to the new chunk, and DP is
-     the corresponding device pointer.  */
-  pthread_mutex_lock (&ptx_event_lock);
-  dp = map_push (dev_str, mapnum * sizeof (void *));
-  pthread_mutex_unlock (&ptx_event_lock);
+  if (mapnum > 0)
+    {
+      /* This reserves a chunk of a pre-allocated page of memory mapped on both
+	 the host and the device. HP is a host pointer to the new chunk, and DP is
+	 the corresponding device pointer.  */
+      pthread_mutex_lock (&ptx_event_lock);
+      dp = map_push (dev_str, mapnum * sizeof (void *));
+      pthread_mutex_unlock (&ptx_event_lock);
 
-  GOMP_PLUGIN_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
+      GOMP_PLUGIN_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
 
-  /* Copy the array of arguments to the mapped page.  */
-  hp = alloca(sizeof(void *) * mapnum);
-  for (i = 0; i < mapnum; i++)
-    ((void **) hp)[i] = devaddrs[i];
+      /* Copy the array of arguments to the mapped page.  */
+      hp = alloca(sizeof(void *) * mapnum);
+      for (i = 0; i < mapnum; i++)
+	((void **) hp)[i] = devaddrs[i];
 
-  /* Copy the (device) pointers to arguments to the device */
-  CUDA_CALL_ASSERT (cuMemcpyHtoD, dp, hp,
-		    mapnum * sizeof (void *));
+      /* Copy the (device) pointers to arguments to the device */
+      CUDA_CALL_ASSERT (cuMemcpyHtoD, dp, hp,
+			mapnum * sizeof (void *));
+    }
+
   GOMP_PLUGIN_debug (0, "  %s: kernel %s: launch"
 		     " gangs=%u, workers=%u, vectors=%u\n",
 		     __FUNCTION__, targ_fn->launch->fn, dims[GOMP_DIM_GANG],
@@ -1422,7 +1426,8 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 
       CUDA_CALL_ASSERT (cuEventRecord, *e, dev_str->stream);
 
-      event_add (PTX_EVT_KNL, e, (void *)dev_str, 0);
+      if (mapnum > 0)
+	event_add (PTX_EVT_KNL, e, (void *)dev_str, 0);
     }
 #else
   r = CUDA_CALL_NOCHECK (cuCtxSynchronize, );
@@ -1439,7 +1444,10 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 #ifndef DISABLE_ASYNC
   if (async < acc_async_noval)
 #endif
-    map_pop (dev_str);
+    {
+      if (mapnum > 0)
+	map_pop (dev_str);
+    }
 }
 
 void * openacc_get_current_cuda_context (void);

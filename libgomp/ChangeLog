@@ -1,5 +1,13 @@
 2019-01-23  Tom de Vries  <tdevries@suse.de>
 
+	PR target/PR88946
+	* plugin/plugin-nvptx.c (cuda_map_destroy): Use CUDA_CALL_NOCHECK for
+	cuMemFree.
+	(nvptx_exec): Don't call map_push if mapnum == 0.
+	* testsuite/libgomp.oacc-c-c++-common/pr88946.c: New test.
+
+2019-01-23  Tom de Vries  <tdevries@suse.de>
+
 	PR target/88941
 	PR target/88939
 	* plugin/plugin-nvptx.c (cuda_map_destroy): Handle map->active case.
