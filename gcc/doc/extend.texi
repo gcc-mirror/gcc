@@ -213,7 +213,14 @@ statement expression is part of a larger expression then it is
 unspecified which other subexpressions of that expression have been
 evaluated except where the language definition requires certain
 subexpressions to be evaluated before or after the statement
-expression.  In any case, as with a function call, the evaluation of a
+expression.  A @code{break} or @code{continue} statement inside of
+a statement expression used in @code{while}, @code{do} or @code{for}
+loop or @code{switch} statement condition
+or @code{for} statement init or increment expressions jumps to an
+outer loop or @code{switch} statement if any (otherwise it is an error),
+rather than to the loop or @code{switch} statement in whose condition
+or init or increment expression it appears.
+In any case, as with a function call, the evaluation of a
 statement expression is not interleaved with the evaluation of other
 parts of the containing expression.  For example,
 
