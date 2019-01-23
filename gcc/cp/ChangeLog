@@ -1,3 +1,11 @@
+2019-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87893 - constexpr ctor ICE on ARM.
+	PR c++/88293 - ICE with comma expression.
+	* constexpr.c (initialized_type): Don't shortcut non-void type.
+	Handle COMPOUND_EXPR.
+	(cxx_eval_outermost_constant_expr): Return early for void type.
+
 2019-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88949
