@@ -30,12 +30,12 @@ void acc_kernels()
   /* { dg-note {'j' was declared here} {} { target *-*-* } .-2 } */
   /* { dg-note {'k' was declared here} {} { target *-*-* } .-3 } */
 
-  #pragma acc kernels num_gangs(i) /* { dg-warning "is used uninitialized" } */
+  #pragma acc kernels num_gangs(i) /* { dg-warning "is used uninitialized" "TODO" { xfail *-*-* } } */
   ;
 
-  #pragma acc kernels num_workers(j) /* { dg-warning "is used uninitialized" } */
+  #pragma acc kernels num_workers(j) /* { dg-warning "is used uninitialized" "TODO" { xfail *-*-* } } */
   ;
 
-  #pragma acc kernels vector_length(k) /* { dg-warning "is used uninitialized" } */
+  #pragma acc kernels vector_length(k) /* { dg-warning "is used uninitialized" "TODO" { xfail *-*-* } } */
   ;
 }

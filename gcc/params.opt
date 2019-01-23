@@ -795,7 +795,7 @@ Common Joined UInteger Var(param_min_vect_loop_bound) Param Optimization
 If -ftree-vectorize is used, the minimal loop bound of a loop to be considered for vectorization.
 
 -param=openacc-kernels=
-Common Joined Enum(openacc_kernels) Var(param_openacc_kernels) Init(OPENACC_KERNELS_PARLOOPS) Param
+Common Joined Enum(openacc_kernels) Var(param_openacc_kernels) Init(OPENACC_KERNELS_DECOMPOSE) Param
 --param=openacc-kernels=[decompose|parloops]	Specify mode of OpenACC 'kernels' constructs handling.
 
 Enum

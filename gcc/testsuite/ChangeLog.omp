@@ -1,3 +1,34 @@
+2019-01-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/classify-kernels-unparallelized.c: Update.
+	* c-c++-common/goacc/classify-kernels.c: Likewise.
+	* c-c++-common/goacc/classify-parallel.c: Likewise.
+	* c-c++-common/goacc/classify-routine.c: Likewise.
+	* c-c++-common/goacc/loop-2-kernels.c: Likewise.
+	* c-c++-common/goacc/note-parallelism-1-kernels-conditional-loop-independent_seq.c:
+	New file.
+	* c-c++-common/goacc/note-parallelism-1-kernels-loop-auto.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-1-kernels-loop-independent_seq.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-1-kernels-loops.c: Likewise.
+	* c-c++-common/goacc/note-parallelism-1-kernels-straight-line.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-combined-kernels-loop-auto.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-combined-kernels-loop-independent_seq.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-kernels-conditional-loop-independent_seq.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-kernels-loop-auto.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-kernels-loop-independent_seq.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-kernels-loops.c: Likewise.
+	* c-c++-common/goacc/note-parallelism.c: Likewise.
+	* c-c++-common/goacc/routine-1.c: Likewise.
+	* c-c++-common/goacc/uninit-dim-clause.c: Likewise.
+
 2019-01-30  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-c++-common/goacc/kernels-1.c: Add

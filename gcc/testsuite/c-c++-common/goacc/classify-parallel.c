@@ -1,5 +1,5 @@
 /* Check offloaded function's attributes and classification for OpenACC
-   parallel.  */
+   'parallel'.  */
 
 /* { dg-additional-options "-O2" }
    { dg-additional-options "-fopt-info-optimized-omp" }
