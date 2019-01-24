@@ -547,7 +547,7 @@ mangle_path (char const *base)
   /* Convert '/' to '#', convert '..' to '^',
      convert ':' to '~' on DOS based file system.  */
   const char *probe;
-  char *buffer = (char *)xmalloc (strlen (base) + 10);
+  char *buffer = (char *)xmalloc (strlen (base) + 1);
   char *ptr = buffer;
 
 #if HAVE_DOS_BASED_FILE_SYSTEM

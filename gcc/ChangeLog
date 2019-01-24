@@ -1,3 +1,11 @@
+2019-01-24  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/88994
+	* gcov-io.c (mangle_path): Do not allocate a bigger buffer,
+	result will be always smaller or equal to the original.
+	* gcov.c (mangle_name): Fix else branch where we should
+	also copy to PTR and shift the pointer.
+
 2019-01-24  Xiong Hu Luo  <luoxhu@linux.vnet.ibm.com>
 
 	* tree-ssa-dom.c (test_for_singularity): fix a comment typo.
