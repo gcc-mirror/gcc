@@ -285,8 +285,26 @@ gfc_conv_descriptor_rank (tree desc)
 
   dtype = gfc_conv_descriptor_dtype (desc);
   tmp = gfc_advance_chain (TYPE_FIELDS (TREE_TYPE (dtype)), GFC_DTYPE_RANK);
-  gcc_assert (tmp!= NULL_TREE
+  gcc_assert (tmp != NULL_TREE
 	      && TREE_TYPE (tmp) == signed_char_type_node);
+  return fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (tmp),
+			  dtype, tmp, NULL_TREE);
+}
+
+
+/* Return the element length from the descriptor dtype field.  */
+
+tree
+gfc_conv_descriptor_elem_len (tree desc)
+{
+  tree tmp;
+  tree dtype;
+
+  dtype = gfc_conv_descriptor_dtype (desc);
+  tmp = gfc_advance_chain (TYPE_FIELDS (TREE_TYPE (dtype)),
+			   GFC_DTYPE_ELEM_LEN);
+  gcc_assert (tmp != NULL_TREE
+	      && TREE_TYPE (tmp) == size_type_node);
   return fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (tmp),
 			  dtype, tmp, NULL_TREE);
 }

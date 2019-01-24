@@ -169,6 +169,7 @@ tree gfc_conv_descriptor_offset_get (tree);
 tree gfc_conv_descriptor_span_get (tree);
 tree gfc_conv_descriptor_dtype (tree);
 tree gfc_conv_descriptor_rank (tree);
+tree gfc_conv_descriptor_elem_len (tree);
 tree gfc_conv_descriptor_attribute (tree);
 tree gfc_get_descriptor_dimension (tree);
 tree gfc_conv_descriptor_stride_get (tree, tree);
