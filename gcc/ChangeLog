@@ -1,3 +1,9 @@
+2019-01-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/88469
+	* profile-count.h (profile_count): On ARM systems using GCC 6/7/8
+	force the alignment of m_val.
+
 2019-01-24  Richard Biener  <rguenther@suse.de>
 
 	PR lto/87187
