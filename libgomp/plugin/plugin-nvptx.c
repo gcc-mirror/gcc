@@ -1936,6 +1936,12 @@ GOMP_OFFLOAD_fini_device (int n)
       instantiated_devices--;
     }
 
+  if (instantiated_devices == 0)
+    {
+      free (ptx_devices);
+      ptx_devices = NULL;
+    }
+
   pthread_mutex_unlock (&ptx_dev_lock);
   return true;
 }
