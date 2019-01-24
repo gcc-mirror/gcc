@@ -1,3 +1,8 @@
+2019-01-24  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/88998
+	* g++.dg/pr88998.c: New test.
+
 2019-01-24  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
