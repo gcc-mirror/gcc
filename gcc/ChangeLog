@@ -1,3 +1,13 @@
+2019-01-24  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/88948
+	* rtl.h (prepare_copy_insn): New prototype.
+	* gcse.c (prepare_copy_insn): New function, split out from
+	process_insert_insn.
+	(process_insert_insn): Use prepare_copy_insn.
+	* store-motion.c (replace_store_insn): Use prepare_copy_insn
+	instead of gen_move_insn.
+
 2019-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/89006
