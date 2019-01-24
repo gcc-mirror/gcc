@@ -829,6 +829,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
       && TREE_CODE (value) == CONSTRUCTOR)
     value = braced_list_to_string (type, value);
 
+  current_ref_temp_count = 0;
   value = extend_ref_init_temps (decl, value, cleanups);
 
   /* In C++11 constant expression is a semantic, not syntactic, property.

@@ -11174,9 +11174,21 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
       && (TREE_STATIC (decl) || CP_DECL_THREAD_LOCAL_P (decl)))
     {
       /* Namespace-scope or local static; give it a mangled name.  */
-      /* FIXME share comdat with decl?  */
+
+      /* If an initializer is visible to multiple translation units, those
+	 translation units must agree on the addresses of the
+	 temporaries. Therefore the temporaries must be given a consistent name
+	 and vague linkage. The mangled name of a temporary is the name of the
+	 non-temporary object in whose initializer they appear, prefixed with
+	 GR and suffixed with a sequence number mangled using the usual rules
+	 for a seq-id. Temporaries are numbered with a pre-order, depth-first,
+	 left-to-right walk of the complete initializer.  */
 
       TREE_STATIC (var) = TREE_STATIC (decl);
+      TREE_PUBLIC (var) = TREE_PUBLIC (decl);
+      if (vague_linkage_p (decl))
+	comdat_linkage (var);
+
       CP_DECL_THREAD_LOCAL_P (var) = CP_DECL_THREAD_LOCAL_P (decl);
       set_decl_tls_model (var, DECL_TLS_MODEL (decl));
 

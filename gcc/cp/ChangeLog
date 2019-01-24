@@ -1,3 +1,13 @@
+2019-01-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89001 - mangling of reference temporaries
+	* cp-tree.h (struct saved_scope): Add ref_temp_count.
+	(current_ref_temp_count): New macro.
+	* mangle.c (mangle_ref_init_variable): Use it.
+	* typeck2.c (store_init_value): Clear it.
+	* call.c (make_temporary_var_for_ref_to_temp): Copy public and
+	comdat.
+
 2019-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88976
