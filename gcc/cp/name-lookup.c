@@ -3482,7 +3482,8 @@ check_module_override (tree decl, tree mvec, bool is_friend,
 	      type = STAT_TYPE (bind);
 	    bind = STAT_VISIBLE (bind);
 	  }
-	// FIXME:Deal with shadowed type?
+
+	// FIXME: Deal with shadowed type?
 	gcc_checking_assert (!type);
 
 	for (ovl_iterator iter (bind); iter; ++iter)
@@ -3928,7 +3929,7 @@ extract_module_binding (tree &binding, tree &name_r, tree &type_r,
     gcc_checking_assert (slot != &binding || anticipated_builtin_p (*slot));
   type_r = type;
 
-  // FIXME:Don't skip the hidden friends!
+  // FIXME: Don't skip the hidden friends!
   return ovl_skip_hidden (value);
 }
 
@@ -4035,7 +4036,7 @@ get_binding_or_decl (tree ctx, tree name, unsigned mod)
 	  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (ctx))
 	    binding = member_vec_binary_search (member_vec, name);
 	  else
-	    // FIXME:Force such classes to have a member vec
+	    // FIXME: Force such classes to have a member vec
 	    for (tree decl = TYPE_FIELDS (ctx); decl; decl = DECL_CHAIN (decl))
 	      if (name == DECL_NAME (decl))
 		return decl;
@@ -6163,7 +6164,7 @@ finish_local_using_decl (tree decl, tree scope, tree name)
     }
   else
     /* Install the new binding.  */
-    // FIXME short circuit P_L_B
+    // FIXME: Short circuit P_L_B
     push_local_binding (name, value, true);
 
   if (!type)
