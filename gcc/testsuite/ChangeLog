@@ -1,5 +1,14 @@
 2019-01-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/88976
+	* c-c++-common/gomp/cancel-2.c: New test.
+	* gcc.dg/gomp/cancel-1.c: New test.
+	* g++.dg/gomp/cancel-1.C: New test.
+	* g++.dg/gomp/cancel-2.C: New test.
+	* g++.dg/gomp/cancel-3.C: New test.
+
+2019-01-24  Jakub Jelinek  <jakub@redhat.com>
+
 	PR tree-optimization/89027
 	* gfortran.dg/gomp/pr89027.f90: New test.
 

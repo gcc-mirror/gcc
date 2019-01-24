@@ -1,3 +1,9 @@
+2019-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88976
+	* c-typeck.c (c_finish_omp_cancel): Diagnose more than one if
+	on #pragma omp cancel with different modifiers.
+
 2019-01-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c/51628
