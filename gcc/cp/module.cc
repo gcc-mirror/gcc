@@ -5014,7 +5014,7 @@ trees_out::core_vals (tree t)
 	default:
 	  break;
 	case VAR_DECL:
-	  // FIXME:Perhaps always write DECL_INITIAL?
+	  // FIXME: Perhaps always write DECL_INITIAL?
 	  if (DECL_CONTEXT (t)
 	      && TREE_CODE (DECL_CONTEXT (t)) != FUNCTION_DECL)
 	    break;
@@ -5139,7 +5139,6 @@ trees_out::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_EXP))
     {
-      // FIXME:Write locus.
       if (streaming_p ())
 	state->write_location (*this, t->exp.locus);
       bool vl = TREE_CODE_CLASS (code) == tcc_vl_exp;
@@ -5165,7 +5164,7 @@ trees_out::core_vals (tree t)
       WT (t->block.supercontext);
       chained_decls (t->block.vars);
       WT (t->block.abstract_origin);
-      // FIXME nonlocalized_vars, fragment_origin, fragment_chain
+      // FIXME: nonlocalized_vars, fragment_origin, fragment_chain
       WT (t->block.subblocks);
       WT (t->block.chain);
     }
@@ -5271,7 +5270,7 @@ trees_out::core_vals (tree t)
       break;
 
     case TS_CP_ARGUMENT_PACK_SELECT:
-      gcc_unreachable (); // FIXME.  Only reachable when we stream instantiations
+      gcc_unreachable (); // FIXME:  Only reachable when we stream instantiations
       break;
 
     case TS_CP_TRAIT_EXPR:
@@ -5297,7 +5296,7 @@ trees_out::core_vals (tree t)
     case TS_CP_TEMPLATE_INFO:
       // TI_TEMPLATE -> TYPE
       WT (t->common.chain); // TI_ARGS
-      // FIXME typedefs_needing_access_checking
+      // FIXME: typedefs_needing_access_checking
       break;
 
     case TS_CP_CONSTRAINT_INFO:
@@ -5595,7 +5594,7 @@ trees_in::core_vals (tree t)
       RT (t->block.supercontext);
       t->block.vars = chained_decls ();
       RT (t->block.abstract_origin);
-      // FIXME nonlocalized_vars, fragment_origin, fragment_chain
+      // FIXME: nonlocalized_vars, fragment_origin, fragment_chain
       RT (t->block.subblocks);
       RT (t->block.chain);
     }
@@ -5715,7 +5714,7 @@ trees_in::core_vals (tree t)
     case TS_CP_TEMPLATE_INFO:
       // TI_TEMPLATE -> TYPE
       RT (t->common.chain); // TI_ARGS
-      // FIXME typedefs_needing_access_checking
+      // FIXME: typedefs_needing_access_checking
       break;
 
     case TS_CP_CONSTRAINT_INFO:
@@ -5842,7 +5841,7 @@ trees_out::lang_type_vals (tree t)
 #define WT(X) (tree_node (X))
   if (streaming_p ())
     WU (lang->align);
-  // FIXME:This is a property of the befriender
+  // FIXME: This is a property of the befriender
   WT (lang->befriending_classes);
 #undef WU
 #undef WT
@@ -6187,7 +6186,7 @@ trees_out::ref_node (tree t)
 
 /* CTX is a context of some node.  NEED_CONTENTS is true if we're
    ultimately looking for something inside CTX.  */
-// FIXME:return indicator if we discoverd a voldemort
+// FIXME: return indicator if we discoverd a voldemort
 void
 trees_out::tree_ctx (tree ctx, bool need_contents, tree inner_decl)
 {
@@ -6354,7 +6353,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 		/* If the owning function is not within
 		   dep_hash->current, it is also a voldemort.  */
 
-		// FIXME: for now, not nested of nested.  Here it'd be
+		// FIXME: For now, not nested of nested.  Here it'd be
 		// nice to just call the context dumper and get some
 		// kind of result back 'hey, you're voldemorty'
 		gcc_assert (TREE_CODE (CP_DECL_CONTEXT (ctx)) == NAMESPACE_DECL);
@@ -6502,7 +6501,7 @@ trees_out::tree_value (tree t, walk_kind walk)
       u (TREE_CODE (t));
       if (walk != WK_mergeable)
 	start (t);
-      // FIXME:If mergeable, mark function parms etc as mergeable too
+      // FIXME: If mergeable, mark function parms etc as mergeable too
     }
 
   int tag = insert (t, walk);
@@ -6604,9 +6603,8 @@ trees_out::tree_node (tree t)
 	i (tt_binfo);
       tree_binfo (t, 0, false);
 
-      // FIXME:IS this true?
-      /* If the dominating type was an import, we will not have put this
-	 in the map.  Do that now.  */
+      /* If the dominating type is not in this SCC, we will not have
+	 put this in the map.  Do that now.  */
       int tag = TREE_VISITED (t) ? 0 : insert (t);
       if (streaming_p ())
 	{
@@ -6890,13 +6888,13 @@ trees_in::tree_node ()
 	else if (TREE_CODE (DECL_TEMPLATE_RESULT (tpl)) != TYPE_DECL)
 	  {
 	    res = instantiate_template (tpl, args, tf_error);
-	    mark_used (res, tf_none); // FIXME:this may be too early
+	    mark_used (res, tf_none); // FIXME: This may be too early
 	  }
 	else
 	  {
 	    res = lookup_template_class (tpl, args, NULL_TREE, NULL_TREE,
 					 0, tf_error);
-	    complete_type (res); // FIXME:Probably too early
+	    complete_type (res); // FIXME: Probably too early
 	    res = TYPE_NAME (res);
 	  }
 	kind = "Instantiation";
@@ -7049,7 +7047,7 @@ trees_in::tree_node ()
 		existing = res;
 		res = start (c);
 	      }
-	    // FIXME:Mark function parms as mergeable during this read in.
+	    // FIXME: Mark function parms as mergeable during this read in.
 	  }
 	else
 	  {
@@ -7243,7 +7241,7 @@ trees_out::tpl_parms (tree parms)
 
 	  if (TREE_CODE (val) == TEMPLATE_TYPE_PARM
 	      && TEMPLATE_TYPE_PARAMETER_PACK (val))
-	    gcc_unreachable (); // FIXME:something
+	    gcc_unreachable (); // FIXME: Something
 
 	  tree_node (TREE_TYPE (val));
 	}
@@ -7363,7 +7361,7 @@ trees_out::tree_mergeable (tree decl)
       break;
 
     default:
-      // FIXME:More cases
+      // FIXME: More cases
       gcc_unreachable ();
     }
 
@@ -7427,7 +7425,7 @@ trees_in::tree_mergeable (bool mod_mergeable)
 	  break;
 
 	default:
-	  // FIXME:More cases
+	  // FIXME: More cases
 	  set_overrun ();
 	}
     }
@@ -7454,7 +7452,7 @@ trees_in::tree_mergeable (bool mod_mergeable)
 }
 
 /* Rebuild a streamed in type.  */
-// FIXME: c++-specific types are not in the canonical type hash.
+// FIXME: C++-specific types are not in the canonical type hash.
 // Perhaps that should be changed?
 
 tree
@@ -7511,7 +7509,7 @@ trees_in::finish_type (tree type)
 
       /* CANONICAL_TYPE is either already correctly remapped.  Or
          correctly already us.  */
-      // FIXME:Are we sure about this?
+      // FIXME: Are we sure about this?
     found_variant:;
     }
   else if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
@@ -7528,7 +7526,7 @@ trees_in::finish_type (tree type)
   else if (!TYPE_STRUCTURAL_EQUALITY_P (type)
 	   && !RECORD_OR_UNION_CODE_P (TREE_CODE (type))
 	   && TREE_CODE (type) != ENUMERAL_TYPE
-	   && !TYPE_NAME (type)) // FIXME:? why this check?
+	   && !TYPE_NAME (type)) // FIXME: why this check?
     {
       gcc_assert (TYPE_ALIGN (type));
       hashval_t hash = type_hash_canon_hash (type);
@@ -8989,7 +8987,7 @@ int module_mapper::translate_include (cpp_reader *reader, line_maps *lmaps,
 
   int action = 0;
   const char *diversion = NULL;
-  // FIXME:Search response?
+  // FIXME: Search response?
   switch (response_word (loc, "IMPORT", "INCLUDE", NULL))
     {
     default:
@@ -9377,7 +9375,7 @@ module_state::read_partitions (unsigned count)
 bool
 module_state::is_matching_decl (tree existing, tree decl)
 {
-  // FIXME:Inhibit TYPENAME_TYPE resolution, all the way down!
+  // FIXME: Inhibit TYPENAME_TYPE resolution, all the way down!
   if (!comptypes (TREE_TYPE (existing), TREE_TYPE (decl),
 		  COMPARE_STRUCTURAL))
     {
@@ -9506,7 +9504,7 @@ module_state::read_function_def (trees_in &in, tree decl)
     }
   else if (odr < 0)
     {
-      // FIXME: check matching defn
+      // FIXME: Check matching defn
     }
   
   return true;
@@ -9539,7 +9537,7 @@ module_state::read_var_def (trees_in &in, tree decl)
     }
   else if (odr < 0)
     {
-      // FIXME: check matching defn
+      // FIXME: Check matching defn
     }
 
   return true;
@@ -9694,7 +9692,7 @@ module_state::write_class_def (trees_out &out, tree defn)
 
       /* TYPE_CONTAINS_VPTR_P looks at the vbase vector, which the
 	 reader won't know at this point.  */
-      // FIXME Think about better ordering
+      // FIXME: Think about better ordering
       int has_vptr = TYPE_CONTAINS_VPTR_P (type);
       if (out.streaming_p ())
 	out.i (has_vptr);
@@ -9824,7 +9822,7 @@ module_state::read_class_def (trees_in &in, tree defn)
 	}
     }
 
-  // FIXME:read more stuff!
+  // FIXME: Read more stuff!
   // lang->nested_udts
 
   int odr = is_skippable_defn (in, type, TYPE_SIZE (type) != NULL_TREE);
@@ -9856,7 +9854,7 @@ module_state::read_class_def (trees_in &in, tree defn)
     }
   else if (odr < 0)
     {
-      // FIXME: check matching defn
+      // FIXME: Check matching defn
     }
 
   if (TYPE_LANG_SPECIFIC (type))
@@ -10791,8 +10789,8 @@ module_state::read_location (bytes_in &sec) const
 }
 
 /* Prepare the span adjustments.  */
-// FIXME The location streaming does not consider running out of
-// locations in either the module interface, not in the importers.
+// FIXME: The location streaming does not consider running out of
+// locations in either the module interface, nor in the importers.
 // At least we fail with a hard error though.
 
 unsigned
@@ -11855,7 +11853,7 @@ module_state::read_macros ()
 }
 
 /* Install the macro name table.  */
-// FIXME Deal with clobbering controling macros
+// FIXME: Deal with clobbering controlling macros
 
 void
 module_state::install_macros ()
@@ -12261,7 +12259,7 @@ module_state_config::get_opts ()
       const cl_decoded_option *opt = &save_decoded_options[ix];
       if (opt->opt_index >= N_OPTS)
 	continue;
-      // FIXME:There's probably a better way to get options we care
+      // FIXME: There's probably a better way to get options we care
       // about?  What does LTO do?
       const char *text = opt->orig_option_with_args_text;
 
@@ -13139,6 +13137,7 @@ get_module_owner (tree decl)
 }
 
 /* Is it permissible to redeclare an entity with owner FROM.  */
+
 bool
 module_may_redeclare (unsigned from)
 {
@@ -13164,7 +13163,7 @@ set_module_owner (tree decl)
     /* We can be called when modules are not enabled.  */
     return;
 
-  // FIXME: check ill-formed linkage
+  // FIXME: Check ill-formed linkage
 
   if ((*modules)[MODULE_PURVIEW])
     {
@@ -13318,9 +13317,9 @@ module_state::do_import (char const *fname, cpp_reader *reader)
   return ok;
 }
 
-/* Import this module now.  Fatal error on failure.  LAZY is
-   true if we're a lazy pending imports (which will have preserved
-   the line map already).  */
+/* Import this module now.  Fatal error on failure.  LAZY is true if
+   we're a lazy pending imports (which will have preserved the line
+   map already).  */
 
 void
 module_state::direct_import (cpp_reader *reader, bool lazy)
@@ -13411,7 +13410,7 @@ module_state::freeze_an_elf ()
     dump () && dump ("No module available for freezing");
 }
 
-/* *SLOT is a lazy binding in namepsace NS named ID.  Load it, or die
+/* *SLOT is a lazy binding in namespace NS named ID.  Load it, or die
    trying.  */
 
 bool
