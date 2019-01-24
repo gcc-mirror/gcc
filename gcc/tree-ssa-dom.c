@@ -1929,7 +1929,7 @@ test_for_singularity (gimple *stmt, gcond *dummy_cond,
 
    3- Very simple redundant store elimination is performed.
 
-   4- We can simpify a condition to a constant or from a relational
+   4- We can simplify a condition to a constant or from a relational
       condition to an equality condition.  */
 
 edge
