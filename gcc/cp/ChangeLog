@@ -1,3 +1,11 @@
+2019-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88976
+	* semantics.c (finish_omp_cancel): Diagnose more than one if
+	on #pragma omp cancel with different modifiers.  Use
+	maybe_convert_cond when not in template or build_x_binary_op
+	otherwise.
+
 2019-01-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88757 - qualified name treated wrongly as type.
