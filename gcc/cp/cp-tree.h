@@ -1640,6 +1640,7 @@ struct GTY(()) saved_scope {
   /* If non-zero, implicit "omp declare target" attribute is added into the
      attribute lists.  */
   int omp_declare_target_attribute;
+  int ref_temp_count;
 
   struct stmt_tree_s x_stmt_tree;
 
@@ -1695,6 +1696,8 @@ extern GTY(()) struct saved_scope *scope_chain;
 #define processing_explicit_instantiation scope_chain->x_processing_explicit_instantiation
 
 #define in_discarded_stmt scope_chain->discarded_stmt
+
+#define current_ref_temp_count scope_chain->ref_temp_count
 
 /* RAII sentinel to handle clearing processing_template_decl and restoring
    it when done.  */
