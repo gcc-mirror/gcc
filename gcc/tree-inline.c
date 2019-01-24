@@ -2204,7 +2204,8 @@ add_clobbers_to_eh_landing_pad (basic_block bb, copy_body_data *id)
 	&& !TREE_THIS_VOLATILE (var)
 	&& !DECL_HAS_VALUE_EXPR_P (var)
 	&& !is_gimple_reg (var)
-	&& auto_var_in_fn_p (var, id->src_fn))
+	&& auto_var_in_fn_p (var, id->src_fn)
+	&& !lookup_attribute ("omp simd array", DECL_ATTRIBUTES (var)))
       {
 	tree *t = id->decl_map->get (var);
 	if (!t)
