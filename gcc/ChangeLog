@@ -1,6 +1,6 @@
 2019-01-24  Uroš Bizjak  <ubizjak@gmail.com>
 
-	PR target/88948
+	PR rtl-optimization/88948
 	* rtl.h (prepare_copy_insn): New prototype.
 	* gcse.c (prepare_copy_insn): New function, split out from
 	process_insert_insn.
