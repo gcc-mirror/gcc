@@ -9,19 +9,23 @@ program main
 
   !$acc kernels copyin(a(1:N)) copy(sum)
 
+  ! converted to "oacc_kernels"
   !$acc loop
   do i = 1, N
     sum = sum + a(i)
   end do
 
+  ! converted to "oacc_parallel_kernels_gang_single"
   sum = sum + 1
   a(1) = a(1) + 1
 
-  !$acc loop
+  ! converted to "oacc_parallel_kernels_parallelized"
+  !$acc loop independent
   do i = 1, N
     sum = sum + a(i)
   end do
 
+  ! converted to "oacc_kernels"
   if (sum .gt. 10) then
     !$acc loop
     do i = 1, N
@@ -29,8 +33,8 @@ program main
     end do
   end if
 
-  !$acc loop
-  ! { dg-bogus "region contains gang partitoned code but is not gang partitioned" "gang partitioned" { xfail *-*-* } .-1 }
+  ! converted to "oacc_kernels"
+  !$acc loop auto
   do i = 1, N
     sum = sum + a(i)
   end do
@@ -42,15 +46,13 @@ end program main
 ! parallel regions.
 ! { dg-final { scan-tree-dump-times "oacc_data_kernels" 1 "convert_oacc_kernels" } }
 
-! The three unconditional loop regions are parallelized, the sequential part
-! in between and the conditional loop are made gang-single.
-! { dg-final { scan-tree-dump-times "oacc_parallel_kernels_parallelized" 3 "convert_oacc_kernels" } }
-! { dg-final { scan-tree-dump-times "oacc_parallel_kernels_gang_single" 2 "convert_oacc_kernels" } }
+! As noted in the comments above, we get one gang-single serial region; one
+! parallelized loop region; and three "old-style" kernel regions.
+! { dg-final { scan-tree-dump-times "oacc_parallel_kernels_gang_single" 1 "convert_oacc_kernels" } }
+! { dg-final { scan-tree-dump-times "oacc_parallel_kernels_parallelized" 1 "convert_oacc_kernels" } }
+! { dg-final { scan-tree-dump-times "oacc_kernels" 3 "convert_oacc_kernels" } }
 
 ! Each of the parallel regions is async, and there is a final call to
 ! __builtin_GOACC_wait.
 ! { dg-final { scan-tree-dump-times "oacc_parallel_kernels.* async\(-1\)" 5 "convert_oacc_kernels" } }
 ! { dg-final { scan-tree-dump-times "__builtin_GOACC_wait" 1 "convert_oacc_kernels" } }
-
-! Check that the original kernels region is removed.
-! { dg-final { scan-tree-dump-not "oacc_kernels" "convert_oacc_kernels" } }

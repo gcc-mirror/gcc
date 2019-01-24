@@ -1,3 +1,15 @@
+2019-01-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-oacc-kernels.c (adjust_region_code_walk_stmt_fn)
+	(adjust_region_code): New functions.
+	(make_loops_gang_single): Update.
+	(make_gang_single_region): Rename to...
+	(make_region_seq): ... this, and update.
+	(make_gang_parallel_loop_region): Rename to...
+	(make_region_loop_nest): ... this, and update.
+	(is_unconditional_oacc_for_loop): Remove stmt parameter and check.
+	(decompose_kernels_region_body): Update.
+
 2019-01-21  Gergö Barany  <gergo@codesourcery.com>
 
 	* omp-oacc-kernels.c (add_async_clauses_and_wait): New function...
