@@ -1,8 +1,13 @@
+2019-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89027
+	* gfortran.dg/gomp/pr89027.f90: New test.
+
 2019-01-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/88929
-	* gfortran.dg/ISO_Fortran_binding_3.f90 : New test
-	* gfortran.dg/ISO_Fortran_binding_3.c : Subsidiary source.
+	* gfortran.dg/ISO_Fortran_binding_3.f90: New test.
+	* gfortran.dg/ISO_Fortran_binding_3.c: Subsidiary source.
 
 2019-01-23  H.J. Lu  <hongjiu.lu@intel.com>
 
