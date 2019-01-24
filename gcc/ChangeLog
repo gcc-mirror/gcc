@@ -1,5 +1,9 @@
 2019-01-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/89006
+	* config/i386/i386.c (ix86_pic_register_p): Return true for
+	UNSPEC_SET_GOT too.
+
 	PR tree-optimization/88964
 	* gimple-loop-interchange.cc (loop_cand::analyze_induction_var): Also
 	punt if HONOR_SNANS (chrec).
