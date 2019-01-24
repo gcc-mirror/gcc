@@ -12,19 +12,22 @@ main (void)
   unsigned int sum = 1;
 
 #pragma acc kernels copyin(a[0:N]) copy(sum)
-  /* { dg-bogus "region contains gang partitoned code but is not gang partitioned" "gang partitioned" { xfail *-*-* } .-1 } */
   {
+    /* converted to "oacc_kernels" */
     #pragma acc loop
     for (i = 0; i < N; ++i)
       sum += a[i];
 
+    /* converted to "oacc_parallel_kernels_gang_single" */
     sum++;
     a[0]++;
 
-    #pragma acc loop
+    /* converted to "oacc_parallel_kernels_parallelized" */
+    #pragma acc loop independent
     for (i = 0; i < N; ++i)
       sum += a[i];
 
+    /* converted to "oacc_kernels" */
     if (sum > 10)
       { 
         #pragma acc loop
@@ -32,7 +35,8 @@ main (void)
           sum += a[i];
       }
 
-    #pragma acc loop
+    /* converted to "oacc_kernels" */
+    #pragma acc loop auto
     for (i = 0; i < N; ++i)
       sum += a[i];
   }
@@ -44,10 +48,11 @@ main (void)
    parallel regions.  */ 
 /* { dg-final { scan-tree-dump-times "oacc_data_kernels" 1 "convert_oacc_kernels" } } */
 
-/* The three unconditional loop regions are parallelized, the sequential
-   part in between and the conditional loop are made gang-single.  */
-/* { dg-final { scan-tree-dump-times "oacc_parallel_kernels_parallelized" 3 "convert_oacc_kernels" } } */
-/* { dg-final { scan-tree-dump-times "oacc_parallel_kernels_gang_single" 2 "convert_oacc_kernels" } } */
+/* As noted in the comments above, we get one gang-single serial region; one
+   parallelized loop region; and three "old-style" kernel regions. */
+/* { dg-final { scan-tree-dump-times "oacc_parallel_kernels_gang_single" 1 "convert_oacc_kernels" } } */
+/* { dg-final { scan-tree-dump-times "oacc_parallel_kernels_parallelized" 1 "convert_oacc_kernels" } } */
+/* { dg-final { scan-tree-dump-times "oacc_kernels" 3 "convert_oacc_kernels" } } */
 
 /* Each of the parallel regions is async, and there is a final call to
    __builtin_GOACC_wait.  */

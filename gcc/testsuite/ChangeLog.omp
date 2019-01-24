@@ -1,3 +1,10 @@
+2019-01-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/kernels-conversion.c: Adjust test.
+	* gfortran.dg/goacc/kernels-conversion.f95: Likewise.
+	* c-c++-common/goacc/kernels-decompose-1.c: New file.
+	* gfortran.dg/goacc/kernels-decompose-1.f95: Likewise.
+
 2019-01-21  Gergö Barany  <gergo@codesourcery.com>
 
 	* c-c++-common/goacc/kernels-conversion.c: Test automatically generated
