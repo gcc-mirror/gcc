@@ -603,7 +603,16 @@ write_ts_decl_common_tree_pointers (struct output_block *ob, tree expr,
      special handling in LTO, it must be handled by streamer hooks.  */
 
   stream_write_tree (ob, DECL_ATTRIBUTES (expr), ref_p);
-  stream_write_tree (ob, DECL_ABSTRACT_ORIGIN (expr), ref_p);
+
+  /* On non-early-LTO enabled targets we claim we compiled with -g0
+     but dwarf2out still did its set_decl_origin_self game fooling
+     itself late.  Und that here since we won't have access to the
+     early generated abstract DIEs.  */
+  tree ao = DECL_ABSTRACT_ORIGIN (expr);
+  if (debug_info_level == DINFO_LEVEL_NONE
+      && ao == expr)
+    ao = NULL_TREE;
+  stream_write_tree (ob, ao, ref_p);
 
   if ((VAR_P (expr) || TREE_CODE (expr) == PARM_DECL)
       && DECL_HAS_VALUE_EXPR_P (expr))
