@@ -1,3 +1,12 @@
+2019-01-24  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89008
+	* tree-ssa-reassoc.c (eliminate_using_constants): For * 0 do
+	not leave another stray operand.
+
 2019-01-22  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/88938
