@@ -1,5 +1,12 @@
 2019-01-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/89015
+	* tree-nested.c (convert_nonlocal_reference_stmt,
+	convert_local_reference_stmt, convert_tramp_reference_stmt,
+	convert_gimple_call) <case GIMPLE_OMP_TEAMS>: Treat
+	gimple_omp_teams_host teams stmts like GIMPLE_OMP_PARALLEL
+	or GIMPLE_OMP_TASK.
+
 	PR tree-optimization/89027
 	* tree-inline.c (add_clobbers_to_eh_landing_pad): Don't add clobbers
 	for "omp simd array" variables.
