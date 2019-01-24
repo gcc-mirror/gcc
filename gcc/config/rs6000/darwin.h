@@ -342,7 +342,7 @@ extern int darwin_emit_branch_islands;
   ((CONSTANT_P (X)						\
     && reg_classes_intersect_p ((CLASS), FLOAT_REGS))		\
    ? NO_REGS							\
-   : ((GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == HIGH)	\
+   : ((SYMBOL_REF_P (X) || GET_CODE (X) == HIGH)		\
       && reg_class_subset_p (BASE_REGS, (CLASS)))		\
    ? BASE_REGS							\
    : (GET_MODE_CLASS (GET_MODE (X)) == MODE_INT			\

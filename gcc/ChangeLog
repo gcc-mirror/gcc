@@ -1,3 +1,109 @@
+2019-01-24  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/altivec.md (build_vector_mask_for_load): Use MEM_P.
+	* config/rs6000/constraints.md (Q constraint): Use REG_P.
+	* config/rs6000/darwin.h (PREFERRED_RELOAD_CLASS): Use SYMBOL_REF_P.
+	* config/rs6000/freebsd64.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P): Use
+	SYMBOL_REF_P, CONST_INT_P and CONST_DOUBLE_P.
+	* config/rs6000/linux64.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P): Likewise.
+	* config/rs6000/predicates.md (altivec_register_operand, vint_operand,
+	vsx_register_operand, vsx_reg_sfsubreg_ok, vfloat_operand,
+	vlogical_operand, gpc_reg_operand, int_reg_operand,
+	int_reg_operand_not_pseudo): Use SUBREG_P and HARD_REGISTER_P.
+	(ca_operand, base_reg_operand, htm_spr_reg_operand, cc_reg_operand,
+	cc_reg_not_cr0_operand, input_operand): Use SUBREG_P.
+	(save_world_operation, restore_world_operation, lmw_operation,
+	stmw_operation): Use MEM_P and REG_P.
+	(tie_operand): Use MEM_P.
+	(vrsave_operation, crsave_operation): Use REG_P.
+	(mfcr_operation, mtcrf_operation): Use REG_P and CONST_INT_P.
+	(fpr_reg_operand): Use SUBREG_P and HARD_REGISTER_NUM_P.
+	(quad_int_reg_operand): Use HARD_REGISTER_NUM_P.
+	(call_operand): Use HARD_REGISTER_P.
+	(indexed_or_indirect_operand, altivec_indexed_or_indirect_operand):
+	Use CONST_INT_P.
+	(lwa_operand): Use SUBREG_P, REG_P and CONST_INT_P.
+	* config/rs6000/rs6000-p8swap.c (insn_is_load_p, insn_is_store_p,
+	quad_aligned_load_p, replace_swapped_aligned_store,
+	recombine_lvx_pattern, replace_swapped_aligned_load,
+	recombine_stvx_pattern): Use MEM_P.
+	(const_load_sequence_p, adjust_vperm, replace_swapped_load_constant):
+	Use MEM_P and SYMBOL_REF_P.
+	(rtx_is_swappable_p): Use REG_P and CONST_INT_P.
+	(insn_is_swappable_p): Use REG_P and MEM_P.
+	(insn_is_swap_p, (alignment_mask): Use CONST_INT_P.
+	* config/rs6000/rs6000-string.c (expand_block_clear, expand_block_move):
+	Use CONST_INT_P.
+	* config/rs6000/rs6000.c (rs6000_secondary_reload, rs6000_emit_cmove):
+	Use CONST_DOUBLE_P.
+	(rs6000_output_move_128bit): Use CONST_DOUBLE_P, CONST_INT_P and
+	CONST_WIDE_INT_P.
+	(rs6000_legitimize_address): Use CONST_DOUBLE_P, CONST_INT_P,
+	CONST_WIDE_INT_P, REG_P and SYMBOL_REF_P.
+	(rs6000_emit_move): Use CONST_DOUBLE_P, CONST_INT_P, HARD_REGISTER_P,
+	HARD_REGISTER_NUM_P, MEM_P, REG_P, SUBREG_P, SYMBOL_REF_P and
+	reg_or_subregno:
+	(output_toc): Use CONST_DOUBLE_P, CONST_INT_P and SYMBOL_REF_P.
+	(easy_altivec_constant, rs6000_legitimate_offset_address_p,
+	rs6000_mode_dependent_address, rs6000_expand_mtfsf_builtin,
+	rs6000_expand_set_fpscr_rn_builtin, rs6000_expand_set_fpscr_drn_builtin,
+	rs6000_expand_unop_builtin, INT_P, rs6000_generate_compare,
+	rs6000_machopic_legitimize_pic_address, rs6000_split_logical_inner,
+	rs6000_split_logical_di): Use CONST_INT_P.
+	(rs6000_legitimize_reload_address): Use CONST_INT_P, HARD_REGISTER_P,
+	REG_P and SYMBOL_REF_P.
+	(setup_incoming_varargs, rs6000_rtx_costs): Use CONST_INT_P and MEM_P.
+	(print_operand): Use CONST_INT_P, MEM_P and REG_P.
+	(virtual_stack_registers_memory_p, rs6000_legitimate_address_p,
+	mems_ok_for_quad_peep): Use CONST_INT_P and REG_P.
+	(rs6000_secondary_reload_memory): Use CONST_INT_P and SUBREG_P.
+	(small_data_operand, print_operand_address): Use CONST_INT_P and
+	SYMBOL_REF_P.
+	(split_stack_arg_pointer_used_p): Use HARD_REGISTER_P.
+	(rs6000_init_hard_regno_mode_ok, direct_move_p):
+	Use HARD_REGISTER_NUM_P.
+	(rs6000_secondary_reload_gpr): Use HARD_REGISTER_NUM_P and MEM_P.
+	(rs6000_secondary_reload_class): Use HARD_REGISTER_NUM_P, REG_P,
+	SUBREG_P and SYMBOL_REF_P.
+	(register_to_reg_type, rs6000_secondary_reload_inner): Use SUBREG_P
+	and HARD_REGISTER_NUM_P.
+	(rs6000_adjust_vec_address): Use HARD_REGISTER_NUM_P and
+	reg_or_subregno.
+	(rs6000_adjust_cost, find_mem_ref): Use MEM_P.
+	(macho_lo_sum_memory_operand, rs6000_eliminate_indexed_memrefs): Use
+	MEM_P and REG_P.
+	(legitimate_indirect_address_p, legitimate_lo_sum_address_p,
+	registers_ok_for_quad_peep, rs6000_output_function_epilogue,
+	find_addr_reg): Use REG_P.
+	(altivec_expand_vec_perm_const): Use REG_P and SUBREG_P.
+	(rs6000_emit_le_vsx_move): Use SUBREG_P.
+	(offsettable_ok_by_alignment, constant_pool_expr_p,
+	legitimate_small_data_p, rs6000_output_dwarf_dtprel,
+	rs6000_delegitimize_address, rs6000_const_not_ok_for_debug_p,
+	rs6000_cannot_force_const_mem, rs6000_output_addr_const_extra,
+	rs6000_assemble_integer, create_TOC_reference,
+	rs6000_emit_allocate_stack, rs6000_xcoff_encode_section_info,
+	rs6000_call_aix, rs6000_call_aix): Use SYMBOL_REF_P.
+	(rs6000_split_vec_extract_var): Use reg_or_subregno.
+	* config/rs6000/rtems.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P): Use
+	CONST_DOUBLE_P, CONST_INT_P and SYMBOL_REF_P.
+	* config/rs6000/sysv4.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P): Likewise.
+	* config/rs6000/xcoff.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P): Likewise.
+	* config/rs6000/rs6000.h (RS6000_SYMBOL_REF_TLS_P): Use SYMBOL_REF_P.
+	(REGNO_OK_FOR_INDEX_P, REGNO_OK_FOR_BASE_P): Use HARD_REGISTER_NUM_P.
+	(INT_REG_OK_FOR_INDEX_P, INT_REG_OK_FOR_BASE_P): Use HARD_REGISTER_P.
+	(CONSTANT_ADDRESS_P): Use CONST_INT_P and SYMBOL_REF_P.
+	* config/rs6000/rs6000.md (define_expands strlensi, mod<mode>3
+	and cbranch<mode>4): Use CONST_INT_P.
+	(multiple define_splits): Use REG_P and SUBREG_P.
+	(define_expands call, call_value): Use MEM_P.
+	(define_expands sibcall, sibcall_value): Use CONST_INT_P and  MEM_P.
+	(define insn *mtcrfsi): Use CONST_INT_P and REG_P.
+	* config/rs6000/vsx.md (*vsx_le_perm_load_<mode>,
+	*vsx_le_perm_load_v8hi, *vsx_le_perm_load_v16qi): Use HARD_REGISTER_P
+	and HARD_REGISTER_NUM_P.
+	(multiple define_splits): Use HARD_REGISTER_NUM_P.
+
 2019-01-24  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/88948
