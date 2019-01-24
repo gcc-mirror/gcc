@@ -459,7 +459,7 @@
      allocation and the hard register destination is not in the altivec
      range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((reg_or_subregno (operands[0]) >= FIRST_PSEUDO_REGISTER)
+      && (!HARD_REGISTER_NUM_P (reg_or_subregno (operands[0]))
 	  || ALTIVEC_REGNO_P (reg_or_subregno (operands[0]))))
     {
       rtx mem_address = XEXP (mem, 0);
@@ -509,7 +509,7 @@
      allocation and the hard register destination is not in the altivec
      range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((REGNO(operands[0]) >= FIRST_PSEUDO_REGISTER)
+      && (!HARD_REGISTER_P (operands[0])
 	  || ALTIVEC_REGNO_P (REGNO(operands[0]))))
     {
       rtx mem_address = XEXP (mem, 0);
@@ -563,7 +563,7 @@
      allocation and the hard register destination is not in the altivec
      range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((REGNO(operands[0]) >= FIRST_PSEUDO_REGISTER)
+      && (!HARD_REGISTER_P (operands[0])
 	  || ALTIVEC_REGNO_P (REGNO(operands[0]))))
     {
       rtx mem_address = XEXP (mem, 0);
@@ -625,7 +625,7 @@
      allocation and the hard register destination is not in the altivec
      range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((REGNO(operands[0]) >= FIRST_PSEUDO_REGISTER)
+      && (!HARD_REGISTER_P (operands[0])
 	  || ALTIVEC_REGNO_P (REGNO(operands[0]))))
     {
       rtx mem_address = XEXP (mem, 0);
@@ -678,8 +678,8 @@
   /* Don't apply the swap optimization if we've already performed register
      allocation and the hard register source is not in the altivec range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((reg_or_subregno (operands[1]) >= FIRST_PSEUDO_REGISTER)
-          || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
+      && (!HARD_REGISTER_NUM_P (reg_or_subregno (operands[1]))
+	  || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
     {
       rtx mem_address = XEXP (mem, 0);
       enum machine_mode mode = GET_MODE (mem);
@@ -750,8 +750,8 @@
   /* Don't apply the swap optimization if we've already performed register
      allocation and the hard register source is not in the altivec range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((reg_or_subregno (operands[1]) >= FIRST_PSEUDO_REGISTER)
-          || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
+      && (!HARD_REGISTER_NUM_P (reg_or_subregno (operands[1]))
+	  || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
     {
       rtx mem_address = XEXP (mem, 0);
       enum machine_mode mode = GET_MODE (mem);
@@ -829,8 +829,8 @@
   /* Don't apply the swap optimization if we've already performed register
      allocation and the hard register source is not in the altivec range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((reg_or_subregno (operands[1]) >= FIRST_PSEUDO_REGISTER)
-          || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
+      && (!HARD_REGISTER_NUM_P (reg_or_subregno (operands[1]))
+	  || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
     {
       rtx mem_address = XEXP (mem, 0);
       enum machine_mode mode = GET_MODE (mem);
@@ -922,8 +922,8 @@
   /* Don't apply the swap optimization if we've already performed register
      allocation and the hard register source is not in the altivec range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((reg_or_subregno (operands[1]) >= FIRST_PSEUDO_REGISTER)
-          || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
+      && (!HARD_REGISTER_NUM_P (reg_or_subregno (operands[1]))
+	  || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
     {
       rtx mem_address = XEXP (mem, 0);
       enum machine_mode mode = GET_MODE (mem);

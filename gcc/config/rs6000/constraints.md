@@ -281,7 +281,7 @@ several times, or that might not access it at all."
   "Memory operand that is an offset from a register (it is usually better
 to use @samp{m} or @samp{es} in @code{asm} statements)"
   (and (match_code "mem")
-       (match_test "GET_CODE (XEXP (op, 0)) == REG")))
+       (match_test "REG_P (XEXP (op, 0))")))
 
 (define_memory_constraint "Y"
   "memory operand for 8 byte and 16 byte gpr load/store"
