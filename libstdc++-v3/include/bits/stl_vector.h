@@ -424,11 +424,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
     private:
 #if __cplusplus >= 201103L
-      static constexpr bool __use_relocate =
-	noexcept(std::__relocate_a(std::declval<pointer>(),
-				   std::declval<pointer>(),
-				   std::declval<pointer>(),
-				   std::declval<_Tp_alloc_type&>()));
+      static constexpr bool
+      _S_use_relocate()
+      {
+	return noexcept(std::__relocate_a(std::declval<pointer>(),
+					  std::declval<pointer>(),
+					  std::declval<pointer>(),
+					  std::declval<_Tp_alloc_type&>()));
+      }
 #endif
 
     protected:

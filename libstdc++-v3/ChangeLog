@@ -1,5 +1,12 @@
 2019-01-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/88840
+	* include/bits/stl_vector.h (vector::__use_relocate): Replace static
+	data member with static member function _S_use_relocate().
+	* include/bits/vector.tcc (vector::reserve, vector::_M_realloc_insert)
+	(vector::_M_default_append): Use _S_use_relocate() instead of
+	__use_relocate.
+
 	* testsuite/27_io/filesystem/path/compare/strings.cc: Only compare
 	sign of results.
 
