@@ -1,3 +1,9 @@
+2019-01-24  Richard Biener  <rguenther@suse.de>
+
+	PR lto/87187
+	* tree-streamer-out.c (write_ts_decl_common_tree_pointers):
+	When in "legacy" debug mode make sure to reset self-origins.
+
 2019-01-24  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/88994
