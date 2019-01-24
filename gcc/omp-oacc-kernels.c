@@ -59,7 +59,14 @@ along with GCC; see the file COPYING3.  If not see
    - Any sequences of other code (non-loops, non-OpenACC loops) are wrapped
      in new "gang-single" parallel regions: Worker/vector annotations are
      copied from the original kernels region if present, but num_gangs is
-     explicitly set to 1.  */
+     explicitly set to 1.
+   - Both points above only apply at the topmost level in the region, i.e.,
+     the transformation does not introduce new parallel regions inside
+     nested statement bodies.  In particular, this means that a
+     gang-parallelizable loop inside an if statement is "gang-serialized" by
+     the transformation.
+     The transformation visits loops inside such new gang-single-regions and
+     removes and warns about any gang annotations.  */
 
 /* Helper function for decompose_kernels_region_body.  If STMT contains a
    "top-level" OMP_FOR statement, returns a pointer to that statement;
@@ -122,6 +129,67 @@ top_level_omp_for_in_stmt (gimple *stmt)
   return NULL;
 }
 
+/* Helper function for make_loops_gang_single for walking the tree.  If the
+   statement indicated by GSI_P is an OpenACC for loop with a gang clause,
+   issue a warning and remove the clause.  */
+
+static tree
+visit_loops_in_gang_single_region (gimple_stmt_iterator *gsi_p,
+				   bool *handled_ops_p,
+				   struct walk_stmt_info *)
+{
+  gimple *stmt = gsi_stmt (*gsi_p);
+  tree clauses = NULL, prev_clause = NULL;
+  *handled_ops_p = false;
+
+  switch (gimple_code (stmt))
+    {
+    case GIMPLE_OMP_FOR:
+      clauses = gimple_omp_for_clauses (stmt);
+      for (tree clause = clauses; clause; clause = OMP_CLAUSE_CHAIN (clause))
+	{
+	  if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_GANG)
+	    {
+	      /* It makes no sense to have a gang clause in a gang-single
+		 region, so remove it and warn.  */
+	      warning_at (gimple_location (stmt), 0,
+			  "conditionally executed loop in kernels region"
+			  " will be executed in a single gang;"
+			  " ignoring %<gang%> clause");
+	      if (prev_clause != NULL)
+		OMP_CLAUSE_CHAIN (prev_clause) = OMP_CLAUSE_CHAIN (clause);
+	      else
+		clauses = OMP_CLAUSE_CHAIN (clause);
+
+	      break;
+	    }
+	  prev_clause = clause;
+	}
+      gimple_omp_for_set_clauses (stmt, clauses);
+      /* No need to recurse into nested statements; no loop nested inside
+	 this loop can be gang-partitioned.  */
+      *handled_ops_p = true;
+      break;
+
+    default:
+      break;
+    }
+
+  return NULL;
+}
+
+/* Visit all nested OpenACC loops in the statement indicated by GSI.  This
+   statement is expected to be inside a gang-single region.  Issue a warning
+   for any loops inside it that have gang clauses and remove the clauses.  */
+
+static void
+make_loops_gang_single (gimple_stmt_iterator gsi)
+{
+  struct walk_stmt_info wi;
+  memset (&wi, 0, sizeof (wi));
+  walk_gimple_stmt (&gsi, visit_loops_in_gang_single_region, NULL, &wi);
+}
+
 /* Construct a "gang-single" OpenACC parallel region at LOC containing the
    STMTS.  The newly created region is annotated with CLAUSES, which must
    not contain a num_gangs clause, and an additional "num_gangs(1)" clause
@@ -150,45 +218,248 @@ make_gang_single_region (location_t loc, gimple_seq stmts, tree clauses)
   return single_region;
 }
 
+/* Helper function for make_gang_parallel_loop_region.  Adds a num_gangs
+   (num_workers, vector_length) clause to the given CLAUSES, either the one
+   from the parent region (PARENT_CLAUSE) or a new one based on the loop's
+   own LOOP_CLAUSE ("gang(num: N)" or similar for workers or vectors) with
+   the given CLAUSE_CODE.  Does nothing if neither PARENT_CLAUSE nor
+   LOOP_CLAUSE exist.  Returns the new clauses.  */
+
+static tree
+add_parent_or_loop_num_clause (tree parent_clause, tree loop_clause,
+			       omp_clause_code clause_code, tree clauses)
+{
+  if (parent_clause != NULL)
+    {
+      tree num_clause = unshare_expr (parent_clause);
+      OMP_CLAUSE_CHAIN (num_clause) = clauses;
+      clauses = num_clause;
+    }
+  else if (loop_clause != NULL)
+    {
+      /* The kernels region does not have a "num_gangs" clause, but the loop
+	 itself had a "gang(num: N)" clause.  Honor it by adding a
+	 "num_gangs(N)" clause on the parallel region.  */
+      tree num = OMP_CLAUSE_OPERAND (loop_clause, 0);
+      tree new_num_clause
+	= build_omp_clause (OMP_CLAUSE_LOCATION (loop_clause), clause_code);
+      OMP_CLAUSE_OPERAND (new_num_clause, 0) = num;
+      OMP_CLAUSE_CHAIN (new_num_clause) = clauses;
+      clauses = new_num_clause;
+    }
+  return clauses;
+}
+
+/* Helper for make_gang_parallel_loop_region, looking for "worker(num: N)"
+   or "vector(length: N)" clauses in nested loops.  Removes the numeric
+   argument, transferring it to the enclosing parallel region (via
+   WI->INFO).  If numeric arguments within the same loop nest conflict,
+   emits a warning.
+
+   This function also decides whether to add an auto clause on each of these
+   nested loops.  It adds an auto clause unless there is already an
+   independent/seq/auto clause or a gang/worker/vector annotation.  */
+
+static tree
+adjust_nested_loop_clauses (gimple_stmt_iterator *gsi_p, bool *,
+			    struct walk_stmt_info *wi)
+{
+  tree **clauses = (tree **) wi->info;
+  tree *gang_num_clause = clauses[GOMP_DIM_GANG];
+  tree *worker_num_clause = clauses[GOMP_DIM_WORKER];
+  tree *vector_length_clause = clauses[GOMP_DIM_VECTOR];
+  gimple *stmt = gsi_stmt (*gsi_p);
+
+  if (gimple_code (stmt) == GIMPLE_OMP_FOR)
+    {
+      bool add_auto_clause = true;
+      tree loop_clauses = gimple_omp_for_clauses (stmt);
+      tree loop_clause = loop_clauses;
+      for (; loop_clause; loop_clause = OMP_CLAUSE_CHAIN (loop_clause))
+	{
+	  tree *outer_clause_ptr = NULL;
+	  switch (OMP_CLAUSE_CODE (loop_clause))
+	    {
+	      case OMP_CLAUSE_GANG:
+		outer_clause_ptr = gang_num_clause;
+		break;
+	      case OMP_CLAUSE_WORKER:
+		outer_clause_ptr = worker_num_clause;
+		break;
+	      case OMP_CLAUSE_VECTOR:
+		outer_clause_ptr = vector_length_clause;
+		break;
+	      case OMP_CLAUSE_INDEPENDENT:
+	      case OMP_CLAUSE_SEQ:
+	      case OMP_CLAUSE_AUTO:
+		add_auto_clause = false;
+	      default:
+		break;
+	    }
+	  if (outer_clause_ptr != NULL)
+	    {
+	      if (OMP_CLAUSE_OPERAND (loop_clause, 0) != NULL
+		  && *outer_clause_ptr == NULL)
+		{
+		  /* Transfer the clause to the enclosing parallel region
+		     and remove the numerical argument from the loop.  */
+		  *outer_clause_ptr = unshare_expr (loop_clause);
+		  OMP_CLAUSE_OPERAND (loop_clause, 0) = NULL;
+		}
+	      else if (OMP_CLAUSE_OPERAND (loop_clause, 0) != NULL &&
+		       OMP_CLAUSE_OPERAND (*outer_clause_ptr, 0) != NULL)
+		{
+		  /* See if both of these are the same constant.  If they
+		     aren't, emit a warning.  */
+		  tree old_op = OMP_CLAUSE_OPERAND (*outer_clause_ptr, 0);
+		  tree new_op = OMP_CLAUSE_OPERAND (loop_clause, 0);
+		  if (!(cst_and_fits_in_hwi (old_op) &&
+			cst_and_fits_in_hwi (new_op) &&
+			int_cst_value (old_op) == int_cst_value (new_op)))
+		    {
+		      const char *clause_name
+			= omp_clause_code_name[OMP_CLAUSE_CODE (loop_clause)];
+		      error_at (gimple_location (stmt),
+				"cannot honor conflicting %qs annotation",
+				clause_name);
+		      inform (OMP_CLAUSE_LOCATION (*outer_clause_ptr),
+			      "location of the previous annotation "
+			      "in the same loop nest");
+		    }
+		  OMP_CLAUSE_OPERAND (loop_clause, 0) = NULL;
+		}
+	    }
+	}
+      if (add_auto_clause)
+	{
+	  tree auto_clause
+	    = build_omp_clause (gimple_location (stmt), OMP_CLAUSE_AUTO);
+	  OMP_CLAUSE_CHAIN (auto_clause) = loop_clauses;
+	  gimple_omp_for_set_clauses (stmt, auto_clause);
+	}
+    }
+
+  return NULL;
+}
+
 /* Helper for make_region_loop_nest.  Transform OpenACC 'kernels'/'loop'
    construct clauses into OpenACC 'parallel'/'loop' construct ones.  */
 
 static tree
 transform_kernels_loop_clauses (gimple *omp_for,
 				tree num_gangs_clause,
+				tree num_workers_clause,
+				tree vector_length_clause,
 				tree clauses)
 {
   /* If this loop in a kernels region does not have an explicit
      "independent", "seq", or "auto" clause, we must give it an explicit
-     "auto" clause. */
+     "auto" clause.
+     We also check for "gang(num: N)" clauses.  These must not appear in
+     kernels regions that have their own "num_gangs" clause.  Otherwise, they
+     must be converted and put on the region; similarly for workers and
+     vectors.  */
   bool add_auto_clause = true;
+  tree loop_gang_clause = NULL, loop_worker_clause = NULL,
+       loop_vector_clause = NULL;
   tree loop_clauses = gimple_omp_for_clauses (omp_for);
-  for (tree c = loop_clauses; c; c = OMP_CLAUSE_CHAIN (c))
+  for (tree loop_clause = loop_clauses;
+       loop_clause;
+       loop_clause = OMP_CLAUSE_CHAIN (loop_clause))
     {
-      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_AUTO
-	  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_INDEPENDENT
-	  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SEQ)
-	{
-	  add_auto_clause = false;
-	  break;
+      /* Look for gang, worker, and vector clauses.  */
+      bool found_num_clause = false;
+      tree *clause_ptr, clause_to_check;
+      switch (OMP_CLAUSE_CODE (loop_clause))
+	 {
+	  case OMP_CLAUSE_GANG:
+	    found_num_clause = true;
+	    clause_ptr = &loop_gang_clause;
+	    clause_to_check = num_gangs_clause;
+	    break;
+	  case OMP_CLAUSE_WORKER:
+	    found_num_clause = true;
+	    clause_ptr = &loop_worker_clause;
+	    clause_to_check = num_workers_clause;
+	    break;
+	  case OMP_CLAUSE_VECTOR:
+	    found_num_clause = true;
+	    clause_ptr = &loop_vector_clause;
+	    clause_to_check = vector_length_clause;
+	    break;
+	  case OMP_CLAUSE_INDEPENDENT:
+	  case OMP_CLAUSE_SEQ:
+	  case OMP_CLAUSE_AUTO:
+	    add_auto_clause = false;
+	  default:
+	    break;
 	}
-    }
+      if (found_num_clause && OMP_CLAUSE_OPERAND (loop_clause, 0) != NULL)
+	{
+	  if (clause_to_check)
+	    {
+	      const char *clause_name
+		= omp_clause_code_name[OMP_CLAUSE_CODE (loop_clause)];
+	      const char *parent_clause_name
+		= omp_clause_code_name[OMP_CLAUSE_CODE (clause_to_check)];
+	      error_at (OMP_CLAUSE_LOCATION (loop_clause),
+			"argument not permitted on %qs clause"
+			" in OpenACC %<kernels%> region with a %qs clause",
+			clause_name, parent_clause_name);
+	      inform (OMP_CLAUSE_LOCATION (clause_to_check),
+		      "location of OpenACC %<kernels%> region");
+	    }
+	  /* Copy the gang(N)/worker(N)/vector(N) clause to the enclosing
+	     parallel region.  */
+	  *clause_ptr = unshare_expr (loop_clause);
+	  OMP_CLAUSE_CHAIN (*clause_ptr) = NULL;
+	  /* Leave a gang/worker/vector clause on the loop, but without a
+	     numeric argument.  */
+	  OMP_CLAUSE_OPERAND (loop_clause, 0) = NULL;
+	 }
+     }
   if (add_auto_clause)
     {
       tree auto_clause = build_omp_clause (gimple_location (omp_for),
 					   OMP_CLAUSE_AUTO);
       OMP_CLAUSE_CHAIN (auto_clause) = loop_clauses;
-      gimple_omp_for_set_clauses (omp_for, auto_clause);
+      loop_clauses = auto_clause;
     }
+  gimple_omp_for_set_clauses (omp_for, loop_clauses);
+  /* We must also recurse into the loop; it might contain nested loops
+     having their own "worker(num: W)" or "vector(length: V)" annotations.
+     Turn these into worker/vector annotations on the parallel region.  */
+  struct walk_stmt_info wi;
+  memset (&wi, 0, sizeof (wi));
+  tree *num_clauses[GOMP_DIM_MAX]
+    = { [GOMP_DIM_GANG] = &loop_gang_clause,
+	[GOMP_DIM_WORKER] = &loop_worker_clause,
+	[GOMP_DIM_VECTOR] = &loop_vector_clause };
+  wi.info = num_clauses;
+  gimple *body = gimple_omp_body (omp_for);
+  walk_gimple_seq (body, adjust_nested_loop_clauses, NULL, &wi);
+  /* Check if there were conflicting numbers of workers or vector lanes.  */
+  if (loop_gang_clause != NULL &&
+      OMP_CLAUSE_OPERAND (loop_gang_clause, 0) == NULL)
+    loop_gang_clause = NULL;
+  if (loop_worker_clause != NULL &&
+      OMP_CLAUSE_OPERAND (loop_worker_clause, 0) == NULL)
+    loop_worker_clause = NULL;
+  if (loop_vector_clause != NULL &&
+      OMP_CLAUSE_OPERAND (loop_vector_clause, 0) == NULL)
+    vector_length_clause = NULL;
 
-  /* If the kernels region had a num_gangs clause, add that to this new
-     parallel region.  */
-  if (num_gangs_clause != NULL)
-    {
-      tree parallel_num_gangs_clause = unshare_expr (num_gangs_clause);
-      OMP_CLAUSE_CHAIN (parallel_num_gangs_clause) = clauses;
-      clauses = parallel_num_gangs_clause;
-    }
+  /* If the kernels region had num_gangs, num_worker, vector_length clauses,
+     add these to this new parallel region.  */
+  clauses
+    = add_parent_or_loop_num_clause (num_gangs_clause, loop_gang_clause,
+				     OMP_CLAUSE_NUM_GANGS, clauses);
+  clauses
+    = add_parent_or_loop_num_clause (num_workers_clause, loop_worker_clause,
+				     OMP_CLAUSE_NUM_WORKERS, clauses);
+  clauses
+    = add_parent_or_loop_num_clause (vector_length_clause, loop_vector_clause,
+				     OMP_CLAUSE_VECTOR_LENGTH, clauses);
 
   return clauses;
 }
@@ -197,18 +468,33 @@ transform_kernels_loop_clauses (gimple *omp_for,
    STMT, which must be identical to, or a bind containing, the loop OMP_FOR
    with OpenACC loop annotations.
 
-   The newly created region is annotated with the optional NUM_GANGS_CLAUSE
-   as well as the other CLAUSES, which must not contain a num_gangs clause.  */
+   The NUM_GANGS_CLAUSE, NUM_WORKERS_CLAUSE, and VECTOR_LENGTH_CLAUSE are
+   optional clauses from the original kernels region and must not be
+   contained in the other CLAUSES. The newly created region is annotated
+   with the optional NUM_GANGS_CLAUSE as well as the other CLAUSES. If there
+   is no NUM_GANGS_CLAUSE but the loop has a "gang(num: N)" clause, that is
+   converted to a "num_gangs(N)" clause on the new region, and similarly for
+   workers and vectors.
+
+   The outermost loop gets an auto clause unless there already is an
+   independent/seq/auto clause or a gang/worker/vector annotation.  Nested
+   loops inside OMP_FOR are treated similarly by the
+   adjust_nested_loop_clauses function.  */
 
 static gimple *
 make_gang_parallel_loop_region (gimple *omp_for, gimple *stmt,
-				tree num_gangs_clause, tree clauses)
+				tree num_gangs_clause,
+				tree num_workers_clause,
+				tree vector_length_clause,
+				tree clauses)
 {
   /* This correctly unshares the entire clause chain rooted here.  */
   clauses = unshare_expr (clauses);
 
   clauses = transform_kernels_loop_clauses (omp_for,
 					    num_gangs_clause,
+					    num_workers_clause,
+					    vector_length_clause,
 					    clauses);
 
   /* Now build the parallel region containing this loop.  */
@@ -596,23 +882,43 @@ decompose_kernels_region_body (gimple *kernels_region, tree kernels_clauses)
   location_t loc = gimple_location (kernels_region);
 
   /* The kernels clauses will be propagated to the child clauses unmodified,
-     except that that num_gangs clause will only be added to loop regions.
-     The other regions are "gang-single" and get an explicit num_gangs(1)
-     clause.  So separate out the num_gangs clause here.  */
-  tree num_gangs_clause = NULL, prev_clause = NULL;
+     except that the num_gangs, num_workers, and vector_length clauses will
+     only be added to loop regions.  The other regions are "gang-single" and
+     get an explicit num_gangs(1) clause.  So separate out the num_gangs,
+     num_workers, and vector_length clauses here.  */
+  tree num_gangs_clause = NULL, num_workers_clause = NULL,
+       vector_length_clause = NULL;
+  tree prev_clause = NULL, next_clause = NULL;
   tree parallel_clauses = kernels_clauses;
-  for (tree c = parallel_clauses; c; c = OMP_CLAUSE_CHAIN (c))
+  for (tree c = parallel_clauses; c; c = next_clause)
     {
-      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_GANGS)
+      /* Preserve this here, as we might NULL it later.  */
+      next_clause = OMP_CLAUSE_CHAIN (c);
+
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_GANGS
+	  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_WORKERS
+	  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_VECTOR_LENGTH)
 	{
 	  /* Cut this clause out of the chain.  */
-	  num_gangs_clause = c;
 	  if (prev_clause != NULL)
 	    OMP_CLAUSE_CHAIN (prev_clause) = OMP_CLAUSE_CHAIN (c);
 	  else
 	    kernels_clauses = OMP_CLAUSE_CHAIN (c);
-	  OMP_CLAUSE_CHAIN (num_gangs_clause) = NULL;
-	  break;
+	  OMP_CLAUSE_CHAIN (c) = NULL;
+	  switch (OMP_CLAUSE_CODE (c))
+	    {
+	      case OMP_CLAUSE_NUM_GANGS:
+		num_gangs_clause = c;
+		break;
+	      case OMP_CLAUSE_NUM_WORKERS:
+		num_workers_clause = c;
+		break;
+	      case OMP_CLAUSE_VECTOR_LENGTH:
+		vector_length_clause = c;
+		break;
+	      default:
+		gcc_unreachable ();
+	    }
 	}
       else
 	prev_clause = c;
@@ -735,6 +1041,8 @@ decompose_kernels_region_body (gimple *kernels_region, tree kernels_clauses)
 	  gimple *parallel_region
 	    = make_gang_parallel_loop_region (omp_for, stmt,
 					      num_gangs_clause,
+					      num_workers_clause,
+					      vector_length_clause,
 					      kernels_clauses);
 	  gimple_seq_add_stmt (&region_body, parallel_region);
 	}
@@ -752,6 +1060,9 @@ decompose_kernels_region_body (gimple *kernels_region, tree kernels_clauses)
 		&& DECL_ARTIFICIAL (gimple_assign_lhs (stmt)));
 	  if (!is_simple_assignment)
 	    only_simple_assignments = false;
+	  /* Remove and issue warnings about gang clauses on any OpenACC
+	     loops nested inside this sequentially executed statement.  */
+	  make_loops_gang_single (gsi);
 	}
     }
 

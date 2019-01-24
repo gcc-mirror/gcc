@@ -1357,7 +1357,7 @@ oacc_loop_fixed_partitions (oacc_loop *loop, unsigned outer_mask)
 
 static unsigned
 oacc_loop_auto_partitions (oacc_loop *loop, unsigned outer_mask,
-			   bool outer_assign)
+			   bool outer_assign, bool is_oacc_gang_single)
 {
   bool assign = (loop->flags & OLF_AUTO) && (loop->flags & OLF_INDEPENDENT);
   bool noisy = true;
@@ -1374,6 +1374,10 @@ oacc_loop_auto_partitions (oacc_loop *loop, unsigned outer_mask,
       /* Allocate outermost and non-innermost loops at the outermost
 	 non-innermost available level.  */
       unsigned this_mask = GOMP_DIM_MASK (GOMP_DIM_GANG);
+
+      /* Gang partitioning is not available in a gang-single region.  */
+      if (is_oacc_gang_single)
+        this_mask = GOMP_DIM_MASK (GOMP_DIM_WORKER);
 
       /* Orphan reductions cannot have gang partitioning.  */
       if ((loop->flags & OLF_REDUCTION)
@@ -1411,7 +1415,8 @@ oacc_loop_auto_partitions (oacc_loop *loop, unsigned outer_mask,
     {
       unsigned tmp_mask = outer_mask | loop->mask | loop->e_mask;
       loop->inner = oacc_loop_auto_partitions (loop->child, tmp_mask,
-					       outer_assign | assign);
+					       outer_assign | assign,
+					       is_oacc_gang_single);
     }
 
   if (assign && (!loop->mask || (tiling && !loop->e_mask) || !outer_assign))
@@ -1470,7 +1475,8 @@ oacc_loop_auto_partitions (oacc_loop *loop, unsigned outer_mask,
 
   if (loop->sibling)
     inner_mask |= oacc_loop_auto_partitions (loop->sibling,
-					     outer_mask, outer_assign);
+					     outer_mask, outer_assign,
+					     is_oacc_gang_single);
 
   inner_mask |= loop->inner | loop->mask | loop->e_mask;
 
@@ -1481,14 +1487,16 @@ oacc_loop_auto_partitions (oacc_loop *loop, unsigned outer_mask,
    axes.  Return mask of partitioning.  */
 
 static unsigned
-oacc_loop_partition (oacc_loop *loop, unsigned outer_mask)
+oacc_loop_partition (oacc_loop *loop, unsigned outer_mask,
+                     bool is_oacc_gang_single)
 {
   unsigned mask_all = oacc_loop_fixed_partitions (loop, outer_mask);
 
   if (mask_all & GOMP_DIM_MASK (GOMP_DIM_MAX))
     {
       mask_all ^= GOMP_DIM_MASK (GOMP_DIM_MAX);
-      mask_all |= oacc_loop_auto_partitions (loop, outer_mask, false);
+      mask_all |= oacc_loop_auto_partitions (loop, outer_mask, false,
+                                             is_oacc_gang_single);
     }
   return mask_all;
 }
@@ -1664,7 +1672,9 @@ execute_oacc_device_lower ()
     }
 
   unsigned outer_mask = fn_level >= 0 ? GOMP_DIM_MASK (fn_level) - 1 : 0;
-  unsigned used_mask = oacc_loop_partition (loops, outer_mask);
+  unsigned used_mask = oacc_loop_partition (loops, outer_mask,
+                                            is_oacc_parallel_kernels_gang_single);
+
   /* OpenACC kernels constructs are special: they currently don't use the
      generic oacc_loop infrastructure and attribute/dimension processing.  */
   if (is_oacc_kernels && is_oacc_kernels_parallelized)

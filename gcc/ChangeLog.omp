@@ -1,5 +1,22 @@
 2019-01-23  Gergö Barany  <gergo@codesourcery.com>
 
+	* omp-oacc-kernels.c (add_parent_or_loop_num_clause): New function.
+	(adjust_nested_loop_clauses): Likewise.
+	(transform_kernels_loop_clauses, make_gang_parallel_loop_region):
+	Add worker and vector clause parameters, emit error on illegal
+	nesting.
+	(visit_loops_in_gang_single_region): Emit warning on conditionally
+	executed code with a gang clause.
+	(make_loops_gang_single): New function.
+	(decompose_kernels_region_body): Separate out gang/worker/vector clauses
+	for separate handling; add call to make_loops_gang_single.
+	* omp-offload.c (oacc_loop_auto_partitions): Add and propagate
+	is_oacc_gang_single parameter.
+	(oacc_loop_partition): Likewise.
+	(execute_oacc_device_lower): Adjust call to oacc_loop_partition.
+
+2019-01-23  Gergö Barany  <gergo@codesourcery.com>
+
 	* omp-oacc-kernels.c (control_flow_regions): New class.
 	(control_flow_regions::control_flow_regions): New constructor.
 	(control_flow_regions::is_unconditional_oacc_for_loop): New method.
