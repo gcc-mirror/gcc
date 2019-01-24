@@ -1,3 +1,11 @@
+2019-01-24  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89008
+	* gcc.dg/torture/pr89008.c: New testcase.
+
 2019-01-22  Manfred Schwarb  <manfred99@gmx.ch>
 
 	* gfortran.dg/array_function_5.f90: : Fix a dg directive.

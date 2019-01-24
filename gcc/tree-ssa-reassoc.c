@@ -1015,7 +1015,7 @@ eliminate_using_constants (enum tree_code opcode,
 		    fprintf (dump_file, "Found * 0, removing all other ops\n");
 
 		  reassociate_stats.ops_eliminated += ops->length () - 1;
-		  ops->truncate (1);
+		  ops->truncate (0);
 		  ops->quick_push (oelast);
 		  return;
 		}
