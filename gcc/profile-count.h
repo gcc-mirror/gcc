@@ -643,7 +643,17 @@ private:
   static const uint64_t max_count = ((uint64_t) 1 << n_bits) - 2;
   static const uint64_t uninitialized_count = ((uint64_t) 1 << n_bits) - 1;
 
-  uint64_t m_val : n_bits;
+#if defined (__arm__) && (__GNUC__ >= 6 && __GNUC__ <= 8)
+  /* Work-around for PR88469.  A bug in the gcc-6/7/8 PCS layout code
+     incorrectly detects the alignment of a structure where the only
+     64-bit aligned object is a bit-field.  We force the alignment of
+     the entire field to mitigate this.  */
+#define UINT64_BIT_FIELD_ALIGN __attribute__ ((aligned(8)))
+#else
+#define UINT64_BIT_FIELD_ALIGN
+#endif
+  uint64_t UINT64_BIT_FIELD_ALIGN m_val : n_bits;
+#undef UINT64_BIT_FIELD_ALIGN
   enum profile_quality m_quality : 3;
 
   /* Return true if both values can meaningfully appear in single function
