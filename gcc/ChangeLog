@@ -1,5 +1,9 @@
 2019-01-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/88964
+	* gimple-loop-interchange.cc (loop_cand::analyze_induction_var): Also
+	punt if HONOR_SNANS (chrec).
+
 	PR middle-end/89015
 	* tree-nested.c (convert_nonlocal_reference_stmt,
 	convert_local_reference_stmt, convert_tramp_reference_stmt,
