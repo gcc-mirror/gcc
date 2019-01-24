@@ -1,6 +1,6 @@
 2019-01-24  Uroš Bizjak  <ubizjak@gmail.com>
 
-	PR target/88948
+	PR rtl-optimization/88948
 	* gcc.target/i386/pr88948.c: New test.
 
 2019-01-24  Jakub Jelinek  <jakub@redhat.com>
