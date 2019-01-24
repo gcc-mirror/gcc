@@ -9527,12 +9527,14 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case FLOAT128_FTYPE_FLOAT128_FLOAT128:
     case V16QI_FTYPE_V16QI_V16QI:
     case V16QI_FTYPE_V8HI_V8HI:
+    case V16HF_FTYPE_V16HF_V16HF:
     case V16SF_FTYPE_V16SF_V16SF:
     case V8QI_FTYPE_V8QI_V8QI:
     case V8QI_FTYPE_V4HI_V4HI:
     case V8HI_FTYPE_V8HI_V8HI:
     case V8HI_FTYPE_V16QI_V16QI:
     case V8HI_FTYPE_V4SI_V4SI:
+    case V8HF_FTYPE_V8HF_V8HF:
     case V8SF_FTYPE_V8SF_V8SF:
     case V8SF_FTYPE_V8SF_V8SI:
     case V8DF_FTYPE_V8DF_V8DF:

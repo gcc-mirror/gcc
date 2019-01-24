@@ -2545,11 +2545,12 @@
 })
 
 (define_expand "<code><mode>3<mask_name><round_saeonly_name>"
-  [(set (match_operand:VF 0 "register_operand")
-	(smaxmin:VF
-	  (match_operand:VF 1 "<round_saeonly_nimm_predicate>")
-	  (match_operand:VF 2 "<round_saeonly_nimm_predicate>")))]
-  "TARGET_SSE && <mask_mode512bit_condition> && <round_saeonly_mode512bit_condition>"
+  [(set (match_operand:VFH 0 "register_operand")
+	(smaxmin:VFH
+	  (match_operand:VFH 1 "<round_saeonly_nimm_predicate>")
+	  (match_operand:VFH 2 "<round_saeonly_nimm_predicate>")))]
+  "TARGET_SSE && <mask_mode512bit_condition>
+   && <round_saeonly_mode512bit_condition>"
 {
   if (!flag_finite_math_only || flag_signed_zeros)
     {
@@ -2570,13 +2571,14 @@
 ;; are undefined in this condition, we're certain this is correct.
 
 (define_insn "*<code><mode>3<mask_name><round_saeonly_name>"
-  [(set (match_operand:VF 0 "register_operand" "=x,v")
-	(smaxmin:VF
-	  (match_operand:VF 1 "<round_saeonly_nimm_predicate>" "%0,v")
-	  (match_operand:VF 2 "<round_saeonly_nimm_predicate>" "xBm,<round_saeonly_constraint>")))]
+  [(set (match_operand:VFH 0 "register_operand" "=x,v")
+	(smaxmin:VFH
+	  (match_operand:VFH 1 "<round_saeonly_nimm_predicate>" "%0,v")
+	  (match_operand:VFH 2 "<round_saeonly_nimm_predicate>" "xBm,<round_saeonly_constraint>")))]
   "TARGET_SSE
    && !(MEM_P (operands[1]) && MEM_P (operands[2]))
-   && <mask_mode512bit_condition> && <round_saeonly_mode512bit_condition>"
+   && <mask_mode512bit_condition>
+   && <round_saeonly_mode512bit_condition>"
   "@
    <maxmin_float><ssemodesuffix>\t{%2, %0|%0, %2}
    v<maxmin_float><ssemodesuffix>\t{<round_saeonly_mask_op3>%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2<round_saeonly_mask_op3>}"
@@ -2593,13 +2595,14 @@
 ;; presence of -0.0 and NaN.
 
 (define_insn "ieee_<ieee_maxmin><mode>3<mask_name><round_saeonly_name>"
-  [(set (match_operand:VF 0 "register_operand" "=x,v")
-	(unspec:VF
-	  [(match_operand:VF 1 "register_operand" "0,v")
-	   (match_operand:VF 2 "<round_saeonly_nimm_predicate>" "xBm,<round_saeonly_constraint>")]
+  [(set (match_operand:VFH 0 "register_operand" "=x,v")
+	(unspec:VFH
+	  [(match_operand:VFH 1 "register_operand" "0,v")
+	   (match_operand:VFH 2 "<round_saeonly_nimm_predicate>" "xBm,<round_saeonly_constraint>")]
 	  IEEE_MAXMIN))]
   "TARGET_SSE
-   && <mask_mode512bit_condition> && <round_saeonly_mode512bit_condition>"
+   && <mask_mode512bit_condition>
+   && <round_saeonly_mode512bit_condition>"
   "@
    <ieee_maxmin><ssemodesuffix>\t{%2, %0|%0, %2}
    v<ieee_maxmin><ssemodesuffix>\t{<round_saeonly_mask_op3>%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2<round_saeonly_mask_op3>}"
@@ -2643,11 +2646,11 @@
    (set_attr "mode" "<ssescalarmode>")])
 
 (define_insn "<sse>_vm<code><mode>3<mask_scalar_name><round_saeonly_scalar_name>"
-  [(set (match_operand:VF_128 0 "register_operand" "=x,v")
-	(vec_merge:VF_128
-	  (smaxmin:VF_128
-	    (match_operand:VF_128 1 "register_operand" "0,v")
-	    (match_operand:VF_128 2 "nonimmediate_operand" "xm,<round_saeonly_scalar_constraint>"))
+  [(set (match_operand:VFH_128 0 "register_operand" "=x,v")
+	(vec_merge:VFH_128
+	  (smaxmin:VFH_128
+	    (match_operand:VFH_128 1 "register_operand" "0,v")
+	    (match_operand:VFH_128 2 "nonimmediate_operand" "xm,<round_saeonly_scalar_constraint>"))
 	 (match_dup 1)
 	 (const_int 1)))]
   "TARGET_SSE"

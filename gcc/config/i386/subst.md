@@ -208,7 +208,9 @@
 (define_subst_attr "round_saeonly_mode512bit_condition" "round_saeonly" "1" "(<MODE>mode == V16SFmode
 									      || <MODE>mode == V8DFmode
 									      || <MODE>mode == V8DImode
-									      || <MODE>mode == V16SImode)")
+									      || <MODE>mode == V16SImode
+									      || <MODE>mode == V32HFmode)")
+
 (define_subst_attr "round_saeonly_modev8sf_condition" "round_saeonly" "1" "(<MODE>mode == V8SFmode)")
 
 (define_subst "round_saeonly"

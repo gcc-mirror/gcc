@@ -722,6 +722,269 @@ _mm_maskz_div_round_sh (__mmask8 __A, __m128h __B, __m128h __C,
 						   (A), (D)))
 #endif /* __OPTIMIZE__ */
 
+/* Intrinsic vmaxph vminph.  */
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_max_ph (__m512h __A, __m512h __B)
+{
+  return __builtin_ia32_vmaxph_v32hf_mask (__A, __B,
+					   _mm512_setzero_ph (),
+					   (__mmask32) -1);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_max_ph (__m512h __A, __mmask32 __B, __m512h __C, __m512h __D)
+{
+  return __builtin_ia32_vmaxph_v32hf_mask (__C, __D, __A, __B);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_max_ph (__mmask32 __A, __m512h __B, __m512h __C)
+{
+  return __builtin_ia32_vmaxph_v32hf_mask (__B, __C,
+					   _mm512_setzero_ph (), __A);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_min_ph (__m512h __A, __m512h __B)
+{
+  return __builtin_ia32_vminph_v32hf_mask (__A, __B,
+					   _mm512_setzero_ph (),
+					   (__mmask32) -1);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_min_ph (__m512h __A, __mmask32 __B, __m512h __C, __m512h __D)
+{
+  return __builtin_ia32_vminph_v32hf_mask (__C, __D, __A, __B);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_min_ph (__mmask32 __A, __m512h __B, __m512h __C)
+{
+  return __builtin_ia32_vminph_v32hf_mask (__B, __C,
+					   _mm512_setzero_ph (), __A);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_max_round_ph (__m512h __A, __m512h __B, const int __C)
+{
+  return __builtin_ia32_vmaxph_v32hf_mask_round (__A, __B,
+						 _mm512_setzero_ph (),
+						 (__mmask32) -1, __C);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_max_round_ph (__m512h __A, __mmask32 __B, __m512h __C,
+			  __m512h __D, const int __E)
+{
+  return __builtin_ia32_vmaxph_v32hf_mask_round (__C, __D, __A, __B, __E);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_max_round_ph (__mmask32 __A, __m512h __B, __m512h __C,
+			   const int __D)
+{
+  return __builtin_ia32_vmaxph_v32hf_mask_round (__B, __C,
+						 _mm512_setzero_ph (),
+						 __A, __D);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_min_round_ph (__m512h __A, __m512h __B, const int __C)
+{
+  return __builtin_ia32_vminph_v32hf_mask_round (__A, __B,
+						 _mm512_setzero_ph (),
+						 (__mmask32) -1, __C);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_min_round_ph (__m512h __A, __mmask32 __B, __m512h __C,
+			  __m512h __D, const int __E)
+{
+  return __builtin_ia32_vminph_v32hf_mask_round (__C, __D, __A, __B, __E);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_min_round_ph (__mmask32 __A, __m512h __B, __m512h __C,
+			   const int __D)
+{
+  return __builtin_ia32_vminph_v32hf_mask_round (__B, __C,
+						 _mm512_setzero_ph (),
+						 __A, __D);
+}
+
+#else
+#define _mm512_max_round_ph(A, B, C)					\
+  (__builtin_ia32_vmaxph_v32hf_mask_round ((A), (B),			\
+					   _mm512_setzero_ph (),	\
+					   (__mmask32)-1, (C)))
+
+#define _mm512_mask_max_round_ph(A, B, C, D, E)				\
+  (__builtin_ia32_vmaxph_v32hf_mask_round ((C), (D), (A), (B), (E)))
+
+#define _mm512_maskz_max_round_ph(A, B, C, D)				\
+  (__builtin_ia32_vmaxph_v32hf_mask_round ((B), (C),			\
+					   _mm512_setzero_ph (),	\
+					   (A), (D)))
+
+#define _mm512_min_round_ph(A, B, C)					\
+  (__builtin_ia32_vminph_v32hf_mask_round ((A), (B),			\
+					   _mm512_setzero_ph (),	\
+					   (__mmask32)-1, (C)))
+
+#define _mm512_mask_min_round_ph(A, B, C, D, E)				\
+  (__builtin_ia32_vminph_v32hf_mask_round ((C), (D), (A), (B), (E)))
+
+#define _mm512_maskz_min_round_ph(A, B, C, D)				\
+  (__builtin_ia32_vminph_v32hf_mask_round ((B), (C),			\
+					   _mm512_setzero_ph (),	\
+					   (A), (D)))
+#endif /* __OPTIMIZE__ */
+
+/* Intrinsic vmaxsh vminsh.  */
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_max_sh (__m128h __A, __m128h __B)
+{
+  __A[0] = __A[0] > __B[0] ? __A[0] : __B[0];
+  return __A;
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_max_sh (__m128h __A, __mmask8 __B, __m128h __C, __m128h __D)
+{
+  return __builtin_ia32_vmaxsh_v8hf_mask (__C, __D, __A, __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_max_sh (__mmask8 __A, __m128h __B, __m128h __C)
+{
+  return __builtin_ia32_vmaxsh_v8hf_mask (__B, __C, _mm_setzero_ph (),
+					  __A);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_min_sh (__m128h __A, __m128h __B)
+{
+  __A[0] = __A[0] < __B[0] ? __A[0] : __B[0];
+  return __A;
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_min_sh (__m128h __A, __mmask8 __B, __m128h __C, __m128h __D)
+{
+  return __builtin_ia32_vminsh_v8hf_mask (__C, __D, __A, __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_min_sh (__mmask8 __A, __m128h __B, __m128h __C)
+{
+  return __builtin_ia32_vminsh_v8hf_mask (__B, __C, _mm_setzero_ph (),
+					  __A);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_max_round_sh (__m128h __A, __m128h __B, const int __C)
+{
+  return __builtin_ia32_vmaxsh_v8hf_mask_round (__A, __B,
+						_mm_setzero_ph (),
+						(__mmask8) -1, __C);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_max_round_sh (__m128h __A, __mmask8 __B, __m128h __C,
+		       __m128h __D, const int __E)
+{
+  return __builtin_ia32_vmaxsh_v8hf_mask_round (__C, __D, __A, __B, __E);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_max_round_sh (__mmask8 __A, __m128h __B, __m128h __C,
+			const int __D)
+{
+  return __builtin_ia32_vmaxsh_v8hf_mask_round (__B, __C,
+						_mm_setzero_ph (),
+						__A, __D);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_min_round_sh (__m128h __A, __m128h __B, const int __C)
+{
+  return __builtin_ia32_vminsh_v8hf_mask_round (__A, __B,
+						_mm_setzero_ph (),
+						(__mmask8) -1, __C);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_min_round_sh (__m128h __A, __mmask8 __B, __m128h __C,
+		       __m128h __D, const int __E)
+{
+  return __builtin_ia32_vminsh_v8hf_mask_round (__C, __D, __A, __B, __E);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_min_round_sh (__mmask8 __A, __m128h __B, __m128h __C,
+			const int __D)
+{
+  return __builtin_ia32_vminsh_v8hf_mask_round (__B, __C,
+						_mm_setzero_ph (),
+						__A, __D);
+}
+
+#else
+#define _mm_max_round_sh(A, B, C)					\
+  (__builtin_ia32_vmaxsh_v8hf_mask_round ((A), (B),			\
+					  _mm_setzero_ph (),		\
+					  (__mmask8)-1, (C)))
+
+#define _mm_mask_max_round_sh(A, B, C, D, E)				\
+  (__builtin_ia32_vmaxsh_v8hf_mask_round ((C), (D), (A), (B), (E)))
+
+#define _mm_maskz_max_round_sh(A, B, C, D)				\
+  (__builtin_ia32_vmaxsh_v8hf_mask_round ((B), (C),			\
+					  _mm_setzero_ph (),		\
+					  (A), (D)))
+
+#define _mm_min_round_sh(A, B, C)					\
+  (__builtin_ia32_vminsh_v8hf_mask_round ((A), (B),			\
+					  _mm_setzero_ph (),		\
+					  (__mmask8)-1, (C)))
+
+#define _mm_mask_min_round_sh(A, B, C, D, E)				\
+  (__builtin_ia32_vminsh_v8hf_mask_round ((C), (D), (A), (B), (E)))
+
+#define _mm_maskz_min_round_sh(A, B, C, D)				\
+  (__builtin_ia32_vminsh_v8hf_mask_round ((B), (C),			\
+					  _mm_setzero_ph (),		\
+					  (A), (D)))
+
+#endif /* __OPTIMIZE__ */
+
 #ifdef __DISABLE_AVX512FP16__
 #undef __DISABLE_AVX512FP16__
 #pragma GCC pop_options
