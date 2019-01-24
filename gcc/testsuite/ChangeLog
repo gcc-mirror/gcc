@@ -1,3 +1,17 @@
+2019-01-24  Martin Sebor  <msebor@redhat.com>
+
+	PR c/86125
+	PR c/88886
+	PR middle-end/86308
+	* gcc.dg/Wbuiltin-declaration-mismatch-6.c: New test.
+	* gcc.dg/Wbuiltin-declaration-mismatch-7.c: New test.
+	* gcc.dg/Wbuiltin-declaration-mismatch-8.c: New test.
+	* gcc.dg/Wbuiltin-declaration-mismatch-9.c: New test.
+	* gcc.dg/Wbuiltin-declaration-mismatch-10.c: New test.
+	* gcc.dg/builtins-69.c: New test.
+	* gcc.dg/Wint-conversion-2.c: Add expected warning.
+	* gcc.c-torture/execute/eeprof-1.c: Adjust function signatures.
+
 2019-01-24  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/88948
