@@ -1,3 +1,9 @@
+2019-01-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/88929
+	* gfortran.dg/ISO_Fortran_binding_3.f90 : New test
+	* gfortran.dg/ISO_Fortran_binding_3.c : Subsidiary source.
+
 2019-01-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libgcc/88931
@@ -218,7 +224,7 @@
 
 2019-01-20  Kewen Lin  <linkw@gcc.gnu.org>
 
-	* gcc.target/powerpc/altivec_vld_vst_addr.c: Remove, split into 
+	* gcc.target/powerpc/altivec_vld_vst_addr.c: Remove, split into
 	altivec_vld_vst_addr-1.c and altivec_vld_vst_addr-2.c.
 	* gcc.target/powerpc/altivec_vld_vst_addr-1.c: New test.
 	* gcc.target/powerpc/altivec_vld_vst_addr-2.c: Ditto.

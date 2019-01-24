@@ -4924,6 +4924,8 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
   tree tmp;
   tree cfi_desc_ptr;
   tree gfc_desc_ptr;
+  tree ptr = NULL_TREE;
+  tree size;
   tree type;
   int attribute;
   symbol_attribute attr = gfc_expr_attr (e);
@@ -4939,7 +4941,7 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 	attribute = 1;
     }
 
-  if (e->rank)
+  if (e->rank != 0)
     {
       gfc_conv_expr_descriptor (parmse, e);
 
@@ -4950,9 +4952,14 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
       /* All the temporary descriptors are marked as DECL_ARTIFICIAL. If
 	 the expression type is different from the descriptor type, then
 	 the offset must be found (eg. to a component ref or substring)
-	 and the dtype updated.  */
-      type = gfc_typenode_for_spec (&e->ts);
-      if (DECL_ARTIFICIAL (parmse->expr)
+	 and the dtype updated.  Assumed type entities are only allowed
+	 to be dummies in Fortran. They therefore lack the decl specific
+	 appendiges and so must be treated differently from other fortran
+	 entities passed to CFI descriptors in the interface decl.  */
+      type = e->ts.type != BT_ASSUMED ? gfc_typenode_for_spec (&e->ts) :
+					NULL_TREE;
+
+      if (type && DECL_ARTIFICIAL (parmse->expr)
 	  && type != gfc_get_element_type (TREE_TYPE (parmse->expr)))
 	{
 	  /* Obtain the offset to the data.  */
@@ -4964,15 +4971,44 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 			  gfc_conv_descriptor_dtype (parmse->expr),
 			  gfc_get_dtype_rank_type (e->rank, type));
 	}
-      else if (!is_subref_array (e) && !DECL_ARTIFICIAL (parmse->expr))
+      else if (type == NULL_TREE
+	       || (!is_subref_array (e) && !DECL_ARTIFICIAL (parmse->expr)))
 	{
 	  /* Make sure that the span is set for expressions where it
 	     might not have been done already.  */
-	  tmp = TREE_TYPE (parmse->expr);
-	  tmp = TYPE_SIZE_UNIT (gfc_get_element_type (tmp));
+	  tmp = gfc_conv_descriptor_elem_len (parmse->expr);
 	  tmp = fold_convert (gfc_array_index_type, tmp);
 	  gfc_conv_descriptor_span_set (&parmse->pre, parmse->expr, tmp);
 	}
+
+      /* INTENT(IN) requires a temporary for the data. Assumed types do not
+	 work with the standard temporary generation schemes. */
+      if (e->expr_type == EXPR_VARIABLE && fsym->attr.intent == INTENT_IN)
+	{
+	  /* Fix the descriptor and determine the size of the data.  */
+	  parmse->expr = gfc_evaluate_now (parmse->expr, &parmse->pre);
+	  size = build_call_expr_loc (input_location,
+				gfor_fndecl_size0, 1,
+				gfc_build_addr_expr (NULL, parmse->expr));
+	  size = fold_convert (size_type_node, size);
+	  tmp = gfc_conv_descriptor_span_get (parmse->expr);
+	  tmp = fold_convert (size_type_node, tmp);
+	  size = fold_build2_loc (input_location, MULT_EXPR,
+				  size_type_node, size, tmp);
+	  /* Fix the size and allocate.  */
+	  size = gfc_evaluate_now (size, &parmse->pre);
+	  tmp = builtin_decl_explicit (BUILT_IN_MALLOC);
+	  ptr = build_call_expr_loc (input_location, tmp, 1, size);
+	  ptr = gfc_evaluate_now (ptr, &parmse->pre);
+	  /* Copy the data to the temporary descriptor.  */
+	  tmp = builtin_decl_explicit (BUILT_IN_MEMCPY);
+	  tmp = build_call_expr_loc (input_location, tmp, 3, ptr,
+				gfc_conv_descriptor_data_get (parmse->expr),
+				size);
+	  gfc_add_expr_to_block (&parmse->pre, tmp);
+	  gfc_conv_descriptor_data_set (&parmse->pre, parmse->expr, ptr);
+	}
+
     }
   else
     {
@@ -4982,7 +5018,7 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 	parmse->expr = build_fold_indirect_ref_loc (input_location,
 						    parmse->expr);
 
-      /* Copy the scalar for INTENT_IN.  */
+      /* Copy the scalar for INTENT(IN).  */
       if (e->expr_type == EXPR_VARIABLE && fsym->attr.intent == INTENT_IN)
 	parmse->expr = gfc_evaluate_now (parmse->expr, &parmse->pre);
       parmse->expr = gfc_conv_scalar_to_descriptor (parmse,
@@ -5011,6 +5047,17 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 
   /* The CFI descriptor is passed to the bind_C procedure.  */
   parmse->expr = cfi_desc_ptr;
+
+  if (ptr)
+    {
+      /* Free both the temporary data and the CFI descriptor for
+	 INTENT(IN) arrays.  */
+      tmp = gfc_call_free (ptr);
+      gfc_prepend_expr_to_block (&parmse->post, tmp);
+      tmp = gfc_call_free (cfi_desc_ptr);
+      gfc_prepend_expr_to_block (&parmse->post, tmp);
+      return;
+    }
 
   /* Transfer values back to gfc descriptor and free the CFI descriptor.  */
   tmp = gfc_build_addr_expr (NULL_TREE, parmse->expr);
