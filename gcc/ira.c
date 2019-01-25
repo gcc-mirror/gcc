@@ -3140,10 +3140,30 @@ equiv_init_movable_p (rtx x, int regno)
   return 1;
 }
 
-/* TRUE if X references a memory location that would be affected by a store
-   to MEMREF.  */
-static int
-memref_referenced_p (rtx memref, rtx x)
+static bool memref_referenced_p (rtx memref, rtx x, bool read_p);
+
+/* Auxiliary function for memref_referenced_p.  Process setting X for
+   MEMREF store.  */
+static bool
+process_set_for_memref_referenced_p (rtx memref, rtx x)
+{
+  /* If we are setting a MEM, it doesn't count (its address does), but any
+     other SET_DEST that has a MEM in it is referencing the MEM.  */
+  if (MEM_P (x))
+    {
+      if (memref_referenced_p (memref, XEXP (x, 0), true))
+	return true;
+    }
+  else if (memref_referenced_p (memref, x, false))
+    return true;
+  
+  return false;
+}
+
+/* TRUE if X references a memory location (as a read if READ_P) that
+   would be affected by a store to MEMREF.  */
+static bool
+memref_referenced_p (rtx memref, rtx x, bool read_p)
 {
   int i, j;
   const char *fmt;
@@ -3159,30 +3179,51 @@ memref_referenced_p (rtx memref, rtx x)
     case CC0:
     case HIGH:
     case LO_SUM:
-      return 0;
+      return false;
 
     case REG:
       return (reg_equiv[REGNO (x)].replacement
 	      && memref_referenced_p (memref,
-				      reg_equiv[REGNO (x)].replacement));
+				      reg_equiv[REGNO (x)].replacement, read_p));
 
     case MEM:
-      if (true_dependence (memref, VOIDmode, x))
-	return 1;
+      /* Memory X might have another effective type than MEMREF.  */
+      if (read_p || true_dependence (memref, VOIDmode, x))
+	return true;
       break;
 
     case SET:
-      /* If we are setting a MEM, it doesn't count (its address does), but any
-	 other SET_DEST that has a MEM in it is referencing the MEM.  */
-      if (MEM_P (SET_DEST (x)))
-	{
-	  if (memref_referenced_p (memref, XEXP (SET_DEST (x), 0)))
-	    return 1;
-	}
-      else if (memref_referenced_p (memref, SET_DEST (x)))
-	return 1;
+      if (process_set_for_memref_referenced_p (memref, SET_DEST (x)))
+	return true;
 
-      return memref_referenced_p (memref, SET_SRC (x));
+      return memref_referenced_p (memref, SET_SRC (x), true);
+
+    case CLOBBER:
+    case CLOBBER_HIGH:
+      if (process_set_for_memref_referenced_p (memref, XEXP (x, 0)))
+	return true;
+
+      return false;
+
+    case PRE_DEC:
+    case POST_DEC:
+    case PRE_INC:
+    case POST_INC:
+      if (process_set_for_memref_referenced_p (memref, XEXP (x, 0)))
+	return true;
+
+      return memref_referenced_p (memref, XEXP (x, 0), true);
+      
+    case POST_MODIFY:
+    case PRE_MODIFY:
+      /* op0 = op0 + op1 */
+      if (process_set_for_memref_referenced_p (memref, XEXP (x, 0)))
+	return true;
+
+      if (memref_referenced_p (memref, XEXP (x, 0), true))
+	return true;
+
+      return memref_referenced_p (memref, XEXP (x, 1), true);
 
     default:
       break;
@@ -3193,17 +3234,17 @@ memref_referenced_p (rtx memref, rtx x)
     switch (fmt[i])
       {
       case 'e':
-	if (memref_referenced_p (memref, XEXP (x, i)))
-	  return 1;
+	if (memref_referenced_p (memref, XEXP (x, i), read_p))
+	  return true;
 	break;
       case 'E':
 	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  if (memref_referenced_p (memref, XVECEXP (x, i, j)))
-	    return 1;
+	  if (memref_referenced_p (memref, XVECEXP (x, i, j), read_p))
+	    return true;
 	break;
       }
 
-  return 0;
+  return false;
 }
 
 /* TRUE if some insn in the range (START, END] references a memory location
@@ -3224,7 +3265,7 @@ memref_used_between_p (rtx memref, rtx_insn *start, rtx_insn *end)
       if (!NONDEBUG_INSN_P (insn))
 	continue;
 
-      if (memref_referenced_p (memref, PATTERN (insn)))
+      if (memref_referenced_p (memref, PATTERN (insn), false))
 	return 1;
 
       /* Nonconst functions may access memory.  */
