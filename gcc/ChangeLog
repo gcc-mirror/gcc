@@ -1,3 +1,8 @@
+2019-01-25  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* doc/sourcebuild.texi (Environment attributes): Add fenv and
+	fenv_exceptions description.
+
 2019-01-25  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR rtl-optimization/87763

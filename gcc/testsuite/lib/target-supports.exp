@@ -8536,6 +8536,14 @@ proc check_effective_target_avr_tiny { } {
     }
 }
 
+# Return 1 if <fenv.h> is available.
+
+proc check_effective_target_fenv {} {
+    return [check_no_compiler_messages fenv object {
+	#include <fenv.h>
+    } [add_options_for_ieee "-std=gnu99"]]
+}
+
 # Return 1 if <fenv.h> is available with all the standard IEEE
 # exceptions and floating-point exceptions are raised by arithmetic
 # operations.  (If the target requires special options for "inexact"
