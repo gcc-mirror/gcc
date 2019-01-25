@@ -1,3 +1,11 @@
+2019-01-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87336
+	* gfortran.dg/pointer_array_10.f90 : New test.
+	* gfortran.dg/assign_10.f90 : Increase 'parm' count to 20.
+	* gfortran.dg/transpose_optimization_2.f90 : Increase 'parm'
+	count to 72.
+
 2019-01-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/86865
