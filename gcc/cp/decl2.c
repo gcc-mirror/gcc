@@ -1757,9 +1757,9 @@ coerce_delete_type (tree decl, location_t loc)
   if (destroying_delete_p (decl))
     {
       if (DECL_CLASS_SCOPE_P (decl))
-	/* If the function is a destroying operator delete declared in class type
-	   C, the type of its first parameter shall be C*.  */
-	ptrtype = TYPE_POINTER_TO (DECL_CONTEXT (decl));
+	/* If the function is a destroying operator delete declared in class
+	   type C, the type of its first parameter shall be C*.  */
+	ptrtype = build_pointer_type (DECL_CONTEXT (decl));
       else
 	/* A destroying operator delete shall be a class member function named
 	   operator delete.  */

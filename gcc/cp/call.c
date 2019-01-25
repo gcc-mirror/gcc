@@ -6461,6 +6461,19 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 		continue;
 	      }
 
+	    /* -- If any of the deallocation functions is a destroying
+	       operator delete, all deallocation functions that are not
+	       destroying operator deletes are eliminated from further
+	       consideration.  */
+	    bool fn_destroying = destroying_delete_p (fn);
+	    bool elt_destroying = destroying_delete_p (elt);
+	    if (elt_destroying != fn_destroying)
+	      {
+		if (elt_destroying)
+		  fn = elt;
+		continue;
+	      }
+
 	    /* -- If the type has new-extended alignment, a function with a
 	       parameter of type std::align_val_t is preferred; otherwise a
 	       function without such a parameter is preferred. If exactly one
