@@ -1,3 +1,8 @@
+2019-01-25  Nathan Sidwell  <nathan@acm.org>
+
+	* elf.c (elf_add): Pass "" filename to recursive call with
+	separated debug.
+
 2019-01-25  Tom de Vries  <tdevries@suse.de>
 
 	* elf.c (elf_add): When handling .gnu_debugaltlink, call elf_add with

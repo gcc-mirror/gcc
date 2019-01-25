@@ -3041,7 +3041,7 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 	  if (debugaltlink_view_valid)
 	    backtrace_release_view (state, &debugaltlink_view, error_callback,
 				    data);
-	  ret = elf_add (state, NULL, d, base_address, error_callback, data,
+	  ret = elf_add (state, "", d, base_address, error_callback, data,
 			 fileline_fn, found_sym, found_dwarf, NULL, 0, 1, NULL,
 			 0);
 	  if (ret < 0)
