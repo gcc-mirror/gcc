@@ -130,7 +130,7 @@ check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3)
 @HAVE_ZLIB_TRUE@@NATIVE_TRUE@am__append_4 = -lz
 @HAVE_ZLIB_TRUE@@NATIVE_TRUE@am__append_5 = -lz
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__append_6 = ttest ttest_alloc
-@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_7 = dtest
+@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_7 = btest_gnudebuglink
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__append_8 = ctestg ctesta \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg_alloc \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta_alloc
@@ -1585,9 +1585,9 @@ btest_dwz.log: btest_dwz
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-dtest.log: dtest
-	@p='dtest'; \
-	b='dtest'; \
+btest_gnudebuglink.log: btest_gnudebuglink
+	@p='btest_gnudebuglink'; \
+	b='btest_gnudebuglink'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1767,9 +1767,9 @@ uninstall-am:
 @NATIVE_TRUE@	$(SHELL) $(srcdir)/../move-if-change tmp-edtest2_build.c edtest2_build.c
 @NATIVE_TRUE@	echo timestamp > $@
 
-@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@dtest: btest
-@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@	$(OBJCOPY) --only-keep-debug btest btest.debug
-@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@	$(OBJCOPY) --strip-debug --add-gnu-debuglink=btest.debug btest dtest
+@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@%_gnudebuglink: %
+@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@	$(OBJCOPY) --only-keep-debug $< $@.debug
+@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@	$(OBJCOPY) --strip-debug --add-gnu-debuglink=$@.debug $< $@
 alloc.lo: config.h backtrace.h internal.h
 backtrace.lo: config.h backtrace.h internal.h
 btest.lo: (INCDIR)/filenames.h backtrace.h backtrace-supported.h

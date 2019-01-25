@@ -255,11 +255,11 @@ endif HAVE_PTHREAD
 
 if HAVE_OBJCOPY_DEBUGLINK
 
-TESTS += dtest
+TESTS += btest_gnudebuglink
 
-dtest: btest
-	$(OBJCOPY) --only-keep-debug btest btest.debug
-	$(OBJCOPY) --strip-debug --add-gnu-debuglink=btest.debug btest dtest
+%_gnudebuglink: %
+	$(OBJCOPY) --only-keep-debug $< $@.debug
+	$(OBJCOPY) --strip-debug --add-gnu-debuglink=$@.debug $< $@
 
 endif HAVE_OBJCOPY_DEBUGLINK
 
