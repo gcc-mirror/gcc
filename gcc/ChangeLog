@@ -186,8 +186,8 @@
 
 2019-01-24  Xiong Hu Luo  <luoxhu@linux.vnet.ibm.com>
 
-	* tree-ssa-dom.c (test_for_singularity): fix a comment typo.
-	* vr-values.c (find_case_label_ranges): fix a comment typo.
+	* tree-ssa-dom.c (test_for_singularity): Fix a comment typo.
+	* vr-values.c (find_case_label_ranges): Fix a comment typo.
 
 2019-01-23  Bin Cheng  <bin.cheng@arm.com>
 	    Steve Ellcey <sellcey@marvell.com>

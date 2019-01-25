@@ -1,7 +1,7 @@
 2019-01-24  Xiong Hu Luo  <luoxhu@linux.vnet.ibm.com>
 
-	* ChangeLog: replace space with tab.
-	* MAINTAINERS: delete 1 tab to keep alignment.
+	* ChangeLog: Replace space with tab.
+	* MAINTAINERS: Delete 1 tab to keep alignment.
 
 2019-01-21  Jiufu Guo  <guojiufu@linux.ibm.com>
 
@@ -26,7 +26,7 @@
 
 	* MAINTAINERS (Write After Approval): Add myself.
 
-2019-01-16  Xiong Hu Luo <luoxhu@linux.vnet.ibm.com>
+2019-01-16  Xiong Hu Luo  <luoxhu@linux.vnet.ibm.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
 
