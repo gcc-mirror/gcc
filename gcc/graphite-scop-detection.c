@@ -555,8 +555,15 @@ scop_detection::can_represent_loop (loop_p loop, sese_l scop)
   tree niter;
   struct tree_niter_desc niter_desc;
 
-  return single_exit (loop)
-    && !(loop_preheader_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP)
+  /* We can only handle do {} while () style loops correctly.  */
+  edge exit = single_exit (loop);
+  if (!exit
+      || !single_pred_p (loop->latch)
+      || exit->src != single_pred (loop->latch)
+      || !empty_block_p (loop->latch))
+    return false;
+
+  return !(loop_preheader_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP)
     && number_of_iterations_exit (loop, single_exit (loop), &niter_desc, false)
     && niter_desc.control.no_overflow
     && (niter = number_of_latch_executions (loop))

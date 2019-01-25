@@ -1,3 +1,9 @@
+2019-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86865
+	* graphite-scop-detection.c (scop_detection::can_represent_loop):
+	Reject non-do-while loops.
+
 2019-01-24  Peter Bergner  <bergner@linux.ibm.com>
 
 	* config/rs6000/altivec.md (build_vector_mask_for_load): Use MEM_P.

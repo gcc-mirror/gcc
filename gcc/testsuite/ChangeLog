@@ -1,3 +1,10 @@
+2019-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86865
+	* gcc.dg/graphite/pr86865.c: New testcase.
+	* gcc.dg/graphite/pr69728.c: XFAIL.
+	* gcc.dg/graphite/scop-21.c: Likewise.
+
 2019-01-24  Martin Sebor  <msebor@redhat.com>
 
 	PR c/86125
