@@ -190,6 +190,12 @@ if HAVE_DWZ
 
 TESTS += btest_dwz
 
+if HAVE_OBJCOPY_DEBUGLINK
+
+TESTS += btest_dwz_gnudebuglink
+
+endif HAVE_OBJCOPY_DEBUGLINK
+
 endif HAVE_DWZ
 
 stest_SOURCES = stest.c

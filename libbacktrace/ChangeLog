@@ -1,5 +1,12 @@
 2019-01-25  Tom de Vries  <tdevries@suse.de>
 
+	* elf.c (elf_add): When handling .gnu_debugaltlink, call elf_add with
+	filename == "".
+	* Makefile.am (TESTS): Add btest_dwz_gnudebuglink.
+	* Makefile.in: Regenerate.
+
+2019-01-25  Tom de Vries  <tdevries@suse.de>
+
 	* Makefile.am: Rewrite dtest rule into "%_gnudebuglink" pattern rule.
 	(TESTS): Rename dtest to btest_gnudebuglink.
 	* Makefile.in: Regenerate.
