@@ -80,7 +80,7 @@ struct coroutine_handle : coroutine_handle<> {
   }
   // 21.11.2.5 promise access
   _Promise& promise() const {
-    void * __t = __builtin_coro_promise(this->__handle,
+    void * __t = __builtin_coro_promise(this->__fr_ptr,
 					__alignof(_Promise), false);
     return *static_cast<_Promise*>(__t);
   }

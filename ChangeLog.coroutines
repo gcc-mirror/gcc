@@ -1,5 +1,10 @@
 2019-01-25  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/testsuite/g++.dg/coroutines/coro.h (promise): Use the
+	__fr_ptr member.
+	
+2019-01-25  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/cp/coroutines.cc (morph_fn_to_coro): Handle GRO with a
 	signature different from the function return.  Handle GRO with
 	non-trivial dtor.
