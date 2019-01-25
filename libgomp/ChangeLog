@@ -1,3 +1,8 @@
+2019-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86865
+	* testsuite/libgomp.graphite/force-parallel-5.c: XFAIL.
+
 2019-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

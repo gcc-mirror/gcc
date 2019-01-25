@@ -30,4 +30,5 @@ int test ()
 
   return a[20];
 }
-/* { dg-final { scan-tree-dump-times "number of SCoPs: 1" 1 "graphite"} } */
+/* XFAILed by the fix for PR86865.  */
+/* { dg-final { scan-tree-dump-times "number of SCoPs: 1" 1 "graphite" { xfail *-*-* } } } */
