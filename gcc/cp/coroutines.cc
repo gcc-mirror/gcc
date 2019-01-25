@@ -1330,6 +1330,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 			     NULL, tf_warning_or_error);
   // init our actual var.
   r = build2 (INIT_EXPR, TREE_TYPE (gro), gro, TREE_OPERAND (r, 1));
+  r = build1 (CONVERT_EXPR, void_type_node, r);
   r = build_stmt (fn_start, EXPR_STMT, r);
   r = maybe_cleanup_point_expr_void (r);
   add_stmt (r);
@@ -1341,16 +1342,15 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree resume_idx = build_class_member_access_expr (deref_fp, resume_idx_m,
 						    NULL_TREE, false,
 						    tf_warning_or_error);
-  //r = build1 (CONVERT_EXPR, short_unsigned_type_node, integer_minus_one_node);
   r = build_int_cst (short_unsigned_type_node, 0);
   r = build2 (INIT_EXPR, short_unsigned_type_node, resume_idx, r);
+  r = build1 (CONVERT_EXPR, void_type_node, r);
   r = build_stmt (fn_start, EXPR_STMT, r);
   r = maybe_cleanup_point_expr_void (r);
   add_stmt (r);
 
   /* So .. call the actor ..  */
   r = build_call_expr_loc (fn_start, actor, 1, coro_fp);
-  r = build_stmt (fn_start, EXPR_STMT, r);
   r = maybe_cleanup_point_expr_void (r);
   add_stmt (r);
 
