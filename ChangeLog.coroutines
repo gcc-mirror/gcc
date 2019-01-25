@@ -1,5 +1,10 @@
 2019-01-25  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/testsuite/g++.dg/coroutines/torture/co-ret-6.C: New.
+	* gcc/testsuite/g++.dg/coroutines/torture/co-ret-7.C: New.
+
+2019-01-25  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/testsuite/g++.dg/coroutines/torture/co-ret-5.C: New.
 
 2019-01-25  Iain Sandoe  <iain@sandoe.co.uk>
