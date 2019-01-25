@@ -127,11 +127,12 @@ check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3)
 @NATIVE_TRUE@	ztest ztest_alloc edtest edtest_alloc
 @NATIVE_TRUE@am__append_2 = allocfail.sh
 @HAVE_DWZ_TRUE@@NATIVE_TRUE@am__append_3 = btest_dwz
-@HAVE_ZLIB_TRUE@@NATIVE_TRUE@am__append_4 = -lz
+@HAVE_DWZ_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_4 = btest_dwz_gnudebuglink
 @HAVE_ZLIB_TRUE@@NATIVE_TRUE@am__append_5 = -lz
-@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__append_6 = ttest ttest_alloc
-@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_7 = btest_gnudebuglink
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__append_8 = ctestg ctesta \
+@HAVE_ZLIB_TRUE@@NATIVE_TRUE@am__append_6 = -lz
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__append_7 = ttest ttest_alloc
+@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_8 = btest_gnudebuglink
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__append_9 = ctestg ctesta \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg_alloc \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta_alloc
 subdir = .
@@ -789,7 +790,7 @@ libbacktrace_la_LIBADD = \
 
 libbacktrace_la_DEPENDENCIES = $(libbacktrace_la_LIBADD)
 TESTS = $(check_PROGRAMS) $(am__append_2) $(am__append_3) \
-	$(am__append_7)
+	$(am__append_4) $(am__append_8)
 @NATIVE_TRUE@check_LTLIBRARIES = libbacktrace_alloc.la \
 @NATIVE_TRUE@	libbacktrace_noformat.la \
 @NATIVE_TRUE@	libbacktrace_instrumented_alloc.la
@@ -834,9 +835,9 @@ TESTS = $(check_PROGRAMS) $(am__append_2) $(am__append_3) \
 @NATIVE_TRUE@stest_alloc_LDADD = libbacktrace_alloc.la
 @NATIVE_TRUE@ztest_SOURCES = ztest.c testlib.c
 @NATIVE_TRUE@ztest_CFLAGS = -DSRCDIR=\"$(srcdir)\"
-@NATIVE_TRUE@ztest_LDADD = libbacktrace.la $(am__append_4) \
+@NATIVE_TRUE@ztest_LDADD = libbacktrace.la $(am__append_5) \
 @NATIVE_TRUE@	$(CLOCK_GETTIME_LINK)
-@NATIVE_TRUE@ztest_alloc_LDADD = libbacktrace_alloc.la $(am__append_5) \
+@NATIVE_TRUE@ztest_alloc_LDADD = libbacktrace_alloc.la $(am__append_6) \
 @NATIVE_TRUE@	$(CLOCK_GETTIME_LINK)
 @NATIVE_TRUE@ztest_alloc_SOURCES = $(ztest_SOURCES)
 @NATIVE_TRUE@ztest_alloc_CFLAGS = $(ztest_CFLAGS)
@@ -1581,6 +1582,13 @@ allocfail.sh.log: allocfail.sh
 btest_dwz.log: btest_dwz
 	@p='btest_dwz'; \
 	b='btest_dwz'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+btest_dwz_gnudebuglink.log: btest_dwz_gnudebuglink
+	@p='btest_dwz_gnudebuglink'; \
+	b='btest_dwz_gnudebuglink'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
