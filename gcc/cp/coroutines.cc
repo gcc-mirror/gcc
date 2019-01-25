@@ -1315,21 +1315,22 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree gro_context_bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
   add_stmt (gro_context_bind);
   tree gro_context_body = push_stmt_list ();
-  
+
+  tree gro_meth = lookup_promise_member (orig, "get_return_object",
+					 fn_start, true /*musthave*/);
+  tree get_ro = build_new_method_call (p, gro_meth, NULL, NULL_TREE,
+				       LOOKUP_NORMAL, NULL,
+				       tf_warning_or_error);
+
   tree gro = build_lang_decl (VAR_DECL, get_identifier ("coro.gro"),
-			      fn_return_type);
+			      TREE_TYPE (TREE_OPERAND (get_ro, 0)));
   DECL_CONTEXT (gro) = current_scope ();
   r = build_stmt (fn_start, DECL_EXPR, gro);
   add_stmt (r);
-  BIND_EXPR_VARS (gro_context_bind) = gro;
+  tree gro_bind_vars = gro;
 
-  tree gro_meth = lookup_promise_member (orig, "get_return_object",
-				    fn_start, true /*musthave*/);
-  r = build_new_method_call (p, gro_meth,
-			     NULL, NULL_TREE, LOOKUP_NORMAL,
-			     NULL, tf_warning_or_error);
   // init our actual var.
-  r = build2 (INIT_EXPR, TREE_TYPE (gro), gro, TREE_OPERAND (r, 1));
+  r = build2 (INIT_EXPR, TREE_TYPE (gro), gro, TREE_OPERAND (get_ro, 1));
   r = build1 (CONVERT_EXPR, void_type_node, r);
   r = build_stmt (fn_start, EXPR_STMT, r);
   r = maybe_cleanup_point_expr_void (r);
@@ -1354,9 +1355,27 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   r = maybe_cleanup_point_expr_void (r);
   add_stmt (r);
 
-  /* done.  */
+  /* done, we just need the return value.  */
   bool no_warning;
-  r = check_return_expr (rvalue (gro), &no_warning);
+  if (same_type_p (TREE_TYPE (gro), fn_return_type))
+     /* Already got it.  */
+    r = check_return_expr (rvalue (gro), &no_warning);
+  else
+    {
+      // construct the return value with a single GRO param.
+      vec<tree, va_gc> *args = make_tree_vector_single (gro);
+      r = build_special_member_call (DECL_RESULT (orig),
+				     complete_ctor_identifier, &args,
+				     fn_return_type, LOOKUP_NORMAL,
+				     tf_warning_or_error);
+      r = build1 (CONVERT_EXPR, void_type_node, r);
+      r = build_stmt (fn_start, EXPR_STMT, r);
+      r = maybe_cleanup_point_expr_void (r);
+      add_stmt (r);
+      // We know it's the correct type.
+      r = DECL_RESULT (orig);
+    }
+
   r = build_stmt (input_location, RETURN_EXPR, r);
   TREE_NO_WARNING (r) |= no_warning;
   r = maybe_cleanup_point_expr_void (r);
@@ -1373,6 +1392,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 				tf_warning_or_error);
   add_stmt (r);
 #endif
+  BIND_EXPR_VARS (gro_context_bind) = gro_bind_vars;
   BIND_EXPR_BODY (gro_context_bind) = pop_stmt_list (gro_context_body);
   BIND_EXPR_BODY (ramp_bind) = pop_stmt_list (ramp_body);
 
