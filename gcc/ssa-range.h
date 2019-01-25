@@ -141,6 +141,8 @@ public:
 
   void dump (FILE *f);
   void calculate_and_dump (FILE *f);   /* Calculate all stmts and dump */
+
+  friend class phi_loop_range;
 protected:
   gori_cache m_gori; 	  /* Generates Outgoing Range Info.  */
   ssa_global_cache m_globals;

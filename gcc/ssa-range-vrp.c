@@ -46,6 +46,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "ssa-range.h"
 #include "tree-ssa-dce.h"
+#include "cfgloop.h"
+#include "tree-scalar-evolution.h"
+#include "tree-ssa-loop.h"
+#include "alloc-pool.h"
+#include "vr-values.h"
 
 // Return TRUE if NAME can be propagated.,
 
@@ -140,6 +145,58 @@ rvrp_process_bb_end (ssa_ranger& ranger, basic_block bb, bitmap touched)
     }
 }
 
+// Class to adjust a PHI result with loop info.
+
+class phi_loop_range
+{
+ public:
+  phi_loop_range ();
+  ~phi_loop_range ();
+  bool adjust_range_with_loop_info (global_ranger &, gphi *, irange &);
+
+ private:
+  vr_values m_vr_values;
+};
+
+phi_loop_range::phi_loop_range ()
+{
+  loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
+  scev_initialize ();
+}
+
+phi_loop_range::~phi_loop_range ()
+{
+  scev_finalize ();
+  loop_optimizer_finalize ();
+}
+
+// Adjust a PHI result's range with loop information.  R is the known
+// range of the PHI result.
+//
+// Adjust R and return TRUE if we were able to refine the range with
+// loop information.
+
+bool
+phi_loop_range::adjust_range_with_loop_info (global_ranger &ranger,
+					     gphi *phi, irange &r)
+{
+  struct loop *l = loop_containing_stmt (phi);
+  if (l && l->header == gimple_bb (phi))
+    {
+      tree phi_result = PHI_RESULT (phi);
+      value_range vr;
+      irange_to_value_range (vr, r);
+      m_vr_values.adjust_range_with_scev (&vr, l, phi, phi_result);
+      if (vr.constant_p ())
+	{
+	  value_range_to_irange (r, TREE_TYPE (phi_result), vr);
+	  ranger.m_globals.set_global_range (PHI_RESULT (phi), r);
+	  return true;
+	}
+    }
+  return false;
+}
+
 static unsigned int
 execute_ranger_vrp ()
 {
@@ -151,6 +208,10 @@ execute_ranger_vrp ()
       global_ranger e;
       e.calculate_and_dump (dump_file);
     }
+
+  // ?? Must be declared before the global_ranger, because of some
+  // lameness with the way loop_optimizer_init behaves.
+  phi_loop_range loop_range;
 
   trace_ranger ranger;
   basic_block bb;
@@ -166,6 +227,9 @@ execute_ranger_vrp ()
 	  tree phi_def = gimple_phi_result (phi);
 	  if (ranger.valid_ssa_p (phi_def) && ranger.range_of_stmt (r, phi))
 	    {
+	      // Adjust range with loop info and store into the cache.
+	      loop_range.adjust_range_with_loop_info (ranger, phi, r);
+
 	      // bitmap_set_bit (touched, SSA_NAME_VERSION (phi_def));
 	    }
 	}

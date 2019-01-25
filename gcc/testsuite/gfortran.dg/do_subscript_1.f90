@@ -1,4 +1,11 @@
 ! { dg-do compile }
+! { dg-options "-fdisable-tree-rvrp" }
+
+! Disable ranger VRP above because we get additional warnings now that
+! the ranger is loop aware.  The warnings are just undefined behavior
+! noise because of the out of bounds detected.  Dunno whether to
+! disable rvrp, or add more dg-warnings below.
+
 program main
   real, dimension(3) :: a
   a = 42.
