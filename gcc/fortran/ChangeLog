@@ -1,3 +1,9 @@
+2019-01-25  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85780
+	* decl.c (gfc_match_subroutine): Check for conflict between BIND(C)
+	and alternative return.
+
 2019-01-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/88929
