@@ -1,3 +1,13 @@
+2019-01-25  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp (check_effective_target_fenv): New.
+	* gcc.dg/torture/fp-int-convert-float128-timode-3.c: Add missing
+	fenv effective target.
+	* gcc.dg/torture/fp-int-convert-timode-1.c: Likewise.
+	* gcc.dg/torture/fp-int-convert-timode-2.c: Likewise.
+	* gcc.dg/torture/fp-int-convert-timode-3.c: Likewise.
+	* gcc.dg/torture/fp-int-convert-timode-4.c: Likewise.
+
 2019-01-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/86865
