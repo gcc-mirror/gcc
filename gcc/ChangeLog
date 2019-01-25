@@ -1,3 +1,9 @@
+2019-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89049
+	* tree-vect-loop.c (vect_compute_single_scalar_iteration_cost):
+	Look at the pattern stmt to determine if the stmt is vectorized.
+
 2019-01-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64-sve.md (*pred_mov<mode>)
