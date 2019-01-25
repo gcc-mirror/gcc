@@ -7163,7 +7163,7 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
 
   /* Equality comparisons of short modes against zero can be performed
      using the TST instruction with the appropriate bitmask.  */
-  if (y == const0_rtx && REG_P (x)
+  if (y == const0_rtx && (REG_P (x) || SUBREG_P (x))
       && (code == EQ || code == NE)
       && (mode_x == HImode || mode_x == QImode))
     return CC_NZmode;
