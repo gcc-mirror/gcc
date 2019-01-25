@@ -170,18 +170,22 @@
 ;; all-true.  Note that this pattern is generated directly by
 ;; aarch64_emit_sve_pred_move, so changes to this pattern will
 ;; need changes there as well.
-(define_insn "*pred_mov<mode>"
-  [(set (match_operand:SVE_ALL 0 "nonimmediate_operand" "=w, m")
+(define_insn_and_split "*pred_mov<mode>"
+  [(set (match_operand:SVE_ALL 0 "nonimmediate_operand" "=w, w, m")
 	(unspec:SVE_ALL
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
-	   (match_operand:SVE_ALL 2 "nonimmediate_operand" "m, w")]
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (match_operand:SVE_ALL 2 "nonimmediate_operand" "w, m, w")]
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[2], <MODE>mode))"
   "@
+   #
    ld1<Vesize>\t%0.<Vetype>, %1/z, %2
    st1<Vesize>\t%2.<Vetype>, %1, %0"
+  "&& register_operand (operands[0], <MODE>mode)
+   && register_operand (operands[2], <MODE>mode)"
+  [(set (match_dup 0) (match_dup 2))]
 )
 
 (define_expand "movmisalign<mode>"
@@ -401,10 +405,10 @@
 ;; Predicated structure moves.  This works for both endiannesses but in
 ;; practice is only useful for big-endian.
 (define_insn_and_split "pred_mov<mode>"
-  [(set (match_operand:SVE_STRUCT 0 "aarch64_sve_struct_nonimmediate_operand" "=w, Utx")
+  [(set (match_operand:SVE_STRUCT 0 "aarch64_sve_struct_nonimmediate_operand" "=w, w, Utx")
 	(unspec:SVE_STRUCT
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
-	   (match_operand:SVE_STRUCT 2 "aarch64_sve_struct_nonimmediate_operand" "Utx, w")]
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (match_operand:SVE_STRUCT 2 "aarch64_sve_struct_nonimmediate_operand" "w, Utx, w")]
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE
    && (register_operand (operands[0], <MODE>mode)

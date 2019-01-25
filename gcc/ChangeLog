@@ -1,3 +1,9 @@
+2019-01-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (*pred_mov<mode>)
+	(pred_mov<mode>): Handle all-register forms using both a new
+	alternative and a split.
+
 2019-01-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/86865
