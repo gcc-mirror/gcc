@@ -1,3 +1,8 @@
+2019-01-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/89037
+	* gcc.dg/pr89037.c: New test.
+
 2019-01-25  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* lib/target-supports.exp (check_effective_target_fenv): New.
