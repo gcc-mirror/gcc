@@ -1,3 +1,10 @@
+2019-01-25  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/88469
+	* gcc.target/aarch64/aapcs64/test_align-10.c: New test.
+	* gcc.target/aarch64/aapcs64/test_align-11.c: New test.
+	* gcc.target/aarch64/aapcs64/test_align-12.c: New test.
+
 2019-01-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/89037

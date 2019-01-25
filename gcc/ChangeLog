@@ -1,3 +1,13 @@
+2019-01-25  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/88469
+	* config/aarch64/aarch64.c (aarch64_function_arg_alignment): Add new
+	argument ABI_BREAK.  Set to true if the calculated alignment has
+	changed in gcc-9.  Check bit-fields for their base type alignment.
+	(aarch64_layout_arg): Warn if argument passing has changed in gcc-9.
+	(aarch64_function_arg_boundary): Likewise.
+	(aarch64_gimplify_va_arg_expr): Likewise.
+
 2019-01-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/89037
