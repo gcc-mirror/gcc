@@ -7558,6 +7558,7 @@ gfc_match_subroutine (void)
   match is_bind_c;
   char peek_char;
   bool allow_binding_name;
+  locus loc;
 
   if (gfc_current_state () != COMP_NONE
       && gfc_current_state () != COMP_INTERFACE
@@ -7623,6 +7624,8 @@ gfc_match_subroutine (void)
   /* Here, we are just checking if it has the bind(c) attribute, and if
      so, then we need to make sure it's all correct.  If it doesn't,
      we still need to continue matching the rest of the subroutine line.  */
+  gfc_gobble_whitespace ();
+  loc = gfc_current_locus;
   is_bind_c = gfc_match_bind_c (sym, allow_binding_name);
   if (is_bind_c == MATCH_ERROR)
     {
@@ -7634,6 +7637,8 @@ gfc_match_subroutine (void)
 
   if (is_bind_c == MATCH_YES)
     {
+      gfc_formal_arglist *arg;
+
       /* The following is allowed in the Fortran 2008 draft.  */
       if (gfc_current_state () == COMP_CONTAINS
 	  && sym->ns->proc_name->attr.flavor != FL_MODULE
@@ -7647,8 +7652,17 @@ gfc_match_subroutine (void)
           gfc_error ("Missing required parentheses before BIND(C) at %C");
           return MATCH_ERROR;
         }
-      if (!gfc_add_is_bind_c (&(sym->attr), sym->name,
-			      &(sym->declared_at), 1))
+
+      /* Scan the dummy arguments for an alternate return.  */
+      for (arg = sym->formal; arg; arg = arg->next)
+	if (!arg->sym)
+	  {
+	    gfc_error ("Alternate return dummy argument cannot appear in a "
+		       "SUBROUTINE with the BIND(C) attribute at %L", &loc);
+	    return MATCH_ERROR;
+	  }
+
+      if (!gfc_add_is_bind_c (&(sym->attr), sym->name, &(sym->declared_at), 1))
         return MATCH_ERROR;
     }
 

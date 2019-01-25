@@ -1,3 +1,8 @@
+2019-01-25  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85780
+	* gfortran.dg/pr85780.f90: Update testcase for error message.
+
 2019-01-25  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/88469
