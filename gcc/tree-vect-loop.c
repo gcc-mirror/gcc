@@ -1100,11 +1100,11 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
             continue;
 
           /* Skip stmts that are not vectorized inside the loop.  */
-          if (stmt_info
-              && !STMT_VINFO_RELEVANT_P (stmt_info)
-              && (!STMT_VINFO_LIVE_P (stmt_info)
-                  || !VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info)))
-	      && !STMT_VINFO_IN_PATTERN_P (stmt_info))
+	  stmt_vec_info vstmt_info = vect_stmt_to_vectorize (stmt_info);
+          if (!STMT_VINFO_RELEVANT_P (vstmt_info)
+              && (!STMT_VINFO_LIVE_P (vstmt_info)
+                  || !VECTORIZABLE_CYCLE_DEF
+			(STMT_VINFO_DEF_TYPE (vstmt_info))))
             continue;
 
 	  vect_cost_for_stmt kind;
