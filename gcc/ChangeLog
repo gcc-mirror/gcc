@@ -1,3 +1,11 @@
+2019-01-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/888846
+	* ira.c (process_set_for_memref_referenced_p): New.
+	(memref_referenced_p): Add new param.  Use
+	process_set_for_memref_referenced_p.  Add new switch cases.
+	(memref_used_between_p): Pass new arg to memref_referenced_p.
+
 2019-01-25  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/88469
