@@ -1,5 +1,10 @@
 2019-01-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (struct loop_info_d): Remove artificial field.
+	(Loop_Statement_to_gnu): Do not set it.
+
+2019-01-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Iterate_Acc_Clause_Arg): Fix formatting.
 	(Acc_gnat_to_gnu): Likewise.
 	(Acc_Data_to_gnu): Likewise.
