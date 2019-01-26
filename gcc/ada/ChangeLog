@@ -1,3 +1,10 @@
+2019-01-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (annotate_value) <INTEGER_CST>: Use test on
+	the sign bit instead of on the sign of the value.
+	<PLUS_EXPR>: Turn addition of negative constant into subtraction.
+	<BIT_AND_EXPR>: Simplify.
+
 2018-12-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* adaint.c [__APPLE__] (__gnat_lwp_self): Ensure that the system
