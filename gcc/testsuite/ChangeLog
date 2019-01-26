@@ -1,3 +1,15 @@
+2019-01-26  Manfred Schwarb  <manfred99@gmx.ch>
+
+	* gfortran.dg/array_function_5.f90
+	* gfortran.dg/class_66.f90
+	* gfortran.dg/dec_structure_12.f90
+	* gfortran.dg/dec_structure_14.f90
+	* gfortran.dg/dec_structure_15.f90
+	* gfortran.dg/extends_11.f03
+	* gfortran.dg/pr58968.f
+	* gfortran.dg/pr78259.f90
+	* gfortran.dg/debug/pr35154-stabs.f
+
 2019-01-24  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/88998
