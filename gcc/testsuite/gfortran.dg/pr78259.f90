@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 ! { dg-options "-fdec-structure" }
 !
 ! PR fortran/78259
