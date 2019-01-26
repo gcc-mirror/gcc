@@ -3501,25 +3501,29 @@ Acc_Loop_to_gnu (Node_Id gnat_loop)
 static tree
 Regular_Loop_to_gnu (Node_Id gnat_node, tree *gnu_cond_expr_p)
 {
-  struct loop_info_d * const gnu_loop_info = gnu_loop_stack->last ();
-  tree gnu_loop_stmt = gnu_loop_info->stmt;
-
   const Node_Id gnat_iter_scheme = Iteration_Scheme (gnat_node);
+  struct loop_info_d *const gnu_loop_info = gnu_loop_stack->last ();
+  tree gnu_loop_stmt = gnu_loop_info->stmt;
+  tree gnu_loop_label = LOOP_STMT_LABEL (gnu_loop_stmt);
+  tree gnu_cond_expr = *gnu_cond_expr_p;
   tree gnu_low = NULL_TREE, gnu_high = NULL_TREE;
 
-  tree gnu_cond_expr = *gnu_cond_expr_p;
+  /* Set the condition under which the loop must keep going.  If we have an
+     explicit condition, use it to set the location information throughout
+     the translation of the loop statement to avoid having multiple SLOCs.
 
-  tree gnu_loop_label = LOOP_STMT_LABEL (gnu_loop_stmt);
-
-  /* Set the condition under which the loop must keep going.
      For the case "LOOP .... END LOOP;" the condition is always true.  */
   if (No (gnat_iter_scheme))
     ;
 
   /* For the case "WHILE condition LOOP ..... END LOOP;" it's immediate.  */
   else if (Present (Condition (gnat_iter_scheme)))
-    LOOP_STMT_COND (gnu_loop_stmt)
-      = gnat_to_gnu (Condition (gnat_iter_scheme));
+    {
+      LOOP_STMT_COND (gnu_loop_stmt)
+	= gnat_to_gnu (Condition (gnat_iter_scheme));
+
+      set_expr_location_from_node (gnu_loop_stmt, gnat_iter_scheme);
+    }
 
   /* Otherwise we have an iteration scheme and the condition is given by the
      bounds of the subtype of the iteration variable.  */
@@ -3673,7 +3677,7 @@ Regular_Loop_to_gnu (Node_Id gnat_node, tree *gnu_cond_expr_p)
 			  build_binary_op (LE_EXPR, boolean_type_node,
 					   gnu_low, gnu_high),
 			  NULL_TREE, alloc_stmt_list ());
-	      set_expr_location_from_node (gnu_cond_expr, gnat_loop_spec);
+	      set_expr_location_from_node (gnu_cond_expr, gnat_iter_scheme);
 	    }
 	}
 
@@ -3748,6 +3752,8 @@ Regular_Loop_to_gnu (Node_Id gnat_node, tree *gnu_cond_expr_p)
 	  set_expr_location_from_node (gnu_stmt, gnat_iter_scheme);
 	  LOOP_STMT_UPDATE (gnu_loop_stmt) = gnu_stmt;
 	}
+
+      set_expr_location_from_node (gnu_loop_stmt, gnat_iter_scheme);
     }
 
   /* If the loop was named, have the name point to this loop.  In this case,

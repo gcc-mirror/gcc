@@ -1,5 +1,10 @@
 2019-01-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Regular_Loop_to_gnu): Use the SLOC of the
+	iteration scheme, if present, throughout the translation.
+
+2019-01-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gnat_to_gnu) <N_Assignment_Statement>: Use
 	DECL_SIZE_UNIT instead of TYPE_SIZE_UNIT for the size to be assigned
 	by a call to memset if the LHS is a DECL.
