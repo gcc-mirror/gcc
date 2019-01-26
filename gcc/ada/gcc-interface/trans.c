@@ -1253,7 +1253,6 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
   return gnu_result;
 }
 
-
 /* If GNAT_EXPR is an N_Identifier, N_Integer_Literal or N_Operator_Symbol,
    call FN on it.  If GNAT_EXPR is an aggregate, call FN on each of its
    elements.  In both cases, pass GNU_EXPR and DATA as additional arguments.
@@ -1285,16 +1284,19 @@ Iterate_Acc_Clause_Arg (Node_Id gnat_expr, tree gnu_expr,
 	    gnu_expr = fn (Expression (gnat_list_expr), gnu_expr, data);
 	}
       else
-	  gcc_unreachable();
-	break;
+	gcc_unreachable ();
+      break;
+
     case N_Identifier:
     case N_Integer_Literal:
     case N_Operator_Symbol:
-	gnu_expr = fn (gnat_expr, gnu_expr, data);
-	break;
+      gnu_expr = fn (gnat_expr, gnu_expr, data);
+      break;
+
     default:
-	gcc_unreachable();
+      gcc_unreachable ();
     }
+
   return gnu_expr;
 }
 
@@ -1329,18 +1331,19 @@ Acc_gnat_to_gnu (Node_Id gnat_node)
 static tree
 Acc_Data_to_gnu (Node_Id gnat_expr, tree gnu_clauses, void* data)
 {
-  tree gnu_clause;
-  enum gomp_map_kind kind = *((enum gomp_map_kind*) data);
-  gnu_clause = build_omp_clause (EXPR_LOCATION(gnu_loop_stack->last ()->stmt),
-				 OMP_CLAUSE_MAP);
+  const enum gomp_map_kind kind = *((enum gomp_map_kind*) data);
+  tree gnu_clause
+    = build_omp_clause (EXPR_LOCATION(gnu_loop_stack->last ()->stmt),
+		        OMP_CLAUSE_MAP);
 
   gcc_assert (Nkind (gnat_expr) == N_Identifier);
-  OMP_CLAUSE_DECL (gnu_clause) =
-    gnat_to_gnu_entity (Entity (gnat_expr), NULL_TREE, false);
+  OMP_CLAUSE_DECL (gnu_clause)
+    = gnat_to_gnu_entity (Entity (gnat_expr), NULL_TREE, false);
 
   TREE_ADDRESSABLE (OMP_CLAUSE_DECL (gnu_clause)) = 1;
   OMP_CLAUSE_SET_MAP_KIND (gnu_clause, kind);
   OMP_CLAUSE_CHAIN (gnu_clause) = gnu_clauses;
+
   return gnu_clause;
 }
 
@@ -1353,13 +1356,13 @@ Acc_Data_to_gnu (Node_Id gnat_expr, tree gnu_clauses, void* data)
 static tree
 Acc_Var_to_gnu (Node_Id gnat_expr, tree gnu_clauses, void* data)
 {
-  tree gnu_clause;
-  enum omp_clause_code kind = *((enum omp_clause_code*) data);
-  gnu_clause =
-    build_omp_clause (EXPR_LOCATION (gnu_loop_stack->last ()->stmt), kind);
+  const enum omp_clause_code kind = *((enum omp_clause_code*) data);
+  tree gnu_clause
+    = build_omp_clause (EXPR_LOCATION (gnu_loop_stack->last ()->stmt), kind);
 
   OMP_CLAUSE_DECL (gnu_clause) = Acc_gnat_to_gnu (gnat_expr);
   OMP_CLAUSE_CHAIN (gnu_clause) = gnu_clauses;
+
   return gnu_clause;
 }
 
@@ -1372,13 +1375,15 @@ Acc_Var_to_gnu (Node_Id gnat_expr, tree gnu_clauses, void* data)
 static tree
 Acc_Reduc_Var_to_gnu (Node_Id gnat_expr, tree gnu_clauses, void* data)
 {
-  tree gnu_clause;
-  tree_code code = *((tree_code*) data);
-  gnu_clause = build_omp_clause (EXPR_LOCATION (gnu_loop_stack->last ()->stmt),
-				 OMP_CLAUSE_REDUCTION);
+  const tree_code code = *((tree_code*) data);
+  tree gnu_clause
+    = build_omp_clause (EXPR_LOCATION (gnu_loop_stack->last ()->stmt),
+			OMP_CLAUSE_REDUCTION);
+
   OMP_CLAUSE_DECL (gnu_clause) = Acc_gnat_to_gnu (gnat_expr);
   OMP_CLAUSE_REDUCTION_CODE (gnu_clause) = code;
   OMP_CLAUSE_CHAIN (gnu_clause) = gnu_clauses;
+
   return gnu_clause;
 }
 
@@ -1389,6 +1394,7 @@ static tree
 Acc_Reduc_to_gnu (Node_Id gnat_expr)
 {
   tree gnu_clauses = NULL_TREE;
+
   for (Node_Id gnat_op = First (Component_Associations (gnat_expr));
        Present (gnat_op);
        gnat_op = Next (gnat_op))
@@ -1421,8 +1427,9 @@ Acc_Reduc_to_gnu (Node_Id gnat_expr)
 	    code = TRUTH_ORIF_EXPR;
 	  break;
 	default:
-	  gcc_unreachable();
+	  gcc_unreachable ();
 	}
+
       /* Unsupported reduction operation.  This should have been
 	 caught in sem_prag.adb.  */
       gcc_assert (code != ERROR_MARK);
@@ -1432,6 +1439,7 @@ Acc_Reduc_to_gnu (Node_Id gnat_expr)
 					    Acc_Reduc_Var_to_gnu,
 					    &code);
     }
+
   return gnu_clauses;
 }
 
@@ -1461,15 +1469,15 @@ Acc_Size_Expr_to_gnu (Node_Id gnat_expr, tree gnu_clauses, void *)
 static tree
 Acc_Size_List_to_gnu (Node_Id gnat_expr)
 {
-  tree gnu_clause;
-  tree gnu_list;
+  tree gnu_clause
+    = build_omp_clause (EXPR_LOCATION (gnu_loop_stack->last ()->stmt),
+		        OMP_CLAUSE_TILE);
+  tree gnu_list = Iterate_Acc_Clause_Arg (gnat_expr, NULL_TREE,
+					  Acc_Size_Expr_to_gnu,
+					  NULL);
 
-  gnu_clause = build_omp_clause (EXPR_LOCATION (gnu_loop_stack->last ()->stmt),
-				 OMP_CLAUSE_TILE);
-  gnu_list = Iterate_Acc_Clause_Arg (gnat_expr, NULL_TREE,
-				     Acc_Size_Expr_to_gnu,
-				     NULL);
   OMP_CLAUSE_TILE_LIST (gnu_clause) = nreverse (gnu_list);
+
   return gnu_clause;
 }
 
@@ -1535,11 +1543,14 @@ Pragma_to_gnu (Node_Id gnat_node)
 
     case Pragma_Acc_Loop:
       {
-	tree gnu_clauses = gnu_loop_stack->last ()->omp_loop_clauses;
 	if (!flag_openacc)
-          break;
-        if (!Present (Pragma_Argument_Associations (gnat_node)))
 	  break;
+
+	tree gnu_clauses = gnu_loop_stack->last ()->omp_loop_clauses;
+
+	if (!Present (Pragma_Argument_Associations (gnat_node)))
+	  break;
+
 	for (gnat_temp = First (Pragma_Argument_Associations (gnat_node));
 	     Present (gnat_temp);
 	     gnat_temp = Next (gnat_temp))
@@ -1572,7 +1583,7 @@ Pragma_to_gnu (Node_Id gnat_node)
 		    kind = OMP_CLAUSE_WORKER;
 		    break;
 		  default:
-		    gcc_unreachable();
+		    gcc_unreachable ();
 		  }
 		gnu_clause = build_omp_clause (EXPR_LOCATION
 					       (gnu_loop_stack->last ()->stmt),
@@ -1592,7 +1603,7 @@ Pragma_to_gnu (Node_Id gnat_node)
 		    break;
 		  case Name_Device_Type:
 		    /* Unimplemented by GCC yet.  */
-		    gcc_unreachable();
+		    gcc_unreachable ();
 		    break;
 		  case Name_Independent:
 		    gnu_clause = build_omp_clause
@@ -1617,7 +1628,7 @@ Pragma_to_gnu (Node_Id gnat_node)
 		    /* These are for the Loop+Kernel combination, which is
 		       unimplemented by the frontend for now.  */
 		  default:
-		    gcc_unreachable();
+		    gcc_unreachable ();
 		  }
 	      }
 	    OMP_CLAUSE_CHAIN (gnu_clause) = gnu_clauses;
@@ -1626,6 +1637,7 @@ Pragma_to_gnu (Node_Id gnat_node)
 	gnu_loop_stack->last ()->omp_loop_clauses = gnu_clauses;
       }
     break;
+
     /* Grouping the transformation of these pragmas together makes sense
        because they are mutually exclusive, share most of their clauses and
        the verification that each clause can legally appear for the pragma has
@@ -1771,7 +1783,8 @@ Pragma_to_gnu (Node_Id gnat_node)
 		clause_code = OMP_CLAUSE_FIRSTPRIVATE;
 		gnu_clauses = Iterate_Acc_Clause_Arg (gnat_expr, gnu_clauses,
 						      Acc_Var_to_gnu,
-						      &clause_code); break;
+						      &clause_code);
+		break;
 
 	      case Name_Default:
 		gnu_clause = build_omp_clause (EXPR_LOCATION
@@ -1982,7 +1995,6 @@ Pragma_to_gnu (Node_Id gnat_node)
   return gnu_result;
 }
 
-
 /* Check the inline status of nested function FNDECL wrt its parent function.
 
    If a non-inline nested function is referenced from an inline external
@@ -3126,7 +3138,7 @@ inside_loop_p (void)
    subtraction; otherwise, return NULL.  */
 
 static struct loop_info_d *
-find_loop_for (tree expr, tree *disp = NULL, bool *neg_p = NULL)
+find_loop_for (tree expr, tree *disp, bool *neg_p)
 {
   tree var, add, cst;
   bool minus_p;
@@ -7373,29 +7385,6 @@ gnat_to_gnu (Node_Id gnat_node)
 				    gnu_result_type, gnu_lhs, gnu_rhs);
       break;
 
-    case N_Op_And:
-    case N_Op_Or:
-    case N_Op_Xor:
-      /* These can either be operations on booleans or on modular types.
-	 Fall through for boolean types since that's the way GNU_CODES is
-	 set up.  */
-      if (Is_Modular_Integer_Type (Underlying_Type (Etype (gnat_node))))
-	{
-	  enum tree_code code
-	    = (kind == N_Op_Or ? BIT_IOR_EXPR
-	       : kind == N_Op_And ? BIT_AND_EXPR
-	       : BIT_XOR_EXPR);
-
-	  gnu_lhs = gnat_to_gnu (Left_Opnd (gnat_node));
-	  gnu_rhs = gnat_to_gnu (Right_Opnd (gnat_node));
-	  gnu_result_type = get_unpadded_type (Etype (gnat_node));
-	  gnu_result = build_binary_op (code, gnu_result_type,
-					gnu_lhs, gnu_rhs);
-	  break;
-	}
-
-      /* ... fall through ... */
-
     case N_Op_Eq:
     case N_Op_Ne:
     case N_Op_Lt:
@@ -7412,6 +7401,9 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Op_Shift_Left:
     case N_Op_Shift_Right:
     case N_Op_Shift_Right_Arithmetic:
+    case N_Op_And:
+    case N_Op_Or:
+    case N_Op_Xor:
     case N_And_Then:
     case N_Or_Else:
       {
@@ -7419,6 +7411,23 @@ gnat_to_gnu (Node_Id gnat_node)
 	bool ignore_lhs_overflow = false;
 	location_t saved_location = input_location;
 	tree gnu_type;
+
+	/* Fix operations set up for boolean types in GNU_CODES above.  */
+	if (Is_Modular_Integer_Type (Underlying_Type (Etype (gnat_node))))
+	  switch (kind)
+	    {
+	    case N_Op_And:
+	      code = BIT_AND_EXPR;
+	      break;
+	    case N_Op_Or:
+	      code = BIT_IOR_EXPR;
+	      break;
+	    case N_Op_Xor:
+	      code = BIT_XOR_EXPR;
+	      break;
+	    default:
+	      break;
+	    }
 
 	gnu_lhs = gnat_to_gnu (Left_Opnd (gnat_node));
 	gnu_rhs = gnat_to_gnu (Right_Opnd (gnat_node));

@@ -1,5 +1,19 @@
 2019-01-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Iterate_Acc_Clause_Arg): Fix formatting.
+	(Acc_gnat_to_gnu): Likewise.
+	(Acc_Data_to_gnu): Likewise.
+	(Acc_Var_to_gnu): Likewise.
+	(Acc_Reduc_to_gnu): Likewise.
+	(Acc_Size_List_to_gnu): Likewise.
+	(Pragma_to_gnu) <Pragma_Acc_Loop>: Likewise.
+	<Pragma_Acc_Data>): Likewise.
+	(find_loop_for): Remove default value for parameters.
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Op_And>: Merge into...
+	<N_Op_Eq>): ...this.
+
+2019-01-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (annotate_value) <INTEGER_CST>: Use test on
 	the sign bit instead of on the sign of the value.
 	<PLUS_EXPR>: Turn addition of negative constant into subtraction.
