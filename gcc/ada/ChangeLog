@@ -1,3 +1,11 @@
+2019-01-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (annotate_value) <INTEGER_CST>: Use test on
+	the sign bit instead of on the sign of the value.
+	<PLUS_EXPR>: Turn addition of negative constant into subtraction.
+	<MULT_EXPR>: Add test for degenerate case.
+	<BIT_AND_EXPR>: Simplify.
+
 2019-01-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* s-oscons-tmplt.c (AF_INET6): Do not undefine for RTEMS.
