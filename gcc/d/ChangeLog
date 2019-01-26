@@ -1,3 +1,9 @@
+2019-01-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/89042
+	* decl.cc (DeclVisitor::visit(VarDeclaration)): Don't assert if
+	handling a void initialized manifest constant.
+
 2019-01-21  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-frontend.cc (Compiler::paintAsType): Update for new signature.
