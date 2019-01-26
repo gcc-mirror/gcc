@@ -99,7 +99,11 @@ st_close (st_parameter_close *clp)
 	      else
 		{
 #if HAVE_UNLINK_OPEN_FILE
-		  remove (u->filename);
+
+		  if (remove (u->filename))
+		    generate_error (&clp->common, LIBERROR_OS,
+			    "File cannot be deleted, possibly in use by"
+			    " another process");
 #else
 		  path = strdup (u->filename);
 #endif
@@ -112,7 +116,10 @@ st_close (st_parameter_close *clp)
 #if !HAVE_UNLINK_OPEN_FILE
       if (path != NULL)
 	{
-	  remove (path);
+	  if (remove (u->filename))
+	    generate_error (&clp->common, LIBERROR_OS,
+		    "File cannot be deleted, possibly in use by"
+		    " another process");
 	  free (path);
 	}
 #endif
