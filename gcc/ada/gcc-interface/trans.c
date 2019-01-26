@@ -201,7 +201,6 @@ struct GTY(()) loop_info_d {
   tree omp_construct_clauses;
   enum tree_code omp_code;
   vec<range_check_info, va_gc> *checks;
-  bool artificial;
 };
 
 typedef struct loop_info_d *loop_info;
@@ -3880,7 +3879,6 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 
   /* Save the statement for later reuse.  */
   gnu_loop_info->stmt = gnu_loop_stmt;
-  gnu_loop_info->artificial = !Comes_From_Source (gnat_node);
 
   /* Perform the core loop body translation.  */
   if (Is_OpenAcc_Loop (gnat_node))
