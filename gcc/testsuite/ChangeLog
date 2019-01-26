@@ -1,3 +1,8 @@
+2019-01-26  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/88933
+	* gfortran.dg/gomp/pr88933.f90: New test.
+
 2019-01-26  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/89042
