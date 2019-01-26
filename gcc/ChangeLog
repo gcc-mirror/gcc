@@ -1,3 +1,18 @@
+2019-01-26  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/88933
+	* tree-inline.c: Include tree-cfgcleanup.h.
+	(delete_unreachable_blocks_update_callgraph): Move...
+	* tree-cfgcleanup.c (delete_unreachable_blocks_update_callgraph):
+	...here, make externally visible, make second argument bool, adjust
+	all callers.
+	* tree-cfgcleanup.c: Include cgraph.h.
+	* tree-cfgcleanup.h (delete_unreachable_blocks_update_callgraph):
+	Declare.
+	* ipa-prop.c: Include tree-cfgcleanup.h.
+	(ipcp_transform_function): Call
+	delete_unreachable_blocks_update_callgraph instead of cleaning uo CFG.
+
 2019-01-25  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/88846
