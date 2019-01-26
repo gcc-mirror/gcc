@@ -1,3 +1,8 @@
+2019-01-26  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR fortran/85579
+	* gfortran.dg/pr51434.f90: Fix the TRANSFER argument.
+
 2019-01-26  Manfred Schwarb  <manfred99@gmx.ch>
 
 	* gfortran.dg/array_function_5.f90

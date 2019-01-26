@@ -6,7 +6,7 @@ module foo
    character(len=1), parameter :: s(n) = 'a'
    type :: a
       integer :: m = n
-      character(len=1):: t(n) = transfer('abcde             ', s)
+      character(len=1):: t(n) = transfer('abcde', s)
    end type a
 end module foo
 
