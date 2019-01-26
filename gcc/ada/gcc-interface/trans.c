@@ -7742,12 +7742,17 @@ gnat_to_gnu (Node_Id gnat_node)
 		= real_zerop (gnu_rhs)
 		  ? integer_zero_node
 		  : fold_convert (integer_type_node, gnu_rhs);
-	      tree to = gnu_lhs;
-	      tree type = TREE_TYPE (to);
-	      tree size
-	        = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TYPE_SIZE_UNIT (type), to);
-	      tree to_ptr = build_fold_addr_expr (to);
+	      tree dest = build_fold_addr_expr (gnu_lhs);
 	      tree t = builtin_decl_explicit (BUILT_IN_MEMSET);
+	      /* Be extra careful not to write too much data.  */
+	      tree size;
+	      if (TREE_CODE (gnu_lhs) == COMPONENT_REF)
+		size = DECL_SIZE_UNIT (TREE_OPERAND (gnu_lhs, 1));
+	      else if (DECL_P (gnu_lhs))
+		size = DECL_SIZE_UNIT (gnu_lhs);
+	      else
+		size = TYPE_SIZE_UNIT (TREE_TYPE (gnu_lhs));
+	      size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (size, gnu_lhs);
 	      if (TREE_CODE (value) == INTEGER_CST && !integer_zerop (value))
 		{
 		  tree mask
@@ -7755,7 +7760,7 @@ gnat_to_gnu (Node_Id gnat_node)
 				     ((HOST_WIDE_INT) 1 << BITS_PER_UNIT) - 1);
 		  value = int_const_binop (BIT_AND_EXPR, value, mask);
 		}
-	      gnu_result = build_call_expr (t, 3, to_ptr, value, size);
+	      gnu_result = build_call_expr (t, 3, dest, value, size);
 	    }
 
 	  /* Otherwise build a regular assignment.  */
