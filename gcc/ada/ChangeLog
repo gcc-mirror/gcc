@@ -1,5 +1,10 @@
 2019-01-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (struct loop_info_d): Remove artificial field.
+	(Loop_Statement_to_gnu): Do not set it.
+
+2019-01-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (annotate_value) <INTEGER_CST>: Use test on
 	the sign bit instead of on the sign of the value.
 	<PLUS_EXPR>: Turn addition of negative constant into subtraction.
