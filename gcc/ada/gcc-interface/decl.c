@@ -8078,8 +8078,9 @@ annotate_value (tree gnu_size)
     {
     case INTEGER_CST:
       /* For negative values, build NEGATE_EXPR of the opposite.  Such values
-	 can appear for discriminants in expressions for variants.  */
-      if (tree_int_cst_sgn (gnu_size) < 0)
+	 can appear for discriminants in expressions for variants.  Note that
+	 sizetype being unsigned, we don't directly use tree_int_cst_sgn.  */
+      if (tree_int_cst_sign_bit (gnu_size))
 	{
 	  tree t = wide_int_to_tree (sizetype, wi::neg (gnu_size));
 	  return annotate_value (build1 (NEGATE_EXPR, sizetype, t));
@@ -8111,7 +8112,6 @@ annotate_value (tree gnu_size)
 
       /* Now just list the operations we handle.  */
     case COND_EXPR:		tcode = Cond_Expr; break;
-    case PLUS_EXPR:		tcode = Plus_Expr; break;
     case MINUS_EXPR:		tcode = Minus_Expr; break;
     case MULT_EXPR:		tcode = Mult_Expr; break;
     case TRUNC_DIV_EXPR:	tcode = Trunc_Div_Expr; break;
@@ -8138,20 +8138,28 @@ annotate_value (tree gnu_size)
     case EQ_EXPR:		tcode = Eq_Expr; break;
     case NE_EXPR:		tcode = Ne_Expr; break;
 
+    case PLUS_EXPR:
+      /* Turn addition of negative constant into subtraction.  */
+      if (TREE_CODE (TREE_OPERAND (gnu_size, 1)) == INTEGER_CST
+	  && tree_int_cst_sign_bit (TREE_OPERAND (gnu_size, 1)))
+	{
+	  tcode = Minus_Expr;
+	  wide_int op1 = wi::neg (TREE_OPERAND (gnu_size, 1));
+	  pre_op1 = annotate_value (wide_int_to_tree (sizetype, op1));
+	}
+      else
+	tcode = Plus_Expr;
+      break;
+
     case BIT_AND_EXPR:
       tcode = Bit_And_Expr;
       /* For negative values in sizetype, build NEGATE_EXPR of the opposite.
-	 Such values appear in expressions with aligning patterns.  Note that,
-	 since sizetype is unsigned, we have to jump through some hoops.   */
+	 Such values can appear in expressions with aligning patterns.  */
       if (TREE_CODE (TREE_OPERAND (gnu_size, 1)) == INTEGER_CST)
 	{
-	  tree op1 = TREE_OPERAND (gnu_size, 1);
-	  wide_int signed_op1 = wi::sext (op1, TYPE_PRECISION (sizetype));
-	  if (wi::neg_p (signed_op1))
-	    {
-	      op1 = wide_int_to_tree (sizetype, wi::neg (signed_op1));
-	      pre_op1 = annotate_value (build1 (NEGATE_EXPR, sizetype, op1));
-	    }
+	  wide_int op1 = wi::sext (TREE_OPERAND (gnu_size, 1),
+				   TYPE_PRECISION (sizetype));
+	  pre_op1 = annotate_value (wide_int_to_tree (sizetype, op1));
 	}
       break;
 
