@@ -1,3 +1,9 @@
+2019-01-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/57553
+	* expr.c (check_inquiry): Add list of inquiry functions allowed in
+	constant expressions for F2008+.
+
 2019-01-25  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85780

@@ -1,3 +1,8 @@
+2019-01-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/57553
+	* gfortran.dg/pr57553.f90: New test.
+
 2019-01-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/array34.adb: New test.
