@@ -593,8 +593,11 @@ public:
 	if (d->isInstantiated ())
 	  return;
 
+	/* Cannot make an expression out of a void initializer.  */
+	if (!d->_init || d->_init->isVoidInitializer ())
+	  return;
+
 	tree decl = get_symbol_decl (d);
-	gcc_assert (d->_init && !d->_init->isVoidInitializer ());
 	Expression *ie = initializerToExpression (d->_init);
 
 	/* CONST_DECL was initially intended for enumerals and may be used for
