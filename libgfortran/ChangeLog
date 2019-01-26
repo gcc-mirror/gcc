@@ -1,6 +1,6 @@
 2019-01-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libfortran/88020
+	PR libfortran/89020
 	* io/close.c (st_close): Generate error if calls to 'remove' return
 	an error.
 
