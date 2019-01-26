@@ -659,7 +659,7 @@ if (is(T == char) || is(T == ubyte))
             s.send(httpOK(req.bdy));
         });
         auto res = post(host ~ "/path", ["name1" : "value1", "name2" : "value2"]);
-        assert(res == "name1=value1&name2=value2");
+        assert(res == "name1=value1&name2=value2" || res == "name2=value2&name1=value1");
     }
 }
 
