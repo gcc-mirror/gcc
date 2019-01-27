@@ -1,3 +1,17 @@
+2019-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/56386
+	PR fortran/58906
+	PR fortran/77385
+	PR fortran/80260
+	PR fortran/82077
+	* resolve.c (resolve_variable): Fix up expressions with array
+	associate names, where the parser did not detect that this is
+	array and there was no array part_ref in the expression.
+	* trans-expr.c (gfc_find_and_cut_at_last_class_ref): base_expr
+	should be a copy of e and not the initialization expr.
+
 2019-01-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/87336

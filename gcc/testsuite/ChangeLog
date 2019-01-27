@@ -1,3 +1,17 @@
+2019-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/56386
+	PR fortran/58906
+	PR fortran/77385
+	* gfortran.dg/associate_44.f90 : New test.
+
+	PR fortran/80260
+	* gfortran.dg/select_type_45.f90 : New test.
+
+	PR fortran/82077
+	* gfortran.dg/select_type_46.f90 : New test.
+
 2019-01-27  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/88948
