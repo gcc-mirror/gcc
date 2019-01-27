@@ -1,5 +1,12 @@
 2019-01-27  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/88815 - narrowing conversion lost in decltype.
+	PR c++/78244 - narrowing conversion in template not detected.
+	* g++.dg/cpp0x/Wnarrowing15.C: New test.
+	* g++.dg/cpp0x/Wnarrowing16.C: New test.
+	* g++.dg/cpp0x/constexpr-decltype3.C: New test.
+	* g++.dg/cpp1y/Wnarrowing1.C: New test.
+
 	PR c++/89024 - ICE with incomplete enum type.
 	* g++.dg/cpp0x/enum37.C: New test.
 

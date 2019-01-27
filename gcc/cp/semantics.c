@@ -2795,11 +2795,14 @@ finish_compound_literal (tree type, tree compound_literal,
 	  return error_mark_node;
       }
 
-  if (processing_template_decl)
+  if (instantiation_dependent_expression_p (compound_literal)
+      || dependent_type_p (type))
     {
       TREE_TYPE (compound_literal) = type;
       /* Mark the expression as a compound literal.  */
       TREE_HAS_CONSTRUCTOR (compound_literal) = 1;
+      /* And as instantiation-dependent.  */
+      CONSTRUCTOR_IS_DEPENDENT (compound_literal) = true;
       if (fcl_context == fcl_c99)
 	CONSTRUCTOR_C99_COMPOUND_LITERAL (compound_literal) = 1;
       return compound_literal;
