@@ -1,3 +1,14 @@
+2019-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87214
+	* config/i386/sse.md
+	(<mask_codefor>avx512dq_shuf_<shuffletype>64x2_1<mask_name>,
+	avx512f_shuf_<shuffletype>64x2_1<mask_name>): Ensure the
+	first constants in pairs are multiples of 2.  Formatting fixes.
+	(avx512vl_shuf_<shuffletype>32x4_1<mask_name>,
+	avx512vl_shuf_<shuffletype>32x4_1<mask_name>): Ensure the
+	first constants in each quadruple are multiples of 4.  Formatting fixes.
+
 2019-01-26  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/88933
