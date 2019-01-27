@@ -1,5 +1,8 @@
 2019-01-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/86740, ICE with constexpr if and nested generic lambdas.
+	* tree.c (cp_walk_subtrees): Handle LAMBDA_EXPR.
+
 	PR c++/87075 - ICE with constexpr array initialization.
 	* constexpr.c (cxx_eval_vec_init_1): Handle trivial initialization.
 
