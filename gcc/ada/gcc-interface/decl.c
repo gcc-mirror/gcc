@@ -6237,12 +6237,6 @@ same_discriminant_p (Entity_Id discr1, Entity_Id discr2)
 static bool
 array_type_has_nonaliased_component (tree gnu_type, Entity_Id gnat_type)
 {
-  /* If the array type is not the innermost dimension of the GNAT type,
-     then it has a non-aliased component.  */
-  if (TREE_CODE (TREE_TYPE (gnu_type)) == ARRAY_TYPE
-      && TYPE_MULTI_ARRAY_P (TREE_TYPE (gnu_type)))
-    return true;
-
   /* If the array type has an aliased component in the front-end sense,
      then it also has an aliased component in the back-end sense.  */
   if (Has_Aliased_Components (gnat_type))
@@ -6253,14 +6247,16 @@ array_type_has_nonaliased_component (tree gnu_type, Entity_Id gnat_type)
   if (Is_Derived_Type (gnat_type))
     {
       tree gnu_parent_type = gnat_to_gnu_type (Etype (gnat_type));
-      int index;
       if (TREE_CODE (gnu_parent_type) == UNCONSTRAINED_ARRAY_TYPE)
 	gnu_parent_type
 	  = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_parent_type))));
-      for (index = Number_Dimensions (gnat_type) - 1; index > 0; index--)
-	gnu_parent_type = TREE_TYPE (gnu_parent_type);
       return TYPE_NONALIASED_COMPONENT (gnu_parent_type);
     }
+
+  /* For a multi-dimensional array type, find the component type.  */
+  while (TREE_CODE (TREE_TYPE (gnu_type)) == ARRAY_TYPE
+	 && TYPE_MULTI_ARRAY_P (TREE_TYPE (gnu_type)))
+    gnu_type = TREE_TYPE (gnu_type);
 
   /* Consider that an array of pointers has an aliased component, which is
      sort of logical and helps with Taft Amendment types in LTO mode.  */
