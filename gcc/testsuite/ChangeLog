@@ -1,3 +1,8 @@
+2019-01-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR fortran/70696
+	* gfortran.dg/coarray/event_3.f0: Add save attribue to x.
+
 2019-01-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88815 - narrowing conversion lost in decltype.
