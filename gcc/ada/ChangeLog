@@ -1,3 +1,8 @@
+2019-01-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (array_type_has_nonaliased_component): Return
+	the same value for every dimension of a multidimensional array type.
+
 2019-01-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Regular_Loop_to_gnu): Use the SLOC of the
