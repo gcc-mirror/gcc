@@ -3666,6 +3666,9 @@ extern void init_lower_subreg (void);
 /* In gcse.c */
 extern bool can_copy_p (machine_mode);
 extern bool can_assign_to_reg_without_clobbers_p (rtx, machine_mode);
+extern rtx_insn *prepare_copy_insn (rtx, rtx);
+
+/* In cprop.c */
 extern rtx fis_get_condition (rtx_insn *);
 
 /* In ira.c */
