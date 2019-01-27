@@ -116,7 +116,7 @@ st_close (st_parameter_close *clp)
 #if !HAVE_UNLINK_OPEN_FILE
       if (path != NULL)
 	{
-	  if (remove (u->filename))
+	  if (remove (path))
 	    generate_error (&clp->common, LIBERROR_OS,
 		    "File cannot be deleted, possibly in use by"
 		    " another process");
