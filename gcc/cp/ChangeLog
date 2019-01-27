@@ -1,5 +1,8 @@
 2019-01-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/87075 - ICE with constexpr array initialization.
+	* constexpr.c (cxx_eval_vec_init_1): Handle trivial initialization.
+
 	* pt.c (tsubst) [TEMPLATE_TYPE_PARM]: Use TEMPLATE_PARM_DESCENDANTS.
 
 2019-01-17  Nathan Sidwell  <nathan@acm.org>
