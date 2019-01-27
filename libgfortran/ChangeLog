@@ -1,3 +1,9 @@
+2019-01-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/89020
+	* io/close.c (st_close): Simplify text of error message to not
+	presume a specific cause of failure to remove file.
+
 2019-01-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/89020

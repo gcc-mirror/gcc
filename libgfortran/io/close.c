@@ -102,8 +102,7 @@ st_close (st_parameter_close *clp)
 
 		  if (remove (u->filename))
 		    generate_error (&clp->common, LIBERROR_OS,
-			    "File cannot be deleted, possibly in use by"
-			    " another process");
+				    "File cannot be deleted");
 #else
 		  path = strdup (u->filename);
 #endif
@@ -118,8 +117,7 @@ st_close (st_parameter_close *clp)
 	{
 	  if (remove (path))
 	    generate_error (&clp->common, LIBERROR_OS,
-		    "File cannot be deleted, possibly in use by"
-		    " another process");
+			    "File cannot be deleted");
 	  free (path);
 	}
 #endif
