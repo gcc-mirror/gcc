@@ -1,5 +1,14 @@
 2019-01-27  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/88815 - narrowing conversion lost in decltype.
+	PR c++/78244 - narrowing conversion in template not detected.
+	* cp-tree.h (CONSTRUCTOR_IS_DEPENDENT): New.
+	* pt.c (instantiation_dependent_r): Consider a CONSTRUCTOR with
+	CONSTRUCTOR_IS_DEPENDENT instantiation-dependent.
+	* semantics.c (finish_compound_literal): When the compound literal
+	isn't instantiation-dependent and the type isn't type-dependent,
+	fall back to the normal processing.  Set CONSTRUCTOR_IS_DEPENDENT.
+
 	PR c++/89024 - ICE with incomplete enum type.
 	* call.c (standard_conversion): When converting an
 	ARITHMETIC_TYPE_P to an incomplete type, return NULL.

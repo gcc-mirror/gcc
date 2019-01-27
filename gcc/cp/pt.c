@@ -25815,6 +25815,11 @@ instantiation_dependent_r (tree *tp, int *walk_subtrees,
 	return *tp;
       break;
 
+    case CONSTRUCTOR:
+      if (CONSTRUCTOR_IS_DEPENDENT (*tp))
+	return *tp;
+      break;
+
     default:
       break;
     }

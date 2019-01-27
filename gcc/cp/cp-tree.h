@@ -424,6 +424,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECL_FINAL_P (in FUNCTION_DECL)
       QUALIFIED_NAME_IS_TEMPLATE (in SCOPE_REF)
       DECLTYPE_FOR_INIT_CAPTURE (in DECLTYPE_TYPE)
+      CONSTRUCTOR_IS_DEPENDENT (in CONSTRUCTOR)
       TINFO_USED_TEMPLATE_ID (in TEMPLATE_INFO)
       PACK_EXPANSION_SIZEOF_P (in *_PACK_EXPANSION)
       OVL_USING_P (in OVERLOAD)
@@ -4204,6 +4205,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* True if NODE is a init-list used as a direct-initializer, i.e.
    B b{1,2}, not B b({1,2}) or B b = {1,2}.  */
 #define CONSTRUCTOR_IS_DIRECT_INIT(NODE) (TREE_LANG_FLAG_0 (CONSTRUCTOR_CHECK (NODE)))
+
+/* True if this CONSTRUCTOR is instantiation-dependent and needs to be
+   substituted.  */
+#define CONSTRUCTOR_IS_DEPENDENT(NODE) \
+  (TREE_LANG_FLAG_1 (CONSTRUCTOR_CHECK (NODE)))
 
 /* True if this CONSTRUCTOR should not be used as a variable initializer
    because it was loaded from a constexpr variable with mutable fields.  */
