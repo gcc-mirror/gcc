@@ -1,3 +1,8 @@
+2019-01-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89024 - ICE with incomplete enum type.
+	* g++.dg/cpp0x/enum37.C: New test.
+
 2019-01-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt75.adb: New test.

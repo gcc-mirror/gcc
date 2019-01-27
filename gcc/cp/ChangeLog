@@ -1,3 +1,9 @@
+2019-01-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89024 - ICE with incomplete enum type.
+	* call.c (standard_conversion): When converting an
+	ARITHMETIC_TYPE_P to an incomplete type, return NULL.
+	
 2019-01-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/88969
