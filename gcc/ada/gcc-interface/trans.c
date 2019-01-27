@@ -2374,15 +2374,12 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       else
 	gnu_result = rm_size (gnu_type);
 
-      /* Deal with a self-referential size by returning the maximum size for
-	 a type and by qualifying the size with the object otherwise.  */
-      if (CONTAINS_PLACEHOLDER_P (gnu_result))
-	{
-	  if (TREE_CODE (gnu_prefix) == TYPE_DECL)
-	    gnu_result = max_size (gnu_result, true);
-	  else
-	    gnu_result = substitute_placeholder_in_expr (gnu_result, gnu_expr);
-	}
+      /* Deal with a self-referential size by qualifying the size with the
+	 object or returning the maximum size for a type.  */
+      if (TREE_CODE (gnu_prefix) != TYPE_DECL)
+	gnu_result = SUBSTITUTE_PLACEHOLDER_IN_EXPR (gnu_result, gnu_expr);
+      else if (CONTAINS_PLACEHOLDER_P (gnu_result))
+	gnu_result = max_size (gnu_result, true);
 
       /* If the type contains a template, subtract the padded size of the
 	 template, except for 'Max_Size_In_Storage_Elements because we need
@@ -3227,13 +3224,25 @@ static bool
 can_be_lower_p (tree val1, tree val2)
 {
   if (TREE_CODE (val1) == NOP_EXPR)
-    val1 = TYPE_MIN_VALUE (TREE_TYPE (TREE_OPERAND (val1, 0)));
+    {
+      tree type = TREE_TYPE (TREE_OPERAND (val1, 0));
+      if (can_be_lower_p (TYPE_MAX_VALUE (type), TYPE_MIN_VALUE (type)))
+	return true;
+
+      val1 = TYPE_MIN_VALUE (type);
+    }
 
   if (TREE_CODE (val1) != INTEGER_CST)
     return true;
 
   if (TREE_CODE (val2) == NOP_EXPR)
-    val2 = TYPE_MAX_VALUE (TREE_TYPE (TREE_OPERAND (val2, 0)));
+    {
+      tree type = TREE_TYPE (TREE_OPERAND (val2, 0));
+      if (can_be_lower_p (TYPE_MAX_VALUE (type), TYPE_MIN_VALUE (type)))
+	return true;
+
+      val2 = TYPE_MAX_VALUE (type);
+    }
 
   if (TREE_CODE (val2) != INTEGER_CST)
     return true;

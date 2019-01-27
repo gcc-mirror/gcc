@@ -1,5 +1,40 @@
 2019-01-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* repinfo.adb (List_Component_Layout): Remove superfluous space for
+	zero-sized field.
+	* gcc-interface/ada-tree.h (TYPE_IS_EXTRA_SUBTYPE_P): New macro.
+	* gcc-interface/gigi.h (create_extra_subtype): Declare.
+	* gcc-interface/decl.c (TYPE_ARRAY_SIZE_LIMIT): Likewise.
+	(update_n_elem): New function.
+	(gnat_to_gnu_entity): Use create_extra_subtype to create extra subtypes
+	instead of doing it manually.
+	<E_Array_Type>: Use update_n_elem to compute the maximum size.  Use the
+ 	index type instead of base type for the bounds. Set TYPE_ARRAY_MAX_SIZE
+	of the array to the maximum size.
+	<E_Array_Subtype>: Create an extra subtype using the index type of the
+	base array type for self-referential bounds.  Use update_n_elem to
+	compute the maximum size.  Set TYPE_ARRAY_MAX_SIZE of the array to the
+	maximum size.
+	(gnat_to_gnu_field): Clear DECL_NONADDRESSABLE_P on discriminants.
+	* gcc-interface/misc.c (gnat_get_alias_set): Return the alias set of
+	the base type for an extra subtype.
+	(gnat_type_max_size): Remove obsolete code.
+	* gcc-interface/trans.c (Attribute_to_gnu): Minor tweak.
+	(can_be_lower_p): Deal with pathological types.
+	* gcc-interface/utils.c (create_extra_subtype): New function.
+	(create_field_decl): Minor tweak.
+	(max_size) <tcc_reference>: Compute a better value by using the extra
+ 	subtypes on the self-referential bounds.
+	<tcc_binary>: Rewrite.  Deal with "negative value" in unsigned types.
+	<tcc_expression>: Likewise.
+	* gcc-interface/utils2.c (compare_arrays): Retrieve the original bounds
+	of the arrays upfront.  Swap only if the second length is not constant.
+	Use comparisons on the original bounds consistently for the null tests.
+	(build_binary_op): Use TYPE_IS_EXTRA_SUBTYPE_P macro.
+	(build_allocator): Minor tweak.
+
+2019-01-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (array_type_has_nonaliased_component): Return
 	the same value for every dimension of a multidimensional array type.
 

@@ -1338,7 +1338,7 @@ package body Repinfo is
             if List_Representation_Info_To_JSON then
                UI_Write (Esiz);
             else
-               if Lbit < 10 then
+               if Lbit >= 0 and then Lbit < 10 then
                   Write_Char (' ');
                end if;
 
