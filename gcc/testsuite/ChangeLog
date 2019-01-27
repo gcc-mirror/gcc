@@ -1,3 +1,9 @@
+2019-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87214
+	* gcc.target/i386/avx512vl-pr87214-1.c: New test.
+	* gcc.target/i386/avx512vl-pr87214-2.c: New test.
+
 2019-01-26  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/88933
