@@ -637,6 +637,9 @@ extern tree create_index_type (tree min, tree max, tree index,
    sizetype is used.  */
 extern tree create_range_type (tree type, tree min, tree max);
 
+/* Return an extra subtype of TYPE with range MIN to MAX.  */
+extern tree create_extra_subtype (tree type, tree min, tree max);
+
 /* Return a TYPE_DECL node suitable for the TYPE_STUB_DECL field of TYPE.
    NAME gives the name of the type to be used in the declaration.  */
 extern tree create_type_stub_decl (tree name, tree type);
