@@ -1,3 +1,21 @@
+2019-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89073
+	* doc/invoke.texi (-mclwb, -mprfchw, -mrdpid, -mrdseed, -msgx,
+	-madx, -mhle, -mavx5124fmaps, -mavx512vnni, -mavx5124vnniw): Document
+	x86 ISA options.
+	(bmi2): Add missing @opindex.
+	* doc/extend.texi (x86 target attribute): Move fma4, lwp, ssse3
+	options alphabetically.  Add missing 3dnow, 3dnowa, adx, avx, avx2,
+	avx5124fmaps, avx5124vnniw, avx512bitalg, avx512bw, avx512cd,
+	avx512dq, avx512er, avx512f, avx512ifma, avx512pf, avx512vbmi,
+	avx512vbmi2, avx512vl, avx512vnni, avx512vpopcntdq, bmi, bmi2,
+	cldemote, clflushopt, clwb, clzero, crc32, cx16, f16c, fma, fsgsbase,
+	fxsr, gfni, hle, lzcnt, movbe, movdir64b, movdiri, mwaitx, pconfig,
+	pku, prefetchwt1, prfchw, ptwrite, rdpid, rdrnd, rdseed, rtm, sahf,
+	sgx, sha, shstk, tbm, vaes, vpclmulqdq, waitpkg, wbnoinvd, xsave,
+	xsavec, xsaveopt and xsaves options.
+
 2019-01-28  Richard Biener  <rguenther@suse.de>
 
 	PR debug/89076

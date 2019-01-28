@@ -1266,12 +1266,14 @@ See RS/6000 and PowerPC Options.
 -mavx2  -mavx512f  -mavx512pf  -mavx512er  -mavx512cd  -mavx512vl @gol
 -mavx512bw  -mavx512dq  -mavx512ifma  -mavx512vbmi  -msha  -maes @gol
 -mpclmul  -mfsgsbase  -mrdrnd  -mf16c  -mfma  -mpconfig  -mwbnoinvd  @gol
--mptwrite  -mprefetchwt1  -mclflushopt  -mxsavec  -mxsaves @gol
+-mptwrite  -mprefetchwt1  -mclflushopt  -mclwb  -mxsavec  -mxsaves @gol
 -msse4a  -m3dnow  -m3dnowa  -mpopcnt  -mabm  -mbmi  -mtbm  -mfma4  -mxop @gol
--mlzcnt  -mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mlwp @gol
+-madx  -mlzcnt  -mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mhle  -mlwp @gol
 -mmwaitx  -mclzero  -mpku  -mthreads  -mgfni  -mvaes  -mwaitpkg @gol
 -mshstk -mmanual-endbr -mforce-indirect-call  -mavx512vbmi2 @gol
 -mvpclmulqdq  -mavx512bitalg  -mmovdiri  -mmovdir64b  -mavx512vpopcntdq @gol
+-mavx5124fmaps  -mavx512vnni  -mavx5124vnniw  -mprfchw  -mrdpid @gol
+-mrdseed  -msgx @gol
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy}  -mmemset-strategy=@var{strategy} @gol
@@ -27877,6 +27879,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mclflushopt
 @opindex mclflushopt
 @need 200
+@itemx -mclwb
+@opindex mclwb
+@need 200
 @itemx -mfsgsbase
 @opindex mfsgsbase
 @need 200
@@ -27901,8 +27906,20 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mfma4
 @opindex mfma4
 @need 200
+@itemx -mprfchw
+@opindex mprfchw
+@need 200
+@itemx -mrdpid
+@opindex mrdpid
+@need 200
 @itemx -mprefetchwt1
 @opindex mprefetchwt1
+@need 200
+@itemx -mrdseed
+@opindex mrdseed
+@need 200
+@itemx -msgx
+@opindex msgx
 @need 200
 @itemx -mxop
 @opindex mxop
@@ -27922,10 +27939,14 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mabm
 @opindex mabm
 @need 200
+@itemx -madx
+@opindex madx
+@need 200
 @itemx -mbmi
 @opindex mbmi
 @need 200
 @itemx -mbmi2
+@opindex mbmi2
 @need 200
 @itemx -mlzcnt
 @opindex mlzcnt
@@ -27947,6 +27968,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @itemx -mrtm
 @opindex mrtm
+@need 200
+@itemx -mhle
+@opindex mhle
 @need 200
 @itemx -mtbm
 @opindex mtbm
@@ -27987,17 +28011,28 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mavx512vpopcntdq
 @opindex mavx512vpopcntdq
 @need 200
+@itemx -mavx5124fmaps
+@opindex mavx5124fmaps
+@need 200
+@itemx -mavx512vnni
+@opindex mavx512vnni
+@need 200
+@itemx -mavx5124vnniw
+@opindex mavx5124vnniw
+@need 200
 @itemx -mcldemote
 @opindex mcldemote
 These switches enable the use of instructions in the MMX, SSE,
-SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AVX512F, AVX512PF, AVX512ER, AVX512CD,
-SHA, AES, PCLMUL, FSGSBASE, PTWRITE, RDRND, F16C, FMA, SSE4A, FMA4, XOP, LWP, ABM,
-AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, BMI, BMI2, VAES, WAITPKG,
-FXSR, XSAVE, XSAVEOPT, LZCNT, RTM, MWAITX, PKU, IBT, SHSTK, AVX512VBMI2,
-GFNI, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B,
-AVX512VPOPCNTDQ, CLDEMOTE, 3DNow!@: or enhanced 3DNow!@: extended instruction
-sets. Each has a corresponding @option{-mno-} option to disable use of these
-instructions.
+SSE2, SSE3, SSSE3, SSE4, SSE4A, SSE4.1, SSE4.2, AVX, AVX2, AVX512F, AVX512PF,
+AVX512ER, AVX512CD, AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, SHA,
+AES, PCLMUL, CLFLUSHOPT, CLWB, FSGSBASE, PTWRITE, RDRND, F16C, FMA, PCONFIG,
+WBNOINVD, FMA4, PREFETCHW, RDPID, PREFETCHWT1, RDSEED, SGX, XOP, LWP,
+3DNow!@:, enhanced 3DNow!@:, POPCNT, ABM, ADX, BMI, BMI2, LZCNT, FXSR, XSAVE,
+XSAVEOPT, XSAVEC, XSAVES, RTM, HLE, TBM, MWAITX, CLZERO, PKU, AVX512VBMI2,
+GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B,
+AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, or CLDEMOTE
+extended instruction sets.  Each has a corresponding @option{-mno-} option to
+disable use of these instructions.
 
 These extensions are also available as built-in functions: see
 @ref{x86 Built-in Functions}, for details of the functions enabled and
