@@ -6021,35 +6021,305 @@ allows specification of target-specific compilation options.
 
 On the x86, the following options are allowed:
 @table @samp
+@item 3dnow
+@itemx no-3dnow
+@cindex @code{target("3dnow")} function attribute, x86
+Enable/disable the generation of the 3DNow!@: instructions.
+
+@item 3dnowa
+@itemx no-3dnowa
+@cindex @code{target("3dnowa")} function attribute, x86
+Enable/disable the generation of the enhanced 3DNow!@: instructions.
+
 @item abm
 @itemx no-abm
 @cindex @code{target("abm")} function attribute, x86
 Enable/disable the generation of the advanced bit instructions.
+
+@item adx
+@itemx no-adx
+@cindex @code{target("adx")} function attribute, x86
+Enable/disable the generation of the ADX instructions.
 
 @item aes
 @itemx no-aes
 @cindex @code{target("aes")} function attribute, x86
 Enable/disable the generation of the AES instructions.
 
+@item avx
+@itemx no-avx
+@cindex @code{target("avx")} function attribute, x86
+Enable/disable the generation of the AVX instructions.
+
+@item avx2
+@itemx no-avx2
+@cindex @code{target("avx2")} function attribute, x86
+Enable/disable the generation of the AVX2 instructions.
+
+@item avx5124fmaps
+@itemx no-avx5124fmaps
+@cindex @code{target("avx5124fmaps")} function attribute, x86
+Enable/disable the generation of the AVX5124FMAPS instructions.
+
+@item avx5124vnniw
+@itemx no-avx5124vnniw
+@cindex @code{target("avx5124vnniw")} function attribute, x86
+Enable/disable the generation of the AVX5124VNNIW instructions.
+
+@item avx512bitalg
+@itemx no-avx512bitalg
+@cindex @code{target("avx512bitalg")} function attribute, x86
+Enable/disable the generation of the AVX512BITALG instructions.
+
+@item avx512bw
+@itemx no-avx512bw
+@cindex @code{target("avx512bw")} function attribute, x86
+Enable/disable the generation of the AVX512BW instructions.
+
+@item avx512cd
+@itemx no-avx512cd
+@cindex @code{target("avx512cd")} function attribute, x86
+Enable/disable the generation of the AVX512CD instructions.
+
+@item avx512dq
+@itemx no-avx512dq
+@cindex @code{target("avx512dq")} function attribute, x86
+Enable/disable the generation of the AVX512DQ instructions.
+
+@item avx512er
+@itemx no-avx512er
+@cindex @code{target("avx512er")} function attribute, x86
+Enable/disable the generation of the AVX512ER instructions.
+
+@item avx512f
+@itemx no-avx512f
+@cindex @code{target("avx512f")} function attribute, x86
+Enable/disable the generation of the AVX512F instructions.
+
+@item avx512ifma
+@itemx no-avx512ifma
+@cindex @code{target("avx512ifma")} function attribute, x86
+Enable/disable the generation of the AVX512IFMA instructions.
+
+@item avx512pf
+@itemx no-avx512pf
+@cindex @code{target("avx512pf")} function attribute, x86
+Enable/disable the generation of the AVX512PF instructions.
+
+@item avx512vbmi
+@itemx no-avx512vbmi
+@cindex @code{target("avx512vbmi")} function attribute, x86
+Enable/disable the generation of the AVX512VBMI instructions.
+
+@item avx512vbmi2
+@itemx no-avx512vbmi2
+@cindex @code{target("avx512vbmi2")} function attribute, x86
+Enable/disable the generation of the AVX512VBMI2 instructions.
+
+@item avx512vl
+@itemx no-avx512vl
+@cindex @code{target("avx512vl")} function attribute, x86
+Enable/disable the generation of the AVX512VL instructions.
+
+@item avx512vnni
+@itemx no-avx512vnni
+@cindex @code{target("avx512vnni")} function attribute, x86
+Enable/disable the generation of the AVX512VNNI instructions.
+
+@item avx512vpopcntdq
+@itemx no-avx512vpopcntdq
+@cindex @code{target("avx512vpopcntdq")} function attribute, x86
+Enable/disable the generation of the AVX512VPOPCNTDQ instructions.
+
+@item bmi
+@itemx no-bmi
+@cindex @code{target("bmi")} function attribute, x86
+Enable/disable the generation of the BMI instructions.
+
+@item bmi2
+@itemx no-bmi2
+@cindex @code{target("bmi2")} function attribute, x86
+Enable/disable the generation of the BMI2 instructions.
+
+@item cldemote
+@itemx no-cldemote
+@cindex @code{target("cldemote")} function attribute, x86
+Enable/disable the generation of the CLDEMOTE instructions.
+
+@item clflushopt
+@itemx no-clflushopt
+@cindex @code{target("clflushopt")} function attribute, x86
+Enable/disable the generation of the CLFLUSHOPT instructions.
+
+@item clwb
+@itemx no-clwb
+@cindex @code{target("clwb")} function attribute, x86
+Enable/disable the generation of the CLWB instructions.
+
+@item clzero
+@itemx no-clzero
+@cindex @code{target("clzero")} function attribute, x86
+Enable/disable the generation of the CLZERO instructions.
+
+@item crc32
+@itemx no-crc32
+@cindex @code{target("crc32")} function attribute, x86
+Enable/disable the generation of the CRC32 instructions.
+
+@item cx16
+@itemx no-cx16
+@cindex @code{target("cx16")} function attribute, x86
+Enable/disable the generation of the CMPXCHG16B instructions.
+
 @item default
 @cindex @code{target("default")} function attribute, x86
 @xref{Function Multiversioning}, where it is used to specify the
 default function version.
+
+@item f16c
+@itemx no-f16c
+@cindex @code{target("f16c")} function attribute, x86
+Enable/disable the generation of the F16C instructions.
+
+@item fma
+@itemx no-fma
+@cindex @code{target("fma")} function attribute, x86
+Enable/disable the generation of the FMA instructions.
+
+@item fma4
+@itemx no-fma4
+@cindex @code{target("fma4")} function attribute, x86
+Enable/disable the generation of the FMA4 instructions.
+
+@item fsgsbase
+@itemx no-fsgsbase
+@cindex @code{target("fsgsbase")} function attribute, x86
+Enable/disable the generation of the FSGSBASE instructions.
+
+@item fxsr
+@itemx no-fxsr
+@cindex @code{target("fxsr")} function attribute, x86
+Enable/disable the generation of the FXSR instructions.
+
+@item gfni
+@itemx no-gfni
+@cindex @code{target("gfni")} function attribute, x86
+Enable/disable the generation of the GFNI instructions.
+
+@item hle
+@itemx no-hle
+@cindex @code{target("hle")} function attribute, x86
+Enable/disable the generation of the HLE instruction prefixes.
+
+@item lwp
+@itemx no-lwp
+@cindex @code{target("lwp")} function attribute, x86
+Enable/disable the generation of the LWP instructions.
+
+@item lzcnt
+@itemx no-lzcnt
+@cindex @code{target("lzcnt")} function attribute, x86
+Enable/disable the generation of the LZCNT instructions.
 
 @item mmx
 @itemx no-mmx
 @cindex @code{target("mmx")} function attribute, x86
 Enable/disable the generation of the MMX instructions.
 
+@item movbe
+@itemx no-movbe
+@cindex @code{target("movbe")} function attribute, x86
+Enable/disable the generation of the MOVBE instructions.
+
+@item movdir64b
+@itemx no-movdir64b
+@cindex @code{target("movdir64b")} function attribute, x86
+Enable/disable the generation of the MOVDIR64B instructions.
+
+@item movdiri
+@itemx no-movdiri
+@cindex @code{target("movdiri")} function attribute, x86
+Enable/disable the generation of the MOVDIRI instructions.
+
+@item mwaitx
+@itemx no-mwaitx
+@cindex @code{target("mwaitx")} function attribute, x86
+Enable/disable the generation of the MWAITX instructions.
+
 @item pclmul
 @itemx no-pclmul
 @cindex @code{target("pclmul")} function attribute, x86
 Enable/disable the generation of the PCLMUL instructions.
 
+@item pconfig
+@itemx no-pconfig
+@cindex @code{target("pconfig")} function attribute, x86
+Enable/disable the generation of the PCONFIG instructions.
+
+@item pku
+@itemx no-pku
+@cindex @code{target("pku")} function attribute, x86
+Enable/disable the generation of the PKU instructions.
+
 @item popcnt
 @itemx no-popcnt
 @cindex @code{target("popcnt")} function attribute, x86
 Enable/disable the generation of the POPCNT instruction.
+
+@item prefetchwt1
+@itemx no-prefetchwt1
+@cindex @code{target("prefetchwt1")} function attribute, x86
+Enable/disable the generation of the PREFETCHWT1 instructions.
+
+@item prfchw
+@itemx no-prfchw
+@cindex @code{target("prfchw")} function attribute, x86
+Enable/disable the generation of the PREFETCHW instruction.
+
+@item ptwrite
+@itemx no-ptwrite
+@cindex @code{target("ptwrite")} function attribute, x86
+Enable/disable the generation of the PTWRITE instructions.
+
+@item rdpid
+@itemx no-rdpid
+@cindex @code{target("rdpid")} function attribute, x86
+Enable/disable the generation of the RDPID instructions.
+
+@item rdrnd
+@itemx no-rdrnd
+@cindex @code{target("rdrnd")} function attribute, x86
+Enable/disable the generation of the RDRND instructions.
+
+@item rdseed
+@itemx no-rdseed
+@cindex @code{target("rdseed")} function attribute, x86
+Enable/disable the generation of the RDSEED instructions.
+
+@item rtm
+@itemx no-rtm
+@cindex @code{target("rtm")} function attribute, x86
+Enable/disable the generation of the RTM instructions.
+
+@item sahf
+@itemx no-sahf
+@cindex @code{target("sahf")} function attribute, x86
+Enable/disable the generation of the SAHF instructions.
+
+@item sgx
+@itemx no-sgx
+@cindex @code{target("sgx")} function attribute, x86
+Enable/disable the generation of the SGX instructions.
+
+@item sha
+@itemx no-sha
+@cindex @code{target("sha")} function attribute, x86
+Enable/disable the generation of the SHA instructions.
+
+@item shstk
+@itemx no-shstk
+@cindex @code{target("shstk")} function attribute, x86
+Enable/disable the shadow stack built-in functions from CET.
 
 @item sse
 @itemx no-sse
@@ -6087,25 +6357,60 @@ Enable/disable the generation of the sse4.2 instructions.
 @cindex @code{target("sse4a")} function attribute, x86
 Enable/disable the generation of the SSE4A instructions.
 
-@item fma4
-@itemx no-fma4
-@cindex @code{target("fma4")} function attribute, x86
-Enable/disable the generation of the FMA4 instructions.
+@item ssse3
+@itemx no-ssse3
+@cindex @code{target("ssse3")} function attribute, x86
+Enable/disable the generation of the SSSE3 instructions.
+
+@item tbm
+@itemx no-tbm
+@cindex @code{target("tbm")} function attribute, x86
+Enable/disable the generation of the TBM instructions.
+
+@item vaes
+@itemx no-vaes
+@cindex @code{target("vaes")} function attribute, x86
+Enable/disable the generation of the VAES instructions.
+
+@item vpclmulqdq
+@itemx no-vpclmulqdq
+@cindex @code{target("vpclmulqdq")} function attribute, x86
+Enable/disable the generation of the VPCLMULQDQ instructions.
+
+@item waitpkg
+@itemx no-waitpkg
+@cindex @code{target("waitpkg")} function attribute, x86
+Enable/disable the generation of the WAITPKG instructions.
+
+@item wbnoinvd
+@itemx no-wbnoinvd
+@cindex @code{target("wbnoinvd")} function attribute, x86
+Enable/disable the generation of the WBNOINVD instructions.
 
 @item xop
 @itemx no-xop
 @cindex @code{target("xop")} function attribute, x86
 Enable/disable the generation of the XOP instructions.
 
-@item lwp
-@itemx no-lwp
-@cindex @code{target("lwp")} function attribute, x86
-Enable/disable the generation of the LWP instructions.
+@item xsave
+@itemx no-xsave
+@cindex @code{target("xsave")} function attribute, x86
+Enable/disable the generation of the XSAVE instructions.
 
-@item ssse3
-@itemx no-ssse3
-@cindex @code{target("ssse3")} function attribute, x86
-Enable/disable the generation of the SSSE3 instructions.
+@item xsavec
+@itemx no-xsavec
+@cindex @code{target("xsavec")} function attribute, x86
+Enable/disable the generation of the XSAVEC instructions.
+
+@item xsaveopt
+@itemx no-xsaveopt
+@cindex @code{target("xsaveopt")} function attribute, x86
+Enable/disable the generation of the XSAVEOPT instructions.
+
+@item xsaves
+@itemx no-xsaves
+@cindex @code{target("xsaves")} function attribute, x86
+Enable/disable the generation of the XSAVES instructions.
 
 @item cld
 @itemx no-cld
