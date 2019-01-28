@@ -5288,6 +5288,8 @@ trees_out::core_vals (tree t)
       gcc_assert (!((lang_tree_node *)t)->lambda_expression.pending_proxies);
       if (streaming_p ())
 	{
+	  state->write_location
+	    (*this, ((lang_tree_node *)t)->lambda_expression.locus);
 	  WU (((lang_tree_node *)t)->lambda_expression.default_capture_mode);
 	  WU (((lang_tree_node *)t)->lambda_expression.discriminator);
 	}
@@ -5706,6 +5708,8 @@ trees_in::core_vals (tree t)
       RT (((lang_tree_node *)t)->lambda_expression.this_capture);
       RT (((lang_tree_node *)t)->lambda_expression.extra_scope);
       /* lambda_expression.pending_proxies is NULL  */
+      ((lang_tree_node *)t)->lambda_expression.locus
+	= state->read_location (*this);
       RUC (cp_lambda_default_capture_mode_type,
 	   ((lang_tree_node *)t)->lambda_expression.default_capture_mode);
       RU (((lang_tree_node *)t)->lambda_expression.discriminator);

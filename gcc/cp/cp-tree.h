@@ -1456,8 +1456,8 @@ struct GTY (()) tree_lambda_expr
   tree extra_scope;
   vec<tree, va_gc> *pending_proxies;
   location_t locus;
-  enum cp_lambda_default_capture_mode_type default_capture_mode;
-  int discriminator;
+  enum cp_lambda_default_capture_mode_type default_capture_mode : 8;
+  short int discriminator;
 };
 
 /* A (typedef,context,usage location) triplet.
