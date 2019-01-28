@@ -1,3 +1,7 @@
+2019-01-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* io/async.c (init_adv_cond): Use __GTHREAD_COND_INIT_FUNCTION().
+
 2019-01-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/89020
