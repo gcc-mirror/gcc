@@ -21,4 +21,4 @@ enum E {
 };
 
 same<E,decltype(x)> s;
-same<unsigned int,__underlying_type(E)> s2;
+same<unsigned int,__underlying_type(E)> s2; // { dg-error "incomplete type" "" { target short_enums } }
