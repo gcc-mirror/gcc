@@ -1,3 +1,9 @@
+2019-01-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* common.opt (-Wattribute-alias): Remove "no-" from name.
+	Make -Wattribute-alias command line option and
+	#pragma GCC diagnostic ignored "-Wattribute-alias" work again.
+
 2019-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/89073

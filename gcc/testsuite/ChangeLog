@@ -1,3 +1,8 @@
+2019-01-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gcc.dg/Wattribute-alias.c: Add test for #pragma GCC diagnostic ignored
+	"-Wattribute-alias".
+
 2019-01-27  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR fortran/70696
