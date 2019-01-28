@@ -3118,6 +3118,12 @@ verify_types_in_gimple_reference (tree expr, bool require_lvalue)
 		     "match field size of BIT_FIELD_REF");
 	      return true;
 	    }
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (op))
+	      && !type_has_mode_precision_p (TREE_TYPE (op)))
+	    {
+	      error ("BIT_FIELD_REF of non-mode-precision operand");
+	      return true;
+	    }
 	  if (!AGGREGATE_TYPE_P (TREE_TYPE (op))
 	      && maybe_gt (size + bitpos,
 			   tree_to_poly_uint64 (TYPE_SIZE (TREE_TYPE (op)))))
@@ -4317,6 +4323,12 @@ verify_gimple_assign_ternary (gassign *stmt)
 	  || ! tree_fits_uhwi_p (TYPE_SIZE (rhs2_type)))
 	{
 	  error ("invalid position or size in BIT_INSERT_EXPR");
+	  return true;
+	}
+      if (INTEGRAL_TYPE_P (rhs1_type)
+	  && !type_has_mode_precision_p (rhs1_type))
+	{
+	  error ("BIT_INSERT_EXPR into non-mode-precision operand");
 	  return true;
 	}
       if (INTEGRAL_TYPE_P (rhs1_type))
