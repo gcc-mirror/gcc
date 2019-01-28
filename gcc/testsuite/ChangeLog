@@ -1,5 +1,10 @@
 2019-01-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
+	* c-c++-common/Waddress-of-packed-member-1.c: Extended test case.
+	* c-c++-common/Waddress-of-packed-member-2.c: New test case.
+
+2019-01-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
 	* gcc.dg/Wattribute-alias.c: Add test for #pragma GCC diagnostic ignored
 	"-Wattribute-alias".
 
