@@ -1,5 +1,8 @@
 2019-01-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/89045
+	* gcc.dg/pr89045.c: New test.
+
 	PR c/86125
 	* gcc.dg/Wbuiltin-declaration-mismatch-7.c: Guard testcase for
 	lp64, ilp32 and llp64 only.

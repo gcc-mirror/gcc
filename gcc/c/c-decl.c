@@ -5528,7 +5528,7 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const,
       pushdecl (decl);
       rest_of_decl_compilation (decl, 1, 0);
     }
-  else if (current_function_decl)
+  else if (current_function_decl && !current_scope->parm_flag)
     pushdecl (decl);
 
   if (non_const)
