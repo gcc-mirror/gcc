@@ -468,6 +468,260 @@ _mm512_maskz_div_round_ph (__mmask32 __A, __m512h __B, __m512h __C,
 						   (A), (D)))
 #endif  /* __OPTIMIZE__  */
 
+/* Intrinsics of v[add,sub,mul,div]sh.  */
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_add_sh (__m128h __A, __m128h __B)
+{
+  __A[0] += __B[0];
+  return __A;
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_add_sh (__m128h __A, __mmask8 __B, __m128h __C, __m128h __D)
+{
+  return __builtin_ia32_vaddsh_v8hf_mask (__C, __D, __A, __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_add_sh (__mmask8 __A, __m128h __B, __m128h __C)
+{
+  return __builtin_ia32_vaddsh_v8hf_mask (__B, __C, _mm_setzero_ph (),
+					  __A);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_sub_sh (__m128h __A, __m128h __B)
+{
+  __A[0] -= __B[0];
+  return __A;
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_sub_sh (__m128h __A, __mmask8 __B, __m128h __C, __m128h __D)
+{
+  return __builtin_ia32_vsubsh_v8hf_mask (__C, __D, __A, __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_sub_sh (__mmask8 __A, __m128h __B, __m128h __C)
+{
+  return __builtin_ia32_vsubsh_v8hf_mask (__B, __C, _mm_setzero_ph (),
+					  __A);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mul_sh (__m128h __A, __m128h __B)
+{
+  __A[0] *= __B[0];
+  return __A;
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_mul_sh (__m128h __A, __mmask8 __B, __m128h __C, __m128h __D)
+{
+  return __builtin_ia32_vmulsh_v8hf_mask (__C, __D, __A, __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_mul_sh (__mmask8 __A, __m128h __B, __m128h __C)
+{
+  return __builtin_ia32_vmulsh_v8hf_mask (__B, __C, _mm_setzero_ph (), __A);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_div_sh (__m128h __A, __m128h __B)
+{
+  __A[0] /= __B[0];
+  return __A;
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_div_sh (__m128h __A, __mmask8 __B, __m128h __C, __m128h __D)
+{
+  return __builtin_ia32_vdivsh_v8hf_mask (__C, __D, __A, __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_div_sh (__mmask8 __A, __m128h __B, __m128h __C)
+{
+  return __builtin_ia32_vdivsh_v8hf_mask (__B, __C, _mm_setzero_ph (),
+					  __A);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_add_round_sh (__m128h __A, __m128h __B, const int __C)
+{
+  return __builtin_ia32_vaddsh_v8hf_mask_round (__A, __B,
+						_mm_setzero_ph (),
+						(__mmask8) -1, __C);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_add_round_sh (__m128h __A, __mmask8 __B, __m128h __C,
+		       __m128h __D, const int __E)
+{
+  return __builtin_ia32_vaddsh_v8hf_mask_round (__C, __D, __A, __B, __E);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_add_round_sh (__mmask8 __A, __m128h __B, __m128h __C,
+			const int __D)
+{
+  return __builtin_ia32_vaddsh_v8hf_mask_round (__B, __C,
+						_mm_setzero_ph (),
+						__A, __D);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_sub_round_sh (__m128h __A, __m128h __B, const int __C)
+{
+  return __builtin_ia32_vsubsh_v8hf_mask_round (__A, __B,
+						_mm_setzero_ph (),
+						(__mmask8) -1, __C);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_sub_round_sh (__m128h __A, __mmask8 __B, __m128h __C,
+		       __m128h __D, const int __E)
+{
+  return __builtin_ia32_vsubsh_v8hf_mask_round (__C, __D, __A, __B, __E);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_sub_round_sh (__mmask8 __A, __m128h __B, __m128h __C,
+			const int __D)
+{
+  return __builtin_ia32_vsubsh_v8hf_mask_round (__B, __C,
+						_mm_setzero_ph (),
+						__A, __D);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mul_round_sh (__m128h __A, __m128h __B, const int __C)
+{
+  return __builtin_ia32_vmulsh_v8hf_mask_round (__A, __B,
+						_mm_setzero_ph (),
+						(__mmask8) -1, __C);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_mul_round_sh (__m128h __A, __mmask8 __B, __m128h __C,
+		       __m128h __D, const int __E)
+{
+  return __builtin_ia32_vmulsh_v8hf_mask_round (__C, __D, __A, __B, __E);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_mul_round_sh (__mmask8 __A, __m128h __B, __m128h __C,
+			const int __D)
+{
+  return __builtin_ia32_vmulsh_v8hf_mask_round (__B, __C,
+						_mm_setzero_ph (),
+						__A, __D);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_div_round_sh (__m128h __A, __m128h __B, const int __C)
+{
+  return __builtin_ia32_vdivsh_v8hf_mask_round (__A, __B,
+						_mm_setzero_ph (),
+						(__mmask8) -1, __C);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_div_round_sh (__m128h __A, __mmask8 __B, __m128h __C,
+		       __m128h __D, const int __E)
+{
+  return __builtin_ia32_vdivsh_v8hf_mask_round (__C, __D, __A, __B, __E);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_div_round_sh (__mmask8 __A, __m128h __B, __m128h __C,
+			const int __D)
+{
+  return __builtin_ia32_vdivsh_v8hf_mask_round (__B, __C,
+						_mm_setzero_ph (),
+						__A, __D);
+}
+#else
+#define _mm_add_round_sh(A, B, C)					\
+  ((__m128h)__builtin_ia32_vaddsh_v8hf_mask_round ((A), (B),		\
+						   _mm_setzero_ph (),	\
+						   (__mmask8)-1, (C)))
+
+#define _mm_mask_add_round_sh(A, B, C, D, E)				\
+  ((__m128h)__builtin_ia32_vaddsh_v8hf_mask_round ((C), (D), (A), (B), (E)))
+
+#define _mm_maskz_add_round_sh(A, B, C, D)				\
+  ((__m128h)__builtin_ia32_vaddsh_v8hf_mask_round ((B), (C),		\
+						   _mm_setzero_ph (),	\
+						   (A), (D)))
+
+#define _mm_sub_round_sh(A, B, C)					\
+  ((__m128h)__builtin_ia32_vsubsh_v8hf_mask_round ((A), (B),		\
+						   _mm_setzero_ph (),	\
+						   (__mmask8)-1, (C)))
+
+#define _mm_mask_sub_round_sh(A, B, C, D, E)				\
+  ((__m128h)__builtin_ia32_vsubsh_v8hf_mask_round ((C), (D), (A), (B), (E)))
+
+#define _mm_maskz_sub_round_sh(A, B, C, D)				\
+  ((__m128h)__builtin_ia32_vsubsh_v8hf_mask_round ((B), (C),		\
+						   _mm_setzero_ph (),	\
+						   (A), (D)))
+
+#define _mm_mul_round_sh(A, B, C)					\
+  ((__m128h)__builtin_ia32_vmulsh_v8hf_mask_round ((A), (B),		\
+						   _mm_setzero_ph (),	\
+						   (__mmask8)-1, (C)))
+
+#define _mm_mask_mul_round_sh(A, B, C, D, E)				\
+  ((__m128h)__builtin_ia32_vmulsh_v8hf_mask_round ((C), (D), (A), (B), (E)))
+
+#define _mm_maskz_mul_round_sh(A, B, C, D)				\
+  ((__m128h)__builtin_ia32_vmulsh_v8hf_mask_round ((B), (C),		\
+						   _mm_setzero_ph (),	\
+						   (A), (D)))
+
+#define _mm_div_round_sh(A, B, C)					\
+  ((__m128h)__builtin_ia32_vdivsh_v8hf_mask_round ((A), (B),		\
+						   _mm_setzero_ph (),	\
+						   (__mmask8)-1, (C)))
+
+#define _mm_mask_div_round_sh(A, B, C, D, E)				\
+  ((__m128h)__builtin_ia32_vdivsh_v8hf_mask_round ((C), (D), (A), (B), (E)))
+
+#define _mm_maskz_div_round_sh(A, B, C, D)				\
+  ((__m128h)__builtin_ia32_vdivsh_v8hf_mask_round ((B), (C),		\
+						   _mm_setzero_ph (),	\
+						   (A), (D)))
+#endif /* __OPTIMIZE__ */
+
 #ifdef __DISABLE_AVX512FP16__
 #undef __DISABLE_AVX512FP16__
 #pragma GCC pop_options

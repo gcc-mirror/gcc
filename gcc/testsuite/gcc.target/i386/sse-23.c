@@ -708,6 +708,10 @@
 #define __builtin_ia32_vsubph_v32hf_mask_round(A, B, C, D, E) __builtin_ia32_vsubph_v32hf_mask_round(A, B, C, D, 8)
 #define __builtin_ia32_vmulph_v32hf_mask_round(A, B, C, D, E) __builtin_ia32_vmulph_v32hf_mask_round(A, B, C, D, 8)
 #define __builtin_ia32_vdivph_v32hf_mask_round(A, B, C, D, E) __builtin_ia32_vdivph_v32hf_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_vaddsh_v8hf_mask_round(A, B, C, D, E) __builtin_ia32_vaddsh_v8hf_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_vsubsh_v8hf_mask_round(A, B, C, D, E) __builtin_ia32_vsubsh_v8hf_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_vmulsh_v8hf_mask_round(A, B, C, D, E) __builtin_ia32_vmulsh_v8hf_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_vdivsh_v8hf_mask_round(A, B, C, D, E) __builtin_ia32_vdivsh_v8hf_mask_round(A, B, C, D, 8)
 
 /* vpclmulqdqintrin.h */
 #define __builtin_ia32_vpclmulqdq_v4di(A, B, C)  __builtin_ia32_vpclmulqdq_v4di(A, B, 1) 

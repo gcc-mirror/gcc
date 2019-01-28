@@ -349,7 +349,7 @@
 (define_mode_iterator VF2_512_256VL
   [V8DF (V4DF "TARGET_AVX512VL")])
 
-;; All 128bit vector float modes
+;; All 128bit vector SF/DF modes
 (define_mode_iterator VF_128
   [V4SF (V2DF "TARGET_SSE2")])
 
@@ -2104,11 +2104,11 @@
    (set_attr "mode" "<ssescalarmode>")])
 
 (define_insn "<sse>_vm<insn><mode>3<mask_scalar_name><round_scalar_name>"
-  [(set (match_operand:VF_128 0 "register_operand" "=x,v")
-	(vec_merge:VF_128
-	  (plusminus:VF_128
-	    (match_operand:VF_128 1 "register_operand" "0,v")
-	    (match_operand:VF_128 2 "nonimmediate_operand" "xm,<round_scalar_constraint>"))
+  [(set (match_operand:VFH_128 0 "register_operand" "=x,v")
+	(vec_merge:VFH_128
+	  (plusminus:VFH_128
+	    (match_operand:VFH_128 1 "register_operand" "0,v")
+	    (match_operand:VFH_128 2 "nonimmediate_operand" "xm,<round_scalar_constraint>"))
 	  (match_dup 1)
 	  (const_int 1)))]
   "TARGET_SSE"
@@ -2195,11 +2195,11 @@
    (set_attr "mode" "<ssescalarmode>")])
 
 (define_insn "<sse>_vm<multdiv_mnemonic><mode>3<mask_scalar_name><round_scalar_name>"
-  [(set (match_operand:VF_128 0 "register_operand" "=x,v")
-	(vec_merge:VF_128
-	  (multdiv:VF_128
-	    (match_operand:VF_128 1 "register_operand" "0,v")
-	    (match_operand:VF_128 2 "nonimmediate_operand" "xm,<round_scalar_constraint>"))
+  [(set (match_operand:VFH_128 0 "register_operand" "=x,v")
+	(vec_merge:VFH_128
+	  (multdiv:VFH_128
+	    (match_operand:VFH_128 1 "register_operand" "0,v")
+	    (match_operand:VFH_128 2 "nonimmediate_operand" "xm,<round_scalar_constraint>"))
 	  (match_dup 1)
 	  (const_int 1)))]
   "TARGET_SSE"
