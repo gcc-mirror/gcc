@@ -1,3 +1,12 @@
+2019-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/86125
+	* gcc.dg/Wbuiltin-declaration-mismatch-7.c: Guard testcase for
+	lp64, ilp32 and llp64 only.
+	(fputs): Use unsigned long long instead of size_t for return type.
+	(vfprintf, vfscanf): Accept arbitrary target specific type for
+	va_list.
+
 2019-01-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88358 - name wrongly treated as type.

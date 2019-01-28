@@ -1,3 +1,16 @@
+2019-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/86125
+	* c-decl.c (last_fileptr_type): Remove.
+	(last_structptr_types): New variable.
+	(match_builtin_function_types): Compare TYPE_MAIN_VARIANT of
+	{old,new}rettype instead of the types themselves.  Assert
+	last_structptr_types array has the same number of elements
+	as builtin_structptr_types array.  Use TYPE_MAIN_VARIANT for
+	argument oldtype and newtype.  Instead of handling
+	just fileptr_type_node specially, handle all builtin_structptr_types
+	pointer nodes.  Formatting fix.
+
 2019-01-24  Martin Sebor  <msebor@redhat.com>
 
 	PR c/86125

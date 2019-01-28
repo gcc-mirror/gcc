@@ -4296,18 +4296,13 @@ c_common_nodes_and_builtins (void)
 			 COMPLEX_FLOATN_NX_TYPE_NODE (i)));
 	}
 
-  if (c_dialect_cxx ())
-    {
-      /* For C++, make fileptr_type_node a distinct void * type until
-	 FILE type is defined.  Likewise for const struct tm*.  */
-      for (unsigned i = 0;
-	   i < sizeof (builtin_structptr_types)
-	       / sizeof (builtin_structptr_type);
-	   ++i)
-	builtin_structptr_types[i].node =
-	  build_variant_type_copy (builtin_structptr_types[i].base);
-
-    }
+  /* Make fileptr_type_node a distinct void * type until
+     FILE type is defined.  Likewise for const struct tm*.  */
+  for (unsigned i = 0;
+       i < sizeof (builtin_structptr_types) / sizeof (builtin_structptr_type);
+       ++i)
+    builtin_structptr_types[i].node
+      = build_variant_type_copy (builtin_structptr_types[i].base);
 
   record_builtin_type (RID_VOID, NULL, void_type_node);
 
