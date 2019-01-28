@@ -134,6 +134,7 @@ UnionExp copyLiteral(Expression *e);
 
 /// Set this literal to the given type, copying it if necessary
 Expression *paintTypeOntoLiteral(Type *type, Expression *lit);
+Expression *paintTypeOntoLiteral(UnionExp *pue, Type *type, Expression *lit);
 UnionExp paintTypeOntoLiteralCopy(Type *type, Expression *lit);
 
 /// Convert from a CTFE-internal slice, into a normal Expression
@@ -143,11 +144,11 @@ Expression *resolveSlice(Expression *e, UnionExp *pue = NULL);
 uinteger_t resolveArrayLength(Expression *e);
 
 /// Create an array literal consisting of 'elem' duplicated 'dim' times.
-ArrayLiteralExp *createBlockDuplicatedArrayLiteral(Loc loc, Type *type,
+ArrayLiteralExp *createBlockDuplicatedArrayLiteral(UnionExp *pue, Loc loc, Type *type,
         Expression *elem, size_t dim);
 
 /// Create a string literal consisting of 'value' duplicated 'dim' times.
-StringExp *createBlockDuplicatedStringLiteral(Loc loc, Type *type,
+StringExp *createBlockDuplicatedStringLiteral(UnionExp *pue, Loc loc, Type *type,
         unsigned value, size_t dim, unsigned char sz);
 
 
@@ -209,7 +210,7 @@ UnionExp pointerArithmetic(Loc loc, TOK op, Type *type,
 bool isFloatIntPaint(Type *to, Type *from);
 
 // Reinterpret float/int value 'fromVal' as a float/integer of type 'to'.
-Expression *paintFloatInt(Expression *fromVal, Type *to);
+Expression *paintFloatInt(UnionExp *pue, Expression *fromVal, Type *to);
 
 /// Return true if t is an AA
 bool isAssocArray(Type *t);
@@ -264,4 +265,4 @@ UnionExp ctfeCat(Loc loc, Type *type, Expression *e1, Expression *e2);
 Expression *ctfeIndex(Loc loc, Type *type, Expression *e1, uinteger_t indx);
 
 /// Cast 'e' of type 'type' to type 'to'.
-Expression *ctfeCast(Loc loc, Type *type, Type *to, Expression *e);
+Expression *ctfeCast(UnionExp *pue, Loc loc, Type *type, Type *to, Expression *e);

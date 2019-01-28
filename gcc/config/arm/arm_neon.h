@@ -18310,12 +18310,12 @@ vfmlsl_laneq_high_u32 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
 /* AdvSIMD Complex numbers intrinsics.  */
 #if __ARM_ARCH >= 8
 #pragma GCC push_options
-#pragma GCC target(("arch=armv8.3-a"))
+#pragma GCC target ("arch=armv8.3-a")
 
 
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 #pragma GCC push_options
-#pragma GCC target(("+fp16"))
+#pragma GCC target ("+fp16")
 __extension__ extern __inline float16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcadd_rot90_f16 (float16x4_t __a, float16x4_t __b)

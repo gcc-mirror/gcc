@@ -49,7 +49,7 @@ expand_block_clear (rtx operands[])
   rtx orig_dest = operands[0];
   rtx bytes_rtx	= operands[1];
   rtx align_rtx = operands[3];
-  bool constp	= (GET_CODE (bytes_rtx) == CONST_INT);
+  bool constp	= CONST_INT_P (bytes_rtx);
   HOST_WIDE_INT align;
   HOST_WIDE_INT bytes;
   int offset;
@@ -61,7 +61,7 @@ expand_block_clear (rtx operands[])
     return 0;
 
   /* This must be a fixed size alignment  */
-  gcc_assert (GET_CODE (align_rtx) == CONST_INT);
+  gcc_assert (CONST_INT_P (align_rtx));
   align = INTVAL (align_rtx) * BITS_PER_UNIT;
 
   /* Anything to clear? */
@@ -113,7 +113,7 @@ expand_block_clear (rtx operands[])
 		 reload, not one per store.  */
 	      addr = XEXP (orig_dest, 0);
 	      if ((GET_CODE (addr) == PLUS || GET_CODE (addr) == LO_SUM)
-		  && GET_CODE (XEXP (addr, 1)) == CONST_INT
+		  && CONST_INT_P (XEXP (addr, 1))
 		  && (INTVAL (XEXP (addr, 1)) & 3) != 0)
 		{
 		  addr = copy_addr_to_reg (addr);
@@ -2705,7 +2705,7 @@ expand_block_move (rtx operands[])
   rtx orig_src	= operands[1];
   rtx bytes_rtx	= operands[2];
   rtx align_rtx = operands[3];
-  int constp	= (GET_CODE (bytes_rtx) == CONST_INT);
+  int constp	= CONST_INT_P (bytes_rtx);
   int align;
   int bytes;
   int offset;
@@ -2718,7 +2718,7 @@ expand_block_move (rtx operands[])
     return 0;
 
   /* This must be a fixed size alignment */
-  gcc_assert (GET_CODE (align_rtx) == CONST_INT);
+  gcc_assert (CONST_INT_P (align_rtx));
   align = INTVAL (align_rtx) * BITS_PER_UNIT;
 
   /* Anything to move? */
@@ -2762,7 +2762,7 @@ expand_block_move (rtx operands[])
 		 reload, not one per load and/or store.  */
 	      addr = XEXP (orig_dest, 0);
 	      if ((GET_CODE (addr) == PLUS || GET_CODE (addr) == LO_SUM)
-		  && GET_CODE (XEXP (addr, 1)) == CONST_INT
+		  && CONST_INT_P (XEXP (addr, 1))
 		  && (INTVAL (XEXP (addr, 1)) & 3) != 0)
 		{
 		  addr = copy_addr_to_reg (addr);
@@ -2770,7 +2770,7 @@ expand_block_move (rtx operands[])
 		}
 	      addr = XEXP (orig_src, 0);
 	      if ((GET_CODE (addr) == PLUS || GET_CODE (addr) == LO_SUM)
-		  && GET_CODE (XEXP (addr, 1)) == CONST_INT
+		  && CONST_INT_P (XEXP (addr, 1))
 		  && (INTVAL (XEXP (addr, 1)) & 3) != 0)
 		{
 		  addr = copy_addr_to_reg (addr);

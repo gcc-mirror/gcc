@@ -2515,7 +2515,8 @@ check_init_expr_arguments (gfc_expr *e)
 static bool check_restricted (gfc_expr *);
 
 /* F95, 7.1.6.1, Initialization expressions, (7)
-   F2003, 7.1.7 Initialization expression, (8)  */
+   F2003, 7.1.7 Initialization expression, (8)
+   F2008, 7.1.12 Constant expression, (4)  */
 
 static match
 check_inquiry (gfc_expr *e, int not_restricted)
@@ -2537,6 +2538,15 @@ check_inquiry (gfc_expr *e, int not_restricted)
     "digits", "epsilon", "huge", "maxexponent", "minexponent",
     "precision", "radix", "range", "tiny",
     "new_line", NULL
+  };
+
+  /* std=f2008+ or -std=gnu */
+  static const char *const inquiry_func_gnu[] = {
+    "lbound", "shape", "size", "ubound",
+    "bit_size", "len", "kind",
+    "digits", "epsilon", "huge", "maxexponent", "minexponent",
+    "precision", "radix", "range", "tiny",
+    "new_line", "storage_size", NULL
   };
 
   int i = 0;
@@ -2565,8 +2575,11 @@ check_inquiry (gfc_expr *e, int not_restricted)
     {
       name = e->symtree->n.sym->name;
 
-      functions = (gfc_option.warn_std & GFC_STD_F2003)
-		? inquiry_func_f2003 : inquiry_func_f95;
+      functions = inquiry_func_gnu;
+      if (gfc_option.warn_std & GFC_STD_F2003)
+	functions = inquiry_func_f2003;
+      if (gfc_option.warn_std & GFC_STD_F95)
+	functions = inquiry_func_f95;
 
       for (i = 0; functions[i]; i++)
 	if (strcmp (functions[i], name) == 0)

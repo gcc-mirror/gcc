@@ -4296,10 +4296,7 @@ decl_tls_wrapper_p (const tree fn)
 }
 
 /* Return an identifier for the name of a temporary variable used to
-   initialize a static reference.  This isn't part of the ABI, but we might
-   as well call them something readable.  */
-
-static GTY(()) int temp_count;
+   initialize a static reference.  This is now part of the ABI.  */
 
 tree
 mangle_ref_init_variable (const tree variable)
@@ -4310,7 +4307,7 @@ mangle_ref_init_variable (const tree variable)
   write_name (variable, /*ignore_local_scope=*/0);
   /* Avoid name clashes with aggregate initialization of multiple
      references at once.  */
-  write_unsigned_number (temp_count++);
+  write_compact_number (current_ref_temp_count++);
   return finish_mangling_get_identifier ();
 }
 

@@ -647,14 +647,7 @@ const (
 func RepoRootForImportPath(importPath string, mod ModuleMode, security web.SecurityMode) (*RepoRoot, error) {
 	rr, err := repoRootFromVCSPaths(importPath, "", security, vcsPaths)
 	if err == errUnknownSite {
-		// If there are wildcards, look up the thing before the wildcard,
-		// hoping it applies to the wildcarded parts too.
-		// This makes 'go get rsc.io/pdf/...' work in a fresh GOPATH.
-		lookup := strings.TrimSuffix(importPath, "/...")
-		if i := strings.Index(lookup, "/.../"); i >= 0 {
-			lookup = lookup[:i]
-		}
-		rr, err = repoRootForImportDynamic(lookup, mod, security)
+		rr, err = repoRootForImportDynamic(importPath, mod, security)
 		if err != nil {
 			err = fmt.Errorf("unrecognized import path %q (%v)", importPath, err)
 		}
@@ -667,6 +660,7 @@ func RepoRootForImportPath(importPath string, mod ModuleMode, security web.Secur
 		}
 	}
 
+	// Should have been taken care of above, but make sure.
 	if err == nil && strings.Contains(importPath, "...") && strings.Contains(rr.Root, "...") {
 		// Do not allow wildcards in the repo root.
 		rr = nil
@@ -903,16 +897,16 @@ type metaImport struct {
 	Prefix, VCS, RepoRoot string
 }
 
-func splitPathHasPrefix(path, prefix []string) bool {
-	if len(path) < len(prefix) {
+// pathPrefix reports whether sub is a prefix of s,
+// only considering entire path components.
+func pathPrefix(s, sub string) bool {
+	// strings.HasPrefix is necessary but not sufficient.
+	if !strings.HasPrefix(s, sub) {
 		return false
 	}
-	for i, p := range prefix {
-		if path[i] != p {
-			return false
-		}
-	}
-	return true
+	// The remainder after the prefix must either be empty or start with a slash.
+	rem := s[len(sub):]
+	return rem == "" || rem[0] == '/'
 }
 
 // A ImportMismatchError is returned where metaImport/s are present
@@ -935,13 +929,10 @@ func (m ImportMismatchError) Error() string {
 // errNoMatch is returned if none match.
 func matchGoImport(imports []metaImport, importPath string) (metaImport, error) {
 	match := -1
-	imp := strings.Split(importPath, "/")
 
 	errImportMismatch := ImportMismatchError{importPath: importPath}
 	for i, im := range imports {
-		pre := strings.Split(im.Prefix, "/")
-
-		if !splitPathHasPrefix(imp, pre) {
+		if !pathPrefix(importPath, im.Prefix) {
 			errImportMismatch.mismatches = append(errImportMismatch.mismatches, im.Prefix)
 			continue
 		}
@@ -966,10 +957,14 @@ func matchGoImport(imports []metaImport, importPath string) (metaImport, error) 
 
 // expand rewrites s to replace {k} with match[k] for each key k in match.
 func expand(match map[string]string, s string) string {
+	// We want to replace each match exactly once, and the result of expansion
+	// must not depend on the iteration order through the map.
+	// A strings.Replacer has exactly the properties we're looking for.
+	oldNew := make([]string, 0, 2*len(match))
 	for k, v := range match {
-		s = strings.Replace(s, "{"+k+"}", v, -1)
+		oldNew = append(oldNew, "{"+k+"}", v)
 	}
-	return s
+	return strings.NewReplacer(oldNew...).Replace(s)
 }
 
 // vcsPaths defines the meaning of import paths referring to

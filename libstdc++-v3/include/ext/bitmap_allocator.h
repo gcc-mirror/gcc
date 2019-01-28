@@ -90,7 +90,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_space_left() const throw()
 	{ return _M_end_of_storage - _M_finish; }
 
-	pointer
+	_GLIBCXX_NODISCARD pointer
 	allocate(size_type __n)
 	{ return static_cast<pointer>(::operator new(__n * sizeof(_Tp))); }
 
@@ -1009,7 +1009,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ~bitmap_allocator() _GLIBCXX_USE_NOEXCEPT
       { }
 
-      pointer 
+      _GLIBCXX_NODISCARD pointer 
       allocate(size_type __n)
       {
 	if (__n > this->max_size())
@@ -1033,7 +1033,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
       }
 
-      pointer 
+      _GLIBCXX_NODISCARD pointer 
       allocate(size_type __n, typename bitmap_allocator<void>::const_pointer)
       { return allocate(__n); }
 

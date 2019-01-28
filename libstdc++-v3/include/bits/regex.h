@@ -1705,7 +1705,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * @retval true The %match_results object is empty.
        * @retval false The %match_results object is not empty.
        */
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const noexcept
       { return size() == 0; }
 

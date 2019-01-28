@@ -151,7 +151,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       ~array_allocator() _GLIBCXX_USE_NOEXCEPT { }
 
-      pointer
+      _GLIBCXX_NODISCARD pointer
       allocate(size_type __n, const void* = 0)
       {
 	if (_M_array == 0 || _M_used + __n > _M_array->size())

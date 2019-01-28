@@ -2795,11 +2795,14 @@ finish_compound_literal (tree type, tree compound_literal,
 	  return error_mark_node;
       }
 
-  if (processing_template_decl)
+  if (instantiation_dependent_expression_p (compound_literal)
+      || dependent_type_p (type))
     {
       TREE_TYPE (compound_literal) = type;
       /* Mark the expression as a compound literal.  */
       TREE_HAS_CONSTRUCTOR (compound_literal) = 1;
+      /* And as instantiation-dependent.  */
+      CONSTRUCTOR_IS_DEPENDENT (compound_literal) = true;
       if (fcl_context == fcl_c99)
 	CONSTRUCTOR_C99_COMPOUND_LITERAL (compound_literal) = 1;
       return compound_literal;
@@ -3438,10 +3441,9 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
     }
 
   /* In a lambda within a template, wait until instantiation
-     time to implicitly capture.  */
+     time to implicitly capture a dependent type.  */
   if (context == containing_function
-      && DECL_TEMPLATE_INFO (containing_function)
-      && uses_template_parms (DECL_TI_ARGS (containing_function)))
+      && dependent_type_p (TREE_TYPE (decl)))
     return decl;
 
   if (lambda_expr && VAR_P (decl)
@@ -9057,11 +9059,26 @@ finish_omp_cancel (tree clauses)
 	  && OMP_CLAUSE_IF_MODIFIER (ifc) != VOID_CST)
 	error_at (OMP_CLAUSE_LOCATION (ifc),
 		  "expected %<cancel%> %<if%> clause modifier");
+      else
+	{
+	  tree ifc2 = omp_find_clause (OMP_CLAUSE_CHAIN (ifc), OMP_CLAUSE_IF);
+	  if (ifc2 != NULL_TREE)
+	    {
+	      gcc_assert (OMP_CLAUSE_IF_MODIFIER (ifc) == VOID_CST
+			  && OMP_CLAUSE_IF_MODIFIER (ifc2) != ERROR_MARK
+			  && OMP_CLAUSE_IF_MODIFIER (ifc2) != VOID_CST);
+	      error_at (OMP_CLAUSE_LOCATION (ifc2),
+			"expected %<cancel%> %<if%> clause modifier");
+	    }
+	}
 
-      tree type = TREE_TYPE (OMP_CLAUSE_IF_EXPR (ifc));
-      ifc = fold_build2_loc (OMP_CLAUSE_LOCATION (ifc), NE_EXPR,
-			     boolean_type_node, OMP_CLAUSE_IF_EXPR (ifc),
-			     build_zero_cst (type));
+      if (!processing_template_decl)
+	ifc = maybe_convert_cond (OMP_CLAUSE_IF_EXPR (ifc));
+      else
+	ifc = build_x_binary_op (OMP_CLAUSE_LOCATION (ifc), NE_EXPR,
+				 OMP_CLAUSE_IF_EXPR (ifc), ERROR_MARK,
+				 integer_zero_node, ERROR_MARK,
+				 NULL, tf_warning_or_error);
     }
   else
     ifc = boolean_true_node;

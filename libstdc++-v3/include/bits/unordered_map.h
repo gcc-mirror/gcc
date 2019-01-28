@@ -300,7 +300,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // size and capacity:
 
       ///  Returns true if the %unordered_map is empty.
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const noexcept
       { return _M_h.empty(); }
 
@@ -1441,7 +1441,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // size and capacity:
 
       ///  Returns true if the %unordered_multimap is empty.
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const noexcept
       { return _M_h.empty(); }
 

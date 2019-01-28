@@ -5540,6 +5540,16 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      if (!operand_equal_p (gimple_assign_rhs2 (slpstmt), op1, 0))
 		scalar_shift_arg = false;
 	    }
+
+	  /* For internal SLP defs we have to make sure we see scalar stmts
+	     for all vector elements.
+	     ???  For different vectors we could resort to a different
+	     scalar shift operand but code-generation below simply always
+	     takes the first.  */
+	  if (dt[1] == vect_internal_def
+	      && maybe_ne (nunits_out * SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node),
+			   stmts.length ()))
+	    scalar_shift_arg = false;
 	}
 
       /* If the shift amount is computed by a pattern stmt we cannot
@@ -9248,6 +9258,7 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
        BITOP2 (rhs1 BITOP1 rhs2) or
        rhs1 BITOP2 (BITOP1 rhs2)
      depending on bitop1 and bitop2 arity.  */
+  bool swap_p = false;
   if (VECTOR_BOOLEAN_TYPE_P (vectype))
     {
       if (code == GT_EXPR)
@@ -9264,15 +9275,13 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	{
 	  bitop1 = BIT_NOT_EXPR;
 	  bitop2 = BIT_AND_EXPR;
-	  std::swap (rhs1, rhs2);
-	  std::swap (dts[0], dts[1]);
+	  swap_p = true;
 	}
       else if (code == LE_EXPR)
 	{
 	  bitop1 = BIT_NOT_EXPR;
 	  bitop2 = BIT_IOR_EXPR;
-	  std::swap (rhs1, rhs2);
-	  std::swap (dts[0], dts[1]);
+	  swap_p = true;
 	}
       else
 	{
@@ -9339,6 +9348,8 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      vect_get_slp_defs (ops, slp_node, &vec_defs);
 	      vec_oprnds1 = vec_defs.pop ();
 	      vec_oprnds0 = vec_defs.pop ();
+	      if (swap_p)
+		std::swap (vec_oprnds0, vec_oprnds1);
 	    }
 	  else
 	    {
@@ -9358,6 +9369,8 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
       if (!slp_node)
 	{
+	  if (swap_p)
+	    std::swap (vec_rhs1, vec_rhs2);
 	  vec_oprnds0.quick_push (vec_rhs1);
 	  vec_oprnds1.quick_push (vec_rhs2);
 	}

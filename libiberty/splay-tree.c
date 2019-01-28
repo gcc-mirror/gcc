@@ -425,6 +425,8 @@ splay_tree_remove (splay_tree sp, splay_tree_key key)
       right = sp->root->right;
 
       /* Delete the root node itself.  */
+      if (sp->delete_key)
+	(*sp->delete_key) (sp->root->key);
       if (sp->delete_value)
 	(*sp->delete_value) (sp->root->value);
       (*sp->deallocate) (sp->root, sp->allocate_data);

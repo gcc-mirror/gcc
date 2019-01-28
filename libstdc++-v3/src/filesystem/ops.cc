@@ -1045,7 +1045,8 @@ bool
 fs::remove(const path& p, error_code& ec) noexcept
 {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-  if (exists(symlink_status(p, ec)))
+  auto st = symlink_status(p, ec);
+  if (exists(st))
     {
       if ((is_directory(p, ec) && RemoveDirectoryW(p.c_str()))
 	  || DeleteFileW(p.c_str()))
@@ -1056,6 +1057,8 @@ fs::remove(const path& p, error_code& ec) noexcept
       else if (!ec)
 	ec.assign((int)GetLastError(), generic_category());
     }
+  else if (status_known(st))
+    ec.clear();
 #else
   if (::remove(p.c_str()) == 0)
     {

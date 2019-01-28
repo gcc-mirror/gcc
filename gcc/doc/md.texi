@@ -1800,6 +1800,100 @@ DF modes
 @end table
 
 
+@item AMD GCN ---@file{config/gcn/constraints.md}
+@table @code
+@item I
+Immediate integer in the range @minus{}16 to 64
+
+@item J
+Immediate 16-bit signed integer
+
+@item Kf
+Immediate constant @minus{}1
+
+@item L
+Immediate 15-bit unsigned integer
+
+@item A
+Immediate constant that can be inlined in an instruction encoding: integer
+@minus{}16..64, or float 0.0, +/@minus{}0.5, +/@minus{}1.0, +/@minus{}2.0,
++/@minus{}4.0, 1.0/(2.0*PI)
+
+@item B
+Immediate 32-bit signed integer that can be attached to an instruction encoding
+
+@item C
+Immediate 32-bit integer in range @minus{}16..4294967295 (i.e. 32-bit unsigned
+integer or @samp{A} constraint)
+
+@item DA
+Immediate 64-bit constant that can be split into two @samp{A} constants
+
+@item DB
+Immediate 64-bit constant that can be split into two @samp{B} constants
+
+@item U
+Any @code{unspec}
+
+@item Y
+Any @code{symbol_ref} or @code{label_ref}
+
+@item v
+VGPR register
+
+@item Sg
+SGPR register
+
+@item SD
+SGPR registers valid for instruction destinations, including VCC, M0 and EXEC
+
+@item SS
+SGPR registers valid for instruction sources, including VCC, M0, EXEC and SCC
+
+@item Sm
+SGPR registers valid as a source for scalar memory instructions (excludes M0
+and EXEC)
+
+@item Sv
+SGPR registers valid as a source or destination for vector instructions
+(excludes EXEC)
+
+@item ca
+All condition registers: SCC, VCCZ, EXECZ
+
+@item cs
+Scalar condition register: SCC
+
+@item cV
+Vector condition register: VCC, VCC_LO, VCC_HI
+
+@item e
+EXEC register (EXEC_LO and EXEC_HI)
+
+@item RB
+Memory operand with address space suitable for @code{buffer_*} instructions
+
+@item RF
+Memory operand with address space suitable for @code{flat_*} instructions
+
+@item RS
+Memory operand with address space suitable for @code{s_*} instructions
+
+@item RL
+Memory operand with address space suitable for @code{ds_*} LDS instructions
+
+@item RG
+Memory operand with address space suitable for @code{ds_*} GDS instructions
+
+@item RD
+Memory operand with address space suitable for any @code{ds_*} instructions
+
+@item RM
+Memory operand with address space suitable for @code{global_*} instructions
+
+@end table
+
+
 @item ARC ---@file{config/arc/constraints.md}
 @table @code
 @item q

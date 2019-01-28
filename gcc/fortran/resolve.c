@@ -4873,7 +4873,7 @@ resolve_array_ref (gfc_array_ref *ar)
 
 
 static bool
-resolve_substring (gfc_ref *ref)
+resolve_substring (gfc_ref *ref, bool *equal_length)
 {
   int k = gfc_validate_kind (BT_INTEGER, gfc_charlen_int_kind, false);
 
@@ -4944,6 +4944,13 @@ resolve_substring (gfc_ref *ref)
 		     &ref->u.ss.end->where);
 	  return false;
 	}
+      /*  If the substring has the same length as the original
+	  variable, the reference itself can be deleted.  */
+
+      if (ref->u.ss.length != NULL
+	  && compare_bound (ref->u.ss.end, ref->u.ss.length->length) == CMP_EQ
+	  && compare_bound_int (ref->u.ss.start, 1) == CMP_EQ)
+	*equal_length = true;
     }
 
   return true;
@@ -5037,7 +5044,9 @@ static bool
 resolve_ref (gfc_expr *expr)
 {
   int current_part_dimension, n_components, seen_part_dimension;
-  gfc_ref *ref;
+  gfc_ref *ref, **prev;
+  bool equal_length;
+  bool breakout;
 
   for (ref = expr->ref; ref; ref = ref->next)
     if (ref->type == REF_ARRAY && ref->u.ar.as == NULL)
@@ -5046,11 +5055,12 @@ resolve_ref (gfc_expr *expr)
 	break;
       }
 
-  for (ref = expr->ref; ref; ref = ref->next)
-    switch (ref->type)
+  breakout = false;
+  for (prev = &expr->ref; !breakout && *prev != NULL; prev = &(*prev)->next)
+    switch ((*prev)->type)
       {
       case REF_ARRAY:
-	if (!resolve_array_ref (&ref->u.ar))
+	if (!resolve_array_ref (&(*prev)->u.ar))
 	  return false;
 	break;
 
@@ -5059,8 +5069,22 @@ resolve_ref (gfc_expr *expr)
 	break;
 
       case REF_SUBSTRING:
-	if (!resolve_substring (ref))
+	equal_length = false;
+	if (!resolve_substring (*prev, &equal_length))
 	  return false;
+
+	if (expr->expr_type != EXPR_SUBSTRING && equal_length)
+	  {
+	    /* Remove the reference and move the charlen, if any.  */
+	    ref = *prev;
+	    *prev = ref->next;
+	    ref->next = NULL;
+	    expr->ts.u.cl = ref->u.ss.length;
+	    ref->u.ss.length = NULL;
+	    gfc_free_ref_list (ref);
+	    if (*prev == NULL)
+	      breakout = true;
+	  }
 	break;
       }
 
@@ -15345,7 +15369,7 @@ resolve_symbol (gfc_symbol *sym)
   /* Set the formal_arg_flag so that check_conflict will not throw
      an error for host associated variables in the specification
      expression for an array_valued function.  */
-  if (sym->attr.function && sym->as)
+  if ((sym->attr.function || sym->attr.result) && sym->as)
     formal_arg_flag = true;
 
   saved_specification_expr = specification_expr;
@@ -16649,7 +16673,7 @@ resolve_types (gfc_namespace *ns)
 
   gfc_traverse_ns (ns, resolve_values);
 
-  if (ns->save_all)
+  if (ns->save_all || !flag_automatic)
     gfc_save_all (ns);
 
   iter_stack = NULL;

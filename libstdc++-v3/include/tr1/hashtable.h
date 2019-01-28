@@ -244,7 +244,7 @@ namespace tr1
       size() const
       { return _M_element_count; }
 
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const
       { return size() == 0; }
 

@@ -113,8 +113,12 @@ if (Targets.length >= 1 && allSatisfy!(isMutable, Targets))
             else
             {
                 enum foundFunc = findCovariantFunction!(TargetMembers[i], Source, SourceMembers);
-                static if (foundFunc == -1)
-                    pragma(msg, "Could not locate matching function for: " ~ TargetMembers[i].stringof);
+                debug
+                {
+                    static if (foundFunc == -1)
+                        pragma(msg, "Could not locate matching function for: ",
+                               TargetMembers[i].stringof);
+                }
                 enum hasRequiredMethods =
                     foundFunc != -1 &&
                     hasRequiredMethods!(i + 1);

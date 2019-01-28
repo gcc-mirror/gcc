@@ -394,7 +394,7 @@ void __wrap_rtems_task_variable_add(void **);
  */
 void reflect_call(const struct __go_func_type *, FuncVal *, _Bool, _Bool,
 		  void **, void **)
-  __asm__ (GOSYM_PREFIX "reflect.call");
+  __asm__ (GOSYM_PREFIX "runtime.reflectcall");
 void runtime_panic(Eface)
   __asm__ (GOSYM_PREFIX "runtime.gopanic");
 void runtime_panic(Eface)

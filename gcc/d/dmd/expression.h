@@ -410,9 +410,9 @@ public:
     Expressions *elements;
     OwnedBy ownedByCtfe;
 
-    ArrayLiteralExp(Loc loc, Expressions *elements);
-    ArrayLiteralExp(Loc loc, Expression *e);
-    ArrayLiteralExp(Loc loc, Expression *basis, Expressions *elements);
+    ArrayLiteralExp(Loc loc, Type *type, Expressions *elements);
+    ArrayLiteralExp(Loc loc, Type *type, Expression *e);
+    ArrayLiteralExp(Loc loc, Type *type, Expression *basis, Expressions *elements);
     static ArrayLiteralExp *create(Loc loc, Expressions *elements);
     Expression *syntaxCopy();
     bool equals(RootObject *o);

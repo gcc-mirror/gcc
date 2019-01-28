@@ -1,3 +1,79 @@
+2019-01-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/57553
+	* expr.c (check_inquiry): Add list of inquiry functions allowed in
+	constant expressions for F2008+.
+
+2019-01-25  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85780
+	* decl.c (gfc_match_subroutine): Check for conflict between BIND(C)
+	and alternative return.
+
+2019-01-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/88929
+	* trans-array.c (gfc_conv_descriptor_elem_len): New function.
+	* trans-array.h : Add prototype for above.
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Take account of
+	assumed rank arrays being flagged by rank = -1 in expressions.
+	Intent in arrays need a pointer to a copy of the data to be
+	assigned to the descriptor passed for conversion. This should
+	then be freed, together with the CFI descriptor on return from
+	the C call.
+
+2019-01-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/88579
+	* trans-expr.c (gfc_conv_power_op): Handle cases of (2**e) ** integer
+	and (- 2**e) ** integer.
+
+2019-01-19  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR fortran/37835
+	* resolve.c (resolve_types): Add !flag_automatic.
+	* symbol.c (gfc_add_save): Silence warnings.
+
+2019-01-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77960
+	* io.c (match_io_element): input-item cannot be an external function.
+
+2018-01-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/56789
+	* trans-expr.c (gfc_conv_procedure_call): Call
+	gfc_conv_subref_array_arg if the formal arg is contiguous
+	and the actual arg may not be.
+
+2019-01-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/88871
+	* resolve.c (resolve_ref): Fix logic for removal of
+	reference.
+
+2019-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/88902
+	* trans-decl.c (gfc_get_symbol_decl): Don't add length to function
+	or parent function if it has been added there already.
+
+2019-01-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/43136
+	* resolve.c (resolve_array_ref): Add equal_length argument; set it
+	if the length of the substring equals that of the orignal
+	variable.
+	(resolve_ref): Remove the substring if it is equal in length to
+	the original variable, unless it is an EXPR_SUBSTRING).
+
+2019-01-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/81849
+	* resolve.c (resolve_symbol): Host associated varaibles can appear
+	in the specification statement of a RESULT array.
+
 2019-01-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Deal with exprs
@@ -11,7 +87,7 @@
 2019-01-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/57992
-	* trans-array.c (gfc_conv_array_parameter):  Do not pack/unpack
+	* trans-array.c (gfc_conv_array_parameter): Do not pack/unpack
 	functions with contiguous results.
 
 2019-01-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
@@ -30,18 +106,18 @@
 
 2019-01-12  Paul Thomas  <pault@gcc.gnu.org>
 
-	* gfortran.texi : Add description in sections on TS 29113 and
+	* gfortran.texi: Add description in sections on TS 29113 and
 	further interoperability with C.
 	* trans-array.c (gfc_conv_descriptor_attribute): New function.
 	(gfc_get_dataptr_offset): Remove static function attribute.
-	* trans-array.h : Add prototypes for above functions.
-	* trans-decl.c : Add declarations for the library functions
+	* trans-array.h: Add prototypes for above functions.
+	* trans-decl.c: Add declarations for the library functions
 	cfi_desc_to_gfc_desc and gfc_desc_to_cfi_desc.
 	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): New function.
 	(gfc_conv_procedure_call): Call it for scalar and array actual
 	arguments, when the formal arguments are bind_c with assumed
 	shape or assumed rank.
-	* trans.h : External declarations for gfor_fndecl_cfi_to_gfc
+	* trans.h: External declarations for gfor_fndecl_cfi_to_gfc
 	and gfor_fndecl_gfc_to_cfi.
 
 2019-01-11  Steven G. Kargl  <kargl@gcc.gnu.org>

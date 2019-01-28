@@ -7,6 +7,7 @@
 package os
 
 import (
+	"runtime"
 	"syscall"
 	"time"
 )
@@ -20,7 +21,7 @@ func Readlink(name string) (string, error) {
 		b := make([]byte, len)
 		n, e := fixCount(syscall.Readlink(fixLongPath(name), b))
 		// buffer too small
-		if e == syscall.ERANGE {
+		if runtime.GOOS == "aix" && e == syscall.ERANGE {
 			continue
 		}
 		if e != nil {

@@ -995,7 +995,7 @@ DEFPARAM (PARAM_PROFILE_FUNC_INTERNAL_ID,
 
 /* When the parameter is 1, track the most frequent N target
    addresses in indirect-call profile. This disables
-   indirect_call_profiler_v2 which tracks single target.  */
+   indirect_call_profiler_v3 which tracks single target.  */
 DEFPARAM (PARAM_INDIR_CALL_TOPN_PROFILE,
 	  "indir-call-topn-profile",
 	  "Track top N target addresses in indirect-call profile.",

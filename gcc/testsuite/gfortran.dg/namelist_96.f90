@@ -1,4 +1,4 @@
-! ( dg-do run }
+! { dg-do run }
 program pr88776
   implicit none
   character(*), parameter :: file = "pr88776.dat"

@@ -1197,7 +1197,9 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 		    = GET_MODE_NUNITS (vmode).to_constant ();
 		  aarch64_simd_lane_bounds (op[opc], 0, nunits / 2, exp);
 		  /* Keep to GCC-vector-extension lane indices in the RTL.  */
-		  op[opc] = aarch64_endian_lane_rtx (vmode, INTVAL (op[opc]));
+		  int lane = INTVAL (op[opc]);
+		  op[opc] = gen_int_mode (ENDIAN_LANE_N (nunits / 2, lane),
+					  SImode);
 		}
 	      /* Fall through - if the lane index isn't a constant then
 		 the next case will error.  */
@@ -1443,14 +1445,12 @@ aarch64_expand_fcmla_builtin (tree exp, rtx target, int fcode)
   int nunits = GET_MODE_NUNITS (quadmode).to_constant ();
   aarch64_simd_lane_bounds (lane_idx, 0, nunits / 2, exp);
 
-  /* Keep to GCC-vector-extension lane indices in the RTL.  */
-  lane_idx = aarch64_endian_lane_rtx (quadmode, INTVAL (lane_idx));
-
   /* Generate the correct register and mode.  */
   int lane = INTVAL (lane_idx);
 
   if (lane < nunits / 4)
-    op2 = simplify_gen_subreg (d->mode, op2, quadmode, 0);
+    op2 = simplify_gen_subreg (d->mode, op2, quadmode,
+			       subreg_lowpart_offset (d->mode, quadmode));
   else
     {
       /* Select the upper 64 bits, either a V2SF or V4HF, this however
@@ -1460,14 +1460,23 @@ aarch64_expand_fcmla_builtin (tree exp, rtx target, int fcode)
 	 gen_highpart_mode generates code that isn't optimal.  */
       rtx temp1 = gen_reg_rtx (d->mode);
       rtx temp2 = gen_reg_rtx (DImode);
-      temp1 = simplify_gen_subreg (d->mode, op2, quadmode, 0);
+      temp1 = simplify_gen_subreg (d->mode, op2, quadmode,
+				   subreg_lowpart_offset (d->mode, quadmode));
       temp1 = simplify_gen_subreg (V2DImode, temp1, d->mode, 0);
-      emit_insn (gen_aarch64_get_lanev2di (temp2, temp1     , const1_rtx));
+      if (BYTES_BIG_ENDIAN)
+	emit_insn (gen_aarch64_get_lanev2di (temp2, temp1, const0_rtx));
+      else
+	emit_insn (gen_aarch64_get_lanev2di (temp2, temp1, const1_rtx));
       op2 = simplify_gen_subreg (d->mode, temp2, GET_MODE (temp2), 0);
 
       /* And recalculate the index.  */
       lane -= nunits / 4;
     }
+
+  /* Keep to GCC-vector-extension lane indices in the RTL, only nunits / 4
+     (max nunits in range check) are valid.  Which means only 0-1, so we
+     only need to know the order in a V2mode.  */
+  lane_idx = aarch64_endian_lane_rtx (V2DImode, lane);
 
   if (!target)
     target = gen_reg_rtx (d->mode);
@@ -1477,8 +1486,7 @@ aarch64_expand_fcmla_builtin (tree exp, rtx target, int fcode)
   rtx pat = NULL_RTX;
 
   if (d->lane)
-    pat = GEN_FCN (d->icode) (target, op0, op1, op2,
-			      gen_int_mode (lane, SImode));
+    pat = GEN_FCN (d->icode) (target, op0, op1, op2, lane_idx);
   else
     pat = GEN_FCN (d->icode) (target, op0, op1, op2);
 

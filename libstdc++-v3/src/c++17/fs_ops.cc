@@ -85,14 +85,35 @@ fs::absolute(const path& p, error_code& ec)
       ec = make_error_code(std::errc::no_such_file_or_directory);
       return ret;
     }
+  ec.clear();
+  if (p.is_absolute())
+    {
+      ret = p;
+      return ret;
+    }
+
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-  const wstring& s = p.native();
+  wstring_view s = p.native();
+
+  if (p.has_root_directory()) // implies !p.has_root_name()
+    {
+      // GetFullPathNameW("//") gives unwanted result (PR 88884).
+      // If there are multiple directory separators at the start,
+      // skip all but the last of them.
+      const auto pos = s.find_first_not_of(L"/\\");
+      __glibcxx_assert(pos != 0);
+      s.remove_prefix(std::min(s.length(), pos) - 1);
+    }
+
+  // s must be null-terminated
+  __glibcxx_assert(!s.empty() && s.back() == 0);
+
   uint32_t len = 1024;
   wstring buf;
   do
     {
       buf.resize(len);
-      len = GetFullPathNameW(s.c_str(), len, buf.data(), nullptr);
+      len = GetFullPathNameW(s.data(), len, buf.data(), nullptr);
     }
   while (len > buf.size());
 
@@ -100,13 +121,11 @@ fs::absolute(const path& p, error_code& ec)
     ec.assign((int)GetLastError(), std::system_category());
   else
     {
-      ec.clear();
       buf.resize(len);
       ret = std::move(buf);
     }
 #else
-  ec.clear();
-  ret = current_path();
+  ret = current_path(ec);
   ret /= p;
 #endif
   return ret;
@@ -144,7 +163,11 @@ fs::path
 fs::canonical(const path& p, error_code& ec)
 {
   path result;
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  const path pa = absolute(p.lexically_normal(), ec);
+#else
   const path pa = absolute(p, ec);
+#endif
   if (ec)
     return result;
 
@@ -483,6 +506,9 @@ fs::create_directories(const path& p, error_code& ec)
       return false;
     }
 
+  __glibcxx_assert(st.type() == file_type::not_found);
+  // !exists(p) so there must be at least one non-existent component in p.
+
   std::stack<path> missing;
   path pp = p;
 
@@ -525,6 +551,8 @@ fs::create_directories(const path& p, error_code& ec)
 	return false;
     }
   while (st.type() == file_type::not_found);
+
+  __glibcxx_assert(!missing.empty());
 
   bool created;
   do
@@ -823,7 +851,49 @@ fs::equivalent(const path& p1, const path& p2, error_code& ec) noexcept
       ec.clear();
       if (is_other(s1) || is_other(s2))
 	return false;
+#if _GLIBCXX_FILESYSTEM_IS_WINDOWS
+      // st_ino is not set, so can't be used to distinguish files
+      if (st1.st_mode != st2.st_mode || st1.st_dev != st2.st_dev)
+	return false;
+
+      struct auto_handle {
+	explicit auto_handle(const path& p_)
+	: handle(CreateFileW(p_.c_str(), 0,
+	      FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+	      0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0))
+	{ }
+
+	~auto_handle()
+	{ if (*this) CloseHandle(handle); }
+
+	explicit operator bool() const
+	{ return handle != INVALID_HANDLE_VALUE; }
+
+	bool get_info()
+	{ return GetFileInformationByHandle(handle, &info); }
+
+	HANDLE handle;
+	BY_HANDLE_FILE_INFORMATION info;
+      };
+      auto_handle h1(p1);
+      auto_handle h2(p2);
+      if (!h1 || !h2)
+	{
+	  if (!h1 && !h2)
+	    ec.assign((int)GetLastError(), generic_category());
+	  return false;
+	}
+      if (!h1.get_info() || !h2.get_info())
+	{
+	  ec.assign((int)GetLastError(), generic_category());
+	  return false;
+	}
+      return h1.info.dwVolumeSerialNumber == h2.info.dwVolumeSerialNumber
+	&& h1.info.nFileIndexHigh == h2.info.nFileIndexHigh
+	&& h1.info.nFileIndexLow == h2.info.nFileIndexLow;
+#else
       return st1.st_dev == st2.st_dev && st1.st_ino == st2.st_ino;
+#endif
     }
   else if (!exists(s1) && !exists(s2))
     ec = std::make_error_code(std::errc::no_such_file_or_directory);
@@ -1175,7 +1245,8 @@ bool
 fs::remove(const path& p, error_code& ec) noexcept
 {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-  if (exists(symlink_status(p, ec)))
+  auto st = symlink_status(p, ec);
+  if (exists(st))
     {
       if ((is_directory(p, ec) && RemoveDirectoryW(p.c_str()))
 	  || DeleteFileW(p.c_str()))
@@ -1186,6 +1257,8 @@ fs::remove(const path& p, error_code& ec) noexcept
       else if (!ec)
 	ec.assign((int)GetLastError(), generic_category());
     }
+  else if (status_known(st))
+    ec.clear();
 #else
   if (::remove(p.c_str()) == 0)
     {
@@ -1315,8 +1388,35 @@ fs::file_status
 fs::status(const fs::path& p, error_code& ec) noexcept
 {
   file_status status;
+  auto str = p.c_str();
+
+#if _GLIBCXX_FILESYSTEM_IS_WINDOWS
+#if ! defined __MINGW64_VERSION_MAJOR || __MINGW64_VERSION_MAJOR < 6
+  // stat() fails if there's a trailing slash (PR 88881)
+  path p2;
+  if (p.has_relative_path())
+    {
+      wstring_view s = p.native();
+      const auto len = s.find_last_not_of(L"/\\") + wstring_view::size_type(1);
+      if (len != 0 && len != s.length())
+	{
+	  __try
+	    {
+	      p2.assign(s.substr(0, len));
+	    }
+	  __catch(const bad_alloc&)
+	    {
+	      ec = std::make_error_code(std::errc::not_enough_memory);
+	      return status;
+	    }
+	  str = p2.c_str();
+	}
+    }
+#endif
+#endif
+
   stat_type st;
-  if (posix::stat(p.c_str(), &st))
+  if (posix::stat(str, &st))
     {
       int err = errno;
       ec.assign(err, std::generic_category());

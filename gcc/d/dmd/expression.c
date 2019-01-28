@@ -1493,7 +1493,6 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
                          * is now optimized. See Bugzilla 2356.
                          */
                         Type *tbn = ((TypeArray *)tb)->next;
-                        Type *tsa = tbn->sarrayOf(nargs - i);
 
                         Expressions *elements = new Expressions();
                         elements->setDim(nargs - i);
@@ -1511,8 +1510,7 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
                             (*elements)[u] = a;
                         }
                         // Bugzilla 14395: Convert to a static array literal, or its slice.
-                        arg = new ArrayLiteralExp(loc, elements);
-                        arg->type = tsa;
+                        arg = new ArrayLiteralExp(loc, tbn->sarrayOf(nargs - i), elements);
                         if (tb->ty == Tarray)
                         {
                             arg = new SliceExp(loc, arg, NULL, NULL);
@@ -3741,34 +3739,37 @@ unsigned StringExp::charAt(uinteger_t i) const
 
 // [ e1, e2, e3, ... ]
 
-ArrayLiteralExp::ArrayLiteralExp(Loc loc, Expressions *elements)
+ArrayLiteralExp::ArrayLiteralExp(Loc loc, Type *type, Expressions *elements)
     : Expression(loc, TOKarrayliteral, sizeof(ArrayLiteralExp))
 {
     this->basis = NULL;
+    this->type = type;
     this->elements = elements;
     this->ownedByCtfe = OWNEDcode;
 }
 
-ArrayLiteralExp::ArrayLiteralExp(Loc loc, Expression *e)
+ArrayLiteralExp::ArrayLiteralExp(Loc loc, Type *type, Expression *e)
     : Expression(loc, TOKarrayliteral, sizeof(ArrayLiteralExp))
 {
     this->basis = NULL;
+    this->type = type;
     elements = new Expressions;
     elements->push(e);
     this->ownedByCtfe = OWNEDcode;
 }
 
-ArrayLiteralExp::ArrayLiteralExp(Loc loc, Expression *basis, Expressions *elements)
+ArrayLiteralExp::ArrayLiteralExp(Loc loc, Type *type, Expression *basis, Expressions *elements)
     : Expression(loc, TOKarrayliteral, sizeof(ArrayLiteralExp))
 {
     this->basis = basis;
+    this->type = type;
     this->elements = elements;
     this->ownedByCtfe = OWNEDcode;
 }
 
 ArrayLiteralExp *ArrayLiteralExp::create(Loc loc, Expressions *elements)
 {
-    return new ArrayLiteralExp(loc, elements);
+    return new ArrayLiteralExp(loc, NULL, elements);
 }
 
 bool ArrayLiteralExp::equals(RootObject *o)
@@ -3806,6 +3807,7 @@ bool ArrayLiteralExp::equals(RootObject *o)
 Expression *ArrayLiteralExp::syntaxCopy()
 {
     return new ArrayLiteralExp(loc,
+        NULL,
         basis ? basis->syntaxCopy() : NULL,
         arraySyntaxCopy(elements));
 }
@@ -4082,8 +4084,7 @@ Expression *StructLiteralExp::getField(Type *type, unsigned offset)
                 z->setDim(length);
                 for (size_t q = 0; q < length; ++q)
                     (*z)[q] = e->copy();
-                e = new ArrayLiteralExp(loc, z);
-                e->type = type;
+                e = new ArrayLiteralExp(loc, type, z);
             }
             else
             {

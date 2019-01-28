@@ -35,15 +35,10 @@
     (R11_REGNUM		11)
     (R12_REGNUM		12)
     (R13_REGNUM		13)
-    ;; Scratch registers for prologue/epilogue use.
-    (EP0_REGNUM		12)
-    (EP1_REGNUM		13)
     (R14_REGNUM		14)
     (R15_REGNUM		15)
     (R16_REGNUM		16)
-    (IP0_REGNUM		16)
     (R17_REGNUM		17)
-    (IP1_REGNUM		17)
     (R18_REGNUM		18)
     (R19_REGNUM		19)
     (R20_REGNUM		20)
@@ -57,7 +52,6 @@
     (R28_REGNUM		28)
     (R29_REGNUM		29)
     (R30_REGNUM		30)
-    (LR_REGNUM		30)
     (SP_REGNUM		31)
     (V0_REGNUM		32)
     (V1_REGNUM		33)
@@ -113,10 +107,20 @@
     (P13_REGNUM		81)
     (P14_REGNUM		82)
     (P15_REGNUM		83)
+    ;; Scratch register used by stack clash protection to calculate
+    ;; SVE CFA offsets during probing.
+    (STACK_CLASH_SVE_CFA_REGNUM 11)
+    ;; Scratch registers for prologue/epilogue use.
+    (EP0_REGNUM         12)
+    (EP1_REGNUM         13)
     ;; A couple of call-clobbered registers that we need to reserve when
     ;; tracking speculation this is not ABI, so is subject to change.
-    (SPECULATION_TRACKER_REGNUM 15)
     (SPECULATION_SCRATCH_REGNUM 14)
+    (SPECULATION_TRACKER_REGNUM 15)
+    ;; Scratch registers used in frame layout.
+    (IP0_REGNUM         16)
+    (IP1_REGNUM         17)
+    (LR_REGNUM          30)
   ]
 )
 
@@ -197,6 +201,7 @@
     UNSPEC_UCVTF
     UNSPEC_USHL_2S
     UNSPEC_VSTRUCTDUMMY
+    UNSPEC_SSP_SYSREG
     UNSPEC_SP_SET
     UNSPEC_SP_TEST
     UNSPEC_RSQRT
@@ -1871,7 +1876,7 @@
   ""
 {
   emit_insn (gen_add<mode>3_compareC (operands[0], operands[1], operands[2]));
-  aarch64_gen_unlikely_cbranch (NE, CC_Cmode, operands[3]);
+  aarch64_gen_unlikely_cbranch (LTU, CC_Cmode, operands[3]);
 
   DONE;
 })
@@ -1973,7 +1978,7 @@
   emit_move_insn (gen_lowpart (DImode, operands[0]), low_dest);
   emit_move_insn (gen_highpart (DImode, operands[0]), high_dest);
 
-  aarch64_gen_unlikely_cbranch (NE, CC_Cmode, operands[3]);
+  aarch64_gen_unlikely_cbranch (GEU, CC_ADCmode, operands[3]);
   DONE;
  })
 
@@ -2010,69 +2015,36 @@
   [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
 )
 
-(define_insn "*add<mode>3_compareC_cconly_imm"
-  [(set (reg:CC_C CC_REGNUM)
-	(ne:CC_C
-	  (plus:<DWI>
-	    (zero_extend:<DWI> (match_operand:GPI 0 "register_operand" "r,r"))
-	    (match_operand:<DWI> 2 "const_scalar_int_operand" ""))
-	  (zero_extend:<DWI>
-	    (plus:GPI
-	      (match_dup 0)
-	      (match_operand:GPI 1 "aarch64_plus_immediate" "I,J")))))]
-  "aarch64_zero_extend_const_eq (<DWI>mode, operands[2],
-				 <MODE>mode, operands[1])"
-  "@
-  cmn\\t%<w>0, %1
-  cmp\\t%<w>0, #%n1"
-  [(set_attr "type" "alus_imm")]
-)
-
 (define_insn "*add<mode>3_compareC_cconly"
   [(set (reg:CC_C CC_REGNUM)
-	(ne:CC_C
-	  (plus:<DWI>
-	    (zero_extend:<DWI> (match_operand:GPI 0 "register_operand" "r"))
-	    (zero_extend:<DWI> (match_operand:GPI 1 "register_operand" "r")))
-	  (zero_extend:<DWI> (plus:GPI (match_dup 0) (match_dup 1)))))]
+	(compare:CC_C
+	  (plus:GPI
+	    (match_operand:GPI 0 "register_operand" "r,r,r")
+	    (match_operand:GPI 1 "aarch64_plus_operand" "r,I,J"))
+	  (match_dup 0)))]
   ""
-  "cmn\\t%<w>0, %<w>1"
-  [(set_attr "type" "alus_sreg")]
-)
-
-(define_insn "*add<mode>3_compareC_imm"
-  [(set (reg:CC_C CC_REGNUM)
-	(ne:CC_C
-	  (plus:<DWI>
-	    (zero_extend:<DWI> (match_operand:GPI 1 "register_operand" "r,r"))
-	    (match_operand:<DWI> 3 "const_scalar_int_operand" ""))
-	  (zero_extend:<DWI>
-	    (plus:GPI
-	      (match_dup 1)
-	      (match_operand:GPI 2 "aarch64_plus_immediate" "I,J")))))
-   (set (match_operand:GPI 0 "register_operand" "=r,r")
-	(plus:GPI (match_dup 1) (match_dup 2)))]
-  "aarch64_zero_extend_const_eq (<DWI>mode, operands[3],
-                                 <MODE>mode, operands[2])"
   "@
-  adds\\t%<w>0, %<w>1, %2
-  subs\\t%<w>0, %<w>1, #%n2"
-  [(set_attr "type" "alus_imm")]
+  cmn\\t%<w>0, %<w>1
+  cmn\\t%<w>0, %1
+  cmp\\t%<w>0, #%n1"
+  [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
 )
 
 (define_insn "add<mode>3_compareC"
   [(set (reg:CC_C CC_REGNUM)
 	(compare:CC_C
-	  (plus:<DWI>
-	    (zero_extend:<DWI> (match_operand:GPI 1 "register_operand" "r"))
-	    (zero_extend:<DWI> (match_operand:GPI 2 "register_operand" "r")))
-	  (zero_extend:<DWI>
-	    (plus:GPI (match_dup 1) (match_dup 2)))))
-   (set (match_operand:GPI 0 "register_operand" "=r")
+	  (plus:GPI
+	    (match_operand:GPI 1 "register_operand" "r,r,r")
+	    (match_operand:GPI 2 "aarch64_plus_operand" "r,I,J"))
+	  (match_dup 1)))
+   (set (match_operand:GPI 0 "register_operand" "=r,r,r")
 	(plus:GPI (match_dup 1) (match_dup 2)))]
   ""
-  "adds\\t%<w>0, %<w>1, %<w>2"
-  [(set_attr "type" "alus_sreg")]
+  "@
+  adds\\t%<w>0, %<w>1, %<w>2
+  adds\\t%<w>0, %<w>1, %2
+  subs\\t%<w>0, %<w>1, #%n2"
+  [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
 )
 
 (define_insn "*add<mode>3_compareV_cconly_imm"
@@ -2470,7 +2442,7 @@
   [(set (match_operand:GPI 0 "register_operand")
 	(plus:GPI
 	  (plus:GPI
-	    (ne:GPI (reg:CC_C CC_REGNUM) (const_int 0))
+	    (ltu:GPI (reg:CC_C CC_REGNUM) (const_int 0))
 	    (match_operand:GPI 1 "aarch64_reg_or_zero"))
 	  (match_operand:GPI 2 "aarch64_reg_or_zero")))]
    ""
@@ -2509,7 +2481,7 @@
 (define_expand "add<mode>3_carryinC"
   [(parallel
      [(set (match_dup 3)
-	   (compare:CC_C
+	   (compare:CC_ADC
 	     (plus:<DWI>
 	       (plus:<DWI>
 		 (match_dup 4)
@@ -2517,57 +2489,54 @@
 		   (match_operand:GPI 1 "register_operand" "")))
 	       (zero_extend:<DWI>
 		 (match_operand:GPI 2 "register_operand" "")))
-	   (zero_extend:<DWI>
-	     (plus:GPI
-	       (plus:GPI (match_dup 5) (match_dup 1))
-	       (match_dup 2)))))
+	     (match_dup 6)))
       (set (match_operand:GPI 0 "register_operand")
 	   (plus:GPI
 	     (plus:GPI (match_dup 5) (match_dup 1))
 	     (match_dup 2)))])]
    ""
 {
-  operands[3] = gen_rtx_REG (CC_Cmode, CC_REGNUM);
-  operands[4] = gen_rtx_NE (<DWI>mode, operands[3], const0_rtx);
-  operands[5] = gen_rtx_NE (<MODE>mode, operands[3], const0_rtx);
+  operands[3] = gen_rtx_REG (CC_ADCmode, CC_REGNUM);
+  rtx ccin = gen_rtx_REG (CC_Cmode, CC_REGNUM);
+  operands[4] = gen_rtx_LTU (<DWI>mode, ccin, const0_rtx);
+  operands[5] = gen_rtx_LTU (<MODE>mode, ccin, const0_rtx);
+  operands[6] = immed_wide_int_const (wi::shwi (1, <DWI>mode)
+				      << GET_MODE_BITSIZE (<MODE>mode),
+				      TImode);
 })
 
 (define_insn "*add<mode>3_carryinC_zero"
-  [(set (reg:CC_C CC_REGNUM)
-	(compare:CC_C
+  [(set (reg:CC_ADC CC_REGNUM)
+	(compare:CC_ADC
 	  (plus:<DWI>
 	    (match_operand:<DWI> 2 "aarch64_carry_operation" "")
 	    (zero_extend:<DWI> (match_operand:GPI 1 "register_operand" "r")))
-	  (zero_extend:<DWI>
-	    (plus:GPI
-	      (match_operand:GPI 3 "aarch64_carry_operation" "")
-	      (match_dup 1)))))
+	  (match_operand 4 "const_scalar_int_operand" "")))
    (set (match_operand:GPI 0 "register_operand" "=r")
-	(plus:GPI (match_dup 3) (match_dup 1)))]
-   ""
+	(plus:GPI (match_operand:GPI 3 "aarch64_carry_operation" "")
+		  (match_dup 1)))]
+  "rtx_mode_t (operands[4], <DWI>mode)
+   == (wi::shwi (1, <DWI>mode) << (unsigned) GET_MODE_BITSIZE (<MODE>mode))"
    "adcs\\t%<w>0, %<w>1, <w>zr"
   [(set_attr "type" "adc_reg")]
 )
 
 (define_insn "*add<mode>3_carryinC"
-  [(set (reg:CC_C CC_REGNUM)
-	(compare:CC_C
+  [(set (reg:CC_ADC CC_REGNUM)
+	(compare:CC_ADC
 	  (plus:<DWI>
 	    (plus:<DWI>
 	      (match_operand:<DWI> 3 "aarch64_carry_operation" "")
 	      (zero_extend:<DWI> (match_operand:GPI 1 "register_operand" "r")))
 	    (zero_extend:<DWI> (match_operand:GPI 2 "register_operand" "r")))
-	  (zero_extend:<DWI>
-	    (plus:GPI
-	      (plus:GPI
-		(match_operand:GPI 4 "aarch64_carry_operation" "")
-		(match_dup 1))
-	      (match_dup 2)))))
+	  (match_operand 5 "const_scalar_int_operand" "")))
    (set (match_operand:GPI 0 "register_operand" "=r")
 	(plus:GPI
-	  (plus:GPI (match_dup 4) (match_dup 1))
+	  (plus:GPI (match_operand:GPI 4 "aarch64_carry_operation" "")
+		    (match_dup 1))
 	  (match_dup 2)))]
-   ""
+  "rtx_mode_t (operands[5], <DWI>mode)
+   == (wi::shwi (1, <DWI>mode) << (unsigned) GET_MODE_BITSIZE (<MODE>mode))"
    "adcs\\t%<w>0, %<w>1, %<w>2"
   [(set_attr "type" "adc_reg")]
 )
@@ -2594,8 +2563,8 @@
    ""
 {
   rtx cc = gen_rtx_REG (CC_Cmode, CC_REGNUM);
-  operands[3] = gen_rtx_NE (<DWI>mode, cc, const0_rtx);
-  operands[4] = gen_rtx_NE (<MODE>mode, cc, const0_rtx);
+  operands[3] = gen_rtx_LTU (<DWI>mode, cc, const0_rtx);
+  operands[4] = gen_rtx_LTU (<MODE>mode, cc, const0_rtx);
 })
 
 (define_insn "*add<mode>3_carryinV_zero"
@@ -6806,12 +6775,45 @@
   ""
 {
   machine_mode mode = GET_MODE (operands[0]);
+  if (aarch64_stack_protector_guard != SSP_GLOBAL)
+  {
+    /* Generate access through the system register.  */
+    rtx tmp_reg = gen_reg_rtx (mode);
+    if (mode == DImode)
+    {
+        emit_insn (gen_reg_stack_protect_address_di (tmp_reg));
+        emit_insn (gen_adddi3 (tmp_reg, tmp_reg,
+			       GEN_INT (aarch64_stack_protector_guard_offset)));
+    }
+    else
+    {
+	emit_insn (gen_reg_stack_protect_address_si (tmp_reg));
+	emit_insn (gen_addsi3 (tmp_reg, tmp_reg,
+			       GEN_INT (aarch64_stack_protector_guard_offset)));
 
+    }
+    operands[1] = gen_rtx_MEM (mode, tmp_reg);
+  }
+  
   emit_insn ((mode == DImode
 	      ? gen_stack_protect_set_di
 	      : gen_stack_protect_set_si) (operands[0], operands[1]));
   DONE;
 })
+
+(define_insn "reg_stack_protect_address_<mode>"
+ [(set (match_operand:PTR 0 "register_operand" "=r")
+       (unspec:PTR [(const_int 0)]
+	UNSPEC_SSP_SYSREG))]
+ "aarch64_stack_protector_guard != SSP_GLOBAL"
+ {
+   char buf[150];
+   snprintf (buf, 150, "mrs\\t%%<w>0, %s",
+	    aarch64_stack_protector_guard_reg_str);
+   output_asm_insn (buf, operands);
+   return "";
+ }
+ [(set_attr "type" "mrs")])
 
 (define_insn "stack_protect_set_<mode>"
   [(set (match_operand:PTR 0 "memory_operand" "=m")
@@ -6833,12 +6835,34 @@
   machine_mode mode = GET_MODE (operands[0]);
 
   result = gen_reg_rtx(mode);
+  if (aarch64_stack_protector_guard != SSP_GLOBAL)
+  {
+    /* Generate access through the system register. The
+       sequence we want here is the access
+       of the stack offset to come with
+       mrs scratch_reg, <system_register>
+       add scratch_reg, scratch_reg, :lo12:offset. */
+    rtx tmp_reg = gen_reg_rtx (mode);
+    if (mode == DImode)
+    {
+       emit_insn (gen_reg_stack_protect_address_di (tmp_reg));
+       emit_insn (gen_adddi3 (tmp_reg, tmp_reg,
+       		              GEN_INT (aarch64_stack_protector_guard_offset)));
+    }
+    else
+    {
+	emit_insn (gen_reg_stack_protect_address_si (tmp_reg));
+	emit_insn (gen_addsi3 (tmp_reg, tmp_reg,
+			       GEN_INT (aarch64_stack_protector_guard_offset)));
 
+    }
+    operands[1] = gen_rtx_MEM (mode, tmp_reg);
+  }
   emit_insn ((mode == DImode
-	      ? gen_stack_protect_test_di
-	      : gen_stack_protect_test_si) (result,
-					    operands[0],
-					    operands[1]));
+		  ? gen_stack_protect_test_di
+		  : gen_stack_protect_test_si) (result,
+					        operands[0],
+					        operands[1]));
 
   if (mode == DImode)
     emit_jump_insn (gen_cbranchdi4 (gen_rtx_EQ (VOIDmode, result, const0_rtx),

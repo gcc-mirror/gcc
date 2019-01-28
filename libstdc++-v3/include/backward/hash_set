@@ -168,7 +168,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       max_size() const
       { return _M_ht.max_size(); }
       
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const
       { return _M_ht.empty(); }
       
@@ -369,7 +369,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       max_size() const
       { return _M_ht.max_size(); }
 
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const
       { return _M_ht.empty(); }
 

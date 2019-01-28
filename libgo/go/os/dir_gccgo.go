@@ -16,6 +16,9 @@ import (
 //extern pathconf
 func libc_pathconf(*byte, int) int
 
+//extern fdopendir
+func libc_fdopendir(int32) *syscall.DIR
+
 func clen(n []byte) int {
 	for i := 0; i < len(n); i++ {
 		if n[i] == 0 {
@@ -48,11 +51,11 @@ func (file *File) readdirnames(n int) (names []string, err error) {
 		}
 
 		syscall.Entersyscall()
-		r := libc_opendir(p)
+		r := libc_fdopendir(int32(file.pfd.Sysfd))
 		errno := syscall.GetErrno()
 		syscall.Exitsyscall()
 		if r == nil {
-			return nil, &PathError{"opendir", file.name, errno}
+			return nil, &PathError{"fdopendir", file.name, errno}
 		}
 
 		file.dirinfo = new(dirInfo)

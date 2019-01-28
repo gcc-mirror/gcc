@@ -9,7 +9,6 @@
 
 // TODO(rsc):
 //	Could potentially handle many outstanding lookups faster.
-//	Could have a small cache.
 //	Random UDP source port (net.Dial should do that for us).
 //	Random request IDs.
 
@@ -24,7 +23,7 @@ import (
 	"sync"
 	"time"
 
-	"golang_org/x/net/dns/dnsmessage"
+	"internal/x/net/dns/dnsmessage"
 )
 
 var (

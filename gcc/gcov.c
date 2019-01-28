@@ -2520,6 +2520,9 @@ make_gcov_file_name (const char *input_name, const char *src_name)
   return result;
 }
 
+/* Mangle BASE name, copy it at the beginning of PTR buffer and
+   return address of the \0 character of the buffer.  */
+
 static char *
 mangle_name (char const *base, char *ptr)
 {
@@ -2527,14 +2530,13 @@ mangle_name (char const *base, char *ptr)
 
   /* Generate the source filename part.  */
   if (!flag_preserve_paths)
-    {
-      base = lbasename (base);
-      len = strlen (base);
-      memcpy (ptr, base, len);
-      ptr += len;
-    }
+    base = lbasename (base);
   else
-    ptr = mangle_path (base);
+    base = mangle_path (base);
+
+  len = strlen (base);
+  memcpy (ptr, base, len);
+  ptr += len;
 
   return ptr;
 }

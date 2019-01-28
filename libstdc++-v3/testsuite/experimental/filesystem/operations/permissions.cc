@@ -18,6 +18,7 @@
 // { dg-options "-DUSE_FILESYSTEM_TS -lstdc++fs" }
 // { dg-do run { target c++11 } }
 // { dg-require-filesystem-ts "" }
+// { dg-xfail-if "permissions not supported" { *-*-mingw* } }
 
 // 15.26 Permissions [fs.op.permissions]
 

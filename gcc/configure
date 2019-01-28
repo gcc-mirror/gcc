@@ -782,6 +782,7 @@ manext
 LIBICONV_DEP
 LTLIBICONV
 LIBICONV
+DL_LIB
 LDEXP_LIB
 EXTRA_GCC_LIBS
 GNAT_LIBEXC
@@ -9734,6 +9735,69 @@ if test "$ac_res" != no; then :
 fi
 
 LDEXP_LIB="$LIBS"
+LIBS="$save_LIBS"
+
+
+# Some systems need dlopen
+save_LIBS="$LIBS"
+LIBS=
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing dlopen" >&5
+$as_echo_n "checking for library containing dlopen... " >&6; }
+if ${ac_cv_search_dlopen+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char dlopen ();
+int
+main ()
+{
+return dlopen ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' dl; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_search_dlopen=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_dlopen+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_dlopen+:} false; then :
+
+else
+  ac_cv_search_dlopen=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_dlopen" >&5
+$as_echo "$ac_cv_search_dlopen" >&6; }
+ac_res=$ac_cv_search_dlopen
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+fi
+
+DL_LIB="$LIBS"
 LIBS="$save_LIBS"
 
 
@@ -18882,7 +18946,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18876 "configure"
+#line 18949 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18988,7 +19052,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18982 "configure"
+#line 19055 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -25377,7 +25441,7 @@ if test "${enable_standard_branch_protection+set}" = set; then :
           no)
             ;;
           *)
-            as_fn_error "'$enableval' is an invalid value for --enable-standard-branch-protection.\
+            as_fn_error $? "'$enableval' is an invalid value for --enable-standard-branch-protection.\
   Valid choices are 'yes' and 'no'." "$LINENO" 5
             ;;
         esac

@@ -8,5 +8,5 @@
 
 include 'dec_d_lines_2.f'
 
-! { dg-error "character in statement label" " " { target *-*-*} 6 }
-! { dg-error "character in statement label" " " { target *-*-*} 7 }
+! { dg-error "character in statement label" " " { target *-*-* } 6 }
+! { dg-error "character in statement label" " " { target *-*-* } 7 }

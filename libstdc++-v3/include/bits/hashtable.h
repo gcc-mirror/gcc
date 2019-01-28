@@ -533,7 +533,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size() const noexcept
       { return _M_element_count; }
 
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const noexcept
       { return size() == 0; }
 

@@ -294,10 +294,12 @@ private:
   bool acceptable_type_p (tree, unsigned HOST_WIDE_INT *);
   bool multiply_term_by (address_term_info &, tree);
   inner_likelihood get_inner_likelihood (tree, unsigned HOST_WIDE_INT);
+  void dump_inner_likelihood (address_info &, address_term_info &);
   void analyze_stride (address_info &, address_term_info &,
 		       tree, struct loop *);
   bool find_per_loop_multiplication (address_info &, address_term_info &);
-  void analyze_term_using_scevs (address_info &, address_term_info &);
+  bool analyze_term_using_scevs (address_info &, address_term_info &);
+  void analyze_arbitrary_term (address_info &, address_term_info &);
   void analyze_address_fragment (address_info &);
   void record_address_fragment (gimple *, unsigned HOST_WIDE_INT,
 				tree, unsigned HOST_WIDE_INT, HOST_WIDE_INT);
@@ -803,6 +805,24 @@ loop_versioning::get_inner_likelihood (tree stride,
   return unlikely_p ? INNER_UNLIKELY : INNER_DONT_KNOW;
 }
 
+/* Dump the likelihood that TERM's stride is for the innermost dimension.
+   ADDRESS is the address that contains TERM.  */
+
+void
+loop_versioning::dump_inner_likelihood (address_info &address,
+					address_term_info &term)
+{
+  if (term.inner_likelihood == INNER_LIKELY)
+    dump_printf_loc (MSG_NOTE, address.stmt, "%T is likely to be the"
+		     " innermost dimension\n", term.stride);
+  else if (term.inner_likelihood == INNER_UNLIKELY)
+    dump_printf_loc (MSG_NOTE, address.stmt, "%T is probably not the"
+		     " innermost dimension\n", term.stride);
+  else
+    dump_printf_loc (MSG_NOTE, address.stmt, "cannot tell whether %T"
+		     " is the innermost dimension\n", term.stride);
+}
+
 /* The caller has identified that STRIDE is the stride of interest
    in TERM, and that the stride is applied in OP_LOOP.  Record this
    information in TERM, deciding whether STRIDE is likely to be for
@@ -818,17 +838,7 @@ loop_versioning::analyze_stride (address_info &address,
 
   term.inner_likelihood = get_inner_likelihood (stride, term.multiplier);
   if (dump_enabled_p ())
-    {
-      if (term.inner_likelihood == INNER_LIKELY)
-	dump_printf_loc (MSG_NOTE, address.stmt, "%T is likely to be the"
-			 " innermost dimension\n", stride);
-      else if (term.inner_likelihood == INNER_UNLIKELY)
-	dump_printf_loc (MSG_NOTE, address.stmt, "%T is probably not the"
-			 " innermost dimension\n", stride);
-      else
-	dump_printf_loc (MSG_NOTE, address.stmt, "cannot tell whether %T"
-			 " is the innermost dimension\n", stride);
-    }
+    dump_inner_likelihood (address, term);
 
   /* To be a versioning opportunity we require:
 
@@ -879,7 +889,7 @@ bool
 loop_versioning::find_per_loop_multiplication (address_info &address,
 					       address_term_info &term)
 {
-  gimple *mult = maybe_get_assign (term.expr);
+  gassign *mult = maybe_get_assign (term.expr);
   if (!mult || gimple_assign_rhs_code (mult) != MULT_EXPR)
     return false;
 
@@ -909,7 +919,7 @@ loop_versioning::find_per_loop_multiplication (address_info &address,
 }
 
 /* Try to use scalar evolutions to find an address stride for TERM,
-   which belongs to ADDRESS.
+   which belongs to ADDRESS.  Return true and update TERM if so.
 
    Here we are interested in any evolution information we can find,
    not just evolutions wrt ADDRESS->LOOP.  For example, if we find that
@@ -917,17 +927,17 @@ loop_versioning::find_per_loop_multiplication (address_info &address,
    that information can help us eliminate worthless versioning opportunities
    in inner loops.  */
 
-void
+bool
 loop_versioning::analyze_term_using_scevs (address_info &address,
 					   address_term_info &term)
 {
   gimple *setter = maybe_get_stmt (term.expr);
   if (!setter)
-    return;
+    return false;
 
   struct loop *wrt_loop = loop_containing_stmt (setter);
   if (!loop_outer (wrt_loop))
-    return;
+    return false;
 
   tree chrec = strip_casts (analyze_scalar_evolution (wrt_loop, term.expr));
   if (TREE_CODE (chrec) == POLYNOMIAL_CHREC)
@@ -955,7 +965,53 @@ loop_versioning::analyze_term_using_scevs (address_info &address,
 	}
 
       analyze_stride (address, term, stride, get_chrec_loop (chrec));
+      return true;
     }
+
+  return false;
+}
+
+/* Address term TERM is an arbitrary term that provides no versioning
+   opportunities.  Analyze it to see whether it contains any likely
+   inner strides, so that we don't mistakenly version for other
+   (less likely) candidates.
+
+   This copes with invariant innermost indices such as:
+
+     x(i, :) = 100
+
+   where the "i" component of the address is invariant in the loop
+   but provides the real inner stride.
+
+   ADDRESS is the address that contains TERM.  */
+
+void
+loop_versioning::analyze_arbitrary_term (address_info &address,
+					 address_term_info &term)
+
+{
+  /* A multiplication offers two potential strides.  Pick the one that
+     is most likely to be an innermost stride.  */
+  tree expr = term.expr, alt = NULL_TREE;
+  gassign *mult = maybe_get_assign (expr);
+  if (mult && gimple_assign_rhs_code (mult) == MULT_EXPR)
+    {
+      expr = strip_casts (gimple_assign_rhs1 (mult));
+      alt = strip_casts (gimple_assign_rhs2 (mult));
+    }
+  term.stride = expr;
+  term.inner_likelihood = get_inner_likelihood (expr, term.multiplier);
+  if (alt)
+    {
+      inner_likelihood alt_l = get_inner_likelihood (alt, term.multiplier);
+      if (alt_l > term.inner_likelihood)
+	{
+	  term.stride = alt;
+	  term.inner_likelihood = alt_l;
+	}
+    }
+  if (dump_enabled_p ())
+    dump_inner_likelihood (address, term);
 }
 
 /* Try to identify loop strides in ADDRESS and try to choose realistic
@@ -1038,8 +1094,10 @@ loop_versioning::analyze_address_fragment (address_info &address)
      find_per_loop_multiplication and analyze_term_using_scevs can handle,
      but the former is much cheaper than SCEV analysis, so try it first.  */
   for (unsigned int i = 0; i < address.terms.length (); ++i)
-    if (!find_per_loop_multiplication (address, address.terms[i]))
-      analyze_term_using_scevs (address, address.terms[i]);
+    if (!find_per_loop_multiplication (address, address.terms[i])
+	&& !analyze_term_using_scevs (address, address.terms[i])
+	&& !POINTER_TYPE_P (TREE_TYPE (address.terms[i].expr)))
+      analyze_arbitrary_term (address, address.terms[i]);
 
   /* Check for strides that are likely to be for the innermost dimension.
 

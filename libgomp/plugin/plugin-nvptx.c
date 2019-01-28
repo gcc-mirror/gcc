@@ -237,7 +237,31 @@ cuda_map_create (size_t size)
 static void
 cuda_map_destroy (struct cuda_map *map)
 {
-  CUDA_CALL_ASSERT (cuMemFree, map->d);
+  if (map->active)
+    /* Possible reasons for the map to be still active:
+       - the associated async kernel might still be running.
+       - the associated async kernel might have finished, but the
+         corresponding event that should trigger the pop_map has not been
+	 processed by event_gc.
+       - the associated sync kernel might have aborted
+
+       The async cases could happen if the user specified an async region
+       without adding a corresponding wait that is guaranteed to be executed
+       (before returning from main, or in an atexit handler).
+       We do not want to deallocate a device pointer that is still being
+       used, so skip it.
+
+       In the sync case, the device pointer is no longer used, but deallocating
+       it using cuMemFree will not succeed, so skip it.
+
+       TODO: Handle this in a more constructive way, by f.i. waiting for streams
+       to finish before de-allocating them (PR88981), or by ensuring the CUDA
+       lib atexit handler is called before rather than after the libgomp plugin
+       atexit handler (PR83795).  */
+    ;
+  else
+    CUDA_CALL_NOCHECK (cuMemFree, map->d);
+
   free (map);
 }
 
@@ -268,7 +292,6 @@ static bool
 map_fini (struct ptx_stream *s)
 {
   assert (s->map->next == NULL);
-  assert (!s->map->active);
 
   cuda_map_destroy (s->map);
 
@@ -296,35 +319,46 @@ map_pop (struct ptx_stream *s)
 static CUdeviceptr
 map_push (struct ptx_stream *s, size_t size)
 {
-  struct cuda_map *map = NULL, *t = NULL;
+  struct cuda_map *map = NULL;
+  struct cuda_map **t;
 
   assert (s);
   assert (s->map);
 
-  /* Each PTX stream requires a separate data region to store the
-     launch arguments for cuLaunchKernel.  Allocate a new
-     cuda_map and push it to the end of the list.  */
+  /* Select an element to push.  */
   if (s->map->active)
-    {
-      map = cuda_map_create (size);
-
-      for (t = s->map; t->next != NULL; t = t->next)
-	;
-
-      t->next = map;
-    }
-  else if (s->map->size < size)
-    {
-      cuda_map_destroy (s->map);
-      map = cuda_map_create (size);
-    }
+    map = cuda_map_create (size);
   else
-    map = s->map;
+    {
+      /* Pop the inactive front element.  */
+      struct cuda_map *pop = s->map;
+      s->map = pop->next;
+      pop->next = NULL;
 
-  s->map = map;
-  s->map->active = true;
+      if (pop->size < size)
+	{
+	  cuda_map_destroy (pop);
 
-  return s->map->d;
+	  map = cuda_map_create (size);
+	}
+      else
+	map = pop;
+    }
+
+  /* Check that the element is as expected.  */
+  assert (map->next == NULL);
+  assert (!map->active);
+
+  /* Mark the element active.  */
+  map->active = true;
+
+  /* Push the element to the back of the list.  */
+  for (t = &s->map; (*t) != NULL; t = &(*t)->next)
+    ;
+  assert (t != NULL && *t == NULL);
+  *t = map;
+
+  return map->d;
 }
 
 /* Target data function launch information.  */
@@ -1130,7 +1164,7 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
   struct ptx_stream *dev_str;
   void *kargs[1];
   void *hp;
-  CUdeviceptr dp;
+  CUdeviceptr dp = 0;
   struct nvptx_thread *nvthd = nvptx_thread ();
   int warp_size = nvthd->ptx_dev->warp_size;
   const char *maybe_abort_msg = "(perhaps abort was called)";
@@ -1327,23 +1361,27 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 			   dims[GOMP_DIM_VECTOR]);
     }
 
-  /* This reserves a chunk of a pre-allocated page of memory mapped on both
-     the host and the device. HP is a host pointer to the new chunk, and DP is
-     the corresponding device pointer.  */
-  pthread_mutex_lock (&ptx_event_lock);
-  dp = map_push (dev_str, mapnum * sizeof (void *));
-  pthread_mutex_unlock (&ptx_event_lock);
+  if (mapnum > 0)
+    {
+      /* This reserves a chunk of a pre-allocated page of memory mapped on both
+	 the host and the device. HP is a host pointer to the new chunk, and DP is
+	 the corresponding device pointer.  */
+      pthread_mutex_lock (&ptx_event_lock);
+      dp = map_push (dev_str, mapnum * sizeof (void *));
+      pthread_mutex_unlock (&ptx_event_lock);
 
-  GOMP_PLUGIN_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
+      GOMP_PLUGIN_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
 
-  /* Copy the array of arguments to the mapped page.  */
-  hp = alloca(sizeof(void *) * mapnum);
-  for (i = 0; i < mapnum; i++)
-    ((void **) hp)[i] = devaddrs[i];
+      /* Copy the array of arguments to the mapped page.  */
+      hp = alloca(sizeof(void *) * mapnum);
+      for (i = 0; i < mapnum; i++)
+	((void **) hp)[i] = devaddrs[i];
 
-  /* Copy the (device) pointers to arguments to the device */
-  CUDA_CALL_ASSERT (cuMemcpyHtoD, dp, hp,
-		    mapnum * sizeof (void *));
+      /* Copy the (device) pointers to arguments to the device */
+      CUDA_CALL_ASSERT (cuMemcpyHtoD, dp, hp,
+			mapnum * sizeof (void *));
+    }
+
   GOMP_PLUGIN_debug (0, "  %s: kernel %s: launch"
 		     " gangs=%u, workers=%u, vectors=%u\n",
 		     __FUNCTION__, targ_fn->launch->fn, dims[GOMP_DIM_GANG],
@@ -1388,7 +1426,8 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 
       CUDA_CALL_ASSERT (cuEventRecord, *e, dev_str->stream);
 
-      event_add (PTX_EVT_KNL, e, (void *)dev_str, 0);
+      if (mapnum > 0)
+	event_add (PTX_EVT_KNL, e, (void *)dev_str, 0);
     }
 #else
   r = CUDA_CALL_NOCHECK (cuCtxSynchronize, );
@@ -1405,7 +1444,10 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 #ifndef DISABLE_ASYNC
   if (async < acc_async_noval)
 #endif
-    map_pop (dev_str);
+    {
+      if (mapnum > 0)
+	map_pop (dev_str);
+    }
 }
 
 void * openacc_get_current_cuda_context (void);
@@ -1892,6 +1934,12 @@ GOMP_OFFLOAD_fini_device (int n)
 	}
       ptx_devices[n] = NULL;
       instantiated_devices--;
+    }
+
+  if (instantiated_devices == 0)
+    {
+      free (ptx_devices);
+      ptx_devices = NULL;
     }
 
   pthread_mutex_unlock (&ptx_dev_lock);

@@ -1,4 +1,4 @@
-// Copyright 2017 The Go Authors. All rights reserved.
+// Copyright 2018 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -8,8 +8,6 @@ import (
 	"os"
 	"syscall"
 )
-
-// This was copied from sockopt_linux.go
 
 func setDefaultSockopts(s, family, sotype int, ipv6only bool) error {
 	if family == syscall.AF_INET6 && sotype != syscall.SOCK_RAW {
@@ -30,5 +28,9 @@ func setDefaultListenerSockopts(s int) error {
 func setDefaultMulticastSockopts(s int) error {
 	// Allow multicast UDP and raw IP datagram sockets to listen
 	// concurrently across multiple listeners.
-	return os.NewSyscallError("setsockopt", syscall.SetsockoptInt(s, syscall.SOL_SOCKET, syscall.SO_REUSEADDR, 1))
+	if err := syscall.SetsockoptInt(s, syscall.SOL_SOCKET, syscall.SO_REUSEADDR, 1); err != nil {
+		return os.NewSyscallError("setsockopt", err)
+	}
+	// Allow reuse of recently-used ports.
+	return os.NewSyscallError("setsockopt", syscall.SetsockoptInt(s, syscall.SOL_SOCKET, syscall.SO_REUSEPORT, 1))
 }

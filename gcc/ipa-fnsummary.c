@@ -941,7 +941,8 @@ mark_modified (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef ATTRIBUTE_UNUSED,
    PARM_DECL) will be stored to *SIZE_P in that case too.  */
 
 static tree
-unmodified_parm_1 (gimple *stmt, tree op, HOST_WIDE_INT *size_p)
+unmodified_parm_1 (ipa_func_body_info *fbi, gimple *stmt, tree op,
+		   HOST_WIDE_INT *size_p)
 {
   /* SSA_NAME referring to parm default def?  */
   if (TREE_CODE (op) == SSA_NAME
@@ -959,8 +960,14 @@ unmodified_parm_1 (gimple *stmt, tree op, HOST_WIDE_INT *size_p)
 
       ao_ref refd;
       ao_ref_init (&refd, op);
-      walk_aliased_vdefs (&refd, gimple_vuse (stmt), mark_modified, &modified,
-			  NULL);
+      int walked = walk_aliased_vdefs (&refd, gimple_vuse (stmt),
+				       mark_modified, &modified, NULL, NULL,
+				       fbi->aa_walk_budget + 1);
+      if (walked < 0)
+	{
+	  fbi->aa_walk_budget = 0;
+	  return NULL_TREE;
+	}
       if (!modified)
 	{
 	  if (size_p)
@@ -977,16 +984,17 @@ unmodified_parm_1 (gimple *stmt, tree op, HOST_WIDE_INT *size_p)
    stored to *SIZE_P in that case too.  */
 
 static tree
-unmodified_parm (gimple *stmt, tree op, HOST_WIDE_INT *size_p)
+unmodified_parm (ipa_func_body_info *fbi, gimple *stmt, tree op,
+		 HOST_WIDE_INT *size_p)
 {
-  tree res = unmodified_parm_1 (stmt, op, size_p);
+  tree res = unmodified_parm_1 (fbi, stmt, op, size_p);
   if (res)
     return res;
 
   if (TREE_CODE (op) == SSA_NAME
       && !SSA_NAME_IS_DEFAULT_DEF (op)
       && gimple_assign_single_p (SSA_NAME_DEF_STMT (op)))
-    return unmodified_parm (SSA_NAME_DEF_STMT (op),
+    return unmodified_parm (fbi, SSA_NAME_DEF_STMT (op),
 			    gimple_assign_rhs1 (SSA_NAME_DEF_STMT (op)),
 			    size_p);
   return NULL_TREE;
@@ -1005,7 +1013,7 @@ unmodified_parm_or_parm_agg_item (struct ipa_func_body_info *fbi,
 				  HOST_WIDE_INT *size_p,
 				  struct agg_position_info *aggpos)
 {
-  tree res = unmodified_parm_1 (stmt, op, size_p);
+  tree res = unmodified_parm_1 (fbi, stmt, op, size_p);
 
   gcc_checking_assert (aggpos);
   if (res)
@@ -1044,7 +1052,7 @@ unmodified_parm_or_parm_agg_item (struct ipa_func_body_info *fbi,
    penalty wrappers.  */
 
 static int
-eliminated_by_inlining_prob (gimple *stmt)
+eliminated_by_inlining_prob (ipa_func_body_info *fbi, gimple *stmt)
 {
   enum gimple_code code = gimple_code (stmt);
   enum tree_code rhs_code;
@@ -1084,7 +1092,7 @@ eliminated_by_inlining_prob (gimple *stmt)
 	    inner_lhs = lhs;
 
 	  /* Reads of parameter are expected to be free.  */
-	  if (unmodified_parm (stmt, inner_rhs, NULL))
+	  if (unmodified_parm (fbi, stmt, inner_rhs, NULL))
 	    rhs_free = true;
 	  /* Match expressions of form &this->field. Those will most likely
 	     combine with something upstream after inlining.  */
@@ -1094,7 +1102,8 @@ eliminated_by_inlining_prob (gimple *stmt)
 	      if (TREE_CODE (op) == PARM_DECL)
 		rhs_free = true;
 	      else if (TREE_CODE (op) == MEM_REF
-		       && unmodified_parm (stmt, TREE_OPERAND (op, 0), NULL))
+		       && unmodified_parm (fbi, stmt, TREE_OPERAND (op, 0),
+					   NULL))
 		rhs_free = true;
 	    }
 
@@ -1107,7 +1116,7 @@ eliminated_by_inlining_prob (gimple *stmt)
 	  /* Reads of parameters passed by reference
 	     expected to be free (i.e. optimized out after inlining).  */
 	  if (TREE_CODE (inner_rhs) == MEM_REF
-	      && unmodified_parm (stmt, TREE_OPERAND (inner_rhs, 0), NULL))
+	      && unmodified_parm (fbi, stmt, TREE_OPERAND (inner_rhs, 0), NULL))
 	    rhs_free = true;
 
 	  /* Copying parameter passed by reference into gimple register is
@@ -1148,7 +1157,8 @@ eliminated_by_inlining_prob (gimple *stmt)
 	  if (TREE_CODE (inner_lhs) == PARM_DECL
 	      || TREE_CODE (inner_lhs) == RESULT_DECL
 	      || (TREE_CODE (inner_lhs) == MEM_REF
-		  && (unmodified_parm (stmt, TREE_OPERAND (inner_lhs, 0), NULL)
+		  && (unmodified_parm (fbi, stmt, TREE_OPERAND (inner_lhs, 0),
+				       NULL)
 		      || (TREE_CODE (TREE_OPERAND (inner_lhs, 0)) == SSA_NAME
 			  && SSA_NAME_VAR (TREE_OPERAND (inner_lhs, 0))
 			  && TREE_CODE (SSA_NAME_VAR (TREE_OPERAND
@@ -1396,7 +1406,7 @@ compute_bb_predicates (struct ipa_func_body_info *fbi,
    a compile time constant.  */
 
 static predicate
-will_be_nonconstant_expr_predicate (struct ipa_node_params *info,
+will_be_nonconstant_expr_predicate (ipa_func_body_info *fbi,
 				    struct ipa_fn_summary *summary,
 				    tree expr,
 				    vec<predicate> nonconstant_names)
@@ -1408,8 +1418,8 @@ will_be_nonconstant_expr_predicate (struct ipa_node_params *info,
   while (UNARY_CLASS_P (expr))
     expr = TREE_OPERAND (expr, 0);
 
-  parm = unmodified_parm (NULL, expr, &size);
-  if (parm && (index = ipa_get_param_decl_index (info, parm)) >= 0)
+  parm = unmodified_parm (fbi, NULL, expr, &size);
+  if (parm && (index = ipa_get_param_decl_index (fbi->info, parm)) >= 0)
     return add_condition (summary, index, size, NULL, predicate::changed,
 			  NULL_TREE);
   if (is_gimple_min_invariant (expr))
@@ -1418,34 +1428,36 @@ will_be_nonconstant_expr_predicate (struct ipa_node_params *info,
     return nonconstant_names[SSA_NAME_VERSION (expr)];
   if (BINARY_CLASS_P (expr) || COMPARISON_CLASS_P (expr))
     {
-      predicate p1 = will_be_nonconstant_expr_predicate
-	(info, summary, TREE_OPERAND (expr, 0),
-	 nonconstant_names);
+      predicate p1
+	= will_be_nonconstant_expr_predicate (fbi, summary,
+					      TREE_OPERAND (expr, 0),
+					      nonconstant_names);
       if (p1 == true)
 	return p1;
 
-      predicate p2;
-      p2 = will_be_nonconstant_expr_predicate (info, summary,
-					       TREE_OPERAND (expr, 1),
-					       nonconstant_names);
+      predicate p2
+	= will_be_nonconstant_expr_predicate (fbi, summary,
+					      TREE_OPERAND (expr, 1),
+					      nonconstant_names);
       return p1.or_with (summary->conds, p2);
     }
   else if (TREE_CODE (expr) == COND_EXPR)
     {
-      predicate p1 = will_be_nonconstant_expr_predicate
-	(info, summary, TREE_OPERAND (expr, 0),
-	 nonconstant_names);
+      predicate p1
+	= will_be_nonconstant_expr_predicate (fbi, summary,
+					      TREE_OPERAND (expr, 0),
+					      nonconstant_names);
       if (p1 == true)
 	return p1;
 
-      predicate p2;
-      p2 = will_be_nonconstant_expr_predicate (info, summary,
-					       TREE_OPERAND (expr, 1),
-					       nonconstant_names);
+      predicate p2
+	= will_be_nonconstant_expr_predicate (fbi, summary,
+					      TREE_OPERAND (expr, 1),
+					      nonconstant_names);
       if (p2 == true)
 	return p2;
       p1 = p1.or_with (summary->conds, p2);
-      p2 = will_be_nonconstant_expr_predicate (info, summary,
+      p2 = will_be_nonconstant_expr_predicate (fbi, summary,
 					       TREE_OPERAND (expr, 2),
 					       nonconstant_names);
       return p2.or_with (summary->conds, p1);
@@ -1511,7 +1523,7 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
      adding conditionals.  */
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
-      tree parm = unmodified_parm (stmt, use, NULL);
+      tree parm = unmodified_parm (fbi, stmt, use, NULL);
       /* For arguments we can build a condition.  */
       if (parm && ipa_get_param_decl_index (fbi->info, parm) >= 0)
 	continue;
@@ -1533,7 +1545,7 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
       HOST_WIDE_INT size;
-      tree parm = unmodified_parm (stmt, use, &size);
+      tree parm = unmodified_parm (fbi, stmt, use, &size);
       int index;
 
       if (parm && (index = ipa_get_param_decl_index (fbi->info, parm)) >= 0)
@@ -1620,7 +1632,7 @@ record_modified (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
    ought to be REG_BR_PROB_BASE / estimated_iters.  */
 
 static int
-param_change_prob (gimple *stmt, int i)
+param_change_prob (ipa_func_body_info *fbi, gimple *stmt, int i)
 {
   tree op = gimple_call_arg (stmt, i);
   basic_block bb = gimple_bb (stmt);
@@ -1680,12 +1692,18 @@ param_change_prob (gimple *stmt, int i)
       info.op = op;
       info.stmt = stmt;
       info.bb_set = BITMAP_ALLOC (NULL);
-      walk_aliased_vdefs (&refd, gimple_vuse (stmt), record_modified, &info,
-			  NULL);
-      if (bitmap_bit_p (info.bb_set, bb->index))
+      int walked
+	= walk_aliased_vdefs (&refd, gimple_vuse (stmt), record_modified, &info,
+			      NULL, NULL, fbi->aa_walk_budget);
+      if (walked < 0 || bitmap_bit_p (info.bb_set, bb->index))
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "     Set in same BB as used.\n");
+	    {
+	      if (walked < 0)
+		fprintf (dump_file, "     Ran out of AA walking budget.\n");
+	      else
+		fprintf (dump_file, "     Set in same BB as used.\n");
+	    }
 	  BITMAP_FREE (info.bb_set);
 	  return REG_BR_PROB_BASE;
 	}
@@ -1719,7 +1737,7 @@ param_change_prob (gimple *stmt, int i)
    return true and store the pointer the predicate in *P.  */
 
 static bool
-phi_result_unknown_predicate (struct ipa_node_params *info,
+phi_result_unknown_predicate (ipa_func_body_info *fbi,
 			      ipa_fn_summary *summary, basic_block bb,
 			      predicate *p,
 			      vec<predicate> nonconstant_names)
@@ -1764,7 +1782,7 @@ phi_result_unknown_predicate (struct ipa_node_params *info,
       || !is_gimple_ip_invariant (gimple_cond_rhs (stmt)))
     return false;
 
-  *p = will_be_nonconstant_expr_predicate (info, summary,
+  *p = will_be_nonconstant_expr_predicate (fbi, summary,
 					   gimple_cond_lhs (stmt),
 					   nonconstant_names);
   if (*p == true)
@@ -2018,7 +2036,9 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	  fbi.info = IPA_NODE_REF (node);
 	  fbi.bb_infos = vNULL;
 	  fbi.bb_infos.safe_grow_cleared (last_basic_block_for_fn (cfun));
-	  fbi.param_count = count_formal_params(node->decl);
+	  fbi.param_count = count_formal_params (node->decl);
+	  fbi.aa_walk_budget = PARAM_VALUE (PARAM_IPA_MAX_AA_STEPS);
+
 	  nonconstant_names.safe_grow_cleared
 	    (SSANAMES (my_function)->length ());
 	}
@@ -2083,7 +2103,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	       gsi_next (&bsi))
 	    {
 	      if (first_phi
-		  && !phi_result_unknown_predicate (fbi.info, info, bb,
+		  && !phi_result_unknown_predicate (&fbi, info, bb,
 						    &phi_predicate,
 						    nonconstant_names))
 		break;
@@ -2173,7 +2193,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		    es->param.safe_grow_cleared (count);
 		  for (i = 0; i < count; i++)
 		    {
-		      int prob = param_change_prob (stmt, i);
+		      int prob = param_change_prob (&fbi, stmt, i);
 		      gcc_assert (prob >= 0 && prob <= REG_BR_PROB_BASE);
 		      es->param[i].change_prob = prob;
 		    }
@@ -2209,7 +2229,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	    {
 	      sreal final_time = (sreal)this_time * freq;
 
-	      prob = eliminated_by_inlining_prob (stmt);
+	      prob = eliminated_by_inlining_prob (&fbi, stmt);
 	      if (prob == 1 && dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file,
 			 "\t\t50%% will be eliminated by inlining\n");
@@ -2286,7 +2306,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		&& !is_gimple_min_invariant (niter_desc.niter))
 	    {
 	      predicate will_be_nonconstant
-		= will_be_nonconstant_expr_predicate (fbi.info, info,
+		= will_be_nonconstant_expr_predicate (&fbi, info,
 						      niter_desc.niter,
 						      nonconstant_names);
 	      if (will_be_nonconstant != true)
@@ -2331,8 +2351,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		    continue;
 
 		  predicate will_be_nonconstant
-		    = will_be_nonconstant_expr_predicate (fbi.info, info,
-							  iv.step,
+		    = will_be_nonconstant_expr_predicate (&fbi, info, iv.step,
 							  nonconstant_names);
 		  if (will_be_nonconstant != true)
 		    will_be_nonconstant = bb_predicate & will_be_nonconstant;

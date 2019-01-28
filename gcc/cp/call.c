@@ -94,7 +94,7 @@ struct conversion {
   BOOL_BITFIELD bad_p : 1;
   /* If KIND is ck_ref_bind ck_base_conv, true to indicate that a
      temporary should be created to hold the result of the
-     conversion.  If KIND is ck_ambig, true if the context is
+     conversion.  If KIND is ck_ambig or ck_user, true means force
      copy-initialization.  */
   BOOL_BITFIELD need_temporary_p : 1;
   /* If KIND is ck_ptr or ck_pmem, true to indicate that a conversion
@@ -1412,6 +1412,13 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	     || (fcode == REAL_TYPE && !(flags & LOOKUP_NO_NON_INTEGRAL)))
           || SCOPED_ENUM_P (from))
 	return NULL;
+
+      /* If we're parsing an enum with no fixed underlying type, we're
+	 dealing with an incomplete type, which renders the conversion
+	 ill-formed.  */
+      if (!COMPLETE_TYPE_P (from))
+	return NULL;
+
       conv = build_conv (ck_std, to, conv);
 
       /* Give this a better rank if it's a promotion.  */
@@ -1560,6 +1567,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
       from = TREE_TYPE (expr);
     }
 
+  bool copy_list_init = false;
   if (expr && BRACE_ENCLOSED_INITIALIZER_P (expr))
     {
       maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
@@ -1582,7 +1590,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
       /* Otherwise, if T is a reference type, a prvalue temporary of the type
 	 referenced by T is copy-list-initialized, and the reference is bound
 	 to that temporary. */
-      CONSTRUCTOR_IS_DIRECT_INIT (expr) = false;
+      copy_list_init = true;
     skip:;
     }
 
@@ -1770,6 +1778,10 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
 
   if (conv->user_conv_p)
     {
+      if (copy_list_init)
+	/* Remember this was copy-list-initialization.  */
+	conv->need_temporary_p = true;
+
       /* If initializing the temporary used a conversion function,
 	 recalculate the second conversion sequence.  */
       for (conversion *t = conv; t; t = next_conversion (t))
@@ -5067,6 +5079,19 @@ build_conditional_expr_1 (const op_location_t &loc,
   arg3_type = unlowered_expr_type (arg3);
   if (VOID_TYPE_P (arg2_type) || VOID_TYPE_P (arg3_type))
     {
+      /* 'void' won't help in resolving an overloaded expression on the
+	 other side, so require it to resolve by itself.  */
+      if (arg2_type == unknown_type_node)
+	{
+	  arg2 = resolve_nondeduced_context_or_error (arg2, complain);
+	  arg2_type = TREE_TYPE (arg2);
+	}
+      if (arg3_type == unknown_type_node)
+	{
+	  arg3 = resolve_nondeduced_context_or_error (arg3, complain);
+	  arg3_type = TREE_TYPE (arg3);
+	}
+
       /* [expr.cond]
 
 	 One of the following shall hold:
@@ -6443,6 +6468,19 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 		continue;
 	      }
 
+	    /* -- If any of the deallocation functions is a destroying
+	       operator delete, all deallocation functions that are not
+	       destroying operator deletes are eliminated from further
+	       consideration.  */
+	    bool fn_destroying = destroying_delete_p (fn);
+	    bool elt_destroying = destroying_delete_p (elt);
+	    if (elt_destroying != fn_destroying)
+	      {
+		if (elt_destroying)
+		  fn = elt;
+		continue;
+	      }
+
 	    /* -- If the type has new-extended alignment, a function with a
 	       parameter of type std::align_val_t is preferred; otherwise a
 	       function without such a parameter is preferred. If exactly one
@@ -6928,7 +6966,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	if (DECL_NONCONVERTING_P (convfn) && DECL_CONSTRUCTOR_P (convfn)
 	    && BRACE_ENCLOSED_INITIALIZER_P (expr)
 	    /* Unless this is for direct-list-initialization.  */
-	    && !CONSTRUCTOR_IS_DIRECT_INIT (expr)
+	    && (!CONSTRUCTOR_IS_DIRECT_INIT (expr) || convs->need_temporary_p)
 	    /* And in C++98 a default constructor can't be explicit.  */
 	    && cxx_dialect >= cxx11)
 	  {
@@ -7631,7 +7669,7 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
     }
 
   if (complain & tf_warning)
-    warn_for_address_or_pointer_of_packed_member (false, type, val);
+    warn_for_address_or_pointer_of_packed_member (type, val);
 
   return val;
 }
@@ -11018,6 +11056,8 @@ perform_implicit_conversion_flags (tree type, tree expr,
       expr = build1 (IMPLICIT_CONV_EXPR, type, expr);
       if (!(flags & LOOKUP_ONLYCONVERTING))
 	IMPLICIT_CONV_EXPR_DIRECT_INIT (expr) = true;
+      if (flags & LOOKUP_NO_NARROWING)
+	IMPLICIT_CONV_EXPR_BRACED_INIT (expr) = true;
     }
   else
     expr = convert_like (conv, expr, complain);
@@ -11154,9 +11194,21 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
       && (TREE_STATIC (decl) || CP_DECL_THREAD_LOCAL_P (decl)))
     {
       /* Namespace-scope or local static; give it a mangled name.  */
-      /* FIXME share comdat with decl?  */
+
+      /* If an initializer is visible to multiple translation units, those
+	 translation units must agree on the addresses of the
+	 temporaries. Therefore the temporaries must be given a consistent name
+	 and vague linkage. The mangled name of a temporary is the name of the
+	 non-temporary object in whose initializer they appear, prefixed with
+	 GR and suffixed with a sequence number mangled using the usual rules
+	 for a seq-id. Temporaries are numbered with a pre-order, depth-first,
+	 left-to-right walk of the complete initializer.  */
 
       TREE_STATIC (var) = TREE_STATIC (decl);
+      TREE_PUBLIC (var) = TREE_PUBLIC (decl);
+      if (vague_linkage_p (decl))
+	comdat_linkage (var);
+
       CP_DECL_THREAD_LOCAL_P (var) = CP_DECL_THREAD_LOCAL_P (decl);
       set_decl_tls_model (var, DECL_TLS_MODEL (decl));
 

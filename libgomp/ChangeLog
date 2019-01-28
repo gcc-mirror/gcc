@@ -1,3 +1,36 @@
+2019-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/89064
+	PR tree-optimization/86865
+	* testsuite/libgomp.graphite/force-parallel-5.c: XFAIL.
+
+2019-01-24  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_fini_device): Free ptx_devices
+	once instantiated_devices drops to 0.
+
+2019-01-23  Tom de Vries  <tdevries@suse.de>
+
+	PR target/PR88946
+	* plugin/plugin-nvptx.c (cuda_map_destroy): Use CUDA_CALL_NOCHECK for
+	cuMemFree.
+	(nvptx_exec): Don't call map_push if mapnum == 0.
+	* testsuite/libgomp.oacc-c-c++-common/pr88946.c: New test.
+
+2019-01-23  Tom de Vries  <tdevries@suse.de>
+
+	PR target/88941
+	PR target/88939
+	* plugin/plugin-nvptx.c (cuda_map_destroy): Handle map->active case.
+	(map_fini): Remove "assert (!s->map->active)".
+	* testsuite/libgomp.oacc-c-c++-common/pr88941.c: New test.
+
+2019-01-23  Tom de Vries  <tdevries@suse.de>
+
+	PR target/87835
+	* plugin/plugin-nvptx.c (map_push): Fix adding of allocated element.
+	* testsuite/libgomp.oacc-c-c++-common/pr87835.c: New test.
+
 2019-01-15  Tom de Vries  <tdevries@suse.de>
 
 	PR target/80547

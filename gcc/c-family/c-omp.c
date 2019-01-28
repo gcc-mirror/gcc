@@ -378,8 +378,11 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
 	    }
 	}
       if (blhs)
-	x = build3_loc (loc, BIT_FIELD_REF, TREE_TYPE (blhs), x,
-			bitsize_int (bitsize), bitsize_int (bitpos));
+	{
+	  x = build3_loc (loc, BIT_FIELD_REF, TREE_TYPE (blhs), x,
+			  bitsize_int (bitsize), bitsize_int (bitpos));
+	  type = TREE_TYPE (blhs);
+	}
       x = build_modify_expr (loc, v, NULL_TREE, NOP_EXPR,
 			     loc, x, NULL_TREE);
       if (rhs1 && rhs1 != orig_lhs)

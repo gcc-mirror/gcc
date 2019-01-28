@@ -242,14 +242,15 @@ genericize_cp_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
   tree exit = NULL;
   tree stmt_list = NULL;
 
-  blab = begin_bc_block (bc_break, start_locus);
-  clab = begin_bc_block (bc_continue, start_locus);
-
   protected_set_expr_location (incr, start_locus);
 
   cp_walk_tree (&cond, cp_genericize_r, data, NULL);
-  cp_walk_tree (&body, cp_genericize_r, data, NULL);
   cp_walk_tree (&incr, cp_genericize_r, data, NULL);
+
+  blab = begin_bc_block (bc_break, start_locus);
+  clab = begin_bc_block (bc_continue, start_locus);
+
+  cp_walk_tree (&body, cp_genericize_r, data, NULL);
   *walk_subtrees = 0;
 
   if (cond && TREE_CODE (cond) != INTEGER_CST)
@@ -356,16 +357,17 @@ genericize_switch_stmt (tree *stmt_p, int *walk_subtrees, void *data)
   tree break_block, body, cond, type;
   location_t stmt_locus = EXPR_LOCATION (stmt);
 
-  break_block = begin_bc_block (bc_break, stmt_locus);
-
   body = SWITCH_STMT_BODY (stmt);
   if (!body)
     body = build_empty_stmt (stmt_locus);
   cond = SWITCH_STMT_COND (stmt);
   type = SWITCH_STMT_TYPE (stmt);
 
-  cp_walk_tree (&body, cp_genericize_r, data, NULL);
   cp_walk_tree (&cond, cp_genericize_r, data, NULL);
+
+  break_block = begin_bc_block (bc_break, stmt_locus);
+
+  cp_walk_tree (&body, cp_genericize_r, data, NULL);
   cp_walk_tree (&type, cp_genericize_r, data, NULL);
   *walk_subtrees = 0;
 

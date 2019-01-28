@@ -338,6 +338,13 @@ thread_jump (edge e, basic_block b)
        insn != NEXT_INSN (BB_END (b)) && !failed;
        insn = NEXT_INSN (insn))
     {
+      /* cond2 must not mention any register that is not equal to the
+	 former block.  Check this before processing that instruction,
+	 as BB_END (b) could contain also clobbers.  */
+      if (insn == BB_END (b)
+	  && mentions_nonequal_regs (cond2, nonequal))
+	goto failed_exit;
+
       if (INSN_P (insn))
 	{
 	  rtx pat = PATTERN (insn);
@@ -361,11 +368,6 @@ thread_jump (edge e, basic_block b)
       b->flags |= BB_NONTHREADABLE_BLOCK;
       goto failed_exit;
     }
-
-  /* cond2 must not mention any register that is not equal to the
-     former block.  */
-  if (mentions_nonequal_regs (cond2, nonequal))
-    goto failed_exit;
 
   EXECUTE_IF_SET_IN_REG_SET (nonequal, 0, i, rsi)
     goto failed_exit;

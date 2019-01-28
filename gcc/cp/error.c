@@ -546,6 +546,12 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
       pp_cxx_cv_qualifier_seq (pp, t);
       if (tree c = PLACEHOLDER_TYPE_CONSTRAINTS (t))
 	pp_cxx_constrained_type_spec (pp, c);
+      else if (template_placeholder_p (t))
+	{
+	  t = TREE_TYPE (CLASS_PLACEHOLDER_TEMPLATE (t));
+	  pp_cxx_tree_identifier (pp, TYPE_IDENTIFIER (t));
+	  pp_string (pp, "<...auto...>");
+	}
       else if (TYPE_IDENTIFIER (t))
 	pp_cxx_tree_identifier (pp, TYPE_IDENTIFIER (t));
       else

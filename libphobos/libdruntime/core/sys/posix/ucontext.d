@@ -197,6 +197,48 @@ version (CRuntime_Glibc)
             _libc_fpstate   __fpregs_mem;
         }
     }
+    else version (HPPA)
+    {
+        private
+        {
+            enum NGREG  = 80;
+            enum NFPREG = 32;
+
+            alias c_ulong greg_t;
+
+            struct gregset_t
+            {
+                greg_t[32] g_regs;
+                greg_t[8] sr_regs;
+                greg_t[24] cr_regs;
+                greg_t[16] g_pad;
+            }
+
+            struct fpregset_t
+            {
+                double[32] fpregs;
+            }
+        }
+
+        struct mcontext_t
+        {
+            greg_t sc_flags;
+            greg_t[32] sc_gr;
+            fpregset_t sc_fr;
+            greg_t[2] sc_iasq;
+            greg_t[2] sc_iaoq;
+            greg_t sc_sar;
+        }
+
+        struct ucontext_t
+        {
+            c_ulong uc_flags;
+            ucontext_t* uc_link;
+            stack_t uc_stack;
+            mcontext_t uc_mcontext;
+            sigset_t uc_sigmask;
+        }
+    }
     else version (MIPS32)
     {
         private

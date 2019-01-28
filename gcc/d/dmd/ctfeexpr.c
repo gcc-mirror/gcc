@@ -264,10 +264,9 @@ UnionExp copyLiteral(Expression *e)
         ArrayLiteralExp *ale = (ArrayLiteralExp *)e;
         Expressions *elements = copyLiteralArray(ale->elements, ale->basis);
 
-        new(&ue) ArrayLiteralExp(e->loc, elements);
+        new(&ue) ArrayLiteralExp(e->loc, e->type, elements);
 
         ArrayLiteralExp *r = (ArrayLiteralExp *)ue.exp();
-        r->type = e->type;
         r->ownedByCtfe = OWNEDctfe;
         return ue;
     }
@@ -314,7 +313,10 @@ UnionExp copyLiteral(Expression *e)
                 {
                     TypeSArray *tsa = (TypeSArray *)v->type;
                     size_t len = (size_t)tsa->dim->toInteger();
-                    m = createBlockDuplicatedArrayLiteral(e->loc, v->type, m, len);
+                    UnionExp uex;
+                    m = createBlockDuplicatedArrayLiteral(&uex, e->loc, v->type, m, len);
+                    if (m == uex.exp())
+                        m = uex.copy();
                 }
             }
             (*newelems)[i] = m;
@@ -412,6 +414,14 @@ Expression *paintTypeOntoLiteral(Type *type, Expression *lit)
     if (lit->type->equals(type))
         return lit;
     return paintTypeOntoLiteralCopy(type, lit).copy();
+}
+
+Expression *paintTypeOntoLiteral(UnionExp *pue, Type *type, Expression *lit)
+{
+    if (lit->type->equals(type))
+        return lit;
+    *pue = paintTypeOntoLiteralCopy(type, lit);
+    return pue->exp();
 }
 
 UnionExp paintTypeOntoLiteralCopy(Type *type, Expression *lit)
@@ -539,6 +549,7 @@ uinteger_t resolveArrayLength(Expression *e)
  * Helper for NewExp
  * Create an array literal consisting of 'elem' duplicated 'dim' times.
  * Params:
+ *      pue = where to store result
  *      loc = source location where the interpretation occurs
  *      type = target type of the result
  *      elem = the source of array element, it will be owned by the result
@@ -546,7 +557,7 @@ uinteger_t resolveArrayLength(Expression *e)
  * Returns:
  *      Constructed ArrayLiteralExp
  */
-ArrayLiteralExp *createBlockDuplicatedArrayLiteral(Loc loc, Type *type,
+ArrayLiteralExp *createBlockDuplicatedArrayLiteral(UnionExp *pue, Loc loc, Type *type,
         Expression *elem, size_t dim)
 {
     if (type->ty == Tsarray && type->nextOf()->ty == Tsarray && elem->type->ty != Tsarray)
@@ -554,7 +565,10 @@ ArrayLiteralExp *createBlockDuplicatedArrayLiteral(Loc loc, Type *type,
         // If it is a multidimensional array literal, do it recursively
         TypeSArray *tsa = (TypeSArray *)type->nextOf();
         size_t len = (size_t)tsa->dim->toInteger();
-        elem = createBlockDuplicatedArrayLiteral(loc, type->nextOf(), elem, len);
+        UnionExp ue;
+        elem = createBlockDuplicatedArrayLiteral(&ue, loc, type->nextOf(), elem, len);
+        if (elem == ue.exp())
+            elem = ue.copy();
     }
 
     // Buzilla 15681
@@ -567,8 +581,8 @@ ArrayLiteralExp *createBlockDuplicatedArrayLiteral(Loc loc, Type *type,
     {
         (*elements)[i] = mustCopy ? copyLiteral(elem).copy() : elem;
     }
-    ArrayLiteralExp *ale = new ArrayLiteralExp(loc, elements);
-    ale->type = type;
+    new(pue) ArrayLiteralExp(loc, type, elements);
+    ArrayLiteralExp *ale = (ArrayLiteralExp *)pue->exp();
     ale->ownedByCtfe = OWNEDctfe;
     return ale;
 }
@@ -577,7 +591,7 @@ ArrayLiteralExp *createBlockDuplicatedArrayLiteral(Loc loc, Type *type,
  * Helper for NewExp
  * Create a string literal consisting of 'value' duplicated 'dim' times.
  */
-StringExp *createBlockDuplicatedStringLiteral(Loc loc, Type *type,
+StringExp *createBlockDuplicatedStringLiteral(UnionExp *pue, Loc loc, Type *type,
         unsigned value, size_t dim, unsigned char sz)
 {
     utf8_t *s = (utf8_t *)mem.xcalloc(dim + 1, sz);
@@ -591,7 +605,8 @@ StringExp *createBlockDuplicatedStringLiteral(Loc loc, Type *type,
             default:    assert(0);
         }
     }
-    StringExp *se = new StringExp(loc, s, dim);
+    new(pue) StringExp(loc, s, dim);
+    StringExp *se = (StringExp *)pue->exp();
     se->type = type;
     se->sz = sz;
     se->committed = true;
@@ -984,13 +999,13 @@ bool isFloatIntPaint(Type *to, Type *from)
 }
 
 // Reinterpret float/int value 'fromVal' as a float/integer of type 'to'.
-Expression *paintFloatInt(Expression *fromVal, Type *to)
+Expression *paintFloatInt(UnionExp *pue, Expression *fromVal, Type *to)
 {
     if (exceptionOrCantInterpret(fromVal))
         return fromVal;
 
     assert(to->size() == 4 || to->size() == 8);
-    return Compiler::paintAsType(fromVal, to);
+    return Compiler::paintAsType(pue, fromVal, to);
 }
 
 /******** Constant folding, with support for CTFE ***************************/
@@ -1512,10 +1527,9 @@ UnionExp ctfeCat(Loc loc, Type *type, Expression *e1, Expression *e2)
         ArrayLiteralExp *es1 = (ArrayLiteralExp *)e1;
         ArrayLiteralExp *es2 = (ArrayLiteralExp *)e2;
 
-        new(&ue) ArrayLiteralExp(es1->loc, copyLiteralArray(es1->elements));
+        new(&ue) ArrayLiteralExp(es1->loc, type, copyLiteralArray(es1->elements));
         es1 = (ArrayLiteralExp *)ue.exp();
         es1->elements->insert(es1->elements->dim, copyLiteralArray(es2->elements));
-        es1->type = type;
         return ue;
     }
     if (e1->op == TOKarrayliteral && e2->op == TOKnull &&
@@ -1587,29 +1601,33 @@ Expression *ctfeIndex(Loc loc, Type *type, Expression *e1, uinteger_t indx)
     }
 }
 
-Expression *ctfeCast(Loc loc, Type *type, Type *to, Expression *e)
+Expression *ctfeCast(UnionExp *pue, Loc loc, Type *type, Type *to, Expression *e)
 {
     if (e->op == TOKnull)
-        return paintTypeOntoLiteral(to, e);
+        return paintTypeOntoLiteral(pue, to, e);
+
     if (e->op == TOKclassreference)
     {
         // Disallow reinterpreting class casts. Do this by ensuring that
         // the original class can implicitly convert to the target class
         ClassDeclaration *originalClass = ((ClassReferenceExp *)e)->originalClass();
         if (originalClass->type->implicitConvTo(to->mutableOf()))
-            return paintTypeOntoLiteral(to, e);
+            return paintTypeOntoLiteral(pue, to, e);
         else
-            return new NullExp(loc, to);
+        {
+            new(pue) NullExp(loc, to);
+            return pue->exp();
+        }
     }
+
     // Allow TypeInfo type painting
     if (isTypeInfo_Class(e->type) && e->type->implicitConvTo(to))
-        return paintTypeOntoLiteral(to, e);
+        return paintTypeOntoLiteral(pue, to, e);
+
     // Allow casting away const for struct literals
     if (e->op == TOKstructliteral &&
         e->type->toBasetype()->castMod(0) == to->toBasetype()->castMod(0))
-    {
-        return paintTypeOntoLiteral(to, e);
-    }
+        return paintTypeOntoLiteral(pue, to, e);
 
     Expression *r;
     if (e->type->equals(type) && type->equals(to))
@@ -1617,22 +1635,28 @@ Expression *ctfeCast(Loc loc, Type *type, Type *to, Expression *e)
         // necessary not to change e's address for pointer comparisons
         r = e;
     }
-    else if (to->toBasetype()->ty == Tarray &&     type->toBasetype()->ty == Tarray &&
+    else if (to->toBasetype()->ty == Tarray &&
+             type->toBasetype()->ty == Tarray &&
              to->toBasetype()->nextOf()->size() == type->toBasetype()->nextOf()->size())
     {
         // Bugzilla 12495: Array reinterpret casts: eg. string to immutable(ubyte)[]
-        return paintTypeOntoLiteral(to, e);
+        return paintTypeOntoLiteral(pue, to, e);
     }
     else
     {
-        r = Cast(loc, type, to, e).copy();
+        *pue = Cast(loc, type, to, e);
+        r = pue->exp();
     }
+
     if (CTFEExp::isCantExp(r))
         error(loc, "cannot cast %s to %s at compile time", e->toChars(), to->toChars());
+
     if (e->op == TOKarrayliteral)
         ((ArrayLiteralExp *)e)->ownedByCtfe = OWNEDctfe;
+
     if (e->op == TOKstring)
         ((StringExp *)e)->ownedByCtfe = OWNEDctfe;
+
     return r;
 }
 
@@ -1816,9 +1840,8 @@ UnionExp changeArrayLiteralLength(Loc loc, TypeArray *arrayType,
             for (size_t i = copylen; i < newlen; i++)
                 (*elements)[i] = defaultElem;
         }
-        new(&ue) ArrayLiteralExp(loc, elements);
+        new(&ue) ArrayLiteralExp(loc, arrayType, elements);
         ArrayLiteralExp *aae = (ArrayLiteralExp *)ue.exp();
-        aae->type = arrayType;
         aae->ownedByCtfe = OWNEDctfe;
     }
     return ue;
@@ -2078,9 +2101,8 @@ UnionExp voidInitLiteral(Type *t, VarDeclaration *var)
                 elem  = copyLiteral(elem).copy();
             (*elements)[i] = elem;
         }
-        new(&ue) ArrayLiteralExp(var->loc, elements);
+        new(&ue) ArrayLiteralExp(var->loc, tsa, elements);
         ArrayLiteralExp *ae = (ArrayLiteralExp *)ue.exp();
-        ae->type = tsa;
         ae->ownedByCtfe = OWNEDctfe;
     }
     else if (t->ty == Tstruct)

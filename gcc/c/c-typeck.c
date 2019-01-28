@@ -6339,17 +6339,21 @@ convert_to_anonymous_field (location_t location, tree type, tree rhs)
    GMSGID identifies the message.
    The component name is taken from the spelling stack.  */
 
-static void
-error_init (location_t loc, const char *gmsgid)
+static void ATTRIBUTE_GCC_DIAG (2,0)
+error_init (location_t loc, const char *gmsgid, ...)
 {
   char *ofwhat;
 
   auto_diagnostic_group d;
 
   /* The gmsgid may be a format string with %< and %>. */
-  error_at (loc, gmsgid);
+  va_list ap;
+  va_start (ap, gmsgid);
+  bool warned = emit_diagnostic_valist (DK_ERROR, loc, -1, gmsgid, &ap);
+  va_end (ap);
+
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
-  if (*ofwhat)
+  if (*ofwhat && warned)
     inform (loc, "(near initialization for %qs)", ofwhat);
 }
 
@@ -6725,8 +6729,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 
   if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (rhstype))
     {
-      warn_for_address_or_pointer_of_packed_member (false, type,
-						    orig_rhs);
+      warn_for_address_or_pointer_of_packed_member (type, orig_rhs);
       return rhs;
     }
 
@@ -7285,8 +7288,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 
       /* If RHS isn't an address, check pointer or array of packed
 	 struct or union.  */
-      warn_for_address_or_pointer_of_packed_member
-	(TREE_CODE (orig_rhs) != ADDR_EXPR, type, orig_rhs);
+      warn_for_address_or_pointer_of_packed_member (type, orig_rhs);
 
       return convert (type, rhs);
     }
@@ -7722,6 +7724,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	{
 	  struct c_expr expr;
 	  tree typ2 = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (inside_init)));
+	  bool incompat_string_cst = false;
 	  expr.value = inside_init;
 	  expr.original_code = (strict_string ? STRING_CST : ERROR_MARK);
 	  expr.original_type = NULL;
@@ -7738,27 +7741,18 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	  if (char_array)
 	    {
 	      if (typ2 != char_type_node)
-		{
-		  error_init (init_loc, "char-array initialized from wide "
-			      "string");
-		  return error_mark_node;
-		}
+		incompat_string_cst = true;
 	    }
-	  else
-	    {
-	      if (typ2 == char_type_node)
-		{
-		  error_init (init_loc, "wide character array initialized "
-			      "from non-wide string");
-		  return error_mark_node;
-		}
-	      else if (!comptypes(typ1, typ2))
-		{
-		  error_init (init_loc, "wide character array initialized "
-			      "from incompatible wide string");
-		  return error_mark_node;
-		}
-	    }
+	  else if (!comptypes (typ1, typ2))
+	    incompat_string_cst = true;
+
+          if (incompat_string_cst)
+            {
+	      error_init (init_loc, "cannot initialize array of %qT from "
+			  "a string literal with type array of %qT",
+			  typ1, typ2);
+	      return error_mark_node;
+            }
 
 	  if (TYPE_DOMAIN (type) != NULL_TREE
 	      && TYPE_SIZE (type) != NULL_TREE
@@ -12772,6 +12766,18 @@ c_finish_omp_cancel (location_t loc, tree clauses)
 	  && OMP_CLAUSE_IF_MODIFIER (ifc) != VOID_CST)
 	error_at (OMP_CLAUSE_LOCATION (ifc),
 		  "expected %<cancel%> %<if%> clause modifier");
+      else
+	{
+	  tree ifc2 = omp_find_clause (OMP_CLAUSE_CHAIN (ifc), OMP_CLAUSE_IF);
+	  if (ifc2 != NULL_TREE)
+	    {
+	      gcc_assert (OMP_CLAUSE_IF_MODIFIER (ifc) == VOID_CST
+			  && OMP_CLAUSE_IF_MODIFIER (ifc2) != ERROR_MARK
+			  && OMP_CLAUSE_IF_MODIFIER (ifc2) != VOID_CST);
+	      error_at (OMP_CLAUSE_LOCATION (ifc2),
+			"expected %<cancel%> %<if%> clause modifier");
+	    }
+	}
 
       tree type = TREE_TYPE (OMP_CLAUSE_IF_EXPR (ifc));
       ifc = fold_build2_loc (OMP_CLAUSE_LOCATION (ifc), NE_EXPR,

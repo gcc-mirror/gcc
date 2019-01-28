@@ -511,6 +511,7 @@ extern tree delegate_object (tree);
 extern tree build_delegate_cst (tree, tree, Type *);
 extern tree build_method_call (tree, tree, Type *);
 extern void extract_from_method_call (tree, tree &, tree &);
+extern tree build_typeof_null_value (Type *);
 extern tree build_vindex_ref (tree, tree, size_t);
 extern tree d_save_expr (tree);
 extern tree stabilize_expr (tree *);
@@ -521,6 +522,7 @@ extern tree d_mark_addressable (tree);
 extern tree d_mark_used (tree);
 extern tree d_mark_read (tree);
 extern bool identity_compare_p (StructDeclaration *);
+extern tree build_float_identity (tree_code, tree, tree);
 extern tree build_struct_comparison (tree_code, StructDeclaration *,
 				     tree, tree);
 extern tree build_array_struct_comparison (tree_code, StructDeclaration *,

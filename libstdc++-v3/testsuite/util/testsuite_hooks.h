@@ -46,9 +46,16 @@
 #include <bits/c++config.h>
 #include <bits/functexcept.h>
 #include <ctime>
+#include <stdio.h>
 
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H
 #include <sys/stat.h>
+#endif
+
+#ifdef stderr
+# define _VERIFY_PRINT(S, F, L, P, C) __builtin_fprintf(stderr, S, F, L, P, C)
+#else
+# define _VERIFY_PRINT(S, F, L, P, C) __builtin_printf(S, F, L, P, C)
 #endif
 
 #define VERIFY(fn)                                                      \
@@ -56,8 +63,8 @@
   {                                                                     \
     if (! (fn))								\
       {									\
-	__builtin_printf("%s:%d: %s: Assertion '%s' failed.\n",		\
-			 __FILE__, __LINE__, __PRETTY_FUNCTION__, #fn); \
+	_VERIFY_PRINT("%s:%d: %s: Assertion '%s' failed.\n",		\
+		      __FILE__, __LINE__, __PRETTY_FUNCTION__, #fn);	\
 	__builtin_abort();						\
       }									\
   } while (false)

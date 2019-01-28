@@ -54,6 +54,7 @@ max_size() const
 { return s_value_alloc.max_size(); }
 
 PB_DS_CLASS_T_DEC
+_GLIBCXX_NODISCARD
 inline bool
 PB_DS_CLASS_C_DEC::
 empty() const

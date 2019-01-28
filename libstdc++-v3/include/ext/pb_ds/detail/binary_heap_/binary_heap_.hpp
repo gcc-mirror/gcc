@@ -144,7 +144,7 @@ namespace __gnu_pbds
 
       ~binary_heap();
 
-      inline bool
+      _GLIBCXX_NODISCARD inline bool
       empty() const;
 
       inline size_type

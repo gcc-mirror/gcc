@@ -634,7 +634,9 @@ Objective-C and Objective-C++ Dialects}.
 -msign-return-address=@var{scope} @gol
 -mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}] @gol
 -march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}  @gol
--moverride=@var{string}  -mverbose-cost-dump  -mtrack-speculation} 
+-moverride=@var{string}  -mverbose-cost-dump @gol
+-mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{sysreg} @gol
+-mstack-protector-guard-offset=@var{offset} -mtrack-speculation }
 
 @emph{Adapteva Epiphany Options}
 @gccoptlist{-mhalf-reg-file  -mprefer-short-insn-regs @gol
@@ -643,6 +645,9 @@ Objective-C and Objective-C++ Dialects}.
 -mround-nearest  -mlong-calls  -mshort-calls  -msmall16 @gol
 -mfp-mode=@var{mode}  -mvect-double  -max-vect-align=@var{num} @gol
 -msplit-vecmove-early  -m1reg-@var{reg}}
+
+@emph{AMD GCN Options}
+@gccoptlist{-march=@var{gpu} -mtune=@var{gpu} -mstack-size=@var{bytes}}
 
 @emph{ARC Options}
 @gccoptlist{-mbarrel-shifter  -mjli-always @gol
@@ -1262,12 +1267,14 @@ See RS/6000 and PowerPC Options.
 -mavx2  -mavx512f  -mavx512pf  -mavx512er  -mavx512cd  -mavx512vl @gol
 -mavx512bw  -mavx512dq  -mavx512ifma  -mavx512vbmi  -msha  -maes @gol
 -mpclmul  -mfsgsbase  -mrdrnd  -mf16c  -mfma  -mpconfig  -mwbnoinvd  @gol
--mptwrite  -mprefetchwt1  -mclflushopt  -mxsavec  -mxsaves @gol
+-mptwrite  -mprefetchwt1  -mclflushopt  -mclwb  -mxsavec  -mxsaves @gol
 -msse4a  -m3dnow  -m3dnowa  -mpopcnt  -mabm  -mbmi  -mtbm  -mfma4  -mxop @gol
--mlzcnt  -mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mlwp @gol
+-madx  -mlzcnt  -mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mhle  -mlwp @gol
 -mmwaitx  -mclzero  -mpku  -mthreads  -mgfni  -mvaes  -mwaitpkg @gol
 -mshstk -mmanual-endbr -mforce-indirect-call  -mavx512vbmi2 @gol
 -mvpclmulqdq  -mavx512bitalg  -mmovdiri  -mmovdir64b  -mavx512vpopcntdq @gol
+-mavx5124fmaps  -mavx512vnni  -mavx5124vnniw  -mprfchw  -mrdpid @gol
+-mrdseed  -msgx @gol
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy}  -mmemset-strategy=@var{strategy} @gol
@@ -9787,7 +9794,7 @@ enabled.
 @opindex fsplit-paths
 Split paths leading to loop backedges.  This can improve dead code
 elimination and common subexpression elimination.  This is enabled by
-default at @option{-O2} and above.
+default at @option{-O3} and above.
 
 @item -fsplit-ivs-in-unroller
 @opindex fsplit-ivs-in-unroller
@@ -15535,6 +15542,7 @@ platform.
 @menu
 * AArch64 Options::
 * Adapteva Epiphany Options::
+* AMD GCN Options::
 * ARC Options::
 * ARM Options::
 * AVR Options::
@@ -15661,6 +15669,42 @@ object boundary as described in the architecture specification.
 @opindex mno-omit-leaf-frame-pointer
 Omit or keep the frame pointer in leaf functions.  The former behavior is the
 default.
+
+@item -mstack-protector-guard=@var{guard}
+@itemx -mstack-protector-guard-reg=@var{reg}
+@itemx -mstack-protector-guard-offset=@var{offset}
+@opindex mstack-protector-guard
+@opindex mstack-protector-guard-reg
+@opindex mstack-protector-guard-offset
+Generate stack protection code using canary at @var{guard}.  Supported
+locations are @samp{global} for a global canary or @samp{sysreg} for a
+canary in an appropriate system register.
+
+With the latter choice the options
+@option{-mstack-protector-guard-reg=@var{reg}} and
+@option{-mstack-protector-guard-offset=@var{offset}} furthermore specify
+which system register to use as base register for reading the canary,
+and from what offset from that base register. There is no default
+register or offset as this is entirely for use within the Linux
+kernel.
+
+@item -mstack-protector-guard=@var{guard}
+@itemx -mstack-protector-guard-reg=@var{reg}
+@itemx -mstack-protector-guard-offset=@var{offset}
+@opindex mstack-protector-guard
+@opindex mstack-protector-guard-reg
+@opindex mstack-protector-guard-offset
+Generate stack protection code using canary at @var{guard}.  Supported
+locations are @samp{global} for a global canary or @samp{sysreg} for a
+canary in an appropriate system register.
+
+With the latter choice the options
+@option{-mstack-protector-guard-reg=@var{reg}} and
+@option{-mstack-protector-guard-offset=@var{offset}} furthermore specify
+which system register to use as base register for reading the canary,
+and from what offset from that base register. There is no default
+register or offset as this is entirely for use within the Linux
+kernel.
 
 @item -mtls-dialect=desc
 @opindex mtls-dialect=desc
@@ -16136,6 +16180,41 @@ Allowable values for @var{reg} are @samp{r43} and @samp{r63},
 which specify use of that register as a fixed register,
 and @samp{none}, which means that no register is used for this
 purpose.  The default is @option{-m1reg-none}.
+
+@end table
+
+@node AMD GCN Options
+@subsection AMD GCN Options
+@cindex AMD GCN Options
+
+These options are defined specifically for the AMD GCN port.
+
+@table @gcctabopt
+
+@item -march=@var{gpu}
+@opindex march
+@itemx -mtune=@var{gpu}
+@opindex mtune
+Set architecture type or tuning for @var{gpu}. Supported values for @var{gpu}
+are
+
+@table @samp
+@opindex fiji
+@item fiji
+Compile for GCN3 Fiji devices (gfx803).
+
+@item gfx900
+Compile for GCN5 Vega 10 devices (gfx900).
+
+@end table
+
+@item -mstack-size=@var{bytes}
+@opindex mstack-size
+Specify how many @var{bytes} of stack space will be requested for each GPU
+thread (wave-front).  Beware that there may be many threads and limited memory
+available.  The size of the stack allocation may also have an impact on
+run-time performance.  The default is 32KB when using OpenACC or OpenMP, and
+1MB otherwise.
 
 @end table
 
@@ -17108,6 +17187,12 @@ Disable the floating-point instructions.
 
 @item armv7-a
 @table @samp
+@item +mp
+The multiprocessing extension.
+
+@item +sec
+The security extension.
+
 @item +fp
 The VFPv3 floating-point instructions, with 16 double-precision
 registers.  The extension @samp{+vfpv3-d16} can be used as an alias
@@ -17536,11 +17621,11 @@ Enables the cryptographic instructions on @samp{cortex-a32},
 
 Additionally the @samp{generic-armv7-a} pseudo target defaults to
 VFPv3 with 16 double-precision registers.  It supports the following
-extension options: @samp{vfpv3-d16}, @samp{vfpv3},
-@samp{vfpv3-d16-fp16}, @samp{vfpv3-fp16}, @samp{vfpv4-d16},
-@samp{vfpv4}, @samp{neon}, @samp{neon-vfpv3}, @samp{neon-fp16},
-@samp{neon-vfpv4}.  The meanings are the same as for the extensions to
-@option{-march=armv7-a}.
+extension options: @samp{mp}, @samp{sec}, @samp{vfpv3-d16},
+@samp{vfpv3}, @samp{vfpv3-d16-fp16}, @samp{vfpv3-fp16},
+@samp{vfpv4-d16}, @samp{vfpv4}, @samp{neon}, @samp{neon-vfpv3},
+@samp{neon-fp16}, @samp{neon-vfpv4}.  The meanings are the same as for
+the extensions to @option{-march=armv7-a}.
 
 @option{-mcpu=generic-@var{arch}} is also permissible, and is
 equivalent to @option{-march=@var{arch} -mtune=generic-@var{arch}}.
@@ -27850,6 +27935,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mclflushopt
 @opindex mclflushopt
 @need 200
+@itemx -mclwb
+@opindex mclwb
+@need 200
 @itemx -mfsgsbase
 @opindex mfsgsbase
 @need 200
@@ -27874,8 +27962,20 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mfma4
 @opindex mfma4
 @need 200
+@itemx -mprfchw
+@opindex mprfchw
+@need 200
+@itemx -mrdpid
+@opindex mrdpid
+@need 200
 @itemx -mprefetchwt1
 @opindex mprefetchwt1
+@need 200
+@itemx -mrdseed
+@opindex mrdseed
+@need 200
+@itemx -msgx
+@opindex msgx
 @need 200
 @itemx -mxop
 @opindex mxop
@@ -27895,10 +27995,14 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mabm
 @opindex mabm
 @need 200
+@itemx -madx
+@opindex madx
+@need 200
 @itemx -mbmi
 @opindex mbmi
 @need 200
 @itemx -mbmi2
+@opindex mbmi2
 @need 200
 @itemx -mlzcnt
 @opindex mlzcnt
@@ -27920,6 +28024,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @itemx -mrtm
 @opindex mrtm
+@need 200
+@itemx -mhle
+@opindex mhle
 @need 200
 @itemx -mtbm
 @opindex mtbm
@@ -27960,17 +28067,28 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mavx512vpopcntdq
 @opindex mavx512vpopcntdq
 @need 200
+@itemx -mavx5124fmaps
+@opindex mavx5124fmaps
+@need 200
+@itemx -mavx512vnni
+@opindex mavx512vnni
+@need 200
+@itemx -mavx5124vnniw
+@opindex mavx5124vnniw
+@need 200
 @itemx -mcldemote
 @opindex mcldemote
 These switches enable the use of instructions in the MMX, SSE,
-SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AVX512F, AVX512PF, AVX512ER, AVX512CD,
-SHA, AES, PCLMUL, FSGSBASE, PTWRITE, RDRND, F16C, FMA, SSE4A, FMA4, XOP, LWP, ABM,
-AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, BMI, BMI2, VAES, WAITPKG,
-FXSR, XSAVE, XSAVEOPT, LZCNT, RTM, MWAITX, PKU, IBT, SHSTK, AVX512VBMI2,
-GFNI, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B,
-AVX512VPOPCNTDQ, CLDEMOTE, 3DNow!@: or enhanced 3DNow!@: extended instruction
-sets. Each has a corresponding @option{-mno-} option to disable use of these
-instructions.
+SSE2, SSE3, SSSE3, SSE4, SSE4A, SSE4.1, SSE4.2, AVX, AVX2, AVX512F, AVX512PF,
+AVX512ER, AVX512CD, AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, SHA,
+AES, PCLMUL, CLFLUSHOPT, CLWB, FSGSBASE, PTWRITE, RDRND, F16C, FMA, PCONFIG,
+WBNOINVD, FMA4, PREFETCHW, RDPID, PREFETCHWT1, RDSEED, SGX, XOP, LWP,
+3DNow!@:, enhanced 3DNow!@:, POPCNT, ABM, ADX, BMI, BMI2, LZCNT, FXSR, XSAVE,
+XSAVEOPT, XSAVEC, XSAVES, RTM, HLE, TBM, MWAITX, CLZERO, PKU, AVX512VBMI2,
+GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B,
+AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, or CLDEMOTE
+extended instruction sets.  Each has a corresponding @option{-mno-} option to
+disable use of these instructions.
 
 These extensions are also available as built-in functions: see
 @ref{x86 Built-in Functions}, for details of the functions enabled and

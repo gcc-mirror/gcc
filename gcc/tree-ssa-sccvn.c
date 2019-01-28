@@ -2298,6 +2298,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
       base2 = get_ref_base_and_extent (gimple_assign_lhs (def_stmt),
 				       &offset2, &size2, &maxsize2,
 				       &reverse);
+      tree def_rhs = gimple_assign_rhs1 (def_stmt);
       if (!reverse
 	  && known_size_p (maxsize2)
 	  && known_eq (maxsize2, size2)
@@ -2309,11 +2310,13 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	     according to endianness.  */
 	  && (! INTEGRAL_TYPE_P (vr->type)
 	      || known_eq (ref->size, TYPE_PRECISION (vr->type)))
-	  && multiple_p (ref->size, BITS_PER_UNIT))
+	  && multiple_p (ref->size, BITS_PER_UNIT)
+	  && (! INTEGRAL_TYPE_P (TREE_TYPE (def_rhs))
+	      || type_has_mode_precision_p (TREE_TYPE (def_rhs))))
 	{
 	  gimple_match_op op (gimple_match_cond::UNCOND,
 			      BIT_FIELD_REF, vr->type,
-			      vn_valueize (gimple_assign_rhs1 (def_stmt)),
+			      vn_valueize (def_rhs),
 			      bitsize_int (ref->size),
 			      bitsize_int (offset - offset2));
 	  tree val = vn_nary_build_or_lookup (&op);
@@ -5275,7 +5278,7 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	  ipa_polymorphic_call_context context (current_function_decl,
 						fn, stmt, &instance);
 	  context.get_dynamic_type (instance, OBJ_TYPE_REF_OBJECT (fn),
-				    otr_type, stmt);
+				    otr_type, stmt, NULL);
 	  bool final;
 	  vec <cgraph_node *> targets
 	      = possible_polymorphic_call_targets (obj_type_ref_class (fn),

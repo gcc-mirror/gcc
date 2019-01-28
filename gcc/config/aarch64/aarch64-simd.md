@@ -455,7 +455,10 @@
 				   (match_operand:SI 4 "const_int_operand" "n")]
 				   FCMLA)))]
   "TARGET_COMPLEX"
-  "fcmla\t%0.<Vtype>, %2.<Vtype>, %3.<FCMLA_maybe_lane>, #<rot>"
+{
+  operands[4] = aarch64_endian_lane_rtx (<VHALF>mode, INTVAL (operands[4]));
+  return "fcmla\t%0.<Vtype>, %2.<Vtype>, %3.<FCMLA_maybe_lane>, #<rot>";
+}
   [(set_attr "type" "neon_fcmla")]
 )
 
@@ -467,7 +470,10 @@
 				 (match_operand:SI 4 "const_int_operand" "n")]
 				 FCMLA)))]
   "TARGET_COMPLEX"
-  "fcmla\t%0.4h, %2.4h, %3.h[%4], #<rot>"
+{
+  operands[4] = aarch64_endian_lane_rtx (V4HFmode, INTVAL (operands[4]));
+  return "fcmla\t%0.4h, %2.4h, %3.h[%4], #<rot>";
+}
   [(set_attr "type" "neon_fcmla")]
 )
 
@@ -479,7 +485,12 @@
 				     (match_operand:SI 4 "const_int_operand" "n")]
 				     FCMLA)))]
   "TARGET_COMPLEX"
-  "fcmla\t%0.<Vtype>, %2.<Vtype>, %3.<FCMLA_maybe_lane>, #<rot>"
+{
+  int nunits = GET_MODE_NUNITS (<VHALF>mode).to_constant ();
+  operands[4]
+    = gen_int_mode (ENDIAN_LANE_N (nunits / 2, INTVAL (operands[4])), SImode);
+  return "fcmla\t%0.<Vtype>, %2.<Vtype>, %3.<FCMLA_maybe_lane>, #<rot>";
+}
   [(set_attr "type" "neon_fcmla")]
 )
 

@@ -1,3 +1,32 @@
+2019-01-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* io/async.c (init_adv_cond): Use __GTHREAD_COND_INIT_FUNCTION().
+
+2019-01-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/89020
+	* io/close.c (st_close): Simplify text of error message to not
+	presume a specific cause of failure to remove file.
+
+2019-01-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/89020
+	* io/close.c (st_close): Fix typo.
+
+2019-01-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/89020
+	* io/close.c (st_close): Generate error if calls to 'remove' return
+	an error.
+
+2019-01-17  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	* configure.ac: Use minimal mode for amdgcn.
+	* configure: Regenerate.
+
 2019-01-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/88776

@@ -185,7 +185,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        *  Returns true if the %queue is empty.
        */
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const
       { return c.empty(); }
 
@@ -563,7 +563,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        *  Returns true if the %queue is empty.
        */
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const
       { return c.empty(); }
 

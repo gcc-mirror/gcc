@@ -319,13 +319,9 @@ builtin_memref::extend_offset_range (tree offset)
 	  offrange[0] += offset_int::from (min, SIGNED);
 	  offrange[1] += offset_int::from (max, SIGNED);
 	}
-      else if (rng == VR_ANTI_RANGE)
-	{
-	  offrange[0] += offset_int::from (max + 1, SIGNED);
-	  offrange[1] += offset_int::from (min - 1, SIGNED);
-	}
       else
 	{
+	  /* Handle an anti-range the same as no range at all.  */
 	  gimple *stmt = SSA_NAME_DEF_STMT (offset);
 	  tree type;
 	  if (is_gimple_assign (stmt)
@@ -1329,6 +1325,9 @@ maybe_diag_overlap (location_t loc, gimple *call, builtin_access &acs)
   if (!acs.overlap ())
     return false;
 
+  if (gimple_no_warning_p (call))
+    return true;
+
   /* For convenience.  */
   const builtin_memref &dstref = *acs.dstref;
   const builtin_memref &srcref = *acs.srcref;
@@ -1568,7 +1567,7 @@ maybe_diag_overlap (location_t loc, gimple *call, builtin_access &acs)
   return true;
 }
 
-/* Validate REF offsets in an EXPRession passed as an argument to a CALL
+/* Validate REF offsets in an expression passed as an argument to a CALL
    to a built-in function FUNC to make sure they are within the bounds
    of the referenced object if its size is known, or PTRDIFF_MAX otherwise.
    Both initial values of the offsets and their final value computed by
@@ -1578,21 +1577,27 @@ maybe_diag_overlap (location_t loc, gimple *call, builtin_access &acs)
 
 static bool
 maybe_diag_offset_bounds (location_t loc, gimple *call, tree func, int strict,
-			  tree expr, const builtin_memref &ref)
+			  const builtin_memref &ref, bool do_warn)
 {
+  /* Check for out-bounds pointers regardless of warning options since
+     the result is used to make codegen decisions.  */
+  offset_int ooboff[] = { ref.offrange[0], ref.offrange[1] };
+  tree oobref = ref.offset_out_of_bounds (strict, ooboff);
+  if (!oobref)
+    return false;
+
+  /* Return true without issuing a warning.  */
+  if (!do_warn)
+    return true;
+
   if (!warn_array_bounds)
     return false;
 
   if (ref.ref && TREE_NO_WARNING (ref.ref))
     return false;
 
-  offset_int ooboff[] = { ref.offrange[0], ref.offrange[1] };
-  tree oobref = ref.offset_out_of_bounds (strict, ooboff);
-  if (!oobref)
-    return false;
-
-  if (EXPR_HAS_LOCATION (expr))
-    loc = EXPR_LOCATION (expr);
+  if (EXPR_HAS_LOCATION (ref.ptr))
+    loc = EXPR_LOCATION (ref.ptr);
 
   loc = expansion_point_location_if_in_system_header (loc);
 
@@ -1811,7 +1816,7 @@ wrestrict_dom_walker::check_call (gimple *call)
       || (dstwr && !INTEGRAL_TYPE_P (TREE_TYPE (dstwr))))
     return;
 
-  if (check_bounds_or_overlap (call, dst, src, dstwr, NULL_TREE))
+  if (!check_bounds_or_overlap (call, dst, src, dstwr, NULL_TREE))
     return;
 
   /* Avoid diagnosing the call again.  */
@@ -1823,12 +1828,14 @@ wrestrict_dom_walker::check_call (gimple *call)
 /* Attempt to detect and diagnose invalid offset bounds and (except for
    memmove) overlapping copy in a call expression EXPR from SRC to DST
    and DSTSIZE and SRCSIZE bytes, respectively.  Both DSTSIZE and
-   SRCSIZE may be NULL.  Return false when one or the other has been
-   detected and diagnosed, true otherwise.  */
+   SRCSIZE may be NULL.  DO_WARN is false to detect either problem
+   without issue a warning.  Return the OPT_Wxxx constant corresponding
+   to the warning if one has been detected and zero otherwise.  */
 
-bool
+int
 check_bounds_or_overlap (gimple *call, tree dst, tree src, tree dstsize,
-			 tree srcsize, bool bounds_only /* = false */)
+			 tree srcsize, bool bounds_only /* = false */,
+			 bool do_warn /* = true */)
 {
   location_t loc = gimple_nonartificial_location (call);
   loc = expansion_point_location_if_in_system_header (loc);
@@ -1847,11 +1854,12 @@ check_bounds_or_overlap (gimple *call, tree dst, tree src, tree dstsize,
   /* Validate offsets first to make sure they are within the bounds
      of the destination object if its size is known, or PTRDIFF_MAX
      otherwise.  */
-  if (maybe_diag_offset_bounds (loc, call, func, strict, dst, dstref)
-      || maybe_diag_offset_bounds (loc, call, func, strict, src, srcref))
+  if (maybe_diag_offset_bounds (loc, call, func, strict, dstref, do_warn)
+      || maybe_diag_offset_bounds (loc, call, func, strict, srcref, do_warn))
     {
-      gimple_set_no_warning (call, true);
-      return false;
+      if (do_warn)
+	gimple_set_no_warning (call, true);
+      return OPT_Warray_bounds;
     }
 
   bool check_overlap
@@ -1861,7 +1869,7 @@ check_bounds_or_overlap (gimple *call, tree dst, tree src, tree dstsize,
 	       && DECL_FUNCTION_CODE (func) != BUILT_IN_MEMMOVE_CHK)));
 
   if (!check_overlap)
-    return true;
+    return 0;
 
   if (operand_equal_p (dst, src, 0))
     {
@@ -1875,20 +1883,20 @@ check_bounds_or_overlap (gimple *call, tree dst, tree src, tree dstsize,
 		      "%G%qD source argument is the same as destination",
 		      call, func);
 	  gimple_set_no_warning (call, true);
-	  return false;
+	  return OPT_Wrestrict;
 	}
 
-      return true;
+      return 0;
     }
 
   /* Return false when overlap has been detected.  */
   if (maybe_diag_overlap (loc, call, acs))
     {
       gimple_set_no_warning (call, true);
-      return false;
+      return OPT_Wrestrict;
     }
 
-  return true;
+  return 0;
 }
 
 gimple_opt_pass *

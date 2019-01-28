@@ -80,6 +80,11 @@ test03()
 void
 test04()
 {
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  // filesystem permissions not supported
+  return;
+#endif
+
   using std::filesystem::perms;
   using std::filesystem::perm_options;
   path p = __gnu_test::nonexistent_path();

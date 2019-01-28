@@ -178,6 +178,26 @@ btest_alloc_LDADD = libbacktrace_alloc.la
 
 check_PROGRAMS += btest_alloc
 
+if HAVE_DWZ
+
+%_dwz: %
+	rm -f $@ $@_common.debug
+	cp $< $@_1
+	cp $< $@_2
+	$(DWZ) -m $@_common.debug $@_1 $@_2
+	rm -f $@_2
+	mv $@_1 $@
+
+TESTS += btest_dwz
+
+if HAVE_OBJCOPY_DEBUGLINK
+
+TESTS += btest_dwz_gnudebuglink
+
+endif HAVE_OBJCOPY_DEBUGLINK
+
+endif HAVE_DWZ
+
 stest_SOURCES = stest.c
 stest_LDADD = libbacktrace.la
 
@@ -241,11 +261,11 @@ endif HAVE_PTHREAD
 
 if HAVE_OBJCOPY_DEBUGLINK
 
-TESTS += dtest
+TESTS += btest_gnudebuglink
 
-dtest: btest
-	$(OBJCOPY) --only-keep-debug btest btest.debug
-	$(OBJCOPY) --strip-debug --add-gnu-debuglink=btest.debug btest dtest
+%_gnudebuglink: %
+	$(OBJCOPY) --only-keep-debug $< $@.debug
+	$(OBJCOPY) --strip-debug --add-gnu-debuglink=$@.debug $< $@
 
 endif HAVE_OBJCOPY_DEBUGLINK
 

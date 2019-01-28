@@ -279,7 +279,7 @@ namespace __gnu_pbds
       max_size() const;
 
       /// True if size() == 0.
-      inline bool
+      _GLIBCXX_NODISCARD inline bool
       empty() const;
 
       /// Return current hash_fn.

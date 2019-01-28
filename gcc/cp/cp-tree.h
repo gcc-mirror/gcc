@@ -426,6 +426,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECL_FINAL_P (in FUNCTION_DECL)
       QUALIFIED_NAME_IS_TEMPLATE (in SCOPE_REF)
       DECLTYPE_FOR_INIT_CAPTURE (in DECLTYPE_TYPE)
+      CONSTRUCTOR_IS_DEPENDENT (in CONSTRUCTOR)
       TINFO_USED_TEMPLATE_ID (in TEMPLATE_INFO)
       PACK_EXPANSION_SIZEOF_P (in *_PACK_EXPANSION)
       OVL_USING_P (in OVERLOAD)
@@ -444,6 +445,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       OVL_HIDDEN_P (in OVERLOAD)
       SWITCH_STMT_NO_BREAK_P (in SWITCH_STMT)
       LAMBDA_EXPR_CAPTURE_OPTIMIZED (in LAMBDA_EXPR)
+      IMPLICIT_CONV_EXPR_BRACED_INIT (in IMPLICIT_CONV_EXPR)
    3: (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
@@ -1744,6 +1746,7 @@ struct GTY(()) saved_scope {
 
   int x_processing_template_decl;
   int x_processing_specialization;
+  int suppress_location_wrappers;
   BOOL_BITFIELD x_processing_explicit_instantiation : 1;
   BOOL_BITFIELD need_pop_function_context : 1;
 
@@ -1757,6 +1760,7 @@ struct GTY(()) saved_scope {
   /* If non-zero, implicit "omp declare target" attribute is added into the
      attribute lists.  */
   int omp_declare_target_attribute;
+  int ref_temp_count;
 
   struct stmt_tree_s x_stmt_tree;
 
@@ -1816,6 +1820,8 @@ extern GTY(()) struct saved_scope *scope_chain;
 #define processing_explicit_instantiation scope_chain->x_processing_explicit_instantiation
 
 #define in_discarded_stmt scope_chain->discarded_stmt
+
+#define current_ref_temp_count scope_chain->ref_temp_count
 
 /* RAII sentinel to handle clearing processing_template_decl and restoring
    it when done.  */
@@ -4320,6 +4326,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    B b{1,2}, not B b({1,2}) or B b = {1,2}.  */
 #define CONSTRUCTOR_IS_DIRECT_INIT(NODE) (TREE_LANG_FLAG_0 (CONSTRUCTOR_CHECK (NODE)))
 
+/* True if this CONSTRUCTOR is instantiation-dependent and needs to be
+   substituted.  */
+#define CONSTRUCTOR_IS_DEPENDENT(NODE) \
+  (TREE_LANG_FLAG_1 (CONSTRUCTOR_CHECK (NODE)))
+
 /* True if this CONSTRUCTOR should not be used as a variable initializer
    because it was loaded from a constexpr variable with mutable fields.  */
 #define CONSTRUCTOR_MUTABLE_POISON(NODE) \
@@ -4348,6 +4359,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    argument.  Set by maybe_convert_nontype_argument.  */
 #define IMPLICIT_CONV_EXPR_NONTYPE_ARG(NODE) \
   (TREE_LANG_FLAG_1 (IMPLICIT_CONV_EXPR_CHECK (NODE)))
+
+/* True if NODE represents a conversion for braced-init-list in a
+   template.  Set by perform_implicit_conversion_flags.  */
+#define IMPLICIT_CONV_EXPR_BRACED_INIT(NODE) \
+  (TREE_LANG_FLAG_2 (IMPLICIT_CONV_EXPR_CHECK (NODE)))
 
 /* Nonzero means that an object of this type cannot be initialized using
    an initializer list.  */
@@ -7004,6 +7020,7 @@ extern tree get_template_innermost_arguments	(const_tree);
 extern tree get_template_argument_pack_elems	(const_tree);
 extern tree get_function_template_decl		(const_tree);
 extern tree resolve_nondeduced_context		(tree, tsubst_flags_t);
+extern tree resolve_nondeduced_context_or_error	(tree, tsubst_flags_t);
 extern hashval_t iterative_hash_template_arg (tree arg, hashval_t val);
 extern tree coerce_template_parms               (tree, tree, tree);
 extern tree coerce_template_parms               (tree, tree, tree, tsubst_flags_t);

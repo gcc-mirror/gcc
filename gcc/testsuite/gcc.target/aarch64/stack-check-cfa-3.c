@@ -8,6 +8,6 @@
    need to make sure we can unwind correctly before the frame is set up.  So
    check that we're emitting r15 with a copy of sp an setting the CFA there.  */
 
-/* { dg-final { scan-assembler-times {mov\tx15, sp} 1 } } */
-/* { dg-final { scan-assembler-times {\.cfi_def_cfa_register 15} 1 } } */
+/* { dg-final { scan-assembler-times {mov\tx11, sp} 1 } } */
+/* { dg-final { scan-assembler-times {\.cfi_def_cfa_register 11} 1 } } */
 /* { dg-final { scan-assembler-times {\.cfi_escape 0xf,0xc,0x8f,0,0x92,0x2e,0,.*} 1 } } */

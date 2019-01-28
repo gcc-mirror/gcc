@@ -1,4 +1,4 @@
-! { dg-do  run  }
+! { dg-do run }
 ! PR 68426 - simplification used to fail.
   module m
     implicit none

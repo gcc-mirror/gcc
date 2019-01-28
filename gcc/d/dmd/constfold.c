@@ -1457,8 +1457,7 @@ UnionExp Slice(Type *type, Expression *e1, Expression *lwr, Expression *upr)
             memcpy(elements->tdata(),
                    es1->elements->tdata() + ilwr,
                    (size_t)(iupr - ilwr) * sizeof((*es1->elements)[0]));
-            new(&ue) ArrayLiteralExp(e1->loc, elements);
-            ue.exp()->type = type;
+            new(&ue) ArrayLiteralExp(e1->loc, type, elements);
         }
     }
     else
@@ -1606,6 +1605,7 @@ UnionExp Cat(Type *type, Expression *e1, Expression *e2)
 
             new(&ue) StringExp(loc, s, len);
             StringExp *es = (StringExp *)ue.exp();
+            es->type = type;
             es->sz = sz;
             es->committed = 1;
         }
@@ -1614,9 +1614,8 @@ UnionExp Cat(Type *type, Expression *e1, Expression *e2)
             // Create an ArrayLiteralExp
             Expressions *elements = new Expressions();
             elements->push(e);
-            new(&ue) ArrayLiteralExp(e->loc, elements);
+            new(&ue) ArrayLiteralExp(e->loc, type, elements);
         }
-        ue.exp()->type = type;
         assert(ue.exp()->type);
         return ue;
     }
@@ -1627,8 +1626,7 @@ UnionExp Cat(Type *type, Expression *e1, Expression *e2)
             // Handle null ~= null
             if (t1->ty == Tarray && t2 == t1->nextOf())
             {
-                new(&ue) ArrayLiteralExp(e1->loc, e2);
-                ue.exp()->type = type;
+                new(&ue) ArrayLiteralExp(e1->loc, type, e2);
                 assert(ue.exp()->type);
                 return ue;
             }
@@ -1695,9 +1693,8 @@ UnionExp Cat(Type *type, Expression *e1, Expression *e2)
         {
             (*elems)[i] = ea->getElement(i);
         }
-        new(&ue) ArrayLiteralExp(e1->loc, elems);
+        new(&ue) ArrayLiteralExp(e1->loc, type, elems);
         ArrayLiteralExp *dest = (ArrayLiteralExp *)ue.exp();
-        dest->type = type;
         sliceAssignArrayLiteralFromString(dest, es, ea->elements->dim);
         assert(ue.exp()->type);
         return ue;
@@ -1715,9 +1712,8 @@ UnionExp Cat(Type *type, Expression *e1, Expression *e2)
         {
             (*elems)[es->len + i] = ea->getElement(i);
         }
-        new(&ue) ArrayLiteralExp(e1->loc, elems);
+        new(&ue) ArrayLiteralExp(e1->loc, type, elems);
         ArrayLiteralExp *dest = (ArrayLiteralExp *)ue.exp();
-        dest->type = type;
         sliceAssignArrayLiteralFromString(dest, es, 0);
         assert(ue.exp()->type);
         return ue;
@@ -1783,7 +1779,7 @@ UnionExp Cat(Type *type, Expression *e1, Expression *e2)
         // Concatenate the arrays
         Expressions *elems = ArrayLiteralExp::copyElements(e1, e2);
 
-        new(&ue) ArrayLiteralExp(e1->loc, elems);
+        new(&ue) ArrayLiteralExp(e1->loc, NULL, elems);
 
         e = ue.exp();
         if (type->toBasetype()->ty == Tsarray)
@@ -1809,7 +1805,7 @@ UnionExp Cat(Type *type, Expression *e1, Expression *e2)
         // Concatenate the array with null
         Expressions *elems = ArrayLiteralExp::copyElements(e);
 
-        new(&ue) ArrayLiteralExp(e->loc, elems);
+        new(&ue) ArrayLiteralExp(e->loc, NULL, elems);
 
         e = ue.exp();
         if (type->toBasetype()->ty == Tsarray)
@@ -1829,7 +1825,7 @@ UnionExp Cat(Type *type, Expression *e1, Expression *e2)
             ? ArrayLiteralExp::copyElements(e1) : new Expressions();
         elems->push(e2);
 
-        new(&ue) ArrayLiteralExp(e1->loc, elems);
+        new(&ue) ArrayLiteralExp(e1->loc, NULL, elems);
 
         e = ue.exp();
         if (type->toBasetype()->ty == Tsarray)
@@ -1846,7 +1842,7 @@ UnionExp Cat(Type *type, Expression *e1, Expression *e2)
     {
         Expressions *elems = ArrayLiteralExp::copyElements(e1, e2);
 
-        new(&ue) ArrayLiteralExp(e2->loc, elems);
+        new(&ue) ArrayLiteralExp(e2->loc, NULL, elems);
 
         e = ue.exp();
         if (type->toBasetype()->ty == Tsarray)
@@ -1874,9 +1870,8 @@ UnionExp Cat(Type *type, Expression *e1, Expression *e2)
         {
             Expressions *expressions = new Expressions();
             expressions->push(e);
-            new(&ue) ArrayLiteralExp(loc, expressions);
+            new(&ue) ArrayLiteralExp(loc, t, expressions);
             e = ue.exp();
-            e->type = t;
         }
         else
         {

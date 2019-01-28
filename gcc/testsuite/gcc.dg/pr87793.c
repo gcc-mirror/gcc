@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fpic -Os -g" } */
+/* { dg-require-effective-target fpic } */
 
 struct fit_loadable_tbl {
 	int type;

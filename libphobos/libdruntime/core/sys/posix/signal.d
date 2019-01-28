@@ -27,6 +27,7 @@ else version (WatchOS)
 
 version (ARM)     version = ARM_Any;
 version (AArch64) version = ARM_Any;
+version (HPPA)    version = HPPA_Any;
 version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
@@ -257,6 +258,30 @@ version (linux)
         enum SIGUSR1    = 10;
         enum SIGUSR2    = 12;
         enum SIGURG     = 23;
+    }
+    else version (HPPA_Any)
+    {
+        //SIGABRT (defined in core.stdc.signal)
+        enum SIGALRM    = 14;
+        enum SIGBUS     = 10;
+        enum SIGCHLD    = 18;
+        enum SIGCONT    = 26;
+        //SIGFPE (defined in core.stdc.signal)
+        enum SIGHUP     = 1;
+        //SIGILL (defined in core.stdc.signal)
+        //SIGINT (defined in core.stdc.signal)
+        enum SIGKILL    = 9;
+        enum SIGPIPE    = 13;
+        enum SIGQUIT    = 3;
+        //SIGSEGV (defined in core.stdc.signal)
+        enum SIGSTOP    = 24;
+        //SIGTERM (defined in core.stdc.signal)
+        enum SIGTSTP    = 25;
+        enum SIGTTIN    = 27;
+        enum SIGTTOU    = 28;
+        enum SIGUSR1    = 16;
+        enum SIGUSR2    = 17;
+        enum SIGURG     = 29;
     }
     else version (MIPS_Any)
     {
@@ -2015,6 +2040,16 @@ version (CRuntime_Glibc)
         enum SIGXCPU        = 24;
         enum SIGXFSZ        = 25;
     }
+    else version (HPPA_Any)
+    {
+        enum SIGPOLL    = 22;
+        enum SIGPROF    = 21;
+        enum SIGSYS     = 31;
+        enum SIGTRAP    = 5;
+        enum SIGVTALRM  = 20;
+        enum SIGXCPU    = 12;
+        enum SIGXFSZ    = 30;
+    }
     else version (MIPS_Any)
     {
         enum SIGPOLL    = 22;
@@ -3465,6 +3500,14 @@ else version (DragonFlyBSD)
 }
 else version (Darwin)
 {
+    struct sigevent
+    {
+        int sigev_notify;
+        int sigev_signo;
+        sigval sigev_value;
+        void function(sigval) sigev_notify_function;
+        pthread_attr_t* sigev_notify_attributes;
+    }
 }
 else version (Solaris)
 {

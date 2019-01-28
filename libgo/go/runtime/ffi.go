@@ -227,6 +227,7 @@ func structToFFI(typ *structtype) *__ffi_type {
 
 	fields := make([]*__ffi_type, 0, c+1)
 	checkPad := false
+	lastzero := false
 	for i, v := range typ.fields {
 		// Skip zero-sized fields; they confuse libffi,
 		// and there is no value to pass in any case.
@@ -235,8 +236,10 @@ func structToFFI(typ *structtype) *__ffi_type {
 		// next field.
 		if v.typ.size == 0 {
 			checkPad = true
+			lastzero = true
 			continue
 		}
+		lastzero = false
 
 		if checkPad {
 			off := uintptr(0)
@@ -255,6 +258,13 @@ func structToFFI(typ *structtype) *__ffi_type {
 		}
 
 		fields = append(fields, typeToFFI(v.typ))
+	}
+
+	if lastzero {
+		// The compiler adds one byte padding to non-empty struct ending
+		// with a zero-sized field (types.cc:get_backend_struct_fields).
+		// Add this padding to the FFI type.
+		fields = append(fields, ffi_type_uint8())
 	}
 
 	fields = append(fields, nil)

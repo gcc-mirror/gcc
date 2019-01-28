@@ -1377,6 +1377,9 @@ The default, which is @option{-fautomatic}, uses the stack for local
 variables smaller than the value given by @option{-fmax-stack-var-size}.
 Use the option @option{-frecursive} to use no static memory. 
 
+Local variables or arrays having an explicit @code{SAVE} attribute are
+silently ignored unless the @option{-pedantic} option is added.
+
 @item -ff2c
 @opindex ff2c
 @cindex calling convention
