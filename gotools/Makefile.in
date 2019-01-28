@@ -400,7 +400,7 @@ MOSTLYCLEANFILES = \
 @NATIVE_TRUE@GOTESTFLAGS = 
 
 # Number of seconds before tests time out.
-@NATIVE_TRUE@GOTOOLS_TEST_TIMEOUT = 480
+@NATIVE_TRUE@GOTOOLS_TEST_TIMEOUT = 600
 
 # CHECK_ENV sets up the environment to run the newly built go tool.
 # If you change this, change ECHO_ENV, below.
