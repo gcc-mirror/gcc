@@ -21107,23 +21107,28 @@ cp_parser_direct_declarator (cp_parser* parser,
 	    if (cxx_dialect >= cxx2a
 		&& (flags & CP_PARSER_FLAGS_TYPENAME_OPTIONAL)
 		&& declarator->kind == cdk_id
-		/* ...whose declarator-id is qualified.  */
-		&& qualifying_scope != NULL_TREE
 		&& !at_class_scope_p ()
 		&& cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
 	      {
-		/* Now we have something like
-		   template <typename T> int C::x(S::p);
-		   which can be a function template declaration or a
-		   variable template definition.  If name lookup for
-		   the declarator-id C::x finds one or more function
-		   templates, assume S::p to name a type.  Otherwise,
-		   don't.  */
-		tree decl
-		  = cp_parser_lookup_name_simple (parser, unqualified_name,
-						  token->location);
-		if (!is_overloaded_fn (decl))
+		/* ...whose declarator-id is qualified.  If it isn't, never
+		   assume the parameters to refer to types.  */
+		if (qualifying_scope == NULL_TREE)
 		  flags &= ~CP_PARSER_FLAGS_TYPENAME_OPTIONAL;
+		else
+		  {
+		    /* Now we have something like
+		       template <typename T> int C::x(S::p);
+		       which can be a function template declaration or a
+		       variable template definition.  If name lookup for
+		       the declarator-id C::x finds one or more function
+		       templates, assume S::p to name a type.  Otherwise,
+		       don't.  */
+		    tree decl
+		      = cp_parser_lookup_name_simple (parser, unqualified_name,
+						      token->location);
+		    if (!is_overloaded_fn (decl))
+		      flags &= ~CP_PARSER_FLAGS_TYPENAME_OPTIONAL;
+		  }
 	      }
 	  }
 

@@ -1,3 +1,10 @@
+2019-01-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88358 - name wrongly treated as type.
+	* parser.c (cp_parser_direct_declarator): Don't assume a qualified-id
+	in parameter-list is a type if the function's declarator-id is not
+	qualified.
+
 2019-01-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88815 - narrowing conversion lost in decltype.
