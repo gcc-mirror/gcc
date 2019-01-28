@@ -1,5 +1,9 @@
 2019-01-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/89045
+	* c-decl.c (build_compound_literal): Don't pushdecl if in parameter
+	scope.
+
 	PR c/86125
 	* c-decl.c (last_fileptr_type): Remove.
 	(last_structptr_types): New variable.
