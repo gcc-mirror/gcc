@@ -1,3 +1,9 @@
+2019-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/86125
+	* c-common.c (c_common_nodes_and_builtins): Build type variants for
+	builtin_structptr_types types even for C.
+
 2019-01-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-warn.c (check_address_or_pointer_of_packed_member): Handle the case
