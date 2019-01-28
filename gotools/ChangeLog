@@ -1,3 +1,7 @@
+2019-01-28  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* Makefile.in: Really regenerate.
+
 2019-01-18  Ian Lance Taylor  <iant@golang.org>
 
 	* Makefile.am (go_cmd_vet_files): Update for Go1.12beta2 release.
