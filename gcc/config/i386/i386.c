@@ -22641,6 +22641,20 @@ ix86_preferred_simd_mode (scalar_mode mode)
       else
 	return V2DImode;
 
+    case E_HFmode:
+      if (TARGET_AVX512FP16)
+	{
+	  if (TARGET_AVX512VL)
+	    {
+	      if (TARGET_PREFER_AVX128)
+		return V8HFmode;
+	      else if (TARGET_PREFER_AVX256)
+		return V16HFmode;
+	    }
+	  return V32HFmode;
+	}
+      return word_mode;
+
     case E_SFmode:
       if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
 	return V16SFmode;

@@ -678,6 +678,10 @@ ix86_avx256_split_vector_move_misalign (rtx op0, rtx op1)
       extract = gen_avx_vextractf128v32qi;
       mode = V16QImode;
       break;
+    case E_V16HFmode:
+      extract = gen_avx_vextractf128v16hf;
+      mode = V8HFmode;
+      break;
     case E_V8SFmode:
       extract = gen_avx_vextractf128v8sf;
       mode = V4SFmode;
