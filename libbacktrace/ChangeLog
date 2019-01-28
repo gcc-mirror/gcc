@@ -1,3 +1,9 @@
+2019-01-28  Tom de Vries  <tdevries@suse.de>
+
+	* Makefile.am (xcoff_%.c): Generate sed result into temporary file.
+	Use $< to access prerequisite.
+	* Makefile.in: Regenerate.
+
 2019-01-25  Nathan Sidwell  <nathan@acm.org>
 
 	* elf.c (elf_add): Pass "" filename to recursive call with

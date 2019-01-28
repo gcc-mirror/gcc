@@ -1754,8 +1754,9 @@ uninstall-am:
 @NATIVE_TRUE@	REPLACE='#undef BACKTRACE_XCOFF_SIZE\
 @NATIVE_TRUE@	#define BACKTRACE_XCOFF_SIZE'; \
 @NATIVE_TRUE@	$(SED) "s/^$$SEARCH\$$/$$REPLACE $*/" \
-@NATIVE_TRUE@		$(srcdir)/xcoff.c \
-@NATIVE_TRUE@		> $@
+@NATIVE_TRUE@		$< \
+@NATIVE_TRUE@		> $@.tmp
+@NATIVE_TRUE@	mv $@.tmp $@
 
 @NATIVE_TRUE@instrumented_alloc.lo: alloc.c
 
