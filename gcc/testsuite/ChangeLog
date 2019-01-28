@@ -1,5 +1,13 @@
 2019-01-28  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/88358 - name wrongly treated as type.
+	* g++.dg/cpp2a/typename1.C: Add dg-error.
+	* g++.dg/cpp2a/typename13.C: New test.
+	* g++.dg/cpp2a/typename6.C: Make a function name qualified.
+	Add typename.
+
+2019-01-28  Marek Polacek  <polacek@redhat.com>
+
 	* g++.dg/cpp0x/enum37.C: Add dg-error.
 
 2019-01-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
