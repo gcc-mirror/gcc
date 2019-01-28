@@ -1,3 +1,11 @@
+2019-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89002
+	* gimplify.c (gimplify_omp_for): When adding OMP_CLAUSE_*_GIMPLE_SEQ
+	for lastprivate/linear IV, push gimplify context around gimplify_assign
+	and, if it needed any temporaries, pop it into a gimple bind around the
+	sequence.
+
 2019-01-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* common.opt (-Wattribute-alias): Remove "no-" from name.
