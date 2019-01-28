@@ -1,3 +1,13 @@
+2019-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88739
+	* tree-cfg.c (verify_types_in_gimple_reference): Verify
+	BIT_FIELD_REFs only are applied to mode-precision operands
+	when they are integral.
+	(verify_gimple_assign_ternary): Likewise for BIT_INSERT_EXPR.
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Avoid generating
+	BIT_FIELD_REFs of non-mode-precision integral operands.
+
 2019-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/87214
