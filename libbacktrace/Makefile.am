@@ -108,8 +108,9 @@ xcoff_%.c: xcoff.c
 	REPLACE='#undef BACKTRACE_XCOFF_SIZE\
 	#define BACKTRACE_XCOFF_SIZE'; \
 	$(SED) "s/^$$SEARCH\$$/$$REPLACE $*/" \
-		$(srcdir)/xcoff.c \
-		> $@
+		$< \
+		> $@.tmp
+	mv $@.tmp $@
 
 test_elf_SOURCES = test_format.c testlib.c
 test_elf_LDADD = libbacktrace_noformat.la elf.lo
