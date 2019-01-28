@@ -1,6 +1,13 @@
 2019-01-28  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_mapper::make): Drop options arg, look at
+	CXX_MODULE_MAPPER.
+	gcc/
+	* doc/invoke.texi (fmodule-mapper): Document env var.
+	(C++ Module Mapper): Likewise.
+
+	gcc/cp/
 	* module.cc (trees_{in,out}::core_vals): Lambda location.
 	* cp-objcp-common.c (cp_common_init_ts): Fix LAMBDA_EXPR marking.
 	* cp-tree.h (tree_lambda_expr): Save 8 bytes.

@@ -3250,13 +3250,13 @@ private:
 
 private:
   void kill (location_t);
-  static module_mapper *make (location_t loc, const char *);
+  static module_mapper *make (location_t loc);
 
 public:
   static module_mapper *get (location_t loc)
   {
     if (!mapper)
-      mapper = make (loc, module_mapper_name);
+      mapper = make (loc);
     return mapper;
   }
   static void fini (location_t loc)
@@ -8594,8 +8594,11 @@ module_mapper::kill (location_t loc)
 /* Create a new mapper connecting to OPTION.  */
 
 module_mapper *
-module_mapper::make (location_t loc, const char *option)
+module_mapper::make (location_t loc)
 {
+  const char *option = module_mapper_name;
+  if (!option)
+    option = getenv ("CXX_MODULE_MAPPER");
   return new module_mapper (loc, option);
 }
 

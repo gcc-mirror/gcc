@@ -2664,9 +2664,11 @@ consistent.
 @itemx -fmodule-mapper=|@var{program}@r{[}?@var{ident}@r{]} @var{args...}
 @itemx -fmodule-mapper==@var{socket}@r{[}?@var{ident}@r{]}
 @itemx -fmodule-mapper=@var{file}@r{[}?@var{ident}@r{]}
+@vindex CXX_MODULE_MAPPER @r{environment variable}
 @opindex fmodule-mapper
 An oracle to query for module name to filename mappings.  If
-unspecified a default is provided.
+unspecified the @env{CXX_MODULE_MAPPER} environment variable is used,
+and if that is unset, a default is provided.
 
 @item -fms-extensions
 @opindex fms-extensions
@@ -29947,11 +29949,12 @@ limit, if that is determinable.
 @subsection Module Mapper
 @cindex C++ Module Mapper
 
-An module mapper provides a line-based server or file that the compiler
-queries to determine the mapping between module names and BMI files.
-It is also used to build BMIs on demand.  A mapper may be
-specified with the @option{-fmodule-mapper=@var{val}} option.  The
-operand may have one of the following forms:
+An module mapper provides a line-based server or file that the
+compiler queries to determine the mapping between module names and BMI
+files.  It is also used to build BMIs on demand.  A mapper may be
+specified with the @option{-fmodule-mapper=@var{val}} option or
+@env{CXX_MODULE_MAPPER} environment variable.  The value may have
+one of the following forms:
 
 @table @gcctabopt
 
