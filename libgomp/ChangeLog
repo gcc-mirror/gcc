@@ -1,3 +1,9 @@
+2019-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/89064
+	PR tree-optimization/86865
+	* testsuite/libgomp.graphite/force-parallel-5.c: XFAIL.
+
 2019-01-24  Tom de Vries  <tdevries@suse.de>
 
 	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_fini_device): Free ptx_devices
