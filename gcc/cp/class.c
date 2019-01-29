@@ -206,6 +206,7 @@ static int empty_base_at_nonzero_offset_p (tree, tree, splay_tree);
 static tree end_of_base (tree);
 static tree get_vcall_index (tree, tree);
 static bool type_maybe_constexpr_default_constructor (tree);
+static bool field_poverlapping_p (tree);
 
 /* Return a COND_EXPR that executes TRUE_STMT if this execution of the
    'structor is in charge of 'structing virtual bases, or FALSE_STMT
@@ -3556,6 +3557,11 @@ check_field_decls (tree t, tree *access_decls,
 	/* We don't treat zero-width bitfields as making a class
 	   non-empty.  */
 	;
+      else if (field_poverlapping_p (x) && is_empty_class (type))
+	{
+	  /* Empty data members also don't make a class non-empty.  */
+	  CLASSTYPE_CONTAINS_EMPTY_CLASS_P (t) = 1;
+	}
       else
 	{
 	  /* The class is non-empty.  */
@@ -3606,6 +3612,11 @@ check_field_decls (tree t, tree *access_decls,
       if (! layout_pod_type_p (type))
 	/* DR 148 now allows pointers to members (which are POD themselves),
 	   to be allowed in POD structs.  */
+	CLASSTYPE_NON_LAYOUT_POD_P (t) = 1;
+
+      if (field_poverlapping_p (x))
+	/* A potentially-overlapping non-static data member makes the class
+	   non-layout-POD.  */
 	CLASSTYPE_NON_LAYOUT_POD_P (t) = 1;
 
       if (!std_layout_type_p (type))
@@ -5926,13 +5937,12 @@ end_of_base (tree binfo)
   return size_binop (PLUS_EXPR, BINFO_OFFSET (binfo), size);
 }
 
-/* Returns the offset of the byte just past the end of the base class
-   with the highest offset in T.  If INCLUDE_VIRTUALS_P is zero, then
-   only non-virtual bases are included.  If INCLUDE_FIELDS_P is true,
-   then also consider non-static data members.  */
+/* Returns the offset of the byte just past the end of the base class or empty
+   data member with the highest offset in T.  If INCLUDE_VIRTUALS_P is zero,
+   then only non-virtual bases are included.  */
 
 static tree
-end_of_class (tree t, bool include_virtuals_p, bool include_fields_p = false)
+end_of_class (tree t, bool include_virtuals_p)
 {
   tree result = size_zero_node;
   vec<tree, va_gc> *vbases;
@@ -5955,15 +5965,19 @@ end_of_class (tree t, bool include_virtuals_p, bool include_fields_p = false)
 	result = offset;
     }
 
-  if (include_fields_p)
-    for (tree field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
-      if (TREE_CODE (field) == FIELD_DECL)
-	{
-	  offset = size_binop (PLUS_EXPR, DECL_FIELD_OFFSET (field),
-			       DECL_SIZE_UNIT (field));
-	  if (tree_int_cst_lt (result, offset))
-	    result = offset;
-	}
+  /* Also consider empty data members.  */
+  for (tree field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
+    if (TREE_CODE (field) == FIELD_DECL
+	&& !DECL_ARTIFICIAL (field)
+	&& field_poverlapping_p (field)
+	&& is_empty_class (TREE_TYPE (field)))
+      {
+	/* Update sizeof(C) to max (sizeof(C), offset(D)+sizeof(D)) */
+	offset = size_binop (PLUS_EXPR, DECL_FIELD_OFFSET (field),
+			     TYPE_SIZE_UNIT (TREE_TYPE (field)));
+	if (tree_int_cst_lt (result, offset))
+	  result = offset;
+      }
 
   if (include_virtuals_p)
     for (vbases = CLASSTYPE_VBASECLASSES (t), i = 0;
@@ -6154,12 +6168,14 @@ layout_class_type (tree t, tree *virtuals_p)
       bool might_overlap = field_poverlapping_p (field);
 
       if (might_overlap && CLASS_TYPE_P (type)
-	  && CLASSTYPE_NON_LAYOUT_POD_P (type))
+	  && (CLASSTYPE_NON_LAYOUT_POD_P (type) || CLASSTYPE_EMPTY_P (type)))
 	{
 	  /* if D is a potentially-overlapping data member, update sizeof(C) to
 	     max (sizeof(C), offset(D)+max (nvsize(D), dsize(D))).  */
 	  tree nvsize = CLASSTYPE_SIZE_UNIT (type);
-	  tree dsize = end_of_class (type, /*vbases*/true, /*fields*/true);
+	  /* end_of_class doesn't always give dsize, but it does in the case of
+	     a class with virtual bases, which is when dsize > nvsize.  */
+	  tree dsize = end_of_class (type, /*vbases*/true);
 	  if (tree_int_cst_le (dsize, nvsize))
 	    {
 	      DECL_SIZE_UNIT (field) = nvsize;
