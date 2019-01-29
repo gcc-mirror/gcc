@@ -84,9 +84,14 @@ libbacktrace_la_DEPENDENCIES = $(libbacktrace_la_LIBADD)
 
 # Testsuite.
 
+# Add test to this variable, if you want it to be build.
 check_PROGRAMS =
 
-TESTS = $(check_PROGRAMS)
+# Add test to this variable, if you want it to be run.
+TESTS =
+
+# Add test to this variable, if you want it to be build and run.
+BUILDTESTS =
 
 if NATIVE
 check_LTLIBRARIES = libbacktrace_alloc.la
@@ -115,37 +120,37 @@ xcoff_%.c: xcoff.c
 test_elf_SOURCES = test_format.c testlib.c
 test_elf_LDADD = libbacktrace_noformat.la elf.lo
 
-check_PROGRAMS += test_elf
+BUILDTESTS += test_elf
 
 test_xcoff_32_SOURCES = test_format.c testlib.c
 test_xcoff_32_LDADD = libbacktrace_noformat.la xcoff_32.lo
 
-check_PROGRAMS += test_xcoff_32
+BUILDTESTS += test_xcoff_32
 
 test_xcoff_64_SOURCES = test_format.c testlib.c
 test_xcoff_64_LDADD = libbacktrace_noformat.la xcoff_64.lo
 
-check_PROGRAMS += test_xcoff_64
+BUILDTESTS += test_xcoff_64
 
 test_pecoff_SOURCES = test_format.c testlib.c
 test_pecoff_LDADD = libbacktrace_noformat.la pecoff.lo
 
-check_PROGRAMS += test_pecoff
+BUILDTESTS += test_pecoff
 
 test_unknown_SOURCES = test_format.c testlib.c
 test_unknown_LDADD = libbacktrace_noformat.la unknown.lo
 
-check_PROGRAMS += test_unknown
+BUILDTESTS += test_unknown
 
 unittest_SOURCES = unittest.c testlib.c
 unittest_LDADD = libbacktrace.la
 
-check_PROGRAMS += unittest
+BUILDTESTS += unittest
 
 unittest_alloc_SOURCES = $(unittest_SOURCES)
 unittest_alloc_LDADD = libbacktrace_alloc.la
 
-check_PROGRAMS += unittest_alloc
+BUILDTESTS += unittest_alloc
 
 check_LTLIBRARIES += libbacktrace_instrumented_alloc.la
 
@@ -171,13 +176,13 @@ btest_SOURCES = btest.c testlib.c
 btest_CFLAGS = $(AM_CFLAGS) -g -O
 btest_LDADD = libbacktrace.la
 
-check_PROGRAMS += btest
+BUILDTESTS += btest
 
 btest_alloc_SOURCES = $(btest_SOURCES)
 btest_alloc_CFLAGS = $(btest_CFLAGS)
 btest_alloc_LDADD = libbacktrace_alloc.la
 
-check_PROGRAMS += btest_alloc
+BUILDTESTS += btest_alloc
 
 if HAVE_DWZ
 
@@ -202,12 +207,12 @@ endif HAVE_DWZ
 stest_SOURCES = stest.c
 stest_LDADD = libbacktrace.la
 
-check_PROGRAMS += stest
+BUILDTESTS += stest
 
 stest_alloc_SOURCES = $(stest_SOURCES)
 stest_alloc_LDADD = libbacktrace_alloc.la
 
-check_PROGRAMS += stest_alloc
+BUILDTESTS += stest_alloc
 
 ztest_SOURCES = ztest.c testlib.c
 ztest_CFLAGS = -DSRCDIR=\"$(srcdir)\"
@@ -221,22 +226,22 @@ endif
 ztest_LDADD += $(CLOCK_GETTIME_LINK)
 ztest_alloc_LDADD += $(CLOCK_GETTIME_LINK)
 
-check_PROGRAMS += ztest
+BUILDTESTS += ztest
 
 ztest_alloc_SOURCES = $(ztest_SOURCES)
 ztest_alloc_CFLAGS = $(ztest_CFLAGS)
 
-check_PROGRAMS += ztest_alloc
+BUILDTESTS += ztest_alloc
 
 edtest_SOURCES = edtest.c edtest2_build.c testlib.c
 edtest_LDADD = libbacktrace.la
 
-check_PROGRAMS += edtest
+BUILDTESTS += edtest
 
 edtest_alloc_SOURCES = $(edtest_SOURCES)
 edtest_alloc_LDADD = libbacktrace_alloc.la
 
-check_PROGRAMS += edtest_alloc
+BUILDTESTS += edtest_alloc
 
 edtest2_build.c: gen_edtest2_build; @true
 gen_edtest2_build: $(srcdir)/edtest2.c
@@ -246,13 +251,13 @@ gen_edtest2_build: $(srcdir)/edtest2.c
 
 if HAVE_PTHREAD
 
-check_PROGRAMS += ttest
+BUILDTESTS += ttest
 
 ttest_SOURCES = ttest.c testlib.c
 ttest_CFLAGS = $(AM_CFLAGS) -pthread
 ttest_LDADD = libbacktrace.la
 
-check_PROGRAMS += ttest_alloc
+BUILDTESTS += ttest_alloc
 
 ttest_alloc_SOURCES = $(ttest_SOURCES)
 ttest_alloc_CFLAGS = $(ttest_CFLAGS)
@@ -282,7 +287,7 @@ ctesta_CFLAGS = $(AM_CFLAGS) -g
 ctesta_LDFLAGS = -Wl,--compress-debug-sections=zlib-gabi
 ctesta_LDADD = libbacktrace.la
 
-check_PROGRAMS += ctestg ctesta
+BUILDTESTS += ctestg ctesta
 
 ctestg_alloc_SOURCES = $(ctestg_SOURCES)
 ctestg_alloc_CFLAGS = $(ctestg_CFLAGS)
@@ -294,11 +299,15 @@ ctesta_alloc_CFLAGS = $(ctesta_CFLAGS)
 ctesta_alloc_LDFLAGS = $(ctesta_LDFLAGS)
 ctesta_alloc_LDADD = libbacktrace_alloc.la
 
-check_PROGRAMS += ctestg_alloc ctesta_alloc
+BUILDTESTS += ctestg_alloc ctesta_alloc
 
 endif
 
 endif NATIVE
+
+check_PROGRAMS += $(BUILDTESTS)
+
+TESTS += $(BUILDTESTS)
 
 # We can't use automake's automatic dependency tracking, because it
 # breaks when using bootstrap-lean.  Automatic dependency tracking
