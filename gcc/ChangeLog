@@ -1,3 +1,11 @@
+2019-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR debug/87295
+	* dwarf2out.c (collect_skeleton_dies): New helper.
+	(copy_decls_for_unworthy_types): Call it.
+	(build_abbrev_table): Assert we do not try to replace
+	DW_AT_signature refs with local refs.
+
 2019-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/89002
