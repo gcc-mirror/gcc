@@ -13831,9 +13831,28 @@ init_module_processing ()
       /* Use 3/4's of the available handles.  */
       lazy_open = lazy_open * 3 / 4;
     }
-  dump () && dump ("Lazy limit is %u", lazy_open);
-  dump () && dump ("Using %s for reading", MAPPED_READING ? "mmap" : "fileio");
-  dump () && dump ("Using %s for writing", MAPPED_WRITING ? "mmap" : "fileio");
+
+  if (dump ())
+    {
+      verstr_t ver;
+      version2string (get_version (), ver);
+      dump ("Source: %s", main_input_filename);
+      dump ("Compiler: %s", version_string);
+      dump ("Modules: %s", ver);
+      dump ("Checking: %s",
+#if CHECKING_P
+	    "checking"
+#elif ENABLE_ASSERT_CHECKING
+	    "asserting"
+#else
+	    "release"
+#endif
+	    );
+      dump ("Reading: %s", MAPPED_READING ? "mmap" : "fileio");
+      dump ("Writing: %s", MAPPED_WRITING ? "mmap" : "fileio");
+      dump ("Lazy limit: %u", lazy_open);
+      dump ("");
+    }
 
   /* Construct the global tree array.  This is an array of unique
      global trees (& types).  Do this now, rather than lazily, as

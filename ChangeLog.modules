@@ -1,6 +1,9 @@
 2019-01-29  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (init_module_processing): Dump more config.
+
+	gcc/cp/
 	* module.cc (MAPPED_READING, MAPPED_WRITING): 0 or 1
 	(init_module_processing): Dump mapping behaviour.
 
