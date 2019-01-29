@@ -1,3 +1,11 @@
+2019-01-29  Tom de Vries  <tdevries@suse.de>
+
+	* Makefile.am: Replace check_PROGRAMS with BUILDTESTS, except for
+	allocfail.
+	(TESTS): Don't add check_PROGRAMS. Add BUILDTESTS.
+	(check_PROGRAMS): Add BUILDTESTS.
+	* Makefile.in: Regenerate.
+
 2019-01-28  Tom de Vries  <tdevries@suse.de>
 
 	* Makefile.am (xcoff_%.c): Generate sed result into temporary file.

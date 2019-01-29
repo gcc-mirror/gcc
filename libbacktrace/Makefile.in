@@ -120,19 +120,22 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3)
+check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_5)
+TESTS = $(am__append_3) $(am__append_4) $(am__append_5) \
+	$(am__append_9) $(am__EXEEXT_5)
 @NATIVE_TRUE@am__append_1 = test_elf test_xcoff_32 test_xcoff_64 \
 @NATIVE_TRUE@	test_pecoff test_unknown unittest unittest_alloc \
-@NATIVE_TRUE@	allocfail btest btest_alloc stest stest_alloc \
-@NATIVE_TRUE@	ztest ztest_alloc edtest edtest_alloc
-@NATIVE_TRUE@am__append_2 = allocfail.sh
-@HAVE_DWZ_TRUE@@NATIVE_TRUE@am__append_3 = btest_dwz
-@HAVE_DWZ_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_4 = btest_dwz_gnudebuglink
-@HAVE_ZLIB_TRUE@@NATIVE_TRUE@am__append_5 = -lz
+@NATIVE_TRUE@	btest btest_alloc stest stest_alloc ztest \
+@NATIVE_TRUE@	ztest_alloc edtest edtest_alloc
+@NATIVE_TRUE@am__append_2 = allocfail
+@NATIVE_TRUE@am__append_3 = allocfail.sh
+@HAVE_DWZ_TRUE@@NATIVE_TRUE@am__append_4 = btest_dwz
+@HAVE_DWZ_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_5 = btest_dwz_gnudebuglink
 @HAVE_ZLIB_TRUE@@NATIVE_TRUE@am__append_6 = -lz
-@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__append_7 = ttest ttest_alloc
-@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_8 = btest_gnudebuglink
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__append_9 = ctestg ctesta \
+@HAVE_ZLIB_TRUE@@NATIVE_TRUE@am__append_7 = -lz
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__append_8 = ttest ttest_alloc
+@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_9 = btest_gnudebuglink
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__append_10 = ctestg ctesta \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg_alloc \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta_alloc
 subdir = .
@@ -181,21 +184,23 @@ libbacktrace_instrumented_alloc_la_OBJECTS =  \
 libbacktrace_noformat_la_OBJECTS =  \
 	$(am_libbacktrace_noformat_la_OBJECTS)
 @NATIVE_TRUE@am_libbacktrace_noformat_la_rpath =
-@NATIVE_TRUE@am__EXEEXT_1 = test_elf$(EXEEXT) test_xcoff_32$(EXEEXT) \
+@NATIVE_TRUE@am__EXEEXT_1 = allocfail$(EXEEXT)
+@NATIVE_TRUE@am__EXEEXT_2 = test_elf$(EXEEXT) test_xcoff_32$(EXEEXT) \
 @NATIVE_TRUE@	test_xcoff_64$(EXEEXT) test_pecoff$(EXEEXT) \
 @NATIVE_TRUE@	test_unknown$(EXEEXT) unittest$(EXEEXT) \
-@NATIVE_TRUE@	unittest_alloc$(EXEEXT) allocfail$(EXEEXT) \
-@NATIVE_TRUE@	btest$(EXEEXT) btest_alloc$(EXEEXT) \
-@NATIVE_TRUE@	stest$(EXEEXT) stest_alloc$(EXEEXT) \
-@NATIVE_TRUE@	ztest$(EXEEXT) ztest_alloc$(EXEEXT) \
-@NATIVE_TRUE@	edtest$(EXEEXT) edtest_alloc$(EXEEXT)
-@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__EXEEXT_2 = ttest$(EXEEXT) \
+@NATIVE_TRUE@	unittest_alloc$(EXEEXT) btest$(EXEEXT) \
+@NATIVE_TRUE@	btest_alloc$(EXEEXT) stest$(EXEEXT) \
+@NATIVE_TRUE@	stest_alloc$(EXEEXT) ztest$(EXEEXT) \
+@NATIVE_TRUE@	ztest_alloc$(EXEEXT) edtest$(EXEEXT) \
+@NATIVE_TRUE@	edtest_alloc$(EXEEXT)
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__EXEEXT_3 = ttest$(EXEEXT) \
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	ttest_alloc$(EXEEXT)
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__EXEEXT_3 =  \
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__EXEEXT_4 =  \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg$(EXEEXT) \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta$(EXEEXT) \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg_alloc$(EXEEXT) \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta_alloc$(EXEEXT)
+am__EXEEXT_5 = $(am__EXEEXT_2) $(am__EXEEXT_3) $(am__EXEEXT_4)
 @NATIVE_TRUE@am_allocfail_OBJECTS = allocfail.$(OBJEXT) \
 @NATIVE_TRUE@	testlib.$(OBJEXT)
 allocfail_OBJECTS = $(am_allocfail_OBJECTS)
@@ -789,8 +794,9 @@ libbacktrace_la_LIBADD = \
 	$(ALLOC_FILE)
 
 libbacktrace_la_DEPENDENCIES = $(libbacktrace_la_LIBADD)
-TESTS = $(check_PROGRAMS) $(am__append_2) $(am__append_3) \
-	$(am__append_4) $(am__append_8)
+
+# Add test to this variable, if you want it to be build and run.
+BUILDTESTS = $(am__append_1) $(am__append_8) $(am__append_10)
 @NATIVE_TRUE@check_LTLIBRARIES = libbacktrace_alloc.la \
 @NATIVE_TRUE@	libbacktrace_noformat.la \
 @NATIVE_TRUE@	libbacktrace_instrumented_alloc.la
@@ -835,9 +841,9 @@ TESTS = $(check_PROGRAMS) $(am__append_2) $(am__append_3) \
 @NATIVE_TRUE@stest_alloc_LDADD = libbacktrace_alloc.la
 @NATIVE_TRUE@ztest_SOURCES = ztest.c testlib.c
 @NATIVE_TRUE@ztest_CFLAGS = -DSRCDIR=\"$(srcdir)\"
-@NATIVE_TRUE@ztest_LDADD = libbacktrace.la $(am__append_5) \
+@NATIVE_TRUE@ztest_LDADD = libbacktrace.la $(am__append_6) \
 @NATIVE_TRUE@	$(CLOCK_GETTIME_LINK)
-@NATIVE_TRUE@ztest_alloc_LDADD = libbacktrace_alloc.la $(am__append_6) \
+@NATIVE_TRUE@ztest_alloc_LDADD = libbacktrace_alloc.la $(am__append_7) \
 @NATIVE_TRUE@	$(CLOCK_GETTIME_LINK)
 @NATIVE_TRUE@ztest_alloc_SOURCES = $(ztest_SOURCES)
 @NATIVE_TRUE@ztest_alloc_CFLAGS = $(ztest_CFLAGS)
@@ -1418,6 +1424,34 @@ recheck: all $(check_LTLIBRARIES) $(check_PROGRAMS)
 	        am__force_recheck=am--force-recheck \
 	        TEST_LOGS="$$log_list"; \
 	exit $$?
+allocfail.sh.log: allocfail.sh
+	@p='allocfail.sh'; \
+	b='allocfail.sh'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+btest_dwz.log: btest_dwz
+	@p='btest_dwz'; \
+	b='btest_dwz'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+btest_dwz_gnudebuglink.log: btest_dwz_gnudebuglink
+	@p='btest_dwz_gnudebuglink'; \
+	b='btest_dwz_gnudebuglink'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+btest_gnudebuglink.log: btest_gnudebuglink
+	@p='btest_gnudebuglink'; \
+	b='btest_gnudebuglink'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 test_elf.log: test_elf$(EXEEXT)
 	@p='test_elf$(EXEEXT)'; \
 	b='test_elf'; \
@@ -1463,13 +1497,6 @@ unittest.log: unittest$(EXEEXT)
 unittest_alloc.log: unittest_alloc$(EXEEXT)
 	@p='unittest_alloc$(EXEEXT)'; \
 	b='unittest_alloc'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-allocfail.log: allocfail$(EXEEXT)
-	@p='allocfail$(EXEEXT)'; \
-	b='allocfail'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1568,34 +1595,6 @@ ctestg_alloc.log: ctestg_alloc$(EXEEXT)
 ctesta_alloc.log: ctesta_alloc$(EXEEXT)
 	@p='ctesta_alloc$(EXEEXT)'; \
 	b='ctesta_alloc'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-allocfail.sh.log: allocfail.sh
-	@p='allocfail.sh'; \
-	b='allocfail.sh'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-btest_dwz.log: btest_dwz
-	@p='btest_dwz'; \
-	b='btest_dwz'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-btest_dwz_gnudebuglink.log: btest_dwz_gnudebuglink
-	@p='btest_dwz_gnudebuglink'; \
-	b='btest_dwz_gnudebuglink'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-btest_gnudebuglink.log: btest_gnudebuglink
-	@p='btest_gnudebuglink'; \
-	b='btest_gnudebuglink'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
