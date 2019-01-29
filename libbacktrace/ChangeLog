@@ -1,5 +1,18 @@
 2019-01-29  Tom de Vries  <tdevries@suse.de>
 
+	* install-debuginfo-for-buildid.sh.in: New script.
+	* Makefile.am (check_PROGRAMS): Add b2test and b3test.
+	(TESTS): Add b2test_buildid and b3test_dwz_buildid.
+	* Makefile.in: Regenerate.
+	* configure.ac (HAVE_ELF): Set with AM_CONDITIONAL.
+	(READELF): Set with AC_CHECK_PROG.
+	(install-debuginfo-for-buildid.sh): Generate with AC_CONFIG_FILES.
+	* configure: Regenerate.
+	* elf.c (SYSTEM_BUILD_ID_DIR): Factor out of ...
+	(elf_open_debugfile_by_buildid): ... here.
+
+2019-01-29  Tom de Vries  <tdevries@suse.de>
+
 	* Makefile.am: Replace check_PROGRAMS with BUILDTESTS, except for
 	allocfail.
 	(TESTS): Don't add check_PROGRAMS. Add BUILDTESTS.
