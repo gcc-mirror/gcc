@@ -209,7 +209,12 @@ Classes used:
 /* msync, sysconf (_SC_PAGE_SIZE), ftruncate  */
 /* posix_fallocate used if available.  */
 #define MAPPED_WRITING 1
+#else
+#define MAPPED_WRITING 0
 #endif
+#else
+#define MAPPED_READING 0
+#define MAPPED_WRITING 0
 #endif
 
 #ifndef HAVE_MEMRCHR
@@ -1307,7 +1312,7 @@ public:
   /* If BYTES is in the mmapped area, allocate a new buffer for it.  */
   void preserve (bytes_in &bytes)
   {
-#ifdef MAPPED_READING
+#if MAPPED_READING
     if (hdr.buffer && bytes.buffer >= hdr.buffer
 	&& bytes.buffer < hdr.buffer + hdr.pos)
       {
@@ -1321,7 +1326,7 @@ public:
      NULL. */
   static void release (elf_in *self, bytes_in &bytes)
   {
-#ifdef MAPPED_READING
+#if MAPPED_READING
     if (!(self && self->hdr.buffer && bytes.buffer >= self->hdr.buffer
 	  && bytes.buffer < self->hdr.buffer + self->hdr.pos))
 #endif
@@ -1333,14 +1338,14 @@ public:
   static void grow (data &data, unsigned needed)
   {
     gcc_checking_assert (!data.buffer);
-#ifndef MAPPED_READING
+#if !MAPPED_READING
     data.buffer = XNEWVEC (char, needed);
 #endif
     data.size = needed;
   }
   static void shrink (data &data)
   {
-#ifndef MAPPED_READING
+#if !MAPPED_READING
     XDELETEVEC (data.buffer);
 #endif
     data.buffer = NULL;
@@ -1388,7 +1393,7 @@ public:
   bool end ()
   {
     release ();
-#ifdef MAPPED_READING
+#if MAPPED_READING
     if (hdr.buffer)
       munmap (hdr.buffer, hdr.pos);
     hdr.buffer = NULL;
@@ -1417,7 +1422,7 @@ class elf_out : public elf, public data::allocator {
 private:
   ptr_int_hash_map identtab;	/* Map of IDENTIFIERS to strtab offsets. */
   unsigned pos;			/* Write position in file.  */
-#ifdef MAPPED_WRITING
+#if MAPPED_WRITING
   unsigned offset;		/* Offset of the mapping.  */
   unsigned extent;		/* Length of mapping.  */
   unsigned page_size;		/* System page size.  */
@@ -1427,7 +1432,7 @@ public:
   elf_out (int fd, int e)
     :parent (fd, e), identtab (500), pos (0)
   {
-#ifdef MAPPED_WRITING
+#if MAPPED_WRITING
     offset = extent = 0;
     page_size = sysconf (_SC_PAGE_SIZE);
     if (page_size < SECTION_ALIGN)
@@ -1442,7 +1447,7 @@ public:
     data::simple_memory.shrink (strtab);
   }
 
-#ifdef MAPPED_WRITING
+#if MAPPED_WRITING
 private:
   void create_mapping (unsigned ext, bool extending = true);
   void remove_mapping ();
@@ -1451,7 +1456,7 @@ private:
 protected:
   using allocator::grow;
   virtual char *grow (char *, unsigned needed);
-#ifdef MAPPED_WRITING
+#if MAPPED_WRITING
   using allocator::shrink;
   virtual void shrink (char *);
 #endif
@@ -1466,7 +1471,7 @@ protected:
   unsigned add (unsigned type, unsigned name = 0,
 		unsigned off = 0, unsigned size = 0, unsigned flags = SHF_NONE);
   unsigned write (const data &);
-#ifdef MAPPED_WRITING
+#if MAPPED_WRITING
   unsigned write (const bytes_out &);
 #endif
 
@@ -1571,7 +1576,7 @@ void
 elf_in::freeze ()
 {
   gcc_checking_assert (!is_frozen ());
-#ifdef MAPPED_READING
+#if MAPPED_READING
   if (munmap (hdr.buffer, hdr.pos) < 0)
     set_error (errno);
 #endif
@@ -1599,7 +1604,7 @@ elf_in::defrost (const char *name)
 #endif
       if (!ok)
 	set_error (EMFILE);
-#ifdef MAPPED_READING
+#if MAPPED_READING
       if (ok)
 	{
 	  char *mapping = reinterpret_cast<char *>
@@ -1623,7 +1628,7 @@ elf_in::defrost (const char *name)
 const char *
 elf_in::read (data *data, unsigned pos, unsigned length)
 {
-#ifdef MAPPED_READING
+#if MAPPED_READING
   if (pos + length > hdr.pos)
     {
       set_error (EINVAL);
@@ -1637,7 +1642,7 @@ elf_in::read (data *data, unsigned pos, unsigned length)
     }
 #endif
   grow (*data, length);
-#ifdef MAPPED_READING  
+#if MAPPED_READING  
   data->buffer = hdr.buffer + pos;
 #else
   if (::read (fd, data->buffer, data->size) != length)
@@ -1702,7 +1707,7 @@ elf_in::begin (location_t loc)
 	size = unsigned (stat.st_size);
     }
 
-#ifdef MAPPED_READING
+#if MAPPED_READING
   /* MAP_SHARED so that the file is backing store.  If someone else
      concurrently writes it, they're wrong.  */
   void *mapping = mmap (NULL, size, PROT_READ, MAP_SHARED, fd, 0);
@@ -1801,7 +1806,7 @@ elf_in::begin (location_t loc)
 
 /* Create a new mapping.  */
 
-#ifdef MAPPED_WRITING
+#if MAPPED_WRITING
 void
 elf_out::create_mapping (unsigned ext, bool extending)
 {
@@ -1837,7 +1842,7 @@ elf_out::create_mapping (unsigned ext, bool extending)
 
 /* Flush out the current mapping.  */
 
-#ifdef MAPPED_WRITING
+#if MAPPED_WRITING
 void
 elf_out::remove_mapping ()
 {
@@ -1870,7 +1875,7 @@ elf_out::grow (char *data, unsigned needed)
       if (unsigned padding = pos & (SECTION_ALIGN - 1))
 	{
 	  padding = SECTION_ALIGN - padding;
-#ifndef MAPPED_WRITING
+#if !MAPPED_WRITING
 	  /* Align the section on disk, should help the necessary copies.
 	     fseeking to extend is non-portable.  */
 	  static char zero[SECTION_ALIGN];
@@ -1879,12 +1884,12 @@ elf_out::grow (char *data, unsigned needed)
 #endif
 	  pos += padding;
 	}
-#ifdef MAPPED_WRITING
+#if MAPPED_WRITING
       data = hdr.buffer + (pos - offset);
 #endif
     }
 
-#ifdef MAPPED_WRITING
+#if MAPPED_WRITING
   unsigned off = data - hdr.buffer;
   if (off + needed > extent)
     {
@@ -1908,7 +1913,7 @@ elf_out::grow (char *data, unsigned needed)
   return data;
 }
 
-#ifdef MAPPED_WRITING
+#if MAPPED_WRITING
 /* Shrinking is a NOP.  */
 void
 elf_out::shrink (char *)
@@ -2028,7 +2033,7 @@ elf_out::add (unsigned type, unsigned name, unsigned off, unsigned size,
 unsigned
 elf_out::write (const data &buffer)
 {
-#ifdef MAPPED_WRITING
+#if MAPPED_WRITING
   /* HDR is always mapped.  */
   if (&buffer != &hdr)
     {
@@ -2055,7 +2060,7 @@ elf_out::write (const data &buffer)
 
 /* Write a streaming buffer.  It must be using us as an allocator.  */
 
-#ifdef MAPPED_WRITING
+#if MAPPED_WRITING
 unsigned
 elf_out::write (const bytes_out &buf)
 {
@@ -2102,7 +2107,7 @@ elf_out::begin ()
   /* Create the UNDEF section.  */
   add (SHT_NONE);
 
-#ifdef MAPPED_WRITING
+#if MAPPED_WRITING
   /* Start a mapping.  */
   create_mapping (MODULE_STAMP ? page_size
 		  : (32767 + page_size) & ~(page_size - 1));
@@ -2148,7 +2153,7 @@ elf_out::end ()
 
       unsigned shoff = write (sectab);
 
-#ifdef MAPPED_WRITING
+#if MAPPED_WRITING
       if (offset)
 	{
 	  remove_mapping ();
@@ -2187,7 +2192,7 @@ elf_out::end ()
 	  write (hdr);
 	}
 
-#ifdef MAPPED_WRITING
+#if MAPPED_WRITING
       remove_mapping ();
       if (ftruncate (fd, length))
 	set_error (errno);
@@ -12995,7 +13000,7 @@ module_state::check_read (unsigned diag_count, tree ns, tree id)
 
       if (e == EMFILE
 	  || e == ENFILE
-#ifdef MAPPED_READING
+#if MAPPED_READING
 	  || e == ENOMEM
 #endif
 	  || false)
@@ -13827,6 +13832,8 @@ init_module_processing ()
       lazy_open = lazy_open * 3 / 4;
     }
   dump () && dump ("Lazy limit is %u", lazy_open);
+  dump () && dump ("Using %s for reading", MAPPED_READING ? "mmap" : "fileio");
+  dump () && dump ("Using %s for writing", MAPPED_WRITING ? "mmap" : "fileio");
 
   /* Construct the global tree array.  This is an array of unique
      global trees (& types).  Do this now, rather than lazily, as

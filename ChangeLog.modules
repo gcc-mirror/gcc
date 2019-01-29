@@ -1,3 +1,9 @@
+2019-01-29  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (MAPPED_READING, MAPPED_WRITING): 0 or 1
+	(init_module_processing): Dump mapping behaviour.
+
 2019-01-28  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
