@@ -1,5 +1,16 @@
 2019-01-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/reference_wrapper/result_type.cc: Disable for
+	C++2a.
+	* testsuite/20_util/reference_wrapper/typedefs-2.cc: Likewise.
+	* testsuite/20_util/reference_wrapper/typedefs-3.cc: Likewise.
+	* testsuite/20_util/reference_wrapper/typedefs.cc: Likewise.
+	* testsuite/30_threads/async/54297.cc: Suppress nodiscard warning.
+	* testsuite/ext/array_allocator/26875.cc: Likewise.
+	* testsuite/ext/pool_allocator/allocate_chunk.cc: Likewise.
+	* testsuite/util/replacement_memory_operators.h: Likewise.
+	* testsuite/util/testsuite_allocator.h: Likewise.
+
 	* include/std/memory_resource (__pool_resource::_M_unpooled): Use
 	normal mode vector, even for debug mode.
 	* include/std/vector [_GLIBCXX_DEBUG] (_GLIBCXX_STD_C::pmr::vector):

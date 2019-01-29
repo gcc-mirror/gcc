@@ -48,13 +48,13 @@ void test01()
   using __gnu_cxx::__pool_alloc;
 
   __pool_alloc<big> alloc_big;
-  alloc_big.allocate(1);
+  (void) alloc_big.allocate(1);
 
   // The constant 20 comes from __pool_alloc_base::_M_refill. See
   // also __pool_alloc_base::_M_allocate_chunk.
   __pool_alloc<small> alloc_small;
   for (unsigned int i = 0; i < 20 * sizeof(big) / sizeof(small) + 1; ++i)
-    alloc_small.allocate(1);
+    (void) alloc_small.allocate(1);
 }
 
 int main()
