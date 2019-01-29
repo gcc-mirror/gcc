@@ -1,5 +1,8 @@
 2019-01-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/26_numerics/headers/complex/synopsis.cc: Remove incorrect
+	constexpr specifiers from arg and proj.
+
 	* config/abi/pre/gnu.ver (GLIBCXX_3.4.26): Add missing exports for
 	__shared_ptr instantiations used by gcc4-compatible ABI.
 
