@@ -1,3 +1,8 @@
+2019-01-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gdc.dg/pr89042a.d: Mark as compile test.
+	* gdc.dg/pr89042b.d: Likewise.
+
 2019-01-29  Richard Biener  <rguenther@suse.de>
 
 	PR debug/87295
