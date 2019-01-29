@@ -1,3 +1,12 @@
+2019-01-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89089 - ICE with [[no_unique_address]].
+	PR c++/88865 - wrong layout with [[no_unique_address]].
+	* class.c (check_field_decls): A potentially-overlapping field makes
+	the class non-layout-POD, but not non-empty.
+	(end_of_class): Always consider empty data members.
+	(layout_class_type): Set DECL_SIZE for empty fields.
+
 2019-01-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88358 - name wrongly treated as type.
