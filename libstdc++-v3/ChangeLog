@@ -1,3 +1,10 @@
+2019-01-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/memory_resource (__pool_resource::_M_unpooled): Use
+	normal mode vector, even for debug mode.
+	* include/std/vector [_GLIBCXX_DEBUG] (_GLIBCXX_STD_C::pmr::vector):
+	Define alias template for normal mode vector.
+
 2019-01-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/68737

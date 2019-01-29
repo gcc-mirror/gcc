@@ -354,7 +354,7 @@ namespace pmr
     struct _BigBlock;
     // Collection of blocks too big for any pool, sorted by address.
     // This also stores the only copy of the upstream memory resource pointer.
-    pmr::vector<_BigBlock> _M_unpooled;
+    _GLIBCXX_STD_C::pmr::vector<_BigBlock> _M_unpooled;
 
     const int _M_npools;
   };
