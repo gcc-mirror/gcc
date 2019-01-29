@@ -78,8 +78,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     erase(forward_list<_Tp, _Alloc>& __cont, const _Up& __value)
     {
       using __elem_type = typename forward_list<_Tp, _Alloc>::value_type;
-      return erase_if(__cont,
-		      [&](__elem_type& __elem) { return __elem == __value; });
+      return std::erase_if(__cont, [&](__elem_type& __elem) {
+	  return __elem == __value;
+      });
     }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
