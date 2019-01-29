@@ -44,7 +44,7 @@
   {
    if (TARGET_HS)
       {
-       return "dmb";
+       return "dmb\\t3";
       }
     else
       {

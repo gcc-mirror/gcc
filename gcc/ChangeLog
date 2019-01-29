@@ -1,3 +1,13 @@
+2019-01-29  Vineet Gupta  <vgupta@synopsys.com>
+
+	Backport from mainline.
+	* gcc/config.gcc: Force .init_array for ARC.
+
+2019-01-29  Vineet Gupta  <vgupta@synopsys.com>
+
+	Backport from mainline.
+	* config/arc/atomic.md: Add operand to DMB instruction.
+
 2019-01-27  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/88948

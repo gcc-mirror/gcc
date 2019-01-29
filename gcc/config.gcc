@@ -1077,7 +1077,10 @@ arc*-*-linux*)
 	case ${with_endian} in
 	big*)	tm_file="arc/big.h ${tm_file}"
 	esac
-        ;;
+	# Force .init_array support.  The configure script cannot always
+	# automatically detect that GAS supports it, yet we require it.
+	gcc_cv_initfini_array=yes
+	;;
 arm-wrs-vxworks|arm-wrs-vxworks7)
 	extra_options="${extra_options} arm/vxworks.opt"
 	tmake_file="${tmake_file} arm/t-arm arm/t-vxworks"
