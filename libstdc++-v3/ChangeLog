@@ -1,5 +1,8 @@
 2019-01-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.26): Add missing exports for
+	__shared_ptr instantiations used by gcc4-compatible ABI.
+
 	* include/experimental/forward_list (experimental::erase): Qualify
 	call to erase_if.
 	* include/experimental/list (experimental::erase): Likewise.
