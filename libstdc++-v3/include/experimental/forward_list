@@ -54,7 +54,9 @@ inline namespace fundamentals_v2
     erase(forward_list<_Tp, _Alloc>& __cont, const _Up& __value)
     {
       using __elem_type = typename forward_list<_Tp, _Alloc>::value_type;
-      erase_if(__cont, [&](__elem_type& __elem) { return __elem == __value; });
+      std::experimental::erase_if(__cont, [&](__elem_type& __elem) {
+	  return __elem == __value;
+      });
     }
 
   namespace pmr {

@@ -1,5 +1,11 @@
 2019-01-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/forward_list (experimental::erase): Qualify
+	call to erase_if.
+	* include/experimental/list (experimental::erase): Likewise.
+	* include/std/forward_list (std::erase): Likewise.
+	* include/std/list (std::erase): Likewise.
+
 	* testsuite/20_util/reference_wrapper/result_type.cc: Disable for
 	C++2a.
 	* testsuite/20_util/reference_wrapper/typedefs-2.cc: Likewise.
