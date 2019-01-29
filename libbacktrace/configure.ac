@@ -259,6 +259,7 @@ elf64) elfsize=64 ;;
 *)     elfsize=unused
 esac
 AC_DEFINE_UNQUOTED([BACKTRACE_ELF_SIZE], [$elfsize], [ELF size: 32 or 64])
+AM_CONDITIONAL(HAVE_ELF, test "$FORMAT_FILE" = "elf.lo")
 
 # XCOFF defines.
 xcoffsize=
@@ -445,6 +446,7 @@ AM_CONDITIONAL(HAVE_COMPRESSED_DEBUG, test "$libgo_cv_ld_compress" = yes)
 
 AC_ARG_VAR(OBJCOPY, [location of objcopy])
 AC_CHECK_PROG(OBJCOPY, objcopy, objcopy,)
+AC_CHECK_PROG(READELF, readelf, readelf)
 AC_CACHE_CHECK([whether objcopy supports debuglink],
 [libbacktrace_cv_objcopy_debuglink],
 [if test -n "${with_target_subdir}"; then
@@ -472,6 +474,7 @@ else
 fi
 
 AC_CONFIG_FILES(Makefile backtrace-supported.h)
+AC_CONFIG_FILES(install-debuginfo-for-buildid.sh, chmod +x install-debuginfo-for-buildid.sh)
 
 # We need multilib support, but only if configuring for the target.
 AC_CONFIG_COMMANDS([default],

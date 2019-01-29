@@ -108,6 +108,28 @@ libbacktrace_noformat_la_LIBADD = $(BACKTRACE_FILE) $(VIEW_FILE) $(ALLOC_FILE)
 
 libbacktrace_noformat_la_DEPENDENCIES = $(libbacktrace_noformat_la_LIBADD)
 
+if HAVE_ELF
+if HAVE_OBJCOPY_DEBUGLINK
+
+TEST_BUILD_ID_DIR=$(abs_builddir)/usr/lib/debug/.build-id/
+
+check_LTLIBRARIES += libbacktrace_elf_for_test.la
+
+libbacktrace_elf_for_test_la_SOURCES = $(libbacktrace_la_SOURCES)
+libbacktrace_elf_for_test_la_LIBADD = $(BACKTRACE_FILE) elf_for_test.lo \
+	$(VIEW_FILE) $(ALLOC_FILE)
+
+elf_for_test.c: elf.c
+	SEARCH='^#define SYSTEM_BUILD_ID_DIR.*$$'; \
+	REPLACE="#define SYSTEM_BUILD_ID_DIR \"$(TEST_BUILD_ID_DIR)\""; \
+	$(SED) "s%$$SEARCH%$$REPLACE%" \
+		$< \
+		> $@.tmp
+	mv $@.tmp $@
+
+endif HAVE_OBJCOPY_DEBUGLINK
+endif HAVE_ELF
+
 xcoff_%.c: xcoff.c
 	SEARCH='#error "Unknown BACKTRACE_XCOFF_SIZE"'; \
 	REPLACE='#undef BACKTRACE_XCOFF_SIZE\
@@ -171,6 +193,28 @@ check_PROGRAMS += allocfail
 allocfail.sh: allocfail
 
 TESTS += allocfail.sh
+
+if HAVE_ELF
+if HAVE_OBJCOPY_DEBUGLINK
+
+b2test_SOURCES = $(btest_SOURCES)
+b2test_CFLAGS = $(btest_CFLAGS)
+b2test_LDFLAGS = -Wl,--build-id
+b2test_LDADD = libbacktrace_elf_for_test.la
+
+check_PROGRAMS += b2test
+TESTS += b2test_buildid
+
+b3test_SOURCES = $(btest_SOURCES)
+b3test_CFLAGS = $(btest_CFLAGS)
+b3test_LDFLAGS = -Wl,--build-id
+b3test_LDADD = libbacktrace_elf_for_test.la
+
+check_PROGRAMS += b3test
+TESTS += b3test_dwz_buildid
+
+endif HAVE_OBJCOPY_DEBUGLINK
+endif HAVE_ELF
 
 btest_SOURCES = btest.c testlib.c
 btest_CFLAGS = $(AM_CFLAGS) -g -O
@@ -274,6 +318,12 @@ TESTS += btest_gnudebuglink
 	$(OBJCOPY) --strip-debug --add-gnu-debuglink=$@.debug $< $@
 
 endif HAVE_OBJCOPY_DEBUGLINK
+
+%_buildid: %
+	./install-debuginfo-for-buildid.sh \
+	  "$(TEST_BUILD_ID_DIR)" \
+	  $<
+	$(OBJCOPY) --strip-debug $< $@
 
 if HAVE_COMPRESSED_DEBUG
 
