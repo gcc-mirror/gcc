@@ -1,3 +1,10 @@
+2019-01-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/57048
+	* interface.c (gfc_compare_types): If a derived type and an
+	integer both have a derived type, and they are identical,
+	this is a C binding type and compares equal.
+
 2019-01-26  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/57553
