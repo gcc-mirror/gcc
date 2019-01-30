@@ -1,3 +1,7 @@
+2019-01-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/invoke.texi (C Language Options): List "-fopenacc-dim".
+
 2019-01-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89111
