@@ -1,5 +1,21 @@
 2019-01-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* testsuite/libgomp.oacc-fortran/optional-cache.f95
+	* testsuite/libgomp.oacc-fortran/optional-data-copyin-by-value.f90
+	* testsuite/libgomp.oacc-fortran/optional-data-copyin.f90
+	* testsuite/libgomp.oacc-fortran/optional-data-copyout.f90
+	* testsuite/libgomp.oacc-fortran/optional-data-enter-exit.f90
+	* testsuite/libgomp.oacc-fortran/optional-declare.f90
+	* testsuite/libgomp.oacc-fortran/optional-firstprivate.f90
+	* testsuite/libgomp.oacc-fortran/optional-host_data.f90
+	* testsuite/libgomp.oacc-fortran/optional-nested-calls.f90
+	* testsuite/libgomp.oacc-fortran/optional-private.f90
+	* testsuite/libgomp.oacc-fortran/optional-reduction.f90
+	* testsuite/libgomp.oacc-fortran/optional-update-device.f90
+	* testsuite/libgomp.oacc-fortran/optional-update-host.f90
+
+2019-01-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* oacc-mem.c (update_dev_host): Return early if the host address
 	is NULL.
 	* testsuite/libgomp.oacc-c-c++-common/lib-43.c: Remove.
