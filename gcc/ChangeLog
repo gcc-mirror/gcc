@@ -1,3 +1,8 @@
+2019-01-29  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88956
+	* gimple-fold.c (fold_array_ctor_reference): Avoid zero-length arrays.
+
 2019-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/66676

@@ -6702,25 +6702,27 @@ fold_array_ctor_reference (tree type, tree ctor,
     domain_type = TYPE_DOMAIN (TREE_TYPE (ctor));
   if (domain_type && TYPE_MIN_VALUE (domain_type))
     {
-      /* Static constructors for variably sized objects makes no sense.  */
+      /* Static constructors for variably sized objects make no sense.  */
       if (TREE_CODE (TYPE_MIN_VALUE (domain_type)) != INTEGER_CST)
 	return NULL_TREE;
       low_bound = wi::to_offset (TYPE_MIN_VALUE (domain_type));
     }
   else
     low_bound = 0;
-  /* Static constructors for variably sized objects makes no sense.  */
+  /* Static constructors for variably sized objects make no sense.  */
   if (TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ctor)))) != INTEGER_CST)
     return NULL_TREE;
   elt_size = wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ctor))));
 
   /* When TYPE is non-null, verify that it specifies a constant-sized
-     accessed not larger than size of array element.  */
-  if (type
-      && (!TYPE_SIZE_UNIT (type)
-	  || TREE_CODE (TYPE_SIZE_UNIT (type)) != INTEGER_CST
-	  || elt_size < wi::to_offset (TYPE_SIZE_UNIT (type))
-	  || elt_size == 0))
+     accessed not larger than size of array element.  Avoid division
+     by zero below when ELT_SIZE is zero, such as with the result of
+     an initializer for a zero-length array or an empty struct.  */
+  if (elt_size == 0
+      || (type
+	  && (!TYPE_SIZE_UNIT (type)
+	      || TREE_CODE (TYPE_SIZE_UNIT (type)) != INTEGER_CST
+	      || elt_size < wi::to_offset (TYPE_SIZE_UNIT (type)))))
     return NULL_TREE;
 
   /* Compute the array index we look for.  */
