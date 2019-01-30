@@ -1,3 +1,7 @@
+2019-01-30  Manfred Schwarb  <manfred99@gmx.ch>
+
+	* gfortran.dg/pr68318_1.f90: Fix a dg directive.
+
 2019-01-30  Kewen Lin  <linkw@gcc.gnu.org>
 
 	Backport from mainline
