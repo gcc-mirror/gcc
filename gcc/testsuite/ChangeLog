@@ -1,3 +1,11 @@
+2019-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR testsuite/89110
+	* g++.dg/other/nontype-1.C: Expect error in all modes.
+	* g++.dg/parse/crash13.C: Likewise.
+	* g++.dg/parse/error36.C: Likewise.
+	* g++.dg/template/error29.C: Likewise.
+
 2019-01-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/57048
