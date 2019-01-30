@@ -1,3 +1,6 @@
+/* { dg-additional-options "-fopenacc-kernels=parloops" } as this is
+   specifically testing "parloops" handling.  */
+
 #include <stdlib.h>
 
 #define N 32

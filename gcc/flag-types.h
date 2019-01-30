@@ -354,4 +354,10 @@ enum cf_protection_level
   CF_FULL = CF_BRANCH | CF_RETURN,
   CF_SET = 1 << 2
 };
+
+/* OpenACC 'kernels' constructs handling.  */
+enum openacc_kernels
+{
+  OPENACC_KERNELS_PARLOOPS
+};
 #endif /* ! GCC_FLAG_TYPES_H */
