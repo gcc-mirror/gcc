@@ -1,3 +1,11 @@
+2019-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/89115
+	* opts.c (default_options_optimization): Reduce
+	PARAM_MAX_DSE_ACTIVE_LOCAL_STORES by a factor of 10 at -O1.
+	Make PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP reduction relative
+	to the default.
+
 2019-01-30  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/rs6000-c.c (altivec-resolve_overloaded_builtin):
