@@ -18680,6 +18680,52 @@ tsubst_copy_and_build (tree t,
 	      }
 	  }
 
+	/* Stripped-down processing for a call in a thunk.  Specifically, in
+	   the thunk template for a generic lambda.  */
+	if (CALL_FROM_THUNK_P (t))
+	  {
+	    tree thisarg = NULL_TREE;
+	    if (TREE_CODE (function) == COMPONENT_REF)
+	      {
+		thisarg = TREE_OPERAND (function, 0);
+		if (TREE_CODE (thisarg) == INDIRECT_REF)
+		  thisarg = TREE_OPERAND (thisarg, 0);
+		function = TREE_OPERAND (function, 1);
+		if (TREE_CODE (function) == BASELINK)
+		  function = BASELINK_FUNCTIONS (function);
+	      }
+	    /* We aren't going to do normal overload resolution, so force the
+	       template-id to resolve.  */
+	    function = resolve_nondeduced_context (function, complain);
+	    for (unsigned i = 0; i < nargs; ++i)
+	      {
+		/* In a thunk, pass through args directly, without any
+		   conversions.  */
+		tree arg = (*call_args)[i];
+		while (TREE_CODE (arg) != PARM_DECL)
+		  arg = TREE_OPERAND (arg, 0);
+		(*call_args)[i] = arg;
+	      }
+	    if (thisarg)
+	      {
+		/* Shift the other args over to make room.  */
+		vec_safe_push (call_args, (*call_args)[nargs-1]);
+		for (int i = nargs-1; i > 0; --i)
+		  (*call_args)[i] = (*call_args)[i-1];
+		(*call_args)[0] = thisarg;
+	      }
+	    ret = build_call_a (function, call_args->length (),
+				call_args->address ());
+	    /* The thunk location is not interesting.  */
+	    SET_EXPR_LOCATION (ret, UNKNOWN_LOCATION);
+	    CALL_FROM_THUNK_P (ret) = true;
+	    if (CLASS_TYPE_P (TREE_TYPE (ret)))
+	      CALL_EXPR_RETURN_SLOT_OPT (ret) = true;
+
+	    release_tree_vector (call_args);
+	    RETURN (ret);
+	  }
+
 	/* We do not perform argument-dependent lookup if normal
 	   lookup finds a non-function, in accordance with the
 	   expected resolution of DR 218.  */
@@ -18883,22 +18929,12 @@ tsubst_copy_and_build (tree t,
 	    bool op = CALL_EXPR_OPERATOR_SYNTAX (t);
 	    bool ord = CALL_EXPR_ORDERED_ARGS (t);
 	    bool rev = CALL_EXPR_REVERSE_ARGS (t);
-	    bool thk = CALL_FROM_THUNK_P (t);
-	    if (op || ord || rev || thk)
+	    if (op || ord || rev)
 	      {
 		function = extract_call_expr (ret);
 		CALL_EXPR_OPERATOR_SYNTAX (function) = op;
 		CALL_EXPR_ORDERED_ARGS (function) = ord;
 		CALL_EXPR_REVERSE_ARGS (function) = rev;
-		if (thk)
-		  {
-		    if (TREE_CODE (function) == CALL_EXPR)
-		      CALL_FROM_THUNK_P (function) = true;
-		    else
-		      AGGR_INIT_FROM_THUNK_P (function) = true;
-		    /* The thunk location is not interesting.  */
-		    SET_EXPR_LOCATION (function, UNKNOWN_LOCATION);
-		  }
 	      }
 	  }
 
