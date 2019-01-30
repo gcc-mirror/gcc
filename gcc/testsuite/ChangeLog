@@ -1,3 +1,16 @@
+2019-01-30  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/vec-extract-schar-1.c: New test.
+	* gcc.target/powerpc/vec-extract-sint-1.c: New test.
+	* gcc.target/powerpc/vec-extract-sint128-1.c: New test.
+	* gcc.target/powerpc/vec-extract-slong-1.c: New test.
+	* gcc.target/powerpc/vec-extract-sshort-1.c: New test.
+	* gcc.target/powerpc/vec-extract-uchar-1.c: New test.
+	* gcc.target/powerpc/vec-extract-uint-1.c: New test.
+	* gcc.target/powerpc/vec-extract-uint128-1.c: New test.
+	* gcc.target/powerpc/vec-extract-ulong-1.c: New test.
+	* gcc.target/powerpc/vec-extract-ushort-1.c: New test.
+	
 2019-01-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89111
