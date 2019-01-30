@@ -1944,6 +1944,10 @@ Gogo::start_function(const std::string& name, Function_type* type,
 	  go_assert(at_top_level);
 	  Type* rtype = type->receiver()->type();
 
+	  while (rtype->named_type() != NULL
+		 && rtype->named_type()->is_alias())
+	    rtype = rtype->named_type()->real_type()->forwarded();
+
 	  // We want to look through the pointer created by the
 	  // parser, without getting an error if the type is not yet
 	  // defined.
