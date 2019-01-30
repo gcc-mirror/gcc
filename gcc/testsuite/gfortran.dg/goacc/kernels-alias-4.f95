@@ -1,3 +1,5 @@
+! { dg-additional-options "--param=openacc-kernels=parloops" } as this is
+! specifically testing "parloops" handling.
 ! { dg-additional-options "-O2" }
 ! { dg-additional-options "-fdump-tree-ealias-all" }
 

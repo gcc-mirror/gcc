@@ -1,7 +1,8 @@
 /* Verify that a simple, explicit acc loop reduction works inside
  a kernels region.  */
 
-/* { dg-additional-options "--param=openacc-kernels=decompose" } */
+/* { dg-additional-options "--param=openacc-kernels=parloops" } as this is
+   specifically testing "parloops" handling.  */
 
 /* { dg-additional-options "-fopt-info-all-omp" }
    { dg-additional-options "-foffload=-fopt-info-all-omp" } */
