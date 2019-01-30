@@ -1,3 +1,12 @@
+2019-01-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* trans-openmp.c (gfc_build_conditional_assign): New.
+	(gfc_build_conditional_assign_expr): New.
+	(gfc_omp_finish_clause): Add conditionals to set the clause
+	declaration to null and size to zero if the declaration is a
+	non-present optional argument.
+	(gfc_trans_omp_clauses_1): Likewise.
+
 2018-10-04  Cesar Philippidis  <cesar@codesourcery.com>
             Julian Brown  <julian@codesourcery.com>
 

@@ -1071,6 +1071,62 @@ gfc_omp_clause_dtor (tree clause, tree decl)
   return tem;
 }
 
+/* Build a conditional expression in BLOCK.  If COND_VAL is not
+   null, then the block THEN_B is executed, otherwise ELSE_VAL
+   is assigned to VAL.  */
+
+static void
+gfc_build_conditional_assign (stmtblock_t *block,
+			      tree val,
+			      tree cond_val,
+			      tree then_b,
+			      tree else_val)
+{
+  stmtblock_t cond_block;
+  tree cond, else_b;
+  tree val_ty = TREE_TYPE (val);
+
+  gfc_init_block (&cond_block);
+  gfc_add_modify (&cond_block, val, fold_convert (val_ty, else_val));
+  else_b = gfc_finish_block (&cond_block);
+  cond = fold_convert (pvoid_type_node, cond_val);
+  cond = fold_build2_loc (input_location, NE_EXPR,
+			  logical_type_node,
+			  cond, null_pointer_node);
+  gfc_add_expr_to_block (block,
+			 build3_loc (input_location,
+				     COND_EXPR,
+				     void_type_node,
+				     cond, then_b,
+				     else_b));
+}
+
+/* Build a conditional expression in BLOCK, returning a temporary
+   variable containing the result.  If COND_VAL is not null, then
+   THEN_VAL will be assigned to the variable, otherwise ELSE_VAL
+   is assigned.
+ */
+
+static tree
+gfc_build_conditional_assign_expr (stmtblock_t *block,
+				   tree cond_val,
+				   tree then_val,
+				   tree else_val)
+{
+  tree val;
+  tree val_ty = TREE_TYPE (then_val);
+  stmtblock_t cond_block;
+
+  val = create_tmp_var (val_ty);
+
+  gfc_init_block (&cond_block);
+  gfc_add_modify (&cond_block, val, then_val);
+  tree then_b = gfc_finish_block (&cond_block);
+
+  gfc_build_conditional_assign (block, val, cond_val, then_b, else_val);
+
+  return val;
+}
 
 void
 gfc_omp_finish_clause (tree c, gimple_seq *pre_p)
@@ -1134,17 +1190,46 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p)
       stmtblock_t block;
       gfc_start_block (&block);
       tree type = TREE_TYPE (decl);
-      tree ptr = gfc_conv_descriptor_data_get (decl);
+      bool optional_arg_p =
+	        TREE_CODE (decl) == INDIRECT_REF
+	      && TREE_CODE (TREE_OPERAND (decl, 0)) == PARM_DECL
+	      && DECL_BY_REFERENCE (TREE_OPERAND (decl, 0))
+	      && TREE_CODE (TREE_TYPE (TREE_OPERAND (decl, 0))) == POINTER_TYPE;
+      tree ptr;
+
+      if (optional_arg_p)
+	ptr = gfc_build_conditional_assign_expr (
+		&block,
+		TREE_OPERAND (decl, 0),
+		gfc_conv_descriptor_data_get (decl),
+		null_pointer_node);
+      else
+	ptr = gfc_conv_descriptor_data_get (decl);
       ptr = fold_convert (build_pointer_type (char_type_node), ptr);
       ptr = build_fold_indirect_ref (ptr);
       OMP_CLAUSE_DECL (c) = ptr;
       c2 = build_omp_clause (input_location, OMP_CLAUSE_MAP);
       OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_TO_PSET);
-      OMP_CLAUSE_DECL (c2) = decl;
+      if (optional_arg_p)
+	{
+	  ptr = create_tmp_var (TREE_TYPE (TREE_OPERAND (decl, 0)));
+	  gfc_add_modify (&block, ptr, TREE_OPERAND (decl, 0));
+
+	  OMP_CLAUSE_DECL (c2) = build_fold_indirect_ref (ptr);
+	}
+      else
+	OMP_CLAUSE_DECL (c2) = decl;
       OMP_CLAUSE_SIZE (c2) = TYPE_SIZE_UNIT (type);
       c3 = build_omp_clause (OMP_CLAUSE_LOCATION (c), OMP_CLAUSE_MAP);
       OMP_CLAUSE_SET_MAP_KIND (c3, GOMP_MAP_POINTER);
-      OMP_CLAUSE_DECL (c3) = gfc_conv_descriptor_data_get (decl);
+      if (optional_arg_p)
+	OMP_CLAUSE_DECL (c3) = gfc_build_conditional_assign_expr (
+		&block,
+		TREE_OPERAND (decl, 0),
+		gfc_conv_descriptor_data_get (decl),
+		null_pointer_node);
+      else
+	OMP_CLAUSE_DECL (c3) = gfc_conv_descriptor_data_get (decl);
       OMP_CLAUSE_SIZE (c3) = size_int (0);
       tree size = create_tmp_var (gfc_array_index_type);
       tree elemsz = TYPE_SIZE_UNIT (gfc_get_element_type (type));
@@ -1174,6 +1259,27 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p)
 	  gfc_add_expr_to_block (&block, build3_loc (input_location, COND_EXPR,
 						     void_type_node, cond,
 						     then_b, else_b));
+	}
+      else if (optional_arg_p)
+	{
+	  stmtblock_t cond_block;
+	  tree then_b;
+
+	  gfc_init_block (&cond_block);
+	  gfc_add_modify (&cond_block, size,
+			  gfc_full_array_size (&cond_block, decl,
+					       GFC_TYPE_ARRAY_RANK (type)));
+	  gfc_add_modify (&cond_block, size,
+			  fold_build2 (MULT_EXPR, gfc_array_index_type,
+				       size, elemsz));
+	  then_b = gfc_finish_block (&cond_block);
+
+	  gfc_build_conditional_assign (
+		  &block,
+		  size,
+		  TREE_OPERAND (decl, 0),
+		  then_b,
+		  build_int_cst (gfc_array_index_type, 0));
 	}
       else
 	{
@@ -2224,7 +2330,17 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		      && n->u.map_op != OMP_MAP_DETACH)
 		    {
 		      tree type = TREE_TYPE (decl);
-		      tree ptr = gfc_conv_descriptor_data_get (decl);
+		      tree ptr;
+
+		      if (sym_attr->optional)
+			ptr = gfc_build_conditional_assign_expr (
+				block,
+				TREE_OPERAND (decl, 0),
+				gfc_conv_descriptor_data_get (decl),
+				null_pointer_node);
+		      else
+			ptr = gfc_conv_descriptor_data_get (decl);
+
 		      ptr = fold_convert (build_pointer_type (char_type_node),
 					  ptr);
 		      ptr = build_fold_indirect_ref (ptr);
@@ -2245,34 +2361,30 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 
 		      /* We have to check for n->sym->attr.dimension because
 			 of scalar coarrays.  */
-		      if (sym_attr->pointer && sym_attr->dimension)
+		      if ((sym_attr->pointer || sym_attr->optional)
+			  && sym_attr->dimension)
 			{
 			  stmtblock_t cond_block;
 			  tree size
 			    = gfc_create_var (gfc_array_index_type, NULL);
-			  tree tem, then_b, else_b, zero, cond;
+			  tree cond = sym_attr->optional
+			      ? TREE_OPERAND (decl, 0)
+			      : gfc_conv_descriptor_data_get (decl);
 
 			  gfc_init_block (&cond_block);
-			  tem
-			    = gfc_full_array_size (&cond_block, decl,
-						   GFC_TYPE_ARRAY_RANK (type));
-			  gfc_add_modify (&cond_block, size, tem);
-			  then_b = gfc_finish_block (&cond_block);
-			  gfc_init_block (&cond_block);
-			  zero = build_int_cst (gfc_array_index_type, 0);
-			  gfc_add_modify (&cond_block, size, zero);
-			  else_b = gfc_finish_block (&cond_block);
-			  tem = gfc_conv_descriptor_data_get (decl);
-			  tem = fold_convert (pvoid_type_node, tem);
-			  cond = fold_build2_loc (input_location, NE_EXPR,
-						  logical_type_node,
-						  tem, null_pointer_node);
-			  gfc_add_expr_to_block (block,
-						 build3_loc (input_location,
-							     COND_EXPR,
-							     void_type_node,
-							     cond, then_b,
-							     else_b));
+			  gfc_add_modify (&cond_block, size,
+					  gfc_full_array_size (
+					      &cond_block, decl,
+					      GFC_TYPE_ARRAY_RANK (type)));
+			  tree then_b = gfc_finish_block (&cond_block);
+
+			  gfc_build_conditional_assign (
+				  block,
+				  size,
+				  cond,
+				  then_b,
+				  build_int_cst (gfc_array_index_type, 0));
+
 			  OMP_CLAUSE_SIZE (node) = size;
 			}
 		      else if (sym_attr->dimension)
