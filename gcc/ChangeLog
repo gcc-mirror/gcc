@@ -1,3 +1,9 @@
+2019-01-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/87246
+	* lra-constraints.c (simplify_operand_subreg): Reload memory
+	in subreg if the address became invalid.
+
 2019-01-30  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR target/87064
