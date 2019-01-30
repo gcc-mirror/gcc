@@ -1,3 +1,10 @@
+2019-01-30  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR fortran/88678
+	* config/fpu-glibc.h (set_fpu_trap_exceptions): Clear stalled
+	exception flags before changing trap mode.  Optimize to call
+	feenableexcept and fedisableexcept only once.
+
 2019-01-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* io/async.c (init_adv_cond): Use __GTHREAD_COND_INIT_FUNCTION().
