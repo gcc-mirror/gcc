@@ -48,6 +48,15 @@ omp_find_clause (tree clauses, enum omp_clause_code kind)
   return NULL_TREE;
 }
 
+/* Return true if DECL is a Fortran optional argument.  */
+
+bool
+omp_is_optional_argument (tree decl)
+{
+  return TREE_CODE (decl) == PARM_DECL && DECL_BY_REFERENCE (decl)
+	 && TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE;
+}
+
 /* Return true if DECL is a reference type.  */
 
 bool

@@ -10136,7 +10136,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		else
 		  {
 		    s = TREE_TYPE (ovar);
-		    if (TREE_CODE (s) == REFERENCE_TYPE)
+		    if (TREE_CODE (s) == REFERENCE_TYPE
+			|| omp_is_optional_argument (ovar))
 		      s = TREE_TYPE (s);
 		    s = TYPE_SIZE_UNIT (s);
 		  }

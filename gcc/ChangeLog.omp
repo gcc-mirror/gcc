@@ -1,3 +1,10 @@
+2019-01-30  Kwok Cheung Yeung <kcy@codesourcery.com>
+
+	* omp-general.c (omp_is_optional_argument): New.
+	* omp-general.h (omp_is_optional_argument): New.
+	* omp-low.c (lower_omp_target): Use size of referenced object when
+	optional argument used as argument to firstprivate.
+
 2018-12-11  Julian Brown  <julian@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 
