@@ -1,3 +1,8 @@
+2019-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88988
+	* testsuite/libgomp.c++/pr88988.C: New test.
+
 2019-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/89002
