@@ -1,3 +1,67 @@
+2019-01-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/kernels-alias-ipa-pta-2.c:
+	Add "--param=openacc-kernels=parloops".
+	* testsuite/libgomp.oacc-c-c++-common/kernels-alias-ipa-pta-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-alias-ipa-pta.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-empty.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq-4.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq-5.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq-6.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-collapse.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-data-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-data-enter-exit-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-data-enter-exit.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-data-update.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-data.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-g.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-mod-not-zero.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-n.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-nest.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-parallel-loop-data-enter-exit.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-reduction-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-reduction.c:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-2.f95: Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-data-2.f95:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-data-enter-exit-2.f95:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-data-enter-exit.f95:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-data-update.f95:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-data.f95: Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop.f95: Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-parallel-loop-data-enter-exit.f95:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-reduction-1.f90:
+	Likewise.
+
 2019-03-19  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/lib-93.c: Adjust target selector.

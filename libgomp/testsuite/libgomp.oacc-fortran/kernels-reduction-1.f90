@@ -1,6 +1,8 @@
 ! Test a simple acc loop reduction inside a kernels region. 
 
 ! { dg-do run }
+! { dg-additional-options "--param=openacc-kernels=parloops" } as this is
+! specifically testing "parloops" handling.
 
 ! { dg-additional-options "--param=openacc-kernels=decompose" }
 
