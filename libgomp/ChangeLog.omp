@@ -1,3 +1,10 @@
+2019-01-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* oacc-mem.c (update_dev_host): Return early if the host address
+	is NULL.
+	* testsuite/libgomp.oacc-c-c++-common/lib-43.c: Remove.
+	* testsuite/libgomp.oacc-c-c++-common/lib-47.c: Likewise.
+
 2018-12-11  Julian Brown  <julian@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 

@@ -692,6 +692,12 @@ update_dev_host (int is_dev, void *h, size_t s, int async)
   if (acc_dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
     return;
 
+  /* Fortran optional arguments that are non-present result in a
+     null host address here.  This can safely be ignored as it is
+     not possible to 'update' a non-present optional argument.  */
+  if (h == NULL)
+    return;
+
   gomp_mutex_lock (&acc_dev->lock);
 
   n = lookup_host (acc_dev, h, s);
