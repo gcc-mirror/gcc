@@ -1,3 +1,8 @@
+2019-01-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/87246
+	* gcc.target/i386/pr87246.c: New.
+
 2019-01-30  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89119 - ICE with value-initialization in template.
@@ -15,7 +20,7 @@
 	* gcc.target/powerpc/vec-extract-uint128-1.c: New test.
 	* gcc.target/powerpc/vec-extract-ulong-1.c: New test.
 	* gcc.target/powerpc/vec-extract-ushort-1.c: New test.
-	
+
 2019-01-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89111
