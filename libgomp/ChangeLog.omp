@@ -1,3 +1,10 @@
+2019-01-30  Andrew Jenner  <andrew@codesourcery.com>
+
+	* testsuite/libgomp.fortan/fortran.exp (lang_link_flags): Add
+	-lquadmath.
+	* testsuite/libgomp.oacc-fortran/fortran.exp (lang_link_flags): Add
+	-lquadmath.
+
 2019-05-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* libgomp_g.h: Include stdint.h instead of gstdint.h.
