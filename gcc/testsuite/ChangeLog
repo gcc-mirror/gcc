@@ -1,3 +1,9 @@
+2019-01-30  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR testsuite/88920
+
+	* lib/target-supports.exp: Cache result.
+
 2019-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89105
