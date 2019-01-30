@@ -659,6 +659,14 @@ decl_jump_unsafe (tree decl)
   if (error_operand_p (decl))
     return false;
 
+  /* Don't warn for compound literals.  If a goto statement crosses
+     their initialization, it should cross also all the places where
+     the complit is used or where the complit address might be saved
+     into some variable, so code after the label to which goto jumps
+     should not be able to refer to the compound literal.  */
+  if (VAR_P (decl) && C_DECL_COMPOUND_LITERAL_P (decl))
+    return false;
+
   /* Always warn about crossing variably modified types.  */
   if ((VAR_P (decl) || TREE_CODE (decl) == TYPE_DECL)
       && variably_modified_type_p (TREE_TYPE (decl), NULL_TREE))
@@ -5486,6 +5494,7 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const,
   DECL_READ_P (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
+  C_DECL_COMPOUND_LITERAL_P (decl) = 1;
   TREE_TYPE (decl) = type;
   c_apply_type_quals_to_decl (TYPE_QUALS (strip_array_types (type)), decl);
   if (alignas_align)

@@ -1,3 +1,8 @@
+2019-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89061
+	* gcc.dg/pr89061.c: New test.
+
 2019-01-29  Martin Sebor  <msebor@redhat.com>
 
 	PR c/88956
