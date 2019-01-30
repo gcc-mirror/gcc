@@ -1,3 +1,8 @@
+2019-01-30  Ulrich Drepper  <drepper@redhat.com>
+
+	* dumpfile.c (opt_info_switch_p_1): Ignore '-' if it appears
+	after '='.
+
 2019-01-29  Martin Sebor  <msebor@redhat.com>
 
 	PR c/88956
