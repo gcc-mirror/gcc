@@ -96,6 +96,10 @@ along with GCC; see the file COPYING3.  If not see
    #pragma omp threadprivate.  */
 #define C_DECL_THREADPRIVATE_P(DECL) DECL_LANG_FLAG_3 (VAR_DECL_CHECK (DECL))
 
+/* Set on VAR_DECLs for compound literals.  */
+#define C_DECL_COMPOUND_LITERAL_P(DECL) \
+  DECL_LANG_FLAG_5 (VAR_DECL_CHECK (DECL))
+
 /* Nonzero for a decl which either doesn't exist or isn't a prototype.
    N.B. Could be simplified if all built-in decls had complete prototypes
    (but this is presently difficult because some of them need FILE*).  */
