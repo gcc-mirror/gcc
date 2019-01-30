@@ -13,4 +13,4 @@ int main ()
 }
 
 // { dg-final { scan-assembler "_Z4frobi:" } }
-// { dg-final { scan-assembler ".weak\[\t ]*_Z4frobi" } }
+// { dg-final { scan-assembler ".weak(_definition)?\[\t ]*_?_Z4frobi" } }

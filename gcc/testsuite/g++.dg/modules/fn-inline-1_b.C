@@ -7,5 +7,5 @@ int Frob (int n, int a)
 }
 
 // { dg-final { scan-assembler "_ZW3bobE4frobii:" } }
-// { dg-final { scan-assembler ".weak\[\t ]*_ZW3bobE4frobii" } }
+// { dg-final { scan-assembler ".weak(_definition)?\[\t ]*_?_ZW3bobE4frobii" } }
 // { dg-final { scan-assembler "_Z4Frobii:" } }
