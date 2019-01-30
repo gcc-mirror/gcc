@@ -1,3 +1,12 @@
+2019-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86943 - wrong code converting lambda to function pointer.
+	* lambda.c (maybe_add_lambda_conv_op): Use a template-id in the
+	call.  Only forward parms for decltype.
+	* pt.c (tsubst_copy_and_build) [CALL_EXPR]: Handle CALL_FROM_THUNK_P
+	specially.
+	* typeck.c (check_return_expr): Don't mess with a thunk call.
+
 2019-01-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/89089 - ICE with [[no_unique_address]].
