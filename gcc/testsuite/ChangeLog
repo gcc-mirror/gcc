@@ -1,5 +1,8 @@
 2019-01-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/89105
+	* g++.target/i386/pr89105.C: New test.
+
 	PR c/89061
 	* gcc.dg/pr89061.c: New test.
 
