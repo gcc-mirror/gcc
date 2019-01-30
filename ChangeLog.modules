@@ -1,5 +1,9 @@
 2019-01-30  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/
+	* module.cc: Reorder includes.
+	* cxx-mapper.cc: Likewise.
+
 	gcc/testsuite/
 	* g++.dg/modules/fn-inline-1_{bc}.C: Adjust weak scan.
 

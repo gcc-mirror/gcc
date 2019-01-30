@@ -26,14 +26,9 @@ along with GCC; see the file COPYING3.  If not see
  */
 
 #include "config.h"
-#define INCLUDE_VECTOR
-#define INCLUDE_MAP
-#define INCLUDE_SET
-#include "system.h"
-#include "version.h"
-#include "intl.h"
-#include <getopt.h>
 
+/* Include network stuff first.  Excitingly OSX10.14 uses bcmp here, which
+   we poison later!  */
 #if defined (HAVE_AF_UNIX) || defined (HAVE_AF_INET6)
 /* socket, bind, listen, accept{4}  */
 # define NETWORKING 1
@@ -66,6 +61,15 @@ along with GCC; see the file COPYING3.  If not see
 #include <sys/select.h>
 #endif
 #endif
+
+#define INCLUDE_VECTOR
+#define INCLUDE_MAP
+#define INCLUDE_SET
+#include "system.h"
+#include "version.h"
+#include "intl.h"
+#include <getopt.h>
+
 
 #ifndef HAVE_MEMRCHR
 /* Some unfortunate souls do not have memrchr.

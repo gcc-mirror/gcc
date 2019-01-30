@@ -163,6 +163,27 @@ Classes used:
 #define MAPPER_VERSION 0
 
 #include "config.h"
+
+/* Include network stuff first.  Excitingly OSX10.14 uses bcmp here, which
+   we poison later!  */
+#if defined (HAVE_AF_UNIX) || defined (HAVE_AF_INET6)
+/* socket, connect, shutdown  */
+# define NETWORKING 1
+# include <sys/socket.h>
+# ifdef HAVE_AF_UNIX
+/* sockaddr_un  */
+#  include <sys/un.h>
+# endif
+# include <netinet/in.h>
+# ifdef HAVE_AF_INET6
+/* sockaddr_in6, getaddrinfo, freeaddrinfo, gai_strerror, ntohs, htons.  */
+#  include <netdb.h>
+# endif
+#endif
+#ifndef HAVE_AF_INET6
+# define gai_strerror(X) ""
+#endif
+
 #include "system.h"
 #include "coretypes.h"
 #include "cp-tree.h"
@@ -183,24 +204,6 @@ Classes used:
 #include "attribs.h"
 #include "intl.h"
 #include "langhooks.h"
-
-#if defined (HAVE_AF_UNIX) || defined (HAVE_AF_INET6)
-/* socket, connect, shutdown  */
-# define NETWORKING 1
-# include <sys/socket.h>
-# ifdef HAVE_AF_UNIX
-/* sockaddr_un  */
-#  include <sys/un.h>
-# endif
-# include <netinet/in.h>
-# ifdef HAVE_AF_INET6
-/* sockaddr_in6, getaddrinfo, freeaddrinfo, gai_strerror, ntohs, htons.  */
-#  include <netdb.h>
-# endif
-#endif
-#ifndef HAVE_AF_INET6
-# define gai_strerror(X) ""
-#endif
 
 #if HAVE_MMAP_FILE && _POSIX_MAPPED_FILES > 0
 /* mmap, munmap.  */
