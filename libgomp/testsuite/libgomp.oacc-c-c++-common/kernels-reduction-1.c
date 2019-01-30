@@ -1,6 +1,9 @@
 /* Verify that a simple, explicit acc loop reduction works inside
  a kernels region.  */
 
+/* { dg-additional-options "-fopenacc-kernels=parloops" } as this is
+   specifically testing "parloops" handling.  */
+
 #include <stdlib.h>
 
 #define N 100

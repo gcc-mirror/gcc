@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fopenacc-kernels=parloops" } as this is
+   specifically testing "parloops" handling.  */
 /* { dg-additional-options "-fopt-info-optimized-omp" } */
 
 int

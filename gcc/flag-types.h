@@ -371,6 +371,12 @@ enum cf_protection_level
   CF_SET = 1 << 2
 };
 
+/* OpenACC 'kernels' constructs handling.  */
+enum openacc_kernels
+{
+  OPENACC_KERNELS_PARLOOPS
+};
+
 /* Parloops schedule type.  */
 enum parloops_schedule_type
 {

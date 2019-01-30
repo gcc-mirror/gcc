@@ -1,3 +1,7 @@
+2019-01-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* flag-types.h (enum openacc_kernels): New type.
+
 2017-12-21  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* omp-low.c (install_parm_decl): Don't extract identifiers from
