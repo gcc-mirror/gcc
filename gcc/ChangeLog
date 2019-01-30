@@ -1,3 +1,10 @@
+2019-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89105
+	* config/i386/i386.c (ix86_warn_parameter_passing_abi): Don't warn
+	for arguments to functions that are TU-local and shouldn't be
+	referenced by assembly.
+
 2019-01-30  Ulrich Drepper  <drepper@redhat.com>
 
 	* dumpfile.c (opt_info_switch_p_1): Ignore '-' if it appears

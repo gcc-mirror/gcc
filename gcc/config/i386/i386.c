@@ -29562,6 +29562,10 @@ ix86_warn_parameter_passing_abi (cumulative_args_t cum_v, tree type)
   if (!TYPE_EMPTY_P (type))
     return;
 
+  /* Don't warn if the function isn't visible outside of the TU.  */
+  if (cum->decl && !TREE_PUBLIC (cum->decl))
+    return;
+
   const_tree ctx = get_ultimate_context (cum->decl);
   if (ctx != NULL_TREE
       && !TRANSLATION_UNIT_WARN_EMPTY_P (ctx))
