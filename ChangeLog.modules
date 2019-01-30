@@ -1,5 +1,16 @@
 2019-01-30  Nathan Sidwell  <nathan@acm.org>
 
+	ADL part 1
+	gcc/cp/
+	* cp-tree.h (module_visible_instantiation_path): Declare.
+	* module.cc (module_visible_instantiation_path): Implement.
+	* name-lookup.c (name_lookup::add_module_fns): Delete.
+	(name_lookup::add_namespace_fns): Add visible bitmaps,
+	reimplement.
+	(name_lookup::search_adl): Get path of instantiation.
+	gcc/testsuite/
+	* g++.dg/modules/adl-1_[abc].C: New.
+
 	gcc/cp/
 	* name-lookup.c (name_lookup::adl_namespace_only): Delete.
 	(name_lookip::adl_{namespace,class}_fns): New.

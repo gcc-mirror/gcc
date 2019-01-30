@@ -1775,9 +1775,9 @@ struct GTY(()) saved_scope {
 extern GTY(()) struct saved_scope *scope_chain;
 
 /* The current module index.  */
-
+// FIXME: Do we need this?
 #define current_module scope_chain->this_module
-  
+
 /* The current open namespace.  */
 
 #define current_namespace scope_chain->old_namespace
@@ -6844,6 +6844,7 @@ extern void finish_module_processing ();
 extern void finish_module_parse (cpp_reader *);
 extern char const *module_name (unsigned, const char **maybe_primary = NULL);
 extern bitmap module_import_bitmap (unsigned module);
+extern bitmap module_visible_instantiation_path (bitmap *);
 extern void module_begin_main_file (cpp_reader *, line_maps *,
 				    const line_map_ordinary *);
 extern int module_translate_include (cpp_reader *, line_maps *,

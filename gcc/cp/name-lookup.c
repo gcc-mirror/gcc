@@ -434,7 +434,6 @@ private:
 
 private:
   void add_fns (tree);
-  void add_module_fns (bitmap, tree, unsigned, unsigned);
   void adl_expr (tree);
   void adl_type (tree);
   void adl_template_arg (tree);
@@ -443,7 +442,7 @@ private:
   void adl_class_only (tree);
   void adl_namespace (tree);
   void adl_class_fns (tree);
-  void adl_namespace_fns (tree);
+  void adl_namespace_fns (tree, bitmap, bitmap);
 
 public:
   /* Search namespace + inlines + maybe usings as qualified lookup.  */
@@ -807,6 +806,9 @@ name_lookup::search_namespace_only (tree scope)
 		/* Extract what we can see from here.  If there's no
 		   stat_hack, then everything was exported.  */
 		tree type = NULL_TREE;
+
+		// FIXME: Isn't STAT_HACK_P always true?  Or does its
+		// lack imply everything is visible?
 		if (STAT_HACK_P (bind))
 		  {
 		    if (STAT_TYPE_VISIBLE_P (bind))
@@ -1029,50 +1031,10 @@ name_lookup::add_fns (tree fns)
   add_overload (fns);
 }
 
-void
-name_lookup::add_module_fns (bitmap imports, tree bind,
-			     unsigned ix, unsigned span)
-{
-  tree val = MAYBE_STAT_DECL (bind);
-
-  if (ix > current_module || ix + span <= current_module)
-    {
-      /* Looking at something other than the current module.  */
-
-      if (!imports)
-	return;
-
-      /* Figure out what's being exported.  */
-      if (TREE_CODE (val) == OVERLOAD)
-	{
-	  if (STAT_HACK_P (bind))
-	    val = STAT_VISIBLE (bind);
-	  else
-	    val = NULL_TREE;
-	}
-      else if (!DECL_MODULE_EXPORT_P (val))
-	val = NULL_TREE;
-
-      if (!val)
-	/* You aint seen nuthin', right?  */
-	return;
-
-      /* Are we importing this module?  */
-      bool found = false;
-      for (; !found && span--; ix++)
-	if (bitmap_bit_p (imports, ix))
-	  found = true;
-
-      if (!found)
-	return;
-    }
-  add_fns (val);
-}
-
 /* Add the overloaded fns of SCOPE.  */
 
 void
-name_lookup::adl_namespace_fns (tree scope)
+name_lookup::adl_namespace_fns (tree scope, bitmap imports, bitmap inst_path)
 {
   if (tree *binding = find_namespace_slot (scope, name))
     {
@@ -1081,14 +1043,61 @@ name_lookup::adl_namespace_fns (tree scope)
 	add_fns (ovl_skip_hidden (MAYBE_STAT_DECL (val)));
       else
 	{
-	  bitmap imports = module_import_bitmap (current_module);
+	  /* I presume the binding list is going to be sparser than
+	     the import bitmap.  Hence iterate over the former
+	     checking for bits set in the bitmap.  */
 	  module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (val);
-	  for (unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (val); ix--; cluster++)
-	    for (unsigned jx = MODULE_VECTOR_SLOTS_PER_CLUSTER; jx--;)
-	      if (cluster->slots[jx])
-		add_module_fns (imports, cluster->slots[jx],
-				cluster->indices[jx].base,
-				cluster->indices[jx].span);
+
+	  if (tree bind = cluster->slots[MODULE_SLOT_CURRENT])
+	    /* The current TU's bindings must be visible, we don't
+	       need to check the bitmaps.  */
+	    add_fns (ovl_skip_hidden (MAYBE_STAT_DECL (bind)));
+
+	  /* Scan the imported bindings.  */
+	  unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (val);
+	  if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_IMPORT_BASE)
+	    {
+	      ix--;
+	      cluster++;
+	    }
+
+	  /* Do this in forward order, so we load modules in an order
+	     the user expects.  */
+	  for (; ix--; cluster++)
+	    for (unsigned jx = 0; jx != MODULE_VECTOR_SLOTS_PER_CLUSTER; jx++)
+	      {
+		/* Functions are never on merged slots.  */
+		if (!cluster->indices[jx].base
+		    || cluster->indices[jx].span != 1)
+		  continue;
+
+		/* Is this slot visible?  */
+		if (!bitmap_bit_p (imports, cluster->indices[jx].base))
+		  continue;
+
+		/* Is it loaded.  */
+		if (cluster->slots[jx].is_lazy ())
+		  lazy_load_binding (cluster->indices[jx].base,
+				     scope, name, &cluster->slots[jx], true);
+
+		tree bind = cluster->slots[jx];
+		if (!bind)
+		  /* Load errors could mean there's nothing here.  */
+		  continue;
+
+		// FIXME: See comment in search_namespace_only
+		if (STAT_HACK_P (bind))
+		  {
+		    /* Modules of the instantiation path are as-if
+		       from the module.  */
+		    if (bitmap_bit_p (inst_path, cluster->indices[jx].base))
+		      bind = ovl_skip_hidden (STAT_DECL (bind));
+		    else
+		      bind = STAT_VISIBLE (bind);
+		  }
+
+		add_fns (bind);
+	      }
 	}
     }
 }
@@ -1418,15 +1427,22 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 	}
       value = fns;
 
+      bitmap inst_path = NULL;
+      bitmap visible = module_visible_instantiation_path (&inst_path);
+
       for (unsigned ix = scopes->length (); ix--;)
 	{
 	  tree scope = (*scopes)[ix];
 	  if (TREE_CODE (scope) == NAMESPACE_DECL)
-	    adl_namespace_fns (scope);
-	  else if (RECORD_OR_UNION_TYPE_P (scope))
-	    adl_class_fns (scope);
+	    adl_namespace_fns (scope, visible, inst_path);
 	  else
-	    gcc_unreachable ();
+	    {
+	      if (RECORD_OR_UNION_TYPE_P (scope))
+		adl_class_fns (scope);
+	      else
+		gcc_unreachable ();
+	      // FIXME: Add fns of the namespace partition of SCOPE
+	    }
 	}
       
       fns = value;

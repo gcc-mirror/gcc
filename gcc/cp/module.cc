@@ -13059,6 +13059,47 @@ module_import_bitmap (unsigned ix)
   return (*modules)[ix]->imports;
 }
 
+/* Return the bitmap describing what modules are visible along the
+   path of instantiation.  If we're not instantiation, this will be
+   the visible imports of the TU.  */
+// FIXME: Should we cache this?  smoosh it into tinst_level?
+
+bitmap
+module_visible_instantiation_path (bitmap *path_map_p)
+{
+  bitmap visible = (*modules)[MODULE_NONE]->imports;
+
+  if (tinst_level *path = current_instantiation ())
+    {
+      bitmap path_map = BITMAP_GGC_ALLOC ();
+      bitmap_set_bit (path_map, MODULE_NONE);
+      bitmap_set_bit (path_map, MODULE_PURVIEW);
+
+      bitmap tmp = BITMAP_GGC_ALLOC ();
+      bitmap_copy (tmp, visible);
+      visible = tmp;
+      for (; path; path = path->next)
+	{
+	  tree decl = path->tldcl;
+	  if (TREE_CODE (decl) == TREE_LIST)
+	    decl = TREE_PURPOSE (decl);
+	  if (TYPE_P (decl))
+	    decl = TYPE_NAME (decl);
+	  decl = get_module_owner (decl);
+	  if (unsigned mod = MAYBE_DECL_MODULE_OWNER (decl))
+	    if (!bitmap_bit_p (path_map, mod))
+	      {
+		bitmap_set_bit (path_map, mod);
+		bitmap imports = (*modules)[mod]->imports;
+		bitmap_ior_into (visible, imports);
+	      }
+	}
+      *path_map_p = path_map;
+    }
+
+  return visible;
+}
+
 /* We've just directly imported OTHER.  Update our import/export
    bitmaps.  IS_EXPORT is true if we're reexporting the OTHER.  */
 
