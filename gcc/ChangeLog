@@ -1,3 +1,9 @@
+2019-01-30  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/87064
+	* config/rs6000/vsx.md (*vsx_reduc_<VEC_reduc_name>_v4sf_scalar):
+	Disable for little-endian.
+
 2019-01-30  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/89115
