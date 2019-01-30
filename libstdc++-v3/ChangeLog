@@ -1,3 +1,13 @@
+2019-01-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89117
+	* src/c++17/fs_path.cc (path::replace_extension): Erase extension from
+	final component as well as from _M_pathname. Append the dot using
+	operator+= instead of only to _M_pathname.
+	(path::_M_find_extension): Reformat slightly.
+	* testsuite/27_io/filesystem/path/modifiers/replace_extension.cc:
+	Add more test cases.
+
 2019-01-30  Ulrich Drepper  <drepper@redhat.com>
 
 	* doc/xml/manual/status_cxx2020.xml: Update P0600 entry.

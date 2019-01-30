@@ -1258,17 +1258,16 @@ path::replace_extension(const path& replacement)
 	_M_pathname.erase(ext.second);
       else
 	{
-	  const auto& back = _M_cmpts.back();
-	  if (ext.first != &back._M_pathname)
-	    _GLIBCXX_THROW_OR_ABORT(
-		std::logic_error("path::replace_extension failed"));
+	  auto& back = _M_cmpts.back();
+	  __glibcxx_assert( ext.first == &back._M_pathname );
+	  back._M_pathname.erase(ext.second);
 	  _M_pathname.erase(back._M_pos + ext.second);
 	}
     }
    // If replacement is not empty and does not begin with a dot character,
    // a dot character is appended
   if (!replacement.empty() && replacement.native()[0] != dot)
-    _M_pathname += dot;
+    operator+=(".");
   operator+=(replacement);
   return *this;
 }
@@ -1803,8 +1802,9 @@ path::_M_find_extension() const
 	{
 	  if (sz <= 2 && (*s)[0] == dot)
 	    return { s, string_type::npos };
-	  const auto pos = s->rfind(dot);
-	  return { s, pos ? pos : string_type::npos };
+	  if (const auto pos = s->rfind(dot))
+	    return { s , pos };
+	  return { s, string_type::npos };
 	}
     }
   return {};
