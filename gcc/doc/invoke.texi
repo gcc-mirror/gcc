@@ -29945,6 +29945,10 @@ code bases there may be more imports than the process limit of file
 descriptors.  By default, the limit is 20 less than the per-process
 limit, if that is determinable.
 
+@menu
+* C++ Module Mapper::       Module Mapper
+@end menu
+
 @node C++ Module Mapper
 @subsection Module Mapper
 @cindex C++ Module Mapper
