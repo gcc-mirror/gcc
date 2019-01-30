@@ -1,3 +1,10 @@
+2019-01-30  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-c.c (altivec-resolve_overloaded_builtin):
+	Change handling of ALTIVEC_BUILTIN_VEC_EXTRACT.  Coerce result to
+	type of vector element when vec_extract is implemented by direct
+	move.
+
 2019-01-30  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* doc/invoke.texi (C Language Options): List "-fopenacc-dim".

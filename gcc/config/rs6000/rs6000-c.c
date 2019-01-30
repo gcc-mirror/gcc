@@ -6645,7 +6645,13 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	    }
 
 	  if (call)
-	    return build_call_expr (call, 2, arg1, arg2);
+	    {
+	      tree result = build_call_expr (call, 2, arg1, arg2);
+	      /* Coerce the result to vector element type.  May be no-op.  */
+	      arg1_inner_type = TREE_TYPE (arg1_type);
+	      result = fold_convert (arg1_inner_type, result);
+	      return result;
+	    }
 	}
 
       /* Build *(((arg1_inner_type*)&(vector type){arg1})+arg2). */
