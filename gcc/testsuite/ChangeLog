@@ -1,3 +1,8 @@
+2019-01-30  Manfred Schwarb  <manfred99@gmx.ch>
+
+	* gfortran.dg/newunit_5.f90.f90: Moved to
+	* gfortran.dg/newunit_5.f90: here and fix a dg directive.
+
 2019-01-30  Kewen Lin  <linkw@gcc.gnu.org>
 
 	Backport from mainline
