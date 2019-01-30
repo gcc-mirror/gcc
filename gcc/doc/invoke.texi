@@ -197,7 +197,9 @@ in the following sections.
 -fpermitted-flt-eval-methods=@var{standard} @gol
 -aux-info @var{filename}  -fallow-parameterless-variadic-functions @gol
 -fno-asm  -fno-builtin  -fno-builtin-@var{function}  -fgimple@gol
--fhosted  -ffreestanding  -fopenacc  -fopenmp  -fopenmp-simd @gol
+-fhosted  -ffreestanding @gol
+-fopenacc  -fopenacc-dim=@var{geom} @gol
+-fopenmp  -fopenmp-simd @gol
 -fms-extensions  -fplan9-extensions  -fsso-struct=@var{endianness} @gol
 -fallow-single-precision  -fcond-mismatch  -flax-vector-conversions @gol
 -fsigned-bitfields  -fsigned-char @gol
