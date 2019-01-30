@@ -1,5 +1,17 @@
 2019-01-30  Nathan Sidwell  <nathan@acm.org>
 
+	ADL part 2
+	gcc/cp/
+	* cp-tree.h (LOOKUP_FOUND_P): Allow enumeral type.
+	* module.cc (module_visible_instantiation_path): Protect against
+	not modules.
+	* name-lookup.c (name_lookup::adl_enum): New.
+	(name_lookup::adl_type): Use it.
+	(name_lookup::adl_namespace): INST_PATH may be null.
+	(name_lookup::search_adl): Add partitions of types.
+	gcc/testsuite/
+	* g++.dg/modules/adl-[23]_[abc].C: New.
+
 	ADL part 1
 	gcc/cp/
 	* cp-tree.h (module_visible_instantiation_path): Declare.

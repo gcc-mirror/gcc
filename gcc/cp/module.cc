@@ -13067,6 +13067,9 @@ module_import_bitmap (unsigned ix)
 bitmap
 module_visible_instantiation_path (bitmap *path_map_p)
 {
+  if (!modules_p ())
+    return NULL;
+
   bitmap visible = (*modules)[MODULE_NONE]->imports;
 
   if (tinst_level *path = current_instantiation ())

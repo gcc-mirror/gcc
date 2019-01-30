@@ -438,6 +438,7 @@ private:
   void adl_type (tree);
   void adl_template_arg (tree);
   void adl_class (tree);
+  void adl_enum (tree);
   void adl_bases (tree);
   void adl_class_only (tree);
   void adl_namespace (tree);
@@ -1090,7 +1091,8 @@ name_lookup::adl_namespace_fns (tree scope, bitmap imports, bitmap inst_path)
 		  {
 		    /* Modules of the instantiation path are as-if
 		       from the module.  */
-		    if (bitmap_bit_p (inst_path, cluster->indices[jx].base))
+		    if (inst_path
+			&& bitmap_bit_p (inst_path, cluster->indices[jx].base))
 		      bind = ovl_skip_hidden (STAT_DECL (bind));
 		    else
 		      bind = STAT_VISIBLE (bind);
@@ -1248,6 +1250,19 @@ name_lookup::adl_class (tree type)
 }
 
 void
+name_lookup::adl_enum (tree type)
+{
+  type = TYPE_MAIN_VARIANT (type);
+  if (see_and_mark (type))
+    return;
+
+  if (TYPE_CLASS_SCOPE_P (type))
+    adl_class_only (TYPE_CONTEXT (type));
+  else
+    adl_namespace (decl_namespace_context (type));
+}
+
+void
 name_lookup::adl_expr (tree expr)
 {
   if (!expr)
@@ -1332,10 +1347,7 @@ name_lookup::adl_type (tree type)
       return;
 
     case ENUMERAL_TYPE:
-      if (TYPE_CLASS_SCOPE_P (type))
-	adl_class_only (TYPE_CONTEXT (type));
-      else
-	adl_namespace (decl_namespace_context (type));
+      adl_enum (type);
       return;
 
     case LANG_TYPE:
@@ -1439,12 +1451,40 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 	    {
 	      if (RECORD_OR_UNION_TYPE_P (scope))
 		adl_class_fns (scope);
-	      else
-		gcc_unreachable ();
-	      // FIXME: Add fns of the namespace partition of SCOPE
+
+	      if (modules_p ())
+		{
+		  /* Add fns in the innermost namespace partition of the
+		     type.  */
+		  tree owner = get_module_owner (TYPE_NAME (scope));
+		  unsigned mod = MAYBE_DECL_MODULE_OWNER (owner);
+
+		  /* If the module was in the inst path, we'll look at its
+		     namespace partition anyway.  */
+		  if (mod >= MODULE_IMPORT_BASE
+		      && !(inst_path && bitmap_bit_p (inst_path, mod)))
+		    {
+		      tree ns = CP_DECL_CONTEXT (owner);
+		      if (tree *slot = find_namespace_slot (ns, name, false))
+			if (mc_slot *mslot
+			    = search_imported_binding_slot (slot, mod))
+			  {
+			    if (mslot->is_lazy ())
+			      lazy_load_binding (mod, ns, name, mslot, true);
+			    else if (!deduping)
+			      {
+				deduping = true;
+				lookup_mark (value, true);
+			      }
+
+			    if (tree bind = *mslot)
+			      add_fns (ovl_skip_hidden (MAYBE_STAT_DECL (bind)));
+			  }
+		    }
+		}
 	    }
 	}
-      
+
       fns = value;
     }
 
