@@ -453,6 +453,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECLTYPE_FOR_REF_CAPTURE (in DECLTYPE_TYPE)
       CONSTRUCTOR_C99_COMPOUND_LITERAL (in CONSTRUCTOR)
       OVL_NESTED_P (in OVERLOAD)
+      LAMBDA_EXPR_INSTANTIATED (in LAMBDA_EXPR)
    4: IDENTIFIER_MARKED (IDENTIFIER_NODEs)
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
 	  CALL_EXPR, or FIELD_DECL).
@@ -1333,6 +1334,10 @@ enum cp_lambda_default_capture_mode_type {
 /* True iff uses of a const variable capture were optimized away.  */
 #define LAMBDA_EXPR_CAPTURE_OPTIMIZED(NODE) \
   TREE_LANG_FLAG_2 (LAMBDA_EXPR_CHECK (NODE))
+
+/* True iff this LAMBDA_EXPR was generated in tsubst_lambda_expr.  */
+#define LAMBDA_EXPR_INSTANTIATED(NODE) \
+  TREE_LANG_FLAG_3 (LAMBDA_EXPR_CHECK (NODE))
 
 /* True if this TREE_LIST in LAMBDA_EXPR_CAPTURE_LIST is for an explicit
    capture.  */

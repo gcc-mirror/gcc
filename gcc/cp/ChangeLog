@@ -1,3 +1,11 @@
+2019-01-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88752 - ICE with lambda and constexpr if.
+	* cp-tree.h (LAMBDA_EXPR_INSTANTIATED): New.
+	* pt.c (tsubst_lambda_expr): Set it.
+	(instantiated_lambda_fn_p): Check it.
+	(enclosing_instantiation_of): Use it.
+
 2019-01-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/88170
