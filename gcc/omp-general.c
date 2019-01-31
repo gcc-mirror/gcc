@@ -53,7 +53,12 @@ omp_find_clause (tree clauses, enum omp_clause_code kind)
 bool
 omp_is_optional_argument (tree decl)
 {
-  return TREE_CODE (decl) == PARM_DECL && DECL_BY_REFERENCE (decl)
+  /* A passed-by-reference Fortran optional argument is similar to
+     a normal argument, but since it can be null the type is a
+     POINTER_TYPE rather than a REFERENCE_TYPE.  */
+  return lang_GNU_Fortran ()
+        && TREE_CODE (decl) == PARM_DECL
+        && DECL_BY_REFERENCE (decl)
 	 && TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE;
 }
 
