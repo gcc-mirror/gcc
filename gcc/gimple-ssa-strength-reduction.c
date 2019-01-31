@@ -1220,7 +1220,7 @@ slsr_process_mul (gimple *gs, tree rhs1, tree rhs2, bool speed)
       c->next_interp = c2->cand_num;
       c2->first_interp = c->cand_num;
     }
-  else
+  else if (TREE_CODE (rhs2) == INTEGER_CST && !integer_zerop (rhs2))
     {
       /* Record an interpretation for the multiply-immediate.  */
       c = create_mul_imm_cand (gs, rhs1, rhs2, speed);
