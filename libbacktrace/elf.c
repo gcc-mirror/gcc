@@ -2864,7 +2864,7 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
       /* Read the build ID if present.  This could check for any
 	 SHT_NOTE section with the right note name and type, but gdb
 	 looks for a specific section name.  */
-      if (!debuginfo
+      if ((!debuginfo || with_buildid_data != NULL)
 	  && !buildid_view_valid
 	  && strcmp (name, ".note.gnu.build-id") == 0)
 	{
@@ -2938,7 +2938,7 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 	  if (debugaltlink_name_len < shdr->sh_size)
 	    {
 	      /* Include terminating zero.  */
-	      debugaltlink_name_len =+ 1;
+	      debugaltlink_name_len += 1;
 
 	      debugaltlink_buildid_data
 		= debugaltlink_data + debugaltlink_name_len;

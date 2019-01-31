@@ -1,3 +1,9 @@
+2019-01-31  Tom de Vries  <tdevries@suse.de>
+
+	PR libbacktrace/89136
+	* elf.c (elf_add): Read build-id if with_buildid_data.  Fix
+	'debugaltlink_name_len =+ 1'.
+
 2019-01-29  Tom de Vries  <tdevries@suse.de>
 
 	* install-debuginfo-for-buildid.sh.in: New script.
