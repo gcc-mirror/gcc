@@ -1,3 +1,9 @@
+2018-01-31  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR tree-optimization/89008
+	* gimple-ssa-strength-reduction.c (slsr_process_mul): Don't
+	process anything of the form X * 0.
+
 2019-01-31  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89135
