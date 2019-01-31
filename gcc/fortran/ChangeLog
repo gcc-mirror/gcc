@@ -1,3 +1,10 @@
+2019-01-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/88669
+	* resolve.c (resolve_component): If the reference is a BT_CLASS,
+	copy the contiguous attribute from the reference and use the
+	correct attributes.
+
 2019-01-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/52564

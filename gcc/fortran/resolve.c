@@ -13761,6 +13761,7 @@ static bool
 resolve_component (gfc_component *c, gfc_symbol *sym)
 {
   gfc_symbol *super_type;
+  symbol_attribute *attr;
 
   if (c->attr.artificial)
     return true;
@@ -13803,7 +13804,23 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
     }
 
   /* F2008, C448.  */
-  if (c->attr.contiguous && (!c->attr.dimension || !c->attr.pointer))
+  if (c->ts.type == BT_CLASS)
+    {
+      if (CLASS_DATA (c))
+	{
+	  attr = &(CLASS_DATA (c)->attr);
+
+	  /* Fix up contiguous attribute.  */
+	  if (c->attr.contiguous)
+	    attr->contiguous = 1;
+	}
+      else
+	attr = NULL;
+    }
+  else
+    attr = &c->attr;
+
+  if (attr && attr->contiguous && (!attr->dimension || !attr->pointer))
     {
       gfc_error ("Component %qs at %L has the CONTIGUOUS attribute but "
                  "is not an array pointer", c->name, &c->loc);
