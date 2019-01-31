@@ -3218,8 +3218,20 @@ static const std::pair<tree *, unsigned> global_tree_arys[] =
 static GTY(()) vec<tree, va_gc> *fixed_trees;
 static unsigned global_crc;
 
+/* Lazy loading can open many files concurrently, there are
+   per-process limits on that.  We pay attention to the process limit,
+   and attempt to increase it when we run out.  Otherwise we use an
+   LRU scheme to figure out who to flush.  Note that if the import
+   graph /depth/ exceeds lazy_limit, we'll exceed the limit.  */
 static unsigned lazy_lru;  /* LRU counter.  */
-static int lazy_open;	 /* Remaining limit for unfrozen loaders.   */
+static unsigned lazy_open; /* Number of open modules */
+static unsigned lazy_limit; /* Current limit of open modules.  */
+static unsigned lazy_hard_limit; /* Hard limit on open modules.  */
+/* Account for source, assembler and dump files & directory searches.
+   We don't keep the source file's open, so we don't have to account
+   for #include depth.  I think dump files are opened and closed per
+   pass, but ICBW.  */
+#define LAZY_HEADROOM 15 /* File descriptor headroom.  */
 
 /* Vector of module state.  Indexed by OWNER.  Has at least 2 slots.  */
 static GTY(()) vec<module_state *, va_gc> *modules;
@@ -12939,11 +12951,11 @@ module_state::maybe_defrost ()
 {
   if (from ()->is_frozen ())
     {
-      if (lazy_open <= 0)
+      if (lazy_open >= lazy_limit)
 	freeze_an_elf ();
       dump () && dump ("Defrosting '%s'", filename);
       from ()->defrost (maybe_add_bmi_prefix (filename));
-      lazy_open--;
+      lazy_open++;
     }
 }
 
@@ -12976,7 +12988,7 @@ module_state::check_read (unsigned diag_count, tree ns, tree id)
 	       && (from ()->get_error () || !slurp ()->remaining));
   if (done)
     {
-      lazy_open++;
+      lazy_open--;
       if (slurp ()->macro_defs.size)
 	from ()->preserve (slurp ()->macro_defs);
       if (slurp ()->macro_tbl.size)
@@ -13343,7 +13355,7 @@ module_state::do_import (char const *fname, cpp_reader *reader)
 	      && !is_imported () && loc != UNKNOWN_LOCATION);
   unsigned diags = is_direct () ? errorcount + warningcount + 1 : 0;
 
-  if (lazy_open <= 0)
+  if (lazy_open >= lazy_limit)
     freeze_an_elf ();
 
   if (fname)
@@ -13362,7 +13374,7 @@ module_state::do_import (char const *fname, cpp_reader *reader)
 
   announce ("importing");
   imported_p = true;
-  lazy_open--;
+  lazy_open++;
   module_state *alias = read (fd, e, reader);
   bool ok = check_read (diags);
   if (alias)
@@ -13438,11 +13450,40 @@ module_state::direct_import (cpp_reader *reader, bool lazy)
   dump.pop (n);
 }
 
+/* Attempt to increase the file descriptor limit.  */
+
+static bool
+try_increase_lazy (unsigned want)
+{
+  gcc_checking_assert (lazy_open >= lazy_limit);
+
+  /* If we're increasing, saturate at hard limit.  */
+  if (want > lazy_hard_limit && lazy_limit < lazy_hard_limit)
+    want = lazy_hard_limit;
+
+#if HAVE_SETRLIMIT
+  if ((!lazy_limit || !PARAM_VALUE (PARAM_LAZY_MODULES))
+      && lazy_hard_limit
+      && want <= lazy_hard_limit)
+    {
+      struct rlimit rlimit;
+      rlimit.rlim_cur = want + LAZY_HEADROOM;
+      if (!setrlimit (RLIMIT_NOFILE, &rlimit))
+	lazy_limit = want;
+    }
+#endif
+
+  return lazy_open < lazy_limit;
+}
+
 /* Pick a victim module to freeze its reader.  */
 
 void
 module_state::freeze_an_elf ()
 {
+  if (try_increase_lazy (lazy_open * 2))
+    return;
+
   module_state *victim = NULL;
   for (unsigned ix = modules->length (); ix--;)
     {
@@ -13463,7 +13504,7 @@ module_state::freeze_an_elf ()
 	/* Save the macro definitions to a buffer.  */
 	victim->from ()->preserve (victim->slurp ()->macro_tbl);
       victim->from ()->freeze ();
-      lazy_open++;
+      lazy_open--;
     }
   else
     dump () && dump ("No module available for freezing");
@@ -13865,19 +13906,31 @@ init_module_processing ()
   dump.push (NULL);
 
   /* Determine lazy handle bound.  */
-  lazy_open = PARAM_VALUE (PARAM_LAZY_MODULES);
-  if (!lazy_open)
-    {
-      lazy_open = 100;
+  {
+    /* Pay Me One Million File Descriptors! */
+    unsigned limit = 1000000;
 #if HAVE_GETRLIMIT
-      struct rlimit rlimit;
-      if (!getrlimit (RLIMIT_NOFILE, &rlimit))
-	lazy_open = (rlimit.rlim_cur > 1000000
-		     ? 1000000 : unsigned (rlimit.rlim_cur));
+    struct rlimit rlimit;
+    if (!getrlimit (RLIMIT_NOFILE, &rlimit))
+      {
+	lazy_hard_limit = (rlimit.rlim_max < limit
+			   ? unsigned (rlimit.rlim_max) : limit);
+	lazy_hard_limit = (lazy_hard_limit > LAZY_HEADROOM
+			   ? lazy_hard_limit - LAZY_HEADROOM : 0);
+	if (rlimit.rlim_cur < 1000000)
+	  limit = unsigned (rlimit.rlim_cur);
+      }
 #endif
-      /* Use 3/4's of the available handles.  */
-      lazy_open = lazy_open * 3 / 4;
-    }
+    limit = limit > LAZY_HEADROOM ? limit - LAZY_HEADROOM : 1;
+
+    if (unsigned parm = PARAM_VALUE (PARAM_LAZY_MODULES))
+      {
+	if (parm <= limit || !try_increase_lazy (parm))
+	  lazy_limit = parm;
+      }
+    else
+      lazy_limit = limit;
+  }
 
   if (dump ())
     {
@@ -13897,7 +13950,8 @@ init_module_processing ()
 	    );
       dump ("Reading: %s", MAPPED_READING ? "mmap" : "fileio");
       dump ("Writing: %s", MAPPED_WRITING ? "mmap" : "fileio");
-      dump ("Lazy limit: %u", lazy_open);
+      dump ("Lazy limit: %u", lazy_limit);
+      dump ("Lazy hard limit: %u", lazy_hard_limit);
       dump ("");
     }
 
