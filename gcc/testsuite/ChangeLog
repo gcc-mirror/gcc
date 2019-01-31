@@ -1,3 +1,14 @@
+2019-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89083, c++/80864 - ICE with list initialization in template.
+	* g++.dg/cpp0x/initlist107.C: New test.
+	* g++.dg/cpp0x/initlist108.C: New test.
+	* g++.dg/cpp0x/initlist109.C: New test.
+	* g++.dg/cpp0x/initlist110.C: New test.
+	* g++.dg/cpp0x/initlist111.C: New test.
+	* g++.dg/cpp0x/initlist112.C: New test.
+	* g++.dg/init/ptrfn4.C: New test.
+
 2019-01-31  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/89122

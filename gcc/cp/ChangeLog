@@ -1,3 +1,11 @@
+2019-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89083, c++/80864 - ICE with list initialization in template.
+	* constexpr.c (adjust_temp_type): Use copy_node and change the type
+	instead of using build_constructor.
+	* decl.c (reshape_init_r): Don't reshape a digested initializer.
+	Return the initializer for COMPOUND_LITERAL_P.
+
 2019-01-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/88752 - ICE with lambda and constexpr if.
