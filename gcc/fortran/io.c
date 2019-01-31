@@ -4172,6 +4172,23 @@ match_io (io_kind k)
 	      else
 		gfc_current_locus = where;
 	    }
+
+	  if (gfc_match_char ('*') == MATCH_YES
+	      && gfc_match_char(',') == MATCH_YES)
+	    {
+	      locus where2 = gfc_current_locus;
+	      if (gfc_match_eos () == MATCH_YES)
+		{
+		  gfc_current_locus = where2;
+		  gfc_error ("Comma after * at %C not allowed without I/O list");
+		  m = MATCH_ERROR;
+		  goto cleanup;
+		}
+	      else
+		gfc_current_locus = where;
+	    }
+	  else
+	    gfc_current_locus = where;
 	}
 
       if (gfc_current_form == FORM_FREE)
