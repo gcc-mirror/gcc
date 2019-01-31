@@ -1291,7 +1291,12 @@ adjust_temp_type (tree type, tree temp)
     return temp;
   /* Avoid wrapping an aggregate value in a NOP_EXPR.  */
   if (TREE_CODE (temp) == CONSTRUCTOR)
-    return build_constructor (type, CONSTRUCTOR_ELTS (temp));
+    {
+      /* build_constructor wouldn't retain various CONSTRUCTOR flags.  */
+      tree t = copy_node (temp);
+      TREE_TYPE (t) = type;
+      return t;
+    }
   if (TREE_CODE (temp) == EMPTY_CLASS_EXPR)
     return build0 (EMPTY_CLASS_EXPR, type);
   gcc_assert (scalarish_type_p (type));
