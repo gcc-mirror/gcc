@@ -10316,18 +10316,51 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      tkind = GOMP_MAP_FIRSTPRIVATE_INT;
 	    type = TREE_TYPE (ovar);
 	    if (TREE_CODE (type) == ARRAY_TYPE)
-	      var = build_fold_addr_expr (var);
+	      {
+		var = build_fold_addr_expr (var);
+		gimplify_assign (x, var, &ilist);
+	      }
 	    else
 	      {
-		if (omp_is_reference (ovar))
+		tree opt_arg_label;
+		bool optional_arg_p = omp_is_optional_argument (ovar);
+
+		if (optional_arg_p)
+		  {
+		    tree null_label
+		      = create_artificial_label (UNKNOWN_LOCATION);
+		    tree notnull_label
+		      = create_artificial_label (UNKNOWN_LOCATION);
+		    opt_arg_label
+		      = create_artificial_label (UNKNOWN_LOCATION);
+		    tree new_x = copy_node (x);
+		    gcond *cond = gimple_build_cond (EQ_EXPR, ovar,
+						     null_pointer_node,
+						     null_label,
+						     notnull_label);
+		    gimple_seq_add_stmt (&ilist, cond);
+		    gimple_seq_add_stmt (&ilist,
+					 gimple_build_label (null_label));
+		    gimplify_assign (new_x, null_pointer_node, &ilist);
+		    gimple_seq_add_stmt (&ilist,
+					 gimple_build_goto (opt_arg_label));
+		    gimple_seq_add_stmt (&ilist,
+					 gimple_build_label (notnull_label));
+		  }
+
+		if (omp_is_reference (ovar) || optional_arg_p)
 		  {
 		    type = TREE_TYPE (type);
 		    if (TREE_CODE (type) != ARRAY_TYPE)
 		      var = build_simple_mem_ref (var);
 		    var = fold_convert (TREE_TYPE (x), var);
 		  }
+
+		gimplify_assign (x, var, &ilist);
+		if (optional_arg_p)
+		  gimple_seq_add_stmt (&ilist,
+				       gimple_build_label (opt_arg_label));
 	      }
-	    gimplify_assign (x, var, &ilist);
 	    s = size_int (0);
 	    purpose = size_int (map_idx++);
 	    CONSTRUCTOR_APPEND_ELT (vsize, purpose, s);
@@ -10509,11 +10542,43 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      {
 		tree type = TREE_TYPE (var);
 		tree new_var = lookup_decl (var, ctx);
-		if (omp_is_reference (var))
+		tree opt_arg_label = NULL_TREE;
+
+		if (omp_is_reference (var) || omp_is_optional_argument (var))
 		  {
 		    type = TREE_TYPE (type);
 		    if (TREE_CODE (type) != ARRAY_TYPE)
 		      {
+			if (omp_is_optional_argument (var))
+			  {
+			    tree null_label
+			      = create_artificial_label (UNKNOWN_LOCATION);
+			    tree notnull_label
+			      = create_artificial_label (UNKNOWN_LOCATION);
+			    opt_arg_label
+			      = create_artificial_label (UNKNOWN_LOCATION);
+			    glabel *null_glabel
+			      = gimple_build_label (null_label);
+			    glabel *notnull_glabel
+			      = gimple_build_label (notnull_label);
+			    ggoto *opt_arg_ggoto
+			      = gimple_build_goto (opt_arg_label);
+			    gcond *cond;
+
+			    gimplify_expr (&x, &new_body, NULL, is_gimple_val,
+					   fb_rvalue);
+			    cond = gimple_build_cond (EQ_EXPR, x,
+						      null_pointer_node,
+						      null_label,
+						      notnull_label);
+			    gimple_seq_add_stmt (&new_body, cond);
+			    gimple_seq_add_stmt (&new_body, null_glabel);
+			    gimplify_assign (new_var, null_pointer_node,
+					     &new_body);
+			    gimple_seq_add_stmt (&new_body, opt_arg_ggoto);
+			    gimple_seq_add_stmt (&new_body, notnull_glabel);
+			  }
+
 			tree v = create_tmp_var_raw (type, get_name (var));
 			gimple_add_tmp_var (v);
 			TREE_ADDRESSABLE (v) = 1;
@@ -10530,6 +10595,10 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		gimplify_expr (&x, &new_body, NULL, is_gimple_val, fb_rvalue);
 		gimple_seq_add_stmt (&new_body,
 				     gimple_build_assign (new_var, x));
+
+		if (opt_arg_label != NULL_TREE)
+		  gimple_seq_add_stmt (&new_body,
+				       gimple_build_label (opt_arg_label));
 	      }
 	    break;
 	  }
