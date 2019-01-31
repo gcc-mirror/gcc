@@ -13019,8 +13019,9 @@ module_state::check_read (unsigned diag_count, tree ns, tree id)
 	  || e == ENOMEM
 #endif
 	  || false)
-	inform (loc, "consider using %<-fno-module-lazy%> or"
-		" reducing %<--param %s%> value",
+	inform (loc, "consider using %<-fno-module-lazy%>,"
+		" reducing %<--param %s%> value,"
+		" or increasing the per-process file descriptor limit",
 		compiler_params[PARAM_LAZY_MODULES].option);
       ok = false;
     }
@@ -13468,6 +13469,7 @@ try_increase_lazy (unsigned want)
     {
       struct rlimit rlimit;
       rlimit.rlim_cur = want + LAZY_HEADROOM;
+      rlimit.rlim_max = lazy_hard_limit + LAZY_HEADROOM;
       if (!setrlimit (RLIMIT_NOFILE, &rlimit))
 	lazy_limit = want;
     }
@@ -13912,11 +13914,11 @@ init_module_processing ()
     struct rlimit rlimit;
     if (!getrlimit (RLIMIT_NOFILE, &rlimit))
       {
-	lazy_hard_limit = (rlimit.rlim_max < limit
-			   ? unsigned (rlimit.rlim_max) : limit);
+	lazy_hard_limit = (rlimit.rlim_max < 1000000
+			   ? unsigned (rlimit.rlim_max) : 1000000);
 	lazy_hard_limit = (lazy_hard_limit > LAZY_HEADROOM
 			   ? lazy_hard_limit - LAZY_HEADROOM : 0);
-	if (rlimit.rlim_cur < 1000000)
+	if (rlimit.rlim_cur < limit)
 	  limit = unsigned (rlimit.rlim_cur);
       }
 #endif

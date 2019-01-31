@@ -1,6 +1,10 @@
 2019-01-31  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (try_increase_lazy): Fix setrlimit call.
+	(init_module_processing): Fix getrlimit call.
+
+	gcc/cp/
 	* module.cc (init_module_processing): Dump even more config.
 	Tweak lazy limit.
 
