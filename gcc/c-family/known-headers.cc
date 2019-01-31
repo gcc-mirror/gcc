@@ -84,6 +84,14 @@ get_stdlib_header_for_name (const char *name, enum stdlib lib)
     {"ULONG_MAX", {"<limits.h>", "<climits>"} },
     {"USHRT_MAX", {"<limits.h>", "<climits>"} },
 
+    /* <float.h> and <cfloat>.  */
+    {"DBL_MAX", {"<float.h>", "<cfloat>"} },
+    {"DBL_MIN", {"<float.h>", "<cfloat>"} },
+    {"FLT_MAX", {"<float.h>", "<cfloat>"} },
+    {"FLT_MIN", {"<float.h>", "<cfloat>"} },
+    {"LDBL_MAX", {"<float.h>", "<cfloat>"} },
+    {"LDBL_MIN", {"<float.h>", "<cfloat>"} },
+
     /* <stdarg.h> and <cstdarg>.  */
     {"va_list", {"<stdarg.h>", "<cstdarg>"} },
 

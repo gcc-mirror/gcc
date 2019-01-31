@@ -1,3 +1,9 @@
+2019-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/89122
+	* g++.dg/spellcheck-stdlib.C (test_FLT_MAX): New test.
+	* gcc.dg/spellcheck-stdlib.c (test_FLT_MAX): New test.
+
 2019-01-31  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89135
