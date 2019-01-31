@@ -1,5 +1,9 @@
 2019-01-31  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (init_module_processing): Dump even more config.
+	Tweak lazy limit.
+
 	Rework lazy limit handling.
 	gcc/cp/
 	* module.cc (lazy_limit, lazy_hard_limit, LAZY_HEADROOM): New.

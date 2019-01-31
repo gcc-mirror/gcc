@@ -13907,8 +13907,7 @@ init_module_processing ()
 
   /* Determine lazy handle bound.  */
   {
-    /* Pay Me One Million File Descriptors! */
-    unsigned limit = 1000000;
+    unsigned limit = 1000;
 #if HAVE_GETRLIMIT
     struct rlimit rlimit;
     if (!getrlimit (RLIMIT_NOFILE, &rlimit))
@@ -13925,7 +13924,7 @@ init_module_processing ()
 
     if (unsigned parm = PARAM_VALUE (PARAM_LAZY_MODULES))
       {
-	if (parm <= limit || !try_increase_lazy (parm))
+	if (parm <= limit || !lazy_hard_limit || !try_increase_lazy (parm))
 	  lazy_limit = parm;
       }
     else
@@ -13946,6 +13945,18 @@ init_module_processing ()
 	    "asserting"
 #else
 	    "release"
+#endif
+	    );
+      dump ("Compiled by: "
+#ifdef __GNUC__
+	    "GCC %d.%d, %s", __GNUC__, __GNUC_MINOR__,
+#ifdef __OPTIMIZE__
+	    "optimizing"
+#else
+	    "not optimizing"
+#endif
+#else
+	    "not GCC"
 #endif
 	    );
       dump ("Reading: %s", MAPPED_READING ? "mmap" : "fileio");
