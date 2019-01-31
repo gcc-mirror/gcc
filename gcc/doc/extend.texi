@@ -2275,27 +2275,46 @@ case 1...5:
 @cindex cast to a union
 @cindex union, casting to a
 
-A cast to union type looks similar to other casts, except that the type
-specified is a union type.  You can specify the type either with the
-@code{union} keyword or with a @code{typedef} name that refers to
-a union.  A cast to a union actually creates a compound literal and
-yields an lvalue, not an rvalue like true casts do.
+A cast to a union type is a C extension not available in C++.  It looks
+just like ordinary casts with the constraint that the type specified is
+a union type.  You can specify the type either with the @code{union}
+keyword or with a @code{typedef} name that refers to a union.  The result
+of a cast to a union is a temporary rvalue of the union type with a member
+whose type matches that of the operand initialized to the value of
+the operand.  The effect of a cast to a union is similar to a compound
+literal except that it yields an rvalue like standard casts do.
 @xref{Compound Literals}.
 
-The types that may be cast to the union type are those of the members
-of the union.  Thus, given the following union and variables:
+Expressions that may be cast to the union type are those whose type matches
+at least one of the members of the union.  Thus, given the following union
+and variables:
 
 @smallexample
 union foo @{ int i; double d; @};
 int x;
 double y;
+union foo z;
 @end smallexample
 
 @noindent
-both @code{x} and @code{y} can be cast to type @code{union foo}.
+both @code{x} and @code{y} can be cast to type @code{union foo} and
+the following assignments
+@smallexample
+  z = (union foo) x;
+  z = (union foo) y;
+@end smallexample
+are shorthand equivalents of these
+@smallexample
+  z = (union foo) @{ .i = x @};
+  z = (union foo) @{ .d = y @};
+@end smallexample
+
+However, @code{(union foo) FLT_MAX;} is not a valid cast because the union
+has no member of type @code{float}.
 
 Using the cast as the right-hand side of an assignment to a variable of
-union type is equivalent to storing in a member of the union:
+union type is equivalent to storing in a member of the union with
+the same type
 
 @smallexample
 union foo u;
