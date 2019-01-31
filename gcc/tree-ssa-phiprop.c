@@ -495,8 +495,14 @@ pass_phiprop::execute (function *fun)
   bbs = get_all_dominated_blocks (CDI_DOMINATORS,
 				  single_succ (ENTRY_BLOCK_PTR_FOR_FN (fun)));
   FOR_EACH_VEC_ELT (bbs, i, bb)
-    for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-      did_something |= propagate_with_phi (bb, gsi.phi (), phivn, n);
+    {
+      /* Since we're going to move dereferences across predecessor
+         edges avoid blocks with abnormal predecessors.  */
+      if (bb_has_abnormal_pred (bb))
+	continue;
+      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	did_something |= propagate_with_phi (bb, gsi.phi (), phivn, n);
+    }
 
   if (did_something)
     gsi_commit_edge_inserts ();
