@@ -1,3 +1,9 @@
+2019-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89135
+	* tree-ssa-phiprop.c (pass_phiprop::execute): Skip blocks
+	with abnormal preds.
+
 2019-01-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/89124
