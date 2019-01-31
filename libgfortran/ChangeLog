@@ -1,12 +1,15 @@
 2019-01-30  Uroš Bizjak  <ubizjak@gmail.com>
 
-	PR fortran/88678
-	* config/fpu-glibc.h (support_fpu_trap): Do not try to enable
-	exceptions to determine if exception is supported.
+	PR libfortran/88678
+	Revert:
+	2016-11-16  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR libfortran/78314
+	* config/fpu-glibc.h (support_fpu_trap): Use feenableexcept.
 
 2019-01-30  Uroš Bizjak  <ubizjak@gmail.com>
 
-	PR fortran/88678
+	PR libfortran/88678
 	* config/fpu-glibc.h (set_fpu_trap_exceptions): Clear stalled
 	exception flags before changing trap mode.  Optimize to call
 	feenableexcept and fedisableexcept only once.
