@@ -415,6 +415,13 @@ enum evrp_mode
   EVRP_MODE_RVRP_DEBUG = EVRP_MODE_RVRP_ONLY | EVRP_MODE_DEBUG
 };
 
+/* Modes of OpenACC 'kernels' constructs handling.  */
+enum openacc_kernels
+{
+  OPENACC_KERNELS_DECOMPOSE,
+  OPENACC_KERNELS_PARLOOPS
+};
+
 #endif
 
 #endif /* ! GCC_FLAG_TYPES_H */

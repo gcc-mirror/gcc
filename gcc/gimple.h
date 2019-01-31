@@ -175,6 +175,15 @@ enum gf_mask {
     GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA = 10,
     GF_OMP_TARGET_KIND_OACC_DECLARE = 11,
     GF_OMP_TARGET_KIND_OACC_HOST_DATA = 12,
+    /* A 'GF_OMP_TARGET_KIND_OACC_PARALLEL' representing an OpenACC 'kernels'
+       decomposed part, parallelized.  */
+    GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED = 13,
+    /* A 'GF_OMP_TARGET_KIND_OACC_PARALLEL' representing an OpenACC 'kernels'
+       decomposed part, "gang-single".  */
+    GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE = 14,
+    /* A 'GF_OMP_TARGET_KIND_OACC_DATA' representing an OpenACC 'kernels'
+       decomposed parts' 'data' construct.  */
+    GF_OMP_TARGET_KIND_OACC_DATA_KERNELS = 15,
     GF_OMP_TEAMS_HOST		= 1 << 0,
 
     /* True on an GIMPLE_OMP_RETURN statement if the return does not require
@@ -6511,6 +6520,9 @@ is_gimple_omp_oacc (const gimple *stmt)
 	case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
 	case GF_OMP_TARGET_KIND_OACC_DECLARE:
 	case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
+	case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+	case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
+	case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
 	  return true;
 	default:
 	  return false;
@@ -6536,6 +6548,8 @@ is_gimple_omp_offloaded (const gimple *stmt)
 	case GF_OMP_TARGET_KIND_OACC_PARALLEL:
 	case GF_OMP_TARGET_KIND_OACC_KERNELS:
 	case GF_OMP_TARGET_KIND_OACC_SERIAL:
+	case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+	case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
 	  return true;
 	default:
 	  return false;

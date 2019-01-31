@@ -193,8 +193,8 @@ static tree scan_omp_1_op (tree *, int *, void *);
       *handled_ops_p = false; \
       break;
 
-/* Return true if CTX corresponds to an OpenACC 'parallel' or 'serial'
-   region.  */
+/* Return whether CTX represents an OpenACC 'parallel' or 'serial' construct.
+   (This doesn't include OpenACC 'kernels' decomposed parts.)  */
 
 static bool
 is_oacc_parallel_or_serial (omp_context *ctx)
@@ -207,7 +207,8 @@ is_oacc_parallel_or_serial (omp_context *ctx)
 		  == GF_OMP_TARGET_KIND_OACC_SERIAL)));
 }
 
-/* Return true if CTX corresponds to an oacc kernels region.  */
+/* Return whether CTX represents an OpenACC 'kernels' construct.
+   (This doesn't include OpenACC 'kernels' decomposed parts.)  */
 
 static bool
 is_oacc_kernels (omp_context *ctx)
@@ -216,6 +217,21 @@ is_oacc_kernels (omp_context *ctx)
   return ((outer_type == GIMPLE_OMP_TARGET)
 	  && (gimple_omp_target_kind (ctx->stmt)
 	      == GF_OMP_TARGET_KIND_OACC_KERNELS));
+}
+
+/* Return whether CTX represents an OpenACC 'kernels' decomposed part.  */
+
+static bool
+is_oacc_kernels_decomposed_part (omp_context *ctx)
+{
+  enum gimple_code outer_type = gimple_code (ctx->stmt);
+  return ((outer_type == GIMPLE_OMP_TARGET)
+	  && ((gimple_omp_target_kind (ctx->stmt)
+	       == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED)
+	      || (gimple_omp_target_kind (ctx->stmt)
+		  == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE)
+	      || (gimple_omp_target_kind (ctx->stmt)
+		  == GF_OMP_TARGET_KIND_OACC_DATA_KERNELS)));
 }
 
 /* Return true if STMT corresponds to an OpenMP target region.  */
@@ -1200,6 +1216,8 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	    {
 	      /* No 'reduction' clauses on OpenACC 'kernels'.  */
 	      gcc_checking_assert (!is_oacc_kernels (ctx));
+	      /* Likewise, on OpenACC 'kernels' decomposed parts.  */
+	      gcc_checking_assert (!is_oacc_kernels_decomposed_part (ctx));
 
 	      ctx->local_reduction_clauses
 		= tree_cons (NULL, c, ctx->local_reduction_clauses);
@@ -2415,7 +2433,9 @@ enclosing_target_ctx (omp_context *ctx)
   return ctx;
 }
 
-/* Return true if ctx is part of an oacc kernels region.  */
+/* Return whether CTX's parent compute construct is an OpenACC 'kernels'
+   construct.
+   (This doesn't include OpenACC 'kernels' decomposed parts.)  */
 
 static bool
 ctx_in_oacc_kernels_region (omp_context *ctx)
@@ -2431,7 +2451,8 @@ ctx_in_oacc_kernels_region (omp_context *ctx)
   return false;
 }
 
-/* Check the parallelism clauses inside a kernels regions.
+/* Check the parallelism clauses inside a OpenACC 'kernels' region.
+   (This doesn't include OpenACC 'kernels' decomposed parts.)
    Until kernels handling moves to use the same loop indirection
    scheme as parallel, we need to do this checking early.  */
 
@@ -2533,6 +2554,10 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
 
 	    if (c_op0)
 	      {
+		/* By construction, this is impossible for OpenACC 'kernels'
+		   decomposed parts.  */
+		gcc_assert (!(tgt && is_oacc_kernels_decomposed_part (tgt)));
+
 		error_at (OMP_CLAUSE_LOCATION (c),
 			  "argument not permitted on %qs clause",
 			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
@@ -3070,6 +3095,8 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 		  case GF_OMP_TARGET_KIND_OACC_PARALLEL:
 		  case GF_OMP_TARGET_KIND_OACC_KERNELS:
 		  case GF_OMP_TARGET_KIND_OACC_SERIAL:
+		  case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+		  case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
 		    ok = true;
 		    break;
 
@@ -3526,6 +3553,11 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	    case GF_OMP_TARGET_KIND_OACC_DECLARE: stmt_name = "declare"; break;
 	    case GF_OMP_TARGET_KIND_OACC_HOST_DATA: stmt_name = "host_data";
 	      break;
+	    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+	    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
+	    case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
+	      /* OpenACC 'kernels' decomposed parts.  */
+	      stmt_name = "kernels"; break;
 	    default: gcc_unreachable ();
 	    }
 	  switch (gimple_omp_target_kind (ctx->stmt))
@@ -3541,6 +3573,11 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	    case GF_OMP_TARGET_KIND_OACC_DATA: ctx_stmt_name = "data"; break;
 	    case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
 	      ctx_stmt_name = "host_data"; break;
+	    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+	    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
+	    case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
+	      /* OpenACC 'kernels' decomposed parts.  */
+	      ctx_stmt_name = "kernels"; break;
 	    default: gcc_unreachable ();
 	    }
 
@@ -6930,6 +6967,8 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
       {
 	/* No 'reduction' clauses on OpenACC 'kernels'.  */
 	gcc_checking_assert (!is_oacc_kernels (ctx));
+	/* Likewise, on OpenACC 'kernels' decomposed parts.  */
+	gcc_checking_assert (!is_oacc_kernels_decomposed_part (ctx));
 
 	tree orig = OMP_CLAUSE_DECL (c);
 	tree var = maybe_lookup_decl (orig, ctx);
@@ -7785,12 +7824,22 @@ lower_oacc_head_mark (location_t loc, tree ddvar, tree clauses,
   else if (is_oacc_kernels (tgt))
     /* Not using this loops handling inside OpenACC 'kernels' regions.  */
     gcc_unreachable ();
+  else if (is_oacc_kernels_decomposed_part (tgt))
+    ;
   else
     gcc_unreachable ();
 
   /* In a parallel region, loops are implicitly INDEPENDENT.  */
   if (!tgt || is_oacc_parallel_or_serial (tgt))
     tag |= OLF_INDEPENDENT;
+
+  /* Loops inside OpenACC 'kernels' decomposed parts' regions are expected to
+     have an explicit 'seq' or 'independent' clause, and no 'auto' clause.  */
+  if (tgt && is_oacc_kernels_decomposed_part (tgt))
+    {
+      gcc_assert (tag & (OLF_SEQ | OLF_INDEPENDENT));
+      gcc_assert (!(tag & OLF_AUTO));
+    }
 
   if (tag & OLF_TILE)
     /* Tiling could use all 3 levels.  */ 
@@ -11639,11 +11688,14 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
     case GF_OMP_TARGET_KIND_OACC_UPDATE:
     case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
     case GF_OMP_TARGET_KIND_OACC_DECLARE:
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
       data_region = false;
       break;
     case GF_OMP_TARGET_KIND_DATA:
     case GF_OMP_TARGET_KIND_OACC_DATA:
     case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
+    case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
       data_region = true;
       break;
     default:
@@ -11829,6 +11881,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  {
 	    /* No 'firstprivate' clauses on OpenACC 'kernels'.  */
 	    gcc_checking_assert (!is_oacc_kernels (ctx));
+	    /* Likewise, on OpenACC 'kernels' decomposed parts.  */
+	    gcc_checking_assert (!is_oacc_kernels_decomposed_part (ctx));
 
 	    goto oacc_firstprivate;
 	  }
@@ -11861,6 +11915,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  {
 	    /* No 'private' clauses on OpenACC 'kernels'.  */
 	    gcc_checking_assert (!is_oacc_kernels (ctx));
+	    /* Likewise, on OpenACC 'kernels' decomposed parts.  */
+	    gcc_checking_assert (!is_oacc_kernels_decomposed_part (ctx));
 
 	    break;
 	  }

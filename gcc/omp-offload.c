@@ -1771,11 +1771,19 @@ execute_oacc_device_lower ()
   bool is_oacc_serial
     = (lookup_attribute ("oacc serial",
 			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
+  bool is_oacc_parallel_kernels_parallelized
+    = (lookup_attribute ("oacc parallel_kernels_parallelized",
+			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
+  bool is_oacc_parallel_kernels_gang_single
+    = (lookup_attribute ("oacc parallel_kernels_gang_single",
+			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
   int fn_level = oacc_fn_attrib_level (attrs);
   bool is_oacc_routine = (fn_level >= 0);
   gcc_checking_assert (is_oacc_parallel
 		       + is_oacc_kernels
 		       + is_oacc_serial
+		       + is_oacc_parallel_kernels_parallelized
+		       + is_oacc_parallel_kernels_gang_single
 		       + is_oacc_routine
 		       == 1);
 
@@ -1795,6 +1803,12 @@ execute_oacc_device_lower ()
 		  ? "parallelized" : "unparallelized"));
       else if (is_oacc_serial)
 	fprintf (dump_file, "Function is OpenACC serial offload\n");
+      else if (is_oacc_parallel_kernels_parallelized)
+	fprintf (dump_file, "Function is %s OpenACC kernels offload\n",
+		 "parallel_kernels_parallelized");
+      else if (is_oacc_parallel_kernels_gang_single)
+	fprintf (dump_file, "Function is %s OpenACC kernels offload\n",
+		 "parallel_kernels_gang_single");
       else if (is_oacc_routine)
 	fprintf (dump_file, "Function is OpenACC routine level %d\n",
 		 fn_level);
@@ -1837,6 +1851,11 @@ execute_oacc_device_lower ()
 	fprintf (dump_file, "%s%d", comma, dims[ix]);
       fprintf (dump_file, "]\n");
     }
+
+  /* Verify that for OpenACC 'kernels' decomposed "gang-single" parts we launch
+     a single gang only.  */
+  if (is_oacc_parallel_kernels_gang_single)
+    gcc_checking_assert (dims[GOMP_DIM_GANG] == 1);
 
   oacc_loop_process (loops);
   if (dump_file)
