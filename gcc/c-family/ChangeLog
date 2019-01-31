@@ -1,3 +1,9 @@
+2019-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/88170
+	* c-pretty-print.c (pp_c_enumeration_constant): Print always as
+	a C cast in pp_c_flag_gnu_v3 mode.
+
 2019-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/86125
