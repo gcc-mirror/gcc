@@ -1,3 +1,8 @@
+2019-01-31  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.c (gimplify_scan_omp_clauses): Handle array sections on
+	dereferenced struct members.
+
 2018-12-14  Julian Brown  <julian@codesourcery.com>
 
 	* gimplify.c (gimplify_omp_var_data): Add GOVD_MAP_HAS_ATTACHMENTS.

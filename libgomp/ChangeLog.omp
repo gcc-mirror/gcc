@@ -1,3 +1,12 @@
+2019-01-31  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c++/deep-copy-12.C: New test.
+	* testsuite/libgomp.oacc-c++/deep-copy-13.C: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-9.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-10.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-11.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-14.c: New test.
+
 2018-11-28  Julian Brown  <julian@codesourcery.com>
 
 	* libgomp.h (RC_CHECKING): New macro, disabled by default, guarding all

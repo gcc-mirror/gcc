@@ -8210,6 +8210,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
   struct gimplify_omp_ctx *ctx, *outer_ctx;
   tree c;
   hash_map<tree, tree> *struct_map_to_clause = NULL;
+  hash_set<tree> *struct_deref_set = NULL;
   tree *prev_list_p = NULL;
   int handled_depend_iterators = -1;
   int nowait = -1;
@@ -8654,7 +8655,35 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		  pd = &TREE_OPERAND (decl, 0);
 		  decl = TREE_OPERAND (decl, 0);
 		}
-	      if (TREE_CODE (decl) == COMPONENT_REF)
+	      bool indir_p = false;
+	      tree orig_decl = decl;
+	      tree decl_ref = NULL_TREE;
+	      if ((region_type & ORT_ACC) != 0
+		  && TREE_CODE (*pd) == COMPONENT_REF
+		  && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALWAYS_POINTER
+		  && code != OACC_UPDATE)
+		{
+		  while (TREE_CODE (decl) == COMPONENT_REF)
+		    {
+		      decl = TREE_OPERAND (decl, 0);
+		      if ((TREE_CODE (decl) == MEM_REF
+			   && integer_zerop (TREE_OPERAND (decl, 1)))
+			  || INDIRECT_REF_P (decl))
+			{
+			  indir_p = true;
+			  decl = TREE_OPERAND (decl, 0);
+			}
+		      if (TREE_CODE (decl) == INDIRECT_REF
+			  && DECL_P (TREE_OPERAND (decl, 0))
+			  && (TREE_CODE (TREE_TYPE (TREE_OPERAND (decl, 0)))
+			      == REFERENCE_TYPE))
+			{
+			  decl_ref = decl;
+			  decl = TREE_OPERAND (decl, 0);
+			}
+		    }
+		}
+	      else if (TREE_CODE (decl) == COMPONENT_REF)
 		{
 		  while (TREE_CODE (decl) == COMPONENT_REF)
 		    decl = TREE_OPERAND (decl, 0);
@@ -8663,6 +8692,51 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		      && (TREE_CODE (TREE_TYPE (TREE_OPERAND (decl, 0)))
 			  == REFERENCE_TYPE))
 		    decl = TREE_OPERAND (decl, 0);
+		}
+	      if (decl != orig_decl && DECL_P (decl) && indir_p)
+		{
+		  gomp_map_kind k = (code == OACC_EXIT_DATA) ? GOMP_MAP_DETACH
+							     : GOMP_MAP_ATTACH;
+		  /* We have a dereference of a struct member.  Make this an
+		     attach/detach operation, and ensure the base pointer is
+		     mapped as a FIRSTPRIVATE_POINTER.  */
+		  OMP_CLAUSE_SET_MAP_KIND (c, k);
+		  flags = GOVD_MAP | GOVD_SEEN | GOVD_EXPLICIT;
+		  if (k == GOMP_MAP_ATTACH
+		      && (!struct_deref_set
+			  || !struct_deref_set->contains (decl)))
+		    {
+		      if (!struct_deref_set)
+		        struct_deref_set = new hash_set<tree> ();
+		      /* As well as the attach, we also need a
+			 FIRSTPRIVATE_POINTER clause to properly map the
+			 pointer to the struct base.  */
+		      tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c),
+						  OMP_CLAUSE_MAP);
+		      OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ALLOC);
+		      OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION (c2)
+			= 1;
+		      tree charptr_zero
+		        = build_int_cst (build_pointer_type (char_type_node),
+					 0);
+		      OMP_CLAUSE_DECL (c2)
+			= build2 (MEM_REF, char_type_node,
+				  decl_ref ? decl_ref : decl, charptr_zero);
+		      OMP_CLAUSE_SIZE (c2) = size_zero_node;
+		      tree c3 = build_omp_clause (OMP_CLAUSE_LOCATION (c),
+						  OMP_CLAUSE_MAP);
+		      OMP_CLAUSE_SET_MAP_KIND (c3,
+					       GOMP_MAP_FIRSTPRIVATE_POINTER);
+		      OMP_CLAUSE_DECL (c3) = decl;
+		      OMP_CLAUSE_SIZE (c3) = size_zero_node;
+		      tree mapgrp = *prev_list_p;
+		      *prev_list_p = c2;
+		      OMP_CLAUSE_CHAIN (c3) = mapgrp;
+		      OMP_CLAUSE_CHAIN (c2) = c3;
+
+		      struct_deref_set->add (decl);
+		    }
+		  goto do_add_decl;
 		}
 	      if (gimplify_expr (pd, pre_p, NULL, is_gimple_lvalue, fb_lvalue)
 		  == GS_ERROR)
@@ -9385,6 +9459,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
   gimplify_omp_ctxp = ctx;
   if (struct_map_to_clause)
     delete struct_map_to_clause;
+  if (struct_deref_set)
+    delete struct_deref_set;
 }
 
 /* Return true if DECL is a candidate for shared to firstprivate

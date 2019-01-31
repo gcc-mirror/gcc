@@ -1,3 +1,10 @@
+2019-01-31  Julian Brown  <julian@codesourcery.com>
+
+	* semantics.c (handle_omp_array_sections_1): Handle array section on
+	dereferenced struct member.
+	(finish_omp_clauses): Don't error on multiple dereferenced struct
+	elements with the same base.
+
 2018-12-14  Julian Brown  <julian@codesourcery.com>
 
 	* parser.c (cp_parser_omp_clause_name): Support attach and detach

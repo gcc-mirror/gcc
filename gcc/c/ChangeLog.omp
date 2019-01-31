@@ -1,3 +1,8 @@
+2019-01-31  Julian Brown  <julian@codesourcery.com>
+
+	* c-typeck.c (handle_omp_array_sections_1): Handle chained dereferences.
+	(c_finish_omp_clauses): Likewise.
+
 2018-12-14  Julian Brown  <julian@codesourcery.com>
 
 	* c-parser.c (c_parser_omp_clause_name): Add parsing of attach and
