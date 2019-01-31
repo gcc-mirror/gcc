@@ -1670,9 +1670,11 @@ lra_rtx_hash (rtx x)
 
     case SCRATCH:
     case CONST_DOUBLE:
-    case CONST_INT:
     case CONST_VECTOR:
       return val;
+
+    case CONST_INT:
+      return val + UINTVAL (x);
 
     default:
       break;
