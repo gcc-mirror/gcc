@@ -309,14 +309,14 @@ static void
 pp_cxx_enumeration_constant (cxx_pretty_printer *pp, tree e)
 {
   tree type = TREE_TYPE (e);
-  tree value;
+  tree value = NULL_TREE;
 
   /* Find the name of this constant.  */
-  for (value = TYPE_VALUES (type);
-       value != NULL_TREE
-	&& !tree_int_cst_equal (DECL_INITIAL (TREE_VALUE (value)), e);
-       value = TREE_CHAIN (value))
-    ;
+  if ((pp->flags & pp_c_flag_gnu_v3) == 0)
+    for (value = TYPE_VALUES (type); value != NULL_TREE;
+	 value = TREE_CHAIN (value))
+      if (tree_int_cst_equal (DECL_INITIAL (TREE_VALUE (value)), e))
+	break;
 
   if (value != NULL_TREE)
     {
