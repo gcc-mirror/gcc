@@ -1,3 +1,7 @@
+2019-02-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
 2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/16615
