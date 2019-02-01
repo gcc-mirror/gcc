@@ -2096,11 +2096,19 @@ Gogo::declare_function(const std::string& name, Function_type* type,
       // declarations.
       Type* rtype = type->receiver()->type();
 
+      while (rtype->named_type() != NULL
+	  && rtype->named_type()->is_alias())
+	rtype = rtype->named_type()->real_type()->forwarded();
+
       // We want to look through the pointer created by the
       // parser, without getting an error if the type is not yet
       // defined.
       if (rtype->classification() == Type::TYPE_POINTER)
 	rtype = rtype->points_to();
+
+      while (rtype->named_type() != NULL
+	  && rtype->named_type()->is_alias())
+	rtype = rtype->named_type()->real_type()->forwarded();
 
       if (rtype->is_error_type())
 	return NULL;
