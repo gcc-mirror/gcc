@@ -9,6 +9,8 @@
 // Note that sometimes we use a lowercase //sys name and
 // wrap it in our own nicer implementation.
 
+// +build !hurd
+
 package syscall
 
 import "unsafe"
