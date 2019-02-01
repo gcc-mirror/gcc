@@ -1,3 +1,9 @@
+2019-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87175
+	* parser.c (cp_parser_gnu_attributes_opt): Set ok to false
+	if require_open failed.
+
 2019-01-31  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89083, c++/80864 - ICE with list initialization in template.
