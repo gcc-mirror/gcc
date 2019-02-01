@@ -6,6 +6,11 @@
 	* decl.c (reshape_init_r): Don't reshape a digested initializer.
 	Return the initializer for COMPOUND_LITERAL_P.
 
+	PR c++/88983 - ICE with switch in constexpr function.
+	* constexpr.c (cxx_eval_switch_expr): Use SWITCH_COND and SWITCH_BODY.
+	(cxx_eval_constant_expression) <case COND_EXPR>: Don't look for the
+	label in the else branch if we found it in the then branch.
+
 2019-01-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/88752 - ICE with lambda and constexpr if.
