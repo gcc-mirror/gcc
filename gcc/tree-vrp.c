@@ -2196,6 +2196,16 @@ extract_range_from_unary_expr (value_range_base *vr,
 	vr->set_varying ();
       return;
     }
+  else if (code == ABSU_EXPR)
+    {
+      wide_int wmin, wmax;
+      wide_int vr0_min, vr0_max;
+      extract_range_into_wide_ints (&vr0, SIGNED, prec, vr0_min, vr0_max);
+      wide_int_range_absu (wmin, wmax, prec, vr0_min, vr0_max);
+      vr->set (VR_RANGE, wide_int_to_tree (type, wmin),
+	       wide_int_to_tree (type, wmax));
+      return;
+    }
 
   /* For unhandled operations fall back to varying.  */
   vr->set_varying ();

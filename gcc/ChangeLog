@@ -1,5 +1,10 @@
 2019-02-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/89143
+	* wide-int-range.h (wide_int_range_absu): Declare.
+	* wide-int-range.cc (wide_int_range_absu): New function.
+	* tree-vrp.c (extract_range_from_unary_expr): Handle ABSU_EXPR.
+
 	PR tree-optimization/88107
 	* tree-cfg.c (find_outermost_region_in_block): Add ALL argument,
 	instead of assertion that eh_region_outermost is non-NULL, if it
