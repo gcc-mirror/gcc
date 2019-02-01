@@ -276,22 +276,8 @@ int32	runtime_timediv(int64, int32, int32*)
 int32	runtime_round2(int32 x); // round x up to a power of 2.
 
 // atomic operations
-#define runtime_cas(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
-#define runtime_cas64(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
-#define runtime_casp(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
-// Don't confuse with XADD x86 instruction,
-// this one is actually 'addx', that is, add-and-fetch.
-#define runtime_xadd(p, v) __sync_add_and_fetch (p, v)
-#define runtime_xadd64(p, v) __sync_add_and_fetch (p, v)
-#define runtime_xchg(p, v) __atomic_exchange_n (p, v, __ATOMIC_SEQ_CST)
-#define runtime_xchg64(p, v) __atomic_exchange_n (p, v, __ATOMIC_SEQ_CST)
-#define runtime_xchgp(p, v) __atomic_exchange_n (p, v, __ATOMIC_SEQ_CST)
+#define runtime_xadd(p, v) __atomic_add_fetch (p, v, __ATOMIC_SEQ_CST)
 #define runtime_atomicload(p) __atomic_load_n (p, __ATOMIC_SEQ_CST)
-#define runtime_atomicstore(p, v) __atomic_store_n (p, v, __ATOMIC_SEQ_CST)
-#define runtime_atomicstore64(p, v) __atomic_store_n (p, v, __ATOMIC_SEQ_CST)
-#define runtime_atomicload64(p) __atomic_load_n (p, __ATOMIC_SEQ_CST)
-#define runtime_atomicloadp(p) __atomic_load_n (p, __ATOMIC_SEQ_CST)
-#define runtime_atomicstorep(p, v) __atomic_store_n (p, v, __ATOMIC_SEQ_CST)
 
 void runtime_setg(G*)
   __asm__ (GOSYM_PREFIX "runtime.setg");

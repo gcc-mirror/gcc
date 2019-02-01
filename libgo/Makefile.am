@@ -471,7 +471,6 @@ runtime_files = \
 	runtime/proc.c \
 	runtime/runtime_c.c \
 	runtime/stack.c \
-	runtime/thread.c \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \
 	$(runtime_getncpu_file)
