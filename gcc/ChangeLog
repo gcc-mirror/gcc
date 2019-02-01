@@ -1,3 +1,14 @@
+2019-02-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/88597
+	* tree-scalar-evolution.c (analyze_scalar_evolution): Set up
+	the instantiate cache.
+	(instantiate_scev_binary): Elide second operand procesing
+	if equal to the first.
+	* tree-chrec.c (chrec_contains_symbols): Add visited set.
+	(chrec_contains_undetermined): Likewise.
+	(tree_contains_chrecs): Likewise.
+
 2019-02-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* parms.def (MAX_INLINE_INSNS_SINGLE): Reduce from 400 to 200.
