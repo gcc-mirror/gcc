@@ -1476,7 +1476,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 
 		  if (! same_type_p (TREE_VALUE (t1), TREE_VALUE (t2)))
 		    break;
-next_arg:;
+		next_arg:;
 		}
 
 	      warning_at (newdecl_loc,
