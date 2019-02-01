@@ -856,7 +856,10 @@ optimize_mode_switching (void)
     commit_edge_insertions ();
 
   if (targetm.mode_switching.entry && targetm.mode_switching.exit)
-    cleanup_cfg (CLEANUP_NO_INSN_DEL);
+    {
+      free_dominance_info (CDI_DOMINATORS);
+      cleanup_cfg (CLEANUP_NO_INSN_DEL);
+    }
   else if (!need_commit && !emitted)
     return 0;
 
