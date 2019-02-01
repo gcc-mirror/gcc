@@ -411,14 +411,19 @@ add_parent_or_loop_num_clause (tree parent_clause, tree loop_clause,
    nested loops.  It adds an auto clause unless there is already an
    independent/seq/auto clause or a gang/worker/vector annotation.  */
 
+struct adjust_nested_loop_clauses_wi_info
+{
+  tree *loop_gang_clause_ptr;
+  tree *loop_worker_clause_ptr;
+  tree *loop_vector_clause_ptr;
+};
+
 static tree
 adjust_nested_loop_clauses (gimple_stmt_iterator *gsi_p, bool *,
 			    struct walk_stmt_info *wi)
 {
-  tree **clauses = (tree **) wi->info;
-  tree *gang_num_clause = clauses[GOMP_DIM_GANG];
-  tree *worker_num_clause = clauses[GOMP_DIM_WORKER];
-  tree *vector_length_clause = clauses[GOMP_DIM_VECTOR];
+  struct adjust_nested_loop_clauses_wi_info *wi_info
+    = (struct adjust_nested_loop_clauses_wi_info *) wi->info;
   gimple *stmt = gsi_stmt (*gsi_p);
 
   if (gimple_code (stmt) == GIMPLE_OMP_FOR)
@@ -432,13 +437,13 @@ adjust_nested_loop_clauses (gimple_stmt_iterator *gsi_p, bool *,
 	  switch (OMP_CLAUSE_CODE (loop_clause))
 	    {
 	      case OMP_CLAUSE_GANG:
-		outer_clause_ptr = gang_num_clause;
+		outer_clause_ptr = wi_info->loop_gang_clause_ptr;
 		break;
 	      case OMP_CLAUSE_WORKER:
-		outer_clause_ptr = worker_num_clause;
+		outer_clause_ptr = wi_info->loop_worker_clause_ptr;
 		break;
 	      case OMP_CLAUSE_VECTOR:
-		outer_clause_ptr = vector_length_clause;
+		outer_clause_ptr = wi_info->loop_vector_clause_ptr;
 		break;
 	      case OMP_CLAUSE_INDEPENDENT:
 	      case OMP_CLAUSE_SEQ:
@@ -582,11 +587,11 @@ transform_kernels_loop_clauses (gimple *omp_for,
      Turn these into worker/vector annotations on the parallel region.  */
   struct walk_stmt_info wi;
   memset (&wi, 0, sizeof (wi));
-  tree *num_clauses[GOMP_DIM_MAX]
-    = { [GOMP_DIM_GANG] = &loop_gang_clause,
-	[GOMP_DIM_WORKER] = &loop_worker_clause,
-	[GOMP_DIM_VECTOR] = &loop_vector_clause };
-  wi.info = num_clauses;
+  struct adjust_nested_loop_clauses_wi_info wi_info;
+  wi_info.loop_gang_clause_ptr = &loop_gang_clause;
+  wi_info.loop_worker_clause_ptr = &loop_worker_clause;
+  wi_info.loop_vector_clause_ptr = &loop_vector_clause;
+  wi.info = &wi_info;
   gimple *body = gimple_omp_body (omp_for);
   walk_gimple_seq (body, adjust_nested_loop_clauses, NULL, &wi);
   /* Check if there were conflicting numbers of workers or vector lanes.  */

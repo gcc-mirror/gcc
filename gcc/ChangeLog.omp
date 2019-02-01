@@ -1,3 +1,8 @@
+2019-02-01  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-oacc-kernels.c (struct adjust_nested_loop_clauses_wi_info): New.
+	(adjust_nested_loop_clauses, transform_kernels_loop_clauses): Use it.
+
 2019-01-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* doc/invoke.texi (-fopenacc-kernels): Update.
