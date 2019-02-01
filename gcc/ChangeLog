@@ -1,3 +1,8 @@
+2019-02-01  Martin Jambor  <mjambor@suse.cz>
+
+	* omp-grid.c (grid_target_follows_gridifiable_pattern): Guard two
+	missed optimization dump with dump_enabled_p.
+
 2019-02-01  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/88597
