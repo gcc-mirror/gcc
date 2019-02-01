@@ -934,6 +934,8 @@ grid_mark_variable_segment (tree var, enum grid_var_segment segment)
   if (!TREE_STATIC (var))
     {
       TREE_STATIC (var) = 1;
+      const char *prefix = IDENTIFIER_POINTER (DECL_NAME (var));
+      SET_DECL_ASSEMBLER_NAME (var, create_tmp_var_name (prefix));
       varpool_node::finalize_decl (var);
     }
 

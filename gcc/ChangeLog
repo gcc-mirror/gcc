@@ -1,5 +1,11 @@
 2019-02-01  Martin Jambor  <mjambor@suse.cz>
 
+	PR hsa/87863
+	* omp-grid.c (grid_mark_variable_segment): Set assembler name of group
+	segment and global segment variables before making them static.
+
+2019-02-01  Martin Jambor  <mjambor@suse.cz>
+
 	* omp-grid.c (grid_target_follows_gridifiable_pattern): Guard two
 	missed optimization dump with dump_enabled_p.
 
