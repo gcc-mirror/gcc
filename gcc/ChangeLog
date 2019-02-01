@@ -1,3 +1,12 @@
+2019-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/88107
+	* tree-cfg.c (find_outermost_region_in_block): Add ALL argument,
+	instead of assertion that eh_region_outermost is non-NULL, if it
+	is NULL, set *ALL to true and return NULL.
+	(move_sese_region_to_fn): Adjust caller, if all is set, call
+	duplicate_eh_regions with NULL region.
+
 2019-02-01  Richard Biener  <rguenth@suse.de>
 
 	PR rtl-optimization/88593

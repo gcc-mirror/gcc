@@ -1,5 +1,8 @@
 2019-02-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/88107
+	* gcc.dg/gomp/pr88107.c: New test.
+
 	PR c++/87175
 	* g++.dg/ext/attrib57.C: New test.
 
