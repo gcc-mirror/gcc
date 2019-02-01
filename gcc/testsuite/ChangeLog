@@ -1,3 +1,8 @@
+2019-02-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88325 - ICE with invalid out-of-line template member definition.
+	* g++.dg/cpp2a/typename14.C: New test.
+
 2019-02-01  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/88597
