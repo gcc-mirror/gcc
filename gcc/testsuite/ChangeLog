@@ -1,3 +1,8 @@
+2019-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88983 - ICE with switch in constexpr function.
+	* g++.dg/cpp1y/constexpr-88983.C: New test.
+
 2019-01-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/88669
