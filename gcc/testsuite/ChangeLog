@@ -1,6 +1,14 @@
 2019-02-01  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	Backport from mainline
+	2018-10-15  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/87022
+	* gcc.dg/tree-ssa/pr87022.c: New test.
+
+2019-02-01  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	Backport from mainline
 	2019-02-01  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/88932
