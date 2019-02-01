@@ -1911,20 +1911,25 @@ next_arg:;
       && TREE_CODE (CP_DECL_CONTEXT (olddecl)) == NAMESPACE_DECL
       && TREE_CODE (olddecl) != NAMESPACE_DECL)
     {
-      if (!module_may_redeclare (MAYBE_DECL_MODULE_OWNER (olddecl)))
+      if (!DECL_ARTIFICIAL (olddecl))
 	{
-	  error ("declaration %qD conflicts with import", newdecl);
-	  inform (olddecl_loc, "import declared %q#D here", olddecl);
+	  if (!module_may_redeclare (MAYBE_DECL_MODULE_OWNER (olddecl)))
+	    {
+	      error ("declaration %qD conflicts with import", newdecl);
+	      inform (olddecl_loc, "import declared %q#D here", olddecl);
 
-	  return error_mark_node;
+	      return error_mark_node;
+	    }
+
+	  if (DECL_MODULE_EXPORT_P (newdecl) && !DECL_MODULE_EXPORT_P (olddecl))
+	    {
+	      error ("conflicting exporting declaration %qD", newdecl);
+	      inform (olddecl_loc, "previous declaration %q#D here", olddecl);
+	    }
 	}
 
-      if (DECL_MODULE_EXPORT_P (newdecl) && !DECL_MODULE_EXPORT_P (olddecl))
-	{
-	  error ("conflicting exporting declaration %qD", newdecl);
-	  inform (olddecl_loc, "previous declaration %q#D here", olddecl);
-	  DECL_MODULE_EXPORT_P (newdecl) = false;
-	}
+      // FIXME: Consider a partition not exporting a definition
+      set_module_owner (olddecl);
     }
 
   /* We have committed to returning OLDDECL at this point.  */

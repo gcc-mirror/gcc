@@ -13229,7 +13229,7 @@ set_module_owner (tree decl)
 {
   /* We should only be setting moduleness on things that are their own
      owners.  */
-  gcc_checking_assert (decl == get_module_owner (decl));
+  gcc_checking_assert (STRIP_TEMPLATE (decl) == get_module_owner (decl));
   
   if (!modules)
     /* We can be called when modules are not enabled.  */
@@ -13237,15 +13237,16 @@ set_module_owner (tree decl)
 
   // FIXME: Check ill-formed linkage
 
-  if ((*modules)[MODULE_PURVIEW])
+  if (module_purview_p ())
     {
+      retrofit_lang_decl (decl);
+      DECL_MODULE_OWNER (decl) = MODULE_PURVIEW;
+
       if (module_exporting_p ())
 	{
 	  gcc_assert (TREE_CODE (decl) != NAMESPACE_DECL);
 	  DECL_MODULE_EXPORT_P (decl) = true;
 	}
-      retrofit_lang_decl (decl);
-      DECL_MODULE_OWNER (decl) = MODULE_PURVIEW;
     }
 }
 

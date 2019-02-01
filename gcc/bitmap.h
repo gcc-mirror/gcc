@@ -306,7 +306,7 @@ struct GTY (()) bitmap_obstack {
    bitmap_elt_clear_from to be implemented in unit time rather than
    linear in the number of elements to be freed.  */
 
-struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) bitmap_element {
+struct GTY((chain_next ("%h.next")/*, chain_prev ("%h.prev")*/)) bitmap_element {
   /* In list form, the next element in the linked list;
      in tree form, the left child node in the tree.  */
   struct bitmap_element *next;

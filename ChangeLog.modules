@@ -1,3 +1,11 @@
+2019-02-01  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* decl.c (duplicate_decls): Accomodate anticipated fns.
+	* module.cc (set_module_owner): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/printf-1_[ab].[HC]: New.
+
 2019-01-31  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
