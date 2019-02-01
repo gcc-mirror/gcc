@@ -1,3 +1,8 @@
+2019-02-01  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/88932
+	* tree-predcom.c (try_combine_chains): Get loop bbs in dom order.
+
 2019-01-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/89137
