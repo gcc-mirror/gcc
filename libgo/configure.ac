@@ -165,6 +165,7 @@ is_dragonfly=no
 is_rtems=no
 is_solaris=no
 is_aix=no
+is_hurd=no
 GOOS=unknown
 case ${host} in
   *-*-darwin*)   is_darwin=yes;  GOOS=darwin ;;
@@ -177,6 +178,7 @@ case ${host} in
   *-*-rtems*)    is_rtems=yes;   GOOS=rtems ;;
   *-*-solaris2*) is_solaris=yes; GOOS=solaris ;;
   *-*-aix*)      is_aix=yes;     GOOS=aix ;;
+  *-*-gnu*)      is_hurd=yes;    GOOS=hurd ;;
 esac
 AM_CONDITIONAL(LIBGO_IS_DARWIN, test $is_darwin = yes)
 AM_CONDITIONAL(LIBGO_IS_FREEBSD, test $is_freebsd = yes)
@@ -188,6 +190,7 @@ AM_CONDITIONAL(LIBGO_IS_DRAGONFLY, test $is_dragonfly = yes)
 AM_CONDITIONAL(LIBGO_IS_RTEMS, test $is_rtems = yes)
 AM_CONDITIONAL(LIBGO_IS_SOLARIS, test $is_solaris = yes)
 AM_CONDITIONAL(LIBGO_IS_AIX, test $is_aix = yes)
+AM_CONDITIONAL(LIBGO_IS_HURD, test $is_hurd = yes)
 AM_CONDITIONAL(LIBGO_IS_BSD, test $is_darwin = yes -o $is_dragonfly = yes -o $is_freebsd = yes -o $is_netbsd = yes -o $is_openbsd = yes)
 AC_SUBST(GOOS)
 AC_SUBST(ALLGOOS)
