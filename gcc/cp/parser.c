@@ -25768,9 +25768,11 @@ cp_parser_gnu_attributes_opt (cp_parser* parser)
       cp_lexer_consume_token (parser->lexer);
       /* Look for the two `(' tokens.  */
       matching_parens outer_parens;
-      outer_parens.require_open (parser);
+      if (!outer_parens.require_open (parser))
+	ok = false;
       matching_parens inner_parens;
-      inner_parens.require_open (parser);
+      if (!inner_parens.require_open (parser))
+	ok = false;
 
       /* Peek at the next token.  */
       token = cp_lexer_peek_token (parser->lexer);
