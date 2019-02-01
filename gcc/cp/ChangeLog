@@ -1,3 +1,78 @@
+2019-02-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88325 - ICE with invalid out-of-line template member definition.
+	* parser.c (cp_parser_class_name): Don't call make_typename_type
+	for overloads.
+
+2019-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87175
+	* parser.c (cp_parser_gnu_attributes_opt): Set ok to false
+	if require_open failed.
+
+2019-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89083, c++/80864 - ICE with list initialization in template.
+	* constexpr.c (adjust_temp_type): Use copy_node and change the type
+	instead of using build_constructor.
+	* decl.c (reshape_init_r): Don't reshape a digested initializer.
+	Return the initializer for COMPOUND_LITERAL_P.
+
+	PR c++/88983 - ICE with switch in constexpr function.
+	* constexpr.c (cxx_eval_switch_expr): Use SWITCH_COND and SWITCH_BODY.
+	(cxx_eval_constant_expression) <case COND_EXPR>: Don't look for the
+	label in the else branch if we found it in the then branch.
+
+2019-01-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88752 - ICE with lambda and constexpr if.
+	* cp-tree.h (LAMBDA_EXPR_INSTANTIATED): New.
+	* pt.c (tsubst_lambda_expr): Set it.
+	(instantiated_lambda_fn_p): Check it.
+	(enclosing_instantiation_of): Use it.
+
+2019-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/88170
+	* cxx-pretty-print.c (pp_cxx_enumeration_constant): Print always as
+	a C cast in pp_c_flag_gnu_v3 mode.
+
+2019-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88988
+	* lambda.c (is_capture_proxy): Don't return true for
+	DECL_OMP_PRIVATIZED_MEMBER artificial vars.
+
+2019-01-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89119 - ICE with value-initialization in template.
+	* pt.c (tsubst_copy_and_build): Handle RANGE_EXPR.
+
+2019-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86943 - wrong code converting lambda to function pointer.
+	* lambda.c (maybe_add_lambda_conv_op): Use a template-id in the
+	call.  Only forward parms for decltype.
+	* pt.c (tsubst_copy_and_build) [CALL_EXPR]: Handle CALL_FROM_THUNK_P
+	specially.
+	* typeck.c (check_return_expr): Don't mess with a thunk call.
+
+2019-01-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89089 - ICE with [[no_unique_address]].
+	PR c++/88865 - wrong layout with [[no_unique_address]].
+	* class.c (check_field_decls): A potentially-overlapping field makes
+	the class non-layout-POD, but not non-empty.
+	(end_of_class): Always consider empty data members.
+	(layout_class_type): Set DECL_SIZE for empty fields.
+
+2019-01-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88358 - name wrongly treated as type.
+	* parser.c (cp_parser_direct_declarator): Don't assume a qualified-id
+	in parameter-list is a type if the function's declarator-id is not
+	qualified.
+
 2019-01-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88815 - narrowing conversion lost in decltype.

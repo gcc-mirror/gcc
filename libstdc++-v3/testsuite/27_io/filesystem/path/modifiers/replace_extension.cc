@@ -33,6 +33,15 @@ test01()
   compare_paths( path("/foo.txt").replace_extension("cpp"), "/foo.cpp" );
   compare_paths( path("/foo.txt").replace_extension(".cpp"), "/foo.cpp" );
   compare_paths( path("/").replace_extension("bar"), "/.bar" );
+  compare_paths( path("/").replace_extension(".bar"), "/.bar" );
+  compare_paths( path("/dir/").replace_extension("bar"), "/dir/.bar" );
+  compare_paths( path("dir/foo").replace_extension("bar"), "dir/foo.bar" );
+
+  // PR 89117:
+  compare_paths( path("/foo.txt").replace_extension(), "/foo" );
+  compare_paths( path("foo.txt").replace_extension(), "foo" );
+  compare_paths( path("/foo").replace_extension(), "/foo" );
+  compare_paths( path("foo").replace_extension(), "foo" );
 }
 
 void

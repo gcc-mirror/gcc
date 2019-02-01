@@ -1,3 +1,181 @@
+2019-02-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88325 - ICE with invalid out-of-line template member definition.
+	* g++.dg/cpp2a/typename14.C: New test.
+
+2019-02-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/88597
+	* gcc.dg/torture/pr88597.c: New testcase.
+
+2019-02-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85497
+	* gcc.dg/graphite/pr85497.c: New testcase.
+
+2019-02-01  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/87451
+	* gcc.dg/debug/dwarf2/inline5.c: Allow more comment variants.
+
+2019-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89143
+	* gcc.dg/tree-ssa/vrp121.c: New test.
+
+	PR tree-optimization/88107
+	* gcc.dg/gomp/pr88107.c: New test.
+
+	PR c++/87175
+	* g++.dg/ext/attrib57.C: New test.
+
+2018-02-01  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/88932
+	* gfortran.dg/pr88932.f90: New test.
+
+2019-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88983 - ICE with switch in constexpr function.
+	* g++.dg/cpp1y/constexpr-88983.C: New test.
+
+2019-01-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/88669
+	* gfortran.dg/contiguous_9.f90: New test.
+
+2019-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89083, c++/80864 - ICE with list initialization in template.
+	* g++.dg/cpp0x/initlist107.C: New test.
+	* g++.dg/cpp0x/initlist108.C: New test.
+	* g++.dg/cpp0x/initlist109.C: New test.
+	* g++.dg/cpp0x/initlist110.C: New test.
+	* g++.dg/cpp0x/initlist111.C: New test.
+	* g++.dg/cpp0x/initlist112.C: New test.
+	* g++.dg/init/ptrfn4.C: New test.
+
+2019-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/89122
+	* g++.dg/spellcheck-stdlib.C (test_FLT_MAX): New test.
+	* gcc.dg/spellcheck-stdlib.c (test_FLT_MAX): New test.
+
+2019-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89135
+	* gcc.dg/torture/pr89135.c: New testcase.
+
+2019-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/89124
+	* c-c++-common/asan/pr89124.c: New test.
+
+2019-01-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/52564
+	* gfortran.dg/print_2.f90: New test.
+
+2019-01-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/87246
+	* gcc.target/i386/pr87246.c: New.
+
+2019-01-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89119 - ICE with value-initialization in template.
+	* g++.dg/cpp0x/initlist-value3.C: New test.
+
+2019-01-30  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/vec-extract-schar-1.c: New test.
+	* gcc.target/powerpc/vec-extract-sint-1.c: New test.
+	* gcc.target/powerpc/vec-extract-sint128-1.c: New test.
+	* gcc.target/powerpc/vec-extract-slong-1.c: New test.
+	* gcc.target/powerpc/vec-extract-sshort-1.c: New test.
+	* gcc.target/powerpc/vec-extract-uchar-1.c: New test.
+	* gcc.target/powerpc/vec-extract-uint-1.c: New test.
+	* gcc.target/powerpc/vec-extract-uint128-1.c: New test.
+	* gcc.target/powerpc/vec-extract-ulong-1.c: New test.
+	* gcc.target/powerpc/vec-extract-ushort-1.c: New test.
+
+2019-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89111
+	* gcc.dg/torture/pr89111.c: New testcase.
+
+2019-01-30  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR testsuite/88920
+	* lib/target-supports.exp: Cache result.
+
+2019-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89105
+	* g++.target/i386/pr89105.C: New test.
+
+	PR c/89061
+	* gcc.dg/pr89061.c: New test.
+
+2019-01-29  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88956
+	* gcc.dg/Warray-bounds-39.c: New test.
+
+2019-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR testsuite/89110
+	* g++.dg/other/nontype-1.C: Expect error in all modes.
+	* g++.dg/parse/crash13.C: Likewise.
+	* g++.dg/parse/error36.C: Likewise.
+	* g++.dg/template/error29.C: Likewise.
+
+2019-01-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/57048
+	* gfortran.dg/c_funptr_1.f90: New file.
+	* gfortran.dg/c_funptr_1_mod.f90: New file.
+
+2019-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/66676
+	PR ipa/89104
+	* gcc.dg/gomp/pr89104.c: New test.
+
+2019-01-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gdc.dg/pr89042a.d: Mark as compile test.
+	* gdc.dg/pr89042b.d: Likewise.
+
+2019-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR debug/87295
+	* g++.dg/lto/pr87295_0.C: New testcase.
+
+2019-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89045
+	* gcc.dg/pr89045.c: New test.
+
+	PR c/86125
+	* gcc.dg/Wbuiltin-declaration-mismatch-7.c: Guard testcase for
+	lp64, ilp32 and llp64 only.
+	(fputs): Use unsigned long long instead of size_t for return type.
+	(vfprintf, vfscanf): Accept arbitrary target specific type for
+	va_list.
+
+2019-01-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88358 - name wrongly treated as type.
+	* g++.dg/cpp2a/typename1.C: Add dg-error.
+	* g++.dg/cpp2a/typename13.C: New test.
+	* g++.dg/cpp2a/typename6.C: Make a function name qualified.
+	Add typename.
+
+2019-01-28  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp0x/enum37.C: Add dg-error.
+
 2019-01-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-c++-common/Waddress-of-packed-member-1.c: Extended test case.
@@ -1381,6 +1559,12 @@
 
 	PR c/88363
 	* c-c++-common/attributes-4.c: New test.
+
+2019-01-04  Sam Tebbs  <sam.tebbs@arm.com>
+
+	PR gcc/87763
+	* gcc.target/aarch64/combine_bfxil.c: Change scan-assembler-times bfxil
+	count to 18.
 
 2019-01-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
 

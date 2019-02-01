@@ -89,10 +89,10 @@ namespace std {
   template<class T> _GLIBCXX_CONSTEXPR T real(const complex<T>&);
   template<class T> _GLIBCXX_CONSTEXPR T imag(const complex<T>&);
   template<class T> T abs(const complex<T>&);
-  template<class T> _GLIBCXX20_CONSTEXPR T arg(const complex<T>&);
+  template<class T> T arg(const complex<T>&);
   template<class T> _GLIBCXX20_CONSTEXPR T norm(const complex<T>&);
   template<class T> _GLIBCXX20_CONSTEXPR complex<T> conj(const complex<T>&);
-  template<class T> _GLIBCXX20_CONSTEXPR complex<T> proj(const complex<T>&);
+  template<class T> complex<T> proj(const complex<T>&);
   template<class T> complex<T> polar(const T& rho, const T& theta);
 
   // 26.2.8 transcendentals:

@@ -1,8 +1,12 @@
+2019-01-31  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/t-linux: Add -mfp-rounding-mode=d
+	to HOST_LIBGCC2_CFLAGS.
+
 2019-01-23  Joseph Myers  <joseph@codesourcery.com>
 
 	PR libgcc/88931
-	* libgcc2.c (FSTYPE FUNC (DWtype u)): Correct no leading bits
-	case.
+	* libgcc2.c (FSTYPE FUNC (DWtype u)): Correct no leading bits case.
 
 2019-01-18  Martin Liska  <mliska@suse.cz>
 

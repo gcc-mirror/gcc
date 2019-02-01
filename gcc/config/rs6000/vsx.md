@@ -4378,7 +4378,7 @@
    (clobber (match_scratch:V4SF 2 "=&wf,&wa"))
    (clobber (match_scratch:V4SF 3 "=&wf,&wa"))
    (clobber (match_scratch:V4SF 4 "=0,0"))]
-  "VECTOR_UNIT_VSX_P (V4SFmode)"
+  "BYTES_BIG_ENDIAN && VECTOR_UNIT_VSX_P (V4SFmode)"
   "#"
   ""
   [(const_int 0)]

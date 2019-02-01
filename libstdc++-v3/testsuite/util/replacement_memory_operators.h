@@ -64,7 +64,7 @@ namespace __gnu_test
     check_new(Alloc a = Alloc())
     {
       __gnu_test::counter::exceptions(false);
-      a.allocate(10);
+      (void) a.allocate(10);
       const bool __b((__gnu_test::counter::count() > 0) == uses_global_new);
       if (!__b)
 	throw std::logic_error("counter not incremented");

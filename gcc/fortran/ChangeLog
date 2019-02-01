@@ -1,3 +1,29 @@
+2019-01-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/88669
+	* resolve.c (resolve_component): If the reference is a BT_CLASS,
+	copy the contiguous attribute from the reference and use the
+	correct attributes.
+
+2019-01-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/52564
+	* io.c (match_io): Add check for comma after '*' without subsequent
+	IO list.
+
+2019-01-30  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR fortran/52884
+	* invoke.texi: Document the promotion of double precision
+	constants.
+
+2019-01-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/57048
+	* interface.c (gfc_compare_types): If a derived type and an
+	integer both have a derived type, and they are identical,
+	this is a C binding type and compares equal.
+
 2019-01-26  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/57553

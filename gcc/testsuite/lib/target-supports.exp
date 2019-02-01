@@ -9263,6 +9263,7 @@ foreach N {df} {
 
 # Return 1 if this target uses an LLVM assembler and/or linker
 proc check_effective_target_llvm_binutils { } {
-    return [expr { [istarget amdgcn*-*-*]
-		   || [check_effective_target_offload_gcn] } ]
+    return [check_cached_effective_target llvm_binutils {
+	      expr { [istarget amdgcn*-*-*]
+		     || [check_effective_target_offload_gcn] }}]
 }

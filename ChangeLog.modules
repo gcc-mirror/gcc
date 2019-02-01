@@ -1,5 +1,7 @@
 2019-02-01  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r268456.
+
 	gcc/cp/
 	* decl.c (duplicate_decls): Accomodate anticipated fns.
 	* module.cc (set_module_owner): Adjust.

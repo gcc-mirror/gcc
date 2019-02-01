@@ -109,4 +109,9 @@ typedef long int __padding_type;
 #if defined (__hppa__)
 #define _GLIBCXX_HAVE_BROKEN_STRTOLD 1
 #endif
+
+// The vnsprintf function returns -1 when the buffer is too small.
+// See PR libstdc++/68737.
+#define _GLIBCXX_HAVE_BROKEN_VSNPRINTF 1
+
 #endif

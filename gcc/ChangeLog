@@ -1,3 +1,183 @@
+2019-02-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* combine.c (try_combine): Do not print "Can't combine" messages unless
+	printing failed combination attempts.
+
+2019-02-01  Martin Jambor  <mjambor@suse.cz>
+
+	PR hsa/87863
+	* omp-grid.c (grid_mark_variable_segment): Set assembler name of group
+	segment and global segment variables before making them static.
+
+2019-02-01  Martin Jambor  <mjambor@suse.cz>
+
+	* omp-grid.c (grid_target_follows_gridifiable_pattern): Guard two
+	missed optimization dump with dump_enabled_p.
+
+2019-02-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/88597
+	* tree-scalar-evolution.c (analyze_scalar_evolution): Set up
+	the instantiate cache.
+	(instantiate_scev_binary): Elide second operand procesing
+	if equal to the first.
+	* tree-chrec.c (chrec_contains_symbols): Add visited set.
+	(chrec_contains_undetermined): Likewise.
+	(tree_contains_chrecs): Likewise.
+
+2019-02-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* parms.def (MAX_INLINE_INSNS_SINGLE): Reduce from 400 to 200.
+
+2019-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89143
+	* wide-int-range.h (wide_int_range_absu): Declare.
+	* wide-int-range.cc (wide_int_range_absu): New function.
+	* tree-vrp.c (extract_range_from_unary_expr): Handle ABSU_EXPR.
+
+	PR tree-optimization/88107
+	* tree-cfg.c (find_outermost_region_in_block): Add ALL argument,
+	instead of assertion that eh_region_outermost is non-NULL, if it
+	is NULL, set *ALL to true and return NULL.
+	(move_sese_region_to_fn): Adjust caller, if all is set, call
+	duplicate_eh_regions with NULL region.
+
+2019-02-01  Richard Biener  <rguenth@suse.de>
+
+	PR rtl-optimization/88593
+	* mode-switching.c (optimize_mode_switching): Free dominators before
+	calling cleanup_cfg.
+
+2019-02-01  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/88932
+	* tree-predcom.c (try_combine_chains): Get loop bbs in dom order.
+
+2019-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89137
+	* omp-low.c (lower_omp_task_reductions): Drop redundant test to avoid
+	bogus clang warning.
+
+2019-01-31  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89071
+	* config/i386/i386.md (*extendsfdf2): Split out reg->reg
+	alternative to avoid partial SSE register stall for TARGET_AVX.
+	(truncdfsf2): Ditto.
+	(sse4_1_round<mode>2): Ditto.
+
+2018-01-31  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR tree-optimization/89008
+	* gimple-ssa-strength-reduction.c (slsr_process_mul): Don't
+	process anything of the form X * 0.
+
+2019-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89135
+	* tree-ssa-phiprop.c (pass_phiprop::execute): Skip blocks
+	with abnormal preds.
+
+2019-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/89124
+	* ipa-inline.c (sanitize_attrs_match_for_inline_p): Allow inlining
+	always_inline callees into no_sanitize_address callers.
+
+2019-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/89115
+	* lra.c (lra_rtx_hash): Properly hash CONST_INT values.
+
+2019-01-30  Martin Sebor  <msebor@redhat.com>
+
+	PR other/89106
+	* doc/extend.texi (cast to a union): Correct and expand.
+
+2019-01-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/87246
+	* lra-constraints.c (simplify_operand_subreg): Reload memory
+	in subreg if the address became invalid.
+
+2019-01-30  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/87064
+	* config/rs6000/vsx.md (*vsx_reduc_<VEC_reduc_name>_v4sf_scalar):
+	Disable for little-endian.
+
+2019-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/89115
+	* opts.c (default_options_optimization): Reduce
+	PARAM_MAX_DSE_ACTIVE_LOCAL_STORES by a factor of 10 at -O1.
+	Make PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP reduction relative
+	to the default.
+
+2019-01-30  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-c.c (altivec-resolve_overloaded_builtin):
+	Change handling of ALTIVEC_BUILTIN_VEC_EXTRACT.  Coerce result to
+	type of vector element when vec_extract is implemented by direct
+	move.
+
+2019-01-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/invoke.texi (C Language Options): List "-fopenacc-dim".
+
+2019-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89111
+	* tree-ssa-loop-im.c (gather_mem_refs_stmt): Restrict
+	canonicalization to appropriately sized access types.
+
+2019-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89105
+	* config/i386/i386.c (ix86_warn_parameter_passing_abi): Don't warn
+	for arguments to functions that are TU-local and shouldn't be
+	referenced by assembly.
+
+2019-01-30  Ulrich Drepper  <drepper@redhat.com>
+
+	* dumpfile.c (opt_info_switch_p_1): Ignore '-' if it appears
+	after '='.
+
+2019-01-29  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88956
+	* gimple-fold.c (fold_array_ctor_reference): Avoid zero-length arrays.
+
+2019-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/66676
+	PR ipa/89104
+	* omp-simd-clone.c (simd_clone_clauses_extract)
+	<case OMP_CLAUSE_ALIGNED>: Ignore clauses with NULL
+	OMP_CLAUSE_ALIGNED_ALIGNMENT.
+
+2019-01-29  Vineet Gupta  <vgupta@synopsys.com>
+
+	* config.gcc: Force .init_array for ARC.
+
+2019-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR debug/87295
+	* dwarf2out.c (collect_skeleton_dies): New helper.
+	(copy_decls_for_unworthy_types): Call it.
+	(build_abbrev_table): Assert we do not try to replace
+	DW_AT_signature refs with local refs.
+
+2019-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89002
+	* gimplify.c (gimplify_omp_for): When adding OMP_CLAUSE_*_GIMPLE_SEQ
+	for lastprivate/linear IV, push gimplify context around gimplify_assign
+	and, if it needed any temporaries, pop it into a gimple bind around the
+	sequence.
+
 2019-01-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* common.opt (-Wattribute-alias): Remove "no-" from name.
@@ -1843,20 +2023,20 @@
 
 	* config/aarch64/aarch64-option-extensions.def: Define
 	AARCH64_OPT_EXTENSION for memtag, rng, sb, ssbs and predres.
-	* gcc/config/aarch64/aarch64.h (AARCH64_FL_RNG): New.
+	* config/aarch64/aarch64.h (AARCH64_FL_RNG): New.
 	(AARCH64_FL_MEMTAG, ARCH64_FL_SB, AARCH64_FL_SSBS): New.
 	(AARCH64_FL_PREDRES): New.
 	(AARCH64_FL_FOR_ARCH8_5): Add AARCH64_FL_SB, AARCH64_FL_SSBS and
 	AARCH64_FL_PREDRES by default.
-	* gcc/doc/invoke.texi: Document rng, memtag, sb, ssbs and predres.
+	* doc/invoke.texi: Document rng, memtag, sb, ssbs and predres.
 
 2018-01-09  Sudakshina Das  <sudi.das@arm.com>
 
 	* config/aarch64/aarch64-arches.def: Define AARCH64_ARCH for
 	ARMv8.5-A.
-	* gcc/config/aarch64/aarch64.h (AARCH64_FL_V8_5): New.
+	* config/aarch64/aarch64.h (AARCH64_FL_V8_5): New.
 	(AARCH64_FL_FOR_ARCH8_5, AARCH64_ISA_V8_5): New.
-	* gcc/doc/invoke.texi: Document ARMv8.5-A.
+	* doc/invoke.texi: Document ARMv8.5-A.
 
 2019-01-09  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
 
@@ -2245,12 +2425,6 @@
 
 	* gdbinit.in: Turn off pagination for the skip commands, restore
 	it to previous state afterwards.
-
-2019-01-04  Sam Tebbs  <sam.tebbs@arm.com>
-
-	PR gcc/87763
-	* gcc.target/aarch64/combine_bfxil.c: Change scan-assembler-times bfxil
-	count to 18.
 
 2019-01-04  Jakub Jelinek  <jakub@redhat.com>
 

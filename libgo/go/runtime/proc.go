@@ -3542,14 +3542,13 @@ func sigprof(pc uintptr, gp *g, mp *m) {
 		for i := 0; i < n; i++ {
 			if stklocs[i].function == "runtime.sigtrampgo" && i+2 < n {
 				framesToDiscard = i + 2
-				n -= framesToDiscard
 			}
 			if stklocs[i].function == "runtime.sigtramp" && i+2 < n {
 				framesToDiscard = i + 2
-				n -= framesToDiscard
 				break
 			}
 		}
+		n -= framesToDiscard
 		for i := 0; i < n; i++ {
 			stk[i] = stklocs[i+framesToDiscard].pc
 		}

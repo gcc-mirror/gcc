@@ -58,7 +58,6 @@ DEFPARAM (PARAM_INLINE_MIN_SPEEDUP,
    of a function counted in internal gcc instructions (not in
    real machine instructions) that is eligible for inlining
    by the tree inliner.
-   The default value is 400.
    Only functions marked inline (or methods defined in the class
    definition for C++) are affected by this.
    There are more restrictions to inlining: If inlined functions
@@ -69,7 +68,7 @@ DEFPARAM (PARAM_INLINE_MIN_SPEEDUP,
 DEFPARAM (PARAM_MAX_INLINE_INSNS_SINGLE,
 	  "max-inline-insns-single",
 	  "The maximum number of instructions in a single function eligible for inlining.",
-	  400, 0, 0)
+	  200, 0, 0)
 
 /* The single function inlining limit for functions that are
    inlined by virtue of -finline-functions (-O3).

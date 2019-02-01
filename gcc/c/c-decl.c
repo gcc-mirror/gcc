@@ -659,6 +659,14 @@ decl_jump_unsafe (tree decl)
   if (error_operand_p (decl))
     return false;
 
+  /* Don't warn for compound literals.  If a goto statement crosses
+     their initialization, it should cross also all the places where
+     the complit is used or where the complit address might be saved
+     into some variable, so code after the label to which goto jumps
+     should not be able to refer to the compound literal.  */
+  if (VAR_P (decl) && C_DECL_COMPOUND_LITERAL_P (decl))
+    return false;
+
   /* Always warn about crossing variably modified types.  */
   if ((VAR_P (decl) || TREE_CODE (decl) == TYPE_DECL)
       && variably_modified_type_p (TREE_TYPE (decl), NULL_TREE))
@@ -1632,13 +1640,13 @@ c_bind (location_t loc, tree decl, bool is_global)
 }
 
 
-/* Stores the first FILE* argument type (whatever it is) seen in
-   a declaration of a file I/O built-in.  Subsequent declarations
-   of such built-ins are expected to refer to it rather than to
-   fileptr_type_node which is just void* (or to any other type).
+/* Stores the first FILE*, const struct tm* etc. argument type (whatever it
+   is) seen in a declaration of a file I/O etc. built-in.  Subsequent
+   declarations of such built-ins are expected to refer to it rather than to
+   fileptr_type_node etc. which is just void* (or to any other type).
    Used only by match_builtin_function_types.  */
 
-static GTY(()) tree last_fileptr_type;
+static GTY(()) tree last_structptr_types[6];
 
 /* Subroutine of compare_decls.  Allow harmless mismatches in return
    and argument types provided that the type modes match.  Set *STRICT
@@ -1660,13 +1668,18 @@ match_builtin_function_types (tree newtype, tree oldtype,
   if (TYPE_MODE (oldrettype) != TYPE_MODE (newrettype))
     return NULL_TREE;
 
-  if (!comptypes (oldrettype, newrettype))
+  if (!comptypes (TYPE_MAIN_VARIANT (oldrettype),
+		  TYPE_MAIN_VARIANT (newrettype)))
     *strict = oldrettype;
 
   tree oldargs = TYPE_ARG_TYPES (oldtype);
   tree newargs = TYPE_ARG_TYPES (newtype);
   tree tryargs = newargs;
 
+  gcc_checking_assert ((sizeof (last_structptr_types)
+			/ sizeof (last_structptr_types[0]))
+		       == (sizeof (builtin_structptr_types)
+			   / sizeof (builtin_structptr_types[0])));
   for (unsigned i = 1; oldargs || newargs; ++i)
     {
       if (!oldargs
@@ -1675,8 +1688,8 @@ match_builtin_function_types (tree newtype, tree oldtype,
 	  || !TREE_VALUE (newargs))
 	return NULL_TREE;
 
-      tree oldtype = TREE_VALUE (oldargs);
-      tree newtype = TREE_VALUE (newargs);
+      tree oldtype = TYPE_MAIN_VARIANT (TREE_VALUE (oldargs));
+      tree newtype = TYPE_MAIN_VARIANT (TREE_VALUE (newargs));
 
       /* Fail for types with incompatible modes/sizes.  */
       if (TYPE_MODE (TREE_VALUE (oldargs))
@@ -1684,28 +1697,39 @@ match_builtin_function_types (tree newtype, tree oldtype,
 	return NULL_TREE;
 
       /* Fail for function and object pointer mismatches.  */
-      if (FUNCTION_POINTER_TYPE_P (oldtype) != FUNCTION_POINTER_TYPE_P (newtype)
+      if ((FUNCTION_POINTER_TYPE_P (oldtype)
+	   != FUNCTION_POINTER_TYPE_P (newtype))
 	  || POINTER_TYPE_P (oldtype) != POINTER_TYPE_P (newtype))
 	return NULL_TREE;
 
-      if (oldtype == fileptr_type_node)
-	{
-	  /* Store the first FILE* argument type (whatever it is), and
-	     expect any subsequent declarations of file I/O built-ins
-	     to refer to it rather than to fileptr_type_node which is
-	     just void*.  */
-	  if (last_fileptr_type)
-	    {
-	      if (!comptypes (last_fileptr_type, newtype))
-		{
-		  *argno = i;
-		  *strict = last_fileptr_type;
-		}
-	    }
-	  else
-	    last_fileptr_type = newtype;
-	}
-      else if (!*strict && !comptypes (oldtype, newtype))
+      unsigned j = (sizeof (builtin_structptr_types)
+		    / sizeof (builtin_structptr_types[0]));
+      if (POINTER_TYPE_P (oldtype))
+	for (j = 0; j < (sizeof (builtin_structptr_types)
+			 / sizeof (builtin_structptr_types[0])); ++j)
+	  {
+	    if (TREE_VALUE (oldargs) != builtin_structptr_types[j].node)
+	      continue;
+	    /* Store the first FILE* etc. argument type (whatever it is), and
+	       expect any subsequent declarations of file I/O etc. built-ins
+	       to refer to it rather than to fileptr_type_node etc. which is
+	       just void* (or const void*).  */
+	    if (last_structptr_types[j])
+	      {
+		if (!comptypes (last_structptr_types[j], newtype))
+		  {
+		    *argno = i;
+		    *strict = last_structptr_types[j];
+		  }
+	      }
+	    else
+	      last_structptr_types[j] = newtype;
+	    break;
+	  }
+      if (j == (sizeof (builtin_structptr_types)
+		/ sizeof (builtin_structptr_types[0]))
+	  && !*strict
+	  && !comptypes (oldtype, newtype))
 	{
 	  *argno = i;
 	  *strict = oldtype;
@@ -5470,6 +5494,7 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const,
   DECL_READ_P (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
+  C_DECL_COMPOUND_LITERAL_P (decl) = 1;
   TREE_TYPE (decl) = type;
   c_apply_type_quals_to_decl (TYPE_QUALS (strip_array_types (type)), decl);
   if (alignas_align)
@@ -5512,7 +5537,7 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const,
       pushdecl (decl);
       rest_of_decl_compilation (decl, 1, 0);
     }
-  else if (current_function_decl)
+  else if (current_function_decl && !current_scope->parm_flag)
     pushdecl (decl);
 
   if (non_const)
