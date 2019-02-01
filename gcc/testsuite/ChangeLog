@@ -1,3 +1,11 @@
+2019-02-01  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	Backport from mainline
+	2019-02-01  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/88932
+	* gfortran.dg/pr88932.f90: New test.
+
 2019-01-30  Manfred Schwarb  <manfred99@gmx.ch>
 
 	* gfortran.dg/newunit_5.f90.f90: Moved to
