@@ -91,6 +91,7 @@ checksig _SIGCANCEL  '{_SigSetStack + _SigUnblock, "SIGCANCEL: reserved signal f
 checksig _SIGXRES    '{_SigNotify, "SIGXRES: resource control exceeded"}'
 checksig _SIGJVM1    '{_SigNotify, "SIGJVM1: reserved signal for Java Virtual Machine"}'
 checksig _SIGJVM2    '{_SigNotify, "SIGJVM2: reserved signal for Java Virtual Machine"}'
+checksig _SIGLOST '   {_SigNotify, "SIGLOST: resource lost (Sun); server died (GNU)"}'
 
 # Special handling of signals 32 and 33 on GNU/Linux systems,
 # because they are special to glibc.
@@ -112,6 +113,11 @@ else
 	    rtmax=`grep 'const _*SIGRTMAX = [0-9]*$' gen-sysinfo.go | sed -e 's/.* = \([0-9]*\)/\1/'`
 	    if test -n "$rtmax"; then
 		nsig=`expr $rtmax + 1`
+	    elif grep 'const _*SIGRTMAX = [ (]*_*SIGRTMIN[ )]*' gen-sysinfo.go >/dev/null 2>&1; then
+		rtmin=`grep 'const _*SIGRTMIN = [0-9]*$' gen-sysinfo.go | sed -e 's/.* = \([0-9]*\)/\1/'`
+		if test -n "$rtmin"; then
+		    nsig=`expr $rtmin + 1`
+		fi
 	    fi
 	fi
     fi

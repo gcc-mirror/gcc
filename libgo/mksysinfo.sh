@@ -55,8 +55,12 @@ grep '^type _mld_hdr_t ' gen-sysinfo.go | \
   sed -e 's/_in6_addr/[16]byte/' >> ${OUT}
 
 # The errno constants.  These get type Errno.
-  egrep '#define E[A-Z0-9_]+ ' errno.i | \
+egrep '#define E[A-Z0-9_]+ [0-9E]' errno.i | \
   sed -e 's/^#define \(E[A-Z0-9_]*\) .*$/const \1 = Errno(_\1)/' >> ${OUT}
+
+# Workaround for GNU/Hurd _EMIG_* errors having negative values
+egrep '#define E[A-Z0-9_]+ -[0-9]' errno.i | \
+  sed -e 's/^#define \(E[A-Z0-9_]*\) .*$/const \1 = Errno(-_\1)/' >> ${OUT}
 
 # The O_xxx flags.
 egrep '^const _(O|F|FD)_' gen-sysinfo.go | \
@@ -129,6 +133,11 @@ grep '^const _SYS_' gen-sysinfo.go | \
     sup=`echo $sys | tr abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ`
     echo "const $sup = _$sys" >> ${OUT}
   done
+
+# Special treatment of SYS_IOCTL for GNU/Hurd.
+if ! grep '^const SYS_IOCTL' ${OUT} > /dev/null 2>&1; then
+  echo "const SYS_IOCTL = 0" >> ${OUT}
+fi
 
 # The GNU/Linux support wants to use SYS_GETDENTS64 if available.
 if ! grep '^const SYS_GETDENTS ' ${OUT} >/dev/null 2>&1; then
@@ -475,6 +484,13 @@ grep '^type _st_timespec ' gen-sysinfo.go | \
       -e 's/tv_sec/Sec/' \
       -e 's/tv_nsec/Nsec/' >> ${OUT}
 
+# Special treatment of struct stat st_dev for GNU/Hurd
+# /usr/include/i386-gnu/bits/stat.h: #define st_dev st_fsid
+fsid_to_dev=
+if grep 'define st_dev st_fsid' gen-sysinfo.go > /dev/null 2>&1; then
+  fsid_to_dev="-e 's/st_fsid/Dev/'"
+fi
+
 # The stat type.
 # Prefer largefile variant if available.
 stat=`grep '^type _stat64 ' gen-sysinfo.go || true`
@@ -485,6 +501,7 @@ else
 fi | sed -e 's/type _stat64/type Stat_t/' \
          -e 's/type _stat/type Stat_t/' \
          -e 's/st_dev/Dev/' \
+         ${fsid_to_dev} \
          -e 's/st_ino/Ino/g' \
          -e 's/st_nlink/Nlink/' \
          -e 's/st_mode/Mode/' \
