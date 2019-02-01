@@ -1,3 +1,8 @@
+2019-02-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* combine.c (try_combine): Do not print "Can't combine" messages unless
+	printing failed combination attempts.
+
 2019-02-01  Martin Jambor  <mjambor@suse.cz>
 
 	PR hsa/87863
