@@ -1,5 +1,14 @@
 2019-02-02  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/88980
+	* trans-array.c (gfc_array_init_size): Add element_size to the
+	arguments.
+	(gfc_array_allocate): Remove the recalculation of the size of
+	the element and use element_size from the call to the above.
+	Unconditionally set the span field of the descriptor.
+
+2019-02-02  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/88685
 	* expr.c (is_subref_array): Move the check for class pointer
 	dummy arrays to after the reference check. If we haven't seen
