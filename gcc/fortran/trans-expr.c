@@ -6042,6 +6042,16 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      break;
 	    }
 
+	  if (e->ts.type == BT_DERIVED && fsym && fsym->ts.type == BT_CLASS)
+	    {
+	      /* The derived type is passed to gfc_deallocate_alloc_comp.
+		 Therefore, class actuals can be handled correctly but derived
+		 types passed to class formals need the _data component.  */
+	      tmp = gfc_class_data_get (tmp);
+	      if (!CLASS_DATA (fsym)->attr.dimension)
+		tmp = build_fold_indirect_ref_loc (input_location, tmp);
+	    }
+
 	  if (e->expr_type == EXPR_OP
 		&& e->value.op.op == INTRINSIC_PARENTHESES
 		&& e->value.op.op1->expr_type == EXPR_VARIABLE)
@@ -6051,16 +6061,6 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      local_tmp = gfc_copy_alloc_comp (e->ts.u.derived, local_tmp, tmp,
 					       parm_rank, 0);
 	      gfc_add_expr_to_block (&se->post, local_tmp);
-	    }
-
-	  if (e->ts.type == BT_DERIVED && fsym && fsym->ts.type == BT_CLASS)
-	    {
-	      /* The derived type is passed to gfc_deallocate_alloc_comp.
-		 Therefore, class actuals can handled correctly but derived
-		 types passed to class formals need the _data component.  */
-	      tmp = gfc_class_data_get (tmp);
-	      if (!CLASS_DATA (fsym)->attr.dimension)
-		tmp = build_fold_indirect_ref_loc (input_location, tmp);
 	    }
 
 	  if (!finalized && !e->must_finalize)

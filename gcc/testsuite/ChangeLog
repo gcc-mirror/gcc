@@ -1,5 +1,10 @@
 2019-02-02  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/88393
+	* gfortran.dg/alloc_comp_assign_16.f03 : New test.
+
+2019-02-02  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/88980
 	* gfortran.dg/realloc_on_assign_32.f90 : New test.
 
