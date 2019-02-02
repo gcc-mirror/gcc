@@ -1,3 +1,11 @@
+2019-02-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/88298
+	* arith.c (gfc_int2int): Do not warn if src->do_not_warn is set.
+	* gfortran.h (gfc_expr): Add flag do_not_warn.
+	* intrinsic.c (gfc_convert_type_warn): Set expr->do_not_warn if
+	no warning is desired.
+
 2019-02-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/88393
