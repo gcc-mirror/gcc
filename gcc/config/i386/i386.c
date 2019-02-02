@@ -50433,7 +50433,9 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
       case E_DFmode:
       /* case E_SCmode: */
       /* case E_DCmode: */
-	break;
+	if (!AGGREGATE_TYPE_P (ret_type))
+	  break;
+	/* FALLTHRU */
       default:
 	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
 		    "unsupported return type %qT for simd", ret_type);
@@ -50444,7 +50446,6 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
   int i;
 
   for (t = DECL_ARGUMENTS (node->decl), i = 0; t; t = DECL_CHAIN (t), i++)
-    /* FIXME: Shouldn't we allow such arguments if they are uniform?  */
     switch (TYPE_MODE (TREE_TYPE (t)))
       {
       case E_QImode:
@@ -50455,8 +50456,12 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
       case E_DFmode:
       /* case E_SCmode: */
       /* case E_DCmode: */
-	break;
+	if (!AGGREGATE_TYPE_P (TREE_TYPE (t)))
+	  break;
+	/* FALLTHRU */
       default:
+	if (clonei->args[i].arg_type == SIMD_CLONE_ARG_TYPE_UNIFORM)
+	  break;
 	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
 		    "unsupported argument type %qT for simd", TREE_TYPE (t));
 	return 0;

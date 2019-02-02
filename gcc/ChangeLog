@@ -1,3 +1,10 @@
+2019-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/87887
+	* config/i386/i386.c (ix86_simd_clone_compute_vecsize_and_simdlen):
+	Punt with warning on aggregate return or argument types.  Ignore
+	type/mode checking for uniform arguments.
+
 2019-02-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* combine.c (try_combine): Do not print "Can't combine" messages unless
