@@ -1488,8 +1488,10 @@ mark_const_cap_r (tree *t, int *walk_subtrees, void *data)
     {
       tree decl = DECL_EXPR_DECL (*t);
       if (is_constant_capture_proxy (decl))
-	var = DECL_CAPTURED_VARIABLE (decl);
-      *walk_subtrees = 0;
+	{
+	  var = DECL_CAPTURED_VARIABLE (decl);
+	  *walk_subtrees = 0;
+	}
     }
   else if (is_constant_capture_proxy (*t))
     var = DECL_CAPTURED_VARIABLE (*t);
