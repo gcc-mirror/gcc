@@ -1,5 +1,13 @@
 2019-02-02  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/88393
+	* trans-expr.c (gfc_conv_procedure_call): For derived entities,
+	passed in parentheses to class formals, invert the order of
+	copying allocatable components to taking the _data of the
+	class expression.
+
+2019-02-02  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/88980
 	* trans-array.c (gfc_array_init_size): Add element_size to the
 	arguments.
