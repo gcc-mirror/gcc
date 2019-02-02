@@ -1,3 +1,9 @@
+2019-02-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88761 - ICE with reference capture of constant.
+	* lambda.c (mark_const_cap_r): Do walk subtrees of DECL_EXPR for
+	non-proxy decls.
+
 2019-02-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88325 - ICE with invalid out-of-line template member definition.
