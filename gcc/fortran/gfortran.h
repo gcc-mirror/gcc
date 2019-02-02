@@ -2168,6 +2168,9 @@ typedef struct gfc_expr
 
   unsigned int do_not_resolve_again : 1;
 
+  /* Set this if no warning should be given somewhere in a lower level.  */
+
+  unsigned int do_not_warn : 1;
   /* If an expression comes from a Hollerith constant or compile-time
      evaluation of a transfer statement, it may have a prescribed target-
      memory representation, and these cannot always be backformed from
