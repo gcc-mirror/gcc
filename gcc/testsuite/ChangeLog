@@ -31,7 +31,7 @@
 	Backport from mainline
 	2019-01-20  Kewen Lin  <linkw@gcc.gnu.org>
 
-	* gcc.target/powerpc/altivec_vld_vst_addr.c: Remove, split into 
+	* gcc.target/powerpc/altivec_vld_vst_addr.c: Remove, split into
 	altivec_vld_vst_addr-1.c and altivec_vld_vst_addr-2.c.
 	* gcc.target/powerpc/altivec_vld_vst_addr-1.c: New test.
 	* gcc.target/powerpc/altivec_vld_vst_addr-2.c: Ditto.

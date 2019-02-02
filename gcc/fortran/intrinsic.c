@@ -4939,6 +4939,8 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
   if (ts->type == BT_UNKNOWN)
     goto bad;
 
+  expr->do_not_warn = ! wflag;
+
   /* NULL and zero size arrays get their type here, unless they already have a
      typespec.  */
   if ((expr->expr_type == EXPR_NULL
