@@ -1072,15 +1072,17 @@ is_subref_array (gfc_expr * e)
   if (e->symtree->n.sym->attr.subref_array_pointer)
     return true;
 
-  if (e->symtree->n.sym->ts.type == BT_CLASS
-      && e->symtree->n.sym->attr.dummy
-      && CLASS_DATA (e->symtree->n.sym)->attr.dimension
-      && CLASS_DATA (e->symtree->n.sym)->attr.class_pointer)
-    return true;
-
   seen_array = false;
+
   for (ref = e->ref; ref; ref = ref->next)
     {
+      /* If we haven't seen the array reference and this is an intrinsic,
+	 what follows cannot be a subreference array.  */
+      if (!seen_array && ref->type == REF_COMPONENT
+	  && ref->u.c.component->ts.type != BT_CLASS
+	  && !gfc_bt_struct (ref->u.c.component->ts.type))
+	return false;
+
       if (ref->type == REF_ARRAY
 	    && ref->u.ar.type != AR_ELEMENT)
 	seen_array = true;
@@ -1089,6 +1091,13 @@ is_subref_array (gfc_expr * e)
 	    && ref->type != REF_ARRAY)
 	return seen_array;
     }
+
+  if (e->symtree->n.sym->ts.type == BT_CLASS
+      && e->symtree->n.sym->attr.dummy
+      && CLASS_DATA (e->symtree->n.sym)->attr.dimension
+      && CLASS_DATA (e->symtree->n.sym)->attr.class_pointer)
+    return true;
+
   return false;
 }
 
