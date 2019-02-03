@@ -1,3 +1,10 @@
+2019-02-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (get_fn_local_identifier): New helper.
+	(morph_fn_to_coro): User helper to find names for outlined
+	functions.
+
 2019-01-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/testsuite/

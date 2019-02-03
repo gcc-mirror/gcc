@@ -996,6 +996,31 @@ build_destroy_fn (location_t loc, tree coro_frame_type,
   DECL_SAVED_TREE (destroy) = pop_stmt_list (destr_outer);
 }
 
+/* Helper that returns an identifier for an appended extension to the
+   current un-mangled function name.  */
+static tree
+get_fn_local_identifier (tree orig, const char *append)
+{
+  /* Figure out the bits we need to generate names for the outlined things
+     For consistency this needs to behave the same way as
+     ASM_FORMAT_PRIVATE_NAME does. */
+  tree nm = DECL_NAME (orig);
+  const char *sep, *pfx = "";
+#ifndef NO_DOT_IN_LABEL
+  sep = ".";
+#else
+# ifndef NO_DOLLAR_IN_LABEL
+  sep = "$"
+# else
+  sep = "_";
+  pfx = "__";
+# endif
+#endif
+
+  char *an = ACONCAT ((pfx, IDENTIFIER_POINTER (nm), sep, append, (char*)0));
+  return get_identifier (an);
+}
+
 /* Here we:
    a) Check that the function and promise type are valid for a
       coroutine.
@@ -1098,22 +1123,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       return false;
     }
 
-  /* Types we need to define.  */
-  /* Figure out the bits we need to generate names for the outlined things
-     For consistency this needs to behave the same way as
-     ASM_FORMAT_PRIVATE_NAME does. */
-  tree nm = DECL_NAME (orig);
-  const char *sep, *pfx = "";
-#ifndef NO_DOT_IN_LABEL
-  sep = ".";
-#else
-# ifndef NO_DOLLAR_IN_LABEL
-  sep = "$"
-# else
-  sep = "_";
-  pfx = "__";
-# endif
-#endif
 
   tree coro_frame_type = xref_tag (record_type, get_identifier ("_R_frame"),
 				   ts_current, false);
@@ -1124,15 +1133,13 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree act_des_fn_ptr = build_pointer_type (act_des_fn_type);
 
   /* Declare the actor function.  */
-  char *an = ACONCAT ((pfx, IDENTIFIER_POINTER (nm), sep, "actor", (char*)0));
-  tree actor_name = get_identifier (an);
+  tree actor_name = get_fn_local_identifier (orig, "actor");
   tree actor = build_lang_decl (FUNCTION_DECL, actor_name, act_des_fn_type);
   DECL_CONTEXT (actor) = DECL_CONTEXT (orig);
   DECL_INITIAL (actor) = error_mark_node;
 
   /* Declare the destroyer function.  */
-  char *dn = ACONCAT ((pfx, IDENTIFIER_POINTER (nm), sep, "destroy", (char*)0));
-  tree destr_name = get_identifier (dn);
+  tree destr_name = get_fn_local_identifier (orig, "destroy");
   tree destroy = build_lang_decl (FUNCTION_DECL, destr_name, act_des_fn_type);
   DECL_CONTEXT (destroy) = DECL_CONTEXT (orig);
   DECL_INITIAL (destroy) = error_mark_node;
