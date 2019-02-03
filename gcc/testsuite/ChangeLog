@@ -1,5 +1,8 @@
 2019-02-03  Martin Sebor  <msebor@redhat.com>
 
+	PR c/69661
+	* c-c++-common/Wsequence-point-2.c: New test.
+
 	PR c++/44648
 	* g++.dg/warn/Wunused-var-35.C: New test.
 
