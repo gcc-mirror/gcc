@@ -613,10 +613,10 @@ DEFTREECODE (DISJ_CONSTR, "disj_constr", tcc_expression, 2)
 */
 DEFTREECODE (COAWAIT_EXPR, "co_await", tcc_expression, 4)
 
-/* Placeholder tree for the allocator machinery.
-   Takes a single type as its parameter describing the current layout of
-   the coroutine frame.  */
-DEFTREECODE (CORO_ALLOCATOR, "coro_alloc", tcc_expression, 1)
+/* The co_yield expression is used to support coroutines.
+
+   Op0 is either an assignment expression or a braced initialiser  */
+DEFTREECODE (COYIELD_EXPR, "coro_alloc", tcc_expression, 1)
 
 /*
 Local variables:

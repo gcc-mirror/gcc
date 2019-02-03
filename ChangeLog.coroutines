@@ -1,6 +1,13 @@
 2019-02-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* cp-objcp-common.c (cp_common_init_ts): Repurpose unused
+	CORO_ALLOCATOR to COYIELD_EXPR.
+	* cp-tree.def: Likewise.
+
+2019-02-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (co_yield_context_valid_p): New.
 	* cp-tree.h (co_yield_context_valid_p): Declare.
 
