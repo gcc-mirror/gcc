@@ -1,6 +1,18 @@
 2019-02-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (morph_fn_to_coro): Adjust the lookup for the
+	initial and final suspend point functions to force instantiation
+	of the promise.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/co-ret-6.C: Update test now that the
+	templatized version handles 'auto' return values for promise
+	members.
+
+2019-02-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (get_fn_local_identifier): New helper.
 	(morph_fn_to_coro): User helper to find names for outlined
 	functions.

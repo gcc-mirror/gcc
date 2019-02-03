@@ -1092,14 +1092,33 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   gcc_assert (! VOID_TYPE_P (fn_return_type));
   tree handle_type = DECL_COROUTINE_HANDLE_TYPE(orig);
   tree promise_type = DECL_COROUTINE_PROMISE_TYPE(orig);
+
+  /* A temp promise instance for the sole purpose of looking up method
+     types.  */
+  tree temp_p = build_lang_decl (VAR_DECL, get_identifier ("coro.temp_p"),
+				  promise_type);
+
+  /* Types we need to define or look up.  */
+
+  /* Initial and final suspend types are special in that the co_awaits for
+     them are synthetic.  We need to find the type for each awaiter from
+     the coroutine promise.  */
   tree initial_suspend_meth = lookup_promise_member (orig, "initial_suspend",
-						     fn_start,
-						     true /*musthave*/);
+						     fn_start, true);
   if (! initial_suspend_meth || initial_suspend_meth == error_mark_node)
     return false;
 
-  tree initial_suspend_type = TREE_TYPE (TREE_TYPE (initial_suspend_meth));
-  if (TREE_CODE (initial_suspend_type) != RECORD_TYPE)
+  tree get_is_fn = NULL_TREE;
+  /* Build the call, since we need to force instantiation of templates.  */
+  tree get_is_call = build_new_method_call (temp_p, initial_suspend_meth,  NULL,
+					    NULL_TREE, LOOKUP_NORMAL,
+					    &get_is_fn, tf_warning_or_error);
+
+  /* Assuming we found it, look at the return type
+     - it must be an aggregate.  */
+  if (!get_is_fn 
+      || get_is_call == error_mark_node
+      || TREE_CODE (TREE_TYPE (TREE_TYPE (get_is_fn))) != RECORD_TYPE)
     {
       error_at (&fn_start_loc,
 		"the initial suspend type needs to be an aggregate");
@@ -1109,19 +1128,36 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       /* FIXME: Match clang wording.  */
       return false;
     }
+  /* Else we know the return type now.  */
+  tree initial_suspend_type = TREE_TYPE (TREE_TYPE (get_is_fn));
+
+  /* Do the same for the final suspend.  */
   tree final_suspend_meth = lookup_promise_member (orig, "final_suspend",
-						   fn_start,
-						   true /*musthave*/);
-  if (! final_suspend_meth || final_suspend_meth == error_mark_node)
+						     fn_start, true);
+  if (!final_suspend_meth || final_suspend_meth == error_mark_node)
     return false;
 
-  tree final_suspend_type = TREE_TYPE (TREE_TYPE (final_suspend_meth));
-  if (TREE_CODE (final_suspend_type) != RECORD_TYPE)
+  tree get_fs_fn = NULL_TREE;
+  /* Build the call, since we need to force instantiation of templates.  */
+  tree get_fs_call = build_new_method_call (temp_p, final_suspend_meth,  NULL,
+					    NULL_TREE, LOOKUP_NORMAL,
+					    &get_fs_fn, tf_warning_or_error);
+
+  /* Assuming we found it, look at the return type
+     - it must be an aggregate.  */
+  if (!get_fs_fn 
+      || get_fs_call == error_mark_node
+      || TREE_CODE (TREE_TYPE (TREE_TYPE (get_fs_fn))) != RECORD_TYPE)
     {
       error_at (fn_start, "the final suspend type needs to be an aggregate");
-      /* FIXME: Match clang wording, add a note to the definition.  */
+      inform (DECL_SOURCE_LOCATION
+               (MAYBE_BASELINK_FUNCTIONS (final_suspend_meth)),
+	      "declared here");
+      /* FIXME: Match clang wording.  */
       return false;
     }
+
+  tree final_suspend_type = TREE_TYPE (TREE_TYPE (get_fs_fn));
 
 
   tree coro_frame_type = xref_tag (record_type, get_identifier ("_R_frame"),

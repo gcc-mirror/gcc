@@ -17,8 +17,6 @@ extern "C" int puts (const char *);
 extern "C" int printf (const char *, ...);
 extern "C" void abort (void) __attribute__((__noreturn__));
 
-//#define BROKEN
-
 #ifndef OUTPUT
 #  define PRINT(X)
 #  define PRINTF (void)
@@ -79,19 +77,12 @@ struct coro1 {
     PRINT ("get_return_object: handle from promise");
     return handle_type::from_promise (*this);
   }
-#ifdef BROKEN
+
   auto initial_suspend () const {
-#else
-  suspend_always_prt initial_suspend () const {
-#endif
     PRINT ("get initial_suspend (always)");
     return suspend_always_prt{};
   }
-#ifdef BROKEN
   auto final_suspend () const {
-#else
-  suspend_always_prt final_suspend () const {
-#endif
     PRINT ("get final_suspend (always)");
     return suspend_always_prt{};
   }
@@ -127,7 +118,6 @@ int main ()
     {
       PRINT ("main: apparently not done...");
       abort ();
-      //x.handle.resume();
     }
   PRINT ("main: returning");
   return 0;
