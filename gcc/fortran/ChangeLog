@@ -1,3 +1,12 @@
+2019-02-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/88685
+	* expr.c (is_subref_array): Move the check for class pointer
+	dummy arrays to after the reference check. If we haven't seen
+	an array reference other than an element and a component is not
+	class or derived, return false.
+
 2019-02-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/88298

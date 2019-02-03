@@ -1,3 +1,9 @@
+2019-02-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/88685
+	* gfortran.dg/pointer_array_component_3.f90 : New test.
+
 2019-02-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/57048
