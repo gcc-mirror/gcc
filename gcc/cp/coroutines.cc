@@ -1491,6 +1491,33 @@ co_await_context_valid_p (location_t kw, tree expr)
   return true;
 }
 
+bool
+co_yield_context_valid_p (location_t kw, tree expr)
+{
+  if (!coro_common_keyword_context_valid_p (current_function_decl, kw,
+					   "co_yield"))
+    return false;
+
+  if (!coro_promise_type_found_p (current_function_decl, kw))
+    return false;
+
+  /* Belt and braces, we should never get here, the expression should be
+     required in the parser. */
+  if (expr == NULL_TREE)
+    {
+      error_at (kw, "%<co_yield%> requires an expression." );
+      return false;
+    }
+
+  if (lookup_promise_member (current_function_decl, "yield_value",
+			     kw, true /*musthave*/) == error_mark_node)
+    return false;
+
+  /* FIXME: we can probably do more here.  */
+  return true;
+}
+
+
 /* Check that it's valid to have a co_return keyword here.
    True if this is a valid context (we don't check the content
    of the expr - except to decide if the promise_type needs as

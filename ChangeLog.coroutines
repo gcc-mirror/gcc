@@ -1,6 +1,12 @@
 2019-02-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (co_yield_context_valid_p): New.
+	* cp-tree.h (co_yield_context_valid_p): Declare.
+
+2019-02-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (morph_fn_to_coro): make sure that we can
 	really get a method that produces the return object.
 	* decl.c (finish_function): Update error exit for the case
