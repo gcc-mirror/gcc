@@ -1,3 +1,12 @@
+2019-02-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/88393
+	* trans-expr.c (gfc_conv_procedure_call): For derived entities,
+	passed in parentheses to class formals, invert the order of
+	copying allocatable components to taking the _data of the
+	class expression.
+
 2019-02-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/88298
