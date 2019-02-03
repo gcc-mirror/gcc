@@ -15987,8 +15987,9 @@ finish_function (bool inline_p)
     {
       if (!morph_fn_to_coro (fndecl, &resumer, &destroyer))
         {
-	  fprintf (stderr, "*** FAILED to morph\n");
-	  return error_mark_node;
+	  DECL_SAVED_TREE (fndecl) = pop_stmt_list (DECL_SAVED_TREE (fndecl));
+	  poplevel (1, 0, 1);
+	  return fndecl;
         }
 
 #if NO_EH_YET

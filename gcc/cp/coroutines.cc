@@ -1363,14 +1363,21 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   /* Set up a new bind context for the GRO.  */
   tree gro_context_bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
   add_stmt (gro_context_bind);
-  tree gro_context_body = push_stmt_list ();
 
   tree gro_meth = lookup_promise_member (orig, "get_return_object",
 					 fn_start, true /*musthave*/);
   tree get_ro = build_new_method_call (p, gro_meth, NULL, NULL_TREE,
 				       LOOKUP_NORMAL, NULL,
 				       tf_warning_or_error);
+  /* Without a return object we haven't got much clue what's going on.  */
+  if (get_ro == error_mark_node)
+    {
+      BIND_EXPR_BODY (ramp_bind) = pop_stmt_list (ramp_body);
+      DECL_SAVED_TREE (orig) = newbody;
+      return false;
+    }
 
+  tree gro_context_body = push_stmt_list ();
   tree gro = build_lang_decl (VAR_DECL, get_identifier ("coro.gro"),
 			      TREE_TYPE (TREE_OPERAND (get_ro, 0)));
   DECL_CONTEXT (gro) = current_scope ();
