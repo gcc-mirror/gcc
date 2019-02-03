@@ -1,3 +1,13 @@
+2019-02-03  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89071
+	* config/i386/i386.md (*sqrt<mode>2_sse): Add (v,0) alternative.
+	Do not prefer (v,v) alternative for non-AVX targets and (m,v)
+	alternative for speed when TARGET_SSE_PARTIAL_REG_DEPENDENCY is set.
+	(*rcpsf2_sse): Ditto.
+	(*rsqrtsf2_sse): Ditto.
+	(sse4_1_round<mode<2): Ditto.
+
 2019-02-03  Richard Biener  <rguenther@suse.de>
 
 	PR debug/87295
