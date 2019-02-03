@@ -1,3 +1,8 @@
+2019-02-03  Richard Biener  <rguenther@suse.de>
+
+	PR debug/87295
+	* g++.dg/debug/dwarf2/pr87295.C: New testcase.
+
 2019-02-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/88298

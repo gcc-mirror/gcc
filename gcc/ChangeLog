@@ -1,3 +1,9 @@
+2019-02-03  Richard Biener  <rguenther@suse.de>
+
+	PR debug/87295
+	* dwarf2out.c (copy_ancestor_tree): Register non-stubs as
+	orig.
+
 2019-02-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/87887
