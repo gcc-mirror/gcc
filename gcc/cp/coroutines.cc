@@ -1200,6 +1200,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   decl = build_decl (fn_start, FIELD_DECL, resume_idx_name,
 		     short_unsigned_type_node);
   DECL_CHAIN (decl) = decls; decls = decl;
+
   // TODO: decide if we need to preserve things across initial susp.
   tree init_susp_name = get_identifier ("__is");
   decl = build_decl (fn_start, FIELD_DECL, init_susp_name,
@@ -1226,10 +1227,10 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   coro_frame_type = finish_struct (coro_frame_type, NULL_TREE);
 
+  /* Ramp: */
   tree ramp_label = get_identifier ("ramp.start");
   ramp_label = define_label (fn_start, ramp_label);
   
-/* Ramp: */
   ramp_label = build_stmt (fn_start, LABEL_EXPR, ramp_label);
   add_stmt (ramp_label);
 
@@ -1344,11 +1345,16 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree promise_m = lookup_member (coro_frame_type, promise_name,
 				  /*protect*/1,  /*want_type*/ 0,
 				  tf_warning_or_error);
+
   tree p = build_class_member_access_expr (deref_fp, promise_m, NULL_TREE,
 					   false, tf_warning_or_error);
+
   /* Do a placement new constructor for the promise type (we never call the
      new operator, just the constructor on the object in place in the frame.
   */
+  /* TODO: We should first see if there's a ctor that takes the function
+     params list.  If that fails, we should fall back to the empty arg
+     list.  */
   r = build_special_member_call(p, complete_ctor_identifier, NULL,
 				promise_type, LOOKUP_NORMAL,
 				tf_warning_or_error);
@@ -1461,16 +1467,16 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 bool
 co_await_context_valid_p (location_t kw, tree expr)
 {
-  if (! coro_common_keyword_context_valid_p (current_function_decl, kw,
+  if (!coro_common_keyword_context_valid_p (current_function_decl, kw,
 					   "co_await"))
     return false;
 
-  if (! coro_promise_type_found_p (current_function_decl, kw))
+  if (!coro_promise_type_found_p (current_function_decl, kw))
     return false;
 
   if (expr == NULL_TREE)
     {
-      error_at (kw, "co_await requires an expression." );
+      error_at (kw, "%<co_await%> requires an expression." );
       return false;
     }
 
