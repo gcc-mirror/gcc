@@ -1,6 +1,20 @@
 2019-02-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* parser.c (required_token): Add RT_CO_YIELD.
+	(cp_parser_yield_expression): New.
+	(cp_parser_assignment_expression): Handle co_yield.
+	(cp_parser_required_error): Handle RT_CO_YIELD.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/co-yield-syntax-1.C: New.
+	* g++.dg/coroutines/co-yield-syntax-2.C: New.
+	* g++.dg/coroutines/co-yield-syntax-3.C: New.
+	* g++.dg/coroutines/coro-missing-promise-yield.C: New.	
+	
+2019-02-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* cp-objcp-common.c (cp_common_init_ts): Repurpose unused
 	CORO_ALLOCATOR to COYIELD_EXPR.
 	* cp-tree.def: Likewise.
