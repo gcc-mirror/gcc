@@ -5046,7 +5046,6 @@ resolve_ref (gfc_expr *expr)
   int current_part_dimension, n_components, seen_part_dimension;
   gfc_ref *ref, **prev;
   bool equal_length;
-  bool breakout;
 
   for (ref = expr->ref; ref; ref = ref->next)
     if (ref->type == REF_ARRAY && ref->u.ar.as == NULL)
@@ -5055,8 +5054,8 @@ resolve_ref (gfc_expr *expr)
 	break;
       }
 
-  breakout = false;
-  for (prev = &expr->ref; !breakout && *prev != NULL; prev = &(*prev)->next)
+  for (prev = &expr->ref; *prev != NULL;
+       prev = *prev == NULL ? prev : &(*prev)->next)
     switch ((*prev)->type)
       {
       case REF_ARRAY:
@@ -5082,8 +5081,6 @@ resolve_ref (gfc_expr *expr)
 	    expr->ts.u.cl = ref->u.ss.length;
 	    ref->u.ss.length = NULL;
 	    gfc_free_ref_list (ref);
-	    if (*prev == NULL)
-	      breakout = true;
 	  }
 	break;
       }
