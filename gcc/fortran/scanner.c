@@ -2478,8 +2478,14 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
       input = gfc_open_included_file (realfilename, false, false);
       if (input == NULL)
 	{
-	  fprintf (stderr, "%s:%d: Error: Can't open included file '%s'\n",
-		   current_file->filename, current_file->line, filename);
+	  /* For -fpre-include file, current_file is NULL.  */
+	  if (current_file)
+	    fprintf (stderr, "%s:%d: Error: Can't open included file '%s'\n",
+		     current_file->filename, current_file->line, filename);
+	  else
+	    fprintf (stderr, "Error: Can't open pre-included file '%s'\n",
+		     filename);
+
 	  return false;
 	}
       stat_result = stat (realfilename, &st);
