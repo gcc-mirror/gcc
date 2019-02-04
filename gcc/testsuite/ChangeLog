@@ -1,7 +1,7 @@
 2019-02-04  Martin Liska  <mliska@suse.cz>
 
-	PR ipa/88958
-	* gcc.dg/ipa/pr88958.c: New test.
+	PR ipa/88985
+	* gcc.dg/ipa/pr88985.c: New test.
 
 2019-02-04  Jakub Jelinek  <jakub@redhat.com>
 
