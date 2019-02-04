@@ -1,5 +1,10 @@
 2019-02-04  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32.c (nds32_legitimate_address_p): Add TLS model
+	into consideration.
+
+2019-02-04  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config.gcc (with_nds32_lib, glibc):
 	Remove TARGET_DEFAULT_TLSDESC_TRAMPOLINE=0 setting.
 	* config/nds32/linux.h (TARGET_DEFAULT_TLSDESC_TRAMPOLINE): Delete.

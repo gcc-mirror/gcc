@@ -2683,7 +2683,7 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 	      /* Now we see the [ + const_addr ] pattern, but we need
 		 some further checking.  */
 
-	      if (flag_pic)
+	      if (flag_pic || SYMBOL_REF_TLS_MODEL (op0))
 		return false;
 
 	      /* If -mcmodel=large, the 'const_addr' is not a valid address
