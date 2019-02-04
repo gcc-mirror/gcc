@@ -1,5 +1,10 @@
 2019-02-04  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/rs6000.c (rs6000_indirect_call_template_1): Increase
+	str[] size to 160, and comment.
+
+2019-02-04  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/rs6000.c (rs6000_indirect_call_template_1),
 	(rs6000_pltseq_template): Guard output of TLS markers with
 	TARGET_TLS_MARKERS.

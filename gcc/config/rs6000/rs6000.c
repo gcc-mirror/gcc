@@ -21609,10 +21609,47 @@ rs6000_indirect_call_template_1 (rtx *operands, unsigned int funop,
 				 bool sibcall)
 {
   /* -Wformat-overflow workaround, without which gcc thinks that %u
-      might produce 10 digits.  */
+     might produce 10 digits.  Note that -Wformat-overflow will not
+     currently warn here for str[], so do not rely on a warning to
+     ensure str[] is correctly sized.  */
   gcc_assert (funop <= MAX_RECOG_OPERANDS);
 
-  static char str[144];  /* 1 spare */
+  /* Currently, funop is either 0 or 1.  The maximum string is always
+     a !speculate 64-bit __tls_get_addr call.
+
+     ABI_AIX:
+     .  9	ld 2,%3\n\t
+     . 27	.reloc .,R_PPC64_TLSGD,%2\n\t
+     . 29	.reloc .,R_PPC64_PLTSEQ,%z1\n\t
+     .  9	crset 2\n\t
+     . 27	.reloc .,R_PPC64_TLSGD,%2\n\t
+     . 30	.reloc .,R_PPC64_PLTCALL,%z1\n\t
+     . 10	beq%T1l-\n\t
+     . 10	ld 2,%4(1)
+     .---
+     .151
+
+     ABI_ELFv2:
+     . 27	.reloc .,R_PPC64_TLSGD,%2\n\t
+     . 29	.reloc .,R_PPC64_PLTSEQ,%z1\n\t
+     .  9	crset 2\n\t
+     . 27	.reloc .,R_PPC64_TLSGD,%2\n\t
+     . 30	.reloc .,R_PPC64_PLTCALL,%z1\n\t
+     . 10	beq%T1l-\n\t
+     . 10	ld 2,%3(1)
+     .---
+     .142
+
+     ABI_V4:
+     . 27	.reloc .,R_PPC64_TLSGD,%2\n\t
+     . 35	.reloc .,R_PPC64_PLTSEQ,%z1+32768\n\t
+     .  9	crset 2\n\t
+     . 27	.reloc .,R_PPC64_TLSGD,%2\n\t
+     . 36	.reloc .,R_PPC64_PLTCALL,%z1+32768\n\t
+     .  8	beq%T1l-
+     .---
+     .141  */
+  static char str[160];  /* 8 spare */
   char *s = str;
   const char *ptrload = TARGET_64BIT ? "d" : "wz";
 
