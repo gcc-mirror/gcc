@@ -1,5 +1,12 @@
 2019-02-04  Martin Liska  <mliska@suse.cz>
 
+	PR fortran/89185
+	* resolve.c (resolve_ref): Remove breakout variable as
+	we need to prevent prev = &(*prev)->next to happen
+	with *prev == NULL.
+
+2019-02-04  Martin Liska  <mliska@suse.cz>
+
 	PR fortran/88912
 	* scanner.c (load_file): Report error for -fpre-include
 	file and do not ICE.
