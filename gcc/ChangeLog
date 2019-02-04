@@ -1,3 +1,19 @@
+2019-02-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.h: Remove superfluous blank lines.
+	* config/sparc/sparc.c (global_offset_table_rtx): Rename into...
+	(got_register_rtx): ...this.
+	(sparc_got): Adjust to above renaming.
+	(sparc_tls_got): Likewise.
+	(sparc_delegitimize_address): Likewise.
+	(sparc_output_mi_thunk): Likewise.
+	(sparc_init_pic_reg): Likewise.
+	(save_local_or_in_reg_p): Fix test on the GOT register.
+	(USE_HIDDEN_LINKONCE): Move around.
+	(get_pc_thunk_name): Likewise.
+	(gen_load_pcrel_sym): Likewise.
+	(load_got_register): Likewise.
+
 2019-02-04  Kito Cheng  <kito.cheng@gmail.com>
 
 	* config/nds32/linux.h (GLIBC_DYNAMIC_LINKER): Define the naming rule
