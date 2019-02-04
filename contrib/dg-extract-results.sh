@@ -298,6 +298,8 @@ BEGIN {
   cnt=0
   print_using=0
   need_close=0
+  has_timeout=0
+  timeout_cnt=0
 }
 /^EXPFILE: / {
   expfiles[expfileno] = \$2
@@ -329,16 +331,36 @@ BEGIN {
   # Ugly hack for gfortran.dg/dg.exp
   if ("$TOOL" == "gfortran" && testname ~ /^gfortran.dg\/g77\//)
     testname="h"testname
+  if (\$1 == "WARNING:" && \$2 == "program" && \$3 == "timed" && (\$4 == "out" || \$4 == "out.")) {
+        has_timeout=1
+        timeout_cnt=cnt
+  } else {
+  # Prepare timeout replacement message in case it's needed
+    timeout_msg=\$0
+    sub(\$1, "WARNING:", timeout_msg)
+  }
 }
 /^$/ { if ("$MODE" == "sum") next }
 { if (variant == curvar && curfile) {
     if ("$MODE" == "sum") {
-      printf "%s %08d|", testname, cnt >> curfile
-      cnt = cnt + 1
+      # Do not print anything if the current line is a timeout
+      if (has_timeout == 0) {
+        # If the previous line was a timeout,
+        # insert the full current message without keyword
+        if (timeout_cnt != 0) {
+          printf "%s %08d|%s program timed out.\n", testname, timeout_cnt, timeout_msg >> curfile
+          timeout_cnt = 0
+        }
+        printf "%s %08d|", testname, cnt >> curfile
+        cnt = cnt + 1
+        filewritten[curfile]=1
+        need_close=1
+        if (timeout_cnt == 0)
+          print >> curfile
+      }
+
+      has_timeout=0
     }
-    filewritten[curfile]=1
-    need_close=1
-    print >> curfile
   } else
     next
 }
