@@ -1,3 +1,10 @@
+2019-02-04  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config.gcc (with_nds32_lib, glibc):
+	Remove TARGET_DEFAULT_TLSDESC_TRAMPOLINE=0 setting.
+	* config/nds32/linux.h (TARGET_DEFAULT_TLSDESC_TRAMPOLINE): Delete.
+	(NDS32_TLSDESC_TRAMPOLINE_SPEC): Delete.
+
 2019-02-03  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/89071

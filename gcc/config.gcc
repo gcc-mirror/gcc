@@ -4543,7 +4543,7 @@ case "${target}" in
 			;;
 		glibc)
 			# OK
-			tm_defines="${tm_defines} TARGET_DEFAULT_TLSDESC_TRAMPOLINE=0"
+			tm_defines="${tm_defines}"
 			;;
 		uclibc)
 			;;
