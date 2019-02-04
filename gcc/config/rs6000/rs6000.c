@@ -21633,7 +21633,7 @@ rs6000_indirect_call_template_1 (rtx *operands, unsigned int funop,
       const char *rel64 = TARGET_64BIT ? "64" : "";
       char tls[29];
       tls[0] = 0;
-      if (GET_CODE (operands[funop + 1]) == UNSPEC)
+      if (TARGET_TLS_MARKERS && GET_CODE (operands[funop + 1]) == UNSPEC)
 	{
 	  if (XINT (operands[funop + 1], 1) == UNSPEC_TLSGD)
 	    sprintf (tls, ".reloc .,R_PPC%s_TLSGD,%%%u\n\t",
@@ -21722,7 +21722,7 @@ rs6000_pltseq_template (rtx *operands, int which)
   const char *rel64 = TARGET_64BIT ? "64" : "";
   char tls[28];
   tls[0] = 0;
-  if (GET_CODE (operands[3]) == UNSPEC)
+  if (TARGET_TLS_MARKERS && GET_CODE (operands[3]) == UNSPEC)
     {
       if (XINT (operands[3], 1) == UNSPEC_TLSGD)
 	sprintf (tls, ".reloc .,R_PPC%s_TLSGD,%%3\n\t",
@@ -32782,7 +32782,6 @@ rs6000_longcall_ref (rtx call_ref, rtx arg)
     }
 
   if (HAVE_AS_PLTSEQ
-      && TARGET_TLS_MARKERS
       && (DEFAULT_ABI == ABI_ELFv2 || DEFAULT_ABI == ABI_V4))
     {
       rtx base = const0_rtx;
@@ -37781,7 +37780,6 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 							   stack_toc_offset));
 	  MEM_VOLATILE_P (stack_toc_mem) = 1;
 	  if (HAVE_AS_PLTSEQ
-	      && TARGET_TLS_MARKERS
 	      && DEFAULT_ABI == ABI_ELFv2
 	      && GET_CODE (func_desc) == SYMBOL_REF)
 	    {
@@ -37806,7 +37804,6 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 	     this insn for linker plt sequence editing too.  */
 	  func_addr = gen_rtx_REG (Pmode, CTR_REGNO);
 	  if (HAVE_AS_PLTSEQ
-	      && TARGET_TLS_MARKERS
 	      && GET_CODE (func_desc) == SYMBOL_REF)
 	    {
 	      rtvec v = gen_rtvec (3, abi_reg, func_desc, tlsarg);
@@ -37947,8 +37944,7 @@ rs6000_call_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
       func = rs6000_longcall_ref (func_desc, tlsarg);
       /* If the longcall was implemented using PLT16 relocs, then r11
 	 needs to be valid at the call for lazy linking.  */
-      if (HAVE_AS_PLTSEQ
-	  && TARGET_TLS_MARKERS)
+      if (HAVE_AS_PLTSEQ)
 	abi_reg = func;
     }
 
@@ -37962,7 +37958,6 @@ rs6000_call_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 	 this insn for linker plt sequence editing too.  */
       func_addr = gen_rtx_REG (Pmode, CTR_REGNO);
       if (HAVE_AS_PLTSEQ
-	  && TARGET_TLS_MARKERS
 	  && GET_CODE (func_desc) == SYMBOL_REF)
 	{
 	  rtvec v = gen_rtvec (3, func, func_desc, tlsarg);
@@ -38019,8 +38014,7 @@ rs6000_sibcall_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
       func = rs6000_longcall_ref (func_desc, tlsarg);
       /* If the longcall was implemented using PLT16 relocs, then r11
 	 needs to be valid at the call for lazy linking.  */
-      if (HAVE_AS_PLTSEQ
-	  && TARGET_TLS_MARKERS)
+      if (HAVE_AS_PLTSEQ)
 	abi_reg = func;
     }
 
@@ -38033,7 +38027,6 @@ rs6000_sibcall_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 	 this insn for linker plt sequence editing too.  */
       func_addr = gen_rtx_REG (Pmode, CTR_REGNO);
       if (HAVE_AS_PLTSEQ
-	  && TARGET_TLS_MARKERS
 	  && GET_CODE (func_desc) == SYMBOL_REF)
 	{
 	  rtvec v = gen_rtvec (3, func, func_desc, tlsarg);
