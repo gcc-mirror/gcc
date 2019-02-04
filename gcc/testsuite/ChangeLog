@@ -1,5 +1,10 @@
 2019-02-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/debug/dwarf2/inline5.c: Handle also @, ; or | comment
+	characters or extra spaces after the comment character.
+
+2019-02-04  Jakub Jelinek  <jakub@redhat.com>
+
 	* g++.dg/torture/alias-1.C: New test.
 
 2019-02-03  Martin Sebor  <msebor@redhat.com>
