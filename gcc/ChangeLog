@@ -1,3 +1,9 @@
+2019-02-04  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR c/88698
+	* doc/extend.texi (Vector Extensions): Add an example of using vector
+	types together with x86 intrinsics.
+
 2019-02-04  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_indirect_call_template_1): Increase
