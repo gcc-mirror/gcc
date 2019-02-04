@@ -1,3 +1,20 @@
+2019-02-04  Bill Schmidt  <wshmidt@linux.ibm.com>
+
+	PR target/87064
+	Backport from mainline
+
+	2019-01-30  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/87064
+	* config/rs6000/vsx.md (*vsx_reduc_<VEC_reduc_name>_v4sf_scalar):
+	Disable for little-endian.
+
+	2019-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87064
+	* config/rs6000/vsx.md (*vsx_reduc_<VEC_reduc_name>_v2df_scalar):
+	Disable for little endian.
+
 2019-02-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.h: Remove superfluous blank lines.

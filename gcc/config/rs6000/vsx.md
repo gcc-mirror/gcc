@@ -4394,7 +4394,7 @@
 	  (match_dup 1))
 	 (parallel [(const_int 1)])))
    (clobber (match_scratch:DF 2 "=0,0,&wd,&wa"))]
-  "VECTOR_UNIT_VSX_P (V2DFmode)"
+  "BYTES_BIG_ENDIAN && VECTOR_UNIT_VSX_P (V2DFmode)"
   "#"
   ""
   [(const_int 0)]
@@ -4421,7 +4421,7 @@
    (clobber (match_scratch:V4SF 2 "=&wf,&wa"))
    (clobber (match_scratch:V4SF 3 "=&wf,&wa"))
    (clobber (match_scratch:V4SF 4 "=0,0"))]
-  "VECTOR_UNIT_VSX_P (V4SFmode)"
+  "BYTES_BIG_ENDIAN && VECTOR_UNIT_VSX_P (V4SFmode)"
   "#"
   ""
   [(const_int 0)]
