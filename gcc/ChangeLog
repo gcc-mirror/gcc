@@ -1,6 +1,6 @@
 2019-02-04  Martin Liska  <mliska@suse.cz>
 
-	PR ipa/88958
+	PR ipa/88985
 	* ipa-fnsummary.c (estimate_edge_devirt_benefit): Bail
 	out when ipa_fn_summaries does not contain entry for callee.
 
