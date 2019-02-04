@@ -29,13 +29,6 @@
 #undef  PTRDIFF_TYPE
 #define PTRDIFF_TYPE "int"
 
-#ifdef TARGET_DEFAULT_TLSDESC_TRAMPOLINE
-  #define NDS32_TLSDESC_TRAMPOLINE_SPEC \
-    " %{!mno-tlsdesc-trampoline:--mtlsdesc-trampoline}"
-#else
-  #define NDS32_TLSDESC_TRAMPOLINE_SPEC ""
-#endif
-
 #define TARGET_OS_CPP_BUILTINS()                \
   do                                            \
     {                                           \
@@ -59,8 +52,7 @@
       %{rdynamic:-export-dynamic} \
       -dynamic-linker " GNU_USER_DYNAMIC_LINKER "} \
     %{static:-static}}" \
-  NDS32_RELAX_SPEC \
-  NDS32_TLSDESC_TRAMPOLINE_SPEC
+  NDS32_RELAX_SPEC
 
 #define LINK_PIE_SPEC "%{pie:%{!fno-pie:%{!fno-PIE:%{!static:-pie}}}} "
 
