@@ -1,3 +1,8 @@
+2019-02-04  Kito Cheng  <kito.cheng@gmail.com>
+
+	* config/nds32/linux.h (GLIBC_DYNAMIC_LINKER): Define the naming rule
+	of the dynamic linker: "ld-linux-nds32[le|be][f].so.1".
+
 2019-02-04  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.c (nds32_legitimate_address_p): Add TLS model
