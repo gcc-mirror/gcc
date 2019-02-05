@@ -1,7 +1,13 @@
 2019-02-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
-	* module.cc (module_state::read_locations): Make wanring
+	* cxx-mapper.cc (client::action): Add mapper agent.
+	* module.cc (module_mapper::handshake): Add mapper agent slot.
+	gcc/
+	* doc/invoke.texi (C++ Module Mapper): Update handshake.
+
+	gcc/cp/
+	* module.cc (module_state::read_locations): Make warning
 	development-only.
 
 	gcc/cp/

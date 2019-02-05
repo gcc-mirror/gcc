@@ -8909,11 +8909,14 @@ module_mapper::handshake (location_t loc, const char *cookie)
       ok = false;
       break;
 
-    case 0: /* HELLO $ver $repo */
+    case 0: /* HELLO $ver $agent $repo */
       {
-	if (char *ver = response_token (loc))
-	  dump () && dump ("Connected to mapper version %s", ver);
-	char *repo = response_token (loc, true);
+	const char *ver = response_token (loc);
+	const char *agent = ver ? response_token (loc) : "";
+	char *repo = agent ? response_token (loc, true) : NULL;
+	
+	if (ver)
+	  dump () && dump ("Connected to mapper:%s version %s", agent, ver);
 	if (response_eol (loc))
 	  {
 	    if (repo)

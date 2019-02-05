@@ -1057,7 +1057,7 @@ client::action ()
 		      err = "ERROR Cookie mismatch";
 		  }
 		gcc_assert (read.get_eol (id));
-		write.send_response (id, err ? err : "HELLO %d %s",
+		write.send_response (id, err ? err : "HELLO %d GCC %s",
 					 MAPPER_VERSION, flag_root);
 		if (!err)
 		  state = TALKING;
@@ -1381,7 +1381,7 @@ server (bool ip6, int sock_fd, const char *cookie)
 
 #if !defined (HAVE_ACCEPT4) \
   && (defined (HAVE_EPOLL) || defined (HAVE_PSELECT) || defined (HAVE_SELECT))
-	  unsigned flags = fcntl (client_fd, F_GETFL, 0);
+	  int flags = fcntl (client_fd, F_GETFL, 0);
 	  fcntl (client_fd, F_SETFL, flags | O_NONBLOCK);
 #endif
 	  for (; reuse != clients.size (); reuse++)
