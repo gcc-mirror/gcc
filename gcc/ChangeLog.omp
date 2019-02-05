@@ -1,5 +1,20 @@
 2018-10-16  Chung-Lin Tang  <cltang@codesourcery.com>
 
+	* omp-low.c (struct omp_context):
+	Add 'hash_map<tree_operand_hash, tree> *dynamic_arrays' field, also
+	added include of "tree-hash-traits.h".
+	(append_field_to_record_type): New function.
+	(create_dynamic_array_descr_type): Likewise.
+	(create_dynamic_array_descr_init_code): Likewise.
+	(new_omp_context): Add initialize of dynamic_arrays field.
+	(delete_omp_context): Add delete of dynamic_arrays field.
+	(scan_sharing_clauses): For dynamic array map kinds, check for
+	supported dimension structure, and install dynamic array variable into
+	current omp_context.
+	(lower_omp_target): Add handling for dynamic array map kinds.
+
+2018-10-16  Chung-Lin Tang  <cltang@codesourcery.com>
+
 	* gimplify.c (gimplify_scan_omp_clauses): For dynamic array map kinds,
 	make sure bias in each dimension are put into firstprivate variables.
 
