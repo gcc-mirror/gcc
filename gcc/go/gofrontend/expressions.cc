@@ -14244,6 +14244,13 @@ Composite_literal_expression::lower_array(Type* type)
 
       if (index_expr == NULL)
 	{
+	  if (std::find(indexes->begin(), indexes->end(), index)
+	      != indexes->end())
+	    {
+	      go_error_at(val->location(),
+			  "duplicate value for index %lu", index);
+	      return Expression::make_error(location);
+	    }
 	  if (!indexes->empty())
 	    indexes->push_back(index);
 	}
