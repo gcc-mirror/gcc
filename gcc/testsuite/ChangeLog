@@ -1,3 +1,7 @@
+2019-02-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.dg/vect/pr84711.c: Use -Wno-psabi.
+
 2019-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/powerpc/vec-extract-sint128-1.c: Require int128 effective
