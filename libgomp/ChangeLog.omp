@@ -1,5 +1,13 @@
 2018-10-16  Chung-Lin Tang  <cltang@codesourcery.com>
 
+	* testsuite/libgomp.oacc-c-c++-common/da-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/da-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/da-3.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/da-4.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/da-utils.h: New test.
+
+2018-10-16  Chung-Lin Tang  <cltang@codesourcery.com>
+
 	* target.c (struct da_dim): New struct declaration.
 	(struct da_descr_type): Likewise.
 	(struct da_info): Likewise.
