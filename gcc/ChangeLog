@@ -1,3 +1,9 @@
+2019-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/89195
+	* combine.c (make_extraction): For MEMs, don't extract bytes outside
+	of the original MEM.
+
 2019-02-05  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/89000
