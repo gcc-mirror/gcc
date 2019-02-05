@@ -22,6 +22,9 @@
 #undef create_code
 #undef verify_code
 
+/* test-add-driver-options.c: We don't use this one, since the extra options
+   affect the whole context.  */
+
 /* test-alignment.c */
 #define create_code create_code_alignment
 #define verify_code verify_code_alignment
