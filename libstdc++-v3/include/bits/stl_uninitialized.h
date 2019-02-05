@@ -904,7 +904,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <typename _Tp, typename _Up>
     inline __enable_if_t<std::__is_bitwise_relocatable<_Tp>::value, _Tp*>
     __relocate_a_1(_Tp* __first, _Tp* __last,
-		   _Tp* __result, allocator<_Up>& __alloc) noexcept
+		   _Tp* __result, allocator<_Up>&) noexcept
     {
       ptrdiff_t __count = __last - __first;
       if (__count > 0)
@@ -925,7 +925,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_ValueType;
       typedef typename iterator_traits<_ForwardIterator>::value_type
 	_ValueType2;
-      static_assert(std::is_same<_ValueType, _ValueType2>::value);
+      static_assert(std::is_same<_ValueType, _ValueType2>::value,
+	  "relocation is only possible for values of the same type");
       _ForwardIterator __cur = __result;
       for (; __first != __last; ++__first, (void)++__cur)
 	std::__relocate_object_a(std::__addressof(*__cur),
