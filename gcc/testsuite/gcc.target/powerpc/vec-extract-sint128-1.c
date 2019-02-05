@@ -1,6 +1,6 @@
 /* Test to verify that the vec_extract from a vector of
    signed __int128s remains signed.  */
-/* { dg-do run } */
+/* { dg-do run { target int128 } } */
 /* { dg-options "-ansi -mcpu=power8 " } */
 /* { dg-require-effective-target p8vector_hw } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
