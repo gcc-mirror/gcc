@@ -1,5 +1,23 @@
 2019-02-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/89130
+	* include/bits/alloc_traits.h (__is_copy_insertable_impl): Rename to
+	__is_alloc_insertable_impl. Replace single type member with two
+	members, one for each of copy and move insertable.
+	(__is_move_insertable): New trait for internal use.
+	* include/bits/stl_vector.h (vector::_S_nothrow_relocate(true_type))
+	(vector::_S_nothrow_relocate(true_type)): New functions to
+	conditionally check if __relocate_a can throw.
+	(vector::_S_use_relocate()): Dispatch to _S_nothrow_relocate based
+	on __is_move_insertable.
+	(vector::_S_do_relocate): New overloaded functions to conditionally
+	call __relocate_a.
+	(vector::_S_relocate): New function that dispatches to _S_do_relocate
+	based on _S_use_relocate.
+	* include/bits/vector.tcc (vector::reserve, vector::_M_realloc_insert)
+	(vector::_M_default_append): Call _S_relocate instead of __relocate_a.
+	* testsuite/23_containers/vector/modifiers/push_back/89130.cc: New.
+
 	PR libstdc++/89090
 	* include/bits/stl_uninitialized.h (__relocate_a_1): Make unused
 	parameter unnamed. Add message to static assertion.
