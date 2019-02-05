@@ -1,3 +1,8 @@
+2019-02-05  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/87770
+	* g++.dg/pr87770.C: New.
+
 2020-02-25  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

@@ -1,3 +1,9 @@
+2019-02-05  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/87770
+	* pt.c (instantiates_primary_template_p): New.
+	(type_dependent_expression_p): Use it.
+
 2020-02-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/92745 - bogus error when initializing array of vectors.
