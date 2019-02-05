@@ -896,12 +896,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   // This class may be specialized for specific types.
+  // Also known as is_trivially_relocatable.
   template<typename _Tp, typename = void>
-    struct __is_trivially_relocatable
+    struct __is_bitwise_relocatable
     : is_trivial<_Tp> { };
 
   template <typename _Tp, typename _Up>
-    inline __enable_if_t<std::__is_trivially_relocatable<_Tp>::value, _Tp*>
+    inline __enable_if_t<std::__is_bitwise_relocatable<_Tp>::value, _Tp*>
     __relocate_a_1(_Tp* __first, _Tp* __last,
 		   _Tp* __result, allocator<_Up>& __alloc) noexcept
     {
