@@ -1,3 +1,13 @@
+2019-02-05  Andrea Corallo <andrea.corallo@arm.com>
+
+	* jit.dg/add-driver-options-testlib.c: Add support file for
+	test-add-driver-options.c testcase.
+	* jit.dg/all-non-failing-tests.h: Add note about
+	test-add-driver-options.c
+	* jit.dg/jit.exp (jit-dg-test): Update to support
+	add-driver-options-testlib.c compilation.
+	* jit.dg/test-add-driver-options.c: New testcase.
+
 2019-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/11304
