@@ -960,7 +960,9 @@ global_ranger::calculate_and_dump (FILE *output)
 	  ssa_op_iter iter;
 	  use_operand_p use_p;
 
-	  range_of_stmt (r, stmt);
+	  // Calculate a range for the LHS if there is one.
+	  if (valid_ssa_p (gimple_get_lhs (stmt)))
+	    range_of_stmt (r, stmt);
 	  // and make sure to query every operand.
 	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
 	    {
