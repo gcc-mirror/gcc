@@ -1,3 +1,11 @@
+2019-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89150
+	* bitmap.h (struct bitmap_obstack): Do not mark GTY.
+	(struct bitmap_element): Drop chain_prev so we properly recurse on
+	the prev member, supporting tree views.
+	(struct bitmap_head): GTY skip the obstack member.
+
 2019-02-04  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR c/88698
