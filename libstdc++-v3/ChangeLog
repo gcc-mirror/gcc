@@ -1,5 +1,8 @@
 2019-02-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/23_containers/vector/modifiers/push_back/49836.cc: Restore
+	use of CopyConsOnlyType, but also test DelAnyAssign for completeness.
+
 	PR libstdc++/89130
 	* include/bits/alloc_traits.h (__is_copy_insertable_impl): Rename to
 	__is_alloc_insertable_impl. Replace single type member with two
