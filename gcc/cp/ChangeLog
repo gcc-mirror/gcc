@@ -1,3 +1,12 @@
+2019-02-05  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2019-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89083, c++/80864 - ICE with list initialization in template.
+	* decl.c (reshape_init_r): Don't reshape a digested initializer.
+	Return the initializer for COMPOUND_LITERAL_P.
+
 2019-01-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86740, ICE with constexpr if and nested generic lambdas.
