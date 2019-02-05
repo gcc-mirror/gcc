@@ -1,5 +1,13 @@
 2019-02-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/89128
+	* include/bits/stl_queue.h (queue, priority_queue): Add deduction
+	guides.
+	* include/bits/stl_stack.h (stack): Likewise.
+	* testsuite/23_containers/priority_queue/deduction.cc: New test.
+	* testsuite/23_containers/queue/deduction.cc: New test.
+	* testsuite/23_containers/stack/deduction.cc: New test.
+
 	PR libstdc++/89194
 	* include/std/type_traits (__is_convertible_helper)
 	(__is_convertible_helper<_From, _To, false>): Revert changes to
