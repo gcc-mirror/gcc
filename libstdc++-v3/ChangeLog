@@ -1,3 +1,13 @@
+2019-02-05  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/87106
+	* include/bits/stl_uninitialized.h (__is_trivially_relocatable):
+	Rename...
+	(__is_bitwise_relocatable): ... to this.
+	(__relocate_a_1): Adapt.
+	* include/bits/stl_deque.h (__is_trivially_relocatable): Rename...
+	(__is_bitwise_relocatable): ... to this.
+
 2019-01-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/89117
