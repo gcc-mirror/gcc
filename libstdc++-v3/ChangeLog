@@ -1,5 +1,12 @@
 2019-02-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/89194
+	* include/std/type_traits (__is_convertible_helper)
+	(__is_convertible_helper<_From, _To, false>): Revert changes to
+	support is_nothrow_convertible.
+	(__is_nt_convertible_helper): New helper.
+	(is_nothrow_convertible): Use __is_nt_convertible_helper.
+
 	* testsuite/23_containers/vector/modifiers/push_back/49836.cc: Restore
 	use of CopyConsOnlyType, but also test DelAnyAssign for completeness.
 
