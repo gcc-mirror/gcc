@@ -4640,7 +4640,7 @@ omp_privatize_field (tree t, bool shared)
 static tree
 handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 			     bool &maybe_zero_len, unsigned int &first_non_one,
-			     enum c_omp_region_type ort)
+			     bool &non_contiguous, enum c_omp_region_type ort)
 {
   tree ret, low_bound, length, type;
   if (TREE_CODE (t) != TREE_LIST)
@@ -4726,7 +4726,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
       && TREE_CODE (TREE_CHAIN (t)) == FIELD_DECL)
     TREE_CHAIN (t) = omp_privatize_field (TREE_CHAIN (t), false);
   ret = handle_omp_array_sections_1 (c, TREE_CHAIN (t), types,
-				     maybe_zero_len, first_non_one, ort);
+				     maybe_zero_len, first_non_one,
+				     non_contiguous, ort);
   if (ret == error_mark_node || ret == NULL_TREE)
     return ret;
 
@@ -4916,6 +4917,21 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		    }
 		}
 	    }
+
+	  /* For OpenACC, if the low_bound/length suggest this is a subarray,
+	     and is referenced through by a pointer, then mark this as
+	     non-contiguous.  */
+	  if (ort == C_ORT_ACC
+	      && types.length () > 0
+	      && (TREE_CODE (low_bound) != INTEGER_CST
+		  || integer_nonzerop (low_bound)
+		  || (length && (TREE_CODE (length) != INTEGER_CST
+				 || !tree_int_cst_equal (size, length)))))
+	    {
+	      tree x = types.last ();
+	      if (TREE_CODE (x) == POINTER_TYPE)
+		non_contiguous = true;
+	    }
 	}
       else if (length == NULL_TREE)
 	{
@@ -4959,13 +4975,16 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
       /* If there is a pointer type anywhere but in the very first
 	 array-section-subscript, the array section can't be contiguous.  */
       if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
-	  && TREE_CODE (TREE_CHAIN (t)) == TREE_LIST)
+	  && TREE_CODE (TREE_CHAIN (t)) == TREE_LIST
+	  && ort != C_ORT_ACC)
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c),
 		    "array section is not contiguous in %qs clause",
 		    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	  return error_mark_node;
 	}
+      else if (TREE_CODE (TREE_CHAIN (t)) == TREE_LIST)
+	non_contiguous = true;
     }
   else
     {
@@ -4993,6 +5012,7 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 {
   bool maybe_zero_len = false;
   unsigned int first_non_one = 0;
+  bool non_contiguous = false;
   auto_vec<tree, 10> types;
   tree *tp = &OMP_CLAUSE_DECL (c);
   if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
@@ -5002,7 +5022,7 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
     tp = &TREE_VALUE (*tp);
   tree first = handle_omp_array_sections_1 (c, *tp, types,
 					    maybe_zero_len, first_non_one,
-					    ort);
+					    non_contiguous, ort);
   if (first == error_mark_node)
     return true;
   if (first == NULL_TREE)
@@ -5036,6 +5056,7 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
       unsigned int num = types.length (), i;
       tree t, side_effects = NULL_TREE, size = NULL_TREE;
       tree condition = NULL_TREE;
+      tree da_dims = NULL_TREE;
 
       if (int_size_in_bytes (TREE_TYPE (first)) <= 0)
 	maybe_zero_len = true;
@@ -5061,6 +5082,13 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	    length = fold_convert (sizetype, length);
 	  if (low_bound == NULL_TREE)
 	    low_bound = integer_zero_node;
+
+	  if (non_contiguous)
+	    {
+	      da_dims = tree_cons (low_bound, length, da_dims);
+	      continue;
+	    }
+
 	  if (!maybe_zero_len && i > first_non_one)
 	    {
 	      if (integer_nonzerop (low_bound))
@@ -5152,6 +5180,14 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	}
       if (!processing_template_decl)
 	{
+	  if (non_contiguous)
+	    {
+	      int kind = OMP_CLAUSE_MAP_KIND (c);
+	      OMP_CLAUSE_SET_MAP_KIND (c, kind | GOMP_MAP_DYNAMIC_ARRAY);
+	      OMP_CLAUSE_DECL (c) = t;
+	      OMP_CLAUSE_SIZE (c) = da_dims;
+	      return false;
+	    }
 	  if (side_effects)
 	    size = build2 (COMPOUND_EXPR, sizetype, side_effects, size);
 	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION

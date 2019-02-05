@@ -1,3 +1,11 @@
+2018-10-16  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-typeck.c (handle_omp_array_sections_1): Add 'bool &non_contiguous'
+	parameter, adjust recursive call site, add cases for allowing
+	pointer based multi-dimensional arrays for OpenACC.
+	(handle_omp_array_sections): Adjust handle_omp_array_sections_1 call,
+	handle non-contiguous case to create dynamic array map.
+
 2019-01-31  Julian Brown  <julian@codesourcery.com>
 
 	* c-typeck.c (handle_omp_array_sections_1): Handle chained dereferences.
