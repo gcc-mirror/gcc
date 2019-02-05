@@ -1,3 +1,10 @@
+2019-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89187
+	* optimize.c (maybe_thunk_body): Clear TREE_ADDRESSABLE on
+	PARM_DECLs of the thunk.
+	* lambda.c (maybe_add_lambda_conv_op): Likewise.
+
 2019-02-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89158 - by-value capture of constexpr variable broken.

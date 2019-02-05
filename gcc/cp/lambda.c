@@ -1130,6 +1130,9 @@ maybe_add_lambda_conv_op (tree type)
       {
 	tree new_node = copy_node (src);
 
+	/* Clear TREE_ADDRESSABLE on thunk arguments.  */
+	TREE_ADDRESSABLE (new_node) = 0;
+
 	if (!fn_args)
 	  fn_args = tgt = new_node;
 	else
