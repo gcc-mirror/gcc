@@ -7006,7 +7006,9 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    return expr;
 	  }
 
-	expr = mark_rvalue_use (expr);
+	/* We don't know here whether EXPR is being used as an lvalue or
+	   rvalue, but we know it's read.  */
+	mark_exp_read (expr);
 
 	/* Pass LOOKUP_NO_CONVERSION so rvalue/base handling knows not to allow
 	   any more UDCs.  */
