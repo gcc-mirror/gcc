@@ -1,5 +1,16 @@
 2018-10-16  Chung-Lin Tang  <cltang@codesourcery.com>
 
+	* omp-low.c (dynamic_array_lookup): New function.
+	(dynamic_array_reference_start): Likewise.
+	(scan_for_op): Likewise.
+	(scan_for_reference): Likewise.
+	(da_create_bias): Likewise.
+	(da_dimension_peel): Likewise.
+	(lower_omp_1): Add case to look for start of dynamic array reference,
+	and handle bias adjustments for the code sequence.
+
+2018-10-16  Chung-Lin Tang  <cltang@codesourcery.com>
+
 	* omp-low.c (struct omp_context):
 	Add 'hash_map<tree_operand_hash, tree> *dynamic_arrays' field, also
 	added include of "tree-hash-traits.h".

@@ -10470,6 +10470,201 @@ lower_omp_grid_body (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		       gimple_build_omp_return (false));
 }
 
+/* Helper to lookup dynamic array through nested omp contexts. Returns
+   TREE_LIST of dimensions, and the CTX where it was found in *CTX_P.  */
+
+static tree
+dynamic_array_lookup (tree t, omp_context **ctx_p)
+{
+  omp_context *c = *ctx_p;
+  while (c)
+    {
+      tree *dims = c->dynamic_arrays->get (t);
+      if (dims)
+	{
+	  *ctx_p = c;
+	  return *dims;
+	}
+      c = c->outer;
+    }
+  return NULL_TREE;
+}
+
+/* Tests if this gimple STMT is the start of a dynamic array access sequence.
+   Returns true if found, and also returns the gimple operand ptr and
+   dimensions tree list through *OUT_REF and *OUT_DIMS respectively.  */
+
+static bool
+dynamic_array_reference_start (gimple *stmt, omp_context **ctx_p,
+			       tree **out_ref, tree *out_dims)
+{
+  if (gimple_code (stmt) == GIMPLE_ASSIGN)
+    for (unsigned i = 1; i < gimple_num_ops (stmt); i++)
+      {
+	tree *op = gimple_op_ptr (stmt, i), dims;
+	if (TREE_CODE (*op) == ARRAY_REF)
+	  op = &TREE_OPERAND (*op, 0);
+	if (TREE_CODE (*op) == MEM_REF)
+	  op = &TREE_OPERAND (*op, 0);
+	if ((dims = dynamic_array_lookup (*op, ctx_p)) != NULL_TREE)
+	  {
+	    *out_ref = op;
+	    *out_dims = dims;
+	    return true;
+	  }
+      }
+  return false;
+}
+
+static tree
+scan_for_op (tree *tp, int *walk_subtrees, void *data)
+{
+  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
+  tree t = *tp;
+  tree op = (tree) wi->info;
+  *walk_subtrees = 1;
+  if (operand_equal_p (t, op, 0))
+    {
+      wi->info = tp;
+      return t;
+    }
+  return NULL_TREE;
+}
+
+static tree *
+scan_for_reference (gimple *stmt, tree op)
+{
+  struct walk_stmt_info wi;
+  memset (&wi, 0, sizeof (wi));
+  wi.info = op;
+  if (walk_gimple_op (stmt, scan_for_op, &wi))
+    return (tree *) wi.info;
+  return NULL;
+}
+
+static tree
+da_create_bias (tree orig_bias, tree unit_type)
+{
+  return build2 (MULT_EXPR, sizetype, fold_convert (sizetype, orig_bias),
+		 TYPE_SIZE_UNIT (unit_type));
+}
+
+/* Main worker for adjusting dynamic array accesses, handles the adjustment
+   of many cases of statement forms, and called multiple times to 'peel' away
+   each dimension.  */
+
+static gimple_stmt_iterator
+da_dimension_peel (omp_context *da_ctx,
+		   gimple_stmt_iterator da_gsi, tree orig_da,
+		   tree *da_op_p, tree *da_type_p, tree *da_dims_p)
+{
+  gimple *stmt = gsi_stmt (da_gsi);
+  tree lhs = gimple_assign_lhs (stmt);
+  tree rhs = gimple_assign_rhs1 (stmt);
+
+  if (gimple_num_ops (stmt) == 2
+      && TREE_CODE (rhs) == MEM_REF
+      && operand_equal_p (*da_op_p, TREE_OPERAND (rhs, 0), 0)
+      && !operand_equal_p (orig_da, TREE_OPERAND (rhs, 0), 0)
+      && (TREE_OPERAND (rhs, 1) == NULL_TREE
+	  || integer_zerop (TREE_OPERAND (rhs, 1))))
+    {
+      gcc_assert (TREE_CODE (TREE_TYPE (*da_type_p)) == POINTER_TYPE);
+      *da_type_p = TREE_TYPE (*da_type_p);
+    }
+  else 
+    {
+      gimple *g;
+      gimple_seq ilist = NULL;
+      tree bias, t;
+      tree op = *da_op_p;
+      tree orig_type = *da_type_p;
+      tree orig_bias = TREE_PURPOSE (*da_dims_p);
+      bool by_ref = false;
+
+      if (TREE_CODE (orig_bias) != INTEGER_CST)
+	orig_bias = lookup_decl (orig_bias, da_ctx);
+
+      if (gimple_num_ops (stmt) == 2)
+	{
+	  if (TREE_CODE (rhs) == ADDR_EXPR)
+	    {
+	      rhs = TREE_OPERAND (rhs, 0);
+	      *da_dims_p = NULL_TREE;
+	    }
+
+	  if (TREE_CODE (rhs) == ARRAY_REF
+	      && TREE_CODE (TREE_OPERAND (rhs, 0)) == MEM_REF
+	      && operand_equal_p (TREE_OPERAND (TREE_OPERAND (rhs, 0), 0),
+				  *da_op_p, 0))
+	    {
+	      bias = da_create_bias (orig_bias,
+				     TREE_TYPE (TREE_TYPE (orig_type)));
+	      *da_type_p = TREE_TYPE (TREE_TYPE (orig_type));
+	    }
+	  else if (TREE_CODE (rhs) == ARRAY_REF
+		   && TREE_CODE (TREE_OPERAND (rhs, 0)) == VAR_DECL
+		   && operand_equal_p (TREE_OPERAND (rhs, 0), *da_op_p, 0))
+	    {
+	      tree ptr_type = build_pointer_type (orig_type);
+	      op = create_tmp_var (ptr_type);
+	      gimplify_assign (op, build_fold_addr_expr (TREE_OPERAND (rhs, 0)),
+			       &ilist);
+	      bias = da_create_bias (orig_bias, TREE_TYPE (orig_type));
+	      *da_type_p = TREE_TYPE (orig_type);
+	      orig_type = ptr_type;
+	      by_ref = true;
+	    }
+	  else if (TREE_CODE (rhs) == MEM_REF
+		   && operand_equal_p (*da_op_p, TREE_OPERAND (rhs, 0), 0)
+		   && TREE_OPERAND (rhs, 1) != NULL_TREE)
+	    {
+	      bias = da_create_bias (orig_bias, TREE_TYPE (orig_type));
+	      *da_type_p = TREE_TYPE (orig_type);
+	    }
+	  else if (TREE_CODE (lhs) == MEM_REF
+		   && operand_equal_p (*da_op_p, TREE_OPERAND (lhs, 0), 0))
+	    {
+	      if (*da_dims_p != NULL_TREE)
+		{
+		  gcc_assert (TREE_CHAIN (*da_dims_p) == NULL_TREE);
+		  bias = da_create_bias (orig_bias, TREE_TYPE (orig_type));
+		  *da_type_p = TREE_TYPE (orig_type);
+		}
+	      else
+		/* This should be the end of the dynamic array access
+		   sequence.  */
+		return da_gsi;
+	    }
+	  else
+	    gcc_unreachable ();
+	}
+      else if (gimple_num_ops (stmt) == 3
+	       && gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR
+	       && operand_equal_p (*da_op_p, rhs, 0))
+	{
+	  bias = da_create_bias (orig_bias, TREE_TYPE (orig_type));
+	}
+      else
+	gcc_unreachable ();
+
+      bias = fold_build1 (NEGATE_EXPR, sizetype, bias);
+      bias = fold_build2 (POINTER_PLUS_EXPR, orig_type, op, bias);
+
+      t = create_tmp_var (by_ref ? build_pointer_type (orig_type) : orig_type);
+
+      g = gimplify_assign (t, bias, &ilist);
+      gsi_insert_seq_before (&da_gsi, ilist, GSI_NEW_STMT);
+      *da_op_p = gimple_assign_lhs (g);
+
+      if (by_ref)
+	*da_op_p = build2 (MEM_REF, TREE_TYPE (orig_type), *da_op_p,
+			   build_int_cst (orig_type, 0));
+      *da_dims_p = TREE_CHAIN (*da_dims_p);
+    }
+
+  return da_gsi;
+}
 
 /* Callback for lower_omp_1.  Return non-NULL if *tp needs to be
    regimplified.  If DATA is non-NULL, lower_omp_1 is outside
@@ -10743,6 +10938,51 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  }
       /* FALLTHRU */
     default:
+
+      /* If we detect the start of a dynamic array reference sequence, scan
+	 and do the needed adjustments.  */
+      tree da_dims, *da_op_p;
+      omp_context *da_ctx = ctx;
+      if (da_ctx && dynamic_array_reference_start (stmt, &da_ctx,
+						   &da_op_p, &da_dims))
+	{
+	  bool started = false;
+	  tree orig_da = *da_op_p;
+	  tree da_type = TREE_TYPE (orig_da);
+	  tree next_da_op;
+
+	  gimple_stmt_iterator da_gsi = *gsi_p, new_gsi;
+	  while (da_op_p)
+	    {
+	      if (!is_gimple_assign (gsi_stmt (da_gsi))
+		  || ((gimple_assign_single_p (gsi_stmt (da_gsi))
+		       || gimple_assign_cast_p (gsi_stmt (da_gsi)))
+		      && *da_op_p == gimple_assign_rhs1 (gsi_stmt (da_gsi))))
+		break;
+
+	      new_gsi = da_dimension_peel (da_ctx, da_gsi, orig_da,
+					   da_op_p, &da_type, &da_dims);
+	      if (!started)
+		{
+		  /* Point 'stmt' to the start of the newly added
+		     sequence.  */
+		  started = true;
+		  *gsi_p = new_gsi;
+		  stmt = gsi_stmt (*gsi_p);
+		}
+	      if (!da_dims)
+		break;
+
+	      next_da_op = gimple_assign_lhs (gsi_stmt (da_gsi));
+
+	      do {
+		gsi_next (&da_gsi);
+		da_op_p = scan_for_reference (gsi_stmt (da_gsi), next_da_op);
+	      }
+	      while (!da_op_p);
+	    }
+	}
+
       if ((ctx || task_shared_vars)
 	  && walk_gimple_op (stmt, lower_omp_regimplify_p,
 			     ctx ? NULL : &wi))
