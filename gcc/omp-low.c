@@ -1468,7 +1468,15 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 		  t = TREE_TYPE (t);
 		}
 
-	      install_var_field (da_decl, by_ref, 3, ctx);
+	      if (DECL_P (decl))
+		install_var_field (da_decl, by_ref, 3, ctx);
+	      else
+	        {
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "dynamic arrays cannot be used within structs");
+		  break;
+		}
+
 	      tree new_var = install_var_local (da_decl, ctx);
 
 	      bool existed = ctx->dynamic_arrays->put (new_var, da_dimensions);
