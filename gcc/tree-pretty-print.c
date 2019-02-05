@@ -826,6 +826,33 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	case GOMP_MAP_LINK:
 	  pp_string (pp, "link");
 	  break;
+	case GOMP_MAP_DYNAMIC_ARRAY_TO:
+	  pp_string (pp, "to,dynamic_array");
+	  break;
+	case GOMP_MAP_DYNAMIC_ARRAY_FROM:
+	  pp_string (pp, "from,dynamic_array");
+	  break;
+	case GOMP_MAP_DYNAMIC_ARRAY_TOFROM:
+	  pp_string (pp, "tofrom,dynamic_array");
+	  break;
+	case GOMP_MAP_DYNAMIC_ARRAY_FORCE_TO:
+	  pp_string (pp, "force_to,dynamic_array");
+	  break;
+	case GOMP_MAP_DYNAMIC_ARRAY_FORCE_FROM:
+	  pp_string (pp, "force_from,dynamic_array");
+	  break;
+	case GOMP_MAP_DYNAMIC_ARRAY_FORCE_TOFROM:
+	  pp_string (pp, "force_tofrom,dynamic_array");
+	  break;
+	case GOMP_MAP_DYNAMIC_ARRAY_ALLOC:
+	  pp_string (pp, "alloc,dynamic_array");
+	  break;
+	case GOMP_MAP_DYNAMIC_ARRAY_FORCE_ALLOC:
+	  pp_string (pp, "force_alloc,dynamic_array");
+	  break;
+	case GOMP_MAP_DYNAMIC_ARRAY_FORCE_PRESENT:
+	  pp_string (pp, "force_present,dynamic_array");
+	  break;
 	case GOMP_MAP_ATTACH:
 	  pp_string (pp, "attach");
 	  break;
@@ -855,6 +882,10 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	      break;
 	    case GOMP_MAP_TO_PSET:
 	      pp_string (pp, " [pointer set, len: ");
+	      break;
+	    case GOMP_MAP_DYNAMIC_ARRAY:
+	      gcc_assert (TREE_CODE (OMP_CLAUSE_SIZE (clause)) == TREE_LIST);
+	      pp_string (pp, " [dimensions: ");
 	      break;
 	    default:
 	      pp_string (pp, " [len: ");

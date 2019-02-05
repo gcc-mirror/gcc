@@ -1,5 +1,10 @@
 2018-10-16  Chung-Lin Tang  <cltang@codesourcery.com>
 
+	* tree-pretty-print.c (dump_omp_clauses): Add cases for printing
+	GOMP_MAP_DYNAMIC_ARRAY map kinds.
+
+2018-10-16  Chung-Lin Tang  <cltang@codesourcery.com>
+
 	* omp-low.c (dynamic_array_lookup): New function.
 	(dynamic_array_reference_start): Likewise.
 	(scan_for_op): Likewise.
