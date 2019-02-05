@@ -1,3 +1,8 @@
+2019-02-05  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/88856
+	* config/s390/s390.md: Remove load and test FP splitter.
+
 2019-02-05  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	PR target/89112
