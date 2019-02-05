@@ -6827,7 +6827,7 @@ inline bool module_exporting_p ()
 { return module_kind & MK_EXPORTING; }
 
 extern module_state *get_module (tree name, module_state *parent = NULL,
-				  bool partition = false);
+				 bool partition = false);
 extern bool module_may_redeclare (unsigned);
 extern tree get_module_owner (tree) ATTRIBUTE_PURE;
 extern void set_module_owner (tree);

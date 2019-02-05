@@ -2902,7 +2902,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool from_partition_p : 1; /* Direct import of a partition.  */
 
  public:
-  module_state (tree name, uintptr_t);
+  module_state (tree name, module_state *, bool);
   ~module_state ();
 
  public:
@@ -3130,13 +3130,12 @@ struct module_state_hash : ggc_ptr_hash<module_state> {
 			    const compare_type &candidate);
 };
 
-module_state::module_state (tree name, uintptr_t pp)
+module_state::module_state (tree name, module_state *parent, bool partition)
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
-    parent (reinterpret_cast<module_state *>(pp & ~uintptr_t (1))),
-    name (name), flatname (NULL), filename (NULL),
+    parent (parent), name (name), flatname (NULL), filename (NULL),
     loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
     mod (MODULE_UNKNOWN), subst (0), crc (0), remap (0),
-    partition_p (bool (pp & 1))
+    partition_p (partition)
 {
   u1.slurp = NULL;
   legacy_p = direct_p = primary_p = interface_p = exported_p
@@ -7973,6 +7972,15 @@ mangle_module_fini ()
     substs.pop ()->subst = 0;
 }
 
+static module_state **
+get_module_slot (tree name, module_state *parent, bool partition, bool insert)
+{
+  module_state_hash::compare_type ct (name, uintptr_t (parent) | partition);
+  hashval_t hv = module_state_hash::hash (ct);
+
+  return modules_hash->find_slot_with_hash (ct, hv, insert ? INSERT : NO_INSERT);
+}
+
 /* Find or create module NAME & PARENT in the hash table.  */
 
 module_state *
@@ -7991,14 +7999,12 @@ get_module (tree name, module_state *parent, bool partition)
 	parent->set_flatname ();
     }
 
-  module_state_hash::compare_type ct (name, uintptr_t (parent) | partition);
-  hashval_t hv = module_state_hash::hash (ct);
-  module_state **slot = modules_hash->find_slot_with_hash (ct, hv, INSERT);
+  module_state **slot = get_module_slot (name, parent, partition, true);
   module_state *state = *slot;
   if (!state)
     {
       state = (new (ggc_alloc<module_state> ())
-	       module_state (ct.first, ct.second));
+	       module_state (name, parent, partition));
       *slot = state;
     }
   return state;
@@ -9007,27 +9013,49 @@ int module_mapper::translate_include (cpp_reader *reader, line_maps *lmaps,
 				      location_t loc,
 				      const char *file, bool angle)
 {
-  send_command (loc, "INCLUDE %c%s%c",
-		angle ? '<' : '"', file, angle ? '>' : '"');
-  if (get_response (loc) <= 0)
-    return 0;
-
   int action = 0;
   const char *diversion = NULL;
-  // FIXME: Search response?
-  switch (response_word (loc, "IMPORT", "INCLUDE", NULL))
+
+  if (mapper->is_server ())
     {
-    default:
-      break;
-    case 0:  /* Divert to import.  */
-      action = 1;
-      if (!eol_p ())
-	diversion = response_token (loc);
-      break;
-    case 1:  /* Treat as include.  */
-      break;
+      send_command (loc, "INCLUDE %c%s%c",
+		    angle ? '<' : '"', file, angle ? '>' : '"');
+      if (get_response (loc) <= 0)
+	return 0;
+
+      // FIXME: Search response?
+      switch (response_word (loc, "IMPORT", "INCLUDE", NULL))
+	{
+	default:
+	  break;
+	case 0:  /* Divert to import.  */
+	  action = 1;
+	  if (!eol_p ())
+	    diversion = response_token (loc);
+	  break;
+	case 1:  /* Treat as include.  */
+	  break;
+	}
+      response_eol (loc);
     }
-  response_eol (loc);
+  else if (mapper->is_live ())
+    {
+      size_t len = strlen (file);
+      char *buf = XNEWVEC (char, len + 3);
+
+      buf[0] = angle ? '<' : '"';
+      buf[len + 1] = angle ? '>' : '"';
+      buf[len + 2] = 0;
+      memcpy (buf + 1, file, len);
+      /* Sadly we intern ever include name.  Adjusting to not do this
+	 will pessimize modul lookup from the parser.  */
+      tree name = get_identifier_with_length (buf, len + 2);
+      XDELETEVEC (buf);
+
+      if (get_module_slot (name, NULL, false, false))
+	action = 1;
+    }
+
   if (!action)
     return 0;
 
@@ -13897,7 +13925,7 @@ init_module_processing ()
 
   /* Create module for current TU.  */
   module_state *current
-    = new (ggc_alloc<module_state> ()) module_state (NULL, 0);
+    = new (ggc_alloc<module_state> ()) module_state (NULL_TREE, NULL, false);
   current->mod = MODULE_NONE;
   bitmap_set_bit (current->imports, MODULE_NONE);
   (*modules)[MODULE_NONE] = current;
