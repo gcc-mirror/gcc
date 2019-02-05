@@ -1,5 +1,12 @@
 2019-02-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/89188
+	* dce.c (delete_unmarked_insns): Don't remove no-op moves if they
+	can throw, non-call exceptions are enabled and we can't delete
+	dead exceptions or alter cfg.  Set must_clean if
+	delete_insn_and_edges returns true, don't set it blindly for calls.
+	Assert that delete_unreachable_blocks is called only if can_alter_cfg.
+
 	PR rtl-optimization/89195
 	* combine.c (make_extraction): For MEMs, don't extract bytes outside
 	of the original MEM.
