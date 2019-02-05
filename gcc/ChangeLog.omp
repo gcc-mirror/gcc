@@ -1,3 +1,8 @@
+2018-10-16  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gimplify.c (gimplify_scan_omp_clauses): For dynamic array map kinds,
+	make sure bias in each dimension are put into firstprivate variables.
+
 2019-01-31  Julian Brown  <julian@codesourcery.com>
 
 	* gimplify.c (gimplify_scan_omp_clauses): Handle array sections on

@@ -8617,8 +8617,28 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  if (OMP_CLAUSE_SIZE (c) == NULL_TREE)
 	    OMP_CLAUSE_SIZE (c) = DECL_P (decl) ? DECL_SIZE_UNIT (decl)
 				  : TYPE_SIZE_UNIT (TREE_TYPE (decl));
-	  if (gimplify_expr (&OMP_CLAUSE_SIZE (c), pre_p,
-			     NULL, is_gimple_val, fb_rvalue) == GS_ERROR)
+	  if (OMP_CLAUSE_SIZE (c)
+	      && TREE_CODE (OMP_CLAUSE_SIZE (c)) == TREE_LIST
+	      && GOMP_MAP_DYNAMIC_ARRAY_P (OMP_CLAUSE_MAP_KIND (c)))
+	    {
+	      tree dims = OMP_CLAUSE_SIZE (c);
+	      for (tree t = dims; t; t = TREE_CHAIN (t))
+		{
+		  /* If a dimension bias isn't a constant, we have to ensure
+		     that the value gets transferred to the offload target.  */
+		  tree low_bound = TREE_PURPOSE (t);
+		  if (TREE_CODE (low_bound) != INTEGER_CST)
+		    {
+		      low_bound = get_initialized_tmp_var (low_bound, pre_p,
+							   NULL, false);
+		      omp_add_variable (ctx, low_bound,
+					GOVD_FIRSTPRIVATE | GOVD_SEEN);
+		      TREE_PURPOSE (t) = low_bound;
+		    }
+		}
+	    }
+	  else if (gimplify_expr (&OMP_CLAUSE_SIZE (c), pre_p,
+				  NULL, is_gimple_val, fb_rvalue) == GS_ERROR)
 	    {
 	      remove = true;
 	      break;
