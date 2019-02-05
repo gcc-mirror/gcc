@@ -1,6 +1,16 @@
 2019-02-05  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	PR target/89112
+	* config/rs6000/rs6000-string.c (do_ifelse, expand_cmp_vec_sequence,
+	expand_compare_loop, expand_block_compare_gpr,
+	expand_strncmp_align_check, expand_strncmp_gpr_sequence): Insert
+	REG_BR_PROB notes in inline expansion of memcmp/strncmp. Add
+	#include "profile-count.h" and "predict.h" for types and functions
+	needed to work with REG_BR_PROB notes.
+
+2019-02-05  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	PR target/89112
 	* config/rs6000/rs6000.md (<bd>tf_<mode>): Generate a local label
 	for the long branch case.
 
