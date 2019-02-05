@@ -6197,6 +6197,9 @@ finish_namespace_using_decl (tree decl, tree scope, tree name)
     return;
 
   tree *slot = find_namespace_slot (current_namespace, name, true);
+  // FIXME: Write more code
+  gcc_assert (!*slot || TREE_CODE (*slot) != MODULE_VECTOR);
+
   tree val = slot ? MAYBE_STAT_DECL (*slot) : NULL_TREE;
   tree type = slot ? MAYBE_STAT_TYPE (*slot) : NULL_TREE;
   do_nonmember_using_decl (scope, name, &val, &type);

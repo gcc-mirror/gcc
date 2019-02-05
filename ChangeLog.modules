@@ -1,6 +1,9 @@
 2019-02-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.c (finish_namespace_using_decl): Add assert + FIXME.
+
+	gcc/cp/
 	* cxx-mapper.cc (client::action): Add mapper agent.
 	* module.cc (module_mapper::handshake): Add mapper agent slot.
 	gcc/
