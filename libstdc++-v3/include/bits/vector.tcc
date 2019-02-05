@@ -73,7 +73,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  const size_type __old_size = size();
 	  pointer __tmp;
 #if __cplusplus >= 201103L
-	  if constexpr (_S_use_relocate())
+	  if _GLIBCXX17_CONSTEXPR (_S_use_relocate())
 	    {
 	      __tmp = this->_M_allocate(__n);
 	      std::__relocate_a(this->_M_impl._M_start,
@@ -457,7 +457,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  __new_finish = pointer();
 
 #if __cplusplus >= 201103L
-	  if constexpr (_S_use_relocate())
+	  if _GLIBCXX17_CONSTEXPR (_S_use_relocate())
 	    {
 	      __new_finish
 		= std::__relocate_a
@@ -498,7 +498,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  __throw_exception_again;
 	}
 #if __cplusplus >= 201103L
-      if constexpr (!_S_use_relocate())
+      if _GLIBCXX17_CONSTEXPR (!_S_use_relocate())
 #endif
 	std::_Destroy(__old_start, __old_finish, _M_get_Tp_allocator());
       _GLIBCXX_ASAN_ANNOTATE_REINIT;
@@ -638,8 +638,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      const size_type __len =
 		_M_check_len(__n, "vector::_M_default_append");
 	      pointer __new_start(this->_M_allocate(__len));
-#if __cplusplus >= 201103L
-	      if constexpr (_S_use_relocate())
+	      if _GLIBCXX17_CONSTEXPR (_S_use_relocate())
 		{
 		  __try
 		    {
@@ -656,7 +655,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 				    __new_start, _M_get_Tp_allocator());
 		}
 	      else
-#endif
 		{
 		  pointer __destroy_from = pointer();
 		  __try
