@@ -155,8 +155,10 @@ Classes used:
    indicates experimentalness of the module system.  It is very
    experimental right now.  */
 #ifndef MODULE_STAMP
-#error "Stahp! What are you doing? This is not ready yet."
+#error "Shtopp! What are you doing? This is not ready yet."
 #define MODULE_STAMP 0
+#else
+#define MODULE_DEVELOPMENT 1
 #endif
 
 /* Mapper Protocol version.  Very new.  */
@@ -11191,9 +11193,12 @@ module_state::read_locations ()
   slurp ()->pre_early_ok
     = (reserved_ord == spans[loc_spans::SPAN_FORCED].ordinary.second
        && reserved_mac == spans[loc_spans::SPAN_FORCED].macro.first);
+
+#if MODULE_DEVELOPMENT
   if (!slurp ()->pre_early_ok)
-    /* Clue the user in.  */
+    /* Clue the developer.  */
     warning_at (loc, 0, "prefix mismatch, early locations are not represented");
+#endif
 
   {
     /* Read the ordinary maps.  */

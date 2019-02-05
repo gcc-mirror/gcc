@@ -56,7 +56,7 @@ CFLAGS-cp/g++spec.o += $(DRIVER_DEFINES)
 CFLAGS-cp/module.o += -DHOST_MACHINE=\"$(host)\" \
 	-DTARGET_MACHINE=\"$(target)\"
 
-# We want to make the version volatile, when in development mode. 
+# We want to make the module version volatile, when in development mode. 
 ifeq ($(DEVPHASE_c),experimental)
 # We want to rebuild module if the source dir changes
 cp/module.o : $(srcdir)/cp
