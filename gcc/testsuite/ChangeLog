@@ -1,3 +1,17 @@
+2019-02-05  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/vec-extract-slong-1.c: Require p8 execution
+	hardware.
+	* gcc.target/powerpc/vec-extract-schar-1.c: Likewise.
+	* gcc.target/powerpc/vec-extract-sint128-1.c: Likewise.
+	* gcc.target/powerpc/vec-extract-sshort-1.c: Likewise.
+	* gcc.target/powerpc/vec-extract-ulong-1.c: Likewise.
+	* gcc.target/powerpc/vec-extract-uchar-1.c: Likewise.
+	* gcc.target/powerpc/vec-extract-sint-1.c: Likewise.
+	* gcc.target/powerpc/vec-extract-uint128-1.c: Likewise.
+	* gcc.target/powerpc/vec-extract-ushort-1.c: Likewise.
+	* gcc.target/powerpc/vec-extract-uint-1.c: Likewise.
+
 2019-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/89186
