@@ -1,3 +1,9 @@
+2019-02-05  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	PR target/89112
+	* config/rs6000/rs6000.md (<bd>tf_<mode>): Generate a local label
+	for the long branch case.
+
 2019-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/89188
