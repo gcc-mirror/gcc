@@ -1,3 +1,9 @@
+2019-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/11304
+	* gcc.target/i386/call-1.c (set_eax): Add "eax" clobber.
+	* gcc.target/i386/call-2.c: New test.
+
 2019-02-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89158 - by-value capture of constexpr variable broken.
