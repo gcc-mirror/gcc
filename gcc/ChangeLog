@@ -1,3 +1,11 @@
+2019-02-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/89000
+	* gcov.c (function_summary): Remove argument.
+	(file_summary): New function.
+	(print_usage): Replace tabs with spaces.
+	(generate_results): Use new function file_summary.
+
 2019-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/89186
