@@ -577,14 +577,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Alloc>
-    class __is_copy_insertable_impl
+    class __is_alloc_insertable_impl
     {
-      typedef allocator_traits<_Alloc> _Traits;
+      using _Traits = allocator_traits<_Alloc>;
+      using value_type = typename _Traits::value_type;
 
-      template<typename _Up, typename
+      template<typename _Up, typename _Tp = __remove_cvref_t<_Up>,
+	       typename
 	       = decltype(_Traits::construct(std::declval<_Alloc&>(),
-					     std::declval<_Up*>(),
-					     std::declval<const _Up&>()))>
+					     std::declval<_Tp*>(),
+					     std::declval<_Up>()))>
 	static true_type
 	_M_select(int);
 
@@ -593,19 +595,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_select(...);
 
     public:
-      typedef decltype(_M_select<typename _Alloc::value_type>(0)) type;
+      using copy = decltype(_M_select<const value_type&>(0));
+      using move = decltype(_M_select<value_type>(0));
     };
 
   // true if _Alloc::value_type is CopyInsertable into containers using _Alloc
   template<typename _Alloc>
     struct __is_copy_insertable
-    : __is_copy_insertable_impl<_Alloc>::type
+    : __is_alloc_insertable_impl<_Alloc>::copy
     { };
 
   // std::allocator<_Tp> just requires CopyConstructible
   template<typename _Tp>
     struct __is_copy_insertable<allocator<_Tp>>
     : is_copy_constructible<_Tp>
+    { };
+
+  // true if _Alloc::value_type is MoveInsertable into containers using _Alloc
+  template<typename _Alloc>
+    struct __is_move_insertable
+    : __is_alloc_insertable_impl<_Alloc>::move
+    { };
+
+  // std::allocator<_Tp> just requires MoveConstructible
+  template<typename _Tp>
+    struct __is_move_insertable<allocator<_Tp>>
+    : is_move_constructible<_Tp>
     { };
 
   // Trait to detect Allocator-like types.

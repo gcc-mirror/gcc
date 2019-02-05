@@ -76,9 +76,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  if _GLIBCXX17_CONSTEXPR (_S_use_relocate())
 	    {
 	      __tmp = this->_M_allocate(__n);
-	      std::__relocate_a(this->_M_impl._M_start,
-				this->_M_impl._M_finish,
-				__tmp, _M_get_Tp_allocator());
+	      _S_relocate(this->_M_impl._M_start, this->_M_impl._M_finish,
+			  __tmp, _M_get_Tp_allocator());
 	    }
 	  else
 #endif
@@ -459,17 +458,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #if __cplusplus >= 201103L
 	  if _GLIBCXX17_CONSTEXPR (_S_use_relocate())
 	    {
-	      __new_finish
-		= std::__relocate_a
-		(__old_start, __position.base(),
-		 __new_start, _M_get_Tp_allocator());
+	      __new_finish = _S_relocate(__old_start, __position.base(),
+					 __new_start, _M_get_Tp_allocator());
 
 	      ++__new_finish;
 
-	      __new_finish
-		= std::__relocate_a
-		(__position.base(), __old_finish,
-		 __new_finish, _M_get_Tp_allocator());
+	      __new_finish = _S_relocate(__position.base(), __old_finish,
+					 __new_finish, _M_get_Tp_allocator());
 	    }
 	  else
 #endif
@@ -650,9 +645,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		      _M_deallocate(__new_start, __len);
 		      __throw_exception_again;
 		    }
-		  std::__relocate_a(this->_M_impl._M_start,
-				    this->_M_impl._M_finish,
-				    __new_start, _M_get_Tp_allocator());
+		  _S_relocate(this->_M_impl._M_start, this->_M_impl._M_finish,
+			      __new_start, _M_get_Tp_allocator());
 		}
 	      else
 		{

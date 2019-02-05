@@ -425,14 +425,47 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     private:
 #if __cplusplus >= 201103L
       static constexpr bool
-      _S_use_relocate()
+      _S_nothrow_relocate(true_type)
       {
 	return noexcept(std::__relocate_a(std::declval<pointer>(),
 					  std::declval<pointer>(),
 					  std::declval<pointer>(),
 					  std::declval<_Tp_alloc_type&>()));
       }
-#endif
+
+      static constexpr bool
+      _S_nothrow_relocate(false_type)
+      { return false; }
+
+      static constexpr bool
+      _S_use_relocate()
+      {
+	// Instantiating std::__relocate_a might cause an error outside the
+	// immediate context (in __relocate_object_a's noexcept-specifier),
+	// so only do it if we know the type can be move-inserted into *this.
+	return _S_nothrow_relocate(__is_move_insertable<_Tp_alloc_type>{});
+      }
+
+      static pointer
+      _S_do_relocate(pointer __first, pointer __last, pointer __result,
+		     _Tp_alloc_type& __alloc, true_type) noexcept
+      {
+	return std::__relocate_a(__first, __last, __result, __alloc);
+      }
+
+      static pointer
+      _S_do_relocate(pointer, pointer, pointer __result,
+		     _Tp_alloc_type&, false_type) noexcept
+      { return __result; }
+
+      static pointer
+      _S_relocate(pointer __first, pointer __last, pointer __result,
+		  _Tp_alloc_type& __alloc) noexcept
+      {
+	using __do_it = __bool_constant<_S_use_relocate()>;
+	return _S_do_relocate(__first, __last, __result, __alloc, __do_it{});
+      }
+#endif // C++11
 
     protected:
       using _Base::_M_allocate;
