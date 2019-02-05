@@ -1,3 +1,9 @@
+2019-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89186
+	* optabs.c (prepare_cmp_insn): Pass x and y to
+	emit_block_comp_via_libcall rather than XEXP (x, 0) and XEXP (y, 0).
+
 2019-02-05  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/89150
