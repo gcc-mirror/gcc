@@ -1,4 +1,9 @@
-2019-02-05  Andrea Corallo <andrea.corallo@arm.com>
+2019-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89187
+	* g++.dg/opt/pr89187.C: New test.
+
+2019-02-05  Andrea Corallo  <andrea.corallo@arm.com>
 
 	* jit.dg/add-driver-options-testlib.c: Add support file for
 	test-add-driver-options.c testcase.
