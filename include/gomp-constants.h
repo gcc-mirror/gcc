@@ -40,6 +40,7 @@
 #define GOMP_MAP_FLAG_SPECIAL_0		(1 << 2)
 #define GOMP_MAP_FLAG_SPECIAL_1		(1 << 3)
 #define GOMP_MAP_FLAG_SPECIAL_2		(1 << 4)
+#define GOMP_MAP_FLAG_SPECIAL_3		(1 << 5)
 #define GOMP_MAP_FLAG_SPECIAL_4		(1 << 6)
 #define GOMP_MAP_FLAG_SPECIAL		(GOMP_MAP_FLAG_SPECIAL_1 \
 					 | GOMP_MAP_FLAG_SPECIAL_0)
@@ -131,6 +132,26 @@ enum gomp_map_kind
     /* Decrement usage count and deallocate if zero.  */
     GOMP_MAP_RELEASE =			(GOMP_MAP_FLAG_SPECIAL_2
 					 | GOMP_MAP_DELETE),
+    /* Mapping kinds for dynamic arrays.  */
+    GOMP_MAP_DYNAMIC_ARRAY =		(GOMP_MAP_FLAG_SPECIAL_3),
+    GOMP_MAP_DYNAMIC_ARRAY_TO =		(GOMP_MAP_DYNAMIC_ARRAY
+					 | GOMP_MAP_TO),
+    GOMP_MAP_DYNAMIC_ARRAY_FROM =	(GOMP_MAP_DYNAMIC_ARRAY
+					 | GOMP_MAP_FROM),
+    GOMP_MAP_DYNAMIC_ARRAY_TOFROM =	(GOMP_MAP_DYNAMIC_ARRAY
+					 | GOMP_MAP_TOFROM),
+    GOMP_MAP_DYNAMIC_ARRAY_FORCE_TO =	(GOMP_MAP_DYNAMIC_ARRAY_TO
+					 | GOMP_MAP_FLAG_FORCE),
+    GOMP_MAP_DYNAMIC_ARRAY_FORCE_FROM =		(GOMP_MAP_DYNAMIC_ARRAY_FROM
+						 | GOMP_MAP_FLAG_FORCE),
+    GOMP_MAP_DYNAMIC_ARRAY_FORCE_TOFROM =	(GOMP_MAP_DYNAMIC_ARRAY_TOFROM
+						 | GOMP_MAP_FLAG_FORCE),
+    GOMP_MAP_DYNAMIC_ARRAY_ALLOC =		(GOMP_MAP_DYNAMIC_ARRAY
+						 | GOMP_MAP_ALLOC),
+    GOMP_MAP_DYNAMIC_ARRAY_FORCE_ALLOC =	(GOMP_MAP_DYNAMIC_ARRAY
+						 | GOMP_MAP_FORCE_ALLOC),
+    GOMP_MAP_DYNAMIC_ARRAY_FORCE_PRESENT =	(GOMP_MAP_DYNAMIC_ARRAY
+						 | GOMP_MAP_FORCE_PRESENT),
     /* In OpenACC, attach a pointer to a mapped struct field.  */
     GOMP_MAP_ATTACH =			(GOMP_MAP_DEEP_COPY | 0),
     /* In OpenACC, detach a pointer to a mapped struct field.  */
@@ -166,6 +187,8 @@ enum gomp_map_kind
 #define GOMP_MAP_ALWAYS_P(X) \
   (GOMP_MAP_ALWAYS_TO_P (X) || ((X) == GOMP_MAP_ALWAYS_FROM))
 
+#define GOMP_MAP_DYNAMIC_ARRAY_P(X) \
+  ((X) & GOMP_MAP_DYNAMIC_ARRAY)
 
 /* Asynchronous behavior.  Keep in sync with
    libgomp/{openacc.h,openacc.f90,openacc_lib.h}:acc_async_t.  */
