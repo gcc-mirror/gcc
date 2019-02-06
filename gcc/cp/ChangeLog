@@ -1,3 +1,14 @@
+2019-02-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/71302
+	* call.c (get_location_for_expr_unwinding_for_system_header): New
+	function.
+	(conversion_null_warnings): Use it when getting locations for
+	EXPR, effectively adding a call to
+	get_location_for_expr_unwinding_for_system_header for
+	-Wconversion-null and making use of EXPR_LOCATION for
+	-Wzero-as-null-pointer-constant.
+
 2019-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89187

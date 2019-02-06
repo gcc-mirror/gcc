@@ -6718,6 +6718,22 @@ build_temp (tree expr, tree type, int flags,
   return expr;
 }
 
+/* Get any location for EXPR, falling back to input_location.
+
+   If the result is in a system header and is the virtual location for
+   a token coming from the expansion of a macro, unwind it to the
+   location of the expansion point of the macro (e.g. to avoid the
+   diagnostic being suppressed for expansions of NULL where "NULL" is
+   in a system header).  */
+
+static location_t
+get_location_for_expr_unwinding_for_system_header (tree expr)
+{
+  location_t loc = EXPR_LOC_OR_LOC (expr, input_location);
+  loc = expansion_point_location_if_in_system_header (loc);
+  return loc;
+}
+
 /* Perform warnings about peculiar, but valid, conversions from/to NULL.
    Also handle a subset of zero as null warnings.
    EXPR is implicitly converted to type TOTYPE.
@@ -6730,8 +6746,7 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
   if (null_node_p (expr) && TREE_CODE (totype) != BOOLEAN_TYPE
       && ARITHMETIC_TYPE_P (totype))
     {
-      location_t loc = EXPR_LOC_OR_LOC (expr, input_location);
-      loc = expansion_point_location_if_in_system_header (loc);
+      location_t loc = get_location_for_expr_unwinding_for_system_header (expr);
       if (fn)
 	{
 	  auto_diagnostic_group d;
@@ -6750,7 +6765,7 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
   else if (TREE_CODE (TREE_TYPE (expr)) == BOOLEAN_TYPE
 	   && TYPE_PTR_P (totype))
     {
-      location_t loc = EXPR_LOC_OR_LOC (expr, input_location);
+      location_t loc = get_location_for_expr_unwinding_for_system_header (expr);
       if (fn)
 	{
 	  auto_diagnostic_group d;
@@ -6769,8 +6784,7 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
   else if (null_ptr_cst_p (expr) &&
 	   (TYPE_PTR_OR_PTRMEM_P (totype) || NULLPTR_TYPE_P (totype)))
     {
-      location_t loc =
-       expansion_point_location_if_in_system_header (input_location);
+      location_t loc = get_location_for_expr_unwinding_for_system_header (expr);
       maybe_warn_zero_as_null_pointer_constant (expr, loc);
     }
 }
