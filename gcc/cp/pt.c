@@ -19005,6 +19005,11 @@ tsubst_copy_and_build (tree t,
     case REQUIRES_EXPR:
       RETURN (tsubst_requires_expr (t, args, complain, in_decl));
 
+    case RANGE_EXPR:
+      /* No need to substitute further, a RANGE_EXPR will always be built
+	 with constant operands.  */
+      RETURN (t);
+
     case NON_LVALUE_EXPR:
     case VIEW_CONVERT_EXPR:
       /* We should only see these for location wrapper nodes, or within

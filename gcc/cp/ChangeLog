@@ -15,6 +15,12 @@
 	(cxx_eval_constant_expression) <case COND_EXPR>: Don't look for the
 	label in the else branch if we found it in the then branch.
 
+	Backport from mainline
+	2019-01-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89119 - ICE with value-initialization in template.
+	* pt.c (tsubst_copy_and_build): Handle RANGE_EXPR.
+
 2019-02-05  Marek Polacek  <polacek@redhat.com>
 
 	Backported from mainline
