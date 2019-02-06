@@ -1,3 +1,12 @@
+2019-02-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/71302
+	* g++.dg/cpp0x/Wzero-as-null-pointer-constant-1.C: Add expected
+	column numbers to dg-warning directives where they are correct.
+	* g++.dg/warn/Wzero-as-null-pointer-constant-5.C: Likewise.
+	* g++.dg/warn/Wzero-as-null-pointer-constant-7.C: Likewise.
+	* g++.dg/warn/Wzero-as-null-pointer-constant-8.C: New test.
+
 2019-02-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR debug/87451
