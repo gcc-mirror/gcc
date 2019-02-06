@@ -1,3 +1,15 @@
+2019-02-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (annotate_value): Tidy up.
+	<INTEGER_CST>: Set TCODE instead of recursing.
+	<COMPONENT_REF>: Set TCODE instead of calling Create_Node manually.
+	<MULT_EXPR, PLUS_EXPR>: Fold conversions into inner operations.
+	<BIT_AND_EXPR>: Adjust.
+	<CALL_EXPR>: Do not fall through.
+
 2019-01-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (array_type_has_nonaliased_component): Return
