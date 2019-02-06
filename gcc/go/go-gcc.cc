@@ -1049,6 +1049,7 @@ Gcc_backend::set_placeholder_pointer_type(Btype* placeholder,
     }
   gcc_assert(TREE_CODE(tt) == POINTER_TYPE);
   TREE_TYPE(pt) = TREE_TYPE(tt);
+  TYPE_CANONICAL(pt) = TYPE_CANONICAL(tt);
   if (TYPE_NAME(pt) != NULL_TREE)
     {
       // Build the data structure gcc wants to see for a typedef.
@@ -1080,6 +1081,12 @@ Gcc_backend::placeholder_struct_type(const std::string& name,
 			     get_identifier_from_string(name),
 			     ret);
       TYPE_NAME(ret) = decl;
+
+      // The struct type that eventually replaces this placeholder will require
+      // structural equality. The placeholder must too, so that the requirement
+      // for structural equality propagates to references that are constructed
+      // before the replacement occurs.
+      SET_TYPE_STRUCTURAL_EQUALITY(ret);
     }
   return this->make_type(ret);
 }
