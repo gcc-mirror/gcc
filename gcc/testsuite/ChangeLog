@@ -1,3 +1,10 @@
+2019-02-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR debug/87451
+	* gcc.dg/debug/dwarf2/inline5.c: Allow for non-comment before
+	"(DIE (0x[0-9a-f]*) DW_TAG_variable".
+	xfail scan-assembler-not with Solaris as.
+
 2019-02-06  Bill Seurer  <seurer@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/vsx-vector-6.p7.c: Update instruction
