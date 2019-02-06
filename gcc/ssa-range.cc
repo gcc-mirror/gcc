@@ -704,7 +704,12 @@ global_ranger::range_of_stmt (irange &r, gimple *s, tree name)
 {
   // If no name, simply call the base routine.
   if (!name)
-    return ssa_ranger::range_of_stmt (r, s, name);
+    {
+      // first check to see if the stmt has a name.
+      name = gimple_get_lhs (s);
+      if (!name)
+	return ssa_ranger::range_of_stmt (r, s, name);
+    }
 
   gcc_checking_assert (supports_ssa_p (name));
 
