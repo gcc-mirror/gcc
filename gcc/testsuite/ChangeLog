@@ -1,5 +1,8 @@
 2019-02-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/89211
+	* gcc.dg/pr89211.c: New test.
+
 	PR middle-end/89210
 	* c-c++-common/builtin-convertvector-2.c: New test.
 
