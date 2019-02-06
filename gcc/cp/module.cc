@@ -157,8 +157,6 @@ Classes used:
 #ifndef MODULE_STAMP
 #error "Shtopp! What are you doing? This is not ready yet."
 #define MODULE_STAMP 0
-#else
-#define MODULE_DEVELOPMENT 1
 #endif
 
 /* Mapper Protocol version.  Very new.  */
@@ -8912,11 +8910,12 @@ module_mapper::handshake (location_t loc, const char *cookie)
     case 0: /* HELLO $ver $agent $repo */
       {
 	const char *ver = response_token (loc);
-	const char *agent = ver ? response_token (loc) : "";
+	const char *agent = ver ? response_token (loc) : NULL;
 	char *repo = agent ? response_token (loc, true) : NULL;
 	
 	if (ver)
-	  dump () && dump ("Connected to mapper:%s version %s", agent, ver);
+	  dump () && dump ("Connected to mapper:%s version %s",
+			   agent ? agent : "unknown", ver);
 	if (response_eol (loc))
 	  {
 	    if (repo)
@@ -11197,11 +11196,8 @@ module_state::read_locations ()
     = (reserved_ord == spans[loc_spans::SPAN_FORCED].ordinary.second
        && reserved_mac == spans[loc_spans::SPAN_FORCED].macro.first);
 
-#if MODULE_DEVELOPMENT
   if (!slurp ()->pre_early_ok)
-    /* Clue the developer.  */
-    warning_at (loc, 0, "prefix mismatch, early locations are not represented");
-#endif
+    dump () && dump ("WARNING: Line map prefix mismatch");
 
   {
     /* Read the ordinary maps.  */
