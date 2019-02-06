@@ -21,6 +21,13 @@
 	PR c++/89119 - ICE with value-initialization in template.
 	* pt.c (tsubst_copy_and_build): Handle RANGE_EXPR.
 
+	Backport from mainline
+	2019-01-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89024 - ICE with incomplete enum type.
+	* call.c (standard_conversion): When converting an
+	ARITHMETIC_TYPE_P to an incomplete type, return NULL.
+	
 2019-02-05  Marek Polacek  <polacek@redhat.com>
 
 	Backported from mainline
