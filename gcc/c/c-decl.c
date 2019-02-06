@@ -5099,10 +5099,15 @@ finish_decl (tree decl, location_t init_loc, tree init,
 
   type = TREE_TYPE (decl);
 
-  /* Deduce size of array from initialization, if not already known.  */
+  /* Deduce size of array from initialization, if not already known.
+     This is only needed for an initialization in the current scope;
+     it must not be done for a file-scope initialization of a
+     declaration with external linkage, redeclared in an inner scope
+     with the outer declaration shadowed in an intermediate scope.  */
   if (TREE_CODE (type) == ARRAY_TYPE
       && TYPE_DOMAIN (type) == NULL_TREE
-      && TREE_CODE (decl) != TYPE_DECL)
+      && TREE_CODE (decl) != TYPE_DECL
+      && !(TREE_PUBLIC (decl) && current_scope != file_scope))
     {
       bool do_default
 	= (TREE_STATIC (decl)
