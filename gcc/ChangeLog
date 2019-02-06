@@ -1,3 +1,8 @@
+2019-02-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/i386.c (ix86_expand_prologue): Emit a memory blockage
+	after restoring registers saved to allocate the frame on Windows.
+
 2019-02-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89182
