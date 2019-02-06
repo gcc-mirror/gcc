@@ -2154,10 +2154,12 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	      tree d = start_decl (declarator, specs, false,
 				   chainon (postfix_attrs,
 					    all_prefix_attrs));
-	      if (d && TREE_CODE (d) == FUNCTION_DECL)
-		if (declarator->kind == cdk_function)
-		  if (DECL_ARGUMENTS (d) == NULL_TREE)
-		    DECL_ARGUMENTS (d) = declarator->u.arg_info->parms;
+	      if (d
+		  && TREE_CODE (d) == FUNCTION_DECL
+		  && declarator->kind == cdk_function
+		  && DECL_ARGUMENTS (d) == NULL_TREE
+		  && DECL_INITIAL (d) == NULL_TREE)
+		DECL_ARGUMENTS (d) = declarator->u.arg_info->parms;
 	      if (omp_declare_simd_clauses.exists ())
 		{
 		  tree parms = NULL_TREE;

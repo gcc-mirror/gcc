@@ -1,3 +1,10 @@
+2019-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89211
+	* c-parser.c (c_parser_declaration_or_fndef): Don't update
+	DECL_ARGUMENTS of d if it has been defined already.  Use a single if
+	instead of 3 nested ifs.
+
 2019-02-06  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/88584
