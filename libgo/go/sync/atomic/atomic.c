@@ -69,7 +69,7 @@ _Bool CompareAndSwapInt32 (int32_t *, int32_t, int32_t)
 _Bool
 CompareAndSwapInt32 (int32_t *val, int32_t old, int32_t new)
 {
-  return __atomic_compare_exchange_n (val, &old, new, true, __ATOMIC_SEQ_CST,
+  return __atomic_compare_exchange_n (val, &old, new, false, __ATOMIC_SEQ_CST,
 				      __ATOMIC_RELAXED);
 }
 
@@ -82,7 +82,7 @@ CompareAndSwapInt64 (int64_t *val, int64_t old, int64_t new)
 {
   if (((uintptr_t) val & 7) != 0)
     val = NULL;
-  return __atomic_compare_exchange_n (val, &old, new, true, __ATOMIC_SEQ_CST,
+  return __atomic_compare_exchange_n (val, &old, new, false, __ATOMIC_SEQ_CST,
 				      __ATOMIC_RELAXED);
 }
 
@@ -93,7 +93,7 @@ _Bool CompareAndSwapUint32 (uint32_t *, uint32_t, uint32_t)
 _Bool
 CompareAndSwapUint32 (uint32_t *val, uint32_t old, uint32_t new)
 {
-  return __atomic_compare_exchange_n (val, &old, new, true, __ATOMIC_SEQ_CST,
+  return __atomic_compare_exchange_n (val, &old, new, false, __ATOMIC_SEQ_CST,
 				      __ATOMIC_RELAXED);
 }
 
@@ -106,7 +106,7 @@ CompareAndSwapUint64 (uint64_t *val, uint64_t old, uint64_t new)
 {
   if (((uintptr_t) val & 7) != 0)
     val = NULL;
-  return __atomic_compare_exchange_n (val, &old, new, true, __ATOMIC_SEQ_CST,
+  return __atomic_compare_exchange_n (val, &old, new, false, __ATOMIC_SEQ_CST,
 				      __ATOMIC_RELAXED);
 }
 
@@ -117,7 +117,7 @@ _Bool CompareAndSwapUintptr (uintptr_t *, uintptr_t, uintptr_t)
 _Bool
 CompareAndSwapUintptr (uintptr_t *val, uintptr_t old, uintptr_t new)
 {
-  return __atomic_compare_exchange_n (val, &old, new, true, __ATOMIC_SEQ_CST,
+  return __atomic_compare_exchange_n (val, &old, new, false, __ATOMIC_SEQ_CST,
 				      __ATOMIC_RELAXED);
 }
 
