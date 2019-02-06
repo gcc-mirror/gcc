@@ -1,3 +1,11 @@
+2019-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89210
+	* fold-const-call.c (fold_const_vec_convert): Pass true as last
+	operand to new_unary_operation only if both element types are integral
+	and it isn't a widening conversion.  Return NULL_TREE if
+	new_unary_operation failed.
+
 2019-02-05  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	PR target/88856
