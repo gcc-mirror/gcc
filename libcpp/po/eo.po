@@ -1,14 +1,14 @@
 # Translation of cpplib to Esperanto
-# Copyright (C) 2013, 2014, 2015, 2016, 2017, 2018 Free Software Foundation, Inc.
+# Copyright (C) 2013, 2014, 2015, 2016, 2017, 2018, 2019 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
-# Felipe Castro <fefcas@gmail.com>, 2013, 2014, 2015, 2016, 2017, 2018.
+# Felipe Castro <fefcas@gmail.com>, 2013, 2014, 2015, 2016, 2017, 2018, 2019.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 8.1-b20180128\n"
+"Project-Id-Version: cpplib 9.1-b20190203\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2019-02-01 23:01+0000\n"
-"PO-Revision-Date: 2018-06-06 16:53-0300\n"
+"PO-Revision-Date: 2019-02-06 20:15+0100\n"
 "Last-Translator: Felipe Castro <fefcas@gmail.com>\n"
 "Language-Team: Esperanto <translation-team-eo@lists.sourceforge.net>\n"
 "Language: eo\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 1.5.4\n"
+"X-Generator: Poedit 2.0.7\n"
 
 #: charset.c:674
 #, c-format
@@ -858,26 +858,24 @@ msgstr "duobligata makro-parametro \"%s\""
 #: macro.c:3141
 #, c-format
 msgid "expected parameter name, found \"%s\""
-msgstr ""
+msgstr "atendinte parametran nomon, ni trovis \"%s\""
 
 #: macro.c:3142
 #, c-format
 msgid "expected ',' or ')', found \"%s\""
-msgstr ""
+msgstr "atendinte ',' aŭ ')', ni trovis \"%s\""
 
 #: macro.c:3143
 msgid "expected parameter name before end of line"
-msgstr ""
+msgstr "ni atendis parametran nomon antaŭ lini-fino"
 
 #: macro.c:3144
-#, fuzzy
-#| msgid "unexpected end of file after #line"
 msgid "expected ')' before end of line"
-msgstr "neatendita dosierfino post #line"
+msgstr "ni atendis ')' antaŭ lini-fino"
 
 #: macro.c:3145
 msgid "expected ')' after \"...\""
-msgstr ""
+msgstr "ni atendis ')' post \"...\""
 
 #: macro.c:3202
 msgid "anonymous variadic macros were introduced in C++11"
