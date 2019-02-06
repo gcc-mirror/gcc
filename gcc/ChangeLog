@@ -1,3 +1,24 @@
+2019-02-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89182
+	* graphite.h (cached_scalar_evolution_in_region): Declare.
+	* graphite.c (struct seir_cache_key): New.
+	(struct sese_scev_hash): Likewise.
+	(seir_cache): New global.
+	(cached_scalar_evolution_in_region): New function.
+	(graphite_transform_loops): Allocate and release seir_cache.
+	* graphite-isl-ast-to-gimple.c (get_rename_from_scev): Use
+	cached_scalar_evolution_in_region.
+	* graphite-scop-detection.c (scop_detection::can_represent_loop):
+	Simplify.
+	(scop_detection::graphite_can_represent_expr: Use
+	cached_scalar_evolution_in_region.
+	(scop_detection::stmt_simple_for_scop_p): Likewise.
+	(find_params_in_bb): Likewise.
+	(gather_bbs::before_dom_children): Likewise.
+	* graphite-sese-to-poly.c (create_pw_aff_from_tree): Likewise.
+	(add_loop_constraints): Likewise.
+
 2019-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/89210

@@ -1,3 +1,8 @@
+2019-02-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89182
+	* gfortran.dg/graphite/pr89182.f90: New testcase.
+
 2019-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/89211
