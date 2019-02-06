@@ -1,3 +1,7 @@
+2019-02-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt76.adb: New test.
+
 2019-02-06  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
