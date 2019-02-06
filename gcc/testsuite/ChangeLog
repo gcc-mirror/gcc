@@ -1,3 +1,12 @@
+2019-02-06  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/vsx-vector-6.p7.c: Update instruction
+	counts and target.
+	* gcc.target/powerpc/vsx-vector-6.p8.c: Update instruction
+	counts and target.
+	* gcc.target/powerpc/vsx-vector-6.p9.c: Update instruction
+	counts and target.
+
 2019-02-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89182
