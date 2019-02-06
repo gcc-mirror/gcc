@@ -1533,9 +1533,12 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 	     a word.
 
 	     If valid memory becomes invalid after subreg elimination
-	     we still have to reload memory.
+	     and address might be different we still have to reload
+	     memory.
 	  */
-	  if ((! addr_was_valid || addr_is_valid)
+	  if ((! addr_was_valid
+	       || addr_is_valid
+	       || known_eq (GET_MODE_SIZE (mode), GET_MODE_SIZE (innermode)))
 	      && !(maybe_ne (GET_MODE_PRECISION (mode),
 			     GET_MODE_PRECISION (innermode))
 		   && known_le (GET_MODE_SIZE (mode), UNITS_PER_WORD)

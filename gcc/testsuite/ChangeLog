@@ -1,3 +1,8 @@
+2019-02-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/89225
+	* gcc.target/powerpc/pr89225.c: New.
+
 2019-02-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt76.adb: New test.

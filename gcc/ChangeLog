@@ -1,3 +1,9 @@
+2019-02-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/89225
+	* lra-constaints.c (simplify_operand_subreg): Add subreg mode
+	sizes check.
+
 2019-02-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/i386/i386.c (ix86_expand_prologue): Emit a memory blockage
