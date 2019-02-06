@@ -1,3 +1,15 @@
+2019-02-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89102 (partial)
+	* include/std/type_traits (common_type<>): Define.
+	(common_type<T>): Derive from common_type<T, T>.
+	* testsuite/20_util/common_type/requirements/explicit_instantiation.cc:
+	Test zero-length template argument list.
+	* testsuite/20_util/common_type/requirements/sfinae_friendly_1.cc:
+	Test additional single argument cases.
+	* testsuite/20_util/common_type/requirements/sfinae_friendly_2.cc:
+	Adjust expected error.
+
 2019-02-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/89128
