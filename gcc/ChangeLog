@@ -1,3 +1,12 @@
+2019-02-06  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	Backport from mainline.
+	2019-01-30  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+	* config/rs6000/rs6000-c.c (altivec-resolve_overloaded_builtin):
+	Change handling of ALTIVEC_BUILTIN_VEC_EXTRACT.  Coerce result to
+	type of vector element when vec_extract is implemented by direct
+	move.
+
 2019-02-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/i386/i386.c (ix86_expand_prologue): Emit a memory blockage
