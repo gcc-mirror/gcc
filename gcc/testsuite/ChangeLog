@@ -1,3 +1,8 @@
+2019-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89210
+	* c-c++-common/builtin-convertvector-2.c: New test.
+
 2019-02-05  Nikhil Benesch  <nikhil.benesch@gmail.com>
 
         PR go/89019

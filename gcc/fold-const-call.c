@@ -665,8 +665,17 @@ fold_const_vec_convert (tree ret_type, tree arg)
 	   && SCALAR_FLOAT_TYPE_P (TREE_TYPE (ret_type)))
     code = FLOAT_EXPR;
 
+  /* We can't handle steps directly when extending, since the
+     values need to wrap at the original precision first.  */
+  bool step_ok_p
+    = (INTEGRAL_TYPE_P (TREE_TYPE (ret_type))
+       && INTEGRAL_TYPE_P (TREE_TYPE (arg_type))
+       && (TYPE_PRECISION (TREE_TYPE (ret_type))
+	   <= TYPE_PRECISION (TREE_TYPE (arg_type))));
   tree_vector_builder elts;
-  elts.new_unary_operation (ret_type, arg, true);
+  if (!elts.new_unary_operation (ret_type, arg, step_ok_p))
+    return NULL_TREE;
+
   unsigned int count = elts.encoded_nelts ();
   for (unsigned int i = 0; i < count; ++i)
     {
