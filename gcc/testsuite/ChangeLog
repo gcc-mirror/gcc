@@ -1,3 +1,12 @@
+2019-02-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/86637
+	PR tree-optimization/89235
+	* gcc.c-torture/compile/pr86637-1.c: New test.
+	* gcc.c-torture/compile/pr86637-2.c: New test.
+	* gcc.c-torture/compile/pr86637-3.c: New test.
+	* gcc.c-torture/compile/pr89235.c: New test.
+
 2019-02-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/abd_1.c: New test.
