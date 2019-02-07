@@ -1,3 +1,7 @@
+2019-02-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnarl/s-linux__sparc.ads (ETIMEDOUT): Set to correct value.
+
 2019-01-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (array_type_has_nonaliased_component): Return
