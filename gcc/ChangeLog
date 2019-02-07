@@ -1,3 +1,10 @@
+2019-02-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	* config/i386/i386.md (*movoi_internal_avx): Set mode to OI
+	for TARGET_AVX512VL.
+	(*movti_internal): Set mode to TI for TARGET_AVX512VL.
+
 2019-02-07  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/s390-builtin-types.def: Add new types.
