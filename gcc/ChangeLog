@@ -1,3 +1,25 @@
+2019-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/88723
+	* dwarf2out.c (const_ok_for_output_1): Remove redundant call to
+	const_not_ok_for_debug_p target hook.
+	(mem_loc_descriptor) <case UNSPEC>: Only call const_ok_for_output_1
+	on UNSPEC and subexpressions thereof if all subexpressions of the
+	UNSPEC are CONSTANT_P.
+
+	2019-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/88635
+	* dwarf2out.c (const_ok_for_output_1): Reject MINUS that contains
+	SYMBOL_REF, CODE_LABEL or UNSPEC in subexpressions of second argument.
+	Reject PLUS that contains SYMBOL_REF, CODE_LABEL or UNSPEC in
+	subexpressions of both operands.
+	(mem_loc_descriptor): Handle UNSPEC if target hook acks it and all the
+	subrtxes are CONSTANT_P.
+
 2019-02-07  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

@@ -1,3 +1,11 @@
+2019-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/88635
+	* gcc.dg/debug/dwarf2/pr88635.c: New test.
+
 2019-02-07  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backport from mainline
