@@ -5119,6 +5119,7 @@ cp_build_binary_op (location_t location,
 	}
 
       if ((code0 == POINTER_TYPE || code1 == POINTER_TYPE)
+	  && !processing_template_decl
 	  && sanitize_flags_p (SANITIZE_POINTER_COMPARE))
 	{
 	  op0 = save_expr (op0);
@@ -5531,7 +5532,8 @@ pointer_diff (location_t loc, tree op0, tree op1, tree ptrtype,
   else
     inttype = restype;
 
-  if (sanitize_flags_p (SANITIZE_POINTER_SUBTRACT))
+  if (!processing_template_decl
+      && sanitize_flags_p (SANITIZE_POINTER_SUBTRACT))
     {
       op0 = save_expr (op0);
       op1 = save_expr (op1);
