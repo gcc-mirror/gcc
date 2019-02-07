@@ -3,6 +3,9 @@
 	Backported from mainline
 	2019-01-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/88968
+	* c-c++-common/gomp/atomic-23.c: New test.
+
 	PR target/88905
 	* gcc.dg/pr88905.c: New test.
 

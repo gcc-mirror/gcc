@@ -1,6 +1,12 @@
 2019-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/88968
+	* c-omp.c (c_finish_omp_atomic): For bitfield atomics, update type
+	variable after using BIT_FIELD_REF.
+
 	2019-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-cppbuiltin.c (c_cpp_builtin): Define __cpp_guaranteed_copy_elision

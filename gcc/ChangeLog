@@ -3,6 +3,10 @@
 	Backported from mainline
 	2019-01-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/88968
+	* gimplify.c (gimplify_omp_atomic): Handle bitfield atomics with
+	non-integral DECL_BIT_FIELD_REPRESENTATIVEs.
+
 	PR target/88905
 	* optabs.c (add_equal_note): Add op0_mode argument, use it instead of
 	GET_MODE (op0).
