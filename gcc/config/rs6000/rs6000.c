@@ -81,6 +81,8 @@
 #include "case-cfn-macros.h"
 #include "ppc-auxv.h"
 #include "tree-ssa-propagate.h"
+#include "tree-vrp.h"
+#include "tree-ssanames.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -16580,6 +16582,13 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 					  arg1_type, temp_addr,
 					  build_int_cst (arg1_type, -16));
 	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	if (!is_gimple_mem_ref_addr (aligned_addr))
+	  {
+	    tree t = make_ssa_name (TREE_TYPE (aligned_addr));
+	    gimple *g = gimple_build_assign (t, aligned_addr);
+	    gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	    aligned_addr = t;
+	  }
 	/* Use the build2 helper to set up the mem_ref.  The MEM_REF could also
 	   take an offset, but since we've already incorporated the offset
 	   above, here we just pass in a zero.  */
@@ -16628,6 +16637,13 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 					  arg2_type, temp_addr,
 					  build_int_cst (arg2_type, -16));
 	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	if (!is_gimple_mem_ref_addr (aligned_addr))
+	  {
+	    tree t = make_ssa_name (TREE_TYPE (aligned_addr));
+	    gimple *g = gimple_build_assign (t, aligned_addr);
+	    gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	    aligned_addr = t;
+	  }
 	/* The desired gimple result should be similar to:
 	   MEM[(__vector floatD.1407 *)_1] = vf1D.2697;  */
 	gimple *g
