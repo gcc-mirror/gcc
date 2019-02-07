@@ -1,3 +1,12 @@
+2018-10-02  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/routine-3.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/routine-nohost-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/routine-bind-nohost-1.c:
+	Update test.
+	* testsuite/libgomp.oacc-fortran/routine-6.f90: Likewise.
+
 2018-10-16  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/da-1.c: New test.

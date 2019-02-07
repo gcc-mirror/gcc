@@ -32285,6 +32285,8 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	case 'n':
 	  if (!strcmp ("nogroup", p))
 	    result = PRAGMA_OMP_CLAUSE_NOGROUP;
+	  else if (!strcmp ("nohost", p))
+	    result = PRAGMA_OACC_CLAUSE_NOHOST;
 	  else if (!strcmp ("nontemporal", p))
 	    result = PRAGMA_OMP_CLAUSE_NONTEMPORAL;
 	  else if (!strcmp ("notinbranch", p))
@@ -35125,6 +35127,11 @@ cp_parser_oacc_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OACC_CLAUSE_LINK:
 	  clauses = cp_parser_oacc_data_clause (parser, c_kind, clauses);
 	  c_name = "link";
+	  break;
+	case PRAGMA_OACC_CLAUSE_NOHOST:
+	  clauses = cp_parser_oacc_simple_clause (here, OMP_CLAUSE_NOHOST,
+						  clauses);
+	  c_name = "nohost";
 	  break;
 	case PRAGMA_OACC_CLAUSE_NUM_GANGS:
 	  code = OMP_CLAUSE_NUM_GANGS;
@@ -40129,8 +40136,8 @@ cp_parser_omp_taskloop (cp_parser *parser, cp_token *pragma_tok,
 	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_GANG)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WORKER)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_VECTOR)		\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_SEQ))
-
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_SEQ)			\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NOHOST) )
 
 /* Parse the OpenACC routine pragma.  This has an optional '( name )'
    component, which must resolve to a declared namespace-scope
@@ -40347,7 +40354,7 @@ cp_finalize_oacc_routine (cp_parser *parser, tree fndecl, bool is_defn)
       /* Add an "omp declare target" attribute.  */
       DECL_ATTRIBUTES (fndecl)
 	= tree_cons (get_identifier ("omp declare target"),
-		     NULL_TREE, DECL_ATTRIBUTES (fndecl));
+		     parser->oacc_routine->clauses, DECL_ATTRIBUTES (fndecl));
 
       /* Don't unset parser->oacc_routine here: we may still need it to
 	 diagnose wrong usage.  But, remember that we've used this "#pragma acc

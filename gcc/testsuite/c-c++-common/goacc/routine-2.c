@@ -1,19 +1,19 @@
-#pragma acc routine gang worker /* { dg-error "multiple loop axes" } */
+#pragma acc routine gang worker /* { dg-error "conflicting level" } */
 void gang (void)
 {
 }
 
-#pragma acc routine worker vector /* { dg-error "multiple loop axes" } */
+#pragma acc routine worker vector /* { dg-error "conflicting level" } */
 void worker (void)
 {
 }
 
-#pragma acc routine vector seq /* { dg-error "multiple loop axes" } */
+#pragma acc routine vector seq /* { dg-error "conflicting level" } */
 void vector (void)
 {
 }
 
-#pragma acc routine seq gang /* { dg-error "multiple loop axes" } */
+#pragma acc routine seq gang /* { dg-error "conflicting level" } */
 void seq (void)
 {
 }

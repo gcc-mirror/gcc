@@ -1200,6 +1200,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 			 spc, flags, false);
       pp_right_paren (pp);
       break;
+    case OMP_CLAUSE_NOHOST:
+      pp_string (pp, "nohost");
+      break;
 
     case OMP_CLAUSE__GRIDDIM_:
       pp_string (pp, "_griddim_(");

@@ -1,3 +1,16 @@
+2018-10-02  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* gfortran.h (gfc_omp_clauses): Add nohost members.
+	* openmp.c (omp_mask2): Add OMP_CLAUSE_NOHOST.
+	(gfc_match_omp_clauses): Handle OMP_CLAUSE_NOHOST.
+	(gfc_match_oacc_routine): Set oacc_function_nohost when appropriate.
+	* gfortran.h (symbol_attribute): Add oacc_function_nohost member.
+	* trans-openmp.c (gfc_add_omp_offload_attributes): Use it to decide
+	whether to generate an OMP_CLAUSE_NOHOST clause.
+	(gfc_trans_omp_clauses_1): Unreachable code to generate an
+	OMP_CLAUSE_NOHOST clause.
+
 2018-12-14  Julian Brown  <julian@codesourcery.com>
 
 	* gfortran.h (gfc_omp_map_op): Add OMP_MAP_ATTACH, OMP_MAP_DETACH.

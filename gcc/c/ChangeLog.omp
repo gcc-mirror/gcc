@@ -1,3 +1,11 @@
+2018-10-02  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Handle "nohost".
+	(c_parser_oacc_all_clauses): Handle PRAGMA_OACC_CLAUSE_NOHOST.
+	(c_parser_oacc_routine, c_finish_oacc_routine): Update.
+	* c-typeck.c (c_finish_omp_clauses): Handle OMP_CLAUSE_NOHOST.
+
 2018-10-16  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* c-typeck.c (handle_omp_array_sections_1): Add 'bool &non_contiguous'

@@ -1,3 +1,19 @@
+2018-10-02  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* tree-core.h (omp_clause_code): Add OMP_CLAUSE_NOHOST.
+	* tree.c (omp_clause_num_ops, omp_clause_code_name, walk_tree_1):
+	Update for these.
+	* tree-pretty-print.c (dump_omp_clause): Handle	OMP_CLAUSE_NOHOST.
+	* gimplify.c (gimplify_scan_omp_clauses)
+	(gimplify_adjust_omp_clauses): Handle OMP_CLAUSE_NOHOST.
+	* tree-nested.c (convert_nonlocal_omp_clauses)
+	(convert_local_omp_clauses): Likewise.
+	* omp-low.c (scan_sharing_clauses): Likewise.
+	* omp-offload.c (maybe_discard_oacc_function): New function.
+	(execute_oacc_device_lower) [!ACCEL_COMPILER]: Handle OpenACC
+	nohost clauses.
+
 2019-02-05  Julian Brown  <julian@codesourcery.com>
 
 	* omp-low.c (scan_sharing_clauses): Disallow dynamic (multidimensional)

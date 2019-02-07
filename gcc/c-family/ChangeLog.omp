@@ -1,3 +1,10 @@
+2018-10-02  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-attribs.c (c_common_attribute_table): Set min_len to -1 for
+	"omp declare target".
+	* c-pragma.h (pragma_omp_clause): Add PRAGMA_OACC_CLAUSE_NOHST.
+
 2018-12-14  Julian Brown  <julian@codesourcery.com>
 
 	* c-pragma.h (pragma_omp_clause): Add PRAGMA_OACC_CLAUSE_ATTACH and

@@ -11749,6 +11749,8 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_NOTINBRANCH;
 	  else if (!strcmp ("nowait", p))
 	    result = PRAGMA_OMP_CLAUSE_NOWAIT;
+	  else if (!strcmp ("nohost", p))
+	    result = PRAGMA_OACC_CLAUSE_NOHOST;
 	  else if (!strcmp ("num_gangs", p))
 	    result = PRAGMA_OACC_CLAUSE_NUM_GANGS;
 	  else if (!strcmp ("num_tasks", p))
@@ -14920,6 +14922,11 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 	  clauses = c_parser_oacc_data_clause (parser, c_kind, clauses);
 	  c_name = "link";
 	  break;
+	case PRAGMA_OACC_CLAUSE_NOHOST:
+	  clauses = c_parser_oacc_simple_clause (here, OMP_CLAUSE_NOHOST,
+						 clauses);
+	  c_name = "nohost";
+	  break;
 	case PRAGMA_OACC_CLAUSE_NUM_GANGS:
 	  clauses = c_parser_oacc_single_int_clause (parser,
 						     OMP_CLAUSE_NUM_GANGS,
@@ -15767,7 +15774,8 @@ c_parser_oacc_kernels_parallel (location_t loc, c_parser *parser,
 	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_GANG)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WORKER)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_VECTOR)		\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_SEQ) )
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_SEQ)			\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NOHOST) )
 
 /* Parse an OpenACC routine directive.  For named directives, we apply
    immediately to the named function.  For unnamed ones we then parse
@@ -15920,7 +15928,7 @@ c_finish_oacc_routine (struct oacc_routine_data *data, tree fndecl,
   /* Add an "omp declare target" attribute.  */
   DECL_ATTRIBUTES (fndecl)
     = tree_cons (get_identifier ("omp declare target"),
-		 NULL_TREE, DECL_ATTRIBUTES (fndecl));
+		 data->clauses, DECL_ATTRIBUTES (fndecl));
 
   /* Remember that we've used this "#pragma acc routine".  */
   data->fndecl_seen = true;

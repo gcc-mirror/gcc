@@ -1404,8 +1404,12 @@ add_attributes_to_decl (symbol_attribute sym_attr, tree list)
     list = tree_cons (get_identifier ("omp declare target link"),
 		      NULL_TREE, list);
   else if (sym_attr.omp_declare_target)
-    list = tree_cons (get_identifier ("omp declare target"),
-		      NULL_TREE, list);
+    {
+      tree c = NULL_TREE;
+      if (sym_attr.oacc_function_nohost)
+	c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE_NOHOST);
+      list = tree_cons (get_identifier ("omp declare target"), c, list);
+    }
 
   if (sym_attr.oacc_routine_lop != OACC_ROUTINE_LOP_NONE)
     {
