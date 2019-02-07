@@ -3793,24 +3793,67 @@ set_bmi_repo (char *r)
    we are.  */
 
 static const char *
-maybe_add_bmi_prefix (const char *to)
+maybe_add_bmi_prefix (const char *to, bool force = false)
 {
-  if (bmi_repo && !IS_ABSOLUTE_PATH (to))
+  bool prefix = bmi_repo && !IS_ABSOLUTE_PATH (to);
+
+  if (prefix || force)
     {
       size_t len = strlen (to);
+      size_t pos = 0;
+
       if (bmi_path_alloc < bmi_repo_length + len + 2)
 	{
 	  XDELETEVEC (bmi_path);
 	  bmi_path_alloc = bmi_repo_length + len * 2 + 2;
 	  bmi_path = XNEWVEC (char, bmi_path_alloc);
+	  bmi_path[0] = 0;
+	}
+
+      if (prefix && !bmi_path[0])
+	{
 	  memcpy (bmi_path, bmi_repo, bmi_repo_length);
 	  bmi_path[bmi_repo_length] = DIR_SEPARATOR;
+	  pos = bmi_repo_length + 1;
 	}
-      memcpy (&bmi_path[bmi_repo_length + 1], to, len + 1);
+
+      memcpy (&bmi_path[pos], to, len + 1);
       to = bmi_path;
     }
   
   return to;
+}
+
+/* Try and create the directories of PATH.  */
+
+static bool
+create_dirs (const char *path)
+{
+  if (path != bmi_path)
+    maybe_add_bmi_prefix (path, true);
+
+  /* Try and create the missing directories.  */
+  char *base = bmi_path;
+  char *end = base + strlen (base);
+
+  for (char *next; (next = (char *)memchr (base, DIR_SEPARATOR, end - base));
+       base = next + 1)
+    if (next != base + 1)
+      {
+	*next = 0;
+	int failed = mkdir (bmi_path, S_IRWXU | S_IRWXG | S_IRWXO);
+	*next = DIR_SEPARATOR;
+	if (failed
+	    /* Maybe racing with another creator (of a *different*
+	       submodule).  */
+	    && errno != EEXIST)
+	  return false;
+      }
+
+  if (path != bmi_path)
+    bmi_path[0] = 0;
+
+  return true;
 }
 
 /* If BMI path TO begins with the prefix, return a pointer to the
@@ -14138,10 +14181,19 @@ finish_module_parse (cpp_reader *reader)
 
       if (state->filename)
 	{
-	  fd = open (maybe_add_bmi_prefix (state->filename),
-		     O_RDWR | O_CREAT | O_TRUNC | O_CLOEXEC,
-		     S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
-	  e = errno;
+	  const char *path = maybe_add_bmi_prefix (state->filename);
+
+	  bool first = true;
+	  do
+	    {
+	      fd = open (path, O_RDWR | O_CREAT | O_TRUNC | O_CLOEXEC,
+			 S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+	      e = errno;
+	      if (!first)
+		break;
+	      first = true;
+	    }
+	  while (fd < 0 && errno == ENOENT && create_dirs (path));
 	}
       unsigned n = dump.push (state);
       state->announce ("creating");
