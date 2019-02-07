@@ -3542,7 +3542,7 @@
 		DOTPROD)))]
   "TARGET_DOTPROD"
   "v<sup>dot.<opsuffix>\\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
-  [(set_attr "type" "neon_dot")]
+  [(set_attr "type" "neon_dot<q>")]
 )
 
 ;; These instructions map to the __builtins for the Dot Product
@@ -3561,7 +3561,7 @@
       = GEN_INT (NEON_ENDIAN_LANE_N (V8QImode, INTVAL (operands[4])));
     return "v<sup>dot.<opsuffix>\\t%<V_reg>0, %<V_reg>2, %P3[%c4]";
   }
-  [(set_attr "type" "neon_dot")]
+  [(set_attr "type" "neon_dot<q>")]
 )
 
 ;; These expands map to the Dot Product optab the vectorizer checks for.

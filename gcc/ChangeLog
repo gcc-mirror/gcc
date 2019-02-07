@@ -1,5 +1,11 @@
 2019-02-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/neon.md (neon_<sup>dot<vsi2qi>):
+	Use neon_dot<q> for type.
+	(neon_<sup>dot_lane<vsi2qi>): Likewise.
+
+2019-02-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64-simd.md (aarch64_<sur>dot<vsi2qi>):
 	Use neon_dot<q> for type.
 	(aarch64_<sur>dot_lane<vsi2qi>): Likewise.
