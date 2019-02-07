@@ -1,0 +1,4 @@
+2018-10-02  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-pragma.h (pragma_omp_clause): Add PRAGMA_OACC_CLAUSE_NOHST.

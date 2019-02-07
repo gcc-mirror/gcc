@@ -1,3 +1,12 @@
+2018-10-02  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-c++-common/goacc/routine-1.c: Adjust test.
+	* c-c++-common/goacc/routine-2.c: Likewise.
+	* c-c++-common/goacc/routine-nohost-1.c: New test.
+	* g++.dg/goacc/routine-2.C: Adjust test.
+	* gfortran.dg/goacc/pr72741.f90: New test.
+
 2020-04-19  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR other/76739

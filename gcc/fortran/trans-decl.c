@@ -1475,8 +1475,14 @@ add_attributes_to_decl (symbol_attribute sym_attr, tree list)
 	   || sym_attr.oacc_declare_copyin
 	   || sym_attr.oacc_declare_deviceptr
 	   || sym_attr.oacc_declare_device_resident)
-    list = tree_cons (get_identifier ("omp declare target"),
-		      clauses, list);
+    {
+      list = tree_cons (get_identifier ("omp declare target"),
+			clauses, list);
+      tree c = clauses;
+      if (sym_attr.oacc_function_nohost)
+	c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE_NOHOST);
+      list = tree_cons (get_identifier ("omp declare target"), c, list);
+    }
 
   return list;
 }

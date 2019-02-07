@@ -1581,7 +1581,6 @@ gfc_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *ctx, tree type)
     }
 }
 
-
 static inline tree
 gfc_trans_add_clause (tree node, tree tail)
 {
@@ -3604,6 +3603,13 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	    : integer_minus_one_node;
 	  OMP_CLAUSE_GANG_STATIC_EXPR (c) = arg;
 	}
+    }
+  if (clauses->nohost)
+    {
+      c = build_omp_clause (where.lb->location, OMP_CLAUSE_NOHOST);
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+      //TODO
+      gcc_unreachable();
     }
 
   return nreverse (omp_clauses);

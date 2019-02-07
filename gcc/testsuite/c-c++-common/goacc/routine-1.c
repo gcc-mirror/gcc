@@ -1,3 +1,4 @@
+/* Test valid use of clauses with routine.  */
 
 #pragma acc routine gang
 void gang (void)
@@ -19,6 +20,11 @@ void seq (void)
 {
 }
 
+#pragma acc routine nohost
+void nohost (void)
+{
+}
+
 int main ()
 {
 #pragma acc kernels num_gangs (32) num_workers (32) vector_length (32)
@@ -27,6 +33,7 @@ int main ()
     worker ();
     vector ();
     seq ();
+    nohost ();
   }
 
 #pragma acc parallel num_gangs (32) num_workers (32) vector_length (32)
@@ -35,6 +42,7 @@ int main ()
     worker ();
     vector ();
     seq ();
+    nohost ();
   }
 
   return 0;

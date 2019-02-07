@@ -1,7 +1,15 @@
+2018-10-02  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* parser.c (cp_parser_omp_clause_name): Handle "nohost".
+	(cp_parser_oacc_all_clauses): Handle PRAGMA_OACC_CLAUSE_NOHOST,
+	(cp_parser_oacc_routine): Update.
+	* pt.c (tsubst_omp_clauses): Handle OMP_CLAUSE_NOHOST.
+	* semantics.c (finish_omp_clauses): Handle OMP_CLAUSE_NOHOST.
+
 2020-04-19  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR other/76739
-
 	* semantics.c (handle_omp_array_sections_1): Add 'bool &non_contiguous'
 	parameter, adjust recursive call site, add cases for allowing
 	pointer based multi-dimensional arrays for OpenACC.

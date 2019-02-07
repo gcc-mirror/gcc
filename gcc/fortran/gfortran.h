@@ -929,6 +929,7 @@ typedef struct
 
   /* OpenACC 'routine' directive's level of parallelism.  */
   ENUM_BITFIELD (oacc_routine_lop) oacc_routine_lop:3;
+  unsigned oacc_function_nohost:1;
 
   /* Attributes set by compiler extensions (!GCC$ ATTRIBUTES).  */
   unsigned ext_attr:EXT_ATTR_NUM;
@@ -1375,7 +1376,7 @@ typedef struct gfc_omp_clauses
   gfc_expr_list *tile_list;
   unsigned async:1, gang:1, worker:1, vector:1, seq:1, independent:1;
   unsigned par_auto:1, gang_static:1;
-  unsigned if_present:1, finalize:1;
+  unsigned if_present:1, finalize:1, nohost:1;
   locus loc;
 
 }
