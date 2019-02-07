@@ -1,3 +1,18 @@
+2019-02-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/86637
+	PR tree-optimization/89235
+	* tree-vect-loop.c (optimize_mask_stores): Add an
+	auto_purge_vect_location sentinel to ensure that vect_location is
+	purged on exit.
+	* tree-vectorizer.c
+	(auto_purge_vect_location::~auto_purge_vect_location): New dtor.
+	(try_vectorize_loop_1): Add an auto_purge_vect_location sentinel
+	to ensure that vect_location is purged on exit.
+	(pass_slp_vectorize::execute): Likewise, replacing the manual
+	reset.
+	* tree-vectorizer.h (class auto_purge_vect_location): New class.
+
 2019-02-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/iterators.md (max_opp): New code_attr.
