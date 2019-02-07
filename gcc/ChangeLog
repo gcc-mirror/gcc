@@ -1,3 +1,13 @@
+2019-02-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/iterators.md (max_opp): New code_attr.
+	(USMAX): New code iterator.
+	* config/aarch64/predicates.md (aarch64_smin): New predicate.
+	(aarch64_smax): Likewise.
+	* config/aarch64/aarch64-simd.md (abd<mode>_3): Rename to...
+	(*aarch64_<su>abd<mode>_3): ... Change RTL representation to
+	MINUS (MAX MIN).
+
 2019-02-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89229

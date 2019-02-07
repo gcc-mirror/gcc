@@ -1052,6 +1052,9 @@
 
 (define_code_attr f16mac [(plus "a") (minus "s")])
 
+;; Map smax to smin and umax to umin.
+(define_code_attr max_opp [(smax "smin") (umax "umin")])
+
 ;; The number of subvectors in an SVE_STRUCT.
 (define_mode_attr vector_count [(VNx32QI "2") (VNx16HI "2")
 				(VNx8SI  "2") (VNx4DI  "2")
@@ -1199,6 +1202,9 @@
 (define_code_iterator MAXMIN [smax smin umax umin])
 
 (define_code_iterator FMAXMIN [smax smin])
+
+;; Signed and unsigned max operations.
+(define_code_iterator USMAX [smax umax])
 
 ;; Code iterator for variants of vector max and min.
 (define_code_iterator ADDSUB [plus minus])
