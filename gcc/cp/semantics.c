@@ -8518,10 +8518,13 @@ finish_omp_cancel (tree clauses)
   tree ifc = omp_find_clause (clauses, OMP_CLAUSE_IF);
   if (ifc != NULL_TREE)
     {
-      tree type = TREE_TYPE (OMP_CLAUSE_IF_EXPR (ifc));
-      ifc = fold_build2_loc (OMP_CLAUSE_LOCATION (ifc), NE_EXPR,
-			     boolean_type_node, OMP_CLAUSE_IF_EXPR (ifc),
-			     build_zero_cst (type));
+      if (!processing_template_decl)
+	ifc = maybe_convert_cond (OMP_CLAUSE_IF_EXPR (ifc));
+      else
+	ifc = build_x_binary_op (OMP_CLAUSE_LOCATION (ifc), NE_EXPR,
+				 OMP_CLAUSE_IF_EXPR (ifc), ERROR_MARK,
+				 integer_zero_node, ERROR_MARK,
+				 NULL, tf_warning_or_error);
     }
   else
     ifc = boolean_true_node;
