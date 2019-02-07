@@ -1,3 +1,8 @@
+2019-02-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR/target 88850
+	* config/arm/neon.md (*neon_mov<mode>): Add r -> r case.
+
 2019-02-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/neon.md (neon_<sup>dot<vsi2qi>):
