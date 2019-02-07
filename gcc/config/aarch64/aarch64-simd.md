@@ -503,7 +503,7 @@
 		DOTPROD)))]
   "TARGET_DOTPROD"
   "<sur>dot\\t%0.<Vtype>, %2.<Vdottype>, %3.<Vdottype>"
-  [(set_attr "type" "neon_dot")]
+  [(set_attr "type" "neon_dot<q>")]
 )
 
 ;; These expands map to the Dot Product optab the vectorizer checks for.
@@ -555,7 +555,7 @@
     operands[4] = aarch64_endian_lane_rtx (V8QImode, INTVAL (operands[4]));
     return "<sur>dot\\t%0.<Vtype>, %2.<Vdottype>, %3.4b[%4]";
   }
-  [(set_attr "type" "neon_dot")]
+  [(set_attr "type" "neon_dot<q>")]
 )
 
 (define_insn "aarch64_<sur>dot_laneq<vsi2qi>"
@@ -570,7 +570,7 @@
     operands[4] = aarch64_endian_lane_rtx (V16QImode, INTVAL (operands[4]));
     return "<sur>dot\\t%0.<Vtype>, %2.<Vdottype>, %3.4b[%4]";
   }
-  [(set_attr "type" "neon_dot")]
+  [(set_attr "type" "neon_dot<q>")]
 )
 
 (define_expand "copysign<mode>3"
