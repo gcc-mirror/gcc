@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target arm*-*-* } } */
 /* { dg-skip-if "Ensure only targetting arm with TARGET_LDRD" { *-*-* } { "-mthumb" } { "" } } */
 /* { dg-options "-O3 -marm -fdump-rtl-peephole2" } */
 
