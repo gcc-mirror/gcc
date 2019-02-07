@@ -1,6 +1,25 @@
 2019-02-07  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2018-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/88448
+	PR middle-end/88415
+	* gcc.dg/gomp/pr88415.c: New testcase.
+
+	2018-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88030
+	* gcc.dg/tsan/pr88030.c: New testcase.
+
+	2018-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87929
+	* gcc.dg/pr87929.c: New testcase.
+
+2019-02-07  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2019-01-22  Tamar Christina  <tamar.christina@arm.com>
 
 	PR/tree-optimization 88903
