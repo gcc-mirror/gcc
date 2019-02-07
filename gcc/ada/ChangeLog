@@ -1,3 +1,7 @@
+2019-02-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnarl/s-linux__sparc.ads (ETIMEDOUT): Set to correct value.
+
 2019-02-06  Arnaud Charlet  <charlet@adacore.com>
 
 	* libgnarl/s-linux__x32.ads: Resync list of signals with s-linux.ads
