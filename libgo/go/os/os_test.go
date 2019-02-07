@@ -1336,6 +1336,10 @@ func TestSeek(t *testing.T) {
 			t.Logf("skipping test case #%d on nacl; https://golang.org/issue/21728", i)
 			continue
 		}
+		if runtime.GOOS == "hurd" && tt.out > 1<<32 {
+			t.Logf("skipping test case #%d on Hurd: file too large", i)
+			continue
+		}
 		off, err := f.Seek(tt.in, tt.whence)
 		if off != tt.out || err != nil {
 			if e, ok := err.(*PathError); ok && e.Err == syscall.EINVAL && tt.out > 1<<32 && runtime.GOOS == "linux" {
