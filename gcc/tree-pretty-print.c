@@ -1310,6 +1310,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 			 spc, flags, false);
       pp_right_paren (pp);
       break;
+    case OMP_CLAUSE_NOHOST:
+      pp_string (pp, "nohost");
+      break;
 
     case OMP_CLAUSE_IF_PRESENT:
       pp_string (pp, "if_present");

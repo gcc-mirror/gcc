@@ -875,6 +875,7 @@ enum omp_mask2
   OMP_CLAUSE_IF_PRESENT,
   OMP_CLAUSE_FINALIZE,
   OMP_CLAUSE_ATTACH,
+  OMP_CLAUSE_NOHOST,
   /* This must come last.  */
   OMP_MASK2_LAST
 };
@@ -1765,6 +1766,13 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 					      &c->lists[OMP_LIST_NONTEMPORAL],
 					      true) == MATCH_YES)
 	    continue;
+	  if ((mask & OMP_CLAUSE_NOHOST)
+	      && !c->nohost
+	      && gfc_match ("nohost") == MATCH_YES)
+	    {
+	      c->nohost = true;
+	      continue;
+	    }
 	  if ((mask & OMP_CLAUSE_NOTINBRANCH)
 	      && !c->notinbranch
 	      && !c->inbranch
@@ -2283,7 +2291,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
   omp_mask (OMP_CLAUSE_ASYNC)
 #define OACC_ROUTINE_CLAUSES \
   (omp_mask (OMP_CLAUSE_GANG) | OMP_CLAUSE_WORKER | OMP_CLAUSE_VECTOR	      \
-   | OMP_CLAUSE_SEQ)
+   | OMP_CLAUSE_SEQ							      \
+   | OMP_CLAUSE_NOHOST)
 
 
 static match
@@ -2749,6 +2758,8 @@ gfc_match_oacc_routine (void)
 				       &old_loc))
 	goto cleanup;
       gfc_current_ns->proc_name->attr.oacc_routine_lop = lop;
+      gfc_current_ns->proc_name->attr.oacc_function_nohost
+	= c ? c->nohost : false;
     }
   else
     /* Something has gone wrong, possibly a syntax error.  */

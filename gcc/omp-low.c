@@ -1787,6 +1787,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	    install_var_local (decl, ctx);
 	  break;
 
+	case OMP_CLAUSE_NOHOST:
 	case OMP_CLAUSE__CACHE_:
 	default:
 	  gcc_unreachable ();
@@ -1973,6 +1974,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE__CONDTEMP_:
 	  break;
 
+	case OMP_CLAUSE_NOHOST:
 	case OMP_CLAUSE__CACHE_:
 	default:
 	  gcc_unreachable ();
