@@ -10049,21 +10049,22 @@ compare_ics (conversion *ics1, conversion *ics2)
      Specifically, we need to do the reference binding comparison at the
      end of this function.  */
 
-  if (ics1->user_conv_p || ics1->kind == ck_list || ics1->kind == ck_aggr)
+  if (ics1->user_conv_p || ics1->kind == ck_list
+      || ics1->kind == ck_aggr || ics2->kind == ck_aggr)
     {
       conversion *t1;
       conversion *t2;
 
-      for (t1 = ics1; t1->kind != ck_user; t1 = next_conversion (t1))
+      for (t1 = ics1; t1 && t1->kind != ck_user; t1 = next_conversion (t1))
 	if (t1->kind == ck_ambig || t1->kind == ck_aggr
 	    || t1->kind == ck_list)
 	  break;
-      for (t2 = ics2; t2->kind != ck_user; t2 = next_conversion (t2))
+      for (t2 = ics2; t2 && t2->kind != ck_user; t2 = next_conversion (t2))
 	if (t2->kind == ck_ambig || t2->kind == ck_aggr
 	    || t2->kind == ck_list)
 	  break;
 
-      if (t1->kind != t2->kind)
+      if (!t1 || !t2 || t1->kind != t2->kind)
 	return 0;
       else if (t1->kind == ck_user)
 	{
