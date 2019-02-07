@@ -1,8 +1,16 @@
+2019-02-07  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backport from mainline
+	2019-01-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89024 - ICE with incomplete enum type.
+	* g++.dg/cpp0x/enum37.C: Add dg-error.
+
 2019-02-07  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
 	2018-11-20  Richard Biener  <rguenther@suse.de>
- 
+
 	PR tree-optimization/88105
 	* gcc.dg/gomp/pr88105.c: New testcase.
 
