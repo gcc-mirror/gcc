@@ -1,3 +1,8 @@
+2019-02-07  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR fortran/52789
+	* gfortran.dg/wunused-parameter_2.f90: New test.
+
 2019-02-07  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* gcc.dg/rtl/arm/ldrd-peepholes.c: Only run on arm
