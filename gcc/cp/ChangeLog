@@ -1,6 +1,12 @@
 2019-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88988
+	* lambda.c (is_capture_proxy): Don't return true for
+	DECL_OMP_PRIVATIZED_MEMBER artificial vars.
+
 	2019-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88976
