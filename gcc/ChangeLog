@@ -1,6 +1,13 @@
 2019-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89105
+	* config/i386/i386.c (ix86_warn_parameter_passing_abi): Don't warn
+	for arguments to functions that are TU-local and shouldn't be
+	referenced by assembly.
+
 	2019-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/66676

@@ -1,6 +1,11 @@
 2019-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89105
+	* g++.dg/abi/pr89105.C: New test.
+
 	2019-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/66676
