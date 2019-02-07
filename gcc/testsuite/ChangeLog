@@ -1,3 +1,10 @@
+2019-02-07  Matthew Malcomson  <matthew.malcomson@arm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/88714
+	* gcc.c-torture/execute/pr88714.c: New test.
+	* gcc.dg/rtl/arm/ldrd-peepholes.c: New test.
+
 2019-02-07  Tamar Christina  <tamar.christina@arm.com>
 
 	PR/target 88850

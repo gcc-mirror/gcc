@@ -1,3 +1,16 @@
+2019-02-07  Matthew Malcomson  <matthew.malcomson@arm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/88714
+	* config/arm/arm-protos.h (valid_operands_ldrd_strd,
+	arm_count_ldrdstrd_insns): New declarations.
+	* config/arm/arm.c (mem_ok_for_ldrd_strd): Remove broken handling of
+	MINUS.
+	(valid_operands_ldrd_strd): New function.
+	(arm_count_ldrdstrd_insns): New function.
+	* config/arm/ldrdstrd.md: Change peepholes to generate PARALLEL SImode
+	sets instead of single DImode set and define new insns to match this.
+
 2019-02-07  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/aarch64/aarch64-builtins.c (aarch64_fcmla_lane_builtin_data):
