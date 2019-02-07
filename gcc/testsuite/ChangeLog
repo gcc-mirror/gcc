@@ -3,6 +3,9 @@
 	Backported from mainline
 	2019-02-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/89195
+	* gcc.c-torture/execute/pr89195.c: New test.
+
 	PR target/89186
 	* g++.dg/ext/vector36.C: New test.
 
