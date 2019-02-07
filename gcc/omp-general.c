@@ -608,9 +608,64 @@ oacc_set_fn_attrib (tree fn, tree clauses, vec<tree> *args)
     }
 }
 
-/*  Process the routine's dimension clauess to generate an attribute
-    value.  Issue diagnostics as appropriate.  We default to SEQ
-    (OpenACC 2.5 clarifies this). All dimensions have a size of zero
+/* Verify OpenACC routine clauses.
+
+   The chain of clauses returned will contain exactly one clause specifying the
+   level of parallelism.  */
+
+void
+oacc_verify_routine_clauses (tree *clauses, location_t loc)
+{
+  tree c_level = NULL_TREE;
+  tree c_p = NULL_TREE;
+  for (tree c = *clauses; c; c_p = c, c = OMP_CLAUSE_CHAIN (c))
+    switch (OMP_CLAUSE_CODE (c))
+      {
+      case OMP_CLAUSE_GANG:
+      case OMP_CLAUSE_WORKER:
+      case OMP_CLAUSE_VECTOR:
+      case OMP_CLAUSE_SEQ:
+	if (c_level == NULL_TREE)
+	  c_level = c;
+	else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_CODE (c_level))
+	  {
+	    /* This has already been diagnosed in the front ends.  */
+	    /* Drop the duplicate clause.  */
+	    gcc_checking_assert (c_p != NULL_TREE);
+	    OMP_CLAUSE_CHAIN (c_p) = OMP_CLAUSE_CHAIN (c);
+	    c = c_p;
+	  }
+	else
+	  {
+	    error_at (OMP_CLAUSE_LOCATION (c),
+		      "%qs specifies a conflicting level of parallelism",
+		      omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	    inform (OMP_CLAUSE_LOCATION (c_level),
+		    "... to the previous %qs clause here",
+		    omp_clause_code_name[OMP_CLAUSE_CODE (c_level)]);
+	    /* Drop the conflicting clause.  */
+	    gcc_checking_assert (c_p != NULL_TREE);
+	    OMP_CLAUSE_CHAIN (c_p) = OMP_CLAUSE_CHAIN (c);
+	    c = c_p;
+	  }
+	break;
+      case OMP_CLAUSE_NOHOST:
+	break;
+      default:
+	gcc_unreachable ();
+      }
+  if (c_level == NULL_TREE)
+    {
+      /* OpenACC 2.5 makes this an error; for the current OpenACC 2.0a
+	 implementation add an implicit "seq" clause.  */
+      c_level = build_omp_clause (loc, OMP_CLAUSE_SEQ);
+      OMP_CLAUSE_CHAIN (c_level) = *clauses;
+      *clauses = c_level;
+    }
+}
+
+/*  Process the OpenACC routine's clauses to generate an attribute
+    for the level of parallelism.  All dimensions have a size of zero
     (dynamic).  TREE_PURPOSE is set to indicate whether that dimension
     can have a loop partitioned on it.  non-zero indicates
     yes, zero indicates no.  By construction once a non-zero has been
@@ -632,16 +687,10 @@ oacc_build_routine_dims (tree clauses)
     for (ix = GOMP_DIM_MAX + 1; ix--;)
       if (OMP_CLAUSE_CODE (clauses) == ids[ix])
 	{
-	  if (level >= 0)
-	    error_at (OMP_CLAUSE_LOCATION (clauses),
-		      "multiple loop axes specified for routine");
 	  level = ix;
 	  break;
 	}
-
-  /* Default to SEQ.  */
-  if (level < 0)
-    level = GOMP_DIM_MAX;
+  gcc_checking_assert (level >= 0);
 
   tree dims = NULL_TREE;
 

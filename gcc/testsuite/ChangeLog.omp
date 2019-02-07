@@ -1,6 +1,11 @@
 2018-10-02  Thomas Schwinge  <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
+	* c-c++-common/goacc/routine-level-of-parallelism-1.c: New test.
+
+2018-10-02  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
 	* c-c++-common/goacc/classify-routine.c: Adjust test.
 	* c-c++-common/goacc/routine-1.c: Likewise.
 	* c-c++-common/goacc/routine-2.c: Likewise.

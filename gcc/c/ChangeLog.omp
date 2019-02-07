@@ -1,6 +1,12 @@
 2018-10-02  Thomas Schwinge  <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
+	* c-parser.c (c_parser_oacc_routine): Normalize order of clauses.
+	(c_finish_oacc_routine): Call oacc_verify_routine_clauses.
+
+2018-10-02  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
 	* c-parser.c (c_parser_omp_clause_name): Handle "nohost".
 	(c_parser_oacc_all_clauses): Handle PRAGMA_OACC_CLAUSE_NOHOST.
 	(c_parser_oacc_routine, c_finish_oacc_routine): Update.
