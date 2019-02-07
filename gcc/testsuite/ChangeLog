@@ -1,3 +1,11 @@
+2019-02-07  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-01-22  Tamar Christina  <tamar.christina@arm.com>
+
+	PR/tree-optimization 88903
+	* gcc.dg/vect/pr88903-1.c: Add explicit &.
+
 2019-02-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt76.adb: New test.
