@@ -309,14 +309,6 @@ module2bmi (const char *module)
 	module += 1, l -= 2;
       memcpy (workspace, module, l);
       workspace[l] = 0;
-      for (char *ptr = workspace; *ptr; ptr++)
-	{
-	  char c = *ptr;
-	  if (IS_DIR_SEPARATOR (c))
-	    c = '!';
-	  *ptr = c;
-	}
-
       strcpy (workspace + l, ".gcm");
       l += 4;
       if (kind)

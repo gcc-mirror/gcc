@@ -1,6 +1,11 @@
 2019-02-07  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* c++-mapper.cc (module2bmi): Do not map dir separators.
+	gcc/testsuite/
+	* g+.dg/modules/modules.exp (decode_mod_spec): Likewise.
+
+	gcc/cp/
 	* module.cc (create_dirs): New.
 	(maybe_add_bmi_prefix): Add FORCE parm, adjust.
 	(finish_module_parse): Try and create intermediate dirs.

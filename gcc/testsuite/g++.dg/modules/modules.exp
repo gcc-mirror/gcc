@@ -59,7 +59,7 @@ proc decode_mod_spec { spec } {
 	    set pfx "${pfx}s"
 	    set spec [string range $spec 1 end-1]
 	}
-	set file "[string map {/ !} $spec].$pfx"
+	set file "$spec.$pfx"
     }
     return [list $not $file]
 }
