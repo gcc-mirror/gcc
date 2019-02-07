@@ -1,6 +1,23 @@
 2019-02-07  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2018-11-20  Richard Biener  <rguenther@suse.de>
+ 
+	PR tree-optimization/88105
+	* tree-ssa-dom.c (pass_dominator::execute): Do not walk
+	backedges.
+
+	2018-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88223
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): When skipping
+	over a stored-same value may-alias store make sure to consider
+	partial overlaps which are valid when TBAA reasonings do not
+	apply and byte-granular overlaps are possible at all.
+
+2019-02-07  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2018-12-11  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/88448
