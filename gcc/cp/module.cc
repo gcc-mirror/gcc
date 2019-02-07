@@ -8398,6 +8398,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 #ifdef HAVE_AF_UNIX
       sockaddr_un un;
       size_t un_len = 0;
+      un.sun_family = AF_UNSPEC;
 #endif
       int port = 0;
 #ifdef HAVE_AF_INET6
@@ -8449,6 +8450,8 @@ module_mapper::module_mapper (location_t loc, const char *option)
 		  err = e;
 		  errmsg = "resolving address";
 		}
+	      else
+		un.sun_family = AF_INET6;
 	      *colon = ':';
 #else
 	      errmsg = "ipv6 protocol unsupported";
@@ -8457,23 +8460,23 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	    }
 	}
       
-      if (name)
+      if (un.sun_family != AF_UNSPEC)
 	{
+	  fd = socket (un.sun_family, SOCK_STREAM, 0);
+	  if (fd < 0)
+	    ;
 #ifdef HAVE_AF_UNIX
-	  if (un_len)
+	  else if (un.sun_family == AF_UNIX)
 	    {
-	      fd = socket (un.sun_family, SOCK_STREAM, 0);
-	      if (fd < 0 || connect (fd, (sockaddr *)&un, un_len) < 0)
-		if (fd >= 0)
-		  {
-		    close (fd);
-		    fd = -1;
-		  }
+	      if (connect (fd, (sockaddr *)&un, un_len) < 0)
+		{
+		  close (fd);
+		  fd = -1;
+		}
 	    }
 #endif
 #ifdef HAVE_AF_INET6
-	  fd = socket (AF_INET6, SOCK_STREAM, 0);
-	  if (fd >= 0)
+	  else if (un.sun_family == AF_INET6)
 	    {
 	      struct addrinfo *next;
 	      for (next = addrs; next; next = next->ai_next)
@@ -8487,12 +8490,18 @@ module_mapper::module_mapper (location_t loc, const char *option)
 		    else if (!connect (fd, next->ai_addr, next->ai_addrlen))
 		      break;
 		  }
+
 	      if (!next)
 		{
 		  close (fd);
 		  fd = -1;
 		}
 	    }
+#endif
+	  else
+	    gcc_unreachable ();
+
+#ifdef HAVE_AF_INET6
 	  freeaddrinfo (addrs);
 #endif
 	  if (fd >= 0)
@@ -8953,9 +8962,9 @@ module_mapper::handshake (location_t loc, const char *cookie)
     case 0: /* HELLO $ver $agent $repo */
       {
 	const char *ver = response_token (loc);
-	const char *agent = ver ? response_token (loc) : NULL;
-	char *repo = agent ? response_token (loc, true) : NULL;
-	
+	const char *agent = !eol_p () ? response_token (loc) : NULL;
+	char *repo = !eol_p () ? response_token (loc, true) : NULL;
+
 	if (ver)
 	  dump () && dump ("Connected to mapper:%s version %s",
 			   agent ? agent : "unknown", ver);
