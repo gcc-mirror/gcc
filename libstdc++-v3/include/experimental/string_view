@@ -273,7 +273,7 @@ inline namespace fundamentals_v1
       // [string.view.ops], string operations:
 
       constexpr basic_string_view
-      substr(size_type __pos, size_type __n=npos) const
+      substr(size_type __pos = 0, size_type __n = npos) const
       {
 	return __pos <= this->_M_len
 	     ? basic_string_view{this->_M_str + __pos,
