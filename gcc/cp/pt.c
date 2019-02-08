@@ -18519,22 +18519,12 @@ tsubst_copy_and_build (tree t,
 	    bool op = CALL_EXPR_OPERATOR_SYNTAX (t);
 	    bool ord = CALL_EXPR_ORDERED_ARGS (t);
 	    bool rev = CALL_EXPR_REVERSE_ARGS (t);
-	    bool thk = CALL_FROM_THUNK_P (t);
-	    if (op || ord || rev || thk)
+	    if (op || ord || rev)
 	      {
 		function = extract_call_expr (ret);
 		CALL_EXPR_OPERATOR_SYNTAX (function) = op;
 		CALL_EXPR_ORDERED_ARGS (function) = ord;
 		CALL_EXPR_REVERSE_ARGS (function) = rev;
-		if (thk)
-		  {
-		    if (TREE_CODE (function) == CALL_EXPR)
-		      CALL_FROM_THUNK_P (function) = true;
-		    else
-		      AGGR_INIT_FROM_THUNK_P (function) = true;
-		    /* The thunk location is not interesting.  */
-		    SET_EXPR_LOCATION (function, UNKNOWN_LOCATION);
-		  }
 	      }
 	  }
 
