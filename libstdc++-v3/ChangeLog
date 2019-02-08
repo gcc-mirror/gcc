@@ -1,6 +1,19 @@
 2019-02-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-02-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89128
+	* include/bits/stl_queue.h (queue, priority_queue): Add deduction
+	guides.
+	* include/bits/stl_stack.h (stack): Likewise.
+	* testsuite/23_containers/priority_queue/deduction.cc: New test.
+	* testsuite/23_containers/queue/deduction.cc: New test.
+	* testsuite/23_containers/stack/deduction.cc: New test.
+
+2019-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
 	2018-11-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/88119
