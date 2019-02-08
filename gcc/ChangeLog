@@ -1,3 +1,27 @@
+2019-02-08  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-12-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88427
+	* vr-values.c (vr_values::extract_range_from_phi_node):
+	Handle symbolic ranges conservatively when trying to drop
+	to Inf +- 1.
+
+	2018-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88217
+	* vr-values.c (vr_values::extract_range_from_phi_node): Make
+	sure to handle results > +INF and < -INF correctly when
+	trying to drop down to +INF - 1 or -INF + 1.
+
+	2018-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88149
+	* tree-vect-slp.c (vect_slp_analyze_node_operations): Detect
+	the case where there are two different def types for the
+	same operand at different operand position in the same stmt.
+
 2019-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

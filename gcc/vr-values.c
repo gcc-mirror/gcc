@@ -2901,7 +2901,9 @@ vr_values::extract_range_from_phi_node (gphi *phi, value_range *vr_result)
       if (cmp_min < 0)
 	vr_result->min = lhs_vr->min;
       else if (cmp_min > 0
-	       && !vrp_val_is_min (vr_result->min))
+	       && (TREE_CODE (vr_result->min) != INTEGER_CST
+		   || tree_int_cst_lt (vrp_val_min (TREE_TYPE (vr_result->min)),
+				       vr_result->min)))
 	vr_result->min
 	  = int_const_binop (PLUS_EXPR,
 			     vrp_val_min (TREE_TYPE (vr_result->min)),
@@ -2911,7 +2913,9 @@ vr_values::extract_range_from_phi_node (gphi *phi, value_range *vr_result)
       if (cmp_max > 0)
 	vr_result->max = lhs_vr->max;
       else if (cmp_max < 0
-	       && !vrp_val_is_max (vr_result->max))
+	       && (TREE_CODE (vr_result->max) != INTEGER_CST
+		   || tree_int_cst_lt (vr_result->max,
+				       vrp_val_max (TREE_TYPE (vr_result->min)))))
 	vr_result->max
 	  = int_const_binop (MINUS_EXPR,
 			     vrp_val_max (TREE_TYPE (vr_result->min)),

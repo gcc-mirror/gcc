@@ -2819,21 +2819,48 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
 	= vect_get_num_vectors (vf * group_size, vectype);
     }
 
+  /* ???  We have to catch the case late where two first scalar stmts appear
+     in multiple SLP children with different def type and fail.  Remember
+     original def types first since SLP_TREE_DEF_TYPE doesn't necessarily
+     match it when that is vect_internal_def.  */
+  auto_vec<vect_def_type, 4> dt;
+  dt.safe_grow (SLP_TREE_CHILDREN (node).length ());
+  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
+    dt[j]
+      = STMT_VINFO_DEF_TYPE (vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (child)[0]));
+
   /* Push SLP node def-type to stmt operands.  */
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
     if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
       STMT_VINFO_DEF_TYPE (vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (child)[0]))
 	= SLP_TREE_DEF_TYPE (child);
-  bool res = vect_analyze_stmt (stmt, &dummy, node, node_instance);
+
+  /* Check everything worked out.  */
+  bool res = true;
+  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
+   if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
+     {
+       if (STMT_VINFO_DEF_TYPE
+	     (vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (child)[0]))
+	   != SLP_TREE_DEF_TYPE (child))
+	 res = false;
+     }
+   else if (STMT_VINFO_DEF_TYPE
+	      (vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (child)[0])) != dt[j])
+     res = false;
+  if (!res && dump_enabled_p ())
+    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+		     "not vectorized: same operand with different "
+		     "def type in stmt.\n");
+  if (res)
+    res = vect_analyze_stmt (stmt, &dummy, node, node_instance);
+
   /* Restore def-types.  */
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
-    if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
-      STMT_VINFO_DEF_TYPE (vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (child)[0]))
-	= vect_internal_def;
-  if (! res)
-    return false;
+    STMT_VINFO_DEF_TYPE (vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (child)[0]))
+      = dt[j];
 
-  return true;
+  return res;
 }
 
 
