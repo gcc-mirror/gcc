@@ -1,5 +1,11 @@
 2019-02-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/88752 - ICE with lambda and constexpr if.
+	* cp-tree.h (LAMBDA_EXPR_INSTANTIATED): New.
+	* pt.c (tsubst_lambda_expr): Set it.
+	(instantiated_lambda_fn_p): Check it.
+	(enclosing_instantiation_of): Use it.
+
 	PR c++/86943 - wrong code converting generic lambda to pointer.
 	* pt.c (tsubst_copy_and_build): Don't propagate CALL_FROM_THUNK_P.
 
