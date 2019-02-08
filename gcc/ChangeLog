@@ -1,6 +1,17 @@
 2019-02-08  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2018-11-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86991
+	* tree-vect-loop.c (vect_is_slp_reduction): Delay reduction
+	group building until we have successfully detected the SLP
+	reduction.
+	(vect_is_simple_reduction): Remove fixup code here.
+
+2019-02-08  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2019-02-03  Richard Biener  <rguenther@suse.de>
 
 	PR debug/87295
