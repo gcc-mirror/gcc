@@ -1,3 +1,8 @@
+2019-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/89234
+	* g++.dg/ubsan/pr89234.C: New test.
+
 2019-02-08  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/89223
