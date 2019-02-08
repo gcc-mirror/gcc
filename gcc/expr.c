@@ -8135,12 +8135,12 @@ expand_constructor (tree exp, rtx target, enum expand_modifier modifier,
   if ((TREE_STATIC (exp)
        && ((mode == BLKmode
 	    && ! (target != 0 && safe_from_p (target, exp, 1)))
-		  || TREE_ADDRESSABLE (exp)
-		  || (tree_fits_uhwi_p (TYPE_SIZE_UNIT (type))
-		      && (! can_move_by_pieces
-				     (tree_to_uhwi (TYPE_SIZE_UNIT (type)),
-				      TYPE_ALIGN (type)))
-		      && ! mostly_zeros_p (exp))))
+	   || TREE_ADDRESSABLE (exp)
+	   || (tree_fits_uhwi_p (TYPE_SIZE_UNIT (type))
+	       && (! can_move_by_pieces
+		   (tree_to_uhwi (TYPE_SIZE_UNIT (type)),
+		    TYPE_ALIGN (type)))
+	       && ! mostly_zeros_p (exp))))
       || ((modifier == EXPAND_INITIALIZER || modifier == EXPAND_CONST_ADDRESS)
 	  && TREE_CONSTANT (exp)))
     {
