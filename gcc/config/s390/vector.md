@@ -1362,6 +1362,31 @@
   operands[4] = CONST0_RTX (V2DImode);
 })
 
+; Vector copysign, implement using vector select
+(define_expand "copysign<mode>3"
+  [(set (match_operand:VFT 0 "register_operand" "")
+	(if_then_else:VFT
+	 (eq (match_dup 3)
+	     (match_dup 4))
+	 (match_operand:VFT 1 "register_operand"  "")
+	 (match_operand:VFT 2 "register_operand"  "")))]
+  "TARGET_VX"
+{
+  int sz = GET_MODE_BITSIZE (GET_MODE_INNER (<MODE>mode));
+  int prec = GET_MODE_PRECISION (GET_MODE_INNER (<tointvec>mode));
+  wide_int mask_val = wi::shwi (1l << (sz - 1), prec);
+
+  rtx mask = gen_reg_rtx (<tointvec>mode);
+
+  int nunits = GET_MODE_NUNITS (<tointvec>mode);
+  rtvec v = rtvec_alloc (nunits);
+  for (int i = 0; i < nunits; i++)
+    RTVEC_ELT (v, i) = GEN_INT (mask_val.to_shwi ());
+
+  mask = gen_rtx_CONST_VECTOR (<tointvec>mode, v);
+  operands[3] = force_reg (<tointvec>mode, mask);
+  operands[4] = CONST0_RTX (<tointvec>mode);
+})
 
 ;;
 ;; Integer compares
