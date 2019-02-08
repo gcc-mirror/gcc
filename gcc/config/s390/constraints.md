@@ -37,6 +37,7 @@
 ;;         jKK: constant vector with all elements having the same value and
 ;;              matching K constraint
 ;;         jm6: An integer operand with the lowest order 6 bits all ones.
+;;         jdd: A constant operand that fits into the data section.
 ;;    t -- Access registers 36 and 37.
 ;;    v -- Vector registers v0-v31.
 ;;    C -- A signed 8-bit constant (-128..127)
@@ -567,3 +568,19 @@
 (define_constraint "ZL"
   "LARL operand when in 64-bit mode, otherwise nothing."
   (match_test "TARGET_64BIT && larl_operand (op, VOIDmode)"))
+
+;; This constraint must behave like "i", in particular, the matching values
+;; must never be placed into registers or memory by
+;; cfgexpand.c:expand_asm_stmt.  It could be straightforward to start its name
+;; with a letter from genpreds.c:const_int_constraints, however it would
+;; require using (match_code "const_int"), which is infeasible.  To achieve the
+;; same effect, that is, setting maybe_allows_reg and maybe_allows_mem to false
+;; in genpreds.c:add_constraint, we explicitly exclude reg, subreg and mem
+;; codes.
+(define_constraint "jdd"
+  "A constant operand that fits into the data section.
+   Usage of this constraint might produce a relocation."
+  (and (not (match_code "reg"))
+       (not (match_code "subreg"))
+       (not (match_code "mem"))
+       (match_test "CONSTANT_P (op)")))
