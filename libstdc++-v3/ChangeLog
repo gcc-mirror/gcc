@@ -1,6 +1,15 @@
 2019-02-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/intro.xml: Document LWG 3096 change.
+	* src/filesystem/std-path.cc (path::lexically_relative(const path&)):
+	Treat a final empty element equivalently to a final dot element.
+	* testsuite/27_io/filesystem/path/generation/relative.cc: Add checks
+	for the examples in the DR.
+
+	Backport from mainline
 	2018-07-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/86595
