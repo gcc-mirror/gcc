@@ -1,3 +1,8 @@
+2019-02-08  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	PR testsuite/89258
+	* gcc.dg/tree-ssa/pr80887.c: Require int32plus.
+
 2019-02-08  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* gcc.target/s390/vector/vec-copysign-execute.c: New test.
