@@ -90,11 +90,17 @@ fs::absolute(const path& p, error_code& ec)
       ec = make_error_code(std::errc::no_such_file_or_directory);
       return ret;
     }
+  if (p.is_absolute())
+    {
+      ec.clear();
+      ret = p;
+      return ret;
+    }
+
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
   ec = std::make_error_code(errc::not_supported);
 #else
-  ec.clear();
-  ret = current_path();
+  ret = current_path(ec);
   ret /= p;
 #endif
   return ret;
