@@ -1,3 +1,7 @@
+2019-02-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* expr.c (expand_constructor): Correct indentations.
+
 2019-02-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89247
