@@ -900,7 +900,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if (_M_widen_ok == 1)
 	  {
-	    __builtin_memcpy(__to, __lo, __hi - __lo);
+	    if (__builtin_expect(__hi != __lo, true))
+	      __builtin_memcpy(__to, __lo, __hi - __lo);
 	    return __hi;
 	  }
 	if (!_M_widen_ok)
@@ -965,7 +966,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if (__builtin_expect(_M_narrow_ok == 1, true))
 	  {
-	    __builtin_memcpy(__to, __lo, __hi - __lo);
+	    if (__builtin_expect(__hi != __lo, true))
+	      __builtin_memcpy(__to, __lo, __hi - __lo);
 	    return __hi;
 	  }
 	if (!_M_narrow_ok)
@@ -1104,7 +1106,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       virtual const char*
       do_widen(const char* __lo, const char* __hi, char_type* __to) const
       {
-	__builtin_memcpy(__to, __lo, __hi - __lo);
+	if (__builtin_expect(__hi != __lo, true))
+	  __builtin_memcpy(__to, __lo, __hi - __lo);
 	return __hi;
       }
 
@@ -1157,7 +1160,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       do_narrow(const char_type* __lo, const char_type* __hi,
 		char __dfault __attribute__((__unused__)), char* __to) const
       {
-	__builtin_memcpy(__to, __lo, __hi - __lo);
+	if (__builtin_expect(__hi != __lo, true))
+	  __builtin_memcpy(__to, __lo, __hi - __lo);
 	return __hi;
       }
 
