@@ -1,6 +1,15 @@
 2019-02-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87308 (partial)
+	* python/libstdcxx/v6/printers.py (StdExpAnyPrinter): Adjust regex to
+	work around PR 88166.
+
+2019-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
 	2019-02-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/89128
