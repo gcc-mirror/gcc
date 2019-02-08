@@ -1286,7 +1286,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// alignment_of
   template<typename _Tp>
     struct alignment_of
-    : public integral_constant<std::size_t, __alignof__(_Tp)> { };
+    : public integral_constant<std::size_t, alignof(_Tp)> { };
 
   /// rank
   template<typename>
