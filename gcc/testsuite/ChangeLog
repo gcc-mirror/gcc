@@ -1,3 +1,8 @@
+2019-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89247
+	* gcc.dg/torture/pr89247.c: New testcase.
+
 2019-02-08  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* gcc.target/s390/jump-label.c: New test.
