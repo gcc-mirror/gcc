@@ -9425,7 +9425,8 @@ elaborate_all_entities (Node_Id gnat_node)
 
 	elaborate_all_entities (gnat_unit);
 
-	if (Ekind (gnat_entity) == E_Package)
+	if (Ekind (gnat_entity) == E_Package
+	    && No (Renamed_Entity (gnat_entity)))
 	  elaborate_all_entities_for_package (gnat_entity);
 
 	else if (Ekind (gnat_entity) == E_Generic_Package)
