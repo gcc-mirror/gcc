@@ -1,5 +1,14 @@
 2019-02-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Aggregate>: Minor tweak.
+	* gcc-interface/utils.c (convert): Do not pad when doing an unchecked
+	conversion here.  Use TREE_CONSTANT throughout the function.
+	(unchecked_convert): Also pad if the source is a CONSTRUCTOR and the
+	destination is a more aligned array type or a larger aggregate type,
+	but not between original and packable versions of a type.
+
+2019-02-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (max_size) <tcc_unary>: Be prepared for an
 	operand with VOID_TYPE.
 
