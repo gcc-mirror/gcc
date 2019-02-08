@@ -1,3 +1,14 @@
+2019-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89247
+	* tree-if-conv.c: Include tree-cfgcleanup.h.
+	(version_loop_for_if_conversion): Record LOOP_VECTORIZED call.
+	(tree_if_conversion): Pass through predicate vector.
+	(pass_if_conversion::execute): Do CFG cleanup and SSA update
+	inline, see if any if-converted loops we refrece in
+	LOOP_VECTORIZED calls vanished and fixup.
+	* tree-if-conv.h (tree_if_conversion): Adjust prototype.
+
 2019-02-08  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* config/s390/constraints.md (jdd): New constraint.
