@@ -1,3 +1,11 @@
+2019-02-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backport from mainline
+	2019-01-07  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/85596
+	* doc/install.texi (with-multilib-list): Document for aarch64.
+
 2019-02-08  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
