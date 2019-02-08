@@ -1,3 +1,8 @@
+2019-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfganal.c (pre_and_rev_post_order_compute_fn): Use fn instead of
+	cfun everywhere.
+
 2019-02-07  David Malcolm  <dmalcolm@redhat.com>
 
 	PR tree-optimization/86637
