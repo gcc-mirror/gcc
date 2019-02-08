@@ -24,22 +24,60 @@ along with this program; see the file COPYING3.  If not see
 #include "system.h"
 #include "mkdeps.h"
 
+/* Not set up to just include std::vector et al, here's a simple
+   implementation.  */
+
 /* Keep this structure local to this file, so clients don't find it
    easy to start making assumptions.  */
 struct deps
 {
-  const char **targetv;
-  unsigned int ntargets;	/* number of slots actually occupied */
-  unsigned int targets_size;	/* amt of allocated space - in words */
+public:
+  /* T has trivial cctor & dtor.  */
+  template <typename T>
+  class vec
+  {
+  private:
+    T *ary;
+    unsigned num;
+    unsigned alloc;
 
-  const char **depv;
-  unsigned int ndeps;
-  unsigned int deps_size;
+  public:
+    vec ()
+      : ary (NULL), num (0), alloc (0) {}
+    ~vec ()
+      {
+	XDELETEVEC (ary);
+      }
 
-  const char **vpathv;
-  size_t *vpathlv;
-  unsigned int nvpaths;
-  unsigned int vpaths_size;
+  public:
+    unsigned size () const
+    {
+      return num;
+    }
+    const T &operator[] (unsigned ix) const
+    {
+      return ary[ix];
+    }
+    void push (const T &elt)
+    {
+      if (num == alloc)
+	{
+	  alloc = alloc ? alloc * 2 : 16;
+	  ary = XRESIZEVEC (T, ary, alloc);
+	}
+      ary[num++] = elt;
+    }
+  };
+  struct velt
+  {
+    const char *str;
+    size_t len;
+  };
+
+public:
+  vec<const char *> targets;
+  vec<const char *> deps;
+  vec<velt> vpath;
 };
 
 static const char *munge (const char *);
@@ -124,29 +162,26 @@ munge (const char *filename)
 static const char *
 apply_vpath (struct deps *d, const char *t)
 {
-  if (d->vpathv)
-    {
-      unsigned int i;
-      for (i = 0; i < d->nvpaths; i++)
-	{
-	  if (!filename_ncmp (d->vpathv[i], t, d->vpathlv[i]))
-	    {
-	      const char *p = t + d->vpathlv[i];
-	      if (!IS_DIR_SEPARATOR (*p))
-		goto not_this_one;
+  if (unsigned len = d->vpath.size ())
+    for (unsigned i = len; i--;)
+      {
+	if (!filename_ncmp (d->vpath[i].str, t, d->vpath[i].len))
+	  {
+	    const char *p = t + d->vpath[i].len;
+	    if (!IS_DIR_SEPARATOR (*p))
+	      goto not_this_one;
 
-	      /* Do not simplify $(vpath)/../whatever.  ??? Might not
-		 be necessary. */
-	      if (p[1] == '.' && p[2] == '.' && IS_DIR_SEPARATOR (p[3]))
-		goto not_this_one;
+	    /* Do not simplify $(vpath)/../whatever.  ??? Might not
+	       be necessary. */
+	    if (p[1] == '.' && p[2] == '.' && IS_DIR_SEPARATOR (p[3]))
+	      goto not_this_one;
 
-	      /* found a match */
-	      t = t + d->vpathlv[i] + 1;
-	      break;
-	    }
-	not_this_one:;
-	}
-    }
+	    /* found a match */
+	    t = t + d->vpath[i].len + 1;
+	    break;
+	  }
+      not_this_one:;
+      }
 
   /* Remove leading ./ in any case.  */
   while (t[0] == '.' && IS_DIR_SEPARATOR (t[1]))
@@ -166,7 +201,7 @@ apply_vpath (struct deps *d, const char *t)
 struct deps *
 deps_init (void)
 {
-  return XCNEW (struct deps);
+  return new deps ();
 }
 
 void
@@ -174,29 +209,14 @@ deps_free (struct deps *d)
 {
   unsigned int i;
 
-  if (d->targetv)
-    {
-      for (i = 0; i < d->ntargets; i++)
-	free ((void *) d->targetv[i]);
-      free (d->targetv);
-    }
-
-  if (d->depv)
-    {
-      for (i = 0; i < d->ndeps; i++)
-	free ((void *) d->depv[i]);
-      free (d->depv);
-    }
-
-  if (d->vpathv)
-    {
-      for (i = 0; i < d->nvpaths; i++)
-	free ((void *) d->vpathv[i]);
-      free (d->vpathv);
-      free (d->vpathlv);
-    }
-
-  free (d);
+  for (i = d->targets.size (); i--;)
+    XDELETEVEC (d->targets[i]);
+  for (i = d->deps.size (); i--;)
+    XDELETEVEC (d->deps[i]);
+  for (i = d->vpath.size (); i--;)
+    XDELETEVEC (d->vpath[i].str);
+	 
+  delete d;
 }
 
 /* Adds a target T.  We make a copy, so it need not be a permanent
@@ -204,19 +224,13 @@ deps_free (struct deps *d)
 void
 deps_add_target (struct deps *d, const char *t, int quote)
 {
-  if (d->ntargets == d->targets_size)
-    {
-      d->targets_size = d->targets_size * 2 + 4;
-      d->targetv = XRESIZEVEC (const char *, d->targetv, d->targets_size);
-    }
-
   t = apply_vpath (d, t);
   if (quote)
     t = munge (t);  /* Also makes permanent copy.  */
   else
     t = xstrdup (t);
 
-  d->targetv[d->ntargets++] = t;
+  d->targets.push (t);
 }
 
 /* Sets the default target if none has been given already.  An empty
@@ -226,7 +240,7 @@ void
 deps_add_default_target (struct deps *d, const char *tgt)
 {
   /* Only if we have no targets.  */
-  if (d->ntargets)
+  if (d->targets.size ())
     return;
 
   if (tgt[0] == '\0')
@@ -257,40 +271,28 @@ deps_add_dep (struct deps *d, const char *t)
 {
   t = munge (apply_vpath (d, t));  /* Also makes permanent copy.  */
 
-  if (d->ndeps == d->deps_size)
-    {
-      d->deps_size = d->deps_size * 2 + 8;
-      d->depv = XRESIZEVEC (const char *, d->depv, d->deps_size);
-    }
-  d->depv[d->ndeps++] = t;
+  d->deps.push (t);
 }
 
 void
 deps_add_vpath (struct deps *d, const char *vpath)
 {
   const char *elem, *p;
-  char *copy;
-  size_t len;
 
   for (elem = vpath; *elem; elem = p)
     {
-      for (p = elem; *p && *p != ':'; p++);
-      len = p - elem;
-      copy = XNEWVEC (char, len + 1);
-      memcpy (copy, elem, len);
-      copy[len] = '\0';
+      for (p = elem; *p && *p != ':'; p++)
+	continue;
+      deps::velt elt;
+      elt.len = p - elem;
+      char *str = XNEWVEC (char, elt.len + 1);
+      elt.str = str;
+      memcpy (str, elem, elt.len);
+      str[elt.len] = '\0';
       if (*p == ':')
 	p++;
 
-      if (d->nvpaths == d->vpaths_size)
-	{
-	  d->vpaths_size = d->vpaths_size * 2 + 8;
-	  d->vpathv = XRESIZEVEC (const char *, d->vpathv, d->vpaths_size);
-	  d->vpathlv = XRESIZEVEC (size_t, d->vpathlv, d->vpaths_size);
-	}
-      d->vpathv[d->nvpaths] = copy;
-      d->vpathlv[d->nvpaths] = len;
-      d->nvpaths++;
+      d->vpath.push (elt);
     }
 }
 
@@ -303,9 +305,11 @@ deps_write (const struct deps *d, FILE *fp, unsigned int colmax)
   if (colmax && colmax < 34)
     colmax = 34;
 
-  for (i = 0; i < d->ntargets; i++)
+  for (i = 0; i < d->targets.size (); i++)
     {
-      size = strlen (d->targetv[i]);
+      const char *target = d->targets[i];
+
+      size = strlen (target);
       column += size;
       if (i)
 	{
@@ -320,15 +324,16 @@ deps_write (const struct deps *d, FILE *fp, unsigned int colmax)
 	      column++;
 	    }
 	}
-      fputs (d->targetv[i], fp);
+      fputs (target, fp);
     }
 
   putc (':', fp);
   column++;
 
-  for (i = 0; i < d->ndeps; i++)
+  for (i = 0; i < d->deps.size (); i++)
     {
-      size = strlen (d->depv[i]);
+      const char *dep = d->deps[i];
+      size = strlen (dep);
       column += size;
       if (colmax && column > colmax)
 	{
@@ -340,7 +345,7 @@ deps_write (const struct deps *d, FILE *fp, unsigned int colmax)
 	  putc (' ', fp);
 	  column++;
 	}
-      fputs (d->depv[i], fp);
+      fputs (dep, fp);
     }
   putc ('\n', fp);
 }
@@ -350,10 +355,10 @@ deps_phony_targets (const struct deps *d, FILE *fp)
 {
   unsigned int i;
 
-  for (i = 1; i < d->ndeps; i++)
+  for (i = 1; i < d->deps.size (); i++)
     {
       putc ('\n', fp);
-      fputs (d->depv[i], fp);
+      fputs (d->deps[i], fp);
       putc (':', fp);
       putc ('\n', fp);
     }
@@ -367,71 +372,71 @@ int
 deps_save (struct deps *deps, FILE *f)
 {
   unsigned int i;
+  size_t size;
 
   /* The cppreader structure contains makefile dependences.  Write out this
      structure.  */
 
   /* The number of dependences.  */
-  if (fwrite (&deps->ndeps, sizeof (deps->ndeps), 1, f) != 1)
-      return -1;
+  size = deps->deps.size ();
+  if (fwrite (&size, sizeof (size), 1, f) != 1)
+    return -1;
+
   /* The length of each dependence followed by the string.  */
-  for (i = 0; i < deps->ndeps; i++)
+  for (i = 0; i < deps->deps.size (); i++)
     {
-      size_t num_to_write = strlen (deps->depv[i]);
-      if (fwrite (&num_to_write, sizeof (size_t), 1, f) != 1)
-          return -1;
-      if (fwrite (deps->depv[i], num_to_write, 1, f) != 1)
-          return -1;
+      size = strlen (deps->deps[i]);
+      if (fwrite (&size, sizeof (size), 1, f) != 1)
+	return -1;
+      if (fwrite (deps->deps[i], size, 1, f) != 1)
+	return -1;
     }
 
   return 0;
 }
 
 /* Read back dependency information written with deps_save into
-   the deps buffer.  The third argument may be NULL, in which case
+   the deps sizefer.  The third argument may be NULL, in which case
    the dependency information is just skipped, or it may be a filename,
    in which case that filename is skipped.  */
 
 int
 deps_restore (struct deps *deps, FILE *fd, const char *self)
 {
-  unsigned int i, count;
-  size_t num_to_read;
-  size_t buf_size = 512;
-  char *buf;
+  size_t size;
+  char *buf = NULL;
+  size_t buf_size = 0;
 
   /* Number of dependences.  */
-  if (fread (&count, 1, sizeof (count), fd) != sizeof (count))
+  if (fread (&size, sizeof (size), 1, fd) != 1)
     return -1;
 
-  buf = XNEWVEC (char, buf_size);
-
   /* The length of each dependence string, followed by the string.  */
-  for (i = 0; i < count; i++)
+  for (unsigned i = size; i--;)
     {
       /* Read in # bytes in string.  */
-      if (fread (&num_to_read, 1, sizeof (size_t), fd) != sizeof (size_t))
+      if (fread (&size, sizeof (size), 1, fd) != 1)
+	return -1;
+
+      if (size >= buf_size)
 	{
-	  free (buf);
-	  return -1;
-	}
-      if (buf_size < num_to_read + 1)
-	{
-	  buf_size = num_to_read + 1 + 127;
+	  buf_size = size + 512;
 	  buf = XRESIZEVEC (char, buf, buf_size);
 	}
-      if (fread (buf, 1, num_to_read, fd) != num_to_read)
+      if (fread (buf, 1, size, fd) != size)
 	{
-	  free (buf);
+	  XDELETEVEC (buf);
 	  return -1;
 	}
-      buf[num_to_read] = '\0';
+      buf[size] = 0;
 
       /* Generate makefile dependencies from .pch if -nopch-deps.  */
+      // FIXME: This seems strange, the elements have already been
+      // munged.
       if (self != NULL && filename_cmp (buf, self) != 0)
         deps_add_dep (deps, buf);
     }
 
-  free (buf);
+  XDELETEVEC (buf);
   return 0;
 }
