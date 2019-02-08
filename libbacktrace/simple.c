@@ -90,7 +90,7 @@ simple_unwind (struct _Unwind_Context *context, void *vdata)
 
 /* Get a simple stack backtrace.  */
 
-int
+int __attribute__((noinline))
 backtrace_simple (struct backtrace_state *state, int skip,
 		  backtrace_simple_callback callback,
 		  backtrace_error_callback error_callback, void *data)

@@ -80,7 +80,7 @@ error_callback (void *data, const char *msg, int errnum)
 
 /* Print a backtrace.  */
 
-void
+void __attribute__((noinline))
 backtrace_print (struct backtrace_state *state, int skip, FILE *f)
 {
   struct print_data data;
