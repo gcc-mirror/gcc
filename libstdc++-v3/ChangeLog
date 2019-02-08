@@ -1,6 +1,13 @@
 2019-02-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/86595
+	* include/bits/fs_dir.h (directory_entry::refresh(error_code&)): Add
+	noexcept.
+
+	Backport from mainline
 	2018-05-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/filesystem/std-ops.cc (absolute): Report an error for empty
