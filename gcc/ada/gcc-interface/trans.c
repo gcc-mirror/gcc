@@ -7230,13 +7230,10 @@ gnat_to_gnu (Node_Id gnat_node)
       {
 	tree gnu_aggr_type;
 
-	/* ??? It is wrong to evaluate the type now, but there doesn't
-	   seem to be any other practical way of doing it.  */
-
+	/* Check that this aggregate has not slipped through the cracks.  */
 	gcc_assert (!Expansion_Delayed (gnat_node));
 
-	gnu_aggr_type = gnu_result_type
-	  = get_unpadded_type (Etype (gnat_node));
+	gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
 	if (TREE_CODE (gnu_result_type) == RECORD_TYPE
 	    && TYPE_CONTAINS_TEMPLATE_P (gnu_result_type))
@@ -7244,6 +7241,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	    = TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (gnu_result_type)));
 	else if (TREE_CODE (gnu_result_type) == VECTOR_TYPE)
 	  gnu_aggr_type = TYPE_REPRESENTATIVE_ARRAY (gnu_result_type);
+	else
+	  gnu_aggr_type = gnu_result_type;
 
 	if (Null_Record_Present (gnat_node))
 	  gnu_result = gnat_build_constructor (gnu_aggr_type, NULL);

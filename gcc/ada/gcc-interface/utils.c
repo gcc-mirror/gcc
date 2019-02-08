@@ -4356,19 +4356,12 @@ convert (tree type, tree expr)
 
       /* If the inner type is of self-referential size and the expression type
 	 is a record, do this as an unchecked conversion unless both types are
-	 essentially the same.  But first pad the expression if possible to
-	 have the same size on both sides.  */
+	 essentially the same.  */
       if (ecode == RECORD_TYPE
 	  && CONTAINS_PLACEHOLDER_P (DECL_SIZE (TYPE_FIELDS (type)))
 	  && TYPE_MAIN_VARIANT (etype)
 	     != TYPE_MAIN_VARIANT (TREE_TYPE (TYPE_FIELDS (type))))
-	{
-	  if (TREE_CODE (TYPE_SIZE (etype)) == INTEGER_CST)
-	    expr = convert (maybe_pad_type (etype, TYPE_SIZE (type), 0, Empty,
-					    false, false, false, true),
-			    expr);
-	  return unchecked_convert (type, expr, false);
-	}
+	return unchecked_convert (type, expr, false);
 
       /* If we are converting between array types with variable size, do the
 	 final conversion as an unchecked conversion, again to avoid the need
@@ -4483,9 +4476,9 @@ convert (tree type, tree expr)
     case STRING_CST:
       /* If we are converting a STRING_CST to another constrained array type,
 	 just make a new one in the proper type.  */
-      if (code == ecode && AGGREGATE_TYPE_P (etype)
-	  && !(TREE_CODE (TYPE_SIZE (etype)) == INTEGER_CST
-	       && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST))
+      if (code == ecode
+	  && !(TREE_CONSTANT (TYPE_SIZE (etype))
+	       && !TREE_CONSTANT (TYPE_SIZE (type))))
 	{
 	  expr = copy_node (expr);
 	  TREE_TYPE (expr) = type;
@@ -5332,7 +5325,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
      so we skip all expressions that are references.  */
   else if (!REFERENCE_CLASS_P (expr)
 	   && !AGGREGATE_TYPE_P (etype)
-	   && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+	   && TREE_CONSTANT (TYPE_SIZE (type))
 	   && (c = tree_int_cst_compare (TYPE_SIZE (etype), TYPE_SIZE (type))))
     {
       if (c < 0)
@@ -5380,13 +5373,33 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
       return unchecked_convert (type, expr, notrunc_p);
     }
 
-  /* If we are converting a CONSTRUCTOR to a more aligned RECORD_TYPE, bump
-     the alignment of the CONSTRUCTOR to speed up the copy operation.  */
+  /* If we are converting a CONSTRUCTOR to a more aligned aggregate type, bump
+     the alignment of the CONSTRUCTOR to speed up the copy operation.  But do
+     not do it for a conversion between original and packable version to avoid
+     an infinite recursion.  */
   else if (TREE_CODE (expr) == CONSTRUCTOR
-	   && code == RECORD_TYPE
+	   && AGGREGATE_TYPE_P (type)
+	   && TYPE_NAME (type) != TYPE_NAME (etype)
 	   && TYPE_ALIGN (etype) < TYPE_ALIGN (type))
     {
       expr = convert (maybe_pad_type (etype, NULL_TREE, TYPE_ALIGN (type),
+				      Empty, false, false, false, true),
+		      expr);
+      return unchecked_convert (type, expr, notrunc_p);
+    }
+
+  /* If we are converting a CONSTRUCTOR to a larger aggregate type, bump the
+     size of the CONSTRUCTOR to make sure there are enough allocated bytes.
+     But do not do it for a conversion between original and packable version
+     to avoid an infinite recursion.  */
+  else if (TREE_CODE (expr) == CONSTRUCTOR
+	   && AGGREGATE_TYPE_P (type)
+	   && TYPE_NAME (type) != TYPE_NAME (etype)
+	   && TREE_CONSTANT (TYPE_SIZE (type))
+	   && (!TREE_CONSTANT (TYPE_SIZE (etype))
+	       || tree_int_cst_lt (TYPE_SIZE (etype), TYPE_SIZE (type))))
+    {
+      expr = convert (maybe_pad_type (etype, TYPE_SIZE (type), 0,
 				      Empty, false, false, false, true),
 		      expr);
       return unchecked_convert (type, expr, notrunc_p);
