@@ -691,7 +691,13 @@ class StdBitsetPrinter:
         return '%s' % (self.typename)
 
     def children (self):
-        words = self.val['_M_w']
+        try:
+            # An empty bitset may not have any members which will
+            # result in an exception being thrown.
+            words = self.val['_M_w']
+        except:
+            return []
+
         wtype = words.type
 
         # The _M_w member can be either an unsigned long, or an
@@ -701,7 +707,7 @@ class StdBitsetPrinter:
             tsize = wtype.target ().sizeof
         else:
             words = [words]
-            tsize = wtype.sizeof 
+            tsize = wtype.sizeof
 
         nwords = wtype.sizeof / tsize
         result = []
@@ -837,7 +843,7 @@ class Tr1HashtableIterator(Iterator):
             self.node = self.buckets[self.bucket]
             if self.node:
                 break
-            self.bucket = self.bucket + 1        
+            self.bucket = self.bucket + 1
 
     def __iter__ (self):
         return self
@@ -940,7 +946,6 @@ class Tr1UnorderedMapPrinter:
         data = self.flatten (imap (self.format_one, StdHashtableIterator (self.hashtable())))
         # Zip the two iterators together.
         return izip (counter, data)
-        
 
     def display_hint (self):
         return 'map'

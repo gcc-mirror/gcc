@@ -41,6 +41,10 @@ main()
   std::string str = "zardoz";
 // { dg-final { note-test str "\"zardoz\"" } }
 
+  // PR 65229
+  std::bitset<0> bs0;
+// { dg-final { note-test bs0 {std::bitset} } }
+
   std::bitset<10> bs;
   bs[0] = 1;
   bs[5] = 1;
