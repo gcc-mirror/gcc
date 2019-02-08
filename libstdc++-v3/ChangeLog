@@ -1,6 +1,18 @@
 2019-02-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (duration_values::zero(), duration_values::min())
+	(duration_values::max()): Add noexcept.
+	(duration::zero(), duration::min(), duration::max()): Likewise.
+	(time_point::zero(), time_point::min(), time_point::max()): Likewise.
+	* testsuite/20_util/duration/requirements/noexcept.cc: New test.
+	* testsuite/20_util/time_point/requirements/noexcept.cc: New test.
+
+2019-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
 	2019-01-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/87787
