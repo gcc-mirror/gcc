@@ -1,6 +1,6 @@
 2019-02-08  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* gcc-interface/trans.c (Regular_Loop_to_gnu): Replace tests on
+	* gcc-interface/trans.c (Loop_Statement_to_gnu): Replace tests on
 	individual flag_unswitch_loops and flag_tree_loop_vectorize switches
 	with test on global optimize switch.
 	(Raise_Error_to_gnu): Likewise.
