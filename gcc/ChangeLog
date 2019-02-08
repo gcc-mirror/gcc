@@ -1,3 +1,10 @@
+2019-02-09  Alan Modra  <amodra@gmail.com>
+
+	PR target/88343
+	* config/rs6000/rs6000.c (save_reg_p): Correct calls_eh_return
+	case.  Match logic in rs6000_emit_prologue emitting pic_offset_table
+	setup.
+
 2019-02-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/88560
