@@ -1,5 +1,9 @@
 2019-02-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/88761 - ICE with reference capture of constant.
+	* lambda.c (mark_const_cap_r): Do walk subtrees of DECL_EXPR for
+	non-proxy decls.
+
 	PR c++/88752 - ICE with lambda and constexpr if.
 	* cp-tree.h (LAMBDA_EXPR_INSTANTIATED): New.
 	* pt.c (tsubst_lambda_expr): Set it.
