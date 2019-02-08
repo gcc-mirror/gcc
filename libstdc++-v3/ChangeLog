@@ -1,3 +1,14 @@
+2019-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2019-01-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89117
+	* src/c++17/fs_path.cc (path::replace_extension): Erase extension from
+	final component as well as from _M_pathname.
+	* testsuite/27_io/filesystem/path/modifiers/replace_extension.cc:
+	Add more test cases.
+
 2019-01-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
