@@ -1,3 +1,51 @@
+2019-02-08  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-02-03  Richard Biener  <rguenther@suse.de>
+
+	PR debug/87295
+	* dwarf2out.c (copy_ancestor_tree): Register non-stubs as
+	orig.
+
+	2019-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR debug/87295
+	* dwarf2out.c (collect_skeleton_dies): New helper.
+	(copy_decls_for_unworthy_types): Call it.
+	(build_abbrev_table): Do not try to replace
+	DW_AT_signature refs with local refs.
+
+	2019-01-17  Richard Biener  <rguenther@suse.de>
+
+	PR lto/86736
+	* dwarf2out.c (want_pubnames): Never generate pubnames sections
+	and friends for the LTO part of debug info.
+
+	2019-01-24  Richard Biener  <rguenther@suse.de>
+
+	PR lto/87187
+	* tree-streamer-out.c (write_ts_decl_common_tree_pointers):
+	When in "legacy" debug mode make sure to reset self-origins.
+
+	2019-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR debug/88046
+	* dwarf2out.c (gen_member_die): Do not generate inheritance
+	DIEs late.
+
+	2018-11-22  Richard Biener  <rguenther@suse.de>
+
+	PR lto/87229
+	PR lto/88112
+	* lto-streamer-out.c (lto_is_streamable): Allow CALL_EXPRs
+	which can appear in size expressions.
+	* tree-streamer-in.c (unpack_ts_base_value_fields): Stream
+	CALL_EXPR_BY_DESCRIPTOR.
+	(streamer_read_tree_bitfields): Stream CALL_EXPR_IFN.
+	* tree-streamer-out.c (pack_ts_base_value_fields): Stream
+	CALL_EXPR_BY_DESCRIPTOR.
+	(streamer_write_tree_bitfields): Stream CALL_EXPR_IFN.
+
 2019-02-08  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backport from mainline

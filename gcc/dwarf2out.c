@@ -8163,6 +8163,11 @@ copy_ancestor_tree (dw_die_ref unit, dw_die_ref die,
   decl_table_entry **slot = NULL;
   struct decl_table_entry *entry = NULL;
 
+  /* If DIE refers to a stub unfold that so we get the appropriate
+     DIE registered as orig in decl_table.  */
+  if (dw_die_ref c = get_AT_ref (die, DW_AT_signature))
+    die = c;
+
   if (decl_table)
     {
       /* Check if the entry has already been copied to UNIT.  */
@@ -8716,6 +8721,33 @@ copy_decls_walk (dw_die_ref unit, dw_die_ref die, decl_hash_type *decl_table)
   FOR_EACH_CHILD (die, c, copy_decls_walk (unit, c, decl_table));
 }
 
+/* Collect skeleton dies in DIE created by break_out_comdat_types already
+   and record them in DECL_TABLE.  */
+
+static void
+collect_skeleton_dies (dw_die_ref die, decl_hash_type *decl_table)
+{
+  dw_die_ref c;
+
+  if (dw_attr_node *a = get_AT (die, DW_AT_signature))
+    {
+      dw_die_ref targ = AT_ref (a);
+      gcc_assert (targ->die_mark == 0 && targ->comdat_type_p);
+      decl_table_entry **slot
+        = decl_table->find_slot_with_hash (targ,
+					   htab_hash_pointer (targ),
+					   INSERT);
+      gcc_assert (*slot == HTAB_EMPTY_ENTRY);
+      /* Record in DECL_TABLE that TARG has been already copied
+	 by remove_child_or_replace_with_skeleton.  */
+      decl_table_entry *entry = XCNEW (struct decl_table_entry);
+      entry->orig = targ;
+      entry->copy = die;
+      *slot = entry;
+    }
+  FOR_EACH_CHILD (die, c, collect_skeleton_dies (c, decl_table));
+}
+
 /* Copy declarations for "unworthy" types into the new comdat section.
    Incomplete types, modified types, and certain other types aren't broken
    out into comdat sections of their own, so they don't have a signature,
@@ -8727,6 +8759,7 @@ copy_decls_for_unworthy_types (dw_die_ref unit)
 {
   mark_dies (unit);
   decl_hash_type decl_table (10);
+  collect_skeleton_dies (unit, &decl_table);
   copy_decls_walk (unit, unit, &decl_table);
   unmark_dies (unit);
 }
@@ -9022,7 +9055,8 @@ build_abbrev_table (dw_die_ref die, external_ref_hash_type *extern_map)
 
 	if (is_type_die (c)
 	    && (ref_p = lookup_external_ref (extern_map, c))
-	    && ref_p->stub && ref_p->stub != die)
+	    && ref_p->stub && ref_p->stub != die
+	    && a->dw_attr != DW_AT_signature)
 	  change_AT_die_ref (a, ref_p->stub);
 	else
 	  /* We aren't changing this reference, so mark it external.  */
@@ -11068,7 +11102,9 @@ output_comp_unit (dw_die_ref die, int output_if_empty,
 static inline bool
 want_pubnames (void)
 {
-  if (debug_info_level <= DINFO_LEVEL_TERSE)
+  if (debug_info_level <= DINFO_LEVEL_TERSE
+      /* Names and types go to the early debug part only.  */
+      || in_lto_p)
     return false;
   if (debug_generate_pub_sections != -1)
     return debug_generate_pub_sections;
@@ -25016,7 +25052,7 @@ gen_member_die (tree type, dw_die_ref context_die)
      the TREE node representing the appropriate (containing) type.  */
 
   /* First output info about the base classes.  */
-  if (binfo)
+  if (binfo && early_dwarf)
     {
       vec<tree, va_gc> *accesses = BINFO_BASE_ACCESSES (binfo);
       int i;

@@ -299,7 +299,6 @@ lto_is_streamable (tree expr)
      name version in lto_output_tree_ref (see output_ssa_names).  */
   return !is_lang_specific (expr)
 	 && code != SSA_NAME
-	 && code != CALL_EXPR
 	 && code != LANG_TYPE
 	 && code != MODIFY_EXPR
 	 && code != INIT_EXPR
