@@ -3616,7 +3616,10 @@ fntype_same_flags_p (const_tree t, tree cico_list, bool return_unconstrained_p,
 
 /* EXP is an expression for the size of an object.  If this size contains
    discriminant references, replace them with the maximum (if MAX_P) or
-   minimum (if !MAX_P) possible value of the discriminant.  */
+   minimum (if !MAX_P) possible value of the discriminant.
+
+   Note that the expression may have already been gimplified,in which case
+   COND_EXPRs have VOID_TYPE and no operands, and this must be handled.  */
 
 tree
 max_size (tree exp, bool max_p)
@@ -3672,11 +3675,15 @@ max_size (tree exp, bool max_p)
       return build_int_cst (type, max_p ? 1 : 0);
 
     case tcc_unary:
-      if (code == NON_LVALUE_EXPR)
-	return max_size (TREE_OPERAND (exp, 0), max_p);
+      op0 = TREE_OPERAND (exp, 0);
 
-      op0 = max_size (TREE_OPERAND (exp, 0),
-		      code == NEGATE_EXPR ? !max_p : max_p);
+      if (code == NON_LVALUE_EXPR)
+	return max_size (op0, max_p);
+
+      if (VOID_TYPE_P (TREE_TYPE (op0)))
+	return max_p ? TYPE_MAX_VALUE (type) : TYPE_MIN_VALUE (type);
+
+      op0 = max_size (op0, code == NEGATE_EXPR ? !max_p : max_p);
 
       if (op0 == TREE_OPERAND (exp, 0))
 	return exp;
