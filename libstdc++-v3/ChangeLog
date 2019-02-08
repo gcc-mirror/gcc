@@ -1,6 +1,15 @@
 2019-02-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-05-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/filesystem/std-ops.cc (absolute): Report an error for empty
+	paths.
+	(weakly_canonical(const path&)): Do not call canonical on empty path.
+	(weakly_canonical(const path&, error_code&)): Likewise.
+	* testsuite/27_io/filesystem/operations/absolute.cc: Check for errors.
+
+	Backport from mainline
 	2019-01-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/89117
