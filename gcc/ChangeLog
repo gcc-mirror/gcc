@@ -1,3 +1,10 @@
+2019-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/89234
+	* except.c (copy_reg_eh_region_note_forward): Return if note_or_insn
+	is a NOTE, CODE_LABEL etc. - rtx_insn * other than INSN_P.
+	(copy_reg_eh_region_note_backward): Likewise.
+
 2019-02-08  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/89223
