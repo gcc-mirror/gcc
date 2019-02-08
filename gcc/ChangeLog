@@ -1,3 +1,10 @@
+2019-02-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	* config/i386/i386.md (*movoi_internal_avx): Set mode to XI for
+	upper 16 vector registers without TARGET_AVX512VL.
+	(*movti_internal): Likewise.
+
 2019-02-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/89234
