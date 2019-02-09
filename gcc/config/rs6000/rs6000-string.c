@@ -1525,6 +1525,7 @@ expand_compare_loop (rtx operands[])
 	  else
 	    j = emit_jump_insn (gen_bdnztf_si (fc_loop, ctr, ctr,
 					       eqrtx, cond));
+	  add_reg_br_prob_note (j, profile_probability::likely ());
 	  JUMP_LABEL (j) = fc_loop;
 	  LABEL_NUSES (fc_loop) += 1;
 
@@ -1896,7 +1897,8 @@ expand_block_compare_gpr(unsigned HOST_WIDE_INT bytes, unsigned int base_align,
 	      rtx ne_rtx = gen_rtx_NE (VOIDmode, cond, const0_rtx);
 	      rtx ifelse = gen_rtx_IF_THEN_ELSE (VOIDmode, ne_rtx,
 						 cvt_ref, pc_rtx);
-	      rtx j = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
+	      rtx_insn *j = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
+	      add_reg_br_prob_note (j, profile_probability::likely ());
 	      JUMP_LABEL (j) = convert_label;
 	      LABEL_NUSES (convert_label) += 1;
 	    }
