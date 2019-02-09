@@ -1,3 +1,17 @@
+2019-02-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71044
+	* include/bits/fs_path.h (path::has_root_name)
+	(path::has_root_directory, path::has_root_path)
+	(path::has_relative_path, path::has_parent_path)
+	(path::has_filename, path::has_stem, path::has_extension)
+	(path::is_absolute, path::is_relative, path::_M_find_extension): Add
+	noexcept.
+	* src/c++17/fs_path.cc (path::has_root_name)
+	(path::has_root_directory, path::has_root_path)
+	(path::has_relative_path, path::has_parent_path)
+	(path::has_filename, path::_M_find_extension): Add noexcept.
+
 2019-02-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/89102 (partial)

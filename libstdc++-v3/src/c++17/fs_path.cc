@@ -1530,7 +1530,7 @@ path::parent_path() const
 }
 
 bool
-path::has_root_name() const
+path::has_root_name() const noexcept
 {
   if (_M_type() == _Type::_Root_name)
     return true;
@@ -1540,7 +1540,7 @@ path::has_root_name() const
 }
 
 bool
-path::has_root_directory() const
+path::has_root_directory() const noexcept
 {
   if (_M_type() == _Type::_Root_dir)
     return true;
@@ -1556,7 +1556,7 @@ path::has_root_directory() const
 }
 
 bool
-path::has_root_path() const
+path::has_root_path() const noexcept
 {
   if (_M_type() == _Type::_Root_name || _M_type() == _Type::_Root_dir)
     return true;
@@ -1570,7 +1570,7 @@ path::has_root_path() const
 }
 
 bool
-path::has_relative_path() const
+path::has_relative_path() const noexcept
 {
   if (_M_type() == _Type::_Filename && !_M_pathname.empty())
     return true;
@@ -1589,7 +1589,7 @@ path::has_relative_path() const
 
 
 bool
-path::has_parent_path() const
+path::has_parent_path() const noexcept
 {
   if (!has_relative_path())
     return !empty();
@@ -1597,7 +1597,7 @@ path::has_parent_path() const
 }
 
 bool
-path::has_filename() const
+path::has_filename() const noexcept
 {
   if (empty())
     return false;
@@ -1783,7 +1783,7 @@ path::lexically_proximate(const path& base) const
 }
 
 std::pair<const path::string_type*, std::size_t>
-path::_M_find_extension() const
+path::_M_find_extension() const noexcept
 {
   const string_type* s = nullptr;
 
