@@ -35,10 +35,10 @@
 #else
 
 #include <streambuf>
-#include "stringfwd.h"
-#include "allocator.h"
-#include "codecvt.h"
-#include "unique_ptr.h"
+#include <bits/stringfwd.h>
+#include <bits/allocator.h>
+#include <bits/codecvt.h>
+#include <bits/unique_ptr.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
