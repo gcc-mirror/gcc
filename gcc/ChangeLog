@@ -1,5 +1,11 @@
 2019-02-09  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR lto/87809
+	* tree.c (fld_simplified_type_name): Use DECL_ASSEMBLER_NAME_SET_P
+	instead of type_with_linkage.
+
+2019-02-09  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/88755
 	* params.def (uninlined-function-insns, uninlined-function-time,
 	uninlined-thunk-insns, uninlined-thunk-time): Add artificial upper
