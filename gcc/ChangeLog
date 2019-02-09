@@ -1,5 +1,10 @@
 2019-02-09  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-visibility.c (localize_node): Also do not localize
+	LDPR_PREVAILING_DEF_IRONLY_EXP.
+
+2019-02-09  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR lto/87957
 	* tree.c (fld_simplified_type_name): Use DECL_ASSEMBLER_NAME_SET_P
 	instead of type_with_linkage.
