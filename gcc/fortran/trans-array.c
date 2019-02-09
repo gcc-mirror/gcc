@@ -1293,6 +1293,15 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
   tmp = gfc_conv_descriptor_dtype (desc);
   gfc_add_modify (pre, tmp, gfc_get_dtype (TREE_TYPE (desc)));
 
+  /* Also set the span for derived types, since they can be used in
+     component references to arrays of this type.  */
+  if (TREE_CODE (eltype) == RECORD_TYPE)
+    {
+      tmp = TYPE_SIZE_UNIT (eltype);
+      tmp = fold_convert (gfc_array_index_type, tmp);
+      gfc_conv_descriptor_span_set (pre, desc, tmp);
+    }
+
   /*
      Fill in the bounds and stride.  This is a packed array, so:
 

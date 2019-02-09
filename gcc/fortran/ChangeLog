@@ -1,3 +1,9 @@
+2019-02-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89200
+	* trans-array.c (gfc_trans_create_temp_array): Set the 'span'
+	field for derived types.
+
 2019-02-04  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/89077
