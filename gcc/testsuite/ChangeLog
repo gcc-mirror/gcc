@@ -1,3 +1,9 @@
+2019-02-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/71860
+	Backport from trunk
+	* gfortran.dg/null_10.f90: New test.
+
 2019-02-06  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	2019-02-05  Kelvin Nilsen  <kelvin@gcc.gnu.org>
