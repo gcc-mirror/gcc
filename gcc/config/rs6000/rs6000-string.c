@@ -35,6 +35,8 @@
 #include "expr.h"
 #include "output.h"
 #include "target.h"
+#include "profile-count.h"
+#include "predict.h"
 
 /* Expand a block clear operation, and return 1 if successful.  Return 0
    if we should let the compiler generate normal code.
@@ -331,6 +333,7 @@ do_load_for_compare_from_addr (machine_mode mode, rtx dest, rtx addr,
    B is the second thing to be compared.
    CR is the condition code reg input, or NULL_RTX.
    TRUE_LABEL is the label to branch to if the condition is true.
+   P is the estimated branch probability for the branch.
 
    The return value is the CR used for the comparison.
    If CR is null_rtx, then a new register of CMPMODE is generated.
@@ -339,7 +342,7 @@ do_load_for_compare_from_addr (machine_mode mode, rtx dest, rtx addr,
 
 static void
 do_ifelse (machine_mode cmpmode, rtx_code comparison,
-	   rtx a, rtx b, rtx cr, rtx true_label)
+	   rtx a, rtx b, rtx cr, rtx true_label, profile_probability br_prob)
 {
   gcc_assert ((a == NULL_RTX && b == NULL_RTX && cr != NULL_RTX)
 	      || (a != NULL_RTX && b != NULL_RTX));
@@ -357,7 +360,8 @@ do_ifelse (machine_mode cmpmode, rtx_code comparison,
   rtx cmp_rtx = gen_rtx_fmt_ee (comparison, VOIDmode, cr, const0_rtx);
 
   rtx ifelse = gen_rtx_IF_THEN_ELSE (VOIDmode, cmp_rtx, label_ref, pc_rtx);
-  rtx j = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
+  rtx_insn *j = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
+  add_reg_br_prob_note (j, br_prob);
   JUMP_LABEL (j) = true_label;
   LABEL_NUSES (true_label) += 1;
 }
@@ -730,7 +734,7 @@ expand_compare_loop (rtx operands[])
 
   /* Difference found is stored here before jump to diff_label.  */
   rtx diff = gen_reg_rtx (word_mode);
-  rtx j;
+  rtx_insn *j;
 
   /* Example of generated code for 35 bytes aligned 1 byte.
 
@@ -814,11 +818,11 @@ expand_compare_loop (rtx operands[])
       /* Check for > max_bytes bytes.  We want to bail out as quickly as
 	 possible if we have to go over to memcmp.  */
       do_ifelse (CCmode, GT, bytes_rtx, GEN_INT (max_bytes),
-		 NULL_RTX, library_call_label);
+		 NULL_RTX, library_call_label, profile_probability::even ());
 
       /* Check for < loop_bytes bytes.  */
       do_ifelse (CCmode, LT, bytes_rtx, GEN_INT (loop_bytes),
-		 NULL_RTX, cleanup_label);
+		 NULL_RTX, cleanup_label, profile_probability::even ());
 
       /* Loop compare bytes and iterations if bytes>max_bytes.  */
       rtx mb_reg = gen_reg_rtx (word_mode);
@@ -859,7 +863,7 @@ expand_compare_loop (rtx operands[])
 	{
 	  rtx lab_after = gen_label_rtx ();
 	  do_ifelse (CCmode, LE, bytes_rtx, GEN_INT (max_bytes),
-		     NULL_RTX, lab_after);
+		     NULL_RTX, lab_after, profile_probability::even ());
 	  emit_move_insn (loop_cmp, mb_reg);
 	  emit_move_insn (iter, mi_reg);
 	  emit_label (lab_after);
@@ -930,7 +934,7 @@ expand_compare_loop (rtx operands[])
 	}
 
       do_ifelse (GET_MODE (dcond), NE, NULL_RTX, NULL_RTX,
-		 dcond, diff_label);
+		 dcond, diff_label, profile_probability::unlikely ());
 
       if (TARGET_P9_MISC)
 	{
@@ -954,6 +958,7 @@ expand_compare_loop (rtx operands[])
       else
 	j = emit_jump_insn (gen_bdnztf_si (loop_top_label, ctr, ctr,
 					   eqrtx, dcond));
+      add_reg_br_prob_note (j, profile_probability::likely ());
       JUMP_LABEL (j) = loop_top_label;
       LABEL_NUSES (loop_top_label) += 1;
     }
@@ -966,9 +971,11 @@ expand_compare_loop (rtx operands[])
      code.  If we exit here with a nonzero diff, it is
      because the second word differed.  */
   if (TARGET_P9_MISC)
-    do_ifelse (CCUNSmode, NE, NULL_RTX, NULL_RTX, dcond, diff_label);
+    do_ifelse (CCUNSmode, NE, NULL_RTX, NULL_RTX, dcond,
+	       diff_label, profile_probability::unlikely ());
   else
-    do_ifelse (CCmode, NE, diff, const0_rtx, NULL_RTX, diff_label);
+    do_ifelse (CCmode, NE, diff, const0_rtx, NULL_RTX,
+	       diff_label, profile_probability::unlikely ());
 
   if (library_call_label != NULL && bytes_is_const && bytes > max_bytes)
     {
@@ -1011,7 +1018,7 @@ expand_compare_loop (rtx operands[])
 	     loop with a branch to cleanup_label.  */
 	  emit_move_insn (target, const0_rtx);
 	  do_ifelse (CCmode, EQ, cmp_rem, const0_rtx,
-		     NULL_RTX, final_label);
+		     NULL_RTX, final_label, profile_probability::unlikely ());
 	}
 
       rtx final_cleanup = gen_label_rtx ();
@@ -1021,9 +1028,12 @@ expand_compare_loop (rtx operands[])
 	{
 	  /* If remainder length < word length, branch to final
 	     cleanup compare.  */
+	  
 	  if (!bytes_is_const)
-	    do_ifelse (CCmode, LT, cmp_rem, GEN_INT (load_mode_size),
-		       NULL_RTX, final_cleanup);
+	    {
+	      do_ifelse (CCmode, LT, cmp_rem, GEN_INT (load_mode_size),
+			 NULL_RTX, final_cleanup, profile_probability::even ());
+	    }
 
 	  /* load and compare 8B */
 	  do_load_for_compare_from_addr (load_mode, d1_1,
@@ -1048,7 +1058,7 @@ expand_compare_loop (rtx operands[])
 	    }
 
 	  do_ifelse (GET_MODE (dcond), NE, NULL_RTX, NULL_RTX,
-		     dcond, diff_label);
+		     dcond, diff_label, profile_probability::even ());
 
 	  do_add3 (src1_addr, src1_addr, GEN_INT (load_mode_size));
 	  do_add3 (src2_addr, src2_addr, GEN_INT (load_mode_size));
@@ -1059,9 +1069,8 @@ expand_compare_loop (rtx operands[])
 	  else
 	    /* See if remaining length is now zero.  We previously set
 	       target to 0 so we can just jump to the end.  */
-	    do_ifelse (CCmode, EQ, cmp_rem, const0_rtx,
-		       NULL_RTX, final_label);
-
+	    do_ifelse (CCmode, EQ, cmp_rem, const0_rtx, NULL_RTX,
+		       final_label, profile_probability::unlikely ());
 	}
 
       /* Cases:
@@ -1144,7 +1153,7 @@ expand_compare_loop (rtx operands[])
 	     than one loop iteration, in which case go do the overlap
 	     load compare path.  */
 	  do_ifelse (CCmode, GT, bytes_rtx, GEN_INT (loop_bytes),
-		     NULL_RTX, nonconst_overlap);
+		     NULL_RTX, nonconst_overlap, profile_probability::even ());
 
 	  rtx rem4k = gen_reg_rtx (word_mode);
 	  rtx dist1 = gen_reg_rtx (word_mode);
@@ -1154,12 +1163,14 @@ expand_compare_loop (rtx operands[])
 	    emit_insn (gen_andsi3 (dist1, src1_addr, GEN_INT (0xfff)));
 	  else
 	    emit_insn (gen_anddi3 (dist1, src1_addr, GEN_INT (0xfff)));
-	  do_ifelse (CCmode, LE, dist1, rem4k, NULL_RTX, handle4k_label);
+	  do_ifelse (CCmode, LE, dist1, rem4k, NULL_RTX,
+		     handle4k_label, profile_probability::very_unlikely ());
 	  if (word_mode == SImode)
 	    emit_insn (gen_andsi3 (dist2, src2_addr, GEN_INT (0xfff)));
 	  else
 	    emit_insn (gen_anddi3 (dist2, src2_addr, GEN_INT (0xfff)));
-	  do_ifelse (CCmode, LE, dist2, rem4k, NULL_RTX, handle4k_label);
+	  do_ifelse (CCmode, LE, dist2, rem4k, NULL_RTX,
+		     handle4k_label, profile_probability::very_unlikely ());
 
 	  /* We don't have a 4k boundary to deal with, so do
 	     a load/shift/compare and jump to diff.  */
@@ -1207,6 +1218,7 @@ expand_compare_loop (rtx operands[])
 	  else
 	    j = emit_jump_insn (gen_bdnztf_si (fc_loop, ctr, ctr,
 					       eqrtx, cond));
+	  add_reg_br_prob_note (j, profile_probability::likely ());
 	  JUMP_LABEL (j) = fc_loop;
 	  LABEL_NUSES (fc_loop) += 1;
 
@@ -1534,7 +1546,8 @@ expand_block_compare (rtx operands[])
 	      rtx ne_rtx = gen_rtx_NE (VOIDmode, cr, const0_rtx);
 	      rtx ifelse = gen_rtx_IF_THEN_ELSE (VOIDmode, ne_rtx,
 						 fin_ref, pc_rtx);
-	      rtx j = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
+	      rtx_insn *j = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
+	      add_reg_br_prob_note (j, profile_probability::unlikely ());
 	      JUMP_LABEL (j) = final_label;
 	      LABEL_NUSES (final_label) += 1;
 	    }
@@ -1593,7 +1606,8 @@ expand_block_compare (rtx operands[])
 	      rtx ne_rtx = gen_rtx_NE (VOIDmode, cond, const0_rtx);
 	      rtx ifelse = gen_rtx_IF_THEN_ELSE (VOIDmode, ne_rtx,
 						 cvt_ref, pc_rtx);
-	      rtx j = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
+	      rtx_insn *j = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
+	      add_reg_br_prob_note (j, profile_probability::likely ());
 	      JUMP_LABEL (j) = convert_label;
 	      LABEL_NUSES (convert_label) += 1;
 	    }
@@ -1698,7 +1712,8 @@ expand_strncmp_align_check (rtx strncmp_label, rtx src, HOST_WIDE_INT bytes)
 
   rtx ifelse = gen_rtx_IF_THEN_ELSE (VOIDmode, cmp_rtx,
 				     lab_ref, pc_rtx);
-  rtx j = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
+  rtx_insn *j = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
+  add_reg_br_prob_note (j, profile_probability::unlikely ());
   JUMP_LABEL (j) = strncmp_label;
   LABEL_NUSES (strncmp_label) += 1;
 }
@@ -2039,7 +2054,8 @@ expand_strn_compare (rtx operands[], int no_length)
 
 	      rtx ifelse = gen_rtx_IF_THEN_ELSE (VOIDmode, cmp_rtx,
 						 lab_ref, pc_rtx);
-	      rtx j = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
+	      rtx_insn *j = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
+	      add_reg_br_prob_note (j, profile_probability::unlikely ());
 	      JUMP_LABEL (j) = final_move_label;
 	      LABEL_NUSES (final_move_label) += 1;
 
@@ -2056,7 +2072,8 @@ expand_strn_compare (rtx operands[], int no_length)
 
 	      rtx ifelse0 = gen_rtx_IF_THEN_ELSE (VOIDmode, cmp0eq_rtx,
 						 lab_ref, pc_rtx);
-	      rtx j0 = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse0));
+	      rtx_insn *j0 = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse0));
+	      add_reg_br_prob_note (j0, profile_probability::unlikely ());
 	      JUMP_LABEL (j0) = final_move_label;
 	      LABEL_NUSES (final_move_label) += 1;
 	    }
@@ -2099,7 +2116,8 @@ expand_strn_compare (rtx operands[], int no_length)
 
 	  rtx ifelse = gen_rtx_IF_THEN_ELSE (VOIDmode, cmp_rtx,
 					     lab_ref, pc_rtx);
-	  rtx j = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
+	  rtx_insn *j = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
+	  add_reg_br_prob_note (j, profile_probability::unlikely ());
 	  JUMP_LABEL (j) = dst_label;
 	  LABEL_NUSES (dst_label) += 1;
 	}
