@@ -1,3 +1,8 @@
+2019-02-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/88711
+	* gfortran.dg/pr79966.f90: Xfail everwyhere.
+
 2019-02-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/89200
