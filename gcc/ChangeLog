@@ -1,3 +1,10 @@
+2019-02-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/88755
+	* params.def (uninlined-function-insns, uninlined-function-time,
+	uninlined-thunk-insns, uninlined-thunk-time): Add artificial upper
+	bound so we don't get overflows.
+
 2019-02-09  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* config/rs6000/rs6000-string.c (expand_compare_loop,
