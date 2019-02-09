@@ -1,3 +1,8 @@
+2019-02-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/89077
+	* gfortran.dg/substr_simplify.f90: New test.
+
 2019-02-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/88711
