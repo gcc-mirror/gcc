@@ -5152,7 +5152,8 @@ fld_simplified_type_name (tree type)
   /* Drop TYPE_DECLs in TYPE_NAME in favor of the identifier in the
      TYPE_DECL if the type doesn't have linkage.
      this must match fld_  */
-  if (type != TYPE_MAIN_VARIANT (type) || ! type_with_linkage_p (type))
+  if (type != TYPE_MAIN_VARIANT (type)
+      || !DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (type)))
     return DECL_NAME (TYPE_NAME (type));
   return TYPE_NAME (type);
 }
