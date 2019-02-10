@@ -13,8 +13,6 @@
  */
 module rt.typeinfo.ti_long;
 
-private import rt.util.hash;
-
 // long
 
 class TypeInfo_l : TypeInfo
@@ -26,9 +24,13 @@ class TypeInfo_l : TypeInfo
 
     override string toString() const pure nothrow @safe { return "long"; }
 
-    override size_t getHash(in void* p)
+    override size_t getHash(scope const void* p)
     {
-        return rt.util.hash.hashOf(p[0 .. long.sizeof], 0);
+        static if (ulong.sizeof <= size_t.sizeof)
+            return *cast(const long*)p;
+        else
+            // long & ulong hash the same if ulong.sizeof > size_t.sizeof.
+            return hashOf(*cast(const ulong*)p);
     }
 
     override bool equals(in void* p1, in void* p2)

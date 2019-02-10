@@ -1,3 +1,12 @@
+2019-02-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Remove rt/util/hash.d
+	* libdruntime/Makefile.in: Rebuild.
+	* testsuite/libphobos.aa/aa.exp: New file.
+	* testsuite/libphobos.aa/test_aa.d: New test.
+	* testsuite/libphobos.hash/hash.exp: New file.
+	* testsuite/libphobos.hash/test_hash.d: New test.
+
 2019-01-12  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* README.gcc: New file.

@@ -229,8 +229,7 @@ am__objects_1 = core/atomic.lo core/attribute.lo core/bitop.lo \
 	rt/typeinfo/ti_wchar.lo rt/util/array.lo \
 	rt/util/container/array.lo rt/util/container/common.lo \
 	rt/util/container/hashtab.lo rt/util/container/treap.lo \
-	rt/util/hash.lo rt/util/random.lo rt/util/typeinfo.lo \
-	rt/util/utf.lo
+	rt/util/random.lo rt/util/typeinfo.lo rt/util/utf.lo
 am__objects_2 = gc/bits.lo gc/config.lo gc/gcinterface.lo \
 	gc/impl/conservative/gc.lo gc/impl/manual/gc.lo gc/os.lo \
 	gc/pooltable.lo gc/proxy.lo
@@ -831,8 +830,8 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	rt/typeinfo/ti_ucent.d rt/typeinfo/ti_uint.d rt/typeinfo/ti_ulong.d \
 	rt/typeinfo/ti_ushort.d rt/typeinfo/ti_void.d rt/typeinfo/ti_wchar.d \
 	rt/util/array.d rt/util/container/array.d rt/util/container/common.d \
-	rt/util/container/hashtab.d rt/util/container/treap.d rt/util/hash.d \
-	rt/util/random.d rt/util/typeinfo.d rt/util/utf.d
+	rt/util/container/hashtab.d rt/util/container/treap.d rt/util/random.d \
+	rt/util/typeinfo.d rt/util/utf.d
 
 DRUNTIME_DSOURCES_STDCXX = core/stdcpp/exception.d \
 	core/stdcpp/typeinfo.d
@@ -1256,7 +1255,6 @@ rt/util/container/array.lo: rt/util/container/$(am__dirstamp)
 rt/util/container/common.lo: rt/util/container/$(am__dirstamp)
 rt/util/container/hashtab.lo: rt/util/container/$(am__dirstamp)
 rt/util/container/treap.lo: rt/util/container/$(am__dirstamp)
-rt/util/hash.lo: rt/util/$(am__dirstamp)
 rt/util/random.lo: rt/util/$(am__dirstamp)
 rt/util/typeinfo.lo: rt/util/$(am__dirstamp)
 rt/util/utf.lo: rt/util/$(am__dirstamp)
