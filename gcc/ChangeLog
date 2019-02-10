@@ -1,3 +1,9 @@
+2019-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89268
+	* tree-if-conv.c (version_loop_for_if_conversion): Push to preds only
+	if preds is non-NULL.
+
 2019-02-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/89272
