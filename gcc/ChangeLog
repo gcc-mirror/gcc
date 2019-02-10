@@ -1,3 +1,8 @@
+2019-02-10  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32-md-auxiliary.c (nds32_spilt_doubleword): Support
+	to split POST_INC.
+
 2019-02-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-visibility.c (localize_node): Also do not localize
