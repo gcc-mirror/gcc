@@ -3867,11 +3867,9 @@ nds32_dwarf_register_span (rtx reg)
 				   gen_rtvec (4, dwarf_low_re, dwarf_high_re,
 						 dwarf_high_im, dwarf_low_im));
 	}
-      else if (mode == SFmode || mode == SImode)
+      else if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
 	{
-	  /* Create new dwarf information with adjusted register number.  */
-	  dwarf_single = gen_rtx_REG (word_mode, regno);
-	  return gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, dwarf_single));
+	  return NULL_RTX;
 	}
       else
 	{
