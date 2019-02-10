@@ -2316,6 +2316,14 @@
 
 ;; ----------------------------------------------------------------------------
 
+;; Patterns for __builtin_trap.
+(define_insn "trap"
+  [(trap_if (const_int 1) (const_int 0))]
+  ""
+  "trap\t0")
+
+;; ----------------------------------------------------------------------------
+
 ;; Patterns for TLS.
 ;; The following two tls patterns don't be expanded directly because the
 ;; intermediate value may be spilled into the stack.  As a result, it is

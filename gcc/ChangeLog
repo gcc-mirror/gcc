@@ -1,5 +1,9 @@
 2019-02-10  Monk Chiang  <sh.chiang04@gmail.com>
 
+	* config/nds32/nds32.md (trap): New pattern.
+
+2019-02-10  Monk Chiang  <sh.chiang04@gmail.com>
+
 	* config/nds32/nds32.c (nds32_dwarf_register_span): Refine register
 	dwarf span.
 
