@@ -532,7 +532,7 @@ void pr2243()
     assert(tih26 == rth26);
     assert(tih27 == rth27);
     assert(tih28 == rth28);
-    //assert(tih29 == rth29); // XGDC: Implementation wrongly hashes padding.
+    assert(tih29 == rth29);
     assert(tih30 == rth30);
     assert(tih31 == rth31);
     assert(tih32 == rth32);

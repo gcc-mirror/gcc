@@ -354,6 +354,8 @@ size_t hashOf(T)(scope const T val, size_t seed = 0) if (!is(T == enum) && __tra
 {
     static if (__traits(isFloating, val))
     {
+        import core.internal.convert : floatSize;
+
         static if (floatCoalesceZeroes || floatCoalesceNaNs)
         {
             import core.internal.traits : Unqual;
@@ -381,7 +383,23 @@ size_t hashOf(T)(scope const T val, size_t seed = 0) if (!is(T == enum) && __tra
         else static if (T.mant_dig == double.mant_dig && T.sizeof == ulong.sizeof)
             return hashOf(*cast(const ulong*) &data, seed);
         else
-            return bytesHashWithExactSizeAndAlignment!T(toUbyte(data), seed);
+        {
+            static if (is(T : creal) && T.sizeof != 2 * floatSize!(typeof(T.re)))
+            {
+                auto h1 = hashOf(data.re);
+                return hashOf(data.im, h1);
+            }
+            else static if (is(T : real) || is(T : ireal))
+            {
+                // Ignore trailing padding
+                auto bytes = toUbyte(data)[0 .. floatSize!T];
+                return bytesHashWithExactSizeAndAlignment!T(bytes, seed);
+            }
+            else
+            {
+                return bytesHashWithExactSizeAndAlignment!T(toUbyte(data), seed);
+            }
+        }
     }
     else
     {

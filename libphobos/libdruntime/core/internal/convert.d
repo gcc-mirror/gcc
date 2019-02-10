@@ -232,6 +232,7 @@ private struct Float
 
 private template FloatTraits(T) if (floatFormat!T == FloatFormat.Float)
 {
+    enum DATASIZE = 4;
     enum EXPONENT = 8;
     enum MANTISSA = 23;
     enum ZERO     = Float(0, 0, 0);
@@ -244,6 +245,7 @@ private template FloatTraits(T) if (floatFormat!T == FloatFormat.Float)
 
 private template FloatTraits(T) if (floatFormat!T == FloatFormat.Double)
 {
+    enum DATASIZE = 8;
     enum EXPONENT = 11;
     enum MANTISSA = 52;
     enum ZERO     = Float(0, 0, 0);
@@ -256,6 +258,7 @@ private template FloatTraits(T) if (floatFormat!T == FloatFormat.Double)
 
 private template FloatTraits(T) if (floatFormat!T == FloatFormat.Real80)
 {
+    enum DATASIZE = 10;
     enum EXPONENT = 15;
     enum MANTISSA = 64;
     enum ZERO     = Float(0, 0, 0);
@@ -268,6 +271,7 @@ private template FloatTraits(T) if (floatFormat!T == FloatFormat.Real80)
 
 private template FloatTraits(T) if (floatFormat!T == FloatFormat.DoubleDouble) //Unsupported in CTFE
 {
+    enum DATASIZE = 16;
     enum EXPONENT = 11;
     enum MANTISSA = 106;
     enum ZERO     = Float(0, 0, 0);
@@ -280,6 +284,7 @@ private template FloatTraits(T) if (floatFormat!T == FloatFormat.DoubleDouble) /
 
 private template FloatTraits(T) if (floatFormat!T == FloatFormat.Quadruple)
 {
+    enum DATASIZE = 16;
     enum EXPONENT = 15;
     enum MANTISSA = 112;
     enum ZERO     = Float(0, 0, 0);
@@ -496,8 +501,8 @@ version (unittest)
         testNumberConvert!("real.min_normal/2UL^^63");
         // check subnormal storage edge case for Quadruple
         testNumberConvert!("real.min_normal/2UL^^56");
-        //testNumberConvert!("real.min_normal/19"); // XGDC: ct[0] == 0, rt[0] == 27
-        //testNumberConvert!("real.min_normal/17"); // XGDC: ct[0= == 128, rt[0] == 136
+        testNumberConvert!("real.min_normal/19");
+        testNumberConvert!("real.min_normal/17");
 
         /**Test imaginary values: convert algorithm is same with real values*/
         testNumberConvert!("0.0Fi");
@@ -505,8 +510,8 @@ version (unittest)
         testNumberConvert!("0.0Li");
 
         /**True random values*/
-        //testNumberConvert!("-0x9.0f7ee55df77618fp-13829L"); //XGDC: ct[0,1] == [0,96], rt[0,1] == [143,97]
-        //testNumberConvert!("0x7.36e6e2640120d28p+8797L"); // XGDC: ct[0,1] == [0,24], rt[0,1] == [80,26]
+        testNumberConvert!("-0x9.0f7ee55df77618fp-13829L");
+        testNumberConvert!("0x7.36e6e2640120d28p+8797L");
         testNumberConvert!("-0x1.05df6ce4702ccf8p+15835L");
         testNumberConvert!("0x9.54bb0d88806f714p-7088L");
 
@@ -565,6 +570,11 @@ template floatFormat(T) if (is(T:real) || is(T:ireal))
     else
         static assert(0);
 
+}
+
+package template floatSize(T) if (is(T:real) || is(T:ireal))
+{
+    enum floatSize = FloatTraits!(T).DATASIZE;
 }
 
 //  all toUbyte functions must be evaluable at compile time
