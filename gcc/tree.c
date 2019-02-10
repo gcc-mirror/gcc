@@ -5153,7 +5153,10 @@ fld_simplified_type_name (tree type)
      TYPE_DECL if the type doesn't have linkage.
      this must match fld_  */
   if (type != TYPE_MAIN_VARIANT (type)
-      || !DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (type)))
+      || (!DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (type))
+	  && (TREE_CODE (type) != RECORD_TYPE
+	      || !TYPE_BINFO (type)
+	      || !BINFO_VTABLE (TYPE_BINFO (type)))))
     return DECL_NAME (TYPE_NAME (type));
   return TYPE_NAME (type);
 }
