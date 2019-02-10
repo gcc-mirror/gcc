@@ -2760,7 +2760,8 @@ version_loop_for_if_conversion (struct loop *loop, vec<gimple *> *preds)
   new_loop->force_vectorize = false;
   gsi = gsi_last_bb (cond_bb);
   gimple_call_set_arg (g, 1, build_int_cst (integer_type_node, new_loop->num));
-  preds->safe_push (g);
+  if (preds)
+    preds->safe_push (g);
   gsi_insert_before (&gsi, g, GSI_SAME_STMT);
   update_ssa (TODO_update_ssa);
   return new_loop;
