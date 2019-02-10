@@ -1,3 +1,9 @@
+2019-02-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/89272
+	* tree.c (fld_simplified_type_name): Also keep TYPE_DECL for
+	polymorphic types.
+
 2019-02-10  Monk Chiang  <sh.chiang04@gmail.com>
 
 	* config/nds32/nds32.md (trap): New pattern.
