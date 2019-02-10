@@ -146,11 +146,10 @@ private:
 
     static hash_t hashOf(in ref Key key) @trusted
     {
-        import rt.util.hash : hashOf;
         static if (is(Key U : U[]))
-            return hashOf(key, 0);
+            return .hashOf(key, 0);
         else
-            return hashOf((&key)[0 .. 1], 0);
+            return .hashOf((&key)[0 .. 1], 0);
     }
 
     @property hash_t mask() const

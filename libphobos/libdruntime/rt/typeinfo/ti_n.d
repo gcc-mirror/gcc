@@ -19,7 +19,7 @@ class TypeInfo_n : TypeInfo
 {
     override string toString() const @safe { return "typeof(null)"; }
 
-    override size_t getHash(in void* p) const
+    override size_t getHash(scope const void* p) const
     {
         return 0;
     }

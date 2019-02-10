@@ -22,7 +22,7 @@ class TypeInfo_C : TypeInfo
     //pure:
     //nothrow:
 
-    override size_t getHash(in void* p)
+    override size_t getHash(scope const void* p)
     {
         Object o = *cast(Object*)p;
         return o ? o.toHash() : 0;
