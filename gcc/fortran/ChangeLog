@@ -1,6 +1,6 @@
 2019-02-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
-	PR fortran/71237
+	PR fortran/71723
 	* expr.c (gfc_check_assign): Add argument is_init_expr.  If we are
 	looking at an init expression, issue error if the target is not a
 	TARGET and we are not looking at a procedure pointer.
