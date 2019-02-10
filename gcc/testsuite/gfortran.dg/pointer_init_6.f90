@@ -13,7 +13,7 @@ module m1
  integer, target :: i
  type(t), target :: x
  integer, pointer :: p1 => i
- integer, pointer :: p2 => p1   ! { dg-error "must have the TARGET attribute" }
+ integer, pointer :: p2 => p1   ! { dg-error "Pointer assignment target in initialization expression does not have the TARGET attribute at" }
  integer, pointer :: p3 => x%p  ! { dg-error "must have the TARGET attribute" }
  integer, pointer :: p4 => x%i
  integer, pointer :: p5 => u    ! { dg-error "has no IMPLICIT type" }
