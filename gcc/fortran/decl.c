@@ -1845,7 +1845,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 		    }
 		  else if (init->ts.u.cl && init->ts.u.cl->length)
 		    sym->ts.u.cl->length =
-				gfc_copy_expr (sym->value->ts.u.cl->length);
+				gfc_copy_expr (init->ts.u.cl->length);
 		}
 	    }
 	  /* Update initializer character length according symbol.  */
