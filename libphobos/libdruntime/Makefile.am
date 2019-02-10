@@ -79,17 +79,8 @@ ALL_DRUNTIME_COMPILE_DSOURCES += $(DRUNTIME_DSOURCES_GENERATED)
 
 ALL_DRUNTIME_SOURCES = $(ALL_DRUNTIME_COMPILE_DSOURCES) $(DRUNTIME_CSOURCES) \
 	$(DRUNTIME_SSOURCES)
-REAL_DRUNTIME_TEST_LOBJECTS = $(ALL_DRUNTIME_COMPILE_DSOURCES:.d=.t.lo)
-REAL_DRUNTIME_TEST_OBJECTS  = $(ALL_DRUNTIME_COMPILE_DSOURCES:.d=.t.o)
-# Workaround issue #
-DRUNTIME_TEST_OBJECTS  = $(filter-out rt/util/typeinfo.t.o \
-	core/internal/convert.t.o, $(REAL_DRUNTIME_TEST_OBJECTS)) \
-	rt/util/typeinfo.o core/internal/convert.o
-
-DRUNTIME_TEST_LOBJECTS  = $(filter-out rt/util/typeinfo.t.lo \
-	core/internal/convert.t.lo, $(REAL_DRUNTIME_TEST_LOBJECTS)) \
-	rt/util/typeinfo.lo core/internal/convert.lo
-
+DRUNTIME_TEST_LOBJECTS = $(ALL_DRUNTIME_COMPILE_DSOURCES:.d=.t.lo)
+DRUNTIME_TEST_OBJECTS  = $(ALL_DRUNTIME_COMPILE_DSOURCES:.d=.t.o)
 
 # Main library build definitions
 check_PROGRAMS =
