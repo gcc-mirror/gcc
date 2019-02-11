@@ -1,3 +1,11 @@
+2019-02-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89023
+	* testsuite/17_intro/headers/c++2011/parallel_mode.cc: New test.
+	* testsuite/17_intro/headers/c++2014/parallel_mode.cc: New test.
+	* testsuite/17_intro/headers/c++2017/parallel_mode.cc: New test.
+	* testsuite/28_regex/headers/regex/parallel_mode.cc: Remove.
+
 2019-02-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/71044
