@@ -13355,7 +13355,8 @@ enclosing_instantiation_of (tree otctx)
   tree fn = current_function_decl;
   int lambda_count = 0;
 
-  for (; tctx && lambda_fn_in_template_p (tctx);
+  for (; tctx && (lambda_fn_in_template_p (tctx)
+		  || instantiated_lambda_fn_p (tctx));
        tctx = decl_function_context (tctx))
     ++lambda_count;
   for (; fn; fn = decl_function_context (fn))
