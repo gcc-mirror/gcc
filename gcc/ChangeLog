@@ -1,5 +1,18 @@
 2019-02-11  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/88771
+	* gimple-ssa-warn-restrict.c (pass_wrestrict::gate): Also enable
+	when -Wstringop-overflow is set.
+	(builtin_memref::builtin_memref): Adjust excessive upper bound
+	only when lower bound is not excessive.
+	(maybe_diag_overlap): Detect and diagnose excessive bounds via
+	-Wstringop-ovefflow.
+	(maybe_diag_offset_bounds): Rename...
+	(maybe_diag_access_bounds): ...to this.
+	(check_bounds_or_overlap): Adjust for name change above.
+
+2019-02-11  Martin Sebor  <msebor@redhat.com>
+
 	PR c++/87996
 	* builtins.c (max_object_size): Move from here...
 	* builtins.h (max_object_size): ...and here...

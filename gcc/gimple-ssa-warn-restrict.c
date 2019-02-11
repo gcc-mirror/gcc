@@ -75,7 +75,7 @@ class pass_wrestrict : public gimple_opt_pass
 bool
 pass_wrestrict::gate (function *fun ATTRIBUTE_UNUSED)
 {
-  return warn_array_bounds != 0 || warn_restrict != 0;
+  return warn_array_bounds || warn_restrict || warn_stringop_overflow;
 }
 
 /* Class to walk the basic blocks of a function in dominator order.  */
@@ -256,7 +256,7 @@ builtin_memref::builtin_memref (tree expr, tree size)
       sizrange[1] = wi::to_offset (range[1]);
       /* get_size_range returns SIZE_MAX for the maximum size.
 	 Constrain it to the real maximum of PTRDIFF_MAX.  */
-      if (sizrange[1] > maxobjsize)
+      if (sizrange[0] <= maxobjsize && sizrange[1] > maxobjsize)
 	sizrange[1] = maxobjsize;
     }
   else
@@ -1567,18 +1567,56 @@ maybe_diag_overlap (location_t loc, gimple *call, builtin_access &acs)
   return true;
 }
 
-/* Validate REF offsets in an expression passed as an argument to a CALL
-   to a built-in function FUNC to make sure they are within the bounds
-   of the referenced object if its size is known, or PTRDIFF_MAX otherwise.
-   Both initial values of the offsets and their final value computed by
-   the function by incrementing the initial value by the size are
+/* Validate REF size and offsets in an expression passed as an argument
+   to a CALL to a built-in function FUNC to make sure they are within
+   the bounds of the referenced object if its size is known, or
+   PTRDIFF_MAX otherwise.  DO_WARN is true when a diagnostic should
+   be issued, false otherwise.
+   Both initial values of the offsets and their final value computed
+   by the function by incrementing the initial value by the size are
    validated.  Return true if the offsets are not valid and a diagnostic
-   has been issued.  */
+   has been issued, or would have been issued if DO_WARN had been true.  */
 
 static bool
-maybe_diag_offset_bounds (location_t loc, gimple *call, tree func, int strict,
+maybe_diag_access_bounds (location_t loc, gimple *call, tree func, int strict,
 			  const builtin_memref &ref, bool do_warn)
 {
+  const offset_int maxobjsize = tree_to_shwi (max_object_size ());
+
+  /* Check for excessive size first and regardless of warning options
+     since the result is used to make codegen decisions.  */
+  if (ref.sizrange[0] > maxobjsize)
+    {
+      /* Return true without issuing a warning.  */
+      if (!do_warn)
+	return true;
+
+      if (ref.ref && TREE_NO_WARNING (ref.ref))
+	return false;
+
+      if (warn_stringop_overflow)
+	{
+	  if (EXPR_HAS_LOCATION (ref.ptr))
+	    loc = EXPR_LOCATION (ref.ptr);
+
+	  loc = expansion_point_location_if_in_system_header (loc);
+
+	  if (ref.sizrange[0] == ref.sizrange[1])
+	    return warning_at (loc, OPT_Wstringop_overflow_,
+			       "%G%qD specified bound %wu "
+			       "exceeds maximum object size %wu",
+			       call, func, ref.sizrange[0].to_uhwi (),
+			       maxobjsize.to_uhwi ());
+
+	  return warning_at (loc, OPT_Wstringop_overflow_,
+			     "%G%qD specified bound between %wu and %wu "
+			     "exceeds maximum object size %wu",
+			     call, func, ref.sizrange[0].to_uhwi (),
+			     ref.sizrange[1].to_uhwi (),
+			     maxobjsize.to_uhwi ());
+	}
+    }
+
   /* Check for out-bounds pointers regardless of warning options since
      the result is used to make codegen decisions.  */
   offset_int ooboff[] = { ref.offrange[0], ref.offrange[1] };
@@ -1616,11 +1654,12 @@ maybe_diag_offset_bounds (location_t loc, gimple *call, tree func, int strict,
   if (oobref == error_mark_node)
     {
       if (ref.sizrange[0] == ref.sizrange[1])
-	sprintf (rangestr[1], "%lli", (long long) ref.sizrange[0].to_shwi ());
+	sprintf (rangestr[1], "%llu",
+		 (unsigned long long) ref.sizrange[0].to_shwi ());
       else
 	sprintf (rangestr[1], "[%lli, %lli]",
-		 (long long) ref.sizrange[0].to_shwi (),
-		 (long long) ref.sizrange[1].to_shwi ());
+		 (unsigned long long) ref.sizrange[0].to_uhwi (),
+		 (unsigned long long) ref.sizrange[1].to_uhwi ());
 
       tree type;
 
@@ -1854,8 +1893,8 @@ check_bounds_or_overlap (gimple *call, tree dst, tree src, tree dstsize,
   /* Validate offsets first to make sure they are within the bounds
      of the destination object if its size is known, or PTRDIFF_MAX
      otherwise.  */
-  if (maybe_diag_offset_bounds (loc, call, func, strict, dstref, do_warn)
-      || maybe_diag_offset_bounds (loc, call, func, strict, srcref, do_warn))
+  if (maybe_diag_access_bounds (loc, call, func, strict, dstref, do_warn)
+      || maybe_diag_access_bounds (loc, call, func, strict, srcref, do_warn))
     {
       if (do_warn)
 	gimple_set_no_warning (call, true);
