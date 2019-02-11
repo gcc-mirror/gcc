@@ -63,7 +63,6 @@ struct searchc_env {
   int order_pos;
   splay_tree nodes_marked_new;
   bool reduce;
-  bool allow_overwritable;
   int count;
 };
 
@@ -105,7 +104,7 @@ searchc (struct searchc_env* env, struct cgraph_node *v,
 
       if (w->aux
 	  && (avail > AVAIL_INTERPOSABLE
-	      || (env->allow_overwritable && avail == AVAIL_INTERPOSABLE)))
+	      || avail == AVAIL_INTERPOSABLE))
 	{
 	  w_info = (struct ipa_dfs_info *) w->aux;
 	  if (w_info->new_node)
@@ -162,7 +161,7 @@ searchc (struct searchc_env* env, struct cgraph_node *v,
 
 int
 ipa_reduced_postorder (struct cgraph_node **order,
-		       bool reduce, bool allow_overwritable,
+		       bool reduce,
 		       bool (*ignore_edge) (struct cgraph_edge *))
 {
   struct cgraph_node *node;
@@ -175,15 +174,13 @@ ipa_reduced_postorder (struct cgraph_node **order,
   env.nodes_marked_new = splay_tree_new (splay_tree_compare_ints, 0, 0);
   env.count = 1;
   env.reduce = reduce;
-  env.allow_overwritable = allow_overwritable;
 
   FOR_EACH_DEFINED_FUNCTION (node)
     {
       enum availability avail = node->get_availability ();
 
       if (avail > AVAIL_INTERPOSABLE
-	  || (allow_overwritable
-	      && (avail == AVAIL_INTERPOSABLE)))
+	  || avail == AVAIL_INTERPOSABLE)
 	{
 	  /* Reuse the info if it is already there.  */
 	  struct ipa_dfs_info *info = (struct ipa_dfs_info *) node->aux;
