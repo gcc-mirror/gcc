@@ -6821,12 +6821,14 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	    /* Make sure we return NULL_TREE only if we have really issued
 	       an error, as described above.  */
 	    return (complain & tf_error) ? NULL_TREE : error_mark_node;
-	  expr = maybe_constant_value (expr);
+	  expr = maybe_constant_value (expr, NULL_TREE,
+				       /*manifestly_const_eval=*/true);
 	  expr = convert_from_reference (expr);
 	}
       else if (TYPE_PTR_OR_PTRMEM_P (type))
 	{
-	  tree folded = maybe_constant_value (expr);
+	  tree folded = maybe_constant_value (expr, NULL_TREE,
+					      /*manifestly_const_eval=*/true);
 	  if (TYPE_PTR_P (type) ? integer_zerop (folded)
 	      : null_member_pointer_value_p (folded))
 	    expr = folded;
