@@ -1,3 +1,9 @@
+2019-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88977
+	* pt.c (convert_nontype_argument): Pass true as manifestly_const_eval
+	to maybe_constant_value calls.
+
 2019-02-11  Marek Polacek  <polacek@redhat.com>
 
 	* typeck2.c (digest_init_r): Remove commented code.
