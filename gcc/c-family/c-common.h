@@ -1270,7 +1270,9 @@ extern tree find_inv_trees (tree *, int *, void *);
 extern tree replace_inv_trees (tree *, int *, void *);
 
 extern bool reject_gcc_builtin (const_tree, location_t = UNKNOWN_LOCATION);
-extern bool valid_array_size_p (location_t, tree, tree, bool = true);
+extern bool valid_array_size_p (location_t, const_tree, tree, bool = true);
+extern void invalid_array_size_error (location_t, cst_size_error,
+				      const_tree, const_tree);
 
 /* In c-warn.c.  */
 extern void constant_expression_warning (tree);
