@@ -1,5 +1,25 @@
 2019-02-11  Martin Sebor  <msebor@redhat.com>
 
+	PR c++/87996
+	* c-c++-common/array-5.c: New test.
+	* c-c++-common/pr68107.c: Adjust text of diagnostics.
+	* g++.dg/init/new38.C: Same.
+	* g++.dg/init/new43.C: Same.
+	* g++.dg/init/new44.C: Same.
+	* g++.dg/init/new46.C: Same.
+	* g++.dg/other/large-size-array.C: Same.
+	* g++.dg/other/new-size-type.C: Same.
+	* g++.dg/template/array30.C: Same.
+	* g++.dg/template/array32.C: New test.
+	* g++.dg/template/dependent-name3.C: Adjust.
+	* gcc.dg/large-size-array-3.c: Same.
+	* gcc.dg/large-size-array-5.c: Same.
+	* gcc.dg/large-size-array.c: Same.
+	* g++.old-deja/g++.brendan/array1.C: Same.
+	* g++.old-deja/g++.mike/p6149.C: Same.
+
+2019-02-11  Martin Sebor  <msebor@redhat.com>
+
 	* gcc.dg/tree-prof/inliner-1.c: Correct comments.
 
 2019-02-11  Tamar Christina  <tamar.christina@arm.com>

@@ -8231,29 +8231,82 @@ reject_gcc_builtin (const_tree expr, location_t loc /* = UNKNOWN_LOCATION */)
   return false;
 }
 
+/* Issue an ERROR for an invalid SIZE of array NAME which is null
+   for unnamed arrays.  */
+
+void
+invalid_array_size_error (location_t loc, cst_size_error error,
+			  const_tree size, const_tree name)
+{
+  tree maxsize = max_object_size ();
+  switch (error)
+    {
+    case cst_size_negative:
+      if (name)
+	error_at (loc, "size %qE of array %qE is negative",
+		  size, name);
+      else
+	error_at (loc, "size %qE of array is negative",
+		  size);
+      break;
+    case cst_size_too_big:
+      if (name)
+	error_at (loc, "size %qE of array %qE exceeds maximum "
+		  "object size %qE", size, name, maxsize);
+      else
+	error_at (loc, "size %qE of array exceeds maximum "
+		  "object size %qE", size, maxsize);
+      break;
+    case cst_size_overflow:
+      if (name)
+	error_at (loc, "size of array %qE exceeds maximum "
+		  "object size %qE", name, maxsize);
+      else
+	error_at (loc, "size of array exceeds maximum "
+		  "object size %qE", maxsize);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Check if array size calculations overflow or if the array covers more
    than half of the address space.  Return true if the size of the array
-   is valid, false otherwise.  TYPE is the type of the array and NAME is
-   the name of the array, or NULL_TREE for unnamed arrays.  */
+   is valid, false otherwise.  T is either the type of the array or its
+   size, and NAME is the name of the array, or null for unnamed arrays.  */
 
 bool
-valid_array_size_p (location_t loc, tree type, tree name, bool complain)
+valid_array_size_p (location_t loc, const_tree t, tree name, bool complain)
 {
-  if (type != error_mark_node
-      && COMPLETE_TYPE_P (type)
-      && TREE_CODE (TYPE_SIZE_UNIT (type)) == INTEGER_CST
-      && !valid_constant_size_p (TYPE_SIZE_UNIT (type)))
+  if (t == error_mark_node)
+    return true;
+
+  const_tree size;
+  if (TYPE_P (t))
     {
-      if (complain)
-	{
-	  if (name)
-	    error_at (loc, "size of array %qE is too large", name);
-	  else
-	    error_at (loc, "size of unnamed array is too large");
-	}
-      return false;
+      if (!COMPLETE_TYPE_P (t))
+	return true;
+      size = TYPE_SIZE_UNIT (t);
     }
-  return true;
+  else
+    size = t;
+
+  if (TREE_CODE (size) != INTEGER_CST)
+    return true;
+
+  cst_size_error error;
+  if (valid_constant_size_p (size, &error))
+    return true;
+
+  if (!complain)
+    return false;
+
+  if (TREE_CODE (TREE_TYPE (size)) == ENUMERAL_TYPE)
+    /* Show the value of the enumerator rather than its name.  */
+    size = convert (ssizetype, const_cast<tree> (size));
+
+  invalid_array_size_error (loc, error, size, name);
+  return false;
 }
 
 /* Read SOURCE_DATE_EPOCH from environment to have a deterministic

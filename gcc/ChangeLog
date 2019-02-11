@@ -1,3 +1,11 @@
+2019-02-11  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/87996
+	* builtins.c (max_object_size): Move from here...
+	* builtins.h (max_object_size): ...and here...
+	* tree.c (max_object_size): ...to here...
+	* tree.h (max_object_size): ...and here.
+
 2019-02-11  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Shift-right

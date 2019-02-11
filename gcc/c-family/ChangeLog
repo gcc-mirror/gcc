@@ -1,3 +1,11 @@
+2019-02-11  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/87996
+	* c-common.c (invalid_array_size_error): New function.
+	(valid_array_size_p): Call it.  Handle size as well as type.
+	* c-common.h (valid_constant_size_p): New function.
+	(enum cst_size_error): New type.
+
 2019-01-31  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/89122
