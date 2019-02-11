@@ -1,3 +1,10 @@
+2019-02-11  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/88560
+	* gcc.target/arm/armv8_2-fp16-move-1.c: Update assembler scans.
+	* gcc.target/arm/fp16-aapcs-3.c: Likewise.
+	* gcc.target/arm/fp16-aapcs-1.c: Likewise.
+
 2019-02-11  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* gcc.target/powerpc/vec-sld-modulo.c: New.
