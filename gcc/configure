@@ -18646,7 +18646,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18640 "configure"
+#line 18649 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18752,7 +18752,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18746 "configure"
+#line 18755 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -23309,16 +23309,16 @@ EOF
 	      cat > conftest.s <<EOF
 .section $sh_quote.fini_array.65530$sh_quote,$sh_flags,$sh_type
 .align 4
-.byte 'C', 'C', 'C', 'C'
+.byte 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C'
 .section $sh_quote.init_array.65530$sh_quote,$sh_flags,$sh_type
 .align 4
-.byte 'D', 'D', 'D', 'D'
+.byte 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D'
 .section $sh_quote.fini_array.01005$sh_quote,$sh_flags,$sh_type
 .align 4
-.byte 'G', 'G', 'G', 'G'
+.byte 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G'
 .section $sh_quote.init_array.01005$sh_quote,$sh_flags,$sh_type
 .align 4
-.byte 'H', 'H', 'H', 'H'
+.byte 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'
 .text
 .globl _start
 _start:
@@ -23326,9 +23326,9 @@ EOF
 	      if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
 	         && $gcc_cv_ld -o conftest conftest.o > /dev/null 2>&1 \
 	         && $gcc_cv_objdump -s -j .init_array conftest \
-		    | grep HHHHDDDD > /dev/null 2>&1 \
+		    | grep HHHHHHHHDDDDDDDD > /dev/null 2>&1 \
 	         && $gcc_cv_objdump -s -j .fini_array conftest \
-		    | grep GGGGCCCC > /dev/null 2>&1; then
+		    | grep GGGGGGGGCCCCCCCC > /dev/null 2>&1; then
 	        gcc_cv_initfini_array=yes
 	      fi
 	      ;;
@@ -25141,7 +25141,7 @@ if test "${enable_standard_branch_protection+set}" = set; then :
           no)
             ;;
           *)
-            as_fn_error "'$enableval' is an invalid value for --enable-standard-branch-protection.\
+            as_fn_error $? "'$enableval' is an invalid value for --enable-standard-branch-protection.\
   Valid choices are 'yes' and 'no'." "$LINENO" 5
             ;;
         esac
