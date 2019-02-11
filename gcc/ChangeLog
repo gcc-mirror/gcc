@@ -1,3 +1,8 @@
+2019-02-11  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.c (cris_preferred_minimum_alignment): Fix name
+	typo.
+
 2019-02-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/constraints.md (Yd): Replace AVX512BW with AVX512DQ
