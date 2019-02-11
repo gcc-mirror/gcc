@@ -62,7 +62,7 @@ namespace CS
       // OutV is initialized to SIZE_MAX in the ctor above causing
       // the multiplication below to produce a very large number
       // in excess of the maximum possible object size (SIZE_MAX/2).
-      __builtin_memcpy (this->OutP, InP, OutV * sizeof (csVector2));   // { dg-warning "specified size \[0-9\]+ exceeds maximum object size" }
+      __builtin_memcpy (this->OutP, InP, OutV * sizeof (csVector2));   // { dg-warning "exceeds maximum object size" }
       return 0;
     }
   };

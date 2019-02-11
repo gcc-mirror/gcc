@@ -1,5 +1,15 @@
 2019-02-11  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/88771
+	* gcc.dg/Wstringop-overflow-8.c: New test.
+	* gcc.dg/Wstringop-overflow-9.c: New test.
+	* gcc.dg/Warray-bounds-40.c: New test.
+	* gcc.dg/builtin-stpncpy.c: Adjust.
+	* gcc.dg/builtin-stringop-chk-4.c: Adjust.
+	* g++.dg/opt/memcpy1.C: Adjust.
+
+2019-02-11  Martin Sebor  <msebor@redhat.com>
+
 	PR c++/87996
 	* c-c++-common/array-5.c: New test.
 	* c-c++-common/pr68107.c: Adjust text of diagnostics.
