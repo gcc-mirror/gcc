@@ -157,9 +157,9 @@
 ;; We use gen_operands_ldrd_strd() with a modify argument as false so that the
 ;; operands are not changed.
 (define_insn "*arm_ldrd"
-  [(parallel [(set (match_operand:SI 0 "s_register_operand" "=r")
+  [(parallel [(set (match_operand:SI 0 "s_register_operand" "=q")
 		   (match_operand:SI 2 "memory_operand" "m"))
-	      (set (match_operand:SI 1 "s_register_operand" "=r")
+	      (set (match_operand:SI 1 "s_register_operand" "=q")
 		   (match_operand:SI 3 "memory_operand" "m"))])]
   "TARGET_LDRD && TARGET_ARM && reload_completed
   && valid_operands_ldrd_strd (operands, true)"
@@ -178,9 +178,9 @@
 
 (define_insn "*arm_strd"
   [(parallel [(set (match_operand:SI 2 "memory_operand" "=m")
-		   (match_operand:SI 0 "s_register_operand" "r"))
+		   (match_operand:SI 0 "s_register_operand" "q"))
 	      (set (match_operand:SI 3 "memory_operand" "=m")
-		   (match_operand:SI 1 "s_register_operand" "r"))])]
+		   (match_operand:SI 1 "s_register_operand" "q"))])]
   "TARGET_LDRD && TARGET_ARM && reload_completed
   && valid_operands_ldrd_strd (operands, false)"
   {
