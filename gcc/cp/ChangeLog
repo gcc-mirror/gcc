@@ -1,3 +1,9 @@
+2019-02-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89267 - change of error location.
+	* pt.c (tsubst_copy_and_build): Do still clear expr location
+	for instantiated thunk calls.
+
 2019-02-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/88761 - ICE with reference capture of constant.
