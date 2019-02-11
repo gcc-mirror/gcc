@@ -1,3 +1,10 @@
+2019-02-11  Hans-Peter Nilsson  <hp@axis.com>
+
+	* function.c (assign_parm_setup_block): Use the stored
+	size, not the passed size, when allocating stack-space,
+	also for a parameter with alignment larger than
+	MAX_SUPPORTED_STACK_ALIGNMENT.
+
 2019-02-11  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/89009
