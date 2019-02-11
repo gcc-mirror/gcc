@@ -1,3 +1,8 @@
+2019-02-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* MAINTAINERS (amdgcn port): Add myself and Julian Brown.
+	(Write After Approval): Remove myself and Julian.
+
 2019-01-26  Harald Anlauf  <anlauf@gmx.de>
 
 	* MAINTAINERS (Write After Approval): Add myself.
