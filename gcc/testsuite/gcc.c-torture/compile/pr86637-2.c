@@ -1,4 +1,6 @@
-/* { dg-do compile { target fgraphite } } */
+/* { dg-do compile } */
+/* { dg-require-effective-target fgraphite } */
+/* { dg-require-effective-target pthread } */
 /* { dg-options "-floop-parallelize-all -fsave-optimization-record -ftree-parallelize-loops=2 -ftree-slp-vectorize" } */
 
 #include <stdint.h>
