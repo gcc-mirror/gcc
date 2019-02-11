@@ -1,5 +1,14 @@
 2019-02-11  Jason Merrill  <jason@redhat.com>
 
+	Revert:
+	PR c++/88752 - ICE with lambda and constexpr if.
+	* cp-tree.h (LAMBDA_EXPR_INSTANTIATED): New.
+	* pt.c (tsubst_lambda_expr): Set it.
+	(instantiated_lambda_fn_p): Check it.
+	(enclosing_instantiation_of): Use it.
+
+2019-02-11  Jason Merrill  <jason@redhat.com>
+
 	PR c++/89267 - change of error location.
 	* pt.c (tsubst_copy_and_build): Do still clear expr location
 	for instantiated thunk calls.
