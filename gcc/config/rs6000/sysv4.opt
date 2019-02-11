@@ -160,6 +160,10 @@ mbss-plt
 Target Report RejectNegative Var(secure_plt, 0) Save
 Generate code for old exec BSS PLT.
 
+mpltseq
+Target Report Var(rs6000_pltseq) Init(1) Save
+Use inline plt sequences to implement long calls and -fno-plt.
+
 mgnu-attribute
 Target Report Var(rs6000_gnu_attr) Init(1) Save
 Emit .gnu_attribute tags.

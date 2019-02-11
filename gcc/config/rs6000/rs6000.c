@@ -21665,7 +21665,7 @@ rs6000_indirect_call_template_1 (rtx *operands, unsigned int funop,
 		    || (REG_P (operands[funop])
 			&& REGNO (operands[funop]) == LR_REGNO));
 
-  if (!TARGET_MACHO && HAVE_AS_PLTSEQ && GET_CODE (operands[funop]) == UNSPEC)
+  if (TARGET_PLTSEQ && GET_CODE (operands[funop]) == UNSPEC)
     {
       const char *rel64 = TARGET_64BIT ? "64" : "";
       char tls[29];
@@ -32827,8 +32827,7 @@ rs6000_longcall_ref (rtx call_ref, rtx arg)
       call_ref = gen_rtx_SYMBOL_REF (VOIDmode, IDENTIFIER_POINTER (node));
     }
 
-  if (HAVE_AS_PLTSEQ
-      && (DEFAULT_ABI == ABI_ELFv2 || DEFAULT_ABI == ABI_V4))
+  if (TARGET_PLTSEQ)
     {
       rtx base = const0_rtx;
       int regno;
@@ -37793,14 +37792,20 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
   rtx call[4];
   int n_call;
   rtx insn;
+  bool is_pltseq_longcall;
 
   if (global_tlsarg)
     tlsarg = global_tlsarg;
 
   /* Handle longcall attributes.  */
+  is_pltseq_longcall = false;
   if ((INTVAL (cookie) & CALL_LONG) != 0
       && GET_CODE (func_desc) == SYMBOL_REF)
-    func = rs6000_longcall_ref (func_desc, tlsarg);
+    {
+      func = rs6000_longcall_ref (func_desc, tlsarg);
+      if (TARGET_PLTSEQ)
+	is_pltseq_longcall = true;
+    }
 
   /* Handle indirect calls.  */
   if (!SYMBOL_REF_P (func)
@@ -37825,10 +37830,12 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 					     gen_rtx_PLUS (Pmode, stack_ptr,
 							   stack_toc_offset));
 	  MEM_VOLATILE_P (stack_toc_mem) = 1;
-	  if (HAVE_AS_PLTSEQ
-	      && DEFAULT_ABI == ABI_ELFv2
-	      && GET_CODE (func_desc) == SYMBOL_REF)
+	  if (is_pltseq_longcall)
 	    {
+	      /* Use USPEC_PLTSEQ here to emit every instruction in an
+		 inline PLT call sequence with a reloc, enabling the
+		 linker to edit the sequence back to a direct call
+		 when that makes sense.  */
 	      rtvec v = gen_rtvec (3, toc_reg, func_desc, tlsarg);
 	      rtx mark_toc_reg = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
 	      emit_insn (gen_rtx_SET (stack_toc_mem, mark_toc_reg));
@@ -37849,8 +37856,7 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 	     calls via LR, so move the address there.  Needed to mark
 	     this insn for linker plt sequence editing too.  */
 	  func_addr = gen_rtx_REG (Pmode, CTR_REGNO);
-	  if (HAVE_AS_PLTSEQ
-	      && GET_CODE (func_desc) == SYMBOL_REF)
+	  if (is_pltseq_longcall)
 	    {
 	      rtvec v = gen_rtvec (3, abi_reg, func_desc, tlsarg);
 	      rtx mark_func = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
@@ -37988,9 +37994,15 @@ rs6000_call_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
       && GET_CODE (func_desc) == SYMBOL_REF)
     {
       func = rs6000_longcall_ref (func_desc, tlsarg);
-      /* If the longcall was implemented using PLT16 relocs, then r11
-	 needs to be valid at the call for lazy linking.  */
-      if (HAVE_AS_PLTSEQ)
+      /* If the longcall was implemented as an inline PLT call using
+	 PLT unspecs then func will be REG:r11.  If not, func will be
+	 a pseudo reg.  The inline PLT call sequence supports lazy
+	 linking (and longcalls to functions in dlopen'd libraries).
+	 The other style of longcalls don't.  The lazy linking entry
+	 to the dynamic symbol resolver requires r11 be the function
+	 address (as it is for linker generated PLT stubs).  Ensure
+	 r11 stays valid to the bctrl by marking r11 used by the call.  */
+      if (TARGET_PLTSEQ)
 	abi_reg = func;
     }
 
@@ -38000,11 +38012,12 @@ rs6000_call_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
       func = force_reg (Pmode, func);
 
       /* Indirect calls via CTR are strongly preferred over indirect
-	 calls via LR, so move the address there.  Needed to mark
-	 this insn for linker plt sequence editing too.  */
+	 calls via LR, so move the address there.  That can't be left
+	 to reload because we want to mark every instruction in an
+	 inline PLT call sequence with a reloc, enabling the linker to
+	 edit the sequence back to a direct call when that makes sense.  */
       func_addr = gen_rtx_REG (Pmode, CTR_REGNO);
-      if (HAVE_AS_PLTSEQ
-	  && GET_CODE (func_desc) == SYMBOL_REF)
+      if (abi_reg)
 	{
 	  rtvec v = gen_rtvec (3, func, func_desc, tlsarg);
 	  rtx mark_func = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
@@ -38058,9 +38071,15 @@ rs6000_sibcall_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
       && GET_CODE (func_desc) == SYMBOL_REF)
     {
       func = rs6000_longcall_ref (func_desc, tlsarg);
-      /* If the longcall was implemented using PLT16 relocs, then r11
-	 needs to be valid at the call for lazy linking.  */
-      if (HAVE_AS_PLTSEQ)
+      /* If the longcall was implemented as an inline PLT call using
+	 PLT unspecs then func will be REG:r11.  If not, func will be
+	 a pseudo reg.  The inline PLT call sequence supports lazy
+	 linking (and longcalls to functions in dlopen'd libraries).
+	 The other style of longcalls don't.  The lazy linking entry
+	 to the dynamic symbol resolver requires r11 be the function
+	 address (as it is for linker generated PLT stubs).  Ensure
+	 r11 stays valid to the bctr by marking r11 used by the call.  */
+      if (TARGET_PLTSEQ)
 	abi_reg = func;
     }
 
@@ -38069,11 +38088,12 @@ rs6000_sibcall_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
     {
       func = force_reg (Pmode, func);
 
-      /* Indirect sibcalls must go via CTR.  Needed to mark
-	 this insn for linker plt sequence editing too.  */
+      /* Indirect sibcalls must go via CTR.  That can't be left to
+	 reload because we want to mark every instruction in an inline
+	 PLT call sequence with a reloc, enabling the linker to edit
+	 the sequence back to a direct call when that makes sense.  */
       func_addr = gen_rtx_REG (Pmode, CTR_REGNO);
-      if (HAVE_AS_PLTSEQ
-	  && GET_CODE (func_desc) == SYMBOL_REF)
+      if (abi_reg)
 	{
 	  rtvec v = gen_rtvec (3, func, func_desc, tlsarg);
 	  rtx mark_func = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);

@@ -155,6 +155,13 @@ extern int dot_symbols;
 		    TARGET_NO_SUM_IN_TOC = 0;			\
 		}						\
 	    }							\
+	  if (TARGET_PLTSEQ && DEFAULT_ABI != ABI_ELFv2)	\
+	    {							\
+	      if (global_options_set.x_rs6000_pltseq)		\
+		warning (0, "%qs unsupported for this ABI",	\
+			 "-mpltseq");				\
+	      rs6000_pltseq = false;				\
+	    }							\
 	}							\
       else							\
 	{							\

@@ -59,6 +59,11 @@
 #define TARGET_SECURE_PLT	secure_plt
 #endif
 
+#if HAVE_AS_PLTSEQ
+#undef TARGET_PLTSEQ
+#define TARGET_PLTSEQ rs6000_pltseq
+#endif
+
 #define SDATA_DEFAULT_SIZE 8
 
 /* The macro SUBTARGET_OVERRIDE_OPTIONS is provided for subtargets, to
@@ -190,6 +195,26 @@ do {									\
   if (TARGET_SECURE_PLT != secure_plt)					\
     {									\
       error ("%qs not supported by your assembler", "-msecure-plt");	\
+    }									\
+									\
+  if (TARGET_PLTSEQ != rs6000_pltseq					\
+      && global_options_set.x_rs6000_pltseq)				\
+    {									\
+      error ("%qs not supported by your assembler", "-mpltseq");	\
+    }									\
+									\
+  if (DEFAULT_ABI == ABI_V4 && TARGET_PLTSEQ && !TARGET_SECURE_PLT)	\
+    {									\
+      if (global_options_set.x_rs6000_pltseq)				\
+	{								\
+	  if (global_options_set.x_secure_plt)				\
+	    error ("%qs and %qs are incompatible",			\
+		   "-mpltseq", "-mbss-plt");				\
+	  else								\
+	    secure_plt = true;						\
+	}								\
+      if (!TARGET_SECURE_PLT)						\
+	rs6000_pltseq = false;						\
     }									\
 									\
   if (flag_pic > 1 && DEFAULT_ABI == ABI_V4)				\
