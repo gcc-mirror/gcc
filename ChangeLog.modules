@@ -1,3 +1,27 @@
+2019-02-11  Nathan Sidwell  <nathan@acm.org>
+
+	Make dependencies
+	libcpp/
+	* include/cpplib.h (cpp_get_deps): Change type.
+	* include/mkdeps.h (struct deps): Rename to ...
+	(struct mrules): ... this.  Adjust accessors.
+	(deps_add_module): Declare.
+	* internal.h (sttuct cpp_reader): Likewise.
+	* mkdeps.c (struct mrules): Rename from deps.  Add module fields.
+	(munge): Allow concatenation.
+	(deps_add_module): New.
+	(write_name, write_vec): New, broken out of ...
+	(deps_write): ... this.  Add module pieces.
+	gcc/
+	* module.cc: #include mkdeps.h.
+	(module_state::direct_import): Add module to dependencies.
+	(finish_module_parse): Set target dependency info.
+	gcc/c-family/
+	* c-opts.c (handle_deferred_opts): Adjust dep accessors.
+	gcc/fortran/
+	* cpp.c (gfc_cpp_add_dep, gfc_cpp_add_target, gfc_cpp_init): Adjust
+	dep accessors.
+
 2019-02-08  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/

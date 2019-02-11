@@ -193,6 +193,7 @@ Classes used:
 #include "cgraph.h"
 #include "tree-iterator.h"
 #include "cpplib.h"
+#include "mkdeps.h"
 #include "incpath.h"
 #include "libiberty.h"
 #include "stor-layout.h"
@@ -13483,7 +13484,13 @@ module_state::direct_import (cpp_reader *reader, bool lazy)
 {
   unsigned n = dump.push (this);
 
-  direct_p = true;
+  if (!is_direct ())
+    {
+      direct_p = true;
+      if (mrules *deps = cpp_get_deps (reader))
+	deps_add_module (deps, get_flatname (false), get_flatname (true));
+    }
+
   if (!is_imported () && mod == MODULE_UNKNOWN)
     {
       char *fname = NULL;
@@ -14191,6 +14198,11 @@ finish_module_parse (cpp_reader *reader)
       if (state->filename)
 	{
 	  const char *path = maybe_add_bmi_prefix (state->filename);
+
+	  if (mrules *deps = cpp_get_deps (reader))
+	    deps_add_module (deps, state->get_flatname (false),
+			     state->get_flatname (true), path,
+			     state->is_legacy ());
 
 	  bool first = true;
 	  do

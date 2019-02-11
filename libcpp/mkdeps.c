@@ -29,7 +29,7 @@ along with this program; see the file COPYING3.  If not see
 
 /* Keep this structure local to this file, so clients don't find it
    easy to start making assumptions.  */
-struct deps
+struct mrules
 {
 public:
   /* T has trivial cctor & dtor.  */
@@ -43,7 +43,8 @@ public:
 
   public:
     vec ()
-      : ary (NULL), num (0), alloc (0) {}
+      : ary (NULL), num (0), alloc (0)
+      {}
     ~vec ()
       {
 	XDELETEVEC (ary);
@@ -74,13 +75,34 @@ public:
     size_t len;
   };
 
+  mrules ()
+    : module_name (NULL), bmi_name (NULL), is_legacy (false)
+  {
+    unsigned int i;
+
+    for (i = targets.size (); i--;)
+      XDELETEVEC (targets[i]);
+    for (i = deps.size (); i--;)
+      XDELETEVEC (deps[i]);
+    for (i = vpath.size (); i--;)
+      XDELETEVEC (vpath[i].str);
+    XDELETEVEC (module_name);
+    XDELETEVEC (bmi_name);
+  }
+  ~mrules ()
+  {
+  }
+
 public:
   vec<const char *> targets;
   vec<const char *> deps;
   vec<velt> vpath;
-};
 
-static const char *munge (const char *);
+public:
+  const char *module_name;
+  const char *bmi_name;
+  bool is_legacy;
+};
 
 /* Given a filename, quote characters in that filename which are
    significant to Make.  Note that it's not possible to quote all such
@@ -90,77 +112,81 @@ static const char *munge (const char *);
    3.76.1.)  */
 
 static const char *
-munge (const char *filename)
+munge (const char *str, const char *trail = NULL, ...)
 {
-  int len;
-  const char *p, *q;
-  char *dst, *buffer;
+  static unsigned alloc;
+  static char *buf;
+  unsigned dst = 0;
+  va_list args;
+  if (trail)
+    va_start (args, trail);
 
-  for (p = filename, len = 0; *p; p++, len++)
+  for (bool first = true; str; first = false)
     {
-      switch (*p)
+      unsigned slashes = 0;
+      char c;
+      for (const char *probe = str; (c = *probe++);)
 	{
-	case ' ':
-	case '\t':
-	  /* GNU make uses a weird quoting scheme for white space.
-	     A space or tab preceded by 2N+1 backslashes represents
-	     N backslashes followed by space; a space or tab
-	     preceded by 2N backslashes represents N backslashes at
-	     the end of a file name; and backslashes in other
-	     contexts should not be doubled.  */
-	  for (q = p - 1; filename <= q && *q == '\\';  q--)
-	    len++;
-	  len++;
-	  break;
+	  if (alloc < dst + 4 + slashes)
+	    {
+	      alloc = alloc * 2 + 32;
+	      buf = XRESIZEVEC (char, buf, alloc);
+	    }
 
-	case '$':
-	  /* '$' is quoted by doubling it.  */
-	  len++;
-	  break;
+	  switch (c)
+	    {
+	    case '\\':
+	      slashes++;
+	      break;
 
-	case '#':
-	  /* '#' is quoted with a backslash.  */
-	  len++;
-	  break;
+	    case '$':
+	      buf[dst++] = '$';
+	      goto def;
+
+	    case ' ':
+	    case '\t':
+	      /* GNU make uses a weird quoting scheme for white space.
+		 A space or tab preceded by 2N+1 backslashes
+		 represents N backslashes followed by space; a space
+		 or tab preceded by 2N backslashes represents N
+		 backslashes at the end of a file name; and
+		 backslashes in other contexts should not be
+		 doubled.  */
+	      while (slashes--)
+		buf[dst++] = '\\';
+	      /* FALLTHROUGH  */
+
+	    case '#':
+	      buf[dst++] = '\\';
+	      /* FALLTHROUGH  */
+
+	    default:
+	    def:
+	      slashes = 0;
+	      break;
+	    }
+
+	  buf[dst++] = c;
 	}
+
+      if (first)
+	str = trail;
+      else
+	str = va_arg (args, const char *);
     }
+  if (trail)
+    va_end (args);
 
-  /* Now we know how big to make the buffer.  */
-  buffer = XNEWVEC (char, len + 1);
-
-  for (p = filename, dst = buffer; *p; p++, dst++)
-    {
-      switch (*p)
-	{
-	case ' ':
-	case '\t':
-	  for (q = p - 1; filename <= q && *q == '\\';  q--)
-	    *dst++ = '\\';
-	  *dst++ = '\\';
-	  break;
-
-	case '$':
-	  *dst++ = '$';
-	  break;
-
-	case '#':
-	  *dst++ = '\\';
-	  break;
-
-	default:
-	  /* nothing */;
-	}
-      *dst = *p;
-    }
-
-  *dst = '\0';
-  return buffer;
+  buf[dst] = 0;
+  char *res = XNEWVEC (char, dst + 1);
+  memcpy (res, buf, dst + 1);
+  return res;
 }
 
 /* If T begins with any of the partial pathnames listed in d->vpathv,
    then advance T to point beyond that pathname.  */
 static const char *
-apply_vpath (struct deps *d, const char *t)
+apply_vpath (struct mrules *d, const char *t)
 {
   if (unsigned len = d->vpath.size ())
     for (unsigned i = len; i--;)
@@ -198,31 +224,22 @@ apply_vpath (struct deps *d, const char *t)
 
 /* Public routines.  */
 
-struct deps *
+struct mrules *
 deps_init (void)
 {
-  return new deps ();
+  return new mrules ();
 }
 
 void
-deps_free (struct deps *d)
+deps_free (struct mrules *d)
 {
-  unsigned int i;
-
-  for (i = d->targets.size (); i--;)
-    XDELETEVEC (d->targets[i]);
-  for (i = d->deps.size (); i--;)
-    XDELETEVEC (d->deps[i]);
-  for (i = d->vpath.size (); i--;)
-    XDELETEVEC (d->vpath[i].str);
-	 
   delete d;
 }
 
 /* Adds a target T.  We make a copy, so it need not be a permanent
    string.  QUOTE is true if the string should be quoted.  */
 void
-deps_add_target (struct deps *d, const char *t, int quote)
+deps_add_target (struct mrules *d, const char *t, int quote)
 {
   t = apply_vpath (d, t);
   if (quote)
@@ -237,7 +254,7 @@ deps_add_target (struct deps *d, const char *t, int quote)
    string as the default target in interpreted as stdin.  The string
    is quoted for MAKE.  */
 void
-deps_add_default_target (struct deps *d, const char *tgt)
+deps_add_default_target (struct mrules *d, const char *tgt)
 {
   /* Only if we have no targets.  */
   if (d->targets.size ())
@@ -267,7 +284,7 @@ deps_add_default_target (struct deps *d, const char *tgt)
 }
 
 void
-deps_add_dep (struct deps *d, const char *t)
+deps_add_dep (struct mrules *d, const char *t)
 {
   t = munge (apply_vpath (d, t));  /* Also makes permanent copy.  */
 
@@ -275,7 +292,7 @@ deps_add_dep (struct deps *d, const char *t)
 }
 
 void
-deps_add_vpath (struct deps *d, const char *vpath)
+deps_add_vpath (struct mrules *d, const char *vpath)
 {
   const char *elem, *p;
 
@@ -283,7 +300,7 @@ deps_add_vpath (struct deps *d, const char *vpath)
     {
       for (p = elem; *p && *p != ':'; p++)
 	continue;
-      deps::velt elt;
+      mrules::velt elt;
       elt.len = p - elem;
       char *str = XNEWVEC (char, elt.len + 1);
       elt.str = str;
@@ -297,71 +314,96 @@ deps_add_vpath (struct deps *d, const char *vpath)
 }
 
 void
-deps_write (const struct deps *d, FILE *fp, unsigned int colmax)
+deps_add_module (struct mrules *d, const char *m, const char *p,
+		 const char *bmi, bool is_legacy)
 {
-  unsigned int size, i, column;
-
-  column = 0;
-  if (colmax && colmax < 34)
-    colmax = 34;
-
-  for (i = 0; i < d->targets.size (); i++)
+  m = munge (p, m, ".c++m", NULL);
+  if (bmi)
     {
-      const char *target = d->targets[i];
+      d->module_name = m;
+      d->is_legacy = is_legacy;
+      d->bmi_name = munge (bmi);
+    }
+  else
+    d->deps.push (m);
+}
 
-      size = strlen (target);
-      column += size;
-      if (i)
+static unsigned
+write_name (const char *name, FILE *fp, unsigned col, unsigned colmax)
+{
+  unsigned size = strlen (name);
+
+  if (col)
+    {
+      if (colmax && col + size> colmax)
 	{
-	  if (colmax && column > colmax)
-	    {
-	      fputs (" \\\n ", fp);
-	      column = 1 + size;
-	    }
-	  else
-	    {
-	      putc (' ', fp);
-	      column++;
-	    }
+	  fputs (" \\\n", fp);
+	  col = 0;
 	}
-      fputs (target, fp);
+      col++;
+      fputs (" ", fp);
     }
 
-  putc (':', fp);
-  column++;
+  col += size;
+  fputs (name, fp);
 
-  for (i = 0; i < d->deps.size (); i++)
-    {
-      const char *dep = d->deps[i];
-      size = strlen (dep);
-      column += size;
-      if (colmax && column > colmax)
-	{
-	  fputs (" \\\n ", fp);
-	  column = 1 + size;
-	}
-      else
-	{
-	  putc (' ', fp);
-	  column++;
-	}
-      fputs (dep, fp);
-    }
-  putc ('\n', fp);
+  return col;
+}
+
+static unsigned
+write_vec (const mrules::vec<const char *> &vec, FILE *fp,
+	   unsigned col, unsigned colmax)
+{
+  for (unsigned ix = 0; ix != vec.size (); ix++)
+    col = write_name (vec[ix], fp, col, colmax);
+  return col;
 }
 
 void
-deps_phony_targets (const struct deps *d, FILE *fp)
+deps_write (const struct mrules *d, FILE *fp, unsigned int colmax)
+{
+  unsigned column = 0;
+  if (colmax && colmax < 34)
+    colmax = 34;
+
+  column = write_vec (d->targets, fp, column, colmax);
+  if (d->bmi_name)
+    column = write_name (d->bmi_name, fp, column, colmax);
+  fputs (":", fp);
+  column++;
+  column = write_vec (d->deps, fp, column, colmax);
+  fputs ("\n", fp);
+  column = 0;
+
+  if (d->module_name)
+    {
+      /* module-name : bmi-name */
+      column = write_name (d->module_name, fp, column, colmax);
+      fputs (":", fp);
+      column++;
+      column = write_name (d->bmi_name, fp, column, colmax);
+      fputs ("\n", fp);
+
+      /* bmi-name :| first-target */
+      if (!d->is_legacy)
+	{
+	  column = 0;
+	  column = write_name (d->bmi_name, fp, column, colmax);
+	  fputs (":|", fp);
+	  column++;
+	  column = write_name (d->targets[0], fp, column, colmax);
+	  fputs ("\n", fp);
+	}
+    }
+}
+
+void
+deps_phony_targets (const struct mrules *d, FILE *fp)
 {
   unsigned int i;
 
   for (i = 1; i < d->deps.size (); i++)
-    {
-      putc ('\n', fp);
-      fputs (d->deps[i], fp);
-      putc (':', fp);
-      putc ('\n', fp);
-    }
+    fprintf (fp, "\n%s:\n", d->deps[i]);
 }
 
 /* Write out a deps buffer to a file, in a form that can be read back
@@ -369,7 +411,7 @@ deps_phony_targets (const struct deps *d, FILE *fp)
    error number will be in errno.  */
 
 int
-deps_save (struct deps *deps, FILE *f)
+deps_save (struct mrules *deps, FILE *f)
 {
   unsigned int i;
   size_t size;
@@ -401,7 +443,7 @@ deps_save (struct deps *deps, FILE *f)
    in which case that filename is skipped.  */
 
 int
-deps_restore (struct deps *deps, FILE *fd, const char *self)
+deps_restore (struct mrules *deps, FILE *fd, const char *self)
 {
   size_t size;
   char *buf = NULL;
