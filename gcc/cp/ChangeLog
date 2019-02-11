@@ -1,3 +1,7 @@
+2019-02-11  Marek Polacek  <polacek@redhat.com>
+
+	* typeck2.c (digest_init_r): Remove commented code.
+
 2019-02-11  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/87996
