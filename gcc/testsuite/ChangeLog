@@ -1,3 +1,12 @@
+2019-02-11  Stefan Agner  <stefan@agner.ch>
+
+	Backport from mainline
+	2019-01-10  Stefan Agner  <stefan@agner.ch>
+
+	PR target/88648
+	* gcc.target/arm/pr88648-asm-syntax-unified.c: Add test to
+	check if -masm-syntax-unified gets applied properly.
+
 2019-02-10  Harald Anlauf  <anlauf@gmx.de>
 
 	Backport from trunk
