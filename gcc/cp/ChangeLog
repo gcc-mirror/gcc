@@ -1,3 +1,9 @@
+2019-02-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89212 - ICE converting nullptr to pointer-to-member-function.
+	* pt.c (tsubst_copy_and_build) <case CONSTRUCTOR>: Return early for
+	null member pointer value.
+
 2019-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88977
