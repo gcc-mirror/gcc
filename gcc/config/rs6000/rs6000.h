@@ -226,6 +226,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define HAVE_AS_PLTSEQ 0
 #endif
 
+#ifndef TARGET_PLTSEQ
+#define TARGET_PLTSEQ 0
+#endif
+
 #ifndef TARGET_LINK_STACK
 #define TARGET_LINK_STACK 0
 #endif
