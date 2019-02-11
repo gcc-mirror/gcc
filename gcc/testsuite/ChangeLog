@@ -1,3 +1,7 @@
+2019-02-11  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/tree-prof/inliner-1.c: Correct comments.
+
 2019-02-11  Tamar Christina  <tamar.christina@arm.com>
 
 	PR middle-end/88560
