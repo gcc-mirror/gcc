@@ -59,6 +59,8 @@ static tree lookup_promise_member (tree, const char *, location_t, bool);
 static bool coro_promise_type_found_p (tree, location_t);
 static tree build_co_await (location_t, tree, tree);
 
+/* ================= Parse, Semantics and Type checking ================= */
+
 /* Lookup std::experimental.  */
 static tree
 find_std_experimental (location_t loc)
@@ -402,6 +404,113 @@ finish_co_await_expr (location_t kw, tree expr)
 
   return op;
 }
+
+/* Take the EXPR given and attempt to build:
+     co_await p.yield_value (expr);
+   per 8.21 §1.
+*/
+tree
+finish_co_yield_expr (location_t kw, tree expr)
+{
+  if (expr == error_mark_node)
+    return error_mark_node;
+
+  /* Check the general requirements and simple syntax errors.  */
+  if (!coro_common_keyword_context_valid_p (current_function_decl, kw,
+					    "co_yield"))
+    return error_mark_node;
+
+  /* We must be able to look up the "yield_value" method in the scope of
+     the promise type, and obtain it's return type.  */
+  if (!coro_promise_type_found_p (current_function_decl, kw))
+    return error_mark_node;
+
+  /* The current function has now become a coroutine, if it wasn't already.  */
+  DECL_COROUTINE_P (current_function_decl) = 1;
+
+  /* Belt and braces, we should never get here, the expression should be
+     required in the parser. */
+  if (expr == NULL_TREE)
+    {
+      error_at (kw, "%<co_yield%> requires an expression." );
+      return error_mark_node;
+    }
+
+  /* The incoming expr is "e" per 8.21 §1, lookup and build a call for
+     p.yield_value(e).  */
+  tree y_meth = lookup_promise_member (current_function_decl, "yield_value",
+				       kw, true /*musthave*/);
+  if (!y_meth || y_meth == error_mark_node)
+    return error_mark_node;
+
+  tree yield_fn = NULL_TREE;
+  vec<tree, va_gc>* args = make_tree_vector_single (expr);
+  tree yield_call = build_new_method_call
+    (DECL_COROUTINE_PROMISE_PROXY (current_function_decl), y_meth,  &args,
+     NULL_TREE, LOOKUP_NORMAL, &yield_fn, tf_warning_or_error);
+
+  if (!yield_fn || yield_call == error_mark_node)
+    return error_mark_node;
+
+  /* So now we have the type of p.yield_value (e).
+     Now we want to build co_await p.yield_value (e).
+     Noting that for co_yield, there is no evaluation of any potential
+     promise transform_await().  The trailing '1' is a flag that notes this
+     co_await resulted from a co_yield.   */
+
+  tree op = build_co_await (kw, yield_call, integer_one_node);
+  op = build2 (CO_YIELD_EXPR, TREE_TYPE (op), expr, op);
+  TREE_SIDE_EFFECTS (op) = 1;
+  SET_EXPR_LOCATION (op, kw);
+
+  return op;
+}
+
+
+/* Check that it's valid to have a co_return keyword here.
+   True if this is a valid context (we don't check the content
+   of the expr - except to decide if the promise_type needs as
+   return_void() or a return_value().  */
+
+bool
+co_return_context_valid_p (location_t kw, tree expr)
+{
+  if (expr == error_mark_node)
+    return false;
+
+  if (! coro_common_keyword_context_valid_p (current_function_decl, kw,
+					   "co_return"))
+    return false;
+
+  if (! coro_promise_type_found_p (current_function_decl, kw))
+    return false;
+
+  /* If the promise object doesn't have the correct return call then
+     there's a mis-match between the co_return <expr> and this.  */
+  if (expr == NULL_TREE || VOID_TYPE_P (TREE_TYPE (expr)))
+    {
+      if (lookup_promise_member (current_function_decl, "return_void",
+				 kw, true /*musthave*/) == error_mark_node)
+	return false;
+    }
+  else
+    {
+      if (lookup_promise_member (current_function_decl, "return_value",
+				 kw, true /*musthave*/) == error_mark_node)
+	return false;
+    }
+
+  /* Makes no sense for a co-routine really. */
+  if (TREE_THIS_VOLATILE (current_function_decl))
+    warning_at (kw, 0, "function declared %<noreturn%> has a"
+		" %<co_return%> statement");
+
+  return true;
+}
+
+/* ================= Morph and Expand. ================= */
+
+
 /* Support for expansion of co_return statements.  */
 struct __coro_ret_data {
   tree promise;
@@ -1586,94 +1695,5 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   DECL_SAVED_TREE (orig) = newbody;
   *resumer = actor;
   *destroyer = destroy;
-  return true;
-}
-
-tree
-finish_co_yield_expr (location_t kw, tree expr)
-{
-  if (!coro_common_keyword_context_valid_p (current_function_decl, kw,
-					   "co_yield"))
-    return error_mark_node;
-
-  if (!coro_promise_type_found_p (current_function_decl, kw))
-    return error_mark_node;
-
-  /* The current function has now become a coroutine, if it wasn't
-     already.  */
-  DECL_COROUTINE_P (current_function_decl) = 1;
-
-  /* Belt and braces, we should never get here, the expression should be
-     required in the parser. */
-  if (expr == NULL_TREE)
-    {
-      error_at (kw, "%<co_yield%> requires an expression." );
-      return error_mark_node;
-    }
-
-  /* The incoming expr is "e" per 8.21 §1.  */
-  tree y_meth = lookup_promise_member (current_function_decl, "yield_value",
-				       kw, true /*musthave*/);
-  if (!y_meth || y_meth == error_mark_node)
-    return error_mark_node;
-
-  tree yield_fn = NULL_TREE;
-  vec<tree, va_gc>* args = make_tree_vector_single (expr);
-  /* Build the call, since we need to force instantiation of templates.  */
-  tree yield_call = build_new_method_call
-    (DECL_COROUTINE_PROMISE_PROXY (current_function_decl), y_meth,  &args,
-     NULL_TREE, LOOKUP_NORMAL, &yield_fn, tf_warning_or_error);
-
-  if (!yield_fn || yield_call == error_mark_node)
-    return error_mark_node;
-
-  /* So now we have the type of p.yield_value (e) per 8.21 §1.
-     Now we want to build co_await p.yield_value (e).
-     Noting that for co_yield, there is no evaluation of any potential
-     promise transform_await().  */
-
-  tree op = build_co_await (kw, yield_call, build_int_cst (integer_type_node, 1));
-  op = build2 (CO_YIELD_EXPR, TREE_TYPE (op), expr, op);
-  SET_EXPR_LOCATION (op, input_location);
-
-  return op;
-}
-
-
-/* Check that it's valid to have a co_return keyword here.
-   True if this is a valid context (we don't check the content
-   of the expr - except to decide if the promise_type needs as
-   return_void() or a return_value().  */
-
-bool
-co_return_context_valid_p (location_t kw, tree expr)
-{
-  if (! coro_common_keyword_context_valid_p (current_function_decl, kw,
-					   "co_return"))
-    return false;
-
-  if (! coro_promise_type_found_p (current_function_decl, kw))
-    return false;
-
-  /* If the promise object doesn't have the correct return call then
-     there's a mis-match between the co_return <expr> and this.  */
-  if (expr == NULL_TREE || VOID_TYPE_P (TREE_TYPE (expr)))
-    {
-      if (lookup_promise_member (current_function_decl, "return_void",
-				 kw, true /*musthave*/) == error_mark_node)
-	return false;
-    }
-  else
-    {
-      if (lookup_promise_member (current_function_decl, "return_value",
-				 kw, true /*musthave*/) == error_mark_node)
-	return false;
-    }
-
-  /* Makes no sense for a co-routine really. */
-  if (TREE_THIS_VOLATILE (current_function_decl))
-    warning_at (kw, 0, "function declared %<noreturn%> has a"
-		" %<co_return%> statement");
-
   return true;
 }

@@ -1,6 +1,13 @@
 2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc: Collect parse-related functions together, adjust
+	comments.  NFC.
+	* cp-tree.def: Adjust comments. NFC.
+
+2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* constexpr.c (potential_constant_expression_1): Declare that co_await
 	and co_yield expressions are not candidates for constexpr.
 	* coroutines.cc: Reorganise text to put the parser-related functions
