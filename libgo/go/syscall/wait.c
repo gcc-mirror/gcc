@@ -16,6 +16,10 @@
 #define WCOREDUMP(status) (((status) & 0200) != 0)
 #endif
 
+#ifndef WIFCONTINUED
+#define WIFCONTINUED(x) 0
+#endif
+
 extern _Bool Exited (uint32_t *w)
   __asm__ (GOSYM_PREFIX "syscall.WaitStatus.Exited");
 
