@@ -1,6 +1,21 @@
 2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* call.c (add_builtin_candidates): Rename COAWAIT_EXPR to
+	CO_AWAIT_EXPR. (op_error, build_new_op_1): Likewise.
+	* coroutines.cc (co_await_expander, build_actor_fn) Likewise.
+	* cp-objcp-common.c (cp_common_init_ts): Rename COAWAIT_EXPR and
+	COYIELD_EXPR, add CO_RETRN_EXPR.
+	* cp-tree.def: Likewise.
+	* operators.def: Rename COAWAIT_EXPR.
+	* parser.c (cp_parser_unary_expression): Likewise.
+	(cp_parser_operator): Ensure CO_AWAIT_EXPR is recognised as a built-
+	in operator.
+	(cp_parser_yield_expression): Rename COYIELD_EXPR to CO_YIELD_EXPR.
+
+2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (coro_promise_type_found_p): Stash the location
 	of the first coroutine keyword seen.
 	* cp-tree.h (lang_decl_fn): Add first_coro_kw.

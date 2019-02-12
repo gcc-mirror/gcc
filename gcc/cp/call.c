@@ -3019,6 +3019,7 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
     case ADDR_EXPR:
     case COMPOUND_EXPR:
     case COMPONENT_REF:
+    case CO_AWAIT_EXPR:
       return;
 
     case COND_EXPR:
@@ -4770,7 +4771,7 @@ op_error (const op_location_t &loc,
 		  opname, opname, arg1, TREE_TYPE (arg1));
       break;
 
-    case COAWAIT_EXPR:
+    case CO_AWAIT_EXPR:
       if (flag_diagnostics_show_caret)
 	error_at (loc, op_error_string (G_("%<operator %s%>"), 1, match),
 		  opname, TREE_TYPE (arg1));
@@ -5926,7 +5927,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	case ADDR_EXPR:
 	case COMPOUND_EXPR:
 	case COMPONENT_REF:
-	case COAWAIT_EXPR:
+	case CO_AWAIT_EXPR:
 	  result = NULL_TREE;
 	  result_valid_p = true;
 	  break;
@@ -6142,6 +6143,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
     case REALPART_EXPR:
     case IMAGPART_EXPR:
     case ABS_EXPR:
+    case CO_AWAIT_EXPR:
       return cp_build_unary_op (code, arg1, candidates != 0, complain);
 
     case ARRAY_REF:
@@ -6156,7 +6158,6 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
     case ADDR_EXPR:
     case COMPONENT_REF:
     case COMPOUND_EXPR:
-    case COAWAIT_EXPR:
       return NULL_TREE;
 
     default:

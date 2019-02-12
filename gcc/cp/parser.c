@@ -8321,10 +8321,10 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	    /* The current function has now become a coroutine, if it wasn't
 	       already.  */
 	    DECL_COROUTINE_P (current_function_decl) = 1;
-	    /* We are going to ignore a => o and o => e and only start out
-	       with the trivial case where a ==> e.  */
-	    return build4_loc (kw_loc, COAWAIT_EXPR, void_type_node,
-			       expr, NULL_TREE, NULL_TREE, NULL_TREE);
+	    /* We don't know the type yet.  */
+	    return build5_loc (kw_loc, CO_AWAIT_EXPR, void_type_node,  expr,
+			       NULL_TREE, NULL_TREE, NULL_TREE,
+			       integer_zero_node);
 	  }
 
 	default:
@@ -15212,22 +15212,25 @@ cp_parser_operator (cp_parser* parser, location_t start_loc)
     {
     case CPP_KEYWORD:
       {
-	/* The keyword should be either `new' or `delete'.  */
+	/* The keyword should be either `new', `delete' or `co_await'.  */
 	if (token->keyword == RID_NEW)
 	  op = NEW_EXPR;
 	else if (token->keyword == RID_DELETE)
 	  op = DELETE_EXPR;
+	else if (token->keyword == RID_CO_AWAIT)
+	  op = CO_AWAIT_EXPR;
 	else
 	  break;
 
-	/* Consume the `new' or `delete' token.  */
+	/* Consume the `new', `delete' or co_await token.  */
 	end_loc = cp_lexer_consume_token (parser->lexer)->location;
 
 	/* Peek at the next token.  */
 	token = cp_lexer_peek_token (parser->lexer);
 	/* If it's a `[' token then this is the array variant of the
 	   operator.  */
-	if (token->type == CPP_OPEN_SQUARE)
+	if (token->type == CPP_OPEN_SQUARE
+	    && op != CO_AWAIT_EXPR)
 	  {
 	    /* Consume the `[' token.  */
 	    cp_lexer_consume_token (parser->lexer);
@@ -25494,7 +25497,7 @@ cp_parser_throw_expression (cp_parser* parser)
      co_yield assignment-expression
      co_yield braced-init-list
 
-   Returns a COYIELD_EXPR representing the yield-expression.  */
+   Returns a CO_YIELD_EXPR representing the yield-expression.  */
 
 static tree
 cp_parser_yield_expression (cp_parser* parser)
@@ -25523,7 +25526,7 @@ cp_parser_yield_expression (cp_parser* parser)
   if (!co_yield_context_valid_p (kw_loc, expr))
     return error_mark_node;
 
-  expr = build1 (COYIELD_EXPR, void_type_node, expr);
+  expr = build2 (CO_YIELD_EXPR, void_type_node, expr, NULL_TREE);
   SET_EXPR_LOCATION (expr, input_location);
 
   /* The current function has now become a coroutine, if it wasn't

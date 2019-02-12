@@ -603,20 +603,31 @@ DEFTREECODE (DISJ_CONSTR, "disj_constr", tcc_expression, 2)
 
   Op 0 is the cast expresssion (potentially modified by the
   promise "await_transform()" method).
-  Op1 is the awaitable ready method.
-  Op2 is the awaitable suspend method.
+  Op1 is a proxy for the temp / coro frame slot
+  Op2 is the initialiser for Op1
   Op3 is the awaitable resume method.
+  Op4 is 0 (await) 1 (yield) 2 (initial) 3 (final)
 
-  At parse-time, only Op0 is populated and the expr type may be set to
-  void if the cast expression is a dependent type.  In this case
-  Op1-Op3 will be NULL_TREE.
+  At parse-time, only Op0 and 4 are populated and the expr type might be
+  set to void if the cast expression is a dependent type.
+  From the parser Op1-Op3 will be NULL_TREE, in any event.
 */
-DEFTREECODE (COAWAIT_EXPR, "co_await", tcc_expression, 4)
+DEFTREECODE (CO_AWAIT_EXPR, "co_await", tcc_expression, 5)
 
 /* The co_yield expression is used to support coroutines.
 
-   Op0 is either an assignment expression or a braced initialiser  */
-DEFTREECODE (COYIELD_EXPR, "coro_alloc", tcc_expression, 1)
+   Op0 is the original expr (for use in diagnostics)
+   Op2 is the co_await derived from this.
+*/   
+DEFTREECODE (CO_YIELD_EXPR, "co_yield", tcc_expression, 2)
+
+/* The co_return expression is used to support coroutines.
+
+   Op0 is the original expr, can be void (for use in diagnostics)
+   Op2 is the promise return_xxxx call for Op0.
+ */
+
+DEFTREECODE (CO_RETRN_EXPR, "co_return", tcc_expression, 2)
 
 /*
 Local variables:

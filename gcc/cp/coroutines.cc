@@ -420,7 +420,7 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
   struct __coro_aw_data *data = (struct __coro_aw_data *) d;
 
   if (TREE_CODE (*stmt) != EXPR_STMT
-      || TREE_CODE (EXPR_STMT_EXPR (*stmt)) != COAWAIT_EXPR)
+      || TREE_CODE (EXPR_STMT_EXPR (*stmt)) != CO_AWAIT_EXPR)
     return NULL_TREE;
 
   tree actor = data->actor_fn;
@@ -429,7 +429,8 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
   tree expr = TREE_OPERAND (saved_co_await, 0);
   tree var = TREE_OPERAND (saved_co_await, 1);
   tree handle = TREE_OPERAND (saved_co_await, 2);
-  bool is_final = (TREE_OPERAND (saved_co_await, 3) != NULL_TREE);
+  tree source = TREE_OPERAND (saved_co_await, 4);
+  bool is_final = (source && TREE_INT_CST_LOW (source) == 3);
   bool needs_dtor = TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (var));
   int resume_point = data->index;
   size_t bufsize = sizeof ("destroy.") + 10;
@@ -792,8 +793,9 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   tree ih = build_class_member_access_expr (actor_frame, ih_m, NULL_TREE,
 					   true, tf_warning_or_error);
 
-  tree initial_aw = build4_loc (loc, COAWAIT_EXPR, void_type_node,
-				is_expr, is, ih, NULL_TREE);
+  tree initial_aw = build5_loc (loc, CO_AWAIT_EXPR, void_type_node,
+				is_expr, is, ih, NULL_TREE,
+				build_int_cst (integer_type_node, 2));
   r = build_stmt (loc, EXPR_STMT, initial_aw);
   add_stmt (r);
 
@@ -869,8 +871,9 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
 					   true, tf_warning_or_error);
 
   /* We flag that this is the final suspend co_await.  */
-  tree final_aw = build4_loc (loc, COAWAIT_EXPR, void_type_node,
-			      fs_expr, fs, fh, integer_one_node);
+  tree final_aw = build5_loc (loc, CO_AWAIT_EXPR, void_type_node,
+			      fs_expr, fs, fh, NULL_TREE,
+			      build_int_cst (integer_type_node, 3));
   r = build_stmt (loc, EXPR_STMT, final_aw);
   add_stmt (r);
 
