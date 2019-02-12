@@ -1,6 +1,13 @@
 2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (co_await_find_in_subtree): New.
+	(co_await_expander): Initial implementation of co_await, limited to
+	expressions without temporaries.
+
+2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (replace_proxy, transform_await_expr,
 	transform_await_wrapper): New.
 	(build_actor_fn): Rewrite the proxy vars used at parse time to the

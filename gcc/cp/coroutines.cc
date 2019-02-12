@@ -607,6 +607,18 @@ create_anon_label_with_ctx (location_t loc, tree ctx)
   return lab;
 }
 
+static tree
+co_await_find_in_subtree (tree *stmt, int *do_subtree, void *d)
+{
+  tree **p = (tree **)d;
+  if (TREE_CODE (*stmt) == CO_AWAIT_EXPR)
+    {
+      *p = stmt;
+      return *stmt;
+    }
+  return NULL_TREE;
+}
+
 /* When we come here:
     the first operand is 'o' as defined in 8.3.8 (3.3)
     the second operand is the var to be copy-initialised
@@ -629,13 +641,36 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
 {
   struct __coro_aw_data *data = (struct __coro_aw_data *) d;
 
-  if (TREE_CODE (*stmt) != EXPR_STMT
-      || TREE_CODE (EXPR_STMT_EXPR (*stmt)) != CO_AWAIT_EXPR)
+  tree saved_co_await = NULL_TREE;
+  enum tree_code stmt_code = TREE_CODE (*stmt);
+  enum tree_code sub_code;
+  tree *buried_stmt = NULL;
+
+  if (stmt_code == EXPR_STMT
+      && TREE_CODE (EXPR_STMT_EXPR (*stmt)) == CO_AWAIT_EXPR)
+    saved_co_await = EXPR_STMT_EXPR (*stmt); /* hopefully, a void exp.  */
+  else if (stmt_code == MODIFY_EXPR || stmt_code == INIT_EXPR)
+    {
+      sub_code = TREE_CODE (TREE_OPERAND (*stmt, 1));
+      if (sub_code == CO_AWAIT_EXPR)
+        saved_co_await = TREE_OPERAND (*stmt, 1); /* Get the RHS.  */
+      else if (tree r = cp_walk_tree 
+			 (&TREE_OPERAND (*stmt, 1),
+			  co_await_find_in_subtree, &buried_stmt, NULL))
+	{
+          //debug_tree(*stmt);
+          saved_co_await = r;
+	}
+    }
+
+  if (!saved_co_await)
     return NULL_TREE;
+
+  /* We want to splice in the await_resume() value in some cases.  */
+  tree saved_statement = *stmt;
 
   tree actor = data->actor_fn;
   location_t loc = EXPR_LOCATION (*stmt);
-  tree saved_co_await = EXPR_STMT_EXPR (*stmt);
   tree expr = TREE_OPERAND (saved_co_await, 0);
   tree var = TREE_OPERAND (saved_co_await, 1);
   tree handle = TREE_OPERAND (saved_co_await, 2);
@@ -829,7 +864,33 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
 
   /* This will produce the value (if one is provided) from the co_await
      expression.  */
-  append_to_statement_list (resume, &stmt_list);
+  switch (stmt_code)
+    {
+    default: /* not likely to work .. but... */
+      append_to_statement_list (resume, &stmt_list);
+      break;
+    case INIT_EXPR:
+    case MODIFY_EXPR:
+       /* Replace the use of co_await by the resume expr.  */
+      if (sub_code == CO_AWAIT_EXPR)
+	{
+	  TREE_OPERAND (saved_statement, 1) = resume;
+	  append_to_statement_list (saved_statement, &stmt_list);
+	}
+      else if (buried_stmt != NULL)
+        {
+	  *buried_stmt = resume;
+	  append_to_statement_list (saved_statement, &stmt_list);
+        }
+      else
+        {
+	  error_at (loc, "failed to substitute the resume method in %qE",
+		    saved_statement);
+	  append_to_statement_list (saved_statement, &stmt_list);
+        }
+      break;
+      
+    }
   if (needs_dtor)
     append_to_statement_list (dtor, &stmt_list);
   data->index += 2;
