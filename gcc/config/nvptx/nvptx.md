@@ -945,6 +945,13 @@
   "%J0\\tbra.uni\\t%l1;"
   [(set_attr "predicable" "no")])
 
+(define_insn "cond_uni"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+          (unspec:SI [(match_operand:SI 1 "nvptx_nonmemory_operand" "R")]
+		      UNSPEC_BR_UNIFIED))]
+  ""
+  "%.\\tmov%t0\\t%0, %1; // unified")
+
 (define_expand "cbranch<mode>4"
   [(set (pc)
 	(if_then_else (match_operator 0 "nvptx_comparison_operator"
