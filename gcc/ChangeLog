@@ -1,3 +1,12 @@
+2019-02-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* asan.c (asan_expand_mark_ifn): Take into account the alignment of
+	the object to pick the size of stores on strict-alignment platforms.
+
+	* config/sparc/sparc.md (*movsi_insn): Minor tweak.
+	(*movdi_insn_sp32): Likewise.
+	(*movdi_insn_sp64): Likewise.
+
 2019-02-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/88777

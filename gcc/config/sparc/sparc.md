@@ -1681,8 +1681,8 @@
 })
 
 (define_insn "*movsi_insn"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r, m, r,*f,*f,*f, m,d,d")
-	(match_operand:SI 1 "input_operand"        "rI,K,m,rJ,*f, r, f, m,*f,J,P"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r, m, r,*f,?*f,?*f,  m,d,d")
+	(match_operand:SI 1 "input_operand"        "rI,K,m,rJ,*f, r,  f,  m,?*f,J,P"))]
   "register_operand (operands[0], SImode)
    || register_or_zero_or_all_ones_operand (operands[1], SImode)"
   "@
@@ -1839,9 +1839,9 @@
 
 (define_insn "*movdi_insn_sp32"
   [(set (match_operand:DI 0 "nonimmediate_operand"
-			    "=T,o,U,T,r,o,r,r,?*f,?T,?*f,?o,?*e,?*e,  r,?*f,?*e,?T,*b,*b")
+			    "=T,o,U,T,r,o,r,r,?*f,  T,?*f,  o,?*e,?*e,  r,?*f,?*e,  T,*b,*b")
         (match_operand:DI 1 "input_operand"
-			    " J,J,T,U,o,r,i,r,  T,*f,  o,*f, *e, *e,?*f,  r,  T,*e, J, P"))]
+			    " J,J,T,U,o,r,i,r,  T,?*f,  o,?*f, *e, *e,?*f,  r,  T,?*e, J, P"))]
   "TARGET_ARCH32
    && (register_operand (operands[0], DImode)
        || register_or_zero_operand (operands[1], DImode))"
@@ -1875,8 +1875,8 @@ visl")
    (set_attr "lra" "*,*,disabled,disabled,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*")])
 
 (define_insn "*movdi_insn_sp64"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r, m, r,*e,?*e,?*e,?W,b,b")
-        (match_operand:DI 1 "input_operand"        "rI,N,m,rJ,*e, r, *e,  W,*e,J,P"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r, m, r,*e,?*e,?*e,  W,b,b")
+        (match_operand:DI 1 "input_operand"        "rI,N,m,rJ,*e, r, *e,  W,?*e,J,P"))]
   "TARGET_ARCH64
    && (register_operand (operands[0], DImode)
        || register_or_zero_or_all_ones_operand (operands[1], DImode))"
