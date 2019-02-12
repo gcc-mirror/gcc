@@ -1,3 +1,12 @@
+2018-12-13  Cesar Philippidis  <cesar@codesourcery.com>
+	    Nathan Sidwell  <nathan@acm.org>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* openmp.cc (oacc_is_parallel): New.
+	(resolve_oacc_loop_blocks): Emit an error on orphan OpenACC
+	gang reductions.
+	* trans-openmp.ccc (gfc_omp_clause_copy_ctor): Permit reductions.
+
 2018-06-29  Cesar Philippidis  <cesar@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>
 
