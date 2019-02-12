@@ -859,6 +859,108 @@ struct suspend_point_info {
 };
 
 static hash_map<tree, struct suspend_point_info> *suspend_points;
+
+struct __proxy_replace {
+  tree from, to;
+};
+
+static tree
+replace_proxy (tree *here, int *do_subtree, void *d)
+{
+  struct __proxy_replace *data = (struct __proxy_replace *)d;
+
+  if (*here == data->from)
+    {
+      *here = data->to;
+      *do_subtree = 0;
+    }
+  else
+    *do_subtree = 1;
+  return NULL_TREE;
+}
+
+struct __await_xform_data {
+  tree promise_proxy;
+  tree real_promise;
+  tree actor_frame; 
+};
+
+/* When we built the await expressions, we didn't know the coro frame
+   layout, therefore no idea where to find the promise or where to put
+   the awaitables.  Now we know these things, fill them in.  */
+static tree
+transform_await_expr (tree await_expr, struct __await_xform_data *xform)
+{
+  struct suspend_point_info *si = suspend_points->get (await_expr);
+  location_t loc = EXPR_LOCATION (await_expr);
+  if (!si)
+    {
+      error_at (loc, "no suspend point info for %qD", await_expr);
+      return error_mark_node;
+    }
+  
+  /* Get a reference to the initial suspend var in the frame.
+     Synthesize the init expression.  */
+  tree coro_frame_type = TREE_TYPE (xform->actor_frame);
+  tree as_m = lookup_member (coro_frame_type, si->await_field_id,
+			     /*protect*/1,  /*want_type*/ 0,
+			     tf_warning_or_error);
+  tree as = build_class_member_access_expr (xform->actor_frame, as_m, NULL_TREE,
+					    true, tf_warning_or_error);
+ 
+  tree ah = NULL_TREE;
+  if (si->save_handle_id)
+    {
+      tree ah_m = lookup_member (coro_frame_type, si->save_handle_id,
+				 /*protect*/1,  /*want_type*/ 0,
+				 tf_warning_or_error);
+      ah = build_class_member_access_expr (xform->actor_frame, ah_m, NULL_TREE,
+					   true, tf_warning_or_error);
+    }
+
+  /* So, we have now :
+     in : CO_AWAIT_EXPR (a, e_proxy, o, awr_call, mode)
+          We no longer need a [it had diagnostic value, maybe?]
+          We need to replace the promise proxy in all elements
+          We need to replace the e_proxy in the awr_call.
+  */
+
+  /* the initialise expression is 'o', currently in slot 2, move it to slot
+     0 (thus discarding 'a').  */
+  TREE_OPERAND (await_expr, 0) = TREE_OPERAND (await_expr, 2);
+  /* Op 2 becomes the frame slot for the temporary handle.  */
+  TREE_OPERAND (await_expr, 2) = ah;
+
+  struct __proxy_replace data = { TREE_OPERAND (await_expr, 1), as};
+  cp_walk_tree (&await_expr, replace_proxy, &data, NULL);
+  TREE_OPERAND (await_expr, 1) = as;
+
+  /* Now do the promise.  */
+  data.from = xform->promise_proxy;
+  data.to = xform->real_promise;
+  cp_walk_tree (&await_expr, replace_proxy, &data, NULL);
+  
+  return await_expr;
+}
+
+/* A wrapper for the routine above so that it can be a callback from 
+   cp_walk_tree.  */
+static tree
+transform_await_wrapper (tree *stmt, int *do_subtree, void *d)
+{
+  if (TREE_CODE (*stmt) != CO_AWAIT_EXPR
+      && TREE_CODE (*stmt) != CO_YIELD_EXPR)
+    return NULL_TREE;
+
+  tree await_expr = *stmt;
+  struct __await_xform_data *xform = (struct __await_xform_data *)d;
+
+  *stmt = transform_await_expr (await_expr, xform);
+  if (*stmt == error_mark_node)
+    *do_subtree = 0;
+  return NULL_TREE;
+}
+
 /* The actor transform.  */
 
 static void
@@ -868,7 +970,8 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
 {
   /* Some things we inherit from the original function.  */
   tree coro_frame_ptr = build_pointer_type (coro_frame_type);
-  tree promise_type = DECL_COROUTINE_PROMISE_TYPE(orig);
+  tree promise_type = DECL_COROUTINE_PROMISE_TYPE (orig);
+  tree promise_proxy = DECL_COROUTINE_PROMISE_PROXY (orig);
   tree act_des_fn_type = build_function_type_list (void_type_node,
 						   coro_frame_ptr, NULL_TREE);
   tree act_des_fn_ptr = build_pointer_type (act_des_fn_type);
@@ -990,32 +1093,14 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   tree ap = build_class_member_access_expr (actor_frame, ap_m, NULL_TREE,
 					   false, tf_warning_or_error);
 
-  /* Get a reference to the initial suspend var in the frame.
-     Synthesize the init expression.  */
-  tree is_m = lookup_member (coro_frame_type, get_identifier ("__is"),
-			     /*protect*/1,  /*want_type*/ 0,
-			     tf_warning_or_error);
-  tree is = build_class_member_access_expr (actor_frame, is_m, NULL_TREE,
-					   true, tf_warning_or_error);
-  tree get_is_meth = lookup_promise_member (orig, "initial_suspend",
-					   loc, true /*musthave*/);
+  /* Now we know the real promise, and enough about the frame layout to
+     decide where to put things.  */
 
-  /* The result of applying 8.3.8 3.1 - 3.4 'e'.  In the case of the init
-      and final suspend points, the operations are constrained.  */
-  tree is_expr = build_new_method_call (ap, get_is_meth,
-					NULL, NULL_TREE, LOOKUP_NORMAL,
-					NULL, tf_warning_or_error);
-  /* Handle for suspend.  */
-  tree ih_m = lookup_member (coro_frame_type, get_identifier ("__ih"),
-			     /*protect*/1,  /*want_type*/ 0,
-			     tf_warning_or_error);
-  tree ih = build_class_member_access_expr (actor_frame, ih_m, NULL_TREE,
-					   true, tf_warning_or_error);
+  struct __await_xform_data xform = {promise_proxy, ap, actor_frame};
 
-  tree initial_aw = build5_loc (loc, CO_AWAIT_EXPR, void_type_node,
-				is_expr, is, ih, NULL_TREE,
-				build_int_cst (integer_type_node, 2));
-  r = build_stmt (loc, EXPR_STMT, initial_aw);
+  /* Get a reference to the initial suspend var in the frame.  */
+  transform_await_expr (initial_await, &xform);
+  r = build_stmt (loc, EXPR_STMT, initial_await);
   add_stmt (r);
 
   /* Now we've built the promise etc, process fnbody for co_returns.
@@ -1039,6 +1124,11 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
 
   /* Expand co_returns in the saved function body  */
   fnbody = expand_co_returns (&fnbody, ap, return_void, fs_label);
+
+  /* Transform the await expressions in the function body.  Only do each
+     await tree once!  */
+  hash_set<tree> pset;
+  cp_walk_tree (&fnbody, transform_await_wrapper, &xform, &pset);
 
   /* Add in our function body with the co_returns rewritten to final form.  */
   add_stmt (fnbody);
@@ -1070,30 +1160,9 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   r = maybe_cleanup_point_expr_void (r);
   add_stmt (r);
 
-  /* Get a reference to the final suspend var in the frame.
-     Synthesize the init expression.  */
-  tree fs_m = lookup_member (coro_frame_type, get_identifier ("__fs"),
-			     /*protect*/1,  /*want_type*/ 0,
-			     tf_warning_or_error);
-  tree fs = build_class_member_access_expr (actor_frame, fs_m, NULL_TREE,
-					    true, tf_warning_or_error);
-  tree get_fs_meth = lookup_promise_member (orig, "final_suspend",
-					   loc, true /*musthave*/);
-  tree fs_expr = build_new_method_call (ap, get_fs_meth,
-					NULL, NULL_TREE, LOOKUP_NORMAL,
-					NULL, tf_warning_or_error);
-  /* Handle for suspend.  */
-  tree fh_m = lookup_member (coro_frame_type, get_identifier ("__fh"),
-			     /*protect*/1,  /*want_type*/ 0,
-			     tf_warning_or_error);
-  tree fh = build_class_member_access_expr (actor_frame, fh_m, NULL_TREE,
-					   true, tf_warning_or_error);
-
-  /* We flag that this is the final suspend co_await.  */
-  tree final_aw = build5_loc (loc, CO_AWAIT_EXPR, void_type_node,
-			      fs_expr, fs, fh, NULL_TREE,
-			      build_int_cst (integer_type_node, 3));
-  r = build_stmt (loc, EXPR_STMT, final_aw);
+  /* Get a reference to the final suspend var in the frame.  */
+  transform_await_expr (final_await, &xform);
+  r = build_stmt (loc, EXPR_STMT, final_await);
   add_stmt (r);
 
   /* now do the tail of the function.  */

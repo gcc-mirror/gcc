@@ -1,6 +1,15 @@
 2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (replace_proxy, transform_await_expr,
+	transform_await_wrapper): New.
+	(build_actor_fn): Rewrite the proxy vars used at parse time to the
+	actual frame vars now we know them.  Drop the synthesis of the initial
+	and final suspend points and use the ones generated at morph time.
+
+2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (build_actor_fn): Use the new measured suspend point
 	count to build the resume and destroy dispatchers.
 
