@@ -1498,7 +1498,8 @@ propagate_pure_const (void)
 		}
 	      if (avail > AVAIL_INTERPOSABLE)
 		{
-		  funct_state y_l = funct_state_summaries->get (y);
+		  funct_state y_l = funct_state_summaries->get_create (y);
+
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {
 		      fprintf (dump_file,

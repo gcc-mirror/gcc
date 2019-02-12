@@ -1,3 +1,10 @@
+2019-02-12  Martin Liska  <mliska@suse.cz>
+
+	PR lto/88876
+	* ipa-pure-const.c (propagate_pure_const): Revert hunk as
+	we need default values of funct_state for a function that
+	is not optimized.
+
 2019-02-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* asan.c (asan_expand_mark_ifn): Take into account the alignment of
