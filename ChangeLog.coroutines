@@ -1,6 +1,16 @@
 2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc: Rename co_yield_context_valid_p to
+	finish_co_yield_expr. (finish_co_yield_expr): Validate and build
+	yield_value() call, use build_co_await() to construct the co_await.
+	* cp-tree.h: Rename co_yield_context_valid_p to finish_co_yield_expr.
+	* parser.c (cp_parser_yield_expression): Revise to use
+	finish_co_yield_expr.
+
+2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (build_co_await): New.
 
 2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>

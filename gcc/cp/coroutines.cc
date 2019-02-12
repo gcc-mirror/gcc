@@ -1551,30 +1551,54 @@ co_await_context_valid_p (location_t kw, tree expr)
   return true;
 }
 
-bool
-co_yield_context_valid_p (location_t kw, tree expr)
+tree
+finish_co_yield_expr (location_t kw, tree expr)
 {
   if (!coro_common_keyword_context_valid_p (current_function_decl, kw,
 					   "co_yield"))
-    return false;
+    return error_mark_node;
 
   if (!coro_promise_type_found_p (current_function_decl, kw))
-    return false;
+    return error_mark_node;
+
+  /* The current function has now become a coroutine, if it wasn't
+     already.  */
+  DECL_COROUTINE_P (current_function_decl) = 1;
 
   /* Belt and braces, we should never get here, the expression should be
      required in the parser. */
   if (expr == NULL_TREE)
     {
       error_at (kw, "%<co_yield%> requires an expression." );
-      return false;
+      return error_mark_node;
     }
 
-  if (lookup_promise_member (current_function_decl, "yield_value",
-			     kw, true /*musthave*/) == error_mark_node)
-    return false;
+  /* The incoming expr is "e" per 8.21 §1.  */
+  tree y_meth = lookup_promise_member (current_function_decl, "yield_value",
+				       kw, true /*musthave*/);
+  if (!y_meth || y_meth == error_mark_node)
+    return error_mark_node;
 
-  /* FIXME: we can probably do more here.  */
-  return true;
+  tree yield_fn = NULL_TREE;
+  vec<tree, va_gc>* args = make_tree_vector_single (expr);
+  /* Build the call, since we need to force instantiation of templates.  */
+  tree yield_call = build_new_method_call
+    (DECL_COROUTINE_PROMISE_PROXY (current_function_decl), y_meth,  &args,
+     NULL_TREE, LOOKUP_NORMAL, &yield_fn, tf_warning_or_error);
+
+  if (!yield_fn || yield_call == error_mark_node)
+    return error_mark_node;
+
+  /* So now we have the type of p.yield_value (e) per 8.21 §1.
+     Now we want to build co_await p.yield_value (e).
+     Noting that for co_yield, there is no evaluation of any potential
+     promise transform_await().  */
+
+  tree op = build_co_await (kw, yield_call, build_int_cst (integer_type_node, 1));
+  op = build2 (CO_YIELD_EXPR, TREE_TYPE (op), expr, op);
+  SET_EXPR_LOCATION (op, input_location);
+
+  return op;
 }
 
 

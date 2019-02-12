@@ -25523,16 +25523,7 @@ cp_parser_yield_expression (cp_parser* parser)
   if (expr == error_mark_node)
     return expr;
 
-  if (!co_yield_context_valid_p (kw_loc, expr))
-    return error_mark_node;
-
-  expr = build2 (CO_YIELD_EXPR, void_type_node, expr, NULL_TREE);
-  SET_EXPR_LOCATION (expr, input_location);
-
-  /* The current function has now become a coroutine, if it wasn't
-     already.  */
-  DECL_COROUTINE_P (current_function_decl) = 1;
-  return expr;
+  return finish_co_yield_expr (kw_loc, expr);
 }
 
 /* GNU Extensions */
