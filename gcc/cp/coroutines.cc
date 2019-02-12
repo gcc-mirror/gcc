@@ -153,7 +153,8 @@ find_promise_type (tree handle_type)
 				     /* protect */1, /*want_type=*/ true,
 				     tf_warning_or_error);
   if (promise_type)
-    promise_type = TREE_TYPE (promise_type);
+    promise_type = complete_type_or_else (TREE_TYPE (promise_type),
+					  promise_type);
 
   /* NULL_TREE on fail.  */
   return promise_type;
