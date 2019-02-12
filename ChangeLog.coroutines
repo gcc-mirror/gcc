@@ -1,6 +1,11 @@
 2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (build_co_await): New.
+
+2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* call.c (add_builtin_candidates): Rename COAWAIT_EXPR to
 	CO_AWAIT_EXPR. (op_error, build_new_op_1): Likewise.
 	* coroutines.cc (co_await_expander, build_actor_fn) Likewise.

@@ -57,6 +57,7 @@ static tree find_coro_handle_type (location_t, tree);
 static tree find_promise_type (tree);
 static tree lookup_promise_member (tree, const char *, location_t, bool);
 static bool coro_promise_type_found_p (tree, location_t);
+static tree build_co_await (location_t, tree, tree);
 
 /* Lookup std::experimental.  */
 static tree
@@ -1487,6 +1488,48 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   *destroyer = destroy;
   return true;
 }
+
+/*  This performs 8.3.8 bullet 3.3 */
+static tree
+build_co_await (location_t loc, tree a, tree mode)
+{
+  /* TODO overload of operator co_await, for now behave as if it returned
+     an empty set.  So that o is a.
+     build_new_op .... */
+  tree o = a;
+ 
+  tree o_type = complete_type_or_else (TREE_TYPE (o), o);
+  if (TREE_CODE (o_type) != RECORD_TYPE)
+    {
+      error_at (loc, "member reference base type %qT is not a"
+		" structure or union", o_type);
+      return error_mark_node;
+    }
+
+  /* Now we want the type of await_resume() for which we need an instance of
+     'e' which is built from o according to 8.3.8 3.4.
+     We don't want to materialise 'e' here (it might need to be placed in the
+     coroutine frame) so we will make a temp placeholder instead. */
+  tree e_proxy = build_lang_decl (VAR_DECL, NULL_TREE, o_type);
+  tree awr_meth = lookup_member (o_type, get_identifier ("await_resume"),
+				 /* protect */1, /*want_type=*/ 0,
+				 tf_warning_or_error);
+
+  if (!awr_meth || awr_meth == error_mark_node)
+    return error_mark_node;
+
+  tree awr_func = NULL_TREE;
+  tree awr_call  = build_new_method_call (e_proxy, awr_meth,  NULL, NULL_TREE,
+					  LOOKUP_NORMAL, &awr_func,
+					  tf_warning_or_error);
+
+  if (!awr_func || !awr_call || awr_call == error_mark_node)
+    return error_mark_node;
+
+  return build5_loc (loc, CO_AWAIT_EXPR, TREE_TYPE (TREE_TYPE (awr_func)),
+		     a, e_proxy, o, awr_call, mode);
+}
+
 
 bool
 co_await_context_valid_p (location_t kw, tree expr)
