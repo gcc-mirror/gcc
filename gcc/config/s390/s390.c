@@ -3020,7 +3020,9 @@ s390_decompose_address (rtx addr, struct s390_address *out)
 	  if (offset)
 	    {
 	      /* If we have an offset, make sure it does not
-		 exceed the size of the constant pool entry.  */
+		 exceed the size of the constant pool entry.
+		 Otherwise we might generate an out-of-range
+		 displacement for the base register form.  */
 	      rtx sym = XVECEXP (disp, 0, 0);
 	      if (offset >= GET_MODE_SIZE (get_pool_mode (sym)))
 		return false;
@@ -3193,8 +3195,10 @@ s390_check_qrst_address (char c, rtx op, bool lit_pool_ok)
      generic cases below ('R' or 'T'), since reload will in fact fix
      them up.  LRA behaves differently here; we never see such forms,
      but on the other hand, we need to strictly reject every invalid
-     address form.  Perform this check right up front.  */
-  if (lra_in_progress)
+     address form.  After both reload and LRA invalid address forms
+     must be rejected, because nothing will fix them up later.  Perform
+     this check right up front.  */
+  if (lra_in_progress || reload_completed)
     {
       if (!decomposed && !s390_decompose_address (op, &addr))
 	return 0;
