@@ -1,5 +1,12 @@
 2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/co-yield-0-triv.C: New.
+	* g++.dg/coroutines/torture/co-yield-1-multi.C: New.
+	* g++.dg/coroutines/torture/co-yield-2-loop.C: New.
+
+2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/
 	* coroutine-passes.c (execute_expand_coro_ifns): Rewrite the tail of
 	.CO_YIELD IFN blocks.  This is needed to avoid confusing the loop
