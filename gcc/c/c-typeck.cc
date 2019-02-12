@@ -14799,8 +14799,11 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  else if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (c) == error_mark_node)
 	    {
-	      error_at (OMP_CLAUSE_LOCATION (c),
-			"user defined reduction not found for %qE", t);
+	      /* There are no user-defined reductions in OpenACC (as of
+		 2.6).  */
+	      if (ort & C_ORT_OMP)
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "user defined reduction not found for %qE", t);
 	      remove = true;
 	      break;
 	    }

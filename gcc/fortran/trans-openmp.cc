@@ -848,7 +848,8 @@ gfc_omp_clause_copy_ctor (tree clause, tree dest, tree src)
   stmtblock_t block, cond_block;
 
   gcc_assert (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_FIRSTPRIVATE
-	      || OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_LINEAR);
+	      || OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_LINEAR
+	      || OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_REDUCTION);
 
   /* Privatize pointer, only; cf. gfc_omp_predetermined_sharing. */
   if (DECL_P (OMP_CLAUSE_DECL (clause))

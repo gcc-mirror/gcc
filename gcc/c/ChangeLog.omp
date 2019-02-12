@@ -1,3 +1,28 @@
+2022-02-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-parser.ccc (c_parser_omp_clause_map): Update call to
+	c_parser_omp_variable_list.
+	(c_parser_omp_clause_to): Update call to c_parser_omp_var_list_parens.
+	(c_parser_omp_clause_from): Likewise.
+
+2018-12-13  Cesar Philippidis  <cesar@codesourcery.com>
+	    Nathan Sidwell  <nathan@acm.org>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_variable_list): New c_omp_region_type
+	argument.  Use it to specialize handling of OMP_CLAUSE_REDUCTION for
+	OpenACC.
+	(c_parser_oacc_data_clause): Add region-type argument.
+	(c_parser_oacc_data_clause_deviceptr): Likewise.
+	(c_parser_omp_clause_reduction): Change is_omp boolean parameter to
+	c_omp_region_type.  Update call to c_parser_omp_variable_list.
+	(c_parser_oacc_all_clauses): Update calls to
+	c_parser_omp_clause_reduction.
+	(c_parser_omp_all_clauses): Likewise.
+	(c_parser_oacc_cache): Update call to c_parser_omp_var_list_parens.
+	* c-typeck.c (c_finish_omp_clauses): Emit an error on orphan OpenACC
+	gang reductions.  Suppress user-defined reduction error for OpenACC.
+
 2020-04-19  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR other/76739

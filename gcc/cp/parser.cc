@@ -37416,6 +37416,7 @@ struct omp_dim
 static tree
 cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 				tree list, bool *colon,
+				enum c_omp_region_type ort = C_ORT_OMP,
 				bool allow_deref = false)
 {
   auto_vec<omp_dim> dims;
@@ -37535,7 +37536,8 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 	    case OMP_CLAUSE_HAS_DEVICE_ADDR:
 	      array_section_p = false;
 	      dims.truncate (0);
-	      while (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_SQUARE))
+	      while ((ort != C_ORT_ACC || kind != OMP_CLAUSE_REDUCTION)
+		     && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_SQUARE))
 		{
 		  location_t loc = UNKNOWN_LOCATION;
 		  tree low_bound = NULL_TREE, length = NULL_TREE;
@@ -37683,10 +37685,11 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 
 static tree
 cp_parser_omp_var_list (cp_parser *parser, enum omp_clause_code kind, tree list,
+			enum c_omp_region_type ort = C_ORT_OMP,
 			bool allow_deref = false)
 {
   if (cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
-    return cp_parser_omp_var_list_no_open (parser, kind, list, NULL,
+    return cp_parser_omp_var_list_no_open (parser, kind, list, NULL, ort,
 					   allow_deref);
   return list;
 }
@@ -37754,7 +37757,7 @@ cp_parser_oacc_data_clause (cp_parser *parser, pragma_omp_clause c_kind,
       gcc_unreachable ();
     }
   tree nl, c;
-  nl = cp_parser_omp_var_list (parser, OMP_CLAUSE_MAP, list, true);
+  nl = cp_parser_omp_var_list (parser, OMP_CLAUSE_MAP, list, C_ORT_ACC, true);
 
   for (c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
     OMP_CLAUSE_SET_MAP_KIND (c, kind);
@@ -39046,7 +39049,7 @@ cp_parser_omp_clause_ordered (cp_parser *parser,
 
 static tree
 cp_parser_omp_clause_reduction (cp_parser *parser, enum omp_clause_code kind,
-				bool is_omp, tree list)
+				enum c_omp_region_type ort, tree list)
 {
   enum tree_code code = ERROR_MARK;
   tree nlist, c, id = NULL_TREE;
@@ -39056,7 +39059,7 @@ cp_parser_omp_clause_reduction (cp_parser *parser, enum omp_clause_code kind,
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
     return list;
 
-  if (kind == OMP_CLAUSE_REDUCTION && is_omp)
+  if (kind == OMP_CLAUSE_REDUCTION && ort == C_ORT_OMP)
     {
       if (cp_lexer_next_token_is_keyword (parser->lexer, RID_DEFAULT)
 	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_COMMA))
@@ -39153,8 +39156,7 @@ cp_parser_omp_clause_reduction (cp_parser *parser, enum omp_clause_code kind,
   if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
     goto resync_fail;
 
-  nlist = cp_parser_omp_var_list_no_open (parser, kind, list,
-					  NULL);
+  nlist = cp_parser_omp_var_list_no_open (parser, kind, list, NULL, ort);
   for (c = nlist; c != list; c = OMP_CLAUSE_CHAIN (c))
     {
       OMP_CLAUSE_REDUCTION_CODE (c) = code;
@@ -40579,7 +40581,7 @@ cp_parser_omp_clause_map (cp_parser *parser, tree list)
     }
 
   nlist = cp_parser_omp_var_list_no_open (parser, OMP_CLAUSE_MAP, list,
-					  NULL, true);
+					  NULL, C_ORT_OMP, true);
 
   for (c = nlist; c != list; c = OMP_CLAUSE_CHAIN (c))
     OMP_CLAUSE_SET_MAP_KIND (c, kind);
@@ -41007,7 +41009,7 @@ cp_parser_oacc_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OACC_CLAUSE_REDUCTION:
 	  clauses
 	    = cp_parser_omp_clause_reduction (parser, OMP_CLAUSE_REDUCTION,
-					      false, clauses);
+					      C_ORT_ACC, clauses);
 	  c_name = "reduction";
 	  break;
 	case PRAGMA_OACC_CLAUSE_SEQ:
@@ -41195,7 +41197,7 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OMP_CLAUSE_IN_REDUCTION:
 	  clauses
 	    = cp_parser_omp_clause_reduction (parser, OMP_CLAUSE_IN_REDUCTION,
-					      true, clauses);
+					      C_ORT_OMP, clauses);
 	  c_name = "in_reduction";
 	  break;
 	case PRAGMA_OMP_CLAUSE_LASTPRIVATE:
@@ -41245,7 +41247,7 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OMP_CLAUSE_REDUCTION:
 	  clauses
 	    = cp_parser_omp_clause_reduction (parser, OMP_CLAUSE_REDUCTION,
-					      true, clauses);
+					      C_ORT_OMP, clauses);
 	  c_name = "reduction";
 	  break;
 	case PRAGMA_OMP_CLAUSE_SCHEDULE:
@@ -41262,7 +41264,7 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  clauses
 	    = cp_parser_omp_clause_reduction (parser,
 					      OMP_CLAUSE_TASK_REDUCTION,
-					      true, clauses);
+					      C_ORT_OMP, clauses);
 	  c_name = "task_reduction";
 	  break;
 	case PRAGMA_OMP_CLAUSE_UNTIED:
@@ -41334,12 +41336,12 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	    }
 	  else
 	    clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_TO, clauses,
-					      true);
+					      C_ORT_OMP, true);
 	  c_name = "to";
 	  break;
 	case PRAGMA_OMP_CLAUSE_FROM:
 	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_FROM, clauses,
-					    true);
+					    C_ORT_OMP, true);
 	  c_name = "from";
 	  break;
 	case PRAGMA_OMP_CLAUSE_UNIFORM:
