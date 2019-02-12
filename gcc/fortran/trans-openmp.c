@@ -716,7 +716,8 @@ gfc_omp_clause_copy_ctor (tree clause, tree dest, tree src)
   stmtblock_t block, cond_block;
 
   gcc_assert (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_FIRSTPRIVATE
-	      || OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_LINEAR);
+	      || OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_LINEAR
+	      || OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_REDUCTION);
 
   if ((! GFC_DESCRIPTOR_TYPE_P (type)
        || GFC_TYPE_ARRAY_AKIND (type) != GFC_ARRAY_ALLOCATABLE)
