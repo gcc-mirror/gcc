@@ -1,3 +1,8 @@
+2019-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89253
+	* gfortran.dg/pr89253.f: New testcase.
+
 2019-02-11  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89212 - ICE converting nullptr to pointer-to-member-function.
