@@ -1,6 +1,13 @@
 2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (co_await_expander): Use the rewritten co_resume()
+	call as a proof of principle.  Eventually, we will use the three
+	calls built at parser time.
+
+2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (build_co_await): Check the awaitable method
 	signatures more rigorously.  Build the method calls for ready and
 	suspend - but don't record them (yet).

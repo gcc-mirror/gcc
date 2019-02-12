@@ -728,6 +728,7 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
   tree expr = TREE_OPERAND (saved_co_await, 0);
   tree var = TREE_OPERAND (saved_co_await, 1);
   tree handle = TREE_OPERAND (saved_co_await, 2);
+  tree resume_call = TREE_OPERAND (saved_co_await, 3);
   tree source = TREE_OPERAND (saved_co_await, 4);
   bool is_final = (source && TREE_INT_CST_LOW (source) == 3);
   bool needs_dtor = TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (var));
@@ -901,6 +902,7 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
   /* Resume point.  */
   resume_label = build_stmt (loc, LABEL_EXPR, resume_label);
   append_to_statement_list (resume_label, &stmt_list);
+#if 0
   tree res_name = get_identifier ("await_resume");
   tree res_memb = lookup_member (await_type, res_name, /*protect*/1,
 				 /*want_type*/ 0, tf_warning_or_error);
@@ -915,25 +917,26 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
 		IDENTIFIER_POINTER (res_name), await_type);
       resume = error_mark_node;
     }
-
+#endif
   /* This will produce the value (if one is provided) from the co_await
      expression.  */
   switch (stmt_code)
     {
     default: /* not likely to work .. but... */
-      append_to_statement_list (resume, &stmt_list);
+      append_to_statement_list (resume_call, &stmt_list);
       break;
     case INIT_EXPR:
     case MODIFY_EXPR:
        /* Replace the use of co_await by the resume expr.  */
       if (sub_code == CO_AWAIT_EXPR)
 	{
-	  TREE_OPERAND (saved_statement, 1) = resume;
+	  /* We're updating the interior of a possibly <(void) expr>cleanup.  */
+	  TREE_OPERAND (stripped_stmt, 1) = resume_call;
 	  append_to_statement_list (saved_statement, &stmt_list);
 	}
       else if (buried_stmt != NULL)
         {
-	  *buried_stmt = resume;
+	  *buried_stmt = resume_call;
 	  append_to_statement_list (saved_statement, &stmt_list);
         }
       else
