@@ -1,8 +1,8 @@
 /* Test that using a character splat to set up a shift-right algebraic
    for a doubleword vector works correctly after gimple folding.  */
 
-/* { dg-do run { target { vsx_hw } } } */
-/* { dg-options "-O2 -mvsx" } */
+/* { dg-do run { target { p8vector_hw } } } */
+/* { dg-options "-O2 -mpower8-vector" } */
 
 #include <altivec.h>
 
