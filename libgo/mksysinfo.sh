@@ -486,9 +486,9 @@ grep '^type _st_timespec ' gen-sysinfo.go | \
 
 # Special treatment of struct stat st_dev for GNU/Hurd
 # /usr/include/i386-gnu/bits/stat.h: #define st_dev st_fsid
-fsid_to_dev=
+st_dev='-e s/st_dev/Dev/'
 if grep 'define st_dev st_fsid' gen-sysinfo.go > /dev/null 2>&1; then
-  fsid_to_dev="-e 's/st_fsid/Dev/'"
+  st_dev='-e s/st_fsid/Dev/'
 fi
 
 # The stat type.
@@ -500,8 +500,7 @@ else
   grep '^type _stat ' gen-sysinfo.go
 fi | sed -e 's/type _stat64/type Stat_t/' \
          -e 's/type _stat/type Stat_t/' \
-         -e 's/st_dev/Dev/' \
-         ${fsid_to_dev} \
+         ${st_dev} \
          -e 's/st_ino/Ino/g' \
          -e 's/st_nlink/Nlink/' \
          -e 's/st_mode/Mode/' \
