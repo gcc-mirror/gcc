@@ -78,10 +78,10 @@ program test
   !$acc parallel num_gangs(i+1)
   !$acc end parallel
 
-  !$acc parallel num_gangs(-1) ! { dg-warning "must be positive" }
+  !$acc parallel num_gangs(-1) ! { dg-error "must be positive" }
   !$acc end parallel
 
-  !$acc parallel num_gangs(0) ! { dg-warning "must be positive" }
+  !$acc parallel num_gangs(0) ! { dg-error "must be positive" }
   !$acc end parallel
 
   !$acc parallel num_gangs() ! { dg-error "Invalid character in name" }
@@ -106,10 +106,10 @@ program test
   !$acc kernels num_gangs(i+1)
   !$acc end kernels
 
-  !$acc kernels num_gangs(-1) ! { dg-warning "must be positive" }
+  !$acc kernels num_gangs(-1) ! { dg-error "must be positive" }
   !$acc end kernels
 
-  !$acc kernels num_gangs(0) ! { dg-warning "must be positive" }
+  !$acc kernels num_gangs(0) ! { dg-error "must be positive" }
   !$acc end kernels
 
   !$acc kernels num_gangs() ! { dg-error "Invalid character in name" }
@@ -135,10 +135,10 @@ program test
   !$acc parallel num_workers(i+1)
   !$acc end parallel
 
-  !$acc parallel num_workers(-1) ! { dg-warning "must be positive" }
+  !$acc parallel num_workers(-1) ! { dg-error "must be positive" }
   !$acc end parallel
 
-  !$acc parallel num_workers(0) ! { dg-warning "must be positive" }
+  !$acc parallel num_workers(0) ! { dg-error "must be positive" }
   !$acc end parallel
 
   !$acc parallel num_workers() ! { dg-error "Invalid expression after 'num_workers\\('" }
@@ -163,10 +163,10 @@ program test
   !$acc kernels num_workers(i+1)
   !$acc end kernels
 
-  !$acc kernels num_workers(-1) ! { dg-warning "must be positive" }
+  !$acc kernels num_workers(-1) ! { dg-error "must be positive" }
   !$acc end kernels
 
-  !$acc kernels num_workers(0) ! { dg-warning "must be positive" }
+  !$acc kernels num_workers(0) ! { dg-error "must be positive" }
   !$acc end kernels
 
   !$acc kernels num_workers() ! { dg-error "Invalid expression after 'num_workers\\('" }
@@ -192,10 +192,10 @@ program test
   !$acc parallel vector_length(i+1)
   !$acc end parallel
 
-  !$acc parallel vector_length(-1) ! { dg-warning "must be positive" }
+  !$acc parallel vector_length(-1) ! { dg-error "must be positive" }
   !$acc end parallel
 
-  !$acc parallel vector_length(0) ! { dg-warning "must be positive" }
+  !$acc parallel vector_length(0) ! { dg-error "must be positive" }
   !$acc end parallel
 
   !$acc parallel vector_length() ! { dg-error "Invalid expression after 'vector_length\\('" }
@@ -220,10 +220,10 @@ program test
   !$acc kernels vector_length(i+1)
   !$acc end kernels
 
-  !$acc kernels vector_length(-1) ! { dg-warning "must be positive" }
+  !$acc kernels vector_length(-1) ! { dg-error "must be positive" }
   !$acc end kernels
 
-  !$acc kernels vector_length(0) ! { dg-warning "must be positive" }
+  !$acc kernels vector_length(0) ! { dg-error "must be positive" }
   !$acc end kernels
 
   !$acc kernels vector_length() ! { dg-error "Invalid expression after 'vector_length\\('" }
@@ -250,10 +250,10 @@ program test
   !$acc loop gang(i+1)
   do i = 1,10
   enddo
-  !$acc loop gang(-1) ! { dg-warning "must be positive" }
+  !$acc loop gang(-1) ! { dg-error "must be positive" }
   do i = 1,10
   enddo
-  !$acc loop gang(0) ! { dg-warning "must be positive" }
+  !$acc loop gang(0) ! { dg-error "must be positive" }
   do i = 1,10
   enddo
   !$acc loop gang() ! { dg-error "Invalid character in name" }
@@ -282,10 +282,10 @@ program test
   !$acc loop worker(i+1)
   do i = 1,10
   enddo
-  !$acc loop worker(-1) ! { dg-warning "must be positive" }
+  !$acc loop worker(-1) ! { dg-error "must be positive" }
   do i = 1,10
   enddo
-  !$acc loop worker(0) ! { dg-warning "must be positive" }
+  !$acc loop worker(0) ! { dg-error "must be positive" }
   do i = 1,10
   enddo
   !$acc loop worker() ! { dg-error "Invalid character in name" }
@@ -314,10 +314,10 @@ program test
   !$acc loop vector(i+1)
   do i = 1,10
   enddo
-  !$acc loop vector(-1) ! { dg-warning "must be positive" }
+  !$acc loop vector(-1) ! { dg-error "must be positive" }
   do i = 1,10
   enddo
-  !$acc loop vector(0) ! { dg-warning "must be positive" }
+  !$acc loop vector(0) ! { dg-error "must be positive" }
   do i = 1,10
   enddo
   !$acc loop vector() ! { dg-error "Invalid character in name" }

@@ -1,3 +1,13 @@
+2018-06-29  Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+
+	* gimplify.cc (enum gimplify_omp_var_data): Add GOVD_DEVICETPR.
+	(omp_notice_variable): Add GOVD_DEVICEPTR attribute when appropriate.
+	(gimplify_scan_omp_clauses): Add GOVD_DEVICEPTR attribute when
+	appropriate.
+	(gimplify_adjust_omp_clauses_1): Set GOMP_MAP_FORCE_DEVICEPTR for
+	implicit deviceptr mappings.
+
 2020-04-19  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR other/76739
