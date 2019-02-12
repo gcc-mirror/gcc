@@ -662,7 +662,8 @@ create_anon_label_with_ctx (location_t loc, tree ctx)
 }
 
 static tree
-co_await_find_in_subtree (tree *stmt, int *do_subtree, void *d)
+co_await_find_in_subtree (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED,
+			  void *d)
 {
   tree **p = (tree **)d;
   if (TREE_CODE (*stmt) == CO_AWAIT_EXPR)
@@ -1519,7 +1520,7 @@ struct __susp_frame_data {
    If this is a co_yield (which embeds an await), drop the yield
    and record the await (the yield was kept for diagnostics only.  */
 static tree
-register_awaits (tree *stmt, int *do_subtree, void *d)
+register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
 {
   struct __susp_frame_data *data = (struct __susp_frame_data *) d;
 

@@ -1,6 +1,12 @@
 2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (co_await_find_in_subtree): Fix unused parm.
+	(register_awaits): Likewise.
+
+2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (co_await_expander): Adjust the expander to look
 	inside cleanup point exprs.  The rewritten control flow needs to be
 	introduced at this level.
