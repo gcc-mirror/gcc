@@ -359,12 +359,32 @@ execute_expand_coro_ifns (void)
 	    else
 	      dst_dest = dst_tgt;
 	    unlink_stmt_vdef (stmt);
-	    tree lhs = gimple_call_lhs (stmt);
-	    gassign *rr
-	      = gimple_build_assign (lhs, build_int_cst (integer_type_node, 0));
-	    gsi_replace (&gsi, rr, true);
-	    fold_stmt (&gsi);
-	    gsi_next (&gsi);
+	    /* lose the co_yield.  */
+	    gsi_remove (&gsi, true);
+	    stmt = gsi_stmt (gsi); /* next. */
+	    /* lose the copy present at O0.  */
+	    if (is_gimple_assign (stmt))
+	      {
+	        unlink_stmt_vdef (stmt);
+		gsi_remove (&gsi, true);
+		stmt = gsi_stmt (gsi);
+	       }
+	    /* Simplify the switch or if following.  */
+	    if (gswitch *gsw = dyn_cast <gswitch *> (stmt))
+	      {
+		gimple_switch_set_index (gsw, integer_zero_node);
+		fold_stmt (&gsi);
+	      }
+	    else if (gcond *gif = dyn_cast <gcond*> (stmt))
+	      {
+		if (gimple_cond_code (gif) == EQ_EXPR)
+		  gimple_cond_make_true (gif);
+		else
+		  gimple_cond_make_false (gif);
+		fold_stmt (&gsi);
+	      }
+	    else
+	      debug_gimple_stmt (stmt);
 	    changed = true;
 	    if (gsi_end_p (gsi))
 	      break;

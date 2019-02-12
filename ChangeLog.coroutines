@@ -1,6 +1,13 @@
 2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/
+	* coroutine-passes.c (execute_expand_coro_ifns): Rewrite the tail of
+	.CO_YIELD IFN blocks.  This is needed to avoid confusing the loop
+	verifier at O0 when we suddenly disconnect stuff inside loops.
+
+2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/
 	* coroutine-passes.c (execute_expand_coro_ifns): Just update comments
 	and diagnostic strings. NFC.
 
