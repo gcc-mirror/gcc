@@ -5704,7 +5704,8 @@ find_omp_placeholder_r (tree *tp, int *, void *data)
    Return true if there is some error and the clause should be removed.  */
 
 static bool
-finish_omp_reduction_clause (tree c, bool *need_default_ctor, bool *need_dtor)
+finish_omp_reduction_clause (tree c, enum c_omp_region_type ort,
+			     bool *need_default_ctor, bool *need_dtor)
 {
   tree t = OMP_CLAUSE_DECL (c);
   bool predefined = false;
@@ -5949,9 +5950,11 @@ finish_omp_reduction_clause (tree c, bool *need_default_ctor, bool *need_dtor)
     *need_dtor = true;
   else
     {
-      error_at (OMP_CLAUSE_LOCATION (c),
-		"user defined reduction not found for %qE",
-		omp_clause_printable_decl (t));
+      /* There are no user-defined reductions for OpenACC (as of 2.6).  */
+      if (ort & C_ORT_OMP)
+	error_at (OMP_CLAUSE_LOCATION (c),
+		  "user defined reduction not found for %qE",
+		  omp_clause_printable_decl (t));
       return true;
     }
   if (TREE_CODE (OMP_CLAUSE_DECL (c)) == MEM_REF)
@@ -6234,6 +6237,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   tree last_iterators = NULL_TREE;
   bool last_iterators_remove = false;
   bool reduction_seen = false;
+  bool oacc_gang_seen = false;
 
   bitmap_obstack_initialize (NULL);
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
@@ -6248,10 +6252,15 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 
   if (ort & C_ORT_ACC)
     for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
-      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ASYNC)
-	{
+      switch (OMP_CLAUSE_CODE (c))
+        {
+	case OMP_CLAUSE_ASYNC:
 	  oacc_async = true;
 	  break;
+	case OMP_CLAUSE_GANG:
+	  oacc_gang_seen = true;
+	  break;
+	default:;
 	}
 
   for (pc = &clauses, c = clauses; c ; c = *pc)
@@ -6268,6 +6277,13 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  field_ok = ((ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP);
 	  goto check_dup_generic;
 	case OMP_CLAUSE_REDUCTION:
+	  if (oacc_gang_seen && oacc_get_fn_attrib (current_function_decl))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"gang reduction on an orphan loop");
+	      remove = true;
+	      break;
+	    }
 	  reduction_seen = true;
 	  /* FALLTHRU */
 	case OMP_CLAUSE_IN_REDUCTION:
@@ -7848,7 +7864,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_REDUCTION:
 	case OMP_CLAUSE_IN_REDUCTION:
 	case OMP_CLAUSE_TASK_REDUCTION:
-	  if (finish_omp_reduction_clause (c, &need_default_ctor,
+	  if (finish_omp_reduction_clause (c, ort, &need_default_ctor,
 					   &need_dtor))
 	    remove = true;
 	  else

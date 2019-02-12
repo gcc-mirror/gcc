@@ -13737,6 +13737,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   bool last_iterators_remove = false;
   tree *nogroup_seen = NULL;
   bool reduction_seen = false;
+  bool oacc_gang_seen = false;
 
   bitmap_obstack_initialize (NULL);
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
@@ -13751,10 +13752,15 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 
   if (ort & C_ORT_ACC)
     for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
-      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ASYNC)
-	{
+      switch (OMP_CLAUSE_CODE (c))
+        {
+	case OMP_CLAUSE_ASYNC:
 	  oacc_async = true;
 	  break;
+	case OMP_CLAUSE_GANG:
+	  oacc_gang_seen = true;
+	  break;
+	default:;
 	}
 
   for (pc = &clauses, c = clauses; c ; c = *pc)
@@ -13775,6 +13781,13 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  goto check_dup_generic;
 
 	case OMP_CLAUSE_REDUCTION:
+	  if (oacc_gang_seen && oacc_get_fn_attrib (current_function_decl))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"gang reduction on an orphan loop");
+	      remove = true;
+	      break;
+	    }
 	  reduction_seen = true;
 	  /* FALLTHRU */
 	case OMP_CLAUSE_IN_REDUCTION:
@@ -13917,8 +13930,11 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  else if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (c) == error_mark_node)
 	    {
-	      error_at (OMP_CLAUSE_LOCATION (c),
-			"user defined reduction not found for %qE", t);
+	      /* There are no user-defined reductions in OpenACC (as of
+		 2.6).  */
+	      if (ort & C_ORT_OMP)
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "user defined reduction not found for %qE", t);
 	      remove = true;
 	      break;
 	    }
