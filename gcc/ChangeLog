@@ -1,3 +1,11 @@
+2019-02-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backport from mainline:
+	2019-02-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-visibility.c (localize_node): Also do not localize
+	LDPR_PREVAILING_DEF_IRONLY_EXP.
+
 2019-02-11  Stefan Agner  <stefan@agner.ch>
 
 	Backport from mainline.

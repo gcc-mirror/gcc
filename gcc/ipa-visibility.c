@@ -543,7 +543,8 @@ localize_node (bool whole_program, symtab_node *node)
      symbols.  In this case we can privatize all hidden symbol but we need
      to keep non-hidden exported.  */
   if (node->same_comdat_group
-      && node->resolution == LDPR_PREVAILING_DEF_IRONLY)
+      && (node->resolution == LDPR_PREVAILING_DEF_IRONLY
+	  || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP))
     {
       symtab_node *next;
       for (next = node->same_comdat_group;
