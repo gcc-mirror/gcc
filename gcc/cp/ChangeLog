@@ -1,3 +1,11 @@
+2019-02-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89144 - link error with constexpr initializer_list.
+	* call.c (convert_like_real) [ck_list]: Don't allocate a temporary
+	array for an empty list.
+	* typeck2.c (store_init_value): Don't use cxx_constant_init in a
+	template.
+
 2019-02-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/89241 - ICE with __func__ in lambda in template.

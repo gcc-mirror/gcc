@@ -7085,34 +7085,42 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       {
 	/* Conversion to std::initializer_list<T>.  */
 	tree elttype = TREE_VEC_ELT (CLASSTYPE_TI_ARGS (totype), 0);
-	tree new_ctor = build_constructor (init_list_type_node, NULL);
 	unsigned len = CONSTRUCTOR_NELTS (expr);
-	tree array, val, field;
-	vec<constructor_elt, va_gc> *vec = NULL;
-	unsigned ix;
+	tree array;
 
-	/* Convert all the elements.  */
-	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (expr), ix, val)
+	if (len)
 	  {
-	    tree sub = convert_like_real (convs->u.list[ix], val, fn, argnum,
-					  false, false, complain);
-	    if (sub == error_mark_node)
-	      return sub;
-	    if (!BRACE_ENCLOSED_INITIALIZER_P (val)
-		&& !check_narrowing (TREE_TYPE (sub), val, complain))
-	      return error_mark_node;
-	    CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_ctor), NULL_TREE, sub);
-	    if (!TREE_CONSTANT (sub))
-	      TREE_CONSTANT (new_ctor) = false;
+	    tree val; unsigned ix;
+
+	    tree new_ctor = build_constructor (init_list_type_node, NULL);
+
+	    /* Convert all the elements.  */
+	    FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (expr), ix, val)
+	      {
+		tree sub = convert_like_real (convs->u.list[ix], val, fn,
+					      argnum, false, false, complain);
+		if (sub == error_mark_node)
+		  return sub;
+		if (!BRACE_ENCLOSED_INITIALIZER_P (val)
+		    && !check_narrowing (TREE_TYPE (sub), val, complain))
+		  return error_mark_node;
+		CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_ctor),
+					NULL_TREE, sub);
+		if (!TREE_CONSTANT (sub))
+		  TREE_CONSTANT (new_ctor) = false;
+	      }
+	    /* Build up the array.  */
+	    elttype = cp_build_qualified_type
+	      (elttype, cp_type_quals (elttype) | TYPE_QUAL_CONST);
+	    array = build_array_of_n_type (elttype, len);
+	    array = finish_compound_literal (array, new_ctor, complain);
+	    /* Take the address explicitly rather than via decay_conversion
+	       to avoid the error about taking the address of a temporary.  */
+	    array = cp_build_addr_expr (array, complain);
 	  }
-	/* Build up the array.  */
-	elttype = cp_build_qualified_type
-	  (elttype, cp_type_quals (elttype) | TYPE_QUAL_CONST);
-	array = build_array_of_n_type (elttype, len);
-	array = finish_compound_literal (array, new_ctor, complain);
-	/* Take the address explicitly rather than via decay_conversion
-	   to avoid the error about taking the address of a temporary.  */
-	array = cp_build_addr_expr (array, complain);
+	else
+	  array = nullptr_node;
+
 	array = cp_convert (build_pointer_type (elttype), array, complain);
 	if (array == error_mark_node)
 	  return error_mark_node;
@@ -7123,11 +7131,12 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	totype = complete_type_or_maybe_complain (totype, NULL_TREE, complain);
 	if (!totype)
 	  return error_mark_node;
-	field = next_initializable_field (TYPE_FIELDS (totype));
+	tree field = next_initializable_field (TYPE_FIELDS (totype));
+	vec<constructor_elt, va_gc> *vec = NULL;
 	CONSTRUCTOR_APPEND_ELT (vec, field, array);
 	field = next_initializable_field (DECL_CHAIN (field));
 	CONSTRUCTOR_APPEND_ELT (vec, field, size_int (len));
-	new_ctor = build_constructor (totype, vec);
+	tree new_ctor = build_constructor (totype, vec);
 	return get_target_expr_sfinae (new_ctor, complain);
       }
 
