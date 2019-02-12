@@ -1,6 +1,14 @@
 2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (build_init_or_final_await): New.
+	(morph_fn_to_coro): Use the co_await builder for initial and final
+	suspend.  Rename the tree list variable used to build the known
+	coroutine frame entries.
+
+2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc: Collect parse-related functions together, adjust
 	comments.  NFC.
 	* cp-tree.def: Adjust comments. NFC.

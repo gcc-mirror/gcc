@@ -1248,6 +1248,30 @@ get_fn_local_identifier (tree orig, const char *append)
   return get_identifier (an);
 }
 
+static tree
+build_init_or_final_await (location_t loc, bool is_final)
+{
+  const char *suspend_alt = is_final ? "final_suspend" : "initial_suspend";
+  tree setup_meth = lookup_promise_member (current_function_decl, suspend_alt,
+					   loc, true /*musthave*/);
+  if (!setup_meth || setup_meth == error_mark_node)
+    return error_mark_node;
+
+  tree s_fn = NULL_TREE;
+  tree setup_call = build_new_method_call
+    (DECL_COROUTINE_PROMISE_PROXY (current_function_decl), setup_meth,  NULL,
+     NULL_TREE, LOOKUP_NORMAL, &s_fn, tf_warning_or_error);
+
+  if (!s_fn || setup_call == error_mark_node)
+    return error_mark_node;
+
+  /* So build the co_await for this */
+  /* For initial/final suspends the call is is "a" per 8.3.8 3.1.  */
+
+  tree point = build_int_cst (integer_type_node,  (is_final ? 3 : 2));
+  return build_co_await (loc, setup_call, point);
+}
+
 /* Here we:
    a) Check that the function and promise type are valid for a
       coroutine.
@@ -1320,72 +1344,22 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree handle_type = DECL_COROUTINE_HANDLE_TYPE(orig);
   tree promise_type = DECL_COROUTINE_PROMISE_TYPE(orig);
 
-  /* A temp promise instance for the sole purpose of looking up method
-     types.  */
-  tree temp_p = build_lang_decl (VAR_DECL, get_identifier ("coro.temp_p"),
-				  promise_type);
-
   /* Types we need to define or look up.  */
 
   /* Initial and final suspend types are special in that the co_awaits for
      them are synthetic.  We need to find the type for each awaiter from
      the coroutine promise.  */
-  tree initial_suspend_meth = lookup_promise_member (orig, "initial_suspend",
-						     fn_start, true);
-  if (! initial_suspend_meth || initial_suspend_meth == error_mark_node)
+  tree initial_await = build_init_or_final_await (fn_start, false);
+  if (initial_await == error_mark_node)
     return false;
+  /* The type of the frame var for this is the type of its temp proxy.  */
+  tree initial_suspend_type = TREE_TYPE (TREE_OPERAND (initial_await, 1));
 
-  tree get_is_fn = NULL_TREE;
-  /* Build the call, since we need to force instantiation of templates.  */
-  tree get_is_call = build_new_method_call (temp_p, initial_suspend_meth,  NULL,
-					    NULL_TREE, LOOKUP_NORMAL,
-					    &get_is_fn, tf_warning_or_error);
-
-  /* Assuming we found it, look at the return type
-     - it must be an aggregate.  */
-  if (!get_is_fn 
-      || get_is_call == error_mark_node
-      || TREE_CODE (TREE_TYPE (TREE_TYPE (get_is_fn))) != RECORD_TYPE)
-    {
-      error_at (&fn_start_loc,
-		"the initial suspend type needs to be an aggregate");
-      inform (DECL_SOURCE_LOCATION
-               (MAYBE_BASELINK_FUNCTIONS (initial_suspend_meth)),
-	      "declared here");
-      /* FIXME: Match clang wording.  */
-      return false;
-    }
-  /* Else we know the return type now.  */
-  tree initial_suspend_type = TREE_TYPE (TREE_TYPE (get_is_fn));
-
-  /* Do the same for the final suspend.  */
-  tree final_suspend_meth = lookup_promise_member (orig, "final_suspend",
-						     fn_start, true);
-  if (!final_suspend_meth || final_suspend_meth == error_mark_node)
+  tree final_await = build_init_or_final_await (fn_start, true);
+  if (final_await == error_mark_node)
     return false;
-
-  tree get_fs_fn = NULL_TREE;
-  /* Build the call, since we need to force instantiation of templates.  */
-  tree get_fs_call = build_new_method_call (temp_p, final_suspend_meth,  NULL,
-					    NULL_TREE, LOOKUP_NORMAL,
-					    &get_fs_fn, tf_warning_or_error);
-
-  /* Assuming we found it, look at the return type
-     - it must be an aggregate.  */
-  if (!get_fs_fn 
-      || get_fs_call == error_mark_node
-      || TREE_CODE (TREE_TYPE (TREE_TYPE (get_fs_fn))) != RECORD_TYPE)
-    {
-      error_at (fn_start, "the final suspend type needs to be an aggregate");
-      inform (DECL_SOURCE_LOCATION
-               (MAYBE_BASELINK_FUNCTIONS (final_suspend_meth)),
-	      "declared here");
-      /* FIXME: Match clang wording.  */
-      return false;
-    }
-
-  tree final_suspend_type = TREE_TYPE (TREE_TYPE (get_fs_fn));
-
+  /* The type of the frame var for this is the type of it's temp proxy.  */
+  tree final_suspend_type = TREE_TYPE (TREE_OPERAND (final_await, 1));
 
   tree coro_frame_type = xref_tag (record_type, get_identifier ("_R_frame"),
 				   ts_current, false);
@@ -1409,44 +1383,45 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
    /* Build our dummy coro frame layout.  */
   coro_frame_type = begin_class_definition (coro_frame_type);
+
   tree resume_name = get_identifier ("__resume");
-  tree decls = build_decl (fn_start, FIELD_DECL, resume_name, act_des_fn_ptr);
+  tree decl = build_decl (fn_start, FIELD_DECL, resume_name, act_des_fn_ptr);
+  tree field_list = decl;
   tree destroy_name = get_identifier ("__destroy");
-  tree decl = build_decl (fn_start, FIELD_DECL, destroy_name, act_des_fn_ptr);
-  DECL_CHAIN (decl) = decls; decls = decl;
+  decl = build_decl (fn_start, FIELD_DECL, destroy_name, act_des_fn_ptr);
+  DECL_CHAIN (decl) = field_list; field_list = decl;
   tree promise_name = get_identifier ("__p");
   decl = build_decl (fn_start, FIELD_DECL, promise_name, promise_type);
-  DECL_CHAIN (decl) = decls; decls = decl;
+  DECL_CHAIN (decl) = field_list; field_list = decl;
   tree fnf_name = get_identifier ("__frame_needs_free");
   decl = build_decl (fn_start, FIELD_DECL, fnf_name, boolean_type_node);
-  DECL_CHAIN (decl) = decls; decls = decl;
+  DECL_CHAIN (decl) = field_list; field_list = decl;
   tree susp_name = get_identifier ("__suspended");
   decl = build_decl (fn_start, FIELD_DECL, susp_name, boolean_type_node);
-  DECL_CHAIN (decl) = decls; decls = decl;
+  DECL_CHAIN (decl) = field_list; field_list = decl;
   tree resume_idx_name = get_identifier ("__resume_at");
   decl = build_decl (fn_start, FIELD_DECL, resume_idx_name,
 		     short_unsigned_type_node);
-  DECL_CHAIN (decl) = decls; decls = decl;
+  DECL_CHAIN (decl) = field_list; field_list = decl;
 
-  // TODO: decide if we need to preserve things across initial susp.
+  /* Initial suspend is mandated.  */
   tree init_susp_name = get_identifier ("__is");
   decl = build_decl (fn_start, FIELD_DECL, init_susp_name,
 		     initial_suspend_type);
-  DECL_CHAIN (decl) = decls; decls = decl;
+  DECL_CHAIN (decl) = field_list; field_list = decl;
   /* We really need to figure this out from the awaiter type.  */
   tree init_hand_name = get_identifier ("__ih");
-  decl = build_decl (fn_start, FIELD_DECL, init_hand_name,
-		     handle_type);
-  DECL_CHAIN (decl) = decls; decls = decl;
-  // TODO: decide if we need to preserve things across final susp.
+  decl = build_decl (fn_start, FIELD_DECL, init_hand_name, handle_type);
+  DECL_CHAIN (decl) = field_list; field_list = decl;
+  /* Final suspend is mandated.  */
   tree fin_susp_name = get_identifier ("__fs");
   decl = build_decl (fn_start, FIELD_DECL, fin_susp_name, final_suspend_type);
-  DECL_CHAIN (decl) = decls; decls = decl;
+  DECL_CHAIN (decl) = field_list; field_list = decl;
   tree fin_hand_name = get_identifier ("__fh");
-  decl = build_decl (fn_start, FIELD_DECL, fin_hand_name,
-		     handle_type);
-  DECL_CHAIN (decl) = decls; decls = decl;
-  TYPE_FIELDS (coro_frame_type) = decls;
+  decl = build_decl (fn_start, FIELD_DECL, fin_hand_name, handle_type);
+  DECL_CHAIN (decl) = field_list; field_list = decl;
+
+  TYPE_FIELDS (coro_frame_type) = field_list;
 
   TYPE_BINFO (coro_frame_type) = make_tree_binfo (0);
   BINFO_OFFSET (TYPE_BINFO (coro_frame_type)) = size_zero_node;
