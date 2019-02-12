@@ -1,6 +1,13 @@
 2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (build_co_await): Check the awaitable method
+	signatures more rigorously.  Build the method calls for ready and
+	suspend - but don't record them (yet).
+
+2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (co_await_find_in_subtree): New.
 	(co_await_expander): Initial implementation of co_await, limited to
 	expressions without temporaries.

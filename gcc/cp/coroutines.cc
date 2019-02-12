@@ -322,33 +322,87 @@ build_co_await (location_t loc, tree a, tree mode)
       return error_mark_node;
     }
 
+  /* Check for required awaitable members and their types.  */
+  tree awrd_meth = lookup_member (o_type, get_identifier ("await_ready"),
+				  /* protect */1, /*want_type=*/ 0,
+				  tf_warning_or_error);
+
+  if (!awrd_meth || awrd_meth == error_mark_node)
+    return error_mark_node;
+
+  tree awsp_meth = lookup_member (o_type, get_identifier ("await_suspend"),
+				  /* protect */1, /*want_type=*/ 0,
+				  tf_warning_or_error);
+
+  if (!awsp_meth || awsp_meth == error_mark_node)
+    return error_mark_node;
+
   /* The type of the co_await is the return type of the awaitable's
      co_resume(), so we need to look that up.  */
-  tree awr_meth = lookup_member (o_type, get_identifier ("await_resume"),
+  tree awrs_meth = lookup_member (o_type, get_identifier ("await_resume"),
 				 /* protect */1, /*want_type=*/ 0,
 				 tf_warning_or_error);
 
-  if (!awr_meth || awr_meth == error_mark_node)
+  if (!awrs_meth || awrs_meth == error_mark_node)
     return error_mark_node;
 
-  /* To complete that lookup, we need an instance of 'e' which is built from
+  /* To complete the lookups, we need an instance of 'e' which is built from
      'o' according to 8.3.8 3.4.  However, we don't want to materialise 'e'
      here (it might need to be placed in the coroutine frame) so we will make
      a temp placeholder instead. */
   tree e_proxy = build_lang_decl (VAR_DECL, NULL_TREE, o_type);
-  tree awr_func = NULL_TREE;
-  tree awr_call  = build_new_method_call (e_proxy, awr_meth,  NULL, NULL_TREE,
-					  LOOKUP_NORMAL, &awr_func,
+
+  /* I suppose we could check that this is contextually convertible to bool.  */
+  tree awrd_func = NULL_TREE;
+  tree awrd_call  = build_new_method_call (e_proxy, awrd_meth,  NULL, NULL_TREE,
+					  LOOKUP_NORMAL, &awrd_func,
 					  tf_warning_or_error);
 
-  if (!awr_func || !awr_call || awr_call == error_mark_node)
+  if (!awrd_func || !awrd_call || awrd_call == error_mark_node)
     return error_mark_node;
 
-  /* TODO: lookup the other two required methods and validate their return
-     types.  */
+  /* The suspend method has constraints on its return type.  */
+  tree awsp_func = NULL_TREE;
+  tree h_type = DECL_COROUTINE_HANDLE_TYPE(current_function_decl);
+  tree h_proxy = build_lang_decl (VAR_DECL, NULL_TREE, h_type);
+  vec<tree, va_gc>* args = make_tree_vector_single (h_proxy);
+  tree awsp_call  = build_new_method_call (e_proxy, awsp_meth, &args, NULL_TREE,
+					  LOOKUP_NORMAL, &awsp_func,
+					  tf_warning_or_error);
 
-  return build5_loc (loc, CO_AWAIT_EXPR, TREE_TYPE (TREE_TYPE (awr_func)),
-		     a, e_proxy, o, awr_call, mode);
+  if (!awsp_func || !awsp_call || awsp_call == error_mark_node)
+    return error_mark_node;
+
+  bool OK = false;
+  tree susp_return_type = TYPE_CANONICAL (TREE_TYPE (TREE_TYPE (awsp_func)));
+  if (same_type_p (susp_return_type, void_type_node))
+    OK = true;
+  else if (same_type_p (susp_return_type, boolean_type_node))
+    OK = true;
+  else if (POINTER_TYPE_P (susp_return_type))
+    OK = true;
+
+  if (!OK)
+    {
+      fprintf (stderr, "didn't grok the suspend return : " );
+      debug_tree (susp_return_type);
+      error_at (loc, "%<await_suspend%> must return %<void%>, %<bool%> or"
+		" a coroutine handle.");
+      return error_mark_node;
+    }
+
+  /* Finally, the type of e.await_resume() is the co_await's type.  */
+  tree awrs_func = NULL_TREE;
+  tree awrs_call  = build_new_method_call (e_proxy, awrs_meth,  NULL, NULL_TREE,
+					  LOOKUP_NORMAL, &awrs_func,
+					  tf_warning_or_error);
+
+  if (!awrs_func || !awrs_call || awrs_call == error_mark_node)
+    return error_mark_node;
+
+
+  return build5_loc (loc, CO_AWAIT_EXPR, TREE_TYPE (TREE_TYPE (awrs_func)),
+		     a, e_proxy, o, awrs_call, mode);
 }
 
 
