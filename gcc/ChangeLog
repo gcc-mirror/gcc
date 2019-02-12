@@ -1,3 +1,9 @@
+2019-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89253
+	* tree-ssa-loop-split.c (tree_ssa_split_loops): Check we can
+	duplicate the loop.
+
 2019-02-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR lto/88147
