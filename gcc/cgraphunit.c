@@ -1226,6 +1226,15 @@ analyze_functions (bool first_time)
        && node != first_handled_var; node = next)
     {
       next = node->next;
+      /* For symbols declared locally we clear TREE_READONLY when emitting
+	 the construtor (if one is needed).  For external declarations we can
+	 not safely assume that the type is readonly because we may be called
+	 during its construction.  */
+      if (TREE_CODE (node->decl) == VAR_DECL
+	  && TYPE_P (TREE_TYPE (node->decl))
+	  && TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (node->decl))
+	  && DECL_EXTERNAL (node->decl))
+	TREE_READONLY (node->decl) = 0;
       if (!node->aux && !node->referred_to_p ())
 	{
 	  if (symtab->dump_file)
