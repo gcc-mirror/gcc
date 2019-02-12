@@ -1319,6 +1319,13 @@ oacc_loop_auto_partitions (oacc_loop *loop, unsigned outer_mask,
 	 non-innermost available level.  */
       unsigned this_mask = GOMP_DIM_MASK (GOMP_DIM_GANG);
 
+      /* Orphan reductions cannot have gang partitioning.  */
+      if ((loop->flags & OLF_REDUCTION)
+	  && oacc_get_fn_attrib (current_function_decl)
+	  && !lookup_attribute ("omp target entrypoint",
+				DECL_ATTRIBUTES (current_function_decl)))
+	this_mask = GOMP_DIM_MASK (GOMP_DIM_WORKER);
+
       /* Find the first outermost available partition. */
       while (this_mask <= outer_mask)
 	this_mask <<= 1;
@@ -1470,6 +1477,17 @@ default_goacc_reduction (gcall *call)
 
       if (!integer_zerop (ref_to_res))
 	{
+	  /* Dummy reduction vars that have GOMP_MAP_FIRSTPRIVATE_POINTER data
+	     mappings gets retyped to (void *).  Adjust the type of ref_to_res
+	     as appropriate.  */
+	  if (TREE_TYPE (TREE_TYPE (ref_to_res)) != TREE_TYPE (var))
+	    {
+	      tree ptype = build_pointer_type (TREE_TYPE (var));
+	      tree t = make_ssa_name (ptype);
+	      tree expr = fold_build1 (NOP_EXPR, ptype, ref_to_res);
+	      gimple_seq_add_stmt (&seq, gimple_build_assign (t, expr));
+	      ref_to_res = t;
+	    }
 	  tree dst = build_simple_mem_ref (ref_to_res);
 	  tree src = var;
 
