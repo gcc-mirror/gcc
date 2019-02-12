@@ -1,3 +1,22 @@
+2018-10-30  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* config/nvptx/nvptx.cc (nvptx_propagate_unified): New.
+	(nvptx_split_blocks): Call it for cond_uni insn.
+	(nvptx_expand_cond_uni): New.
+	(enum nvptx_builtins): Add NVPTX_BUILTIN_COND_UNI.
+	(nvptx_init_builtins): Initialize it.
+	(nvptx_expand_builtin):
+	(nvptx_generate_vector_shuffle): Change integral SHIFT operand to
+	tree BITS operand.
+	(nvptx_vector_reduction): New.
+	(nvptx_adjust_reduction_type): New.
+	(nvptx_goacc_reduction_setup): Use it to adjust the type of ref_to_res.
+	(nvptx_goacc_reduction_init): Don't update LHS if it doesn't exist.
+	(nvptx_goacc_reduction_fini): Call nvptx_vector_reduction for vector.
+	Use it to adjust the type of ref_to_res.
+	(nvptx_goacc_reduction_teardown):
+	* config/nvptx/nvptx.md (cond_uni): New pattern.
+
 2018-06-29  Cesar Philippidis  <cesar@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>
 
