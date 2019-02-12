@@ -115,6 +115,9 @@ acc_get_cuda_stream (int async)
   return ret;
 }
 
+/* As of OpenACC 2.6, the return code of this function appears to be
+   unspecified.  We choose to return 1 for success, or 0 for failure.  */
+
 int
 acc_set_cuda_stream (int async, void *stream)
 {
@@ -127,7 +130,7 @@ acc_set_cuda_stream (int async, void *stream)
 
   thr = goacc_thread ();
 
-  int ret = -1;
+  int ret = 0;
   if (thr && thr->dev && thr->dev->openacc.cuda.set_stream_func)
     {
       acc_prof_info prof_info;

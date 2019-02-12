@@ -39,6 +39,12 @@ main (int argc, char **argv)
       if (streams[i] != NULL)
 	abort ();
 
+      /* The no-value async may be an alias for a numbered async stream.
+         Skip over setting it below else the above NULL check will fail for
+         the aliased stream.  */
+      if (i == acc_async_noval)
+	continue;
+
       r = cuStreamCreate (&streams[i], CU_STREAM_DEFAULT);
       if (r != CUDA_SUCCESS)
 	{
