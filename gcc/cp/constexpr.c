@@ -6400,6 +6400,12 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case ANNOTATE_EXPR:
       return RECUR (TREE_OPERAND (t, 0), rval);
 
+    /* coroutine await points - not sure it there's ever a case where they
+       could be constexpr.  */
+    case CO_AWAIT_EXPR:
+    case CO_YIELD_EXPR:
+      return false;
+
     default:
       if (objc_is_property_ref (t))
 	return false;

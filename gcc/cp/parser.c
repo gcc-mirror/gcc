@@ -8312,19 +8312,11 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	    cp_lexer_consume_token (parser->lexer);
 	    /* Parse the cast-expression.  */
 	    expr = cp_parser_simple_cast_expression (parser);
-	    if (! co_await_context_valid_p (kw_loc, expr))
+	    if (expr == error_mark_node)
 	      return error_mark_node;
 
-	    /* FIXME: we're not checking anything here yet, this is just a
-	       placeholder in the initial work.  */
-
-	    /* The current function has now become a coroutine, if it wasn't
-	       already.  */
-	    DECL_COROUTINE_P (current_function_decl) = 1;
-	    /* We don't know the type yet.  */
-	    return build5_loc (kw_loc, CO_AWAIT_EXPR, void_type_node,  expr,
-			       NULL_TREE, NULL_TREE, NULL_TREE,
-			       integer_zero_node);
+	    /* Do the Section 8.3.8 dance of the awaitable.  */
+	    return cp_expr (finish_co_await_expr (kw_loc, expr));
 	  }
 
 	default:

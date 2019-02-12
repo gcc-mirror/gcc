@@ -1,6 +1,19 @@
 2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* constexpr.c (potential_constant_expression_1): Declare that co_await
+	and co_yield expressions are not candidates for constexpr.
+	* coroutines.cc: Reorganise text to put the parser-related functions
+	together.  Rename co_await_context_valid_p to finish_co_await_expr.
+	(finish_co_await_expr): Perform the check for p.await_transform().
+	Use the common build_co_await() to complete the build.
+	* cp-tree.h: Rename co_await_context_valid_p to finish_co_await_expr.
+	* parser.c (cp_parser_unary_expression): Use finish_co_await_expr in
+	place of the temporary parse.
+
+2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc: Rename co_yield_context_valid_p to
 	finish_co_yield_expr. (finish_co_yield_expr): Validate and build
 	yield_value() call, use build_co_await() to construct the co_await.

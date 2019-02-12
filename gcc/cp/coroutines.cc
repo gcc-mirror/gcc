@@ -302,6 +302,106 @@ coro_function_valid_p (tree fndecl)
   return true;
 }
 
+/*  This performs 8.3.8 bullet 3.3 and validates the interface obtained.
+    It is also used to build the initial and final suspend points.   */
+static tree
+build_co_await (location_t loc, tree a, tree mode)
+{
+  /* TODO overload of operator co_await, for now behave as if it returned
+     an empty set.  So that o is a.
+     build_new_op .... */
+  tree o = a;
+ 
+  tree o_type = complete_type_or_else (TREE_TYPE (o), o);
+  if (TREE_CODE (o_type) != RECORD_TYPE)
+    {
+      error_at (loc, "member reference base type %qT is not a"
+		" structure or union", o_type);
+      return error_mark_node;
+    }
+
+  /* The type of the co_await is the return type of the awaitable's
+     co_resume(), so we need to look that up.  */
+  tree awr_meth = lookup_member (o_type, get_identifier ("await_resume"),
+				 /* protect */1, /*want_type=*/ 0,
+				 tf_warning_or_error);
+
+  if (!awr_meth || awr_meth == error_mark_node)
+    return error_mark_node;
+
+  /* To complete that lookup, we need an instance of 'e' which is built from
+     'o' according to 8.3.8 3.4.  However, we don't want to materialise 'e'
+     here (it might need to be placed in the coroutine frame) so we will make
+     a temp placeholder instead. */
+  tree e_proxy = build_lang_decl (VAR_DECL, NULL_TREE, o_type);
+  tree awr_func = NULL_TREE;
+  tree awr_call  = build_new_method_call (e_proxy, awr_meth,  NULL, NULL_TREE,
+					  LOOKUP_NORMAL, &awr_func,
+					  tf_warning_or_error);
+
+  if (!awr_func || !awr_call || awr_call == error_mark_node)
+    return error_mark_node;
+
+  /* TODO: lookup the other two required methods and validate their return
+     types.  */
+
+  return build5_loc (loc, CO_AWAIT_EXPR, TREE_TYPE (TREE_TYPE (awr_func)),
+		     a, e_proxy, o, awr_call, mode);
+}
+
+
+tree
+finish_co_await_expr (location_t kw, tree expr)
+{
+  if (!coro_common_keyword_context_valid_p (current_function_decl, kw,
+					   "co_await"))
+    return error_mark_node;
+
+  /* We must be able to look up the "await_transform" method in the scope of
+     the promise type, and obtain it's return type.  */
+  if (!coro_promise_type_found_p (current_function_decl, kw))
+    return error_mark_node;
+
+  /* The current function has now become a coroutine, if it wasn't already.  */
+  DECL_COROUTINE_P (current_function_decl) = 1;
+
+  if (expr == NULL_TREE)
+    {
+      error_at (kw, "%<co_await%> requires an expression." );
+      return error_mark_node;
+    }
+
+  /* The incoming cast expression might be transformed by a promise
+     'await_transform()'.  */
+  tree at_meth = lookup_promise_member (current_function_decl, 
+					"await_transform", kw, false /*musthave*/);
+  if (at_meth == error_mark_node)
+    return error_mark_node;
+
+  tree a = expr;
+  if (at_meth)
+    {
+      /* try to build a = p.await_transform (e). */
+      tree at_fn = NULL_TREE;
+      vec<tree, va_gc>* args = make_tree_vector_single (expr);
+      a = build_new_method_call
+	(DECL_COROUTINE_PROMISE_PROXY (current_function_decl), at_meth,  &args,
+	 NULL_TREE, LOOKUP_NORMAL, &at_fn, tf_warning_or_error);
+
+      /* Probably it's not an error to fail here, although possibly a bit odd
+	 to find await_transform but not a valid one?  */
+      if (!at_fn || a == error_mark_node)
+	return error_mark_node;
+     }
+
+  /* Now we want to build co_await a.
+     The trailing '0' is a flag that notes this is a regular co_await.  */
+  tree op = build_co_await (kw, a, integer_zero_node);
+  TREE_SIDE_EFFECTS (op) = 1;
+  SET_EXPR_LOCATION (op, kw);
+
+  return op;
+}
 /* Support for expansion of co_return statements.  */
 struct __coro_ret_data {
   tree promise;
@@ -1486,68 +1586,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   DECL_SAVED_TREE (orig) = newbody;
   *resumer = actor;
   *destroyer = destroy;
-  return true;
-}
-
-/*  This performs 8.3.8 bullet 3.3 */
-static tree
-build_co_await (location_t loc, tree a, tree mode)
-{
-  /* TODO overload of operator co_await, for now behave as if it returned
-     an empty set.  So that o is a.
-     build_new_op .... */
-  tree o = a;
- 
-  tree o_type = complete_type_or_else (TREE_TYPE (o), o);
-  if (TREE_CODE (o_type) != RECORD_TYPE)
-    {
-      error_at (loc, "member reference base type %qT is not a"
-		" structure or union", o_type);
-      return error_mark_node;
-    }
-
-  /* Now we want the type of await_resume() for which we need an instance of
-     'e' which is built from o according to 8.3.8 3.4.
-     We don't want to materialise 'e' here (it might need to be placed in the
-     coroutine frame) so we will make a temp placeholder instead. */
-  tree e_proxy = build_lang_decl (VAR_DECL, NULL_TREE, o_type);
-  tree awr_meth = lookup_member (o_type, get_identifier ("await_resume"),
-				 /* protect */1, /*want_type=*/ 0,
-				 tf_warning_or_error);
-
-  if (!awr_meth || awr_meth == error_mark_node)
-    return error_mark_node;
-
-  tree awr_func = NULL_TREE;
-  tree awr_call  = build_new_method_call (e_proxy, awr_meth,  NULL, NULL_TREE,
-					  LOOKUP_NORMAL, &awr_func,
-					  tf_warning_or_error);
-
-  if (!awr_func || !awr_call || awr_call == error_mark_node)
-    return error_mark_node;
-
-  return build5_loc (loc, CO_AWAIT_EXPR, TREE_TYPE (TREE_TYPE (awr_func)),
-		     a, e_proxy, o, awr_call, mode);
-}
-
-
-bool
-co_await_context_valid_p (location_t kw, tree expr)
-{
-  if (!coro_common_keyword_context_valid_p (current_function_decl, kw,
-					   "co_await"))
-    return false;
-
-  if (!coro_promise_type_found_p (current_function_decl, kw))
-    return false;
-
-  if (expr == NULL_TREE)
-    {
-      error_at (kw, "%<co_await%> requires an expression." );
-      return false;
-    }
-
-  /* FIXME: we can probably do more here.  */
   return true;
 }
 
