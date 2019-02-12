@@ -1,3 +1,10 @@
+2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (find_std_experimental): New.
+	(find_handle_type): Rename to find_coro_traits_template_decl.
+	(find_coro_handle_type): Rename vars, use factored function.
+
 2019-02-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/

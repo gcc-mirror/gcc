@@ -52,38 +52,47 @@ along with GCC; see the file COPYING3.  If not see
 /* DEBUG remove me.  */
 extern void debug_tree(tree);
 
-static tree find_handle_type (location_t);
+static tree find_coro_traits_template_decl (location_t);
 static tree find_coro_handle_type (location_t, tree);
 static tree find_promise_type (tree);
 static tree lookup_promise_member (tree, const char *, location_t, bool);
 static bool coro_promise_type_found_p (tree, location_t);
 
-/* Lookup the coroutine_traits template decl.
-   Instantiate that for the function signature.  */
-
+/* Lookup std::experimental.  */
 static tree
-find_handle_type (location_t kw)
+find_std_experimental (location_t loc)
 {
-  unsigned p;
   /* we want std::experimental::coroutine_traits class template decl.  */
   tree exp_name = get_identifier ("experimental");
-  tree traits_name = get_identifier ("coroutine_traits");
-  tree functyp = TREE_TYPE (current_function_decl);
-  tree arg_node = TYPE_ARG_TYPES (functyp);
-  tree targ = make_tree_vec (list_length (arg_node));
   tree exp_ns = lookup_qualified_name (std_node, exp_name, 0, false, false);
 
   if (exp_ns == error_mark_node)
     {
-      error_at (kw, "std::experimental not found");
+      error_at (loc, "std::experimental not found");
       return NULL_TREE;
     }
+  return exp_ns;
+}
 
-  /* So now build up a type list for the template.  The list length includes a
-     terminating 'void' which we don't want - but we use that slot for the fn
-     return type (which we do list even if it's 'void').  */
+/* Lookup the coroutine_traits template decl.
+   Instantiate that for the function signature.  */
+
+static tree
+find_coro_traits_template_decl (location_t kw)
+{
+  tree exp_ns = find_std_experimental (kw);
+  if (!exp_ns)
+    return NULL_TREE;
+
+  /* So now build up a type list for the template <R, ...>.
+     The function arg list length includes a terminating 'void' which we
+     don't want - but we use that slot for the fn return type (which we do
+     list even if it's 'void').  */
+  tree functyp = TREE_TYPE (current_function_decl);
+  tree arg_node = TYPE_ARG_TYPES (functyp);
+  tree targ = make_tree_vec (list_length (arg_node));
   TREE_VEC_ELT (targ, 0) = TYPE_MAIN_VARIANT (TREE_TYPE (functyp));
-  p = 1;
+  unsigned p = 1;
   while (arg_node != NULL_TREE
          && !VOID_TYPE_P (TREE_VALUE (arg_node)))
     {
@@ -91,39 +100,33 @@ find_handle_type (location_t kw)
       arg_node = TREE_CHAIN (arg_node);
     }
 
-  tree handle_type = lookup_template_class (traits_name, targ,
+  tree traits_name = get_identifier ("coroutine_traits");
+  tree traits_decl = lookup_template_class (traits_name, targ,
 					    /* in_decl */ NULL_TREE,
 					    /* context */ exp_ns,
 					    /* entering scope */ false,
 					    tf_none);
 
-  if (handle_type == error_mark_node)
+  if (traits_decl == error_mark_node)
     {
       error_at (kw, "couldn't instantiate coroutine_traits");
       return NULL_TREE;
     }
 
-  return handle_type;
+  return traits_decl;
 }
 
 static tree
 find_coro_handle_type (location_t kw, tree promise_type)
 {
-  /* we want std::experimental::coroutine_handle class template decl.  */
-  tree exp_name = get_identifier ("experimental");
-  tree handle_name = get_identifier ("coroutine_handle");
-  tree exp_ns = lookup_qualified_name (std_node, exp_name, 0, false, false);
+  tree exp_ns = find_std_experimental (kw);
+  if (!exp_ns)
+    return NULL_TREE;
+
+  /* So now build up a type list for the template, one entry, the promise.  */
   tree targ = make_tree_vec (1);
-
-  if (exp_ns == error_mark_node)
-    {
-      error_at (kw, "std::experimental not found");
-      return NULL_TREE;
-    }
-
-  /* So now build up a type list for the template, one entr, the promise.  */
   TREE_VEC_ELT (targ, 0) = promise_type;
-
+  tree handle_name = get_identifier ("coroutine_handle");
   tree handle_type = lookup_template_class (handle_name, targ,
 					    /* in_decl */ NULL_TREE,
 					    /* context */ exp_ns,
@@ -167,10 +170,14 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
   /* If we don't already have a current promise type, try to look it up.  */
   if (DECL_COROUTINE_PROMISE_TYPE(fndecl) == NULL_TREE)
     {
-      tree handle_type = find_handle_type (loc);
-      DECL_COROUTINE_PROMISE_TYPE(fndecl) = find_promise_type (handle_type);
-      DECL_COROUTINE_HANDLE_TYPE(fndecl)
-       = find_coro_handle_type (loc, DECL_COROUTINE_PROMISE_TYPE(fndecl));
+      /* Get the coroutine traits temple decl for the specified return and
+         argument type list.  coroutine_traits <R, ...> */
+      tree templ_decl = find_coro_traits_template_decl (loc);
+      /* Find the promise type for that.  */
+      DECL_COROUTINE_PROMISE_TYPE (fndecl) = find_promise_type (templ_decl);
+      /* Find the handle type for that.  */
+      DECL_COROUTINE_HANDLE_TYPE (fndecl)
+	= find_coro_handle_type (loc, DECL_COROUTINE_PROMISE_TYPE(fndecl));
     }
 
   if (DECL_COROUTINE_PROMISE_TYPE(fndecl) == NULL_TREE)
