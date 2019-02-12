@@ -2655,7 +2655,7 @@ struct GTY(()) lang_decl_fn {
      In a coroutine, the handle and promise types.  */
   tree coro_handle_type;
   tree promise_type;
-
+  tree promise_proxy;
 };
 
 /* DECL_LANG_SPECIFIC for namespaces.  */
@@ -4905,6 +4905,9 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* The PROMISE_TYPE associated with this coroutine type.  */
 #define DECL_COROUTINE_PROMISE_TYPE(NODE) \
   (LANG_DECL_FN_CHECK (DECL_COMMON_CHECK (NODE))->promise_type)
+
+#define DECL_COROUTINE_PROMISE_PROXY(NODE) \
+  (LANG_DECL_FN_CHECK (DECL_COMMON_CHECK (NODE))->promise_proxy)
 
 /* True for an OMP_ATOMIC that has dependent parameters.  These are stored
    as an expr in operand 1, and integer_zero_node or clauses in operand 0.  */
