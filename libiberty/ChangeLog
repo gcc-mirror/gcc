@@ -1,3 +1,9 @@
+2019-02-11  Philippe Waroquiers  <philippe.waroquiers@skynet.be>
+
+	* splay-tree.c (splay_tree_insert): Also release old KEY in case
+	of insertion of a key equal to an already present key.
+	(splay_tree_new_typed_alloc): Update comment.
+
 2019-01-22  Nidal Faour  <nidal.faour@wdc.com>
 
 	PR lto/88422
