@@ -1,3 +1,8 @@
+2019-02-12  Tom de Vries  <tdevries@suse.de>
+
+	PR libbacktrace/81983
+	* dwarf.c (dwarf_lookup_pc): Don't call bsearch if nmemb == 0.
+
 2019-02-10  Tom de Vries  <tdevries@suse.de>
 
 	* Makefile.am (BUILDTESTS): Add btest_lto.
