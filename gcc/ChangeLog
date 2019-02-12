@@ -1,3 +1,8 @@
+2019-02-12  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Remove duplicate
+	-maltivec. Delete -maltivec=be and -maltivec=le documentation.
+
 2019-02-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89229
