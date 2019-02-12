@@ -847,6 +847,18 @@ expand_co_awaits (tree fn, tree *fnbody, tree coro_fp, tree resume_idx,
   return *fnbody;
 }
 
+/* Suspend point hash_map.  */
+
+struct suspend_point_info {
+  /* coro frame field type.  */
+  tree awaitable_type;
+  /* coro frame field name.  */
+  tree await_field_id;
+  /* coro frame handle field name, NULL_TREE if not needed.  */
+  tree save_handle_id;
+};
+
+static hash_map<tree, struct suspend_point_info> *suspend_points;
 /* The actor transform.  */
 
 static void
@@ -1272,6 +1284,78 @@ build_init_or_final_await (location_t loc, bool is_final)
   return build_co_await (loc, setup_call, point);
 }
 
+
+static bool
+register_await_info (tree await_expr, tree aw_type, tree aw_nam, tree h_nam)
+{
+  bool seen;
+  struct suspend_point_info &s
+    = suspend_points->get_or_insert (await_expr, &seen);
+  if (seen)
+    {
+      error_at (EXPR_LOCATION (await_expr), "duplicate info for %qE",
+		await_expr);
+      debug_tree (await_expr);
+      return false;
+    }
+  s.awaitable_type = aw_type;
+  s.await_field_id = aw_nam;
+  s.save_handle_id = h_nam;
+  return true;
+}
+
+struct __susp_frame_data {
+  tree *field_list;
+  tree handle_type;
+  unsigned count;
+};
+
+/* If this is an await, then register it and decide on what coro
+   frame storage is needed.
+   If this is a co_yield (which embeds an await), drop the yield
+   and record the await (the yield was kept for diagnostics only.  */
+static tree
+register_awaits (tree *stmt, int *do_subtree, void *d)
+{
+  struct __susp_frame_data *data = (struct __susp_frame_data *) d;
+
+  if (TREE_CODE (*stmt) != CO_AWAIT_EXPR
+      && TREE_CODE (*stmt) != CO_YIELD_EXPR)
+    return NULL_TREE;
+
+  size_t bufsize = sizeof ("__aw_s.") + 10;
+  char *buf = (char *) alloca (bufsize);
+  snprintf (buf, bufsize, "__aw_s.%d", data->count);
+  tree aw_field_nam = get_identifier (buf);
+  /* TODO: be more intelligent about whether we need a coro handle
+     saved across the suspend.  */
+  snprintf (buf, bufsize, "__aw_h.%d", data->count);
+  tree handle_field_nam = get_identifier (buf);
+
+  tree aw_expr = *stmt;
+  location_t aw_loc = EXPR_LOCATION (aw_expr); /* location of the co_xxxx.  */
+  if (TREE_CODE (aw_expr) == CO_YIELD_EXPR)
+    {
+      aw_expr = TREE_OPERAND (aw_expr, 1);
+      *stmt = aw_expr; //build_stmt (aw_loc, EXPR_STMT, aw_expr);
+    }
+
+  /* The required field has the same type as the proxy stored in the
+      await expr.  */
+  tree aw_field_type = TREE_TYPE (TREE_OPERAND (aw_expr, 1));
+
+  tree decl = build_decl (aw_loc, FIELD_DECL, aw_field_nam, aw_field_type);
+  DECL_CHAIN (decl) = *data->field_list; *data->field_list = decl;
+
+  decl = build_decl (aw_loc, FIELD_DECL, handle_field_nam, data->handle_type);
+  DECL_CHAIN (decl) = *data->field_list; *data->field_list = decl;
+
+  register_await_info (aw_expr, aw_field_type, aw_field_nam, handle_field_nam);
+
+  data->count++;
+  return NULL_TREE;
+}
+
 /* Here we:
    a) Check that the function and promise type are valid for a
       coroutine.
@@ -1346,6 +1430,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   /* Types we need to define or look up.  */
 
+  suspend_points = hash_map<tree, struct suspend_point_info>::create_ggc (11);
+
   /* Initial and final suspend types are special in that the co_awaits for
      them are synthetic.  We need to find the type for each awaiter from
      the coroutine promise.  */
@@ -1413,6 +1499,16 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree init_hand_name = get_identifier ("__ih");
   decl = build_decl (fn_start, FIELD_DECL, init_hand_name, handle_type);
   DECL_CHAIN (decl) = field_list; field_list = decl;
+
+  register_await_info (initial_await, initial_suspend_type,
+		       init_susp_name, init_hand_name);
+
+  /* Now insert the data for any body await points.  */
+  struct __susp_frame_data body_aw_points = { &field_list, handle_type, 0 };
+  /* we don't want to duplicate.  */
+  hash_set<tree> pset;
+  cp_walk_tree (&fnbody, register_awaits, &body_aw_points, &pset);
+
   /* Final suspend is mandated.  */
   tree fin_susp_name = get_identifier ("__fs");
   decl = build_decl (fn_start, FIELD_DECL, fin_susp_name, final_suspend_type);
@@ -1420,6 +1516,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree fin_hand_name = get_identifier ("__fh");
   decl = build_decl (fn_start, FIELD_DECL, fin_hand_name, handle_type);
   DECL_CHAIN (decl) = field_list; field_list = decl;
+
+  register_await_info (final_await, final_suspend_type,
+		       fin_susp_name, fin_hand_name);
 
   TYPE_FIELDS (coro_frame_type) = field_list;
 
