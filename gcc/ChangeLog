@@ -1,3 +1,10 @@
+2019-02-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	* config/i386/i386.md (*movoi_internal_avx): Revert revision
+	268678 and revision 268657.
+	(*movti_internal): Likewise.
+
 2019-02-12  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR target/89233
