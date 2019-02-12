@@ -1,3 +1,16 @@
+2018-06-29  Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+
+	* c-c++-common/goacc/deviceptr-4.c: Update.
+	* gfortran.dg/goacc/loop-2.f95: Update.
+	* gfortran.dg/goacc/loop-3-2.f95: Update.
+	* gfortran.dg/goacc/loop-3.f95: Update.
+	* gfortran.dg/goacc/loop-5.f95: Update.
+	* gfortran.dg/goacc/pr72715.f90: New test.
+	* gfortran.dg/goacc/sie.f95: Update.
+	* gfortran.dg/goacc/tile-1.f90: Update.
+	* gfortran.dg/gomp/pr77516.f90: Update.
+
 2018-10-02  Thomas Schwinge  <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 

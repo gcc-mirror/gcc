@@ -44,17 +44,17 @@ subroutine parloop
   do i = 1, n
   end do
 
-  !$acc parallel loop tile(-3) ! { dg-warning "must be positive" }
+  !$acc parallel loop tile(-3) ! { dg-error "must be positive" }
   do i = 1, n
   end do
 
-  !$acc parallel loop tile(10, -3) ! { dg-warning "must be positive" }
+  !$acc parallel loop tile(10, -3) ! { dg-error "must be positive" }
   do i = 1, n
      do j = 1, n
      end do
   end do
 
-  !$acc parallel loop tile(-100, 10, 5) ! { dg-warning "must be positive" }
+  !$acc parallel loop tile(-100, 10, 5) ! { dg-error "must be positive" }
   do i = 1, n
      do j = 1, n
         do k = 1, n
@@ -114,7 +114,7 @@ subroutine par
      end do
   end do
 
-  !$acc loop tile(-2) ! { dg-warning "must be positive" }
+  !$acc loop tile(-2) ! { dg-error "must be positive" }
   do i = 1, n
   end do
 
@@ -195,7 +195,7 @@ subroutine kern
      end do
   end do
 
-  !$acc loop tile(-2) ! { dg-warning "must be positive" }
+  !$acc loop tile(-2) ! { dg-error "must be positive" }
   do i = 1, n
   end do
 
@@ -295,17 +295,17 @@ subroutine kernsloop
   do i = 1, n
   end do
 
-  !$acc kernels loop tile(-3) ! { dg-warning "must be positive" }
+  !$acc kernels loop tile(-3) ! { dg-error "must be positive" }
   do i = 1, n
   end do
 
-  !$acc kernels loop tile(10, -3) ! { dg-warning "must be positive" }
+  !$acc kernels loop tile(10, -3) ! { dg-error "must be positive" }
   do i = 1, n
      do j = 1, n
      end do
   end do
 
-  !$acc kernels loop tile(-100, 10, 5) ! { dg-warning "must be positive" }
+  !$acc kernels loop tile(-100, 10, 5) ! { dg-error "must be positive" }
   do i = 1, n
      do j = 1, n
         do k = 1, n
