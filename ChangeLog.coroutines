@@ -1,6 +1,17 @@
 2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/testsuite/
+	* g++.dg/coroutines/torture/co-await-0-triv.C: New.
+	* g++.dg/coroutines/torture/co-await-1-value.C: New.
+	* g++.dg/coroutines/torture/co-await-2-xform.C: New.
+	* g++.dg/coroutines/torture/co-await-3-rhs-op.C: New.
+	* g++.dg/coroutines/torture/co-await-4-control-flow.C: New.
+	* g++.dg/coroutines/torture/co-await-5-loop.C: New.
+	* g++.dg/coroutines/torture/co-await-6-ovl.C: New.
+
+2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/testsuite/
 	* g++.dg/coroutines/torture/co-yield-0-triv.C: New.
 	* g++.dg/coroutines/torture/co-yield-1-multi.C: New.
 	* g++.dg/coroutines/torture/co-yield-2-loop.C: New.
