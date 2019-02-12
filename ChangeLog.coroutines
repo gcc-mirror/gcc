@@ -1,6 +1,12 @@
 2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (build_actor_fn): Use the new measured suspend point
+	count to build the resume and destroy dispatchers.
+
+2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (register_await_info, register_awaits): New.
 	(morph_fn_to_coro): Record suspend points from the function body.
 

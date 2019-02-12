@@ -863,7 +863,8 @@ static hash_map<tree, struct suspend_point_info> *suspend_points;
 
 static void
 build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
-		tree fnbody, tree orig)
+	        tree fnbody, tree orig, 
+		tree initial_await, tree final_await, unsigned body_count)
 {
   /* Some things we inherit from the original function.  */
   tree coro_frame_ptr = build_pointer_type (coro_frame_type);
@@ -925,23 +926,20 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   tree b = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   add_stmt (b);
 
-  b = build_case_label (build_int_cst (short_unsigned_type_node, 3), NULL_TREE,
-			create_anon_label_with_ctx (loc, actor));
-  add_stmt (b);
-  b = build_call_expr_internal_loc (loc, IFN_CO_ACTOR, void_type_node, 1,
-				    build_int_cst (short_unsigned_type_node, 3));
-  add_stmt (b);
-  b = build1 (GOTO_EXPR, void_type_node, CASE_LABEL (ddeflab));
-  add_stmt (b);
-
-  b = build_case_label (build_int_cst (short_unsigned_type_node, 5), NULL_TREE,
-			create_anon_label_with_ctx (loc, actor));
-  add_stmt (b);
-  b = build_call_expr_internal_loc (loc, IFN_CO_ACTOR, void_type_node, 1,
-				    build_int_cst (short_unsigned_type_node, 5));
-  add_stmt (b);
-  b = build1 (GOTO_EXPR, void_type_node, CASE_LABEL (ddeflab));
-  add_stmt (b);
+  short unsigned lab_num = 3;
+  for (unsigned destr_pt = 0; destr_pt < body_count + 2; destr_pt++)
+    {
+      tree l_num = build_int_cst (short_unsigned_type_node, lab_num);
+      b = build_case_label (l_num, NULL_TREE,
+			    create_anon_label_with_ctx (loc, actor));
+      add_stmt (b);
+      b = build_call_expr_internal_loc (loc, IFN_CO_ACTOR, void_type_node, 1,
+					l_num);
+      add_stmt (b);
+      b = build1 (GOTO_EXPR, void_type_node, CASE_LABEL (ddeflab));
+      add_stmt (b);
+      lab_num += 2;
+    }
 
   /* Insert the prototype dspatcher.  */
   finish_switch_stmt (destroy_dispatcher);
@@ -950,34 +948,33 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
 
   tree dispatcher = begin_switch_stmt ();
   finish_switch_cond (rat, dispatcher);
-   b = build_case_label (build_int_cst (short_unsigned_type_node, 0), NULL_TREE,
+  b = build_case_label (build_int_cst (short_unsigned_type_node, 0), NULL_TREE,
 			 create_anon_label_with_ctx (loc, actor));
   add_stmt (b);
   b = build1 (GOTO_EXPR, void_type_node, actor_begin_label);
   add_stmt (b);
-  tree deflab = build_case_label (NULL_TREE, NULL_TREE,
+
+  tree rdeflab = build_case_label (NULL_TREE, NULL_TREE,
 				  create_anon_label_with_ctx (loc, actor));
-  add_stmt (deflab);
+  add_stmt (rdeflab);
   b = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   add_stmt (b);
-  b = build1 (GOTO_EXPR, void_type_node, ret_label);
-  add_stmt (b);
-  b = build_case_label (build_int_cst (short_unsigned_type_node, 2), NULL_TREE,
-			create_anon_label_with_ctx (loc, actor));
-  add_stmt (b);
-  b = build_call_expr_internal_loc (loc, IFN_CO_ACTOR, void_type_node, 1,
-				    build_int_cst (short_unsigned_type_node, 2));
-  add_stmt (b);
-  b = build1 (GOTO_EXPR, void_type_node, CASE_LABEL (deflab));
-  add_stmt (b);
-  b = build_case_label (build_int_cst (short_unsigned_type_node, 4), NULL_TREE,
-			create_anon_label_with_ctx (loc, actor));
-  add_stmt (b);
-  b = build_call_expr_internal_loc (loc, IFN_CO_ACTOR, void_type_node, 1,
-				    build_int_cst (short_unsigned_type_node, 4));
-  add_stmt (b);
-  b = build1 (GOTO_EXPR, void_type_node, CASE_LABEL (deflab));
-  add_stmt (b);
+
+  lab_num = 2;
+  /* The final resume should be made to hit the default (trap, UB) entry.  */
+  for (unsigned resu_pt = 0; resu_pt < body_count + 1; resu_pt++)
+    {
+      tree l_num = build_int_cst (short_unsigned_type_node, lab_num);
+      b = build_case_label (l_num, NULL_TREE,
+			    create_anon_label_with_ctx (loc, actor));
+      add_stmt (b);
+      b = build_call_expr_internal_loc (loc, IFN_CO_ACTOR, void_type_node, 1,
+					l_num);
+      add_stmt (b);
+      b = build1 (GOTO_EXPR, void_type_node, CASE_LABEL (rdeflab));
+      add_stmt (b);
+      lab_num += 2;
+    }
 
   /* Insert the prototype dspatcher.  */
   finish_switch_stmt (dispatcher);
@@ -1548,7 +1545,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   add_stmt (r);
   tree varlist = coro_fp;
 
-  /* Collected the scope vars we need ... */
+  /* Collected the scope vars we need ... only one for now. */
   BIND_EXPR_VARS (ramp_bind) = nreverse (varlist);
 
   /* Allocate the frame.  This is the "real version"...
@@ -1753,13 +1750,17 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   BIND_EXPR_BODY (gro_context_bind) = pop_stmt_list (gro_context_body);
   BIND_EXPR_BODY (ramp_bind) = pop_stmt_list (ramp_body);
 
+  /* We know the "real" promise and have a frame layout with a slot for each
+     suspend point.  */
+
   /* We do this to avoid these routines being seen as nested by the middle
      end.  */
 
   push_deferring_access_checks (dk_no_check);
 
   /* Actor...  */
-  build_actor_fn (fn_start, coro_frame_type, actor, fnbody, orig);
+  build_actor_fn (fn_start, coro_frame_type, actor, fnbody, orig,
+		  initial_await, final_await, body_aw_points.count);
   
   /* Destroyer ... */
   build_destroy_fn (fn_start, coro_frame_type, destroy, actor);
