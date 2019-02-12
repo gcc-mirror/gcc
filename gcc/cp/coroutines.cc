@@ -309,11 +309,21 @@ coro_function_valid_p (tree fndecl)
 static tree
 build_co_await (location_t loc, tree a, tree mode)
 {
-  /* TODO overload of operator co_await, for now behave as if it returned
-     an empty set.  So that o is a.
-     build_new_op .... */
-  tree o = a;
- 
+  /* Try and overload of operator co_await, .... */
+  tree o;
+  if (MAYBE_CLASS_TYPE_P (TREE_TYPE (a)))
+    {
+      tree overload = NULL_TREE;
+      o = build_new_op (loc, CO_AWAIT_EXPR, LOOKUP_NORMAL, a,
+			NULL_TREE, NULL_TREE, &overload,
+			tf_warning_or_error);
+      /* If no viable functions are found, o is a.  */
+      if (!o || o == error_mark_node)
+        o = a;
+    }
+  else
+    o = a; /* This is most likely about to fail anyway.  */    
+
   tree o_type = complete_type_or_else (TREE_TYPE (o), o);
   if (TREE_CODE (o_type) != RECORD_TYPE)
     {

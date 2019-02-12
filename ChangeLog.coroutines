@@ -1,6 +1,12 @@
 2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (build_co_await): implement co_await() operator
+	overload resolution.
+
+2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (co_await_find_in_subtree): Fix unused parm.
 	(register_awaits): Likewise.
 
