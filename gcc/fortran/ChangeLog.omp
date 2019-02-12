@@ -1,3 +1,9 @@
+2018-06-29  Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+
+	* openmp.c (resolve_positive_int_expr): Promote the warning to an
+	error.
+
 2018-10-02  Thomas Schwinge  <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
