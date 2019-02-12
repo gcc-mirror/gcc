@@ -6712,8 +6712,8 @@ resolve_positive_int_expr (gfc_expr *expr, const char *clause)
   if (expr->expr_type == EXPR_CONSTANT
       && expr->ts.type == BT_INTEGER
       && mpz_sgn (expr->value.integer) <= 0)
-    gfc_warning (0, "INTEGER expression of %s clause at %L must be positive",
-		 clause, &expr->where);
+    gfc_error ("INTEGER expression of %s clause at %L must be positive",
+	       clause, &expr->where);
 }
 
 static void

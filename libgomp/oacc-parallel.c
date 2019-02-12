@@ -621,6 +621,8 @@ GOACC_data_start (int flags_m, size_t mapnum,
   if (profiling_p)
     goacc_profiling_dispatch (&prof_info, &enter_data_event_info, &api_info);
 
+  handle_ftn_pointers (mapnum, hostaddrs, sizes, kinds);
+
   /* Host fallback or 'do nothing'.  */
   if ((acc_dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
       || (flags & GOACC_FLAG_HOST_FALLBACK))

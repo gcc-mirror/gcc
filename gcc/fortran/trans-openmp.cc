@@ -1543,6 +1543,9 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
       return;
     }
 
+  if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FORCE_DEVICEPTR)
+    return;
+
   tree c2 = NULL_TREE, c3 = NULL_TREE, c4 = NULL_TREE;
   tree present = gfc_omp_check_optional_argument (decl, true);
   if (POINTER_TYPE_P (TREE_TYPE (decl)))
@@ -3143,6 +3146,12 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		      OMP_CLAUSE_SET_MAP_KIND (node2, GOMP_MAP_ATTACH_DETACH);
 		      OMP_CLAUSE_DECL (node2) = gfc_class_data_get (decl);
 		      OMP_CLAUSE_SIZE (node2) = size_int (0);
+		      goto finalize_map_clause;
+		    }
+		  else if (POINTER_TYPE_P (TREE_TYPE (decl))
+			   && n->u.map_op == OMP_MAP_FORCE_DEVICEPTR)
+		    {
+		      OMP_CLAUSE_DECL (node) = decl;
 		      goto finalize_map_clause;
 		    }
 		  else if (POINTER_TYPE_P (TREE_TYPE (decl))
