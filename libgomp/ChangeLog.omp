@@ -1,3 +1,11 @@
+2019-02-12  Julian Brown <julian@codesourcery.com>
+
+	* oacc-cuda.c (acc_set_cuda_stream): Return 0 on error/invalid
+	arguments.
+	* testsuite/libgomp.oacc-c-c++-common/lib-84.c: Handle unnumbered
+	async stream being an alias for a numbered async stream.
+	* testsuite/libgomp.oacc-c-c++-common/lib-85.c: Likewise.
+
 2020-04-19  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR other/76739
