@@ -1,3 +1,17 @@
+2018-06-29  Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_map_clause): Re-write handling of the
+	deviceptr clause.  Add new common_blocks argument.  Propagate it to
+	gfc_match_omp_variable_list.
+	(gfc_match_omp_clauses): Update calls to gfc_match_omp_map_clauses.
+	(resolve_positive_int_expr): Promote the warning to an error.
+	(check_array_not_assumed): Remove pointer check.
+	(resolve_oacc_nested_loops): Error on do concurrent loops.
+	* trans-openmp.c (gfc_omp_finish_clause): Don't create pointer data
+	mappings for deviceptr clauses.
+	(gfc_trans_omp_clauses): Likewise.
+
 2018-10-02  Thomas Schwinge  <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 

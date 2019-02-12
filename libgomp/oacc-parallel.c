@@ -327,6 +327,8 @@ GOACC_data_start (int flags_m, size_t mapnum,
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
 
+  handle_ftn_pointers (mapnum, hostaddrs, sizes, kinds);
+
   /* Host fallback or 'do nothing'.  */
   if ((acc_dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
       || (flags & GOACC_FLAG_HOST_FALLBACK))
