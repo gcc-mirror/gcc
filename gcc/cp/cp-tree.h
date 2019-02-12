@@ -2656,6 +2656,7 @@ struct GTY(()) lang_decl_fn {
   tree coro_handle_type;
   tree promise_type;
   tree promise_proxy;
+  location_t first_coro_kw;
 };
 
 /* DECL_LANG_SPECIFIC for namespaces.  */
@@ -4908,6 +4909,9 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 
 #define DECL_COROUTINE_PROMISE_PROXY(NODE) \
   (LANG_DECL_FN_CHECK (DECL_COMMON_CHECK (NODE))->promise_proxy)
+
+#define DECL_COROUTINE_FIRST_KEYWD_LOC(NODE) \
+  (LANG_DECL_FN_CHECK (DECL_COMMON_CHECK (NODE))->first_coro_kw)
 
 /* True for an OMP_ATOMIC that has dependent parameters.  These are stored
    as an expr in operand 1, and integer_zero_node or clauses in operand 0.  */

@@ -1,9 +1,17 @@
 2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (coro_promise_type_found_p): Stash the location
+	of the first coroutine keyword seen.
+	* cp-tree.h (lang_decl_fn): Add first_coro_kw.
+	(DECL_COROUTINE_FIRST_KEYWD_LOC): New.
+	
+2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (coro_promise_type_found_p): Build a promise var
 	to be used as a proxy for the eventual frame var.
-	* cp-tree.h (lang_decl): Add promise_proxy.
+	* cp-tree.h (lang_decl_fn): Add promise_proxy.
 	(DECL_COROUTINE_PROMISE_PROXY): New.
 
 2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>

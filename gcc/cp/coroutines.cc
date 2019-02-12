@@ -179,6 +179,9 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
       /* Find the handle type for that.  */
       DECL_COROUTINE_HANDLE_TYPE (fndecl)
 	= find_coro_handle_type (loc, DECL_COROUTINE_PROMISE_TYPE(fndecl));
+      /* Note where we first saw a coroutine keyword.  */
+      DECL_COROUTINE_FIRST_KEYWD_LOC (fndecl) = loc;
+      /* Build a proxy for the promise so that we can perform lookups.  */
       DECL_COROUTINE_PROMISE_PROXY (fndecl)
 	= build_lang_decl (VAR_DECL, get_identifier ("promise.proxy"),
 			   DECL_COROUTINE_PROMISE_TYPE (fndecl));
