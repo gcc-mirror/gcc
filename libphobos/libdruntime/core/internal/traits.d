@@ -128,6 +128,30 @@ template dtorIsNothrow(T)
     enum dtorIsNothrow = is(typeof(function{T t=void;}) : void function() nothrow);
 }
 
+/*
+Tests whether all given items satisfy a template predicate, i.e. evaluates to
+$(D F!(T[0]) && F!(T[1]) && ... && F!(T[$ - 1])).
+*/
+package(core.internal)
+template allSatisfy(alias F, T...)
+{
+    static if (T.length == 0)
+    {
+        enum allSatisfy = true;
+    }
+    else static if (T.length == 1)
+    {
+        enum allSatisfy = F!(T[0]);
+    }
+    else
+    {
+        static if (allSatisfy!(F, T[0  .. $/2]))
+            enum allSatisfy = allSatisfy!(F, T[$/2 .. $]);
+        else
+            enum allSatisfy = false;
+    }
+}
+
 template anySatisfy(alias F, T...)
 {
     static if (T.length == 0)

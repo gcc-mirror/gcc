@@ -1,3 +1,37 @@
+2019-02-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Aggregate>: Minor tweak.
+	* gcc-interface/utils.c (convert): Do not pad when doing an unchecked
+	conversion here.  Use TREE_CONSTANT throughout the function.
+	(unchecked_convert): Also pad if the source is a CONSTRUCTOR and the
+	destination is a more aligned array type or a larger aggregate type,
+	but not between original and packable versions of a type.
+
+2019-02-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (max_size) <tcc_unary>: Be prepared for an
+	operand with VOID_TYPE.
+
+2019-02-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (elaborate_all_entities): Do not elaborate the
+	entities of a package renaming another one.
+
+2019-02-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Regular_Loop_to_gnu): Replace tests on
+	individual flag_unswitch_loops and flag_tree_loop_vectorize switches
+	with test on global optimize switch.
+	(Raise_Error_to_gnu): Likewise.
+
+2019-02-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnarl/s-linux__sparc.ads (ETIMEDOUT): Set to correct value.
+
+2019-02-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnarl/s-linux__x32.ads: Resync list of signals with s-linux.ads
+
 2019-01-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* repinfo.adb (List_Component_Layout): Remove superfluous space for

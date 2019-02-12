@@ -2,7 +2,7 @@
    signed chars remains signed.  */
 /* { dg-do run } */
 /* { dg-options "-ansi -mcpu=power8 " } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
+/* { dg-require-effective-target p8vector_hw } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
 
 #include <altivec.h>

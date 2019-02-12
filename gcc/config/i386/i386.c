@@ -13579,8 +13579,9 @@ ix86_expand_prologue (void)
 	}
       m->fs.sp_offset += allocate;
 
-      /* Use stack_pointer_rtx for relative addressing so that code
-	 works for realigned stack, too.  */
+      /* Use stack_pointer_rtx for relative addressing so that code works for
+	 realigned stack.  But this means that we need a blockage to prevent
+	 stores based on the frame pointer from being scheduled before.  */
       if (r10_live && eax_live)
         {
 	  t = gen_rtx_PLUS (Pmode, stack_pointer_rtx, eax);
@@ -13589,6 +13590,7 @@ ix86_expand_prologue (void)
 	  t = plus_constant (Pmode, t, UNITS_PER_WORD);
 	  emit_move_insn (gen_rtx_REG (word_mode, AX_REG),
 			  gen_frame_mem (word_mode, t));
+	  emit_insn (gen_memory_blockage ());
 	}
       else if (eax_live || r10_live)
 	{
@@ -13596,6 +13598,7 @@ ix86_expand_prologue (void)
 	  emit_move_insn (gen_rtx_REG (word_mode,
 				       (eax_live ? AX_REG : R10_REG)),
 			  gen_frame_mem (word_mode, t));
+	  emit_insn (gen_memory_blockage ());
 	}
     }
   gcc_assert (m->fs.sp_offset == frame.stack_pointer_offset);
@@ -50433,7 +50436,9 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
       case E_DFmode:
       /* case E_SCmode: */
       /* case E_DCmode: */
-	break;
+	if (!AGGREGATE_TYPE_P (ret_type))
+	  break;
+	/* FALLTHRU */
       default:
 	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
 		    "unsupported return type %qT for simd", ret_type);
@@ -50442,25 +50447,34 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 
   tree t;
   int i;
+  tree type_arg_types = TYPE_ARG_TYPES (TREE_TYPE (node->decl));
+  bool decl_arg_p = (node->definition || type_arg_types == NULL_TREE);
 
-  for (t = DECL_ARGUMENTS (node->decl), i = 0; t; t = DECL_CHAIN (t), i++)
-    /* FIXME: Shouldn't we allow such arguments if they are uniform?  */
-    switch (TYPE_MODE (TREE_TYPE (t)))
-      {
-      case E_QImode:
-      case E_HImode:
-      case E_SImode:
-      case E_DImode:
-      case E_SFmode:
-      case E_DFmode:
-      /* case E_SCmode: */
-      /* case E_DCmode: */
-	break;
-      default:
-	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		    "unsupported argument type %qT for simd", TREE_TYPE (t));
-	return 0;
-      }
+  for (t = (decl_arg_p ? DECL_ARGUMENTS (node->decl) : type_arg_types), i = 0;
+       t && t != void_list_node; t = TREE_CHAIN (t), i++)
+    {
+      tree arg_type = decl_arg_p ? TREE_TYPE (t) : TREE_VALUE (t);
+      switch (TYPE_MODE (arg_type))
+	{
+	case E_QImode:
+	case E_HImode:
+	case E_SImode:
+	case E_DImode:
+	case E_SFmode:
+	case E_DFmode:
+	/* case E_SCmode: */
+	/* case E_DCmode: */
+	  if (!AGGREGATE_TYPE_P (arg_type))
+	    break;
+	  /* FALLTHRU */
+	default:
+	  if (clonei->args[i].arg_type == SIMD_CLONE_ARG_TYPE_UNIFORM)
+	    break;
+	  warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		      "unsupported argument type %qT for simd", arg_type);
+	  return 0;
+	}
+    }
 
   if (!TREE_PUBLIC (node->decl))
     {

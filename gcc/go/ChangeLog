@@ -1,3 +1,12 @@
+2019-02-05  Nikhil Benesch  <nikhil.benesch@gmail.com>
+
+        PR go/89019
+        * go-gcc.cc (Gcc_backend::placeholder_struct_type): Mark
+        placeholder structs as requiring structural equality.
+        (Gcc_backend::set_placeholder_pointer_type): Propagate the
+	canonical type from the desired pointer type to the placeholder
+	pointer type.
+
 2019-01-09  Ian Lance Taylor  <iant@golang.org>
 
 	PR go/86343

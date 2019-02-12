@@ -723,7 +723,14 @@ bool AggregateDeclaration::fill(Loc loc, Expressions *elements, bool ctorinit)
             else if (vx->_init)
             {
                 assert(!vx->_init->isVoidInitializer());
-                e = vx->getConstInitializer(false);
+                if (vx->inuse)   // https://issues.dlang.org/show_bug.cgi?id=18057
+                {
+                    vx->error(loc, "recursive initialization of field");
+                    errors = true;
+                    e = NULL;
+                }
+                else
+                    e = vx->getConstInitializer(false);
             }
             else
             {

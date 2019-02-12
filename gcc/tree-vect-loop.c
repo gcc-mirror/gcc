@@ -8578,6 +8578,7 @@ optimize_mask_stores (struct loop *loop)
   gimple_stmt_iterator gsi;
   gimple *stmt;
   auto_vec<gimple *> worklist;
+  auto_purge_vect_location sentinel;
 
   vect_location = find_loop_location (loop);
   /* Pick up all masked stores in loop if any.  */

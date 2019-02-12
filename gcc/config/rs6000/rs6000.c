@@ -15735,13 +15735,37 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case ALTIVEC_BUILTIN_VSRAH:
     case ALTIVEC_BUILTIN_VSRAW:
     case P8V_BUILTIN_VSRAD:
-      arg0 = gimple_call_arg (stmt, 0);
-      arg1 = gimple_call_arg (stmt, 1);
-      lhs = gimple_call_lhs (stmt);
-      g = gimple_build_assign (lhs, RSHIFT_EXPR, arg0, arg1);
-      gimple_set_location (g, gimple_location (stmt));
-      gsi_replace (gsi, g, true);
-      return true;
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	tree arg1_type = TREE_TYPE (arg1);
+	tree unsigned_arg1_type = unsigned_type_for (TREE_TYPE (arg1));
+	tree unsigned_element_type = unsigned_type_for (TREE_TYPE (arg1_type));
+	location_t loc = gimple_location (stmt);
+	/* Force arg1 into the range valid matching the arg0 type.  */
+	/* Build a vector consisting of the max valid bit-size values.  */
+	int n_elts = VECTOR_CST_NELTS (arg1);
+	tree element_size = build_int_cst (unsigned_element_type,
+					   128 / n_elts);
+	tree_vector_builder elts (unsigned_arg1_type, n_elts, 1);
+	for (int i = 0; i < n_elts; i++)
+	  elts.safe_push (element_size);
+	tree modulo_tree = elts.build ();
+	/* Modulo the provided shift value against that vector.  */
+	gimple_seq stmts = NULL;
+	tree unsigned_arg1 = gimple_build (&stmts, VIEW_CONVERT_EXPR,
+					   unsigned_arg1_type, arg1);
+	tree new_arg1 = gimple_build (&stmts, loc, TRUNC_MOD_EXPR,
+				      unsigned_arg1_type, unsigned_arg1,
+				      modulo_tree);
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	/* And finally, do the shift.  */
+	g = gimple_build_assign (lhs, RSHIFT_EXPR, arg0, new_arg1);
+	gimple_set_location (g, loc);
+	gsi_replace (gsi, g, true);
+	return true;
+      }
    /* Flavors of vector shift left.
       builtin_altivec_vsl{b,h,w} -> vsl{b,h,w}.  */
     case ALTIVEC_BUILTIN_VSLB:
@@ -15795,14 +15819,34 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	arg0 = gimple_call_arg (stmt, 0);
 	arg1 = gimple_call_arg (stmt, 1);
 	lhs = gimple_call_lhs (stmt);
+	tree arg1_type = TREE_TYPE (arg1);
+	tree unsigned_arg1_type = unsigned_type_for (TREE_TYPE (arg1));
+	tree unsigned_element_type = unsigned_type_for (TREE_TYPE (arg1_type));
+	location_t loc = gimple_location (stmt);
 	gimple_seq stmts = NULL;
 	/* Convert arg0 to unsigned.  */
 	tree arg0_unsigned
 	  = gimple_build (&stmts, VIEW_CONVERT_EXPR,
 			  unsigned_type_for (TREE_TYPE (arg0)), arg0);
+	/* Force arg1 into the range valid matching the arg0 type.  */
+	/* Build a vector consisting of the max valid bit-size values.  */
+	int n_elts = VECTOR_CST_NELTS (arg1);
+	tree element_size = build_int_cst (unsigned_element_type,
+					   128 / n_elts);
+	tree_vector_builder elts (unsigned_arg1_type, n_elts, 1);
+	for (int i = 0; i < n_elts; i++)
+	  elts.safe_push (element_size);
+	tree modulo_tree = elts.build ();
+	/* Modulo the provided shift value against that vector.  */
+	tree unsigned_arg1 = gimple_build (&stmts, VIEW_CONVERT_EXPR,
+					   unsigned_arg1_type, arg1);
+	tree new_arg1 = gimple_build (&stmts, loc, TRUNC_MOD_EXPR,
+				      unsigned_arg1_type, unsigned_arg1,
+				      modulo_tree);
+	/* Do the shift.  */
 	tree res
 	  = gimple_build (&stmts, RSHIFT_EXPR,
-			  TREE_TYPE (arg0_unsigned), arg0_unsigned, arg1);
+			  TREE_TYPE (arg0_unsigned), arg0_unsigned, new_arg1);
 	/* Convert result back to the lhs type.  */
 	res = gimple_build (&stmts, VIEW_CONVERT_EXPR, TREE_TYPE (lhs), res);
 	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
@@ -21609,10 +21653,47 @@ rs6000_indirect_call_template_1 (rtx *operands, unsigned int funop,
 				 bool sibcall)
 {
   /* -Wformat-overflow workaround, without which gcc thinks that %u
-      might produce 10 digits.  */
+     might produce 10 digits.  Note that -Wformat-overflow will not
+     currently warn here for str[], so do not rely on a warning to
+     ensure str[] is correctly sized.  */
   gcc_assert (funop <= MAX_RECOG_OPERANDS);
 
-  static char str[144];  /* 1 spare */
+  /* Currently, funop is either 0 or 1.  The maximum string is always
+     a !speculate 64-bit __tls_get_addr call.
+
+     ABI_AIX:
+     .  9	ld 2,%3\n\t
+     . 27	.reloc .,R_PPC64_TLSGD,%2\n\t
+     . 29	.reloc .,R_PPC64_PLTSEQ,%z1\n\t
+     .  9	crset 2\n\t
+     . 27	.reloc .,R_PPC64_TLSGD,%2\n\t
+     . 30	.reloc .,R_PPC64_PLTCALL,%z1\n\t
+     . 10	beq%T1l-\n\t
+     . 10	ld 2,%4(1)
+     .---
+     .151
+
+     ABI_ELFv2:
+     . 27	.reloc .,R_PPC64_TLSGD,%2\n\t
+     . 29	.reloc .,R_PPC64_PLTSEQ,%z1\n\t
+     .  9	crset 2\n\t
+     . 27	.reloc .,R_PPC64_TLSGD,%2\n\t
+     . 30	.reloc .,R_PPC64_PLTCALL,%z1\n\t
+     . 10	beq%T1l-\n\t
+     . 10	ld 2,%3(1)
+     .---
+     .142
+
+     ABI_V4:
+     . 27	.reloc .,R_PPC64_TLSGD,%2\n\t
+     . 35	.reloc .,R_PPC64_PLTSEQ,%z1+32768\n\t
+     .  9	crset 2\n\t
+     . 27	.reloc .,R_PPC64_TLSGD,%2\n\t
+     . 36	.reloc .,R_PPC64_PLTCALL,%z1+32768\n\t
+     .  8	beq%T1l-
+     .---
+     .141  */
+  static char str[160];  /* 8 spare */
   char *s = str;
   const char *ptrload = TARGET_64BIT ? "d" : "wz";
 
@@ -21628,12 +21709,12 @@ rs6000_indirect_call_template_1 (rtx *operands, unsigned int funop,
 		    || (REG_P (operands[funop])
 			&& REGNO (operands[funop]) == LR_REGNO));
 
-  if (!TARGET_MACHO && HAVE_AS_PLTSEQ && GET_CODE (operands[funop]) == UNSPEC)
+  if (TARGET_PLTSEQ && GET_CODE (operands[funop]) == UNSPEC)
     {
       const char *rel64 = TARGET_64BIT ? "64" : "";
       char tls[29];
       tls[0] = 0;
-      if (GET_CODE (operands[funop + 1]) == UNSPEC)
+      if (TARGET_TLS_MARKERS && GET_CODE (operands[funop + 1]) == UNSPEC)
 	{
 	  if (XINT (operands[funop + 1], 1) == UNSPEC_TLSGD)
 	    sprintf (tls, ".reloc .,R_PPC%s_TLSGD,%%%u\n\t",
@@ -21722,7 +21803,7 @@ rs6000_pltseq_template (rtx *operands, int which)
   const char *rel64 = TARGET_64BIT ? "64" : "";
   char tls[28];
   tls[0] = 0;
-  if (GET_CODE (operands[3]) == UNSPEC)
+  if (TARGET_TLS_MARKERS && GET_CODE (operands[3]) == UNSPEC)
     {
       if (XINT (operands[3], 1) == UNSPEC_TLSGD)
 	sprintf (tls, ".reloc .,R_PPC%s_TLSGD,%%3\n\t",
@@ -23971,21 +24052,30 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 static bool
 save_reg_p (int reg)
 {
-  /* We need to mark the PIC offset register live for the same conditions
-     as it is set up, or otherwise it won't be saved before we clobber it.  */
-
   if (reg == RS6000_PIC_OFFSET_TABLE_REGNUM && !TARGET_SINGLE_PIC_BASE)
     {
       /* When calling eh_return, we must return true for all the cases
 	 where conditional_register_usage marks the PIC offset reg
-	 call used.  */
-      if (TARGET_TOC && TARGET_MINIMAL_TOC
-	  && (crtl->calls_eh_return
-	      || df_regs_ever_live_p (reg)
-	      || !constant_pool_empty_p ()))
+	 call used or fixed.  */
+      if (crtl->calls_eh_return
+	  && ((DEFAULT_ABI == ABI_V4 && flag_pic)
+	      || (DEFAULT_ABI == ABI_DARWIN && flag_pic)
+	      || (TARGET_TOC && TARGET_MINIMAL_TOC)))
 	return true;
 
-      if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_DARWIN)
+      /* We need to mark the PIC offset register live for the same
+	 conditions as it is set up in rs6000_emit_prologue, or
+	 otherwise it won't be saved before we clobber it.  */
+      if (TARGET_TOC && TARGET_MINIMAL_TOC
+	  && !constant_pool_empty_p ())
+	return true;
+
+      if (DEFAULT_ABI == ABI_V4
+	  && (flag_pic == 1 || (flag_pic && TARGET_SECURE_PLT))
+	  && df_regs_ever_live_p (RS6000_PIC_OFFSET_TABLE_REGNUM))
+	return true;
+
+      if (DEFAULT_ABI == ABI_DARWIN
 	  && flag_pic && crtl->uses_pic_offset_table)
 	return true;
     }
@@ -32781,9 +32871,7 @@ rs6000_longcall_ref (rtx call_ref, rtx arg)
       call_ref = gen_rtx_SYMBOL_REF (VOIDmode, IDENTIFIER_POINTER (node));
     }
 
-  if (HAVE_AS_PLTSEQ
-      && TARGET_TLS_MARKERS
-      && (DEFAULT_ABI == ABI_ELFv2 || DEFAULT_ABI == ABI_V4))
+  if (TARGET_PLTSEQ)
     {
       rtx base = const0_rtx;
       int regno;
@@ -37748,14 +37836,20 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
   rtx call[4];
   int n_call;
   rtx insn;
+  bool is_pltseq_longcall;
 
   if (global_tlsarg)
     tlsarg = global_tlsarg;
 
   /* Handle longcall attributes.  */
+  is_pltseq_longcall = false;
   if ((INTVAL (cookie) & CALL_LONG) != 0
       && GET_CODE (func_desc) == SYMBOL_REF)
-    func = rs6000_longcall_ref (func_desc, tlsarg);
+    {
+      func = rs6000_longcall_ref (func_desc, tlsarg);
+      if (TARGET_PLTSEQ)
+	is_pltseq_longcall = true;
+    }
 
   /* Handle indirect calls.  */
   if (!SYMBOL_REF_P (func)
@@ -37780,11 +37874,12 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 					     gen_rtx_PLUS (Pmode, stack_ptr,
 							   stack_toc_offset));
 	  MEM_VOLATILE_P (stack_toc_mem) = 1;
-	  if (HAVE_AS_PLTSEQ
-	      && TARGET_TLS_MARKERS
-	      && DEFAULT_ABI == ABI_ELFv2
-	      && GET_CODE (func_desc) == SYMBOL_REF)
+	  if (is_pltseq_longcall)
 	    {
+	      /* Use USPEC_PLTSEQ here to emit every instruction in an
+		 inline PLT call sequence with a reloc, enabling the
+		 linker to edit the sequence back to a direct call
+		 when that makes sense.  */
 	      rtvec v = gen_rtvec (3, toc_reg, func_desc, tlsarg);
 	      rtx mark_toc_reg = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
 	      emit_insn (gen_rtx_SET (stack_toc_mem, mark_toc_reg));
@@ -37805,9 +37900,7 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 	     calls via LR, so move the address there.  Needed to mark
 	     this insn for linker plt sequence editing too.  */
 	  func_addr = gen_rtx_REG (Pmode, CTR_REGNO);
-	  if (HAVE_AS_PLTSEQ
-	      && TARGET_TLS_MARKERS
-	      && GET_CODE (func_desc) == SYMBOL_REF)
+	  if (is_pltseq_longcall)
 	    {
 	      rtvec v = gen_rtvec (3, abi_reg, func_desc, tlsarg);
 	      rtx mark_func = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
@@ -37945,10 +38038,15 @@ rs6000_call_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
       && GET_CODE (func_desc) == SYMBOL_REF)
     {
       func = rs6000_longcall_ref (func_desc, tlsarg);
-      /* If the longcall was implemented using PLT16 relocs, then r11
-	 needs to be valid at the call for lazy linking.  */
-      if (HAVE_AS_PLTSEQ
-	  && TARGET_TLS_MARKERS)
+      /* If the longcall was implemented as an inline PLT call using
+	 PLT unspecs then func will be REG:r11.  If not, func will be
+	 a pseudo reg.  The inline PLT call sequence supports lazy
+	 linking (and longcalls to functions in dlopen'd libraries).
+	 The other style of longcalls don't.  The lazy linking entry
+	 to the dynamic symbol resolver requires r11 be the function
+	 address (as it is for linker generated PLT stubs).  Ensure
+	 r11 stays valid to the bctrl by marking r11 used by the call.  */
+      if (TARGET_PLTSEQ)
 	abi_reg = func;
     }
 
@@ -37958,12 +38056,12 @@ rs6000_call_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
       func = force_reg (Pmode, func);
 
       /* Indirect calls via CTR are strongly preferred over indirect
-	 calls via LR, so move the address there.  Needed to mark
-	 this insn for linker plt sequence editing too.  */
+	 calls via LR, so move the address there.  That can't be left
+	 to reload because we want to mark every instruction in an
+	 inline PLT call sequence with a reloc, enabling the linker to
+	 edit the sequence back to a direct call when that makes sense.  */
       func_addr = gen_rtx_REG (Pmode, CTR_REGNO);
-      if (HAVE_AS_PLTSEQ
-	  && TARGET_TLS_MARKERS
-	  && GET_CODE (func_desc) == SYMBOL_REF)
+      if (abi_reg)
 	{
 	  rtvec v = gen_rtvec (3, func, func_desc, tlsarg);
 	  rtx mark_func = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
@@ -38017,10 +38115,15 @@ rs6000_sibcall_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
       && GET_CODE (func_desc) == SYMBOL_REF)
     {
       func = rs6000_longcall_ref (func_desc, tlsarg);
-      /* If the longcall was implemented using PLT16 relocs, then r11
-	 needs to be valid at the call for lazy linking.  */
-      if (HAVE_AS_PLTSEQ
-	  && TARGET_TLS_MARKERS)
+      /* If the longcall was implemented as an inline PLT call using
+	 PLT unspecs then func will be REG:r11.  If not, func will be
+	 a pseudo reg.  The inline PLT call sequence supports lazy
+	 linking (and longcalls to functions in dlopen'd libraries).
+	 The other style of longcalls don't.  The lazy linking entry
+	 to the dynamic symbol resolver requires r11 be the function
+	 address (as it is for linker generated PLT stubs).  Ensure
+	 r11 stays valid to the bctr by marking r11 used by the call.  */
+      if (TARGET_PLTSEQ)
 	abi_reg = func;
     }
 
@@ -38029,12 +38132,12 @@ rs6000_sibcall_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
     {
       func = force_reg (Pmode, func);
 
-      /* Indirect sibcalls must go via CTR.  Needed to mark
-	 this insn for linker plt sequence editing too.  */
+      /* Indirect sibcalls must go via CTR.  That can't be left to
+	 reload because we want to mark every instruction in an inline
+	 PLT call sequence with a reloc, enabling the linker to edit
+	 the sequence back to a direct call when that makes sense.  */
       func_addr = gen_rtx_REG (Pmode, CTR_REGNO);
-      if (HAVE_AS_PLTSEQ
-	  && TARGET_TLS_MARKERS
-	  && GET_CODE (func_desc) == SYMBOL_REF)
+      if (abi_reg)
 	{
 	  rtvec v = gen_rtvec (3, func, func_desc, tlsarg);
 	  rtx mark_func = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);

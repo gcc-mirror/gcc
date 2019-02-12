@@ -1,3 +1,22 @@
+2019-02-10  Tom de Vries  <tdevries@suse.de>
+
+	* Makefile.am (BUILDTESTS): Add btest_lto.
+	* Makefile.in: Regenerate.
+	* btest.c (test1, f2, f3, test3, f22, f23): Declare with
+	__attribute__((noclone)).
+
+2019-02-08  Tom de Vries  <tdevries@suse.de>
+
+	* backtrace.c (backtrace_full): Declare with __attribute__((noinline)).
+	* print.c (backtrace_print): Same.
+	* simple.c (backtrace_simple): Same.
+
+2019-02-08  Tom de Vries  <tdevries@suse.de>
+
+	PR libbacktrace/78063
+	* dwarf.c (build_address_map): Keep all parsed units.
+	(read_referenced_name_from_attr): Handle DW_FORM_ref_addr.
+
 2019-01-31  Tom de Vries  <tdevries@suse.de>
 
 	PR libbacktrace/89136

@@ -325,6 +325,28 @@ gcc_jit_context_add_command_line_option (gcc_jit_context *ctxt,
 
 #define LIBGCCJIT_HAVE_gcc_jit_context_add_command_line_option
 
+/* Add an arbitrary gcc driver option to the context.
+   The context takes a copy of the string, so the
+   (const char *) optname is not needed anymore after the call
+   returns.
+
+   Note that only some options are likely to be meaningful; there is no
+   "frontend" within libgccjit, so typically only those affecting
+   assembler and linker are likely to be useful.
+
+   This entrypoint was added in LIBGCCJIT_ABI_11; you can test for
+   its presence using
+   #ifdef LIBGCCJIT_HAVE_gcc_jit_context_add_driver_option
+*/
+extern void
+gcc_jit_context_add_driver_option (gcc_jit_context *ctxt,
+				   const char *optname);
+
+/* Pre-canned feature-test macro for detecting the presence of
+   gcc_jit_context_add_driver_option within libgccjit.h.  */
+
+#define LIBGCCJIT_HAVE_gcc_jit_context_add_driver_option
+
 /* Compile the context to in-memory machine code.
 
    This can be called more that once on a given context,

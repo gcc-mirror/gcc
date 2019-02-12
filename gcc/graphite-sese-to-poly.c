@@ -328,7 +328,7 @@ create_pw_aff_from_tree (poly_bb_p pbb, loop_p loop, tree t)
 {
   scop_p scop = PBB_SCOP (pbb);
 
-  t = scalar_evolution_in_region (scop->scop_info->region, loop, t);
+  t = cached_scalar_evolution_in_region (scop->scop_info->region, loop, t);
 
   gcc_assert (!chrec_contains_undetermined (t));
   gcc_assert (!automatically_generated_chrec_p (t));
@@ -782,7 +782,7 @@ add_loop_constraints (scop_p scop, __isl_take isl_set *domain, loop_p loop,
     }
   /* loop_i <= expr_nb_iters */
   gcc_assert (!chrec_contains_undetermined (nb_iters));
-  nb_iters = scalar_evolution_in_region (region, loop, nb_iters);
+  nb_iters = cached_scalar_evolution_in_region (region, loop, nb_iters);
   gcc_assert (!chrec_contains_undetermined (nb_iters));
 
   isl_pw_aff *aff_nb_iters = extract_affine (scop, nb_iters,

@@ -23,9 +23,10 @@ class TypeInfo_P : TypeInfo
     pure:
     nothrow:
 
-    override size_t getHash(in void* p)
+    override size_t getHash(scope const void* p)
     {
-        return cast(size_t)*cast(void**)p;
+        size_t addr = cast(size_t) *cast(const void**)p;
+        return addr ^ (addr >> 4);
     }
 
     override bool equals(in void* p1, in void* p2)

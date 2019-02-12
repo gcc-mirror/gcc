@@ -16,6 +16,6 @@ sub (int *a)
 int
 main (void)
 {
-  int a[DIM][DIM];  /* { dg-error "size of array 'a' is too large" } */
+  int a[DIM][DIM];  /* { dg-error "exceeds maximum object size" } */
   return sub (&a[0][0]);
 }

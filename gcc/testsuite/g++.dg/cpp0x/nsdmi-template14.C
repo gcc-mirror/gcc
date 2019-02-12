@@ -19,6 +19,8 @@ struct C
 {
   template<int N> struct D
   {
-    D* p = new D<0>;
+    D* p = new D<0>;		// { dg-error "" }
   };
 };
+
+C::D<0> d;

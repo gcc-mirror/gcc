@@ -568,8 +568,6 @@ scop_detection::can_represent_loop (loop_p loop, sese_l scop)
     && niter_desc.control.no_overflow
     && (niter = number_of_latch_executions (loop))
     && !chrec_contains_undetermined (niter)
-    && !chrec_contains_undetermined (scalar_evolution_in_region (scop,
-								 loop, niter))
     && graphite_can_represent_expr (scop, loop, niter);
 }
 
@@ -924,7 +922,7 @@ bool
 scop_detection::graphite_can_represent_expr (sese_l scop, loop_p loop,
 					     tree expr)
 {
-  tree scev = scalar_evolution_in_region (scop, loop, expr);
+  tree scev = cached_scalar_evolution_in_region (scop, loop, expr);
   return graphite_can_represent_scev (scop, scev);
 }
 
@@ -1061,7 +1059,8 @@ scop_detection::stmt_simple_for_scop_p (sese_l scop, gimple *stmt,
 	FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_USE)
 	  if (scev_analyzable_p (op, scop)
 	      && chrec_contains_undetermined
-		   (scalar_evolution_in_region (scop, bb->loop_father, op)))
+		   (cached_scalar_evolution_in_region (scop,
+						       bb->loop_father, op)))
 	    {
 	      DEBUG_PRINT (dp << "[scop-detection-fail] "
 			   << "Graphite cannot code-gen stmt:\n";
@@ -1190,10 +1189,10 @@ find_params_in_bb (sese_info_p region, gimple_poly_bb_p gbb)
   FOR_EACH_VEC_ELT (GBB_CONDITIONS (gbb), i, stmt)
     {
       loop_p loop = gimple_bb (stmt)->loop_father;
-      tree lhs = scalar_evolution_in_region (region->region, loop,
-					     gimple_cond_lhs (stmt));
-      tree rhs = scalar_evolution_in_region (region->region, loop,
-					     gimple_cond_rhs (stmt));
+      tree lhs = cached_scalar_evolution_in_region (region->region, loop,
+						    gimple_cond_lhs (stmt));
+      tree rhs = cached_scalar_evolution_in_region (region->region, loop,
+						    gimple_cond_rhs (stmt));
       gcc_assert (!chrec_contains_undetermined (lhs)
 		  && !chrec_contains_undetermined (rhs));
 
@@ -1492,8 +1491,8 @@ gather_bbs::before_dom_children (basic_block bb)
       tree nb_iters = number_of_latch_executions (loop);
       if (chrec_contains_symbols (nb_iters))
 	{
-	  nb_iters = scalar_evolution_in_region (region->region,
-						 loop, nb_iters);
+	  nb_iters = cached_scalar_evolution_in_region (region->region,
+							loop, nb_iters);
 	  scan_tree_for_params (region, nb_iters);
 	}
     }

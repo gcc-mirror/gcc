@@ -3787,7 +3787,7 @@ Regular_Loop_to_gnu (Node_Id gnat_node, tree *gnu_cond_expr_p)
 	 unswitching is enabled, do not require the loop bounds to be also
 	 invariant, as their evaluation will still be ahead of the loop.  */
       if (vec_safe_length (gnu_loop_info->checks) > 0
-	 && (make_invariant (&gnu_low, &gnu_high) || flag_unswitch_loops))
+	 && (make_invariant (&gnu_low, &gnu_high) || optimize >= 3))
 	{
 	  struct range_check_info_d *rci;
 	  unsigned int i, n_remaining_checks = 0;
@@ -3840,22 +3840,21 @@ Regular_Loop_to_gnu (Node_Id gnat_node, tree *gnu_cond_expr_p)
 	  /* Note that loop unswitching can only be applied a small number of
 	     times to a given loop (PARAM_MAX_UNSWITCH_LEVEL default to 3).  */
 	  if (IN_RANGE (n_remaining_checks, 1, 3)
-	      && optimize > 1
+	      && optimize >= 2
 	      && !optimize_size)
 	    FOR_EACH_VEC_ELT (*gnu_loop_info->checks, i, rci)
 	      if (rci->invariant_cond != boolean_false_node)
 		{
 		  TREE_OPERAND (rci->inserted_cond, 0) = rci->invariant_cond;
 
-		  if (flag_unswitch_loops)
+		  if (optimize >= 3)
 		    add_stmt_with_node_force (rci->inserted_cond, gnat_node);
 		}
 	}
 
       /* Second, if loop vectorization is enabled and the iterations of the
 	 loop can easily be proved as independent, mark the loop.  */
-      if (optimize
-	  && flag_tree_loop_vectorize
+      if (optimize >= 3
 	  && independent_iterations_p (LOOP_STMT_BODY (gnu_loop_stmt)))
 	LOOP_STMT_IVDEP (gnu_loop_stmt) = 1;
 
@@ -6478,7 +6477,7 @@ Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 		= build1 (SAVE_EXPR, boolean_type_node, boolean_true_node);
 	      vec_safe_push (loop->checks, rci);
 	      gnu_cond = build_noreturn_cond (gnat_to_gnu (gnat_cond));
-	      if (flag_unswitch_loops)
+	      if (optimize >= 3)
 		gnu_cond = build_binary_op (TRUTH_ANDIF_EXPR,
 					    boolean_type_node,
 					    rci->inserted_cond,
@@ -7231,13 +7230,10 @@ gnat_to_gnu (Node_Id gnat_node)
       {
 	tree gnu_aggr_type;
 
-	/* ??? It is wrong to evaluate the type now, but there doesn't
-	   seem to be any other practical way of doing it.  */
-
+	/* Check that this aggregate has not slipped through the cracks.  */
 	gcc_assert (!Expansion_Delayed (gnat_node));
 
-	gnu_aggr_type = gnu_result_type
-	  = get_unpadded_type (Etype (gnat_node));
+	gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
 	if (TREE_CODE (gnu_result_type) == RECORD_TYPE
 	    && TYPE_CONTAINS_TEMPLATE_P (gnu_result_type))
@@ -7245,6 +7241,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	    = TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (gnu_result_type)));
 	else if (TREE_CODE (gnu_result_type) == VECTOR_TYPE)
 	  gnu_aggr_type = TYPE_REPRESENTATIVE_ARRAY (gnu_result_type);
+	else
+	  gnu_aggr_type = gnu_result_type;
 
 	if (Null_Record_Present (gnat_node))
 	  gnu_result = gnat_build_constructor (gnu_aggr_type, NULL);
@@ -9426,7 +9424,8 @@ elaborate_all_entities (Node_Id gnat_node)
 
 	elaborate_all_entities (gnat_unit);
 
-	if (Ekind (gnat_entity) == E_Package)
+	if (Ekind (gnat_entity) == E_Package
+	    && No (Renamed_Entity (gnat_entity)))
 	  elaborate_all_entities_for_package (gnat_entity);
 
 	else if (Ekind (gnat_entity) == E_Generic_Package)

@@ -222,6 +222,16 @@ btest_LDADD = libbacktrace.la
 
 BUILDTESTS += btest
 
+if HAVE_ELF
+
+btest_lto_SOURCES = btest.c testlib.c
+btest_lto_CFLAGS = $(AM_CFLAGS) -g -O -flto
+btest_lto_LDADD = libbacktrace.la
+
+BUILDTESTS += btest_lto
+
+endif HAVE_ELF
+
 btest_alloc_SOURCES = $(btest_SOURCES)
 btest_alloc_CFLAGS = $(btest_CFLAGS)
 btest_alloc_LDADD = libbacktrace_alloc.la

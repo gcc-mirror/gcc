@@ -400,6 +400,36 @@ template_class_depth (tree type)
   return depth;
 }
 
+/* Return TRUE if NODE instantiates a template that has arguments of
+   its own, be it directly a primary template or indirectly through a
+   partial specializations.  */
+static bool
+instantiates_primary_template_p (tree node)
+{
+  tree tinfo = get_template_info (node);
+  if (!tinfo)
+    return false;
+
+  tree tmpl = TI_TEMPLATE (tinfo);
+  if (PRIMARY_TEMPLATE_P (tmpl))
+    return true;
+
+  if (!DECL_TEMPLATE_SPECIALIZATION (tmpl))
+    return false;
+
+  /* So now we know we have a specialization, but it could be a full
+     or a partial specialization.  To tell which, compare the depth of
+     its template arguments with those of its context.  */
+
+  tree ctxt = DECL_CONTEXT (tmpl);
+  tree ctinfo = get_template_info (ctxt);
+  if (!ctinfo)
+    return true;
+
+  return (TMPL_ARGS_DEPTH (TI_ARGS (tinfo))
+	  > TMPL_ARGS_DEPTH (TI_ARGS (ctinfo)));
+}
+
 /* Subroutine of maybe_begin_member_template_processing.
    Returns true if processing DECL needs us to push template parms.  */
 
@@ -6791,12 +6821,14 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	    /* Make sure we return NULL_TREE only if we have really issued
 	       an error, as described above.  */
 	    return (complain & tf_error) ? NULL_TREE : error_mark_node;
-	  expr = maybe_constant_value (expr);
+	  expr = maybe_constant_value (expr, NULL_TREE,
+				       /*manifestly_const_eval=*/true);
 	  expr = convert_from_reference (expr);
 	}
       else if (TYPE_PTR_OR_PTRMEM_P (type))
 	{
-	  tree folded = maybe_constant_value (expr);
+	  tree folded = maybe_constant_value (expr, NULL_TREE,
+					      /*manifestly_const_eval=*/true);
 	  if (TYPE_PTR_P (type) ? integer_zerop (folded)
 	      : null_member_pointer_value_p (folded))
 	    expr = folded;
@@ -19237,6 +19269,12 @@ tsubst_copy_and_build (tree t,
 	   looked up by digest_init.  */
 	process_index_p = !(type && MAYBE_CLASS_TYPE_P (type));
 
+	if (null_member_pointer_value_p (t))
+	  {
+	    gcc_assert (same_type_p (type, TREE_TYPE (t)));
+	    RETURN (t);
+	  }
+
 	n = vec_safe_copy (CONSTRUCTOR_ELTS (t));
         newlen = vec_safe_length (n);
 	FOR_EACH_VEC_SAFE_ELT (n, idx, ce)
@@ -25709,7 +25747,7 @@ type_dependent_expression_p (tree expression)
 	 that come from the template-id; the template arguments for the
 	 enclosing class do not make it type-dependent unless they are used in
 	 the type of the decl.  */
-      if (PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (expression))
+      if (instantiates_primary_template_p (expression)
 	  && (any_dependent_template_arguments_p
 	      (INNERMOST_TEMPLATE_ARGS (DECL_TI_ARGS (expression)))))
 	return true;

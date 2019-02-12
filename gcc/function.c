@@ -2915,7 +2915,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
       SET_DECL_ALIGN (parm, MAX (DECL_ALIGN (parm), BITS_PER_WORD));
       if (DECL_ALIGN (parm) > MAX_SUPPORTED_STACK_ALIGNMENT)
 	{
-	  rtx allocsize = gen_int_mode (size, Pmode);
+	  rtx allocsize = gen_int_mode (size_stored, Pmode);
 	  get_dynamic_stack_size (&allocsize, 0, DECL_ALIGN (parm), NULL);
 	  stack_parm = assign_stack_local (BLKmode, UINTVAL (allocsize),
 					   MAX_SUPPORTED_STACK_ALIGNMENT);

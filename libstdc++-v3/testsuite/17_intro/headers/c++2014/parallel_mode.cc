@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2019 Free Software Foundation, Inc.
+// Copyright (C) 2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,8 +15,11 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile { target c++11 } }
+// { dg-options "-std=gnu++14" }
+// { dg-do compile { target c++14 } }
 // { dg-require-normal-mode "" }
 
-#define _GLIBCXX_PARALLEL
-#include <regex>
+#if __has_include(<omp.h>)
+# define _GLIBCXX_PARALLEL 1
+# include <bits/extc++.h>
+#endif

@@ -96,23 +96,23 @@ DEFPARAM (PARAM_UNINLINED_FUNCTION_INSNS,
 	  "uninlined-function-insns",
 	  "Instruction accounted for function prologue, epilogue and other"
 	  " overhead.",
-	  2, 0, 0)
+	  2, 0, 1000000)
 
 DEFPARAM (PARAM_UNINLINED_FUNCTION_TIME,
 	  "uninlined-function-time",
 	  "Time accounted for function prologue, epilogue and other"
 	  " overhead.",
-	  0, 0, 0)
+	  0, 0, 1000000)
 
 DEFPARAM (PARAM_UNINLINED_FUNCTION_THUNK_INSNS,
 	  "uninlined-thunk-insns",
 	  "Instruction accounted for function thunk overhead.",
-	  2, 0, 0)
+	  2, 0, 1000000)
 
 DEFPARAM (PARAM_UNINLINED_FUNCTION_THUNK_TIME,
 	  "uninlined-thunk-time",
 	  "Time accounted for function thunk overhead.",
-	  2, 0, 0)
+	  2, 0, 1000000)
 
 DEFPARAM (PARAM_MAX_INLINE_INSNS_RECURSIVE,
 	  "max-inline-insns-recursive",

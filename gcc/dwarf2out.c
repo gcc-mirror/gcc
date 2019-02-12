@@ -8169,6 +8169,11 @@ copy_ancestor_tree (dw_die_ref unit, dw_die_ref die,
   decl_table_entry **slot = NULL;
   struct decl_table_entry *entry = NULL;
 
+  /* If DIE refers to a stub unfold that so we get the appropriate
+     DIE registered as orig in decl_table.  */
+  if (dw_die_ref c = get_AT_ref (die, DW_AT_signature))
+    die = c;
+
   if (decl_table)
     {
       /* Check if the entry has already been copied to UNIT.  */

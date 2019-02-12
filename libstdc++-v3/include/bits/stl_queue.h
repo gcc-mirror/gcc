@@ -302,6 +302,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // __cplusplus >= 201103L
     };
 
+#if __cpp_deduction_guides >= 201606
+  template<typename _Container,
+	   typename = enable_if_t<!__is_allocator<_Container>::value>>
+    queue(_Container) -> queue<typename _Container::value_type, _Container>;
+
+  template<typename _Container, typename _Allocator,
+	   typename = enable_if_t<!__is_allocator<_Container>::value>,
+	   typename = enable_if_t<__is_allocator<_Allocator>::value>>
+    queue(_Container, _Allocator)
+    -> queue<typename _Container::value_type, _Container>;
+#endif
+
   /**
    *  @brief  Queue equality comparison.
    *  @param  __x  A %queue.
@@ -652,6 +664,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 #endif // __cplusplus >= 201103L
     };
+
+#if __cpp_deduction_guides >= 201606
+  template<typename _Compare, typename _Container,
+	   typename = enable_if_t<!__is_allocator<_Compare>::value>,
+	   typename = enable_if_t<!__is_allocator<_Container>::value>>
+    priority_queue(_Compare, _Container)
+    -> priority_queue<typename _Container::value_type, _Container, _Compare>;
+
+  template<typename _InputIterator, typename _ValT
+	   = typename iterator_traits<_InputIterator>::value_type,
+	   typename _Compare = less<_ValT>,
+	   typename _Container = vector<_ValT>,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = enable_if_t<!__is_allocator<_Compare>::value>,
+	   typename = enable_if_t<!__is_allocator<_Container>::value>>
+    priority_queue(_InputIterator, _InputIterator, _Compare = _Compare(),
+		   _Container = _Container())
+    -> priority_queue<_ValT, _Container, _Compare>;
+
+  template<typename _Compare, typename _Container, typename _Allocator,
+	   typename = enable_if_t<!__is_allocator<_Compare>::value>,
+	   typename = enable_if_t<!__is_allocator<_Container>::value>,
+	   typename = enable_if_t<__is_allocator<_Allocator>::value>>
+    priority_queue(_Compare, _Container, _Allocator)
+    -> priority_queue<typename _Container::value_type, _Container, _Compare>;
+#endif
 
   // No equality/comparison operators are provided for priority_queue.
 

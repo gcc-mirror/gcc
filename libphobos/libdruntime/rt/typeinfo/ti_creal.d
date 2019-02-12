@@ -27,7 +27,7 @@ class TypeInfo_c : TypeInfo
 
     override string toString() const { return F.stringof; }
 
-    override size_t getHash(in void* p) const @trusted
+    override size_t getHash(scope const void* p) const @trusted
     {
         return Floating!F.hashOf(*cast(F*)p);
     }

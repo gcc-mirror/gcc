@@ -5099,10 +5099,15 @@ finish_decl (tree decl, location_t init_loc, tree init,
 
   type = TREE_TYPE (decl);
 
-  /* Deduce size of array from initialization, if not already known.  */
+  /* Deduce size of array from initialization, if not already known.
+     This is only needed for an initialization in the current scope;
+     it must not be done for a file-scope initialization of a
+     declaration with external linkage, redeclared in an inner scope
+     with the outer declaration shadowed in an intermediate scope.  */
   if (TREE_CODE (type) == ARRAY_TYPE
       && TYPE_DOMAIN (type) == NULL_TREE
-      && TREE_CODE (decl) != TYPE_DECL)
+      && TREE_CODE (decl) != TYPE_DECL
+      && !(TREE_PUBLIC (decl) && current_scope != file_scope))
     {
       bool do_default
 	= (TREE_STATIC (decl)
@@ -8394,6 +8399,16 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       }
   }
 
+  /* If this was supposed to be a transparent union, but we can't
+     make it one, warn and turn off the flag.  */
+  if (TREE_CODE (t) == UNION_TYPE
+      && TYPE_TRANSPARENT_AGGR (t)
+      && (!TYPE_FIELDS (t) || TYPE_MODE (t) != DECL_MODE (TYPE_FIELDS (t))))
+    {
+      TYPE_TRANSPARENT_AGGR (t) = 0;
+      warning_at (loc, 0, "union cannot be made transparent");
+    }
+
   /* Note: C_TYPE_INCOMPLETE_VARS overloads TYPE_VFIELD which is used
      in dwarf2out via rest_of_decl_compilation below and means
      something totally different.  Since we will be clearing
@@ -8406,20 +8421,11 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
     {
       TYPE_FIELDS (x) = TYPE_FIELDS (t);
       TYPE_LANG_SPECIFIC (x) = TYPE_LANG_SPECIFIC (t);
+      TYPE_TRANSPARENT_AGGR (x) = TYPE_TRANSPARENT_AGGR (t);
       C_TYPE_FIELDS_READONLY (x) = C_TYPE_FIELDS_READONLY (t);
       C_TYPE_FIELDS_VOLATILE (x) = C_TYPE_FIELDS_VOLATILE (t);
       C_TYPE_VARIABLE_SIZE (x) = C_TYPE_VARIABLE_SIZE (t);
       C_TYPE_INCOMPLETE_VARS (x) = NULL_TREE;
-    }
-
-  /* If this was supposed to be a transparent union, but we can't
-     make it one, warn and turn off the flag.  */
-  if (TREE_CODE (t) == UNION_TYPE
-      && TYPE_TRANSPARENT_AGGR (t)
-      && (!TYPE_FIELDS (t) || TYPE_MODE (t) != DECL_MODE (TYPE_FIELDS (t))))
-    {
-      TYPE_TRANSPARENT_AGGR (t) = 0;
-      warning_at (loc, 0, "union cannot be made transparent");
     }
 
   /* Update type location to the one of the definition, instead of e.g.

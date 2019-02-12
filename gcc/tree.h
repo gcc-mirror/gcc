@@ -4357,7 +4357,18 @@ extern int tree_int_cst_sign_bit (const_tree);
 extern unsigned int tree_int_cst_min_precision (tree, signop);
 extern tree strip_array_types (tree);
 extern tree excess_precision_type (tree);
-extern bool valid_constant_size_p (const_tree);
+
+/* Desription of the reason why the argument of valid_constant_size_p
+   is not a valid size.  */
+enum cst_size_error {
+  cst_size_ok,
+  cst_size_negative,
+  cst_size_too_big,
+  cst_size_overflow
+};
+
+extern bool valid_constant_size_p (const_tree, cst_size_error * = NULL);
+extern tree max_object_size ();
 
 /* Return true if T holds a value that can be represented as a poly_int64
    without loss of precision.  Store the value in *VALUE if so.  */

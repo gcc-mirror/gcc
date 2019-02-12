@@ -48,6 +48,8 @@ aarch64 port		James Greenhalgh	<james.greenhalgh@arm.com>
 aarch64 port		Marcus Shawcroft	<marcus.shawcroft@arm.com>
 aarch64 SVE port	Richard Sandiford	<richard.sandiford@arm.com>
 alpha port		Richard Henderson	<rth@twiddle.net>
+amdgcn port		Julian Brown		<julian@codesourcery.com>
+amdgcn port		Andrew Stubbs		<ams@codesourcery.com>
 arc port		Joern Rennecke		<gnu@amylaar.uk>
 arm port		Nick Clifton		<nickc@redhat.com>
 arm port		Richard Earnshaw	<richard.earnshaw@arm.com>
@@ -333,7 +335,6 @@ Neil Booth					<neil@daikokuya.co.uk>
 Robert Bowdidge					<bowdidge@apple.com>
 Joel Brobecker					<brobecker@gnat.com>
 Dave Brolley					<brolley@redhat.com>
-Julian Brown					<julian@codesourcery.com>
 Christian Bruel					<christian.bruel@st.com>
 Kevin Buettner					<kevinb@redhat.com>
 Adam Butcher					<adam@jessamine.co.uk>
@@ -586,7 +587,6 @@ Richard Stallman				<rms@gnu.org>
 Basile Starynkevitch				<basile@starynkevitch.net>
 Jakub Staszak					<kuba@et.pl>
 Graham Stott					<graham.stott@btinternet.com>
-Andrew Stubbs					<ams@codesourcery.com>
 Jeff Sturm					<jsturm@gcc.gnu.org>
 Robert Suchanek					<robert.suchanek@imgtec.com>
 Andrew Sutton					<andrew.n.sutton@gmail.com>

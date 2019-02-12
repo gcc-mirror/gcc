@@ -11054,6 +11054,47 @@ v4si g = __builtin_convertvector (f, v4si); /* g is @{1,-2,3,7@} */
 v4si h = __builtin_convertvector (c, v4si); /* h is @{1,5,0,10@} */
 @end smallexample
 
+@cindex vector types, using with x86 intrinsics
+Sometimes it is desirable to write code using a mix of generic vector
+operations (for clarity) and machine-specific vector intrinsics (to
+access vector instructions that are not exposed via generic built-ins).
+On x86, intrinsic functions for integer vectors typically use the same
+vector type @code{__m128i} irrespective of how they interpret the vector,
+making it necessary to cast their arguments and return values from/to
+other vector types.  In C, you can make use of a @code{union} type:
+@c In C++ such type punning via a union is not allowed by the language
+@smallexample
+#include <immintrin.h>
+
+typedef unsigned char u8x16 __attribute__ ((vector_size (16)));
+typedef unsigned int  u32x4 __attribute__ ((vector_size (16)));
+
+typedef union @{
+        __m128i mm;
+        u8x16   u8;
+        u32x4   u32;
+@} v128;
+@end smallexample
+
+@noindent
+for variables that can be used with both built-in operators and x86
+intrinsics:
+
+@smallexample
+v128 x, y = @{ 0 @};
+memcpy (&x, ptr, sizeof x);
+y.u8  += 0x80;
+x.mm  = _mm_adds_epu8 (x.mm, y.mm);
+x.u32 &= 0xffffff;
+
+/* Instead of a variable, a compound literal may be used to pass the
+   return value of an intrinsic call to a function expecting the union: */
+v128 foo (v128);
+x = foo ((v128) @{_mm_adds_epu8 (x.mm, y.mm)@});
+@c This could be done implicitly with __attribute__((transparent_union)),
+@c but GCC does not accept it for unions of vector types (PR 88955).
+@end smallexample
+
 @node Offsetof
 @section Support for @code{offsetof}
 @findex __builtin_offsetof

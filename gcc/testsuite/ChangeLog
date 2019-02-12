@@ -1,3 +1,391 @@
+2019-02-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89212 - ICE converting nullptr to pointer-to-member-function.
+	* g++.dg/cpp0x/nullptr40.C: New test.
+	* g++.dg/cpp0x/nullptr41.C: New test.
+
+2019-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88977
+	* g++.dg/cpp2a/is-constant-evaluated7.C: New test.
+
+2019-02-12  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR tree-optimization/86637
+	* gcc.c-torture/compile/pr86637-2.c: Test pthread and graphite target.
+
+2019-02-11  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/88771
+	* gcc.dg/Wstringop-overflow-8.c: New test.
+	* gcc.dg/Wstringop-overflow-9.c: New test.
+	* gcc.dg/Warray-bounds-40.c: New test.
+	* gcc.dg/builtin-stpncpy.c: Adjust.
+	* gcc.dg/builtin-stringop-chk-4.c: Adjust.
+	* g++.dg/opt/memcpy1.C: Adjust.
+
+2019-02-11  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/87996
+	* c-c++-common/array-5.c: New test.
+	* c-c++-common/pr68107.c: Adjust text of diagnostics.
+	* g++.dg/init/new38.C: Same.
+	* g++.dg/init/new43.C: Same.
+	* g++.dg/init/new44.C: Same.
+	* g++.dg/init/new46.C: Same.
+	* g++.dg/other/large-size-array.C: Same.
+	* g++.dg/other/new-size-type.C: Same.
+	* g++.dg/template/array30.C: Same.
+	* g++.dg/template/array32.C: New test.
+	* g++.dg/template/dependent-name3.C: Adjust.
+	* gcc.dg/large-size-array-3.c: Same.
+	* gcc.dg/large-size-array-5.c: Same.
+	* gcc.dg/large-size-array.c: Same.
+	* g++.old-deja/g++.brendan/array1.C: Same.
+	* g++.old-deja/g++.mike/p6149.C: Same.
+
+2019-02-11  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/tree-prof/inliner-1.c: Correct comments.
+
+2019-02-11  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/88560
+	* gcc.target/arm/armv8_2-fp16-move-1.c: Update assembler scans.
+	* gcc.target/arm/fp16-aapcs-3.c: Likewise.
+	* gcc.target/arm/fp16-aapcs-1.c: Likewise.
+
+2019-02-11  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/vec-sld-modulo.c: New.
+	* gcc.target/powerpc/vec-srad-modulo.c: New.
+	* gcc.target/powerpc/vec-srd-modulo.c: New.
+
+2019-02-11  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/89009
+	* g++.dg/ipa/pr89009.C: New test.
+
+2019-02-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/71723
+	* gfortran.dg/pointer_init_2.f90: Adjust error messages.
+	* gfortran.dg/pointer_init_6.f90: Likewise.
+	* gfortran.dg/pointer_init_9.f90: New test.
+
+2019-02-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/67679
+	* gfortran.dg/warn_undefined_1.f90: New test.o
+
+2019-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89268
+	* gcc.dg/vect/pr89268.c: New test.
+
+2019-02-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gnat.dg/lto19.adb: Remove dg-excess-errors.
+
+2019-02-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/89077
+	* gfortran.dg/substr_simplify.f90: New test.
+
+2019-02-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/88711
+	* gfortran.dg/pr79966.f90: Xfail everwyhere.
+
+2019-02-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89200
+	* gfortran.dg/array_reference_2.f90 : New test.
+
+2019-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89246
+	* gcc.dg/gomp/pr89246-1.c: New test.
+	* gcc.dg/gomp/pr89246-2.c: New test.
+
+2019-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/88739
+	* gcc.c-torture/execute/pr88739.c: New test.
+
+2019-02-08  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	PR testsuite/89258
+	* gcc.dg/tree-ssa/pr80887.c: Require int32plus.
+
+2019-02-08  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/vector/vec-copysign-execute.c: New test.
+	* gcc.target/s390/vector/vec-copysign.c: New test.
+
+2019-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89247
+	* gcc.dg/torture/pr89247.c: New testcase.
+
+2019-02-08  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/jump-label.c: New test.
+
+2019-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/89250
+	* gcc.dg/vect/vect-24.c: Remove XFAIL on vect_condition targets.
+
+2019-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/89234
+	* g++.dg/ubsan/pr89234.C: New test.
+
+2019-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89223
+	* gcc.dg/torture/pr89223.c: New testcase.
+
+2019-02-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/86637
+	PR tree-optimization/89235
+	* gcc.c-torture/compile/pr86637-1.c: New test.
+	* gcc.c-torture/compile/pr86637-2.c: New test.
+	* gcc.c-torture/compile/pr86637-3.c: New test.
+	* gcc.c-torture/compile/pr89235.c: New test.
+
+2019-02-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/abd_1.c: New test.
+	* gcc.dg/sabd_1.c: Likewise.
+
+2019-02-07  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR fortran/52789
+	* gfortran.dg/wunused-parameter_2.f90: New test.
+
+2019-02-07  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.dg/rtl/arm/ldrd-peepholes.c: Only run on arm
+
+2019-02-07  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/zvector/xl-xst-align-1.c: New test.
+	* gcc.target/s390/zvector/xl-xst-align-2.c: New test.
+
+2019-02-07  Matthew Malcomson  <matthew.malcomson@arm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/88714
+	* gcc.c-torture/execute/pr88714.c: New test.
+	* gcc.dg/rtl/arm/ldrd-peepholes.c: New test.
+
+2019-02-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR/target 88850
+	* gcc.target/arm/pr88850.c: New test.
+
+2019-02-07  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/86218
+	* g++.dg/cpp0x/pr86218.C: New.
+
+2019-02-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/89225
+	* gcc.target/powerpc/pr89225.c: New.
+
+2019-02-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt76.adb: New test.
+
+2019-02-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/71860
+	* gfortran.dg/null_10.f90: New test.
+
+2019-02-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/71302
+	* g++.dg/cpp0x/Wzero-as-null-pointer-constant-1.C: Add expected
+	column numbers to dg-warning directives where they are correct.
+	* g++.dg/warn/Wzero-as-null-pointer-constant-5.C: Likewise.
+	* g++.dg/warn/Wzero-as-null-pointer-constant-7.C: Likewise.
+	* g++.dg/warn/Wzero-as-null-pointer-constant-8.C: New test.
+
+2019-02-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR debug/87451
+	* gcc.dg/debug/dwarf2/inline5.c: Allow for non-comment before
+	"(DIE (0x[0-9a-f]*) DW_TAG_variable".
+	xfail scan-assembler-not with Solaris as.
+
+2019-02-06  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/vsx-vector-6.p7.c: Update instruction
+	counts and target.
+	* gcc.target/powerpc/vsx-vector-6.p8.c: Update instruction
+	counts and target.
+	* gcc.target/powerpc/vsx-vector-6.p9.c: Update instruction
+	counts and target.
+
+2019-02-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89182
+	* gfortran.dg/graphite/pr89182.f90: New testcase.
+
+2019-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89211
+	* gcc.dg/pr89211.c: New test.
+
+	PR middle-end/89210
+	* c-c++-common/builtin-convertvector-2.c: New test.
+
+2019-02-05  Nikhil Benesch  <nikhil.benesch@gmail.com>
+
+        PR go/89019
+        * lib/go-torture.exp: Test compiling with -flto.
+
+2019-02-06  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/88584
+	* gcc.dg/redecl-18.c: New test.
+
+2019-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89187
+	* g++.dg/opt/pr89187.C: New test.
+
+2019-02-05  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* jit.dg/add-driver-options-testlib.c: Add support file for
+	test-add-driver-options.c testcase.
+	* jit.dg/all-non-failing-tests.h: Add note about
+	test-add-driver-options.c
+	* jit.dg/jit.exp (jit-dg-test): Update to support
+	add-driver-options-testlib.c compilation.
+	* jit.dg/test-add-driver-options.c: New testcase.
+
+2019-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/11304
+	* gcc.target/i386/call-1.c (set_eax): Add "eax" clobber.
+	* gcc.target/i386/call-2.c: New test.
+
+2019-02-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89158 - by-value capture of constexpr variable broken.
+	* g++.dg/cpp0x/lambda/lambda-89158.C: New test.
+
+2019-02-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.dg/vect/pr84711.c: Use -Wno-psabi.
+
+2019-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/powerpc/vec-extract-sint128-1.c: Require int128 effective
+	target.
+	* gcc.target/powerpc/vec-extract-uint128-1.c: Likewise.
+
+	PR target/89188
+	* g++.dg/opt/pr89188.C: New test.
+
+	PR rtl-optimization/89195
+	* gcc.c-torture/execute/pr89195.c: New test.
+
+2019-02-05  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/vec-extract-slong-1.c: Require p8 execution
+	hardware.
+	* gcc.target/powerpc/vec-extract-schar-1.c: Likewise.
+	* gcc.target/powerpc/vec-extract-sint128-1.c: Likewise.
+	* gcc.target/powerpc/vec-extract-sshort-1.c: Likewise.
+	* gcc.target/powerpc/vec-extract-ulong-1.c: Likewise.
+	* gcc.target/powerpc/vec-extract-uchar-1.c: Likewise.
+	* gcc.target/powerpc/vec-extract-sint-1.c: Likewise.
+	* gcc.target/powerpc/vec-extract-uint128-1.c: Likewise.
+	* gcc.target/powerpc/vec-extract-ushort-1.c: Likewise.
+	* gcc.target/powerpc/vec-extract-uint-1.c: Likewise.
+
+2019-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89186
+	* g++.dg/ext/vector36.C: New test.
+
+2019-02-05  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/87770
+	* g++.dg/pr87770.C: New.
+
+2019-02-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/89077
+	* gfortran.dg/pr89077.f90: New test.
+
+2019-02-04  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/88985
+	* gcc.dg/ipa/pr88985.c: New test.
+
+2019-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/debug/dwarf2/inline5.c: Handle also @, ; or | comment
+	characters or extra spaces after the comment character.
+
+2019-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/torture/alias-1.C: New test.
+
+2019-02-03  Martin Sebor  <msebor@redhat.com>
+
+	PR c/69661
+	* c-c++-common/Wsequence-point-2.c: New test.
+
+	PR c++/44648
+	* g++.dg/warn/Wunused-var-35.C: New test.
+
+2019-02-03  Richard Biener  <rguenther@suse.de>
+
+	PR debug/87295
+	* g++.dg/debug/dwarf2/pr87295.C: New testcase.
+
+2019-02-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/88298
+	* gfortran.dg/warn_conversion_10.f90: New test.
+
+2019-02-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/88393
+	* gfortran.dg/alloc_comp_assign_16.f03 : New test.
+
+2019-02-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/88980
+	* gfortran.dg/realloc_on_assign_32.f90 : New test.
+
+2019-02-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/88685
+	* gfortran.dg/pointer_array_component_3.f90 : New test.
+
+2019-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/87887
+	* gcc.dg/gomp/pr87887-1.c: New test.
+	* gcc.dg/gomp/pr87887-2.c: New test.
+
+2019-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/83246
+	PR fortran/89084
+	* gfortran.dg/pr89084.f90: New test.
+	* gfortran.dg/lto/pr89084_0.f90: New test.
+	* gfortran.dg/pr83246.f90: New test.
+
 2019-02-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88325 - ICE with invalid out-of-line template member definition.

@@ -1,3 +1,69 @@
+2019-02-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89212 - ICE converting nullptr to pointer-to-member-function.
+	* pt.c (tsubst_copy_and_build) <case CONSTRUCTOR>: Return early for
+	null member pointer value.
+
+2019-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88977
+	* pt.c (convert_nontype_argument): Pass true as manifestly_const_eval
+	to maybe_constant_value calls.
+
+2019-02-11  Marek Polacek  <polacek@redhat.com>
+
+	* typeck2.c (digest_init_r): Remove commented code.
+
+2019-02-11  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/87996
+	* decl.c (compute_array_index_type_loc): Preserve signed sizes
+	for diagnostics.  Call valid_array_size_p instead of error.
+	* init.c (build_new_1): Compute size for diagnostic.  Call
+	invalid_array_size_error
+	(build_new): Call valid_array_size_p instead of error.
+
+2019-02-07  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/86218
+	* call.c (compare_ics): Deal with ck_aggr in either cs.
+
+2019-02-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/71302
+	* call.c (get_location_for_expr_unwinding_for_system_header): New
+	function.
+	(conversion_null_warnings): Use it when getting locations for
+	EXPR, effectively adding a call to
+	get_location_for_expr_unwinding_for_system_header for
+	-Wconversion-null and making use of EXPR_LOCATION for
+	-Wzero-as-null-pointer-constant.
+
+2019-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89187
+	* optimize.c (maybe_thunk_body): Clear TREE_ADDRESSABLE on
+	PARM_DECLs of the thunk.
+	* lambda.c (maybe_add_lambda_conv_op): Likewise.
+
+2019-02-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89158 - by-value capture of constexpr variable broken.
+	* call.c (convert_like_real) <case ck_user>: Call mark_exp_read
+	instead of mark_rvalue_use.
+
+2019-02-05  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/87770
+	* pt.c (instantiates_primary_template_p): New.
+	(type_dependent_expression_p): Use it.
+
+2019-02-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88761 - ICE with reference capture of constant.
+	* lambda.c (mark_const_cap_r): Do walk subtrees of DECL_EXPR for
+	non-proxy decls.
+
 2019-02-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88325 - ICE with invalid out-of-line template member definition.

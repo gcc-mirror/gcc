@@ -1513,14 +1513,12 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
   size_t units_count;
   size_t i;
   struct unit **pu;
-  size_t prev_addrs_count;
   size_t unit_offset = 0;
 
   memset (&addrs->vec, 0, sizeof addrs->vec);
   memset (&unit_vec->vec, 0, sizeof unit_vec->vec);
   addrs->count = 0;
   unit_vec->count = 0;
-  prev_addrs_count = 0;
 
   /* Read through the .debug_info section.  FIXME: Should we use the
      .debug_aranges section?  gdb and addr2line don't use it, but I'm
@@ -1620,18 +1618,6 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
 
       if (unit_buf.reported_underflow)
 	goto fail;
-
-      if (addrs->count > prev_addrs_count || unit_tag == DW_TAG_partial_unit)
-	prev_addrs_count = addrs->count;
-      else
-	{
-	  /* Unit was not used; remove it from the vector.  */
-	  --units_count;
-	  units.size -= sizeof (u);
-	  units.alc += sizeof (u);
-	  free_abbrevs (state, &u->abbrevs, error_callback, data);
-	  backtrace_free (state, u, sizeof *u, error_callback, data);
-	}
     }
   if (info.reported_underflow)
     goto fail;
@@ -2189,13 +2175,19 @@ read_referenced_name_from_attr (struct dwarf_data *ddata, struct unit *u,
       return NULL;
     }
 
-  if (attr->form == DW_FORM_ref_addr
-      || attr->form == DW_FORM_ref_sig8)
+  if (attr->form == DW_FORM_ref_sig8)
+    return NULL;
+
+  if (val->encoding == ATTR_VAL_REF_INFO)
     {
-      /* This refers to an abstract origin defined in
-	 some other compilation unit.  We can handle
-	 this case if we must, but it's harder.  */
-      return NULL;
+      struct unit *unit
+	= find_unit (ddata->units, ddata->units_count,
+		     val->u.uint);
+      if (unit == NULL)
+	return NULL;
+
+      uint64_t offset = val->u.uint - unit->low_offset;
+      return read_referenced_name (ddata, unit, offset, error_callback, data);
     }
 
   if (val->encoding == ATTR_VAL_UINT

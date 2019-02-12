@@ -14,7 +14,6 @@
 module rt.typeinfo.ti_Ag;
 
 private import core.stdc.string;
-private import rt.util.hash;
 private import core.internal.string;
 
 // byte[]
@@ -25,10 +24,10 @@ class TypeInfo_Ag : TypeInfo_Array
 
     override string toString() const { return "byte[]"; }
 
-    override size_t getHash(in void* p) @trusted const
+    override size_t getHash(scope const void* p) @trusted const
     {
         const s = *cast(const void[]*)p;
-        return rt.util.hash.hashOf(s, 0);
+        return hashOf(s);
     }
 
     override bool equals(in void* p1, in void* p2) const
@@ -118,54 +117,10 @@ class TypeInfo_Aa : TypeInfo_Ah
 {
     override string toString() const { return "char[]"; }
 
-    override size_t getHash(in void* p) @trusted const
+    override size_t getHash(scope const void* p) @trusted const
     {
         char[] s = *cast(char[]*)p;
-        size_t hash = 0;
-
-version (all)
-{
-        foreach (char c; s)
-            hash = hash * 11 + c;
-}
-else
-{
-        size_t len = s.length;
-        char *str = s;
-
-        while (1)
-        {
-            switch (len)
-            {
-                case 0:
-                    return hash;
-
-                case 1:
-                    hash *= 9;
-                    hash += *cast(ubyte *)str;
-                    return hash;
-
-                case 2:
-                    hash *= 9;
-                    hash += *cast(ushort *)str;
-                    return hash;
-
-                case 3:
-                    hash *= 9;
-                    hash += (*cast(ushort *)str << 8) +
-                            (cast(ubyte *)str)[2];
-                    return hash;
-
-                default:
-                    hash *= 9;
-                    hash += *cast(uint *)str;
-                    str += 4;
-                    len -= 4;
-                    break;
-            }
-        }
-}
-        return hash;
+        return hashOf(s);
     }
 
     override @property inout(TypeInfo) next() inout

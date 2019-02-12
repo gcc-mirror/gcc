@@ -1092,7 +1092,8 @@ tree translate_isl_ast_to_gimple::
 get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
 		      vec<tree> iv_map)
 {
-  tree scev = scalar_evolution_in_region (region->region, loop, old_name);
+  tree scev = cached_scalar_evolution_in_region (region->region,
+						 loop, old_name);
 
   /* At this point we should know the exact scev for each
      scalar SSA_NAME used in the scop: all the other scalar

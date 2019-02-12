@@ -4523,9 +4523,18 @@ case "${target}" in
 		# process --with-nds32-lib
 		case "${with_nds32_lib}" in
 		"")
-			# the default library is newlib
-			with_nds32_lib=newlib
-			tm_defines="${tm_defines} TARGET_DEFAULT_CTOR_DTOR=1"
+			case ${target} in
+			*-*-*uclibc*)
+				with_nds32_lib=ulibc
+				;;
+			*-*-linux*)
+				with_nds32_lib=glibc
+				;;
+			*)
+				with_nds32_lib=newlib
+				tm_defines="${tm_defines} TARGET_DEFAULT_CTOR_DTOR=1"
+				;;
+			esac
 			;;
 		newlib)
 			# OK
@@ -4541,11 +4550,8 @@ case "${target}" in
 				;;
 			esac
 			;;
-		glibc)
+		glibc | uclibc)
 			# OK
-			tm_defines="${tm_defines} TARGET_DEFAULT_TLSDESC_TRAMPOLINE=0"
-			;;
-		uclibc)
 			;;
 		*)
 			echo "Cannot accept --with-nds32-lib=$with_nds32_lib, available values are: newlib mculib glibc uclibc" 1>&2

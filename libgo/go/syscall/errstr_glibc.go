@@ -1,4 +1,4 @@
-// errstr_linux.go -- GNU/Linux specific error strings.
+// errstr_glibc.go -- GNU/Linux and GNU/Hurd specific error strings.
 
 // Copyright 2010 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
@@ -6,6 +6,8 @@
 
 // We use this rather than errstr.go because on GNU/Linux sterror_r
 // returns a pointer to the error message, and may not use buf at all.
+
+// +build hurd linux
 
 package syscall
 

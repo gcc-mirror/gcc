@@ -359,16 +359,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     // query
 
     [[nodiscard]] bool empty() const noexcept { return _M_pathname.empty(); }
-    bool has_root_name() const;
-    bool has_root_directory() const;
-    bool has_root_path() const;
-    bool has_relative_path() const;
-    bool has_parent_path() const;
-    bool has_filename() const;
-    bool has_stem() const;
-    bool has_extension() const;
-    bool is_absolute() const;
-    bool is_relative() const { return !is_absolute(); }
+    bool has_root_name() const noexcept;
+    bool has_root_directory() const noexcept;
+    bool has_root_path() const noexcept;
+    bool has_relative_path() const noexcept;
+    bool has_parent_path() const noexcept;
+    bool has_filename() const noexcept;
+    bool has_stem() const noexcept;
+    bool has_extension() const noexcept;
+    bool is_absolute() const noexcept;
+    bool is_relative() const noexcept { return !is_absolute(); }
 
     // generation
     path lexically_normal() const;
@@ -433,7 +433,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     void _M_append(basic_string_view<value_type>);
     void _M_concat(basic_string_view<value_type>);
 
-    pair<const string_type*, size_t> _M_find_extension() const;
+    pair<const string_type*, size_t> _M_find_extension() const noexcept;
 
     template<typename _CharT>
       struct _Cvt;
@@ -1102,21 +1102,21 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   }
 
   inline bool
-  path::has_stem() const
+  path::has_stem() const noexcept
   {
     auto ext = _M_find_extension();
     return ext.first && ext.second != 0;
   }
 
   inline bool
-  path::has_extension() const
+  path::has_extension() const noexcept
   {
     auto ext = _M_find_extension();
     return ext.first && ext.second != string_type::npos;
   }
 
   inline bool
-  path::is_absolute() const
+  path::is_absolute() const noexcept
   {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
     return has_root_name() && has_root_directory();

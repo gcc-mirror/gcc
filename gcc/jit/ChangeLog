@@ -1,3 +1,30 @@
+2019-02-05  Andrea Corallo <andrea.corallo@arm.com>
+
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_11): New ABI tag.
+	* docs/topics/contexts.rst (Additional driver options): New
+	section.
+	* jit-playback.c (invoke_driver): Add call to append_driver_options.
+	* jit-recording.c: Within namespace gcc::jit...
+	(recording::context::~context): Free the optnames within
+	m_driver_options.
+	(recording::context::add_driver_option): New method.
+	(recording::context::append_driver_options): New method.
+	(recording::context::dump_reproducer_to_file): Add driver
+	options.
+	* jit-recording.h: Within namespace gcc::jit...
+	(recording::context::add_driver_option): New method.
+	(recording::context::append_driver_options): New method.
+	(recording::context::m_driver_options): New field.
+	* libgccjit++.h (gccjit::context::add_driver_option): New
+	method.
+	* libgccjit.c (gcc_jit_context_add_driver_option): New API
+	entrypoint.
+	* libgccjit.h (gcc_jit_context_add_driver_option): New API
+	entrypoint.
+	(LIBGCCJIT_HAVE_gcc_jit_context_add_driver_option): New
+	macro.
+	* libgccjit.map (LIBGCCJIT_ABI_11): New ABI tag.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

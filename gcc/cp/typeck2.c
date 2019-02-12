@@ -1099,7 +1099,6 @@ digest_init_r (tree type, tree init, int nested, int flags,
 
       tree typ1 = TYPE_MAIN_VARIANT (TREE_TYPE (type));
       if (char_type_p (typ1)
-	  /*&& init */
 	  && TREE_CODE (stripped_init) == STRING_CST)
 	{
 	  tree char_type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (init)));

@@ -1096,6 +1096,7 @@ See RS/6000 and PowerPC Options.
 -mtraceback=@var{traceback_type} @gol
 -maix-struct-return  -msvr4-struct-return @gol
 -mabi=@var{abi-type}  -msecure-plt  -mbss-plt @gol
+-mlongcall  -mno-longcall  -mpltseq  -mno-pltseq  @gol
 -mblock-move-inline-limit=@var{num} @gol
 -mblock-compare-inline-limit=@var{num} @gol
 -mblock-compare-inline-loop-limit=@var{num} @gol
@@ -24892,6 +24893,11 @@ generate slower code.  As of this writing, the AIX linker can do this,
 as can the GNU linker for PowerPC/64.  It is planned to add this feature
 to the GNU linker for 32-bit PowerPC systems as well.
 
+On PowerPC64 ELFv2 and 32-bit PowerPC systems with newer GNU linkers,
+GCC can generate long calls using an inline PLT call sequence (see
+@option{-mpltseq}).  PowerPC with @option{-mbss-plt} and PowerPC64
+ELFv1 (big-endian) do not support inline PLT calls.
+
 On Darwin/PPC systems, @code{#pragma longcall} generates @code{jbsr
 callee, L42}, plus a @dfn{branch island} (glue code).  The two target
 addresses represent the callee and the branch island.  The
@@ -24908,6 +24914,20 @@ to use or discard it.
 
 In the future, GCC may ignore all longcall specifications
 when the linker is known to generate glue.
+
+@item -mpltseq
+@itemx -mno-pltseq
+@opindex mpltseq
+@opindex mno-pltseq
+Implement (do not implement) -fno-plt and long calls using an inline
+PLT call sequence that supports lazy linking and long calls to
+functions in dlopen'd shared libraries.  Inline PLT calls are only
+supported on PowerPC64 ELFv2 and 32-bit PowerPC systems with newer GNU
+linkers, and are enabled by default if the support is detected when
+configuring GCC, and, in the case of 32-bit PowerPC, if GCC is
+configured with @option{--enable-secureplt}.  @option{-mpltseq} code
+and @option{-mbss-plt} 32-bit PowerPC relocatable objects may not be
+linked together.
 
 @item -mtls-markers
 @itemx -mno-tls-markers

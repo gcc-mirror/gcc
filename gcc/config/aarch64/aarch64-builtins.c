@@ -455,7 +455,7 @@ static aarch64_crc_builtin_datum aarch64_crc_builtin_data[] = {
 
 /* This structure contains how to manage the mapping form the builtin to the
    instruction to generate in the backend and how to invoke the instruction.  */
-static aarch64_fcmla_laneq_builtin_datum aarch64_fcmla_lane_builtin_data[] {
+static aarch64_fcmla_laneq_builtin_datum aarch64_fcmla_lane_builtin_data[] = {
   AARCH64_SIMD_FCMLA_LANEQ_BUILTINS
 };
 

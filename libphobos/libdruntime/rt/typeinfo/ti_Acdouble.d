@@ -25,7 +25,7 @@ class TypeInfo_Ar : TypeInfo_Array
 
     override string toString() const { return (F[]).stringof; }
 
-    override size_t getHash(in void* p) @trusted const
+    override size_t getHash(scope const void* p) @trusted const
     {
         return Array!F.hashOf(*cast(F[]*)p);
     }

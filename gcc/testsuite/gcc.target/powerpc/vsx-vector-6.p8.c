@@ -1,16 +1,15 @@
-/* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
+/* { dg-do compile { target lp64 } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mvsx -O2 -mcpu=power8" } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
 
-
 /* Expected instruction counts for Power 8.  */
 
 /* { dg-final { scan-assembler-times "xvabsdp" 1 } } */
 /* { dg-final { scan-assembler-times "xvadddp" 1 } } */
-/* { dg-final { scan-assembler-times "xxlnor" 8 { target le } } } */
-/* { dg-final { scan-assembler-times "xxlnor" 7 { target be } } } */
+/* { dg-final { scan-assembler-times "xxlnor" 6 { target le } } } */
+/* { dg-final { scan-assembler-times "xxlnor" 5 { target be } } } */
 
 /* We generate xxlor instructions for many reasons other than or'ing vector
    operands or calling __builtin_vec_or(), which  means we cannot rely on
@@ -18,16 +17,12 @@
    xxlor instruction was generated.  */
 /* { dg-final { scan-assembler "xxlor" } } */
 
-/* { dg-final { scan-assembler-times "xvcmpeqdp" 4 { target le } } } */
-/* { dg-final { scan-assembler-times "xvcmpeqdp" 6 { target be } } } */
-/* { dg-final { scan-assembler-times "xvcmpeqdp." 4 { target le } } } */
-/* { dg-final { scan-assembler-times "xvcmpeqdp." 6 { target be } } } */
-/* { dg-final { scan-assembler-times "xvcmpgtdp" 7 { target le } } } */
-/* { dg-final { scan-assembler-times "xvcmpgtdp" 8 { target be } } } */
-/* { dg-final { scan-assembler-times "xvcmpgtdp." 7 { target le } } } */
-/* { dg-final { scan-assembler-times "xvcmpgtdp." 8 { target be } } } */
-/* { dg-final { scan-assembler-times "xvcmpgedp" 7 } } */
-/* { dg-final { scan-assembler-times "xvcmpgedp." 7 } } */
+/* { dg-final { scan-assembler-times {\mxvcmpeqdp\s} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvcmpeqdp\.\s} 5 } } */
+/* { dg-final { scan-assembler-times {\mxvcmpgtdp\s} 2 } } */
+/* { dg-final { scan-assembler-times {\mxvcmpgtdp\.\s} 6 } } */
+/* { dg-final { scan-assembler-times {\mxvcmpgedp\s} 2 } } */
+/* { dg-final { scan-assembler-times {\mxvcmpgedp\.\s} 4 } } */
 /* { dg-final { scan-assembler-times "xvrdpim" 1 } } */
 /* { dg-final { scan-assembler-times "xvmaddadp" 1 } } */
 /* { dg-final { scan-assembler-times "xvmsubadp" 1 } } */

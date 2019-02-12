@@ -14,7 +14,6 @@
 module rt.typeinfo.ti_Along;
 
 private import core.stdc.string;
-private import rt.util.hash;
 
 // long[]
 
@@ -24,10 +23,11 @@ class TypeInfo_Al : TypeInfo_Array
 
     override string toString() const { return "long[]"; }
 
-    override size_t getHash(in void* p) @trusted const
+    override size_t getHash(scope const void* p) @trusted const
     {
-        const s = *cast(const long[]*)p;
-        return rt.util.hash.hashOf(s, 0);
+        // Hash as if unsigned.
+        const s = *cast(const ulong[]*)p;
+        return hashOf(s);
     }
 
     override bool equals(in void* p1, in void* p2) const

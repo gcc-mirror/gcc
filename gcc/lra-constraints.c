@@ -1533,9 +1533,12 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 	     a word.
 
 	     If valid memory becomes invalid after subreg elimination
-	     we still have to reload memory.
+	     and address might be different we still have to reload
+	     memory.
 	  */
-	  if ((! addr_was_valid || addr_is_valid)
+	  if ((! addr_was_valid
+	       || addr_is_valid
+	       || known_eq (GET_MODE_SIZE (mode), GET_MODE_SIZE (innermode)))
 	      && !(maybe_ne (GET_MODE_PRECISION (mode),
 			     GET_MODE_PRECISION (innermode))
 		   && known_le (GET_MODE_SIZE (mode), UNITS_PER_WORD)
@@ -2793,29 +2796,32 @@ process_alt_operands (int only_alternative)
 			      (GET_MODE (op), this_alternative, cl)))))
 		losers++;
 
-	      /* Input reloads can be inherited more often than output
-		 reloads can be removed, so penalize output
-		 reloads.  */
-	      if (!REG_P (op) || curr_static_id->operand[nop].type != OP_IN)
-		{
-		  if (lra_dump_file != NULL)
-		    fprintf
-		      (lra_dump_file,
-		       "            %d Non input pseudo reload: reject++\n",
-		       nop);
-		  reject++;
-		}
-
 	      if (MEM_P (op) && offmemok)
 		addr_losers++;
-	      else if (curr_static_id->operand[nop].type == OP_INOUT)
+	      else
 		{
-		  if (lra_dump_file != NULL)
-		    fprintf
-		      (lra_dump_file,
-		       "            %d Input/Output reload: reject+=%d\n",
-		       nop, LRA_LOSER_COST_FACTOR);
-		  reject += LRA_LOSER_COST_FACTOR;
+		  /* Input reloads can be inherited more often than
+		     output reloads can be removed, so penalize output
+		     reloads.  */
+		  if (!REG_P (op) || curr_static_id->operand[nop].type != OP_IN)
+		    {
+		      if (lra_dump_file != NULL)
+			fprintf
+			  (lra_dump_file,
+			   "            %d Non input pseudo reload: reject++\n",
+			   nop);
+		      reject++;
+		    }
+
+		  if (curr_static_id->operand[nop].type == OP_INOUT)
+		    {
+		      if (lra_dump_file != NULL)
+			fprintf
+			  (lra_dump_file,
+			   "            %d Input/Output reload: reject+=%d\n",
+			   nop, LRA_LOSER_COST_FACTOR);
+		      reject += LRA_LOSER_COST_FACTOR;
+		    }
 		}
 	    }
 

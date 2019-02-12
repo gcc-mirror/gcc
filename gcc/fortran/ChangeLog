@@ -1,3 +1,90 @@
+2019-02-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/71723
+	* expr.c (gfc_check_assign): Add argument is_init_expr.  If we are
+	looking at an init expression, issue error if the target is not a
+	TARGET and we are not looking at a procedure pointer.
+	* gfortran.h (gfc_check_assign): Add optional argument
+	is_init_expr.
+
+2019-02-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/89077
+	* resolve.c (gfc_resolve_substring_charlen): Check substring
+	length for constantness prior to general calculation of length.
+
+2019-02-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89200
+	* trans-array.c (gfc_trans_create_temp_array): Set the 'span'
+	field for derived types.
+
+2019-02-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/89077
+	* decl.c (add_init_expr_to_sym): Copy length of string initializer
+	to declared symbol.
+
+2019-02-04  Martin Liska  <mliska@suse.cz>
+
+	PR fortran/89185
+	* resolve.c (resolve_ref): Remove breakout variable as
+	we need to prevent prev = &(*prev)->next to happen
+	with *prev == NULL.
+
+2019-02-04  Martin Liska  <mliska@suse.cz>
+
+	PR fortran/88912
+	* scanner.c (load_file): Report error for -fpre-include
+	file and do not ICE.
+
+2019-02-02  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR fortran/81344
+	* invoke.texi: Document the behavior of repeated -ffpe-trap
+	and -ffpe-summary.
+
+2019-02-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/88298
+	* arith.c (gfc_int2int): Do not warn if src->do_not_warn is set.
+	* gfortran.h (gfc_expr): Add flag do_not_warn.
+	* intrinsic.c (gfc_convert_type_warn): Set expr->do_not_warn if
+	no warning is desired.
+
+2019-02-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/88393
+	* trans-expr.c (gfc_conv_procedure_call): For derived entities,
+	passed in parentheses to class formals, invert the order of
+	copying allocatable components to taking the _data of the
+	class expression.
+
+2019-02-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/88980
+	* trans-array.c (gfc_array_init_size): Add element_size to the
+	arguments.
+	(gfc_array_allocate): Remove the recalculation of the size of
+	the element and use element_size from the call to the above.
+	Unconditionally set the span field of the descriptor.
+
+2019-02-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/88685
+	* expr.c (is_subref_array): Move the check for class pointer
+	dummy arrays to after the reference check. If we haven't seen
+	an array reference other than an element and a component is not
+	class or derived, return false.
+
+2019-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/83246
+	PR fortran/89084
+	* trans-decl.c (generate_local_decl): Add referenced FL_PARAMETERs
+	if sym->ns->construct_entities rather than if
+	sym->ns->parent->code->op == EXEC_BLOCK.
+
 2019-01-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/88669
