@@ -5382,8 +5382,7 @@ may_be_aliased (const_tree var)
 	      || DECL_EXTERNAL (var)
 	      || TREE_ADDRESSABLE (var))
 	  && !((TREE_STATIC (var) || TREE_PUBLIC (var) || DECL_EXTERNAL (var))
-	       && ((TREE_READONLY (var)
-		    && !TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (var)))
+	       && (TREE_READONLY (var)
 		   || (TREE_CODE (var) == VAR_DECL
 		       && DECL_NONALIASED (var)))));
 }
