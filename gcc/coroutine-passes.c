@@ -327,6 +327,12 @@ execute_expand_coro_ifns (void)
 	    break;
 	  case IFN_CO_YIELD:
 	    {
+	    /* .CO_YIELD (NUM, FINAL, RES_LAB, DEST_LAB);
+	       NUM = await number.
+	       FINAL = 1 if this is the final_suspend() await.
+	       RES_LAB = resume point label.
+	       DEST_LAB = destroy point label.
+	    */
 	    if (dump_file)
 	      fprintf (dump_file, "saw CO_YIELD in BB %u\n", bb->index);
 	    tree num = gimple_call_arg (stmt, 0); /* yield point.  */
@@ -336,7 +342,7 @@ execute_expand_coro_ifns (void)
 	    tree &res_dest = destinations.get_or_insert (idx, &existed);
 	    if (existed && dump_file)
 	      {
-		fprintf (dump_file, "duplicate YIELD point ("
+		fprintf (dump_file, "duplicate YIELD RESUME point ("
 				     HOST_WIDE_INT_PRINT_DEC ") ?\n", idx);
 		debug_gimple_stmt (stmt);
 	      }
@@ -346,7 +352,7 @@ execute_expand_coro_ifns (void)
 	    tree &dst_dest = destinations.get_or_insert (idx+1, &existed);
 	    if (existed && dump_file)
 	      {
-		fprintf (dump_file, "duplicate YIELD point ("
+		fprintf (dump_file, "duplicate YIELD DESTROY point ("
 				     HOST_WIDE_INT_PRINT_DEC ") ?\n", idx+1);
 		debug_gimple_stmt (stmt);
 	      }
