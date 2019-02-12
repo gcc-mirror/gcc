@@ -1,3 +1,8 @@
+2019-02-12  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/89233
+	* gcc.target/s390/pr89233.c: New test.
+
 2018-01-12  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* gcc.target/powerpc/vec-sld-modulo.c: Require p8vector_hw.

@@ -1,3 +1,10 @@
+2019-02-12  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/89233
+	* config/s390/s390.c (s390_decompose_address): Update comment.
+	(s390_check_qrst_address): Reject invalid address forms after
+	LRA.
+
 2019-02-12  Martin Liska  <mliska@suse.cz>
 
 	PR lto/88876
