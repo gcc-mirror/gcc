@@ -1,5 +1,12 @@
 2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/
+	* coroutine-passes.c (move_edge_and_update_vdef): Don't recompute
+	dominators immediately, defer until the common code at the end.  Note
+	this wasn't "wrong" it was just a waste of resources.
+
+2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/cp/
 	* coroutines.cc (build_co_await): implement co_await() operator
 	overload resolution.

@@ -248,12 +248,6 @@ move_edge_and_update_vdef (edge e, tree act_vdef,
   /* Die if we failed.  */
   gcc_checking_assert (e);
 
-  /* Update the dominators for the old and new targets.  */
-  set_immediate_dominator (CDI_DOMINATORS, old_bb,
-			   recompute_dominator (CDI_DOMINATORS, old_bb));
-  set_immediate_dominator (CDI_DOMINATORS, new_bb,
-			   recompute_dominator (CDI_DOMINATORS, new_bb));
-
   /* redirect_edge_and_branch() doesn't do anything specific to ensure that
      the VSSA is sane or intact.  The new block connection will be added to
      the new block's incoming VPHI, if it has one - but there will be no
