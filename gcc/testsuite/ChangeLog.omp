@@ -1,3 +1,13 @@
+2018-06-29  Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+
+	* c-c++-common/goacc/deviceptr-4.c: Update.
+	* gfortran.dg/goacc/loop-2-kernels-tile.f95: Update.
+	* gfortran.dg/goacc/loop-2-parallel-tile.f95: Update.
+	* gfortran.dg/goacc/sie.f95: Update.
+	* gfortran.dg/goacc/tile-1.f90: Update.
+	* gfortran.dg/gomp/pr77516.f90: Update.
+
 2020-04-19  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR other/76739

@@ -1,3 +1,11 @@
+2018-06-29  Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+
+	* oacc-parallel.c (GOACC_parallel_keyed): Handle Fortran deviceptr
+	clause.
+	(GOACC_data_start): Likewise.
+	* testsuite/libgomp.oacc-fortran/deviceptr-1.f90: New test.
+
 2019-02-12  Julian Brown <julian@codesourcery.com>
 
 	* oacc-cuda.c (acc_set_cuda_stream): Return 0 on error/invalid
