@@ -1,6 +1,13 @@
 2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (co_await_expander): Adjust the expander to look
+	inside cleanup point exprs.  The rewritten control flow needs to be
+	introduced at this level.
+
+2019-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (co_await_expander): Use the rewritten co_resume()
 	call as a proof of principle.  Eventually, we will use the three
 	calls built at parser time.
