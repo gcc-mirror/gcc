@@ -1,3 +1,10 @@
+2019-02-13  Martin Liska  <mliska@suse.cz>
+
+	PR lto/88858
+	* cfgrtl.c (remove_barriers_from_footer): New function.
+	(try_redirect_by_replacing_jump): Use it.
+	(cfg_layout_redirect_edge_and_branch): Likewise.
+
 2019-02-13  Xiong Hu Luo  <luoxhu@linux.vnet.ibm.com>
 
 	* config/rs6000/altivec.h (vec_sbox_be, vec_cipher_be,
