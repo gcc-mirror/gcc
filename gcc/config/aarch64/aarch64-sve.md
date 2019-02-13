@@ -170,7 +170,7 @@
 ;; all-true.  Note that this pattern is generated directly by
 ;; aarch64_emit_sve_pred_move, so changes to this pattern will
 ;; need changes there as well.
-(define_insn_and_split "*pred_mov<mode>"
+(define_insn_and_split "@aarch64_pred_mov<mode>"
   [(set (match_operand:SVE_ALL 0 "nonimmediate_operand" "=w, w, m")
 	(unspec:SVE_ALL
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
@@ -404,7 +404,7 @@
 
 ;; Predicated structure moves.  This works for both endiannesses but in
 ;; practice is only useful for big-endian.
-(define_insn_and_split "pred_mov<mode>"
+(define_insn_and_split "@aarch64_pred_mov<mode>"
   [(set (match_operand:SVE_STRUCT 0 "aarch64_sve_struct_nonimmediate_operand" "=w, w, Utx")
 	(unspec:SVE_STRUCT
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")

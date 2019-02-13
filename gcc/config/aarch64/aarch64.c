@@ -3414,9 +3414,12 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm,
 void
 aarch64_emit_sve_pred_move (rtx dest, rtx pred, rtx src)
 {
-  emit_insn (gen_rtx_SET (dest, gen_rtx_UNSPEC (GET_MODE (dest),
-						gen_rtvec (2, pred, src),
-						UNSPEC_MERGE_PTRUE)));
+  expand_operand ops[3];
+  machine_mode mode = GET_MODE (dest);
+  create_output_operand (&ops[0], dest, mode);
+  create_input_operand (&ops[1], pred, GET_MODE(pred));
+  create_input_operand (&ops[2], src, mode);
+  expand_insn (code_for_aarch64_pred_mov (mode), 3, ops);
 }
 
 /* Expand a pre-RA SVE data move from SRC to DEST in which at least one
