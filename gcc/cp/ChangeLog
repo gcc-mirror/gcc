@@ -1,3 +1,11 @@
+2019-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/88986
+	* decl.c (make_typename_type): Allow for TYPE_PACK_EXPANSION as
+	context (the first argument).
+	* pt.c (tsubst, case TYPENAME_TYPE): Handle TYPE_PACK_EXPANSION
+	as context.
+
 2019-02-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/89144 - link error with constexpr initializer_list.
