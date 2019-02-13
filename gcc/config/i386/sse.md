@@ -7417,7 +7417,7 @@
   [(set (match_operand:VI4F_256_512 0 "register_operand" "=v,v,v")
 	(vec_merge:VI4F_256_512
 	  (vec_duplicate:VI4F_256_512
-	    (match_operand:<ssescalarmode> 2 "general_operand" "v,m,r"))
+	    (match_operand:<ssescalarmode> 2 "nonimmediate_operand" "v,m,r"))
 	  (match_operand:VI4F_256_512 1 "const0_operand" "C,C,C")
 	  (const_int 1)))]
   "TARGET_AVX"
@@ -9669,7 +9669,7 @@
   [(set (match_operand:VF2_512_256 0 "register_operand" "=v")
 	(vec_merge:VF2_512_256
 	  (vec_duplicate:VF2_512_256
-	    (match_operand:<ssescalarmode> 2 "general_operand" "xm"))
+	    (match_operand:<ssescalarmode> 2 "nonimmediate_operand" "xm"))
 	  (match_operand:VF2_512_256 1 "const0_operand" "C")
 	  (const_int 1)))]
   "TARGET_AVX"
@@ -14573,22 +14573,21 @@
 ;; nonimmediate_operand for operand 2 and *not* allowing memory for the SSE
 ;; alternatives pretty much forces the MMX alternative to be chosen.
 (define_insn "*vec_concatv2si"
-  [(set (match_operand:V2SI 0 "register_operand"     "=x,x ,*y,x,x,*y,*y")
+  [(set (match_operand:V2SI 0 "register_operand"     "=x,x ,x,x,*y,*y")
 	(vec_concat:V2SI
-	  (match_operand:SI 1 "nonimmediate_operand" " 0,rm,rm,0,m, 0,*rm")
-	  (match_operand:SI 2 "reg_or_0_operand"     " x,C ,C, x,C,*y,C")))]
+	  (match_operand:SI 1 "nonimmediate_operand" " 0,rm,0,m, 0,rm")
+	  (match_operand:SI 2 "reg_or_0_operand"     " x,C ,x,C,*y,C")))]
   "TARGET_SSE && !TARGET_SSE4_1"
   "@
    punpckldq\t{%2, %0|%0, %2}
-   movd\t{%1, %0|%0, %1}
    movd\t{%1, %0|%0, %1}
    unpcklps\t{%2, %0|%0, %2}
    movss\t{%1, %0|%0, %1}
    punpckldq\t{%2, %0|%0, %2}
    movd\t{%1, %0|%0, %1}"
-  [(set_attr "isa" "sse2,sse2,sse2,*,*,*,*")
-   (set_attr "type" "sselog,ssemov,mmxmov,sselog,ssemov,mmxcvt,mmxmov")
-   (set_attr "mode" "TI,TI,DI,V4SF,SF,DI,DI")])
+  [(set_attr "isa" "sse2,sse2,*,*,*,*")
+   (set_attr "type" "sselog,ssemov,sselog,ssemov,mmxcvt,mmxmov")
+   (set_attr "mode" "TI,TI,V4SF,SF,DI,DI")])
 
 (define_insn "*vec_concatv4si"
   [(set (match_operand:V4SI 0 "register_operand"       "=x,v,x,x,v")
@@ -14610,7 +14609,7 @@
 (define_insn "*vec_concatv4si_0"
   [(set (match_operand:V4SI 0 "register_operand"       "=v,x")
 	(vec_concat:V4SI
-	  (match_operand:V2SI 1 "nonimmediate_operand" "xm,?!*y")
+	  (match_operand:V2SI 1 "nonimmediate_operand" "vm,?!*y")
 	  (match_operand:V2SI 2 "const0_operand"       " C,C")))]
   "TARGET_SSE2"
   "@
@@ -14618,30 +14617,22 @@
    movq2dq\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "maybe_vex,orig")
-   (set_attr "mode" "TI")
-   (set (attr "preferred_for_speed")
-     (if_then_else (eq_attr "alternative" "1")
-       (symbol_ref "TARGET_INTER_UNIT_MOVES_FROM_VEC")
-       (symbol_ref "true")))])
+   (set_attr "mode" "TI")])
 
-;; movd instead of movq is required to handle broken assemblers.
 (define_insn "vec_concatv2di"
   [(set (match_operand:V2DI 0 "register_operand"
-	  "=Yr,*x,x ,v ,v,v ,x   ,x,v ,x,x,v")
+	  "=Yr,*x,x ,v ,x,v ,x,x,v")
 	(vec_concat:V2DI
-	  (match_operand:DI 1 "nonimmediate_operand"
-	  "  0, 0,x ,Yv,r,vm,?!*y,0,Yv,0,0,v")
-	  (match_operand:DI 2 "nonimm_or_0_operand"
-	  " rm,rm,rm,rm,C ,C ,C ,x,Yv,x,m,m")))]
+	  (match_operand:DI 1 "register_operand"
+	  "  0, 0,x ,Yv,0,Yv,0,0,v")
+	  (match_operand:DI 2 "nonimmediate_operand"
+	  " rm,rm,rm,rm,x,Yv,x,m,m")))]
   "TARGET_SSE"
   "@
    pinsrq\t{$1, %2, %0|%0, %2, 1}
    pinsrq\t{$1, %2, %0|%0, %2, 1}
    vpinsrq\t{$1, %2, %1, %0|%0, %1, %2, 1}
    vpinsrq\t{$1, %2, %1, %0|%0, %1, %2, 1}
-   * return HAVE_AS_IX86_INTERUNIT_MOVQ ? \"%vmovq\t{%1, %0|%0, %1}\" : \"%vmovd\t{%1, %0|%0, %1}\";
-   %vmovq\t{%1, %0|%0, %1}
-   movq2dq\t{%1, %0|%0, %1}
    punpcklqdq\t{%2, %0|%0, %2}
    vpunpcklqdq\t{%2, %1, %0|%0, %1, %2}
    movlhps\t{%2, %0|%0, %2}
@@ -14655,22 +14646,18 @@
 	    (eq_attr "alternative" "3")
 	      (const_string "x64_avx512dq")
 	    (eq_attr "alternative" "4")
-	      (const_string "x64_sse2")
-	    (eq_attr "alternative" "5,6")
-	      (const_string "sse2")
-	    (eq_attr "alternative" "7")
 	      (const_string "sse2_noavx")
-	    (eq_attr "alternative" "8,11")
+	    (eq_attr "alternative" "5,8")
 	      (const_string "avx")
 	   ]
 	   (const_string "noavx")))
    (set (attr "type")
      (if_then_else
-       (eq_attr "alternative" "0,1,2,3,7,8")
+       (eq_attr "alternative" "0,1,2,3,4,5")
        (const_string "sselog")
        (const_string "ssemov")))
    (set (attr "prefix_rex")
-     (if_then_else (eq_attr "alternative" "0,1,2,3,4")
+     (if_then_else (eq_attr "alternative" "0,1,2,3")
 		   (const_string "1")
 		   (const_string "*")))
    (set (attr "prefix_extra")
@@ -14686,18 +14673,30 @@
 	      (const_string "vex")
 	    (eq_attr "alternative" "3")
 	      (const_string "evex")
-	    (eq_attr "alternative" "4,5")
-	      (const_string "maybe_vex")
-	    (eq_attr "alternative" "8,11")
+	    (eq_attr "alternative" "5,8")
 	      (const_string "maybe_evex")
 	   ]
 	   (const_string "orig")))
-   (set_attr "mode" "TI,TI,TI,TI,TI,TI,TI,TI,TI,V4SF,V2SF,V2SF")
+   (set_attr "mode" "TI,TI,TI,TI,TI,TI,V4SF,V2SF,V2SF")])
+
+(define_insn "*vec_concatv2di_0"
+  [(set (match_operand:V2DI 0 "register_operand"     "=v,v ,x")
+	(vec_concat:V2DI
+	  (match_operand:DI 1 "nonimmediate_operand" " r,vm,?!*y")
+	  (match_operand:DI 2 "const0_operand"       " C,C ,C")))]
+  "TARGET_SSE2"
+  "@
+   * return HAVE_AS_IX86_INTERUNIT_MOVQ ? \"%vmovq\t{%1, %0|%0, %1}\" : \"%vmovd\t{%1, %0|%0, %1}\";
+   %vmovq\t{%1, %0|%0, %1}
+   movq2dq\t{%1, %0|%0, %1}"
+  [(set_attr "isa" "x64,*,*")
+   (set_attr "type" "ssemov")
+   (set_attr "prefix_rex" "1,*,*")
+   (set_attr "prefix" "maybe_vex,maybe_vex,orig")
+   (set_attr "mode" "TI")
    (set (attr "preferred_for_speed")
-     (cond [(eq_attr "alternative" "4")
+     (cond [(eq_attr "alternative" "0")
 	      (symbol_ref "TARGET_INTER_UNIT_MOVES_TO_VEC")
-	    (eq_attr "alternative" "6")
-	      (symbol_ref "TARGET_INTER_UNIT_MOVES_FROM_VEC")
 	   ]
 	   (symbol_ref "true")))])
 
@@ -14706,7 +14705,7 @@
   [(set (match_operand:VI8_AVX_AVX512F 0 "register_operand" "=v,v")
 	(vec_merge:VI8_AVX_AVX512F
 	  (vec_duplicate:VI8_AVX_AVX512F
-	    (match_operand:<ssescalarmode> 2 "general_operand" "r,vm"))
+	    (match_operand:<ssescalarmode> 2 "nonimmediate_operand" "r,vm"))
 	  (match_operand:VI8_AVX_AVX512F 1 "const0_operand" "C,C")
 	  (const_int 1)))]
   "TARGET_AVX"
