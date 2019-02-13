@@ -703,8 +703,8 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-@NATIVE_FALSE@uninstall-local:
 @NATIVE_FALSE@install-exec-local:
+@NATIVE_FALSE@uninstall-local:
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-generic clean-noinstPROGRAMS \
@@ -813,8 +813,9 @@ s-zdefaultcc: Makefile
 	$(STAMP) $@ 
 
 mostlyclean-local:
-	-chmod -R u+w check-go-dir
-	rm -rf check-go-dir check-runtime-dir cgo-test-dir carchive-test-dir
+	if test -d check-go-dir; then chmod -R u+w check-go-dir; fi
+	rm -rf check-go-dir check-runtime-dir cgo-test-dir carchive-test-dir \
+	check-vet-dir gocache-test
 
 @NATIVE_TRUE@go$(EXEEXT): $(go_cmd_go_files) $(LIBGOTOOL) $(LIBGODEP)
 @NATIVE_TRUE@	$(GOLINK) $(go_cmd_go_files) $(LIBGOTOOL) $(LIBS) $(NET_LIBS)
