@@ -1,3 +1,11 @@
+2019-02-13  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/87322
+	* pt.c (tsubst_lambda_expr): Avoid duplicate tsubsting.
+	Move cp_evaluated resetting before signature tsubsting.
+	(gen_elem_of_pack_expansion_instantiation): Separate local
+	specializations per index.
+
 2019-02-13  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/89036
