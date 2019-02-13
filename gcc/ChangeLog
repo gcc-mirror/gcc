@@ -1,3 +1,11 @@
+2019-02-13  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/88847
+	* config/aarch64/aarch64-sve.md (*pred_mov<mode>, pred_mov<mode>):
+	Expose as @aarch64_pred_mov.
+	* config/aarch64/aarch64.c (aarch64_classify_address):
+	Use expand_insn which legitimizes operands.
+
 2019-02-13  Martin Liska  <mliska@suse.cz>
 
 	* builtins.h (expand_builtin_with_bounds): Remove declaration.

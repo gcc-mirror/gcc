@@ -1,3 +1,8 @@
+2019-02-13  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/88847
+	* gcc.target/aarch64/sve/pr88847.c: New test.
+
 2019-02-13  Jonathan Wakely  <jwakely@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
