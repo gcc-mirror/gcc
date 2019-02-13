@@ -14928,8 +14928,25 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
     case TYPENAME_TYPE:
       {
-	tree ctx = tsubst_aggr_type (TYPE_CONTEXT (t), args, complain,
-				     in_decl, /*entering_scope=*/1);
+	tree ctx = TYPE_CONTEXT (t);
+	if (TREE_CODE (ctx) == TYPE_PACK_EXPANSION)
+	  {
+	    ctx = tsubst_pack_expansion (ctx, args, complain, in_decl);
+	    if (ctx == error_mark_node
+		|| TREE_VEC_LENGTH (ctx) > 1)
+	      return error_mark_node;
+	    if (TREE_VEC_LENGTH (ctx) == 0)
+	      {
+		if (complain & tf_error)
+		  error ("%qD is instantiated for an empty pack",
+			 TYPENAME_TYPE_FULLNAME (t));
+		return error_mark_node;
+	      }
+	    ctx = TREE_VEC_ELT (ctx, 0);
+	  }
+	else
+	  ctx = tsubst_aggr_type (ctx, args, complain, in_decl,
+				  /*entering_scope=*/1);
 	if (ctx == error_mark_node)
 	  return error_mark_node;
 

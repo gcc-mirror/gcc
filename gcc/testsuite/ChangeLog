@@ -1,3 +1,10 @@
+2019-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/88986
+	* g++.dg/cpp1z/using4.C: New.
+	* g++.dg/cpp1z/using5.C: Likewise.
+	* g++.dg/cpp1z/using6.C: Likewise.
+
 2019-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/89290

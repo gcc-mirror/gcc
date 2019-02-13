@@ -3816,7 +3816,9 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
   gcc_assert (identifier_p (name));
   gcc_assert (TYPE_P (context));
 
-  if (!MAYBE_CLASS_TYPE_P (context))
+  if (TREE_CODE (context) == TYPE_PACK_EXPANSION)
+    /* This can happen for C++17 variadic using (c++/88986).  */;
+  else if (!MAYBE_CLASS_TYPE_P (context))
     {
       if (complain & tf_error)
 	error ("%q#T is not a class", context);
