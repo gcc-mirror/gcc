@@ -3293,7 +3293,7 @@ struct GTY(()) lang_decl {
 #define DECL_DEPENDENT_P(NODE) DECL_LANG_FLAG_0 (USING_DECL_CHECK (NODE))
 
 /* The scope named in a using decl.  */
-#define USING_DECL_SCOPE(NODE) TREE_TYPE (USING_DECL_CHECK (NODE))
+#define USING_DECL_SCOPE(NODE) DECL_RESULT_FLD (USING_DECL_CHECK (NODE))
 
 /* The decls named by a using decl.  */
 #define USING_DECL_DECLS(NODE) DECL_INITIAL (USING_DECL_CHECK (NODE))

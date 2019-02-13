@@ -1,5 +1,16 @@
 2019-02-13  Alexandre Oliva <aoliva@redhat.com>
 
+	PR c++/86379
+	* cp-tree.h (USING_DECL_SCOPE): Use result rather than type.
+	* name-lookup.c (strip_using_decl): Use USING_DECL_SCOPE.
+	* search.c (protected_accessible_p): Follow USING_DECL_DECLS.
+	(shared_member_p): Likewise.
+	(lookup_member): Likewise.
+	* decl.c (grok_special_member_properties): Skip USING_DECLs.
+	* semantics.c (finish_omp_declare_simd_methods): Likewise.
+	(finish_qualified_id_expr): Do not call shared_member_p with
+	a dependent expr.
+
 	PR c++/87322
 	* pt.c (tsubst_lambda_expr): Avoid duplicate tsubsting.
 	Move cp_evaluated resetting before signature tsubsting.

@@ -13317,7 +13317,8 @@ grok_special_member_properties (tree decl)
 {
   tree class_type;
 
-  if (!DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+  if (TREE_CODE (decl) == USING_DECL
+      || !DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
     return;
 
   class_type = DECL_CONTEXT (decl);
