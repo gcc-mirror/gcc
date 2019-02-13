@@ -1,3 +1,8 @@
+2019-02-13  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/89190
+	* gcc.target/arm/pr89190.c: New test.
+
 2019-02-13  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/89036
