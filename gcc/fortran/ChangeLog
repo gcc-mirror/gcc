@@ -1,3 +1,10 @@
+2019-02-13  Martin Liska  <mliska@suse.cz>
+
+	PR fortran/88649
+	* resolve.c (resolve_operator): Initialize 't' right
+	after function entry.  Skip switch (e->value.op.op)
+	for -fdec operands that become function calls.
+
 2019-02-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/71723
