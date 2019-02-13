@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "domwalk.h"
 #include "builtins.h"
+#include "tree-cfgcleanup.h"
 
 /* Function summary where the parameter infos are actually stored. */
 ipa_node_params_t *ipa_node_params_sum = NULL;
@@ -5173,10 +5174,11 @@ ipcp_transform_function (struct cgraph_node *node)
 
   if (!something_changed)
     return 0;
-  else if (cfg_changed)
-    return TODO_update_ssa_only_virtuals | TODO_cleanup_cfg;
-  else
-    return TODO_update_ssa_only_virtuals;
+
+  if (cfg_changed)
+    delete_unreachable_blocks_update_callgraph (node, false);
+
+  return TODO_update_ssa_only_virtuals;
 }
 
 #include "gt-ipa-prop.h"

@@ -79,17 +79,8 @@ ALL_DRUNTIME_COMPILE_DSOURCES += $(DRUNTIME_DSOURCES_GENERATED)
 
 ALL_DRUNTIME_SOURCES = $(ALL_DRUNTIME_COMPILE_DSOURCES) $(DRUNTIME_CSOURCES) \
 	$(DRUNTIME_SSOURCES)
-REAL_DRUNTIME_TEST_LOBJECTS = $(ALL_DRUNTIME_COMPILE_DSOURCES:.d=.t.lo)
-REAL_DRUNTIME_TEST_OBJECTS  = $(ALL_DRUNTIME_COMPILE_DSOURCES:.d=.t.o)
-# Workaround issue #
-DRUNTIME_TEST_OBJECTS  = $(filter-out rt/util/typeinfo.t.o \
-	core/internal/convert.t.o, $(REAL_DRUNTIME_TEST_OBJECTS)) \
-	rt/util/typeinfo.o core/internal/convert.o
-
-DRUNTIME_TEST_LOBJECTS  = $(filter-out rt/util/typeinfo.t.lo \
-	core/internal/convert.t.lo, $(REAL_DRUNTIME_TEST_LOBJECTS)) \
-	rt/util/typeinfo.lo core/internal/convert.lo
-
+DRUNTIME_TEST_LOBJECTS = $(ALL_DRUNTIME_COMPILE_DSOURCES:.d=.t.lo)
+DRUNTIME_TEST_OBJECTS  = $(ALL_DRUNTIME_COMPILE_DSOURCES:.d=.t.o)
 
 # Main library build definitions
 check_PROGRAMS =
@@ -197,8 +188,8 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	rt/typeinfo/ti_ucent.d rt/typeinfo/ti_uint.d rt/typeinfo/ti_ulong.d \
 	rt/typeinfo/ti_ushort.d rt/typeinfo/ti_void.d rt/typeinfo/ti_wchar.d \
 	rt/util/array.d rt/util/container/array.d rt/util/container/common.d \
-	rt/util/container/hashtab.d rt/util/container/treap.d rt/util/hash.d \
-	rt/util/random.d rt/util/typeinfo.d rt/util/utf.d
+	rt/util/container/hashtab.d rt/util/container/treap.d rt/util/random.d \
+	rt/util/typeinfo.d rt/util/utf.d
 
 DRUNTIME_DSOURCES_STDCXX = core/stdcpp/exception.d \
 	core/stdcpp/typeinfo.d

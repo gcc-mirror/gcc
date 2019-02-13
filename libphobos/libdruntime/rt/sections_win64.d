@@ -42,7 +42,7 @@ struct SectionGroup
     }
 
     version (Win64)
-    @property immutable(FuncTable)[] ehTables() const
+    @property immutable(FuncTable)[] ehTables() const nothrow @nogc
     {
         auto pbeg = cast(immutable(FuncTable)*)&_deh_beg;
         auto pend = cast(immutable(FuncTable)*)&_deh_end;

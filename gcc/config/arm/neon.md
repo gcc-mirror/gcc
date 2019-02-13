@@ -25,9 +25,9 @@
 
 (define_insn "*neon_mov<mode>"
   [(set (match_operand:VDX 0 "nonimmediate_operand"
-	  "=w,Un,w, w,  ?r,?w,?r, ?Us")
+	  "=w,Un,w, w,  ?r,?w,?r, ?Us,*r")
 	(match_operand:VDX 1 "general_operand"
-	  " w,w, Dn,Uni, w, r, Usi,r"))]
+	  " w,w, Dn,Uni, w, r, Usi,r,*r"))]
   "TARGET_NEON
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
@@ -57,16 +57,17 @@
     case 2: gcc_unreachable ();
     case 4: return "vmov\t%Q0, %R0, %P1  @ <mode>";
     case 5: return "vmov\t%P0, %Q1, %R1  @ <mode>";
+    case 8: return "#";
     default: return output_move_double (operands, true, NULL);
     }
 }
  [(set_attr "type" "neon_move<q>,neon_store1_1reg,neon_move<q>,\
                     neon_load1_1reg, neon_to_gp<q>,neon_from_gp<q>,\
-                    neon_load1_2reg, neon_store1_2reg")
-  (set_attr "length" "4,4,4,4,4,4,8,8")
-  (set_attr "arm_pool_range"     "*,*,*,1020,*,*,1020,*")
-  (set_attr "thumb2_pool_range"     "*,*,*,1018,*,*,1018,*")
-  (set_attr "neg_pool_range" "*,*,*,1004,*,*,1004,*")])
+                    neon_load1_2reg, neon_store1_2reg, multiple")
+  (set_attr "length" "4,4,4,4,4,4,8,8,8")
+  (set_attr "arm_pool_range"     "*,*,*,1020,*,*,1020,*,*")
+  (set_attr "thumb2_pool_range"     "*,*,*,1018,*,*,1018,*,*")
+  (set_attr "neg_pool_range" "*,*,*,1004,*,*,1004,*,*")])
 
 (define_insn "*neon_mov<mode>"
   [(set (match_operand:VQXMOV 0 "nonimmediate_operand"
@@ -3542,7 +3543,7 @@
 		DOTPROD)))]
   "TARGET_DOTPROD"
   "v<sup>dot.<opsuffix>\\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
-  [(set_attr "type" "neon_dot")]
+  [(set_attr "type" "neon_dot<q>")]
 )
 
 ;; These instructions map to the __builtins for the Dot Product
@@ -3561,7 +3562,7 @@
       = GEN_INT (NEON_ENDIAN_LANE_N (V8QImode, INTVAL (operands[4])));
     return "v<sup>dot.<opsuffix>\\t%<V_reg>0, %<V_reg>2, %P3[%c4]";
   }
-  [(set_attr "type" "neon_dot")]
+  [(set_attr "type" "neon_dot<q>")]
 )
 
 ;; These expands map to the Dot Product optab the vectorizer checks for.

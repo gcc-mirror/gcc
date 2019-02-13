@@ -1291,7 +1291,12 @@ adjust_temp_type (tree type, tree temp)
     return temp;
   /* Avoid wrapping an aggregate value in a NOP_EXPR.  */
   if (TREE_CODE (temp) == CONSTRUCTOR)
-    return build_constructor (type, CONSTRUCTOR_ELTS (temp));
+    {
+      /* build_constructor wouldn't retain various CONSTRUCTOR flags.  */
+      tree t = copy_node (temp);
+      TREE_TYPE (t) = type;
+      return t;
+    }
   if (TREE_CODE (temp) == EMPTY_CLASS_EXPR)
     return build0 (EMPTY_CLASS_EXPR, type);
   gcc_assert (scalarish_type_p (type));
@@ -4135,13 +4140,13 @@ cxx_eval_switch_expr (const constexpr_ctx *ctx, tree t,
 		      bool *non_constant_p, bool *overflow_p,
 		      tree *jump_target)
 {
-  tree cond = TREE_OPERAND (t, 0);
+  tree cond = SWITCH_COND (t);
   cond = cxx_eval_constant_expression (ctx, cond, false,
 				       non_constant_p, overflow_p);
   VERIFY_CONSTANT (cond);
   *jump_target = cond;
 
-  tree body = TREE_OPERAND (t, 1);
+  tree body = SWITCH_BODY (t);
   constexpr_ctx new_ctx = *ctx;
   constexpr_switch_state css = css_default_not_seen;
   new_ctx.css_state = &css;
@@ -4676,6 +4681,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case COND_EXPR:
       if (jump_target && *jump_target)
 	{
+	  tree orig_jump = *jump_target;
 	  /* When jumping to a label, the label might be either in the
 	     then or else blocks, so process then block first in skipping
 	     mode first, and if we are still in the skipping mode at its end,
@@ -4683,7 +4689,19 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 1),
 					    lval, non_constant_p, overflow_p,
 					    jump_target);
-	  if (*jump_target)
+	  /* It's possible that we found the label in the then block.  But
+	     it could have been followed by another jumping statement, e.g.
+	     say we're looking for case 1:
+	      if (cond)
+		{
+		  // skipped statements
+		  case 1:; // clears up *jump_target
+		  return 1; // and sets it to a RETURN_EXPR
+		}
+	      else { ... }
+	     in which case we need not go looking to the else block.
+	     (goto is not allowed in a constexpr function.)  */
+	  if (*jump_target == orig_jump)
 	    r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 2),
 					      lval, non_constant_p, overflow_p,
 					      jump_target);

@@ -26,6 +26,8 @@
 
 using std::filesystem::path;
 
+int sign(int i) { return i > 0 ? 1 : i < 0 ? -1 : 0; }
+
 void
 test01()
 {
@@ -36,8 +38,8 @@ test01()
     path p(s);
     VERIFY( p.compare(s) == 0 );
     VERIFY( p.compare(s.c_str()) == 0 );
-    VERIFY( p.compare(p0) == p.compare(s0) );
-    VERIFY( p.compare(p0) == p.compare(s0.c_str()) );
+    VERIFY( sign(p.compare(p0)) == sign(p.compare(s0)) );
+    VERIFY( sign(p.compare(p0)) == sign(p.compare(s0.c_str())) );
   }
 }
 

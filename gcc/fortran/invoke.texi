@@ -416,36 +416,45 @@ kind declaration.
 
 @item -fdefault-real-8
 @opindex @code{fdefault-real-8}
-Set the default real type to an 8 byte wide type. This option also affects
-the kind of non-double real constants like @code{1.0}, and does promote
-the default width of @code{DOUBLE PRECISION} to 16 bytes if possible, unless
-@code{-fdefault-double-8} is given, too. Unlike @option{-freal-4-real-8},
-it does not promote variables with explicit kind declaration.
+Set the default real type to an 8 byte wide type.  This option also affects
+the kind of non-double real constants like @code{1.0}.  This option promotes
+the default width of @code{DOUBLE PRECISION} and double real constants
+like @code{1.d0} to 16 bytes if possible.  If @code{-fdefault-double-8}
+is given along with @code{fdefault-real-8}, @code{DOUBLE PRECISION}
+and double real constants are not promoted.  Unlike @option{-freal-4-real-8},
+@code{fdefault-real-8} does not promote variables with explicit kind
+declarations.
 
 @item -fdefault-real-10
 @opindex @code{fdefault-real-10}
-Set the default real type to a 10 byte wide type. This option also affects
-the kind of non-double real constants like @code{1.0}, and does promote
-the default width of @code{DOUBLE PRECISION} to 16 bytes if possible, unless
-@code{-fdefault-double-8} is given. Unlike @option{-freal-4-real-10},
-it does not promote variables with explicit kind declaration.
+Set the default real type to an 10 byte wide type.  This option also affects
+the kind of non-double real constants like @code{1.0}.  This option promotes
+the default width of @code{DOUBLE PRECISION} and double real constants
+like @code{1.d0} to 16 bytes if possible.  If @code{-fdefault-double-8}
+is given along with @code{fdefault-real-10}, @code{DOUBLE PRECISION}
+and double real constants are not promoted.  Unlike @option{-freal-4-real-10},
+@code{fdefault-real-10} does not promote variables with explicit kind
+declarations.
 
 @item -fdefault-real-16
 @opindex @code{fdefault-real-16}
-Set the default real type to a 16 byte wide type. This option also affects
-the kind of non-double real constants like @code{1.0}, and does promote
-the default width of @code{DOUBLE PRECISION} to 16 bytes if possible, unless
-@code{-fdefault-double-8} is given. Unlike @option{-freal-4-real-16},
-it does not promote variables with explicit kind declaration.
+Set the default real type to an 16 byte wide type.  This option also affects
+the kind of non-double real constants like @code{1.0}.  This option promotes
+the default width of @code{DOUBLE PRECISION} and double real constants
+like @code{1.d0} to 16 bytes if possible.  If @code{-fdefault-double-8}
+is given along with @code{fdefault-real-16}, @code{DOUBLE PRECISION}
+and double real constants are not promoted.  Unlike @option{-freal-4-real-16},
+@code{fdefault-real-16} does not promote variables with explicit kind
+declarations.
 
 @item -fdefault-double-8
 @opindex @code{fdefault-double-8}
-Set the @code{DOUBLE PRECISION} type to an 8 byte wide type.  Do nothing if this
-is already the default.  If @option{-fdefault-real-8} is given,
-@code{DOUBLE PRECISION} would instead be promoted to 16 bytes if possible, and
-@option{-fdefault-double-8} can be used to prevent this.  The kind of real
-constants like @code{1.d0} will not be changed by @option{-fdefault-real-8}
-though, so also @option{-fdefault-double-8} does not affect it.
+Set the @code{DOUBLE PRECISION} type and double real constants
+like @code{1.d0} to an 8 byte wide type.  Do nothing if this
+is already the default.  This option prevents @option{-fdefault-real-8},
+@option{-fdefault-real-10}, and @option{-fdefault-real-16},
+from promoting @code{DOUBLE PRECISION} and double real constants like
+@code{1.d0} to 16 bytes.
 
 @item -finteger-4-integer-8
 @opindex @code{finteger-4-integer-8}
@@ -1194,6 +1203,12 @@ The first three exceptions (@samp{invalid}, @samp{zero}, and
 has provisions for dealing with these exceptions, enabling traps for
 these three exceptions is probably a good idea.
 
+If the option is used more than once in the command line, the lists will
+be joined: '@code{ffpe-trap=}@var{list1} @code{ffpe-trap=}@var{list2}'
+is equivalent to @code{ffpe-trap=}@var{list1,list2}.
+
+Note that once enabled an exception cannot be disabled (no negative form).
+
 Many, if not most, floating point operations incur loss of precision
 due to rounding, and hence the @code{ffpe-trap=inexact} is likely to
 be uninteresting in practice.
@@ -1208,6 +1223,9 @@ to @code{ERROR_UNIT} when invoking @code{STOP} and @code{ERROR STOP}.
 of the following exceptions: @samp{invalid}, @samp{zero}, @samp{overflow},
 @samp{underflow}, @samp{inexact} and @samp{denormal}. (See
 @option{-ffpe-trap} for a description of the exceptions.)
+
+If the option is used more than once in the command line, only the
+last one will be used.
 
 By default, a summary for all exceptions but @samp{inexact} is shown.
 

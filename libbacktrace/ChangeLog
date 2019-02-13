@@ -1,3 +1,78 @@
+2019-02-12  Tom de Vries  <tdevries@suse.de>
+
+	PR libbacktrace/81983
+	* dwarf.c (dwarf_lookup_pc): Don't call bsearch if nmemb == 0.
+
+2019-02-10  Tom de Vries  <tdevries@suse.de>
+
+	* Makefile.am (BUILDTESTS): Add btest_lto.
+	* Makefile.in: Regenerate.
+	* btest.c (test1, f2, f3, test3, f22, f23): Declare with
+	__attribute__((noclone)).
+
+2019-02-08  Tom de Vries  <tdevries@suse.de>
+
+	* backtrace.c (backtrace_full): Declare with __attribute__((noinline)).
+	* print.c (backtrace_print): Same.
+	* simple.c (backtrace_simple): Same.
+
+2019-02-08  Tom de Vries  <tdevries@suse.de>
+
+	PR libbacktrace/78063
+	* dwarf.c (build_address_map): Keep all parsed units.
+	(read_referenced_name_from_attr): Handle DW_FORM_ref_addr.
+
+2019-01-31  Tom de Vries  <tdevries@suse.de>
+
+	PR libbacktrace/89136
+	* elf.c (elf_add): Read build-id if with_buildid_data.  Fix
+	'debugaltlink_name_len =+ 1'.
+
+2019-01-29  Tom de Vries  <tdevries@suse.de>
+
+	* install-debuginfo-for-buildid.sh.in: New script.
+	* Makefile.am (check_PROGRAMS): Add b2test and b3test.
+	(TESTS): Add b2test_buildid and b3test_dwz_buildid.
+	* Makefile.in: Regenerate.
+	* configure.ac (HAVE_ELF): Set with AM_CONDITIONAL.
+	(READELF): Set with AC_CHECK_PROG.
+	(install-debuginfo-for-buildid.sh): Generate with AC_CONFIG_FILES.
+	* configure: Regenerate.
+	* elf.c (SYSTEM_BUILD_ID_DIR): Factor out of ...
+	(elf_open_debugfile_by_buildid): ... here.
+
+2019-01-29  Tom de Vries  <tdevries@suse.de>
+
+	* Makefile.am: Replace check_PROGRAMS with BUILDTESTS, except for
+	allocfail.
+	(TESTS): Don't add check_PROGRAMS. Add BUILDTESTS.
+	(check_PROGRAMS): Add BUILDTESTS.
+	* Makefile.in: Regenerate.
+
+2019-01-28  Tom de Vries  <tdevries@suse.de>
+
+	* Makefile.am (xcoff_%.c): Generate sed result into temporary file.
+	Use $< to access prerequisite.
+	* Makefile.in: Regenerate.
+
+2019-01-25  Nathan Sidwell  <nathan@acm.org>
+
+	* elf.c (elf_add): Pass "" filename to recursive call with
+	separated debug.
+
+2019-01-25  Tom de Vries  <tdevries@suse.de>
+
+	* elf.c (elf_add): When handling .gnu_debugaltlink, call elf_add with
+	filename == "".
+	* Makefile.am (TESTS): Add btest_dwz_gnudebuglink.
+	* Makefile.in: Regenerate.
+
+2019-01-25  Tom de Vries  <tdevries@suse.de>
+
+	* Makefile.am: Rewrite dtest rule into "%_gnudebuglink" pattern rule.
+	(TESTS): Rename dtest to btest_gnudebuglink.
+	* Makefile.in: Regenerate.
+
 2019-01-23  Tom de Vries  <tdevries@suse.de>
 
 	* dwarf.c (struct unit): Use size_t for low_offset/high_offset fields.

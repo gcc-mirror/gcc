@@ -245,7 +245,7 @@ namespace __gnu_test
       Alloc a;
       try
 	{
-	  a.allocate(a.max_size() + 1);
+	  (void) a.allocate(a.max_size() + 1);
 	}
       catch(std::bad_alloc&)
 	{

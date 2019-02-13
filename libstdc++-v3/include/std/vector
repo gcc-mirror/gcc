@@ -89,6 +89,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Tp>
       using vector = std::vector<_Tp, polymorphic_allocator<_Tp>>;
   } // namespace pmr
+# ifdef _GLIBCXX_DEBUG
+  namespace _GLIBCXX_STD_C::pmr {
+    template<typename _Tp>
+      using vector
+	= _GLIBCXX_STD_C::vector<_Tp, std::pmr::polymorphic_allocator<_Tp>>;
+  } // namespace _GLIBCXX_STD_C::pmr
+# endif
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++17

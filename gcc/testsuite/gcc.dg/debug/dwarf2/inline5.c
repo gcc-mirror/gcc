@@ -4,13 +4,13 @@
 /* { dg-options "-O -gdwarf -dA" } */
 /* { dg-do compile } */
 /* { dg-final { scan-assembler-times "DW_TAG_inlined_subroutine" 2 } } */
-/* { dg-final { scan-assembler-times "DW_TAG_lexical_block\\)\[^#/!\]*\[#/!\] DW_AT_abstract_origin" 2 } } */
-/* { dg-final { scan-assembler-times "DW_TAG_lexical_block\\)\[^#/!\]*\[#/!\] \\(DIE \\(0x\[0-9a-f\]*\\) DW_TAG_variable" 1 } } */
+/* { dg-final { scan-assembler-times "DW_TAG_lexical_block\\)\[^#/!@;\\|\]*\[#/!@;\\|\]+ +DW_AT_abstract_origin" 2 } } */
+/* { dg-final { scan-assembler-times "DW_TAG_lexical_block\\)\[^#/!@;\\|\]*\[#/!@;\\|\]+ +\[^#/!@\\|\]*\\(DIE \\(0x\[0-9a-f\]*\\) DW_TAG_variable" 1 } } */
 /* We do not know which is output first so look for both invalid abstract
    origins on the lexical blocks (knowing that the abstract instance has
    no attribute following the DW_TAG_lexical_block.  */
-/* { dg-final { scan-assembler-not "\\(DIE \\(0x(\[0-9a-f\]*)\\) DW_TAG_lexical_block\\)\[^#/!\]*\[#/!\] \[^(\].*DW_TAG_lexical_block\\)\[^#/!x\]*x\\1\[^#/!\]*\[#/!\] DW_AT_abstract_origin" } } */
-/* { dg-final { scan-assembler-not "DW_TAG_lexical_block\\)\[^#/!x\]*x(\[0-9a-f\]*)\[^#/!\]*\[#/!\] DW_AT_abstract_origin.*\\(DIE \\(0x\\1\\) DW_TAG_lexical_block\\)\[^#/!\]*\[#/!\] DW_AT" } } */
+/* { dg-final { scan-assembler-not "\\(DIE \\(0x(\[0-9a-f\]*)\\) DW_TAG_lexical_block\\)\[^#/!@;\\|\]*\[#/!@;\\|\]+ +\[^(\].*DW_TAG_lexical_block\\)\[^#/!@;\\|x\]*x\\1\[^#/!@;\\|\]*\[#/!@;\\|\] +DW_AT_abstract_origin" { xfail { *-*-solaris2.* && { ! gas } } } } } */
+/* { dg-final { scan-assembler-not "DW_TAG_lexical_block\\)\[^#/!@;\\|x\]*x(\[0-9a-f\]*)\[^#/!@;\\|\]*\[#/!@;\\|\]+ +DW_AT_abstract_origin.*\\(DIE \\(0x\\1\\) DW_TAG_lexical_block\\)\[^#/!@;\\|\]*\[#/!@;\\|\]+ +DW_AT" } } */
 
 int foo (int i)
 {

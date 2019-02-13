@@ -1497,10 +1497,11 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
       alter_subreg (curr_id->operand_loc[nop], false);
       rtx subst = *curr_id->operand_loc[nop];
       lra_assert (MEM_P (subst));
-
+      const bool addr_is_valid = valid_address_p (GET_MODE (subst),
+						  XEXP (subst, 0),
+						  MEM_ADDR_SPACE (subst));
       if (!addr_was_valid
-	  || valid_address_p (GET_MODE (subst), XEXP (subst, 0),
-			      MEM_ADDR_SPACE (subst))
+	  || addr_is_valid
 	  || ((get_constraint_type (lookup_constraint
 				    (curr_static_id->operand[nop].constraint))
 	       != CT_SPECIAL_MEMORY)
@@ -1529,12 +1530,20 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 	     data into a register when the inner is narrower than outer or
 	     missing important data from memory when the inner is wider than
 	     outer.  This rule only applies to modes that are no wider than
-	     a word.  */
-	  if (!(maybe_ne (GET_MODE_PRECISION (mode),
-			  GET_MODE_PRECISION (innermode))
-		&& known_le (GET_MODE_SIZE (mode), UNITS_PER_WORD)
-		&& known_le (GET_MODE_SIZE (innermode), UNITS_PER_WORD)
-		&& WORD_REGISTER_OPERATIONS)
+	     a word.
+
+	     If valid memory becomes invalid after subreg elimination
+	     and address might be different we still have to reload
+	     memory.
+	  */
+	  if ((! addr_was_valid
+	       || addr_is_valid
+	       || known_eq (GET_MODE_SIZE (mode), GET_MODE_SIZE (innermode)))
+	      && !(maybe_ne (GET_MODE_PRECISION (mode),
+			     GET_MODE_PRECISION (innermode))
+		   && known_le (GET_MODE_SIZE (mode), UNITS_PER_WORD)
+		   && known_le (GET_MODE_SIZE (innermode), UNITS_PER_WORD)
+		   && WORD_REGISTER_OPERATIONS)
 	      && (!(MEM_ALIGN (subst) < GET_MODE_ALIGNMENT (mode)
 		    && targetm.slow_unaligned_access (mode, MEM_ALIGN (subst)))
 		  || (MEM_ALIGN (reg) < GET_MODE_ALIGNMENT (innermode)
@@ -1553,7 +1562,7 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 	  enum reg_class rclass
 	    = (enum reg_class) targetm.preferred_reload_class (reg, ALL_REGS);
 	  if (get_reload_reg (curr_static_id->operand[nop].type, innermode,
-			      reg, rclass, TRUE, "slow mem", &new_reg))
+			      reg, rclass, TRUE, "slow/invalid mem", &new_reg))
 	    {
 	      bool insert_before, insert_after;
 	      bitmap_set_bit (&lra_subreg_reload_pseudos, REGNO (new_reg));
@@ -1572,7 +1581,7 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 	  rclass
 	    = (enum reg_class) targetm.preferred_reload_class (reg, ALL_REGS);
 	  if (get_reload_reg (curr_static_id->operand[nop].type, mode, reg,
-			      rclass, TRUE, "slow mem", &new_reg))
+			      rclass, TRUE, "slow/invalid mem", &new_reg))
 	    {
 	      bool insert_before, insert_after;
 	      bitmap_set_bit (&lra_subreg_reload_pseudos, REGNO (new_reg));
@@ -1585,7 +1594,7 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 	    }
 	  *curr_id->operand_loc[nop] = new_reg;
 	  lra_process_new_insns (curr_insn, before, after,
-				 "Inserting slow mem reload");
+				 "Inserting slow/invalid mem reload");
 	  return true;
 	}
 
@@ -2787,29 +2796,32 @@ process_alt_operands (int only_alternative)
 			      (GET_MODE (op), this_alternative, cl)))))
 		losers++;
 
-	      /* Input reloads can be inherited more often than output
-		 reloads can be removed, so penalize output
-		 reloads.  */
-	      if (!REG_P (op) || curr_static_id->operand[nop].type != OP_IN)
-		{
-		  if (lra_dump_file != NULL)
-		    fprintf
-		      (lra_dump_file,
-		       "            %d Non input pseudo reload: reject++\n",
-		       nop);
-		  reject++;
-		}
-
 	      if (MEM_P (op) && offmemok)
 		addr_losers++;
-	      else if (curr_static_id->operand[nop].type == OP_INOUT)
+	      else
 		{
-		  if (lra_dump_file != NULL)
-		    fprintf
-		      (lra_dump_file,
-		       "            %d Input/Output reload: reject+=%d\n",
-		       nop, LRA_LOSER_COST_FACTOR);
-		  reject += LRA_LOSER_COST_FACTOR;
+		  /* Input reloads can be inherited more often than
+		     output reloads can be removed, so penalize output
+		     reloads.  */
+		  if (!REG_P (op) || curr_static_id->operand[nop].type != OP_IN)
+		    {
+		      if (lra_dump_file != NULL)
+			fprintf
+			  (lra_dump_file,
+			   "            %d Non input pseudo reload: reject++\n",
+			   nop);
+		      reject++;
+		    }
+
+		  if (curr_static_id->operand[nop].type == OP_INOUT)
+		    {
+		      if (lra_dump_file != NULL)
+			fprintf
+			  (lra_dump_file,
+			   "            %d Input/Output reload: reject+=%d\n",
+			   nop, LRA_LOSER_COST_FACTOR);
+		      reject += LRA_LOSER_COST_FACTOR;
+		    }
 		}
 	    }
 

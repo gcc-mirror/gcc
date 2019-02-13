@@ -548,9 +548,6 @@ sem_function::equals_wpa (sem_item *item,
         return return_false_with_msg ("thunk this_adjusting mismatch");
       if (cnode->thunk.virtual_offset_p != cnode2->thunk.virtual_offset_p)
         return return_false_with_msg ("thunk virtual_offset_p mismatch");
-      if (cnode->thunk.add_pointer_bounds_args
-	  != cnode2->thunk.add_pointer_bounds_args)
-        return return_false_with_msg ("thunk add_pointer_bounds_args mismatch");
     }
 
   /* Compare special function DECL attributes.  */
@@ -1407,7 +1404,6 @@ sem_function::init (void)
       hstate.add_hwi (cnode->thunk.virtual_value);
       hstate.add_flag (cnode->thunk.this_adjusting);
       hstate.add_flag (cnode->thunk.virtual_offset_p);
-      hstate.add_flag (cnode->thunk.add_pointer_bounds_args);
       gcode_hash = hstate.end ();
     }
 }
@@ -2205,7 +2201,6 @@ sem_variable::merge (sem_item *alias_item)
       DECL_INITIAL (alias->decl) = NULL;
       ((symtab_node *)alias)->call_for_symbol_and_aliases (clear_decl_rtl,
 							   NULL, true);
-      alias->need_bounds_init = false;
       alias->remove_all_references ();
       if (TREE_ADDRESSABLE (alias->decl))
         original->call_for_symbol_and_aliases (set_addressable, NULL, true);

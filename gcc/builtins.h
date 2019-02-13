@@ -119,7 +119,6 @@ extern void expand_builtin_trap (void);
 extern void expand_ifn_atomic_bit_test_and (gcall *);
 extern void expand_ifn_atomic_compare_exchange (gcall *);
 extern rtx expand_builtin (tree, rtx, rtx, machine_mode, int);
-extern rtx expand_builtin_with_bounds (tree, rtx, rtx, machine_mode, int);
 extern enum built_in_function builtin_mathfn_code (const_tree);
 extern tree fold_builtin_expect (location_t, tree, tree, tree, tree);
 extern bool avoid_folding_inline_builtin (tree);
@@ -150,6 +149,5 @@ extern internal_fn replacement_internal_fn (gcall *);
 
 extern void warn_string_no_nul (location_t, const char *, tree, tree);
 extern tree unterminated_array (tree, tree * = NULL, bool * = NULL);
-extern tree max_object_size ();
 
 #endif /* GCC_BUILTINS_H */

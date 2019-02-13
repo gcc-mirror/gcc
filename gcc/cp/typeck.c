@@ -9728,6 +9728,11 @@ check_return_expr (tree retval, bool *no_warning)
 	    }
 	}
 
+      /* The call in a (lambda) thunk needs no conversions.  */
+      if (TREE_CODE (retval) == CALL_EXPR
+	  && CALL_FROM_THUNK_P (retval))
+	converted = true;
+
       /* First convert the value to the function's return type, then
 	 to the type of return value's location to handle the
 	 case that functype is smaller than the valtype.  */

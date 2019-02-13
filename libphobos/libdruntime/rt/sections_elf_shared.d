@@ -18,6 +18,7 @@ static if (SharedELF):
 
 // debug = PRINTF;
 import core.memory;
+import core.stdc.config;
 import core.stdc.stdio;
 import core.stdc.stdlib : calloc, exit, free, malloc, EXIT_FAILURE;
 import core.stdc.string : strlen;
@@ -955,8 +956,27 @@ version (Shared) void* handleForAddr(void* addr) nothrow @nogc
  */
 struct tls_index
 {
-    size_t ti_module;
-    size_t ti_offset;
+    version (CRuntime_Glibc)
+    {
+        // For x86_64, fields are of type uint64_t, this is important for x32
+        // where tls_index would otherwise have the wrong size.
+        // See https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/x86_64/dl-tls.h
+        version (X86_64)
+        {
+            ulong ti_module;
+            ulong ti_offset;
+        }
+        else
+        {
+            c_ulong ti_module;
+            c_ulong ti_offset;
+        }
+    }
+    else
+    {
+        size_t ti_module;
+        size_t ti_offset;
+    }
 }
 
 extern(C) void* __tls_get_addr(tls_index* ti) nothrow @nogc;

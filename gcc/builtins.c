@@ -11210,12 +11210,3 @@ target_char_cst_p (tree t, char *p)
   *p = (char)tree_to_uhwi (t);
   return true;
 }
-
-/* Return the maximum object size.  */
-
-tree
-max_object_size (void)
-{
-  /* To do: Make this a configurable parameter.  */
-  return TYPE_MAX_VALUE (ptrdiff_type_node);
-}

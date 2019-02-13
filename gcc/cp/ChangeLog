@@ -1,3 +1,237 @@
+2019-02-13  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/86379
+	* cp-tree.h (USING_DECL_SCOPE): Use result rather than type.
+	* name-lookup.c (strip_using_decl): Use USING_DECL_SCOPE.
+	* search.c (protected_accessible_p): Follow USING_DECL_DECLS.
+	(shared_member_p): Likewise.
+	(lookup_member): Likewise.
+	* decl.c (grok_special_member_properties): Skip USING_DECLs.
+	* semantics.c (finish_omp_declare_simd_methods): Likewise.
+	(finish_qualified_id_expr): Do not call shared_member_p with
+	a dependent expr.
+
+	PR c++/87322
+	* pt.c (tsubst_lambda_expr): Avoid duplicate tsubsting.
+	Move cp_evaluated resetting before signature tsubsting.
+	(gen_elem_of_pack_expansion_instantiation): Separate local
+	specializations per index.
+
+2019-02-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/89036
+	* class.c (add_method): Drop destructor assertion.
+
+2019-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/88986
+	* decl.c (make_typename_type): Allow for TYPE_PACK_EXPANSION as
+	context (the first argument).
+	* pt.c (tsubst, case TYPENAME_TYPE): Handle TYPE_PACK_EXPANSION
+	as context.
+
+2019-02-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89144 - link error with constexpr initializer_list.
+	* call.c (convert_like_real) [ck_list]: Don't allocate a temporary
+	array for an empty list.
+	* typeck2.c (store_init_value): Don't use cxx_constant_init in a
+	template.
+
+2019-02-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89241 - ICE with __func__ in lambda in template.
+	* pt.c (enclosing_instantiation_of): Also check
+	instantiated_lambda_fn_p for the template context.
+
+2019-02-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89212 - ICE converting nullptr to pointer-to-member-function.
+	* pt.c (tsubst_copy_and_build) <case CONSTRUCTOR>: Return early for
+	null member pointer value.
+
+2019-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88977
+	* pt.c (convert_nontype_argument): Pass true as manifestly_const_eval
+	to maybe_constant_value calls.
+
+2019-02-11  Marek Polacek  <polacek@redhat.com>
+
+	* typeck2.c (digest_init_r): Remove commented code.
+
+2019-02-11  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/87996
+	* decl.c (compute_array_index_type_loc): Preserve signed sizes
+	for diagnostics.  Call valid_array_size_p instead of error.
+	* init.c (build_new_1): Compute size for diagnostic.  Call
+	invalid_array_size_error
+	(build_new): Call valid_array_size_p instead of error.
+
+2019-02-07  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/86218
+	* call.c (compare_ics): Deal with ck_aggr in either cs.
+
+2019-02-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/71302
+	* call.c (get_location_for_expr_unwinding_for_system_header): New
+	function.
+	(conversion_null_warnings): Use it when getting locations for
+	EXPR, effectively adding a call to
+	get_location_for_expr_unwinding_for_system_header for
+	-Wconversion-null and making use of EXPR_LOCATION for
+	-Wzero-as-null-pointer-constant.
+
+2019-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89187
+	* optimize.c (maybe_thunk_body): Clear TREE_ADDRESSABLE on
+	PARM_DECLs of the thunk.
+	* lambda.c (maybe_add_lambda_conv_op): Likewise.
+
+2019-02-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89158 - by-value capture of constexpr variable broken.
+	* call.c (convert_like_real) <case ck_user>: Call mark_exp_read
+	instead of mark_rvalue_use.
+
+2019-02-05  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/87770
+	* pt.c (instantiates_primary_template_p): New.
+	(type_dependent_expression_p): Use it.
+
+2019-02-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88761 - ICE with reference capture of constant.
+	* lambda.c (mark_const_cap_r): Do walk subtrees of DECL_EXPR for
+	non-proxy decls.
+
+2019-02-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88325 - ICE with invalid out-of-line template member definition.
+	* parser.c (cp_parser_class_name): Don't call make_typename_type
+	for overloads.
+
+2019-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87175
+	* parser.c (cp_parser_gnu_attributes_opt): Set ok to false
+	if require_open failed.
+
+2019-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89083, c++/80864 - ICE with list initialization in template.
+	* constexpr.c (adjust_temp_type): Use copy_node and change the type
+	instead of using build_constructor.
+	* decl.c (reshape_init_r): Don't reshape a digested initializer.
+	Return the initializer for COMPOUND_LITERAL_P.
+
+	PR c++/88983 - ICE with switch in constexpr function.
+	* constexpr.c (cxx_eval_switch_expr): Use SWITCH_COND and SWITCH_BODY.
+	(cxx_eval_constant_expression) <case COND_EXPR>: Don't look for the
+	label in the else branch if we found it in the then branch.
+
+2019-01-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88752 - ICE with lambda and constexpr if.
+	* cp-tree.h (LAMBDA_EXPR_INSTANTIATED): New.
+	* pt.c (tsubst_lambda_expr): Set it.
+	(instantiated_lambda_fn_p): Check it.
+	(enclosing_instantiation_of): Use it.
+
+2019-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/88170
+	* cxx-pretty-print.c (pp_cxx_enumeration_constant): Print always as
+	a C cast in pp_c_flag_gnu_v3 mode.
+
+2019-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88988
+	* lambda.c (is_capture_proxy): Don't return true for
+	DECL_OMP_PRIVATIZED_MEMBER artificial vars.
+
+2019-01-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89119 - ICE with value-initialization in template.
+	* pt.c (tsubst_copy_and_build): Handle RANGE_EXPR.
+
+2019-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86943 - wrong code converting lambda to function pointer.
+	* lambda.c (maybe_add_lambda_conv_op): Use a template-id in the
+	call.  Only forward parms for decltype.
+	* pt.c (tsubst_copy_and_build) [CALL_EXPR]: Handle CALL_FROM_THUNK_P
+	specially.
+	* typeck.c (check_return_expr): Don't mess with a thunk call.
+
+2019-01-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89089 - ICE with [[no_unique_address]].
+	PR c++/88865 - wrong layout with [[no_unique_address]].
+	* class.c (check_field_decls): A potentially-overlapping field makes
+	the class non-layout-POD, but not non-empty.
+	(end_of_class): Always consider empty data members.
+	(layout_class_type): Set DECL_SIZE for empty fields.
+
+2019-01-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88358 - name wrongly treated as type.
+	* parser.c (cp_parser_direct_declarator): Don't assume a qualified-id
+	in parameter-list is a type if the function's declarator-id is not
+	qualified.
+
+2019-01-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88815 - narrowing conversion lost in decltype.
+	PR c++/78244 - narrowing conversion in template not detected.
+	* cp-tree.h (CONSTRUCTOR_IS_DEPENDENT): New.
+	* pt.c (instantiation_dependent_r): Consider a CONSTRUCTOR with
+	CONSTRUCTOR_IS_DEPENDENT instantiation-dependent.
+	* semantics.c (finish_compound_literal): When the compound literal
+	isn't instantiation-dependent and the type isn't type-dependent,
+	fall back to the normal processing.  Set CONSTRUCTOR_IS_DEPENDENT.
+
+	PR c++/89024 - ICE with incomplete enum type.
+	* call.c (standard_conversion): When converting an
+	ARITHMETIC_TYPE_P to an incomplete type, return NULL.
+	
+2019-01-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/88969
+	* call.c (build_op_delete_call): Implement 7.6.2.5/(10.1).
+	* decl2.c (coerce_delete_type): Use build_pointer_type instead
+	of TYPE_POINTER_TO.
+
+2019-01-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89001 - mangling of reference temporaries
+	* cp-tree.h (struct saved_scope): Add ref_temp_count.
+	(current_ref_temp_count): New macro.
+	* mangle.c (mangle_ref_init_variable): Use it.
+	* typeck2.c (store_init_value): Clear it.
+	* call.c (make_temporary_var_for_ref_to_temp): Copy public and
+	comdat.
+
+2019-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88976
+	* semantics.c (finish_omp_cancel): Diagnose more than one if
+	on #pragma omp cancel with different modifiers.  Use
+	maybe_convert_cond when not in template or build_x_binary_op
+	otherwise.
+
+2019-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88757 - qualified name treated wrongly as type.
+	* parser.c (cp_parser_direct_declarator): Don't treat qualified-ids
+	in parameter-list as types if name lookup for declarator-id didn't
+	find one or more function templates.
+
 2019-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/44715

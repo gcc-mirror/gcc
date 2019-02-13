@@ -2597,7 +2597,7 @@ find_case_label_ranges (gswitch *stmt, value_range *vr, size_t *min_idx1,
 
   take_default = !find_case_label_range (stmt, min, max, &i, &j);
 
-  /* Set second range to emtpy.  */
+  /* Set second range to empty.  */
   *min_idx2 = 1;
   *max_idx2 = 0;
 

@@ -3078,21 +3078,21 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
   /* Verify that I2 and maybe I1 and I0 can be combined into I3.  */
   if (!can_combine_p (i2, i3, i0, i1, NULL, NULL, &i2dest, &i2src))
     {
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Can't combine i2 into i3\n");
       undo_all ();
       return 0;
     }
   if (i1 && !can_combine_p (i1, i3, i0, NULL, i2, NULL, &i1dest, &i1src))
     {
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Can't combine i1 into i3\n");
       undo_all ();
       return 0;
     }
   if (i0 && !can_combine_p (i0, i3, NULL, NULL, i1, i2, &i0dest, &i0src))
     {
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Can't combine i0 into i3\n");
       undo_all ();
       return 0;
@@ -7687,6 +7687,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	      /* We can't do this if we are widening INNER_MODE (it
 		 may not be aligned, for one thing).  */
 	      && !paradoxical_subreg_p (tmode, inner_mode)
+	      && known_le (pos + len, GET_MODE_PRECISION (is_mode))
 	      && (inner_mode == tmode
 		  || (! mode_dependent_address_p (XEXP (inner, 0),
 						  MEM_ADDR_SPACE (inner))

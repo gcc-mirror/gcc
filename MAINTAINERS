@@ -48,6 +48,8 @@ aarch64 port		James Greenhalgh	<james.greenhalgh@arm.com>
 aarch64 port		Marcus Shawcroft	<marcus.shawcroft@arm.com>
 aarch64 SVE port	Richard Sandiford	<richard.sandiford@arm.com>
 alpha port		Richard Henderson	<rth@twiddle.net>
+amdgcn port		Julian Brown		<julian@codesourcery.com>
+amdgcn port		Andrew Stubbs		<ams@codesourcery.com>
 arc port		Joern Rennecke		<gnu@amylaar.uk>
 arm port		Nick Clifton		<nickc@redhat.com>
 arm port		Richard Earnshaw	<richard.earnshaw@arm.com>
@@ -303,6 +305,7 @@ from other maintainers or reviewers.
 
 Mark G. Adams					<mark.g.adams@sympatico.ca>
 Pedro Alves					<palves@redhat.com>
+Harald Anlauf					<anlauf@gmx.de>
 Raksit Ashok					<raksit@google.com>
 Matt Austern					<austern@google.com>
 David Ayers					<ayers@fsfe.org>
@@ -332,7 +335,6 @@ Neil Booth					<neil@daikokuya.co.uk>
 Robert Bowdidge					<bowdidge@apple.com>
 Joel Brobecker					<brobecker@gnat.com>
 Dave Brolley					<brolley@redhat.com>
-Julian Brown					<julian@codesourcery.com>
 Christian Bruel					<christian.bruel@st.com>
 Kevin Buettner					<kevinb@redhat.com>
 Adam Butcher					<adam@jessamine.co.uk>
@@ -484,7 +486,7 @@ Manuel López-Ibáñez				<manu@gcc.gnu.org>
 Carl Love					<cel@us.ibm.com>
 Martin v. Löwis					<loewis@informatik.hu-berlin.de>
 H.J. Lu						<hjl.tools@gmail.com>
-Xiong Hu Luo						<luoxhu@linux.vnet.ibm.com>
+Xiong Hu Luo					<luoxhu@linux.vnet.ibm.com>
 Christophe Lyon					<christophe.lyon@st.com>
 Luis Machado					<luisgpm@br.ibm.com>
 Ziga Mahkovec					<ziga.mahkovec@klika.si>
@@ -585,7 +587,6 @@ Richard Stallman				<rms@gnu.org>
 Basile Starynkevitch				<basile@starynkevitch.net>
 Jakub Staszak					<kuba@et.pl>
 Graham Stott					<graham.stott@btinternet.com>
-Andrew Stubbs					<ams@codesourcery.com>
 Jeff Sturm					<jsturm@gcc.gnu.org>
 Robert Suchanek					<robert.suchanek@imgtec.com>
 Andrew Sutton					<andrew.n.sutton@gmail.com>
@@ -634,6 +635,7 @@ Canqun Yang					<canqun@nudt.edu.cn>
 Fei Yang					<felix.yang@huawei.com>
 Jeffrey Yasskin					<jyasskin@google.com>
 Joey Ye						<joey.ye@arm.com>
+Kwok Cheung Yeung				<kcy@codesourcery.com>
 Greta Yorsh					<greta.yorsh@arm.com>
 David Yuste					<david.yuste@gmail.com>
 Adhemerval Zanella				<azanella@linux.vnet.ibm.com>

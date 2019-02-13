@@ -690,8 +690,8 @@ loop_cand::analyze_induction_var (tree var, tree chrec)
     {
       /* Punt on floating point invariants if honoring signed zeros,
 	 representing that as + 0.0 would change the result if init
-	 is -0.0.  */
-      if (HONOR_SIGNED_ZEROS (chrec))
+	 is -0.0.  Similarly for SNaNs it can raise exception.  */
+      if (HONOR_SIGNED_ZEROS (chrec) || HONOR_SNANS (chrec))
 	return false;
       struct induction *iv = XCNEW (struct induction);
       iv->var = var;

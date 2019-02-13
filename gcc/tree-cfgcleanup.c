@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-match.h"
 #include "gimple-fold.h"
 #include "tree-ssa-loop-niter.h"
-
+#include "cgraph.h"
 
 /* The set of blocks in that at least one of the following changes happened:
    -- the statement at the end of the block was changed
@@ -1379,4 +1379,77 @@ make_pass_cleanup_cfg_post_optimizing (gcc::context *ctxt)
   return new pass_cleanup_cfg_post_optimizing (ctxt);
 }
 
+
+/* Delete all unreachable basic blocks and update callgraph.
+   Doing so is somewhat nontrivial because we need to update all clones and
+   remove inline function that become unreachable.  */
+
+bool
+delete_unreachable_blocks_update_callgraph (cgraph_node *dst_node,
+					    bool update_clones)
+{
+  bool changed = false;
+  basic_block b, next_bb;
+
+  find_unreachable_blocks ();
+
+  /* Delete all unreachable basic blocks.  */
+
+  for (b = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb; b
+       != EXIT_BLOCK_PTR_FOR_FN (cfun); b = next_bb)
+    {
+      next_bb = b->next_bb;
+
+      if (!(b->flags & BB_REACHABLE))
+	{
+          gimple_stmt_iterator bsi;
+
+          for (bsi = gsi_start_bb (b); !gsi_end_p (bsi); gsi_next (&bsi))
+	    {
+	      struct cgraph_edge *e;
+	      struct cgraph_node *node;
+
+	      dst_node->remove_stmt_references (gsi_stmt (bsi));
+
+	      if (gimple_code (gsi_stmt (bsi)) == GIMPLE_CALL
+		  &&(e = dst_node->get_edge (gsi_stmt (bsi))) != NULL)
+		{
+		  if (!e->inline_failed)
+		    e->callee->remove_symbol_and_inline_clones (dst_node);
+		  else
+		    e->remove ();
+		}
+	      if (update_clones && dst_node->clones)
+		for (node = dst_node->clones; node != dst_node;)
+		  {
+		    node->remove_stmt_references (gsi_stmt (bsi));
+		    if (gimple_code (gsi_stmt (bsi)) == GIMPLE_CALL
+			&& (e = node->get_edge (gsi_stmt (bsi))) != NULL)
+		      {
+			if (!e->inline_failed)
+			  e->callee->remove_symbol_and_inline_clones (dst_node);
+			else
+			  e->remove ();
+		      }
+
+		    if (node->clones)
+		      node = node->clones;
+		    else if (node->next_sibling_clone)
+		      node = node->next_sibling_clone;
+		    else
+		      {
+			while (node != dst_node && !node->next_sibling_clone)
+			  node = node->clone_of;
+			if (node != dst_node)
+			  node = node->next_sibling_clone;
+		      }
+		  }
+	    }
+	  delete_basic_block (b);
+	  changed = true;
+	}
+    }
+
+  return changed;
+}
 

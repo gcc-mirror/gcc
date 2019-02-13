@@ -5152,7 +5152,11 @@ fld_simplified_type_name (tree type)
   /* Drop TYPE_DECLs in TYPE_NAME in favor of the identifier in the
      TYPE_DECL if the type doesn't have linkage.
      this must match fld_  */
-  if (type != TYPE_MAIN_VARIANT (type) || ! type_with_linkage_p (type))
+  if (type != TYPE_MAIN_VARIANT (type)
+      || (!DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (type))
+	  && (TREE_CODE (type) != RECORD_TYPE
+	      || !TYPE_BINFO (type)
+	      || !BINFO_VTABLE (TYPE_BINFO (type)))))
     return DECL_NAME (TYPE_NAME (type));
   return TYPE_NAME (type);
 }
@@ -7496,10 +7500,12 @@ compare_tree_int (const_tree t, unsigned HOST_WIDE_INT u)
 
 /* Return true if SIZE represents a constant size that is in bounds of
    what the middle-end and the backend accepts (covering not more than
-   half of the address-space).  */
+   half of the address-space).
+   When PERR is non-null, set *PERR on failure to the description of
+   why SIZE is not valid.  */
 
 bool
-valid_constant_size_p (const_tree size)
+valid_constant_size_p (const_tree size, cst_size_error *perr /* = NULL */)
 {
   if (POLY_INT_CST_P (size))
     {
@@ -7510,10 +7516,33 @@ valid_constant_size_p (const_tree size)
 	  return false;
       return true;
     }
-  if (! tree_fits_uhwi_p (size)
-      || TREE_OVERFLOW (size)
-      || tree_int_cst_sign_bit (size) != 0)
-    return false;
+
+  cst_size_error error;
+  if (!perr)
+    perr = &error;
+
+  if (TREE_OVERFLOW (size))
+    {
+      *perr = cst_size_overflow;
+      return false;
+    }
+
+  tree type = TREE_TYPE (size);
+  if (TYPE_UNSIGNED (type))
+    {
+      if (!tree_fits_uhwi_p (size)
+	  || tree_int_cst_sign_bit (size))
+	{
+	  *perr = cst_size_too_big;
+	  return false;
+	}
+    }
+  else if (tree_int_cst_sign_bit (size))
+    {
+      *perr = cst_size_negative;
+      return false;
+    }
+
   return true;
 }
 
@@ -14998,6 +15027,15 @@ const builtin_structptr_type builtin_structptr_types[6] =
   { fexcept_t_ptr_type_node, ptr_type_node, "fexcept_t" },
   { const_fexcept_t_ptr_type_node, const_ptr_type_node, "fexcept_t" }
 };
+
+/* Return the maximum object size.  */
+
+tree
+max_object_size (void)
+{
+  /* To do: Make this a configurable parameter.  */
+  return TYPE_MAX_VALUE (ptrdiff_type_node);
+}
 
 #if CHECKING_P
 

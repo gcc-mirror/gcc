@@ -242,6 +242,10 @@ simd_clone_clauses_extract (struct cgraph_node *node, tree clauses,
 	  }
 	case OMP_CLAUSE_ALIGNED:
 	  {
+	    /* Ignore aligned (x) for declare simd, for the ABI we really
+	       need an alignment specified.  */
+	    if (OMP_CLAUSE_ALIGNED_ALIGNMENT (t) == NULL_TREE)
+	      break;
 	    tree decl = OMP_CLAUSE_DECL (t);
 	    int argno = tree_to_uhwi (decl);
 	    clone_info->args[argno].alignment

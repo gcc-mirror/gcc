@@ -1915,10 +1915,9 @@ opt_info_switch_p_1 (const char *arg, dump_flags_t *flags,
       end_ptr = strchr (ptr, '-');
       eq_ptr = strchr (ptr, '=');
 
-      if (eq_ptr && !end_ptr)
+      if (eq_ptr && (!end_ptr || eq_ptr < end_ptr))
         end_ptr = eq_ptr;
-
-      if (!end_ptr)
+      else if (!end_ptr)
 	end_ptr = ptr + strlen (ptr);
       length = end_ptr - ptr;
 

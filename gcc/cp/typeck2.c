@@ -829,6 +829,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
       && TREE_CODE (value) == CONSTRUCTOR)
     value = braced_list_to_string (type, value);
 
+  current_ref_temp_count = 0;
   value = extend_ref_init_temps (decl, value, cleanups);
 
   /* In C++11 constant expression is a semantic, not syntactic, property.
@@ -849,6 +850,11 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
 	     non-inline in-class-initialized static data member.  */
 	  if (!require_constant_expression (value))
 	    value = error_mark_node;
+	  else if (processing_template_decl)
+	    /* In a template we might not have done the necessary
+	       transformations to make value actually constant,
+	       e.g. extend_ref_init_temps.  */
+	    value = maybe_constant_init (value, decl, true);
 	  else
 	    value = cxx_constant_init (value, decl);
 	}
@@ -1098,7 +1104,6 @@ digest_init_r (tree type, tree init, int nested, int flags,
 
       tree typ1 = TYPE_MAIN_VARIANT (TREE_TYPE (type));
       if (char_type_p (typ1)
-	  /*&& init */
 	  && TREE_CODE (stripped_init) == STRING_CST)
 	{
 	  tree char_type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (init)));

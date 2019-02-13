@@ -380,6 +380,37 @@ find_var_scev_info (basic_block instantiated_below, tree var)
   return &res->chrec;
 }
 
+
+/* Hashtable helpers for a temporary hash-table used when
+   analyzing a scalar evolution, instantiating a CHREC or
+   resolving mixers.  */
+
+struct instantiate_cache_type
+{
+  htab_t map;
+  vec<scev_info_str> entries;
+
+  instantiate_cache_type () : map (NULL), entries (vNULL) {}
+  ~instantiate_cache_type ();
+  tree get (unsigned slot) { return entries[slot].chrec; }
+  void set (unsigned slot, tree chrec) { entries[slot].chrec = chrec; }
+};
+
+instantiate_cache_type::~instantiate_cache_type ()
+{
+  if (map != NULL)
+    {
+      htab_delete (map);
+      entries.release ();
+    }
+}
+
+/* Cache to avoid infinite recursion when instantiating an SSA name.
+   Live during the outermost analyze_scalar_evolution, instantiate_scev
+   or resolve_mixers call.  */
+static instantiate_cache_type *global_cache;
+
+
 /* Return true when CHREC contains symbolic names defined in
    LOOP_NB.  */
 
@@ -2117,7 +2148,22 @@ analyze_scalar_evolution (struct loop *loop, tree var)
 
   res = get_scalar_evolution (block_before_loop (loop), var);
   if (res == chrec_not_analyzed_yet)
-    res = analyze_scalar_evolution_1 (loop, var);
+    {
+      /* We'll recurse into instantiate_scev, avoid tearing down the
+         instantiate cache repeatedly and keep it live from here.  */
+      bool destr = false;
+      if (!global_cache)
+	{
+	  global_cache = new instantiate_cache_type;
+	  destr = true;
+	}
+      res = analyze_scalar_evolution_1 (loop, var);
+      if (destr)
+	{
+	  delete global_cache;
+	  global_cache = NULL;
+	}
+    }
 
   if (dump_file && (dump_flags & TDF_SCEV))
     fprintf (dump_file, ")\n");
@@ -2230,34 +2276,6 @@ analyze_scalar_evolution_in_loop (struct loop *wrto_loop, struct loop *use_loop,
     }
 }
 
-
-/* Hashtable helpers for a temporary hash-table used when
-   instantiating a CHREC or resolving mixers.  For this use
-   instantiated_below is always the same.  */
-
-struct instantiate_cache_type
-{
-  htab_t map;
-  vec<scev_info_str> entries;
-
-  instantiate_cache_type () : map (NULL), entries (vNULL) {}
-  ~instantiate_cache_type ();
-  tree get (unsigned slot) { return entries[slot].chrec; }
-  void set (unsigned slot, tree chrec) { entries[slot].chrec = chrec; }
-};
-
-instantiate_cache_type::~instantiate_cache_type ()
-{
-  if (map != NULL)
-    {
-      htab_delete (map);
-      entries.release ();
-    }
-}
-
-/* Cache to avoid infinite recursion when instantiating an SSA name.
-   Live during the outermost instantiate_scev or resolve_mixers call.  */
-static instantiate_cache_type *global_cache;
 
 /* Computes a hash function for database element ELT.  */
 
@@ -2562,10 +2580,18 @@ instantiate_scev_binary (edge instantiate_below,
   if (op0 == chrec_dont_know)
     return chrec_dont_know;
 
-  op1 = instantiate_scev_r (instantiate_below, evolution_loop, inner_loop,
-			    c1, fold_conversions, size_expr);
-  if (op1 == chrec_dont_know)
-    return chrec_dont_know;
+  /* While we eventually compute the same op1 if c0 == c1 the process
+     of doing this is expensive so the following short-cut prevents
+     exponential compile-time behavior.  */
+  if (c0 != c1)
+    {
+      op1 = instantiate_scev_r (instantiate_below, evolution_loop, inner_loop,
+				c1, fold_conversions, size_expr);
+      if (op1 == chrec_dont_know)
+	return chrec_dont_know;
+    }
+  else
+    op1 = op0;
 
   if (c0 != op0
       || c1 != op1)

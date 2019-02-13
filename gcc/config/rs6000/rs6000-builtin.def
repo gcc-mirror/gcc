@@ -2418,13 +2418,22 @@ BU_P9_OVERLOAD_2 (CMPRB2,	"byte_in_either_range")
 BU_P9_OVERLOAD_2 (CMPEQB,	"byte_in_set")
 
 /* 1 argument crypto functions.  */
-BU_CRYPTO_1 (VSBOX,		"vsbox",	  CONST, crypto_vsbox)
+BU_CRYPTO_1 (VSBOX,		"vsbox",	  CONST, crypto_vsbox_v2di)
+BU_CRYPTO_1 (VSBOX_BE,		"vsbox_be",	  CONST, crypto_vsbox_v16qi)
 
 /* 2 argument crypto functions.  */
-BU_CRYPTO_2 (VCIPHER,		"vcipher",	  CONST, crypto_vcipher)
-BU_CRYPTO_2 (VCIPHERLAST,	"vcipherlast",	  CONST, crypto_vcipherlast)
-BU_CRYPTO_2 (VNCIPHER,		"vncipher",	  CONST, crypto_vncipher)
-BU_CRYPTO_2 (VNCIPHERLAST,	"vncipherlast",	  CONST, crypto_vncipherlast)
+BU_CRYPTO_2 (VCIPHER,		"vcipher",	  CONST, crypto_vcipher_v2di)
+BU_CRYPTO_2 (VCIPHER_BE,	"vcipher_be",	  CONST, crypto_vcipher_v16qi)
+BU_CRYPTO_2 (VCIPHERLAST,	"vcipherlast",
+	     CONST, crypto_vcipherlast_v2di)
+BU_CRYPTO_2 (VCIPHERLAST_BE,	"vcipherlast_be",
+	     CONST, crypto_vcipherlast_v16qi)
+BU_CRYPTO_2 (VNCIPHER,		"vncipher",	  CONST, crypto_vncipher_v2di)
+BU_CRYPTO_2 (VNCIPHER_BE,	"vncipher_be",	  CONST, crypto_vncipher_v16qi)
+BU_CRYPTO_2 (VNCIPHERLAST,	"vncipherlast",
+	     CONST, crypto_vncipherlast_v2di)
+BU_CRYPTO_2 (VNCIPHERLAST_BE,	"vncipherlast_be",
+	     CONST, crypto_vncipherlast_v16qi)
 BU_CRYPTO_2A (VPMSUMB,		"vpmsumb",	  CONST, crypto_vpmsumb)
 BU_CRYPTO_2A (VPMSUMH,		"vpmsumh",	  CONST, crypto_vpmsumh)
 BU_CRYPTO_2A (VPMSUMW,		"vpmsumw",	  CONST, crypto_vpmsumw)

@@ -992,7 +992,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
 	char __fbuf[16];
 	__num_base::_S_format_float(__io, __fbuf, __mod);
 
-#if _GLIBCXX_USE_C99_STDIO
+#if _GLIBCXX_USE_C99_STDIO && !_GLIBCXX_HAVE_BROKEN_VSNPRINTF
 	// Precision is always used except for hexfloat format.
 	const bool __use_prec =
 	  (__io.flags() & ios_base::floatfield) != ios_base::floatfield;

@@ -220,7 +220,7 @@ public:
                     return unixTimeToStdTime(core.stdc.time.time(null));
                 else
                 {
-                    import core.sys.solaris.time : CLOCK_REALTIME;
+                    import core.sys.solaris.time : clock_gettime, CLOCK_REALTIME;
                     static if (clockType == ClockType.coarse)       alias clockArg = CLOCK_REALTIME;
                     else static if (clockType == ClockType.normal)  alias clockArg = CLOCK_REALTIME;
                     else static if (clockType == ClockType.precise) alias clockArg = CLOCK_REALTIME;

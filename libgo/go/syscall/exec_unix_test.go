@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build aix darwin dragonfly freebsd linux netbsd openbsd solaris
+// +build aix darwin dragonfly freebsd hurd linux netbsd openbsd solaris
 
 package syscall_test
 
@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"runtime"
 	"syscall"
 	"testing"
 	"unsafe"
@@ -162,6 +163,9 @@ func TestPgid(t *testing.T) {
 }
 
 func TestForeground(t *testing.T) {
+	if runtime.GOOS == "hurd" {
+		t.Skip("skipping; TestForeground: fails on GNU/Hurd")
+	}
 	signal.Ignore(syscall.SIGTTIN, syscall.SIGTTOU)
 
 	tty, err := os.OpenFile("/dev/tty", os.O_RDWR, 0)

@@ -1422,7 +1422,7 @@ propagate_pure_const (void)
   bool remove_p = false;
   bool has_cdtor;
 
-  order_pos = ipa_reduced_postorder (order, true, false,
+  order_pos = ipa_reduced_postorder (order, true,
 				     ignore_edge_for_pure_const);
   if (dump_file)
     {
@@ -1498,7 +1498,8 @@ propagate_pure_const (void)
 		}
 	      if (avail > AVAIL_INTERPOSABLE)
 		{
-		  funct_state y_l = funct_state_summaries->get (y);
+		  funct_state y_l = funct_state_summaries->get_create (y);
+
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {
 		      fprintf (dump_file,
@@ -1751,7 +1752,7 @@ propagate_nothrow (void)
   int i;
   struct ipa_dfs_info * w_info;
 
-  order_pos = ipa_reduced_postorder (order, true, false,
+  order_pos = ipa_reduced_postorder (order, true,
 				     ignore_edge_for_nothrow);
   if (dump_file)
     {

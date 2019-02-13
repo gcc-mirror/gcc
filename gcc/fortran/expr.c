@@ -1072,15 +1072,17 @@ is_subref_array (gfc_expr * e)
   if (e->symtree->n.sym->attr.subref_array_pointer)
     return true;
 
-  if (e->symtree->n.sym->ts.type == BT_CLASS
-      && e->symtree->n.sym->attr.dummy
-      && CLASS_DATA (e->symtree->n.sym)->attr.dimension
-      && CLASS_DATA (e->symtree->n.sym)->attr.class_pointer)
-    return true;
-
   seen_array = false;
+
   for (ref = e->ref; ref; ref = ref->next)
     {
+      /* If we haven't seen the array reference and this is an intrinsic,
+	 what follows cannot be a subreference array.  */
+      if (!seen_array && ref->type == REF_COMPONENT
+	  && ref->u.c.component->ts.type != BT_CLASS
+	  && !gfc_bt_struct (ref->u.c.component->ts.type))
+	return false;
+
       if (ref->type == REF_ARRAY
 	    && ref->u.ar.type != AR_ELEMENT)
 	seen_array = true;
@@ -1089,6 +1091,13 @@ is_subref_array (gfc_expr * e)
 	    && ref->type != REF_ARRAY)
 	return seen_array;
     }
+
+  if (e->symtree->n.sym->ts.type == BT_CLASS
+      && e->symtree->n.sym->attr.dummy
+      && CLASS_DATA (e->symtree->n.sym)->attr.dimension
+      && CLASS_DATA (e->symtree->n.sym)->attr.class_pointer)
+    return true;
+
   return false;
 }
 
@@ -2515,7 +2524,8 @@ check_init_expr_arguments (gfc_expr *e)
 static bool check_restricted (gfc_expr *);
 
 /* F95, 7.1.6.1, Initialization expressions, (7)
-   F2003, 7.1.7 Initialization expression, (8)  */
+   F2003, 7.1.7 Initialization expression, (8)
+   F2008, 7.1.12 Constant expression, (4)  */
 
 static match
 check_inquiry (gfc_expr *e, int not_restricted)
@@ -2537,6 +2547,15 @@ check_inquiry (gfc_expr *e, int not_restricted)
     "digits", "epsilon", "huge", "maxexponent", "minexponent",
     "precision", "radix", "range", "tiny",
     "new_line", NULL
+  };
+
+  /* std=f2008+ or -std=gnu */
+  static const char *const inquiry_func_gnu[] = {
+    "lbound", "shape", "size", "ubound",
+    "bit_size", "len", "kind",
+    "digits", "epsilon", "huge", "maxexponent", "minexponent",
+    "precision", "radix", "range", "tiny",
+    "new_line", "storage_size", NULL
   };
 
   int i = 0;
@@ -2565,8 +2584,11 @@ check_inquiry (gfc_expr *e, int not_restricted)
     {
       name = e->symtree->n.sym->name;
 
-      functions = (gfc_option.warn_std & GFC_STD_F2003)
-		? inquiry_func_f2003 : inquiry_func_f95;
+      functions = inquiry_func_gnu;
+      if (gfc_option.warn_std & GFC_STD_F2003)
+	functions = inquiry_func_f2003;
+      if (gfc_option.warn_std & GFC_STD_F95)
+	functions = inquiry_func_f95;
 
       for (i = 0; functions[i]; i++)
 	if (strcmp (functions[i], name) == 0)
@@ -3669,7 +3691,7 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform,
 
 bool
 gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
-			  bool suppress_type_test)
+			  bool suppress_type_test, bool is_init_expr)
 {
   symbol_attribute attr, lhs_attr;
   gfc_ref *ref;
@@ -4111,11 +4133,35 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
       return false;
     }
 
-  if (!attr.target && !attr.pointer)
+  if (is_init_expr)
     {
-      gfc_error ("Pointer assignment target is neither TARGET "
-		 "nor POINTER at %L", &rvalue->where);
-      return false;
+      gfc_symbol *sym;
+      bool target;
+
+      gcc_assert (rvalue->symtree);
+      sym = rvalue->symtree->n.sym;
+
+      if (sym->ts.type == BT_CLASS && sym->attr.class_ok)
+	target = CLASS_DATA (sym)->attr.target;
+      else
+	target = sym->attr.target;
+
+      if (!target && !proc_pointer)
+	{
+	  gfc_error ("Pointer assignment target in initialization expression "
+		     "does not have the TARGET attribute at %L",
+		     &rvalue->where);
+	  return false;
+	}
+    }
+  else
+    {
+      if (!attr.target && !attr.pointer)
+	{
+	  gfc_error ("Pointer assignment target is neither TARGET "
+		     "nor POINTER at %L", &rvalue->where);
+	  return false;
+	}
     }
 
   if (is_pure && gfc_impure_variable (rvalue->symtree->n.sym))
@@ -4249,7 +4295,7 @@ gfc_check_assign_symbol (gfc_symbol *sym, gfc_component *comp, gfc_expr *rvalue)
     }
 
   if (pointer || proc_pointer)
-    r = gfc_check_pointer_assign (&lvalue, rvalue);
+    r = gfc_check_pointer_assign (&lvalue, rvalue, false, true);
   else
     {
       /* If a conversion function, e.g., __convert_i8_i4, was inserted

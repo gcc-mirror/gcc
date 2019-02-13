@@ -428,7 +428,11 @@ else
 if LIBGO_IS_AIX
 runtime_getncpu_file = runtime/getncpu-aix.c
 else
+if LIBGO_IS_HURD
+runtime_getncpu_file = runtime/getncpu-hurd.c
+else
 runtime_getncpu_file = runtime/getncpu-none.c
+endif
 endif
 endif
 endif
@@ -471,7 +475,6 @@ runtime_files = \
 	runtime/proc.c \
 	runtime/runtime_c.c \
 	runtime/stack.c \
-	runtime/thread.c \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \
 	$(runtime_getncpu_file)

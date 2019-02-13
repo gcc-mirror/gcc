@@ -59,6 +59,11 @@
 #define TARGET_SECURE_PLT	secure_plt
 #endif
 
+#if HAVE_AS_PLTSEQ
+#undef TARGET_PLTSEQ
+#define TARGET_PLTSEQ rs6000_pltseq
+#endif
+
 #define SDATA_DEFAULT_SIZE 8
 
 /* The macro SUBTARGET_OVERRIDE_OPTIONS is provided for subtargets, to
@@ -190,6 +195,26 @@ do {									\
   if (TARGET_SECURE_PLT != secure_plt)					\
     {									\
       error ("%qs not supported by your assembler", "-msecure-plt");	\
+    }									\
+									\
+  if (TARGET_PLTSEQ != rs6000_pltseq					\
+      && global_options_set.x_rs6000_pltseq)				\
+    {									\
+      error ("%qs not supported by your assembler", "-mpltseq");	\
+    }									\
+									\
+  if (DEFAULT_ABI == ABI_V4 && TARGET_PLTSEQ && !TARGET_SECURE_PLT)	\
+    {									\
+      if (global_options_set.x_rs6000_pltseq)				\
+	{								\
+	  if (global_options_set.x_secure_plt)				\
+	    error ("%qs and %qs are incompatible",			\
+		   "-mpltseq", "-mbss-plt");				\
+	  else								\
+	    secure_plt = true;						\
+	}								\
+      if (!TARGET_SECURE_PLT)						\
+	rs6000_pltseq = false;						\
     }									\
 									\
   if (flag_pic > 1 && DEFAULT_ABI == ABI_V4)				\
@@ -353,14 +378,14 @@ do {									\
 #undef	ASM_OUTPUT_SPECIAL_POOL_ENTRY_P
 #define	ASM_OUTPUT_SPECIAL_POOL_ENTRY_P(X, MODE)			\
   (TARGET_TOC								\
-   && (GET_CODE (X) == SYMBOL_REF					\
+   && (SYMBOL_REF_P (X)							\
        || (GET_CODE (X) == CONST && GET_CODE (XEXP (X, 0)) == PLUS	\
-	   && GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF)		\
+	   && SYMBOL_REF_P (XEXP (XEXP (X, 0), 0)))			\
        || GET_CODE (X) == LABEL_REF					\
-       || (GET_CODE (X) == CONST_INT 					\
+       || (CONST_INT_P (X)						\
 	   && GET_MODE_BITSIZE (MODE) <= GET_MODE_BITSIZE (Pmode))	\
        || (!TARGET_NO_FP_IN_TOC						\
-	   && GET_CODE (X) == CONST_DOUBLE				\
+	   && CONST_DOUBLE_P (X)					\
 	   && SCALAR_FLOAT_MODE_P (GET_MODE (X))			\
 	   && BITS_PER_WORD == HOST_BITS_PER_INT)))
 

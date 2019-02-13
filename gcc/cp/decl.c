@@ -3816,7 +3816,9 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
   gcc_assert (identifier_p (name));
   gcc_assert (TYPE_P (context));
 
-  if (!MAYBE_CLASS_TYPE_P (context))
+  if (TREE_CODE (context) == TYPE_PACK_EXPANSION)
+    /* This can happen for C++17 variadic using (c++/88986).  */;
+  else if (!MAYBE_CLASS_TYPE_P (context))
     {
       if (complain & tf_error)
 	error ("%q#T is not a class", context);
@@ -6154,20 +6156,29 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
     {
       if (TREE_CODE (stripped_init) == CONSTRUCTOR)
 	{
-	  if (TREE_TYPE (init) && TYPE_PTRMEMFUNC_P (TREE_TYPE (init)))
-	    /* There is no need to reshape pointer-to-member function
-	       initializers, as they are always constructed correctly
-	       by the front end.  */
-           ;
-	  else if (COMPOUND_LITERAL_P (stripped_init))
+	  tree init_type = TREE_TYPE (init);
+	  if (init_type && TYPE_PTRMEMFUNC_P (init_type))
+	    /* There is no need to call reshape_init for pointer-to-member
+	       function initializers, as they are always constructed correctly
+	       by the front end.  Here we have e.g. {.__pfn=0B, .__delta=0},
+	       which is missing outermost braces.  We should warn below, and
+	       one of the routines below will wrap it in additional { }.  */;
 	  /* For a nested compound literal, there is no need to reshape since
-	     brace elision is not allowed. Even if we decided to allow it,
-	     we should add a call to reshape_init in finish_compound_literal,
-	     before calling digest_init, so changing this code would still
-	     not be necessary.  */
-	    gcc_assert (!BRACE_ENCLOSED_INITIALIZER_P (stripped_init));
+	     we called reshape_init in finish_compound_literal, before calling
+	     digest_init.  */
+	  else if (COMPOUND_LITERAL_P (stripped_init)
+		   /* Similarly, a CONSTRUCTOR of the target's type is a
+		      previously digested initializer.  */
+		   || same_type_ignoring_top_level_qualifiers_p (type,
+								 init_type))
+	    {
+	      ++d->cur;
+	      gcc_assert (!BRACE_ENCLOSED_INITIALIZER_P (stripped_init));
+	      return init;
+	    }
 	  else
 	    {
+	      /* Something that hasn't been reshaped yet.  */
 	      ++d->cur;
 	      gcc_assert (BRACE_ENCLOSED_INITIALIZER_P (stripped_init));
 	      return reshape_init (type, init, complain);
@@ -9643,17 +9654,21 @@ static tree
 compute_array_index_type_loc (location_t name_loc, tree name, tree size,
 			      tsubst_flags_t complain)
 {
-  tree itype;
-  tree osize = size;
-
   if (error_operand_p (size))
     return error_mark_node;
+
+  /* The type of the index being computed.  */
+  tree itype;
+
+  /* The original numeric size as seen in the source code before
+     conversion to size_t.  */
+  tree origsize = size;
 
   location_t loc = cp_expr_loc_or_loc (size, name ? name_loc : input_location);
 
   if (!type_dependent_expression_p (size))
     {
-      osize = size = mark_rvalue_use (size);
+      origsize = size = mark_rvalue_use (size);
 
       if (cxx_dialect < cxx11 && TREE_CODE (size) == NOP_EXPR
 	  && TREE_SIDE_EFFECTS (size))
@@ -9670,7 +9685,7 @@ compute_array_index_type_loc (location_t name_loc, tree name, tree size,
 				       /*manifestly_const_eval=*/true);
 
 	  if (!TREE_CONSTANT (size))
-	    size = osize;
+	    size = origsize;
 	}
 
       if (error_operand_p (size))
@@ -9731,16 +9746,30 @@ compute_array_index_type_loc (location_t name_loc, tree name, tree size,
   /* Normally, the array-bound will be a constant.  */
   if (TREE_CODE (size) == INTEGER_CST)
     {
-      /* An array must have a positive number of elements.  */
-      if (!valid_constant_size_p (size))
+      /* The size to use in diagnostics that reflects the constant
+	 size used in the source, rather than SIZE massaged above.  */
+      tree diagsize = size;
+
+      /* If the original size before conversion to size_t was signed
+	 and negative, convert it to ssizetype to restore the sign.  */
+      if (!TYPE_UNSIGNED (TREE_TYPE (origsize))
+	  && TREE_CODE (size) == INTEGER_CST
+	  && tree_int_cst_sign_bit (size))
+	{
+	  diagsize = fold_convert (ssizetype, size);
+
+	  /* Clear the overflow bit that may have been set as a result
+	     of the conversion from the sizetype of the new size to
+	     ssizetype.  */
+	  TREE_OVERFLOW (diagsize) = false;
+	}
+
+      /* Verify that the array has a positive number of elements
+	 and issue the appropriate diagnostic if it doesn't.  */
+      if (!valid_array_size_p (loc, diagsize, name, (complain & tf_error)))
 	{
 	  if (!(complain & tf_error))
 	    return error_mark_node;
-
-	  if (name)
-	    error_at (loc, "size of array %qD is negative", name);
-	  else
-	    error_at (loc, "size of array is negative");
 	  size = integer_one_node;
 	}
       /* As an extension we allow zero-sized arrays.  */
@@ -13288,7 +13317,8 @@ grok_special_member_properties (tree decl)
 {
   tree class_type;
 
-  if (!DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+  if (TREE_CODE (decl) == USING_DECL
+      || !DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
     return;
 
   class_type = DECL_CONTEXT (decl);

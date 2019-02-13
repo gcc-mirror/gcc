@@ -1,3 +1,157 @@
+2019-02-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89023
+	* testsuite/17_intro/headers/c++2011/parallel_mode.cc: New test.
+	* testsuite/17_intro/headers/c++2014/parallel_mode.cc: New test.
+	* testsuite/17_intro/headers/c++2017/parallel_mode.cc: New test.
+	* testsuite/28_regex/headers/regex/parallel_mode.cc: Remove.
+
+2019-02-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71044
+	* include/bits/fs_path.h (path::has_root_name)
+	(path::has_root_directory, path::has_root_path)
+	(path::has_relative_path, path::has_parent_path)
+	(path::has_filename, path::has_stem, path::has_extension)
+	(path::is_absolute, path::is_relative, path::_M_find_extension): Add
+	noexcept.
+	* src/c++17/fs_path.cc (path::has_root_name)
+	(path::has_root_directory, path::has_root_path)
+	(path::has_relative_path, path::has_parent_path)
+	(path::has_filename, path::_M_find_extension): Add noexcept.
+
+2019-02-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89102 (partial)
+	* include/std/type_traits (common_type<>): Define.
+	(common_type<T>): Derive from common_type<T, T>.
+	* testsuite/20_util/common_type/requirements/explicit_instantiation.cc:
+	Test zero-length template argument list.
+	* testsuite/20_util/common_type/requirements/sfinae_friendly_1.cc:
+	Test additional single argument cases.
+	* testsuite/20_util/common_type/requirements/sfinae_friendly_2.cc:
+	Adjust expected error.
+
+2019-02-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89128
+	* include/bits/stl_queue.h (queue, priority_queue): Add deduction
+	guides.
+	* include/bits/stl_stack.h (stack): Likewise.
+	* testsuite/23_containers/priority_queue/deduction.cc: New test.
+	* testsuite/23_containers/queue/deduction.cc: New test.
+	* testsuite/23_containers/stack/deduction.cc: New test.
+
+	PR libstdc++/89194
+	* include/std/type_traits (__is_convertible_helper)
+	(__is_convertible_helper<_From, _To, false>): Revert changes to
+	support is_nothrow_convertible.
+	(__is_nt_convertible_helper): New helper.
+	(is_nothrow_convertible): Use __is_nt_convertible_helper.
+
+	* testsuite/23_containers/vector/modifiers/push_back/49836.cc: Restore
+	use of CopyConsOnlyType, but also test DelAnyAssign for completeness.
+
+	PR libstdc++/89130
+	* include/bits/alloc_traits.h (__is_copy_insertable_impl): Rename to
+	__is_alloc_insertable_impl. Replace single type member with two
+	members, one for each of copy and move insertable.
+	(__is_move_insertable): New trait for internal use.
+	* include/bits/stl_vector.h (vector::_S_nothrow_relocate(true_type))
+	(vector::_S_nothrow_relocate(true_type)): New functions to
+	conditionally check if __relocate_a can throw.
+	(vector::_S_use_relocate()): Dispatch to _S_nothrow_relocate based
+	on __is_move_insertable.
+	(vector::_S_do_relocate): New overloaded functions to conditionally
+	call __relocate_a.
+	(vector::_S_relocate): New function that dispatches to _S_do_relocate
+	based on _S_use_relocate.
+	* include/bits/vector.tcc (vector::reserve, vector::_M_realloc_insert)
+	(vector::_M_default_append): Call _S_relocate instead of __relocate_a.
+	* testsuite/23_containers/vector/modifiers/push_back/89130.cc: New.
+
+	PR libstdc++/89090
+	* include/bits/stl_uninitialized.h (__relocate_a_1): Make unused
+	parameter unnamed. Add message to static assertion.
+	* include/bits/vector.tcc (vector::reserve, vector::_M_realloc_insert)
+	(vector::_M_default_append): Use _GLIBCXX17_CONSTEXPR for if constexpr
+	in C++11 code.
+
+2019-02-05  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/87106
+	* include/bits/stl_uninitialized.h (__is_trivially_relocatable):
+	Rename...
+	(__is_bitwise_relocatable): ... to this.
+	(__relocate_a_1): Adapt.
+	* include/bits/stl_deque.h (__is_trivially_relocatable): Rename...
+	(__is_bitwise_relocatable): ... to this.
+
+2019-01-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89117
+	* src/c++17/fs_path.cc (path::replace_extension): Erase extension from
+	final component as well as from _M_pathname. Append the dot using
+	operator+= instead of only to _M_pathname.
+	(path::_M_find_extension): Reformat slightly.
+	* testsuite/27_io/filesystem/path/modifiers/replace_extension.cc:
+	Add more test cases.
+
+2019-01-30  Ulrich Drepper  <drepper@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml: Update P0600 entry.
+
+2019-01-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/headers/complex/synopsis.cc: Remove incorrect
+	constexpr specifiers from arg and proj.
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.26): Add missing exports for
+	__shared_ptr instantiations used by gcc4-compatible ABI.
+
+	* include/experimental/forward_list (experimental::erase): Qualify
+	call to erase_if.
+	* include/experimental/list (experimental::erase): Likewise.
+	* include/std/forward_list (std::erase): Likewise.
+	* include/std/list (std::erase): Likewise.
+
+	* testsuite/20_util/reference_wrapper/result_type.cc: Disable for
+	C++2a.
+	* testsuite/20_util/reference_wrapper/typedefs-2.cc: Likewise.
+	* testsuite/20_util/reference_wrapper/typedefs-3.cc: Likewise.
+	* testsuite/20_util/reference_wrapper/typedefs.cc: Likewise.
+	* testsuite/30_threads/async/54297.cc: Suppress nodiscard warning.
+	* testsuite/ext/array_allocator/26875.cc: Likewise.
+	* testsuite/ext/pool_allocator/allocate_chunk.cc: Likewise.
+	* testsuite/util/replacement_memory_operators.h: Likewise.
+	* testsuite/util/testsuite_allocator.h: Likewise.
+
+	* include/std/memory_resource (__pool_resource::_M_unpooled): Use
+	normal mode vector, even for debug mode.
+	* include/std/vector [_GLIBCXX_DEBUG] (_GLIBCXX_STD_C::pmr::vector):
+	Define alias template for normal mode vector.
+
+2019-01-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/68737
+	* config/locale/generic/c_locale.h (__convert_from_v)
+	[_GLIBCXX_USE_C99_STDIO]: Also check _GLIBCXX_HAVE_BROKEN_VSNPRINTF.
+	* config/os/hpux/os_defines.h: Define _GLIBCXX_HAVE_BROKEN_VSNPRINTF.
+	* include/bits/locale_facets.tcc (num_put::_M_insert_float)
+	[_GLIBCXX_USE_C99_STDIO]: Also check _GLIBCXX_HAVE_BROKEN_VSNPRINTF.
+
+2019-01-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88840
+	* include/bits/stl_vector.h (vector::__use_relocate): Replace static
+	data member with static member function _S_use_relocate().
+	* include/bits/vector.tcc (vector::reserve, vector::_M_realloc_insert)
+	(vector::_M_default_append): Use _S_use_relocate() instead of
+	__use_relocate.
+
+	* testsuite/27_io/filesystem/path/compare/strings.cc: Only compare
+	sign of results.
+
 2019-01-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/88740

@@ -503,7 +503,7 @@
 		DOTPROD)))]
   "TARGET_DOTPROD"
   "<sur>dot\\t%0.<Vtype>, %2.<Vdottype>, %3.<Vdottype>"
-  [(set_attr "type" "neon_dot")]
+  [(set_attr "type" "neon_dot<q>")]
 )
 
 ;; These expands map to the Dot Product optab the vectorizer checks for.
@@ -555,7 +555,7 @@
     operands[4] = aarch64_endian_lane_rtx (V8QImode, INTVAL (operands[4]));
     return "<sur>dot\\t%0.<Vtype>, %2.<Vdottype>, %3.4b[%4]";
   }
-  [(set_attr "type" "neon_dot")]
+  [(set_attr "type" "neon_dot<q>")]
 )
 
 (define_insn "aarch64_<sur>dot_laneq<vsi2qi>"
@@ -570,7 +570,7 @@
     operands[4] = aarch64_endian_lane_rtx (V16QImode, INTVAL (operands[4]));
     return "<sur>dot\\t%0.<Vtype>, %2.<Vdottype>, %3.4b[%4]";
   }
-  [(set_attr "type" "neon_dot")]
+  [(set_attr "type" "neon_dot<q>")]
 )
 
 (define_expand "copysign<mode>3"
@@ -705,13 +705,22 @@
   [(set_attr "type" "neon_abs<q>")]
 )
 
-(define_insn "abd<mode>_3"
+;; It's tempting to represent SABD as ABS (MINUS op1 op2).
+;; This isn't accurate as ABS treats always its input as a signed value.
+;; So (ABS:QI (minus:QI 64 -128)) == (ABS:QI (192 or -64 signed)) == 64.
+;; Whereas SABD would return 192 (-64 signed) on the above example.
+;; Use MINUS ([us]max (op1, op2), [us]min (op1, op2)) instead.
+(define_insn "*aarch64_<su>abd<mode>_3"
   [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
-	(abs:VDQ_BHSI (minus:VDQ_BHSI
-		       (match_operand:VDQ_BHSI 1 "register_operand" "w")
-		       (match_operand:VDQ_BHSI 2 "register_operand" "w"))))]
+	(minus:VDQ_BHSI
+	  (USMAX:VDQ_BHSI
+	    (match_operand:VDQ_BHSI 1 "register_operand" "w")
+	    (match_operand:VDQ_BHSI 2 "register_operand" "w"))
+	  (match_operator 3 "aarch64_<max_opp>"
+	    [(match_dup 1)
+	     (match_dup 2)])))]
   "TARGET_SIMD"
-  "sabd\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+  "<su>abd\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "type" "neon_abd<q>")]
 )
 

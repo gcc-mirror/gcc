@@ -30,6 +30,7 @@ namespace std
   typedef void test_type5;
   typedef const void test_type6;  
 
+  template struct common_type<>;
   template struct common_type<test_type1>;
   template struct common_type<test_type1, test_type2>;
   template struct common_type<test_type1, test_type2, test_type3>;

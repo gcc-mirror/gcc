@@ -424,6 +424,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECL_FINAL_P (in FUNCTION_DECL)
       QUALIFIED_NAME_IS_TEMPLATE (in SCOPE_REF)
       DECLTYPE_FOR_INIT_CAPTURE (in DECLTYPE_TYPE)
+      CONSTRUCTOR_IS_DEPENDENT (in CONSTRUCTOR)
       TINFO_USED_TEMPLATE_ID (in TEMPLATE_INFO)
       PACK_EXPANSION_SIZEOF_P (in *_PACK_EXPANSION)
       OVL_USING_P (in OVERLOAD)
@@ -452,6 +453,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECLTYPE_FOR_REF_CAPTURE (in DECLTYPE_TYPE)
       CONSTRUCTOR_C99_COMPOUND_LITERAL (in CONSTRUCTOR)
       OVL_NESTED_P (in OVERLOAD)
+      LAMBDA_EXPR_INSTANTIATED (in LAMBDA_EXPR)
       COROUTINE_RETURN_P (in RETURN_EXPR)
    4: IDENTIFIER_MARKED (IDENTIFIER_NODEs)
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
@@ -1334,6 +1336,10 @@ enum cp_lambda_default_capture_mode_type {
 #define LAMBDA_EXPR_CAPTURE_OPTIMIZED(NODE) \
   TREE_LANG_FLAG_2 (LAMBDA_EXPR_CHECK (NODE))
 
+/* True iff this LAMBDA_EXPR was generated in tsubst_lambda_expr.  */
+#define LAMBDA_EXPR_INSTANTIATED(NODE) \
+  TREE_LANG_FLAG_3 (LAMBDA_EXPR_CHECK (NODE))
+
 /* True if this TREE_LIST in LAMBDA_EXPR_CAPTURE_LIST is for an explicit
    capture.  */
 #define LAMBDA_CAPTURE_EXPLICIT_P(NODE) \
@@ -1641,6 +1647,7 @@ struct GTY(()) saved_scope {
   /* If non-zero, implicit "omp declare target" attribute is added into the
      attribute lists.  */
   int omp_declare_target_attribute;
+  int ref_temp_count;
 
   struct stmt_tree_s x_stmt_tree;
 
@@ -1696,6 +1703,8 @@ extern GTY(()) struct saved_scope *scope_chain;
 #define processing_explicit_instantiation scope_chain->x_processing_explicit_instantiation
 
 #define in_discarded_stmt scope_chain->discarded_stmt
+
+#define current_ref_temp_count scope_chain->ref_temp_count
 
 /* RAII sentinel to handle clearing processing_template_decl and restoring
    it when done.  */
@@ -3293,7 +3302,7 @@ struct GTY(()) lang_decl {
 #define DECL_DEPENDENT_P(NODE) DECL_LANG_FLAG_0 (USING_DECL_CHECK (NODE))
 
 /* The scope named in a using decl.  */
-#define USING_DECL_SCOPE(NODE) TREE_TYPE (USING_DECL_CHECK (NODE))
+#define USING_DECL_SCOPE(NODE) DECL_RESULT_FLD (USING_DECL_CHECK (NODE))
 
 /* The decls named by a using decl.  */
 #define USING_DECL_DECLS(NODE) DECL_INITIAL (USING_DECL_CHECK (NODE))
@@ -4210,6 +4219,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* True if NODE is a init-list used as a direct-initializer, i.e.
    B b{1,2}, not B b({1,2}) or B b = {1,2}.  */
 #define CONSTRUCTOR_IS_DIRECT_INIT(NODE) (TREE_LANG_FLAG_0 (CONSTRUCTOR_CHECK (NODE)))
+
+/* True if this CONSTRUCTOR is instantiation-dependent and needs to be
+   substituted.  */
+#define CONSTRUCTOR_IS_DEPENDENT(NODE) \
+  (TREE_LANG_FLAG_1 (CONSTRUCTOR_CHECK (NODE)))
 
 /* True if this CONSTRUCTOR should not be used as a variable initializer
    because it was loaded from a constexpr variable with mutable fields.  */

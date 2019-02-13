@@ -6,7 +6,7 @@ template<class T> T::R f();
 
 // Ill-formed (no diagnostic required), attempt to declare
 // a void variable template
-template<class T> void f(T::R);
+template<class T> void f(T::R); // { dg-error "declared void" }
 
 template <class T> struct A;
 template <class T> using B = A<T>::U;

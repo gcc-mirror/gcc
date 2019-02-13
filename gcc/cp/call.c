@@ -1412,6 +1412,13 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	     || (fcode == REAL_TYPE && !(flags & LOOKUP_NO_NON_INTEGRAL)))
           || SCOPED_ENUM_P (from))
 	return NULL;
+
+      /* If we're parsing an enum with no fixed underlying type, we're
+	 dealing with an incomplete type, which renders the conversion
+	 ill-formed.  */
+      if (!COMPLETE_TYPE_P (from))
+	return NULL;
+
       conv = build_conv (ck_std, to, conv);
 
       /* Give this a better rank if it's a promotion.  */
@@ -6474,6 +6481,19 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 		continue;
 	      }
 
+	    /* -- If any of the deallocation functions is a destroying
+	       operator delete, all deallocation functions that are not
+	       destroying operator deletes are eliminated from further
+	       consideration.  */
+	    bool fn_destroying = destroying_delete_p (fn);
+	    bool elt_destroying = destroying_delete_p (elt);
+	    if (elt_destroying != fn_destroying)
+	      {
+		if (elt_destroying)
+		  fn = elt;
+		continue;
+	      }
+
 	    /* -- If the type has new-extended alignment, a function with a
 	       parameter of type std::align_val_t is preferred; otherwise a
 	       function without such a parameter is preferred. If exactly one
@@ -6711,6 +6731,22 @@ build_temp (tree expr, tree type, int flags,
   return expr;
 }
 
+/* Get any location for EXPR, falling back to input_location.
+
+   If the result is in a system header and is the virtual location for
+   a token coming from the expansion of a macro, unwind it to the
+   location of the expansion point of the macro (e.g. to avoid the
+   diagnostic being suppressed for expansions of NULL where "NULL" is
+   in a system header).  */
+
+static location_t
+get_location_for_expr_unwinding_for_system_header (tree expr)
+{
+  location_t loc = EXPR_LOC_OR_LOC (expr, input_location);
+  loc = expansion_point_location_if_in_system_header (loc);
+  return loc;
+}
+
 /* Perform warnings about peculiar, but valid, conversions from/to NULL.
    Also handle a subset of zero as null warnings.
    EXPR is implicitly converted to type TOTYPE.
@@ -6723,8 +6759,7 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
   if (null_node_p (expr) && TREE_CODE (totype) != BOOLEAN_TYPE
       && ARITHMETIC_TYPE_P (totype))
     {
-      location_t loc = EXPR_LOC_OR_LOC (expr, input_location);
-      loc = expansion_point_location_if_in_system_header (loc);
+      location_t loc = get_location_for_expr_unwinding_for_system_header (expr);
       if (fn)
 	{
 	  auto_diagnostic_group d;
@@ -6743,7 +6778,7 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
   else if (TREE_CODE (TREE_TYPE (expr)) == BOOLEAN_TYPE
 	   && TYPE_PTR_P (totype))
     {
-      location_t loc = EXPR_LOC_OR_LOC (expr, input_location);
+      location_t loc = get_location_for_expr_unwinding_for_system_header (expr);
       if (fn)
 	{
 	  auto_diagnostic_group d;
@@ -6762,8 +6797,7 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
   else if (null_ptr_cst_p (expr) &&
 	   (TYPE_PTR_OR_PTRMEM_P (totype) || NULLPTR_TYPE_P (totype)))
     {
-      location_t loc =
-       expansion_point_location_if_in_system_header (input_location);
+      location_t loc = get_location_for_expr_unwinding_for_system_header (expr);
       maybe_warn_zero_as_null_pointer_constant (expr, loc);
     }
 }
@@ -6999,7 +7033,9 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    return expr;
 	  }
 
-	expr = mark_rvalue_use (expr);
+	/* We don't know here whether EXPR is being used as an lvalue or
+	   rvalue, but we know it's read.  */
+	mark_exp_read (expr);
 
 	/* Pass LOOKUP_NO_CONVERSION so rvalue/base handling knows not to allow
 	   any more UDCs.  */
@@ -7062,34 +7098,42 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       {
 	/* Conversion to std::initializer_list<T>.  */
 	tree elttype = TREE_VEC_ELT (CLASSTYPE_TI_ARGS (totype), 0);
-	tree new_ctor = build_constructor (init_list_type_node, NULL);
 	unsigned len = CONSTRUCTOR_NELTS (expr);
-	tree array, val, field;
-	vec<constructor_elt, va_gc> *vec = NULL;
-	unsigned ix;
+	tree array;
 
-	/* Convert all the elements.  */
-	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (expr), ix, val)
+	if (len)
 	  {
-	    tree sub = convert_like_real (convs->u.list[ix], val, fn, argnum,
-					  false, false, complain);
-	    if (sub == error_mark_node)
-	      return sub;
-	    if (!BRACE_ENCLOSED_INITIALIZER_P (val)
-		&& !check_narrowing (TREE_TYPE (sub), val, complain))
-	      return error_mark_node;
-	    CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_ctor), NULL_TREE, sub);
-	    if (!TREE_CONSTANT (sub))
-	      TREE_CONSTANT (new_ctor) = false;
+	    tree val; unsigned ix;
+
+	    tree new_ctor = build_constructor (init_list_type_node, NULL);
+
+	    /* Convert all the elements.  */
+	    FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (expr), ix, val)
+	      {
+		tree sub = convert_like_real (convs->u.list[ix], val, fn,
+					      argnum, false, false, complain);
+		if (sub == error_mark_node)
+		  return sub;
+		if (!BRACE_ENCLOSED_INITIALIZER_P (val)
+		    && !check_narrowing (TREE_TYPE (sub), val, complain))
+		  return error_mark_node;
+		CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_ctor),
+					NULL_TREE, sub);
+		if (!TREE_CONSTANT (sub))
+		  TREE_CONSTANT (new_ctor) = false;
+	      }
+	    /* Build up the array.  */
+	    elttype = cp_build_qualified_type
+	      (elttype, cp_type_quals (elttype) | TYPE_QUAL_CONST);
+	    array = build_array_of_n_type (elttype, len);
+	    array = finish_compound_literal (array, new_ctor, complain);
+	    /* Take the address explicitly rather than via decay_conversion
+	       to avoid the error about taking the address of a temporary.  */
+	    array = cp_build_addr_expr (array, complain);
 	  }
-	/* Build up the array.  */
-	elttype = cp_build_qualified_type
-	  (elttype, cp_type_quals (elttype) | TYPE_QUAL_CONST);
-	array = build_array_of_n_type (elttype, len);
-	array = finish_compound_literal (array, new_ctor, complain);
-	/* Take the address explicitly rather than via decay_conversion
-	   to avoid the error about taking the address of a temporary.  */
-	array = cp_build_addr_expr (array, complain);
+	else
+	  array = nullptr_node;
+
 	array = cp_convert (build_pointer_type (elttype), array, complain);
 	if (array == error_mark_node)
 	  return error_mark_node;
@@ -7100,11 +7144,12 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	totype = complete_type_or_maybe_complain (totype, NULL_TREE, complain);
 	if (!totype)
 	  return error_mark_node;
-	field = next_initializable_field (TYPE_FIELDS (totype));
+	tree field = next_initializable_field (TYPE_FIELDS (totype));
+	vec<constructor_elt, va_gc> *vec = NULL;
 	CONSTRUCTOR_APPEND_ELT (vec, field, array);
 	field = next_initializable_field (DECL_CHAIN (field));
 	CONSTRUCTOR_APPEND_ELT (vec, field, size_int (len));
-	new_ctor = build_constructor (totype, vec);
+	tree new_ctor = build_constructor (totype, vec);
 	return get_target_expr_sfinae (new_ctor, complain);
       }
 
@@ -10026,21 +10071,22 @@ compare_ics (conversion *ics1, conversion *ics2)
      Specifically, we need to do the reference binding comparison at the
      end of this function.  */
 
-  if (ics1->user_conv_p || ics1->kind == ck_list || ics1->kind == ck_aggr)
+  if (ics1->user_conv_p || ics1->kind == ck_list
+      || ics1->kind == ck_aggr || ics2->kind == ck_aggr)
     {
       conversion *t1;
       conversion *t2;
 
-      for (t1 = ics1; t1->kind != ck_user; t1 = next_conversion (t1))
+      for (t1 = ics1; t1 && t1->kind != ck_user; t1 = next_conversion (t1))
 	if (t1->kind == ck_ambig || t1->kind == ck_aggr
 	    || t1->kind == ck_list)
 	  break;
-      for (t2 = ics2; t2->kind != ck_user; t2 = next_conversion (t2))
+      for (t2 = ics2; t2 && t2->kind != ck_user; t2 = next_conversion (t2))
 	if (t2->kind == ck_ambig || t2->kind == ck_aggr
 	    || t2->kind == ck_list)
 	  break;
 
-      if (t1->kind != t2->kind)
+      if (!t1 || !t2 || t1->kind != t2->kind)
 	return 0;
       else if (t1->kind == ck_user)
 	{
@@ -11187,9 +11233,21 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
       && (TREE_STATIC (decl) || CP_DECL_THREAD_LOCAL_P (decl)))
     {
       /* Namespace-scope or local static; give it a mangled name.  */
-      /* FIXME share comdat with decl?  */
+
+      /* If an initializer is visible to multiple translation units, those
+	 translation units must agree on the addresses of the
+	 temporaries. Therefore the temporaries must be given a consistent name
+	 and vague linkage. The mangled name of a temporary is the name of the
+	 non-temporary object in whose initializer they appear, prefixed with
+	 GR and suffixed with a sequence number mangled using the usual rules
+	 for a seq-id. Temporaries are numbered with a pre-order, depth-first,
+	 left-to-right walk of the complete initializer.  */
 
       TREE_STATIC (var) = TREE_STATIC (decl);
+      TREE_PUBLIC (var) = TREE_PUBLIC (decl);
+      if (vague_linkage_p (decl))
+	comdat_linkage (var);
+
       CP_DECL_THREAD_LOCAL_P (var) = CP_DECL_THREAD_LOCAL_P (decl);
       set_decl_tls_model (var, DECL_TLS_MODEL (decl));
 

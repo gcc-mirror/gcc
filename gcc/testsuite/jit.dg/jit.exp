@@ -379,6 +379,19 @@ proc jit-dg-test { prog do_what extra_tool_flags } {
 	append extra_tool_flags " -lpthread"
     }
 
+    # test-add-driver-options.c needs a shared library built from
+    # add-driver-options-testlib.c
+    if {[string match "*test-add-driver-options.c" $prog]} {
+	global srcdir
+	global subdir
+
+	set comp_output [gcc_target_compile \
+			     $srcdir/$subdir/add-driver-options-testlib.c \
+			     "libadd-driver-options-testlib.so" \
+			     "executable" \
+			     "additional_flags=-fPIC additional_flags=-shared"]
+    }
+
     # Any test case that uses jit-verify-output-file-was-created
     # needs to call jit-setup-compile-to-file here.
     # (is there a better way to handle setup/finish pairs in dg?)

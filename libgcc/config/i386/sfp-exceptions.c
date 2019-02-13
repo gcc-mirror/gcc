@@ -104,5 +104,5 @@ __sfp_handle_exceptions (int _fex)
       /* No need for fwait, exception is triggered by emitted fstp.  */
 #endif
     }
-};
+}
 #endif

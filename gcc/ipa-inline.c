@@ -264,6 +264,12 @@ sanitize_attrs_match_for_inline_p (const_tree caller, const_tree callee)
   if (!caller || !callee)
     return true;
 
+  /* Allow inlining always_inline functions into no_sanitize_address
+     functions.  */
+  if (!sanitize_flags_p (SANITIZE_ADDRESS, caller)
+      && lookup_attribute ("always_inline", DECL_ATTRIBUTES (callee)))
+    return true;
+
   return ((sanitize_flags_p (SANITIZE_ADDRESS, caller)
 	   == sanitize_flags_p (SANITIZE_ADDRESS, callee))
 	  && (sanitize_flags_p (SANITIZE_POINTER_COMPARE, caller)
@@ -1772,7 +1778,7 @@ inline_small_functions (void)
      metrics.  */
 
   max_count = profile_count::uninitialized ();
-  ipa_reduced_postorder (order, true, true, NULL);
+  ipa_reduced_postorder (order, true, NULL);
   free (order);
 
   FOR_EACH_DEFINED_FUNCTION (node)

@@ -65,7 +65,7 @@
 (define_predicate "altivec_register_operand"
   (match_operand 0 "register_operand")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     {
       if (TARGET_NO_SF_SUBREG && sf_subreg_operand (op, mode))
 	return 0;
@@ -76,7 +76,7 @@
   if (!REG_P (op))
     return 0;
 
-  if (REGNO (op) >= FIRST_PSEUDO_REGISTER)
+  if (!HARD_REGISTER_P (op))
     return 1;
 
   return ALTIVEC_REGNO_P (REGNO (op));
@@ -86,7 +86,7 @@
 (define_predicate "vsx_register_operand"
   (match_operand 0 "register_operand")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     {
       if (TARGET_NO_SF_SUBREG && sf_subreg_operand (op, mode))
 	return 0;
@@ -97,7 +97,7 @@
   if (!REG_P (op))
     return 0;
 
-  if (REGNO (op) >= FIRST_PSEUDO_REGISTER)
+  if (!HARD_REGISTER_P (op))
     return 1;
 
   return VSX_REGNO_P (REGNO (op));
@@ -107,13 +107,13 @@
 (define_predicate "vsx_reg_sfsubreg_ok"
   (match_operand 0 "register_operand")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     op = SUBREG_REG (op);
 
   if (!REG_P (op))
     return 0;
 
-  if (REGNO (op) >= FIRST_PSEUDO_REGISTER)
+  if (!HARD_REGISTER_P (op))
     return 1;
 
   return VSX_REGNO_P (REGNO (op));
@@ -124,7 +124,7 @@
 (define_predicate "vfloat_operand"
   (match_operand 0 "register_operand")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     {
       if (TARGET_NO_SF_SUBREG && sf_subreg_operand (op, mode))
 	return 0;
@@ -135,7 +135,7 @@
   if (!REG_P (op))
     return 0;
 
-  if (REGNO (op) >= FIRST_PSEUDO_REGISTER)
+  if (!HARD_REGISTER_P (op))
     return 1;
 
   return VFLOAT_REGNO_P (REGNO (op));
@@ -146,7 +146,7 @@
 (define_predicate "vint_operand"
   (match_operand 0 "register_operand")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     {
       if (TARGET_NO_SF_SUBREG && sf_subreg_operand (op, mode))
 	return 0;
@@ -157,7 +157,7 @@
   if (!REG_P (op))
     return 0;
 
-  if (REGNO (op) >= FIRST_PSEUDO_REGISTER)
+  if (!HARD_REGISTER_P (op))
     return 1;
 
   return VINT_REGNO_P (REGNO (op));
@@ -168,7 +168,7 @@
 (define_predicate "vlogical_operand"
   (match_operand 0 "register_operand")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     {
       if (TARGET_NO_SF_SUBREG && sf_subreg_operand (op, mode))
 	return 0;
@@ -180,7 +180,7 @@
   if (!REG_P (op))
     return 0;
 
-  if (REGNO (op) >= FIRST_PSEUDO_REGISTER)
+  if (!HARD_REGISTER_P (op))
     return 1;
 
   return VLOGICAL_REGNO_P (REGNO (op));
@@ -190,7 +190,7 @@
 (define_predicate "ca_operand"
   (match_operand 0 "register_operand")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     op = SUBREG_REG (op);
 
   if (!REG_P (op))
@@ -309,7 +309,7 @@
 (define_predicate "gpc_reg_operand"
   (match_operand 0 "register_operand")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     {
       if (TARGET_NO_SF_SUBREG && sf_subreg_operand (op, mode))
 	return 0;
@@ -320,7 +320,7 @@
   if (!REG_P (op))
     return 0;
 
-  if (REGNO (op) >= FIRST_PSEUDO_REGISTER)
+  if (!HARD_REGISTER_P (op))
     return 1;
 
   if (TARGET_ALTIVEC && ALTIVEC_REGNO_P (REGNO (op)))
@@ -338,7 +338,7 @@
 (define_predicate "int_reg_operand"
   (match_operand 0 "register_operand")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     {
       if (TARGET_NO_SF_SUBREG && sf_subreg_operand (op, mode))
 	return 0;
@@ -349,7 +349,7 @@
   if (!REG_P (op))
     return 0;
 
-  if (REGNO (op) >= FIRST_PSEUDO_REGISTER)
+  if (!HARD_REGISTER_P (op))
     return 1;
 
   return INT_REGNO_P (REGNO (op));
@@ -361,13 +361,13 @@
 (define_predicate "int_reg_operand_not_pseudo"
   (match_operand 0 "register_operand")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     op = SUBREG_REG (op);
 
   if (!REG_P (op))
     return 0;
 
-  if (REGNO (op) >= FIRST_PSEUDO_REGISTER)
+  if (!HARD_REGISTER_P (op))
     return 0;
 
   return INT_REGNO_P (REGNO (op));
@@ -377,7 +377,7 @@
 (define_predicate "base_reg_operand"
   (match_operand 0 "int_reg_operand")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     op = SUBREG_REG (op);
 
   if (!REG_P (op))
@@ -393,14 +393,14 @@
 {
   HOST_WIDE_INT r;
 
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     op = SUBREG_REG (op);
 
   if (!REG_P (op))
     return 0;
 
   r = REGNO (op);
-  if (r >= FIRST_PSEUDO_REGISTER)
+  if (!HARD_REGISTER_NUM_P (r))
     return 1;
 
   return FP_REGNO_P (r);
@@ -413,7 +413,7 @@
   if (!TARGET_HTM)
     return 0;
 
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     op = SUBREG_REG (op);
 
   if (!REG_P (op))
@@ -449,7 +449,7 @@
     return 0;
 
   r = REGNO (op);
-  if (r >= FIRST_PSEUDO_REGISTER)
+  if (!HARD_REGISTER_NUM_P (r))
     return 1;
 
   return (INT_REGNO_P (r) && ((r & 1) == 0));
@@ -459,7 +459,7 @@
 (define_predicate "cc_reg_operand"
   (match_operand 0 "register_operand")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     op = SUBREG_REG (op);
 
   if (!REG_P (op))
@@ -475,7 +475,7 @@
 (define_predicate "cc_reg_not_cr0_operand"
   (match_operand 0 "register_operand")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     op = SUBREG_REG (op);
 
   if (!REG_P (op))
@@ -780,7 +780,7 @@
   op = XEXP (op, 0);
   if (VECTOR_MEM_ALTIVEC_P (mode)
       && GET_CODE (op) == AND
-      && GET_CODE (XEXP (op, 1)) == CONST_INT
+      && CONST_INT_P (XEXP (op, 1))
       && INTVAL (XEXP (op, 1)) == -16)
     op = XEXP (op, 0);
 
@@ -810,7 +810,7 @@
   op = XEXP (op, 0);
   if (VECTOR_MEM_ALTIVEC_OR_VSX_P (mode)
       && GET_CODE (op) == AND
-      && GET_CODE (XEXP (op, 1)) == CONST_INT
+      && CONST_INT_P (XEXP (op, 1))
       && INTVAL (XEXP (op, 1)) == -16)
     return indexed_or_indirect_address (XEXP (op, 0), mode);
 
@@ -937,7 +937,7 @@
   rtx inner, addr, offset;
 
   inner = op;
-  if (reload_completed && GET_CODE (inner) == SUBREG)
+  if (reload_completed && SUBREG_P (inner))
     inner = SUBREG_REG (inner);
 
   if (gpc_reg_operand (inner, mode))
@@ -952,13 +952,13 @@
 	  && !legitimate_indexed_address_p (XEXP (addr, 1), 0)))
     return false;
   if (GET_CODE (addr) == LO_SUM
-      && GET_CODE (XEXP (addr, 0)) == REG
+      && REG_P (XEXP (addr, 0))
       && GET_CODE (XEXP (addr, 1)) == CONST)
     addr = XEXP (XEXP (addr, 1), 0);
   if (GET_CODE (addr) != PLUS)
     return true;
   offset = XEXP (addr, 1);
-  if (GET_CODE (offset) != CONST_INT)
+  if (!CONST_INT_P (offset))
     return true;
   return INTVAL (offset) % 4 == 0;
 })
@@ -1004,7 +1004,7 @@
   (if_then_else (match_code "reg")
      (match_test "REGNO (op) == LR_REGNO
 		  || REGNO (op) == CTR_REGNO
-		  || REGNO (op) >= FIRST_PSEUDO_REGISTER")
+		  || !HARD_REGISTER_P (op)")
      (match_code "symbol_ref")))
 
 ;; Return 1 if the operand, used inside a MEM, is a valid first argument
@@ -1081,7 +1081,7 @@
   /* V.4 allows SYMBOL_REFs and CONSTs that are in the small data region
      to be valid.  */
   if (DEFAULT_ABI == ABI_V4
-      && (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == CONST)
+      && (SYMBOL_REF_P (op) || GET_CODE (op) == CONST)
       && small_data_operand (op, Pmode))
     return 1;
 
@@ -1210,9 +1210,9 @@
     {
       elt = XVECEXP (op, 0, index++);
       if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_DEST (elt)) != MEM
-	  || ! memory_operand (SET_DEST (elt), DFmode)
-	  || GET_CODE (SET_SRC (elt)) != REG
+	  || !MEM_P (SET_DEST (elt))
+	  || !memory_operand (SET_DEST (elt), DFmode)
+	  || !REG_P (SET_SRC (elt))
 	  || GET_MODE (SET_SRC (elt)) != DFmode)
 	return 0;
     }
@@ -1221,8 +1221,8 @@
     {
       elt = XVECEXP (op, 0, index++);
       if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_DEST (elt)) != MEM
-	  || GET_CODE (SET_SRC (elt)) != REG
+	  || !MEM_P (SET_DEST (elt))
+	  || !REG_P (SET_SRC (elt))
 	  || GET_MODE (SET_SRC (elt)) != V4SImode)
 	return 0;
     }
@@ -1231,18 +1231,18 @@
     {
       elt = XVECEXP (op, 0, index++);
       if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_DEST (elt)) != MEM
-	  || ! memory_operand (SET_DEST (elt), Pmode)
-	  || GET_CODE (SET_SRC (elt)) != REG
+	  || !MEM_P (SET_DEST (elt))
+	  || !memory_operand (SET_DEST (elt), Pmode)
+	  || !REG_P (SET_SRC (elt))
 	  || GET_MODE (SET_SRC (elt)) != Pmode)
 	return 0;
     }
 
   elt = XVECEXP (op, 0, index++);
   if (GET_CODE (elt) != SET
-      || GET_CODE (SET_DEST (elt)) != MEM
-      || ! memory_operand (SET_DEST (elt), Pmode)
-      || GET_CODE (SET_SRC (elt)) != REG
+      || !MEM_P (SET_DEST (elt))
+      || !memory_operand (SET_DEST (elt), Pmode)
+      || !REG_P (SET_SRC (elt))
       || REGNO (SET_SRC (elt)) != CR2_REGNO
       || GET_MODE (SET_SRC (elt)) != Pmode)
     return 0;
@@ -1274,9 +1274,9 @@
 
   elt = XVECEXP (op, 0, index++);
   if (GET_CODE (elt) != SET
-      || GET_CODE (SET_SRC (elt)) != MEM
-      || ! memory_operand (SET_SRC (elt), Pmode)
-      || GET_CODE (SET_DEST (elt)) != REG
+      || !MEM_P (SET_SRC (elt))
+      || !memory_operand (SET_SRC (elt), Pmode)
+      || !REG_P (SET_DEST (elt))
       || REGNO (SET_DEST (elt)) != CR2_REGNO
       || GET_MODE (SET_DEST (elt)) != Pmode)
     return 0;
@@ -1285,9 +1285,9 @@
     {
       elt = XVECEXP (op, 0, index++);
       if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_SRC (elt)) != MEM
-	  || ! memory_operand (SET_SRC (elt), Pmode)
-	  || GET_CODE (SET_DEST (elt)) != REG
+	  || !MEM_P (SET_SRC (elt))
+	  || !memory_operand (SET_SRC (elt), Pmode)
+	  || !REG_P (SET_DEST (elt))
 	  || GET_MODE (SET_DEST (elt)) != Pmode)
 	return 0;
     }
@@ -1296,8 +1296,8 @@
     {
       elt = XVECEXP (op, 0, index++);
       if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_SRC (elt)) != MEM
-	  || GET_CODE (SET_DEST (elt)) != REG
+	  || !MEM_P (SET_SRC (elt))
+	  || !REG_P (SET_DEST (elt))
 	  || GET_MODE (SET_DEST (elt)) != V4SImode)
 	return 0;
     }
@@ -1306,9 +1306,9 @@
     {
       elt = XVECEXP (op, 0, index++);
       if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_SRC (elt)) != MEM
-	  || ! memory_operand (SET_SRC (elt), DFmode)
-	  || GET_CODE (SET_DEST (elt)) != REG
+	  || !MEM_P (SET_SRC (elt))
+	  || !memory_operand (SET_SRC (elt), DFmode)
+	  || !REG_P (SET_DEST (elt))
 	  || GET_MODE (SET_DEST (elt)) != DFmode)
 	return 0;
     }
@@ -1332,7 +1332,7 @@
 
   if (count <= 1
       || GET_CODE (XVECEXP (op, 0, 0)) != SET
-      || GET_CODE (SET_DEST (XVECEXP (op, 0, 0))) != REG
+      || !REG_P (SET_DEST (XVECEXP (op, 0, 0)))
       || GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != UNSPEC_VOLATILE
       || XINT (SET_SRC (XVECEXP (op, 0, 0)), 1) != UNSPECV_SET_VRSAVE)
     return 0;
@@ -1378,13 +1378,13 @@
 
       src_reg = XVECEXP (SET_SRC (exp), 0, 0);
 
-      if (GET_CODE (src_reg) != REG
+      if (!REG_P (src_reg)
 	  || GET_MODE (src_reg) != CCmode
 	  || ! CR_REGNO_P (REGNO (src_reg)))
 	return 0;
 
       if (GET_CODE (exp) != SET
-	  || GET_CODE (SET_DEST (exp)) != REG
+	  || !REG_P (SET_DEST (exp))
 	  || GET_MODE (SET_DEST (exp)) != SImode
 	  || ! INT_REGNO_P (REGNO (SET_DEST (exp))))
 	return 0;
@@ -1395,7 +1395,7 @@
 	  || XINT (unspec, 1) != UNSPEC_MOVESI_FROM_CR
 	  || XVECLEN (unspec, 0) != 2
 	  || XVECEXP (unspec, 0, 0) != src_reg
-	  || GET_CODE (XVECEXP (unspec, 0, 1)) != CONST_INT
+	  || !CONST_INT_P (XVECEXP (unspec, 0, 1))
 	  || INTVAL (XVECEXP (unspec, 0, 1)) != maskval)
 	return 0;
     }
@@ -1418,7 +1418,7 @@
     return 0;
   src_reg = XVECEXP (SET_SRC (XVECEXP (op, 0, 0)), 0, 0);
 
-  if (GET_CODE (src_reg) != REG
+  if (!REG_P (src_reg)
       || GET_MODE (src_reg) != SImode
       || ! INT_REGNO_P (REGNO (src_reg)))
     return 0;
@@ -1430,7 +1430,7 @@
       int maskval;
 
       if (GET_CODE (exp) != SET
-	  || GET_CODE (SET_DEST (exp)) != REG
+	  || !REG_P (SET_DEST (exp))
 	  || GET_MODE (SET_DEST (exp)) != CCmode
 	  || ! CR_REGNO_P (REGNO (SET_DEST (exp))))
 	return 0;
@@ -1441,7 +1441,7 @@
 	  || XINT (unspec, 1) != UNSPEC_MOVESI_TO_CR
 	  || XVECLEN (unspec, 0) != 2
 	  || XVECEXP (unspec, 0, 0) != src_reg
-	  || GET_CODE (XVECEXP (unspec, 0, 1)) != CONST_INT
+	  || !CONST_INT_P (XVECEXP (unspec, 0, 1))
 	  || INTVAL (XVECEXP (unspec, 0, 1)) != maskval)
 	return 0;
     }
@@ -1460,7 +1460,7 @@
       rtx exp = XVECEXP (op, 0, i);
 
       if (GET_CODE (exp) != USE
-	  || GET_CODE (XEXP (exp, 0)) != REG
+	  || !REG_P (XEXP (exp, 0))
 	  || GET_MODE (XEXP (exp, 0)) != CCmode
 	  || ! CR_REGNO_P (REGNO (XEXP (exp, 0))))
 	return 0;
@@ -1482,8 +1482,8 @@
   /* Perform a quick check so we don't blow up below.  */
   if (count <= 1
       || GET_CODE (XVECEXP (op, 0, 0)) != SET
-      || GET_CODE (SET_DEST (XVECEXP (op, 0, 0))) != REG
-      || GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != MEM)
+      || !REG_P (SET_DEST (XVECEXP (op, 0, 0)))
+      || !MEM_P (SET_SRC (XVECEXP (op, 0, 0))))
     return 0;
 
   dest_regno = REGNO (SET_DEST (XVECEXP (op, 0, 0)));
@@ -1516,10 +1516,10 @@
       HOST_WIDE_INT newoffset;
 
       if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_DEST (elt)) != REG
+	  || !REG_P (SET_DEST (elt))
 	  || GET_MODE (SET_DEST (elt)) != SImode
 	  || REGNO (SET_DEST (elt)) != dest_regno + i
-	  || GET_CODE (SET_SRC (elt)) != MEM
+	  || !MEM_P (SET_SRC (elt))
 	  || GET_MODE (SET_SRC (elt)) != SImode)
 	return 0;
       newaddr = XEXP (SET_SRC (elt), 0);
@@ -1557,8 +1557,8 @@
   /* Perform a quick check so we don't blow up below.  */
   if (count <= 1
       || GET_CODE (XVECEXP (op, 0, 0)) != SET
-      || GET_CODE (SET_DEST (XVECEXP (op, 0, 0))) != MEM
-      || GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != REG)
+      || !MEM_P (SET_DEST (XVECEXP (op, 0, 0)))
+      || !REG_P (SET_SRC (XVECEXP (op, 0, 0))))
     return 0;
 
   src_regno = REGNO (SET_SRC (XVECEXP (op, 0, 0)));
@@ -1591,10 +1591,10 @@
       HOST_WIDE_INT newoffset;
 
       if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_SRC (elt)) != REG
+	  || !REG_P (SET_SRC (elt))
 	  || GET_MODE (SET_SRC (elt)) != SImode
 	  || REGNO (SET_SRC (elt)) != src_regno + i
-	  || GET_CODE (SET_DEST (elt)) != MEM
+	  || !MEM_P (SET_DEST (elt))
 	  || GET_MODE (SET_DEST (elt)) != SImode)
 	return 0;
       newaddr = XEXP (SET_DEST (elt), 0);
@@ -1623,7 +1623,7 @@
   (match_code "parallel")
 {
   return (GET_CODE (XVECEXP (op, 0, 0)) == SET
-	  && GET_CODE (XEXP (XVECEXP (op, 0, 0), 0)) == MEM
+	  && MEM_P (XEXP (XVECEXP (op, 0, 0), 0))
 	  && GET_MODE (XEXP (XVECEXP (op, 0, 0), 0)) == BLKmode
 	  && XEXP (XVECEXP (op, 0, 0), 1) == const0_rtx);
 })

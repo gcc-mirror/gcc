@@ -10259,6 +10259,15 @@ Find_type_use::type(Type* type)
 	  break;
 
 	case Type::TYPE_NAMED:
+          if (type->named_type() == type->base()->named_type())
+            {
+              this->found_ = true;
+              return TRAVERSE_EXIT;
+            }
+          else
+	    go_assert(saw_errors());
+	break;
+
 	case Type::TYPE_FORWARD:
 	  go_assert(saw_errors());
 	  break;

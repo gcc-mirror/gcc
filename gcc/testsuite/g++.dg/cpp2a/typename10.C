@@ -11,7 +11,7 @@ namespace N2 {
   template<typename T> extern T::type v; // #1a
   //template<typename T> T::type v(typename T::value); // #1b
 }
-template<typename T> T::type N2::v(T::value); // { dg-error "" }
+template<typename T> T::type N2::v(T::value);
 
 namespace A {
   inline namespace B { template<typename T> int f(typename T::foo); }

@@ -6412,7 +6412,7 @@ set_uids_in_ptset (bitmap into, bitmap from, struct pt_solution *pt,
 	      && bitmap_bit_p (escaped_vi->solution, i)))
 	{
 	  pt->vars_contains_escaped = true;
-	  pt->vars_contains_escaped_heap = vi->is_heap_var;
+	  pt->vars_contains_escaped_heap |= vi->is_heap_var;
 	}
 
       if (vi->is_restrict_var)

@@ -417,6 +417,8 @@ maybe_thunk_body (tree fn, bool force)
 		  gcc_assert (clone_parm);
 		  DECL_ABSTRACT_ORIGIN (clone_parm) = NULL;
 		  args[parmno] = clone_parm;
+		  /* Clear TREE_ADDRESSABLE on thunk arguments.  */
+		  TREE_ADDRESSABLE (clone_parm) = 0;
 		  clone_parm = TREE_CHAIN (clone_parm);
 		}
 	      if (fn_parm_typelist)

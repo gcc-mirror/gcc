@@ -1,4 +1,5 @@
 // { dg-do compile { target c++11 } }
+// { dg-skip-if "result_type removed for C++20" { c++2a } }
 
 // 2010-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
 

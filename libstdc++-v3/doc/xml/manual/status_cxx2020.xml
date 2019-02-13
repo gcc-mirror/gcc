@@ -159,14 +159,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  <code>nodiscard</code> in the Library </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0600r1.pdf">
 	P0600R1
 	</link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 9.1 </entry>
       <entry />
     </row>
 

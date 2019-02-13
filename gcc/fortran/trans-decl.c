@@ -5735,10 +5735,7 @@ generate_local_decl (gfc_symbol * sym)
 			  "imported at %L", sym->name, &sym->declared_at);
 	}
 
-      if (sym->ns
-	  && sym->ns->parent
-	  && sym->ns->parent->code
-	  && sym->ns->parent->code->op == EXEC_BLOCK)
+      if (sym->ns && sym->ns->construct_entities)
 	{
 	  if (sym->attr.referenced)
 	    gfc_get_symbol_decl (sym);

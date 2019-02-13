@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "sreal.h"
+#include "tree-cfgcleanup.h"
 
 /* I'm not real happy about this, but we need to handle gimple and
    non-gimple trees.  */
@@ -132,7 +133,6 @@ static tree copy_decl_to_var (tree, copy_body_data *);
 static tree copy_result_decl_to_var (tree, copy_body_data *);
 static tree copy_decl_maybe_to_var (tree, copy_body_data *);
 static gimple_seq remap_gimple_stmt (gimple *, copy_body_data *);
-static bool delete_unreachable_blocks_update_callgraph (copy_body_data *id);
 static void insert_init_stmt (copy_body_data *, basic_block, gimple *);
 
 /* Insert a tree->tree mapping for ID.  Despite the name suggests
@@ -2204,7 +2204,8 @@ add_clobbers_to_eh_landing_pad (basic_block bb, copy_body_data *id)
 	&& !TREE_THIS_VOLATILE (var)
 	&& !DECL_HAS_VALUE_EXPR_P (var)
 	&& !is_gimple_reg (var)
-	&& auto_var_in_fn_p (var, id->src_fn))
+	&& auto_var_in_fn_p (var, id->src_fn)
+	&& !lookup_attribute ("omp simd array", DECL_ATTRIBUTES (var)))
       {
 	tree *t = id->decl_map->get (var);
 	if (!t)
@@ -4553,7 +4554,6 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 
   /* We will be inlining this callee.  */
   id->eh_lp_nr = lookup_stmt_eh_lp (stmt);
-  id->assign_stmts.create (0);
 
   /* Update the callers EH personality.  */
   if (DECL_FUNCTION_PERSONALITY (fn))
@@ -4915,7 +4915,6 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
       TREE_USED (gimple_assign_rhs1 (stmt)) = 1;
     }
 
-  id->assign_stmts.release ();
   id->add_clobbers_to_eh_landing_pads = 0;
 
   /* Output the inlining info for this abstract function, since it has been
@@ -5123,7 +5122,8 @@ optimize_inline_calls (tree fn)
   /* Renumber the lexical scoping (non-code) blocks consecutively.  */
   number_blocks (fn);
 
-  delete_unreachable_blocks_update_callgraph (&id);
+  delete_unreachable_blocks_update_callgraph (id.dst_node, false);
+
   if (flag_checking)
     id.dst_node->verify ();
 
@@ -5707,79 +5707,6 @@ tree_versionable_function_p (tree fndecl)
 	  && copy_forbidden (DECL_STRUCT_FUNCTION (fndecl)) == NULL);
 }
 
-/* Delete all unreachable basic blocks and update callgraph.
-   Doing so is somewhat nontrivial because we need to update all clones and
-   remove inline function that become unreachable.  */
-
-static bool
-delete_unreachable_blocks_update_callgraph (copy_body_data *id)
-{
-  bool changed = false;
-  basic_block b, next_bb;
-
-  find_unreachable_blocks ();
-
-  /* Delete all unreachable basic blocks.  */
-
-  for (b = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb; b
-       != EXIT_BLOCK_PTR_FOR_FN (cfun); b = next_bb)
-    {
-      next_bb = b->next_bb;
-
-      if (!(b->flags & BB_REACHABLE))
-	{
-          gimple_stmt_iterator bsi;
-
-          for (bsi = gsi_start_bb (b); !gsi_end_p (bsi); gsi_next (&bsi))
-	    {
-	      struct cgraph_edge *e;
-	      struct cgraph_node *node;
-
-	      id->dst_node->remove_stmt_references (gsi_stmt (bsi));
-
-	      if (gimple_code (gsi_stmt (bsi)) == GIMPLE_CALL
-		  &&(e = id->dst_node->get_edge (gsi_stmt (bsi))) != NULL)
-		{
-		  if (!e->inline_failed)
-		    e->callee->remove_symbol_and_inline_clones (id->dst_node);
-		  else
-		    e->remove ();
-		}
-	      if (id->transform_call_graph_edges == CB_CGE_MOVE_CLONES
-		  && id->dst_node->clones)
-		for (node = id->dst_node->clones; node != id->dst_node;)
-		  {
-		    node->remove_stmt_references (gsi_stmt (bsi));
-		    if (gimple_code (gsi_stmt (bsi)) == GIMPLE_CALL
-			&& (e = node->get_edge (gsi_stmt (bsi))) != NULL)
-		      {
-			if (!e->inline_failed)
-			  e->callee->remove_symbol_and_inline_clones (id->dst_node);
-			else
-			  e->remove ();
-		      }
-
-		    if (node->clones)
-		      node = node->clones;
-		    else if (node->next_sibling_clone)
-		      node = node->next_sibling_clone;
-		    else
-		      {
-			while (node != id->dst_node && !node->next_sibling_clone)
-			  node = node->clone_of;
-			if (node != id->dst_node)
-			  node = node->next_sibling_clone;
-		      }
-		  }
-	    }
-	  delete_basic_block (b);
-	  changed = true;
-	}
-    }
-
-  return changed;
-}
-
 /* Update clone info after duplication.  */
 
 static void
@@ -6093,7 +6020,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
   update_max_bb_count ();
   fold_marked_statements (0, id.statements_to_fold);
   delete id.statements_to_fold;
-  delete_unreachable_blocks_update_callgraph (&id);
+  delete_unreachable_blocks_update_callgraph (id.dst_node, update_clones);
   if (id.dst_node->definition)
     cgraph_edge::rebuild_references ();
   if (loops_state_satisfies_p (LOOPS_NEED_FIXUP))

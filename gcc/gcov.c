@@ -615,7 +615,8 @@ static void find_exception_blocks (function_info *);
 static void add_branch_counts (coverage_info *, const arc_info *);
 static void add_line_counts (coverage_info *, function_info *);
 static void executed_summary (unsigned, unsigned);
-static void function_summary (const coverage_info *, const char *);
+static void function_summary (const coverage_info *);
+static void file_summary (const coverage_info *);
 static const char *format_gcov (gcov_type, gcov_type, int);
 static void accumulate_line_counts (source_info *);
 static void output_gcov_file (const char *, source_info *);
@@ -886,7 +887,7 @@ print_usage (int error_p)
   fnotice (file, "  -d, --display-progress          Display progress information\n");
   fnotice (file, "  -f, --function-summaries        Output summaries for each function\n");
   fnotice (file, "  -h, --help                      Print this help, then exit\n");
-  fnotice (file, "  -i, --json-format		    Output JSON intermediate format into .gcov.json.gz file\n");
+  fnotice (file, "  -i, --json-format               Output JSON intermediate format into .gcov.json.gz file\n");
   fnotice (file, "  -j, --human-readable            Output human readable numbers\n");
   fnotice (file, "  -k, --use-colors                Emit colored output\n");
   fnotice (file, "  -l, --long-file-names           Use long output file names for included\n\
@@ -1376,7 +1377,7 @@ generate_results (const char *file_name)
       add_line_counts (flag_function_summary ? &coverage : NULL, fn);
       if (flag_function_summary)
 	{
-	  function_summary (&coverage, "Function");
+	  function_summary (&coverage);
 	  fnotice (stdout, "\n");
 	}
     }
@@ -1427,7 +1428,7 @@ generate_results (const char *file_name)
       accumulate_line_counts (src);
 
       if (!flag_use_stdout)
-	function_summary (&src->coverage, "File");
+	file_summary (&src->coverage);
       total_lines += src->coverage.lines;
       total_executed += src->coverage.lines_executed;
       if (flag_gcov_file)
@@ -2339,12 +2340,21 @@ executed_summary (unsigned lines, unsigned executed)
     fnotice (stdout, "No executable lines\n");
 }
 
-/* Output summary info for a function or file.  */
+/* Output summary info for a function.  */
 
 static void
-function_summary (const coverage_info *coverage, const char *title)
+function_summary (const coverage_info *coverage)
 {
-  fnotice (stdout, "%s '%s'\n", title, coverage->name);
+  fnotice (stdout, "%s '%s'\n", "Function", coverage->name);
+  executed_summary (coverage->lines, coverage->lines_executed);
+}
+
+/* Output summary info for a file.  */
+
+static void
+file_summary (const coverage_info *coverage)
+{
+  fnotice (stdout, "%s '%s'\n", "File", coverage->name);
   executed_summary (coverage->lines, coverage->lines_executed);
 
   if (flag_branches)
@@ -2520,6 +2530,9 @@ make_gcov_file_name (const char *input_name, const char *src_name)
   return result;
 }
 
+/* Mangle BASE name, copy it at the beginning of PTR buffer and
+   return address of the \0 character of the buffer.  */
+
 static char *
 mangle_name (char const *base, char *ptr)
 {
@@ -2527,14 +2540,13 @@ mangle_name (char const *base, char *ptr)
 
   /* Generate the source filename part.  */
   if (!flag_preserve_paths)
-    {
-      base = lbasename (base);
-      len = strlen (base);
-      memcpy (ptr, base, len);
-      ptr += len;
-    }
+    base = lbasename (base);
   else
-    ptr = mangle_path (base);
+    base = mangle_path (base);
+
+  len = strlen (base);
+  memcpy (ptr, base, len);
+  ptr += len;
 
   return ptr;
 }

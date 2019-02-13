@@ -3414,9 +3414,12 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm,
 void
 aarch64_emit_sve_pred_move (rtx dest, rtx pred, rtx src)
 {
-  emit_insn (gen_rtx_SET (dest, gen_rtx_UNSPEC (GET_MODE (dest),
-						gen_rtvec (2, pred, src),
-						UNSPEC_MERGE_PTRUE)));
+  expand_operand ops[3];
+  machine_mode mode = GET_MODE (dest);
+  create_output_operand (&ops[0], dest, mode);
+  create_input_operand (&ops[1], pred, GET_MODE(pred));
+  create_input_operand (&ops[2], src, mode);
+  expand_insn (code_for_aarch64_pred_mov (mode), 3, ops);
 }
 
 /* Expand a pre-RA SVE data move from SRC to DEST in which at least one
@@ -3765,12 +3768,16 @@ aarch64_vfp_is_call_candidate (cumulative_args_t pcum_v, machine_mode mode,
 
 /* Given MODE and TYPE of a function argument, return the alignment in
    bits.  The idea is to suppress any stronger alignment requested by
-   the user and opt for the natural alignment (specified in AAPCS64 \S 4.1).
-   This is a helper function for local use only.  */
+   the user and opt for the natural alignment (specified in AAPCS64 \S
+   4.1).  ABI_BREAK is set to true if the alignment was incorrectly
+   calculated in versions of GCC prior to GCC-9.  This is a helper
+   function for local use only.  */
 
 static unsigned int
-aarch64_function_arg_alignment (machine_mode mode, const_tree type)
+aarch64_function_arg_alignment (machine_mode mode, const_tree type,
+				bool *abi_break)
 {
+  *abi_break = false;
   if (!type)
     return GET_MODE_ALIGNMENT (mode);
 
@@ -3786,9 +3793,22 @@ aarch64_function_arg_alignment (machine_mode mode, const_tree type)
     return TYPE_ALIGN (TREE_TYPE (type));
 
   unsigned int alignment = 0;
+  unsigned int bitfield_alignment = 0;
   for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     if (TREE_CODE (field) == FIELD_DECL)
-      alignment = std::max (alignment, DECL_ALIGN (field));
+      {
+	alignment = std::max (alignment, DECL_ALIGN (field));
+	if (DECL_BIT_FIELD_TYPE (field))
+	  bitfield_alignment
+	    = std::max (bitfield_alignment,
+			TYPE_ALIGN (DECL_BIT_FIELD_TYPE (field)));
+      }
+
+  if (bitfield_alignment > alignment)
+    {
+      *abi_break = true;
+      return bitfield_alignment;
+    }
 
   return alignment;
 }
@@ -3805,6 +3825,7 @@ aarch64_layout_arg (cumulative_args_t pcum_v, machine_mode mode,
   int ncrn, nvrn, nregs;
   bool allocate_ncrn, allocate_nvrn;
   HOST_WIDE_INT size;
+  bool abi_break;
 
   /* We need to do this once per argument.  */
   if (pcum->aapcs_arg_processed)
@@ -3881,25 +3902,28 @@ aarch64_layout_arg (cumulative_args_t pcum_v, machine_mode mode,
      entirely general registers.  */
   if (allocate_ncrn && (ncrn + nregs <= NUM_ARG_REGS))
     {
-
       gcc_assert (nregs == 0 || nregs == 1 || nregs == 2);
 
       /* C.8 if the argument has an alignment of 16 then the NGRN is
-         rounded up to the next even number.  */
+	 rounded up to the next even number.  */
       if (nregs == 2
 	  && ncrn % 2
 	  /* The == 16 * BITS_PER_UNIT instead of >= 16 * BITS_PER_UNIT
 	     comparison is there because for > 16 * BITS_PER_UNIT
 	     alignment nregs should be > 2 and therefore it should be
 	     passed by reference rather than value.  */
-	  && aarch64_function_arg_alignment (mode, type) == 16 * BITS_PER_UNIT)
+	  && (aarch64_function_arg_alignment (mode, type, &abi_break)
+	      == 16 * BITS_PER_UNIT))
 	{
+	  if (abi_break && warn_psabi && currently_expanding_gimple_stmt)
+	    inform (input_location, "parameter passing for argument of type "
+		    "%qT changed in GCC 9.1", type);
 	  ++ncrn;
 	  gcc_assert (ncrn + nregs <= NUM_ARG_REGS);
 	}
 
       /* NREGS can be 0 when e.g. an empty structure is to be passed.
-         A reg is still generated for it, but the caller should be smart
+	 A reg is still generated for it, but the caller should be smart
 	 enough not to use it.  */
       if (nregs == 0 || nregs == 1 || GET_MODE_CLASS (mode) == MODE_INT)
 	pcum->aapcs_reg = gen_rtx_REG (mode, R0_REGNUM + ncrn);
@@ -3931,9 +3955,18 @@ aarch64_layout_arg (cumulative_args_t pcum_v, machine_mode mode,
 on_stack:
   pcum->aapcs_stack_words = size / UNITS_PER_WORD;
 
-  if (aarch64_function_arg_alignment (mode, type) == 16 * BITS_PER_UNIT)
-    pcum->aapcs_stack_size = ROUND_UP (pcum->aapcs_stack_size,
-				       16 / UNITS_PER_WORD);
+  if (aarch64_function_arg_alignment (mode, type, &abi_break)
+      == 16 * BITS_PER_UNIT)
+    {
+      int new_size = ROUND_UP (pcum->aapcs_stack_size, 16 / UNITS_PER_WORD);
+      if (pcum->aapcs_stack_size != new_size)
+	{
+	  if (abi_break && warn_psabi && currently_expanding_gimple_stmt)
+	    inform (input_location, "parameter passing for argument of type "
+		    "%qT changed in GCC 9.1", type);
+	  pcum->aapcs_stack_size = new_size;
+	}
+    }
   return;
 }
 
@@ -4022,7 +4055,13 @@ aarch64_function_arg_regno_p (unsigned regno)
 static unsigned int
 aarch64_function_arg_boundary (machine_mode mode, const_tree type)
 {
-  unsigned int alignment = aarch64_function_arg_alignment (mode, type);
+  bool abi_break;
+  unsigned int alignment = aarch64_function_arg_alignment (mode, type,
+							   &abi_break);
+  if (abi_break & warn_psabi)
+    inform (input_location, "parameter passing for argument of type "
+	    "%qT changed in GCC 9.1", type);
+
   return MIN (MAX (alignment, PARM_BOUNDARY), STACK_BOUNDARY);
 }
 
@@ -7163,7 +7202,7 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
 
   /* Equality comparisons of short modes against zero can be performed
      using the TST instruction with the appropriate bitmask.  */
-  if (y == const0_rtx && REG_P (x)
+  if (y == const0_rtx && (REG_P (x) || SUBREG_P (x))
       && (code == EQ || code == NE)
       && (mode_x == HImode || mode_x == QImode))
     return CC_NZmode;
@@ -13320,7 +13359,10 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   stack = build3 (COMPONENT_REF, TREE_TYPE (f_stack), unshare_expr (valist),
 		  f_stack, NULL_TREE);
   size = int_size_in_bytes (type);
-  align = aarch64_function_arg_alignment (mode, type) / BITS_PER_UNIT;
+
+  bool abi_break;
+  align
+    = aarch64_function_arg_alignment (mode, type, &abi_break) / BITS_PER_UNIT;
 
   dw_align = false;
   adjust = 0;
@@ -13367,7 +13409,12 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
       nregs = rsize / UNITS_PER_WORD;
 
       if (align > 8)
-	dw_align = true;
+	{
+	  if (abi_break && warn_psabi)
+	    inform (input_location, "parameter passing for argument of type "
+		    "%qT changed in GCC 9.1", type);
+	  dw_align = true;
+	}
 
       if (BLOCK_REG_PADDING (mode, type, 1) == PAD_DOWNWARD
 	  && size < UNITS_PER_WORD)

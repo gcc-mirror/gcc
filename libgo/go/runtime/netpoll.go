@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build aix darwin dragonfly freebsd js,wasm linux nacl netbsd openbsd solaris windows
+// +build aix darwin dragonfly freebsd hurd js,wasm linux nacl netbsd openbsd solaris windows
 
 package runtime
 
@@ -102,7 +102,7 @@ func netpollinited() bool {
 // descriptor being used by netpoll.
 func poll_runtime_isPollServerDescriptor(fd uintptr) bool {
 	fds := netpolldescriptor()
-	if GOOS != "aix" {
+	if GOOS != "aix" && GOOS != "hurd" {
 		return fd == fds
 	} else {
 		// AIX have a pipe in its netpoll implementation.
@@ -178,8 +178,8 @@ func poll_runtime_pollWait(pd *pollDesc, mode int) int {
 	if err != 0 {
 		return err
 	}
-	// As for now only Solaris and AIX use level-triggered IO.
-	if GOOS == "solaris" || GOOS == "aix" {
+	// As for now only Solaris, AIX and Hurd use level-triggered IO.
+	if GOOS == "solaris" || GOOS == "aix" || GOOS == "hurd" {
 		netpollarm(pd, mode)
 	}
 	for !netpollblock(pd, int32(mode), false) {

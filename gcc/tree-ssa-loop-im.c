@@ -1472,6 +1472,11 @@ gather_mem_refs_stmt (struct loop *loop, gimple *stmt)
 	  && aor.max_size.is_constant (&max_size)
 	  && size == max_size
 	  && (size % BITS_PER_UNIT) == 0
+	  /* We're canonicalizing to a MEM where TYPE_SIZE specifies the
+	     size.  Make sure this is consistent with the extraction.  */
+	  && poly_int_tree_p (TYPE_SIZE (TREE_TYPE (*mem)))
+	  && known_eq (wi::to_poly_offset (TYPE_SIZE (TREE_TYPE (*mem))),
+		       aor.size)
 	  && (mem_base = get_addr_base_and_unit_offset (aor.ref, &mem_off)))
 	{
 	  hash = iterative_hash_expr (ao_ref_base (&aor), 0);

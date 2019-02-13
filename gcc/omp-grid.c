@@ -745,9 +745,10 @@ grid_target_follows_gridifiable_pattern (gomp_target *target, grid_prop *grid)
   tree group_size = NULL;
   if (!teams)
     {
-      dump_printf_loc (MSG_MISSED_OPTIMIZATION, tloc,
-		       GRID_MISSED_MSG_PREFIX "it does not have a sole teams "
-		       "construct in it.\n");
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, tloc,
+			 GRID_MISSED_MSG_PREFIX "it does not have a sole "
+			 "teams construct in it.\n");
       return false;
     }
 
@@ -788,9 +789,10 @@ grid_target_follows_gridifiable_pattern (gomp_target *target, grid_prop *grid)
   gomp_for *dist = dyn_cast <gomp_for *> (stmt);
   if (!dist)
     {
-      dump_printf_loc (MSG_MISSED_OPTIMIZATION, tloc,
-		       GRID_MISSED_MSG_PREFIX "the teams construct does not "
-		       "have a single distribute construct in it.\n");
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, tloc,
+			 GRID_MISSED_MSG_PREFIX "the teams construct does not "
+			 "have a single distribute construct in it.\n");
       return false;
     }
 
@@ -932,6 +934,8 @@ grid_mark_variable_segment (tree var, enum grid_var_segment segment)
   if (!TREE_STATIC (var))
     {
       TREE_STATIC (var) = 1;
+      const char *prefix = IDENTIFIER_POINTER (DECL_NAME (var));
+      SET_DECL_ASSEMBLER_NAME (var, create_tmp_var_name (prefix));
       varpool_node::finalize_decl (var);
     }
 

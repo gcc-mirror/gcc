@@ -70,7 +70,7 @@ package System.Linux is
    EINVAL    : constant := 22;
    ENOMEM    : constant := 12;
    EPERM     : constant := 1;
-   ETIMEDOUT : constant := 110;
+   ETIMEDOUT : constant := 60;
 
    -------------
    -- Signals --

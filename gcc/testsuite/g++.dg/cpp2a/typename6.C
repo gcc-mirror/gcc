@@ -55,11 +55,14 @@ struct S2 {
 // (5.2.4) parameter-declaration in a declarator of a function or function
 // template declaration whose declarator-id is qualified,
 // unless that parameter-declaration appears in a default argument
-template<typename T>
-int fn3 (T::X);
+
+struct M {
+  template<typename T>
+  int fn (T::X);
+};
 
 template<typename T>
-int fn4 (T::X p) { return p; }
+int M::fn (T::X p) { return p; }
 
 // (5.2.5) parameter-declaration in a lambda-declarator,
 // unless that parameter-declaration appears in a default argument
@@ -92,7 +95,7 @@ struct S5 {
 };
 
 template<typename T>
-void fn7 (T::X p)
+void fn7 (typename T::X p)
 {
   int i = static_cast<T::Y>(p);
   i = dynamic_cast<T::Y>(p);

@@ -1684,7 +1684,7 @@ FUNC (DWtype u)
 
   /* No leading bits means u == minimum.  */
   if (count == 0)
-    return -(Wtype_MAXp1_F * (Wtype_MAXp1_F / 2));
+    return Wtype_MAXp1_F * (FSTYPE) (hi | ((UWtype) u != 0));
 
   shift = 1 + W_TYPE_SIZE - count;
 

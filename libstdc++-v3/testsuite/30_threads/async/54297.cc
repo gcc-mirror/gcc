@@ -45,5 +45,5 @@ struct Task
 
 int main()
 {
-  std::async(std::launch::async, Task());
+  (void) std::async(std::launch::async, Task());
 }

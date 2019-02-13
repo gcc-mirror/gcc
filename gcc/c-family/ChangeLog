@@ -1,3 +1,37 @@
+2019-02-11  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/87996
+	* c-common.c (invalid_array_size_error): New function.
+	(valid_array_size_p): Call it.  Handle size as well as type.
+	* c-common.h (valid_constant_size_p): New function.
+	(enum cst_size_error): New type.
+
+2019-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/89122
+	* known-headers.cc (get_stdlib_header_for_name): Add
+	{FLT|DBL|LDBL}_{MAX|MIN} to "hints" array.
+
+2019-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/88170
+	* c-pretty-print.c (pp_c_enumeration_constant): Print always as
+	a C cast in pp_c_flag_gnu_v3 mode.
+
+2019-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/86125
+	* c-common.c (c_common_nodes_and_builtins): Build type variants for
+	builtin_structptr_types types even for C.
+
+2019-01-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-warn.c (check_address_or_pointer_of_packed_member): Handle the case
+	when rhs is of array type correctly.  Fix handling of nested structures.
+	Fix handling of indirect_ref together with nop_expr and/or addr_expr.
+	(check_and_warn_address_or_pointer_of_packed_member): Fix handling of
+	type casts within nested compound expressions.
+
 2019-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/88968

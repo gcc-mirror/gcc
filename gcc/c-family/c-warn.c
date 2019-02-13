@@ -2725,14 +2725,19 @@ static tree
 check_address_or_pointer_of_packed_member (tree type, tree rhs)
 {
   bool rvalue = true;
+  bool indirect = false;
 
   if (INDIRECT_REF_P (rhs))
-    rhs = TREE_OPERAND (rhs, 0);
+    {
+      rhs = TREE_OPERAND (rhs, 0);
+      STRIP_NOPS (rhs);
+      indirect = true;
+    }
 
   if (TREE_CODE (rhs) == ADDR_EXPR)
     {
       rhs = TREE_OPERAND (rhs, 0);
-      rvalue = false;
+      rvalue = indirect;
     }
 
   if (!POINTER_TYPE_P (type))
@@ -2796,6 +2801,10 @@ check_address_or_pointer_of_packed_member (tree type, tree rhs)
 	  if (context)
 	    break;
 	}
+      if (TREE_CODE (TREE_TYPE (rhs)) == ARRAY_TYPE)
+	rvalue = false;
+      if (rvalue)
+	return NULL_TREE;
       rhs = TREE_OPERAND (rhs, 0);
     }
 
@@ -2811,14 +2820,18 @@ check_address_or_pointer_of_packed_member (tree type, tree rhs)
 static void
 check_and_warn_address_or_pointer_of_packed_member (tree type, tree rhs)
 {
-  bool nop_p;
+  bool nop_p = false;
+  tree orig_rhs;
 
-  while (TREE_CODE (rhs) == COMPOUND_EXPR)
-    rhs = TREE_OPERAND (rhs, 1);
-
-  tree orig_rhs = rhs;
-  STRIP_NOPS (rhs);
-  nop_p = orig_rhs != rhs;
+  do
+    {
+      while (TREE_CODE (rhs) == COMPOUND_EXPR)
+	rhs = TREE_OPERAND (rhs, 1);
+      orig_rhs = rhs;
+      STRIP_NOPS (rhs);
+      nop_p |= orig_rhs != rhs;
+    }
+  while (orig_rhs != rhs);
 
   if (TREE_CODE (rhs) == COND_EXPR)
     {

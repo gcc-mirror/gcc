@@ -105,10 +105,6 @@ struct Mallocator
     test!Mallocator();
 }
 
-version (Posix)
-@nogc nothrow
-private extern(C) int posix_memalign(void**, size_t, size_t);
-
 version (Windows)
 {
     // DMD Win 32 bit, DigitalMars C standard library misses the _aligned_xxx
@@ -231,6 +227,7 @@ struct AlignedMallocator
     void[] alignedAllocate(size_t bytes, uint a) shared
     {
         import core.stdc.errno : ENOMEM, EINVAL;
+        import core.sys.posix.stdlib : posix_memalign;
         assert(a.isGoodDynamicAlignment);
         void* result;
         auto code = posix_memalign(&result, a, bytes);

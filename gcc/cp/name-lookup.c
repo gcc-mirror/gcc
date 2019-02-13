@@ -2100,7 +2100,7 @@ strip_using_decl (tree decl)
 	     
 	 using typename :: [opt] nested-name-specifier unqualified-id ;
       */
-      decl = make_typename_type (TREE_TYPE (decl),
+      decl = make_typename_type (USING_DECL_SCOPE (decl),
 				 DECL_NAME (decl),
 				 typename_type, tf_error);
       if (decl != error_mark_node)

@@ -1,3 +1,17 @@
+2019-02-11  Martin Liska  <mliska@suse.cz>
+
+	PR lto/88147
+	* line-map.c (linemap_line_start): Don't reuse the existing line
+	map if the line offset is sufficiently large to cause overflow
+	when computing location_t values.
+
+2019-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/88974
+	* directives.c (SEEN_EOL): Move macro to ...
+	* internal.h (SEEN_EOL): ... here.
+	* expr.c (parse_has_include): Don't cpp_get_token if SEEN_EOL ().
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

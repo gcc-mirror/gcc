@@ -2128,6 +2128,13 @@ Target can truncate a file from a file descriptor, as used by
 @file{libgfortran/io/unix.c:fd_truncate}; i.e.@: @code{ftruncate} or
 @code{chsize}.
 
+@item fenv
+Target provides @file{fenv.h} include file.
+
+@item fenv_exceptions
+Target supports @file{fenv.h} with all the standard IEEE exceptions
+and floating-point exceptions are raised by arithmetic operations.
+
 @item freestanding
 Target is @samp{freestanding} as defined in section 4 of the C99 standard.
 Effectively, it is a target which supports no extra headers or libraries

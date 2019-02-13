@@ -11,6 +11,15 @@ module core.sys.posix.aio;
 private import core.sys.posix.signal;
 private import core.sys.posix.sys.types;
 
+version (OSX)
+    version = Darwin;
+else version (iOS)
+    version = Darwin;
+else version (TVOS)
+    version = Darwin;
+else version (WatchOS)
+    version = Darwin;
+
 version (Posix):
 
 extern (C):
@@ -63,7 +72,7 @@ version (CRuntime_Glibc)
         }
     }
 }
-else version (OSX)
+else version (Darwin)
 {
     struct aiocb
     {
@@ -171,7 +180,7 @@ version (CRuntime_Glibc)
         AIO_ALLDONE
     }
 }
-else version (OSX)
+else version (Darwin)
 {
     enum
     {
@@ -209,7 +218,7 @@ version (CRuntime_Glibc)
         LIO_NOP
     }
 }
-else version (OSX)
+else version (Darwin)
 {
     enum
     {
@@ -246,7 +255,7 @@ version (CRuntime_Glibc)
         LIO_NOWAIT
     }
 }
-else version (OSX)
+else version (Darwin)
 {
     enum
     {

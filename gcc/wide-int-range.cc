@@ -735,6 +735,37 @@ wide_int_range_abs (wide_int &min, wide_int &max,
   return true;
 }
 
+/* Calculate ABSU_EXPR on a range and store the result in [MIN, MAX].  */
+
+void
+wide_int_range_absu (wide_int &min, wide_int &max,
+		     unsigned prec, const wide_int &vr0_min,
+		     const wide_int &vr0_max)
+{
+  /* Pass through VR0 the easy cases.  */
+  if (wi::ges_p (vr0_min, 0))
+    {
+      min = vr0_min;
+      max = vr0_max;
+      return;
+    }
+
+  min = wi::abs (vr0_min);
+  max = wi::abs (vr0_max);
+
+  /* If the range contains zero then we know that the minimum value in the
+     range will be zero.  */
+  if (wi::ges_p (vr0_max, 0))
+    {
+      if (wi::gtu_p (min, max))
+	max = min;
+      min = wi::zero (prec);
+    }
+  else
+    /* Otherwise, swap MIN and MAX.  */
+    std::swap (min, max);
+}
+
 /* Convert range in [VR0_MIN, VR0_MAX] with INNER_SIGN and INNER_PREC,
    to a range in [MIN, MAX] with OUTER_SIGN and OUTER_PREC.
 

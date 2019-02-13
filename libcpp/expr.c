@@ -2238,7 +2238,7 @@ parse_has_include (cpp_reader *pfile, enum include_type type)
       XDELETEVEC (fname);
     }
 
-  if (paren && cpp_get_token (pfile)->type != CPP_CLOSE_PAREN)
+  if (paren && !SEEN_EOL () && cpp_get_token (pfile)->type != CPP_CLOSE_PAREN)
     cpp_error (pfile, CPP_DL_ERROR,
 	       "missing ')' after \"__has_include__\"");
 

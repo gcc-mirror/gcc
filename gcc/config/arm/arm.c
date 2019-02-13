@@ -13191,6 +13191,9 @@ ldm_stm_operation_p (rtx op, bool load, machine_mode mode,
   if (load && (REGNO (reg) == SP_REGNUM) && (REGNO (addr) != SP_REGNUM))
     return false;
 
+  if (regno == REGNO (addr))
+    addr_reg_in_reglist = true;
+
   for (; i < count; i++)
     {
       elt = XVECEXP (op, 0, i);
@@ -13385,7 +13388,6 @@ load_multiple_sequence (rtx *operands, int nops, int *regs, int *saved_order,
   int unsorted_regs[MAX_LDM_STM_OPS];
   HOST_WIDE_INT unsorted_offsets[MAX_LDM_STM_OPS];
   int order[MAX_LDM_STM_OPS];
-  rtx base_reg_rtx = NULL;
   int base_reg = -1;
   int i, ldm_case;
 
@@ -13430,7 +13432,6 @@ load_multiple_sequence (rtx *operands, int nops, int *regs, int *saved_order,
 	  if (i == 0)
 	    {
 	      base_reg = REGNO (reg);
-	      base_reg_rtx = reg;
 	      if (TARGET_THUMB1 && base_reg > LAST_LO_REGNUM)
 		return 0;
 	    }
@@ -13488,10 +13489,6 @@ load_multiple_sequence (rtx *operands, int nops, int *regs, int *saved_order,
 
       *load_offset = unsorted_offsets[order[0]];
     }
-
-  if (TARGET_THUMB1
-      && !peep2_reg_dead_p (nops, base_reg_rtx))
-    return 0;
 
   if (unsorted_offsets[order[0]] == 0)
     ldm_case = 1; /* ldmia */
@@ -13868,9 +13865,17 @@ gen_ldm_seq (rtx *operands, int nops, bool sort_regs)
 
   if (TARGET_THUMB1)
     {
-      gcc_assert (peep2_reg_dead_p (nops, base_reg_rtx));
       gcc_assert (ldm_case == 1 || ldm_case == 5);
-      write_back = TRUE;
+
+      /* Thumb-1 ldm uses writeback except if the base is loaded.  */
+      write_back = true;
+      for (i = 0; i < nops; i++)
+	if (base_reg == regs[i])
+	  write_back = false;
+
+      /* Ensure the base is dead if it is updated.  */
+      if (write_back && !peep2_reg_dead_p (nops, base_reg_rtx))
+	return false;
     }
 
   if (ldm_case == 5)
@@ -13878,8 +13883,7 @@ gen_ldm_seq (rtx *operands, int nops, bool sort_regs)
       rtx newbase = TARGET_THUMB1 ? base_reg_rtx : gen_rtx_REG (SImode, regs[0]);
       emit_insn (gen_addsi3 (newbase, base_reg_rtx, GEN_INT (offset)));
       offset = 0;
-      if (!TARGET_THUMB1)
-	base_reg_rtx = newbase;
+      base_reg_rtx = newbase;
     }
 
   for (i = 0; i < nops; i++)
@@ -15574,7 +15578,7 @@ mem_ok_for_ldrd_strd (rtx mem, rtx *base, rtx *offset, HOST_WIDE_INT *align)
       *base = addr;
       return true;
     }
-  else if (GET_CODE (addr) == PLUS || GET_CODE (addr) == MINUS)
+  else if (GET_CODE (addr) == PLUS)
     {
       *base = XEXP (addr, 0);
       *offset = XEXP (addr, 1);
@@ -15739,7 +15743,7 @@ gen_operands_ldrd_strd (rtx *operands, bool load,
     }
 
   /* Make sure accesses are to consecutive memory locations.  */
-  if (gap != 4)
+  if (gap != GET_MODE_SIZE (SImode))
     return false;
 
   if (!align_ok_ldrd_strd (align[0], offset))
@@ -15820,6 +15824,55 @@ gen_operands_ldrd_strd (rtx *operands, bool load,
 }
 
 
+/* Return true if parallel execution of the two word-size accesses provided
+   could be satisfied with a single LDRD/STRD instruction.  Two word-size
+   accesses are represented by the OPERANDS array, where OPERANDS[0,1] are
+   register operands and OPERANDS[2,3] are the corresponding memory operands.
+   */
+bool
+valid_operands_ldrd_strd (rtx *operands, bool load)
+{
+  int nops = 2;
+  HOST_WIDE_INT offsets[2], offset, align[2];
+  rtx base = NULL_RTX;
+  rtx cur_base, cur_offset;
+  int i, gap;
+
+  /* Check that the memory references are immediate offsets from the
+     same base register.  Extract the base register, the destination
+     registers, and the corresponding memory offsets.  */
+  for (i = 0; i < nops; i++)
+    {
+      if (!mem_ok_for_ldrd_strd (operands[nops+i], &cur_base, &cur_offset,
+				 &align[i]))
+	return false;
+
+      if (i == 0)
+	base = cur_base;
+      else if (REGNO (base) != REGNO (cur_base))
+	return false;
+
+      offsets[i] = INTVAL (cur_offset);
+      if (GET_CODE (operands[i]) == SUBREG)
+	return false;
+    }
+
+  if (offsets[0] > offsets[1])
+    return false;
+
+  gap = offsets[1] - offsets[0];
+  offset = offsets[0];
+
+  /* Make sure accesses are to consecutive memory locations.  */
+  if (gap != GET_MODE_SIZE (SImode))
+    return false;
+
+  if (!align_ok_ldrd_strd (align[0], offset))
+    return false;
+
+  return operands_ok_ldrd_strd (operands[0], operands[1], base, offset,
+				false, load);
+}
 
 
 /* Print a symbolic form of X to the debug file, F.  */
@@ -28497,6 +28550,26 @@ arm_count_output_move_double_insns (rtx *operands)
   output_move_double (ops, false, &count);
   return count;
 }
+
+/* Same as above, but operands are a register/memory pair in SImode.
+   Assumes operands has the base register in position 0 and memory in position
+   2 (which is the order provided by the arm_{ldrd,strd} patterns).  */
+int
+arm_count_ldrdstrd_insns (rtx *operands, bool load)
+{
+  int count;
+  rtx ops[2];
+  int regnum, memnum;
+  if (load)
+    regnum = 0, memnum = 1;
+  else
+    regnum = 1, memnum = 0;
+  ops[regnum] = gen_rtx_REG (DImode, REGNO (operands[0]));
+  ops[memnum] = adjust_address (operands[2], DImode, 0);
+  output_move_double (ops, false, &count);
+  return count;
+}
+
 
 int
 vfp3_const_double_for_fract_bits (rtx operand)
