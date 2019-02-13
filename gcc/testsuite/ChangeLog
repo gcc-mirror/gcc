@@ -1,3 +1,8 @@
+2019-02-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/89036
+	* g++.dg/concepts/pr89036.C: New test.
+
 2019-02-13  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/88847
