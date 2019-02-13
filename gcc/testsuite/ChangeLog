@@ -1,3 +1,8 @@
+2019-02-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/77304
+	* g++.dg/cpp2a/nontype-class13.C: New test.
+
 2019-02-13  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR target/89190
