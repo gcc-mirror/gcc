@@ -1,3 +1,13 @@
+2019-02-13  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86554
+	* tree-ssa-sccvn.c (visit_nary_op): When value-numbering to
+	expressions with different overflow behavior make sure there's an
+	available expression on the path.
+
 2019-02-13  Martin Liska  <mliska@suse.cz>
 
 	PR lto/89260
