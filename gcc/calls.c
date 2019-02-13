@@ -82,15 +82,6 @@ struct arg_data
   /* If REG is a PARALLEL, this is a copy of VALUE pulled into the correct
      form for emit_group_move.  */
   rtx parallel_value;
-  /* If value is passed in neither reg nor stack, this field holds a number
-     of a special slot to be used.  */
-  rtx special_slot;
-  /* For pointer bounds hold an index of parm bounds are bound to.  -1 if
-     there is no such pointer.  */
-  int pointer_arg;
-  /* If pointer_arg refers a structure, then pointer_offset holds an offset
-     of a pointer in this structure.  */
-  int pointer_offset;
   /* If REG was promoted from the actual mode of the argument expression,
      indicates whether the promotion is sign- or zero-extended.  */
   int unsignedp;
@@ -2129,10 +2120,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 						argpos < n_named_args);
 
       if (args[i].reg && CONST_INT_P (args[i].reg))
-	{
-	  args[i].special_slot = args[i].reg;
-	  args[i].reg = NULL;
-	}
+	args[i].reg = NULL;
 
       /* If this is a sibling call and the machine has register windows, the
 	 register window has to be unwinded before calling the routine, so

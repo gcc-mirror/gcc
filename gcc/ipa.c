@@ -548,12 +548,6 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	      node->remove_callees ();
 	      node->remove_all_references ();
 	      changed = true;
-	      if (node->thunk.thunk_p
-		  && node->thunk.add_pointer_bounds_args)
-		{
-		  node->thunk.thunk_p = false;
-		  node->thunk.add_pointer_bounds_args = false;
-		}
 	    }
 	}
       else
