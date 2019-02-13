@@ -1,3 +1,10 @@
+2019-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89290
+	* config/i386/predicates.md (x86_64_immediate_operand): Allow
+	TLS UNSPECs offsetted by signed 32-bit CONST_INT even with
+	-mcmodel=large.
+
 2019-02-13  Martin Liska  <mliska@suse.cz>
 
 	PR lto/88858
