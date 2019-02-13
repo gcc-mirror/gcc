@@ -1,3 +1,15 @@
+2019-02-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (vec_set<VI4F_256_512:mode>_0): Use
+	nonimmediate_operand as operand 2 predicate.
+	(vec_set<VF2_512_256:mode>_0): Ditto.
+	(vec_set<VI8_AVX_AVX512F:mode>_0): Ditto.
+	(*vec_concatv2si): Remove alternative 2.
+	(*vec_concatv4si_0): Use vm constraint for alternative 0.
+	(*vec_concatv4si_0): Remove preferred_for_speed attribute.
+	(vec_concatv2di): Split alternatives 4,5,6 to ...
+	(*vec_concatv2di_0) ... new pattern.
+
 2019-02-13  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR target/89190
