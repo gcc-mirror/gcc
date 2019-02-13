@@ -1,3 +1,14 @@
+2019-02-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89345
+	* include/std/version [__cpp_impl_destroying_delete]
+	(__cpp_lib_destroying_delete): Only define for C++2a and later.
+	* libsupc++/new [__cpp_impl_destroying_delete]
+	(__cpp_lib_destroying_delete): Likewise.
+	(destroying_delete_t, destroying_delete): Likewise, but define even
+	when __cpp_impl_destroying_delete is not defined.
+	* testsuite/18_support/destroying_delete.cc: New test.
+
 2019-02-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/89023

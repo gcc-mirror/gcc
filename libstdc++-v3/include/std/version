@@ -42,10 +42,6 @@
 # define __cpp_lib_uncaught_exceptions 201411L
 #endif
 
-#if __cpp_impl_destroying_delete
-# define __cpp_lib_destroying_delete 201806L
-#endif
-
 #if __cplusplus >= 201103L
 // c++11
 #define __cpp_lib_allocator_is_always_equal 201411
@@ -152,6 +148,9 @@
 
 #if __cplusplus > 201703L
 // c++2a
+#if __cpp_impl_destroying_delete
+# define __cpp_lib_destroying_delete 201806L
+#endif
 #define __cpp_lib_erase_if 201900L
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
 # define __cpp_lib_is_constant_evaluated 201811L
