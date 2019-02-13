@@ -1,3 +1,9 @@
+2019-02-13  Jonathan Wakely  <jwakely@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89303
+	* g++.dg/torture/pr89303.C: New test.
+
 2019-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/88986
