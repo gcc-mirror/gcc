@@ -17687,6 +17687,7 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
     {
     /* unsigned 1 argument functions.  */
     case CRYPTO_BUILTIN_VSBOX:
+    case CRYPTO_BUILTIN_VSBOX_BE:
     case P8V_BUILTIN_VGBBD:
     case MISC_BUILTIN_CDTBCD:
     case MISC_BUILTIN_CBCDTD:
@@ -17702,9 +17703,13 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
     case ALTIVEC_BUILTIN_VMULOUH:
     case P8V_BUILTIN_VMULOUW:
     case CRYPTO_BUILTIN_VCIPHER:
+    case CRYPTO_BUILTIN_VCIPHER_BE:
     case CRYPTO_BUILTIN_VCIPHERLAST:
+    case CRYPTO_BUILTIN_VCIPHERLAST_BE:
     case CRYPTO_BUILTIN_VNCIPHER:
+    case CRYPTO_BUILTIN_VNCIPHER_BE:
     case CRYPTO_BUILTIN_VNCIPHERLAST:
+    case CRYPTO_BUILTIN_VNCIPHERLAST_BE:
     case CRYPTO_BUILTIN_VPMSUMB:
     case CRYPTO_BUILTIN_VPMSUMH:
     case CRYPTO_BUILTIN_VPMSUMW:
