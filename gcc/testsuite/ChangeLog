@@ -1,3 +1,10 @@
+2019-02-13  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/87322
+	* g++.dg/cpp1y/pr87322.C: New.
+	* g++.dg/cpp0x/lambda/lambda-variadic5.C: Test that we
+	instantiate the expected number of lambda functions.
+
 2019-02-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/77304

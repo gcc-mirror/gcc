@@ -11700,6 +11700,10 @@ gen_elem_of_pack_expansion_instantiation (tree pattern,
       ARGUMENT_PACK_SELECT_INDEX (aps) = index;
     }
 
+  // Any local specialization bindings arising from this substitution
+  // cannot be reused for a different INDEX.
+  local_specialization_stack lss (lss_copy);
+
   /* Substitute into the PATTERN with the (possibly altered)
      arguments.  */
   if (pattern == in_decl)
@@ -17932,7 +17936,16 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   tree oldfn = lambda_function (t);
   in_decl = oldfn;
 
+  /* If we have already specialized this lambda expr, reuse it.  See
+     PR c++/87322.  */
+  if (local_specializations)
+    if (tree r = retrieve_local_specialization (t))
+      return r;
+
   tree r = build_lambda_expr ();
+
+  if (local_specializations)
+    register_local_specialization (r, t);
 
   LAMBDA_EXPR_LOCATION (r)
     = LAMBDA_EXPR_LOCATION (t);
@@ -18025,6 +18038,11 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     r = error_mark_node;
   else
     {
+      /* The body of a lambda-expression is not a subexpression of the
+	 enclosing expression.  Parms are to have DECL_CHAIN tsubsted,
+	 which would be skipped if cp_unevaluated_operand.  */
+      cp_evaluated ev;
+
       /* Fix the type of 'this'.  */
       fntype = build_memfn_type (fntype, type,
 				 type_memfn_quals (fntype),
@@ -18045,10 +18063,6 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
       /* Let finish_function set this.  */
       DECL_DECLARED_CONSTEXPR_P (fn) = false;
-
-      /* The body of a lambda-expression is not a subexpression of the
-	 enclosing expression.  */
-      cp_evaluated ev;
 
       bool nested = cfun;
       if (nested)
