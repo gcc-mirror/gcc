@@ -100,8 +100,9 @@ MOSTLYCLEANFILES = \
 	*.sent
 
 mostlyclean-local:
-	-chmod -R u+w check-go-dir
-	rm -rf check-go-dir check-runtime-dir cgo-test-dir carchive-test-dir
+	if test -d check-go-dir; then chmod -R u+w check-go-dir; fi
+	rm -rf check-go-dir check-runtime-dir cgo-test-dir carchive-test-dir \
+	check-vet-dir gocache-test
 
 if NATIVE
 

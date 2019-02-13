@@ -1,3 +1,10 @@
+2019-02-12  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/89193
+	* Makefile.am (mostlyclean-local): Avoid getting an error from
+	chmod.  Remove check-vet-dir and gocache-test.
+	* Makefile.in: Regenerate.
+
 2019-01-28  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* Makefile.in: Really regenerate.
