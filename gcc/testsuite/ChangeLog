@@ -1,3 +1,8 @@
+2019-02-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89297 - ICE with OVERLOAD in template.
+	* g++.dg/cpp0x/initlist113.C: New test.
+
 2019-02-13  Alexandre Oliva <aoliva@redhat.com>
 
 	PR c++/86379
