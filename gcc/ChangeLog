@@ -1,3 +1,38 @@
+2019-02-13  Martin Liska  <mliska@suse.cz>
+
+	* builtins.h (expand_builtin_with_bounds): Remove declaration.
+	* calls.c (struct arg_data): Remove special_slot, pointer_arg
+	and pointer_offset fields.
+	(initialize_argument_information): Remove usage of dead
+	fields.
+	* cgraph.h (struct cgraph_thunk_info): Remove
+	add_pointer_bounds_args.
+	* cgraphunit.c (cgraph_node::expand_thunk): Remove usage of dead
+	fields.
+	(cgraph_node::assemble_thunks_and_aliases): Remove usage of dead
+	fields.
+	* config/i386/i386.c (ix86_function_arg_advance): Remove
+	unrelated comment.
+	(struct builtin_isa): Remove leaf_p and nothrow_p fields.
+	(def_builtin):  Remove usage of dead
+	fields.
+	(ix86_add_new_builtins): Likewise.
+	* ipa-fnsummary.c (compute_fn_summary): Likewise.
+	* ipa-icf.c (sem_function::equals_wpa): Likewise.
+	(sem_function::init): Likewise.
+	(sem_variable::merge): Likewise.
+	* ipa-visibility.c (function_and_variable_visibility): Likewise.
+	* ipa.c (symbol_table::remove_unreachable_nodes): Likewise.
+	* lto-cgraph.c (lto_output_node): Likewise.
+	(lto_output_varpool_node): Likewise.
+	(input_node): Likewise.
+	(input_varpool_node): Likewise.
+	* lto-streamer-out.c (lto_output): Likewise.
+	* tree-inline.c (expand_call_inline): Remove usage of
+	assign_stmts.
+	* tree-inline.h (struct copy_body_data): Likewise.
+	* varpool.c (varpool_node::dump): Likewise.
+
 2019-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/89303

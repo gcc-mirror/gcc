@@ -63,9 +63,6 @@ struct copy_body_data
   /* The VAR_DECL for the return value.  */
   tree retvar;
 
-  /* Assign statements that need bounds copy.  */
-  vec<gimple *> assign_stmts;
-
   /* The map from local declarations in the inlined function to
      equivalents in the function into which it is being inlined.  */
   hash_map<tree, tree> *decl_map;

@@ -690,9 +690,6 @@ struct GTY(()) cgraph_thunk_info {
        the virtual one.  */
   bool virtual_offset_p;
 
-  /* ??? True for special kind of thunks, seems related to instrumentation.  */
-  bool add_pointer_bounds_args;
-
   /* Set to true when alias node (the cgraph_node to which this struct belong)
      is a thunk.  Access to any other fields is invalid if this is false.  */
   bool thunk_p;
@@ -1938,10 +1935,6 @@ public:
 
   /* Set when variable is scheduled to be assembled.  */
   unsigned output : 1;
-
-  /* Set when variable has statically initialized pointer
-     or is a static bounds variable and needs initalization.  */
-  unsigned need_bounds_init : 1;
 
   /* Set if the variable is dynamically initialized, except for
      function local statics.   */

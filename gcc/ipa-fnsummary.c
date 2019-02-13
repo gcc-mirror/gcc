@@ -2449,13 +2449,7 @@ compute_fn_summary (struct cgraph_node *node, bool early)
       info->account_size_time (2 * ipa_fn_summary::size_scale, 0, t, t);
       ipa_update_overall_fn_summary (node);
       info->self_size = info->size;
-      /* We cannot inline instrumentation clones.  */
-      if (node->thunk.add_pointer_bounds_args)
-	{
-          info->inlinable = false;
-          node->callees->inline_failed = CIF_CHKP;
-	}
-      else if (stdarg_p (TREE_TYPE (node->decl)))
+      if (stdarg_p (TREE_TYPE (node->decl)))
 	{
 	  info->inlinable = false;
 	  node->callees->inline_failed = CIF_VARIADIC_THUNK;
@@ -2501,16 +2495,6 @@ compute_fn_summary (struct cgraph_node *node, bool early)
 	       node->local.can_change_signature = !e;
 	     }
 	 }
-       /* Functions called by instrumentation thunk can't change signature
-	  because instrumentation thunk modification is not supported.  */
-       if (node->local.can_change_signature)
-	 for (e = node->callers; e; e = e->next_caller)
-	   if (e->caller->thunk.thunk_p
-	       && e->caller->thunk.add_pointer_bounds_args)
-	     {
-	       node->local.can_change_signature = false;
-	       break;
-	     }
        analyze_function_body (node, early);
        pop_cfun ();
      }

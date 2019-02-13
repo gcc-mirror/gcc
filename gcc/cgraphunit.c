@@ -1782,11 +1782,6 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
   tree thunk_fndecl = decl;
   tree a;
 
-  /* Instrumentation thunk is the same function with
-     a different signature.  Never need to expand it.  */
-  if (thunk.add_pointer_bounds_args)
-    return false;
-
   if (!force_gimple_thunk
       && this_adjusting
       && indirect_offset == 0
@@ -2123,8 +2118,7 @@ cgraph_node::assemble_thunks_and_aliases (void)
 
   for (e = callers; e;)
     if (e->caller->thunk.thunk_p
-	&& !e->caller->global.inlined_to
-	&& !e->caller->thunk.add_pointer_bounds_args)
+	&& !e->caller->global.inlined_to)
       {
 	cgraph_node *thunk = e->caller;
 
