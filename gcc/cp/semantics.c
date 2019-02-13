@@ -2096,7 +2096,8 @@ finish_qualified_id_expr (tree qualifying_class,
     {
       /* See if any of the functions are non-static members.  */
       /* If so, the expression may be relative to 'this'.  */
-      if (!shared_member_p (expr)
+      if ((type_dependent_expression_p (expr)
+	   || !shared_member_p (expr))
 	  && current_class_ptr
 	  && DERIVED_FROM_P (qualifying_class,
 			     current_nonlambda_class_type ()))
@@ -5867,7 +5868,8 @@ finish_omp_declare_simd_methods (tree t)
 
   for (tree x = TYPE_FIELDS (t); x; x = DECL_CHAIN (x))
     {
-      if (TREE_CODE (TREE_TYPE (x)) != METHOD_TYPE)
+      if (TREE_CODE (x) == USING_DECL
+	  || !DECL_NONSTATIC_MEMBER_FUNCTION_P (x))
 	continue;
       tree ods = lookup_attribute ("omp declare simd", DECL_ATTRIBUTES (x));
       if (!ods || !TREE_VALUE (ods))
