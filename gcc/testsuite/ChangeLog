@@ -1,3 +1,21 @@
+2019-02-13  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89253
+	* gfortran.dg/pr89253.f: New testcase.
+
+	2019-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89223
+	* gcc.dg/torture/pr89223.c: New testcase.
+
+	2019-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88739
+	* gcc.c-torture/execute/pr88739.c: New test.
+
 2019-02-11  Stefan Agner  <stefan@agner.ch>
 
 	Backport from mainline
