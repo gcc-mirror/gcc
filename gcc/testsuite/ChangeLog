@@ -1,3 +1,18 @@
+2019-02-13  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+        Backport from mainline
+        2019-02-11  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+        * gcc.target/powerpc/vec-sld-modulo.c: New.
+        * gcc.target/powerpc/vec-srad-modulo.c: New.
+        * gcc.target/powerpc/vec-srd-modulo.c: New.
+
+        2018-01-12  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/vec-sld-modulo.c: Require p8vector_hw.
+	* gcc.target/powerpc/vec-srad-modulo.c: Likewise.
+	* gcc.target/powerpc/vec-srd-modulo.c: Likewise.
+
 2019-02-13  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

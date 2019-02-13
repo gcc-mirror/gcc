@@ -1,3 +1,12 @@
+2019-02-13  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+        Backport from mainline
+        2019-02-11  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+        * config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Shift-right
+        and shift-left vector built-ins need to include a TRUNC_MOD_EXPR
+        for correct semantics.
+
 2019-02-13  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
@@ -62,7 +71,7 @@
 	PR tree-opt/86020
 	Revert:
 	2017-05-22  Jan Hubicka  <hubicka@ucw.cz>
-	
+
         * ipa-inline.c (edge_badness): Use inlined_time instead of
         inline_summaries->get.
 
