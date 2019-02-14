@@ -1,3 +1,10 @@
+2018-02-14  Steve Ellcey  <sellcey@marvell.com>
+
+	* config/aarch64/aarch64.c (aarch64_attribute_table): Change
+	affects_type_identity to true for aarch64_vector_pcs.
+	(aarch64_comp_type_attributes): New function.
+	(TARGET_COMP_TYPE_ATTRIBUTES): New macro.
+
 2019-02-14  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/88850
