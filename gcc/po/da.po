@@ -1,8 +1,8 @@
 # Danish version of GCC strings.
-# Copyright (C) 2018 Free Software Foundation, Inc.
+# Copyright (C) 2019 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Ole Laursen <olau@hardworking.dk>, 2001, 02, 03, 04.
-# Joe Hansen <joedalton2@yahoo.dk>, 2015, 2016, 2017, 2018.
+# Joe Hansen <joedalton2@yahoo.dk>, 2015, 2016, 2017, 2018, 2019.
 #
 # Konventioner:
 #
@@ -135,10 +135,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc-8.1-b20180128\n"
+"Project-Id-Version: gcc-9.1-b20190203\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2019-02-01 23:01+0000\n"
-"PO-Revision-Date: 2018-04-02 11:00+0200\n"
+"PO-Revision-Date: 2019-02-14 11:00+0200\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da\n"
@@ -268,17 +268,11 @@ msgstr "oversættelse afsluttede.\n"
 
 #: diagnostic.c:618
 msgid "In file included from"
-msgstr ""
+msgstr "I fil inkluderet fra"
 
 #: diagnostic.c:619
-#, fuzzy
-#| msgid ""
-#| ",\n"
-#| "                 from %s:%u"
 msgid "                 from"
-msgstr ""
-",\n"
-"                   af %s:%u"
+msgstr "                 fra"
 
 #: diagnostic.c:991
 #, c-format
@@ -892,10 +886,9 @@ msgstr ""
 "%s.\n"
 
 #: gcov-tool.c:528
-#, fuzzy, c-format
-#| msgid "Copyright %s 2018 Free Software Foundation, Inc.\n"
+#, c-format
 msgid "Copyright %s 2019 Free Software Foundation, Inc.\n"
-msgstr "Ophavsret %s 2018 Free Software Foundation, Inc.\n"
+msgstr "Ophavsret %s 2019 Free Software Foundation, Inc.\n"
 
 #: gcov-tool.c:531 gcov.c:920
 #, c-format
@@ -1007,10 +1000,11 @@ msgid "  -p, --preserve-paths            Preserve all pathname components\n"
 msgstr "  -p, --preserve-paths            Bevar alle stinavnskomponenter\n"
 
 #: gcov.c:898
-#, fuzzy, c-format
-#| msgid "  -k, --use-colors                Emit colored output\n"
+#, c-format
 msgid "  -q, --use-hotness-colors        Emit perf-like colored output for hot lines\n"
-msgstr "  -k, --use-colors                Udsend farvelagt resultat\n"
+msgstr ""
+"  -q --use-hotness-colors         Udsend perf-lignende farvelagt resultat for\n"
+"                                  varme linjer\n"
 
 #: gcov.c:899
 #, c-format
@@ -1023,10 +1017,9 @@ msgid "  -s, --source-prefix DIR         Source prefix to elide\n"
 msgstr "  -s, --source-prefix \tMAPPE     Kildepræfiks til elide\n"
 
 #: gcov.c:901
-#, fuzzy, c-format
-#| msgid "  -n, --no-output                 Do not create an output file\n"
+#, c-format
 msgid "  -t, --stdout                    Output to stdout instead of a file\n"
-msgstr "  -n, --no-output                 Opret ikke en uddatafil\n"
+msgstr "  -t, --stout                     Uddata til standardud i stedet for en fil\n"
 
 #: gcov.c:902
 #, c-format
@@ -1054,10 +1047,9 @@ msgid "gcov %s%s\n"
 msgstr "gcov %s%s\n"
 
 #: gcov.c:1231
-#, fuzzy, c-format
-#| msgid "#pragma %s %s is already registered"
+#, c-format
 msgid "'%s' file is already processed\n"
-msgstr "#pragma %s %s er allerede registreret"
+msgstr "»%s« fil er allerede behandlet\n"
 
 #: gcov.c:1345
 #, c-format
@@ -1085,16 +1077,14 @@ msgid "\n"
 msgstr "\n"
 
 #: gcov.c:1469
-#, fuzzy, c-format
-#| msgid "%s: Cannot open output file: %s\n"
+#, c-format
 msgid "Cannot open JSON output file %s\n"
-msgstr "%s: Kan ikke åbne uddatafilen %s\n"
+msgstr "Kan ikke åbne JSON-uddatafilen %s\n"
 
 #: gcov.c:1477
-#, fuzzy, c-format
-#| msgid "Error writing output file '%s'\n"
+#, c-format
 msgid "Error writing JSON output file %s\n"
-msgstr "Fejl ved skrivning af uddatafilen »%s«\n"
+msgstr "Fejl ved skrivning af JSON-uddatafilen »%s«\n"
 
 #: gcov.c:1644
 #, c-format
@@ -1242,21 +1232,19 @@ msgid "call   %2d never executed\n"
 msgstr "kald   %2d aldrig udført\n"
 
 #: gcov.c:2763
-#, fuzzy, c-format
-#| msgid "branch %2d taken %s%s\n"
+#, c-format
 msgid "branch %2d taken %s%s"
-msgstr "forgrening %2d valgt %s%s\n"
+msgstr "forgrening %2d valgt %s%s"
 
 #: gcov.c:2768
-#, fuzzy, c-format
-#| msgid "branch %2d never executed\n"
+#, c-format
 msgid "branch %2d never executed"
-msgstr "forgrening %2d aldrig udført\n"
+msgstr "forgrening %2d aldrig udført"
 
 #: gcov.c:2771
 #, c-format
 msgid " (BB %d)"
-msgstr ""
+msgstr " (BB %d)"
 
 #: gcov.c:2778
 #, c-format
@@ -1363,10 +1351,8 @@ msgid "this is the insn:"
 msgstr "dette er instruktionen:"
 
 #: lra-constraints.c:2955
-#, fuzzy
-#| msgid "unable to generate reloads for:"
 msgid "unable to generate reloads for impossible constraints:"
-msgstr "kunne ikke generere genindlæsninger for:"
+msgstr "kunne ikke generere genindlæsninger for umulige begræsninger:"
 
 #: lra-constraints.c:3946 reload.c:3814
 msgid "unable to generate reloads for:"
@@ -1470,13 +1456,12 @@ msgstr "De følgende tilvalg er sprogrelaterede"
 #: passes.c:1763
 #, c-format
 msgid "during %s pass: %s\n"
-msgstr ""
+msgstr "under %s gennemløb: %s\n"
 
 #: passes.c:1768
-#, fuzzy, c-format
-#| msgid "options enabled: "
+#, c-format
 msgid "dump file: %s\n"
-msgstr "tilvalg slået til: "
+msgstr "dump-fil: %s\n"
 
 #: plugin.c:923
 msgid "Event"
@@ -1779,38 +1764,34 @@ msgid "The maximum number of instructions when automatically inlining."
 msgstr "Det maksimale antal instruktioner ved automatisk indbygning."
 
 #: params.def:87
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions when automatically inlining."
+#, no-c-format
 msgid "The maximum number of instructions when automatically inlining small functions."
-msgstr "Det maksimale antal instruktioner ved automatisk indbygning."
+msgstr "Det maksimale antal instruktioner ved automatisk indbygning af små funktioner."
 
 #: params.def:92
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions when automatically inlining."
+#, no-c-format
 msgid "The maximum number of instructions when inlining for size."
-msgstr "Det maksimale antal instruktioner ved automatisk indbygning."
+msgstr "Det maksimale antal instruktioner ved automatisk indbygning for størrelse."
 
 #: params.def:97
-#, fuzzy, no-c-format
-#| msgid "Use subroutines for function prologue/epilogue"
+#, no-c-format
 msgid "Instruction accounted for function prologue, epilogue and other overhead."
-msgstr "Benyt subrutiner for funktionsindledning/-afslutninger"
+msgstr "Instruktion medtaget forfunktionsindledning/-afslutning og andre systembyrder."
 
 #: params.def:103
-#, fuzzy, no-c-format
-#| msgid "Use subroutines for function prologue/epilogue"
+#, no-c-format
 msgid "Time accounted for function prologue, epilogue and other overhead."
-msgstr "Benyt subrutiner for funktionsindledning/-afslutninger"
+msgstr "Tid medtaget for funktionsindledning/-afslutninger og andre systembyrder"
 
 #: params.def:109
 #, no-c-format
 msgid "Instruction accounted for function thunk overhead."
-msgstr ""
+msgstr "Instruktion medtaget for funktion thunk-systembyrde."
 
 #: params.def:114
 #, no-c-format
 msgid "Time accounted for function thunk overhead."
-msgstr ""
+msgstr "Tid medtaget for funktion thunk-systembyrde."
 
 #: params.def:119
 #, no-c-format
@@ -2033,8 +2014,7 @@ msgid "The maximum number of unswitchings in a single loop."
 msgstr "Det maksimale antal afbrydelser i en enkel løkke."
 
 #: params.def:393
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns in loop header duplicated by he copy loop headers pass."
+#, no-c-format
 msgid "The maximum number of insns in loop header duplicated by the copy loop headers pass."
 msgstr "Det maksimale antal instruktioner i løkketeksthoveder duplikeret af kopiløkkehoveders gennemløb."
 
@@ -2056,7 +2036,7 @@ msgstr ""
 #: params.def:417
 #, no-c-format
 msgid "The minimum value of stage count that swing modulo scheduler will generate."
-msgstr ""
+msgstr "Den mindstre værdi for trinoptælling som swing modulo-planlæggeren vil oprette."
 
 #: params.def:421
 #, no-c-format
@@ -2069,10 +2049,9 @@ msgid "A threshold on the average loop count considered by the swing modulo sche
 msgstr ""
 
 #: params.def:430
-#, fuzzy, no-c-format
-#| msgid "Select fraction of the maximal count of repetitions of basic block in program given basic block needs to have to be considered hot"
+#, no-c-format
 msgid "Select fraction of the maximal count of repetitions of basic block in program given basic block needs to have to be considered hot (used in non-LTO mode)."
-msgstr "Vælg den andel af det maksimale antal gentagelser af basisblokke i et program en given basisblok skal have for at blive betragtet som \"varm\""
+msgstr "Vælg den andel af det maksimale antal gentagelser af basisblokke i et program en given basisblok skal have for at blive betragtet som »varm« (brugt i ikke-LTO-tilstand)."
 
 #: params.def:435
 #, no-c-format
@@ -2197,9 +2176,9 @@ msgid "If number of candidates in the set is smaller, we always try to remove un
 msgstr ""
 
 #: params.def:583
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Average number of iterations of a loop."
-msgstr "Det maksimale antal faser der skal gennemgås ved udførsel af GCSE"
+msgstr "Gennemsnitlig antal genneløb for en løkke."
 
 #: params.def:588
 #, no-c-format
@@ -2259,9 +2238,9 @@ msgid "Minimum heap size before we start collecting garbage, in kilobytes."
 msgstr "Minimal heap-størrelse før vi starter affaldsindsamling, i kilobyte."
 
 #: params.def:655
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "The maximum number of instructions to search backward when looking for equivalent reload."
-msgstr "Det maksimale antal instruktioner der overvejes at udrulle i en løkke"
+msgstr "Det maksimale antal instruktioner til at søge baglæns når der kigges efter tilsvarende genindlæsning."
 
 #: params.def:660
 #, no-c-format
@@ -2439,10 +2418,9 @@ msgid "Maximum length of partial antic set when performing tree pre optimization
 msgstr ""
 
 #: params.def:894
-#, fuzzy, no-c-format
-#| msgid "The maximum depth of a loop nest we completely peel."
+#, no-c-format
 msgid "Maximum depth of a loop nest to fully value-number optimistically."
-msgstr "Den maksimale dybde for en løkkerede vi skrædder fuldstændig."
+msgstr "Den maksimale dybde for en løkkerede til fuld værdi-nummer optimistisk."
 
 #: params.def:905
 #, no-c-format
@@ -2452,12 +2430,12 @@ msgstr ""
 #: params.def:910
 #, no-c-format
 msgid "Max loops number for regional RA."
-msgstr ""
+msgstr "Maks. løkkeantal for regional RA."
 
 #: params.def:915
 #, no-c-format
 msgid "Max size of conflict table in MB."
-msgstr ""
+msgstr "Maks. størrelse på konfliktabel i MB."
 
 #: params.def:920
 #, no-c-format
@@ -2485,27 +2463,24 @@ msgid "Size of tiles for loop blocking."
 msgstr ""
 
 #: params.def:953
-#, fuzzy, no-c-format
-#| msgid "maximum number of parameters in a SCoP."
+#, no-c-format
 msgid "Maximum number of parameters in a SCoP."
-msgstr "maksimalt antal parametre i en SCoP."
+msgstr "Maksimalt antal parametre i en SCoP."
 
 #: params.def:960
-#, fuzzy, no-c-format
-#| msgid "maximum number of arrays per scop."
+#, no-c-format
 msgid "Maximum number of arrays per scop."
-msgstr "maksimalt antal tabeller per scop."
+msgstr "Maksimalt antal tabeller per scop."
 
 #: params.def:965
-#, fuzzy, no-c-format
-#| msgid "maximum number of isl operations, 0 means unlimited"
+#, no-c-format
 msgid "Maximum number of isl operations, 0 means unlimited."
-msgstr "maksimalt antal isl-operationer, 0 betyder ubegrænset"
+msgstr "Maksimalt antal isl-operationer, 0 betyder ubegrænset"
 
 #: params.def:971
 #, no-c-format
 msgid "Whether codegen errors should be ICEs when -fchecking."
-msgstr ""
+msgstr "Om codegen-fejl skal være ICE'er når -fckhcking."
 
 #: params.def:977
 #, no-c-format
@@ -2518,10 +2493,9 @@ msgid "Max basic blocks number in loop for loop invariant motion."
 msgstr ""
 
 #: params.def:992
-#, fuzzy, no-c-format
-#| msgid "use internal function id in profile lookup."
+#, no-c-format
 msgid "Use internal function id in profile lookup."
-msgstr "brug intern funktions-id i profilopslag."
+msgstr "Brug intern funktions-id i profilopslag."
 
 #: params.def:1000
 #, no-c-format
@@ -2710,10 +2684,9 @@ msgid "Enable asan stack protection."
 msgstr "Aktiver asan-stakbeskyttelse."
 
 #: params.def:1238
-#, fuzzy, no-c-format
-#| msgid "Enable asan globals protection."
+#, no-c-format
 msgid "Enable asan allocas/VLAs protection."
-msgstr "Aktiver asan-global beskyttelse."
+msgstr "Aktiver asan allocas/VLA-beskyttelse."
 
 #: params.def:1243
 #, no-c-format
@@ -11247,64 +11220,47 @@ msgstr "Generér ikke char-instruktioner"
 
 #: config/i386/i386.opt:882
 msgid "Support code generation of sahf instruction in 64bit x86-64 code."
-msgstr ""
+msgstr "Understøt kodeoprettelse af sahf-instruktion i 64-bit x86-64-kode."
 
 #: config/i386/i386.opt:886
-#, fuzzy
 msgid "Support code generation of movbe instruction."
-msgstr "Generér ikke char-instruktioner"
+msgstr "Understøt kodeoprettelse af movbe-instruktion."
 
 #: config/i386/i386.opt:890
-#, fuzzy
-#| msgid "Do not generate char instructions"
 msgid "Support code generation of crc32 instruction."
-msgstr "Generér ikke char-instruktioner"
+msgstr "Understøt kodeoprettelse af crc32-instruktion"
 
 #: config/i386/i386.opt:894
-#, fuzzy
-#| msgid "Support MMX and SSE built-in functions and code generation"
 msgid "Support AES built-in functions and code generation."
-msgstr "Understøt indbyggede MMX- og SSE-funktioner og kodegenerering"
+msgstr "Understøt indbyggede AES--funktioner og kodegenerering"
 
 #: config/i386/i386.opt:898
-#, fuzzy
-#| msgid "Support MMX and SSE built-in functions and code generation"
 msgid "Support SHA1 and SHA256 built-in functions and code generation."
-msgstr "Understøt indbyggede MMX- og SSE-funktioner og kodegenerering"
+msgstr "Understøt indbyggede SHA1- og SHA256funktioner og kodegenerering"
 
 #: config/i386/i386.opt:902
-#, fuzzy
-#| msgid "Support MMX and SSE built-in functions and code generation"
 msgid "Support PCLMUL built-in functions and code generation."
-msgstr "Understøt indbyggede MMX- og SSE-funktioner og kodegenerering"
+msgstr "Understøt indbyggede PCLMUL-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:906
 msgid "Encode SSE instructions with VEX prefix."
-msgstr ""
+msgstr "Kod SSE-instruktioner med VEX-præfiks."
 
 #: config/i386/i386.opt:910
-#, fuzzy
-#| msgid "Support MMX and SSE built-in functions and code generation"
 msgid "Support FSGSBASE built-in functions and code generation."
-msgstr "Understøt indbyggede MMX- og SSE-funktioner og kodegenerering"
+msgstr "Understøt indbyggede FSGSBASE-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:914
-#, fuzzy
-#| msgid "Support MMX and SSE built-in functions and code generation"
 msgid "Support RDRND built-in functions and code generation."
-msgstr "Understøt indbyggede MMX- og SSE-funktioner og kodegenerering"
+msgstr "Understøt indbyggede RDRND-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:918
-#, fuzzy
-#| msgid "Support MMX and SSE built-in functions and code generation"
 msgid "Support F16C built-in functions and code generation."
-msgstr "Understøt indbyggede MMX- og SSE-funktioner og kodegenerering"
+msgstr "Understøt indbyggede F16C-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:922
-#, fuzzy
-#| msgid "Support MMX and SSE built-in functions and code generation"
 msgid "Support PREFETCHWT1 built-in functions and code generation."
-msgstr "Understøt indbyggede MMX- og SSE-funktioner og kodegenerering"
+msgstr "Understøt indbyggede PREFETCHWT1-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:926
 #, fuzzy
@@ -11313,7 +11269,7 @@ msgstr "Flyt ikke instruktioner til en funktions begyndelse"
 
 #: config/i386/i386.opt:930
 msgid "Generate __mcount_loc section with all mcount or __fentry__ calls."
-msgstr ""
+msgstr "Opret __mcount_loc-sektion med alle mcount- eller __fentry__-kald."
 
 #: config/i386/i386.opt:934 config/s390/s390.opt:299
 msgid "Generate mcount/__fentry__ calls as nops. To activate they need to be patched in."
@@ -11346,28 +11302,20 @@ msgid "Split 32-byte AVX unaligned store."
 msgstr ""
 
 #: config/i386/i386.opt:963
-#, fuzzy
-#| msgid "Support MMX and SSE built-in functions and code generation"
 msgid "Support RTM built-in functions and code generation."
-msgstr "Understøt indbyggede MMX- og SSE-funktioner og kodegenerering"
+msgstr "Understøt indbyggede RTM-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:971
-#, fuzzy
-#| msgid "Support MMX and SSE built-in functions and code generation"
 msgid "Support MWAITX and MONITORX built-in functions and code generation."
-msgstr "Understøt indbyggede MMX- og SSE-funktioner og kodegenerering"
+msgstr "Understøt indbyggede MWAITX- og MONITORX-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:975
-#, fuzzy
-#| msgid "Support MMX and SSE built-in functions and code generation"
 msgid "Support CLZERO built-in functions and code generation."
-msgstr "Understøt indbyggede MMX- og SSE-funktioner og kodegenerering"
+msgstr "Understøt indbyggede CLZERO-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:979
-#, fuzzy
-#| msgid "Support MMX and SSE built-in functions and code generation"
 msgid "Support PKU built-in functions and code generation."
-msgstr "Understøt indbyggede MMX- og SSE-funktioner og kodegenerering"
+msgstr "Understøt indbyggede PKU-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:987
 msgid "Known stack protector guard (for use with the -mstack-protector-guard= option):"
@@ -11398,10 +11346,8 @@ msgid "Insert ENDBR instruction at function entry only via cf_check attribute fo
 msgstr ""
 
 #: config/i386/i386.opt:1038
-#, fuzzy
-#| msgid "Use call and rtc for function calls and returns"
 msgid "Make all function calls indirect."
-msgstr "Benyt call og rtc til funktionskald og returneringer"
+msgstr "Benyt alle funktionskald indirekte."
 
 #: config/i386/i386.opt:1042
 msgid "Convert indirect call and jump to call and return thunks."
@@ -11424,33 +11370,24 @@ msgid "Force indirect call and jump via register."
 msgstr ""
 
 #: config/i386/i386.opt:1070
-#, fuzzy
-#| msgid "Support MMX and SSE built-in functions and code generation"
 msgid "Support MOVDIRI built-in functions and code generation."
-msgstr "Understøt indbyggede MMX- og SSE-funktioner og kodegenerering"
+msgstr "Understøt indbyggede MOVDIRI-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:1074
-#, fuzzy
-#| msgid "Support MMX and SSE built-in functions and code generation"
 msgid "Support MOVDIR64B built-in functions and code generation."
-msgstr "Understøt indbyggede MMX- og SSE-funktioner og kodegenerering"
+msgstr "Understøt indbyggede MOVDIR64B-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:1078
-#, fuzzy
-#| msgid "Support MMX and SSE built-in functions and code generation"
 msgid "Support WAITPKG built-in functions and code generation."
-msgstr "Understøt indbyggede MMX- og SSE-funktioner og kodegenerering"
+msgstr "Understøt indbyggede MMWAITPKGX-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:1082
-#, fuzzy
-#| msgid "Support MMX and SSE built-in functions and code generation"
 msgid "Support CLDEMOTE built-in functions and code generation."
-msgstr "Understøt indbyggede MMX- og SSE-funktioner og kodegenerering"
+msgstr "Understøt indbyggede CLDEMOTE-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:1086
-#, fuzzy
 msgid "Instrument function exit in instrumented functions with __fentry__."
-msgstr "Instrumentér funktionsindgange/-afslutninger med profileringskald"
+msgstr "Instrumentér funktionsafslutninger i instrumenteret funktioner med __fentry__."
 
 #: config/i386/i386.opt:1090
 msgid "Known choices for return instrumentation with -minstrument-return="
@@ -11461,16 +11398,12 @@ msgid "Generate a __return_loc section pointing to all return instrumentation co
 msgstr ""
 
 #: config/pa/pa64-hpux.opt:23
-#, fuzzy
-#| msgid "Assume code will be linked by GNU ld"
 msgid "Assume code will be linked by GNU ld."
-msgstr "Antag at kode vil blive sammenkædet med GNU ld"
+msgstr "Antag at kode vil blive sammenkædet med GNU ld."
 
 #: config/pa/pa64-hpux.opt:27
-#, fuzzy
-#| msgid "Assume code will be linked by HP ld"
 msgid "Assume code will be linked by HP ld."
-msgstr "Antag at kode vil blive sammenkædet med HP ld"
+msgstr "Antag at kode vil blive sammenkædet med HP ld."
 
 #: config/pa/pa-hpux1010.opt:23 config/pa/pa-hpux.opt:31
 #: config/pa/pa-hpux1131.opt:23 config/pa/pa-hpux1111.opt:23
@@ -11478,256 +11411,172 @@ msgid "Specify UNIX standard for predefines and linking."
 msgstr ""
 
 #: config/pa/pa-hpux.opt:27
-#, fuzzy
-#| msgid "Generate cpp defines for server IO"
 msgid "Generate cpp defines for server IO."
-msgstr "Generér CPP-defineringer til server-IO"
+msgstr "Opret cpp-defineringer til server-IO."
 
 #: config/pa/pa-hpux.opt:35
-#, fuzzy
-#| msgid "Generate cpp defines for workstation IO"
 msgid "Generate cpp defines for workstation IO."
-msgstr "Generér CPP-defineringer til arbejdsstation-IO"
+msgstr "Opret CPP-defineringer til arbejdsstation-IO."
 
 #: config/pa/pa.opt:30 config/pa/pa.opt:87 config/pa/pa.opt:95
-#, fuzzy
-#| msgid "Generate PA1.0 code"
 msgid "Generate PA1.0 code."
-msgstr "Generér PA1.0-kode"
+msgstr "Opret PA1.0-kode."
 
 #: config/pa/pa.opt:34 config/pa/pa.opt:99 config/pa/pa.opt:140
-#, fuzzy
-#| msgid "Generate PA1.1 code"
 msgid "Generate PA1.1 code."
-msgstr "Generér PA1.1-kode"
+msgstr "Opret PA1.1-kode."
 
 #: config/pa/pa.opt:38 config/pa/pa.opt:103
-#, fuzzy
-#| msgid "Generate PA2.0 code (requires binutils 2.10 or later)"
 msgid "Generate PA2.0 code (requires binutils 2.10 or later)."
-msgstr "Generér PA2.0-kode (kræver binutils 2.10 eller nyere)"
+msgstr "Opret PA2.0-kode (kræver binutils 2.10 eller nyere)."
 
 #: config/pa/pa.opt:46
 msgid "Caller copies function arguments passed by hidden reference."
 msgstr ""
 
 #: config/pa/pa.opt:50
-#, fuzzy
-#| msgid "Disable FP regs"
 msgid "Disable FP regs."
-msgstr "Deaktivér kommatalsregistre"
+msgstr "Deaktiver kommatalsregistre."
 
 #: config/pa/pa.opt:54
-#, fuzzy
-#| msgid "Disable indexed addressing"
 msgid "Disable indexed addressing."
-msgstr "Deaktivér indekseret adressering"
+msgstr "Deaktiver indekseret adressering."
 
 #: config/pa/pa.opt:58
-#, fuzzy
-#| msgid "Generate fast indirect calls"
 msgid "Generate fast indirect calls."
-msgstr "Generér hurtige indirekte kald"
+msgstr "Opret hurtige indirekte kald."
 
 #: config/pa/pa.opt:66
-#, fuzzy
-#| msgid "Assume code will be assembled by GAS"
 msgid "Assume code will be assembled by GAS."
-msgstr "Antag at koden bliver oversat af GAS"
+msgstr "Antag at koden bliver oversat af GAS."
 
 #: config/pa/pa.opt:75
-#, fuzzy
-#| msgid "Enable linker optimizations"
 msgid "Enable linker optimizations."
-msgstr "Aktivér sammenkæderoptimeringer"
+msgstr "Aktiver sammenkæderoptimeringer."
 
 #: config/pa/pa.opt:79
-#, fuzzy
-#| msgid "Always generate long calls"
 msgid "Always generate long calls."
-msgstr "Generér altid lange kalde"
+msgstr "Opret altid lange kald."
 
 #: config/pa/pa.opt:83
-#, fuzzy
-#| msgid "Emit long load/store sequences"
 msgid "Emit long load/store sequences."
-msgstr "Udsend lange load/store-sekvenser"
+msgstr "Udsend lange load/store-sekvenser."
 
 #: config/pa/pa.opt:91
-#, fuzzy
-#| msgid "Disable space regs"
 msgid "Disable space regs."
-msgstr "Deaktivér pladsregistre"
+msgstr "Deaktivée pladsregistre."
 
 #: config/pa/pa.opt:107
-#, fuzzy
-#| msgid "Use portable calling conventions"
 msgid "Use portable calling conventions."
-msgstr "Benyt portable kaldekonventioner"
+msgstr "Benyt portable kaldekonventioner."
 
 #: config/pa/pa.opt:111
-#, fuzzy
-#| msgid ""
-#| "unknown -mschedule= option (%s).\n"
-#| "Valid options are 700, 7100, 7100LC, 7200, 7300, and 8000\n"
 msgid "Specify CPU for scheduling purposes.  Valid arguments are 700, 7100, 7100LC, 7200, 7300, and 8000."
-msgstr ""
-"ukendt parameter til -mschedule= (%s).\n"
-"Gyldige parametre er 700, 7100, 7100LC, 7200, 7300 og 8000\n"
+msgstr "Angiv CPU for planlægningsformål. Gyldige argumenter er 700, 7100, 7100LC, 7200, 7300 og 8000."
 
 #: config/pa/pa.opt:136 config/frv/frv.opt:215
-#, fuzzy
-#| msgid "Use software floating point"
 msgid "Use software floating point."
-msgstr "Benyt softwarekommatal"
+msgstr "Benyt softwarekommatal."
 
 #: config/pa/pa.opt:144
-#, fuzzy
-#| msgid "Do not disable space regs"
 msgid "Do not disable space regs."
-msgstr "Deaktivér ikke pladsregistre"
+msgstr "Deaktiver ikke pladsregistre."
 
 #: config/v850/v850.opt:29
-#, fuzzy
-#| msgid "Do not use registers r2 and r5"
 msgid "Use registers r2 and r5."
-msgstr "Benyt ikke registrene r2 og r5"
+msgstr "Benyt ikke registrene r2 og r5."
 
 #: config/v850/v850.opt:33
-#, fuzzy
-#| msgid "Use 4 byte entries in switch tables"
 msgid "Use 4 byte entries in switch tables."
-msgstr "Benyt 4 byte-elementer i switch-tabeller"
+msgstr "Benyt 4 byte-elementer i switch-tabeller."
 
 #: config/v850/v850.opt:37
-#, fuzzy
-#| msgid "Enable backend debugging"
 msgid "Enable backend debugging."
-msgstr "Aktivér bagendefejlanalyseringsinfo"
+msgstr "Aktiver motorfejlsøgning."
 
 #: config/v850/v850.opt:41
-#, fuzzy
-#| msgid "Do not use the callt instruction"
 msgid "Do not use the callt instruction (default)."
-msgstr "Benyt ikke callt-instruktionen"
+msgstr "Benyt ikke callt-instruktionen (standard)."
 
 #: config/v850/v850.opt:45
-#, fuzzy
-#| msgid "Reuse r30 on a per function basis"
 msgid "Reuse r30 on a per function basis."
-msgstr "Genbrug r30 på et pr. funktionsgrundlag"
+msgstr "Genbrug r30 på et pr. funktionsgrundlag."
 
 #: config/v850/v850.opt:52
-#, fuzzy
-#| msgid "Prohibit PC relative function calls"
 msgid "Prohibit PC relative function calls."
-msgstr "Forbyd PC-relative funktionskald"
+msgstr "Forbyd PC-relative funktionskald."
 
 #: config/v850/v850.opt:56
-#, fuzzy
-#| msgid "Use stubs for function prologues"
 msgid "Use stubs for function prologues."
-msgstr "Benyt stubbe til funktionsindledninger"
+msgstr "Benyt stubbe til funktionsindledninger."
 
 #: config/v850/v850.opt:60
-#, fuzzy
-#| msgid "Set the max size of data eligible for the SDA area"
 msgid "Set the max size of data eligible for the SDA area."
-msgstr "Angiv den maks. størrelse af data til SDA-området"
+msgstr "Angiv den maks. størrelse af data til SDA-området."
 
 #: config/v850/v850.opt:67
-#, fuzzy
-#| msgid "Enable the use of the short load instructions"
 msgid "Enable the use of the short load instructions."
-msgstr "Aktivér brug af short load-instruktioner"
+msgstr "Aktiver brug af short load-instruktioner."
 
 #: config/v850/v850.opt:71
-#, fuzzy
-#| msgid "Same as: -mep -mprolog-function"
 msgid "Same as: -mep -mprolog-function."
-msgstr "Samme som: -mep -mprolog-function"
+msgstr "Samme som: -mep -mprolog-function."
 
 #: config/v850/v850.opt:75
-#, fuzzy
-#| msgid "Set the max size of data eligible for the TDA area"
 msgid "Set the max size of data eligible for the TDA area."
-msgstr "Angiv den maks. størrelse af data til TDA-området"
+msgstr "Angiv den maks. størrelse af data til TDA-området."
 
 #: config/v850/v850.opt:82
-#, fuzzy
-#| msgid "Enforce strict alignment"
 msgid "Do not enforce strict alignment."
-msgstr "Gennemtving streng justering"
+msgstr "Gennemtving ikke streng justering."
 
 #: config/v850/v850.opt:86
 msgid "Put jump tables for switch statements into the .data section rather than the .code section."
 msgstr ""
 
 #: config/v850/v850.opt:93
-#, fuzzy
-#| msgid "Compile for the v850 processor"
 msgid "Compile for the v850 processor."
-msgstr "Oversæt for v850-processoren"
+msgstr "Oversæt for v850-processoren."
 
 #: config/v850/v850.opt:97
-#, fuzzy
-#| msgid "Compile for the v850 processor"
 msgid "Compile for the v850e processor."
-msgstr "Oversæt for v850-processoren"
+msgstr "Oversæt for v850e-processoren."
 
 #: config/v850/v850.opt:101
-#, fuzzy
-#| msgid "Compile for the v850 processor"
 msgid "Compile for the v850e1 processor."
-msgstr "Oversæt for v850-processoren"
+msgstr "Oversæt for v850e1-processoren."
 
 #: config/v850/v850.opt:105
-#, fuzzy
-#| msgid "Compile for the v850 processor"
 msgid "Compile for the v850es variant of the v850e1."
-msgstr "Oversæt for v850-processoren"
+msgstr "Oversæt for v850-es-varianten af v850e1."
 
 #: config/v850/v850.opt:109
-#, fuzzy
-#| msgid "Compile for the v850 processor"
 msgid "Compile for the v850e2 processor."
-msgstr "Oversæt for v850-processoren"
+msgstr "Oversæt for v850e2-processoren."
 
 #: config/v850/v850.opt:113
-#, fuzzy
-#| msgid "Compile for the v850 processor"
 msgid "Compile for the v850e2v3 processor."
-msgstr "Oversæt for v850-processoren"
+msgstr "Oversæt for v850e2v3-processoren."
 
 #: config/v850/v850.opt:117
-#, fuzzy
-#| msgid "Compile for the v850 processor"
 msgid "Compile for the v850e3v5 processor."
-msgstr "Oversæt for v850-processoren"
+msgstr "Oversæt for v850e3v5-processoren."
 
 #: config/v850/v850.opt:124
-#, fuzzy
-#| msgid "Enable parallel instructions"
 msgid "Enable v850e3v5 loop instructions."
-msgstr "Aktivér parallelle instruktioner"
+msgstr "Aktiverv850e3v5-løkkeinstruktioner."
 
 #: config/v850/v850.opt:128
-#, fuzzy
-#| msgid "Set the max size of data eligible for the ZDA area"
 msgid "Set the max size of data eligible for the ZDA area."
-msgstr "Angiv den maks. størrelse af data til ZDA-området"
+msgstr "Angiv den maks. størrelse af data til ZDA-området."
 
 #: config/v850/v850.opt:135
-#, fuzzy
-#| msgid "Enable compatibility with ic960 assembler"
 msgid "Enable relaxing in the assembler."
-msgstr "Aktivér kompatibilitet med ic960-maskinkodeoversætteren"
+msgstr "Aktiver relaxing i maskinkodeoversætteren"
 
 #: config/v850/v850.opt:139
-#, fuzzy
-#| msgid "Prohibit PC relative function calls"
 msgid "Prohibit PC relative jumps."
-msgstr "Forbyd PC-relative funktionskald"
+msgstr "Forbyd PC-relative hop."
 
 #: config/v850/v850.opt:143
 #, fuzzy
@@ -11748,10 +11597,8 @@ msgid "Enable support for the RH850 ABI.  This is the default."
 msgstr "Aktiver brugen af RX FPU-instruktioner. Dette er standarden."
 
 #: config/v850/v850.opt:155
-#, fuzzy
-#| msgid "Enable support for huge objects"
 msgid "Enable support for the old GCC ABI."
-msgstr "Aktivér understøttelse af enorme objekter"
+msgstr "Aktiver understøttelse af den gamle GCC ABI."
 
 #: config/v850/v850.opt:159
 msgid "Support alignments of up to 64-bits."
@@ -11767,26 +11614,20 @@ msgid "Support legacy multi-threading."
 msgstr ""
 
 #: config/lynx.opt:27
-#, fuzzy
-#| msgid "Use hardware fp"
 msgid "Use shared libraries."
-msgstr "Brug hardwarekommatal"
+msgstr "Brug delte biblioteker."
 
 #: config/lynx.opt:31
 msgid "Support multi-threading."
-msgstr ""
+msgstr "Understøt brug af flere tråde."
 
 #: config/nvptx/nvptx.opt:22 config/gcn/gcn.opt:47
-#, fuzzy
-#| msgid "Generate code for a 68302"
 msgid "Generate code for a 32-bit ABI."
-msgstr "Generér kode til en 68302"
+msgstr "Opret kode til en 32-bit ABI."
 
 #: config/nvptx/nvptx.opt:26 config/gcn/gcn.opt:51
-#, fuzzy
-#| msgid "Generate code for a 68040"
 msgid "Generate code for a 64-bit ABI."
-msgstr "Generér kode til en 68040"
+msgstr "Opret kode til en 64-bit ABI."
 
 #: config/nvptx/nvptx.opt:30
 msgid "Link in code for a __main kernel."
@@ -11813,28 +11654,20 @@ msgid "Generate code for OpenMP offloading: enables -msoft-stack and -muniform-s
 msgstr ""
 
 #: config/nvptx/nvptx.opt:54
-#, fuzzy
-#| msgid "Known ABIs (for use with the -mabi= option):"
 msgid "Known PTX ISA versions (for use with the -misa= option):"
-msgstr "Kendte ABI'er (for brug med tilvalget -mabi=):"
+msgstr "Kendte PTX ISA-versioner (for brug med tilvalget -misa=):"
 
 #: config/nvptx/nvptx.opt:64
-#, fuzzy
-#| msgid "Specify the name of the target CPU"
 msgid "Specify the version of the ptx ISA to use."
-msgstr "Angiv navnet på målprocessoren"
+msgstr "Angiv versionen for ptx ISA'en at anvende."
 
 #: config/vxworks.opt:36
-#, fuzzy
-#| msgid "Assume normal C execution environment"
 msgid "Assume the VxWorks RTP environment."
-msgstr "Antag normalt C-kørselsmiljø"
+msgstr "Antag VxWorks RTP-miljøet."
 
 #: config/vxworks.opt:43
-#, fuzzy
-#| msgid "Assume normal C execution environment"
 msgid "Assume the VxWorks vThreads environment."
-msgstr "Antag normalt C-kørselsmiljø"
+msgstr "Antag VxWorks vThreads-miljøet."
 
 #: config/cr16/cr16.opt:23
 #, fuzzy
@@ -11843,10 +11676,8 @@ msgid "-msim   Use simulator runtime."
 msgstr "Benyt WindISS-simulatoren"
 
 #: config/cr16/cr16.opt:27
-#, fuzzy
-#| msgid "Generate char instructions"
 msgid "Generate SBIT, CBIT instructions."
-msgstr "Generér char-instruktioner"
+msgstr "Opret SBIT-, CBIT-instruktioner."
 
 #: config/cr16/cr16.opt:31
 #, fuzzy
@@ -11859,31 +11690,25 @@ msgid "Treat data references as near, far or medium. medium is default."
 msgstr ""
 
 #: config/cr16/cr16.opt:42
-#, fuzzy
-#| msgid "Generate code for CR16C architecture"
 msgid "Generate code for CR16C architecture."
-msgstr "Opret kode for CR16C-arkitekturen"
+msgstr "Opret kode for CR16C-arkitekturen."
 
 #: config/cr16/cr16.opt:46
-#, fuzzy
-#| msgid "Generate code for CR16C+ architecture (Default)"
 msgid "Generate code for CR16C+ architecture (Default)."
-msgstr "Opret kode for CR16C+-arkitekturen (standard)"
+msgstr "Opret kode for CR16C+-arkitekturen (standard)."
 
 #: config/cr16/cr16.opt:50
 msgid "Treat integers as 32-bit."
 msgstr "Opfat heltal som 32-bit"
 
 #: config/avr/avr.opt:23
-#, fuzzy
-#| msgid "Use subroutines for function prologue/epilogue"
 msgid "Use subroutines for function prologues and epilogues."
-msgstr "Benyt subrutiner for funktionsindledning/-afslutninger"
+msgstr "Benyt subrutiner for funktionsindledning/-afslutninger."
 
 #: config/avr/avr.opt:26
-#, fuzzy, c-format
+#, c-format
 msgid "missing device or architecture after %qs"
-msgstr "et mål mangler efter '-%s'"
+msgstr "manglende enhed eller arkitektur efter %qs"
 
 #: config/avr/avr.opt:27
 #, fuzzy
@@ -11983,94 +11808,68 @@ msgid "Do not link against the device-specific library lib<MCU>.a."
 msgstr ""
 
 #: config/m32r/m32r.opt:34
-#, fuzzy
-#| msgid "Compile for a 68HC12"
 msgid "Compile for the m32rx."
-msgstr "Oversæt til en 68HC12"
+msgstr "Oversæt til m32rx'en."
 
 #: config/m32r/m32r.opt:38
-#, fuzzy
-#| msgid "Compile for a 68HC12"
 msgid "Compile for the m32r2."
-msgstr "Oversæt til en 68HC12"
+msgstr "Oversæt til m32rx'en."
 
 #: config/m32r/m32r.opt:42
-#, fuzzy
-#| msgid "Compile for a 68HC12"
 msgid "Compile for the m32r."
-msgstr "Oversæt til en 68HC12"
+msgstr "Oversæt til m32r'en."
 
 #: config/m32r/m32r.opt:46
-#, fuzzy
-#| msgid "Align all loops to 32 byte boundary"
 msgid "Align all loops to 32 byte boundary."
-msgstr "Justér alle løkker til 32 byte-grænserne"
+msgstr "Juster alle løkker til 32 byte-grænserne."
 
 #: config/m32r/m32r.opt:50
-#, fuzzy
-#| msgid "Prefer branches over conditional execution"
 msgid "Prefer branches over conditional execution."
-msgstr "Foretræk forgrening frem for betinget udførelse"
+msgstr "Foretræk forgrening frem for betinget udførelse."
 
 #: config/m32r/m32r.opt:54
 msgid "Give branches their default cost."
-msgstr ""
+msgstr "Giv forgreninger deres standardomkostning."
 
 #: config/m32r/m32r.opt:58
-#, fuzzy
-#| msgid "Display compile time statistics"
 msgid "Display compile time statistics."
-msgstr "Vis oversættelsesstatistikker"
+msgstr "Vis oversættelsesstatistik."
 
 #: config/m32r/m32r.opt:62
-#, fuzzy
-#| msgid "Specify cache flush function"
 msgid "Specify cache flush function."
-msgstr "Angiv mellemlagertømningsfunktion"
+msgstr "Angiv mellemlagertømningsfunktion."
 
 #: config/m32r/m32r.opt:66
-#, fuzzy
 msgid "Specify cache flush trap number."
-msgstr "Angiv mellemlagertømningsfunktion"
+msgstr "Angiv mellemlagertømningsfunktion."
 
 #: config/m32r/m32r.opt:70
-#, fuzzy
-#| msgid "Only issue one instruction per cycle"
 msgid "Only issue one instruction per cycle."
-msgstr "Udfør kun én instruktion pr. cyklus"
+msgstr "Udfør kun én instruktion pr. cyklus."
 
 #: config/m32r/m32r.opt:74
-#, fuzzy
-#| msgid "Only issue one instruction per cycle"
 msgid "Allow two instructions to be issued per cycle."
-msgstr "Udfør kun én instruktion pr. cyklus"
+msgstr "Tillad at to instruktioner udstedes per cyklus."
 
 #: config/m32r/m32r.opt:78
-#, fuzzy
-#| msgid "Code size: small, medium or large"
 msgid "Code size: small, medium or large."
-msgstr "Kodestørrelse: small, medium eller large"
+msgstr "Kodestørrelse: small, medium eller large."
 
 #: config/m32r/m32r.opt:94
-#, fuzzy
-#| msgid "Don't call any cache flush functions"
 msgid "Don't call any cache flush functions."
-msgstr "Kald ikke nogen mellemlagertømningsfunktion"
+msgstr "Kald ikke nogen mellemlagertømningsfunktion."
 
 #: config/m32r/m32r.opt:98
-#, fuzzy
 msgid "Don't call any cache flush trap."
-msgstr "Kald ikke nogen mellemlagertømningsfunktion"
+msgstr "Kald ikke nogen mellemlagertømningsfunktion."
 
 #: config/m32r/m32r.opt:105
-#, fuzzy
-#| msgid "Small data area: none, sdata, use"
 msgid "Small data area: none, sdata, use."
-msgstr "Område til små data: none, sdata, use"
+msgstr "Område til små data: none, sdata, use."
 
 #: config/s390/tpf.opt:23
 msgid "Enable TPF-OS tracing code."
-msgstr ""
+msgstr "Aktiver TPF-OS-registreringskode."
 
 #: config/s390/tpf.opt:27
 #, fuzzy
@@ -12079,28 +11878,24 @@ msgid "Specify main object for TPF-OS."
 msgstr "Angiv maksimalt antal iterationer for RPTS"
 
 #: config/s390/s390.opt:48
-#, fuzzy
 msgid "31 bit ABI."
-msgstr "Benyt 64 bit-API"
+msgstr "31-bit ABI."
 
 #: config/s390/s390.opt:52
-#, fuzzy
 msgid "64 bit ABI."
-msgstr "Benyt 64 bit-API"
+msgstr "64-bit ABI."
 
 #: config/s390/s390.opt:117
 msgid "Maintain backchain pointer."
 msgstr ""
 
 #: config/s390/s390.opt:121
-#, fuzzy
-#| msgid "Additional debug prints"
 msgid "Additional debug prints."
-msgstr "Udskriv ekstra fejlanalyseringsinfo"
+msgstr "Udskriv ekstra fejlsøgningsinformation."
 
 #: config/s390/s390.opt:125
 msgid "ESA/390 architecture."
-msgstr ""
+msgstr "ESA/390-arkitektur."
 
 #: config/s390/s390.opt:129
 #, fuzzy
@@ -19929,10 +19724,9 @@ msgstr "uforenelig egenskab '%s' ignoreret"
 
 #: attribs.c:998 cp/decl.c:1136 cp/decl.c:1971 cp/decl.c:1982 cp/decl.c:2561
 #: cp/decl.c:2983
-#, fuzzy, gcc-internal-format
-#| msgid "previous declaration of `%D'"
+#, gcc-internal-format
 msgid "previous declaration of %qD"
-msgstr "'%D' er tidligere erklæret"
+msgstr "tidligere erklæring af %qD"
 
 #: attribs.c:1141
 #, fuzzy, gcc-internal-format
@@ -19988,10 +19782,9 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: attribs.c:1987 attribs.c:2007
-#, fuzzy, gcc-internal-format
-#| msgid "  `%#D' declared here"
+#, gcc-internal-format
 msgid "%qD target declared here"
-msgstr "  '%#D' erklæret her"
+msgstr "%qD-mål erklæret her"
 
 #: attribs.c:2001
 #, gcc-internal-format
@@ -20003,7 +19796,7 @@ msgstr[1] ""
 #: auto-profile.c:365
 #, gcc-internal-format
 msgid "offset exceeds 16 bytes"
-msgstr ""
+msgstr "forskydning er større end 16 byte"
 
 #: auto-profile.c:865
 #, fuzzy, gcc-internal-format
@@ -20012,10 +19805,9 @@ msgid "Not expected TAG."
 msgstr "';' forventet"
 
 #: auto-profile.c:930
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Could not open source file %s.\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot open profile file %s"
-msgstr "Kunne ikke åbne kildefilen %s.\n"
+msgstr "kan ikke åben profilefilen %s"
 
 #: auto-profile.c:936
 #, gcc-internal-format
@@ -27871,7 +27663,7 @@ msgstr ""
 #: tree.c:14259
 #, gcc-internal-format
 msgid "TYPE_CANONICAL is not compatible"
-msgstr ""
+msgstr "TYPE_CANONICAL er ikke kompatibel"
 
 #: tree.c:14267
 #, gcc-internal-format
@@ -27886,27 +27678,27 @@ msgstr ""
 #: tree.c:14289
 #, gcc-internal-format
 msgid "TYPE_VFIELD is not FIELD_DECL nor TREE_LIST"
-msgstr ""
+msgstr "TYPE_VFIELD er ikke FIELD_DECL eller TREE_LIST"
 
 #: tree.c:14299
 #, gcc-internal-format
 msgid "TYPE_NEXT_PTR_TO is not POINTER_TYPE"
-msgstr ""
+msgstr "TYPE_NEXT_PTR_TO er ikke POINTER_TYPE"
 
 #: tree.c:14309
 #, gcc-internal-format
 msgid "TYPE_NEXT_REF_TO is not REFERENCE_TYPE"
-msgstr ""
+msgstr "TYPE_NEXT_REF_TO er ikke REFERENCE_TYPE"
 
 #: tree.c:14330
 #, gcc-internal-format
 msgid "TYPE_BINFO is not TREE_BINFO"
-msgstr ""
+msgstr "TYPE_BINFO er ikke TREE_BINFO"
 
 #: tree.c:14336
 #, gcc-internal-format
 msgid "TYPE_BINFO type is not TYPE_MAIN_VARIANT"
-msgstr ""
+msgstr "TYPE_BINFO type er ikke TYPE_MAIN_VARIANT"
 
 #: tree.c:14347
 #, gcc-internal-format
@@ -27976,7 +27768,7 @@ msgstr ""
 #: tree.c:14496
 #, gcc-internal-format
 msgid "wrong TYPE_CACHED_VALUES entry"
-msgstr ""
+msgstr "forkert TYPE_CACHED_VALUES-element"
 
 #: tree.c:14509
 #, gcc-internal-format
@@ -28044,16 +27836,14 @@ msgid "variable tracking size limit exceeded"
 msgstr ""
 
 #: varasm.c:337
-#, fuzzy, gcc-internal-format
-#| msgid "%+D causes a section type conflict with %D"
+#, gcc-internal-format
 msgid "%+qD causes a section type conflict with %qD"
-msgstr "%+D forårsager en sektionstypekonflikt med %D"
+msgstr "%+qD forårsager en sektionstypekonflikt med %qD"
 
 #: varasm.c:340
-#, fuzzy, gcc-internal-format
-#| msgid "section type conflict with %D"
+#, gcc-internal-format
 msgid "section type conflict with %qD"
-msgstr "afsnitstypekonflikt med %D"
+msgstr "afsnitstypekonflikt med %qD"
 
 #: varasm.c:345
 #, gcc-internal-format
@@ -47360,22 +47150,19 @@ msgid "friend declaration of %qD specifies default arguments and isn't a definit
 msgstr "erklæring af '%#D' uden for en klasse er ikke en definition"
 
 #: cp/decl.c:8949
-#, fuzzy, gcc-internal-format
-#| msgid "cannot declare `::main' to be a template"
+#, gcc-internal-format
 msgid "cannot declare %<::main%> to be a template"
-msgstr "kan ikke erklære '::main' som en skabelon"
+msgstr "kan ikke erklære %<::main%> som en skabelon"
 
 #: cp/decl.c:8952
-#, fuzzy, gcc-internal-format
-#| msgid "cannot declare `::main' to be inline"
+#, gcc-internal-format
 msgid "cannot declare %<::main%> to be inline"
-msgstr "kan ikke erklære '::main' som indlejret"
+msgstr "kan ikke erklære %<::main%> som indlejret"
 
 #: cp/decl.c:8955
-#, fuzzy, gcc-internal-format
-#| msgid "cannot declare `::main' to be inline"
+#, gcc-internal-format
 msgid "cannot declare %<::main%> to be %<constexpr%>"
-msgstr "kan ikke erklære '::main' som indlejret"
+msgstr "kan ikke erklære %<::main%> til at være %<constexpr%>"
 
 #: cp/decl.c:8957
 #, fuzzy, gcc-internal-format
@@ -52076,15 +51863,14 @@ msgid "use of %<auto%> in parameter declaration only available with -fconcepts"
 msgstr "ISO C forbyder forhåndsparametererklæringer"
 
 #: cp/parser.c:17791
-#, fuzzy, gcc-internal-format
-#| msgid "  expected a template of type `%D', got `%D'"
+#, gcc-internal-format
 msgid "expected template-id for type"
-msgstr "  forventede en skabelon af typen '%D', modtog '%D'"
+msgstr "forventet skabelon-id for typen"
 
 #: cp/parser.c:17862
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected type-name"
-msgstr "uventet operand"
+msgstr "forventet type-navn"
 
 #: cp/parser.c:18208
 #, gcc-internal-format
@@ -52166,21 +51952,19 @@ msgid "declaration of %qD in %qD which does not enclose %qD"
 msgstr "erklæring af '%D' i '%D' som ikke omgiver '%D'"
 
 #: cp/parser.c:18844 cp/parser.c:23841
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "extra qualification not allowed"
-msgstr "ekstra modifikation '%T::' af medlemmet '%D' ignoreret"
+msgstr "ekstra kvalifikation er ikke tilladt"
 
 #: cp/parser.c:18868
-#, fuzzy, gcc-internal-format
-#| msgid "multiple definition of `%#T'"
+#, gcc-internal-format
 msgid "multiple definition of %q#T"
-msgstr "flere definitioner af '%#T'"
+msgstr "flere definitioner af %q#T"
 
 #: cp/parser.c:18881
-#, fuzzy, gcc-internal-format
-#| msgid "ISO C++ forbids %sing an enum"
+#, gcc-internal-format
 msgid "ISO C++ forbids empty unnamed enum"
-msgstr "ISO C++ forbyder %s af en enum"
+msgstr "ISO C++ forbyder tomme unavngivet enum"
 
 #: cp/parser.c:18901
 #, gcc-internal-format
@@ -52198,15 +51982,14 @@ msgid "%qD is not a namespace-name; did you mean %qs?"
 msgstr "'%D' erklærer ikke en skabelonstype"
 
 #: cp/parser.c:19099
-#, fuzzy, gcc-internal-format
-#| msgid "`%D' is not a namespace"
+#, gcc-internal-format
 msgid "%qD is not a namespace-name"
-msgstr "'%D' er ikke et navnerum"
+msgstr "%qD er ikke et navnerum-navn"
 
 #: cp/parser.c:19103
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected namespace-name"
-msgstr "uventet operand"
+msgstr "forventet navnerum-navn"
 
 #: cp/parser.c:19164
 #, fuzzy, gcc-internal-format
@@ -52230,10 +52013,9 @@ msgid "nested namespace name required"
 msgstr "uventet operand"
 
 #: cp/parser.c:19209
-#, fuzzy, gcc-internal-format
-#| msgid "namespace `%T' undeclared"
+#, gcc-internal-format
 msgid "namespace name required"
-msgstr "navnerummet '%T' er ikke erklæret"
+msgstr "navnerumnavn krævet"
 
 #: cp/parser.c:19213
 #, fuzzy, gcc-internal-format
@@ -52302,10 +52084,9 @@ msgid "%qT is not an asm qualifier"
 msgstr "'%T' er ikke et navnerum"
 
 #: cp/parser.c:20176
-#, fuzzy, gcc-internal-format
-#| msgid "%s: function definition not converted\n"
+#, gcc-internal-format
 msgid "a function-definition is not allowed here"
-msgstr "%s: funktionsdefinitionen er ikke omdannet\n"
+msgstr "en funktionsdefinition er ikke tilladt her"
 
 #: cp/parser.c:20187
 #, gcc-internal-format
@@ -52460,7 +52241,7 @@ msgstr "uventet operand"
 #: cp/parser.c:22180
 #, gcc-internal-format
 msgid "expected %<,%> or %<...%>"
-msgstr ""
+msgstr "forventede %<,%> eller %<...%>"
 
 #: cp/parser.c:22258
 #, fuzzy, gcc-internal-format
@@ -52496,16 +52277,14 @@ msgid "C++ designated initializers only available with -std=c++2a or -std=gnu++2
 msgstr ""
 
 #: cp/parser.c:22914
-#, fuzzy, gcc-internal-format
-#| msgid "ISO C++ does not allow designated initializers"
+#, gcc-internal-format
 msgid "ISO C++ does not allow GNU designated initializers"
-msgstr "ISO C++ tillader ikke udpegede startværdier"
+msgstr "ISO C++ tillader ikke GNU-udpegede startværdier"
 
 #: cp/parser.c:22952
-#, fuzzy, gcc-internal-format
-#| msgid "ISO C++ does not allow designated initializers"
+#, gcc-internal-format
 msgid "ISO C++ does not allow C99 designated initializers"
-msgstr "ISO C++ tillader ikke udpegede startværdier"
+msgstr "ISO C++ tillader ikke C99-udpegede startværdier"
 
 #: cp/parser.c:22966
 #, gcc-internal-format
@@ -52513,10 +52292,9 @@ msgid "either all initializer clauses should be designated or none of them shoul
 msgstr ""
 
 #: cp/parser.c:22991
-#, fuzzy, gcc-internal-format
-#| msgid "ISO C++ does not allow designated initializers"
+#, gcc-internal-format
 msgid "%<...%> not allowed in designated initializer list"
-msgstr "ISO C++ tillader ikke udpegede startværdier"
+msgstr "%<...%> er ikke tilladt i udpegede startværdiliste"
 
 #: cp/parser.c:23029
 #, gcc-internal-format
@@ -52524,9 +52302,9 @@ msgid "%<.%s%> designator used multiple times in the same initializer list"
 msgstr ""
 
 #: cp/parser.c:23085 cp/parser.c:23213
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected class-name"
-msgstr "uventet operand"
+msgstr "forventet klasse-navn"
 
 #: cp/parser.c:23415
 #, fuzzy, gcc-internal-format
@@ -52546,7 +52324,7 @@ msgstr "'%s' er erklæret inline efter dens definition"
 #: cp/parser.c:23764
 #, gcc-internal-format
 msgid "expected %<{%> or %<:%>"
-msgstr ""
+msgstr "forventede %<{%> eller %<:%>"
 
 #: cp/parser.c:23775
 #, fuzzy, gcc-internal-format
@@ -52709,10 +52487,9 @@ msgid "dynamic exception specifications are deprecated in C++11"
 msgstr ""
 
 #: cp/parser.c:25267
-#, fuzzy, gcc-internal-format
-#| msgid "invalid use of void expression"
+#, gcc-internal-format
 msgid "invalid use of %<auto%> in exception-specification"
-msgstr "ugyldig brug af void-udtryk"
+msgstr "ugyldig brug af %<auto%> i undtagelsesspecifikation"
 
 #: cp/parser.c:25306
 #, gcc-internal-format
@@ -53040,15 +52817,14 @@ msgid "%qs tag used in naming %q#T"
 msgstr "'%s'-mærke benyttet i navngivning af '%#T'"
 
 #: cp/parser.c:29570
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' previously declared here"
+#, gcc-internal-format
 msgid "%q#T was previously declared here"
-msgstr "'%s' tidligere erklæret her"
+msgstr "%q#T var tidligere erklæret her"
 
 #: cp/parser.c:29591
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD redeclared with different access"
-msgstr "'%#D' omerklæret som en anden form for symbol"
+msgstr "%qD omerklæret med anden adgang"
 
 #: cp/parser.c:29612
 #, gcc-internal-format
@@ -53300,23 +53076,20 @@ msgid "enclosing class templates are not explicitly specialized"
 msgstr "omgivende klasseskabeloner er ikke eksplicit specialiserede"
 
 #: cp/pt.c:794
-#, fuzzy, gcc-internal-format
-#| msgid "specialization of %D after instantiation"
+#, gcc-internal-format
 msgid "specialization of %qD must appear at namespace scope"
-msgstr "specialisering af '%D' efter instantiering"
+msgstr "specialisering af %qD skal fremstå ved navnerumsanvendelsesområde"
 
 #: cp/pt.c:805
-#, fuzzy, gcc-internal-format
-#| msgid "specializing `%#T' in different namespace"
+#, gcc-internal-format
 msgid "specialization of %qD in different namespace"
-msgstr "specialiserer '%#T' i andet navnerum"
+msgstr "specialisering af %qD i andet navnerum"
 
 # hænger sammen med foregående tekst, derfor ikke 'fra'
 #: cp/pt.c:807 cp/pt.c:1034
-#, fuzzy, gcc-internal-format
-#| msgid "  from definition of `%#D'"
+#, gcc-internal-format
 msgid "  from definition of %q#D"
-msgstr "  i forhold til definition af '%#D'"
+msgstr "  i forhold til definition af %q#D"
 
 #: cp/pt.c:824
 #, fuzzy, gcc-internal-format
@@ -78297,8 +78070,6 @@ msgstr "opretter vælger for ikke-eksisterende metode '%s'"
 #~ msgid "Make prefix-radix non-decimal constants be typeless"
 #~ msgstr "Gør præfiks-grundtal ikke-decimale konstanter typeløse"
 
-# hollerith?
-#, fuzzy
 #~ msgid "Hollerith and typeless can be passed as arguments"
 #~ msgstr "Hollerith og typeløse konstanter overbringes ikke som parametre"
 
@@ -78315,7 +78086,6 @@ msgstr "opretter vælger for ikke-eksisterende metode '%s'"
 #~ msgid "Allow REAL(Z) and AIMAG(Z) given DOUBLE COMPLEX Z"
 #~ msgstr "Tillad REAL(Z) og AIMAG(Z) givet DOUBLE COMPLEX Z"
 
-#, fuzzy
 #~ msgid "Initialization via DATA and PARAMETER is not type-compatible"
 #~ msgstr "Klargøring via DATA og PARAMETER er type-kompatible"
 
@@ -78328,14 +78098,12 @@ msgstr "opretter vælger for ikke-eksisterende metode '%s'"
 #~ msgid "Disable libU77 intrinsics"
 #~ msgstr "Deaktivér libU77-indbyggede"
 
-#, fuzzy
 #~ msgid "Enable libU77 intrinsics"
 #~ msgstr "Deaktivér libU77-indbyggede"
 
 #~ msgid "Hide libU77 intrinsics"
 #~ msgstr "Skjul libU77-indbyggede"
 
-#, fuzzy
 #~ msgid "Print g77-specific version information and run internal tests"
 #~ msgstr "Udskriv g77-specifik oversætterversioninfo, kør interne test"
 
@@ -78351,7 +78119,6 @@ msgstr "opretter vælger for ikke-eksisterende metode '%s'"
 #~ msgid "Disable non-FORTRAN-77 intrinsics VXT FORTRAN supports"
 #~ msgstr "Deaktivér VXT FORTRAN-understøttelse af ikke-FORTRAN-77-indbyggede "
 
-#, fuzzy
 #~ msgid "Enable non-FORTRAN-77 intrinsics VXT FORTRAN supports"
 #~ msgstr "Deaktivér VXT FORTRAN-understøttelse af ikke-FORTRAN-77-indbyggede "
 
@@ -78364,7 +78131,6 @@ msgstr "opretter vælger for ikke-eksisterende metode '%s'"
 #~ msgid "Emit cross referencing information"
 #~ msgstr "Udsend krydsreferenceoplysninger"
 
-#, fuzzy
 #~ msgid "Print internal debugging-related information"
 #~ msgstr "Udskriv intern fejlanalyseringsrelateret info"
 
@@ -78374,14 +78140,12 @@ msgstr "opretter vælger for ikke-eksisterende metode '%s'"
 #~ msgid "-force_cpusubtype_ALL not allowed with -dynamiclib"
 #~ msgstr "-force_cpusubtype_ALL er ikke tilladt med -dynamiclib"
 
-#, fuzzy
 #~ msgid "-p and -pp specified - pick one"
 #~ msgstr "-I- er angivet to gange"
 
 #~ msgid "-pg or -p and -fomit-frame-pointer are incompatible"
 #~ msgstr "-pg eller -p og -fomit-frame-pointer er indbyrdes uforenelige"
 
-#, fuzzy
 #~ msgid "GCC does not support -CC without using -E"
 #~ msgstr "GNU C understøtter ikke -CC uden -E"
 
@@ -80752,9 +80516,6 @@ msgstr "opretter vælger for ikke-eksisterende metode '%s'"
 #~ msgid "%s: option `-W %s' doesn't allow an argument\n"
 #~ msgstr "%s: tilvalget '-W %s' tillader ikke en parameter\n"
 
-#~ msgid "Objective-C text in C source file"
-#~ msgstr "Objective C-tekst i C-kildekodefil"
-
 #~ msgid "`asm' cannot be used in function where memory usage is checked"
 #~ msgstr "'asm' kan ikke benyttes i funktioner hvor hukommelsesforbruget bliver tjekket"
 
@@ -80769,9 +80530,3 @@ msgstr "opretter vælger for ikke-eksisterende metode '%s'"
 
 #~ msgid "Errors detected in input file (your bison.simple is out of date)\n"
 #~ msgstr "Fandt fejl i inddatafilen (din bison.simple er forældet)\n"
-
-#~ msgid "Data size %ld.\n"
-#~ msgstr "Datastørrelse %ld.\n"
-
-#~ msgid "Unknown stab %s: : 0x%x\n"
-#~ msgstr "Ukendt stab %s: : 0x%x\n"
