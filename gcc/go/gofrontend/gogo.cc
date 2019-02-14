@@ -265,6 +265,21 @@ Gogo::pkgpath_for_symbol(const std::string& pkgpath)
   return go_encode_id(pkgpath);
 }
 
+// Return a hash code for a string, given a starting hash.
+
+unsigned int
+Gogo::hash_string(const std::string& s, unsigned int h)
+{
+  const char* p = s.data();
+  size_t len = s.length();
+  for (; len > 0; --len)
+    {
+      h ^= *p++;
+      h*= 16777619;
+    }
+  return h;
+}
+
 // Get the package path to use for type reflection data.  This should
 // ideally be unique across the entire link.
 

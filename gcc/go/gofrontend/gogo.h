@@ -224,6 +224,10 @@ class Gogo
   static std::string
   pkgpath_for_symbol(const std::string& pkgpath);
 
+  // Compute a hash code for a string, given a seed.
+  static unsigned int
+  hash_string(const std::string&, unsigned int);
+
   // Return the package path to use for reflect.Type.PkgPath.
   const std::string&
   pkgpath() const;
