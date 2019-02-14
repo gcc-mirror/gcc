@@ -1,5 +1,8 @@
 2019-02-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/89314
+	* gcc.dg/pr89314.c: New test.
+
 	PR middle-end/89284
 	* gcc.dg/ubsan/pr89284.c: New test.
 
