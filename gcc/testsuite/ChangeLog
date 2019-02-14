@@ -1,3 +1,12 @@
+2019-02-14  David Malcolm  <dmalcolm@redhat.com>
+
+	Backport of r259720 from trunk.
+	2018-04-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85515
+	* g++.dg/pr85515-1.C: New test.
+	* g++.dg/pr85515-2.C: New test.
+
 2019-02-14  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
