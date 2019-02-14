@@ -1,6 +1,15 @@
 2019-02-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (__coro_aw_data): Add "self" handle field.
+	(co_await_expander): Collect the calls build at parse time instead
+	of building them again.  Use the saved handle for "self".
+	(__await_xform_data): Add fields for the self handle.
+	(build_actor_fn): Transform the proxy for the "self" handle.
+
+2019-02-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (build_actor_fn): initialize the "self" handle
 	slot.
 

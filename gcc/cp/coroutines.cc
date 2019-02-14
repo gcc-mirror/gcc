@@ -663,6 +663,7 @@ struct __coro_aw_data {
   tree resume_idx;
   tree cleanup;
   tree cororet;
+  tree self_h;
   unsigned index; // resume point.
 };
 
@@ -765,8 +766,8 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
   location_t loc = EXPR_LOCATION (*stmt);
   tree expr = TREE_OPERAND (saved_co_await, 0);
   tree var = TREE_OPERAND (saved_co_await, 1);
-  tree handle = TREE_OPERAND (saved_co_await, 2);
-  tree resume_call = TREE_OPERAND (saved_co_await, 3);
+  //tree sv_handle = TREE_OPERAND (saved_co_await, 2); /* not yet.  */
+  tree awaiter_calls = TREE_OPERAND (saved_co_await, 3);
   tree source = TREE_OPERAND (saved_co_await, 4);
   bool is_final = (source && TREE_INT_CST_LOW (source) == 3);
   bool needs_dtor = TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (var));
@@ -831,7 +832,7 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
      it's void.  */
   if (sus_memb && sus_memb != error_mark_node)
     {
-      vec<tree, va_gc>* args = make_tree_vector_single (handle);
+      vec<tree, va_gc>* args = make_tree_vector_single (data->self_h);
       suspend = build_new_method_call (var, sus_memb, &args,
 				       NULL_TREE, LOOKUP_NORMAL, NULL,
 				       tf_warning_or_error);
@@ -996,9 +997,10 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
 
 static tree
 expand_co_awaits (tree fn, tree *fnbody, tree coro_fp, tree resume_idx,
-		  tree cleanup, tree cororet)
+		  tree cleanup, tree cororet, tree self_h)
 {
-  struct __coro_aw_data data = {fn, coro_fp, resume_idx, cleanup, cororet, 2};
+  struct __coro_aw_data data = {fn, coro_fp, resume_idx,
+				cleanup, cororet, self_h, 2};
   cp_walk_tree (fnbody, co_await_expander, &data, NULL);
   return *fnbody;
 }
@@ -1036,9 +1038,11 @@ replace_proxy (tree *here, int *do_subtree, void *d)
 }
 
 struct __await_xform_data {
+  tree actor_frame; 
   tree promise_proxy;
   tree real_promise;
-  tree actor_frame; 
+  tree self_h_proxy;
+  tree real_self_h;
 };
 
 /* When we built the await expressions, we didn't know the coro frame
@@ -1126,6 +1130,8 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
 {
   /* Some things we inherit from the original function.  */
   tree coro_frame_ptr = build_pointer_type (coro_frame_type);
+  tree handle_type = DECL_COROUTINE_HANDLE_TYPE (orig);
+  tree self_h_proxy = DECL_COROUTINE_SELF_H_PROXY (orig);
   tree promise_type = DECL_COROUTINE_PROMISE_TYPE (orig);
   tree promise_proxy = DECL_COROUTINE_PROMISE_PROXY (orig);
   tree act_des_fn_type = build_function_type_list (void_type_node,
@@ -1270,7 +1276,9 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   /* Now we know the real promise, and enough about the frame layout to
      decide where to put things.  */
 
-  struct __await_xform_data xform = {promise_proxy, ap, actor_frame};
+  struct __await_xform_data xform = { actor_frame,
+				      promise_proxy, ap,
+				      self_h_proxy, ash };
 
   /* Get a reference to the initial suspend var in the frame.  */
   transform_await_expr (initial_await, &xform);
@@ -1400,7 +1408,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   /* We've now rewritten the tree and added the initial and final
      co_awaits.  Now pass over the tree and expand the co_awaits.  */
   actor_body = expand_co_awaits (actor, &actor_body, actor_fp, res_idx,
-				 del_promise_label, ret_label);
+				 del_promise_label, ret_label, ash);
 
   actor_body = pop_stmt_list (actor_body);
   BIND_EXPR_BODY (actor_bind) = actor_body;
