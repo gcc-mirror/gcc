@@ -180,13 +180,16 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
       /* Find the promise type for that.  */
       DECL_COROUTINE_PROMISE_TYPE (fndecl) = find_promise_type (templ_decl);
       /* Find the handle type for that.  */
-      DECL_COROUTINE_HANDLE_TYPE (fndecl)
-	= find_coro_handle_type (loc, DECL_COROUTINE_PROMISE_TYPE(fndecl));
+      tree handle_type
+        = find_coro_handle_type (loc, DECL_COROUTINE_PROMISE_TYPE(fndecl));
+      /* Instantiate this, we're going to use it.  */
+      handle_type = complete_type_or_else (handle_type, fndecl);
+      DECL_COROUTINE_HANDLE_TYPE (fndecl) = handle_type;
       /* Build a proxy for a handle to "self" as the param to await_suspend()
 	 calls.  */
       DECL_COROUTINE_SELF_H_PROXY (fndecl)
 	= build_lang_decl (VAR_DECL, get_identifier ("self_h.proxy"),
-			   DECL_COROUTINE_HANDLE_TYPE (fndecl));
+			   handle_type);
       /* Build a proxy for the promise so that we can perform lookups.  */
       DECL_COROUTINE_PROMISE_PROXY (fndecl)
 	= build_lang_decl (VAR_DECL, get_identifier ("promise.proxy"),

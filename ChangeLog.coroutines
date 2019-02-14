@@ -1,6 +1,12 @@
 2019-02-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (coro_promise_type_found_p): Ensure that the
+	coro handle type is complete.
+
+2019-02-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (coro_promise_type_found_p): Build a proxy for
 	the handle to coroutine 'self'.
 	* cp-tree.h (lang_decl_fn): Add self_h_proxy, amend comments.
