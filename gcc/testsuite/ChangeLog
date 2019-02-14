@@ -1,3 +1,8 @@
+2019-02-14  Martin Liska  <mliska@suse.cz>
+
+	PR rtl-optimization/89242
+	* g++.dg/pr89242.C: New test.
+
 2019-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/89314
