@@ -265,6 +265,9 @@ if $GLIBCXX_IS_NATIVE; then
   AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
   AC_CHECK_FUNCS(_wfopen)
 
+  # C11 functions for C++17 library
+  AC_CHECK_FUNCS(timespec_get)
+
   # For iconv support.
   AM_ICONV
 
