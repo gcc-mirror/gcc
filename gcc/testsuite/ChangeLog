@@ -1,3 +1,7 @@
+2018-02-14  Steve Ellcey  <sellcey@marvell.com>
+
+	* gcc.target/aarch64/pcs_attribute.c: New test.
+
 2019-02-14  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/88248
