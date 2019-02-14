@@ -1,8 +1,8 @@
 # Danish version of cpplib.
-# Copyright (C) 2018 Free Software Foundation, Inc.
+# Copyright (C) 2019 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Ole Laursen <olau@hardworking.dk>, 2001, 02, 03.
-# Joe Hansen <joedalton2@yahoo.dk>, 2015, 2016, 2017, 2018.
+# Joe Hansen <joedalton2@yahoo.dk>, 2015, 2016, 2017, 2018, 2019.
 #
 # Konventioner:
 #
@@ -128,10 +128,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 8.1-b20180128\n"
+"Project-Id-Version: cpplib 9.1-b20190203\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2019-02-01 23:01+0000\n"
-"PO-Revision-Date: 2018-03-03 18:00+0200\n"
+"PO-Revision-Date: 2019-02-14 18:00+0200\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da\n"
@@ -980,26 +980,24 @@ msgstr "makroparameternavnet »%s« optræder mere end en gang"
 #: macro.c:3141
 #, c-format
 msgid "expected parameter name, found \"%s\""
-msgstr ""
+msgstr "forventede parameternavn, fandt »%s«"
 
 #: macro.c:3142
 #, c-format
 msgid "expected ',' or ')', found \"%s\""
-msgstr ""
+msgstr "forventede »,« eller »)«, fandt »%s«"
 
 #: macro.c:3143
 msgid "expected parameter name before end of line"
-msgstr ""
+msgstr "forventede parameternavn før linjeafslutning"
 
 #: macro.c:3144
-#, fuzzy
-#| msgid "unexpected end of file after #line"
 msgid "expected ')' before end of line"
-msgstr "uventet filafslutning efter #line"
+msgstr "forventede »)« før linjeafslutning"
 
 #: macro.c:3145
 msgid "expected ')' after \"...\""
-msgstr ""
+msgstr "forventede »)« efter »...«"
 
 #: macro.c:3202
 msgid "anonymous variadic macros were introduced in C++11"
