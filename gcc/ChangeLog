@@ -1,3 +1,10 @@
+2019-02-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (TARGET_SUBTARGET64_ISA_DEFAULT):
+	Enable MMX, SSE and SSE2 by default.
+	* config/i386/i386.c (ix86_option_override_internal): Do not
+	explicitly set MMX, SSE and SSE2 flags for TARGET_64BIT here.
+
 2019-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/89354
