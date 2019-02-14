@@ -1,5 +1,10 @@
 2019-02-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/intro.xml: Document LWG 2566 status.
+	* include/bits/stl_queue.h (queue, priority_queue): Add static
+	assertions to enforce LWG 2566 requirement on value_type.
+	* include/bits/stl_stack.h (stack): Likewise.
+
 	PR middle-end/89303
 	* testsuite/20_util/enable_shared_from_this/89303.cc: New test.
 
