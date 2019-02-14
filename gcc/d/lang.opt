@@ -162,6 +162,10 @@ defaultlib=
 Driver Joined
 Default library to use instead of phobos.
 
+dstartfiles
+Driver
+Do link the standard D startup files in the compilation.
+
 -verbose
 D Alias(v)
 

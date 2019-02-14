@@ -143,6 +143,14 @@ DRUNTIME_LIBRARIES_DLOPEN
 DRUNTIME_LIBRARIES_ZLIB
 DRUNTIME_INSTALL_DIRECTORIES
 
+# Add drtbegin.o/drtend.o to startfile/endfile specs in libgphobos.spec
+if test "$DCFG_MINFO_BRACKETING" = "false"; then
+    DRTSTUFF_SPEC=$srcdir/src/drtstuff.spec
+else
+    DRTSTUFF_SPEC=/dev/null
+fi
+AC_SUBST_FILE(DRTSTUFF_SPEC)
+
 # Add dependencies for libgphobos.spec file
 SPEC_PHOBOS_DEPS="$LIBS"
 AC_SUBST(SPEC_PHOBOS_DEPS)

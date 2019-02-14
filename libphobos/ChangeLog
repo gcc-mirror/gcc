@@ -1,3 +1,39 @@
+2019-02-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR d/87864
+	* configure.ac (DRTSTUFF_SPEC): New variable.
+	Substitute it.
+	* libdruntime/m4/druntime/os.m4 (DRUNTIME_OS_MINFO_BRACKETING):
+	New automake conditional.
+	* configure: Regenerate.
+	* libdruntime/gcc/drtstuff.c: New file.
+	* libdruntime/Makefile.am [!DRUNTIME_OS_MINFO_BRACKETING]
+	(DRTSTUFF, toolexeclib_DATA): New variables.
+	(gcc/drtbegin.lo, gcc/drtend.lo): New rules.
+	(libgdruntime_la_LDFLAGS): Use -Wc instead of -Xcompiler.
+	Add -dstartfiles -B../src -Bgcc.
+	(libgdruntime_la_DEPENDENCIES): New variable.
+	(unittest_static_LDFLAGS): Use -Wc instead of -Xcompiler.
+	(libgdruntime_t_la_LDFLAGS): Likewise.
+	(unittest_LDFLAGS): Likewise.
+	* src/Makefile.am (libgphobos_la_LDFLAGS): Use -Wc instead of
+	-Xcompiler.
+	Add -dstartfiles -B../libdruntime/gcc.
+	(unittest_static_LDFLAGS): Use -Wc instead of -Xcompiler.
+	(libgphobos_t_la_LDFLAGS): Likewise.
+	(unittest_LDFLAGS): Likewise.
+	* libdruntime/Makefile.in, src/Makefile.in: Regenerate.
+	* Makefile.in, testsuite/Makefile.in: Regenerate.
+	* libdruntime/rt/sections_elf_shared.d (Minfo_Bracketing): Don't
+	assert.
+	* libdruntime/gcc/config.d.in (Minfo_Bracketing): Remove.
+	* src/drtstuff.spec: New file.
+	* src/libgphobos.spec.in (DRTSTUFF_SPEC): Substitute.
+	(*lib): Only pass SPEC_PHOBOS_DEPS without -debuglib, -defaultlib,
+	-nophoboslib.
+	* testsuite/testsuite_flags.in <--gdcldflags> (GDCLDFLAGS): Add
+	-B${BUILD_DIR}/libdruntime/gcc.
+
 2019-02-13  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/core/runtime.d (defaultTraceHandler): Give

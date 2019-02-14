@@ -4,5 +4,7 @@
 # order.
 #
 
+@DRTSTUFF_SPEC@
+
 %rename lib liborig_gdc_renamed
-*lib: @SPEC_PHOBOS_DEPS@ %(liborig_gdc_renamed)
+*lib: %{debuglib|defaultlib|nophoboslib: ; :@SPEC_PHOBOS_DEPS@} %(liborig_gdc_renamed)
