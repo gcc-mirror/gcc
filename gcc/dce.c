@@ -652,6 +652,7 @@ delete_unmarked_insns (void)
     {
       gcc_assert (can_alter_cfg);
       delete_unreachable_blocks ();
+      free_dominance_info (CDI_DOMINATORS);
     }
 }
 
