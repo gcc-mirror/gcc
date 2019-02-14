@@ -30,6 +30,8 @@ case "${target}" in
 	;;
   x86_64-*-linux* | i?86-*-linux*)
 	;;
+  x86_64-*-netbsd* | i?86-*-netbsd*)
+	;;
   *)
 	UNSUPPORTED=1
 	;;

@@ -839,6 +839,7 @@ case ${target} in
   tm_p_file="${tm_p_file} netbsd-protos.h"
   tmake_file="t-netbsd t-slibgcc"
   extra_objs="${extra_objs} netbsd.o"
+  d_target_objs="${d_target_objs} netbsd-d.o"
   gas=yes
   gnu_ld=yes
   use_gcc_stdint=wrap
@@ -847,6 +848,7 @@ case ${target} in
   esac
   nbsd_tm_file="netbsd.h netbsd-stdint.h netbsd-elf.h"
   default_use_cxa_atexit=yes
+  target_has_targetdm=yes
   ;;
 *-*-openbsd*)
   tmake_file="t-openbsd"
