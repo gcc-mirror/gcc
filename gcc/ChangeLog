@@ -1,6 +1,12 @@
+2019-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/89354
+	* combine.c (make_extraction): Punt if extraction_mode is narrower
+	than len bits.
+
 2019-02-14  Maya Rashish  <coypu@sdf.org>
 
-	* config.gcc (*-*-netbsd*): Add netbsd-d.o
+	* config.gcc (*-*-netbsd*): Add netbsd-d.o.
 	* config/netbsd-d.c: New file.
 	* config/t-netbsd: Add netbsd-d.o
 
