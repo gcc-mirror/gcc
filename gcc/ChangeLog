@@ -1,3 +1,8 @@
+2019-02-14  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/88850
+	* config/arm/iterators.md (ANY64): Add V4HF.
+
 2019-02-14  Martin Liska  <mliska@suse.cz>
 
 	PR rtl-optimization/89242

@@ -1,3 +1,12 @@
+2019-02-14  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/88850
+	* gcc.target/arm/pr88850-2.c: New test.
+	* lib/target-supports.exp
+	(check_effective_target_arm_neon_softfp_fp16_ok_nocache,
+	check_effective_target_arm_neon_softfp_fp16_ok,
+	add_options_for_arm_neon_softfp_fp16): New.
+
 2019-02-14  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* gcc.dg/rtl/arm/ldrd-peepholes.c: Restrict testcase.
