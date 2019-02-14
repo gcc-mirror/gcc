@@ -1142,6 +1142,14 @@ requirements of the license of GCC.
     <listitem><para>Add new constructor.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr2586"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2586">2586</link>:
+       <emphasis>Wrong value category used in <code>scoped_allocator_adaptor::construct()</code>
+       </emphasis>
+    </term>
+    <listitem><para>Change internal helper for uses-allocator construction
+      to always check using const lvalue allocators.
+    </para></listitem></varlistentry>
+
     <varlistentry xml:id="manual.bugs.dr2684"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2684">2684</link>:
        <emphasis><code>priority_queue</code> lacking comparator typedef
        </emphasis>

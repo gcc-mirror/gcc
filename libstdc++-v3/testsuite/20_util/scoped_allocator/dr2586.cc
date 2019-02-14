@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2019 Free Software Foundation, Inc.
+// Copyright (C) 2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,32 +17,18 @@
 
 // { dg-do compile { target c++11 } }
 
-// PR libstdc++/69293
-
-#include <tuple>
 #include <memory>
+#include <scoped_allocator>
 
-using std::allocator;
-using std::allocator_arg_t;
-using std::uses_allocator;
-using std::tuple;
-using std::is_constructible;
+// DR 2586. Wrong value category used in scoped_allocator_adaptor::construct()
 
-struct X
-{
-  using allocator_type = allocator<int>;
+struct X {
+  using allocator_type = std::allocator<X>;
+  X(std::allocator_arg_t, allocator_type&&) { }
+  X(const allocator_type&) { }
 };
 
-using alloc_type = X::allocator_type;
-
-static_assert(uses_allocator<X, alloc_type>{}, "");
-static_assert(!is_constructible<X, allocator_arg_t, alloc_type>{}, "");
-static_assert(!is_constructible<X, alloc_type>{}, "");
-
-void
-test01()
-{
-  alloc_type a;
-  std::tuple<X> t(std::allocator_arg, a); // this is required to be ill-formed
-  // { dg-error "failed: .* uses_allocator is true" "" { target *-*-* } 0 }
+int main() {
+  std::scoped_allocator_adaptor<std::allocator<X>> sa;
+  sa.construct(sa.allocate(1));
 }
