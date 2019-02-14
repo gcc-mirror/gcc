@@ -1,3 +1,8 @@
+2019-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/89354
+	* gcc.dg/pr89354.c: New test.
+
 2019-02-14  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/ssse3-pabsb.c: Re-enable 64-bit form on AVX targets.

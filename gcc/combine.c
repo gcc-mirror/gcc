@@ -7830,6 +7830,10 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
       && partial_subreg_p (extraction_mode, mode))
     extraction_mode = mode;
 
+  /* Punt if len is too large for extraction_mode.  */
+  if (maybe_gt (len, GET_MODE_PRECISION (extraction_mode)))
+    return NULL_RTX;
+
   if (!MEM_P (inner))
     wanted_inner_mode = wanted_inner_reg_mode;
   else
