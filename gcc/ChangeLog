@@ -1,6 +1,15 @@
 2019-02-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backport from trunk
+	2019-01-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/88892
+	* config/rs6000/rs6000.md (*movsi_from_df): Allow only register
+	operands.
+
+2019-02-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from trunk
 	2018-07-26  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/85805
