@@ -1,3 +1,9 @@
+2019-02-14  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR fortran/72715
+	* openmp.c (resolve_oacc_nested_loops): Error on do concurrent
+	loops.
+
 2019-02-13  Martin Liska  <mliska@suse.cz>
 
 	PR fortran/88649

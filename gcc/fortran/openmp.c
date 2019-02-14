@@ -5760,7 +5760,13 @@ resolve_oacc_nested_loops (gfc_code *code, gfc_code* do_code, int collapse,
 		     "at %L", &do_code->loc);
 	  break;
 	}
-      gcc_assert (do_code->op == EXEC_DO || do_code->op == EXEC_DO_CONCURRENT);
+      if (do_code->op == EXEC_DO_CONCURRENT)
+	{
+	  gfc_error ("!$ACC LOOP cannot be a DO CONCURRENT loop at %L",
+		     &do_code->loc);
+	  break;
+	}
+      gcc_assert (do_code->op == EXEC_DO);
       if (do_code->ext.iterator->var->ts.type != BT_INTEGER)
 	gfc_error ("!$ACC LOOP iteration variable must be of type integer at %L",
 		   &do_code->loc);
