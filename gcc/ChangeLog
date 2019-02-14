@@ -3,6 +3,11 @@
 	Backported from mainline
 	2019-02-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/89281
+	* optabs.c (prepare_cmp_insn): Use UINTVAL (size) instead of
+	INTVAL (size), compare it to GET_MODE_MASK instead of
+	1 << GET_MODE_BITSIZE.
+
 	PR target/89290
 	* config/i386/predicates.md (x86_64_immediate_operand): Allow
 	TLS UNSPECs offsetted by signed 32-bit CONST_INT even with
