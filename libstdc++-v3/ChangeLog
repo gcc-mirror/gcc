@@ -1,5 +1,12 @@
 2019-02-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/intro.xml: Document LWG 2537 status.
+	* include/bits/stl_queue.h
+	(priority_queue(const Compare&, const Container&, const Alloc&))
+	(priority_queue(const Compare&, Container&&, const Alloc&)): Call
+	make_heap.
+	* testsuite/23_containers/priority_queue/dr2537.cc: New test.
+
 	* doc/xml/manual/intro.xml: Document LWG 2566 status.
 	* include/bits/stl_queue.h (queue, priority_queue): Add static
 	assertions to enforce LWG 2566 requirement on value_type.
