@@ -1,3 +1,8 @@
+2019-02-13  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc: #include "opts.h".
+	(Gcc_backend::function): Compile thunks with -Os.
+
 2019-02-05  Nikhil Benesch  <nikhil.benesch@gmail.com>
 
         PR go/89019

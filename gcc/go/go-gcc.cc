@@ -25,6 +25,7 @@
 #include <gmp.h>
 
 #include "tree.h"
+#include "opts.h"
 #include "fold-const.h"
 #include "stringpool.h"
 #include "stor-layout.h"
@@ -3101,6 +3102,41 @@ Gcc_backend::function(Btype* fntype, const std::string& name,
     {
       DECL_EXTERNAL(decl) = 1;
       DECL_DECLARED_INLINE_P(decl) = 1;
+    }
+
+  // Optimize thunk functions for size.  A thunk created for a defer
+  // statement that may call recover looks like:
+  //     if runtime.setdeferretaddr(L1) {
+  //         goto L1
+  //     }
+  //     realfn()
+  // L1:
+  // The idea is that L1 should be the address to which realfn
+  // returns.  This only works if this little function is not over
+  // optimized.  At some point GCC started duplicating the epilogue in
+  // the basic-block reordering pass, breaking this assumption.
+  // Optimizing the function for size avoids duplicating the epilogue.
+  // This optimization shouldn't matter for any thunk since all thunks
+  // are small.
+  size_t pos = name.find("..thunk");
+  if (pos != std::string::npos)
+    {
+      for (pos += 7; pos < name.length(); ++pos)
+	{
+	  if (name[pos] < '0' || name[pos] > '9')
+	    break;
+	}
+      if (pos == name.length())
+	{
+	  struct cl_optimization cur_opts;
+	  cl_optimization_save(&cur_opts, &global_options);
+	  global_options.x_optimize_size = 1;
+	  global_options.x_optimize_fast = 0;
+	  global_options.x_optimize_debug = 0;
+	  DECL_FUNCTION_SPECIFIC_OPTIMIZATION(decl) =
+	    build_optimization_node(&global_options);
+	  cl_optimization_restore(&global_options, &cur_opts);
+	}
     }
 
   go_preserve_from_gc(decl);
