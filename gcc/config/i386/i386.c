@@ -4165,14 +4165,9 @@ ix86_option_override_internal (bool main_args_p,
       opts->x_target_flags
 	|= TARGET_SUBTARGET64_DEFAULT & ~opts_set->x_target_flags;
 
-      /* Enable by default the SSE and MMX builtins.  Do allow the user to
-	 explicitly disable any of these.  In particular, disabling SSE and
-	 MMX for kernel code is extremely useful.  */
       if (!ix86_arch_specified)
-      opts->x_ix86_isa_flags
-	|= ((OPTION_MASK_ISA_SSE2 | OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_MMX
-	     | TARGET_SUBTARGET64_ISA_DEFAULT)
-            & ~opts->x_ix86_isa_flags_explicit);
+	opts->x_ix86_isa_flags
+	  |= TARGET_SUBTARGET64_ISA_DEFAULT & ~opts->x_ix86_isa_flags_explicit;
 
       if (TARGET_RTD_P (opts->x_target_flags))
 	warning (0,

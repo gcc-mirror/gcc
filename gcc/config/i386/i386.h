@@ -633,7 +633,9 @@ extern tree x86_mfence;
 
 /* Extra bits to force on w/ 64-bit mode.  */
 #define TARGET_SUBTARGET64_DEFAULT 0
-#define TARGET_SUBTARGET64_ISA_DEFAULT 0
+/* Enable MMX, SSE and SSE2 by default.  */
+#define TARGET_SUBTARGET64_ISA_DEFAULT \
+  (OPTION_MASK_ISA_MMX | OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_SSE2)
 
 /* Replace MACH-O, ifdefs by in-line tests, where possible. 
    (a) Macros defined in config/i386/darwin.h  */
