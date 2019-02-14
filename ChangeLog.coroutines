@@ -1,6 +1,13 @@
 2019-02-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (build_co_await): Free args vec after use.
+	(build_actor_fn): Likewise.
+	(morph_fn_to_coro): Likewise.
+
+2019-02-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (build_co_await): We build the awaiter calls to
 	verify, so save them for expansion time.
 	(co_await_expander): Use saved awaiter calls instead of rebuilding

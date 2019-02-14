@@ -387,6 +387,7 @@ build_co_await (location_t loc, tree a, tree mode)
 					  LOOKUP_NORMAL, &awsp_func,
 					  tf_warning_or_error);
 
+  release_tree_vector (args);
   if (!awsp_func || !awsp_call || awsp_call == error_mark_node)
     return error_mark_node;
 
@@ -1248,6 +1249,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   r = build_stmt (loc, EXPR_STMT, r);
   r = maybe_cleanup_point_expr_void (r);
   add_stmt (r);
+  release_tree_vector (args);
 
   /* Now we know the real promise, and enough about the frame layout to
      decide where to put things.  */
@@ -1959,6 +1961,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       r = build_stmt (fn_start, EXPR_STMT, r);
       r = maybe_cleanup_point_expr_void (r);
       add_stmt (r);
+      release_tree_vector (args);
       // We know it's the correct type.
       r = DECL_RESULT (orig);
     }
