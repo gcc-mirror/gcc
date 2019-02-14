@@ -673,7 +673,7 @@ Type_expression : public Expression
   { go_unreachable(); }
 
   void do_dump_expression(Ast_dump_context*) const;
- 
+
  private:
   // The type which we are representing as an expression.
   Type* type_;
@@ -2950,7 +2950,7 @@ Const_expression::do_numeric_constant_value(Numeric_constant* nc) const
     return false;
 
   Expression* e = this->constant_->const_value()->expr();
-  
+
   this->seen_ = true;
 
   bool r = e->numeric_constant_value(nc);
@@ -3298,10 +3298,10 @@ class Iota_expression : public Parser_expression
   Expression*
   do_copy()
   { go_unreachable(); }
-  
+
   void
   do_dump_expression(Ast_dump_context* ast_dump_context) const
-  { ast_dump_context->ostream() << "iota"; } 
+  { ast_dump_context->ostream() << "iota"; }
 };
 
 // Make an iota expression.  This is only called for one case: the
@@ -4174,7 +4174,7 @@ Unary_expression::base_is_static_initializer(Expression* expr)
 // know the address of this expression is being taken, we must always
 // check for nil.
 Unary_expression::Nil_check_classification
-Unary_expression::requires_nil_check(Gogo* gogo) 
+Unary_expression::requires_nil_check(Gogo* gogo)
 {
   go_assert(this->op_ == OPERATOR_MULT);
   go_assert(this->expr_->type()->points_to() != NULL);
@@ -7311,14 +7311,14 @@ Bound_method_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
 {
   if (this->expr_type_ != NULL)
     ast_dump_context->ostream() << "(";
-  ast_dump_context->dump_expression(this->expr_); 
-  if (this->expr_type_ != NULL) 
+  ast_dump_context->dump_expression(this->expr_);
+  if (this->expr_type_ != NULL)
     {
       ast_dump_context->ostream() << ":";
       ast_dump_context->dump_type(this->expr_type_);
       ast_dump_context->ostream() << ")";
     }
-    
+
   ast_dump_context->ostream() << "." << this->function_->name();
 }
 
@@ -7461,7 +7461,7 @@ Builtin_call_expression::do_lower(Gogo*, Named_object* function,
 	  farg = farg->expr()->field_reference_expression();
 	}
     }
- 
+
   if (this->is_constant())
     {
       Numeric_constant nc;
@@ -10812,7 +10812,7 @@ void
 Call_result_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
     const
 {
-  // FIXME: Wouldn't it be better if the call is assigned to a temporary 
+  // FIXME: Wouldn't it be better if the call is assigned to a temporary
   // (struct) and the fields are referenced instead.
   ast_dump_context->ostream() << this->index_ << "@(";
   ast_dump_context->dump_expression(this->call_);
@@ -10930,8 +10930,8 @@ Index_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
 // (expr[expr:expr:expr], expr[expr:expr] or expr[expr]) to a dump context.
 
 void
-Index_expression::dump_index_expression(Ast_dump_context* ast_dump_context, 
-					const Expression* expr, 
+Index_expression::dump_index_expression(Ast_dump_context* ast_dump_context,
+					const Expression* expr,
 					const Expression* start,
 					const Expression* end,
 					const Expression* cap)
@@ -10955,10 +10955,10 @@ Index_expression::dump_index_expression(Ast_dump_context* ast_dump_context,
 // Dump ast representation for an index expression.
 
 void
-Index_expression::do_dump_expression(Ast_dump_context* ast_dump_context) 
+Index_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
     const
 {
-  Index_expression::dump_index_expression(ast_dump_context, this->left_, 
+  Index_expression::dump_index_expression(ast_dump_context, this->left_,
                                           this->start_, this->end_, this->cap_);
 }
 
@@ -11471,10 +11471,10 @@ Array_index_expression::do_get_backend(Translate_context* context)
 // Dump ast representation for an array index expression.
 
 void
-Array_index_expression::do_dump_expression(Ast_dump_context* ast_dump_context) 
+Array_index_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
     const
 {
-  Index_expression::dump_index_expression(ast_dump_context, this->array_, 
+  Index_expression::dump_index_expression(ast_dump_context, this->array_,
                                           this->start_, this->end_, this->cap_);
 }
 
@@ -11697,7 +11697,7 @@ String_index_expression::do_get_backend(Translate_context* context)
       Bexpression* ptr = bytes->get_backend(context);
       ptr = gogo->backend()->pointer_offset_expression(ptr, bstart, loc);
       Btype* ubtype = Type::lookup_integer_type("uint8")->get_backend(gogo);
-      Bexpression* index = 
+      Bexpression* index =
 	gogo->backend()->indirect_expression(ubtype, ptr, true, loc);
 
       Btype* byte_btype = bytes->type()->points_to()->get_backend(gogo);
@@ -11945,7 +11945,7 @@ Map_index_expression::get_value_pointer(Gogo* gogo)
 // Dump ast representation for a map index expression
 
 void
-Map_index_expression::do_dump_expression(Ast_dump_context* ast_dump_context) 
+Map_index_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
     const
 {
   Index_expression::dump_index_expression(ast_dump_context, this->map_,
@@ -12546,7 +12546,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 	imethod = it->find_method(name);
     }
 
-  if ((method == NULL && imethod == NULL) 
+  if ((method == NULL && imethod == NULL)
       || (left_type->named_type() != NULL && left_type->points_to() != NULL))
     {
       if (!is_ambiguous)
@@ -12621,7 +12621,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 	   ++p)
 	results->push_back(*p);
     }
-  
+
   Function_type* fntype = Type::make_function_type(NULL, parameters, results,
 						   location);
   if (method_type->is_varargs())
@@ -12708,14 +12708,14 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 // Dump the ast for a selector expression.
 
 void
-Selector_expression::do_dump_expression(Ast_dump_context* ast_dump_context) 
+Selector_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
     const
 {
   ast_dump_context->dump_expression(this->left_);
   ast_dump_context->ostream() << ".";
   ast_dump_context->ostream() << this->name_;
 }
-                      
+
 // Make a selector expression.
 
 Expression*
@@ -12800,7 +12800,7 @@ Allocation_expression::do_get_backend(Translate_context* context)
 // Dump ast representation for an allocation expression.
 
 void
-Allocation_expression::do_dump_expression(Ast_dump_context* ast_dump_context) 
+Allocation_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
     const
 {
   ast_dump_context->ostream() << "new(";
@@ -14447,6 +14447,7 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
 					Type* type)
 {
   Location location = this->location();
+  Unordered_map(unsigned int, std::vector<Expression*>) st;
   if (this->vals_ != NULL)
     {
       if (!this->has_keys_)
@@ -14476,6 +14477,48 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
 	      gogo->lower_expression(function, inserter, &*p);
 	      go_assert((*p)->is_error_expression());
 	      return Expression::make_error(location);
+	    }
+	  // Check if there are duplicate constant keys.
+	  if (!(*p)->is_constant())
+	    continue;
+	  std::string sval;
+	  // Check if there are duplicate constant string keys.
+	  if ((*p)->string_constant_value(&sval))
+	    {
+	      unsigned int h = Gogo::hash_string(sval, 0);
+	      // Search the index h in the hash map.
+	      Unordered_map(unsigned int, std::vector<Expression*>)::iterator mit;
+	      mit = st.find(h);
+	      if (mit == st.end())
+		{
+		  // No duplicate since h is a new index.
+		  // Create a new vector indexed by h and add it to the hash map.
+		  std::vector<Expression*> l;
+		  l.push_back(*p);
+		  std::pair<unsigned int, std::vector<Expression*> > val(h, l);
+		  st.insert(val);
+		}
+	      else
+		{
+		  // Do further check since index h already exists.
+		  for (std::vector<Expression*>::iterator lit =
+			   mit->second.begin();
+		       lit != mit->second.end();
+		       lit++)
+		    {
+		      std::string s;
+		      bool ok = (*lit)->string_constant_value(&s);
+		      go_assert(ok);
+		      if (s == sval)
+			{
+			  go_error_at((*p)->location(), ("duplicate key "
+				      "in map literal"));
+			  return Expression::make_error(location);
+			}
+		    }
+		  // Add this new string key to the vector indexed by h.
+		  mit->second.push_back(*p);
+		}
 	    }
 	}
     }
@@ -15260,8 +15303,8 @@ Type_info_expression::do_dump_expression(
   ast_dump_context->ostream() << "typeinfo(";
   ast_dump_context->dump_type(this->type_);
   ast_dump_context->ostream() << ",";
-  ast_dump_context->ostream() << 
-    (this->type_info_ == TYPE_INFO_ALIGNMENT ? "alignment" 
+  ast_dump_context->ostream() <<
+    (this->type_info_ == TYPE_INFO_ALIGNMENT ? "alignment"
     : this->type_info_ == TYPE_INFO_FIELD_ALIGNMENT ? "field alignment"
     : this->type_info_ == TYPE_INFO_SIZE ? "size"
     : this->type_info_ == TYPE_INFO_BACKEND_PTRDATA ? "backend_ptrdata"
@@ -15369,8 +15412,8 @@ Slice_info_expression::do_dump_expression(
   ast_dump_context->ostream() << "sliceinfo(";
   this->slice_->dump_expression(ast_dump_context);
   ast_dump_context->ostream() << ",";
-  ast_dump_context->ostream() << 
-      (this->slice_info_ == SLICE_INFO_VALUE_POINTER ? "values" 
+  ast_dump_context->ostream() <<
+      (this->slice_info_ == SLICE_INFO_VALUE_POINTER ? "values"
     : this->slice_info_ == SLICE_INFO_LENGTH ? "length"
     : this->slice_info_ == SLICE_INFO_CAPACITY ? "capacity "
     : "unknown");
@@ -15969,7 +16012,7 @@ class Struct_field_offset_expression : public Expression
 
   void
   do_dump_expression(Ast_dump_context*) const;
-  
+
  private:
   // The type of the struct.
   Struct_type* type_;
@@ -16056,7 +16099,7 @@ class Label_addr_expression : public Expression
   void
   do_dump_expression(Ast_dump_context* ast_dump_context) const
   { ast_dump_context->ostream() << this->label_->name(); }
-  
+
  private:
   // The label whose address we are taking.
   Label* label_;
@@ -17028,7 +17071,7 @@ Numeric_constant::check_float_type(Float_type* type, bool issue_error,
     }
 
   return ret;
-} 
+}
 
 // Check whether the constant can be expressed in a complex type.
 
