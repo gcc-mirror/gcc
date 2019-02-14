@@ -1,3 +1,22 @@
+2019-02-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/ssse3-pabsb.c: Re-enable 64-bit form on AVX targets.
+	* gcc.target/i386/ssse3-pabsd.c: Ditto.
+	* gcc.target/i386/ssse3-pabsw.c: Ditto.
+	* gcc.target/i386/ssse3-palignr.c: Ditto.
+	* gcc.target/i386/ssse3-phaddd.c: Ditto.
+	* gcc.target/i386/ssse3-phaddsw.c: Ditto.
+	* gcc.target/i386/ssse3-phaddw.c: Ditto.
+	* gcc.target/i386/ssse3-phsubd.c: Ditto.
+	* gcc.target/i386/ssse3-phsubsw.c: Ditto.
+	* gcc.target/i386/ssse3-phsubw.c: Ditto.
+	* gcc.target/i386/ssse3-pmaddubsw.c: Ditto.
+	* gcc.target/i386/ssse3-pmulhrsw.c: Ditto.
+	* gcc.target/i386/ssse3-pshufb.c: Ditto.
+	* gcc.target/i386/ssse3-psignb.c: Ditto.
+	* gcc.target/i386/ssse3-psignd.c: Ditto.
+	* gcc.target/i386/ssse3-psignw.c: Ditto.
+
 2018-02-14  Steve Ellcey  <sellcey@marvell.com>
 
 	* gcc.target/aarch64/pcs_attribute.c: New test.
