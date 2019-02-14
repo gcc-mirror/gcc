@@ -1,3 +1,11 @@
+2019-02-14  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-02-11  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/89009
+	* g++.dg/ipa/pr89009.C: New test.
+
 2019-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/89314
