@@ -1,3 +1,9 @@
+2019-02-14  Maya Rashish  <coypu@sdf.org>
+
+	* config.gcc (*-*-netbsd*): Add netbsd-d.o
+	* config/netbsd-d.c: New file.
+	* config/t-netbsd: Add netbsd-d.o
+
 2018-02-14  Steve Ellcey  <sellcey@marvell.com>
 
 	* config/aarch64/aarch64.c (aarch64_attribute_table): Change

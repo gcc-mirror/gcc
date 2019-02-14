@@ -103,7 +103,7 @@ static if (__BSD_VISIBLE)
     //void*    fdlopen(int, int);
     int      dladdr(const(void)*, Dl_info*);
     //dlfunc_t dlfunc(void*, const(char)*);
-    //int      dlinfo(void*, int, void*);
+    int      dlinfo(void*, int, void*);
     /+void     dllockinit(void* _context,
         void* function(void* _context) _lock_create,
         void  function(void* _lock)    _rlock_acquire,

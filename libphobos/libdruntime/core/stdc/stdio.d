@@ -198,12 +198,6 @@ else version (FreeBSD)
         ubyte *_base;
         int _size;
     }
-
-    union __mbstate_t // <sys/_types.h>
-    {
-        char[128]   _mbstate8;
-        long        _mbstateL;
-    }
 }
 else version (NetBSD)
 {
@@ -228,12 +222,6 @@ else version (NetBSD)
         ubyte *_base;
         int _size;
     }
-
-    union __mbstate_t // <sys/_types.h>
-    {
-        char[128]   _mbstate8;
-        long        _mbstateL;
-    }
 }
 else version (OpenBSD)
 {
@@ -257,12 +245,6 @@ else version (OpenBSD)
     {
         ubyte *_base;
         int _size;
-    }
-
-    union __mbstate_t // <sys/_types.h>
-    {
-        char[128]   __mbstate8;
-        long        __mbstateL;
     }
 }
 else version (DragonFlyBSD)
@@ -296,12 +278,6 @@ else version (DragonFlyBSD)
         SBUF_FINISHED   = 0x00020000,   // set by sbuf_finish()
         SBUF_DYNSTRUCT  = 0x00080000,   // sbuf must be freed
         SBUF_INSECTION  = 0x00100000,   // set by sbuf_start_section()
-    }
-
-    union __mbstate_t                   // <sys/stdint.h>
-    {
-        char[128]   _mbstate8;
-        long        _mbstateL;
     }
 }
 else version (Solaris)
@@ -518,6 +494,9 @@ else version (Darwin)
 }
 else version (FreeBSD)
 {
+    // Need to import wchar_ now since __mbstate_t now resides there
+    import core.stdc.wchar_ : mbstate_t;
+
     ///
     alias off_t fpos_t;
 
@@ -554,7 +533,7 @@ else version (FreeBSD)
         pthread_t       _fl_owner;
         int             _fl_count;
         int             _orientation;
-        __mbstate_t     _mbstate;
+        mbstate_t       _mbstate;
     }
 
     ///
@@ -664,10 +643,7 @@ else version (DragonFlyBSD)
 }
 else version (Solaris)
 {
-    import core.stdc.wchar_ : __mbstate_t;
-
-    ///
-    alias mbstate_t = __mbstate_t;
+    import core.stdc.wchar_ : mbstate_t;
 
     ///
     alias c_long fpos_t;

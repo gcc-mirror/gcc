@@ -1,3 +1,7 @@
+2019-02-14  Maya Rashish  <coypu@sdf.org>
+
+	* d-system.h: NetBSD is POSIX.
+
 2019-02-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR d/87864
