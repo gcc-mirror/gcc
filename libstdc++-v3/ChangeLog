@@ -1,5 +1,13 @@
 2019-02-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* configure.ac: Check for C11 timespec_get function.
+	* crossconfig.m4 (freebsd, linux, gnu, cygwin, solaris, netbsd)
+	(openbsd): Likewise
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/c_global/ctime (timespec, timespec_get): Add to namespace
+	std for C++17 and up.
+
 	* doc/xml/manual/intro.xml: Document LWG 2537 status.
 	* include/bits/stl_queue.h
 	(priority_queue(const Compare&, const Container&, const Alloc&))
