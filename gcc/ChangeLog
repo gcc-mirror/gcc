@@ -1,3 +1,8 @@
+2019-02-13  Ian Lance Taylor  <iant@golang.org>
+
+	* optc-save-gen.awk: Set var_opt_hash for initial optimizations
+	and set current index for other optimizations.
+
 2019-02-13  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (vec_set<VI4F_256_512:mode>_0): Use
