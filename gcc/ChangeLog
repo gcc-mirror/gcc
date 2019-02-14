@@ -3,6 +3,11 @@
 	Backported from mainline
 	2019-02-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/89303
+	* tree-ssa-structalias.c (set_uids_in_ptset): Or in vi->is_heap_var
+	into pt->vars_contains_escaped_heap instead of setting
+	pt->vars_contains_escaped_heap to it.
+
 	PR middle-end/89281
 	* optabs.c (prepare_cmp_insn): Use UINTVAL (size) instead of
 	INTVAL (size), compare it to GET_MODE_MASK instead of
