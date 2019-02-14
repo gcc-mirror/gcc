@@ -2662,9 +2662,18 @@ struct GTY(()) lang_decl_fn {
 
   /* FIXME: this state will grow and needs to be in a hashtab.
      In a coroutine, the handle and promise types.  */
+
+  /* The handle type for this coroutine and a placeholder for an instance
+     of it during parsing.  */
   tree coro_handle_type;
+  tree self_h_proxy;
+
+  /* The promise type and a placeholder for an instance during parsing.  */
   tree promise_type;
   tree promise_proxy;
+
+  /* The location of the first TS keyword we saw that makes this function
+     become a coroutine (diagnostic use only, so far).  */
   location_t first_coro_kw;
 };
 
@@ -4916,6 +4925,9 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* The HANDLE_TYPE associated with this coroutine type.  */
 #define DECL_COROUTINE_HANDLE_TYPE(NODE) \
   (LANG_DECL_FN_CHECK (DECL_COMMON_CHECK (NODE))->coro_handle_type)
+
+#define DECL_COROUTINE_SELF_H_PROXY(NODE) \
+  (LANG_DECL_FN_CHECK (DECL_COMMON_CHECK (NODE))->self_h_proxy)
 
 /* The PROMISE_TYPE associated with this coroutine type.  */
 #define DECL_COROUTINE_PROMISE_TYPE(NODE) \

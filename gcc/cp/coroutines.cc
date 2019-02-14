@@ -182,12 +182,17 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
       /* Find the handle type for that.  */
       DECL_COROUTINE_HANDLE_TYPE (fndecl)
 	= find_coro_handle_type (loc, DECL_COROUTINE_PROMISE_TYPE(fndecl));
-      /* Note where we first saw a coroutine keyword.  */
-      DECL_COROUTINE_FIRST_KEYWD_LOC (fndecl) = loc;
+      /* Build a proxy for a handle to "self" as the param to await_suspend()
+	 calls.  */
+      DECL_COROUTINE_SELF_H_PROXY (fndecl)
+	= build_lang_decl (VAR_DECL, get_identifier ("self_h.proxy"),
+			   DECL_COROUTINE_HANDLE_TYPE (fndecl));
       /* Build a proxy for the promise so that we can perform lookups.  */
       DECL_COROUTINE_PROMISE_PROXY (fndecl)
 	= build_lang_decl (VAR_DECL, get_identifier ("promise.proxy"),
 			   DECL_COROUTINE_PROMISE_TYPE (fndecl));
+      /* Note where we first saw a coroutine keyword.  */
+      DECL_COROUTINE_FIRST_KEYWD_LOC (fndecl) = loc;
     }
 
   if (DECL_COROUTINE_PROMISE_TYPE(fndecl) == NULL_TREE)
@@ -373,8 +378,7 @@ build_co_await (location_t loc, tree a, tree mode)
 
   /* The suspend method has constraints on its return type.  */
   tree awsp_func = NULL_TREE;
-  tree h_type = DECL_COROUTINE_HANDLE_TYPE(current_function_decl);
-  tree h_proxy = build_lang_decl (VAR_DECL, NULL_TREE, h_type);
+  tree h_proxy = DECL_COROUTINE_SELF_H_PROXY (current_function_decl);
   vec<tree, va_gc>* args = make_tree_vector_single (h_proxy);
   tree awsp_call  = build_new_method_call (e_proxy, awsp_meth, &args, NULL_TREE,
 					  LOOKUP_NORMAL, &awsp_func,

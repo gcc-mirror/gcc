@@ -1,3 +1,11 @@
+2019-02-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (coro_promise_type_found_p): Build a proxy for
+	the handle to coroutine 'self'.
+	* cp-tree.h (lang_decl_fn): Add self_h_proxy, amend comments.
+	(DECL_COROUTINE_SELF_H_PROXY): New.
+
 2019-02-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Merge trunk r268852.
