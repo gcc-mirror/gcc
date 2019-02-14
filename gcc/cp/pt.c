@@ -26474,6 +26474,8 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
 	  targs = template_parms_to_args (tparms);
 	  fparms = tsubst_arg_types (fparms, tsubst_args, NULL_TREE,
 				     complain, ctor);
+	  if (fparms == error_mark_node)
+	    ok = false;
 	  fargs = tsubst (fargs, tsubst_args, complain, ctor);
 	  if (ci)
 	    ci = tsubst_constraint_info (ci, tsubst_args, complain, ctor);

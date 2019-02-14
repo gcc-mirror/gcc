@@ -1,3 +1,12 @@
+2019-02-14  David Malcolm  <dmalcolm@redhat.com>
+
+	Backport of r267957 from trunk.
+	2019-01-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/88795
+	* tree.c (build_function_type): Assert that arg_types is not
+	error_mark_node.
+
 2019-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/89354

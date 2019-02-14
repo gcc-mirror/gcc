@@ -8023,6 +8023,8 @@ build_function_type (tree value_type, tree arg_types)
   bool any_structural_p, any_noncanonical_p;
   tree canon_argtypes;
 
+  gcc_assert (arg_types != error_mark_node);
+
   if (TREE_CODE (value_type) == FUNCTION_TYPE)
     {
       error ("function return type cannot be function");

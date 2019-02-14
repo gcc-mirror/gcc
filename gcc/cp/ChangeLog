@@ -1,5 +1,14 @@
 2019-02-14  David Malcolm  <dmalcolm@redhat.com>
 
+	Backport of r267957 from trunk.
+	2019-01-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/88795
+	* pt.c (build_deduction_guide): Bail out if tsubst_arg_types
+	fails.
+
+2019-02-14  David Malcolm  <dmalcolm@redhat.com>
+
 	Backport of r262199 from trunk.
 	2018-06-27  David Malcolm  <dmalcolm@redhat.com>
 
