@@ -4918,6 +4918,26 @@ proc check_effective_target_arm_prefer_ldrd_strd { } {
     }  "-O2 -mthumb" ]
 }
 
+# Return true if LDRD/STRD instructions are available on this target.
+proc check_effective_target_arm_ldrd_strd_ok { } {
+    if { ![check_effective_target_arm32] } {
+      return 0;
+    }
+
+    return [check_no_compiler_messages arm_ldrd_strd_ok object {
+      int main(void)
+      {
+        __UINT64_TYPE__ a = 1, b = 10;
+        __UINT64_TYPE__ *c = &b;
+        // `a` will be in a valid register since it's a DImode quantity.
+        asm ("ldrd %0, %1"
+             : "=r" (a)
+             : "m" (c));
+        return a == 10;
+      }
+    }]
+}
+
 # Return 1 if this is a PowerPC target supporting -meabi.
 
 proc check_effective_target_powerpc_eabi_ok { } {

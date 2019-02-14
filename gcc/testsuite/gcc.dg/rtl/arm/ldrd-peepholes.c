@@ -1,4 +1,6 @@
 /* { dg-do compile { target arm*-*-* } } */
+/* { dg-require-effective-target arm_arm_ok } */
+/* { dg-require-effective-target arm_ldrd_strd_ok } */
 /* { dg-skip-if "Ensure only targetting arm with TARGET_LDRD" { *-*-* } { "-mthumb" } { "" } } */
 /* { dg-options "-O3 -marm -fdump-rtl-peephole2" } */
 
