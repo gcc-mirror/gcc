@@ -1003,6 +1003,16 @@ Type::get_backend(Gogo* gogo)
 	  ins.first->second.is_placeholder = false;
 	}
 
+      // We set the has_padding field of a Struct_type when we convert
+      // to the backend type, so if we have multiple Struct_type's
+      // mapping to the same backend type we need to copy the
+      // has_padding field.  FIXME: This is awkward.  We shouldn't
+      // really change the type when setting the backend type, but
+      // there isn't any other good time to add the padding field.
+      if (ins.first->first->struct_type() != NULL
+	  && ins.first->first->struct_type()->has_padding())
+	this->struct_type()->set_has_padding();
+
       return ins.first->second.btype;
     }
 
