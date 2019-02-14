@@ -2000,7 +2000,7 @@ diagnostic_show_locus (diagnostic_context * context,
 
   context->last_location = loc;
 
-  const char *saved_prefix = pp_get_prefix (context->printer);
+  char *saved_prefix = pp_take_prefix (context->printer);
   pp_set_prefix (context->printer, NULL);
 
   layout layout (context, richloc, diagnostic_kind);

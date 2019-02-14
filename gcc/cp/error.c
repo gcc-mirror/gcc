@@ -3286,8 +3286,13 @@ void
 cxx_print_error_function (diagnostic_context *context, const char *file,
 			  diagnostic_info *diagnostic)
 {
+  char *prefix;
+  if (file)
+    prefix = xstrdup (file);
+  else
+    prefix = NULL;
   lhd_print_error_function (context, file, diagnostic);
-  pp_set_prefix (context->printer, file);
+  pp_set_prefix (context->printer, prefix);
   maybe_print_instantiation_context (context);
 }
 
@@ -3315,7 +3320,7 @@ cp_print_error_function (diagnostic_context *context,
     return;
   if (diagnostic_last_function_changed (context, diagnostic))
     {
-      const char *old_prefix = context->printer->prefix;
+      char *old_prefix = pp_take_prefix (context->printer);
       const char *file = LOCATION_FILE (diagnostic_location (diagnostic));
       tree abstract_origin = diagnostic_abstract_origin (diagnostic);
       char *new_prefix = (file && abstract_origin == NULL)

@@ -1491,14 +1491,29 @@ pp_clear_output_area (pretty_printer *pp)
   pp_buffer (pp)->line_length = 0;
 }
 
-/* Set PREFIX for PRETTY-PRINTER.  */
+/* Set PREFIX for PRETTY-PRINTER, taking ownership of PREFIX, which
+   will eventually be free-ed.  */
+
 void
-pp_set_prefix (pretty_printer *pp, const char *prefix)
+pp_set_prefix (pretty_printer *pp, char *prefix)
 {
+  free (pp->prefix);
   pp->prefix = prefix;
   pp_set_real_maximum_length (pp);
   pp->emitted_prefix = false;
   pp_indentation (pp) = 0;
+}
+
+/* Take ownership of PP's prefix, setting it to NULL.
+   This allows clients to save, overide, and then restore an existing
+   prefix, without it being free-ed.  */
+
+char *
+pp_take_prefix (pretty_printer *pp)
+{
+  char *result = pp->prefix;
+  pp->prefix = NULL;
+  return result;
 }
 
 /* Free PRETTY-PRINTER's prefix, a previously malloc()'d string.  */
@@ -1507,7 +1522,7 @@ pp_destroy_prefix (pretty_printer *pp)
 {
   if (pp->prefix != NULL)
     {
-      free (CONST_CAST (char *, pp->prefix));
+      free (pp->prefix);
       pp->prefix = NULL;
     }
 }
@@ -1544,10 +1559,9 @@ pp_emit_prefix (pretty_printer *pp)
     }
 }
 
-/* Construct a PRETTY-PRINTER with PREFIX and of MAXIMUM_LENGTH
-   characters per line.  */
+/* Construct a PRETTY-PRINTER of MAXIMUM_LENGTH characters per line.  */
 
-pretty_printer::pretty_printer (const char *p, int l)
+pretty_printer::pretty_printer (int maximum_length)
   : buffer (new (XCNEW (output_buffer)) output_buffer ()),
     prefix (),
     padding (pp_none),
@@ -1561,10 +1575,10 @@ pretty_printer::pretty_printer (const char *p, int l)
     translate_identifiers (true),
     show_color ()
 {
-  pp_line_cutoff (this) = l;
+  pp_line_cutoff (this) = maximum_length;
   /* By default, we emit prefixes once per message.  */
   pp_prefixing_rule (this) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
-  pp_set_prefix (this, p);
+  pp_set_prefix (this, NULL);
 }
 
 pretty_printer::~pretty_printer ()
@@ -1573,6 +1587,7 @@ pretty_printer::~pretty_printer ()
     delete m_format_postprocessor;
   buffer->~output_buffer ();
   XDELETE (buffer);
+  free (prefix);
 }
 
 /* Append a string delimited by START and END to the output area of

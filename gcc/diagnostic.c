@@ -1063,7 +1063,6 @@ diagnostic_append_note (diagnostic_context *context,
 {
   diagnostic_info diagnostic;
   va_list ap;
-  const char *saved_prefix;
   rich_location richloc (line_table, location);
 
   va_start (ap, gmsgid);
@@ -1073,7 +1072,7 @@ diagnostic_append_note (diagnostic_context *context,
       va_end (ap);
       return;
     }
-  saved_prefix = pp_get_prefix (context->printer);
+  char *saved_prefix = pp_take_prefix (context->printer);
   pp_set_prefix (context->printer,
                  diagnostic_build_prefix (context, &diagnostic));
   pp_format (context->printer, &diagnostic.message);

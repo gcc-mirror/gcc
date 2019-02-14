@@ -1,3 +1,25 @@
+2019-02-14  David Malcolm  <dmalcolm@redhat.com>
+
+	Backport of r263275 from trunk.
+	2018-08-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c (diagnostic_show_locus): Use
+	pp_take_prefix when saving the existing prefix.
+	* diagnostic.c (diagnostic_append_note): Likewise.
+	* langhooks.c (lhd_print_error_function): Likewise.
+	* pretty-print.c (pp_set_prefix): Drop the "const" from "prefix"
+	param's type.  Free the existing prefix.
+	(pp_take_prefix): New function.
+	(pretty_printer::pretty_printer): Drop the prefix parameter.
+	Rename the length parameter to match the comment.
+	(pretty_printer::~pretty_printer): Free the prefix.
+	* pretty-print.h (pretty_printer::pretty_printer): Drop the prefix
+	parameter.
+	(struct pretty_printer): Drop the "const" from "prefix" field's
+	type and clarify memory management.
+	(pp_set_prefix): Drop the "const" from the 2nd param.
+	(pp_take_prefix): New decl.
+
 2019-02-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backport from trunk
