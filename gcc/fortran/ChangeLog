@@ -1,3 +1,10 @@
+2019-02-14  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/81552
+	* gfortran.h (gfc_option_t): Make flag_init_integer_value a long.
+	* options.c (gfc_handle_option): Use strtol instead of atoi.
+	* invoke.texi: Document -finit-integer behavior in more detail.
+
 2019-02-14  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/88248

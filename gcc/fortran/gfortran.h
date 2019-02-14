@@ -2681,7 +2681,7 @@ typedef struct
   int flag_preprocessed;
   int flag_d_lines;
   int flag_init_integer;
-  int flag_init_integer_value;
+  long flag_init_integer_value;
   int flag_init_logical;
   int flag_init_character;
   char flag_init_character_value;
