@@ -1,5 +1,8 @@
 2019-02-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR middle-end/89303
+	* testsuite/20_util/enable_shared_from_this/89303.cc: New test.
+
 	* doc/xml/manual/intro.xml: Document LWG 2735 status.
 	* include/bits/std_abs.h: Add comment about LWG 2735.
 	* testsuite/26_numerics/headers/cstdlib/dr2735.cc: New test.
