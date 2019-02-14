@@ -1,3 +1,8 @@
+2019-02-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR middle-end/89303
+	* testsuite/20_util/enable_shared_from_this/89303.cc: New test.
+
 2019-02-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
