@@ -1,5 +1,14 @@
 2019-02-14  David Malcolm  <dmalcolm@redhat.com>
 
+	Backport of r262199 from trunk.
+	2018-06-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/86329
+	* name-lookup.c (consider_binding_level): Filter out names that
+	match anon_aggrname_p.
+
+2019-02-14  David Malcolm  <dmalcolm@redhat.com>
+
 	Backport of r259720 from trunk.
 	2018-04-27  David Malcolm  <dmalcolm@redhat.com>
 
