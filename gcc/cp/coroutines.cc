@@ -1247,7 +1247,25 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   tree ap_m = lookup_member (coro_frame_type, get_identifier ("__p"), 1, 0,
 			     tf_warning_or_error);
   tree ap = build_class_member_access_expr (actor_frame, ap_m, NULL_TREE,
-					   false, tf_warning_or_error);
+					    false, tf_warning_or_error);
+
+  /* actor's coroutine 'self handle'.  */
+  tree ash_m = lookup_member (coro_frame_type, get_identifier ("__self_h"),
+			     1, 0, tf_warning_or_error);
+  tree ash = build_class_member_access_expr (actor_frame, ash_m, NULL_TREE,
+					     false, tf_warning_or_error);
+  /* So construct the self-handle from the frame address.  */
+  tree hfa_m = lookup_member (handle_type, get_identifier ("from_address"),
+			     1, 0, tf_warning_or_error);
+  r = build1 (CONVERT_EXPR, build_pointer_type (void_type_node), actor_fp);
+  vec<tree, va_gc>* args = make_tree_vector_single (r);
+  tree hfa = build_new_method_call (ap, hfa_m, &args, NULL_TREE, LOOKUP_NORMAL,
+				    NULL, tf_warning_or_error);
+  r = build2 (INIT_EXPR, handle_type, ash, TREE_OPERAND (hfa, 1));
+  r = build1 (CONVERT_EXPR, void_type_node, r);
+  r = build_stmt (loc, EXPR_STMT, r);
+  r = maybe_cleanup_point_expr_void (r);
+  add_stmt (r);
 
   /* Now we know the real promise, and enough about the frame layout to
      decide where to put things.  */

@@ -1,6 +1,12 @@
 2019-02-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (build_actor_fn): initialize the "self" handle
+	slot.
+
+2019-02-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (morph_fn_to_coro): Allocate a slot for "self"
 	handle in the coro frame.
 
