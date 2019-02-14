@@ -1,5 +1,9 @@
 2019-02-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/89314
+	* fold-const.c (fold_binary_loc): Cast strlen argument to
+	const char * before dereferencing it.  Formatting fixes.
+
 	PR middle-end/89284
 	* passes.def: Swap pass_ubsan and pass_early_warn_uninitialized.
 
