@@ -158,7 +158,7 @@
 
 2019-02-12  Jan Hubicka  <hubicka@ucw.cz>
 
-	PR lto/88777
+	PR lto/88677
 	* cgraphunit.c (analyze_functions): Clear READONLY flag for external
 	types that needs constructiong.
 	* tree.h (may_be_aliased): Do not check TYPE_NEEDS_CONSTRUCTING.
