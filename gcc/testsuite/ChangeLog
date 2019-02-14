@@ -1,3 +1,7 @@
+2019-02-13  Ian Lance Taylor  <iant@golang.org>
+
+	* gcc.dg/func-attr-1.c: New test.
+
 2019-02-13  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sse2-init-v2di-2.c (dg-final): Update scan string.

@@ -770,8 +770,11 @@ print "}";
 n_opt_val = 3;
 var_opt_val[0] = "x_optimize"
 var_opt_val_type[0] = "char "
+var_opt_hash[0] = 1;
 var_opt_val[1] = "x_optimize_size"
+var_opt_hash[1] = 1;
 var_opt_val[2] = "x_optimize_debug"
+var_opt_hash[2] = 1;
 var_opt_val_type[1] = "char "
 var_opt_val_type[2] = "char "
 for (i = 0; i < n_opts; i++) {
@@ -787,8 +790,9 @@ for (i = 0; i < n_opts; i++) {
 
 		otype = var_type_struct(flags[i])
 		var_opt_val_type[n_opt_val] = otype;
-		var_opt_val[n_opt_val++] = "x_" name;
+		var_opt_val[n_opt_val] = "x_" name;
 		var_opt_hash[n_opt_val] = flag_set_p("Optimization", flags[i]);
+		n_opt_val++;
 	}
 }
 print "";
