@@ -1,3 +1,9 @@
+2019-02-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/88248
+	* symbol.c: Move check for labeled DO statement from
+	gfc_define_st_label to gfc_reference_st_label.
+
 2019-02-14  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR fortran/72715

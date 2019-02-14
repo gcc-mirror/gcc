@@ -2743,10 +2743,6 @@ gfc_define_st_label (gfc_st_label *lp, gfc_sl_type type, locus *label_locus)
 				  "DO termination statement which is not END DO"
 				  " or CONTINUE with label %d at %C", labelno))
 	    return;
-	  if (type == ST_LABEL_DO_TARGET
-	      && !gfc_notify_std (GFC_STD_F2018_OBS, "Labeled DO statement "
-				  "at %L", label_locus))
-	    return;
 	  break;
 
 	default:
@@ -2802,6 +2798,11 @@ gfc_reference_st_label (gfc_st_label *lp, gfc_sl_type type)
   if (lp->referenced == ST_LABEL_DO_TARGET && type == ST_LABEL_DO_TARGET
       && !gfc_notify_std (GFC_STD_F95_OBS | GFC_STD_F2018_DEL,
 			  "Shared DO termination label %d at %C", labelno))
+    return false;
+
+  if (type == ST_LABEL_DO_TARGET
+      && !gfc_notify_std (GFC_STD_F2018_OBS, "Labeled DO statement "
+			  "at %L", &gfc_current_locus))
     return false;
 
   if (lp->referenced != ST_LABEL_DO_TARGET)
