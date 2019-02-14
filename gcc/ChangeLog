@@ -1,3 +1,12 @@
+2019-02-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from trunk
+	2018-07-26  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/85805
+	* combine.c (reg_nonzero_bits_for_combine): Only use the last set
+	value for hard registers if that was written in the same mode.
+
 2019-02-14  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline

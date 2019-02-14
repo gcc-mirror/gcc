@@ -10179,7 +10179,8 @@ reg_nonzero_bits_for_combine (const_rtx x, scalar_int_mode xmode,
   rsp = &reg_stat[REGNO (x)];
   if (rsp->last_set_value != 0
       && (rsp->last_set_mode == mode
-	  || (GET_MODE_CLASS (rsp->last_set_mode) == MODE_INT
+	  || (REGNO (x) >= FIRST_PSEUDO_REGISTER
+	      && GET_MODE_CLASS (rsp->last_set_mode) == MODE_INT
 	      && GET_MODE_CLASS (mode) == MODE_INT))
       && ((rsp->last_set_label >= label_tick_ebb_start
 	   && rsp->last_set_label < label_tick)
