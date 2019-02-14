@@ -1,5 +1,8 @@
 2019-02-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/89314
+	* gcc.dg/pr89314.c: New test.
+
 	Backported from mainline
 	2019-02-13  Jonathan Wakely  <jwakely@redhat.com>
 		    Jakub Jelinek  <jakub@redhat.com>
