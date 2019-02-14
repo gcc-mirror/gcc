@@ -1,3 +1,7 @@
+2019-02-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/arm/pr88850.c: change options to additional option.
+
 2019-02-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR d/87864
