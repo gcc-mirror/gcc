@@ -1,6 +1,12 @@
 2019-02-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (morph_fn_to_coro): Allocate a slot for "self"
+	handle in the coro frame.
+
+2019-02-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (coro_promise_type_found_p): Ensure that the
 	coro handle type is complete.
 

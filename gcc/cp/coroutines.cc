@@ -1712,6 +1712,12 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 		     short_unsigned_type_node);
   DECL_CHAIN (decl) = field_list; field_list = decl;
 
+  /* We need a handle to this coroutine, which is passed to every
+     await_suspend().  There's no point in creating it over and over.  */
+  tree self_h_name = get_identifier ("__self_h");
+  decl = build_decl (fn_start, FIELD_DECL, self_h_name, handle_type);
+  DECL_CHAIN (decl) = field_list; field_list = decl;
+
   /* Initial suspend is mandated.  */
   tree init_susp_name = get_identifier ("__is");
   decl = build_decl (fn_start, FIELD_DECL, init_susp_name,
