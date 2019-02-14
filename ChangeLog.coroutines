@@ -1,6 +1,16 @@
 2019-02-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (build_co_await): We build the awaiter calls to
+	verify, so save them for expansion time.
+	(co_await_expander): Use saved awaiter calls instead of rebuilding
+	them.
+	(transform_await_expr): Substitute the proxy for self handle into
+	any of the calls that use it.
+
+2019-02-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (__coro_aw_data): Add "self" handle field.
 	(co_await_expander): Collect the calls build at parse time instead
 	of building them again.  Use the saved handle for "self".

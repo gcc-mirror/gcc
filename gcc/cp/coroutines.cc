@@ -417,9 +417,16 @@ build_co_await (location_t loc, tree a, tree mode)
   if (!awrs_func || !awrs_call || awrs_call == error_mark_node)
     return error_mark_node;
 
+  /* We now have three call expressions, in terms of the promise, handle and
+     'e' proxies.  Save them in the await expression for later expansion.  */
+
+  tree awaiter_calls = make_tree_vec (3);
+  TREE_VEC_ELT (awaiter_calls, 0) = awrd_call; /* await_ready().  */
+  TREE_VEC_ELT (awaiter_calls, 1) = awsp_call; /* await_suspend().  */
+  TREE_VEC_ELT (awaiter_calls, 2) = awrs_call; /* await_resume().  */
 
   return build5_loc (loc, CO_AWAIT_EXPR, TREE_TYPE (TREE_TYPE (awrs_func)),
-		     a, e_proxy, o, awrs_call, mode);
+		     a, e_proxy, o, awaiter_calls, mode);
 }
 
 
@@ -768,6 +775,7 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
   tree var = TREE_OPERAND (saved_co_await, 1);
   //tree sv_handle = TREE_OPERAND (saved_co_await, 2); /* not yet.  */
   tree awaiter_calls = TREE_OPERAND (saved_co_await, 3);
+
   tree source = TREE_OPERAND (saved_co_await, 4);
   bool is_final = (source && TREE_INT_CST_LOW (source) == 3);
   bool needs_dtor = TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (var));
@@ -785,33 +793,22 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
   tree empty_list = build_empty_stmt (loc);
 
   tree dtor = NULL_TREE;
+  tree await_type = TREE_TYPE (var);
   if (needs_dtor)
     dtor = build_special_member_call(var, complete_dtor_identifier, NULL,
-				     TREE_TYPE (var), LOOKUP_NORMAL,
+				     await_type, LOOKUP_NORMAL,
 				     tf_warning_or_error);
 
   tree stmt_list = NULL;
   /* Initialise the var from the provided 'o' expression.  */
-  tree r = build2 (INIT_EXPR, TREE_TYPE (var), var, TREE_OPERAND (expr, 1));
+  tree r = build2 (INIT_EXPR, await_type, var, TREE_OPERAND (expr, 1));
+  r = build1 (CONVERT_EXPR, void_type_node, r);
   r = build_stmt (loc, EXPR_STMT, r);
+  r = maybe_cleanup_point_expr_void (r);
   append_to_statement_list (r, &stmt_list);
 
-  /* Produce the test and suspend.  */
-  tree awr_name = get_identifier ("await_ready");
-  tree await_type = TREE_TYPE (var);
-  tree awr_memb = lookup_member (await_type, awr_name, /*protect*/1,
-				 /*want_type*/ 0, tf_warning_or_error);
-  tree ready_cond;
-  if (awr_memb && awr_memb != error_mark_node)
-    ready_cond = build_new_method_call (var, awr_memb, NULL,
-					NULL_TREE, LOOKUP_NORMAL, NULL,
-					tf_warning_or_error);
-  else
-    {
-      error_at (loc, "no member named %qs in %qT",
-		IDENTIFIER_POINTER (awr_name), await_type);
-      ready_cond = error_mark_node;
-    }
+  /* Use the await_ready() call to test if we need to suspend.  */
+  tree ready_cond = TREE_VEC_ELT (awaiter_calls, 0); /* await_ready().  */
   ready_cond = build1_loc (loc, TRUTH_NOT_EXPR, boolean_type_node, ready_cond);
   ready_cond = build1_loc (loc, CLEANUP_POINT_EXPR,
 			   boolean_type_node, ready_cond);
@@ -820,30 +817,16 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
   tree susp_idx = build_int_cst (short_unsigned_type_node, data->index);
   r = build2_loc (loc, MODIFY_EXPR, short_unsigned_type_node,
 		  data->resume_idx, susp_idx);
+  r = build1 (CONVERT_EXPR, void_type_node, r);
+  r = build_stmt (loc, EXPR_STMT, r);
   r = maybe_cleanup_point_expr_void (r);
   append_to_statement_list (r, &body_list);
 
-  tree sus_name = get_identifier ("await_suspend");
-  tree sus_memb = lookup_member (await_type, sus_name, /*protect*/1,
-				 /*want_type*/ 0, tf_warning_or_error);
-  tree suspend;
   /* We are not (yet) going to muck around with figuring out the actions
      for different return type on the suspend, our simple case assumes
      it's void.  */
-  if (sus_memb && sus_memb != error_mark_node)
-    {
-      vec<tree, va_gc>* args = make_tree_vector_single (data->self_h);
-      suspend = build_new_method_call (var, sus_memb, &args,
-				       NULL_TREE, LOOKUP_NORMAL, NULL,
-				       tf_warning_or_error);
-      release_tree_vector (args);
-    }
-  else
-    {
-      error_at (loc, "no member named %qs in %qT",
-		IDENTIFIER_POINTER (sus_name), await_type);
-      suspend = error_mark_node;
-    }
+  tree suspend = TREE_VEC_ELT (awaiter_calls, 1); /* await_suspend().  */
+  suspend = build1 (CONVERT_EXPR, void_type_node, suspend);
   suspend = build_stmt (loc, EXPR_STMT, suspend);
   suspend = maybe_cleanup_point_expr_void (suspend);
   append_to_statement_list (suspend, &body_list);
@@ -941,24 +924,10 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
   /* Resume point.  */
   resume_label = build_stmt (loc, LABEL_EXPR, resume_label);
   append_to_statement_list (resume_label, &stmt_list);
-#if 0
-  tree res_name = get_identifier ("await_resume");
-  tree res_memb = lookup_member (await_type, res_name, /*protect*/1,
-				 /*want_type*/ 0, tf_warning_or_error);
-  tree resume;
-  if (res_memb && res_memb != error_mark_node)
-    resume = build_new_method_call (var, res_memb, NULL,
-				    NULL_TREE, LOOKUP_NORMAL, NULL,
-				    tf_warning_or_error);
-  else
-    {
-      error_at (loc, "no member named %qs in %qT",
-		IDENTIFIER_POINTER (res_name), await_type);
-      resume = error_mark_node;
-    }
-#endif
+
   /* This will produce the value (if one is provided) from the co_await
      expression.  */
+  tree resume_call = TREE_VEC_ELT (awaiter_calls, 2); /* await_resume().  */
   switch (stmt_code)
     {
     default: /* not likely to work .. but... */
@@ -1085,6 +1054,8 @@ transform_await_expr (tree await_expr, struct __await_xform_data *xform)
           We need to replace the e_proxy in the awr_call.
   */
 
+  /* FIXME: determine if it's better to walk the co_await several times with
+     a quick test, or once with a more complex test.  */
   /* the initialise expression is 'o', currently in slot 2, move it to slot
      0 (thus discarding 'a').  */
   TREE_OPERAND (await_expr, 0) = TREE_OPERAND (await_expr, 2);
@@ -1094,6 +1065,11 @@ transform_await_expr (tree await_expr, struct __await_xform_data *xform)
   struct __proxy_replace data = { TREE_OPERAND (await_expr, 1), as};
   cp_walk_tree (&await_expr, replace_proxy, &data, NULL);
   TREE_OPERAND (await_expr, 1) = as;
+
+ /* Now do the self_handle.  */
+  data.from = xform->self_h_proxy;
+  data.to = xform->real_self_h;
+  cp_walk_tree (&await_expr, replace_proxy, &data, NULL);
 
   /* Now do the promise.  */
   data.from = xform->promise_proxy;
