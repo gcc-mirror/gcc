@@ -19,8 +19,8 @@ program f2018_obs
 
   equivalence (a(10),b(1))           ! { dg-warning "obsolescent feature" }
 
-  do 99 i=1,10
-99 continue                          ! { dg-warning "obsolescent feature" }
+  do 99 i=1,10                       ! { dg-warning "obsolescent feature" }
+99 continue
 
   j = (/ 0, 1, 2, 3, 4, 0, 6, 7  /)
   forall (i=1:8, j(i) /= 0)          ! { dg-warning "obsolescent feature" }
