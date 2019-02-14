@@ -1,5 +1,8 @@
 2019-02-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2017.xml: Add P0063R3 to status table.
+	* doc/html/*: Regenerate.
+
 	* doc/xml/manual/intro.xml: Document LWG 2586 status.
 	* include/bits/uses_allocator.h (__uses_alloc): Use const lvalue
 	allocator type in is_constructible checks.

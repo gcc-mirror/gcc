@@ -548,7 +548,11 @@ Feature-testing recommendations for C++</a>.
 	<a class="link" href="http://www.open-std.org/JTC1/sc22/WG21/docs/papers/2014/n4259.pdf" target="_top">
 	  N4259
 	</a>
-      </td><td align="center">6.1</td><td align="left"><code class="code">__cpp_lib_uncaught_exceptions &gt;= 201411</code></td></tr><tr><td align="left"> Variant: a type-safe union for C++17 </td><td align="left">
+      </td><td align="center">6.1</td><td align="left"><code class="code">__cpp_lib_uncaught_exceptions &gt;= 201411</code></td></tr><tr><td align="left"> C++17 should refer to C11 instead of C99 </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0063r3.html" target="_top">
+	P0063R3
+	</a>
+      </td><td align="center"> 9.1 </td><td align="left"> </td></tr><tr><td align="left"> Variant: a type-safe union for C++17 </td><td align="left">
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0088r3.html" target="_top">
 	P0088R3
 	</a>
@@ -821,7 +825,19 @@ Feature-testing recommendations for C++</a>.
 	P0067R5
 	</a>
       </td><td align="center"> 8.1 (only integral types supported) </td><td align="left"><code class="code"> __has_include(&lt;charconv&gt;) </code>
-             <code class="code"> __cpp_lib_to_chars &gt;= 201611 </code></td></tr></tbody></table></div></div><br class="table-break" /><p>
+             <code class="code"> __cpp_lib_to_chars &gt;= 201611 </code></td></tr><tr><td align="left"> Homogeneous interface for variant, any and optional </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0032r3.pdf" target="_top">
+	P0032R3
+	</a>
+      </td><td align="center"> 7.1  </td><td align="left">
+             <code class="code"> __cpp_lib_any &gt;= 201606 </code>,
+             <code class="code"> __cpp_lib_optional &gt;= 201606 </code>,
+             <code class="code"> __cpp_lib_variant &gt;= 201606 </code>
+      </td></tr><tr><td align="left"> Making Optional Greater Equal Again </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0307r2.pdf" target="_top">
+	P0307R2
+	</a>
+      </td><td align="center"> 7.1  </td><td align="left"> <code class="code"> __cpp_lib_optional &gt;= 201606 </code> </td></tr></tbody></table></div></div><br class="table-break" /><p>
 Note 1: This feature is supported in GCC 7.1 and 7.2 but before GCC 7.3 the
 <code class="code">__cpp_lib</code> macro is not defined, and compilation will fail if the
 header is included without using <code class="option">-std</code> to enable C++17 support.
@@ -1037,11 +1053,11 @@ Feature-testing recommendations for C++</a>.
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0550r2.pdf" target="_top">
 	P0550R2
 	</a>
-      </td><td align="center"> 9.1 </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">  <code class="code">nodiscard</code> in the Library </td><td align="left">
+      </td><td align="center"> 9.1 </td><td align="left"> </td></tr><tr><td align="left">  <code class="code">nodiscard</code> in the Library </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0600r1.pdf" target="_top">
 	P0600R1
 	</a>
-      </td><td align="center"> </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">  de-pessimize legacy algorithms with <code class="code">std::move</code> </td><td align="left">
+      </td><td align="center"> 9.1 </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">  de-pessimize legacy algorithms with <code class="code">std::move</code> </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0616r0.pdf" target="_top">
 	P0616R0
 	</a>
@@ -1273,11 +1289,11 @@ Feature-testing recommendations for C++</a>.
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1085r2.md" target="_top">
 	P1085R2
 	</a>
-      </td><td align="center"> </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">  Editorial Guidance for merging P0019r8 and P0528r3 </td><td align="left">
+      </td><td align="center"> </td><td align="left"> </td></tr><tr><td align="left">  Editorial Guidance for merging P0019r8 and P0528r3 </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1123r0.html" target="_top">
 	P1123R0
 	</a>
-      </td><td align="center"> </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">  Cleaning up Clause 20 </td><td align="left">
+      </td><td align="center"> Note 1 </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">  Cleaning up Clause 20 </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1148r0.pdf" target="_top">
 	P1148R0
 	</a>
