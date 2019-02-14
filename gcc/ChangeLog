@@ -1,6 +1,15 @@
 2019-02-14  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2019-02-14  Martin Liska  <mliska@suse.cz>
+
+	PR rtl-optimization/89242
+	* dce.c (delete_unmarked_insns): Call free_dominance_info we
+	process a transformation.
+
+2019-02-14  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2019-02-13  Martin Liska  <mliska@suse.cz>
 
 	PR lto/88858

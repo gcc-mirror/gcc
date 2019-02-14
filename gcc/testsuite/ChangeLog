@@ -1,6 +1,14 @@
 2019-02-14  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2019-02-14  Martin Liska  <mliska@suse.cz>
+
+	PR rtl-optimization/89242
+	* g++.dg/pr89242.C: New test.
+
+2019-02-14  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2019-02-11  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/89009
