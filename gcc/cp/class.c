@@ -1141,9 +1141,6 @@ add_method (tree type, tree method, bool via_using)
 	}
     }
 
-  /* A class should never have more than one destructor.  */
-  gcc_assert (!current_fns || !DECL_DESTRUCTOR_P (method));
-
   current_fns = ovl_insert (method, current_fns, via_using);
 
   if (!COMPLETE_TYPE_P (type) && !DECL_CONV_FN_P (method)
