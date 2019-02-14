@@ -64,6 +64,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 // _GLIBCXX_RESOLVE_LIB_DEFECTS
 // 2192. Validity and return type of std::abs(0u) is unclear
 // 2294. <cstdlib> should declare abs(double)
+// 2735. std::abs(short), std::abs(signed char) and others should return int
 
 #ifndef __CORRECT_ISO_CPP_MATH_H_PROTO
   inline _GLIBCXX_CONSTEXPR double

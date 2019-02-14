@@ -1,3 +1,9 @@
+2019-02-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/intro.xml: Document LWG 2735 status.
+	* include/bits/std_abs.h: Add comment about LWG 2735.
+	* testsuite/26_numerics/headers/cstdlib/dr2735.cc: New test.
+
 2019-02-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/89345

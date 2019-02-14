@@ -1134,6 +1134,17 @@ requirements of the license of GCC.
     <listitem><para>Define the <code>value_compare</code> typedef.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr2735"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2735">2735</link>:
+       <emphasis><code>std::abs(short)</code>,
+	 <code>std::abs(signed char)</code> and others should return
+	 <code>int</code> instead of <code>double</code> in order to be
+	 compatible with C++98 and C
+       </emphasis>
+    </term>
+    <listitem><para>Resolved by the changes for
+      <link linkend="manual.bugs.dr2192">2192</link>.
+    </para></listitem></varlistentry>
+
     <varlistentry xml:id="manual.bugs.dr2770"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2770">2770</link>:
        <emphasis><code>tuple_size&lt;const T&gt;</code> specialization is not
 	 SFINAE compatible and breaks decomposition declarations
