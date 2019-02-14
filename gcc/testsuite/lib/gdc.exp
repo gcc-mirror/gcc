@@ -120,6 +120,10 @@ proc gdc_link_flags { paths } {
     if { $gccpath != "" } {
         # Path to libgphobos.spec.
         append flags "-B${gccpath}/libphobos/src "
+        # Path to drtbegin.o/drtend.o.
+        if { [file exists "${gccpath}/libphobos/libdruntime/gcc/drtbegin.o"] } {
+            append flags "-B${gccpath}/libphobos/libdruntime/gcc "
+        }
 
         if { [file exists "${gccpath}/libphobos/src/.libs/libgphobos.a"] \
              || [file exists "${gccpath}/libphobos/src/.libs/libgphobos.${shlib_ext}"] } {
