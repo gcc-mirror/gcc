@@ -1,6 +1,15 @@
 2019-02-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backport from trunk
+	2018-08-31  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/86684
+	PR target/87149
+	* config/rs6000/rs6000.md (lround<mode>di2): Gate on TARGET_FPRND.
+
+2019-02-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from trunk
 	2019-01-18  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/88892
