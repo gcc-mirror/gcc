@@ -1,5 +1,15 @@
 2019-02-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/intro.xml: Document LWG 2586 status.
+	* include/bits/uses_allocator.h (__uses_alloc): Use const lvalue
+	allocator type in is_constructible checks.
+	* testsuite/20_util/scoped_allocator/69293_neg.cc: Adjust dg-error.
+	* testsuite/20_util/scoped_allocator/dr2586.cc: New test.
+	* testsuite/20_util/tuple/cons/allocators.cc: Add test using
+	problematic type from LWG 2586 discussion.
+	* testsuite/20_util/uses_allocator/69293_neg.cc: Adjust dg-error.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: Likewise.
+
 	* configure.ac: Check for C11 timespec_get function.
 	* crossconfig.m4 (freebsd, linux, gnu, cygwin, solaris, netbsd)
 	(openbsd): Likewise
