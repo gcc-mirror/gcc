@@ -1,3 +1,8 @@
+2019-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89284
+	* passes.def: Swap pass_ubsan and pass_early_warn_uninitialized.
+
 2019-02-13  Ian Lance Taylor  <iant@golang.org>
 
 	* optc-save-gen.awk: Set var_opt_hash for initial optimizations

@@ -1,3 +1,8 @@
+2019-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89284
+	* gcc.dg/ubsan/pr89284.c: New test.
+
 2019-02-13  Ian Lance Taylor  <iant@golang.org>
 
 	* gcc.dg/func-attr-1.c: New test.
