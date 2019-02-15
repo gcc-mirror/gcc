@@ -606,7 +606,7 @@ insn_current_reference_address (rtx_insn *branch)
 
   rtx_insn *seq = NEXT_INSN (PREV_INSN (branch));
   seq_uid = INSN_UID (seq);
-  if (!JUMP_P (branch))
+  if (!jump_to_label_p (branch))
     /* This can happen for example on the PA; the objective is to know the
        offset to address something in front of the start of the function.
        Thus, we can treat it like a backward branch.
