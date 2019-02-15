@@ -1745,7 +1745,7 @@ inline_small_functions (void)
      metrics.  */
 
   max_count = 0;
-  ipa_reduced_postorder (order, true, true, NULL);
+  ipa_reduced_postorder (order, true, NULL);
   free (order);
 
   FOR_EACH_DEFINED_FUNCTION (node)

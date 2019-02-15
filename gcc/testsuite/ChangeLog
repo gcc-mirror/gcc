@@ -1,3 +1,11 @@
+2019-02-15  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-02-11  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/89009
+	* g++.dg/ipa/pr89009.C: New test.
+
 2019-02-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/struct-ret-check-1.c: Add -fno-pie option.
