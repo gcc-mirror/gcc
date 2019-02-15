@@ -94,7 +94,7 @@ struct String
 
 struct FuncVal
 {
-	void	(*fn)(void);
+	uintptr_t fn;
 	// variable-size, fn-specific data here
 };
 
@@ -295,7 +295,7 @@ void	runtime_entersyscall()
   __asm__ (GOSYM_PREFIX "runtime.entersyscall");
 void	runtime_entersyscallblock()
   __asm__ (GOSYM_PREFIX "runtime.entersyscallblock");
-G*	__go_go(void (*pfn)(void*), void*);
+G*	__go_go(uintptr, void*);
 int32	runtime_callers(int32, Location*, int32, bool keep_callers);
 int64	runtime_nanotime(void)	// monotonic time
   __asm__(GOSYM_PREFIX "runtime.nanotime");
@@ -389,7 +389,7 @@ void runtime_panic(Eface)
 /*
  * runtime c-called (but written in Go)
  */
-void	runtime_newErrorCString(const char*, Eface*)
+void	runtime_newErrorCString(uintptr, Eface*)
      __asm__ (GOSYM_PREFIX "runtime.NewErrorCString");
 
 /*

@@ -664,11 +664,19 @@ Gogo::write_barrier_variable()
     {
       Location bloc = Linemap::predeclared_location();
 
-      // We pretend that writeBarrier is a uint32, so that we do a
-      // 32-bit load.  That is what the gc toolchain does.
-      Type* uint32_type = Type::lookup_integer_type("uint32");
-      Variable* var = new Variable(uint32_type, NULL, true, false, false,
-				   bloc);
+      Type* bool_type = Type::lookup_bool_type();
+      Array_type* pad_type = Type::make_array_type(this->lookup_global("byte")->type_value(),
+						   Expression::make_integer_ul(3, NULL, bloc));
+      Type* uint64_type = Type::lookup_integer_type("uint64");
+      Type* wb_type = Type::make_builtin_struct_type(5,
+						     "enabled", bool_type,
+						     "pad", pad_type,
+						     "needed", bool_type,
+						     "cgo", bool_type,
+						     "alignme", uint64_type);
+
+      Variable* var = new Variable(wb_type, NULL,
+				    true, false, false, bloc);
 
       bool add_to_globals;
       Package* package = this->add_imported_package("runtime", "_", false,
@@ -850,8 +858,12 @@ Gogo::assign_with_write_barrier(Function* function, Block* enclosing,
     case Type::TYPE_FUNCTION:
     case Type::TYPE_MAP:
     case Type::TYPE_CHANNEL:
-      // These types are all represented by a single pointer.
-      call = Runtime::make_call(Runtime::GCWRITEBARRIER, loc, 2, lhs, rhs);
+      {
+	// These types are all represented by a single pointer.
+	Type* uintptr_type = Type::lookup_integer_type("uintptr");
+	rhs = Expression::make_unsafe_cast(uintptr_type, rhs, loc);
+	call = Runtime::make_call(Runtime::GCWRITEBARRIER, loc, 2, lhs, rhs);
+      }
       break;
 
     case Type::TYPE_STRING:
@@ -882,7 +894,17 @@ Gogo::check_write_barrier(Block* enclosing, Statement* without,
 {
   Location loc = without->location();
   Named_object* wb = this->write_barrier_variable();
+  // We pretend that writeBarrier is a uint32, so that we do a
+  // 32-bit load.  That is what the gc toolchain does.
+  Type* void_type = Type::make_void_type();
+  Type* unsafe_pointer_type = Type::make_pointer_type(void_type);
+  Type* uint32_type = Type::lookup_integer_type("uint32");
+  Type* puint32_type = Type::make_pointer_type(uint32_type);
   Expression* ref = Expression::make_var_reference(wb, loc);
+  ref = Expression::make_unary(OPERATOR_AND, ref, loc);
+  ref = Expression::make_cast(unsafe_pointer_type, ref, loc);
+  ref = Expression::make_cast(puint32_type, ref, loc);
+  ref = Expression::make_unary(OPERATOR_MULT, ref, loc);
   Expression* zero = Expression::make_integer_ul(0, ref->type(), loc);
   Expression* cond = Expression::make_binary(OPERATOR_EQEQ, ref, zero, loc);
 

@@ -153,7 +153,7 @@ var runtimeInitTime int64
 var initSigmask sigset
 
 // The main goroutine.
-func main() {
+func main(unsafe.Pointer) {
 	g := getg()
 
 	// Max stack size is 1 GB on 64-bit, 250 MB on 32-bit.

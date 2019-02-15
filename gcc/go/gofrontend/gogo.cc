@@ -4513,13 +4513,13 @@ Build_recover_thunks::can_recover_arg(Location location)
     builtin_return_address =
       Gogo::declare_builtin_rf_address("__builtin_return_address");
 
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
   static Named_object* can_recover;
   if (can_recover == NULL)
     {
       const Location bloc = Linemap::predeclared_location();
       Typed_identifier_list* param_types = new Typed_identifier_list();
-      Type* voidptr_type = Type::make_pointer_type(Type::make_void_type());
-      param_types->push_back(Typed_identifier("a", voidptr_type, bloc));
+      param_types->push_back(Typed_identifier("a", uintptr_type, bloc));
       Type* boolean_type = Type::lookup_bool_type();
       Typed_identifier_list* results = new Typed_identifier_list();
       results->push_back(Typed_identifier("", boolean_type, bloc));
@@ -4539,6 +4539,7 @@ Build_recover_thunks::can_recover_arg(Location location)
   args->push_back(zexpr);
 
   Expression* call = Expression::make_call(fn, args, false, location);
+  call = Expression::make_unsafe_cast(uintptr_type, call, location);
 
   args = new Expression_list();
   args->push_back(call);

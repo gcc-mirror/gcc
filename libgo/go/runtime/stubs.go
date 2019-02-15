@@ -283,8 +283,7 @@ func eqstring(x, y string) bool {
 // For gccgo this is in the C code.
 func osyield()
 
-// For gccgo this can be called directly.
-//extern syscall
+//extern __go_syscall6
 func syscall(trap uintptr, a1, a2, a3, a4, a5, a6 uintptr) uintptr
 
 // For gccgo, to communicate from the C code to the Go code.

@@ -1344,7 +1344,7 @@ Func_descriptor_expression::make_func_descriptor_type()
   if (Func_descriptor_expression::descriptor_type != NULL)
     return;
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
-  Type* struct_type = Type::make_builtin_struct_type(1, "code", uintptr_type);
+  Type* struct_type = Type::make_builtin_struct_type(1, "fn", uintptr_type);
   Func_descriptor_expression::descriptor_type =
     Type::make_builtin_named_type("functionDescriptor", struct_type);
 }
@@ -3874,7 +3874,9 @@ Unsafe_type_conversion_expression::do_get_backend(Translate_context* context)
 	      || et->integer_type() != NULL
               || et->is_nil_type());
   else if (et->is_unsafe_pointer_type())
-    go_assert(t->points_to() != NULL);
+    go_assert(t->points_to() != NULL
+	      || (t->integer_type() != NULL
+		  && t->integer_type() == Type::lookup_integer_type("uintptr")->real_type()));
   else if (t->interface_type() != NULL)
     {
       bool empty_iface = t->interface_type()->is_empty();

@@ -20,7 +20,7 @@ extern void * __splitstack_find_context (void *context[10], size_t *, void **,
 // tail call to doscanstack1.
 #pragma GCC optimize ("-fno-optimize-sibling-calls")
 
-extern void scanstackblock(void *addr, uintptr size, void *gcw)
+extern void scanstackblock(uintptr addr, uintptr size, void *gcw)
   __asm__("runtime.scanstackblock");
 
 static bool doscanstack1(G*, void*)
@@ -84,11 +84,11 @@ static bool doscanstack1(G *gp, void *gcw) {
 		}
 	}
 	if(sp != nil) {
-		scanstackblock(sp, (uintptr)(spsize), gcw);
+		scanstackblock((uintptr)(sp), (uintptr)(spsize), gcw);
 		while((sp = __splitstack_find(next_segment, next_sp,
 					      &spsize, &next_segment,
 					      &next_sp, &initial_sp)) != nil)
-			scanstackblock(sp, (uintptr)(spsize), gcw);
+			scanstackblock((uintptr)(sp), (uintptr)(spsize), gcw);
 	}
 #else
 	byte* bottom;

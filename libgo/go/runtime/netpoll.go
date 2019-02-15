@@ -112,7 +112,7 @@ func poll_runtime_isPollServerDescriptor(fd uintptr) bool {
 }
 
 //go:linkname poll_runtime_pollOpen internal..z2fpoll.runtime_pollOpen
-func poll_runtime_pollOpen(fd uintptr) (*pollDesc, int) {
+func poll_runtime_pollOpen(fd uintptr) (uintptr, int) {
 	pd := pollcache.alloc()
 	lock(&pd.lock)
 	if pd.wg != 0 && pd.wg != pdReady {
@@ -133,11 +133,12 @@ func poll_runtime_pollOpen(fd uintptr) (*pollDesc, int) {
 
 	var errno int32
 	errno = netpollopen(fd, pd)
-	return pd, int(errno)
+	return uintptr(unsafe.Pointer(pd)), int(errno)
 }
 
 //go:linkname poll_runtime_pollClose internal..z2fpoll.runtime_pollClose
-func poll_runtime_pollClose(pd *pollDesc) {
+func poll_runtime_pollClose(ctx uintptr) {
+	pd := (*pollDesc)(unsafe.Pointer(ctx))
 	if !pd.closing {
 		throw("runtime: close polldesc w/o unblock")
 	}
@@ -159,7 +160,8 @@ func (c *pollCache) free(pd *pollDesc) {
 }
 
 //go:linkname poll_runtime_pollReset internal..z2fpoll.runtime_pollReset
-func poll_runtime_pollReset(pd *pollDesc, mode int) int {
+func poll_runtime_pollReset(ctx uintptr, mode int) int {
+	pd := (*pollDesc)(unsafe.Pointer(ctx))
 	err := netpollcheckerr(pd, int32(mode))
 	if err != 0 {
 		return err
@@ -173,7 +175,8 @@ func poll_runtime_pollReset(pd *pollDesc, mode int) int {
 }
 
 //go:linkname poll_runtime_pollWait internal..z2fpoll.runtime_pollWait
-func poll_runtime_pollWait(pd *pollDesc, mode int) int {
+func poll_runtime_pollWait(ctx uintptr, mode int) int {
+	pd := (*pollDesc)(unsafe.Pointer(ctx))
 	err := netpollcheckerr(pd, int32(mode))
 	if err != 0 {
 		return err
@@ -195,7 +198,8 @@ func poll_runtime_pollWait(pd *pollDesc, mode int) int {
 }
 
 //go:linkname poll_runtime_pollWaitCanceled internal..z2fpoll.runtime_pollWaitCanceled
-func poll_runtime_pollWaitCanceled(pd *pollDesc, mode int) {
+func poll_runtime_pollWaitCanceled(ctx uintptr, mode int) {
+	pd := (*pollDesc)(unsafe.Pointer(ctx))
 	// This function is used only on windows after a failed attempt to cancel
 	// a pending async IO operation. Wait for ioready, ignore closing or timeouts.
 	for !netpollblock(pd, int32(mode), true) {
@@ -203,7 +207,8 @@ func poll_runtime_pollWaitCanceled(pd *pollDesc, mode int) {
 }
 
 //go:linkname poll_runtime_pollSetDeadline internal..z2fpoll.runtime_pollSetDeadline
-func poll_runtime_pollSetDeadline(pd *pollDesc, d int64, mode int) {
+func poll_runtime_pollSetDeadline(ctx uintptr, d int64, mode int) {
+	pd := (*pollDesc)(unsafe.Pointer(ctx))
 	lock(&pd.lock)
 	if pd.closing {
 		unlock(&pd.lock)
@@ -288,7 +293,8 @@ func poll_runtime_pollSetDeadline(pd *pollDesc, d int64, mode int) {
 }
 
 //go:linkname poll_runtime_pollUnblock internal..z2fpoll.runtime_pollUnblock
-func poll_runtime_pollUnblock(pd *pollDesc) {
+func poll_runtime_pollUnblock(ctx uintptr) {
+	pd := (*pollDesc)(unsafe.Pointer(ctx))
 	lock(&pd.lock)
 	if pd.closing {
 		throw("runtime: unblock on closing polldesc")
