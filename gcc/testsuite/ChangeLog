@@ -1,3 +1,10 @@
+2019-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-c++-common/patchable_function_entry-decl.c: Do not run on Visium.
+	* c-c++-common/patchable_function_entry-default.c: Likewise.
+	* c-c++-common/patchable_function_entry-definition.c: Likewise.
+	* gcc.dg/tree-ssa/pr84859.c: Add -ftree-cselim switch.
+
 2019-02-15  Richard Biener  <rguenther@suse.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 
