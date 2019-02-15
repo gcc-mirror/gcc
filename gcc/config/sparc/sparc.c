@@ -12524,7 +12524,7 @@ sparc_init_machine_status (void)
 static unsigned HOST_WIDE_INT
 sparc_asan_shadow_offset (void)
 {
-  return TARGET_ARCH64 ? HOST_WIDE_INT_C (0x7fff8000) : (HOST_WIDE_INT_1 << 29);
+  return TARGET_ARCH64 ? (HOST_WIDE_INT_1 << 43) : (HOST_WIDE_INT_1 << 29);
 }
 
 /* This is called from dwarf2out.c via TARGET_ASM_OUTPUT_DWARF_DTPREL.
