@@ -110,15 +110,15 @@ static bool doscanstack1(G *gp, void *gcw) {
 	}
 	top = (byte*)(void*)(gp->gcinitialsp) + gp->gcstacksize;
 	if(top > bottom)
-		scanstackblock(bottom, (uintptr)(top - bottom), gcw);
+		scanstackblock((uintptr)(bottom), (uintptr)(top - bottom), gcw);
 	else
-		scanstackblock(top, (uintptr)(bottom - top), gcw);
+		scanstackblock((uintptr)(top), (uintptr)(bottom - top), gcw);
 	if (nextsp2 != nil) {
 		initialsp2 = (byte*)(void*)(gp->gcinitialsp2);
 		if(initialsp2 > nextsp2)
-			scanstackblock(nextsp2, (uintptr)(initialsp2 - nextsp2), gcw);
+			scanstackblock((uintptr)(nextsp2), (uintptr)(initialsp2 - nextsp2), gcw);
 		else
-			scanstackblock(initialsp2, (uintptr)(nextsp2 - initialsp2), gcw);
+			scanstackblock((uintptr)(initialsp2), (uintptr)(nextsp2 - initialsp2), gcw);
 	}
 #endif
 	return true;
