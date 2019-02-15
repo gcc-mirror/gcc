@@ -31,7 +31,7 @@ func ExampleFrames() {
 			// To keep this example's output stable
 			// even if there are changes in the testing package,
 			// stop unwinding when we leave package runtime.
-			if !strings.Contains(frame.File, "runtime/") {
+			if !strings.Contains(frame.File, "runtime/") && !strings.Contains(frame.File, "/test/") {
 				break
 			}
 			fmt.Printf("- more:%v | %s\n", more, frame.Function)
@@ -47,8 +47,8 @@ func ExampleFrames() {
 	a()
 	// Output:
 	// - more:true | runtime.Callers
-	// - more:true | runtime_test.ExampleFrames.func1
-	// - more:true | runtime_test.ExampleFrames.func2
-	// - more:true | runtime_test.ExampleFrames.func3
+	// - more:true | runtime_test.ExampleFrames..func1
+	// - more:true | runtime_test.ExampleFrames..func2
+	// - more:true | runtime_test.ExampleFrames..func3
 	// - more:true | runtime_test.ExampleFrames
 }
