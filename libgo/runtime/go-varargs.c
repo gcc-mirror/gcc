@@ -12,6 +12,12 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#ifdef HAVE_SYSCALL_H
+#include <syscall.h>
+#endif
+#ifdef HAVE_SYS_SYSCALL_H
+#include <sys/syscall.h>
+#endif
 
 /* The syscall package calls C functions.  The Go compiler can not
    represent a C varargs functions.  On some systems it's important
