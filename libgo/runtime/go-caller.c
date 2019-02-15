@@ -192,12 +192,12 @@ struct caller_ret
   _Bool ok;
 };
 
-struct caller_ret Caller (int n) __asm__ (GOSYM_PREFIX "runtime.Caller");
+struct caller_ret Caller (intgo n) __asm__ (GOSYM_PREFIX "runtime.Caller");
 
 /* Implement runtime.Caller.  */
 
 struct caller_ret
-Caller (int skip)
+Caller (intgo skip)
 {
   struct caller_ret ret;
   Location loc;
