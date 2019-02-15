@@ -1,3 +1,10 @@
+2019-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/ubsan/opts-1.c: New test.
+	* c-c++-common/ubsan/opts-2.c: New test.
+	* c-c++-common/ubsan/opts-3.c: New test.
+	* c-c++-common/ubsan/opts-4.c: New test.
+
 2019-02-15  Richard Biener  <rguenther@suse.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 
