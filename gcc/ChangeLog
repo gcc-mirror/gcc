@@ -1,3 +1,10 @@
+2019-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/89342
+	* optc-save-gen.awk: Handle optimize_fast like optimize_size or
+	optimize_debug.
+	* opth-gen.awk: Likewise.
+
 2019-02-15  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (TARGET_SUBTARGET64_ISA_DEFAULT):
