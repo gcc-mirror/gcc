@@ -1,5 +1,18 @@
 2019-02-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR other/69006
+	PR testsuite/88920
+	* lib/gcc-dg.exp: If llvm_binutils effective target, set
+	allow_blank_lines to 2 during initialization.
+	(dg-allow-blank-lines-in-output): Set allow_blank_lines to 1 only if
+	it was previously zero.
+	(gcc-dg-prune): Don't check for llvm_binutils effective target here.
+	Clear allow_blank_lines afterwards whenever it was 1.
+	* gdc.test/gdc-test.exp (dmd2dg): Don't call
+	dg-allow-blank-lines-in-output here.
+	(gdc-do-test): Set allow_blank_lines to 3 if it is 0 before running
+	the tests and restore it back at the end.
+
 	* c-c++-common/ubsan/opts-1.c: New test.
 	* c-c++-common/ubsan/opts-2.c: New test.
 	* c-c++-common/ubsan/opts-3.c: New test.
