@@ -9903,17 +9903,18 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
 	      && n == "getcallerpc")
 	    {
 	      static Named_object* builtin_return_address;
+              int arg = 0;
 	      return this->lower_to_builtin(&builtin_return_address,
 					    "__builtin_return_address",
-					    0);
+					    &arg);
 	    }
 	  else if ((this->args_ == NULL || this->args_->size() == 0)
 		   && n == "getcallersp")
 	    {
-	      static Named_object* builtin_frame_address;
-	      return this->lower_to_builtin(&builtin_frame_address,
-					    "__builtin_frame_address",
-					    1);
+	      static Named_object* builtin_dwarf_cfa;
+	      return this->lower_to_builtin(&builtin_dwarf_cfa,
+					    "__builtin_dwarf_cfa",
+					    NULL);
 	    }
 	}
     }
@@ -10031,21 +10032,24 @@ Call_expression::lower_varargs(Gogo* gogo, Named_object* function,
   this->varargs_are_lowered_ = true;
 }
 
-// Return a call to __builtin_return_address or __builtin_frame_address.
+// Return a call to __builtin_return_address or __builtin_dwarf_cfa.
 
 Expression*
 Call_expression::lower_to_builtin(Named_object** pno, const char* name,
-				  int arg)
+				  int* arg)
 {
   if (*pno == NULL)
-    *pno = Gogo::declare_builtin_rf_address(name);
+    *pno = Gogo::declare_builtin_rf_address(name, arg != NULL);
 
   Location loc = this->location();
 
   Expression* fn = Expression::make_func_reference(*pno, NULL, loc);
-  Expression* a = Expression::make_integer_ul(arg, NULL, loc);
   Expression_list *args = new Expression_list();
-  args->push_back(a);
+  if (arg != NULL)
+    {
+      Expression* a = Expression::make_integer_ul(*arg, NULL, loc);
+      args->push_back(a);
+    }
   Expression* call = Expression::make_call(fn, args, false, loc);
 
   // The builtin functions return void*, but the Go functions return uintptr.

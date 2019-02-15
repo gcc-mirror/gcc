@@ -737,9 +737,9 @@ class Gogo
   build_recover_thunks();
 
   // Return a declaration for __builtin_return_address or
-  // __builtin_frame_address.
+  // __builtin_dwarf_cfa.
   static Named_object*
-  declare_builtin_rf_address(const char* name);
+  declare_builtin_rf_address(const char* name, bool hasarg);
 
   // Simplify statements which might use thunks: go and defer
   // statements.
