@@ -289,12 +289,6 @@ x)
 	;;
 esac
 
-# Some tests expect the _obj directory created by the gc Makefiles.
-mkdir _obj
-
-# Some tests expect the _test directory created by the gc Makefiles.
-mkdir _test
-
 case "x$gofiles" in
 x)
 	for f in `ls *_test.go`; do
@@ -404,14 +398,6 @@ x)
 	;;
 esac
 
-# Run any commands given in sources, like
-#   // gotest: $GC foo.go
-# to build any test-only dependencies.
-holdGC="$GC"
-GC="$GC -g -c -I ."
-sed -n 's/^\/\/ gotest: //p' $gofiles | sh
-GC="$holdGC"
-
 case "x$pkgfiles" in
 x)
 	pkgbasefiles=`ls *.go | grep -v _test.go 2>/dev/null`
@@ -514,26 +500,29 @@ localname() {
 #
 symtogo() {
   result=""
-  for tp in $*
-  do
+  for tp in $*; do
     s=$(echo "$tp" | sed -e 's/\.\.z2f/%/g' | sed -e 's/.*%//')
-    # screen out methods (X.Y.Z)
+    # Screen out methods (X.Y.Z).
     if ! expr "$s" : '^[^.]*\.[^.]*$' >/dev/null 2>&1; then
       continue
     fi
-    echo "$s"
+    tname=$(testname $s)
+    # Skip TestMain.
+    if test x$tname = xTestMain; then
+      continue
+    fi
+    # Check that the function is defined in a test file,
+    # not an ordinary non-test file.
+    if grep "^func $tname(" $gofiles $xgofiles >/dev/null 2>&1; then
+      echo "$s"
+    fi
   done
 }
 
 {
-	text="T"
-
 	# On systems using PPC64 ELF ABI v1 function symbols show up
-	# as descriptors in the data section.  We assume that $goarch
-	# distinguishes v1 (ppc64) from v2 (ppc64le).
-	if test "$goos" != "aix" && test "$goarch" = "ppc64"; then
-	    text="[TD]"
-	fi
+	# as descriptors in the data section.
+	text="[TD]"
 
 	# test functions are named TestFoo
 	# the grep -v eliminates methods and other special names
@@ -575,13 +564,10 @@ symtogo() {
 	# test array
 	echo
 	echo 'var tests = []testing.InternalTest {'
-	for i in $tests
-	do
+	for i in $tests; do
 		n=$(testname $i)
-		if test "$n" != "TestMain"; then
-			j=$(localname $i)
-			echo '	{"'$n'", '$j'},'
-		fi
+		j=$(localname $i)
+		echo '	{"'$n'", '$j'},'
 	done
 	echo '}'
 
@@ -589,8 +575,7 @@ symtogo() {
 	# The comment makes the multiline declaration
 	# gofmt-safe even when there are no benchmarks.
 	echo 'var benchmarks = []testing.InternalBenchmark{ //'
-	for i in $benchmarks
-	do
+	for i in $benchmarks; do
 		n=$(testname $i)
 		j=$(localname $i)
 		echo '	{"'$n'", '$j'},'
@@ -599,13 +584,58 @@ symtogo() {
 
 	# examples array
 	echo 'var examples = []testing.InternalExample{ //'
-	# This doesn't work because we don't pick up the output.
-	#for i in $examples
-	#do
-	#	n=$(testname $i)
-	#	j=$(localname $i)
-	#	echo '	{"'$n'", '$j', ""},'
-	#done
+	for i in $examples; do
+		n=$(testname $i)
+		j=$(localname $i)
+		# Look for a //output comment.
+		hasoutput=false
+		unordered=false
+		output=
+		for f in $gofiles $xgofiles; do
+		    if ! grep "^func $n(" $f >/dev/null 2>&1; then
+			continue
+		    fi
+		    # Copy the output comment, if any, into example.txt.
+		    # Remove the comment markers.
+		    sed -n "/^func $n(/,/^}$/ p" $f |
+			sed -n '\|// \([Uu]nordered \)\?[Oo]utput:|,$ p' |
+			sed -n '\|//| s|[ 	]*// \?||p' > example.txt
+		    # Check whether we found an output comment.
+		    if ! sed -n '1p' < example.txt | grep '[Oo]utput:' >/dev/null 2>&1; then
+			# An example with no output is only compiled, not run,
+			# so don't add it to the examples slice.
+			rm -f example.txt
+			break
+		    fi
+		    # Check whether the output can be unordered.
+		    unordered=false
+		    if sed -n '1p' < example.txt | grep -i unordered; then
+			unordered=true
+		    fi
+		    # Remove the output header.
+		    # Quote backslashes.
+		    # Quote quotation characters.
+		    # Turn tab into \t.
+		    # Turn pairs of spaces into " \x20", because $() will
+		    # drop duplicate spaces.
+		    # Drop trailing spaces, and turn newlines into \n.
+		    output="$(sed '1 s/\([Uu]nordered \)\?[Oo]utput:[ 	]*//' < example.txt |
+				 sed -e 's/\\/\\\\/g' \
+				     -e 's/"/\\"/g' \
+				     -e 's/	/\\t/g' \
+				     -e 's/  / \\x20/g' \
+				     -e 's/[ 	]*$/\\n/g' |
+				 tr -d '\n')"
+		    # Remove leading and trailing \n.
+		    output="$(echo "$output" | sed -e 's/^\(\\n\)*//' -e 's/\(\\n\)*$//')"
+		    hasoutput=true
+		    rm -f example.txt
+		    break
+		done
+		if test x$hasoutput = xtrue; then
+		    echo '	{"'$n'", '$j', "'"$output"'", '$unordered'},'
+		fi
+	done
 	echo '}'
 
 	# body
