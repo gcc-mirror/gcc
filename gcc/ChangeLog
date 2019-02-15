@@ -1,7 +1,11 @@
+2019-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* asan.c (asan_emit_stack_protection): Use full-sized mask to align
+	the base address on 64-bit strict-alignment platforms.
+
 2019-02-15  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* config/i386/i386.h (VALID_MMX_REG_MODE): Correct the misplaced
-	')'.
+	* config/i386/i386.h (VALID_MMX_REG_MODE): Correct the misplaced ')'.
 
 2019-02-15  Uroš Bizjak  <ubizjak@gmail.com>
 
