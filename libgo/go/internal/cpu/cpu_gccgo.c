@@ -70,3 +70,118 @@ struct xgetbv_ret xgetbv(void) {
 #pragma GCC pop_options
 
 #endif /* defined(__i386__) || defined(__x86_64__)  */
+
+#ifdef __s390__
+
+struct facilityList {
+	uint64_t bits[4];
+};
+
+struct queryResult {
+	uint64_t bits[2];
+};
+
+struct facilityList stfle(void)
+  __asm__(GOSYM_PREFIX "internal..z2fcpu.stfle")
+  __attribute__((no_split_stack));
+
+struct facilityList stfle(void) {
+    struct facilityList ret;
+    __asm__ ("la    %%r1, %[ret]\t\n"
+	     "lghi  %%r0, 3\t\n" // last doubleword index to store
+	     "xc    0(32,%%r1), 0(%%r1)\t\n" // clear 4 doublewords (32 bytes)
+	     ".long 0xb2b01000\t\n"  // store facility list extended (STFLE)
+	     :[ret] "=Q" (ret) : : "r0", "r1", "cc");
+    return ret;
+}
+
+struct queryResult kmQuery(void)
+  __asm__(GOSYM_PREFIX "internal..z2fcpu.kmQuery")
+  __attribute__((no_split_stack));
+
+struct queryResult kmQuery() {
+    struct queryResult ret;
+
+    __asm__ ("lghi   %%r0, 0\t\n" // set function code to 0 (KM-Query)
+	     "la     %%r1, %[ret]\t\n"
+	     ".long  0xb92e0024\t\n" // cipher message (KM)
+	     :[ret] "=Q" (ret) : : "r0", "r1", "cc");
+    return ret;
+}
+
+struct queryResult kmcQuery(void)
+  __asm__(GOSYM_PREFIX "internal..z2fcpu.kmcQuery")
+  __attribute__((no_split_stack));
+
+struct queryResult kmcQuery() {
+    struct queryResult ret;
+
+    __asm__ ("lghi   %%r0, 0\t\n" // set function code to 0 (KMC-Query)
+	     "la     %%r1, %[ret]\t\n"
+	     ".long  0xb92f0024\t\n"  // cipher message with chaining (KMC)
+	     :[ret] "=Q" (ret) : : "r0", "r1", "cc");
+
+    return ret;
+}
+
+struct queryResult kmctrQuery(void)
+  __asm__(GOSYM_PREFIX "internal..z2fcpu.kmctrQuery")
+  __attribute__((no_split_stack));
+
+struct queryResult kmctrQuery() {
+    struct queryResult ret;
+
+    __asm__ ("lghi   %%r0, 0\t\n" // set function code to 0 (KMCTR-Query)
+	     "la     %%r1, %[ret]\t\n"
+	     ".long  0xb92d4024\t\n" // cipher message with counter (KMCTR)
+	     :[ret] "=Q" (ret) : : "r0", "r1", "cc");
+
+    return ret;
+}
+
+struct queryResult kmaQuery(void)
+  __asm__(GOSYM_PREFIX "internal..z2fcpu.kmaQuery")
+  __attribute__((no_split_stack));
+
+struct queryResult kmaQuery() {
+    struct queryResult ret;
+
+    __asm__ ("lghi   %%r0, 0\t\n" // set function code to 0 (KMA-Query)
+	     "la     %%r1, %[ret]\t\n"
+	     ".long  0xb9296024\t\n" // cipher message with authentication (KMA)
+	     :[ret] "=Q" (ret) : : "r0", "r1", "cc");
+
+    return ret;
+}
+
+struct queryResult kimdQuery(void)
+  __asm__(GOSYM_PREFIX "internal..z2fcpu.kimdQuery")
+  __attribute__((no_split_stack));
+
+struct queryResult kimdQuery() {
+    struct queryResult ret;
+
+    __asm__ ("lghi   %%r0, 0\t\n"  // set function code to 0 (KIMD-Query)
+	     "la     %%r1, %[ret]\t\n"
+	     ".long  0xb93e0024\t\n"  // compute intermediate message digest (KIMD)
+	     :[ret] "=Q" (ret) : : "r0", "r1", "cc");
+
+    return ret;
+}
+
+struct queryResult klmdQuery(void)
+  __asm__(GOSYM_PREFIX "internal..z2fcpu.klmdQuery")
+  __attribute__((no_split_stack));
+
+struct queryResult klmdQuery() {
+    struct queryResult ret;
+
+    __asm__ ("lghi   %%r0, 0\t\n"  // set function code to 0 (KLMD-Query)
+	     "la     %%r1, %[ret]\t\n"
+	     ".long  0xb93f0024\t\n"  // compute last message digest (KLMD)
+	     :[ret] "=Q" (ret) : : "r0", "r1", "cc");
+
+    return ret;
+}
+
+#endif /* defined(__s390__)  */
