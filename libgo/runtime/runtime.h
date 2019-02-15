@@ -268,7 +268,7 @@ void*	runtime_sysAlloc(uintptr, uint64*)
 void	runtime_sysFree(void*, uintptr, uint64*)
   __asm__ (GOSYM_PREFIX "runtime.sysFree");
 void	runtime_mprofinit(void);
-#define runtime_getcallersp() __builtin_frame_address(0)
+#define runtime_getcallersp() __builtin_dwarf_cfa()
 void	runtime_mcall(FuncVal*)
   __asm__ (GOSYM_PREFIX "runtime.mcall");
 int32	runtime_timediv(int64, int32, int32*)

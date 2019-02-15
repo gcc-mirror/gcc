@@ -735,8 +735,9 @@ Gcc_backend::Gcc_backend()
   this->define_builtin(BUILT_IN_RETURN_ADDRESS, "__builtin_return_address",
 		       NULL, t, false, false);
 
-  // The runtime calls __builtin_frame_address for runtime.getcallersp.
-  this->define_builtin(BUILT_IN_FRAME_ADDRESS, "__builtin_frame_address",
+  // The runtime calls __builtin_dwarf_cfa for runtime.getcallersp.
+  t = build_function_type_list(ptr_type_node, NULL_TREE);
+  this->define_builtin(BUILT_IN_DWARF_CFA, "__builtin_dwarf_cfa",
 		       NULL, t, false, false);
 
   // The runtime calls __builtin_extract_return_addr when recording

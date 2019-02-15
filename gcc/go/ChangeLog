@@ -1,3 +1,8 @@
+2019-02-15  Cherry Zhang  <cherryyz@google.com>
+
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Define __builtin_dwarf_cfa
+	instead of __builtin_frame_address.
+
 2019-02-14  Ian Lance Taylor  <iant@golang.org>
 
 	* go-backend.c (go_imported_unsafe): Update
