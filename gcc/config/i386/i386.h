@@ -1158,7 +1158,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   ((MODE) == V2SFmode || (MODE) == SFmode)
 
 #define VALID_MMX_REG_MODE(MODE)					\
-  ((MODE == V1DImode) || (MODE) == DImode				\
+  ((MODE) == V1DImode || (MODE) == DImode				\
    || (MODE) == V2SImode || (MODE) == SImode				\
    || (MODE) == V4HImode || (MODE) == V8QImode)
 
