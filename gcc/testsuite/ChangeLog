@@ -1,3 +1,9 @@
+2019-02-15  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89278
+	* gcc.dg/pr89278.c: New test.
+
 2019-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/89342
