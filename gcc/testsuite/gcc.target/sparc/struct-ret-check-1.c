@@ -7,7 +7,7 @@
 
 /* Origin: Carlos O'Donell <carlos@codesourcery.com> */
 /* { dg-do run { target sparc*-*-solaris* sparc*-*-linux* sparc*-*-*bsd* } } */
-/* { dg-options "-mstd-struct-return" } */
+/* { dg-options "-mstd-struct-return -fno-pie" } */
 /* { dg-require-effective-target ilp32 } */
 #include <stdio.h>
 #include <stdlib.h>
