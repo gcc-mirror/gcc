@@ -1,3 +1,8 @@
+2019-02-14  Ian Lance Taylor  <iant@golang.org>
+
+	* go-backend.c (go_imported_unsafe): Update
+	optimization_default_node.
+
 2019-02-13  Ian Lance Taylor  <iant@golang.org>
 
 	* go-gcc.cc: #include "opts.h".
