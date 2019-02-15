@@ -89,6 +89,7 @@ void
 go_imported_unsafe (void)
 {
   flag_strict_aliasing = false;
+  TREE_OPTIMIZATION (optimization_default_node)->x_flag_strict_aliasing = false;
 
   /* Let the backend know that the options have changed.  */
   targetm.override_options_after_change ();
