@@ -3797,7 +3797,6 @@ proc check_effective_target_arm_neon_softfp_fp16_ok_nocache { } {
     if { [check_effective_target_arm32]
 	 && [check_effective_target_arm_neon_ok] } {
 	foreach flags {"-mfpu=neon-fp16 -mfloat-abi=softfp"
-		       "-mfloat-abi=softfp -mfp16-format=ieee"
 		       "-mfpu=neon-fp16 -mfloat-abi=softfp -mfp16-format=ieee"} {
 	    if { [check_no_compiler_messages_nocache arm_neon_softfp_fp16_ok object {
 		#include "arm_neon.h"
