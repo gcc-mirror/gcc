@@ -1,3 +1,9 @@
+2019-02-15  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	PR rtl-optimization/88308
+	* shrink-wrap.c (move_insn_for_shrink_wrap): Fix LABEL_NUSES counts
+	on copied instruction.
+
 2019-02-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* final.c (insn_current_reference_address): Replace test on JUMP_P
