@@ -1,3 +1,8 @@
+2019-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/asan/asan_oob_test.cc: Skip OOB_int on SPARC.
+	* g++.dg/asan/function-argument-3.C: Tweak for 32-bit SPARC.
+
 2019-02-15  Tamar Christina  <tamar.christina@arm.com>
 
 	* lib/target-supports.exp
