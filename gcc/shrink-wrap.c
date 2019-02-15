@@ -414,7 +414,12 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
       dead_debug_insert_temp (debug, DF_REF_REGNO (def), insn,
 			      DEBUG_TEMP_BEFORE_WITH_VALUE);
 
-  emit_insn_after (PATTERN (insn), bb_note (bb));
+  rtx_insn *insn_copy = emit_insn_after (PATTERN (insn), bb_note (bb));
+  /* Update the LABEL_NUSES count on any referenced labels. The ideal
+     solution here would be to actually move the instruction instead
+     of copying/deleting it as this loses some notations on the
+     insn.  */
+  mark_jump_label (PATTERN (insn), insn_copy, 0);
   delete_insn (insn);
   return true;
 }
