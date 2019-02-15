@@ -904,7 +904,8 @@ Gogo::check_write_barrier(Block* enclosing, Statement* without,
   ref = Expression::make_unary(OPERATOR_AND, ref, loc);
   ref = Expression::make_cast(unsafe_pointer_type, ref, loc);
   ref = Expression::make_cast(puint32_type, ref, loc);
-  ref = Expression::make_unary(OPERATOR_MULT, ref, loc);
+  ref = Expression::make_dereference(ref,
+                                     Expression::NIL_CHECK_NOT_NEEDED, loc);
   Expression* zero = Expression::make_integer_ul(0, ref->type(), loc);
   Expression* cond = Expression::make_binary(OPERATOR_EQEQ, ref, zero, loc);
 
