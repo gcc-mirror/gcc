@@ -114,6 +114,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "params.h"
 #include "tree-vectorizer.h"
+#include "tree-eh.h"
 
 
 #define MAX_DATAREFS_NUM \
@@ -996,7 +997,7 @@ generate_memset_builtin (struct loop *loop, partition *partition)
   /* The new statements will be placed before LOOP.  */
   gsi = gsi_last_bb (loop_preheader_edge (loop)->src);
 
-  nb_bytes = builtin->size;
+  nb_bytes = rewrite_to_non_trapping_overflow (builtin->size);
   nb_bytes = force_gimple_operand_gsi (&gsi, nb_bytes, true, NULL_TREE,
 				       false, GSI_CONTINUE_LINKING);
   mem = builtin->dst_base;
@@ -1048,7 +1049,7 @@ generate_memcpy_builtin (struct loop *loop, partition *partition)
   /* The new statements will be placed before LOOP.  */
   gsi = gsi_last_bb (loop_preheader_edge (loop)->src);
 
-  nb_bytes = builtin->size;
+  nb_bytes = rewrite_to_non_trapping_overflow (builtin->size);
   nb_bytes = force_gimple_operand_gsi (&gsi, nb_bytes, true, NULL_TREE,
 				       false, GSI_CONTINUE_LINKING);
   dest = builtin->dst_base;
