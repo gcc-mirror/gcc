@@ -1,5 +1,9 @@
 2019-02-15  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc.target/sparc/struct-ret-check-1.c: Add -fno-pie option.
+
+2019-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* c-c++-common/patchable_function_entry-decl.c: Do not run on Visium.
 	* c-c++-common/patchable_function_entry-default.c: Likewise.
 	* c-c++-common/patchable_function_entry-definition.c: Likewise.
