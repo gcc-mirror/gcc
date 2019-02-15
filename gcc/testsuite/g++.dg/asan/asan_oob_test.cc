@@ -68,9 +68,13 @@ TEST(AddressSanitizer, OOB_char) {
   OOBTest<U1>();
 }
 
+// The following test uses unaligned memory accesses
+
+#if !defined(__sparc__)
 TEST(AddressSanitizer, OOB_int) {
   OOBTest<U4>();
 }
+#endif
 
 TEST(AddressSanitizer, OOBRightTest) {
   for (size_t access_size = 1; access_size <= 8; access_size *= 2) {
