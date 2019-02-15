@@ -635,7 +635,10 @@ delete_unmarked_insns (void)
 
   /* Deleted a pure or const call.  */
   if (must_clean)
-    delete_unreachable_blocks ();
+    {
+      delete_unreachable_blocks ();
+      free_dominance_info (CDI_DOMINATORS);
+    }
 }
 
 
