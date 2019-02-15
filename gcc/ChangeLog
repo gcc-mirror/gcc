@@ -1,3 +1,20 @@
+2019-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* final.c (insn_current_reference_address): Replace test on JUMP_P
+	with test on jump_to_label_p.
+	* config/visium/visium-passes.def: New file.
+	* config/visium/t-visium (PASSES_EXTRA): Define.
+	* config/visium/visium-protos.h (make_pass_visium_reorg): Declare.
+	* config/visium/visium.h (TRAMPOLINE_SIZE): Adjust.
+	(TRAMPOLINE_ALIGNMENT): Define.
+	* config/visium/visium.c (visium_option_override): Do not register
+	the machine-specific reorg pass here.
+	(visium_trampoline_init): Align the BRA insn on a 64-bit boundary
+	for the GR6.
+	(output_branch): Adjust threshold for long branch instruction.
+	* config/visium/visium.md (cpu): Move around.
+	(length): Adjust for the GR6.
+
 2019-02-15  Richard Biener  <rguenther@suse.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 

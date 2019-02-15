@@ -1,3 +1,8 @@
+2019-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/visium/lib2funcs.c (__set_trampoline_parity): Replace
+	TRAMPOLINE_SIZE with __LIBGCC_TRAMPOLINE_SIZE__.
+
 2019-01-31  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/t-linux: Add -mfp-rounding-mode=d
