@@ -1,3 +1,7 @@
+2019-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/struct-ret-check-1.c: Add -fno-pie option.
+
 2019-02-11  Stefan Agner  <stefan@agner.ch>
 
 	Backport from mainline
