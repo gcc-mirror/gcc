@@ -8904,6 +8904,10 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
 
   loc = DECL_SOURCE_LOCATION (decl1);
 
+  /* A nested function is not global.  */
+  if (current_function_decl != NULL_TREE)
+    TREE_PUBLIC (decl1) = 0;
+
   c_decl_attributes (&decl1, attributes, 0);
 
   if (DECL_DECLARED_INLINE_P (decl1)
@@ -8944,10 +8948,6 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   /* Make the init_value nonzero so pushdecl knows this is not tentative.
      error_mark_node is replaced below (in pop_scope) with the BLOCK.  */
   DECL_INITIAL (decl1) = error_mark_node;
-
-  /* A nested function is not global.  */
-  if (current_function_decl != NULL_TREE)
-    TREE_PUBLIC (decl1) = 0;
 
   /* If this definition isn't a prototype and we had a prototype declaration
      before, copy the arg type info from that prototype.  */

@@ -1,5 +1,10 @@
 2019-02-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/89340
+	* gcc.dg/pr89340.c: New test.
+	* gcc.dg/torture/pr57036-2.c (jpgDecode_convert): Expect a warning
+	that leaf attribute on nested function is useless.
+
 	PR other/89342
 	* gcc.dg/pr89342.c: New test.
 

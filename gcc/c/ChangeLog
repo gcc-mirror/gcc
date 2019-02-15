@@ -1,3 +1,9 @@
+2019-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89340
+	* c-decl.c (start_function): Clear TREE_PUBLIC on nested functions
+	before c_decl_attributes rather than after it.
+
 2019-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/89211
