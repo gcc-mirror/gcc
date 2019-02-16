@@ -3117,6 +3117,12 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
       primop0 = op0;
       primop1 = op1;
 
+      /* We want to fold unsigned comparisons of >= and < against zero.
+	 For these, we may also issue a warning if we have a non-constant
+	 compared against zero, where the zero was spelled as "0" (rather
+	 than merely folding to it).
+	 If we have at least one constant, then op1 is constant
+	 and we may have a non-constant expression as op0.  */
       if (!real1 && !real2 && integer_zerop (primop1)
 	  && TYPE_UNSIGNED (*restype_ptr))
 	{
@@ -3125,13 +3131,14 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
 	     if OP0 is a constant that is >= 0, the signedness of
 	     the comparison isn't an issue, so suppress the
 	     warning.  */
+	  tree folded_op0 = fold_for_warn (op0);
 	  bool warn = 
 	    warn_type_limits && !in_system_header_at (loc)
-	    && !(TREE_CODE (primop0) == INTEGER_CST
+	    && !(TREE_CODE (folded_op0) == INTEGER_CST
 		 && !TREE_OVERFLOW (convert (c_common_signed_type (type),
-					     primop0)))
+					     folded_op0)))
 	    /* Do not warn for enumeration types.  */
-	    && (TREE_CODE (expr_original_type (primop0)) != ENUMERAL_TYPE);
+	    && (TREE_CODE (expr_original_type (folded_op0)) != ENUMERAL_TYPE);
 	  
 	  switch (code)
 	    {
