@@ -1,3 +1,12 @@
+2019-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (*movqi_internal): Remove static from
+	buf variable.  Use output_asm_insn (buf, operands); return "";
+	instead of return buf;.
+	* config/i386/sse.md (<sse>_andnot<mode>3<mask_name>,
+	*<code><mode>3<mask_name>, *andnot<mode>3, *andnottf3, *<code><mode>3,
+	*<code>tf3, <mask_codefor><code><mode>3<mask_name>): Likewise.
+
 2019-02-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/linux.h (ASAN_CC1_SPEC): Define.
