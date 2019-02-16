@@ -1,3 +1,20 @@
+2019-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/88074
+	* simplify.c (simplify_transformation_to_array): Run post_op
+	immediately after processing corresponding row, rather than at the
+	end.
+	(norm2_scale): New variable.
+	(add_squared): Rename to ...
+	(norm2_add_squared): ... this.  Scale down operand and/or result
+	if needed.
+	(do_sqrt): Rename to ...
+	(norm2_do_sqrt): ... this.  Handle the result == e case.  Scale up
+	result and clear norm2_scale.
+	(gfc_simplify_norm2): Clear norm2_scale.  Change add_squared to
+	norm2_add_squared and &do_sqrt to norm2_do_sqrt.  Scale up result
+	and clear norm2_scale again.
+
 2019-02-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/71066
