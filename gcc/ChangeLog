@@ -1,3 +1,8 @@
+2019-02-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/mmx.md (*vec_extractv2si_zext_mem): Doesn't require
+	MMX.  Add isa attribute.
+
 2019-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/66152
