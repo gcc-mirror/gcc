@@ -103,6 +103,7 @@ struct c_strlen_data
 };
 
 extern tree c_strlen (tree, int, c_strlen_data * = NULL, unsigned = 1);
+extern rtx c_readstr (const char *, scalar_int_mode, bool = true);
 extern void expand_builtin_setjmp_setup (rtx, rtx);
 extern void expand_builtin_setjmp_receiver (rtx);
 extern void expand_builtin_update_setjmp_buf (rtx);

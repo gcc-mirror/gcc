@@ -5453,6 +5453,30 @@ emit_storent_insn (rtx to, rtx from)
   return maybe_expand_insn (code, 2, ops);
 }
 
+/* Helper function for store_expr storing of STRING_CST.  */
+
+static rtx
+string_cst_read_str (void *data, HOST_WIDE_INT offset, scalar_int_mode mode)
+{
+  tree str = (tree) data;
+
+  gcc_assert (offset >= 0);
+  if (offset >= TREE_STRING_LENGTH (str))
+    return const0_rtx;
+
+  if ((unsigned HOST_WIDE_INT) offset + GET_MODE_SIZE (mode)
+      > (unsigned HOST_WIDE_INT) TREE_STRING_LENGTH (str))
+    {
+      char *p = XALLOCAVEC (char, GET_MODE_SIZE (mode));
+      size_t l = TREE_STRING_LENGTH (str) - offset;
+      memcpy (p, TREE_STRING_POINTER (str) + offset, l);
+      memset (p + l, '\0', GET_MODE_SIZE (mode) - l);
+      return c_readstr (p, mode, false);
+    }
+
+  return c_readstr (TREE_STRING_POINTER (str) + offset, mode, false);
+}
+
 /* Generate code for computing expression EXP,
    and storing the value into TARGET.
 
@@ -5472,7 +5496,7 @@ emit_storent_insn (rtx to, rtx from)
 
 rtx
 store_expr (tree exp, rtx target, int call_param_p,
-			bool nontemporal, bool reverse)
+	    bool nontemporal, bool reverse)
 {
   rtx temp;
   rtx alt_rtl = NULL_RTX;
@@ -5606,36 +5630,32 @@ store_expr (tree exp, rtx target, int call_param_p,
       if (TREE_STRING_LENGTH (str) <= 0)
 	goto normal_expr;
 
-      str_copy_len = strlen (TREE_STRING_POINTER (str));
-      if (str_copy_len < TREE_STRING_LENGTH (str) - 1)
-	goto normal_expr;
+      if (can_store_by_pieces (exp_len, string_cst_read_str, (void *) str,
+			       MEM_ALIGN (target), false))
+	{
+	  store_by_pieces (target, exp_len, string_cst_read_str, (void *) str,
+			   MEM_ALIGN (target), false, RETURN_BEGIN);
+	  return NULL_RTX;
+	}
 
       str_copy_len = TREE_STRING_LENGTH (str);
-      if ((STORE_MAX_PIECES & (STORE_MAX_PIECES - 1)) == 0
-	  && TREE_STRING_POINTER (str)[TREE_STRING_LENGTH (str) - 1] == '\0')
+      if ((STORE_MAX_PIECES & (STORE_MAX_PIECES - 1)) == 0)
 	{
 	  str_copy_len += STORE_MAX_PIECES - 1;
 	  str_copy_len &= ~(STORE_MAX_PIECES - 1);
 	}
-      str_copy_len = MIN (str_copy_len, exp_len);
-      if (!can_store_by_pieces (str_copy_len, builtin_strncpy_read_str,
-				CONST_CAST (char *, TREE_STRING_POINTER (str)),
-				MEM_ALIGN (target), false))
+      if (str_copy_len >= exp_len)
 	goto normal_expr;
 
-      dest_mem = target;
+      if (!can_store_by_pieces (str_copy_len, string_cst_read_str,
+				(void *) str, MEM_ALIGN (target), false))
+	goto normal_expr;
 
-      memop_ret retmode = exp_len > str_copy_len ? RETURN_END : RETURN_BEGIN;
-      dest_mem = store_by_pieces (dest_mem,
-				  str_copy_len, builtin_strncpy_read_str,
-				  CONST_CAST (char *,
-					      TREE_STRING_POINTER (str)),
-				  MEM_ALIGN (target), false,
-				  retmode);
-      if (exp_len > str_copy_len)
-	clear_storage (adjust_address (dest_mem, BLKmode, 0),
-		       GEN_INT (exp_len - str_copy_len),
-		       BLOCK_OP_NORMAL);
+      dest_mem = store_by_pieces (target, str_copy_len, string_cst_read_str,
+				  (void *) str, MEM_ALIGN (target), false,
+				  RETURN_END);
+      clear_storage (adjust_address (dest_mem, BLKmode, 0),
+		     GEN_INT (exp_len - str_copy_len), BLOCK_OP_NORMAL);
       return NULL_RTX;
     }
   else
