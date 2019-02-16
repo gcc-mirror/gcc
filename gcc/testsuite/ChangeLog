@@ -1,3 +1,8 @@
+2019-02-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/71066
+	* gfortran.dg/coarray_data_1.f90: New test.
+
 2019-02-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-c++-common/patchable_function_entry-decl.c: Add -fno-pie on SPARC.
