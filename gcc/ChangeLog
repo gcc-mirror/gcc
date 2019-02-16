@@ -1,5 +1,14 @@
 2019-02-16  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/89372
+	* config/i386/sse.md (ssedoublemode): Remove V4HI.
+	(PMULHRSW): Likewise.
+	(<ssse3_avx2>_pmulhrsw<mode>3): Require TARGET_SSSE3, not
+	TARGET_AVX2.
+	(ssse3_pmulhrswv4hi3): New expander.
+
+2019-02-16  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/mmx.md (*vec_extractv2si_zext_mem): Doesn't require
 	MMX.  Add isa attribute.
 

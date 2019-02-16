@@ -596,7 +596,7 @@
   [(V4SF "V8SF") (V8SF "V16SF") (V16SF "V32SF")
    (V2DF "V4DF") (V4DF "V8DF") (V8DF "V16DF")
    (V16QI "V16HI") (V32QI "V32HI") (V64QI "V64HI")
-   (V4HI "V4SI") (V8HI "V8SI") (V16HI "V16SI") (V32HI "V32SI")
+   (V8HI "V8SI") (V16HI "V16SI") (V32HI "V32SI")
    (V4SI "V4DI") (V8SI "V16SI") (V16SI "V32SI")
    (V4DI "V8DI") (V8DI "V16DI")])
 
@@ -15590,7 +15590,7 @@
    (set_attr "mode" "DI")])
 
 (define_mode_iterator PMULHRSW
-  [V4HI V8HI (V16HI "TARGET_AVX2")])
+  [V8HI (V16HI "TARGET_AVX2")])
 
 (define_expand "<ssse3_avx2>_pmulhrsw<mode>3_mask"
   [(set (match_operand:PMULHRSW 0 "register_operand")
@@ -15629,7 +15629,7 @@
 		(const_int 14))
 	      (match_dup 3))
 	    (const_int 1))))]
-  "TARGET_AVX2"
+  "TARGET_SSSE3"
 {
   operands[3] = CONST1_RTX(<MODE>mode);
   ix86_fixup_binary_operands_no_copy (MULT, <MODE>mode, operands);
@@ -15661,6 +15661,26 @@
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "orig,maybe_evex,evex")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_expand "ssse3_pmulhrswv4hi3"
+  [(set (match_operand:V4HI 0 "register_operand")
+	(truncate:V4HI
+	  (lshiftrt:V4SI
+	    (plus:V4SI
+	      (lshiftrt:V4SI
+		(mult:V4SI
+		  (sign_extend:V4SI
+		    (match_operand:V4HI 1 "nonimmediate_operand"))
+		  (sign_extend:V4SI
+		    (match_operand:V4HI 2 "nonimmediate_operand")))
+		(const_int 14))
+	      (match_dup 3))
+	    (const_int 1))))]
+  "TARGET_SSSE3"
+{
+  operands[3] = CONST1_RTX(V4HImode);
+  ix86_fixup_binary_operands_no_copy (MULT, V4HImode, operands);
+})
 
 (define_insn "*ssse3_pmulhrswv4hi3"
   [(set (match_operand:V4HI 0 "register_operand" "=y")
