@@ -1354,13 +1354,14 @@
 	  (vec_select:SI
 	    (match_operand:V2SI 1 "memory_operand" "o,o,o")
 	    (parallel [(match_operand:SI 2 "const_0_to_1_operand")]))))]
-  "TARGET_64BIT && TARGET_MMX"
+  "TARGET_64BIT"
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (zero_extend:DI (match_dup 1)))]
 {
   operands[1] = adjust_address (operands[1], SImode, INTVAL (operands[2]) * 4);
-})
+}
+  [(set_attr "isa" "*,sse2,*")])
 
 (define_expand "vec_extractv2sisi"
   [(match_operand:SI 0 "register_operand")
