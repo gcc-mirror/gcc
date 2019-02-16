@@ -1,3 +1,9 @@
+2019-02-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-c++-common/patchable_function_entry-decl.c: Add -fno-pie on SPARC.
+	* c-c++-common/patchable_function_entry-default.c: Likewise.
+	* c-c++-common/patchable_function_entry-definition.c: Likewise.
+
 2019-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/66152
