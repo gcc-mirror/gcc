@@ -3198,7 +3198,7 @@
 	  (match_operand:VF_128_256 2 "vector_operand" "xBm,xm,vm,vm")))]
   "TARGET_SSE && <mask_avx512vl_condition>"
 {
-  static char buf[128];
+  char buf[128];
   const char *ops;
   const char *suffix;
 
@@ -3233,7 +3233,8 @@
     }
 
   snprintf (buf, sizeof (buf), ops, suffix);
-  return buf;
+  output_asm_insn (buf, operands);
+  return "";
 }
   [(set_attr "isa" "noavx,avx,avx512dq,avx512f")
    (set_attr "type" "sselog")
@@ -3264,7 +3265,7 @@
 	  (match_operand:VF_512 2 "nonimmediate_operand" "vm")))]
   "TARGET_AVX512F"
 {
-  static char buf[128];
+  char buf[128];
   const char *ops;
   const char *suffix;
 
@@ -3281,7 +3282,8 @@
   snprintf (buf, sizeof (buf),
 	    "v%sandn%s\t{%%2, %%1, %%0<mask_operand3_1>|%%0<mask_operand3_1>, %%1, %%2}",
 	    ops, suffix);
-  return buf;
+  output_asm_insn (buf, operands);
+  return "";
 }
   [(set_attr "type" "sselog")
    (set_attr "prefix" "evex")
@@ -3314,7 +3316,7 @@
   "TARGET_SSE && <mask_avx512vl_condition>
    && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
 {
-  static char buf[128];
+  char buf[128];
   const char *ops;
   const char *suffix;
 
@@ -3349,7 +3351,8 @@
     }
 
   snprintf (buf, sizeof (buf), ops, suffix);
-  return buf;
+  output_asm_insn (buf, operands);
+  return "";
 }
   [(set_attr "isa" "noavx,avx,avx512dq,avx512f")
    (set_attr "type" "sselog")
@@ -3378,7 +3381,7 @@
 	  (match_operand:VF_512 2 "nonimmediate_operand" "vm")))]
   "TARGET_AVX512F && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
 {
-  static char buf[128];
+  char buf[128];
   const char *ops;
   const char *suffix;
 
@@ -3395,7 +3398,8 @@
   snprintf (buf, sizeof (buf),
 	   "v%s<logic>%s\t{%%2, %%1, %%0<mask_operand3_1>|%%0<mask_operand3_1>, %%1, %%2}",
 	   ops, suffix);
-  return buf;
+  output_asm_insn (buf, operands);
+  return "";
 }
   [(set_attr "type" "sselog")
    (set_attr "prefix" "evex")
@@ -3449,7 +3453,7 @@
 	    (match_operand:MODEF 2 "register_operand" "x,x,v,v")))]
   "SSE_FLOAT_MODE_P (<MODE>mode)"
 {
-  static char buf[128];
+  char buf[128];
   const char *ops;
   const char *suffix
     = (get_attr_mode (insn) == MODE_V4SF) ? "ps" : "<ssevecmodesuffix>";
@@ -3485,7 +3489,8 @@
     }
 
   snprintf (buf, sizeof (buf), ops, suffix);
-  return buf;
+  output_asm_insn (buf, operands);
+  return "";
 }
   [(set_attr "isa" "noavx,avx,avx512vl,avx512f")
    (set_attr "type" "sselog")
@@ -3516,7 +3521,7 @@
 	  (match_operand:TF 2 "vector_operand" "xBm,xm,vm,v")))]
   "TARGET_SSE"
 {
-  static char buf[128];
+  char buf[128];
   const char *ops;
   const char *tmp
     = (which_alternative >= 2 ? "pandnq"
@@ -3539,7 +3544,8 @@
     }
 
   snprintf (buf, sizeof (buf), ops, tmp);
-  return buf;
+  output_asm_insn (buf, operands);
+  return "";
 }
   [(set_attr "isa" "noavx,avx,avx512vl,avx512f")
    (set_attr "type" "sselog")
@@ -3572,7 +3578,7 @@
 	  (match_operand:MODEF 2 "register_operand" "x,x,v,v")))]
   "SSE_FLOAT_MODE_P (<MODE>mode)"
 {
-  static char buf[128];
+  char buf[128];
   const char *ops;
   const char *suffix
     = (get_attr_mode (insn) == MODE_V4SF) ? "ps" : "<ssevecmodesuffix>";
@@ -3607,7 +3613,8 @@
     }
 
   snprintf (buf, sizeof (buf), ops, suffix);
-  return buf;
+  output_asm_insn (buf, operands);
+  return "";
 }
   [(set_attr "isa" "noavx,avx,avx512vl,avx512f")
    (set_attr "type" "sselog")
@@ -3646,7 +3653,7 @@
 	  (match_operand:TF 2 "vector_operand" "xBm,xm,vm,v")))]
   "TARGET_SSE && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
 {
-  static char buf[128];
+  char buf[128];
   const char *ops;
   const char *tmp
     = (which_alternative >= 2 ? "p<logic>q"
@@ -3669,7 +3676,8 @@
     }
 
   snprintf (buf, sizeof (buf), ops, tmp);
-  return buf;
+  output_asm_insn (buf, operands);
+  return "";
 }
   [(set_attr "isa" "noavx,avx,avx512vl,avx512f")
    (set_attr "type" "sselog")
@@ -12066,7 +12074,7 @@
 	  (match_operand:VI 2 "vector_operand" "xBm,xm,vm")))]
   "TARGET_SSE"
 {
-  static char buf[64];
+  char buf[64];
   const char *ops;
   const char *tmp;
   const char *ssesuffix;
@@ -12136,7 +12144,8 @@
     }
 
   snprintf (buf, sizeof (buf), ops, tmp, ssesuffix);
-  return buf;
+  output_asm_insn (buf, operands);
+  return "";
 }
   [(set_attr "isa" "noavx,avx,avx")
    (set_attr "type" "sselog")
@@ -12211,7 +12220,7 @@
   "TARGET_SSE && <mask_mode512bit_condition>
    && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
 {
-  static char buf[64];
+  char buf[64];
   const char *ops;
   const char *tmp;
   const char *ssesuffix;
@@ -12276,7 +12285,8 @@
     }
 
   snprintf (buf, sizeof (buf), ops, tmp, ssesuffix);
-  return buf;
+  output_asm_insn (buf, operands);
+  return "";
 }
   [(set_attr "isa" "noavx,avx,avx")
    (set_attr "type" "sselog")
@@ -12311,7 +12321,7 @@
 	  (match_operand:VI12_AVX_AVX512F 2 "vector_operand" "xBm,xm,vm")))]
   "TARGET_SSE && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
 {
-  static char buf[64];
+  char buf[64];
   const char *ops;
   const char *tmp;
   const char *ssesuffix;
@@ -12371,7 +12381,8 @@
     }
 
   snprintf (buf, sizeof (buf), ops, tmp, ssesuffix);
-  return buf;
+  output_asm_insn (buf, operands);
+  return "";
 }
   [(set_attr "isa" "noavx,avx,avx")
    (set_attr "type" "sselog")
