@@ -1,3 +1,8 @@
+2019-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/66152
+	* gcc.target/i386/pr66152.c: New test.
+
 2019-02-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/asan/asan_oob_test.cc: Skip OOB_int on SPARC.

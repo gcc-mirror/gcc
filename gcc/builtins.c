@@ -95,7 +95,6 @@ builtin_info_type builtin_info[(int)END_BUILTINS];
 /* Non-zero if __builtin_constant_p should be folded right away.  */
 bool force_folding_builtin_constant_p;
 
-static rtx c_readstr (const char *, scalar_int_mode);
 static int target_char_cast (tree, char *);
 static rtx get_memory_rtx (tree, tree);
 static int apply_args_size (void);
@@ -802,10 +801,14 @@ c_strlen (tree src, int only_value, c_strlen_data *data, unsigned eltsize)
 }
 
 /* Return a constant integer corresponding to target reading
-   GET_MODE_BITSIZE (MODE) bits from string constant STR.  */
+   GET_MODE_BITSIZE (MODE) bits from string constant STR.  If
+   NULL_TERMINATED_P, reading stops after '\0' character, all further ones
+   are assumed to be zero, otherwise it reads as many characters
+   as needed.  */
 
-static rtx
-c_readstr (const char *str, scalar_int_mode mode)
+rtx
+c_readstr (const char *str, scalar_int_mode mode,
+	   bool null_terminated_p/*=true*/)
 {
   HOST_WIDE_INT ch;
   unsigned int i, j;
@@ -830,7 +833,7 @@ c_readstr (const char *str, scalar_int_mode mode)
 	j = j + UNITS_PER_WORD - 2 * (j % UNITS_PER_WORD) - 1;
       j *= BITS_PER_UNIT;
 
-      if (ch)
+      if (ch || !null_terminated_p)
 	ch = (unsigned char) str[i];
       tmp[j / HOST_BITS_PER_WIDE_INT] |= ch << (j % HOST_BITS_PER_WIDE_INT);
     }

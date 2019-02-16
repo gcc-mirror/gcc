@@ -1,5 +1,16 @@
 2019-02-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/66152
+	* builtins.h (c_readstr): Declare.
+	* builtins.c (c_readstr): Remove forward declaration.  Add
+	null_terminated_p argument, if false, read all bytes from the
+	string instead of stopping after '\0'.
+	* expr.c (string_cst_read_str): New function.
+	(store_expr): Use string_cst_read_str instead of
+	builtin_strncpy_read_str.  Try to store by pieces the whole
+	exp_len first, and only if that fails, split it up into
+	store by pieces followed by clear_storage.  Formatting fix.
+
 	* config/i386/i386.md (*movqi_internal): Remove static from
 	buf variable.  Use output_asm_insn (buf, operands); return "";
 	instead of return buf;.
