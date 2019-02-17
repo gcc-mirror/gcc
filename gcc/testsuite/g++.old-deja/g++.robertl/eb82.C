@@ -9,5 +9,5 @@ double val <int> () // { dg-error "" } bogus code
 
 int main ()
 {
-   printf ("%d\n", val<(int)3> ()); // { dg-error "" } val undeclared
+   printf ("%d\n", val<(int)3> ()); // { dg-error "" "" { target c++17_down } } val undeclared
 }
