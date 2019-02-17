@@ -1,3 +1,9 @@
+2019-02-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/89077
+	* decl.c (gfc_set_constant_character_len): Clear original string
+	representation after padding has been performed to target length.
+
 2019-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/88074
