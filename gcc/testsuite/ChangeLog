@@ -5,6 +5,9 @@
 
 	* g++.old-deja/g++.robertl/eb82.C: Tweak dg-error.
 
+	PR c++/89315
+	* g++.dg/cpp0x/initlist114.C: New test.
+
 2019-02-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/88680
