@@ -1,5 +1,11 @@
 2019-02-17  Harald Anlauf  <anlauf@gmx.de>
 
+	PR fortran/88299
+	* resolve.c (resolve_common_blocks,resolve_common_vars): Move
+	check for obsolent COMMON feature in F2018 to better place.
+
+2019-02-17  Harald Anlauf  <anlauf@gmx.de>
+
 	PR fortran/89077
 	* decl.c (gfc_set_constant_character_len): Clear original string
 	representation after padding has been performed to target length.

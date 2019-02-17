@@ -940,7 +940,11 @@ resolve_common_vars (gfc_common_head *common_block, bool named_common)
 	 have been ignored to continue parsing.
 	 We do the checks again here.  */
       if (!csym->attr.use_assoc)
-	gfc_add_in_common (&csym->attr, csym->name, &common_block->where);
+	{
+	  gfc_add_in_common (&csym->attr, csym->name, &common_block->where);
+	  gfc_notify_std (GFC_STD_F2018_OBS, "COMMON block at %L",
+			  &common_block->where);
+	}
 
       if (csym->value || csym->attr.data)
 	{
@@ -997,10 +1001,6 @@ resolve_common_blocks (gfc_symtree *common_root)
     resolve_common_blocks (common_root->right);
 
   resolve_common_vars (common_root->n.common, true);
-
-  if (!gfc_notify_std (GFC_STD_F2018_OBS, "COMMON block at %L",
-		       &common_root->n.common->where))
-    return;
 
   /* The common name is a global name - in Fortran 2003 also if it has a
      C binding name, since Fortran 2008 only the C binding name is a global
