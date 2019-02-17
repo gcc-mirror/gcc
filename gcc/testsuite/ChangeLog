@@ -3,6 +3,8 @@
 	PR c++/89217 - ICE with list-initialization in range-based for loop.
 	* g++.dg/cpp0x/range-for37.C: New test.
 
+	* g++.old-deja/g++.robertl/eb82.C: Tweak dg-error.
+
 2019-02-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/88680
