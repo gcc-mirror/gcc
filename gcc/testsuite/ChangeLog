@@ -8,6 +8,10 @@
 	PR c++/89315
 	* g++.dg/cpp0x/initlist114.C: New test.
 
+	PR c++/89356
+	* g++.dg/abi/mangle68.C: New test.
+	* g++.dg/cpp0x/decltype69.C: New test.
+
 2019-02-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/88680
