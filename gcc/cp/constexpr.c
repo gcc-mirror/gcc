@@ -1318,7 +1318,7 @@ find_constructor (tree *tp, int *walk_subtrees, void *)
 /* If T is a CONSTRUCTOR or an expression that has a CONSTRUCTOR node as a
    subexpression, return an unshared copy of T.  Otherwise return T.  */
 
-static tree
+tree
 unshare_constructor (tree t)
 {
   tree ctor = walk_tree (&t, find_constructor, NULL, NULL);
