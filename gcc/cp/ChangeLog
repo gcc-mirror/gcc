@@ -1,3 +1,12 @@
+2019-02-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89217 - ICE with list-initialization in range-based for loop.
+	* constexpr.c (unshare_constructor): No longer static.
+	* cp-tree.h (unshare_constructor): Declare.
+	* semantics.c (finish_compound_literal): When dealing with a
+	non-dependent expression in a template, return the original
+	expression.  Pass LOOKUP_NO_NARROWING to digest_init_flags.
+
 2019-02-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89297 - ICE with OVERLOAD in template.
