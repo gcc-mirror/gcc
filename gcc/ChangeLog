@@ -1,3 +1,10 @@
+2019-02-17  Alan Modra  <amodra@gmail.com>
+
+	PR target/89271
+	* config/rs6000/rs6000.md (<bd>_<mode> split): Check for an int
+	output reg on add insn.
+	(<bd>tf_<mode> split): Likewise.  Match predicates with insn.
+
 2019-02-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89372
