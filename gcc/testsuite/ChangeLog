@@ -1,5 +1,10 @@
 2019-02-17  Harald Anlauf  <anlauf@gmx.de>
 
+	PR fortran/88299
+	* gfortran.dg/pr88299.f90: New test.
+
+2019-02-17  Harald Anlauf  <anlauf@gmx.de>
+
 	PR fortran/89077
 	* gfortran.dg/transfer_simplify_12.f90: New test.
 
