@@ -5792,6 +5792,12 @@ call_2 may be NULL or a call insn.",
  NULL)
 
 DEFHOOK
+(get_multilib_abi_name,
+ "This hook returns name of multilib ABI name.",
+ const char *, (void),
+ hook_constcharptr_void_null)
+
+DEFHOOK
 (remove_extra_call_preserved_regs,
  "This hook removes registers from the set of call-clobbered registers\n\
  in @var{used_regs} if, contrary to the default rules, something guarantees\n\

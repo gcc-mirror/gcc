@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "match.h"
 #include "parse.h"
 #include "constructor.h"
+#include "target.h"
 
 /* Macros to access allocate memory for gfc_data_variable,
    gfc_data_value and gfc_data.  */
@@ -11360,19 +11361,22 @@ gfc_match_gcc_unroll (void)
   return MATCH_ERROR;
 }
 
-/* Match a !GCC$ builtin (b) attributes simd flags form:
+/* Match a !GCC$ builtin (b) attributes simd flags if('target') form:
 
    The parameter b is name of a middle-end built-in.
-   Flags are one of:
-     - (empty)
-     - inbranch
-     - notinbranch
+   FLAGS is optional and must be one of:
+     - (inbranch)
+     - (notinbranch)
+
+   IF('target') is optional and TARGET is a name of a multilib ABI.
 
    When we come here, we have already matched the !GCC$ builtin string.  */
+
 match
 gfc_match_gcc_builtin (void)
 {
   char builtin[GFC_MAX_SYMBOL_LEN + 1];
+  char target[GFC_MAX_SYMBOL_LEN + 1];
 
   if (gfc_match (" ( %n ) attributes simd", builtin) != MATCH_YES)
     return MATCH_ERROR;
@@ -11382,6 +11386,13 @@ gfc_match_gcc_builtin (void)
     clause = SIMD_NOTINBRANCH;
   else if (gfc_match (" ( inbranch ) ") == MATCH_YES)
     clause = SIMD_INBRANCH;
+
+  if (gfc_match (" if ( '%n' ) ", target) == MATCH_YES)
+    {
+      const char *abi = targetm.get_multilib_abi_name ();
+      if (abi == NULL || strcmp (abi, target) != 0)
+	return MATCH_YES;
+    }
 
   if (gfc_vectorized_builtins == NULL)
     gfc_vectorized_builtins = new hash_map<nofree_string_hash, int> ();
