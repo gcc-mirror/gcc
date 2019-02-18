@@ -1,3 +1,18 @@
+2019-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/s390/s390.md (*<risbg_n>_ior_and_sr_ze,
+	*<risbg_n>_<mode>_ior_and_lshiftrt, *<risbg_n>_sidi_ior_and_lshiftrt):
+	Use HOST_WIDE_INT_M1U instead of ~(0ULL).
+	(*<risbg_n>_and_subregdi_rotr, *<risbg_n>_and_subregdi_rotl): Use
+	HOST_WIDE_INT_1U instead of 1ULL.
+	(*pre_z10_extzv<mode>, *pre_z10_extv<mode>): Change mask type from int
+	to unsigned HOST_WIDE_INT, use HOST_WIDE_INT_1U instead of 1ul.
+	(*insv<mode><clobbercc_or_nocc>_appendbitsleft,
+	z = (x << c) | (y >> d) splitters): Use HOST_WIDE_INT_1U
+	instead of 1UL.
+	(*insv<mode>_mem_reg, *insvdi_mem_reghigh): Use HOST_WIDE_INT_1U
+	instead of 1ul.
+
 2019-02-18  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/89209
