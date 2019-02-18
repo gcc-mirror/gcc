@@ -1,5 +1,8 @@
 2019-02-18  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (check_explicit_specialization): If the declarator is a
+	template-id, only check whether the arguments are dependent.
+
 	Improve duplicate [[likely]] diagnostic.
 	* parser.c (cp_parser_statement): Make attrs_loc a range.  Pass it
 	to process_stmt_hotness_attribute.

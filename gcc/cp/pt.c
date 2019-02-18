@@ -2849,7 +2849,7 @@ check_explicit_specialization (tree declarator,
 	  /* This case handles bogus declarations like template <>
 	     template <class T> void f<int>(); */
 
-	  if (!uses_template_parms (declarator))
+	  if (!uses_template_parms (TREE_OPERAND (declarator, 1)))
 	    error ("template-id %qD in declaration of primary template",
 		   declarator);
 	  else if (variable_template_p (TREE_OPERAND (declarator, 0)))
