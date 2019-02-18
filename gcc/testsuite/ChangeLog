@@ -1,3 +1,8 @@
+2019-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89296
+	* gcc.dg/uninit-pr89296.c: New testcase.
+
 2019-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/89369
