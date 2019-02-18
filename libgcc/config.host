@@ -711,6 +711,9 @@ x86_64-*-darwin*)
 i[34567]86-*-elfiamcu)
 	tmake_file="$tmake_file i386/t-crtstuff t-softfp-sfdftf i386/32/t-softfp i386/32/t-iamcu i386/t-softfp t-softfp t-dfprules"
 	;;
+i586-zephyr-elf)
+	tmake_file="$tmake_file i386/t-crtstuff t-softfp-sfdf i386/32/t-zephyr i386/t-softfp t-softfp t-dfprules"
+	;;
 i[34567]86-*-elf*)
 	tmake_file="$tmake_file i386/t-crtstuff t-crtstuff-pic t-libgcc-pic"
 	;;
@@ -1568,7 +1571,7 @@ i[34567]86-*-linux* | x86_64-*-linux* | \
 esac
 
 case ${host} in
-i[34567]86-*-elfiamcu | i[34567]86-*-rtems*)
+i[34567]86-*-elfiamcu | i[34567]86-zephyr-elf | i[34567]86-*-rtems*)
 	# These use soft-fp for SFmode and DFmode, not just TFmode.
 	;;
 i[34567]86-*-* | x86_64-*-*)
