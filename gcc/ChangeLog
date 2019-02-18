@@ -1,3 +1,10 @@
+2019-02-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/89294
+	* tree.c (valid_constant_size_p): Avoid assuming size is a constant
+	expression.
+	* tree.h (cst_size_error): Add the cst_size_not_constant enumerator.
+
 2019-02-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89296

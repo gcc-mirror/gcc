@@ -7521,7 +7521,13 @@ valid_constant_size_p (const_tree size, cst_size_error *perr /* = NULL */)
   if (!perr)
     perr = &error;
 
-  if (TREE_OVERFLOW (size))
+  if (TREE_CODE (size) != INTEGER_CST)
+    {
+      *perr = cst_size_not_constant;
+      return false;
+    }
+
+  if (TREE_OVERFLOW_P (size))
     {
       *perr = cst_size_overflow;
       return false;
