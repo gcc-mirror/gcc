@@ -43,3 +43,6 @@ enum GNU_Have_64Bit_Atomics = @DCFG_HAVE_64BIT_ATOMICS@;
 
 // Do we have libatomic available
 enum GNU_Have_LibAtomic = @DCFG_HAVE_LIBATOMIC@;
+
+// Do we have qsort_r function
+enum Have_Qsort_R = @DCFG_HAVE_QSORT_R@;
