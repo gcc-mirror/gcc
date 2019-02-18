@@ -5262,13 +5262,16 @@ without a value).
 For C only, warn about a @code{return} statement with an expression in a
 function whose return type is @code{void}, unless the expression type is
 also @code{void}.  As a GNU extension, the latter case is accepted
-without a warning unless @option{-Wpedantic} is used.
+without a warning unless @option{-Wpedantic} is used.  Attempting
+to use the return value of a non-@code{void} function other than @code{main}
+that flows off the end by reaching the closing curly brace that terminates
+the function is undefined.
 
-For C++, a function without return type always produces a diagnostic
-message, even when @option{-Wno-return-type} is specified.  The only
-exceptions are @code{main} and functions defined in system headers.
+Unlike in C, in C++, flowing off the end of a non-@code{void} function other
+than @code{main} results in undefined behavior even when the value of
+the function is not used.
 
-This warning is enabled by default for C++ and is enabled by @option{-Wall}.
+This warning is enabled by default in C++ and by @option{-Wall} otherwise.
 
 @item -Wshift-count-negative
 @opindex Wshift-count-negative
