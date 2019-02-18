@@ -2970,9 +2970,54 @@ create_fn_spec (gfc_symbol *sym, tree fntype)
   return build_type_attribute_variant (fntype, tmp);
 }
 
+/* Helper function - if we do not find an interface for a procedure,
+   construct it from the actual arglist.  Luckily, this can only
+   happen for call by reference, so the information we actually need
+   to provide (and which would be impossible to guess from the call
+   itself) is not actually needed.  */
+
+static void
+get_formal_from_actual_arglist (gfc_symbol *sym, gfc_actual_arglist *actual_args)
+{
+  gfc_actual_arglist *a;
+  gfc_formal_arglist **f;
+  gfc_symbol *s;
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+  static int var_num;
+
+  f = &sym->formal;
+  for (a = actual_args; a != NULL; a = a->next)
+    {
+      if (a->expr)
+	{
+	  (*f) = gfc_get_formal_arglist ();
+	  snprintf (name, GFC_MAX_SYMBOL_LEN, "_formal_%d", var_num ++);
+	  gfc_get_symbol (name, NULL, &s);
+	  if (a->expr->ts.type == BT_PROCEDURE)
+	    {
+	      s->attr.flavor = FL_PROCEDURE;
+	    }
+	  else
+	    {
+	      s->ts = a->expr->ts;
+	      s->attr.flavor = FL_VARIABLE;
+	      if (a->expr->rank > 0)
+		{
+		  s->attr.dimension = 1;
+		  s->as = gfc_get_array_spec ();
+		  s->as->type = AS_ASSUMED_SIZE;
+		}
+	    }
+	  s->attr.dummy = 1;
+	  s->attr.intent = INTENT_UNKNOWN;
+	  (*f)->sym = s;
+	}
+      f = &((*f)->next);
+    }
+}
 
 tree
-gfc_get_function_type (gfc_symbol * sym)
+gfc_get_function_type (gfc_symbol * sym, gfc_actual_arglist *actual_args)
 {
   tree type;
   vec<tree, va_gc> *typelist = NULL;
@@ -3030,6 +3075,10 @@ gfc_get_function_type (gfc_symbol * sym)
 	    vec_safe_push (typelist, build_pointer_type(gfc_charlen_type_node));
 	}
     }
+  if (sym->backend_decl == error_mark_node && actual_args != NULL
+      && sym->formal == NULL && (sym->attr.proc == PROC_EXTERNAL
+				 || sym->attr.proc == PROC_UNKNOWN))
+    get_formal_from_actual_arglist (sym, actual_args);
 
   /* Build the argument types for the function.  */
   for (f = gfc_sym_get_dummy_args (sym); f; f = f->next)

@@ -1,3 +1,17 @@
+2019-02-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87689
+	* trans-decl.c (gfc_get_extern_function_decl): Add argument
+	actual_args and pass it through to gfc_get_function_type.
+	* trans-expr.c (conv_function_val): Add argument actual_args
+	and pass it on to gfc_get_extern_function_decl.
+	(conv_procedure_call): Pass actual arguments to conv_function_val.
+	* trans-types.c (get_formal_from_actual_arglist): New function.
+	(gfc_get_function_type): Add argument actual_args.  Generate
+	formal args from actual args if necessary.
+	* trans-types.h (gfc_get_function_type): Add optional argument.
+	* trans.h (gfc_get_extern_function_decl): Add optional argument.
+
 2019-02-18  Martin Liska  <mliska@suse.cz>
 
 	* decl.c (gfc_match_gcc_builtin): Add support for filtering
