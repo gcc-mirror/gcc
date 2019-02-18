@@ -1,5 +1,12 @@
 2019-02-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/88714
+	* config/arm/arm.md (*arm_movdi, *movdf_soft_insn): Use "r" instead of
+	"q" constraint.
+	* config/arm/vfp.md (*movdi_vfp): Likewise.
+	* config/arm/ldrdstrd.md (*arm_ldrd, *arm_strd): Use "r" instead of
+	"q" constraint for operands[0].
+
 	PR target/89369
 	* config/s390/s390.md (*r<noxa>sbg_<mode>_srl_bitmask,
 	*r<noxa>sbg_<mode>_sll, *r<noxa>sbg_<mode>_srl): Don't construct
