@@ -1,5 +1,5 @@
 // { dg-do compile { target c++11 } }
-// { dg-options "-Wtype-limits" }
+// { dg-options "-Wtype-limits -fno-short-enums" }
 
 const unsigned N = 8;
 const unsigned P = 0;
