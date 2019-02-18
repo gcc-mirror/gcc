@@ -1,5 +1,13 @@
 2019-02-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/89361
+	* config/s390/s390.c (s390_indirect_branch_attrvalue,
+	s390_indirect_branch_settings): Define unconditionally.
+	(s390_set_current_function): Likewise, but guard the whole body except
+	the s390_indirect_branch_settings call with
+	#if S390_USE_TARGET_ATTRIBUTE.
+	(TARGET_SET_CURRENT_FUNCTION): Redefine unconditionally.
+
 	* config/s390/s390.md (*<risbg_n>_ior_and_sr_ze,
 	*<risbg_n>_<mode>_ior_and_lshiftrt, *<risbg_n>_sidi_ior_and_lshiftrt):
 	Use HOST_WIDE_INT_M1U instead of ~(0ULL).
