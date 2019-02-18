@@ -1,5 +1,12 @@
 2019-02-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/89369
+	* config/s390/s390.md (*r<noxa>sbg_<mode>_srl_bitmask,
+	*r<noxa>sbg_<mode>_sll, *r<noxa>sbg_<mode>_srl): Don't construct
+	pattern in a temporary buffer.
+	(*r<noxa>sbg_sidi_srl): Likewise.  Always use 32 as I3 rather
+	than 64-operands[2].
+
 	PR target/89361
 	* config/s390/s390.c (s390_indirect_branch_attrvalue,
 	s390_indirect_branch_settings): Define unconditionally.
