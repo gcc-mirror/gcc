@@ -1,5 +1,35 @@
 2019-02-18  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/89306
+	* cgraph.c (symbol_table::create_edge): Set m_summary_id to -1
+	by default.
+	(symbol_table::free_edge): Recycle m_summary_id.
+	* cgraph.h (get_summary_id): New.
+	(symbol_table::release_symbol): Set m_summary_id to -1
+	by default.
+	(symbol_table::allocate_cgraph_symbol): Recycle m_summary_id.
+	* ipa-fnsummary.c (ipa_fn_summary_t): Switch from
+	function_summary to fast_function_summary.
+	* ipa-fnsummary.h (ipa_fn_summary_t): Likewise.
+	* ipa-pure-const.c (class funct_state_summary_t):
+	Switch from function_summary to fast_function_summary.
+	* ipa-reference.c (class ipa_ref_var_info_summary_t): Likewise.
+	(class ipa_ref_opt_summary_t): Switch from function_summary
+	to fast_function_summary.
+	* symbol-summary.h (class function_summary_base): New class
+	that is created from base of former function_summary.
+	(function_summary_base::unregister_hooks): New.
+	(class function_summary): Inherit from function_summary_base.
+	(class call_summary_base): New class
+	that is created from base of former call_summary.
+	(class call_summary): Inherit from call_summary_base.
+	(struct is_same): New.
+	(class fast_function_summary): New summary class.
+	(class fast_call_summary): New summary class.
+	* vec.h (vec_safe_grow_cleared): New function.
+
+2019-02-18  Martin Liska  <mliska@suse.cz>
+
 	* config/i386/i386.c (ix86_get_multilib_abi_name): New function.
 	(TARGET_GET_MULTILIB_ABI_NAME): New macro defined.
 	* doc/tm.texi: Document new target hook.

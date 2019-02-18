@@ -1302,6 +1302,12 @@ public:
     return m_uid;
   }
 
+  /* Get summary id of the node.  */
+  inline int get_summary_id ()
+  {
+    return m_summary_id;
+  }
+
   /* Record that DECL1 and DECL2 are semantically identical function
      versions.  */
   static void record_function_versions (tree decl1, tree decl2);
@@ -1469,6 +1475,9 @@ public:
 private:
   /* Unique id of the node.  */
   int m_uid;
+
+  /* Summary id that is recycled.  */
+  int m_summary_id;
 
   /* Worker for call_for_symbol_and_aliases.  */
   bool call_for_symbol_and_aliases_1 (bool (*callback) (cgraph_node *,
@@ -1728,6 +1737,12 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
     return m_uid;
   }
 
+  /* Get summary id of the edge.  */
+  inline int get_summary_id ()
+  {
+    return m_summary_id;
+  }
+
   /* Rebuild cgraph edges for current function node.  This needs to be run after
      passes that don't update the cgraph.  */
   static unsigned int rebuild_edges (void);
@@ -1804,6 +1819,9 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
 private:
   /* Unique id of the edge.  */
   int m_uid;
+
+  /* Summary id that is recycled.  */
+  int m_summary_id;
 
   /* Remove the edge from the list of the callers of the callee.  */
   void remove_caller (void);
@@ -2051,7 +2069,8 @@ public:
   friend class cgraph_node;
   friend class cgraph_edge;
 
-  symbol_table (): cgraph_max_uid (1), edges_max_uid (1)
+  symbol_table (): cgraph_max_uid (1), cgraph_max_summary_id (0),
+  edges_max_uid (1), edges_max_summary_id (0)
   {
   }
 
@@ -2254,15 +2273,31 @@ public:
   /* Dump symbol table to stderr.  */
   void DEBUG_FUNCTION debug (void);
 
+  /* Assign a new summary ID for the callgraph NODE.  */
+  inline int assign_summary_id (cgraph_node *node)
+  {
+    node->m_summary_id = cgraph_max_summary_id++;
+    return node->m_summary_id;
+  }
+
+  /* Assign a new summary ID for the callgraph EDGE.  */
+  inline int assign_summary_id (cgraph_edge *edge)
+  {
+    edge->m_summary_id = edges_max_summary_id++;
+    return edge->m_summary_id;
+  }
+
   /* Return true if assembler names NAME1 and NAME2 leads to the same symbol
      name.  */
   static bool assembler_names_equal_p (const char *name1, const char *name2);
 
   int cgraph_count;
   int cgraph_max_uid;
+  int cgraph_max_summary_id;
 
   int edges_count;
   int edges_max_uid;
+  int edges_max_summary_id;
 
   symtab_node* GTY(()) nodes;
   asm_node* GTY(()) asmnodes;
@@ -2634,8 +2669,10 @@ symbol_table::release_symbol (cgraph_node *node)
 
   /* Clear out the node to NULL all pointers and add the node to the free
      list.  */
+  int summary_id = node->m_summary_id;
   memset (node, 0, sizeof (*node));
   node->type = SYMTAB_FUNCTION;
+  node->m_summary_id = summary_id;
   SET_NEXT_FREE_NODE (node, free_nodes);
   free_nodes = node;
 }
@@ -2653,7 +2690,10 @@ symbol_table::allocate_cgraph_symbol (void)
       free_nodes = NEXT_FREE_NODE (node);
     }
   else
-    node = ggc_cleared_alloc<cgraph_node> ();
+    {
+      node = ggc_cleared_alloc<cgraph_node> ();
+      node->m_summary_id = -1;
+    }
 
   node->m_uid = cgraph_max_uid++;
   return node;
