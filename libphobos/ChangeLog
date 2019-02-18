@@ -1,3 +1,15 @@
+2019-02-19  Johannes Pfau  <johannespfau@gmail.com>
+
+	PR d/88127
+	* m4/druntime/libraries.m4 (DRUNTIME_LIBRARIES_CLIB): Add new macro.
+	* configure.ac: Use DRUNTIME_LIBRARIES_CLIB.
+	* configure: Regenerate
+	* Makefile.in: Regenerate
+	* libdruntime/gcc/config.d.in: Add Have_Qsort_R.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2019-02-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite/lib/libphobos-dg.exp: Tabify.

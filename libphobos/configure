@@ -650,6 +650,7 @@ LIBATOMIC
 DCFG_HAVE_LIBATOMIC
 DCFG_HAVE_64BIT_ATOMICS
 DCFG_HAVE_ATOMIC_BUILTINS
+DCFG_HAVE_QSORT_R
 DRUNTIME_OS_MINFO_BRACKETING_FALSE
 DRUNTIME_OS_MINFO_BRACKETING_TRUE
 DCFG_MINFO_BRACKETING
@@ -11498,7 +11499,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11501 "configure"
+#line 11502 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11604,7 +11605,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11607 "configure"
+#line 11608 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14128,6 +14129,27 @@ else
   DRUNTIME_OS_MINFO_BRACKETING_TRUE='#'
   DRUNTIME_OS_MINFO_BRACKETING_FALSE=
 fi
+
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+  DCFG_HAVE_QSORT_R=false
+  ac_fn_c_check_func "$LINENO" "qsort_r" "ac_cv_func_qsort_r"
+if test "x$ac_cv_func_qsort_r" = xyes; then :
+  DCFG_HAVE_QSORT_R=true
+fi
+
 
   ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
