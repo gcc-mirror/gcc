@@ -1,3 +1,7 @@
+2019-02-18  Sharon Dvir  <unapologtic@gmail.com>
+
+	* README: Fix typos.
+
 2019-02-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/torture/pr89303.C (bad_weak_ptr): Rename to

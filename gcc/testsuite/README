@@ -8,7 +8,7 @@ ftp://gcc.gnu.org/pub/gcc/infrastructure, for example.
 These tests are included "as is". If any of them fails, do not report
 a bug.  Bug reports for DejaGnu can go to bug-dejagnu@gnu.org.
 Discussion and comments about this testsuite should be sent to
-gcc@gcc.gnu.org; additions and changes to should go to sent to
+gcc@gcc.gnu.org; additions and changes should be sent to
 gcc-patches@gcc.gnu.org.
 
 The entire testsuite is invoked by `make check` at the top level of
@@ -48,7 +48,7 @@ how to run tests (in the GCC 2.7 era):
 where 
 
 	runtest	Is the name used to invoke DejaGnu.   If DejaGnu is not
-		install this will be the relative path name for runtest.
+		installed this will be the relative path name for runtest.
 
 	--tool	This tells DejaGnu which tool you are testing. It is
 		mainly used to find the testsuite directories for a
