@@ -29579,6 +29579,19 @@ ix86_warn_parameter_passing_abi (cumulative_args_t cum_v, tree type)
   cum->warn_empty = false;
 }
 
+/* This hook returns name of multilib ABI.  */
+
+static const char *
+ix86_get_multilib_abi_name (void)
+{
+  if (!(TARGET_64BIT_P (ix86_isa_flags)))
+    return "i386";
+  else if (TARGET_X32_P (ix86_isa_flags))
+    return "x32";
+  else
+    return "x86_64";
+}
+
 /* Compute the alignment for a variable for Intel MCU psABI.  TYPE is
    the data type, and ALIGN is the alignment that the object would
    ordinarily have.  */
@@ -51805,6 +51818,10 @@ ix86_run_selftests (void)
 
 #undef TARGET_WARN_PARAMETER_PASSING_ABI
 #define TARGET_WARN_PARAMETER_PASSING_ABI ix86_warn_parameter_passing_abi
+
+#undef TARGET_GET_MULTILIB_ABI_NAME
+#define TARGET_GET_MULTILIB_ABI_NAME \
+  ix86_get_multilib_abi_name
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

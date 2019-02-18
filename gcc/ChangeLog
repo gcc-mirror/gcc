@@ -1,3 +1,13 @@
+2019-02-18  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386.c (ix86_get_multilib_abi_name): New function.
+	(TARGET_GET_MULTILIB_ABI_NAME): New macro defined.
+	* doc/tm.texi: Document new target hook.
+	* doc/tm.texi.in: Likewise.
+	* target.def: Add new target macro.
+	* gcc.c (find_fortran_preinclude_file): Do not search multilib
+	suffixes.
+
 2019-02-17  Alan Modra  <amodra@gmail.com>
 
 	PR target/89271

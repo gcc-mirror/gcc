@@ -1711,6 +1711,8 @@ of @code{CALL_USED_REGISTERS}.
 
 @hook TARGET_RETURN_CALL_WITH_MAX_CLOBBERS
 
+@hook TARGET_GET_MULTILIB_ABI_NAME
+
 @findex fixed_regs
 @findex call_used_regs
 @findex global_regs
