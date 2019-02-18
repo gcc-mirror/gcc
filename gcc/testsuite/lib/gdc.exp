@@ -44,22 +44,22 @@ proc gdc_version { } {
 
     # verify that the compiler exists
     if { [is_remote host] || [which $compiler] != 0 } then {
-        set tmp [remote_exec host "$compiler -v"]
-        set status [lindex $tmp 0]
-        set output [lindex $tmp 1]
-        regexp " version \[^\n\r\]*" $output version
-        if { $status == 0 && [info exists version] } then {
-            if [is_remote host] {
-                clone_output "$compiler $version\n"
-            } else {
-                clone_output "[which $compiler] $version\n"
-            }
-        } else {
-            clone_output "Couldn't determine version of [which $compiler]\n"
-        }
+	set tmp [remote_exec host "$compiler -v"]
+	set status [lindex $tmp 0]
+	set output [lindex $tmp 1]
+	regexp " version \[^\n\r\]*" $output version
+	if { $status == 0 && [info exists version] } then {
+	    if [is_remote host] {
+		clone_output "$compiler $version\n"
+	    } else {
+		clone_output "[which $compiler] $version\n"
+	    }
+	} else {
+	    clone_output "Couldn't determine version of [which $compiler]\n"
+	}
     } else {
-        # compiler does not exist (this should have already been detected)
-        warning "$compiler does not exist"
+	# compiler does not exist (this should have already been detected)
+	warning "$compiler does not exist"
     }
 }
 
@@ -74,26 +74,26 @@ proc gdc_include_flags { paths } {
     set flags ""
 
     if { [is_remote host] || ![info exists TESTING_IN_BUILD_TREE] } {
-        return "${flags}"
+	return "${flags}"
     }
 
     set gccpath ${paths}
     set target [file tail [file normalize ${paths}]]
 
     if { $gccpath != "" } {
-        if [file exists "${gccpath}/libphobos/libdruntime"] {
-            append flags "-I${gccpath}/libphobos/libdruntime "
-        }
+	if [file exists "${gccpath}/libphobos/libdruntime"] {
+	    append flags "-I${gccpath}/libphobos/libdruntime "
+	}
     }
     append flags "-I${srcdir}/../../libphobos/libdruntime "
     append flags "-I${srcdir}/../../libphobos/src "
 
     # For the tests that mix C++ and D, we should try and handle this better.
     if { $gccpath != "" } {
-        if [file exists "${gccpath}/libstdc++-v3/include"] {
-            append flags "-I${gccpath}/libstdc++-v3/include "
-            append flags "-I${gccpath}/libstdc++-v3/include/$target "
-        }
+	if [file exists "${gccpath}/libstdc++-v3/include"] {
+	    append flags "-I${gccpath}/libstdc++-v3/include "
+	    append flags "-I${gccpath}/libstdc++-v3/include/$target "
+	}
     }
     append flags "-I${srcdir}/../../libstdc++-v3/libsupc++"
 }
@@ -118,60 +118,60 @@ proc gdc_link_flags { paths } {
     verbose "shared lib extension: $shlib_ext"
 
     if { $gccpath != "" } {
-        # Path to libgphobos.spec.
-        append flags "-B${gccpath}/libphobos/src "
-        # Path to drtbegin.o/drtend.o.
-        if { [file exists "${gccpath}/libphobos/libdruntime/gcc/drtbegin.o"] } {
-            append flags "-B${gccpath}/libphobos/libdruntime/gcc "
-        }
+	# Path to libgphobos.spec.
+	append flags "-B${gccpath}/libphobos/src "
+	# Path to drtbegin.o/drtend.o.
+	if { [file exists "${gccpath}/libphobos/libdruntime/gcc/drtbegin.o"] } {
+	    append flags "-B${gccpath}/libphobos/libdruntime/gcc "
+	}
 
-        if { [file exists "${gccpath}/libphobos/src/.libs/libgphobos.a"] \
-             || [file exists "${gccpath}/libphobos/src/.libs/libgphobos.${shlib_ext}"] } {
-            append flags "-L${gccpath}/libphobos/src/.libs "
-            append ld_library_path ":${gccpath}/libphobos/src/.libs"
-        }
-        if { [file exists "${gccpath}/libphobos/libdruntime/.libs/libgdruntime.a"] \
-             || [file exists "${gccpath}/libphobos/libdruntime/.libs/libgdruntime.${shlib_ext}"] } {
-            append flags "-L${gccpath}/libphobos/libdruntime/.libs "
-            append ld_library_path ":${gccpath}/libphobos/libdruntime/.libs"
-        }
-        # Static linking is default. If only the shared lib is available adjust
-        # flags to always use it. If both are available, set SHARED_OPTION which
-        # will be added to PERMUTE_ARGS
-        if { [file exists "${gccpath}/libphobos/libdruntime/.libs/libgdruntime.${shlib_ext}"] } {
-            if { [file exists "${gccpath}/libphobos/libdruntime/.libs/libgdruntime.a"] } {
-                set SHARED_OPTION "-shared-libphobos"
-            } else {
-                append flags "-shared-libphobos "
-            }
-        }
-        if [file exists "${gccpath}/libiberty/libiberty.a"] {
-            append flags "-L${gccpath}/libiberty "
-        }
-        # For the tests that mix C++ and D, we should try and handle this better.
-        if { [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.a"] \
-             || [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.${shlib_ext}"] } {
-            append flags "-L${gccpath}/libstdc++-v3/src/.libs "
-            append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
-        }
-        append ld_library_path [gcc-set-multilib-library-path $GDC_UNDER_TEST]
+	if { [file exists "${gccpath}/libphobos/src/.libs/libgphobos.a"] \
+	     || [file exists "${gccpath}/libphobos/src/.libs/libgphobos.${shlib_ext}"] } {
+	    append flags "-L${gccpath}/libphobos/src/.libs "
+	    append ld_library_path ":${gccpath}/libphobos/src/.libs"
+	}
+	if { [file exists "${gccpath}/libphobos/libdruntime/.libs/libgdruntime.a"] \
+	     || [file exists "${gccpath}/libphobos/libdruntime/.libs/libgdruntime.${shlib_ext}"] } {
+	    append flags "-L${gccpath}/libphobos/libdruntime/.libs "
+	    append ld_library_path ":${gccpath}/libphobos/libdruntime/.libs"
+	}
+	# Static linking is default. If only the shared lib is available adjust
+	# flags to always use it. If both are available, set SHARED_OPTION which
+	# will be added to PERMUTE_ARGS
+	if { [file exists "${gccpath}/libphobos/libdruntime/.libs/libgdruntime.${shlib_ext}"] } {
+	    if { [file exists "${gccpath}/libphobos/libdruntime/.libs/libgdruntime.a"] } {
+		set SHARED_OPTION "-shared-libphobos"
+	    } else {
+		append flags "-shared-libphobos "
+	    }
+	}
+	if [file exists "${gccpath}/libiberty/libiberty.a"] {
+	    append flags "-L${gccpath}/libiberty "
+	}
+	# For the tests that mix C++ and D, we should try and handle this better.
+	if { [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.a"] \
+	     || [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.${shlib_ext}"] } {
+	    append flags "-L${gccpath}/libstdc++-v3/src/.libs "
+	    append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
+	}
+	append ld_library_path [gcc-set-multilib-library-path $GDC_UNDER_TEST]
     } else {
-        global tool_root_dir
+	global tool_root_dir
 
-        set libphobos [lookfor_file ${tool_root_dir} libgphobos]
-        if { $libphobos != "" } {
-            append flags "-B${libphobos} -L${libphobos} "
-            append ld_library_path ":${libphobos}"
-        }
-        set libdruntime [lookfor_file ${tool_root_dir} libgdruntime]
-        if { $libdruntime != "" } {
-            append flags "-L${libdruntime} "
-            append ld_library_path ":${libdruntime}"
-        }
-        set libiberty [lookfor_file ${tool_root_dir} libiberty]
-        if { $libiberty != "" } {
-            append flags "-L${libiberty} "
-        }
+	set libphobos [lookfor_file ${tool_root_dir} libgphobos]
+	if { $libphobos != "" } {
+	    append flags "-B${libphobos} -L${libphobos} "
+	    append ld_library_path ":${libphobos}"
+	}
+	set libdruntime [lookfor_file ${tool_root_dir} libgdruntime]
+	if { $libdruntime != "" } {
+	    append flags "-L${libdruntime} "
+	    append ld_library_path ":${libdruntime}"
+	}
+	set libiberty [lookfor_file ${tool_root_dir} libiberty]
+	if { $libiberty != "" } {
+	    append flags "-L${libiberty} "
+	}
     }
 
     set_ld_library_path_env_vars
@@ -204,29 +204,29 @@ proc gdc_init { args } {
     setenv LANG C
 
     if ![info exists GDC_UNDER_TEST] then {
-        if [info exists TOOL_EXECUTABLE] {
-            set GDC_UNDER_TEST $TOOL_EXECUTABLE
-        } else {
-            if { [is_remote host] || ! [info exists TESTING_IN_BUILD_TREE] } {
-                set GDC_UNDER_TEST [transform gdc]
-            } else {
-                set GDC_UNDER_TEST [findfile $base_dir/../../gdc "$base_dir/../../gdc -B$base_dir/../../" [findfile $base_dir/gdc "$base_dir/gdc -B$base_dir/" [transform gdc]]]
-            }
-        }
+	if [info exists TOOL_EXECUTABLE] {
+	    set GDC_UNDER_TEST $TOOL_EXECUTABLE
+	} else {
+	    if { [is_remote host] || ! [info exists TESTING_IN_BUILD_TREE] } {
+		set GDC_UNDER_TEST [transform gdc]
+	    } else {
+		set GDC_UNDER_TEST [findfile $base_dir/../../gdc "$base_dir/../../gdc -B$base_dir/../../" [findfile $base_dir/gdc "$base_dir/gdc -B$base_dir/" [transform gdc]]]
+	    }
+	}
     }
 
     if ![is_remote host] {
-        if { [which $GDC_UNDER_TEST] == 0 } then {
-            perror "GDC_UNDER_TEST ($GDC_UNDER_TEST) does not exist"
-            exit 1
-        }
+	if { [which $GDC_UNDER_TEST] == 0 } then {
+	    perror "GDC_UNDER_TEST ($GDC_UNDER_TEST) does not exist"
+	    exit 1
+	}
     }
     if ![info exists tmpdir] {
-        set tmpdir "/tmp"
+	set tmpdir "/tmp"
     }
 
     if [info exists gluefile] {
-        unset gluefile
+	unset gluefile
     }
 
     gdc_maybe_build_wrapper "${tmpdir}/d-testglue.o"
@@ -237,21 +237,21 @@ proc gdc_init { args } {
     # compilation.  They are passed first to allow individual
     # tests to override them.
     if [info exists TEST_ALWAYS_FLAGS] {
-        lappend ALWAYS_DFLAGS "additional_flags=$TEST_ALWAYS_FLAGS"
+	lappend ALWAYS_DFLAGS "additional_flags=$TEST_ALWAYS_FLAGS"
     }
 
     if ![is_remote host] {
-        if [info exists TOOL_OPTIONS] {
-            lappend ALWAYS_DFLAGS "additional_flags=[gdc_include_flags [get_multilibs ${TOOL_OPTIONS}] ]"
-            lappend ALWAYS_DFLAGS "ldflags=[gdc_link_flags [get_multilibs ${TOOL_OPTIONS}] ]"
-        } else {
-            lappend ALWAYS_DFLAGS "additional_flags=[gdc_include_flags [get_multilibs] ]"
-            lappend ALWAYS_DFLAGS "ldflags=[gdc_link_flags [get_multilibs] ]"
-        }
+	if [info exists TOOL_OPTIONS] {
+	    lappend ALWAYS_DFLAGS "additional_flags=[gdc_include_flags [get_multilibs ${TOOL_OPTIONS}] ]"
+	    lappend ALWAYS_DFLAGS "ldflags=[gdc_link_flags [get_multilibs ${TOOL_OPTIONS}] ]"
+	} else {
+	    lappend ALWAYS_DFLAGS "additional_flags=[gdc_include_flags [get_multilibs] ]"
+	    lappend ALWAYS_DFLAGS "ldflags=[gdc_link_flags [get_multilibs] ]"
+	}
     }
 
     if [info exists TOOL_OPTIONS] {
-        lappend ALWAYS_DFLAGS "additional_flags=$TOOL_OPTIONS"
+	lappend ALWAYS_DFLAGS "additional_flags=$TOOL_OPTIONS"
     }
 
     verbose -log "ALWAYS_DFLAGS set to $ALWAYS_DFLAGS"
@@ -273,8 +273,8 @@ proc gdc_target_compile { source dest type options } {
     global GDC_UNDER_TEST
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
-        lappend options "libs=${gluefile}"
-        lappend options "ldflags=${wrap_flags}"
+	lappend options "libs=${gluefile}"
+	lappend options "ldflags=${wrap_flags}"
     }
 
     lappend options "timeout=[timeout_value]"

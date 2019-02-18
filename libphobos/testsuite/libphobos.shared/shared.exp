@@ -39,9 +39,9 @@ proc shared_library { source destfile options } {
 
     set comp_output [libphobos_target_compile "$source" "$destfile" "executable" $options]
     if ![ string match "" $comp_output ] {
-        fail "libphobos.shared/[file tail $source]"
-        verbose -log $comp_output
-        return 1
+	fail "libphobos.shared/[file tail $source]"
+	verbose -log $comp_output
+	return 1
     }
 
     lappend all_libraries $destfile
@@ -52,7 +52,7 @@ shared_library "$srcdir/$subdir/lib.d" "lib.so" ""
 
 # liblinkdep.so
 shared_library "$srcdir/$subdir/liblinkdep.d" "liblinkdep.so" \
-        [list "additional_flags=-I$srcdir/$subdir lib.so"]
+	[list "additional_flags=-I$srcdir/$subdir lib.so"]
 
 # libloaddep.so
 shared_library "$srcdir/$subdir/libloaddep.d" "libloaddep.so" ""
@@ -69,14 +69,14 @@ dg-init
 
 # Main loop.
 dg-test "$srcdir/$subdir/link.d" "-I$srcdir/$subdir lib.so -shared-libphobos" \
-        "$DEFAULT_DFLAGS"
+	"$DEFAULT_DFLAGS"
 
 dg-test "$srcdir/$subdir/link_linkdep.d" \
-        "-I$srcdir/$subdir liblinkdep.so lib.so -shared-libphobos" \
-        "$DEFAULT_DFLAGS"
+	"-I$srcdir/$subdir liblinkdep.so lib.so -shared-libphobos" \
+	"$DEFAULT_DFLAGS"
 
 dg-test "$srcdir/$subdir/link_loaddep.d" \
-        "-I$srcdir/$subdir libloaddep.so -shared-libphobos" "$DEFAULT_DFLAGS"
+	"-I$srcdir/$subdir libloaddep.so -shared-libphobos" "$DEFAULT_DFLAGS"
 
 # dlopen() tests.
 if [is-effective-target dlopen] {
