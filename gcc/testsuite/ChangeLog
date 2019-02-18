@@ -1,3 +1,11 @@
+2019-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89369
+	* gcc.c-torture/execute/pr89369.c: New test.
+	* gcc.target/s390/md/rXsbg_mode_sXl.c (rosbg_si_srl,
+	rxsbg_si_srl): Expect last 3 operands 32,63,62 rather than
+	34,63,62.
+
 2019-02-18  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/89209
