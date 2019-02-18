@@ -1,5 +1,10 @@
 2019-02-18  Martin Sebor  <msebor@redhat.com>
 
+	* doc/cpp.texi (Conditional syntax): Add __has_attribute,
+	__has_cpp_attribute, and __has_include.
+
+2019-02-18  Martin Sebor  <msebor@redhat.com>
+
 	* doc/invoke.texi (-Wreturn-type): Correct and expand.
 
 2019-02-18  Martin Sebor  <msebor@redhat.com>
