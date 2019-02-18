@@ -1,3 +1,7 @@
+2019-02-18  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* g++.dg/wrappers/pr88680.C: Add -fno-short-enums.
+
 2019-02-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gdc.dg/dg.exp: Tabify.
