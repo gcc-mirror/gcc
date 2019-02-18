@@ -1,3 +1,9 @@
+2019-02-18  Martin Liska  <mliska@suse.cz>
+
+	PR c++/89383
+	* line-map.c (linemap_line_start): Use 1UL in order
+	to not overflow.
+
 2019-02-11  Martin Liska  <mliska@suse.cz>
 
 	PR lto/88147
