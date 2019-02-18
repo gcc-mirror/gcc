@@ -110,23 +110,22 @@ static bitmap_obstack local_info_obstack;
 /* Obstack holding global analysis live forever.  */
 static bitmap_obstack optimization_summary_obstack;
 
-class ipa_ref_var_info_summary_t: public function_summary
-			  <ipa_reference_vars_info_d *>
+class ipa_ref_var_info_summary_t: public fast_function_summary
+			  <ipa_reference_vars_info_d *, va_heap>
 {
 public:
   ipa_ref_var_info_summary_t (symbol_table *symtab):
-    function_summary <ipa_reference_vars_info_d *> (symtab) {}
+    fast_function_summary <ipa_reference_vars_info_d *, va_heap> (symtab) {}
 };
 
 static ipa_ref_var_info_summary_t *ipa_ref_var_info_summaries = NULL;
 
-class ipa_ref_opt_summary_t: public function_summary
-			     <ipa_reference_optimization_summary_d *>
+class ipa_ref_opt_summary_t: public fast_function_summary
+			     <ipa_reference_optimization_summary_d *, va_heap>
 {
 public:
   ipa_ref_opt_summary_t (symbol_table *symtab):
-    function_summary <ipa_reference_optimization_summary_d *> (symtab) {}
-
+    fast_function_summary <ipa_reference_optimization_summary_d *, va_heap> (symtab) {}
 
   virtual void remove (cgraph_node *src_node,
 		       ipa_reference_optimization_summary_d *data);

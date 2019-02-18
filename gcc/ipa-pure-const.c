@@ -128,11 +128,12 @@ typedef struct funct_state_d * funct_state;
    possibility that it may be desirable to move this to the cgraph
    local info.  */
 
-class funct_state_summary_t: public function_summary <funct_state_d *>
+class funct_state_summary_t:
+  public fast_function_summary <funct_state_d *, va_heap>
 {
 public:
   funct_state_summary_t (symbol_table *symtab):
-    function_summary <funct_state_d *> (symtab) {}
+    fast_function_summary <funct_state_d *, va_heap> (symtab) {}
 
   virtual void insert (cgraph_node *, funct_state_d *state);
   virtual void duplicate (cgraph_node *src_node, cgraph_node *dst_node,
