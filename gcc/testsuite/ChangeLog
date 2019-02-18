@@ -1,3 +1,8 @@
+2019-02-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/torture/pr89303.C (bad_weak_ptr): Rename to
+	bad_weak_ptr_.
+
 2019-02-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/87689

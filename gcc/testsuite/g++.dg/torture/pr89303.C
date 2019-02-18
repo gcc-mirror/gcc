@@ -350,11 +350,11 @@ namespace std
       { return static_cast<const _Tp*>(_M_addr()); }
     };
 
-  class bad_weak_ptr { };
+  class bad_weak_ptr_ { };
 
   inline void
   __throw_bad_weak_ptr()
-  { (throw (bad_weak_ptr())); }
+  { (throw (bad_weak_ptr_())); }
 
     class _Sp_counted_base
     {
