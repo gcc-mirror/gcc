@@ -17,6 +17,7 @@
 
 // { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
+// { dg-require-filesystem-ts "" }
 
 // C++17 30.10.15.33 Resize file [fs.op.resize_file]
 
