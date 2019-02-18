@@ -1,3 +1,11 @@
+2019-02-18  Jason Merrill  <jason@redhat.com>
+
+	Improve duplicate [[likely]] diagnostic.
+	* parser.c (cp_parser_statement): Make attrs_loc a range.  Pass it
+	to process_stmt_hotness_attribute.
+	* cp-gimplify.c (process_stmt_hotness_attribute): Take attrs_loc.
+	(genericize_if_stmt): Use likely/unlikely instead of predictor_name.
+
 2019-02-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89217 - ICE with list-initialization in range-based for loop.

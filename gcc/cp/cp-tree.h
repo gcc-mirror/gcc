@@ -7576,7 +7576,7 @@ extern tree cp_fully_fold			(tree);
 extern tree cp_fully_fold_init			(tree);
 extern void clear_fold_cache			(void);
 extern tree lookup_hotness_attribute		(tree);
-extern tree process_stmt_hotness_attribute	(tree);
+extern tree process_stmt_hotness_attribute	(tree, location_t);
 
 /* in name-lookup.c */
 extern tree strip_using_decl                    (tree);
