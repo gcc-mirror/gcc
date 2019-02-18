@@ -1,3 +1,14 @@
+2019-02-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/89209
+	* tree-sra.c (create_access_replacement): New optional parameter
+	reg_tree.  Use it as a type if non-NULL and access type is not of
+	a register type.
+	(get_repl_default_def_ssa_name): New parameter REG_TYPE, pass it
+	to create_access_replacement.
+	(sra_modify_assign): Pass LHS type to get_repl_default_def_ssa_name.
+	Check lacc is non-NULL before attempting to re-create it on the RHS.
+
 2019-02-18  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/89306
