@@ -26,107 +26,107 @@ proc gdc-convert-args { args } {
     set out ""
 
     foreach arg [split [lindex $args 0] " "] {
-        # List of switches kept in ASCII collated order.
-        if [string match "-D" $arg] {
-            lappend out "-fdoc"
+	# List of switches kept in ASCII collated order.
+	if [string match "-D" $arg] {
+	    lappend out "-fdoc"
 
-        } elseif { [regexp -- {^-I([\w+/-]+)} $arg pattern path] } {
-            lappend out "-I$path"
+	} elseif { [regexp -- {^-I([\w+/-]+)} $arg pattern path] } {
+	    lappend out "-I$path"
 
-        } elseif { [regexp -- {^-J([\w+/-]+)} $arg pattern path] } {
-            lappend out "-J$path"
+	} elseif { [regexp -- {^-J([\w+/-]+)} $arg pattern path] } {
+	    lappend out "-J$path"
 
-        } elseif [string match "-allinst" $arg] {
-            lappend out "-fall-instantiations"
+	} elseif [string match "-allinst" $arg] {
+	    lappend out "-fall-instantiations"
 
-        } elseif { [string match "-boundscheck" $arg]
-                 || [string match "-boundscheck=on" $arg] } {
-            lappend out "-fbounds-check"
+	} elseif { [string match "-boundscheck" $arg]
+		 || [string match "-boundscheck=on" $arg] } {
+	    lappend out "-fbounds-check"
 
-        } elseif { [string match "-boundscheck=off" $arg]
-                   || [string match "-noboundscheck" $arg] } {
-            lappend out "-fno-bounds-check"
+	} elseif { [string match "-boundscheck=off" $arg]
+		   || [string match "-noboundscheck" $arg] } {
+	    lappend out "-fno-bounds-check"
 
-        } elseif [string match "-boundscheck=safeonly" $arg] {
-            lappend out "-fbounds-check=safeonly"
+	} elseif [string match "-boundscheck=safeonly" $arg] {
+	    lappend out "-fbounds-check=safeonly"
 
-        } elseif [string match "-c" $arg] {
-            lappend out "-c"
+	} elseif [string match "-c" $arg] {
+	    lappend out "-c"
 
-        } elseif [string match "-d" $arg] {
-            lappend out "-Wno-deprecated"
+	} elseif [string match "-d" $arg] {
+	    lappend out "-Wno-deprecated"
 
-        } elseif [string match "-de" $arg] {
-            lappend out "-Wdeprecated"
-            lappend out "-Werror"
+	} elseif [string match "-de" $arg] {
+	    lappend out "-Wdeprecated"
+	    lappend out "-Werror"
 
-        } elseif [string match "-debug" $arg] {
-            lappend out "-fdebug"
+	} elseif [string match "-debug" $arg] {
+	    lappend out "-fdebug"
 
-        } elseif [regexp -- {^-debug=(\w+)} $arg pattern value] {
-            lappend out "-fdebug=$value"
+	} elseif [regexp -- {^-debug=(\w+)} $arg pattern value] {
+	    lappend out "-fdebug=$value"
 
-        } elseif [string match "-dip1000" $arg] {
-            lappend out "-ftransition=dip1000"
+	} elseif [string match "-dip1000" $arg] {
+	    lappend out "-ftransition=dip1000"
 
-        } elseif [string match "-dip25" $arg] {
-            lappend out "-ftransition=dip25"
+	} elseif [string match "-dip25" $arg] {
+	    lappend out "-ftransition=dip25"
 
-        } elseif [string match "-dw" $arg] {
-            lappend out "-Wdeprecated"
-            lappend out "-Wno-error"
+	} elseif [string match "-dw" $arg] {
+	    lappend out "-Wdeprecated"
+	    lappend out "-Wno-error"
 
-        } elseif [string match "-fPIC" $arg] {
-            lappend out "-fPIC"
+	} elseif [string match "-fPIC" $arg] {
+	    lappend out "-fPIC"
 
-        } elseif { [string match "-g" $arg]
-                   || [string match "-gc" $arg] } {
-            lappend out "-g"
+	} elseif { [string match "-g" $arg]
+		   || [string match "-gc" $arg] } {
+	    lappend out "-g"
 
-        } elseif [string match "-inline" $arg] {
-            lappend out "-finline-functions"
+	} elseif [string match "-inline" $arg] {
+	    lappend out "-finline-functions"
 
-        } elseif [string match "-main" $arg] {
-            lappend out "-fmain"
+	} elseif [string match "-main" $arg] {
+	    lappend out "-fmain"
 
-        } elseif [regexp -- {^-mv=([\w+=./-]+)} $arg pattern value] {
-            lappend out "-fmodule-file=$value"
+	} elseif [regexp -- {^-mv=([\w+=./-]+)} $arg pattern value] {
+	    lappend out "-fmodule-file=$value"
 
-        } elseif [string match "-O" $arg] {
-            lappend out "-O2"
+	} elseif [string match "-O" $arg] {
+	    lappend out "-O2"
 
-        } elseif [string match "-release" $arg] {
-            lappend out "-frelease"
+	} elseif [string match "-release" $arg] {
+	    lappend out "-frelease"
 
-        } elseif [regexp -- {^-transition=(\w+)} $arg pattern value] {
-            lappend out "-ftransition=$value"
+	} elseif [regexp -- {^-transition=(\w+)} $arg pattern value] {
+	    lappend out "-ftransition=$value"
 
-        } elseif [string match "-unittest" $arg] {
-            lappend out "-funittest"
+	} elseif [string match "-unittest" $arg] {
+	    lappend out "-funittest"
 
-        } elseif [string match "-verrors=spec" $arg] {
-            lappend out "-Wspeculative"
+	} elseif [string match "-verrors=spec" $arg] {
+	    lappend out "-Wspeculative"
 
-        } elseif [regexp -- {^-verrors=(\d+)} $arg pattern num] {
-            lappend out "-fmax-errors=$num"
+	} elseif [regexp -- {^-verrors=(\d+)} $arg pattern num] {
+	    lappend out "-fmax-errors=$num"
 
-        } elseif [regexp -- {^-version=(\w+)} $arg pattern value] {
-            lappend out "-fversion=$value"
+	} elseif [regexp -- {^-version=(\w+)} $arg pattern value] {
+	    lappend out "-fversion=$value"
 
-        } elseif [string match "-vtls" $arg] {
-            lappend out "-ftransition=tls"
+	} elseif [string match "-vtls" $arg] {
+	    lappend out "-ftransition=tls"
 
-        } elseif [string match "-w" $arg] {
-            lappend out "-Wall"
-            lappend out "-Werror"
+	} elseif [string match "-w" $arg] {
+	    lappend out "-Wall"
+	    lappend out "-Werror"
 
-        } elseif [string match "-wi" $arg] {
-            lappend out "-Wall"
-            lappend out "-Wno-error"
+	} elseif [string match "-wi" $arg] {
+	    lappend out "-Wall"
+	    lappend out "-Wno-error"
 
-        } else {
-            # print "Unhandled Argument: $arg"
-        }
+	} else {
+	    # print "Unhandled Argument: $arg"
+	}
     }
 
     return $out
@@ -146,8 +146,8 @@ proc gdc-copy-extra { base extra } {
     fconfigure $fdout -encoding binary
 
     while { [gets $fdin copy_line] >= 0 } {
-        set out_line $copy_line
-        puts $fdout $out_line
+	set out_line $copy_line
+	puts $fdout $out_line
     }
 
     close $fdin
@@ -160,20 +160,20 @@ proc gdc-copy-extra { base extra } {
 # Translate DMD test directives to dejagnu equivalent.
 #
 #   COMPILE_SEPARATELY: Not handled.
-#   EXECUTE_ARGS:       Parameters to add to the execution of the test.
-#   COMPILED_IMPORTS:   List of modules files that are imported by the main
-#                       source file that should be included in compilation.
-#                       Currently handled the same as EXTRA_SOURCES.
-#   EXTRA_SOURCES:      List of extra sources to build and link along with
-#                       the test.
-#   EXTRA_FILES:        List of extra files to copy for the test runs.
-#   PERMUTE_ARGS:       The set of arguments to permute in multiple compiler
-#                       invocations.  An empty set means only one permutation
-#                       with no arguments.
-#   TEST_OUTPUT:        The output expected from the compilation.
-#   POST_SCRIPT:        Not handled.
-#   REQUIRED_ARGS:      Arguments to add to the compiler command line.
-#   DISABLED:           Not handled.
+#   EXECUTE_ARGS:	Parameters to add to the execution of the test.
+#   COMPILED_IMPORTS:	List of modules files that are imported by the main
+#			source file that should be included in compilation.
+#			Currently handled the same as EXTRA_SOURCES.
+#   EXTRA_SOURCES:	List of extra sources to build and link along with
+#			the test.
+#   EXTRA_FILES:	List of extra files to copy for the test runs.
+#   PERMUTE_ARGS:	The set of arguments to permute in multiple compiler
+#			invocations.  An empty set means only one permutation
+#			with no arguments.
+#   TEST_OUTPUT:	The output expected from the compilation.
+#   POST_SCRIPT:	Not handled.
+#   REQUIRED_ARGS:	Arguments to add to the compiler command line.
+#   DISABLED:		Not handled.
 #
 
 proc dmd2dg { base test } {
@@ -198,76 +198,76 @@ proc dmd2dg { base test } {
     #fconfigure $fdout -encoding binary
 
     while { [gets $fdin copy_line] >= 0 } {
-        set out_line $copy_line
+	set out_line $copy_line
 
-        if [regexp -- {COMPILE_SEPARATELY} $copy_line] {
-            # COMPILE_SEPARATELY is not handled.
-            regsub -- {COMPILE_SEPARATELY.*$} $copy_line "" out_line
+	if [regexp -- {COMPILE_SEPARATELY} $copy_line] {
+	    # COMPILE_SEPARATELY is not handled.
+	    regsub -- {COMPILE_SEPARATELY.*$} $copy_line "" out_line
 
-        } elseif [regexp -- {DISABLED} $copy_line] {
-            # DISABLED is not handled.
-            regsub -- {DISABLED.*$} $copy_line "" out_line
+	} elseif [regexp -- {DISABLED} $copy_line] {
+	    # DISABLED is not handled.
+	    regsub -- {DISABLED.*$} $copy_line "" out_line
 
-        } elseif [regexp -- {POST_SCRIPT} $copy_line] {
-            # POST_SCRIPT is not handled
-            regsub -- {POST_SCRIPT.*$} $copy_line "" out_line
+	} elseif [regexp -- {POST_SCRIPT} $copy_line] {
+	    # POST_SCRIPT is not handled
+	    regsub -- {POST_SCRIPT.*$} $copy_line "" out_line
 
-        } elseif [regexp -- {PERMUTE_ARGS\s*:\s*(.*)} $copy_line match args] {
-            # PERMUTE_ARGS is handled by gdc-do-test.
-            set PERMUTE_ARGS [gdc-convert-args $args]
-            regsub -- {PERMUTE_ARGS.*$} $copy_line "" out_line
+	} elseif [regexp -- {PERMUTE_ARGS\s*:\s*(.*)} $copy_line match args] {
+	    # PERMUTE_ARGS is handled by gdc-do-test.
+	    set PERMUTE_ARGS [gdc-convert-args $args]
+	    regsub -- {PERMUTE_ARGS.*$} $copy_line "" out_line
 
-        } elseif [regexp -- {EXECUTE_ARGS\s*:\s*(.*)} $copy_line match args] {
-            # EXECUTE_ARGS is handled by gdc_load.
-            foreach arg $args {
-                lappend GDC_EXECUTE_ARGS $arg
-            }
-            regsub -- {EXECUTE_ARGS.*$} $copy_line "" out_line
+	} elseif [regexp -- {EXECUTE_ARGS\s*:\s*(.*)} $copy_line match args] {
+	    # EXECUTE_ARGS is handled by gdc_load.
+	    foreach arg $args {
+		lappend GDC_EXECUTE_ARGS $arg
+	    }
+	    regsub -- {EXECUTE_ARGS.*$} $copy_line "" out_line
 
-        } elseif [regexp -- {REQUIRED_ARGS\s*:\s*(.*)} $copy_line match args] {
-            # Convert all listed arguments to from dmd to gdc-style.
-            set new_option "{ dg-additional-options \"[gdc-convert-args $args]\" }"
-            regsub -- {REQUIRED_ARGS.*$} $copy_line $new_option out_line
+	} elseif [regexp -- {REQUIRED_ARGS\s*:\s*(.*)} $copy_line match args] {
+	    # Convert all listed arguments to from dmd to gdc-style.
+	    set new_option "{ dg-additional-options \"[gdc-convert-args $args]\" }"
+	    regsub -- {REQUIRED_ARGS.*$} $copy_line $new_option out_line
 
-        } elseif [regexp -- {EXTRA_SOURCES\s*:\s*(.*)} $copy_line match sources] {
-            # Copy all sources to the testsuite build directory.
-            foreach import $sources {
-                # print "Import: $base $type/$import"
-                gdc-copy-extra $base "$type/$import"
-            }
-            set new_option "{ dg-additional-sources \"$sources\" }"
-            regsub -- {EXTRA_SOURCES.*$} $copy_line $new_option out_line
+	} elseif [regexp -- {EXTRA_SOURCES\s*:\s*(.*)} $copy_line match sources] {
+	    # Copy all sources to the testsuite build directory.
+	    foreach import $sources {
+		# print "Import: $base $type/$import"
+		gdc-copy-extra $base "$type/$import"
+	    }
+	    set new_option "{ dg-additional-sources \"$sources\" }"
+	    regsub -- {EXTRA_SOURCES.*$} $copy_line $new_option out_line
 
-        } elseif [regexp -- {EXTRA_CPP_SOURCES\s*:\s*(.*)} $copy_line match sources] {
-            # Copy all sources to the testsuite build directory.
-            foreach import $sources {
-                # print "Import: $base $type/$import"
-                gdc-copy-extra $base "$type/$import"
-            }
-            set new_option "{ dg-additional-sources \"$sources\" }"
-            regsub -- {EXTRA_CPP_SOURCES.*$} $copy_line $new_option out_line
+	} elseif [regexp -- {EXTRA_CPP_SOURCES\s*:\s*(.*)} $copy_line match sources] {
+	    # Copy all sources to the testsuite build directory.
+	    foreach import $sources {
+		# print "Import: $base $type/$import"
+		gdc-copy-extra $base "$type/$import"
+	    }
+	    set new_option "{ dg-additional-sources \"$sources\" }"
+	    regsub -- {EXTRA_CPP_SOURCES.*$} $copy_line $new_option out_line
 
-        } elseif [regexp -- {EXTRA_FILES\s*:\s*(.*)} $copy_line match files] {
-            # Copy all files to the testsuite build directory.
-            foreach import $files {
-                # print "Import: $base $type/$import"
-                gdc-copy-extra $base "$type/$import"
-            }
-            set new_option "{ dg-additional-files \"$files\" }"
-            regsub -- {EXTRA_FILES.*$} $copy_line $new_option out_line
+	} elseif [regexp -- {EXTRA_FILES\s*:\s*(.*)} $copy_line match files] {
+	    # Copy all files to the testsuite build directory.
+	    foreach import $files {
+		# print "Import: $base $type/$import"
+		gdc-copy-extra $base "$type/$import"
+	    }
+	    set new_option "{ dg-additional-files \"$files\" }"
+	    regsub -- {EXTRA_FILES.*$} $copy_line $new_option out_line
 
-        } elseif [regexp -- {COMPILED_IMPORTS\s*:\s*(.*)} $copy_line match sources] {
-            # Copy all sources to the testsuite build directory.
-            foreach import $sources {
-                # print "Import: $base $type/$import"
-                gdc-copy-extra $base "$type/$import"
-            }
-            set new_option "{ dg-additional-sources \"$sources\" }"
-            regsub -- {COMPILED_IMPORTS.*$} $copy_line $new_option out_line
+	} elseif [regexp -- {COMPILED_IMPORTS\s*:\s*(.*)} $copy_line match sources] {
+	    # Copy all sources to the testsuite build directory.
+	    foreach import $sources {
+		# print "Import: $base $type/$import"
+		gdc-copy-extra $base "$type/$import"
+	    }
+	    set new_option "{ dg-additional-sources \"$sources\" }"
+	    regsub -- {COMPILED_IMPORTS.*$} $copy_line $new_option out_line
 
-        }
+	}
 
-        puts $fdout $out_line
+	puts $fdout $out_line
     }
 
     # Add specific options for test type
@@ -281,32 +281,32 @@ proc dmd2dg { base test } {
     # Fail compilable are successful if an output is not generated.
     # Runnable must compile, link, and return 0 to be successful by default.
     switch $type {
-        runnable {
-            if ![isnative] {
-                set out_line "// { dg-final { output-exists } }"
-                puts $fdout $out_line
-            }
-        }
+	runnable {
+	    if ![isnative] {
+		set out_line "// { dg-final { output-exists } }"
+		puts $fdout $out_line
+	    }
+	}
 
-        compilable {
-            set out_line "// { dg-final { output-exists } }"
-            puts $fdout $out_line
+	compilable {
+	    set out_line "// { dg-final { output-exists } }"
+	    puts $fdout $out_line
 
-            # Check that Ddoc tests also generate a html file.
-            if [regexp -- "ddoc.*" $name] {
-                set ddocfile "[file rootname $name].html"
-                set out_line "// { dg-final { scan-file $ddocfile \"Generated by Ddoc from $test\" } }"
-                puts $fdout $out_line
-                # Cleanup extra generated files.
-                set out_line "// { dg-final { file delete $ddocfile } }"
-                puts $fdout $out_line
-            }
-        }
+	    # Check that Ddoc tests also generate a html file.
+	    if [regexp -- "ddoc.*" $name] {
+		set ddocfile "[file rootname $name].html"
+		set out_line "// { dg-final { scan-file $ddocfile \"Generated by Ddoc from $test\" } }"
+		puts $fdout $out_line
+		# Cleanup extra generated files.
+		set out_line "// { dg-final { file delete $ddocfile } }"
+		puts $fdout $out_line
+	    }
+	}
 
-        fail_compilation {
-            set out_line "// { dg-final { output-exists-not } }"
-            puts $fdout $out_line
-        }
+	fail_compilation {
+	    set out_line "// { dg-final { output-exists-not } }"
+	    puts $fdout $out_line
+	}
     }
 
     close $fdin
@@ -319,14 +319,14 @@ proc gdc-permute-options { options } {
     set result { }
     set n [expr 1<<[llength $options]]
     for { set i 0 } { $i<$n } { incr i } {
-        set option ""
-        for { set j 0 } { $j<[llength $options] } { incr j } {
-            if [expr $i & 1 << $j] {
-                append option [lindex $options $j]
-                append option " "
-            }
-        }
-        lappend result $option
+	set option ""
+	for { set j 0 } { $j<[llength $options] } { incr j } {
+	    if [expr $i & 1 << $j] {
+		append option [lindex $options $j]
+		append option " "
+	    }
+	}
+	lappend result $option
 
     }
     return $result
@@ -341,8 +341,8 @@ proc gdc-do-test { } {
     # If a testcase doesn't have special options, use these.
     global DEFAULT_DFLAGS
     if ![info exists DEFAULT_DFLAGS] then {
-        set DEFAULT_DFLAGS "-g -O2 -frelease"
-        #set DEFAULT_DFLAGS "-O2"
+	set DEFAULT_DFLAGS "-g -O2 -frelease"
+	#set DEFAULT_DFLAGS "-O2"
     }
 
     # These are special options to use on testcase, and override DEFAULT_DFLAGS
@@ -373,65 +373,65 @@ proc gdc-do-test { } {
     # set dg-final-code ""
     # Find all tests and pass to routine.
     foreach test [lsort [find $srcdir/$subdir *]] {
-        regexp -- "(.*)/(.+)/(.+)\.(.+)$" $test match base dir name ext
+	regexp -- "(.*)/(.+)/(.+)\.(.+)$" $test match base dir name ext
 
-        # Skip invalid test directory
-        if { [lsearch "runnable compilable fail_compilation" $dir] == -1 } {
-            continue
-        }
+	# Skip invalid test directory
+	if { [lsearch "runnable compilable fail_compilation" $dir] == -1 } {
+	    continue
+	}
 
-        # Skip invalid test extensions
-        if { [lsearch "d" $ext] == -1 } {
-            continue
-        }
+	# Skip invalid test extensions
+	if { [lsearch "d" $ext] == -1 } {
+	    continue
+	}
 
-        # Convert to DG test.
-        set imports [format "-I%s/%s" $base $dir]
-        # Include $subdir prefix so test names follow DejaGnu conventions.
-        set filename "$subdir/[dmd2dg $base $dir/$name.$ext]"
+	# Convert to DG test.
+	set imports [format "-I%s/%s" $base $dir]
+	# Include $subdir prefix so test names follow DejaGnu conventions.
+	set filename "$subdir/[dmd2dg $base $dir/$name.$ext]"
 
-        if { $dir == "runnable" } {
-            append PERMUTE_ARGS " $SHARED_OPTION"
-        }
-        set options [gdc-permute-options $PERMUTE_ARGS]
+	if { $dir == "runnable" } {
+	    append PERMUTE_ARGS " $SHARED_OPTION"
+	}
+	set options [gdc-permute-options $PERMUTE_ARGS]
 
-        switch $dir {
-            runnable {
-                for { set i 0 } { $i<[llength $options] } { incr i } {
-                    set flags [lindex $options $i]
-                    if [isnative] {
-                        set dg-do-what-default "run"
-                    } else {
-                        set dg-do-what-default "link"
-                    }
-                    gdc-dg-runtest $filename $flags $imports
-                }
-            }
+	switch $dir {
+	    runnable {
+		for { set i 0 } { $i<[llength $options] } { incr i } {
+		    set flags [lindex $options $i]
+		    if [isnative] {
+			set dg-do-what-default "run"
+		    } else {
+			set dg-do-what-default "link"
+		    }
+		    gdc-dg-runtest $filename $flags $imports
+		}
+	    }
 
-            compilable {
-                for { set i 0 } { $i<[llength $options] } { incr i } {
-                    set flags [lindex $options $i]
-                    # Compilable test may require checking another kind of output file.
-                    if [regexp -- "ddoc.*" $name] {
-                        set dg-do-what-default "compile"
-                    } else {
-                        set dg-do-what-default "assemble"
-                    }
-                    gdc-dg-runtest $filename $flags $imports
-                }
-            }
+	    compilable {
+		for { set i 0 } { $i<[llength $options] } { incr i } {
+		    set flags [lindex $options $i]
+		    # Compilable test may require checking another kind of output file.
+		    if [regexp -- "ddoc.*" $name] {
+			set dg-do-what-default "compile"
+		    } else {
+			set dg-do-what-default "assemble"
+		    }
+		    gdc-dg-runtest $filename $flags $imports
+		}
+	    }
 
-            fail_compilation {
-                for { set i 0 } { $i<[llength $options] } { incr i } {
-                    set flags [lindex $options $i]
-                    set dg-do-what-default "assemble"
-                    gdc-dg-runtest $filename $flags $imports
-                }
-            }
-        }
+	    fail_compilation {
+		for { set i 0 } { $i<[llength $options] } { incr i } {
+		    set flags [lindex $options $i]
+		    set dg-do-what-default "assemble"
+		    gdc-dg-runtest $filename $flags $imports
+		}
+	    }
+	}
 
-        # Cleanup
-        file delete $filename
+	# Cleanup
+	file delete $filename
     }
 
     set allow_blank_lines $save_allow_blank_lines

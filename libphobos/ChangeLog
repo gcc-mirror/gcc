@@ -1,3 +1,11 @@
+2019-02-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/lib/libphobos-dg.exp: Tabify.
+	* testsuite/lib/libphobos.exp: Likewise.
+	* testsuite/libphobos.cycles/cycles.exp: Likewise.
+	* testsuite/libphobos.shared/shared.exp: Likewise.
+	* testsuite/libphobos.unittests/unittests.exp: Likewise.
+
 2019-02-14  Maya Rashish  <coypu@sdf.org>
 
 	* configure.tgt: Add netbsd/x86 as supported target.

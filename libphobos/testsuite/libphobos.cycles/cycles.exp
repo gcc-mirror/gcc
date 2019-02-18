@@ -20,7 +20,7 @@ set dg-output-text [list]
 
 # Arguments to pass to the test program, expected output, and return code.
 set cycle_test_list [list \
-    { ignore ""  0 } \
+    { ignore ""	 0 } \
     { abort "object.Error@.*: Cyclic dependency between module mod. and mod." 1 } \
     { print "Cyclic dependency between module mod. and mod." 0 } \
     { deprecate "Deprecation 16211 warning:" 0 } \
@@ -41,8 +41,8 @@ foreach cycle_test $cycle_test_list {
     set expected_fail [lindex $cycle_test 2]
 
     foreach test $tests {
-        set shouldfail $expected_fail
-        dg-test $test "" $DEFAULT_DFLAGS
+	set shouldfail $expected_fail
+	dg-test $test "" $DEFAULT_DFLAGS
     }
 
     set shouldfail 0
