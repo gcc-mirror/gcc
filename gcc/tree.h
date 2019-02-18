@@ -4352,6 +4352,7 @@ extern tree excess_precision_type (tree);
    is not a valid size.  */
 enum cst_size_error {
   cst_size_ok,
+  cst_size_not_constant,
   cst_size_negative,
   cst_size_too_big,
   cst_size_overflow

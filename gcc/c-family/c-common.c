@@ -8248,6 +8248,13 @@ invalid_array_size_error (location_t loc, cst_size_error error,
   tree maxsize = max_object_size ();
   switch (error)
     {
+    case cst_size_not_constant:
+      if (name)
+	error_at (loc, "size of array %qE is not a constant expression",
+		  name);
+      else
+	error_at (loc, "size of array is not a constant expression");
+      break;
     case cst_size_negative:
       if (name)
 	error_at (loc, "size %qE of array %qE is negative",
