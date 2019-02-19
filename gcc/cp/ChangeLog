@@ -1,3 +1,9 @@
+2019-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89390
+	* error.c (qualified_name_lookup_error): Only call
+	suggest_alternative_in_scoped_enum if name is IDENTIFIER_NODE.
+
 2019-02-19  Tom Honermann  <tom@honermann.net>
 
 	* name-lookup.c (get_std_name_hint): Added u8string as a name hint.
