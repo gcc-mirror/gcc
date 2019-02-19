@@ -1,3 +1,10 @@
+2019-02-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/89384
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): If the dummy
+	argument is contiguous and the actual argument may not be,
+	use gfc_conv_subref_array_arg.
+
 2019-02-19  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR c/87924

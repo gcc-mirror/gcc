@@ -1,3 +1,8 @@
+2019-02-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/89384
+	* gfortran.dg/ISO_Fortran_binding_4.f90
+
 2019-02-19  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR c/87924
