@@ -1,5 +1,71 @@
 2019-02-19  Tom Honermann  <tom@honermann.net>
 
+	* testsuite/18_support/numeric_limits/char8_t.cc: New test cloned
+	from char16_32_t.cc; validates numeric_limits<char8_t>.
+	* testsuite/21_strings/basic_string/literals/types-char8_t.cc: New
+	test cloned from types.cc; validates operator""s for char8_t
+	returns u8string.
+	* testsuite/21_strings/basic_string/literals/values-char8_t.cc: New
+	test cloned from values.cc; validates construction and comparison
+	of u8string values.
+	* testsuite/21_strings/basic_string/requirements/
+	/explicit_instantiation/char8_t/1.cc: New test cloned from
+	char16_t/1.cc; validates explicit instantiation of
+	basic_string<char8_t>.
+	* testsuite/21_strings/basic_string_view/literals/types-char8_t.cc:
+	New test cloned from types.cc; validates operator""sv for char8_t
+	returns u8string_view.
+	* testsuite/21_strings/basic_string_view/literals/
+	values-char8_t.cc: New test cloned from values.cc; validates
+	construction and comparison of u8string_view values.
+	* testsuite/21_strings/basic_string_view/requirements/
+	explicit_instantiation/char8_t/1.cc: New test cloned from
+	char16_t/1.cc; validates explicit instantiation of
+	basic_string_view<char8_t>.
+	* testsuite/21_strings/char_traits/requirements/char8_t/65049.cc:
+	New test cloned from char16_t/65049.cc; validates that
+	char_traits<char8_t> is not vulnerable to the concerns in PR65049.
+	* testsuite/21_strings/char_traits/requirements/char8_t/
+	typedefs.cc: New test cloned from char16_t/typedefs.cc; validates
+	that char_traits<char8_t> member typedefs are present and correct.
+	* testsuite/21_strings/char_traits/requirements/
+	explicit_instantiation/char8_t/1.cc: New test cloned from
+	char16_t/1.cc; validates explicit instantiation of
+	char_traits<char8_t>.
+	* testsuite/22_locale/codecvt/char16_t-char8_t.cc: New test cloned
+	from char16_t.cc: validates
+	codecvt<char16_t, char8_t, mbstate_t>.
+	* testsuite/22_locale/codecvt/char32_t-char8_t.cc: New test cloned
+	from char32_t.cc: validates
+	codecvt<char32_t, char8_t, mbstate_t>.
+	* testsuite/22_locale/codecvt/utf8-char8_t.cc: New test cloned from
+	utf8.cc; validates codecvt<char16_t, char8_t, std::mbstate_t> and
+	codecvt<char32_t, char8_t, std::mbstate_t>.
+	* testsuite/27_io/filesystem/path/native/string-char8_t.cc: New
+	test cloned from string.cc; validates filesystem::path construction
+	from char8_t input.
+	* testsuite/experimental/feat-char8_t.cc: New test; validates that
+	the __cpp_lib_char8_t feature test macro is defined with the
+	correct value.
+	* testsuite/experimental/filesystem/path/native/string-char8_t.cc:
+	New test cloned from string.cc; validates filesystem::path
+	construction from char8_t input.
+	* testsuite/experimental/string_view/literals/types-char8_t.cc: New
+	test cloned from types.cc; validates operator""sv for char8_t
+	returns u8string_view.
+	* testsuite/experimental/string_view/literals/values-char8_t.cc:
+	New test cloned from values.cc; validates construction and
+	comparison of u8string_view values.
+	* testsuite/experimental/string_view/requirements/
+	explicit_instantiation/char8_t/1.cc: New test cloned from
+	char16_t/1.cc; validates explicit instantiation of
+	basic_string_view<char8_t>.
+	* testsuite/ext/char8_t/atomic-1.cc: New test; validates that
+	ATOMIC_CHAR8_T_LOCK_FREE is not defined if char8_t support is not
+	enabled.
+
+2019-02-19  Tom Honermann  <tom@honermann.net>
+
 	P0482R5 char8_t: Standard library support
 	* config/abi/pre/gnu-versioned-namespace.ver (CXXABI_2.0): Add
 	typeinfo symbols for char8_t.
