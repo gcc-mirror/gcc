@@ -29,9 +29,7 @@ func doinit() {
 		{Name: "darn", Feature: &PPC64.HasDARN},
 		{Name: "scv", Feature: &PPC64.HasSCV},
 		{Name: "power9", Feature: &PPC64.IsPOWER9},
-
-		// These capabilities should always be enabled on ppc64 and ppc64le:
-		{Name: "power8", Feature: &PPC64.IsPOWER8, Required: true},
+		{Name: "power8", Feature: &PPC64.IsPOWER8},
 	}
 
 	// HWCAP2 feature bits
