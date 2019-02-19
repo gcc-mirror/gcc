@@ -225,7 +225,7 @@ _Unwind_GetGR (struct _Unwind_Context *context, int regno)
   _Unwind_Context_Reg_Val val;
 
 #ifdef DWARF_ZERO_REG
-  if (index == DWARF_ZERO_REG)
+  if (regno == DWARF_ZERO_REG)
     return 0;
 #endif
 
