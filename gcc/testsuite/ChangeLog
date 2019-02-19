@@ -1,3 +1,7 @@
+2019-02-19  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/arm/pr88850.c: Block -mfloat-abi override.
+
 2019-02-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/89384
