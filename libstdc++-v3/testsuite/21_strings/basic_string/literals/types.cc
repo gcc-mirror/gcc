@@ -20,6 +20,12 @@
 #include <string>
 #include <type_traits>
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+using std::u8string;
+#else
+using u8string = std::string;
+#endif
+
 void
 test01()
 {
@@ -28,7 +34,7 @@ test01()
   static_assert(std::is_same<decltype("Hello"s), std::string>::value,
 		"\"Hello\"s is std::string");
 
-  static_assert(std::is_same<decltype(u8"Hello"s), std::string>::value,
+  static_assert(std::is_same<decltype(u8"Hello"s), u8string>::value,
 		"u8\"Hello\"s is std::string");
 
 #ifdef _GLIBCXX_USE_WCHAR_T

@@ -1,3 +1,31 @@
+2019-02-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/literals/types.cc
+	[_GLIBCXX_USE_CHAR8_T]: Adjust expected string type for u8 literal.
+	* testsuite/21_strings/basic_string/literals/values.cc
+	[_GLIBCXX_USE_CHAR8_T]: Likewise.
+	* testsuite/22_locale/codecvt/char16_t.cc: Adjust for u8 literals
+	potentially having different type.
+	* testsuite/22_locale/codecvt/char32_t.cc: Likewise.
+	* testsuite/22_locale/codecvt/codecvt_utf8/79980.cc: Cast u8 literal
+	to char.
+	* testsuite/22_locale/codecvt/codecvt_utf8/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/utf8.cc: Likewise.
+	* testsuite/22_locale/conversions/string/2.cc: Remove u8 prefix from
+	string literals only using basic character set.
+	* testsuite/22_locale/conversions/string/3.cc: Likewise. Cast other
+	u8 literals to char.
+	* testsuite/29_atomics/headers/atomic/macros.cc [_GLIBCXX_USE_CHAR8_T]:
+	Test ATOMIC_CHAR8_T_LOCK_FREE.
+	Add missing #error to ATOMIC_CHAR16_T_LOCK_FREE test.
+	* testsuite/29_atomics/headers/atomic/types_std_c++0x.cc
+	[_GLIBCXX_USE_CHAR8_T]: Check for std::atomic_char8_t.
+	* testsuite/experimental/string_view/literals/types.cc
+	[_GLIBCXX_USE_CHAR8_T]: Adjust expected string_view type for u8
+	literal.
+	* testsuite/experimental/string_view/literals/values.cc
+	[_GLIBCXX_USE_CHAR8_T]: Likewise.
+
 2019-02-19  Tom Honermann  <tom@honermann.net>
 
 	* testsuite/18_support/numeric_limits/char8_t.cc: New test cloned
