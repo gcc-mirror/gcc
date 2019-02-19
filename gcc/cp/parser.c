@@ -32867,17 +32867,23 @@ cp_parser_oacc_wait_list (cp_parser *parser, location_t clause_loc, tree list)
 }
 
 /* OpenACC:
-   wait ( int-expr-list ) */
+   wait [( int-expr-list )] */
 
 static tree
 cp_parser_oacc_clause_wait (cp_parser *parser, tree list)
 {
   location_t location = cp_lexer_peek_token (parser->lexer)->location;
 
-  if (cp_lexer_peek_token (parser->lexer)->type != CPP_OPEN_PAREN)
-    return list;
+  if (cp_lexer_peek_token (parser->lexer)->type == CPP_OPEN_PAREN)
+    list = cp_parser_oacc_wait_list (parser, location, list);
+  else
+    {
+      tree c = build_omp_clause (location, OMP_CLAUSE_WAIT);
 
-  list = cp_parser_oacc_wait_list (parser, location, list);
+      OMP_CLAUSE_DECL (c) = build_int_cst (integer_type_node, GOMP_ASYNC_NOVAL);
+      OMP_CLAUSE_CHAIN (c) = list;
+      list = c;
+    }
 
   return list;
 }
