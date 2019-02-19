@@ -22,7 +22,7 @@
 #include <string>
 #include <testsuite_hooks.h>
 
-const char expected[] = u8"£¥€";
+const auto expected = (const char*)u8"£¥€";
 const std::size_t expected_len = std::char_traits<char>::length(expected);
 
 template<typename C>
