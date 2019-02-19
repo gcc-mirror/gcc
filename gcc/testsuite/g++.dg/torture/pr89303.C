@@ -2,7 +2,7 @@
 // { dg-do run }
 // { dg-additional-options "-std=c++14" }
 
-namespace std
+namespace my
 {
   typedef __SIZE_TYPE__ size_t;
   typedef decltype(nullptr) nullptr_t;
@@ -172,28 +172,28 @@ template <class... T> using __void_t = typename void_details ::make_void<T...>::
 
   template<typename _Tp>
     constexpr _Tp&&
-    forward(typename std::remove_reference<_Tp>::type& __t) noexcept
+    forward(typename my::remove_reference<_Tp>::type& __t) noexcept
     { return static_cast<_Tp&&>(__t); }
 
   template<typename _Tp>
     constexpr _Tp&&
-    forward(typename std::remove_reference<_Tp>::type&& __t) noexcept
+    forward(typename my::remove_reference<_Tp>::type&& __t) noexcept
     {
       return static_cast<_Tp&&>(__t);
     }
 
   template<typename _Tp>
-    constexpr typename std::remove_reference<_Tp>::type&&
+    constexpr typename my::remove_reference<_Tp>::type&&
     move(_Tp&& __t) noexcept
-    { return static_cast<typename std::remove_reference<_Tp>::type&&>(__t); }
+    { return static_cast<typename my::remove_reference<_Tp>::type&&>(__t); }
 }
        
-inline void* operator new(std::size_t, void* p) { return p; }
+inline void* operator new(my::size_t, void* p) { return p; }
 
-extern "C" void* malloc(std::size_t);
+extern "C" void* malloc(my::size_t);
 extern "C" void free(void*);
 
-namespace std
+namespace my
 {
   template<typename T>
     class allocator
@@ -254,7 +254,7 @@ namespace std
       using value_type = _Tp;
       using pointer = _Tp*;
       using const_pointer = const _Tp*;
-      using size_type = std::size_t;
+      using size_type = my::size_t;
 
       static pointer
       allocate(allocator_type& __a, size_type __n)
@@ -267,7 +267,7 @@ namespace std
       template<typename _Up, typename... _Args>
         static void
         construct(allocator_type& __a, _Up* __p, _Args&&... __args)
-        { __a.construct(__p, std::forward<_Args>(__args)...); }
+        { __a.construct(__p, my::forward<_Args>(__args)...); }
 
       template<typename _Up>
         static void
@@ -282,13 +282,13 @@ namespace std
       using value_type = typename allocator_traits<_Alloc>::value_type;
 
       __allocated_ptr(_Alloc& __a, pointer __ptr) noexcept
-      : _M_alloc(std::__addressof(__a)), _M_ptr(__ptr)
+      : _M_alloc(my::__addressof(__a)), _M_ptr(__ptr)
       { }
 
       template<typename _Ptr,
         typename _Req = _Require<is_same<_Ptr, value_type*>>>
       __allocated_ptr(_Alloc& __a, _Ptr __ptr)
-      : _M_alloc(std::__addressof(__a)),
+      : _M_alloc(my::__addressof(__a)),
       _M_ptr(__ptr)
       { }
 
@@ -299,11 +299,11 @@ namespace std
       ~__allocated_ptr()
       {
         if (_M_ptr != nullptr)
-          std::allocator_traits<_Alloc>::deallocate(*_M_alloc, _M_ptr, 1);
+          my::allocator_traits<_Alloc>::deallocate(*_M_alloc, _M_ptr, 1);
       }
 
       __allocated_ptr&
-      operator=(std::nullptr_t) noexcept
+      operator=(my::nullptr_t) noexcept
       {
         _M_ptr = nullptr;
         return *this;
@@ -320,7 +320,7 @@ namespace std
     __allocated_ptr<_Alloc>
     __allocate_guarded(_Alloc& __a)
     {
-      return { __a, std::allocator_traits<_Alloc>::allocate(__a, 1) };
+      return { __a, my::allocator_traits<_Alloc>::allocate(__a, 1) };
     }
 
   template<typename _Tp>
@@ -461,7 +461,7 @@ namespace std
         : _M_impl(__a)
         {
           allocator_traits<_Alloc>::construct(__a, _M_ptr(),
-              std::forward<_Args>(__args)...);
+              my::forward<_Args>(__args)...);
         }
 
       ~_Sp_counted_ptr_inplace() noexcept { }
@@ -500,10 +500,10 @@ namespace std
       {
         typedef _Sp_counted_ptr_inplace<_Tp, _Alloc> _Sp_cp_type;
         typename _Sp_cp_type::__allocator_type __a2(__a._M_a);
-        auto __guard = std::__allocate_guarded(__a2);
+        auto __guard = my::__allocate_guarded(__a2);
         _Sp_cp_type* __mem = __guard.get();
         auto __pi = ::new (__mem)
-          _Sp_cp_type(__a._M_a, std::forward<_Args>(__args)...);
+          _Sp_cp_type(__a._M_a, my::forward<_Args>(__args)...);
         __guard = nullptr;
         _M_pi = __pi;
         __p = __pi->_M_ptr();
@@ -631,7 +631,7 @@ namespace std
 
       template<typename _Alloc, typename... _Args>
         shared_ptr(_Sp_alloc_shared_tag<_Alloc> __tag, _Args&&... __args)
-        : _M_ptr(), _M_refcount(_M_ptr, __tag, std::forward<_Args>(__args)...)
+        : _M_ptr(), _M_refcount(_M_ptr, __tag, my::forward<_Args>(__args)...)
         { _M_enable_shared_from_this_with(_M_ptr); }
 
       template<typename _Tp1, typename _Alloc,
@@ -645,8 +645,8 @@ namespace std
 
       template<typename _Yp>
         using __esft_base_t = decltype(__enable_shared_from_this_base(
-              std::declval<const __shared_count&>(),
-              std::declval<_Yp*>()));
+              my::declval<const __shared_count&>(),
+              my::declval<_Yp*>()));
 
       template<typename _Yp, typename = void>
         struct __has_esft_base
@@ -757,20 +757,20 @@ namespace std
     allocate_shared(const _Alloc& __a, _Args&&... __args)
     {
       return shared_ptr<_Tp>(_Sp_alloc_shared_tag<_Alloc>{__a},
-        std::forward<_Args>(__args)...);
+        my::forward<_Args>(__args)...);
     }
 
   template<typename _Tp, typename... _Args>
     inline shared_ptr<_Tp>
     make_shared(_Args&&... __args)
     {
-      typedef typename std::remove_const<_Tp>::type _Tp_nc;
-      return std::allocate_shared<_Tp>(std::allocator<_Tp_nc>(),
-           std::forward<_Args>(__args)...);
+      typedef typename my::remove_const<_Tp>::type _Tp_nc;
+      return my::allocate_shared<_Tp>(my::allocator<_Tp_nc>(),
+           my::forward<_Args>(__args)...);
     }
 }
 
-class blob final: public std::enable_shared_from_this<blob>
+class blob final: public my::enable_shared_from_this<blob>
 {
   int* data;
 
@@ -780,13 +780,13 @@ public:
 };
 
 static int
-bar(std::shared_ptr<blob>)
+bar(my::shared_ptr<blob>)
 {
   return 0;
 }
 
 int main()
 {
-  std::shared_ptr<blob> tg = std::make_shared<blob>();
+  my::shared_ptr<blob> tg = my::make_shared<blob>();
   return tg->shared_from_this().use_count() - 2;
 }
