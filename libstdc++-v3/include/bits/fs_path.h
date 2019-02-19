@@ -69,8 +69,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   {
     template<typename _CharT, typename _Ch = remove_const_t<_CharT>>
       using __is_encoded_char
-	= __or_<is_same<_Ch, char>, is_same<_Ch, wchar_t>,
-		is_same<_Ch, char16_t>, is_same<_Ch, char32_t>>;
+	= __or_<is_same<_Ch, char>,
+#ifdef _GLIBCXX_USE_CHAR8_T
+		is_same<_Ch, char8_t>,
+#endif
+		is_same<_Ch, wchar_t>,
+		is_same<_Ch, char16_t>,
+		is_same<_Ch, char32_t>>;
 
     template<typename _Iter,
 	     typename _Iter_traits = std::iterator_traits<_Iter>>
@@ -320,7 +325,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if _GLIBCXX_USE_WCHAR_T
     std::wstring   wstring() const;
 #endif
+#ifdef _GLIBCXX_USE_CHAR8_T
+    __attribute__((__abi_tag__("__u8")))
+    std::u8string  u8string() const;
+#else
     std::string    u8string() const;
+#endif // _GLIBCXX_USE_CHAR8_T
     std::u16string u16string() const;
     std::u32string u32string() const;
 
@@ -334,7 +344,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if _GLIBCXX_USE_WCHAR_T
     std::wstring   generic_wstring() const;
 #endif
+#ifdef _GLIBCXX_USE_CHAR8_T
+    __attribute__((__abi_tag__("__u8")))
+    std::u8string  generic_u8string() const;
+#else
     std::string    generic_u8string() const;
+#endif // _GLIBCXX_USE_CHAR8_T
     std::u16string generic_u16string() const;
     std::u32string generic_u32string() const;
 
@@ -735,10 +750,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       static string_type
       _S_convert(const _CharT* __f, const _CharT* __l)
       {
-	std::codecvt_utf8<_CharT> __cvt;
-	std::string __str;
-	if (__str_codecvt_out(__f, __l, __str, __cvt))
-	  return __str;
+#ifdef _GLIBCXX_USE_CHAR8_T
+	if constexpr (is_same_v<_CharT, char8_t>)
+	  {
+	    string_type __str(__f, __l);
+	    return __str;
+	  }
+	else
+	  {
+#endif
+	    std::codecvt_utf8<_CharT> __cvt;
+	    std::string __str;
+	    if (__str_codecvt_out(__f, __l, __str, __cvt))
+	      return __str;
+#ifdef _GLIBCXX_USE_CHAR8_T
+	  }
+#endif
 	_GLIBCXX_THROW_OR_ABORT(filesystem_error(
 	      "Cannot convert character sequence",
 	      std::make_error_code(errc::illegal_byte_sequence)));
@@ -938,6 +965,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	{
 	  if constexpr (is_same_v<_CharT, char>)
 	    return __u8str;
+#ifdef _GLIBCXX_USE_CHAR8_T
+	  else if constexpr (is_same_v<_CharT, char8_t>)
+	    {
+	      const char* __f = __u8str.data();
+	      const char* __l = __f + __u8str.size();
+	      _WString __wstr(__f, __l);
+	      return __wstr;
+	    }
+#endif
 	  else
 	    {
 	      _WString __wstr;
@@ -950,10 +986,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	    }
 	}
 #else
-      codecvt_utf8<_CharT> __cvt;
-      basic_string<_CharT, _Traits, _Allocator> __wstr{__a};
-      if (__str_codecvt_in(__first, __last, __wstr, __cvt))
-	return __wstr;
+#ifdef _GLIBCXX_USE_CHAR8_T
+      if constexpr (is_same_v<_CharT, char8_t>)
+	{
+	  basic_string<_CharT, _Traits, _Allocator> __wstr{__first, __last, __a};
+	  return __wstr;
+	}
+      else
+	{
+#endif
+	  codecvt_utf8<_CharT> __cvt;
+	  basic_string<_CharT, _Traits, _Allocator> __wstr{__a};
+	  if (__str_codecvt_in(__first, __last, __wstr, __cvt))
+	    return __wstr;
+#ifdef _GLIBCXX_USE_CHAR8_T
+	}
+#endif
 #endif
       _GLIBCXX_THROW_OR_ABORT(filesystem_error(
 	    "Cannot convert character sequence",
@@ -978,6 +1026,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   path::wstring() const { return string<wchar_t>(); }
 #endif
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+  inline std::u8string
+  path::u8string() const { return string<char8_t>(); }
+#else
   inline std::string
   path::u8string() const
   {
@@ -996,6 +1048,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     return _M_pathname;
 #endif
   }
+#endif // _GLIBCXX_USE_CHAR8_T
 
   inline std::u16string
   path::u16string() const { return string<char16_t>(); }
@@ -1045,9 +1098,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   { return generic_string<wchar_t>(); }
 #endif
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+  inline std::u8string
+  path::generic_u8string() const
+  { return generic_string<char8_t>(); }
+#else
   inline std::string
   path::generic_u8string() const
   { return generic_string(); }
+#endif
 
   inline std::u16string
   path::generic_u16string() const

@@ -1,3 +1,7 @@
+2019-02-19  Tom Honermann  <tom@honermann.net>
+
+	* name-lookup.c (get_std_name_hint): Added u8string as a name hint.
+
 2019-02-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/89336 - multiple stores in constexpr stmt.

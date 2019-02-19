@@ -140,6 +140,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_USE_WCHAR_T
   template<> class codecvt<wchar_t, char, mbstate_t>;
 #endif
+#if __cplusplus >= 201103L
+  template<> class codecvt<char16_t, char, mbstate_t>;
+  template<> class codecvt<char32_t, char, mbstate_t>;
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<> class codecvt<char16_t, char8_t, mbstate_t>;
+  template<> class codecvt<char32_t, char8_t, mbstate_t>;
+#endif
+#endif
   template<typename _InternT, typename _ExternT, typename _StateT>
     class codecvt_byname;
 

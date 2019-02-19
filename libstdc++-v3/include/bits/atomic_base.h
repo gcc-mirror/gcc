@@ -227,6 +227,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // atomic_ulong    unsigned long
   // atomic_llong    long long
   // atomic_ullong   unsigned long long
+  // atomic_char8_t  char8_t
   // atomic_char16_t char16_t
   // atomic_char32_t char32_t
   // atomic_wchar_t  wchar_t

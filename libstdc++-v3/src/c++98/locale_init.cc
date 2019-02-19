@@ -209,6 +209,16 @@ namespace
   __attribute__ ((aligned(__alignof__(codecvt<char32_t, char, mbstate_t>))));
   fake_codecvt_c32 codecvt_c32;
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+  typedef char fake_codecvt_c16_c8[sizeof(codecvt<char16_t, char8_t, mbstate_t>)]
+  __attribute__ ((aligned(__alignof__(codecvt<char16_t, char8_t, mbstate_t>))));
+  fake_codecvt_c16_c8 codecvt_c16_c8;
+
+  typedef char fake_codecvt_c32_c8[sizeof(codecvt<char32_t, char8_t, mbstate_t>)]
+  __attribute__ ((aligned(__alignof__(codecvt<char32_t, char8_t, mbstate_t>))));
+  fake_codecvt_c32_c8 codecvt_c32_c8;
+#endif
+
   // Storage for "C" locale caches.
   typedef char fake_num_cache_c[sizeof(std::__numpunct_cache<char>)]
   __attribute__ ((aligned(__alignof__(std::__numpunct_cache<char>))));
@@ -329,6 +339,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if _GLIBCXX_NUM_UNICODE_FACETS != 0
     &codecvt<char16_t, char, mbstate_t>::id,
     &codecvt<char32_t, char, mbstate_t>::id,
+#ifdef _GLIBCXX_USE_CHAR8_T
+    &codecvt<char16_t, char8_t, mbstate_t>::id,
+    &codecvt<char32_t, char8_t, mbstate_t>::id,
+#endif
 #endif
     0
   };
@@ -536,6 +550,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if _GLIBCXX_NUM_UNICODE_FACETS != 0
     _M_init_facet(new (&codecvt_c16) codecvt<char16_t, char, mbstate_t>(1));
     _M_init_facet(new (&codecvt_c32) codecvt<char32_t, char, mbstate_t>(1));
+
+#ifdef _GLIBCXX_USE_CHAR8_T
+    _M_init_facet(new (&codecvt_c16_c8) codecvt<char16_t, char8_t, mbstate_t>(1));
+    _M_init_facet(new (&codecvt_c32_c8) codecvt<char32_t, char8_t, mbstate_t>(1));
+#endif
+
 #endif
 
 #if _GLIBCXX_USE_DUAL_ABI
