@@ -625,6 +625,17 @@ namespace std
 # endif
 #endif
 
+// Unless explicitly specified, enable char8_t extensions only if the core
+// language char8_t feature macro is defined.
+#ifndef _GLIBCXX_USE_CHAR8_T
+# ifdef __cpp_char8_t
+#  define _GLIBCXX_USE_CHAR8_T 1
+# endif
+#endif
+#ifdef _GLIBCXX_USE_CHAR8_T
+# define __cpp_lib_char8_t 201811
+#endif
+
 /* Define if __float128 is supported on this host. */
 #if defined(__FLOAT128__) || defined(__SIZEOF_FLOAT128__)
 #define _GLIBCXX_USE_FLOAT128

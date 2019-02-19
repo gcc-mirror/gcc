@@ -5765,6 +5765,7 @@ get_std_name_hint (const char *name)
     {"basic_string", "<string>", cxx98},
     {"string", "<string>", cxx98},
     {"wstring", "<string>", cxx98},
+    {"u8string", "<string>", cxx2a},
     {"u16string", "<string>", cxx11},
     {"u32string", "<string>", cxx11},
     /* <string_view>.  */

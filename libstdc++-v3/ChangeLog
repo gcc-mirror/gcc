@@ -1,3 +1,88 @@
+2019-02-19  Tom Honermann  <tom@honermann.net>
+
+	P0482R5 char8_t: Standard library support
+	* config/abi/pre/gnu-versioned-namespace.ver (CXXABI_2.0): Add
+	typeinfo symbols for char8_t.
+	* config/abi/pre/gnu.ver: Add CXXABI_1.3.12.
+	(GLIBCXX_3.4.26): Add symbols for specializations of
+	numeric_limits and codecvt that involve char8_t.
+	(CXXABI_1.3.12): Add typeinfo symbols for char8_t.
+	* include/bits/atomic_base.h: Add atomic_char8_t.
+	* include/bits/basic_string.h: Add std::hash<u8string> and
+	operator""s(const char8_t*, size_t).
+	* include/bits/c++config: Define _GLIBCXX_USE_CHAR8_T and
+	__cpp_lib_char8_t.
+	* include/bits/char_traits.h: Add char_traits<char8_t>.
+	* include/bits/codecvt.h: Add
+	codecvt<char16_t, char8_t, mbstate_t>,
+	codecvt<char32_t, char8_t, mbstate_t>,
+	codecvt_byname<char16_t, char8_t, mbstate_t>, and
+	codecvt_byname<char32_t, char8_t, mbstate_t>.
+	* include/bits/cpp_type_traits.h: Add __is_integer<char8_t> to
+	recognize char8_t as an integral type.
+	* include/bits/fs_path.h: (path::__is_encoded_char): Recognize
+	char8_t.
+	(path::u8string): Return std::u8string when char8_t support is
+	enabled.
+	(path::generic_u8string): Likewise.
+	(path::_S_convert): Handle conversion from char8_t input.
+	(path::_S_str_convert): Likewise.
+	* include/bits/functional_hash.h: Add hash<char8_t>.
+	* include/bits/locale_conv.h (__str_codecvt_out): Add overloads for
+	char8_t.
+	* include/bits/locale_facets.h (_GLIBCXX_NUM_UNICODE_FACETS): Bump
+	for new char8_t specializations.
+	* include/bits/localefwd.h: Add missing declarations of
+	codecvt<char16_t, char, mbstate_t> and
+	codecvt<char32_t, char, mbstate_t>.  Add char8_t declarations
+	codecvt<char16_t, char8_t, mbstate_t> and
+	codecvt<char32_t, char8_t, mbstate_t>.
+	* include/bits/postypes.h: Add u8streampos
+	* include/bits/stringfwd.h: Add declarations of
+	char_traits<char8_t> and u8string.
+	* include/c_global/cstddef: Add __byte_operand<char8_t>.
+	* include/experimental/bits/fs_path.h (path::__is_encoded_char):
+	Recognize char8_t.
+	(path::u8string): Return std::u8string when char8_t support is
+	enabled.
+	(path::generic_u8string): Likewise.
+	(path::_S_convert): Handle conversion from char8_t input.
+	(path::_S_str_convert): Likewise.
+	* include/experimental/string: Add u8string.
+	* include/experimental/string_view: Add u8string_view,
+	hash<experimental::u8string_view>, and
+	operator""sv(const char8_t*, size_t).
+	* include/std/atomic: Add atomic<char8_t> and atomic_char8_t.
+	* include/std/charconv (__is_int_to_chars_type): Recognize char8_t
+	as a character type.
+	* include/std/limits: Add numeric_limits<char8_t>.
+	* include/std/string_view: Add u8string_view,
+	hash<experimental::u8string_view>, and
+	operator""sv(const char8_t*, size_t).
+	* include/std/type_traits: Add __is_integral_helper<char8_t>,
+	__make_unsigned<char8_t>, and __make_signed<char8_t>.
+	* libsupc++/atomic_lockfree_defines.h: Define
+	ATOMIC_CHAR8_T_LOCK_FREE.
+	* src/c++11/Makefile.am: Compile with -fchar8_t when compiling
+	codecvt.cc and limits.cc so that char8_t specializations of
+	numeric_limits and codecvt and emitted.
+	* src/c++11/Makefile.in: Likewise.
+	* src/c++11/codecvt.cc: Define members of
+	codecvt<char16_t, char8_t, mbstate_t>,
+	codecvt<char32_t, char8_t, mbstate_t>,
+	codecvt_byname<char16_t, char8_t, mbstate_t>, and
+	codecvt_byname<char32_t, char8_t, mbstate_t>.
+	* src/c++11/limits.cc: Define members of
+	numeric_limits<char8_t>.
+	* src/c++98/Makefile.am: Compile with -fchar8_t when compiling
+	locale_init.cc and localename.cc.
+	* src/c++98/Makefile.in: Likewise.
+	* src/c++98/locale_init.cc: Add initialization for the
+	codecvt<char16_t, char8_t, mbstate_t> and
+	codecvt<char32_t, char8_t, mbstate_t> facets.
+	* src/c++98/localename.cc: Likewise.
+	* testsuite/util/testsuite_abi.cc: Validate ABI bump.
+
 2019-02-18  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* 27_io/filesystem/operations/all.cc: Add dg-require-filesystem-ts.

@@ -573,6 +573,122 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       do_max_length() const throw();
     };
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+  /** @brief  Class codecvt<char16_t, char8_t, mbstate_t> specialization.
+   *
+   *  Converts between UTF-16 and UTF-8.
+   */
+  template<>
+    class codecvt<char16_t, char8_t, mbstate_t>
+    : public __codecvt_abstract_base<char16_t, char8_t, mbstate_t>
+    {
+    public:
+      // Types:
+      typedef char16_t			intern_type;
+      typedef char8_t			extern_type;
+      typedef mbstate_t			state_type;
+
+    public:
+      static locale::id			id;
+
+      explicit
+      codecvt(size_t __refs = 0)
+      : __codecvt_abstract_base<char16_t, char8_t, mbstate_t>(__refs) { }
+
+    protected:
+      virtual
+      ~codecvt();
+
+      virtual result
+      do_out(state_type& __state, const intern_type* __from,
+	     const intern_type* __from_end, const intern_type*& __from_next,
+	     extern_type* __to, extern_type* __to_end,
+	     extern_type*& __to_next) const;
+
+      virtual result
+      do_unshift(state_type& __state,
+		 extern_type* __to, extern_type* __to_end,
+		 extern_type*& __to_next) const;
+
+      virtual result
+      do_in(state_type& __state,
+	     const extern_type* __from, const extern_type* __from_end,
+	     const extern_type*& __from_next,
+	     intern_type* __to, intern_type* __to_end,
+	     intern_type*& __to_next) const;
+
+      virtual
+      int do_encoding() const throw();
+
+      virtual
+      bool do_always_noconv() const throw();
+
+      virtual
+      int do_length(state_type&, const extern_type* __from,
+		    const extern_type* __end, size_t __max) const;
+
+      virtual int
+      do_max_length() const throw();
+    };
+
+  /** @brief  Class codecvt<char32_t, char8_t, mbstate_t> specialization.
+   *
+   *  Converts between UTF-32 and UTF-8.
+   */
+  template<>
+    class codecvt<char32_t, char8_t, mbstate_t>
+    : public __codecvt_abstract_base<char32_t, char8_t, mbstate_t>
+    {
+    public:
+      // Types:
+      typedef char32_t			intern_type;
+      typedef char8_t			extern_type;
+      typedef mbstate_t			state_type;
+
+    public:
+      static locale::id			id;
+
+      explicit
+      codecvt(size_t __refs = 0)
+      : __codecvt_abstract_base<char32_t, char8_t, mbstate_t>(__refs) { }
+
+    protected:
+      virtual
+      ~codecvt();
+
+      virtual result
+      do_out(state_type& __state, const intern_type* __from,
+	     const intern_type* __from_end, const intern_type*& __from_next,
+	     extern_type* __to, extern_type* __to_end,
+	     extern_type*& __to_next) const;
+
+      virtual result
+      do_unshift(state_type& __state,
+		 extern_type* __to, extern_type* __to_end,
+		 extern_type*& __to_next) const;
+
+      virtual result
+      do_in(state_type& __state,
+	     const extern_type* __from, const extern_type* __from_end,
+	     const extern_type*& __from_next,
+	     intern_type* __to, intern_type* __to_end,
+	     intern_type*& __to_next) const;
+
+      virtual
+      int do_encoding() const throw();
+
+      virtual
+      bool do_always_noconv() const throw();
+
+      virtual
+      int do_length(state_type&, const extern_type* __from,
+		    const extern_type* __end, size_t __max) const;
+
+      virtual int
+      do_max_length() const throw();
+    };
+#endif // _GLIBCXX_USE_CHAR8_T
+
 #endif // C++11
 
   /// class codecvt_byname [22.2.1.6].
@@ -639,6 +755,45 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       virtual
       ~codecvt_byname() { }
     };
+
+#if defined(_GLIBCXX_USE_CHAR8_T)
+  template<>
+    class codecvt_byname<char16_t, char8_t, mbstate_t>
+    : public codecvt<char16_t, char8_t, mbstate_t>
+    {
+    public:
+      explicit
+      codecvt_byname(const char* __s, size_t __refs = 0)
+      : codecvt<char16_t, char8_t, mbstate_t>(__refs) { }
+
+      explicit
+      codecvt_byname(const string& __s, size_t __refs = 0)
+      : codecvt_byname(__s.c_str(), __refs) { }
+
+    protected:
+      virtual
+      ~codecvt_byname() { }
+    };
+
+  template<>
+    class codecvt_byname<char32_t, char8_t, mbstate_t>
+    : public codecvt<char32_t, char8_t, mbstate_t>
+    {
+    public:
+      explicit
+      codecvt_byname(const char* __s, size_t __refs = 0)
+      : codecvt<char32_t, char8_t, mbstate_t>(__refs) { }
+
+      explicit
+      codecvt_byname(const string& __s, size_t __refs = 0)
+      : codecvt_byname(__s.c_str(), __refs) { }
+
+    protected:
+      virtual
+      ~codecvt_byname() { }
+    };
+#endif
+
 #endif // C++11
 
   // Inhibit implicit instantiations for required instantiations,
@@ -669,6 +824,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
   extern template class codecvt_byname<char16_t, char, mbstate_t>;
   extern template class codecvt_byname<char32_t, char, mbstate_t>;
+
+#if defined(_GLIBCXX_USE_CHAR8_T)
+  extern template class codecvt_byname<char16_t, char8_t, mbstate_t>;
+  extern template class codecvt_byname<char32_t, char8_t, mbstate_t>;
+#endif
+
 #endif
 
 #endif

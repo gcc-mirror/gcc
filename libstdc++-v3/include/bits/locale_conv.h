@@ -158,6 +158,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __str_codecvt_out(__first, __last, __outstr, __cvt, __state, __n);
     }
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+
+  // Convert wide character string to narrow.
+  template<typename _CharT, typename _Traits, typename _Alloc, typename _State>
+    inline bool
+    __str_codecvt_out(const _CharT* __first, const _CharT* __last,
+		      basic_string<char8_t, _Traits, _Alloc>& __outstr,
+		      const codecvt<_CharT, char8_t, _State>& __cvt,
+		      _State& __state, size_t& __count)
+    {
+      using _Codecvt = codecvt<_CharT, char8_t, _State>;
+      using _ConvFn
+	= codecvt_base::result
+	  (_Codecvt::*)(_State&, const _CharT*, const _CharT*, const _CharT*&,
+			char8_t*, char8_t*, char8_t*&) const;
+      _ConvFn __fn = &codecvt<_CharT, char8_t, _State>::out;
+      return __do_str_codecvt(__first, __last, __outstr, __cvt, __state,
+			      __count, __fn);
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc, typename _State>
+    inline bool
+    __str_codecvt_out(const _CharT* __first, const _CharT* __last,
+		      basic_string<char8_t, _Traits, _Alloc>& __outstr,
+		      const codecvt<_CharT, char8_t, _State>& __cvt)
+    {
+      _State __state = {};
+      size_t __n;
+      return __str_codecvt_out(__first, __last, __outstr, __cvt, __state, __n);
+    }
+
+#endif  // _GLIBCXX_USE_CHAR8_T
+
 #ifdef _GLIBCXX_USE_WCHAR_T
 
 _GLIBCXX_BEGIN_NAMESPACE_CXX11

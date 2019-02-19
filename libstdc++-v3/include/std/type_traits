@@ -234,6 +234,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public true_type { };
 #endif
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<>
+    struct __is_integral_helper<char8_t>
+    : public true_type { };
+#endif
+
   template<>
     struct __is_integral_helper<char16_t>
     : public true_type { };
@@ -1680,8 +1686,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	= typename __match_cv_qualifiers<_Tp, __unsigned_type>::__type;
     };
 
-  // wchar_t, char16_t and char32_t are integral types but are neither
-  // signed integer types nor unsigned integer types, so must be
+  // wchar_t, char8_t, char16_t and char32_t are integral types but are
+  // neither signed integer types nor unsigned integer types, so must be
   // transformed to the unsigned integer type with the smallest rank.
   // Use the partial specialization for enumeration types to do that.
 #if defined(_GLIBCXX_USE_WCHAR_T)
@@ -1690,6 +1696,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       using __type
 	= typename __make_unsigned_selector<wchar_t, false, true>::__type;
+    };
+#endif
+
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<>
+    struct __make_unsigned<char8_t>
+    {
+      using __type
+	= typename __make_unsigned_selector<char8_t, false, true>::__type;
     };
 #endif
 
@@ -1807,6 +1822,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       using __type
 	= typename __make_signed_selector<wchar_t, false, true>::__type;
+    };
+#endif
+
+#if defined(_GLIBCXX_USE_CHAR8_T)
+  template<>
+    struct __make_signed<char8_t>
+    {
+      using __type
+	= typename __make_signed_selector<char8_t, false, true>::__type;
     };
 #endif
 

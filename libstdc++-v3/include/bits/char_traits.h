@@ -507,6 +507,115 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 #endif //_GLIBCXX_USE_WCHAR_T
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<>
+    struct char_traits<char8_t>
+    {
+      typedef char8_t           char_type;
+      typedef unsigned int      int_type;
+      typedef u8streampos       pos_type;
+      typedef streamoff         off_type;
+      typedef mbstate_t         state_type;
+
+      static _GLIBCXX17_CONSTEXPR void
+      assign(char_type& __c1, const char_type& __c2) _GLIBCXX_NOEXCEPT
+      { __c1 = __c2; }
+
+      static _GLIBCXX_CONSTEXPR bool
+      eq(const char_type& __c1, const char_type& __c2) _GLIBCXX_NOEXCEPT
+      { return __c1 == __c2; }
+
+      static _GLIBCXX_CONSTEXPR bool
+      lt(const char_type& __c1, const char_type& __c2) _GLIBCXX_NOEXCEPT
+      { return __c1 < __c2; }
+
+      static _GLIBCXX17_CONSTEXPR int
+      compare(const char_type* __s1, const char_type* __s2, size_t __n)
+      {
+#if __cplusplus > 201402
+	if (__builtin_constant_p(__n)
+	    && __constant_char_array_p(__s1, __n)
+	    && __constant_char_array_p(__s2, __n))
+	  return __gnu_cxx::char_traits<char_type>::compare(__s1, __s2, __n);
+#endif
+	if (__n == 0)
+	  return 0;
+	return __builtin_memcmp(__s1, __s2, __n);
+      }
+
+      static _GLIBCXX17_CONSTEXPR size_t
+      length(const char_type* __s)
+      {
+#if __cplusplus > 201402
+	if (__constant_string_p(__s))
+	  return __gnu_cxx::char_traits<char_type>::length(__s);
+#endif
+	size_t __i = 0;
+	while (!eq(__s[__i], char_type()))
+	  ++__i;
+	return __i;
+      }
+
+      static _GLIBCXX17_CONSTEXPR const char_type*
+      find(const char_type* __s, size_t __n, const char_type& __a)
+      {
+#if __cplusplus > 201402
+	if (__builtin_constant_p(__n)
+	    && __builtin_constant_p(__a)
+	    && __constant_char_array_p(__s, __n))
+	  return __gnu_cxx::char_traits<char_type>::find(__s, __n, __a);
+#endif
+	if (__n == 0)
+	  return 0;
+	return static_cast<const char_type*>(__builtin_memchr(__s, __a, __n));
+      }
+
+      static char_type*
+      move(char_type* __s1, const char_type* __s2, size_t __n)
+      {
+	if (__n == 0)
+	  return __s1;
+	return static_cast<char_type*>(__builtin_memmove(__s1, __s2, __n));
+      }
+
+      static char_type*
+      copy(char_type* __s1, const char_type* __s2, size_t __n)
+      {
+	if (__n == 0)
+	  return __s1;
+	return static_cast<char_type*>(__builtin_memcpy(__s1, __s2, __n));
+      }
+
+      static char_type*
+      assign(char_type* __s, size_t __n, char_type __a)
+      {
+	if (__n == 0)
+	  return __s;
+	return static_cast<char_type*>(__builtin_memset(__s, __a, __n));
+      }
+
+      static _GLIBCXX_CONSTEXPR char_type
+      to_char_type(const int_type& __c) _GLIBCXX_NOEXCEPT
+      { return char_type(__c); }
+
+      static _GLIBCXX_CONSTEXPR int_type
+      to_int_type(const char_type& __c) _GLIBCXX_NOEXCEPT
+      { return int_type(__c); }
+
+      static _GLIBCXX_CONSTEXPR bool
+      eq_int_type(const int_type& __c1, const int_type& __c2) _GLIBCXX_NOEXCEPT
+      { return __c1 == __c2; }
+
+      static _GLIBCXX_CONSTEXPR int_type
+      eof() _GLIBCXX_NOEXCEPT
+      { return static_cast<int_type>(-1); }
+
+      static _GLIBCXX_CONSTEXPR int_type
+      not_eof(const int_type& __c) _GLIBCXX_NOEXCEPT
+      { return eq_int_type(__c, eof()) ? 0 : __c; }
+    };
+#endif //_GLIBCXX_USE_CHAR8_T
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
