@@ -4276,7 +4276,7 @@ qualified_name_lookup_error (tree scope, tree name,
       else
 	{
 	  name_hint hint;
-	  if (SCOPED_ENUM_P (scope))
+	  if (SCOPED_ENUM_P (scope) && TREE_CODE (name) == IDENTIFIER_NODE)
 	    hint = suggest_alternative_in_scoped_enum (name, scope);
 	  if (const char *suggestion = hint.suggestion ())
 	    {
