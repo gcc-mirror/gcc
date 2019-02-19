@@ -1,3 +1,9 @@
+2019-02-19  Richard Biener  <rguenther@suse.de>
+
+        PR middle-end/88074
+	* toplev.c (do_compile): Initialize mpfr's exponent range
+	based on available float modes.
+
 2019-02-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* rtlanal.c (get_initial_register_offset): Fall back to the estimate

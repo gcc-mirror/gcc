@@ -2153,6 +2153,30 @@ do_compile ()
 	else
 	  int_n_enabled_p[i] = false;
 
+      /* Initialize mpfrs exponent range.  This is important to get
+         underflow/overflow in a reasonable timeframe.  */
+      machine_mode mode;
+      int min_exp = -1;
+      int max_exp = 1;
+      FOR_EACH_MODE_IN_CLASS (mode, MODE_FLOAT)
+	if (SCALAR_FLOAT_MODE_P (mode))
+	  {
+	    const real_format *fmt = REAL_MODE_FORMAT (mode);
+	    if (fmt)
+	      {
+		/* fmt->emin - fmt->p + 1 should be enough but the
+		   back-and-forth dance in real_to_decimal_for_mode we
+		   do for checking fails due to rounding effects then.  */
+		if ((fmt->emin - fmt->p) < min_exp)
+		  min_exp = fmt->emin - fmt->p;
+		if (fmt->emax > max_exp)
+		  max_exp = fmt->emax;
+	      }
+	  }
+      if (mpfr_set_emin (min_exp)
+	  || mpfr_set_emax (max_exp))
+	sorry ("mpfr not configured to handle all float modes");
+
       /* Set up the back-end if requested.  */
       if (!no_backend)
 	backend_init ();
