@@ -3634,6 +3634,18 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   maybe_simplify_trivial_copy (target, init);
 
   tree type = TREE_TYPE (target);
+  bool preeval = SCALAR_TYPE_P (type) || TREE_CODE (t) == MODIFY_EXPR;
+  if (preeval)
+    {
+      /* Evaluate the value to be stored without knowing what object it will be
+	 stored in, so that any side-effects happen first.  */
+      if (!SCALAR_TYPE_P (type))
+	new_ctx.ctor = new_ctx.object = NULL_TREE;
+      init = cxx_eval_constant_expression (&new_ctx, init, false,
+					   non_constant_p, overflow_p);
+      if (*non_constant_p)
+	return t;
+    }
   target = cxx_eval_constant_expression (ctx, target,
 					 true,
 					 non_constant_p, overflow_p);
@@ -3834,7 +3846,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
     }
   release_tree_vector (refs);
 
-  if (AGGREGATE_TYPE_P (type) || VECTOR_TYPE_P (type))
+  if (!preeval)
     {
       /* Create a new CONSTRUCTOR in case evaluation of the initializer
 	 wants to modify it.  */
@@ -3843,21 +3855,20 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	  *valp = build_constructor (type, NULL);
 	  CONSTRUCTOR_NO_CLEARING (*valp) = no_zero_init;
 	}
-      else if (TREE_CODE (*valp) == PTRMEM_CST)
-	*valp = cplus_expand_constant (*valp);
       new_ctx.ctor = *valp;
       new_ctx.object = target;
+      init = cxx_eval_constant_expression (&new_ctx, init, false,
+					   non_constant_p, overflow_p);
+      if (target == object)
+	/* The hash table might have moved since the get earlier.  */
+	valp = ctx->values->get (object);
     }
 
-  init = cxx_eval_constant_expression (&new_ctx, init, false,
-				       non_constant_p, overflow_p);
   /* Don't share a CONSTRUCTOR that might be changed later.  */
   init = unshare_constructor (init);
-  if (target == object)
-    /* The hash table might have moved since the get earlier.  */
-    valp = ctx->values->get (object);
 
-  if (TREE_CODE (init) == CONSTRUCTOR)
+  if (*valp && TREE_CODE (*valp) == CONSTRUCTOR
+      && TREE_CODE (init) == CONSTRUCTOR)
     {
       /* An outer ctx->ctor might be pointing to *valp, so replace
 	 its contents.  */
