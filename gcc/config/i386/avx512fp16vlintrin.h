@@ -308,6 +308,56 @@ _mm256_maskz_min_ph (__mmask16 __A, __m256h __B, __m256h __C)
 					   _mm256_setzero_ph (), __A);
 }
 
+/* vcmpph */
+#ifdef __OPTIMIZE
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cmp_ph_mask (__m128h __A, __m128h __B, const int __C)
+{
+  return (__mmask8) __builtin_ia32_vcmpph_v8hf_mask (__A, __B, __C,
+						     (__mmask8) -1);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cmp_ph_mask (__mmask8 __A, __m128h __B, __m128h __C,
+		      const int __D)
+{
+  return (__mmask8) __builtin_ia32_vcmpph_v8hf_mask (__B, __C, __D, __A);
+}
+
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cmp_ph_mask (__m256h __A, __m256h __B, const int __C)
+{
+  return (__mmask16) __builtin_ia32_vcmpph_v16hf_mask (__A, __B, __C,
+						       (__mmask16) -1);
+}
+
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cmp_ph_mask (__mmask16 __A, __m256h __B, __m256h __C,
+		      const int __D)
+{
+  return (__mmask16) __builtin_ia32_vcmpph_v16hf_mask (__B, __C, __D,
+						       __A);
+}
+
+#else
+#define _mm_cmp_ph_mask(A, B, C)		\
+  (__builtin_ia32_vcmpph_v8hf_mask ((A), (B), (C), (-1)))
+
+#define _mm_mask_cmp_ph_mask(A, B, C, D)	\
+  (__builtin_ia32_vcmpph_v8hf_mask ((B), (C), (D), (A)))
+
+#define _mm256_cmp_ph_mask(A, B, C)		\
+  (__builtin_ia32_vcmpph_v16hf_mask ((A), (B), (C), (-1)))
+
+#define _mm256_mask_cmp_ph_mask(A, B, C, D)	\
+  (__builtin_ia32_vcmpph_v16hf_mask ((B), (C), (D), (A)))
+
+#endif /* __OPTIMIZE__ */
+
 #ifdef __DISABLE_AVX512FP16VL__
 #undef __DISABLE_AVX512FP16VL__
 #pragma GCC pop_options

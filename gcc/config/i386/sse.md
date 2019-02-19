@@ -226,7 +226,7 @@
    (V16SF "TARGET_AVX512F") (V8SF "TARGET_AVX") V4SF
    (V8DF "TARGET_AVX512F")  (V4DF "TARGET_AVX") V2DF])
 
-;; All AVX-512{F,VL} vector modes. Supposed TARGET_AVX512F baseline.
+;; All AVX-512{F,VL} vector modes without HF. Supposed TARGET_AVX512F baseline.
 (define_mode_iterator V48_AVX512VL
   [V16SI (V8SI "TARGET_AVX512VL") (V4SI "TARGET_AVX512VL")
    V8DI  (V4DI "TARGET_AVX512VL") (V2DI "TARGET_AVX512VL")
@@ -238,6 +238,16 @@
    V8DI  (V4DI "TARGET_AVX512VL")
    V16SF (V8SF "TARGET_AVX512VL")
    V8DF  (V4DF "TARGET_AVX512VL")])
+
+;; All AVX-512{F,VL} vector modes. Supposed TARGET_AVX512F baseline.
+(define_mode_iterator V48H_AVX512VL
+  [V16SI (V8SI "TARGET_AVX512VL") (V4SI "TARGET_AVX512VL")
+   V8DI  (V4DI "TARGET_AVX512VL") (V2DI "TARGET_AVX512VL")
+   (V32HF "TARGET_AVX512FP16")
+   (V16HF "TARGET_AVX512FP16 && TARGET_AVX512VL")
+   (V8HF "TARGET_AVX512FP16 && TARGET_AVX512VL")
+   V16SF (V8SF "TARGET_AVX512VL") (V4SF "TARGET_AVX512VL")
+   V8DF  (V4DF "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")])
 
 ;; 1,2 byte AVX-512{BW,VL} vector modes. Supposed TARGET_AVX512BW baseline.
 (define_mode_iterator VI12_AVX512VL
@@ -1014,10 +1024,10 @@
   [(V64QI "b") (V32HI "w") (V16SI "k") (V8DI "q")
    (V32QI "b") (V16HI "w") (V8SI "k") (V4DI "q")
    (V16QI "b") (V8HI "w") (V4SI "k") (V2DI "q")
-   (V16SF "k") (V8DF "q")
-   (V8SF "k") (V4DF "q")
-   (V4SF "k") (V2DF "q")
-   (SF "k") (DF "q")])
+   (V32HF "w") (V16SF "k") (V8DF "q")
+   (V16HF "w") (V8SF "k") (V4DF "q")
+   (V8HF "w") (V4SF "k") (V2DF "q")
+   (HF "w") (SF "k") (DF "q")])
 
 ;; Mapping of vector modes to VPTERNLOG suffix
 (define_mode_attr ternlogsuffix
@@ -1066,6 +1076,18 @@
    (V16QI "p") (V8HI "p") (V8HF "p")
    (V32QI "p") (V16HI "p") (V16HF "p")
    (V64QI "p") (V32HI "p") (V32HF "p")])
+
+;; SSE prefix for integer and HF vector comparison.
+(define_mode_attr ssecmpintprefix
+  [(V2DI  "p") (V2DF  "")
+   (V4DI  "p") (V4DF  "")
+   (V8DI  "p") (V8DF  "")
+   (V4SI  "p") (V4SF  "")
+   (V8SI  "p") (V8SF  "")
+   (V16SI "p") (V16SF "")
+   (V16QI "p") (V8HI "p") (V8HF "")
+   (V32QI "p") (V16HI "p") (V16HF "")
+   (V64QI "p") (V32HI "p") (V32HF "")])
 
 ;; SSE scalar suffix for vector modes
 (define_mode_attr ssescalarmodesuffix
@@ -3450,11 +3472,11 @@
    (set_attr "mode" "<ssescalarmode>")])
 
 (define_mode_attr cmp_imm_predicate
-  [(V16SF "const_0_to_31_operand")  (V8DF "const_0_to_31_operand")
+  [(V32HF "const_0_to_31_operand") (V16SF "const_0_to_31_operand") (V8DF "const_0_to_31_operand")
    (V16SI "const_0_to_7_operand")   (V8DI "const_0_to_7_operand")
-   (V8SF "const_0_to_31_operand")   (V4DF "const_0_to_31_operand")
+   (V16HF "const_0_to_31_operand") (V8SF "const_0_to_31_operand") (V4DF "const_0_to_31_operand")
    (V8SI "const_0_to_7_operand")    (V4DI "const_0_to_7_operand")
-   (V4SF "const_0_to_31_operand")   (V2DF "const_0_to_31_operand")
+   (V8HF "const_0_to_31_operand") (V4SF "const_0_to_31_operand") (V2DF "const_0_to_31_operand")
    (V4SI "const_0_to_7_operand")    (V2DI "const_0_to_7_operand")
    (V32HI "const_0_to_7_operand")   (V64QI "const_0_to_7_operand")
    (V16HI "const_0_to_7_operand")   (V32QI "const_0_to_7_operand")
@@ -3463,12 +3485,12 @@
 (define_insn "<avx512>_cmp<mode>3<mask_scalar_merge_name><round_saeonly_name>"
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=k")
 	(unspec:<avx512fmaskmode>
-	  [(match_operand:V48_AVX512VL 1 "register_operand" "v")
-	   (match_operand:V48_AVX512VL 2 "nonimmediate_operand" "<round_saeonly_constraint>")
+	  [(match_operand:V48H_AVX512VL 1 "register_operand" "v")
+	   (match_operand:V48H_AVX512VL 2 "nonimmediate_operand" "<round_saeonly_constraint>")
 	   (match_operand:SI 3 "<cmp_imm_predicate>" "n")]
 	  UNSPEC_PCMP))]
   "TARGET_AVX512F && <round_saeonly_mode512bit_condition>"
-  "v<sseintprefix>cmp<ssemodesuffix>\t{%3, <round_saeonly_mask_scalar_merge_op4>%2, %1, %0<mask_scalar_merge_operand4>|%0<mask_scalar_merge_operand4>, %1, %2<round_saeonly_mask_scalar_merge_op4>, %3}"
+  "v<ssecmpintprefix>cmp<ssemodesuffix>\t{%3, <round_saeonly_mask_scalar_merge_op4>%2, %1, %0<mask_scalar_merge_operand4>|%0<mask_scalar_merge_operand4>, %1, %2<round_saeonly_mask_scalar_merge_op4>, %3}"
   [(set_attr "type" "ssecmp")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "evex")
@@ -3617,8 +3639,8 @@
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=k")
 	(and:<avx512fmaskmode>
 	  (unspec:<avx512fmaskmode>
-	    [(match_operand:VF_128 1 "register_operand" "v")
-	     (match_operand:VF_128 2 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")
+	    [(match_operand:VFH_128 1 "register_operand" "v")
+	     (match_operand:VFH_128 2 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")
 	     (match_operand:SI 3 "const_0_to_31_operand" "n")]
 	    UNSPEC_PCMP)
 	  (const_int 1)))]
@@ -3633,8 +3655,8 @@
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=k")
 	(and:<avx512fmaskmode>
 	  (unspec:<avx512fmaskmode>
-	    [(match_operand:VF_128 1 "register_operand" "v")
-	     (match_operand:VF_128 2 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")
+	    [(match_operand:VFH_128 1 "register_operand" "v")
+	     (match_operand:VFH_128 2 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")
 	     (match_operand:SI 3 "const_0_to_31_operand" "n")]
 	    UNSPEC_PCMP)
 	  (and:<avx512fmaskmode>
@@ -3650,10 +3672,10 @@
 (define_insn "<sse>_<unord>comi<round_saeonly_name>"
   [(set (reg:CCFP FLAGS_REG)
 	(compare:CCFP
-	  (vec_select:MODEF
+	  (vec_select:MODEFH
 	    (match_operand:<ssevecmode> 0 "register_operand" "v")
 	    (parallel [(const_int 0)]))
-	  (vec_select:MODEF
+	  (vec_select:MODEFH
 	    (match_operand:<ssevecmode> 1 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")
 	    (parallel [(const_int 0)]))))]
   "SSE_FLOAT_MODE_P (<MODE>mode)"
