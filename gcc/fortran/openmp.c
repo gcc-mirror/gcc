@@ -1885,7 +1885,19 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		  break;
 		}
 	      else if (m == MATCH_NO)
-		needs_space = true;
+		{
+		  gfc_expr *expr
+		    = gfc_get_constant_expr (BT_INTEGER,
+					     gfc_default_integer_kind,
+					     &gfc_current_locus);
+		  mpz_set_si (expr->value.integer, GOMP_ASYNC_NOVAL);
+		  gfc_expr_list **expr_list = &c->wait_list;
+		  while (*expr_list)
+		    expr_list = &(*expr_list)->next;
+		  *expr_list = gfc_get_expr_list ();
+		  (*expr_list)->expr = expr;
+		  needs_space = true;
+		}
 	      continue;
 	    }
 	  if ((mask & OMP_CLAUSE_WORKER)

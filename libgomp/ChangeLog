@@ -1,3 +1,11 @@
+2019-02-19  Chung-Lin Tang <cltang@codesourcery.com>
+
+	PR c/87924
+	* oacc-parallel.c (GOACC_parallel_keyed): Remove condition on call to
+	goacc_wait().
+	(goacc_wait): Handle ACC_ASYNC_NOVAL case, remove goacc_thread() call
+	and related adjustment.
+
 2019-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88988
