@@ -4944,7 +4944,12 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 
   if (e->rank != 0)
     {
-      gfc_conv_expr_descriptor (parmse, e);
+      if (fsym->attr.contiguous
+	  && !gfc_is_simply_contiguous (e, false, true))
+	gfc_conv_subref_array_arg (parmse, e, false, fsym->attr.intent,
+				   fsym->attr.pointer);
+      else
+	gfc_conv_expr_descriptor (parmse, e);
 
       if (POINTER_TYPE_P (TREE_TYPE (parmse->expr)))
 	parmse->expr = build_fold_indirect_ref_loc (input_location,
