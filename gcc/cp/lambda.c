@@ -941,7 +941,8 @@ maybe_generic_this_capture (tree object, tree fns)
 	  fns = TREE_OPERAND (fns, 0);
 
 	for (lkp_iterator iter (fns); iter; ++iter)
-	  if ((!id_expr || TREE_CODE (*iter) == TEMPLATE_DECL)
+	  if (((!id_expr && TREE_CODE (*iter) != USING_DECL)
+	       || TREE_CODE (*iter) == TEMPLATE_DECL)
 	      && DECL_NONSTATIC_MEMBER_FUNCTION_P (*iter))
 	    {
 	      /* Found a non-static member.  Capture this.  */
