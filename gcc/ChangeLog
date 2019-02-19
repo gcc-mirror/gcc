@@ -1,3 +1,8 @@
+2019-02-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* rtlanal.c (get_initial_register_offset): Fall back to the estimate
+	as long as the epilogue isn't completed.
+
 2019-02-18  Martin Sebor  <msebor@redhat.com>
 
 	* doc/cpp.texi (Conditional syntax): Add __has_attribute,
