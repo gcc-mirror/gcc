@@ -1,3 +1,10 @@
+2019-02-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* testsuite/libphobos.shared/load.d: Import core.sys.posix.dlfcn.
+	[DragonFlyBSD, FreeBSD, linux, NetBSD, OSX, Solaris]: Import only
+	RTLD_NOLOAD from core.sys.*.dlfcn.
+	Assert RTLD_NOLOAD is available.
+
 2019-02-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* m4/druntime/libraries.m4 (DRUNTIME_LIBRARIES_NET): New macro.
