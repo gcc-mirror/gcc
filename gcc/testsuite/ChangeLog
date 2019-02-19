@@ -1,5 +1,9 @@
 2019-02-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/89303
+	* g++.dg/torture/pr89303.C: Move everything from std namespace to my
+	namespace.
+
 	PR c++/89387
 	* g++.dg/cpp0x/lambda/lambda-89387.C: New test.
 
