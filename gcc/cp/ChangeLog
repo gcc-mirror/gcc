@@ -1,5 +1,9 @@
 2019-02-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/89387
+	* lambda.c (maybe_generic_this_capture): Don't check
+	DECL_NONSTATIC_MEMBER_FUNCTION_P on USING_DECLs.
+
 	PR c++/89391
 	* typeck.c (build_reinterpret_cast_1): Don't handle void to
 	&& conversion go through build_target_expr_with_type.

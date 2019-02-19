@@ -1,5 +1,8 @@
 2019-02-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/89387
+	* g++.dg/cpp0x/lambda/lambda-89387.C: New test.
+
 	PR c++/89391
 	* g++.dg/cpp0x/reinterpret_cast2.C: New test.
 
