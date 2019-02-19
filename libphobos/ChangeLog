@@ -1,3 +1,11 @@
+2019-02-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* src/Makefile.am: Avoid the -D option which is not available
+	with the install-sh fallback.  Use $(MKDIR_P) instead.
+	* libdruntime/Makefile.am: Likewise.
+	* src/Makefile.in: Regenerated.
+	* libdruntime/Makefile.in: Regenerated.
+
 2019-02-19  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* testsuite/libphobos.shared/load.d: Import core.sys.posix.dlfcn.

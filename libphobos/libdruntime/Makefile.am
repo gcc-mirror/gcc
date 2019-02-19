@@ -147,10 +147,11 @@ clean-local:
 # Handles generated files as well
 install-data-local:
 	for file in $(ALL_DRUNTIME_INSTALL_DSOURCES); do \
+	  $(MKDIR_P) `dirname $(DESTDIR)$(gdc_include_dir)/$$file` ; \
 	  if test -f $$file; then \
-	    $(INSTALL_HEADER) -D $$file $(DESTDIR)$(gdc_include_dir)/$$file ; \
+	    $(INSTALL_HEADER) $$file $(DESTDIR)$(gdc_include_dir)/$$file ; \
 	  else \
-	    $(INSTALL_HEADER) -D $(srcdir)/$$file \
+	    $(INSTALL_HEADER) $(srcdir)/$$file \
 	      $(DESTDIR)$(gdc_include_dir)/$$file ; \
 	  fi ; \
 	done
