@@ -5946,7 +5946,7 @@ print_operand (FILE *file, rtx x, int code)
 	      if (x)
 		print_operand (file, ix, code);
 	      else
-		output_operand_lossage ("invlaid fp constant");
+		output_operand_lossage ("invalid fp constant");
 	      return;
 	      break;
 	    }
