@@ -1,3 +1,8 @@
+2019-02-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* unwind-dw2.c (_Unwind_GetGR) [DWARF_ZERO_REG]: Compare
+	regno instead of index to DWARF_ZERO_REG.
+
 2019-02-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/visium/lib2funcs.c (__set_trampoline_parity): Replace
