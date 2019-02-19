@@ -80,6 +80,10 @@ func CgocallBack() {
 		gp = getg()
 		mp := gp.m
 		mp.dropextram = true
+
+		// This is a C-created stack.
+		// Record the outermost Go frame to help stack scan.
+		gp.entrysp = getcallersp()
 	}
 
 	lockOSThread()

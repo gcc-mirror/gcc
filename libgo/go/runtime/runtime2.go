@@ -433,6 +433,7 @@ type g struct {
 
 	entry    func(unsafe.Pointer) // goroutine function to run
 	entryfn  uintptr              // function address passed to __go_go
+	entrysp  uintptr              // the stack pointer of the outermost Go frame
 	fromgogo bool                 // whether entered from gogo function
 
 	scanningself bool // whether goroutine is scanning its own stack
