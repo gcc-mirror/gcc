@@ -1192,6 +1192,9 @@ func kickoff() {
 		gp.param = nil
 	}
 
+	// Record the entry SP to help stack scan.
+	gp.entrysp = getsp()
+
 	fv(param)
 	goexit1()
 }

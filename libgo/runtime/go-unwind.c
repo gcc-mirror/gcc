@@ -649,6 +649,19 @@ findstackmaps (struct _Unwind_Context *context, _Unwind_Ptr *ip, _Unwind_Ptr *sp
   _sleb128_t index;
   int size;
 
+#ifdef HAVE_GETIPINFO
+  ip1 = _Unwind_GetIPInfo (context, &ip_before_insn);
+#else
+  ip1 = _Unwind_GetIP (context);
+#endif
+  if (! ip_before_insn)
+    --ip1;
+
+  if (ip != NULL)
+    *ip = ip1;
+  if (sp != NULL)
+    *sp = _Unwind_GetCFA (context);
+
 #ifdef __ARM_EABI_UNWINDER__
   {
     _Unwind_Control_Block *ucbp;
@@ -671,14 +684,6 @@ findstackmaps (struct _Unwind_Context *context, _Unwind_Ptr *ip, _Unwind_Ptr *sp
 
   if (info.TType == NULL)
     return NOTFOUND_OK;
-
-#ifdef HAVE_GETIPINFO
-  ip1 = _Unwind_GetIPInfo (context, &ip_before_insn);
-#else
-  ip1 = _Unwind_GetIP (context);
-#endif
-  if (! ip_before_insn)
-    --ip1;
 
   size = value_size (info.ttype_encoding);
 
@@ -738,14 +743,15 @@ findstackmaps (struct _Unwind_Context *context, _Unwind_Ptr *ip, _Unwind_Ptr *sp
   if (stackmap1 == NULL)
     return NOTFOUND_BAD;
 
-  if (ip != NULL)
-    *ip = ip1;
-  if (sp != NULL)
-    *sp = _Unwind_GetCFA (context);
   if (stackmap != NULL)
     *stackmap = stackmap1;
   return FOUND;
 }
+
+struct scanstate {
+  void* gcw;      // the GC worker, passed into scanstackwithmap_callback
+  uintptr lastsp; // the last (outermost) SP of Go function seen in a traceback, set by the callback
+};
 
 // Callback function to scan a stack frame with stack maps.
 // It skips non-Go functions.
@@ -755,7 +761,11 @@ scanstackwithmap_callback (struct _Unwind_Context *context, void *arg)
   struct _stackmap *stackmap;
   _Unwind_Ptr ip, sp;
   G* gp;
-  void *gcw = arg;
+  struct scanstate* state = (struct scanstate*) arg;
+  void *gcw;
+
+  gp = runtime_g ();
+  gcw = state->gcw;
 
   switch (findstackmaps (context, &ip, &sp, &stackmap))
     {
@@ -767,7 +777,6 @@ scanstackwithmap_callback (struct _Unwind_Context *context, void *arg)
           // No stack map found.
           // If we're scanning from the signal stack, the goroutine
           // may be not stopped at a safepoint. Allow this case.
-          gp = runtime_g ();
           if (gp != gp->m->gsignal)
             {
               // TODO: print gp, pc, sp
@@ -781,6 +790,7 @@ scanstackwithmap_callback (struct _Unwind_Context *context, void *arg)
         abort ();
     }
 
+  state->lastsp = sp;
   runtime_scanstackblockwithmap (ip, sp, (uintptr)(stackmap->len) * sizeof(uintptr), stackmap->data, gcw);
 
   return _URC_NO_REASON;
@@ -792,10 +802,30 @@ bool
 scanstackwithmap (void *gcw)
 {
   _Unwind_Reason_Code code;
+  bool ret;
+  struct scanstate state;
+  G* gp;
+  G* curg;
+
+  state.gcw = gcw;
+  state.lastsp = 0;
+  gp = runtime_g ();
+  curg = gp->m->curg;
+
   runtime_xadd (&__go_runtime_in_callers, 1);
-  code = _Unwind_Backtrace (scanstackwithmap_callback, gcw);
+  code = _Unwind_Backtrace (scanstackwithmap_callback, (void*)&state);
   runtime_xadd (&__go_runtime_in_callers, -1);
-  return code == _URC_END_OF_STACK;
+  ret = (code == _URC_END_OF_STACK);
+  if (ret && gp == gp->m->gsignal)
+    {
+      // For signal-triggered scan, the unwinder may not be able to unwind
+      // the whole stack while it still reports _URC_END_OF_STACK (e.g.
+      // signal is delivered in vdso). Check that we actually reached the
+      // the end of the stack, that is, the SP on entry.
+      if (state.lastsp != curg->entrysp)
+        ret = false;
+    }
+  return ret;
 }
 
 // Returns whether stack map is enabled.
