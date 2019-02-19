@@ -7477,7 +7477,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
      reinterpret_cast.  */
   if (TYPE_REF_P (type))
     {
-      if (TYPE_REF_IS_RVALUE (type))
+      if (TYPE_REF_IS_RVALUE (type) && !VOID_TYPE_P (intype))
 	{
 	  if (!obvalue_p (expr))
 	    /* Perform the temporary materialization conversion.  */
