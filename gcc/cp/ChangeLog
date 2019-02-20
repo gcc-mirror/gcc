@@ -1,3 +1,11 @@
+2019-02-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88368 - wrong 'use of deleted function'
+	* method.c (walk_field_subobs): Remember errors from get_nsdmi.
+	(get_defaulted_eh_spec): Call push_tinst_level.
+	* pt.c (maybe_instantiate_noexcept): Keep error_mark_node.
+	* typeck2.c (merge_exception_specifiers): Handle error_mark_node.
+
 2019-02-19  Chung-Lin Tang <cltang@codesourcery.com>
 
 	PR c/87924
