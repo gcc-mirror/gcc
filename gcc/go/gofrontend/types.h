@@ -3086,7 +3086,7 @@ class Interface_type : public Type
     return this->all_methods_ == NULL;
   }
 
-  // Return the list of locally defined methos.  This will return NULL
+  // Return the list of locally defined methods.  This will return NULL
   // for an empty interface.  Embedded interfaces will appear in this
   // list as an entry with no name.
   const Typed_identifier_list*
