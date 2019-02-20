@@ -1,3 +1,10 @@
+2019-02-20  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_usad_char):
+	Add PowerPC support.
+	* gcc.dg/vect/slp-reduc-sad.c: Update scan string.
+	* gcc.dg/vect/vect-reduc-sad.c: Likewise.
+
 2019-02-20 Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	PR target/86487

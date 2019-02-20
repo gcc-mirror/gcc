@@ -6047,7 +6047,9 @@ proc check_effective_target_vect_usad_char { } {
       expr { [istarget i?86-*-*]
 	      || [istarget x86_64-*-*]
 	      || ([istarget aarch64*-*-*]
-		  && ![check_effective_target_aarch64_sve])}}]
+		  && ![check_effective_target_aarch64_sve])
+	      || ([istarget powerpc*-*-*]
+		  && [check_p9vector_hw_available])}}]
 }
 
 # Return 1 if the target plus current options supports both signed
