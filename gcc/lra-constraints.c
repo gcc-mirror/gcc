@@ -1770,14 +1770,24 @@ uses_hard_regs_p (rtx x, HARD_REG_SET set)
     return false;
   code = GET_CODE (x);
   mode = GET_MODE (x);
+
   if (code == SUBREG)
     {
+      /* For all SUBREGs we want to check whether the full multi-register
+	 overlaps the set.  For normal SUBREGs this means 'get_hard_regno' of
+	 the inner register, for paradoxical SUBREGs this means the
+	 'get_hard_regno' of the full SUBREG and for complete SUBREGs either is
+	 fine.  Use the wider mode for all cases.  */
+      rtx subreg = SUBREG_REG (x);
       mode = wider_subreg_mode (x);
-      x = SUBREG_REG (x);
-      code = GET_CODE (x);
+      if (mode == GET_MODE (subreg))
+	{
+	  x = subreg;
+	  code = GET_CODE (x);
+	}
     }
 
-  if (REG_P (x))
+  if (REG_P (x) || SUBREG_P (x))
     {
       x_hard_regno = get_hard_regno (x, true);
       return (x_hard_regno >= 0

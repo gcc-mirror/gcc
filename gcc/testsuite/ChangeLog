@@ -1,3 +1,8 @@
+2019-02-20 Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/86487
+	* gcc.target/arm/pr86487.c: New.
+
 2019-02-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84536
