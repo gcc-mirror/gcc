@@ -550,7 +550,8 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
 		  break;
 		case GOMP_MAP_TO:
 		case GOMP_MAP_FORCE_TO:
-		  acc_copyin_async (hostaddrs[i], sizes[i], async);
+		  if (hostaddrs[i])
+		    acc_copyin_async (hostaddrs[i], sizes[i], async);
 		  break;
 		case GOMP_MAP_STRUCT:
 		  {

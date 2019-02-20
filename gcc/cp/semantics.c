@@ -5261,12 +5261,18 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	  if ((ort & C_ORT_OMP_DECLARE_SIMD) != C_ORT_OMP && ort != C_ORT_ACC)
 	    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_POINTER);
 	  else if (TREE_CODE (t) == COMPONENT_REF)
-	    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ALWAYS_POINTER);
+	    {
+	      gomp_map_kind k = (ort == C_ORT_ACC) ? GOMP_MAP_ATTACH_DETACH
+						   : GOMP_MAP_ALWAYS_POINTER;
+	      OMP_CLAUSE_SET_MAP_KIND (c2, k);
+	    }
 	  else if (REFERENCE_REF_P (t)
 		   && TREE_CODE (TREE_OPERAND (t, 0)) == COMPONENT_REF)
 	    {
 	      t = TREE_OPERAND (t, 0);
-	      OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ALWAYS_POINTER);
+	      gomp_map_kind k = (ort == C_ORT_ACC) ? GOMP_MAP_ATTACH_DETACH
+						   : GOMP_MAP_ALWAYS_POINTER;
+	      OMP_CLAUSE_SET_MAP_KIND (c2, k);
 	    }
 	  else
 	    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_FIRSTPRIVATE_POINTER);
@@ -7300,7 +7306,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		break;
 	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 		  && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER
-		      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALWAYS_POINTER))
+		      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALWAYS_POINTER
+		      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH))
 		break;
 	      if (DECL_P (t))
 		error_at (OMP_CLAUSE_LOCATION (c),
@@ -7439,7 +7446,12 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c),
 					      OMP_CLAUSE_MAP);
 		  if (TREE_CODE (t) == COMPONENT_REF)
-		    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ALWAYS_POINTER);
+		    {
+		      gomp_map_kind k
+			= (ort == C_ORT_ACC) ? GOMP_MAP_ATTACH_DETACH
+					     : GOMP_MAP_ALWAYS_POINTER;
+		      OMP_CLAUSE_SET_MAP_KIND (c2, k);
+		    }
 		  else
 		    OMP_CLAUSE_SET_MAP_KIND (c2,
 					     GOMP_MAP_FIRSTPRIVATE_REFERENCE);

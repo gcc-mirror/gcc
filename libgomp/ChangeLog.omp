@@ -1,3 +1,14 @@
+2019-07-10  Julian Brown  <julian@codesourcery.com>
+
+	* oacc-parallel.c (GOACC_enter_exit_data): Fix optional arguments for
+	changes to clause stripping in enter data/exit data directives.
+	* testsuite/libgomp.oacc-fortran/class-ptr-param.f95: New test.
+	* testsuite/libgomp.oacc-fortran/classtypes-1.f95: New test.
+	* testsuite/libgomp.oacc-fortran/classtypes-2.f95: New test.
+	* testsuite/libgomp.oacc-fortran/derivedtype-1.f95: New test.
+	* testsuite/libgomp.oacc-fortran/derivedtype-2.f95: New test.
+	* testsuite/libgomp.oacc-fortran/multidim-slice.f95: New test.
+
 2019-05-28  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/gangprivate-attrib-2.f90: New test.

@@ -1,3 +1,8 @@
+2019-07-10  Julian Brown  <julian@codesourcery.com>
+
+	* semantics.c (handle_omp_array_sections): Likewise.
+	(finish_omp_clauses): Handle GOMP_MAP_ATTACH_DETACH.
+
 2019-07-09  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline:

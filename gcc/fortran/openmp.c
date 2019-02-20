@@ -3931,12 +3931,6 @@ check_array_not_assumed (gfc_symbol *sym, locus loc, const char *name)
 static void
 resolve_oacc_data_clauses (gfc_symbol *sym, locus loc, const char *name)
 {
-  if ((sym->ts.type == BT_ASSUMED && sym->attr.allocatable)
-      || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
-	  && CLASS_DATA (sym)->attr.allocatable))
-    gfc_error ("ALLOCATABLE object %qs of polymorphic type "
-	       "in %s clause at %L", sym->name, name, &loc);
-  check_symbol_not_pointer (sym, loc, name);
   check_array_not_assumed (sym, loc, name);
 }
 

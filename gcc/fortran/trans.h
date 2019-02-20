@@ -546,6 +546,15 @@ tree gfc_conv_expr_present (gfc_symbol *);
 /* Convert a missing, dummy argument into a null or zero.  */
 void gfc_conv_missing_dummy (gfc_se *, gfc_expr *, gfc_typespec, int);
 
+/* Lowering of component references.  */
+void gfc_conv_component_ref (gfc_se * se, gfc_ref * ref);
+void conv_parent_component_references (gfc_se * se, gfc_ref * ref);
+
+/* Automatically dereference var.  */
+tree gfc_auto_dereference_var (location_t, gfc_symbol *, tree,
+			       bool desc_only = false,
+			       bool is_classarray = false);
+
 /* Generate code to allocate a string temporary.  */
 tree gfc_conv_string_tmp (gfc_se *, tree, tree);
 /* Get the string length variable belonging to an expression.  */

@@ -1,3 +1,18 @@
+2019-07-10  Julian Brown  <julian@codesourcery.com>
+
+	* openmp.c (resolve_oacc_data_clauses): Allow polymorphic allocatable
+	variables.
+	* trans-expr.c (gfc_conv_component_ref,
+	conv_parent_component_reference): Make global.
+	(gfc_auto_dereference_var): New function, broken out of...
+	(gfc_conv_variable): ...here. Call outlined function instead.
+	* trans-openmp.c (gfc_trans_omp_array_section): New function, broken out
+	of...
+	(gfc_trans_omp_clauses): ...here. Separate out OpenACC derived
+	type/polymorphic class pointer handling. Call above outlined function.
+	* trans.h (gfc_conv_component_ref, conv_parent_component_references,
+	gfc_auto_dereference_var): Add prototypes.
+
 2019-05-19  Julian Brown  <julian@codesourcery.com>
 
 	* trans-openmp.c (gfc_omp_finish_clause): Guard addition of clauses for

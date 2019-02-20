@@ -171,7 +171,11 @@ enum gomp_map_kind
     /* Do not map, but pointer assign a pointer instead.  */
     GOMP_MAP_FIRSTPRIVATE_POINTER =	(GOMP_MAP_LAST | 1),
     /* Do not map, but pointer assign a reference instead.  */
-    GOMP_MAP_FIRSTPRIVATE_REFERENCE =	(GOMP_MAP_LAST | 2)
+    GOMP_MAP_FIRSTPRIVATE_REFERENCE =	(GOMP_MAP_LAST | 2),
+    /* An attach or detach operation.  Rewritten to the appropriate type during
+       gimplification, depending on directive (i.e. "enter data" or
+       parallel/kernels region vs. "exit data").  */
+    GOMP_MAP_ATTACH_DETACH =		(GOMP_MAP_LAST | 3)
   };
 
 #define GOMP_MAP_COPY_TO_P(X) \

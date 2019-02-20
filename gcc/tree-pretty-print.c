@@ -871,6 +871,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	case GOMP_MAP_FORCE_DETACH:
 	  pp_string (pp, "force_detach");
 	  break;
+	case GOMP_MAP_ATTACH_DETACH:
+	  pp_string (pp, "attach_detach");
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -895,6 +898,12 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	    case GOMP_MAP_DYNAMIC_ARRAY:
 	      gcc_assert (TREE_CODE (OMP_CLAUSE_SIZE (clause)) == TREE_LIST);
 	      pp_string (pp, " [dimensions: ");
+	      break;
+	    case GOMP_MAP_ATTACH:
+	    case GOMP_MAP_DETACH:
+	    case GOMP_MAP_FORCE_DETACH:
+	    case GOMP_MAP_ATTACH_DETACH:
+	      pp_string (pp, " [bias: ");
 	      break;
 	    default:
 	      pp_string (pp, " [len: ");

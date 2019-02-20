@@ -2403,7 +2403,7 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
 
 /* Convert a derived type component reference.  */
 
-static void
+void
 gfc_conv_component_ref (gfc_se * se, gfc_ref * ref)
 {
   gfc_component *c;
@@ -2493,7 +2493,7 @@ gfc_conv_component_ref (gfc_se * se, gfc_ref * ref)
 
 /* This function deals with component references to components of the
    parent type for derived type extensions.  */
-static void
+void
 conv_parent_component_references (gfc_se * se, gfc_ref * ref)
 {
   gfc_component *c;
@@ -2557,6 +2557,95 @@ conv_inquiry (gfc_se * se, gfc_ref * ref, gfc_expr *expr, gfc_typespec *ts)
       gcc_unreachable ();
     }
   se->expr = res;
+}
+
+/* Transparently dereference VAR if it is a pointer, reference, etc.
+   according to Fortran semantics.  */
+
+tree
+gfc_auto_dereference_var (location_t loc, gfc_symbol *sym, tree var,
+			  bool descriptor_only_p, bool is_classarray)
+{
+  /* Characters are entirely different from other types, they are treated
+     separately.  */
+  if (sym->ts.type == BT_CHARACTER)
+    {
+      /* Dereference character pointer dummy arguments
+	 or results.  */
+      if ((sym->attr.pointer || sym->attr.allocatable)
+	  && (sym->attr.dummy
+	      || sym->attr.function
+	      || sym->attr.result))
+	var = build_fold_indirect_ref_loc (input_location, var);
+    }
+  else if (!sym->attr.value)
+    {
+      /* Dereference temporaries for class array dummy arguments.  */
+      if (sym->attr.dummy && is_classarray
+	  && GFC_ARRAY_TYPE_P (TREE_TYPE (var)))
+	{
+	  if (!descriptor_only_p)
+	    var = GFC_DECL_SAVED_DESCRIPTOR (var);
+
+	  var = build_fold_indirect_ref_loc (input_location, var);
+	}
+
+      /* Dereference non-character scalar dummy arguments.  */
+      if (sym->attr.dummy && !sym->attr.dimension
+	  && !(sym->attr.codimension && sym->attr.allocatable)
+	  && (sym->ts.type != BT_CLASS
+	      || (!CLASS_DATA (sym)->attr.dimension
+		  && !(CLASS_DATA (sym)->attr.codimension
+		       && CLASS_DATA (sym)->attr.allocatable))))
+	var = build_fold_indirect_ref_loc (input_location, var);
+
+      /* Dereference scalar hidden result.  */
+      if (flag_f2c && sym->ts.type == BT_COMPLEX
+	  && (sym->attr.function || sym->attr.result)
+	  && !sym->attr.dimension && !sym->attr.pointer
+	  && !sym->attr.always_explicit)
+	var = build_fold_indirect_ref_loc (input_location, var);
+
+      /* Dereference non-character, non-class pointer variables.
+	 These must be dummies, results, or scalars.  */
+      if (!is_classarray
+	  && (sym->attr.pointer || sym->attr.allocatable
+	      || gfc_is_associate_pointer (sym)
+	      || (sym->as && sym->as->type == AS_ASSUMED_RANK))
+	  && (sym->attr.dummy
+	      || sym->attr.function
+	      || sym->attr.result
+	      || (!sym->attr.dimension
+		  && (!sym->attr.codimension || !sym->attr.allocatable))))
+	var = build_fold_indirect_ref_loc (input_location, var);
+      /* Now treat the class array pointer variables accordingly.  */
+      else if (sym->ts.type == BT_CLASS
+	       && sym->attr.dummy
+	       && (CLASS_DATA (sym)->attr.dimension
+		   || CLASS_DATA (sym)->attr.codimension)
+	       && ((CLASS_DATA (sym)->as
+		    && CLASS_DATA (sym)->as->type == AS_ASSUMED_RANK)
+		   || CLASS_DATA (sym)->attr.allocatable
+		   || CLASS_DATA (sym)->attr.class_pointer))
+	var = build_fold_indirect_ref_loc (input_location, var);
+      /* And the case where a non-dummy, non-result, non-function,
+	 non-allotable and non-pointer classarray is present.  This case was
+	 previously covered by the first if, but with introducing the
+	 condition !is_classarray there, that case has to be covered
+	 explicitly.  */
+      else if (sym->ts.type == BT_CLASS
+	       && !sym->attr.dummy
+	       && !sym->attr.function
+	       && !sym->attr.result
+	       && (CLASS_DATA (sym)->attr.dimension
+		   || CLASS_DATA (sym)->attr.codimension)
+	       && (sym->assoc
+		   || !CLASS_DATA (sym)->attr.allocatable)
+	       && !CLASS_DATA (sym)->attr.class_pointer)
+	var = build_fold_indirect_ref_loc (input_location, var);
+    }
+
+  return var;
 }
 
 /* Return the contents of a variable. Also handles reference/pointer
@@ -2665,94 +2754,9 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 	  return;
 	}
 
-
-      /* Dereference the expression, where needed. Since characters
-	 are entirely different from other types, they are treated
-	 separately.  */
-      if (sym->ts.type == BT_CHARACTER)
-	{
-	  /* Dereference character pointer dummy arguments
-	     or results.  */
-	  if ((sym->attr.pointer || sym->attr.allocatable)
-	      && (sym->attr.dummy
-		  || sym->attr.function
-		  || sym->attr.result))
-	    se->expr = build_fold_indirect_ref_loc (input_location,
-						se->expr);
-
-	}
-      else if (!sym->attr.value)
-	{
-	  /* Dereference temporaries for class array dummy arguments.  */
-	  if (sym->attr.dummy && is_classarray
-	      && GFC_ARRAY_TYPE_P (TREE_TYPE (se->expr)))
-	    {
-	      if (!se->descriptor_only)
-		se->expr = GFC_DECL_SAVED_DESCRIPTOR (se->expr);
-
-	      se->expr = build_fold_indirect_ref_loc (input_location,
-						      se->expr);
-	    }
-
-	  /* Dereference non-character scalar dummy arguments.  */
-	  if (sym->attr.dummy && !sym->attr.dimension
-	      && !(sym->attr.codimension && sym->attr.allocatable)
-	      && (sym->ts.type != BT_CLASS
-		  || (!CLASS_DATA (sym)->attr.dimension
-		      && !(CLASS_DATA (sym)->attr.codimension
-			   && CLASS_DATA (sym)->attr.allocatable))))
-	    se->expr = build_fold_indirect_ref_loc (input_location,
-						se->expr);
-
-          /* Dereference scalar hidden result.  */
-	  if (flag_f2c && sym->ts.type == BT_COMPLEX
-	      && (sym->attr.function || sym->attr.result)
-	      && !sym->attr.dimension && !sym->attr.pointer
-	      && !sym->attr.always_explicit)
-	    se->expr = build_fold_indirect_ref_loc (input_location,
-						se->expr);
-
-	  /* Dereference non-character, non-class pointer variables.
-	     These must be dummies, results, or scalars.  */
-	  if (!is_classarray
-	      && (sym->attr.pointer || sym->attr.allocatable
-		  || gfc_is_associate_pointer (sym)
-		  || (sym->as && sym->as->type == AS_ASSUMED_RANK))
-	      && (sym->attr.dummy
-		  || sym->attr.function
-		  || sym->attr.result
-		  || (!sym->attr.dimension
-		      && (!sym->attr.codimension || !sym->attr.allocatable))))
-	    se->expr = build_fold_indirect_ref_loc (input_location,
-						se->expr);
-	  /* Now treat the class array pointer variables accordingly.  */
-	  else if (sym->ts.type == BT_CLASS
-		   && sym->attr.dummy
-		   && (CLASS_DATA (sym)->attr.dimension
-		       || CLASS_DATA (sym)->attr.codimension)
-		   && ((CLASS_DATA (sym)->as
-			&& CLASS_DATA (sym)->as->type == AS_ASSUMED_RANK)
-		       || CLASS_DATA (sym)->attr.allocatable
-		       || CLASS_DATA (sym)->attr.class_pointer))
-	    se->expr = build_fold_indirect_ref_loc (input_location,
-						se->expr);
-	  /* And the case where a non-dummy, non-result, non-function,
-	     non-allotable and non-pointer classarray is present.  This case was
-	     previously covered by the first if, but with introducing the
-	     condition !is_classarray there, that case has to be covered
-	     explicitly.  */
-	  else if (sym->ts.type == BT_CLASS
-		   && !sym->attr.dummy
-		   && !sym->attr.function
-		   && !sym->attr.result
-		   && (CLASS_DATA (sym)->attr.dimension
-		       || CLASS_DATA (sym)->attr.codimension)
-		   && (sym->assoc
-		       || !CLASS_DATA (sym)->attr.allocatable)
-		   && !CLASS_DATA (sym)->attr.class_pointer)
-	    se->expr = build_fold_indirect_ref_loc (input_location,
-						se->expr);
-	}
+      /* Dereference the expression, where needed.  */
+      se->expr = gfc_auto_dereference_var (input_location, sym, se->expr,
+					   se->descriptor_only, is_classarray);
 
       ref = expr->ref;
     }

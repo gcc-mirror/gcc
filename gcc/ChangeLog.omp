@@ -1,3 +1,13 @@
+2019-07-10  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.c (insert_struct_comp_map): Handle GOMP_MAP_ATTACH_DETACH.
+	(gimplify_scan_omp_clauses): Separate out handling of OACC_ENTER_DATA
+	and OACC_EXIT_DATA. Remove GOMP_MAP_POINTER and GOMP_MAP_TO_PSET
+	mappings, apart from those following GOMP_MAP_DECLARE_{,DE}ALLOCATE.
+	Handle GOMP_MAP_ATTACH_DETACH.
+	* tree-pretty-print.c (dump_omp_clause): Support GOMP_MAP_ATTACH_DETACH.
+	Print "bias" not "len" for attach/detach clause types.
+
 2019-05-28  Julian Brown  <julian@codesourcery.com>
 
 	* omp-low.c (mark_oacc_gangprivate): Add CTX parameter.  Use to look up
