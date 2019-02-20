@@ -1,5 +1,10 @@
 2019-02-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/87513 - 'sorry' mangling PMF template-id.
+	* mangle.c (write_expression): Handle SCOPE_REF to BASELINK.
+
+2019-02-19  Jason Merrill  <jason@redhat.com>
+
 	PR c++/88380 - wrong-code with flexible array and NSDMI.
 	* typeck2.c (process_init_constructor_record): Skip flexarrays.
 
