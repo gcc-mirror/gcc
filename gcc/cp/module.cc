@@ -150,13 +150,23 @@ Classes used:
    I have a confession: tri-valued bools are not the worst thing in
    this file.  */
 
-/* MODULE_STAMP is a #define passed in from the Makefile.  When
-   present, it is used for version stamping the binary files, and
-   indicates experimentalness of the module system.  It is very
-   experimental right now.  */
-#ifndef MODULE_STAMP
+/* In expermental (trunk) sources, MODULE_VERSION is a #define passed
+   in from the Makefile.  It records the modification date of the our
+   source directory -- that's the only way to stay sane.  In release
+   sources, we use the compiler's major.minor versioning.  While the
+   format might not change between at least minor versions, it seems
+   simplest to tie the two together.  Experimental and
+   non-experimental versions are unordered WRT each other.  */
+#define IS_EXPERIMENTAL(V) ((V) >= (1U << 20))
+#define MODULE_MAJOR(V) ((V) / 10000)
+#define MODULE_MINOR(V) ((V) % 10000)
+#define EXPERIMENT(A,B) (IS_EXPERIMENTAL (MODULE_VERSION) ? (A) : (B))
+#ifndef MODULE_VERSION
 #error "Shtopp! What are you doing? This is not ready yet."
-#define MODULE_STAMP 0
+#include "bversion.h"
+#define MODULE_VERSION (BUILDING_GCC_MAJOR * 10000U + BUILDING_GCC_MINOR)
+#elif !IS_EXPERIMENTAL (MODULE_VERSION)
+#error "This is not the version I was looking for."
 #endif
 
 /* Mapper Protocol version.  Very new.  */
@@ -256,67 +266,22 @@ int module_dump_id;
 /* Prefix for section names.  (Not system-defined, so no leading dot.)  */
 #define MOD_SNAME_PFX "gnu.c++"
 
-/* Get the version of this compiler.  This is negative, when it is a
-   date-time stamp indicating experimentalness of the system.  See
-   above about MODULE_STAMP.  */
-
-static inline int
-get_version ()
-{
-  /* If the on-disk format changes, update the version number.  */
-  int version = 20180101;
-
-#if MODULE_STAMP
-  /* MODULE_STAMP is a decimal encoding YYYYMMDDhhmm or YYYYMMDD in
-     local timezone.  Using __TIME__ doesn't work very well with
-     boostrapping!  */
-  version = -(MODULE_STAMP > 2000LL * 10000 * 10000
-	      ? int (MODULE_STAMP - 2000LL * 10000 * 10000)
-	      : int (MODULE_STAMP - 2000LL * 10000) * 10000);
-#endif
-  return version;
-}
-
-/* Version to date.  Understand both experimental and released
-   version dates.  */
-
-static inline int
-version2date (int v)
-{
-  if (v < 0)
-    return unsigned (-v) / 10000 + 20000000;
-  else
-    return v;
-}
-
-/* Version to time.  Only understand times when experimental.  */
-
-static inline unsigned
-version2time (int v)
-{
-  if (MODULE_STAMP && v < 0)
-    return unsigned (-v) % 10000;
-  else
-    return 0;
-}
-
-/* Format a version for user consumption.  Only attach time
-   information for experimental builds.  */
+/* Format a version for user consumption.  */
 
 typedef char verstr_t[32];
 static void
-version2string (int version, verstr_t &out)
+version2string (unsigned version, verstr_t &out)
 {
-  unsigned date = version2date (version);
-  unsigned time = version2time (version);
-  if (MODULE_STAMP)
-    sprintf (out, "%04u/%02u/%02u-%02u:%02u",
-	     date / 10000, (date / 100) % 100, (date % 100),
-	     time / 100, time % 100);
+  unsigned major = MODULE_MAJOR (version);
+  unsigned minor = MODULE_MINOR (version);
+
+  if (IS_EXPERIMENTAL (version))
+    sprintf (out, "%04u/%02u/%02u-%02u:%02u%s",
+	     2000 + major / 10000, (major / 100) % 100, (major % 100),
+	     minor / 100, minor % 100,
+	     EXPERIMENT ("", " (experimental)"));
   else
-    sprintf (out, "%04u/%02u/%02u%s",
-	     date / 10000, (date / 100) % 100, (date % 100),
-	     version < 0 ? " (experimental)": "");
+    sprintf (out, "%u.%u", major, minor);
 }
 
 /* Traits to hash an arbitrary pointer.  Entries are not deletable,
@@ -399,7 +364,7 @@ data::allocator::grow (data &obj, unsigned needed, bool exact)
   gcc_checking_assert (needed ? needed > obj.size : !obj.size);
   if (!needed)
     /* Pick a default size.  */
-    needed = MODULE_STAMP ? 100 : 10000;
+    needed = EXPERIMENT (100, 1000);
 
   if (!exact)
     needed *= 2;
@@ -1088,7 +1053,7 @@ bytes_out::printf (const char *format, ...)
 {
   va_list args;
   /* Exercise buffer expansion.  */
-  size_t len = MODULE_STAMP ? 10 : 500;
+  size_t len = EXPERIMENT (10, 500);
 
   while (char *ptr = write (len))
     {
@@ -2113,8 +2078,8 @@ elf_out::begin ()
 
 #if MAPPED_WRITING
   /* Start a mapping.  */
-  create_mapping (MODULE_STAMP ? page_size
-		  : (32767 + page_size) & ~(page_size - 1));
+  create_mapping (EXPERIMENT (page_size,
+			      (32767 + page_size) & ~(page_size - 1)));
   if (!hdr.buffer)
     return false;
 #endif
@@ -3459,7 +3424,7 @@ dumper::push (module_state *m)
     {
       /* Create or extend the dump implementor.  */
       unsigned current = dumps ? dumps->stack.length () : 0;
-      unsigned count = current ? current * 2 : MODULE_STAMP ? 1 : 20;
+      unsigned count = current ? current * 2 : EXPERIMENT (1, 20);
       size_t alloc = (offsetof (impl, impl::stack)
 		      + impl::stack_t::embedded_size (count));
       dumps = XRESIZEVAR (impl, dumps, alloc);
@@ -3696,7 +3661,7 @@ dumper::operator () (const char *format, ...)
 	  break;
 	case 'V': /* Verson.  */
 	  {
-	    int v = va_arg (args, unsigned);
+	    unsigned v = va_arg (args, unsigned);
 	    verstr_t string;
 
 	    version2string (v, string);
@@ -8269,7 +8234,7 @@ ordinary_loc_of (line_maps *lmaps, location_t from)
 module_mapper::module_mapper (location_t loc, const char *option)
   : name (NULL), from (NULL), to (NULL), pex (NULL), sigpipe (SIG_IGN),
     /* Exercise buffer expansion code.  */
-    buffer (NULL), size (MODULE_STAMP ? 3 : 200), pos (NULL), end (NULL),
+    buffer (NULL), size (EXPERIMENT (3, 200)), pos (NULL), end (NULL),
     start (NULL), fd_from (-1), fd_to (-1), batching (false)
 {
   const char *dflt = "|cxx-mapper";
@@ -9176,7 +9141,7 @@ module_state::write_readme (elf_out *to, const char *options, cpp_hashnode *node
 
   /* Module format version.  */
   verstr_t string;
-  version2string (get_version (), string);
+  version2string (MODULE_VERSION, string);
   readme.printf ("version: %s", string);
 
   /* Module information.  */
@@ -12362,7 +12327,7 @@ module_state_config::get_opts ()
     return opts;
 
   /* Concatenate important options.  */
-  size_t opt_alloc = MODULE_STAMP ? 2 : 200;
+  size_t opt_alloc = EXPERIMENT (2, 200);
   size_t opt_len = 0;
   char *opt_str = XNEWVEC (char, opt_alloc);
 
@@ -12459,8 +12424,8 @@ module_state::write_config (elf_out *to, module_state_config &config,
   /* Write version and inner crc as u32 values, for easier
      debug inspection.  */
   dump () && dump ("Writing version=%V, inner_crc=%x",
-		   get_version (), inner_crc);
-  cfg.u32 (unsigned (get_version ()));
+		   MODULE_VERSION, inner_crc);
+  cfg.u32 (unsigned (MODULE_VERSION));
   cfg.u32 (inner_crc);
 
   cfg.u (to->name (is_legacy () ? "" : get_flatname ()));
@@ -12532,32 +12497,30 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
     return false;
 
   /* Check version.  */
-  int my_ver = get_version ();
-  int their_ver = int (cfg.u32 ());
+  unsigned my_ver = MODULE_VERSION;
+  unsigned their_ver = cfg.u32 ();
   dump () && dump  (my_ver == their_ver ? "Version %V"
 		    : "Expecting %V found %V", my_ver, their_ver);
   if (their_ver != my_ver)
     {
-      int my_date = version2date (my_ver);
-      int their_date = version2date (their_ver);
-      int my_time = version2time (my_ver);
-      int their_time = version2time (their_ver);
       verstr_t my_string, their_string;
 
       version2string (my_ver, my_string);
       version2string (their_ver, their_string);
 
-      if (my_date != their_date)
+      if (!IS_EXPERIMENTAL (my_ver)
+	  || !IS_EXPERIMENTAL (their_ver)
+	  || MODULE_MAJOR (my_ver) != MODULE_MAJOR (their_ver))
 	{
-	  /* Dates differ, decline.  */
+	  /* Non-experimental or majors differ, decline.  */
 	  error_at (loc, "file is version %s, this is version %s",
 		    their_string, my_string);
 	
 	  cfg.set_overrun ();
 	  goto done;
 	}
-      else if (my_time != their_time)
-	/* Times differ, give it a go.  */
+      else
+	/* Minors differ, give it a go.  */
 	warning_at (loc, 0, "file is version %s, compiler is version %s,"
 		    " close enough? \xc2\xaf\\_(\xe3\x83\x84)_/\xc2\xaf",
 		    their_string, my_string);
@@ -13451,6 +13414,9 @@ module_state::do_import (char const *fname, cpp_reader *reader)
       filename = xstrdup (fname);
     }
 
+  if (mrules *deps = cpp_get_deps (reader))
+    deps_add_module (deps, get_flatname (false), get_flatname (true));
+
   int fd = -1;
   int e = ENOENT;
   if (filename)
@@ -13484,13 +13450,7 @@ module_state::direct_import (cpp_reader *reader, bool lazy)
 {
   unsigned n = dump.push (this);
 
-  if (!is_direct ())
-    {
-      direct_p = true;
-      if (mrules *deps = cpp_get_deps (reader))
-	deps_add_module (deps, get_flatname (false), get_flatname (true));
-    }
-
+  direct_p = true;
   if (!is_imported () && mod == MODULE_UNKNOWN)
     {
       char *fname = NULL;
@@ -13769,6 +13729,7 @@ module_cpp_deferred_macro (cpp_reader *reader, location_t loc,
 }
 
 /* Figure out whether to treat HEADER as an include or an import.  */
+// FIXME: Cache results
 
 int
 module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
@@ -14028,7 +13989,7 @@ init_module_processing ()
   if (dump ())
     {
       verstr_t ver;
-      version2string (get_version (), ver);
+      version2string (MODULE_VERSION, ver);
       dump ("Source: %s", main_input_filename);
       dump ("Compiler: %s", version_string);
       dump ("Modules: %s", ver);

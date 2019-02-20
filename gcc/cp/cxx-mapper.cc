@@ -88,15 +88,6 @@ memrchr (void *s_, int c, size_t n)
 typedef void (*sighandler_t) (int);
 #endif
 
-/* MODULE_STAMP is a #define passed in from the Makefile.  When
-   present, it is used for version stamping the binary files, and
-   indicates experimentalness of the module system.  It is very
-   experimental right now.  */
-#ifndef MODULE_STAMP
-#error "Stahp! What are you doing? This is not ready yet."
-#define MODULE_STAMP 0
-#endif
-
 /* Mapper Protocol version.  Very new.  */
 #define MAPPER_VERSION 0
 
@@ -336,7 +327,7 @@ class buffer {
 
 public:
   buffer (int fd)
-    : buf (NULL), size (MODULE_STAMP ? 3 : 200),
+    : buf (NULL), size (200),
       pos (NULL), end (NULL), start (NULL), fd (fd)
   {
     buf = XNEWVEC (char, size);

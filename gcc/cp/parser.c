@@ -41251,7 +41251,7 @@ pragma_lex (tree *value, location_t *loc)
   return ret;
 }
 
-/* Tokenize until we've got to EOF (return true), or we've just gone
+/* Tokenize until we've got to EOF (return NULL), or we've just gone
    past import declaration that affects the tokenizer.  */
 
 static cp_token *

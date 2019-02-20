@@ -1,3 +1,17 @@
+2019-02-20  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/
+	* REVISION: Add [].
+	gcc/cp/
+	* Make-lang.in (MODULE_VERSION): Replace ...
+	(MODULE_STAMP): ... this.  Adjust
+	* cxx-mapper.cc: Update.
+	* module.cc: Update version behaviour.
+	(module_state::do_import): Add dependency.
+	libcpp/
+	* mkdeps.c (mrules): Add dtor properly.   Add modules.
+	(deps_write): Spew module deps.
+
 2019-02-11  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r268782.

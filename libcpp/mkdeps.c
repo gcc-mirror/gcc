@@ -78,6 +78,9 @@ public:
   mrules ()
     : module_name (NULL), bmi_name (NULL), is_legacy (false)
   {
+  }
+  ~mrules ()
+  {
     unsigned int i;
 
     for (i = targets.size (); i--;)
@@ -86,17 +89,17 @@ public:
       XDELETEVEC (deps[i]);
     for (i = vpath.size (); i--;)
       XDELETEVEC (vpath[i].str);
+    for (i = modules.size (); i--;)
+      XDELETEVEC (modules[i]);
     XDELETEVEC (module_name);
     XDELETEVEC (bmi_name);
-  }
-  ~mrules ()
-  {
   }
 
 public:
   vec<const char *> targets;
   vec<const char *> deps;
   vec<velt> vpath;
+  vec<const char *> modules;
 
 public:
   const char *module_name;
@@ -325,7 +328,7 @@ deps_add_module (struct mrules *d, const char *m, const char *p,
       d->bmi_name = munge (bmi);
     }
   else
-    d->deps.push (m);
+    d->modules.push (m);
 }
 
 static unsigned
@@ -372,6 +375,7 @@ deps_write (const struct mrules *d, FILE *fp, unsigned int colmax)
   fputs (":", fp);
   column++;
   column = write_vec (d->deps, fp, column, colmax);
+  column = write_vec (d->modules, fp, column, colmax);
   fputs ("\n", fp);
   column = 0;
 
@@ -394,6 +398,9 @@ deps_write (const struct mrules *d, FILE *fp, unsigned int colmax)
 	  column = write_name (d->targets[0], fp, column, colmax);
 	  fputs ("\n", fp);
 	}
+      column = fprintf (fp, "CXX_IMPORTS +=");
+      write_vec (d->modules, fp, column, colmax);
+      fputs ("\n", fp);
     }
 }
 

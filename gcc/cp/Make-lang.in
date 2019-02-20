@@ -56,22 +56,21 @@ CFLAGS-cp/g++spec.o += $(DRIVER_DEFINES)
 CFLAGS-cp/module.o += -DHOST_MACHINE=\"$(host)\" \
 	-DTARGET_MACHINE=\"$(target)\"
 
-# We want to make the module version volatile, when in development mode. 
 ifeq ($(DEVPHASE_c),experimental)
-# We want to rebuild module if the source dir changes
+# We want to make the module version volatile, when in development mode,
+# so link it to the cp dir modification time
 cp/module.o : $(srcdir)/cp
-version.o : $(srcdir)/cp/module.cc
 # Some date's don't grok 'r', if so, simply use today's
 # date (don't bootstrap at midnight).
-MODULE_STAMP := $(shell date -r $(srcdir)/cp '+%Y%m%d-%H%M' 2>/dev/null || \
-	date '+%Y%m%d' 2>/dev/null || echo 0)
-ifneq ($(REVISION_s),"\"\"")
-# Wedge the MODULE_STAMP into REVISION_s so that it turns up in -v invocations
+MODULE_VERSION := $(shell date -r $(srcdir)/cp '+%y%m%d-%H%M' 2>/dev/null || \
+	date '+%y%m%d-0000' 2>/dev/null || echo 0)
+ifneq ($(REVISION_s),$(REVISION_s:%]\""=%))
+version.o : $(srcdir)/cp/module.cc
+# Wedge the MODULE_VERSION into REVISION_s so that it turns up in -v invocations
 # Remember, Make thinks of REVISION_s as a set of space-separated words
-REVISION_s := $(patsubst %\"",%:$(MODULE_STAMP)\"",$(REVISION_s))
+REVISION_s := $(REVISION_s:%]\""=%:20$(MODULE_VERSION)]\"")
 endif
-CFLAGS-cp/module.o += -DMODULE_STAMP=$(subst -,,$(MODULE_STAMP))LL
-CFLAGS-cp/cxx-mapper.o += -DMODULE_STAMP=$(subst -,,$(MODULE_STAMP))LL
+CFLAGS-cp/module.o += -DMODULE_VERSION='($(subst -,,$(MODULE_VERSION))U)'
 endif
 
 # Create the compiler driver for g++.
