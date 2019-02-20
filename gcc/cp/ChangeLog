@@ -1,3 +1,11 @@
+2019-02-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84536
+	* pt.c (tsubst_init): Diagnose an initializer expanding to an
+	empty list of expressions; tweak wrt dependent types.
+	(regenerate_decl_from_template): For VAR_DECLs call tsubst_init
+	instead of tsubst_expr.
+
 2019-02-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/88368 - wrong 'use of deleted function'
