@@ -1,3 +1,8 @@
+2019-02-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88380 - wrong-code with flexible array and NSDMI.
+	* typeck2.c (process_init_constructor_record): Skip flexarrays.
+
 2019-02-20  will wray  <wjwray@gmail.com>
 
 	PR c++/88572 - wrong handling of braces on scalar init.
