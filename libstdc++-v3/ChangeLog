@@ -1,3 +1,9 @@
+2019-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/89402
+	* src/c++98/compatibility-ldbl.cc (_ZNKSt4hashIeEclEe): Add
+	_GLIBCXX_PURE to the alias declaration.
+
 2019-02-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/21_strings/basic_string/literals/types.cc
