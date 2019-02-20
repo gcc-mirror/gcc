@@ -1,3 +1,8 @@
+2019-02-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84536
+	* g++.dg/cpp1y/var-templ60.C: New.
+
 2019-02-20  Li Jia He  <helijia@linux.ibm.com>
 
 	PR target/88100
