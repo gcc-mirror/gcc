@@ -2173,8 +2173,12 @@ do_compile ()
 		  max_exp = fmt->emax;
 	      }
 	  }
-      if (mpfr_set_emin (min_exp)
-	  || mpfr_set_emax (max_exp))
+      /* E.g. mpc_norm assumes it can square a number without bothering with
+	 with range scaling, so until that is fixed, double the minimum
+	 and maximum exponents, plus add some buffer for arithmetics
+	 on the squared numbers.  */
+      if (mpfr_set_emin (2 * (min_exp - 1))
+	  || mpfr_set_emax (2 * (max_exp + 1)))
 	sorry ("mpfr not configured to handle all float modes");
 
       /* Set up the back-end if requested.  */
