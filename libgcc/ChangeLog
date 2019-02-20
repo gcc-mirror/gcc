@@ -1,3 +1,8 @@
+2019-02-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/linux-unwind.h (alpha_fallback_frame_state):
+	Cast 'mcontext_t *' &rt_->uc.uc_mcontext to 'struct sigcontext *'.
+
 2019-02-19  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* unwind-dw2.c (_Unwind_GetGR) [DWARF_ZERO_REG]: Compare
