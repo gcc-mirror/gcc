@@ -9,7 +9,7 @@
 	argument is contiguous and the actual argument may not be,
 	use gfc_conv_subref_array_arg.
 
-2019-02-19  Chung-Lin Tang  <cltang@codesourcery.com>
+2019-02-19  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR c/87924
 	* openmp.c (gfc_match_omp_clauses): Add representation of wait clause
