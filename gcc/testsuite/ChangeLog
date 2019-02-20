@@ -1,3 +1,8 @@
+2019-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89336
+	* g++.dg/cpp1y/constexpr-89336-3.C: New test.
+
 2019-02-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/89410

@@ -1,3 +1,9 @@
+2019-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89336
+	* constexpr.c (cxx_eval_store_expression): Diagnose changing of active
+	union member for -std=c++17 and earlier.
+
 2019-02-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/87513 - 'sorry' mangling PMF template-id.

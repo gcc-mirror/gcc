@@ -3813,8 +3813,20 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 
 	  if (code == UNION_TYPE && CONSTRUCTOR_NELTS (*valp)
 	      && CONSTRUCTOR_ELT (*valp, 0)->index != index)
-	    /* Changing active member.  */
-	    vec_safe_truncate (CONSTRUCTOR_ELTS (*valp), 0);
+	    {
+	      if (cxx_dialect < cxx2a)
+		{
+		  if (!ctx->quiet)
+		    error_at (cp_expr_loc_or_loc (t, input_location),
+			      "change of the active member of a union "
+			      "from %qD to %qD",
+			      CONSTRUCTOR_ELT (*valp, 0)->index,
+			      index);
+		  *non_constant_p = true;
+		}
+	      /* Changing active member.  */
+	      vec_safe_truncate (CONSTRUCTOR_ELTS (*valp), 0);
+	    }
 
 	  for (idx = 0;
 	       vec_safe_iterate (CONSTRUCTOR_ELTS (*valp), idx, &cep);
