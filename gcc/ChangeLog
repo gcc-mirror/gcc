@@ -1,4 +1,12 @@
 2019-02-20  Jakub Jelinek  <jakub@redhat.com>
+	    David Malcolm  <dmalcolm@redhat.com>
+
+	PR middle-end/89091
+	* fold-const.c (decode_field_reference): Return NULL_TREE if
+	lang_hooks.types.type_for_size returns NULL.  Check it before
+	overwriting *exp_.  Use return NULL_TREE instead of return 0.
+
+2019-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/88074
 	PR middle-end/89415

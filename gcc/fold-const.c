@@ -4280,7 +4280,7 @@ decode_field_reference (location_t loc, tree *exp_, HOST_WIDE_INT *pbitsize,
      There are problems with FP fields since the type_for_size call
      below can fail for, e.g., XFmode.  */
   if (! INTEGRAL_TYPE_P (TREE_TYPE (exp)))
-    return 0;
+    return NULL_TREE;
 
   /* We are interested in the bare arrangement of bits, so strip everything
      that doesn't affect the machine mode.  However, record the type of the
@@ -4296,7 +4296,7 @@ decode_field_reference (location_t loc, tree *exp_, HOST_WIDE_INT *pbitsize,
       exp = TREE_OPERAND (exp, 0);
       STRIP_NOPS (exp); STRIP_NOPS (and_mask);
       if (TREE_CODE (and_mask) != INTEGER_CST)
-	return 0;
+	return NULL_TREE;
     }
 
   poly_int64 poly_bitsize, poly_bitpos;
@@ -4312,7 +4312,11 @@ decode_field_reference (location_t loc, tree *exp_, HOST_WIDE_INT *pbitsize,
       || (! AGGREGATE_TYPE_P (TREE_TYPE (inner))
 	  && compare_tree_int (TYPE_SIZE (TREE_TYPE (inner)),
 			       *pbitpos + *pbitsize) < 0))
-    return 0;
+    return NULL_TREE;
+
+  unsigned_type = lang_hooks.types.type_for_size (*pbitsize, 1);
+  if (unsigned_type == NULL_TREE)
+    return NULL_TREE;
 
   *exp_ = exp;
 
@@ -4323,7 +4327,6 @@ decode_field_reference (location_t loc, tree *exp_, HOST_WIDE_INT *pbitsize,
     *punsignedp = TYPE_UNSIGNED (outer_type);
 
   /* Compute the mask to access the bitfield.  */
-  unsigned_type = lang_hooks.types.type_for_size (*pbitsize, 1);
   precision = TYPE_PRECISION (unsigned_type);
 
   mask = build_int_cst_type (unsigned_type, -1);
