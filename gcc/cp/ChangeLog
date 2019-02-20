@@ -1,3 +1,10 @@
+2019-02-20  will wray  <wjwray@gmail.com>
+
+	PR c++/88572 - wrong handling of braces on scalar init.
+	* decl.c (reshape_init_r): Allow braces around scalar initializer
+	within aggregate init.  Reject double braced-init of scalar
+	variable.
+
 2019-02-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84536
