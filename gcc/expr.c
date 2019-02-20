@@ -5211,9 +5211,13 @@ expand_assignment (tree to, tree from, bool nontemporal)
 		}
 	      else
 		{
-		  rtx from_rtx
-		    = simplify_gen_subreg (to_mode, result,
-					   TYPE_MODE (TREE_TYPE (from)), 0);
+		  rtx from_rtx;
+		  if (MEM_P (result))
+		    from_rtx = change_address (result, to_mode, NULL_RTX);
+		  else
+		    from_rtx
+		      = simplify_gen_subreg (to_mode, result,
+					     TYPE_MODE (TREE_TYPE (from)), 0);
 		  if (from_rtx)
 		    {
 		      emit_move_insn (XEXP (to_rtx, 0),
