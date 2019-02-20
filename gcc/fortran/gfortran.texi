@@ -3615,7 +3615,7 @@ for the built-in that should be vectorized.  Example usage:
 @end smallexample
 
 The purpose of the directive is to provide an API among the GCC compiler and
-the GNU C Library which would define vector implementation of math routines.
+the GNU C Library which would define vector implementations of math routines.
 
 @node Non-Fortran Main Program
 @section Non-Fortran Main Program
