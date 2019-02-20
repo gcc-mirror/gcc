@@ -86,7 +86,7 @@ rvrp_process_bb_end (ssa_ranger& ranger, basic_block bb, bitmap touched)
   // Look only at conditionals.
   if (stmt && (cond = dyn_cast <gcond *> (stmt)))
     {
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "RVRP: Considering BB %d:  ", bb->index);
 	  print_gimple_stmt (dump_file, cond, 0, TDF_NONE);
@@ -94,7 +94,7 @@ rvrp_process_bb_end (ssa_ranger& ranger, basic_block bb, bitmap touched)
       // CHeck to see if the expression folds.
       if (ranger.range_of_stmt (r, stmt) && !r.varying_p ())
 	{
-	  if (dump_file)
+	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "      Expression evaluates to range: ");
 	      r.dump (dump_file);
@@ -105,7 +105,7 @@ rvrp_process_bb_end (ssa_ranger& ranger, basic_block bb, bitmap touched)
 	      if (!argument_ok_to_propagate (gimple_cond_lhs (cond)) ||
 		  !argument_ok_to_propagate (gimple_cond_rhs (cond)))
 		{
-		  if (dump_file)
+		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file, "RVRP: Cannot propagate.\n");
 		  return;
 		}

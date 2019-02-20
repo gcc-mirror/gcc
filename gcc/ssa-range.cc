@@ -816,7 +816,7 @@ global_ranger::export_global_ranges ()
   irange r;
   if (dump_file)
     {
-      fprintf (dump_file, "Updating global range table\n");
+      fprintf (dump_file, "Exported global range table\n");
       fprintf (dump_file, "===========================\n");
     }
 
