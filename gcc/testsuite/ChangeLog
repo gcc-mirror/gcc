@@ -28,11 +28,6 @@
 	* c-c++-common/goacc/asyncwait-5.c: Remove XFAILs.
 	* gfortran.dg/goacc/asyncwait-5.f: Likewise.
 
-2019-02-19  H.J. Lu  <hongjiu.lu@intel.com>
-
-	PR target/89397
-	* gcc.target/i386/pr89397.c: New test.
-
 2019-02-19  Richard Biener  <rguenther@suse.de>
 
         PR middle-end/88074
