@@ -75,6 +75,6 @@ namespace std _GLIBCXX_VISIBILITY(default)
 // and std::hash<long double>::operator()
 // are the same, no need to duplicate them.
 extern "C" void _ZNKSt4hashIeEclEe (void)
-  __attribute__((alias ("_ZNKSt3tr14hashIeEclEe")));
+  _GLIBCXX_PURE __attribute__((alias ("_ZNKSt3tr14hashIeEclEe")));
 
 #endif
