@@ -1,4 +1,10 @@
 2019-02-20  Jakub Jelinek  <jakub@redhat.com>
+	    David Malcolm  <dmalcolm@redhat.com>
+
+	PR middle-end/89091
+	* gcc.dg/torture/pr89091.c: New test.
+
+2019-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/88074
 	PR middle-end/89415
