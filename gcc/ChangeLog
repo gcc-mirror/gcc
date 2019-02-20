@@ -1,3 +1,9 @@
+2019-02-20 Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/86487
+	* lra-constraints.c(uses_hard_regs_p): Fix handling of
+	paradoxical SUBREGS.
+
 2019-02-20  Li Jia He  <helijia@linux.ibm.com>
 
 	PR target/88100
