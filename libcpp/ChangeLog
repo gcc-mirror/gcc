@@ -1,3 +1,9 @@
+2019-02-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/89410
+	* include/line-map.h (linenum_arith_t): New typedef.
+	(compare): Use it.
+
 2019-02-18  Martin Liska  <mliska@suse.cz>
 
 	PR c++/89383

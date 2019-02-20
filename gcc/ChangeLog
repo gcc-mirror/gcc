@@ -1,3 +1,12 @@
+2019-02-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/89410
+	* diagnostic-show-locus.c (layout::calculate_line_spans): Use
+	linenum_arith_t when determining if two adjacent line spans are
+	close enough to merge.
+	(diagnostic_show_locus): Use linenum_arith_t when iterating over
+	lines within each line_span.
+
 2019-02-20 Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	PR target/86487
