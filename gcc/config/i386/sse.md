@@ -1972,7 +1972,7 @@
   [(set (match_operand:VF1_128_256 0 "register_operand")
 	(unspec:VF1_128_256
 	  [(match_operand:VF1_128_256 1 "vector_operand")] UNSPEC_RSQRT))]
-  "TARGET_SSE_MATH"
+  "TARGET_SSE && TARGET_SSE_MATH"
 {
   ix86_emit_swsqrtsf (operands[0], operands[1], <MODE>mode, true);
   DONE;
@@ -1983,7 +1983,7 @@
 	(unspec:V16SF
 	  [(match_operand:V16SF 1 "vector_operand")]
 	  UNSPEC_RSQRT28))]
-  "TARGET_SSE_MATH && TARGET_AVX512ER"
+  "TARGET_AVX512ER && TARGET_SSE_MATH"
 {
   ix86_emit_swsqrtsf (operands[0], operands[1], V16SFmode, true);
   DONE;
