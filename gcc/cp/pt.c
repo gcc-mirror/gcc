@@ -24199,8 +24199,6 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 	  pop_deferring_access_checks ();
 	  pop_access_scope (fn);
 	  pop_tinst_level ();
-	  if (spec == error_mark_node)
-	    spec = noexcept_false_spec;
 	}
       else
 	spec = noexcept_false_spec;

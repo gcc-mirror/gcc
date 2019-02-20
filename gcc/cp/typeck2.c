@@ -2363,6 +2363,9 @@ merge_exception_specifiers (tree list, tree add)
 {
   tree noex, orig_list;
 
+  if (list == error_mark_node || add == error_mark_node)
+    return error_mark_node;
+
   /* No exception-specifier or noexcept(false) are less strict than
      anything else.  Prefer the newer variant (LIST).  */
   if (!list || list == noexcept_false_spec)
