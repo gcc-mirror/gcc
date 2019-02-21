@@ -71,7 +71,7 @@ struct xgetbv_ret xgetbv(void) {
 
 #endif /* defined(__i386__) || defined(__x86_64__)  */
 
-#ifdef __s390__
+#ifdef __s390x__
 
 struct facilityList {
 	uint64_t bits[4];
@@ -184,4 +184,4 @@ struct queryResult klmdQuery() {
     return ret;
 }
 
-#endif /* defined(__s390__)  */
+#endif /* defined(__s390x__)  */
