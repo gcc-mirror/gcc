@@ -1,3 +1,32 @@
+2019-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89285
+	* constexpr.c (struct constexpr_fundef): Add parms and result members.
+	(retrieve_constexpr_fundef): Adjust for the above change.
+	(register_constexpr_fundef): Save constexpr body with copy_fn,
+	temporarily set DECL_CONTEXT on DECL_RESULT before that.
+	(get_fundef_copy): Change FUN argument to FUNDEF with
+	constexpr_fundef * type, grab body and parms/result out of
+	constexpr_fundef struct and temporarily change it for copy_fn calls
+	too.
+	(cxx_eval_builtin_function_call): For __builtin_FUNCTION temporarily
+	adjust current_function_decl from ctx->call context.  Test
+	!potential_constant_expression instead of !is_constant_expression.
+	(cxx_bind_parameters_in_call): Grab parameters from new_call.  Undo
+	convert_for_arg_passing changes for TREE_ADDRESSABLE type passing.
+	(cxx_eval_call_expression): Adjust get_fundef_copy caller.
+	(cxx_eval_conditional_expression): For IF_STMT, allow then or else
+	operands to be NULL.
+	(label_matches): Handle BREAK_STMT and CONTINUE_STMT.
+	(cxx_eval_loop_expr): Add support for FOR_STMT, WHILE_STMT and DO_STMT.
+	(cxx_eval_switch_expr): Add support for SWITCH_STMT.
+	(cxx_eval_constant_expression): Handle IF_STMT, FOR_STMT, WHILE_STMT,
+	DO_STMT, CONTINUE_STMT, SWITCH_STMT, BREAK_STMT and CONTINUE_STMT.
+	For SIZEOF_EXPR, recurse on the result of fold_sizeof_expr.  Ignore
+	DECL_EXPR with USING_DECL operand.
+	* lambda.c (maybe_add_lambda_conv_op): Build thisarg using
+	build_int_cst to make it a valid constant expression.
+
 2019-02-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/88690 - C++17 ICE with empty base in aggregate.

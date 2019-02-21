@@ -12,7 +12,7 @@ void
 f2 ()
 { 
   for (;;)
-    constexpr bool b = ({ break; false; }) && false;	// { dg-error "statement is not a constant expression" }
+    constexpr bool b = ({ break; false; }) && false;	// { dg-error "is not a constant expression" }
 }
 
 constexpr bool

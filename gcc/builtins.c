@@ -9302,8 +9302,7 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
 			     tree arg0, tree arg1, tree arg2)
 {
   enum internal_fn ifn = IFN_LAST;
-  /* The code of the expression corresponding to the type-generic
-     built-in, or ERROR_MARK for the type-specific ones.  */
+  /* The code of the expression corresponding to the built-in.  */
   enum tree_code opcode = ERROR_MARK;
   bool ovf_only = false;
 
@@ -9313,42 +9312,39 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
       ovf_only = true;
       /* FALLTHRU */
     case BUILT_IN_ADD_OVERFLOW:
-      opcode = PLUS_EXPR;
-      /* FALLTHRU */
     case BUILT_IN_SADD_OVERFLOW:
     case BUILT_IN_SADDL_OVERFLOW:
     case BUILT_IN_SADDLL_OVERFLOW:
     case BUILT_IN_UADD_OVERFLOW:
     case BUILT_IN_UADDL_OVERFLOW:
     case BUILT_IN_UADDLL_OVERFLOW:
+      opcode = PLUS_EXPR;
       ifn = IFN_ADD_OVERFLOW;
       break;
     case BUILT_IN_SUB_OVERFLOW_P:
       ovf_only = true;
       /* FALLTHRU */
     case BUILT_IN_SUB_OVERFLOW:
-      opcode = MINUS_EXPR;
-      /* FALLTHRU */
     case BUILT_IN_SSUB_OVERFLOW:
     case BUILT_IN_SSUBL_OVERFLOW:
     case BUILT_IN_SSUBLL_OVERFLOW:
     case BUILT_IN_USUB_OVERFLOW:
     case BUILT_IN_USUBL_OVERFLOW:
     case BUILT_IN_USUBLL_OVERFLOW:
+      opcode = MINUS_EXPR;
       ifn = IFN_SUB_OVERFLOW;
       break;
     case BUILT_IN_MUL_OVERFLOW_P:
       ovf_only = true;
       /* FALLTHRU */
     case BUILT_IN_MUL_OVERFLOW:
-      opcode = MULT_EXPR;
-      /* FALLTHRU */
     case BUILT_IN_SMUL_OVERFLOW:
     case BUILT_IN_SMULL_OVERFLOW:
     case BUILT_IN_SMULLL_OVERFLOW:
     case BUILT_IN_UMUL_OVERFLOW:
     case BUILT_IN_UMULL_OVERFLOW:
     case BUILT_IN_UMULLL_OVERFLOW:
+      opcode = MULT_EXPR;
       ifn = IFN_MUL_OVERFLOW;
       break;
     default:
@@ -9373,13 +9369,27 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
 				 ? boolean_true_node : boolean_false_node,
 				 arg2);
 
-  tree ctype = build_complex_type (type);
-  tree call = build_call_expr_internal_loc (loc, ifn, ctype,
-					    2, arg0, arg1);
-  tree tgt = save_expr (call);
-  tree intres = build1_loc (loc, REALPART_EXPR, type, tgt);
-  tree ovfres = build1_loc (loc, IMAGPART_EXPR, type, tgt);
-  ovfres = fold_convert_loc (loc, boolean_type_node, ovfres);
+  tree intres, ovfres;
+  if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
+    {
+      intres = fold_binary_loc (loc, opcode, type,
+				fold_convert_loc (loc, type, arg0),
+				fold_convert_loc (loc, type, arg1));
+      if (TREE_OVERFLOW (intres))
+	intres = drop_tree_overflow (intres);
+      ovfres = (arith_overflowed_p (opcode, type, arg0, arg1)
+		? boolean_true_node : boolean_false_node);
+    }
+  else
+    {
+      tree ctype = build_complex_type (type);
+      tree call = build_call_expr_internal_loc (loc, ifn, ctype, 2,
+						arg0, arg1);
+      tree tgt = save_expr (call);
+      intres = build1_loc (loc, REALPART_EXPR, type, tgt);
+      ovfres = build1_loc (loc, IMAGPART_EXPR, type, tgt);
+      ovfres = fold_convert_loc (loc, boolean_type_node, ovfres);
+    }
 
   if (ovf_only)
     return omit_one_operand_loc (loc, boolean_type_node, ovfres, arg2);
