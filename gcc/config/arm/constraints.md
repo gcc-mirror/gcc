@@ -90,9 +90,6 @@
 (define_register_constraint "k" "STACK_REG"
  "@internal The stack register.")
 
-(define_register_constraint "q" "(TARGET_ARM && TARGET_LDRD) ? CORE_REGS : GENERAL_REGS"
-  "@internal In ARM state with LDRD support, core registers, otherwise general registers.")
-
 (define_register_constraint "b" "TARGET_THUMB ? BASE_REGS : NO_REGS"
  "@internal
   Thumb only.  The union of the low registers and the stack register.")
