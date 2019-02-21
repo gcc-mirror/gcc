@@ -1,5 +1,6 @@
 /* PR target/88850.  */
 /* { dg-do compile } */
+/* { dg-skip-if "do not override -mfloat-abi" { *-*-* } { "-mfloat-abi=*" } {"-mfloat-abi=softfp" } } */
 /* { dg-additional-options "-O2 -march=armv7-a -fdump-rtl-final" } */
 /* { dg-add-options arm_neon_softfp_fp16 } */
 /* { dg-require-effective-target arm_neon_softfp_fp16_ok } */
