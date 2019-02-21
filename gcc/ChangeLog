@@ -1,3 +1,10 @@
+2019-02-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87412
+	* config/i386/i386.c (ix86_set_indirect_branch_type): Issue an
+	error for -mindirect-branch/-mfunction-return with incompatible
+	-fcf-protection.
+
 2019-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/88714
