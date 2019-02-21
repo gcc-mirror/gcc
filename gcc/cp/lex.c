@@ -376,30 +376,48 @@ interface_strcmp (const char* s)
 
 /* We've just read a cpp-token, figure out our next state.  */
 
-int
-module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, int state)
+void *
+module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, void *data_)
 {
-  int depth = state & ~3;
+  unsigned *data = (unsigned *)data_;
+  if (!tok)
+    {
+      if (!flag_modules)
+	return NULL; /* Do not use  */
+      if (data)
+	{
+	  XDELETE (data);
+	  data = NULL;
+	}
+      else
+	{
+	  data = XNEW (unsigned);
+	  *data = 1;
+	}
+      return data;
+    }
+
+  unsigned state = *data;
+  unsigned depth = state & ~3;
   switch (state & 3)
     {
-    case 0: /* Just started.  */
-      if (!flag_modules)
-	return -1; /* Do not use  */
-      state = 1;
-      /* FALLTHROUGH */
-
     case 1:  /* Start of decl.  */
       if (tok->type == CPP_NAME)
 	{
 	  tree ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node.node));
 	  int keyword = C_RID_CODE (ident);
 	  if (keyword == RID_EXPORT)
-	    return depth | 1;  /* Remain at start.  */
+	    {
+	      state = depth | 1;  /* Remain at start.  */
+	      break;
+	    }
 	  else if (!depth && keyword == RID_IMPORT)
 	    {
 	      cpp_enable_filename_token (pfile, true);
-	      return depth | 3; /* Just started import.  */
+	      state = depth | 3; /* Just started import.  */
+	      break;
 	    }
+	  // FIXME:translated include inside extern C
 	}
       /* FALLTHROUGH */
 
@@ -409,12 +427,22 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, int state)
 	{
 	case CPP_PADDING:
 	case CPP_COMMENT:
-	  return state; /* Unchanged state.  */
+	  break; /* Unchanged state.  */
 
 	case CPP_OPEN_BRACE:
-	  depth += 8;
-	  /* FALLTHROUGH */
-	  
+	case CPP_OPEN_PAREN:
+	case CPP_OPEN_SQUARE:
+	  depth += 4;
+	  state = depth | 2;
+	  break;
+
+	case CPP_CLOSE_PAREN:
+	case CPP_CLOSE_SQUARE:
+	  if (depth)
+	    depth -= 4;
+	  state = depth | 2;
+	  break;
+
 	case CPP_CLOSE_BRACE:
 	  if (depth)
 	    depth -= 4;
@@ -422,15 +450,18 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, int state)
 
 	case CPP_SEMICOLON:
 	case CPP_PRAGMA_EOL:
-	  return depth | 1; /* Start of decl.  */
+	  state = depth | 1; /* Start of decl.  */
+	  break;
 
 	default:
-	  return depth | 2; /* In a decl.  */
+	  state =  depth | 2; /* In a decl.  */
+	  break;
 	}
+      break;
 
     case 3: /* Saw import.  */
       if (tok->type == CPP_PADDING || tok->type == CPP_COMMENT)
-	return state; /* Unchanged state.  */
+	break; /* Unchanged state.  */
 
       cpp_enable_filename_token (pfile, false);
       if (tok->type == CPP_HEADER_NAME || tok->type == CPP_STRING)
@@ -441,11 +472,15 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, int state)
 	  if (module_state *mod = get_module (name))
 	    import_module (mod, tok->src_loc, false, NULL, pfile);
 	}
+      // FIXME: MD assemblage
       goto maybe_end;
 
     default:
       gcc_unreachable ();
     }
+
+  *data = state;
+  return data;
 }
 
 /* Parse a #pragma whose sole argument is a string constant.

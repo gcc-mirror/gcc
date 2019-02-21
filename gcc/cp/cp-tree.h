@@ -6764,7 +6764,7 @@ extern void set_identifier_kind			(tree, cp_identifier_kind);
 extern bool cxx_init				(void);
 extern void cxx_finish				(void);
 extern bool in_main_input_context		(void);
-extern int module_preprocess_token (cpp_reader *, const cpp_token *, int);
+extern void *module_preprocess_token (cpp_reader *, const cpp_token *, void *);
 
 /* in method.c */
 extern void init_method				(void);

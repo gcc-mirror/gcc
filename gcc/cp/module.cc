@@ -13467,7 +13467,8 @@ module_state::direct_import (cpp_reader *reader, bool lazy)
 	  fname = module_mapper::import_export (this, false);
 	}
 
-      if (!do_import (fname, reader))
+      if (!do_import (fname, reader)
+	  && !flag_preprocess_only)
 	fatal_error (loc, "returning to gate for a mechanical issue");
 
       /* Restore the line-map state.  */
@@ -13488,6 +13489,7 @@ module_state::direct_import (cpp_reader *reader, bool lazy)
 
       /* If the current TU is an interface, any directly-imported
 	 interface partition must be exported.  */
+      // FIXME: check this at BMI writing point
       if (imp->is_partition () && imp->is_interface ()
 	  && !imp->exported_p && module_interface_p ())
 	{

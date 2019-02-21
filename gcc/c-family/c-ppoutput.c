@@ -176,14 +176,17 @@ scan_translation_unit (cpp_reader *pfile)
       && !flag_no_line_commands;
   bool in_pragma = false;
   bool line_marker_emitted = false;
-  int filter = lang_hooks.preprocess_token ? 0 : -1;
+  void *filter = NULL;
+
+  if (lang_hooks.preprocess_token)
+    filter = lang_hooks.preprocess_token (pfile, NULL, NULL);
 
   print.source = NULL;
   for (;;)
     {
       location_t loc = UNKNOWN_LOCATION;
       const cpp_token *token = cpp_get_token_with_location (pfile, &loc);
-      if (filter >= 0)
+      if (filter)
 	{
 	  filter = lang_hooks.preprocess_token (pfile, token, filter);
 	  if (!filter)
@@ -297,6 +300,9 @@ scan_translation_unit (cpp_reader *pfile)
       if (cpp_token_val_index (token) == CPP_TOKEN_FLD_STR)
 	account_for_newlines (token->val.str.text, token->val.str.len);
     }
+
+  if (filter)
+    filter = lang_hooks.preprocess_token (pfile, NULL, filter);
 }
 
 static void

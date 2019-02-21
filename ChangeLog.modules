@@ -1,3 +1,15 @@
+2019-02-21  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/
+	* langhooks.h (struct lang_hooks): Adjust preprocess_token API.
+	gcc/cp/
+	* lex.c (module_preprocess_token): Adjust API.
+	* cp-tree.h (module_preprocess_token): Adjust API.
+	* module.cc (module_state::direct_import): Not fatal if preprocessing.
+	gcc/c-family/
+	* c-ppoutput.c (scan_translation_unit): Adjust preprocess_token
+	hook API.
+
 2019-02-20  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/
