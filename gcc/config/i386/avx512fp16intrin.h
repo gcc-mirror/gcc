@@ -1235,6 +1235,199 @@ _mm_comi_round_sh (__m128h __A, __m128h __B, const int __P, const int __R)
 
 #endif /* __OPTIMIZE__  */
 
+/* Intrinsics vsqrtph.  */
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_sqrt_ph (__m512h __A)
+{
+  return __builtin_ia32_vsqrtph_v32hf_mask_round (__A,
+						  _mm512_setzero_ph(),
+						  (__mmask32) -1,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_sqrt_ph (__m512h __A, __mmask32 __B, __m512h __C)
+{
+  return __builtin_ia32_vsqrtph_v32hf_mask_round (__C, __A, __B,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_sqrt_ph (__mmask32 __A, __m512h __B)
+{
+  return __builtin_ia32_vsqrtph_v32hf_mask_round (__B,
+						  _mm512_setzero_ph (),
+						  __A,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_sqrt_round_ph (__m512h __A, const int __B)
+{
+  return __builtin_ia32_vsqrtph_v32hf_mask_round (__A,
+						  _mm512_setzero_ph(),
+						  (__mmask32) -1, __B);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_sqrt_round_ph (__m512h __A, __mmask32 __B, __m512h __C,
+			   const int __D)
+{
+  return __builtin_ia32_vsqrtph_v32hf_mask_round (__C, __A, __B, __D);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_sqrt_round_ph (__mmask32 __A, __m512h __B, const int __C)
+{
+  return __builtin_ia32_vsqrtph_v32hf_mask_round (__B,
+						  _mm512_setzero_ph (),
+						  __A, __C);
+}
+
+#else
+#define _mm512_sqrt_round_ph(A, B)					\
+  (__builtin_ia32_vsqrtph_v32hf_mask_round ((A),			\
+					    _mm512_setzero_ph (),	\
+					    (__mmask32)-1, (B)))
+
+#define _mm512_mask_sqrt_round_ph(A, B, C, D)				\
+  (__builtin_ia32_vsqrtph_v32hf_mask_round ((C), (A), (B), (D)))
+
+#define _mm512_maskz_sqrt_round_ph(A, B, C)				\
+  (__builtin_ia32_vsqrtph_v32hf_mask_round ((B),			\
+					    _mm512_setzero_ph (),	\
+					    (A), (C)))
+
+#endif /* __OPTIMIZE__ */
+
+/* Intrinsics vrsqrtph.  */
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_rsqrt_ph (__m512h __A)
+{
+  return __builtin_ia32_vrsqrtph_v32hf_mask (__A, _mm512_setzero_ph (),
+					     (__mmask32) -1);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_rsqrt_ph (__m512h __A, __mmask32 __B, __m512h __C)
+{
+  return __builtin_ia32_vrsqrtph_v32hf_mask (__C, __A, __B);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_rsqrt_ph (__mmask32 __A, __m512h __B)
+{
+  return __builtin_ia32_vrsqrtph_v32hf_mask (__B, _mm512_setzero_ph (),
+					     __A);
+}
+
+/* Intrinsics vrsqrtsh.  */
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_rsqrt_sh (__m128h __A, __m128h __B)
+{
+  return __builtin_ia32_vrsqrtsh_v8hf_mask (__B, __A, _mm_setzero_ph (),
+					    (__mmask8) -1);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_rsqrt_sh (__m128h __A, __mmask8 __B, __m128h __C, __m128h __D)
+{
+  return __builtin_ia32_vrsqrtsh_v8hf_mask (__D, __C, __A, __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_rsqrt_sh (__mmask8 __A, __m128h __B, __m128h __C)
+{
+  return __builtin_ia32_vrsqrtsh_v8hf_mask (__C, __B, _mm_setzero_ph (),
+					    __A);
+}
+
+/* Intrinsics vsqrtsh.  */
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_sqrt_sh (__m128h __A, __m128h __B)
+{
+  return __builtin_ia32_vsqrtsh_v8hf_mask_round (__B, __A,
+						 _mm_setzero_ph (),
+						 (__mmask8) -1,
+						 _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_sqrt_sh (__m128h __A, __mmask8 __B, __m128h __C, __m128h __D)
+{
+  return __builtin_ia32_vsqrtsh_v8hf_mask_round (__D, __C, __A, __B,
+						 _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_sqrt_sh (__mmask8 __A, __m128h __B, __m128h __C)
+{
+  return __builtin_ia32_vsqrtsh_v8hf_mask_round (__C, __B,
+						 _mm_setzero_ph (),
+						 __A, _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_sqrt_round_sh (__m128h __A, __m128h __B, const int __C)
+{
+  return __builtin_ia32_vsqrtsh_v8hf_mask_round (__B, __A,
+						 _mm_setzero_ph (),
+						 (__mmask8) -1, __C);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_sqrt_round_sh (__m128h __A, __mmask8 __B, __m128h __C,
+			__m128h __D, const int __E)
+{
+  return __builtin_ia32_vsqrtsh_v8hf_mask_round (__D, __C, __A, __B,
+						 __E);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_sqrt_round_sh (__mmask8 __A, __m128h __B, __m128h __C,
+			 const int __D)
+{
+  return __builtin_ia32_vsqrtsh_v8hf_mask_round (__C, __B,
+						 _mm_setzero_ph (),
+						 __A, __D);
+}
+
+#else
+#define _mm_sqrt_round_sh(A, B, C)				\
+  (__builtin_ia32_vsqrtsh_v8hf_mask_round ((B), (A),		\
+					   _mm_setzero_ph (),	\
+					   (__mmask8)-1, (C)))
+
+#define _mm_mask_sqrt_round_sh(A, B, C, D, E)			\
+  (__builtin_ia32_vsqrtsh_v8hf_mask_round ((D), (C), (A), (B), (E)))
+
+#define _mm_maskz_sqrt_round_sh(A, B, C, D)			\
+  (__builtin_ia32_vsqrtsh_v8hf_mask_round ((C), (B),		\
+					   _mm_setzero_ph (),	\
+					   (A), (D)))
+
+#endif /* __OPTIMIZE__ */
+
 #ifdef __DISABLE_AVX512FP16__
 #undef __DISABLE_AVX512FP16__
 #pragma GCC pop_options

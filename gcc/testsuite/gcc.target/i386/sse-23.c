@@ -719,6 +719,8 @@
 #define __builtin_ia32_vcmpph_v32hf_mask(A, B, C, D) __builtin_ia32_vcmpph_v32hf_mask(A, B, 1, D)
 #define __builtin_ia32_vcmpph_v32hf_mask_round(A, B, C, D, E) __builtin_ia32_vcmpph_v32hf_mask_round(A, B, 1, D, 8)
 #define __builtin_ia32_vcmpsh_v8hf_mask_round(A, B, C, D, E) __builtin_ia32_vcmpsh_v8hf_mask_round(A, B, 1, D, 8)
+#define __builtin_ia32_vsqrtph_v32hf_mask_round(C, A, B, D) __builtin_ia32_vsqrtph_v32hf_mask_round(C, A, B, 8)
+#define __builtin_ia32_vsqrtsh_v8hf_mask_round(D, C, A, B, E) __builtin_ia32_vsqrtsh_v8hf_mask_round(D, C, A, B, 8)
 
 /* avx512fp16vlintrin.h */
 #define __builtin_ia32_vcmpph_v8hf_mask(A, B, C, D) __builtin_ia32_vcmpph_v8hf_mask(A, B, 1, D)

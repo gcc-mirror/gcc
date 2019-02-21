@@ -405,6 +405,9 @@
 (define_mode_iterator VF_AVX512FP16
   [V32HF V16HF V8HF])
 
+(define_mode_iterator VF_AVX512FP16VL
+  [V32HF (V16HF "TARGET_AVX512VL") (V8HF "TARGET_AVX512VL")])
+
 ;; All vector integer modes
 (define_mode_iterator VI
   [(V16SI "TARGET_AVX512F") (V8DI "TARGET_AVX512F")
@@ -2381,8 +2384,8 @@
    (set_attr "mode" "<MODE>")])
 
 (define_expand "sqrt<mode>2"
-  [(set (match_operand:VF2 0 "register_operand")
-	(sqrt:VF2 (match_operand:VF2 1 "vector_operand")))]
+  [(set (match_operand:VF2H 0 "register_operand")
+	(sqrt:VF2H (match_operand:VF2H 1 "vector_operand")))]
   "TARGET_SSE2")
 
 (define_expand "sqrt<mode>2"
@@ -2402,8 +2405,8 @@
 })
 
 (define_insn "<sse>_sqrt<mode>2<mask_name><round_name>"
-  [(set (match_operand:VF 0 "register_operand" "=x,v")
-	(sqrt:VF (match_operand:VF 1 "<round_nimm_predicate>" "xBm,<round_constraint>")))]
+  [(set (match_operand:VFH 0 "register_operand" "=x,v")
+	(sqrt:VFH (match_operand:VFH 1 "<round_nimm_predicate>" "xBm,<round_constraint>")))]
   "TARGET_SSE && <mask_mode512bit_condition> && <round_mode512bit_condition>"
   "@
    sqrt<ssemodesuffix>\t{%1, %0|%0, %1}
@@ -2416,11 +2419,11 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<sse>_vmsqrt<mode>2<mask_scalar_name><round_scalar_name>"
-  [(set (match_operand:VF_128 0 "register_operand" "=x,v")
-	(vec_merge:VF_128
-	  (sqrt:VF_128
-	    (match_operand:VF_128 1 "nonimmediate_operand" "xm,<round_scalar_constraint>"))
-	  (match_operand:VF_128 2 "register_operand" "0,v")
+  [(set (match_operand:VFH_128 0 "register_operand" "=x,v")
+	(vec_merge:VFH_128
+	  (sqrt:VFH_128
+	    (match_operand:VFH_128 1 "nonimmediate_operand" "xm,<round_scalar_constraint>"))
+	  (match_operand:VFH_128 2 "register_operand" "0,v")
 	  (const_int 1)))]
   "TARGET_SSE"
   "@
@@ -2471,6 +2474,16 @@
   "%vrsqrtps\t{%1, %0|%0, %1}"
   [(set_attr "type" "sse")
    (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "<sse>_rsqrt<mode>2<mask_name>"
+  [(set (match_operand:VF_AVX512FP16VL 0 "register_operand" "=v")
+	(unspec:VF_AVX512FP16VL
+	  [(match_operand:VF_AVX512FP16VL 1 "vector_operand" "vBm")] UNSPEC_RSQRT))]
+  "TARGET_AVX512FP16"
+  "vrsqrtph\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+  [(set_attr "type" "sse")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<mask_codefor>rsqrt14<mode><mask_name>"
@@ -2547,6 +2560,19 @@
    (set_attr "type" "sse")
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "SF")])
+
+(define_insn "avx512fp16_vmrsqrtv8hf2<mask_scalar_name>"
+  [(set (match_operand:V8HF 0 "register_operand" "=v")
+	(vec_merge:V8HF
+	  (unspec:V8HF [(match_operand:V8HF 1 "nonimmediate_operand" "vm")]
+		       UNSPEC_RSQRT)
+	  (match_operand:V8HF 2 "register_operand" "v")
+	  (const_int 1)))]
+  "TARGET_AVX512FP16"
+  "vrsqrtsh\t{%1, %2, %0<mask_scalar_operand3>|%0<mask_scalar_operand3>, %2, %w1}"
+  [(set_attr "type" "sse")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "HF")])
 
 (define_expand "cond_<code><mode>"
   [(set (match_operand:VF 0 "register_operand")

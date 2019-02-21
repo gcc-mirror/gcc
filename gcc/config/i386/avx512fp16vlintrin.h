@@ -358,6 +358,99 @@ _mm_mask_cmp_ph_mask (__mmask16 __A, __m256h __B, __m256h __C,
 
 #endif /* __OPTIMIZE__ */
 
+/* Intrinsics vsqrtph.  */
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_sqrt_ph (__m128h __A)
+{
+  return __builtin_ia32_vsqrtph_v8hf_mask (__A, _mm_setzero_ph (),
+					   (__mmask8) -1);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_sqrt_ph (__m256h __A)
+{
+  return __builtin_ia32_vsqrtph_v16hf_mask (__A, _mm256_setzero_ph (),
+					    (__mmask16) -1);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_sqrt_ph (__m128h __A, __mmask8 __B, __m128h __C)
+{
+  return __builtin_ia32_vsqrtph_v8hf_mask (__C, __A, __B);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_sqrt_ph (__m256h __A, __mmask16 __B, __m256h __C)
+{
+  return __builtin_ia32_vsqrtph_v16hf_mask (__C, __A, __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_sqrt_ph (__mmask8 __A, __m128h __B)
+{
+  return __builtin_ia32_vsqrtph_v8hf_mask (__B, _mm_setzero_ph (),
+					   __A);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_sqrt_ph (__mmask16 __A, __m256h __B)
+{
+  return __builtin_ia32_vsqrtph_v16hf_mask (__B, _mm256_setzero_ph (),
+					    __A);
+}
+
+/* Intrinsics vrsqrtph.  */
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_rsqrt_ph (__m128h __A)
+{
+  return __builtin_ia32_vrsqrtph_v8hf_mask (__A, _mm_setzero_ph (),
+					    (__mmask8) -1);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_rsqrt_ph (__m256h __A)
+{
+  return __builtin_ia32_vrsqrtph_v16hf_mask (__A, _mm256_setzero_ph (),
+					     (__mmask16) -1);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_rsqrt_ph (__m128h __A, __mmask8 __B, __m128h __C)
+{
+  return __builtin_ia32_vrsqrtph_v8hf_mask (__C, __A, __B);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_rsqrt_ph (__m256h __A, __mmask16 __B, __m256h __C)
+{
+  return __builtin_ia32_vrsqrtph_v16hf_mask (__C, __A, __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_rsqrt_ph (__mmask8 __A, __m128h __B)
+{
+  return __builtin_ia32_vrsqrtph_v8hf_mask (__B, _mm_setzero_ph (), __A);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_rsqrt_ph (__mmask16 __A, __m256h __B)
+{
+  return __builtin_ia32_vrsqrtph_v16hf_mask (__B, _mm256_setzero_ph (),
+					     __A);
+}
+
 #ifdef __DISABLE_AVX512FP16VL__
 #undef __DISABLE_AVX512FP16VL__
 #pragma GCC pop_options
