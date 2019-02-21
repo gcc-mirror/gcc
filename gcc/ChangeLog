@@ -1,3 +1,13 @@
+2019-02-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR hsa/89302
+	* omp-general.c (omp_extract_for_data): Removed a duplicate call
+	to omp_adjust_for_condition, moved NE_EXPR code_cond processing...
+	(omp_adjust_for_condition): ...here.  Added necessary parameters.
+	* omp-general.h (omp_adjust_for_condition): Updated declaration.
+	* omp-grid.c (grid_attempt_target_gridification): Adjust to pass
+	proper values to new parameters of omp_adjust_for_condition.
+
 2019-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/89412

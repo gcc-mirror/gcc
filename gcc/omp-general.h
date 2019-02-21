@@ -73,7 +73,7 @@ struct omp_for_data
 extern tree omp_find_clause (tree clauses, enum omp_clause_code kind);
 extern bool omp_is_reference (tree decl);
 extern void omp_adjust_for_condition (location_t loc, enum tree_code *cond_code,
-				      tree *n2);
+				      tree *n2, tree v, tree step);
 extern tree omp_get_for_step_from_incr (location_t loc, tree incr);
 extern void omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 				  struct omp_for_data_loop *loops);
