@@ -2956,8 +2956,8 @@ struct GTY(()) lang_decl {
 /* Nonzero for _DECL means that this decl appears in (or will appear
    in) as a member in a RECORD_TYPE or UNION_TYPE node.  It is also for
    detecting circularity in case members are multiply defined.  In the
-   case of a VAR_DECL, it is also used to determine how program storage
-   should be allocated.  */
+   case of a VAR_DECL, it means that no definition has been seen, even
+   if an initializer has been.  */
 #define DECL_IN_AGGR_P(NODE) (DECL_LANG_FLAG_3 (NODE))
 
 /* Nonzero for a VAR_DECL means that the variable's initialization (if

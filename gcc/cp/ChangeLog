@@ -1,3 +1,16 @@
+2019-02-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87921 - wrong error with inline static data member.
+	* decl2.c (finish_static_data_member_decl): Don't set DECL_IN_AGGR_P
+	for a non-template inline variable.  Do nothing for an
+	already-instantiated variable.
+	(c_parse_final_cleanups): Check DECL_IN_AGGR_P without
+	DECL_INLINE_VAR_P.
+	* decl.c (check_initializer): Likewise.
+	(make_rtl_for_nonlocal_decl): Likewise.
+	* pt.c (instantiate_decl): Likewise.
+	* typeck2.c (store_init_value): Likewise.
+
 2019-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89403
