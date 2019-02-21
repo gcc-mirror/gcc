@@ -1,5 +1,8 @@
 2019-02-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/89405
+	* g++.dg/cpp1z/inline-var5.C: New test.
+
 	PR middle-end/89412
 	* gcc.c-torture/compile/pr89412.c: New test.
 
