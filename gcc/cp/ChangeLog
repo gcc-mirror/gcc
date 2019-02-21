@@ -1,5 +1,9 @@
 2019-02-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/89405
+	* decl.c (maybe_commonize_var): When clearing TREE_PUBLIC and
+	DECL_COMMON, set DECL_INTERFACE_KNOWN.
+
 	PR c++/89336
 	* constexpr.c (cxx_eval_store_expression): Diagnose changing of active
 	union member for -std=c++17 and earlier.
