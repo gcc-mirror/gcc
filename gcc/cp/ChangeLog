@@ -1,3 +1,9 @@
+2019-02-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88419 - C++17 ICE with class template arg deduction.
+	* pt.c (make_template_placeholder): Set TYPE_CANONICAL after
+	CLASS_PLACEHOLDER_TEMPLATE.
+
 2019-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89285
