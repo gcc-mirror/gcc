@@ -1087,8 +1087,7 @@ maybe_add_lambda_conv_op (tree type)
   tree optype = TREE_TYPE (callop);
   tree fn_result = TREE_TYPE (optype);
 
-  tree thisarg = build_nop (TREE_TYPE (DECL_ARGUMENTS (callop)),
-			    null_pointer_node);
+  tree thisarg = build_int_cst (TREE_TYPE (DECL_ARGUMENTS (callop)), 0);
   if (generic_lambda_p)
     {
       ++processing_template_decl;

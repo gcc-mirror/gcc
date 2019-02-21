@@ -15,11 +15,11 @@ struct T : S {
   int b;
   int g() { return 0; }
   virtual int v() { return 1; }
-  constexpr const T *foo() { return (const T *) reinterpret_cast<const S *> (this); }
+  constexpr const T *foo() { return (const T *) reinterpret_cast<const S *> (this); } // { dg-error "is not a constant expression" }
 };
 
 constexpr T t;
-constexpr const T *p = t.foo ();
+constexpr const T *p = t.foo ();	// { dg-message "expansion of" }
 
 template <typename U>
 struct V {
@@ -39,16 +39,17 @@ struct W : V<U> {
 };
 
 constexpr W<int> w;
-constexpr const W<int> *s = w.foo ();
+constexpr const W<int> *s = w.foo ();	// { dg-error "is not a constant expression" }
+// { dg-message "expansion of" "" { target *-*-* } .-1 }
 
 template <typename U>
 int foo (void)
 {
   static constexpr T t;
-  static constexpr const T *p = t.foo ();
+  static constexpr const T *p = t.foo ();	// { dg-message "expansion of" }
   static constexpr W<U> w;
-  static constexpr const W<U> *s = w.foo ();
-  return t.b + w.b;
+  static constexpr const W<U> *s = w.foo ();	// { dg-error "is not a constant expression" }
+  return t.b + w.b;				// { dg-message "expansion of" "" { target *-*-* } .-1 }
 }
 
 int x = foo <char> ();
