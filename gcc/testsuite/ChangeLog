@@ -1,3 +1,14 @@
+2019-02-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87412
+	* gcc.target/i386/indirect-thunk-attr-14.c: Replace
+	-fcf-protection with -fcf-protection=branch.
+	* gcc.target/i386/indirect-thunk-attr-15.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-16.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-8.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-9.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-10.c: Likewise.
+
 2019-02-21  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.target/arm/pr88850-2.c: Block -mfloat-abi override.
