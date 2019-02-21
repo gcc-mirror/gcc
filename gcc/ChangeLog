@@ -1,3 +1,7 @@
+2019-02-21  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (__clear_cache): Correct signature.
+
 2019-02-21  Ian Lance Taylor  <iant@golang.org>
 
 	PR go/89170
