@@ -1,3 +1,12 @@
+2019-02-21  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/89170
+	* varasm.c (decode_addr_const): Call lookup_constant_def rather
+	than output_constant_def.
+	(add_constant_to_table): New static function.
+	(output_constant_def): Call add_constant_to_table.
+	(tree_output_constant_def): Likewise.
+
 2019-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89285
