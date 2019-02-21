@@ -2961,7 +2961,9 @@ decode_addr_const (tree exp, struct addr_const *value)
     case COMPLEX_CST:
     case CONSTRUCTOR:
     case INTEGER_CST:
-      x = output_constant_def (target, 1);
+      x = lookup_constant_def (target);
+      /* Should have been added by output_addressed_constants.  */
+      gcc_assert (x);
       break;
 
     case INDIRECT_REF:
@@ -3424,6 +3426,43 @@ build_constant_desc (tree exp)
   return desc;
 }
 
+/* Subroutine of output_constant_def and tree_output_constant_def:
+   Add a constant to the hash table that tracks which constants
+   already have labels.  */
+
+static constant_descriptor_tree *
+add_constant_to_table (tree exp)
+{
+  /* The hash table methods may call output_constant_def for addressed
+     constants, so handle them first.  */
+  output_addressed_constants (exp);
+
+  /* Sanity check to catch recursive insertion.  */
+  static bool inserting;
+  gcc_assert (!inserting);
+  inserting = true;
+
+  /* Look up EXP in the table of constant descriptors.  If we didn't
+     find it, create a new one.  */
+  struct constant_descriptor_tree key;
+  key.value = exp;
+  key.hash = const_hash_1 (exp);
+  constant_descriptor_tree **loc
+    = const_desc_htab->find_slot_with_hash (&key, key.hash, INSERT);
+
+  inserting = false;
+
+  struct constant_descriptor_tree *desc = *loc;
+  if (!desc)
+    {
+      desc = build_constant_desc (exp);
+      desc->hash = key.hash;
+      *loc = desc;
+    }
+
+  return desc;
+}
+
 /* Return an rtx representing a reference to constant data in memory
    for the constant expression EXP.
 
@@ -3440,24 +3479,7 @@ build_constant_desc (tree exp)
 rtx
 output_constant_def (tree exp, int defer)
 {
-  struct constant_descriptor_tree *desc;
-  struct constant_descriptor_tree key;
-
-  /* Look up EXP in the table of constant descriptors.  If we didn't find
-     it, create a new one.  */
-  key.value = exp;
-  key.hash = const_hash_1 (exp);
-  constant_descriptor_tree **loc
-    = const_desc_htab->find_slot_with_hash (&key, key.hash, INSERT);
-
-  desc = *loc;
-  if (desc == 0)
-    {
-      desc = build_constant_desc (exp);
-      desc->hash = key.hash;
-      *loc = desc;
-    }
-
+  struct constant_descriptor_tree *desc = add_constant_to_table (exp);
   maybe_output_constant_def_contents (desc, defer);
   return desc->rtl;
 }
@@ -3591,25 +3613,8 @@ lookup_constant_def (tree exp)
 tree
 tree_output_constant_def (tree exp)
 {
-  struct constant_descriptor_tree *desc, key;
-  tree decl;
-
-  /* Look up EXP in the table of constant descriptors.  If we didn't find
-     it, create a new one.  */
-  key.value = exp;
-  key.hash = const_hash_1 (exp);
-  constant_descriptor_tree **loc
-    = const_desc_htab->find_slot_with_hash (&key, key.hash, INSERT);
-
-  desc = *loc;
-  if (desc == 0)
-    {
-      desc = build_constant_desc (exp);
-      desc->hash = key.hash;
-      *loc = desc;
-    }
-
-  decl = SYMBOL_REF_DECL (XEXP (desc->rtl, 0));
+  struct constant_descriptor_tree *desc = add_constant_to_table (exp);
+  tree decl = SYMBOL_REF_DECL (XEXP (desc->rtl, 0));
   varpool_node::finalize_decl (decl);
   return decl;
 }
