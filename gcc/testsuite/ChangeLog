@@ -1,3 +1,11 @@
+2019-02-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87412
+	* gcc.target/i386/pr87412-1.c: New file.
+	* gcc.target/i386/pr87412-2.c: Likewise.
+	* gcc.target/i386/pr87412-3.c: Likewise.
+	* gcc.target/i386/pr87412-4.c: Likewise.
+
 2019-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89403
