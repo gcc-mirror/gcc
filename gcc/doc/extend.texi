@@ -13073,7 +13073,7 @@ void foo (void)
 
 @end deftypefn
 
-@deftypefn {Built-in Function} void __builtin___clear_cache (char *@var{begin}, char *@var{end})
+@deftypefn {Built-in Function} void __builtin___clear_cache (void *@var{begin}, void *@var{end})
 This function is used to flush the processor's instruction cache for
 the region of memory between @var{begin} inclusive and @var{end}
 exclusive.  Some targets require that the instruction cache be

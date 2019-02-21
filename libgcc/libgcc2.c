@@ -2162,11 +2162,14 @@ __eprintf (const char *string, const char *expression,
 /* Clear part of an instruction cache.  */
 
 void
-__clear_cache (char *beg __attribute__((__unused__)),
-	       char *end __attribute__((__unused__)))
+__clear_cache (void *beg __attribute__((__unused__)),
+	       void *end __attribute__((__unused__)))
 {
 #ifdef CLEAR_INSN_CACHE
-  CLEAR_INSN_CACHE (beg, end);
+  /* Cast the void* pointers to char* as some implementations
+     of the macro assume the pointers can be subtracted from
+     one another.  */
+  CLEAR_INSN_CACHE ((char *) beg, (char *) end);
 #endif /* CLEAR_INSN_CACHE */
 }
 
