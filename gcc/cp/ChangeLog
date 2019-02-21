@@ -1,5 +1,10 @@
 2019-02-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/89422 - ICE with -g and lambda in default arg in template.
+	* pt.c (tsubst_function_decl): SET_DECL_FRIEND_CONTEXT sooner.
+
+2019-02-21  Jason Merrill  <jason@redhat.com>
+
 	PR c++/88419 - C++17 ICE with class template arg deduction.
 	* pt.c (make_template_placeholder): Set TYPE_CANONICAL after
 	CLASS_PLACEHOLDER_TEMPLATE.

@@ -13088,6 +13088,11 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 	set_constraints (r, ci);
       }
 
+  if (DECL_FRIEND_P (t) && DECL_FRIEND_CONTEXT (t))
+    SET_DECL_FRIEND_CONTEXT (r,
+			     tsubst (DECL_FRIEND_CONTEXT (t),
+				     args, complain, in_decl));
+
   /* Set up the DECL_TEMPLATE_INFO for R.  There's no need to do
      this in the special friend case mentioned above where
      GEN_TMPL is NULL.  */
@@ -13148,11 +13153,6 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 	   && IDENTIFIER_ANY_OP_P (DECL_NAME (r))
 	   && !grok_op_properties (r, /*complain=*/true))
     return error_mark_node;
-
-  if (DECL_FRIEND_P (t) && DECL_FRIEND_CONTEXT (t))
-    SET_DECL_FRIEND_CONTEXT (r,
-			     tsubst (DECL_FRIEND_CONTEXT (t),
-				     args, complain, in_decl));
 
   /* Possibly limit visibility based on template args.  */
   DECL_VISIBILITY (r) = VISIBILITY_DEFAULT;
