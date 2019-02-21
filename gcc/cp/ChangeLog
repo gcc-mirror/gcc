@@ -1,5 +1,10 @@
 2019-02-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/89403
+	* decl2.c (c_parse_final_cleanups): Move TREE_ASM_WRITTEN setting
+	for flag_syntax_only from here...
+	* semantics.c (expand_or_defer_fn_1): ... here.
+
 	PR c++/89405
 	* decl.c (maybe_commonize_var): When clearing TREE_PUBLIC and
 	DECL_COMMON, set DECL_INTERFACE_KNOWN.
