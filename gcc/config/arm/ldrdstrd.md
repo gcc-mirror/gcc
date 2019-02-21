@@ -159,7 +159,7 @@
 (define_insn "*arm_ldrd"
   [(parallel [(set (match_operand:SI 0 "s_register_operand" "=r")
 		   (match_operand:SI 2 "memory_operand" "m"))
-	      (set (match_operand:SI 1 "s_register_operand" "=q")
+	      (set (match_operand:SI 1 "s_register_operand" "=rk")
 		   (match_operand:SI 3 "memory_operand" "m"))])]
   "TARGET_LDRD && TARGET_ARM && reload_completed
   && valid_operands_ldrd_strd (operands, true)"
@@ -180,7 +180,7 @@
   [(parallel [(set (match_operand:SI 2 "memory_operand" "=m")
 		   (match_operand:SI 0 "s_register_operand" "r"))
 	      (set (match_operand:SI 3 "memory_operand" "=m")
-		   (match_operand:SI 1 "s_register_operand" "q"))])]
+		   (match_operand:SI 1 "s_register_operand" "rk"))])]
   "TARGET_LDRD && TARGET_ARM && reload_completed
   && valid_operands_ldrd_strd (operands, false)"
   {
