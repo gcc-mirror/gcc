@@ -1,5 +1,10 @@
 2019-02-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	* dump-parse-tree.c (debug): Implement for gfc_expr *,
+	gfc_typespec *, gfc_typespec and gfc_symbol *.
+
+2019-02-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/86119
 	* class.c (gfc_get_len_component): Add argument k for kind.
 	If the kind of the resulting expression is not equal to k,
