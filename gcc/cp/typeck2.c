@@ -843,8 +843,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
       value = fold_non_dependent_expr (value);
       if (DECL_DECLARED_CONSTEXPR_P (decl)
 	  || (DECL_IN_AGGR_P (decl)
-	      && DECL_INITIALIZED_IN_CLASS_P (decl)
-	      && !DECL_VAR_DECLARED_INLINE_P (decl)))
+	      && DECL_INITIALIZED_IN_CLASS_P (decl)))
 	{
 	  /* Diagnose a non-constant initializer for constexpr variable or
 	     non-inline in-class-initialized static data member.  */
