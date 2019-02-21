@@ -275,6 +275,9 @@ ssa_block_ranges&
 block_range_cache::get_block_ranges (tree name)
 {
   unsigned v = SSA_NAME_VERSION (name);
+  if (v >= m_ssa_ranges.length ())
+    m_ssa_ranges.safe_grow_cleared (num_ssa_names + 1);
+
   if (!m_ssa_ranges[v])
     m_ssa_ranges[v] = new ssa_block_ranges (TREE_TYPE (name));
 
@@ -323,7 +326,7 @@ void
 block_range_cache::dump (FILE *f)
 {
   unsigned x;
-  for (x = 0; x < num_ssa_names; ++x)
+  for (x = 0; x < m_ssa_ranges.length (); ++x)
     {
       if (m_ssa_ranges[x])
         {
@@ -343,7 +346,7 @@ block_range_cache::dump (FILE *f, basic_block bb, bool print_varying)
   unsigned x;
   irange r;
   bool summarize_varying = false;
-  for (x = 1; x < num_ssa_names; ++x)
+  for (x = 1; x < m_ssa_ranges.length (); ++x)
     {
       if (!ssa_ranger::valid_ssa_p (ssa_name (x)))
         continue;
@@ -402,7 +405,11 @@ ssa_global_cache::~ssa_global_cache ()
 bool
 ssa_global_cache::get_global_range (irange &r, tree name) const
 {
-  irange_storage *stow = m_tab[SSA_NAME_VERSION (name)];
+  unsigned v = SSA_NAME_VERSION (name);
+  if (v >= m_tab.length ())
+    return false;
+   
+  irange_storage *stow = m_tab[v];
   if (!stow)
     return false;
   r = irange (TREE_TYPE (name), stow);
@@ -414,7 +421,10 @@ ssa_global_cache::get_global_range (irange &r, tree name) const
 void
 ssa_global_cache::set_global_range (tree name, const irange& r)
 {
-  irange_storage *m = m_tab[SSA_NAME_VERSION (name)];
+  unsigned v = SSA_NAME_VERSION (name);
+  if (v >= m_tab.length ())
+    m_tab.safe_grow_cleared (num_ssa_names + 1);
+  irange_storage *m = m_tab[v];
 
   if (m)
     m->set_irange (r);
@@ -430,7 +440,10 @@ ssa_global_cache::set_global_range (tree name, const irange& r)
 void
 ssa_global_cache::clear_global_range (tree name)
 {
-  m_tab[SSA_NAME_VERSION (name)] = NULL;
+  unsigned v = SSA_NAME_VERSION (name);
+  if (v >= m_tab.length ())
+    m_tab.safe_grow_cleared (num_ssa_names + 1);
+  m_tab[v] = NULL;
 }
 
 // Clear the global cache.

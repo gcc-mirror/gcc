@@ -137,7 +137,13 @@ range_def_chain::build_def_chain (tree name, bitmap result, basic_block bb)
 inline bool
 range_def_chain::has_def_chain (tree name)
 {
-  return (m_def_chain[SSA_NAME_VERSION (name)] != NULL);
+  unsigned v = SSA_NAME_VERSION (name);
+  if (v >= m_def_chain.length ())
+    {
+      m_def_chain.safe_grow_cleared (num_ssa_names + 1);
+      m_terminal.safe_grow_cleared (num_ssa_names + 1);
+    }
+  return (m_def_chain[v] != NULL);
 }
 
 // Calculate the def chain for NAME and all of its dependent operands. Only
@@ -151,7 +157,7 @@ range_def_chain::get_def_chain (tree name)
   unsigned v = SSA_NAME_VERSION (name);
 
   // If it has already been processed, just return the cached value.
-  if (m_def_chain[v])
+  if (has_def_chain (name))
     return m_def_chain[v];
 
   // No definition chain for default defs.
