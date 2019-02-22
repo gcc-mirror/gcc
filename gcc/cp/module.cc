@@ -13779,6 +13779,26 @@ set_module_header_name (const char *src, unsigned len, bool quote = true)
   *name = 0;
 }
 
+void
+module_preprocess (mrules *deps, module_state *state, int is_module)
+{
+  if (is_module)
+    (*modules)[MODULE_PURVIEW] = state;
+  if (!state->flatname)
+    state->set_flatname ();
+  const char *path = NULL;
+  if (is_module > 0)
+    {
+      path = state->filename;
+      if (!path)
+	path = module_mapper::import_export (state, true);
+      path = path ? maybe_add_bmi_prefix (path) : "";
+    }
+
+  deps_add_module (deps, state->get_flatname (false), state->get_flatname (true),
+		   path, state->is_header ());
+}
+
 /* We've just properly entered the main source file.  I.e. after the
    command line, builtins and forced headers.  Record the line map and
    location of this map.  Note we may be called more than once.  The
@@ -13816,8 +13836,11 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
 	    }
 
 	  tree name = get_identifier (module_header_name);
-	  declare_module (get_module (name),
-			  spans.main_start (), true, NULL, reader);
+	  module_state *state = get_module (name);
+	  if (!flag_preprocess_only)
+	    declare_module (state, spans.main_start (), true, NULL, reader);
+	  else if (mrules *deps = cpp_get_deps (reader))
+	    module_preprocess (deps, state, 1);
 	}
     }
 }

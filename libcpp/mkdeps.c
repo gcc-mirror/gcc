@@ -325,7 +325,7 @@ deps_add_module (struct mrules *d, const char *m, const char *p,
     {
       d->module_name = m;
       d->is_legacy = is_legacy;
-      d->bmi_name = munge (bmi);
+      d->bmi_name = *bmi ? munge (bmi) : NULL;
     }
   else
     d->modules.push (m);
@@ -369,35 +369,57 @@ deps_write (const struct mrules *d, FILE *fp, unsigned int colmax)
   if (colmax && colmax < 34)
     colmax = 34;
 
-  column = write_vec (d->targets, fp, column, colmax);
-  if (d->bmi_name)
-    column = write_name (d->bmi_name, fp, column, colmax);
-  fputs (":", fp);
-  column++;
-  column = write_vec (d->deps, fp, column, colmax);
-  column = write_vec (d->modules, fp, column, colmax);
-  fputs ("\n", fp);
-  column = 0;
+  if (d->deps.size ())
+    {
+      column = write_vec (d->targets, fp, 0, colmax);
+      if (d->bmi_name)
+	column = write_name (d->bmi_name, fp, column, colmax);
+      fputs (":", fp);
+      column++;
+      column = write_vec (d->deps, fp, column, colmax);
+      fputs ("\n", fp);
+    }
+
+  if (d->modules.size ())
+    {
+      column = write_vec (d->targets, fp, 0, colmax);
+      if (d->bmi_name)
+	column = write_name (d->bmi_name, fp, column, colmax);
+      fputs (":", fp);
+      column++;
+      column = write_vec (d->modules, fp, column, colmax);
+      fputs ("\n", fp);
+    }
 
   if (d->module_name)
     {
-      /* module-name : bmi-name */
-      column = write_name (d->module_name, fp, column, colmax);
-      fputs (":", fp);
-      column++;
-      column = write_name (d->bmi_name, fp, column, colmax);
-      fputs ("\n", fp);
-
-      /* bmi-name :| first-target */
-      if (!d->is_legacy)
+      if (d->bmi_name)
 	{
-	  column = 0;
+	  /* module-name : bmi-name */
+	  column = write_name (d->module_name, fp, 0, colmax);
+	  fputs (":", fp);
+	  column++;
 	  column = write_name (d->bmi_name, fp, column, colmax);
+	  fputs ("\n", fp);
+
+	  column = fprintf (fp, ".PHONY:");
+	  column = write_name (d->module_name, fp, column, colmax);
+	  fputs ("\n", fp);
+	}
+
+      if (d->bmi_name && !d->is_legacy)
+	{
+	  /* bmi-name :| first-target */
+	  column = write_name (d->bmi_name, fp, 0, colmax);
 	  fputs (":|", fp);
 	  column++;
 	  column = write_name (d->targets[0], fp, column, colmax);
 	  fputs ("\n", fp);
 	}
+    }
+  
+  if (d->modules.size ())
+    {
       column = fprintf (fp, "CXX_IMPORTS +=");
       write_vec (d->modules, fp, column, colmax);
       fputs ("\n", fp);

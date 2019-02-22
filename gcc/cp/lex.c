@@ -379,42 +379,65 @@ interface_strcmp (const char* s)
 void *
 module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, void *data_)
 {
-  unsigned *data = (unsigned *)data_;
+  enum mode_sm
+  {
+   msm_start_decl,
+   msm_in_decl,
+   msm_after_import,
+   msm_after_module,
+  };
+  struct state
+  {
+    unsigned depth;
+    mode_sm mode : 8;
+    bool got_colon : 1;
+    bool want_dot : 1;
+    bool got_export : 1;
+    mrules *deps;
+    module_state *parent;
+
+    state (mrules *deps)
+      : depth(0), mode (msm_start_decl),
+      got_colon (false), want_dot (false), got_export (false), deps (deps),
+      parent (NULL)
+    {
+    }
+  };  
+  state *data = (state *)data_;
+
   if (!tok)
     {
-      if (!flag_modules)
-	return NULL; /* Do not use  */
       if (data)
 	{
-	  XDELETE (data);
+	  delete data;
 	  data = NULL;
 	}
-      else
-	{
-	  data = XNEW (unsigned);
-	  *data = 1;
-	}
+      else if (flag_modules)
+	data = new state (cpp_get_deps (pfile));
       return data;
     }
 
-  unsigned state = *data;
-  unsigned depth = state & ~3;
-  switch (state & 3)
+  switch (data->mode)
     {
-    case 1:  /* Start of decl.  */
+    case msm_start_decl:
       if (tok->type == CPP_NAME)
 	{
 	  tree ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node.node));
 	  int keyword = C_RID_CODE (ident);
 	  if (keyword == RID_EXPORT)
 	    {
-	      state = depth | 1;  /* Remain at start.  */
-	      break;
+	      data->got_export = true;
+	      break; /* Remain at start.  */
 	    }
-	  else if (!depth && keyword == RID_IMPORT)
+	  else if (!data->depth && keyword == RID_IMPORT)
 	    {
 	      cpp_enable_filename_token (pfile, true);
-	      state = depth | 3; /* Just started import.  */
+	      data->mode = msm_after_import;
+	      break;
+	    }
+	  else if (!data->depth && keyword == RID_MODULE)
+	    {
+	      data->mode = msm_after_module;
 	      break;
 	    }
 	  // FIXME:translated include inside extern C
@@ -422,7 +445,10 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, void *data_)
       /* FALLTHROUGH */
 
     maybe_end:
-    case 2:
+      data->mode = msm_in_decl;
+      /* FALLTHROUGH */
+
+    case msm_in_decl:
       switch (tok->type)
 	{
 	case CPP_PADDING:
@@ -430,56 +456,94 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, void *data_)
 	  break; /* Unchanged state.  */
 
 	case CPP_OPEN_BRACE:
+	  data->depth += 1;
+	  break;
+
 	case CPP_OPEN_PAREN:
 	case CPP_OPEN_SQUARE:
-	  depth += 4;
-	  state = depth | 2;
+	  data->depth += 2;
 	  break;
 
 	case CPP_CLOSE_PAREN:
 	case CPP_CLOSE_SQUARE:
-	  if (depth)
-	    depth -= 4;
-	  state = depth | 2;
+	  if (data->depth > 1)
+	    data->depth -= 2;
 	  break;
 
 	case CPP_CLOSE_BRACE:
-	  if (depth)
-	    depth -= 4;
+	  if (data->depth)
+	    data->depth -= 1;
 	  /* FALLTHROUGH */
 
 	case CPP_SEMICOLON:
 	case CPP_PRAGMA_EOL:
-	  state = depth | 1; /* Start of decl.  */
+	  data->got_export = false;
+	  data->mode = msm_start_decl;
 	  break;
 
 	default:
-	  state =  depth | 2; /* In a decl.  */
+	  /* Still in a decl.  */
 	  break;
 	}
       break;
 
-    case 3: /* Saw import.  */
+    case msm_after_import:
+    case msm_after_module:
       if (tok->type == CPP_PADDING || tok->type == CPP_COMMENT)
 	break; /* Unchanged state.  */
 
-      cpp_enable_filename_token (pfile, false);
-      if (tok->type == CPP_HEADER_NAME || tok->type == CPP_STRING)
+      if (data->mode == msm_after_import
+	  && !data->parent && !data->got_colon)
 	{
-	  /* Load the legacy import.  */
-	  tree name = get_identifier_with_length
-	    ((const char *) tok->val.str.text, tok->val.str.len);
-	  if (module_state *mod = get_module (name))
-	    import_module (mod, tok->src_loc, false, NULL, pfile);
+	  cpp_enable_filename_token (pfile, false);
+	  if (tok->type == CPP_HEADER_NAME || tok->type == CPP_STRING)
+	    {
+	      /* Load the legacy import.  */
+	      tree name = get_identifier_with_length
+		((const char *) tok->val.str.text, tok->val.str.len);
+	      if (module_state *mod = get_module (name))
+		import_module (mod, tok->src_loc, false, NULL, pfile);
+	      goto maybe_end;
+	    }
 	}
-      // FIXME: MD assemblage
-      goto maybe_end;
+
+      if (!data->deps)
+	goto maybe_end;
+
+      if (!data->parent && tok->type == CPP_COLON
+	  && data->mode == msm_after_import)
+	data->got_colon = true;
+      else if (data->want_dot && tok->type == CPP_DOT)
+	data->want_dot = false;
+      else if (data->want_dot && !data->got_colon
+	       && tok->type == CPP_COLON)
+	{
+	  data->got_colon = true;
+	  data->want_dot = false;
+	}
+      else if (!data->want_dot && tok->type == CPP_NAME)
+	{
+	  tree ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node.node));
+	  data->parent = get_module (ident, data->parent, data->got_colon);
+	  data->want_dot = true;
+	}
+      else
+	{
+	  if (data->want_dot && data->parent)
+	    module_preprocess (data->deps, data->parent,
+			       data->mode != msm_after_module ? 0
+			       : data->got_export ? +1 : -1);
+	  data->want_dot = false;
+	  data->got_colon = false;
+	  data->parent = NULL;
+	  goto maybe_end;
+	}
+      break;
 
     default:
       gcc_unreachable ();
     }
 
-  *data = state;
   return data;
 }
 

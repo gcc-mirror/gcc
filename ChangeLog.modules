@@ -1,3 +1,15 @@
+2019-02-22  Nathan Sidwell  <nathan@acm.org>
+
+	libcpp/
+	* mkdeps.c (deps_add_module): Allow empty bmi name.
+	(deps_write): Refactor. Add PHONY.
+	gcc/cp/
+	* cp-tree.h (module_preprocess): Declare.
+	* lex.c (module_preprocess_token): Have a proper state object,
+	register imports with dependency machinery.
+	* module.cc (module_preprocess_token): New.
+	(module_begin_main_file): Cope with just preprocessing.
+
 2019-02-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/c-family/
