@@ -27224,7 +27224,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 
   tree outer_args = NULL_TREE;
   if (DECL_CLASS_SCOPE_P (tmpl)
-      && CLASSTYPE_TEMPLATE_INFO (DECL_CONTEXT (tmpl)))
+      && CLASSTYPE_TEMPLATE_INSTANTIATION (DECL_CONTEXT (tmpl)))
     {
       outer_args = CLASSTYPE_TI_ARGS (DECL_CONTEXT (tmpl));
       type = TREE_TYPE (most_general_template (tmpl));

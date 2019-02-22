@@ -1,5 +1,9 @@
 2019-02-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/88869 - C++17 ICE with CTAD and explicit specialization.
+	* pt.c (do_class_deduction): Don't include explicit specialization
+	args in outer_args.
+
 	PR c++/89422 - ICE with -g and lambda in default arg in template.
 	* pt.c (tsubst_function_decl): SET_DECL_FRIEND_CONTEXT sooner.
 
