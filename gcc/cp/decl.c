@@ -16687,12 +16687,14 @@ require_deduced_type (tree decl, tsubst_flags_t complain)
 tree
 build_explicit_specifier (tree expr, tsubst_flags_t complain)
 {
-  if (processing_template_decl && value_dependent_expression_p (expr))
+  if (instantiation_dependent_expression_p (expr))
     /* Wait for instantiation, tsubst_function_decl will handle it.  */
     return expr;
 
+  expr = instantiate_non_dependent_expr_sfinae (expr, complain);
+  /* Don't let convert_like_real create more template codes.  */
+  processing_template_decl_sentinel s;
   expr = build_converted_constant_expr (boolean_type_node, expr, complain);
-  expr = instantiate_non_dependent_expr (expr);
   expr = cxx_constant_value (expr);
   return expr;
 }

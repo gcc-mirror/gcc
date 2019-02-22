@@ -1,3 +1,14 @@
+2019-02-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89420 - ICE with CAST_EXPR in explicit-specifier.
+	* decl.c (build_explicit_specifier): Don't check
+	processing_template_decl.  Call instantiation_dependent_expression_p
+	instead of value_dependent_expression_p.  Call
+	instantiate_non_dependent_expr_sfinae before
+	build_converted_constant_expr instead of calling
+	instantiate_non_dependent_expr after it.  Add
+	processing_template_decl_sentinel.
+
 2019-02-22  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* parser.c (cp_parser_oacc_simple_clause): Remove parser formal

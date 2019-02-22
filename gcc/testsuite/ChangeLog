@@ -1,3 +1,8 @@
+2019-02-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89420 - ICE with CAST_EXPR in explicit-specifier.
+	* g++.dg/cpp2a/explicit14.C: New test.
+
 2019-02-22  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	PR target/89324
