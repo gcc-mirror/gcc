@@ -1,5 +1,15 @@
 2019-02-21  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/c-family/
+	* c.opt: Rename fmodule-legacy to fmodule-header
+	gcc/
+	* doc/invoke.texi: Update.
+	gcc/cp/
+	* cp-tree.h, module.cc, lang-specs.h, name-lookup.c, parser.c:
+	Rename.
+	gcc/testsuite/
+	* g++.dg/modules/: Likewise.
+
 	gcc/
 	* langhooks.h (struct lang_hooks): Adjust preprocess_token API.
 	gcc/cp/

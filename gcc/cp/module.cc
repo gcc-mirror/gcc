@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
    for entities declared in the Global Module Fragment.  In the
    purview of the current module, it is MODULE_PURVIEW.  For any
    imported declaration it is >= MODULE_IMPORT_BASE.  Decls from
-   legacy imports have a MODULE_OWNER, even though they are in the
+   header imports have a MODULE_OWNER, even though they are in the
    global module.  Builtins are always MODULE_NONE. (Note that
    this is happenstance for decls lacking DECL_LANG_SPECIFIC.)  For
    efficiency, MODULE_OWNER is also set in the decl of container-like
@@ -2737,9 +2737,9 @@ struct GTY(()) slurping {
     GTY((skip)) remap;			/* Module owner remapping.  */
   elf_in *GTY((skip)) from;     	/* The elf loader.  */
 
-  /* This map is only for legacy imports themselves -- the global
-     legacies bitmap hold it for the current TU.  */
-  bitmap legacies;	/* Transitive direct legacy import graph. */
+  /* This map is only for header imports themselves -- the global
+     headers bitmap hold it for the current TU.  */
+  bitmap headers;	/* Transitive direct header import graph. */
 
   /* These objects point into the mmapped area, unless we're not doing
      that, or we got frozen or closed.  In those cases the points to
@@ -2806,7 +2806,7 @@ struct GTY(()) slurping {
 
 slurping::slurping (elf_in *from)
   : unnamed (NULL), remap (NULL), from (from),
-    legacies (BITMAP_GGC_ALLOC ()), macro_defs (), macro_tbl (),
+    headers (BITMAP_GGC_ALLOC ()), macro_defs (), macro_tbl (),
     ordinary_locs (0, 0), macro_locs (0, 0), loc_deltas (0, 0),
     current (~0u), remaining (0), lru (0), pre_early_ok (false)
 {
@@ -2855,7 +2855,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   unsigned crc;		/* CRC we saw reading it in. */
 
   unsigned short remap;		/* Remapping during writing.  */
-  bool legacy_p : 1;	/* Is a legacy import.  */
+  bool header_p : 1;	/* Is a header import.  */
   bool direct_p : 1;	/* A direct import of TU (includes interface
 			   of implementation for which primary_p).  */
   bool primary_p : 1;   /* Is the primary interface of this
@@ -2918,9 +2918,9 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   {
     return interface_p;
   }
-  bool is_legacy () const
+  bool is_header () const
   {
-    return legacy_p;
+    return header_p;
   }
   bool is_alias () const
   {
@@ -3104,12 +3104,12 @@ module_state::module_state (tree name, module_state *parent, bool partition)
     partition_p (partition)
 {
   u1.slurp = NULL;
-  legacy_p = direct_p = primary_p = interface_p = exported_p
+  header_p = direct_p = primary_p = interface_p = exported_p
     = imported_p = alias_p = from_partition_p = false;
   if (name && (IDENTIFIER_POINTER (name)[0] == '"'
 	       || IDENTIFIER_POINTER (name)[0] == '<'))
-    legacy_p = true;
-  gcc_checking_assert (!(parent && legacy_p));
+    header_p = true;
+  gcc_checking_assert (!(parent && header_p));
 }
 
 module_state::~module_state ()
@@ -3152,9 +3152,9 @@ module_state_hash::equal (const value_type existing,
 /* Mapper name.  */
 static const char *module_mapper_name;
 
-/* Legacy header mode.  */
-static const char *module_legacy_name;
-static const char *module_legacy_macro;
+/* Header mode.  */
+static const char *module_header_name;
+static const char *module_header_macro;
 
 /* Our controlling macro.  */
 static cpp_hashnode *controlling_node;
@@ -7342,7 +7342,7 @@ trees_out::tree_mergeable (tree decl)
   tree_node (DECL_NAME (inner));
 
   unsigned is_mod = false;
-  if (!module_legacy_p ())
+  if (!module_header_p ())
     is_mod = MAYBE_DECL_MODULE_OWNER (decl) != MODULE_NONE;
 
   if (streaming_p ())
@@ -8026,7 +8026,7 @@ get_module (const char *ptr)
 {
   if (ptr[0] == '"' || ptr[0] == '<')
     {
-      /* A legacy name.  */
+      /* A header name.  */
       size_t len = strlen (ptr);
       if (len < 3 || ptr[len-1] != (ptr[0] == '"' ? '"' : '>'))
 	return NULL;
@@ -9026,7 +9026,7 @@ module_mapper::export_done (const module_state *state)
 }
 
 /* Include translation.  Query if include FILE should be turned into
-   an import of a legacy header.  Return 0 if it should remain a
+   an import of a header.  Return 0 if it should remain a
    #include.  If READER is non-NULL, do the translation by pushing a
    buffer containing the translation text (ending in two \n's).
    Return non-zero indicator of who owns the pushed buffer.  */
@@ -9131,8 +9131,8 @@ module_state::write_readme (elf_out *to, const char *options, cpp_hashnode *node
   readme.begin (false);
 
   readme.printf ("GNU C++ %smodule%s%s",
-		 is_legacy () ? "legacy " : is_partition () ? "" : "primary ",
-		 is_legacy () ? ""
+		 is_header () ? "header " : is_partition () ? "" : "primary ",
+		 is_header () ? ""
 		 : is_interface () ? " interface" : " implementation",
 		 is_partition () ? " partition" : "");
 
@@ -10186,7 +10186,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	    {
 	      unsigned owner = MODULE_NONE;
 
-	      if (!is_legacy ())
+	      if (!is_header ())
 		owner = MAYBE_DECL_MODULE_OWNER (decl);
 
 	      if (owner >= MODULE_IMPORT_BASE) 
@@ -10345,7 +10345,7 @@ module_state::read_cluster (unsigned snum)
 	    bool dedup = (TREE_PUBLIC (ns)
 			  && (is_primary ()
 			      || is_partition ()
-			      || is_legacy ()));
+			      || is_header ()));
 
 	    while (tree decl = sec.tree_node ())
 	      {
@@ -11713,9 +11713,9 @@ static vec<macro_import, va_heap, vl_embed> *macro_imports;
 
 static vec<macro_export, va_heap, vl_embed> *macro_exports;
 
-/* The reachable set of legacy imports from this TU.  */
+/* The reachable set of header imports from this TU.  */
 
-static GTY(()) bitmap legacies;
+static GTY(()) bitmap headers;
 
 /* Get the (possibly empty) macro imports for NODE.  */
 
@@ -11989,11 +11989,11 @@ module_state::install_macros ()
 void
 module_state::import_macros ()
 {
-  bitmap_ior_into (legacies, slurp ()->legacies);
+  bitmap_ior_into (headers, slurp ()->headers);
 
   bitmap_iterator bititer;
   unsigned bitnum;
-  EXECUTE_IF_SET_IN_BITMAP (slurp ()->legacies, 0, bitnum, bititer)
+  EXECUTE_IF_SET_IN_BITMAP (slurp ()->headers, 0, bitnum, bititer)
     (*modules)[bitnum]->install_macros ();
 }
 
@@ -12047,15 +12047,15 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
 
   if (!(imports[0].get_undef () && !imports[0].get_mod ()))
     {
-      /* Calculate the set of visible legacy imports.  */
-      bitmap_copy (visible, legacies);
+      /* Calculate the set of visible header imports.  */
+      bitmap_copy (visible, headers);
       for (unsigned ix = imports.length (); ix--;)
 	{
 	  const macro_import::slot &slot = imports[ix];
 	  unsigned mod = slot.get_mod ();
 	  if (slot.get_undef () && bitmap_bit_p (visible, mod))
 	    {
-	      bitmap arg = mod ? (*modules)[mod]->slurp ()->legacies : legacies;
+	      bitmap arg = mod ? (*modules)[mod]->slurp ()->headers : headers;
 	      bitmap_and_compl_into (visible, arg);
 	      bitmap_set_bit (visible, mod);
 	    }
@@ -12354,8 +12354,8 @@ module_state_config::get_opts ()
 
       /* Drop module-related options we don't need to preserve.  */
       if (opt->opt_index == OPT_fmodule_lazy
-	  || opt->opt_index == OPT_fmodule_legacy_
-	  || opt->opt_index == OPT_fmodule_legacy
+	  || opt->opt_index == OPT_fmodule_header_
+	  || opt->opt_index == OPT_fmodule_header
 	  || opt->opt_index == OPT_fforce_module_macros
 	  || opt->opt_index == OPT_fmodule_mapper_
 	  || opt->opt_index == OPT_fmodule_only
@@ -12428,11 +12428,11 @@ module_state::write_config (elf_out *to, module_state_config &config,
   cfg.u32 (unsigned (MODULE_VERSION));
   cfg.u32 (inner_crc);
 
-  cfg.u (to->name (is_legacy () ? "" : get_flatname ()));
+  cfg.u (to->name (is_header () ? "" : get_flatname ()));
   if (is_partition ())
     cfg.u (to->name (get_flatname (true)));
 
-  if (!is_legacy ())
+  if (!is_header ())
     ;
   else if (config.controlling_node)
     {
@@ -12540,13 +12540,13 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
     if (their_name[0] == ':')
       their_primary = from ()->name (cfg.u ());
 
-    if (!is_legacy ())
+    if (!is_header ())
       {
 	our_name = get_flatname ();
 	our_primary = get_flatname (true);
       }
 
-    /* Legacy modules can be aliased, so name checking is
+    /* Header units can be aliased, so name checking is
        inappropriate.  */
     if (strcmp (their_name, our_name)
 	|| strcmp (their_primary, our_primary))
@@ -12554,8 +12554,8 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
 	error_at (loc,
 		  their_name[0] && our_name[0] ? G_("module %<%s%s%> found")
 		  : their_name[0]
-		  ? G_("legacy module expected, module %<%s%s%> found")
-		  : G_("module %<%s%s%> expected, legacy module found"),
+		  ? G_("header module expected, module %<%s%s%> found")
+		  : G_("module %<%s%s%> expected, header module found"),
 		  their_name[0] ? their_primary : our_primary,
 		  their_name[0] ? their_name : our_name);
 	cfg.set_overrun ();
@@ -12565,7 +12565,7 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
 
   /* Read controlling macro.  We do this before validating the CRC,
      as the latter is computed from names we originally used.  */
-  if (!is_legacy ())
+  if (!is_header ())
     ;
   else if (cpp_hashnode *node = cfg.cpp_node ())
     {
@@ -12724,7 +12724,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
   /* Figure out remapped module numbers, which might elide
      partitions.  */
   bitmap partitions = NULL;
-  if (!is_legacy () && !is_partition ())
+  if (!is_header () && !is_partition ())
     partitions = BITMAP_GGC_ALLOC ();
 
   unsigned mod_hwm = MODULE_IMPORT_BASE;
@@ -12867,7 +12867,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
   /* Write the line maps.  */
   write_locations (to, range_bits, config.partitions, &crc);
 
-  config.any_macros = module_legacy_p () && write_macros (to, reader, &crc);
+  config.any_macros = module_header_p () && write_macros (to, reader, &crc);
   config.controlling_node = controlling_node;
 
   /* And finish up.  */
@@ -12928,8 +12928,8 @@ module_state::read (int fd, int e, cpp_reader *reader)
   /* We always import and export ourselves. */
   bitmap_set_bit (imports, ix);
   bitmap_set_bit (exports, ix);
-  if (is_legacy ())
-    bitmap_set_bit (slurp ()->legacies, ix);
+  if (is_header ())
+    bitmap_set_bit (slurp ()->headers, ix);
   mod = remap = ix;
 
   (*slurp ()->remap)[MODULE_PURVIEW] = mod;
@@ -13077,14 +13077,14 @@ module_state::check_read (unsigned diag_count, tree ns, tree id)
   if (done)
     {
       slurp ()->close ();
-      if (!is_legacy ())
+      if (!is_header ())
 	slurped ();
     }
 
   if (id && diag_count && diag_count <= unsigned (errorcount + warningcount)
       && flag_module_lazy)
     inform (input_location,
-	    is_legacy () ? G_("during lazy loading of %<%E%s%E%>")
+	    is_header () ? G_("during lazy loading of %<%E%s%E%>")
 	    : G_("during lazy loading of %<%E%s%E@%s%>"),
 	    ns, ns == global_namespace ? "" : "::", id, get_flatname ());
 
@@ -13182,9 +13182,9 @@ module_state::set_import (module_state const *other, bool is_export)
     /* We'll export OTHER's exports.  */
     bitmap_ior_into (exports, other->exports);
 
-  if (is_legacy () && other->is_legacy () && mod >= MODULE_IMPORT_BASE)
-    /* We only see OTHER's legacies if it is legacy.  */
-    bitmap_ior_into (slurp ()->legacies, other->slurp ()->legacies);
+  if (is_header () && other->is_header () && mod >= MODULE_IMPORT_BASE)
+    /* We only see OTHER's headers if it is header.  */
+    bitmap_ior_into (slurp ()->headers, other->slurp ()->headers);
 }
 
 /* Return the decl that determines the owning module of DECL.  That
@@ -13498,7 +13498,7 @@ module_state::direct_import (cpp_reader *reader, bool lazy)
 	}
 
       (*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
-      if (imp->is_legacy ())
+      if (imp->is_header ())
 	imp->import_macros ();
     }
 
@@ -13628,7 +13628,7 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
   if (exporting)
     imp->exported_p = true;
 
-  if (imp->is_legacy ())
+  if (imp->is_header ())
     imp->direct_import (reader, false);
   else
     vec_safe_push (pending_imports, imp);
@@ -13680,7 +13680,7 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
 	  module_kind |= MK_INTERFACE;
 	}
 
-      if (state->is_legacy ())
+      if (state->is_header ())
 	module_kind |= MK_GLOBAL | MK_EXPORTING;
 
       /* Copy the importing information we may have already done.  */
@@ -13709,7 +13709,7 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
 void
 module_cpp_undef (cpp_reader *reader, location_t loc, cpp_hashnode *node)
 {
-  if (!module_legacy_p ())
+  if (!module_header_p ())
     {
       /* Turn us off.  */
       struct cpp_callbacks *cb = cpp_get_callbacks (reader);
@@ -13766,10 +13766,10 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 }
 
 static void
-set_module_legacy_name (const char *src, unsigned len, bool quote = true)
+set_module_header_name (const char *src, unsigned len, bool quote = true)
 {
   char *name = XNEWVEC (char, len + 3);
-  module_legacy_name = name;
+  module_header_name = name;
   if (quote)
     *name++ = '"';
   memcpy (name, src, len);
@@ -13796,7 +13796,7 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
       dump.pop (n);
       if (flag_modules < 0)
 	{
-	  if (!module_legacy_name)
+	  if (!module_header_name)
 	    {
 	      /* Set the module header name from the main_input_filename.  */
 	      const char *main = main_input_filename;
@@ -13812,10 +13812,10 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
 		    break;
 		  }
 
-	      set_module_legacy_name (main + pos, len - pos);
+	      set_module_header_name (main + pos, len - pos);
 	    }
 
-	  tree name = get_identifier (module_legacy_name);
+	  tree name = get_identifier (module_header_name);
 	  declare_module (get_module (name),
 			  spans.main_start (), true, NULL, reader);
 	}
@@ -13958,7 +13958,7 @@ init_module_processing ()
 
   gcc_checking_assert (!fixed_trees);
 
-  legacies = BITMAP_GGC_ALLOC ();
+  headers = BITMAP_GGC_ALLOC ();
 
   dump.push (NULL);
 
@@ -14088,7 +14088,7 @@ load_macros (cpp_reader *reader, cpp_hashnode *node, void *)
 void
 finish_module_parse (cpp_reader *reader)
 {
-  if (module_legacy_p ())
+  if (module_header_p ())
     module_kind &= ~MK_EXPORTING;
 
   if (flag_module_macros)
@@ -14118,10 +14118,10 @@ finish_module_parse (cpp_reader *reader)
       int fd = -1;
       int e = ENOENT;
 
-      if (module_legacy_macro)
+      if (module_header_macro)
 	{
 	  /* There's a specified controlling macro.  Find it.  */
-	  const char *name = module_legacy_macro;
+	  const char *name = module_header_macro;
 	  if (const char *eq = strchr (name, '='))
 	    {
 	      char *tmp = XNEWVEC (char, eq - name + 1);
@@ -14130,7 +14130,7 @@ finish_module_parse (cpp_reader *reader)
 	      name = tmp;
 	    }
 	  controlling_node = cpp_node (get_identifier (name));
-	  if (name != module_legacy_macro)
+	  if (name != module_header_macro)
 	    XDELETEVEC (const_cast<char *> (name));
 
 	  if (cpp_user_macro_p (controlling_node))
@@ -14145,10 +14145,10 @@ finish_module_parse (cpp_reader *reader)
 	    }
 
 	  if (!cpp_user_macro_p (controlling_node)
-	      || name != module_legacy_macro)
+	      || name != module_header_macro)
 	    {
 	      cpp_force_token_locations (reader, state->loc);
-	      cpp_define (reader, module_legacy_macro);
+	      cpp_define (reader, module_header_macro);
 	      cpp_stop_forcing_token_locations (reader);
 	    }
 	}
@@ -14165,7 +14165,7 @@ finish_module_parse (cpp_reader *reader)
 	  if (mrules *deps = cpp_get_deps (reader))
 	    deps_add_module (deps, state->get_flatname (false),
 			     state->get_flatname (true), path,
-			     state->is_legacy ());
+			     state->is_header ());
 
 	  bool first = true;
 	  do
@@ -14201,11 +14201,11 @@ finish_module_parse (cpp_reader *reader)
   /* We're done with the macro tables now.  */
   vec_free (macro_exports);
   vec_free (macro_imports);
-  legacies = NULL;
+  headers = NULL;
   if (modules)
     for (unsigned ix = modules->length (); ix--;)
       if (module_state *state = (*modules)[ix])
-	if (state->is_legacy ())
+	if (state->is_header ())
 	  state->slurped ();
 }
 
@@ -14237,7 +14237,7 @@ handle_module_option (unsigned code, const char *str, int)
   switch (opt_code (code))
     {
     case OPT_fmodules_ts:
-      /* Don't drop out of legacy mode.  */
+      /* Don't drop out of header mode.  */
       if (!flag_modules)
 	flag_modules = +1;
       return true;
@@ -14246,14 +14246,14 @@ handle_module_option (unsigned code, const char *str, int)
       module_mapper_name = str;
       return true;
 
-    case OPT_fmodule_legacy_:
+    case OPT_fmodule_header_:
       {
 	size_t len = strlen (str);
 	const char *cookie = (const char *)memchr (str, '?', len);
 
 	if (cookie && cookie[1])
 	  {
-	    module_legacy_macro = cookie + 1;
+	    module_header_macro = cookie + 1;
 	    len = cookie - str;
 	  }
 
@@ -14263,17 +14263,17 @@ handle_module_option (unsigned code, const char *str, int)
 
 	    if (other && (len < 3 || str[len-1] != other
 			  || str[1] == '"' || str[1] == '<'))
-	      error ("legacy name %qs is badly quoted", str);
+	      error ("header name %qs is badly quoted", str);
 
 	    if (cookie || !other)
-	      set_module_legacy_name (str, len, !other);
+	      set_module_header_name (str, len, !other);
 	    else
-	      module_legacy_name = str;
+	      module_header_name = str;
 	  }
       }
       /* FALLTHROUGH  */
 
-    case OPT_fmodule_legacy:
+    case OPT_fmodule_header:
       flag_modules = -1;
       return true;
 

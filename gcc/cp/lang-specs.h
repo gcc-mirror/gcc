@@ -49,7 +49,7 @@ along with GCC; see the file COPYING3.  If not see
       "  %{!save-temps*:%{!no-integrated-cpp:%(cpp_unique_options)}}"
       "  %(cc1_options) %2"
       "  %{!S:-o %g.s%V}"
-      "  %{!fsyntax-only:%{!fmodule-only:%{!fmodule-legacy*:%{!fdump-ada-spec*:"
+      "  %{!fsyntax-only:%{!fmodule-only:%{!fmodule-header*:%{!fdump-ada-spec*:"
       "	     %{!o*:--output-pch=%i.gch}%W{o*:--output-pch=%*}}}}}}}}",
      CPLUSPLUS_CPP_SPEC, 0, 0},
   {"@c++",
@@ -71,5 +71,5 @@ along with GCC; see the file COPYING3.  If not see
       "%{!E:%{!M:%{!MM:"
       "  cc1plus -fpreprocessed %i %(cc1_options) %2"
       "  %{fmodule-only:%{!S:-o %g.s%V}}"
-      "  %{!fsyntax-only:%{!fmodule-only:%{!fmodule-legacy*:"
+      "  %{!fsyntax-only:%{!fmodule-only:%{!fmodule-header*:"
       "     %(invoke_as)}}}}}}", 0, 0, 0},

@@ -1,5 +1,5 @@
 // { dg-module-do run }
-// { dg-additional-options "-fmodule-legacy" }
+// { dg-additional-options "-fmodule-header" }
 // { dg-module-bmi {"leg-merge-8_a.H"} }
 
 template<int I> struct Tpl

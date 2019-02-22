@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodule-legacy=<stdio.h>" }
+// { dg-additional-options "-fmodule-header=<stdio.h>" }
 // { dg-module-bmi {<stdio.h>} }
 
 #define STDIO_H

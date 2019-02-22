@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodule-legacy=\"string.h\"" }
+// { dg-additional-options "-fmodule-header=\"string.h\"" }
 // { dg-module-bmi {"string.h"} }
 
 #define STRING_H

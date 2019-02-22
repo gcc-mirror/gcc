@@ -189,8 +189,8 @@ get_fixed_binding_slot (tree *slot, tree name, unsigned ix, int create)
 	return NULL;
 
       /* The partition slot is not needed when we know we're not a
-	 non-legacy module.  */
-      bool partition_slot = !not_module_p () && !module_legacy_p ();
+	 non-header module.  */
+      bool partition_slot = !not_module_p () && !module_header_p ();
       unsigned want = ((MODULE_SLOTS_FIXED + partition_slot + (create < 0)
 			+ MODULE_VECTOR_SLOTS_PER_CLUSTER - 1)
 		       / MODULE_VECTOR_SLOTS_PER_CLUSTER);
@@ -3453,7 +3453,7 @@ add_mergeable_decl (tree *gslot, tree decl)
 static void
 record_mergeable_decl (tree *slot, tree name, tree decl)
 {
-  bool partition = module_not_legacy_p ();
+  bool partition = module_not_header_p ();
   tree *gslot = get_fixed_binding_slot
     (slot, name, partition ? MODULE_SLOT_PARTITION : MODULE_SLOT_GLOBAL, true);
   add_mergeable_decl (gslot, decl);
@@ -3588,7 +3588,7 @@ check_module_override (tree decl, tree mvec, bool is_friend,
     {
       /* Look in the appropriate mergeable decl slot.  */
       tree mergeable = NULL_TREE;
-      if (module_not_legacy_p ())
+      if (module_not_header_p ())
 	mergeable = MODULE_VECTOR_CLUSTER (mvec, MODULE_SLOT_PARTITION
 					   / MODULE_VECTOR_SLOTS_PER_CLUSTER)
 	  .slots[MODULE_SLOT_PARTITION % MODULE_VECTOR_SLOTS_PER_CLUSTER];

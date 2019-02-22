@@ -2639,18 +2639,18 @@ usually not needed, as that is the default.  For now.
 @opindex fmodule-lazy
 Disable lazy module importing and module mapper creation.
 
-@item -fmodule-legacy
-@itemx -fmodule-legacy=@r{[}@var{name}@r{][}?@var{macro}@r{[}=@var{value}@r{]]}
-@opindex fmodule-legacy
-Compile as a legacy module.  The @var{name} may use
+@item -fmodule-header
+@itemx -fmodule-header=@r{[}@var{name}@r{][}?@var{macro}@r{[}=@var{value}@r{]]}
+@opindex fmodule-header
+Compile as a header unit module.  The @var{name} may use
 @samp{"..."} or @samp{<...>} to indicate a user or system header, and
 defaults to user.  If a name is omitted, the source filename is used.
 The source filename may be partitioned by a @samp{/./} component, in
 which case the fragment following is used as the name.  A @samp{?}
-character separates the legacy name from a controlling macro.  If this
-is not specified, the first macro defined in the legacy module is used
+character separates the header name from a controlling macro.  If this
+is not specified, the first macro defined in the header unit is used
 to determine uniqueness.  The format of the macro is the same as the
-@option{-D} option, except that an exiting definition will be chosen
+@option{-D} option, except that an existing definition will be chosen
 if one is available.
 
 @item -fmodule-only
@@ -29945,14 +29945,14 @@ encoding the exported declarations of the module.  Importing a module
 reads in the BMI.  The dependency graph of imports is a Directed
 Acyclic Graph (DAG).
 
+The @option{-fmodule-header} family of options enable compilation of a
+header as a header unit module.  Using this option implies
+@option{-fmodules-ts}.
+
 The @option{-fno-module-lazy} option disables lazy module loading.
 Usually importing a module will load minimal information, deferring
 the bulk of the loading to the point at which name lookup inspects a
 particular namespace-scope name.
-
-The @option{-fmodule-legacy} family of options enable compilation of a
-header as a legacy module.  Using this option implies
-@option{-fmodules-ts}.
 
 The @option{-fmodule-only} disables generation of the associated
 object file for compiling a module interface.  Only the binary module

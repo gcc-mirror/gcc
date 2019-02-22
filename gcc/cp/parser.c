@@ -13106,13 +13106,13 @@ cp_parser_module_name (cp_parser *parser, bool for_module)
 	return get_module (token->u.value);
 
       error_at (token->location,
-		"legacy module cannot be explicitly declared");
+		"header module cannot be explicitly declared");
       return NULL;
     }
 
   module_state *parent = NULL;
   bool partitioned = false;
-  if (!for_module && token->type == CPP_COLON && module_not_legacy_p ())
+  if (!for_module && token->type == CPP_COLON && module_not_header_p ())
     {
       partitioned = true;
       cp_lexer_consume_token (parser->lexer);

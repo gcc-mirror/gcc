@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodule-legacy" }
+// { dg-additional-options "-fmodule-header" }
 // { dg-module-bmi {"leg-merge-6_b.H"} }
 
 struct X 

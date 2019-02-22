@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodule-legacy" }
+// { dg-additional-options "-fmodule-header" }
 // { dg-module-bmi {"macro-2_b.H"} }
 
 

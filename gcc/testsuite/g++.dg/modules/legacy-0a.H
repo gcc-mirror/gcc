@@ -1,2 +1,2 @@
-// { dg-additional-options "-fmodule-legacy=<sys" }
+// { dg-additional-options "-fmodule-header=<sys" }
 // { dg-error "badly quoted" "" { target *-*-* } 0 }
