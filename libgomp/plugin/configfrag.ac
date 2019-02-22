@@ -139,8 +139,11 @@ AC_SUBST(PLUGIN_HSA_LIBS)
 
 # Parse '--enable-offload-targets', figure out the corresponding libgomp
 # plugins, and configure to find the corresponding offload compilers.
+# 'offload_plugins' and 'offload_targets' will be populated in the same order.
 offload_plugins=
+offload_targets=
 AC_SUBST(offload_plugins)
+AC_SUBST(offload_targets)
 offload_additional_options=
 offload_additional_lib_paths=
 AC_SUBST(offload_additional_options)
@@ -244,8 +247,10 @@ if test x"$enable_offload_targets" != x; then
       continue
     elif test x"$offload_plugins" = x; then
       offload_plugins=$tgt_plugin
+      offload_targets=$tgt
     else
       offload_plugins=$offload_plugins,$tgt_plugin
+      offload_targets=$offload_targets,$tgt
     fi
     # Configure additional search paths.
     if test "$tgt_plugin" = hsa; then
