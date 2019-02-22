@@ -1,3 +1,9 @@
+2019-02-22  Martin Sebor  <msebor@redhat.com>
+
+	PR c/89425
+	* c-parser.c (sizeof_ptr_memacc_comptypes): Avoid warning in
+	unreachable subexpressions.
+
 2019-02-22  H.J. Lu  <hongjiu.lu@intel.com>
 	    Hongtao Liu  <hongtao.liu@intel.com>
 	    Sunil K Pandey  <sunil.k.pandey@intel.com>

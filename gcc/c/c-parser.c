@@ -9374,6 +9374,10 @@ sizeof_ptr_memacc_comptypes (tree type1, tree type2)
 static void
 warn_for_abs (location_t loc, tree fndecl, tree arg)
 {
+  /* Avoid warning in unreachable subexpressions.  */
+  if (c_inhibit_evaluation_warnings)
+    return;
+
   tree atype = TREE_TYPE (arg);
 
   /* Casts from pointers (and thus arrays and fndecls) will generate

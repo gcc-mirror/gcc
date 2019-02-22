@@ -1,5 +1,8 @@
 2019-02-22  Martin Sebor  <msebor@redhat.com>
 
+	PR c/89425
+	* gcc.dg/Wabsolute-value.c: New test.
+
 	* gcc.dg/Wbuiltin-declaration-mismatch-12.c: New test.
 
 2019-02-22  H.J. Lu  <hongjiu.lu@intel.com>
