@@ -945,6 +945,29 @@ struct sprintf_dom_walker::call_info
   {
     return bounded ? OPT_Wformat_truncation_ : OPT_Wformat_overflow_;
   }
+
+  /* Return true for calls to file formatted functions.  */
+  bool is_file_func () const
+  {
+    return (fncode == BUILT_IN_FPRINTF
+	    || fncode == BUILT_IN_FPRINTF_CHK
+	    || fncode == BUILT_IN_FPRINTF_UNLOCKED
+	    || fncode == BUILT_IN_VFPRINTF
+	    || fncode == BUILT_IN_VFPRINTF_CHK);
+  }
+
+  /* Return true for calls to string formatted functions.  */
+  bool is_string_func () const
+  {
+    return (fncode == BUILT_IN_SPRINTF
+	    || fncode == BUILT_IN_SPRINTF_CHK
+	    || fncode == BUILT_IN_SNPRINTF
+	    || fncode == BUILT_IN_SNPRINTF_CHK
+	    || fncode == BUILT_IN_VSPRINTF
+	    || fncode == BUILT_IN_VSPRINTF_CHK
+	    || fncode == BUILT_IN_VSNPRINTF
+	    || fncode == BUILT_IN_VSNPRINTF_CHK);
+  }
 };
 
 /* Return the result of formatting a no-op directive (such as '%n').  */
@@ -2841,6 +2864,8 @@ format_directive (const sprintf_dom_walker::call_info &info,
   if (!warned
       /* Only warn at level 2.  */
       && warn_level > 1
+      /* Only warn for string functions.  */
+      && info.is_string_func ()
       && (!minunder4k
 	  || (!maxunder4k && fmtres.range.max < HOST_WIDE_INT_MAX)))
     {
@@ -2849,7 +2874,9 @@ format_directive (const sprintf_dom_walker::call_info &info,
 	 of C11.  Warn on this only at level 2 but remember this and
 	 prevent folding the return value when done.  This allows for
 	 the possibility of the actual libc call failing due to ENOMEM
-	 (like Glibc does under some conditions).  */
+	 (like Glibc does with very large precision or width).
+	 Issue the "may exceed" warning only for string functions and
+	 not for fprintf or printf.  */
 
       if (fmtres.range.min == fmtres.range.max)
 	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
@@ -2857,14 +2884,18 @@ format_directive (const sprintf_dom_walker::call_info &info,
 			  "minimum required size of 4095", dirlen,
 			  target_to_host (hostdir, sizeof hostdir, dir.beg),
 			  fmtres.range.min);
-      else
+      else if (!minunder4k)
 	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
-			  minunder4k
-			  ? G_("%<%.*s%> directive output between %wu and %wu "
-			       "bytes may exceed minimum required size of "
-			       "4095")
-			  : G_("%<%.*s%> directive output between %wu and %wu "
-			       "bytes exceeds minimum required size of 4095"),
+			  "%<%.*s%> directive output between %wu and %wu "
+			  "bytes exceeds minimum required size of 4095",
+			  dirlen,
+			  target_to_host (hostdir, sizeof hostdir, dir.beg),
+			  fmtres.range.min, fmtres.range.max);
+      else if (!info.retval_used () && info.is_string_func ())
+	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			  "%<%.*s%> directive output between %wu and %wu "
+			  "bytes may exceed minimum required size of "
+			  "4095",
 			  dirlen,
 			  target_to_host (hostdir, sizeof hostdir, dir.beg),
 			  fmtres.range.min, fmtres.range.max);
@@ -2887,24 +2918,48 @@ format_directive (const sprintf_dom_walker::call_info &info,
 	      && maxximax
 	      && fmtres.range.max < HOST_WIDE_INT_MAX)))
     {
-      /* The directive output causes the total length of output
-	 to exceed INT_MAX bytes.  */
-
-      if (fmtres.range.min == fmtres.range.max)
+      if (fmtres.range.min > target_int_max ())
+	{
+	  /* The directive output exceeds INT_MAX bytes.  */
+	  if (fmtres.range.min == fmtres.range.max)
+	    warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			      "%<%.*s%> directive output of %wu bytes exceeds "
+			      "%<INT_MAX%>", dirlen,
+			      target_to_host (hostdir, sizeof hostdir, dir.beg),
+			      fmtres.range.min);
+	  else
+	    warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			      "%<%.*s%> directive output between %wu and "
+			      "%wu bytes exceeds %<INT_MAX%>", dirlen,
+			      target_to_host (hostdir, sizeof hostdir, dir.beg),
+			      fmtres.range.min, fmtres.range.max);
+	}
+      else if (res->range.min > target_int_max ())
+	{
+	  /* The directive output is under INT_MAX but causes the result
+	     to exceed INT_MAX bytes.  */
+	  if (fmtres.range.min == fmtres.range.max)
+	    warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			      "%<%.*s%> directive output of %wu bytes causes "
+			      "result to exceed %<INT_MAX%>", dirlen,
+			      target_to_host (hostdir, sizeof hostdir, dir.beg),
+			      fmtres.range.min);
+	  else
+	    warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			      "%<%.*s%> directive output between %wu and "
+			      "%wu bytes causes result to exceed %<INT_MAX%>",
+			      dirlen,
+			      target_to_host (hostdir, sizeof hostdir, dir.beg),
+			      fmtres.range.min, fmtres.range.max);
+	}
+      else if ((!info.retval_used () || !info.bounded)
+	       && (info.is_string_func ()))
+	/* Warn for calls to string functions that either aren't bounded
+	   (sprintf) or whose return value isn't used.  */
 	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
-			  "%<%.*s%> directive output of %wu bytes causes "
-			  "result to exceed %<INT_MAX%>", dirlen,
-			  target_to_host (hostdir, sizeof hostdir, dir.beg),
-			  fmtres.range.min);
-      else
-	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
-			  fmtres.range.min > target_int_max ()
-			  ? G_("%<%.*s%> directive output between %wu and "
-			       "%wu bytes causes result to exceed "
-			       "%<INT_MAX%>")
-			  : G_("%<%.*s%> directive output between %wu and "
-			       "%wu bytes may cause result to exceed "
-			       "%<INT_MAX%>"), dirlen,
+			  "%<%.*s%> directive output between %wu and "
+			  "%wu bytes may cause result to exceed "
+			  "%<INT_MAX%>", dirlen,
 			  target_to_host (hostdir, sizeof hostdir, dir.beg),
 			  fmtres.range.min, fmtres.range.max);
     }
@@ -2944,37 +2999,65 @@ format_directive (const sprintf_dom_walker::call_info &info,
 
   res->warned |= warned;
 
-  if (!dir.beg[0] && res->warned && info.objsize < HOST_WIDE_INT_MAX)
+  if (!dir.beg[0] && res->warned)
     {
-      /* If a warning has been issued for buffer overflow or truncation
-	 (but not otherwise) help the user figure out how big a buffer
-	 they need.  */
-
       location_t callloc = gimple_location (info.callstmt);
 
       unsigned HOST_WIDE_INT min = res->range.min;
       unsigned HOST_WIDE_INT max = res->range.max;
 
-      if (min == max)
-	inform (callloc,
-		(min == 1
-		 ? G_("%qE output %wu byte into a destination of size %wu")
-		 : G_("%qE output %wu bytes into a destination of size %wu")),
-		info.func, min, info.objsize);
-      else if (max < HOST_WIDE_INT_MAX)
-	inform (callloc,
-		"%qE output between %wu and %wu bytes into "
-		"a destination of size %wu",
-		info.func, min, max, info.objsize);
-      else if (min < res->range.likely && res->range.likely < max)
-	inform (callloc,
-		"%qE output %wu or more bytes (assuming %wu) into "
-		"a destination of size %wu",
-		info.func, min, res->range.likely, info.objsize);
-      else
-	inform (callloc,
-		"%qE output %wu or more bytes into a destination of size %wu",
-		info.func, min, info.objsize);
+      if (info.objsize < HOST_WIDE_INT_MAX)
+	{
+	  /* If a warning has been issued for buffer overflow or truncation
+	     help the user figure out how big a buffer they need.  */
+
+	  if (min == max)
+	    inform (callloc,
+		    (min == 1
+		     ? G_("%qE output %wu byte into a destination of size %wu")
+		     : G_("%qE output %wu bytes into a destination of size "
+			  "%wu")),
+		    info.func, min, info.objsize);
+	  else if (max < HOST_WIDE_INT_MAX)
+	    inform (callloc,
+		    "%qE output between %wu and %wu bytes into "
+		    "a destination of size %wu",
+		    info.func, min, max, info.objsize);
+	  else if (min < res->range.likely && res->range.likely < max)
+	    inform (callloc,
+		    "%qE output %wu or more bytes (assuming %wu) into "
+		    "a destination of size %wu",
+		    info.func, min, res->range.likely, info.objsize);
+	  else
+	    inform (callloc,
+		    "%qE output %wu or more bytes into a destination of size "
+		    "%wu",
+		    info.func, min, info.objsize);
+	}
+      else if (!info.is_string_func ())
+	{
+	  /* If the warning is for a file function function like fprintf
+	     of printf with no destination size just print the computed
+	     result.  */
+	  if (min == max)
+	    inform (callloc,
+		    (min == 1
+		     ? G_("%qE output %wu byte")
+		     : G_("%qE output %wu bytes")),
+		    info.func, min);
+	  else if (max < HOST_WIDE_INT_MAX)
+	    inform (callloc,
+		    "%qE output between %wu and %wu bytes",
+		    info.func, min, max);
+	  else if (min < res->range.likely && res->range.likely < max)
+	    inform (callloc,
+		    "%qE output %wu or more bytes (assuming %wu)",
+		    info.func, min, res->range.likely);
+	  else
+	    inform (callloc,
+		    "%qE output %wu or more bytes",
+		    info.func, min);
+	}
     }
 
   if (dump_file && *dir.beg)
@@ -3501,14 +3584,14 @@ sprintf_dom_walker::compute_format_length (call_info &info,
 }
 
 /* Return the size of the object referenced by the expression DEST if
-   available, or -1 otherwise.  */
+   available, or the maximum possible size otherwise.  */
 
 static unsigned HOST_WIDE_INT
 get_destination_size (tree dest)
 {
-  /* When there is no destination return -1.  */
+  /* When there is no destination return the maximum.  */
   if (!dest)
-    return HOST_WIDE_INT_M1U;
+    return HOST_WIDE_INT_MAX;
 
   /* Initialize object size info before trying to compute it.  */
   init_object_sizes ();
@@ -3523,7 +3606,7 @@ get_destination_size (tree dest)
   if (compute_builtin_object_size (dest, ost, &size))
     return size;
 
-  return HOST_WIDE_INT_M1U;
+  return HOST_WIDE_INT_MAX;
 }
 
 /* Return true if the call described by INFO with result RES safe to
@@ -3844,7 +3927,7 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
 
     case BUILT_IN_PRINTF_CHK:
       // Signature:
-      //   __builtin_printf_chk (it, format, ...)
+      //   __builtin_printf_chk (ost, format, ...)
       idx_format = 1;
       info.argidx = 2;
       idx_dstptr = -1;
