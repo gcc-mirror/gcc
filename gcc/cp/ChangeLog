@@ -1,5 +1,8 @@
 2019-02-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/88394 - ICE with VLA init-capture.
+	* lambda.c (is_normal_capture_proxy): Check DECL_CAPTURED_VARIABLE.
+
 	PR c++/88869 - C++17 ICE with CTAD and explicit specialization.
 	* pt.c (do_class_deduction): Don't include explicit specialization
 	args in outer_args.
