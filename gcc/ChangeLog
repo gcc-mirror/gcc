@@ -1,3 +1,20 @@
+2019-02-22  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	PR target/89324
+	* config/aarch64/aarch64.md: Use aarch64_general_reg predicate on
+	destination register in peepholes generating patterns for ADDS/SUBS.
+	(add<mode>3_compare0,
+	*addsi3_compare0_uxtw, add<mode>3_compareC,
+	add<mode>3_compareV_imm, add<mode>3_compareV,
+	*adds_<optab><ALLX:mode>_<GPI:mode>,
+	*subs_<optab><ALLX:mode>_<GPI:mode>,
+	*adds_<optab><ALLX:mode>_shift_<GPI:mode>,
+	*subs_<optab><ALLX:mode>_shift_<GPI:mode>,
+	*adds_<optab><mode>_multp2, *subs_<optab><mode>_multp2,
+	*sub<mode>3_compare0, *subsi3_compare0_uxtw,
+	sub<mode>3_compare1): Allow stack pointer for source register.
+	* config/aarch64/predicates.md (aarch64_general_reg): New predicate.
+
 2019-02-22  Martin Sebor  <msebor@redhat.com>
 
 	PR c/89425
