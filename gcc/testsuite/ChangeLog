@@ -1,5 +1,8 @@
 2019-02-22  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR fortran/72741
+	* gfortran.dg/goacc/classify-routine.f95: Adjust.
+
 	* c-c++-common/goacc/routine-5.c: Revert earlier changes.
 	* g++.dg/goacc/template.C: Likewise.
 

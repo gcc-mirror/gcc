@@ -1,3 +1,11 @@
+2019-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/72741
+	* omp-general.c (oacc_replace_fn_attrib): Mostly split out into...
+	(oacc_replace_fn_attrib_attr): ... this new function.
+	* omp-general.h (oacc_replace_fn_attrib_attr): New prototype.
+	* config/nvptx/nvptx.c (nvptx_goacc_validate_dims_1): Revert workaround.
+
 2019-02-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm-cpus.in (ares): Rename to...

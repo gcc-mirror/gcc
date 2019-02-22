@@ -540,16 +540,26 @@ oacc_launch_pack (unsigned code, tree device, unsigned op)
 
 /* Replace any existing oacc fn attribute with updated dimensions.  */
 
-void
-oacc_replace_fn_attrib (tree fn, tree dims)
+/* Variant working on a list of attributes.  */
+
+tree
+oacc_replace_fn_attrib_attr (tree attribs, tree dims)
 {
   tree ident = get_identifier (OACC_FN_ATTRIB);
-  tree attribs = DECL_ATTRIBUTES (fn);
 
   /* If we happen to be present as the first attrib, drop it.  */
   if (attribs && TREE_PURPOSE (attribs) == ident)
     attribs = TREE_CHAIN (attribs);
-  DECL_ATTRIBUTES (fn) = tree_cons (ident, dims, attribs);
+  return tree_cons (ident, dims, attribs);
+}
+
+/* Variant working on a function decl.  */
+
+void
+oacc_replace_fn_attrib (tree fn, tree dims)
+{
+  DECL_ATTRIBUTES (fn)
+    = oacc_replace_fn_attrib_attr (DECL_ATTRIBUTES (fn), dims);
 }
 
 /* Scan CLAUSES for launch dimensions and attach them to the oacc

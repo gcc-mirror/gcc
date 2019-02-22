@@ -317,6 +317,15 @@ enum save_state
 { SAVE_NONE = 0, SAVE_EXPLICIT, SAVE_IMPLICIT
 };
 
+/* OpenACC 'routine' directive's level of parallelism.  */
+enum oacc_routine_lop
+{ OACC_ROUTINE_LOP_NONE = 0,
+  OACC_ROUTINE_LOP_GANG,
+  OACC_ROUTINE_LOP_WORKER,
+  OACC_ROUTINE_LOP_VECTOR,
+  OACC_ROUTINE_LOP_SEQ
+};
+
 /* Strings for all symbol attributes.  We use these for dumping the
    parse tree, in error messages, and also when reading and writing
    modules.  In symbol.c.  */
@@ -904,8 +913,8 @@ typedef struct
   unsigned oacc_declare_device_resident:1;
   unsigned oacc_declare_link:1;
 
-  /* This is an OpenACC acclerator function at level N - 1  */
-  unsigned oacc_function:3;
+  /* OpenACC 'routine' directive's level of parallelism.  */
+  ENUM_BITFIELD (oacc_routine_lop) oacc_routine_lop:3;
 
   /* Attributes set by compiler extensions (!GCC$ ATTRIBUTES).  */
   unsigned ext_attr:EXT_ATTR_NUM;

@@ -2232,34 +2232,43 @@ gfc_match_oacc_cache (void)
   return MATCH_YES;
 }
 
-/* Determine the loop level for a routine.   */
+/* Determine the OpenACC 'routine' directive's level of parallelism.  */
 
-static int
-gfc_oacc_routine_dims (gfc_omp_clauses *clauses)
+static oacc_routine_lop
+gfc_oacc_routine_lop (gfc_omp_clauses *clauses)
 {
-  int level = -1;
+  oacc_routine_lop ret = OACC_ROUTINE_LOP_SEQ;
 
   if (clauses)
     {
-      unsigned mask = 0;
+      unsigned n_lop_clauses = 0;
 
       if (clauses->gang)
-	level = GOMP_DIM_GANG, mask |= GOMP_DIM_MASK (level);
+	{
+	  ++n_lop_clauses;
+	  ret = OACC_ROUTINE_LOP_GANG;
+	}
       if (clauses->worker)
-	level = GOMP_DIM_WORKER, mask |= GOMP_DIM_MASK (level);
+	{
+	  ++n_lop_clauses;
+	  ret = OACC_ROUTINE_LOP_WORKER;
+	}
       if (clauses->vector)
-	level = GOMP_DIM_VECTOR, mask |= GOMP_DIM_MASK (level);
+	{
+	  ++n_lop_clauses;
+	  ret = OACC_ROUTINE_LOP_VECTOR;
+	}
       if (clauses->seq)
-	level = GOMP_DIM_MAX, mask |= GOMP_DIM_MASK (level);
+	{
+	  ++n_lop_clauses;
+	  ret = OACC_ROUTINE_LOP_SEQ;
+	}
 
-      if (mask != (mask & -mask))
+      if (n_lop_clauses > 1)
 	gfc_error ("Multiple loop axes specified for routine");
     }
 
-  if (level < 0)
-    level = GOMP_DIM_MAX;
-
-  return level;
+  return ret;
 }
 
 match
@@ -2352,8 +2361,8 @@ gfc_match_oacc_routine (void)
 				       gfc_current_ns->proc_name->name,
 				       &old_loc))
 	goto cleanup;
-      gfc_current_ns->proc_name->attr.oacc_function
-	= gfc_oacc_routine_dims (c) + 1;
+      gfc_current_ns->proc_name->attr.oacc_routine_lop
+	= gfc_oacc_routine_lop (c);
     }
 
   if (n)
