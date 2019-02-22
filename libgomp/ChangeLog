@@ -1,5 +1,15 @@
 2019-02-22  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* testsuite/libgomp.oacc-c++/c++.exp: Specify
+	"-foffload=$offload_target".
+	* testsuite/libgomp.oacc-c/c.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_openacc_nvidia_accel_configured): Remove,
+	as (conceptually) merged into
+	check_effective_target_openacc_nvidia_accel_selected.  Adjust all
+	users.
+
 	* plugin/configfrag.ac: Populate and AC_SUBST offload_targets.
 	* testsuite/libgomp-test-support.exp.in: Adjust.
 	* testsuite/lib/libgomp.exp: Likewise.  Don't populate
