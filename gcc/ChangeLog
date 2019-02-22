@@ -1,3 +1,10 @@
+2019-02-22  Thiago Macieira  <thiago.macieira@intel.com>
+
+	PR target/89444
+	* config/i386/i386.h (PTA_WESTMERE): Remove PTA_AES.
+	(PTA_SKYLAKE): Add PTA_AES.
+	(PTA_GOLDMONT): Likewise.
+
 2019-02-22  Sudakshina Das  <sudi.das@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_output_mi_thunk): Add bti
