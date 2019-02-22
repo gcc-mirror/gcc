@@ -1,3 +1,12 @@
+2019-02-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/71066
+	Backport from trunk
+	* trans-decl.c (generate_coarray_sym_init):  For an array
+	constructor in a DATA statement of a coarray variable, set the
+	rank to 1 to avoid confusion later on.  If the constructor
+	contains only one value, use that for initiailizig.
+
 2019-02-22  Release Manager
 
 	* GCC 8.3.0 released.
