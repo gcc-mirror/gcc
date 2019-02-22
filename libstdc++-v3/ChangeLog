@@ -1,3 +1,7 @@
+2019-02-22  Release Manager
+
+	* GCC 8.3.0 released.
+
 2019-02-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR middle-end/89303
