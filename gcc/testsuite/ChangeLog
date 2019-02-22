@@ -1,3 +1,8 @@
+2019-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/78027
+	* gfortran.dg/goacc/pr78027.f90: Add 'dg-additional-options "-Wno-hsa"'.
+
 2019-02-22  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/87609
