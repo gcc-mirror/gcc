@@ -33,6 +33,11 @@ static_assert(std::is_same_v<std::pmr::basic_string<char, T>,
 static_assert(std::is_same_v<std::pmr::string,
     std::basic_string<char, std::char_traits<char>,
 		      std::pmr::polymorphic_allocator<char>>>);
+#ifdef _GLIBCXX_USE_CHAR8_T
+static_assert(std::is_same_v<std::pmr::u8string,
+    std::basic_string<char8_t, std::char_traits<char8_t>,
+		      std::pmr::polymorphic_allocator<char8_t>>>);
+#endif
 static_assert(std::is_same_v<std::pmr::u16string,
     std::basic_string<char16_t, std::char_traits<char16_t>,
 		      std::pmr::polymorphic_allocator<char16_t>>>);

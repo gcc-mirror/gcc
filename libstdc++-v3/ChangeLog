@@ -1,5 +1,66 @@
 2019-02-22  Tom Honermann  <tom@honermann.net>
 
+	* testsuite/18_support/byte/ops.cc: Validate
+	std::to_integer<char8_t>, std::to_integer<char16_t>, and
+	std::to_integer<char32_t>.
+	* testsuite/18_support/numeric_limits/dr559.cc: Validate
+	std::numeric_limits<char8_t>.
+	* testsuite/18_support/numeric_limits/lowest.cc: Validate
+	std::numeric_limits<char8_t>::lowest().
+	* testsuite/18_support/numeric_limits/max_digits10.cc: Validate
+	std::numeric_limits<char8_t>::max_digits10.
+	* testsuite/18_support/type_info/fundamental.cc: Validate
+	typeinfo for char8_t.
+	* testsuite/20_util/from_chars/1_c++20_neg.cc: New test, validating
+	std::from_chars with char8_t.
+	* testsuite/20_util/hash/requirements/explicit_instantiation.cc:
+	Validate explicit instantiation of std::hash<char8_t>.
+	* testsuite/20_util/is_integral/value.cc: Validate
+	std::is_integral<char8_t>.
+	* testsuite/20_util/make_signed/requirements/typedefs-4.cc:
+	Validate std::make_signed<char8_t>.
+	* testsuite/21_strings/basic_string/cons/char/deduction.cc:
+	Validate u8string construction from char8_t sources.
+	* testsuite/21_strings/basic_string/types/pmr_typedefs.cc: Validate
+	std::pmr::u8string.
+	* testsuite/21_strings/basic_string_view/operations/compare/
+	char/70483.cc: Validate substr operations on u8string_view.
+	* testsuite/21_strings/basic_string_view/typedefs.cc: Validate that
+	the u8string_view typedef is defined.
+	* testsuite/21_strings/char_traits/requirements/
+	constexpr_functions.cc: Validate char_traits<char8_t> constexpr
+	member functions.
+	* testsuite/21_strings/char_traits/requirements/
+	constexpr_functions_c++17.cc: Validate char_traits<char8_t> C++17
+	constexpr member functions.
+	* testsuite/21_strings/headers/string/types_std_c++0x.cc: Validate
+	that the u8string typedef is defined.
+	* testsuite/22_locale/locale/cons/unicode.cc: Validate the presence
+	of the std::codecvt<char16_t, char8_t, std::mbstate_t> and
+	std::codecvt<char32_t, char8_t, std::mbstate_t> facets.
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Update line
+	numbers.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/cons/assign_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic_integral/cons/copy_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/is_always_lock_free.cc:
+	Validate std::atomic<char8_t>::is_always_lock_free
+	* testsuite/29_atomics/atomic_integral/operators/bitwise_neg.cc:
+	Update line numbers.
+	* testsuite/29_atomics/atomic_integral/operators/decrement_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/increment_neg.cc:
+	Likewise.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_string.cc:
+	Validate std::experimental::pmr::u8string.
+	* testsuite/experimental/string_view/typedefs.cc: Validate that the
+	u8string_view typedef is defined.
+	* testsuite/util/testsuite_common_types.h: Add char8_t, char16_t and
+	char32_t to the typelists.
+
+2019-02-22  Tom Honermann  <tom@honermann.net>
+
 	* include/ext/typelist.h: Constrain a partial specialization of
 	typelist::detail::append_ to only match chain<T1,T2>.
 

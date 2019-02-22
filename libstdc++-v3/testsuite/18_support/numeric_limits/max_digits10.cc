@@ -42,6 +42,9 @@ test01()
   VERIFY( std::numeric_limits<unsigned long>::max_digits10 == 0 );
   VERIFY( std::numeric_limits<long long>::max_digits10 == 0 );
   VERIFY( std::numeric_limits<unsigned long long>::max_digits10 == 0 );
+#ifdef _GLIBCXX_USE_CHAR8_T
+  VERIFY( std::numeric_limits<char8_t>::max_digits10 == 0 );
+#endif
   VERIFY( std::numeric_limits<char16_t>::max_digits10 == 0 );
   VERIFY( std::numeric_limits<char32_t>::max_digits10 == 0 );
 

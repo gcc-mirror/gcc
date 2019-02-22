@@ -21,6 +21,9 @@
 
 namespace gnu
 {
+#ifdef _GLIBCXX_USE_CHAR8_T
+  typedef std::u8string t2;
+#endif
   typedef std::u16string t3;
   typedef std::u32string t4;
 }
