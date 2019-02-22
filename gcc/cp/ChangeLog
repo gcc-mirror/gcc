@@ -1,3 +1,11 @@
+2019-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* parser.c (cp_parser_oacc_simple_clause): Remove parser formal
+	parameter, move loc formal parameter to the front.  Adjust all
+	users.
+	(cp_parser_oacc_shape_clause): Add loc formal parameter.  Adjust
+	all users.
+
 2019-02-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/87685 - generic lambda 'this' capture error.
