@@ -2075,13 +2075,6 @@ gfc_match_oacc_declare (void)
 	  module_var = true;
 	}
 
-      if (ns->proc_name->attr.oacc_function)
-	{
-	  gfc_error ("Invalid declare in routine with $!ACC DECLARE at %L",
-		     &where);
-	  return MATCH_ERROR;
-	}
-
       if (s->attr.use_assoc)
 	{
 	  gfc_error ("Variable is USE-associated with !$ACC DECLARE at %L",
