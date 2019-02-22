@@ -1032,7 +1032,9 @@ struct GTY(()) tree_base {
        expression trees and specify known data non-dependences.  For
        two memory references in a function they are known to not
        alias if dependence_info.clique are equal and dependence_info.base
-       are distinct.  */
+       are distinct.  Clique number zero means there is no information,
+       clique number one is populated from function global information
+       and thus needs no remapping on transforms like loop unrolling.  */
     struct {
       unsigned short clique;
       unsigned short base;
