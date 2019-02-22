@@ -1,3 +1,14 @@
+2019-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87609
+	* tree-core.h (tree_base): Document special clique values.
+	* tree-inline.c (remap_dependence_clique): Do not use the
+	special clique value of one.
+	(maybe_set_dependence_info): Use clique one.
+	(clear_dependence_clique): New callback.
+	(compute_dependence_clique): Clear clique one from all refs
+	before assigning it (again).
+
 2019-02-21  Martin Sebor  <msebor@redhat.com>
 
 	* doc/extend.texi (__clear_cache): Correct signature.

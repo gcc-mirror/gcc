@@ -7495,7 +7495,11 @@ maybe_set_dependence_info (gimple *, tree base, tree, void *data)
       if (MR_DEPENDENCE_CLIQUE (base) == 0)
 	{
 	  if (clique == 0)
-	    clique = ++cfun->last_clique;
+	    {
+	      if (cfun->last_clique == 0)
+		cfun->last_clique = 1;
+	      clique = 1;
+	    }
 	  if (restrict_var->ruid == 0)
 	    restrict_var->ruid = ++last_ruid;
 	  MR_DEPENDENCE_CLIQUE (base) = clique;
@@ -7506,12 +7510,42 @@ maybe_set_dependence_info (gimple *, tree base, tree, void *data)
   return false;
 }
 
+/* Clear dependence info for the clique DATA.  */
+
+static bool
+clear_dependence_clique (gimple *, tree base, tree, void *data)
+{
+  unsigned short clique = (uintptr_t)data;
+  if ((TREE_CODE (base) == MEM_REF
+       || TREE_CODE (base) == TARGET_MEM_REF)
+      && MR_DEPENDENCE_CLIQUE (base) == clique)
+    {
+      MR_DEPENDENCE_CLIQUE (base) = 0;
+      MR_DEPENDENCE_BASE (base) = 0;
+    }
+
+  return false;
+}
+
 /* Compute the set of independend memory references based on restrict
    tags and their conservative propagation to the points-to sets.  */
 
 static void
 compute_dependence_clique (void)
 {
+  /* First clear the special "local" clique.  */
+  basic_block bb;
+  if (cfun->last_clique != 0)
+    FOR_EACH_BB_FN (bb, cfun)
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  walk_stmt_load_store_ops (stmt, (void *)(uintptr_t) 1,
+				    clear_dependence_clique,
+				    clear_dependence_clique);
+	}
+
   unsigned short clique = 0;
   unsigned short last_ruid = 0;
   bitmap rvars = BITMAP_ALLOC (NULL);
