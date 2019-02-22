@@ -1,3 +1,9 @@
+2019-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89440
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Remove
+	not necessary assert.
+
 2019-02-22  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR fortran/72741

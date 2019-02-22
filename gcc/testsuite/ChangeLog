@@ -1,3 +1,8 @@
+2019-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89440
+	* gcc.dg/vect/pr89440.c: New testcase.
+
 2019-02-22  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* lib/target-supports.exp (check_effective_target_offload_nvptx):
