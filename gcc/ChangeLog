@@ -1,5 +1,13 @@
 2019-02-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm-cpus.in (ares): Rename to...
+	(neoverse-n1): ... This.  Add ares as alias.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Likewise.
+	* doc/invoke.txt (ARM Options): Document neoverse-n1.
+
+2019-02-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64-cores.def (neoverse-e1): Define.
 	* config/aarch64/aarch64-tune.md: Regenerate.
 	* doc/invoke.texi (AArch64 Options): Document neoverse-e1 -mcpu option.
