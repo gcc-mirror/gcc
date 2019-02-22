@@ -1640,7 +1640,7 @@ def register_type_printers(obj):
         return
 
     # Add type printers for typedefs std::string, std::wstring etc.
-    for ch in ('', 'w', 'u16', 'u32'):
+    for ch in ('', 'w', 'u8', 'u16', 'u32'):
         add_one_type_printer(obj, 'basic_string', ch + 'string')
         add_one_type_printer(obj, '__cxx11::basic_string', ch + 'string')
         # Typedefs for __cxx11::basic_string used to be in namespace __cxx11:
@@ -1690,7 +1690,7 @@ def register_type_printers(obj):
 
     # Add type printers for experimental::basic_string_view typedefs.
     ns = 'experimental::fundamentals_v1::'
-    for ch in ('', 'w', 'u16', 'u32'):
+    for ch in ('', 'w', 'u8', 'u16', 'u32'):
         add_one_type_printer(obj, ns + 'basic_string_view',
                              ns + ch + 'string_view')
 
