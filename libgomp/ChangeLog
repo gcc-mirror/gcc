@@ -1,5 +1,22 @@
 2019-02-22  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* plugin/configfrag.ac: Populate and AC_SUBST offload_plugins
+	instead of offload_targets, and AC_DEFINE_UNQUOTED OFFLOAD_PLUGINS
+	instead of OFFLOAD_TARGETS.
+	* target.c (gomp_target_init): Adjust.
+	* testsuite/libgomp-test-support.exp.in: Likewise.
+	* testsuite/lib/libgomp.exp: Likewise.  Populate
+	openacc_device_types_s instead of offload_targets_s_openacc.
+	(check_effective_target_openacc_nvidia_accel_selected)
+	(check_effective_target_openacc_host_selected): Adjust.
+	* testsuite/libgomp.oacc-c++/c++.exp: Likewise.
+	* testsuite/libgomp.oacc-c/c.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+	* Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
 	* testsuite/lib/libgomp.exp: Error out for unknown offload target.
 	* testsuite/libgomp.oacc-c++/c++.exp: Likewise.  Report if
 	"offloading: supported, but hardware not accessible".
