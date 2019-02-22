@@ -5980,6 +5980,9 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   rtx this_rtx, temp0, temp1, addr, funexp;
   rtx_insn *insn;
 
+  if (aarch64_bti_enabled ())
+    emit_insn (gen_bti_c());
+
   reload_completed = 1;
   emit_note (NOTE_INSN_PROLOGUE_END);
 
@@ -12032,7 +12035,6 @@ aarch64_override_options (void)
     {
 #ifdef TARGET_ENABLE_PAC_RET
       aarch64_ra_sign_scope = AARCH64_FUNCTION_NON_LEAF;
-      aarch64_ra_sign_key = AARCH64_KEY_A;
 #else
       aarch64_ra_sign_scope = AARCH64_FUNCTION_NONE;
 #endif
