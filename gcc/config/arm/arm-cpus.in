@@ -1331,8 +1331,9 @@ begin cpu cortex-a76
  part d0b
 end cpu cortex-a76
 
-begin cpu ares
- cname ares
+begin cpu neoverse-n1
+ cname neoversen1
+ alias !ares
  tune for cortex-a57
  tune flags LDSCHED
  architecture armv8.2-a+fp16+dotprod+simd
@@ -1340,7 +1341,7 @@ begin cpu ares
  costs cortex_a57
  vendor 41
  part d0c
-end cpu ares
+end cpu neoverse-n1
 
 # ARMv8.2 A-profile ARM DynamIQ big.LITTLE implementations
 begin cpu cortex-a75.cortex-a55
