@@ -1985,7 +1985,7 @@
 (define_insn "add<mode>3_compare0"
   [(set (reg:CC_NZ CC_REGNUM)
 	(compare:CC_NZ
-	 (plus:GPI (match_operand:GPI 1 "register_operand" "%r,r,r")
+	 (plus:GPI (match_operand:GPI 1 "register_operand" "%rk,rk,rk")
 		   (match_operand:GPI 2 "aarch64_plus_operand" "r,I,J"))
 	 (const_int 0)))
    (set (match_operand:GPI 0 "register_operand" "=r,r,r")
@@ -2002,7 +2002,7 @@
 (define_insn "*addsi3_compare0_uxtw"
   [(set (reg:CC_NZ CC_REGNUM)
 	(compare:CC_NZ
-	 (plus:SI (match_operand:SI 1 "register_operand" "%r,r,r")
+	 (plus:SI (match_operand:SI 1 "register_operand" "%rk,rk,rk")
 		  (match_operand:SI 2 "aarch64_plus_operand" "r,I,J"))
 	 (const_int 0)))
    (set (match_operand:DI 0 "register_operand" "=r,r,r")
@@ -2034,7 +2034,7 @@
   [(set (reg:CC_C CC_REGNUM)
 	(compare:CC_C
 	  (plus:GPI
-	    (match_operand:GPI 1 "register_operand" "r,r,r")
+	    (match_operand:GPI 1 "register_operand" "rk,rk,rk")
 	    (match_operand:GPI 2 "aarch64_plus_operand" "r,I,J"))
 	  (match_dup 1)))
    (set (match_operand:GPI 0 "register_operand" "=r,r,r")
@@ -2081,7 +2081,7 @@
 	(compare:CC_V
 	  (plus:<DWI>
 	    (sign_extend:<DWI>
-	      (match_operand:GPI 1 "register_operand" "r,r"))
+	      (match_operand:GPI 1 "register_operand" "rk,rk"))
 	    (match_operand:GPI 2 "aarch64_plus_immediate" "I,J"))
 	  (sign_extend:<DWI>
 	    (plus:GPI (match_dup 1) (match_dup 2)))))
@@ -2098,7 +2098,7 @@
   [(set (reg:CC_V CC_REGNUM)
 	(compare:CC_V
 	  (plus:<DWI>
-	    (sign_extend:<DWI> (match_operand:GPI 1 "register_operand" "r"))
+	    (sign_extend:<DWI> (match_operand:GPI 1 "register_operand" "rk"))
 	    (sign_extend:<DWI> (match_operand:GPI 2 "register_operand" "r")))
 	  (sign_extend:<DWI> (plus:GPI (match_dup 1) (match_dup 2)))))
    (set (match_operand:GPI 0 "register_operand" "=r")
@@ -2177,7 +2177,7 @@
 	(compare:CC_NZ
 	 (plus:GPI
 	  (ANY_EXTEND:GPI (match_operand:ALLX 1 "register_operand" "r"))
-	  (match_operand:GPI 2 "register_operand" "r"))
+	  (match_operand:GPI 2 "register_operand" "rk"))
 	(const_int 0)))
    (set (match_operand:GPI 0 "register_operand" "=r")
 	(plus:GPI (ANY_EXTEND:GPI (match_dup 1)) (match_dup 2)))]
@@ -2189,7 +2189,7 @@
 (define_insn "*subs_<optab><ALLX:mode>_<GPI:mode>"
   [(set (reg:CC_NZ CC_REGNUM)
 	(compare:CC_NZ
-	 (minus:GPI (match_operand:GPI 1 "register_operand" "r")
+	 (minus:GPI (match_operand:GPI 1 "register_operand" "rk")
 		    (ANY_EXTEND:GPI
 		     (match_operand:ALLX 2 "register_operand" "r")))
 	(const_int 0)))
@@ -2207,7 +2207,7 @@
 		    (ANY_EXTEND:GPI 
 		     (match_operand:ALLX 1 "register_operand" "r"))
 		    (match_operand 2 "aarch64_imm3" "Ui3"))
-		   (match_operand:GPI 3 "register_operand" "r"))
+		   (match_operand:GPI 3 "register_operand" "rk"))
 	 (const_int 0)))
    (set (match_operand:GPI 0 "register_operand" "=rk")
 	(plus:GPI (ashift:GPI (ANY_EXTEND:GPI (match_dup 1))
@@ -2221,7 +2221,7 @@
 (define_insn "*subs_<optab><ALLX:mode>_shift_<GPI:mode>"
   [(set (reg:CC_NZ CC_REGNUM)
 	(compare:CC_NZ
-	 (minus:GPI (match_operand:GPI 1 "register_operand" "r")
+	 (minus:GPI (match_operand:GPI 1 "register_operand" "rk")
 		    (ashift:GPI 
 		     (ANY_EXTEND:GPI
 		      (match_operand:ALLX 2 "register_operand" "r"))
@@ -2244,7 +2244,7 @@
 			      (match_operand 2 "aarch64_pwr_imm3" "Up3"))
 		    (match_operand 3 "const_int_operand" "n")
 		    (const_int 0))
-		   (match_operand:GPI 4 "register_operand" "r"))
+		   (match_operand:GPI 4 "register_operand" "rk"))
 	(const_int 0)))
    (set (match_operand:GPI 0 "register_operand" "=r")
 	(plus:GPI (ANY_EXTRACT:GPI (mult:GPI (match_dup 1) (match_dup 2))
@@ -2259,7 +2259,7 @@
 (define_insn "*subs_<optab><mode>_multp2"
   [(set (reg:CC_NZ CC_REGNUM)
 	(compare:CC_NZ
-	 (minus:GPI (match_operand:GPI 4 "register_operand" "r")
+	 (minus:GPI (match_operand:GPI 4 "register_operand" "rk")
 		    (ANY_EXTRACT:GPI
 		     (mult:GPI (match_operand:GPI 1 "register_operand" "r")
 			       (match_operand 2 "aarch64_pwr_imm3" "Up3"))
@@ -2923,7 +2923,7 @@
 
 (define_insn "*sub<mode>3_compare0"
   [(set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ (minus:GPI (match_operand:GPI 1 "register_operand" "r")
+	(compare:CC_NZ (minus:GPI (match_operand:GPI 1 "register_operand" "rk")
 				  (match_operand:GPI 2 "register_operand" "r"))
 		       (const_int 0)))
    (set (match_operand:GPI 0 "register_operand" "=r")
@@ -2936,7 +2936,7 @@
 ;; zero_extend version of above
 (define_insn "*subsi3_compare0_uxtw"
   [(set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ (minus:SI (match_operand:SI 1 "register_operand" "r")
+	(compare:CC_NZ (minus:SI (match_operand:SI 1 "register_operand" "rk")
 				 (match_operand:SI 2 "register_operand" "r"))
 		       (const_int 0)))
    (set (match_operand:DI 0 "register_operand" "=r")
@@ -2949,7 +2949,7 @@
 (define_insn "sub<mode>3_compare1_imm"
   [(set (reg:CC CC_REGNUM)
 	(compare:CC
-	  (match_operand:GPI 1 "aarch64_reg_or_zero" "rZ,rZ")
+	  (match_operand:GPI 1 "aarch64_reg_or_zero" "rkZ,rkZ")
 	  (match_operand:GPI 2 "aarch64_plus_immediate" "I,J")))
    (set (match_operand:GPI 0 "register_operand" "=r,r")
 	(plus:GPI
@@ -2965,7 +2965,7 @@
 (define_insn "sub<mode>3_compare1"
   [(set (reg:CC CC_REGNUM)
 	(compare:CC
-	  (match_operand:GPI 1 "aarch64_reg_or_zero" "rZ")
+	  (match_operand:GPI 1 "aarch64_reg_or_zero" "rkZ")
 	  (match_operand:GPI 2 "aarch64_reg_or_zero" "rZ")))
    (set (match_operand:GPI 0 "register_operand" "=r")
 	(minus:GPI (match_dup 1) (match_dup 2)))]
@@ -2975,7 +2975,7 @@
 )
 
 (define_peephole2
-  [(set (match_operand:GPI 0 "register_operand")
+  [(set (match_operand:GPI 0 "aarch64_general_reg")
 	(minus:GPI (match_operand:GPI 1 "aarch64_reg_or_zero")
 		    (match_operand:GPI 2 "aarch64_reg_or_zero")))
    (set (reg:CC CC_REGNUM)
@@ -3000,7 +3000,7 @@
 	(compare:CC
 	  (match_operand:GPI 1 "aarch64_reg_or_zero")
 	  (match_operand:GPI 2 "aarch64_reg_or_zero")))
-   (set (match_operand:GPI 0 "register_operand")
+   (set (match_operand:GPI 0 "aarch64_general_reg")
 	(minus:GPI (match_dup 1)
 		   (match_dup 2)))]
   ""
@@ -3013,7 +3013,7 @@
 )
 
 (define_peephole2
-  [(set (match_operand:GPI 0 "register_operand")
+  [(set (match_operand:GPI 0 "aarch64_general_reg")
 	(plus:GPI (match_operand:GPI 1 "register_operand")
 		  (match_operand:GPI 2 "aarch64_plus_immediate")))
    (set (reg:CC CC_REGNUM)
@@ -3038,7 +3038,7 @@
 	(compare:CC
 	  (match_operand:GPI 1 "register_operand")
 	  (match_operand:GPI 3 "const_int_operand")))
-   (set (match_operand:GPI 0 "register_operand")
+   (set (match_operand:GPI 0 "aarch64_general_reg")
 	(plus:GPI (match_dup 1)
 		  (match_operand:GPI 2 "aarch64_plus_immediate")))]
   "INTVAL (operands[3]) == -INTVAL (operands[2])"
