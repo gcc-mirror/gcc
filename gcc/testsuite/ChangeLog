@@ -1,3 +1,8 @@
+2019-02-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/83057
+	* gfortran.dg/newunit_6.f90: New test.
+
 2019-02-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89420 - ICE with CAST_EXPR in explicit-specifier.
