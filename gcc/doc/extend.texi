@@ -12890,6 +12890,23 @@ built-in in this case, because it has no opportunity to perform
 optimization.
 @end deftypefn
 
+@deftypefn {Built-in Function} bool __builtin_is_constant_evaluated (void)
+The @code{__builtin_is_constant_evaluated} function is available only
+in C++.  The built-in is intended to be used by implementations of
+the @code{std::is_constant_evaluated} C++ function.  Programs should make
+use of the latter function rather than invoking the built-in directly.
+
+The main use case of the built-in is to determine whether a @code{constexpr}
+function is being called in a @code{constexpr} context.  A call to
+the function evaluates to a core constant expression with the value
+@code{true} if and only if it occurs within the evaluation of an expression
+or conversion that is manifestly constant-evaluated as defined in the C++
+standard.  Manifestly constant-evaluated contexts include constant-expressions,
+the conditions of @code{constexpr if} statements, constraint-expressions, and
+initializers of variables usable in constant expressions.   For more details
+refer to the latest revision of the C++ standard.
+@end deftypefn
+
 @deftypefn {Built-in Function} long __builtin_expect (long @var{exp}, long @var{c})
 @opindex fprofile-arcs
 You may use @code{__builtin_expect} to provide the compiler with
