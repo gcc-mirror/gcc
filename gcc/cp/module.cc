@@ -13955,13 +13955,29 @@ maybe_add_global (tree val, unsigned &crc)
    global trees.  Create the module for current TU.  */
 
 void
-init_module_processing ()
+init_module_processing (cpp_reader *reader)
 {
   /* PCH should not be reachable because of lang-specs, but the
      user could have overriden that.  */
   if (pch_file)
     fatal_error (input_location,
 		 "C++ modules incompatible with precompiled headers");
+
+  if (flag_preprocess_only)
+    {
+      cpp_options *cpp_opts = cpp_get_options (reader);
+      if (flag_no_output
+	  || (cpp_opts->deps.style != DEPS_NONE
+	      && !cpp_opts->deps.need_preprocessor_output))
+	{
+	  warning (0, flag_dump_macros == 'M'
+		   ? G_("macro debug output may be incomplete with modules")
+		   : G_("module dependencies require full preprocessing"));
+	  if (cpp_opts->deps.style != DEPS_NONE)
+	    inform (input_location, "you should use the %<-%s%> option",
+		    cpp_opts->deps.style == DEPS_SYSTEM ? "MD" : "MMD");
+	}
+    }
 
   /* :: is always exported.  */
   DECL_MODULE_EXPORT_P (global_namespace) = true;

@@ -1,5 +1,10 @@
 2019-02-22  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (init_module_processing): Add arg.
+	* decl.c (cxx_init_decl_processing): Adjust.
+	* module.cc (init_module_processing): Check preprocess sanity.
+
 	libcpp/
 	* mkdeps.c (deps_add_module): Allow empty bmi name.
 	(deps_write): Refactor. Add PHONY.
