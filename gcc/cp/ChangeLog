@@ -1,5 +1,9 @@
 2019-02-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/87685 - generic lambda 'this' capture error.
+	* lambda.c (lambda_expr_this_capture): Change add_capture_p to int.
+	(maybe_generic_this_capture): Pass -1.
+
 	PR c++/88394 - ICE with VLA init-capture.
 	* lambda.c (is_normal_capture_proxy): Check DECL_CAPTURED_VARIABLE.
 
