@@ -215,10 +215,10 @@ namespace detail
       typedef Typelist_Chain 			      		type;
     };
 
-  template<typename Typelist_Chain>
-    struct append_<Typelist_Chain, null_type>
+  template<typename Hd, typename Tl>
+    struct append_<chain<Hd, Tl>, null_type>
     {
-      typedef Typelist_Chain 					type;
+      typedef chain<Hd, Tl>  					type;
     };
 
   template<>
