@@ -1,5 +1,19 @@
 2019-02-22  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/87609
+	* cfghooks.h (dependence_hash): New typedef.
+	(struct copy_bb_data): New type.
+	(cfg_hooks::duplicate_block): Adjust to take a copy_bb_data argument.
+	(duplicate_block): Likewise.
+	* cfghooks.c (duplicate_block): Pass down copy_bb_data.
+	(copy_bbs): Create and pass down copy_bb_data.
+	* cfgrtl.c (cfg_layout_duplicate_bb): Adjust.
+	(rtl_duplicate_bb): Likewise.
+	* tree-cfg.c (gimple_duplicate_bb): If the copy_bb_data arg is not NULL
+	remap dependence info.
+
+2019-02-22  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/87609
 	* tree-core.h (tree_base): Document special clique values.
 	* tree-inline.c (remap_dependence_clique): Do not use the

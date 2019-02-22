@@ -1,3 +1,8 @@
+2019-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87609
+	* gcc.dg/torture/restrict-7.c: New testcase.
+
 2019-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89285
