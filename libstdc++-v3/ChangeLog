@@ -1,5 +1,10 @@
 2019-02-22  Tom Honermann  <tom@honermann.net>
 
+	* python/libstdcxx/v6/printers.py (register_type_printers): Add type
+	printers for u8string and u8string_view.
+
+2019-02-22  Tom Honermann  <tom@honermann.net>
+
 	* testsuite/18_support/byte/ops.cc: Validate
 	std::to_integer<char8_t>, std::to_integer<char16_t>, and
 	std::to_integer<char32_t>.
