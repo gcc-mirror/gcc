@@ -1,3 +1,23 @@
+2019-02-22  H.J. Lu  <hongjiu.lu@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+	    Sunil K Pandey  <sunil.k.pandey@intel.com>
+
+	PR target/87007
+	* config/i386/i386-passes.def: Add
+	pass_remove_partial_avx_dependency.
+	* config/i386/i386-protos.h
+	(make_pass_remove_partial_avx_dependency): New.
+	* config/i386/i386.c (make_pass_remove_partial_avx_dependency):
+	New function.
+	(pass_data_remove_partial_avx_dependency): New.
+	(pass_remove_partial_avx_dependency): Likewise.
+	(make_pass_remove_partial_avx_dependency): Likewise.
+	* config/i386/i386.md (avx_partial_xmm_update): New attribute.
+	(*extendsfdf2): Add avx_partial_xmm_update.
+	(truncdfsf2): Likewise.
+	(*float<SWI48:mode><MODEF:mode>2): Likewise.
+	(SF/DF conversion splitters): Disabled for TARGET_AVX.
+
 2019-02-22  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/85598

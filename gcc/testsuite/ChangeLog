@@ -1,3 +1,11 @@
+2019-02-22  H.J. Lu  <hongjiu.lu@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+	    Sunil K Pandey  <sunil.k.pandey@intel.com>
+
+	PR target/87007
+	* gcc.target/i386/pr87007-1.c: New test.
+	* gcc.target/i386/pr87007-2.c: Likewise.
+
 2019-02-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89440
