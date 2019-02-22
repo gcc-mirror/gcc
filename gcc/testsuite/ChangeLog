@@ -1,5 +1,8 @@
 2019-02-22  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* lib/target-supports.exp (check_effective_target_offload_nvptx):
+	Remove.
+
 	PR fortran/72741
 	* gfortran.dg/goacc/classify-routine.f95: Adjust.
 
