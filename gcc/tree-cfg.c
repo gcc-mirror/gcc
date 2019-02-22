@@ -6229,6 +6229,8 @@ gimple_duplicate_bb (basic_block bb, copy_bb_data *id)
 	    DECL_NONSHAREABLE (base) = 1;
 	}
  
+      /* If requested remap dependence info of cliques brought in
+         via inlining.  */
       if (id)
 	for (unsigned i = 0; i < gimple_num_ops (copy); ++i)
 	  {
@@ -6242,7 +6244,7 @@ gimple_duplicate_bb (basic_block bb, copy_bb_data *id)
 	      op = TREE_OPERAND (op, 0);
 	    if ((TREE_CODE (op) == MEM_REF
 		 || TREE_CODE (op) == TARGET_MEM_REF)
-		&& MR_DEPENDENCE_CLIQUE (op) != 0)
+		&& MR_DEPENDENCE_CLIQUE (op) > 1)
 	      {
 		if (!id->dependence_map)
 		  id->dependence_map = new hash_map<dependence_hash,

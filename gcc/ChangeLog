@@ -1,3 +1,8 @@
+2019-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87609
+	* tree-cfg.c (gimple_duplicate_bb): Only remap inlined cliques.
+
 2019-02-22  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/87761
