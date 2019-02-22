@@ -1,3 +1,8 @@
+2019-02-22  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (Other Builtins): Add
+	__builtin_is_constant_evaluated.
+
 2019-02-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87609
@@ -25,6 +30,17 @@
 	*sub<mode>3_compare0, *subsi3_compare0_uxtw,
 	sub<mode>3_compare1): Allow stack pointer for source register.
 	* config/aarch64/predicates.md (aarch64_general_reg): New predicate.
+
+2019-02-22  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/88993
+	PR tree-optimization/88853
+	* gimple-ssa-sprintf.c (sprintf_dom_walker::call_info::is_file_func):
+	New helper.
+	(sprintf_dom_walker::call_info::is_string_func): New helper.
+	(format_directive): Only issue "may exceed" 4095/INT_MAX warnings
+	for formatted string functions.
+	(sprintf_dom_walker::handle_gimple_call): Fix a typo in a comment.
 
 2019-02-22  Martin Sebor  <msebor@redhat.com>
 
