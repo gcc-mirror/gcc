@@ -1,3 +1,8 @@
+2019-02-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/abi/post/sparc64-linux-gnu/baseline_symbols.txt: Adjust.
+	* config/abi/post/sparc64-linux-gnu/32/baseline_symbols.txt: Likewise.
+
 2019-02-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/89402
