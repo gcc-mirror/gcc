@@ -1,3 +1,10 @@
+2019-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.c (c_parser_oacc_shape_clause): Add loc formal
+	parameter.  Adjust all users.
+	(c_parser_oacc_simple_clause): Replace parser with loc formal
+	parameter.  Adjust all users.
+
 2019-02-19  Chung-Lin Tang <cltang@codesourcery.com>
 
 	PR c/87924
