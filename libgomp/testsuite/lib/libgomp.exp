@@ -41,31 +41,6 @@ load_gcc_lib fortran-modules.exp
 # Try to load a test support file, built during libgomp configuration.
 load_file libgomp-test-support.exp
 
-# Populate offload_plugins_s (offload plugins, separated by a space), and
-# openacc_device_types_s (OpenACC device type names for suitable offload
-# plugins, separated by a space).
-set offload_plugins_s [split $offload_plugins ","]
-set openacc_device_types_s {}
-foreach offload_plugin $offload_plugins_s {
-    # Translate to OpenACC names, or skip if not yet supported.
-    switch $offload_plugin {
-	intelmic {
-	    continue
-	}
-	nvptx {
-	    set offload_plugin "nvidia"
-	}
-	hsa {
-	    continue
-	}
-	default {
-	    error "Unknown offload target: $offload_target_openacc"
-	}
-    }
-    lappend openacc_device_types_s "$offload_plugin"
-}
-lappend openacc_device_types_s "host"
-
 set dg-do-what-default run
 
 #
@@ -325,6 +300,28 @@ proc libgomp_option_proc { option } {
     }
 }
 
+# Translate offload target to OpenACC device type.  Return the empty string if
+# not supported, and 'host' for offload target 'disable'.
+proc offload_target_to_openacc_device_type { offload_target } {
+    switch -glob $offload_target {
+	disable {
+	    return "host"
+	}
+	hsa* {
+	    return ""
+	}
+	*-intelmic* {
+	    return ""
+	}
+	nvptx* {
+	    return "nvidia"
+	}
+	default {
+	    error "Unknown offload target: $offload_target"
+	}
+    }
+}
+
 # Return 1 if offload device is available.
 proc check_effective_target_offload_device { } {
     return [check_runtime_nocache offload_device_available_ {
@@ -368,8 +365,8 @@ proc check_effective_target_offload_device_shared_as { } {
 # Return 1 if configured for 'nvptx' offloading.
 
 proc check_effective_target_openacc_nvidia_accel_configured { } {
-    global offload_plugins
-    if { ![string match "*,nvptx,*" ",$offload_plugins,"] } {
+    global offload_targets
+    if { ![string match "*,nvptx*,*" ",$offload_targets,"] } {
         return 0
     }
     # PR libgomp/65099: Currently, we only support offloading in 64-bit

@@ -1,5 +1,17 @@
 2019-02-22  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* plugin/configfrag.ac: Populate and AC_SUBST offload_targets.
+	* testsuite/libgomp-test-support.exp.in: Adjust.
+	* testsuite/lib/libgomp.exp: Likewise.  Don't populate
+	openacc_device_types_s.
+	(offload_target_to_openacc_device_type): New proc.
+	* testsuite/libgomp.oacc-c++/c++.exp: Adjust.
+	* testsuite/libgomp.oacc-c/c.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
 	* plugin/configfrag.ac: Populate and AC_SUBST offload_plugins
 	instead of offload_targets, and AC_DEFINE_UNQUOTED OFFLOAD_PLUGINS
 	instead of OFFLOAD_TARGETS.

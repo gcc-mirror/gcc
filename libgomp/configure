@@ -667,6 +667,7 @@ PLUGIN_NVPTX_FALSE
 PLUGIN_NVPTX_TRUE
 offload_additional_lib_paths
 offload_additional_options
+offload_targets
 offload_plugins
 PLUGIN_HSA_LIBS
 PLUGIN_HSA_LDFLAGS
@@ -11392,7 +11393,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11395 "configure"
+#line 11396 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11498,7 +11499,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11501 "configure"
+#line 11502 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15621,7 +15622,10 @@ PLUGIN_HSA_LIBS=
 
 # Parse '--enable-offload-targets', figure out the corresponding libgomp
 # plugins, and configure to find the corresponding offload compilers.
+# 'offload_plugins' and 'offload_targets' will be populated in the same order.
 offload_plugins=
+offload_targets=
+
 
 offload_additional_options=
 offload_additional_lib_paths=
@@ -15737,8 +15741,10 @@ rm -f core conftest.err conftest.$ac_objext \
       continue
     elif test x"$offload_plugins" = x; then
       offload_plugins=$tgt_plugin
+      offload_targets=$tgt
     else
       offload_plugins=$offload_plugins,$tgt_plugin
+      offload_targets=$offload_targets,$tgt
     fi
     # Configure additional search paths.
     if test "$tgt_plugin" = hsa; then

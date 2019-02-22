@@ -77,19 +77,24 @@ if { $lang_test_file_found } {
 	set libstdcxx_includes ""
     }
 
-    # Test with available OpenACC device types.
-    global openacc_device_type
-    foreach openacc_device_type $openacc_device_types_s {
+    # Test with all available offload targets, and with offloading disabled.
+    foreach offload_target [concat [split $offload_targets ","] "disable"] {
+	global openacc_device_type
+	set openacc_device_type [offload_target_to_openacc_device_type $offload_target]
 	set tagopt "-DACC_DEVICE_TYPE_$openacc_device_type=1"
 
 	switch $openacc_device_type {
+	    "" {
+		unsupported "$subdir $offload_target offloading"
+		continue
+	    }
 	    host {
 		set acc_mem_shared 1
 	    }
 	    nvidia {
 		if { ![check_effective_target_openacc_nvidia_accel_present] } {
 		    # Don't bother; execution testing is going to FAIL.
-		    untested "$subdir $openacc_device_type offloading: supported, but hardware not accessible"
+		    untested "$subdir $offload_target offloading: supported, but hardware not accessible"
 		    continue
 		}
 
@@ -102,7 +107,7 @@ if { $lang_test_file_found } {
 		set acc_mem_shared 0
 	    }
 	    default {
-		error "Unknown OpenACC device type: $openacc_device_type"
+		error "Unknown OpenACC device type: $openacc_device_type (offload target: $offload_target)"
 	    }
 	}
 	set tagopt "$tagopt -DACC_MEM_SHARED=$acc_mem_shared"
@@ -116,8 +121,8 @@ if { $lang_test_file_found } {
 	# -O0 and -O2 only, to avoid testing times exploding too much, under
 	# the assumption that between -O0 and -O[something] there is the
 	# biggest difference in the overall structure of the generated code.
-	switch $openacc_device_type {
-	    host {
+	switch -glob $offload_target {
+	    disable {
 		set-torture-options [list \
 					 { -O2 } ]
 	    }
