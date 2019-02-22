@@ -38,20 +38,21 @@ set ld_library_path $always_ld_library_path
 append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
 set_ld_library_path_env_vars
 
-# Test OpenACC with available accelerators.
+# Test with available OpenACC device types.
 set SAVE_ALWAYS_CFLAGS "$ALWAYS_CFLAGS"
-foreach offload_target_openacc $offload_targets_s_openacc {
+global openacc_device_type
+foreach openacc_device_type $openacc_device_types_s {
     set ALWAYS_CFLAGS "$SAVE_ALWAYS_CFLAGS"
-    set tagopt "-DACC_DEVICE_TYPE_$offload_target_openacc=1"
+    set tagopt "-DACC_DEVICE_TYPE_$openacc_device_type=1"
 
-    switch $offload_target_openacc {
+    switch $openacc_device_type {
 	host {
 	    set acc_mem_shared 1
 	}
 	nvidia {
 	    if { ![check_effective_target_openacc_nvidia_accel_present] } {
 		# Don't bother; execution testing is going to FAIL.
-		untested "$subdir $offload_target_openacc offloading: supported, but hardware not accessible"
+		untested "$subdir $openacc_device_type offloading: supported, but hardware not accessible"
 		continue
 	    }
 
@@ -64,12 +65,12 @@ foreach offload_target_openacc $offload_targets_s_openacc {
 	    set acc_mem_shared 0
 	}
 	default {
-	    error "Unknown OpenACC device type: $offload_target_openacc"
+	    error "Unknown OpenACC device type: $openacc_device_type"
 	}
     }
     set tagopt "$tagopt -DACC_MEM_SHARED=$acc_mem_shared"
 
-    setenv ACC_DEVICE_TYPE $offload_target_openacc
+    setenv ACC_DEVICE_TYPE $openacc_device_type
 
     # To get better test coverage for device-specific code that is only
     # ever used in offloading configurations, we'd like more thorough
@@ -78,7 +79,7 @@ foreach offload_target_openacc $offload_targets_s_openacc {
     # -O0 and -O2 only, to avoid testing times exploding too much, under
     # the assumption that between -O0 and -O[something] there is the
     # biggest difference in the overall structure of the generated code.
-    switch $offload_target_openacc {
+    switch $openacc_device_type {
 	host {
 	    set-torture-options [list \
 				     { -O2 } ]

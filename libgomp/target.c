@@ -2710,9 +2710,9 @@ gomp_target_fini (void)
     }
 }
 
-/* This function initializes the runtime needed for offloading.
-   It parses the list of offload targets and tries to load the plugins for
-   these targets.  On return, the variables NUM_DEVICES and NUM_DEVICES_OPENMP
+/* This function initializes the runtime for offloading.
+   It parses the list of offload plugins, and tries to load these.
+   On return, the variables NUM_DEVICES and NUM_DEVICES_OPENMP
    will be set, and the array DEVICES initialized, containing descriptors for
    corresponding devices, first the GOMP_OFFLOAD_CAP_OPENMP_400 ones, follows
    by the others.  */
@@ -2729,7 +2729,7 @@ gomp_target_init (void)
   num_devices = 0;
   devices = NULL;
 
-  cur = OFFLOAD_TARGETS;
+  cur = OFFLOAD_PLUGINS;
   if (*cur)
     do
       {
