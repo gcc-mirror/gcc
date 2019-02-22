@@ -1,3 +1,9 @@
+2019-02-22  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/87761
+	* config/mips/mips.md: Add new combiner pattern to recognize
+	a bitfield extraction using (ashiftrt (truncate (ashift (...)))).
+
 2019-02-22  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	PR target/89324
