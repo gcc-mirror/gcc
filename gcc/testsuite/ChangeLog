@@ -1,5 +1,8 @@
 2019-02-22  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* c-c++-common/goacc/routine-5.c: Revert earlier changes.
+	* g++.dg/goacc/template.C: Likewise.
+
 	PR fortran/78027
 	* gfortran.dg/goacc/pr78027.f90: Add 'dg-additional-options "-Wno-hsa"'.
 

@@ -1,3 +1,7 @@
+2019-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* openmp.c (gfc_match_oacc_declare): Revert earlier changes.
+
 2019-02-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* dump-parse-tree.c (debug): Implement for gfc_expr *,
