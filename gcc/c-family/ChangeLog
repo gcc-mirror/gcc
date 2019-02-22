@@ -1,3 +1,10 @@
+2019-02-22  Richard Biener  <rguenther@suse.de>
+
+	* c-pch.c (no_checksum): Remove.
+	(pch_init): Remove assertion that executable_checksum is not
+	all zero.
+	(c_common_valid_pch): Likewise.
+
 2019-02-18  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/89294
