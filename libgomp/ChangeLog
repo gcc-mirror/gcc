@@ -1,3 +1,11 @@
+2019-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/lib/libgomp.exp: Error out for unknown offload target.
+	* testsuite/libgomp.oacc-c++/c++.exp: Likewise.  Report if
+	"offloading: supported, but hardware not accessible".
+	* testsuite/libgomp.oacc-c/c.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+
 2019-02-19  Chung-Lin Tang <cltang@codesourcery.com>
 
 	PR c/87924

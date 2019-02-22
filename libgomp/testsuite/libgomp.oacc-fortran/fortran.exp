@@ -76,14 +76,14 @@ if { $lang_test_file_found } {
 	    nvidia {
 		if { ![check_effective_target_openacc_nvidia_accel_present] } {
 		    # Don't bother; execution testing is going to FAIL.
-		    untested "$subdir $offload_target_openacc offloading"
+		    untested "$subdir $offload_target_openacc offloading: supported, but hardware not accessible"
 		    continue
 		}
 
 		set acc_mem_shared 0
 	    }
 	    default {
-		set acc_mem_shared 0
+		error "Unknown OpenACC device type: $offload_target_openacc"
 	    }
 	}
 	set tagopt "$tagopt -DACC_MEM_SHARED=$acc_mem_shared"
