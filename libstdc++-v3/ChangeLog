@@ -1,3 +1,9 @@
+2019-02-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/29_atomics/headers/atomic/types_std_c++20.cc: New test.
+	* testsuite/29_atomics/headers/atomic/types_std_c++20_neg.cc: New
+	test.
+
 2019-02-22  Tom Honermann  <tom@honermann.net>
 
 	* python/libstdcxx/v6/printers.py (register_type_printers): Add type
