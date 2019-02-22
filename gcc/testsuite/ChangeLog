@@ -1,3 +1,8 @@
+2019-02-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84676
+	* g++.dg/cpp0x/pr84676.C: New.
+
 2019-02-22  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/tree-ssa/builtin-sprintf-10.c: Cast wchar_t to wint_t
