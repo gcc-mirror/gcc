@@ -65,6 +65,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "calls.h"
 #include "cfgloop.h"
+#include "tree-scalar-evolution.h"
+#include "tree-ssa-loop.h"
 #include "intl.h"
 #include "langhooks.h"
 
@@ -4200,9 +4202,21 @@ pass_sprintf_length::execute (function *fun)
   init_target_to_host_charmap ();
 
   calculate_dominance_info (CDI_DOMINATORS);
+  bool use_scev = optimize > 0 && flag_printf_return_value;
+  if (use_scev)
+    {
+      loop_optimizer_init (LOOPS_NORMAL);
+      scev_initialize ();
+    }
 
   sprintf_dom_walker sprintf_dom_walker;
   sprintf_dom_walker.walk (ENTRY_BLOCK_PTR_FOR_FN (fun));
+
+  if (use_scev)
+    {
+      scev_finalize ();
+      loop_optimizer_finalize ();
+    }
 
   /* Clean up object size info.  */
   fini_object_sizes ();
