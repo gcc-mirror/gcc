@@ -1,5 +1,11 @@
 2019-02-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64-cores.def (neoverse-e1): Define.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi (AArch64 Options): Document neoverse-e1 -mcpu option.
+
+2019-02-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.c (ares_tunings): Rename to...
 	(neoversen1_tunings): ... This.
 	* config/aarch64/aarch64-cores.def (ares): Change tuning to the above.
