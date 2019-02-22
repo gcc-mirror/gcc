@@ -118,9 +118,9 @@ void test_width_and_precision_out_of_range (char *d)
   /* The range here happens to be a property of the compiler, not
      one of the target.  */
   T ("%9223372036854775808i", 0);    /* { dg-warning "width out of range" "first" } */
-  /* { dg-warning "result to exceed .INT_MAX." "second" { target *-*-* } .-1 } */
+  /* { dg-warning "exceeds .INT_MAX." "second" { target *-*-* } .-1 } */
   T ("%.9223372036854775808i", 0);   /* { dg-warning "precision out of range" "first" } */
-  /* { dg-warning "causes result to exceed .INT_MAX." "second" { target *-*-* } .-1 } */
+  /* { dg-warning "exceeds .INT_MAX." "second" { target *-*-* } .-1 } */
 
   /* The following is diagnosed by -Wformat (disabled here).  */
   /* T ("%9223372036854775808$i", 0); */
