@@ -1,3 +1,11 @@
+2019-02-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89446
+	* include/bits/char_traits.h (__constant_char_array): Check index is
+	in range before dereferencing.
+	* testsuite/21_strings/basic_string_view/operators/char/89446.cc:
+	New test.
+
 2019-02-22  Release Manager
 
 	* GCC 8.3.0 released.
