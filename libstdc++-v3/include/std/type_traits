@@ -2176,12 +2176,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                common_type<_Tp, _Up>>::type, _Vp...>::type
     { };
 
+  template<typename _Tp, bool = is_enum<_Tp>::value>
+    struct __underlying_type_impl
+    {
+      using type = __underlying_type(_Tp);
+    };
+
+  template<typename _Tp>
+    struct __underlying_type_impl<_Tp, false>
+    { };
+
   /// The underlying type of an enum.
   template<typename _Tp>
     struct underlying_type
-    {
-      typedef __underlying_type(_Tp) type;
-    };
+    : public __underlying_type_impl<_Tp>
+    { };
 
   template<typename _Tp>
     struct __declval_protector
