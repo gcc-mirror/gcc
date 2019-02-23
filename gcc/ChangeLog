@@ -1,3 +1,13 @@
+2019-02-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR driver/69471
+	* opts-common.c (prune_options): Also prune joined switches
+	with Negative and RejectNegative.
+	* config/i386/i386.opt (march=): Add Negative(march=).
+	(mtune=): Add Negative(mtune=).
+	* doc/options.texi: Document Negative used together with Joined
+	and RejectNegative.
+
 2019-02-22  Martin Sebor  <msebor@redhat.com>
 
 	* doc/extend.texi (Other Builtins): Add

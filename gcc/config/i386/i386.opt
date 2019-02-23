@@ -253,7 +253,7 @@ EnumValue
 Enum(ix86_align_data) String(cacheline) Value(ix86_align_data_type_cacheline)
 
 march=
-Target RejectNegative Joined Var(ix86_arch_string)
+Target RejectNegative Negative(march=) Joined Var(ix86_arch_string)
 Generate code for given CPU.
 
 masm=
@@ -510,7 +510,7 @@ Target Report Mask(TLS_DIRECT_SEG_REFS)
 Use direct references against %gs when accessing tls data.
 
 mtune=
-Target RejectNegative Joined Var(ix86_tune_string)
+Target RejectNegative Negative(mtune=) Joined Var(ix86_tune_string)
 Schedule code for given CPU.
 
 mtune-ctrl=
