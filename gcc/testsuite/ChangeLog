@@ -4,6 +4,9 @@
 	* g++.dg/cpp0x/noexcept34.C: New test.
 	* g++.dg/cpp0x/noexcept35.C: New test.
 
+	PR c++/89419
+	* g++.dg/cpp1y/lambda-generic-89419.C: New test.
+
 2019-02-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/88117
