@@ -246,7 +246,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __constant_char_array_p(const _CharT* __a, size_t __n)
     {
       size_t __i = 0;
-      while (__builtin_constant_p(__a[__i]) && __i < __n)
+      while (__i < __n && __builtin_constant_p(__a[__i]))
 	__i++;
       return __i == __n;
     }
