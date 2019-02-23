@@ -76,7 +76,7 @@ public:
   };
 
   mrules ()
-    : module_name (NULL), bmi_name (NULL), is_legacy (false)
+    : module_name (NULL), bmi_name (NULL), is_legacy (false), quote_lwm (0)
   {
   }
   ~mrules ()
@@ -105,6 +105,7 @@ public:
   const char *module_name;
   const char *bmi_name;
   bool is_legacy;
+  unsigned short quote_lwm;
 };
 
 /* Given a filename, quote characters in that filename which are
@@ -181,9 +182,7 @@ munge (const char *str, const char *trail = NULL, ...)
     va_end (args);
 
   buf[dst] = 0;
-  char *res = XNEWVEC (char, dst + 1);
-  memcpy (res, buf, dst + 1);
-  return res;
+  return buf;
 }
 
 /* If T begins with any of the partial pathnames listed in d->vpathv,
@@ -245,12 +244,13 @@ void
 deps_add_target (struct mrules *d, const char *t, int quote)
 {
   t = apply_vpath (d, t);
-  if (quote)
-    t = munge (t);  /* Also makes permanent copy.  */
-  else
-    t = xstrdup (t);
+  if (!quote)
+    {
+      gcc_assert (d->quote_lwm == d->targets.size ());
+      d->quote_lwm++;
+    }
 
-  d->targets.push (t);
+  d->targets.push (xstrdup (t));
 }
 
 /* Sets the default target if none has been given already.  An empty
@@ -289,9 +289,9 @@ deps_add_default_target (struct mrules *d, const char *tgt)
 void
 deps_add_dep (struct mrules *d, const char *t)
 {
-  t = munge (apply_vpath (d, t));  /* Also makes permanent copy.  */
+  t = apply_vpath (d, t);
 
-  d->deps.push (t);
+  d->deps.push (xstrdup (t));
 }
 
 void
@@ -320,20 +320,29 @@ void
 deps_add_module (struct mrules *d, const char *m, const char *p,
 		 const char *bmi, bool is_legacy)
 {
-  m = munge (p, m, ".c++m", NULL);
+  size_t m_len = strlen (m);
+  size_t p_len = p ? strlen (p) : 0;
+
+  char *m_name = XNEWVEC (char, m_len + p_len + 1);
+  memcpy (m_name, m, m_len + 1);
+  if (p_len)
+    memcpy (m_name + m_len, p, p_len + 1);
   if (bmi)
     {
       d->module_name = m;
       d->is_legacy = is_legacy;
-      d->bmi_name = *bmi ? munge (bmi) : NULL;
+      d->bmi_name = *bmi ? bmi : NULL;
     }
   else
     d->modules.push (m);
 }
 
 static unsigned
-write_name (const char *name, FILE *fp, unsigned col, unsigned colmax)
+make_write_name (const char *name, FILE *fp, unsigned col, unsigned colmax,
+		 bool quote = true, const char *trail = NULL)
 {
+  if (quote)
+    name = munge (name, trail, NULL);
   unsigned size = strlen (name);
 
   if (col)
@@ -354,16 +363,17 @@ write_name (const char *name, FILE *fp, unsigned col, unsigned colmax)
 }
 
 static unsigned
-write_vec (const mrules::vec<const char *> &vec, FILE *fp,
-	   unsigned col, unsigned colmax)
+make_write_vec (const mrules::vec<const char *> &vec, FILE *fp,
+		unsigned col, unsigned colmax, unsigned quote_lwm = 0,
+		const char *trail = NULL)
 {
   for (unsigned ix = 0; ix != vec.size (); ix++)
-    col = write_name (vec[ix], fp, col, colmax);
+    col = make_write_name (vec[ix], fp, col, colmax, ix >= quote_lwm, trail);
   return col;
 }
 
-void
-deps_write (const struct mrules *d, FILE *fp, unsigned int colmax)
+static void
+make_write (const struct mrules *d, FILE *fp, bool phony, unsigned int colmax)
 {
   unsigned column = 0;
   if (colmax && colmax < 34)
@@ -371,23 +381,26 @@ deps_write (const struct mrules *d, FILE *fp, unsigned int colmax)
 
   if (d->deps.size ())
     {
-      column = write_vec (d->targets, fp, 0, colmax);
+      column = make_write_vec (d->targets, fp, 0, colmax, d->quote_lwm);
       if (d->bmi_name)
-	column = write_name (d->bmi_name, fp, column, colmax);
+	column = make_write_name (d->bmi_name, fp, column, colmax);
       fputs (":", fp);
       column++;
-      column = write_vec (d->deps, fp, column, colmax);
+      column = make_write_vec (d->deps, fp, column, colmax);
       fputs ("\n", fp);
+      if (phony)
+	for (unsigned i = 1; i < d->deps.size (); i++)
+	  fprintf (fp, "%s:\n", munge (d->deps[i]));
     }
 
   if (d->modules.size ())
     {
-      column = write_vec (d->targets, fp, 0, colmax);
+      column = make_write_vec (d->targets, fp, 0, colmax, d->quote_lwm);
       if (d->bmi_name)
-	column = write_name (d->bmi_name, fp, column, colmax);
+	column = make_write_name (d->bmi_name, fp, column, colmax);
       fputs (":", fp);
       column++;
-      column = write_vec (d->modules, fp, column, colmax);
+      column = make_write_vec (d->modules, fp, column, colmax, 0, ".c++m");
       fputs ("\n", fp);
     }
 
@@ -396,24 +409,24 @@ deps_write (const struct mrules *d, FILE *fp, unsigned int colmax)
       if (d->bmi_name)
 	{
 	  /* module-name : bmi-name */
-	  column = write_name (d->module_name, fp, 0, colmax);
+	  column = make_write_name (d->module_name, fp, 0, colmax);
 	  fputs (":", fp);
 	  column++;
-	  column = write_name (d->bmi_name, fp, column, colmax);
+	  column = make_write_name (d->bmi_name, fp, column, colmax);
 	  fputs ("\n", fp);
 
 	  column = fprintf (fp, ".PHONY:");
-	  column = write_name (d->module_name, fp, column, colmax);
+	  column = make_write_name (d->module_name, fp, column, colmax);
 	  fputs ("\n", fp);
 	}
 
       if (d->bmi_name && !d->is_legacy)
 	{
 	  /* bmi-name :| first-target */
-	  column = write_name (d->bmi_name, fp, 0, colmax);
+	  column = make_write_name (d->bmi_name, fp, 0, colmax);
 	  fputs (":|", fp);
 	  column++;
-	  column = write_name (d->targets[0], fp, column, colmax);
+	  column = make_write_name (d->targets[0], fp, column, colmax);
 	  fputs ("\n", fp);
 	}
     }
@@ -421,18 +434,15 @@ deps_write (const struct mrules *d, FILE *fp, unsigned int colmax)
   if (d->modules.size ())
     {
       column = fprintf (fp, "CXX_IMPORTS +=");
-      write_vec (d->modules, fp, column, colmax);
+      make_write_vec (d->modules, fp, column, colmax, 0, ".c++m");
       fputs ("\n", fp);
     }
 }
 
 void
-deps_phony_targets (const struct mrules *d, FILE *fp)
+deps_write (const struct mrules *d, FILE *fp, bool phony, unsigned int colmax)
 {
-  unsigned int i;
-
-  for (i = 1; i < d->deps.size (); i++)
-    fprintf (fp, "\n%s:\n", d->deps[i]);
+  make_write (d, fp, phony, colmax);
 }
 
 /* Write out a deps buffer to a file, in a form that can be read back
@@ -502,8 +512,6 @@ deps_restore (struct mrules *deps, FILE *fd, const char *self)
       buf[size] = 0;
 
       /* Generate makefile dependencies from .pch if -nopch-deps.  */
-      // FIXME: This seems strange, the elements have already been
-      // munged.
       if (self != NULL && filename_cmp (buf, self) != 0)
         deps_add_dep (deps, buf);
     }

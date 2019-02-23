@@ -1,5 +1,18 @@
 2019-02-22  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* mkdeps.h (deps_write): Add phony arg.
+	(deps_phony_targets): Delete.
+	* init.c (cpp_finish): Adjust deps_write call.
+	* mkdeps.c (mrules): Add quote_lwm member.
+	(munge): Just return static buffer.
+	(deps_add_target, deps_add_dep, deps_add_module): Store unmunged.
+	(write_name): Rename ...
+	(make_write_name): ... here.  Maybe munge here.
+	(write_vec, deps_write): Rename to ...
+	(make_write_vec, make_write): ... here.  Adjust.
+	(deps_write): New wrapper.
+
 	gcc/cp/
 	* cp-tree.h (init_module_processing): Add arg.
 	* decl.c (cxx_init_decl_processing): Adjust.

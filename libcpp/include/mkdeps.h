@@ -58,9 +58,9 @@ extern void deps_add_dep (struct mrules *, const char *);
 extern void deps_add_module (struct mrules *, const char *, const char *,
 			     const char * = NULL, bool = false);
 
-/* Write out a deps buffer to a specified file.  The third argument
+/* Write out a deps buffer to a specified file.  The fourth argument
    is the number of columns to word-wrap at (0 means don't wrap).  */
-extern void deps_write (const struct mrules *, FILE *, unsigned int);
+extern void deps_write (const struct mrules *, FILE *, bool, unsigned int);
 
 /* Write out a deps buffer to a file, in a form that can be read back
    with deps_restore.  Returns nonzero on error, in which case the
@@ -72,11 +72,5 @@ extern int deps_save (struct mrules *, FILE *);
    the dependency information is just skipped, or it may be a filename,
    in which case that filename is skipped.  */
 extern int deps_restore (struct mrules *, FILE *, const char *);
-
-/* For each dependency *except the first*, emit a dummy rule for that
-   file, causing it to depend on nothing.  This is used to work around
-   the intermediate-file deletion misfeature in Make, in some
-   automatic dependency schemes.  */
-extern void deps_phony_targets (const struct mrules *, FILE *);
 
 #endif /* ! LIBCPP_MKDEPS_H */
