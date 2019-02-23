@@ -1,3 +1,9 @@
+2019-02-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88294 - ICE with non-constant noexcept-specifier.
+	* pt.c (maybe_instantiate_noexcept): Set up the list of local
+	specializations.  Set current_class_{ptr,ref}.
+
 2019-02-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/89390
