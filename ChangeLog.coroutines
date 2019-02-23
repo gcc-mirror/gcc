@@ -1,15 +1,21 @@
 2019-02-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
-	* coroutines.cc (co_return_context_valid_p): Rename to finish_co_return_stmt.
-	(finish_co_return_stmt): Amend to return CO_RETRN_EXPR, use promise proxy.
+	* cp-tree.h (COROUTINE_RETURN_P): Remove.
+
+2019-02-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (co_return_context_valid_p): Rename to
+	finish_co_return_stmt. (finish_co_return_stmt): Amend to return
+	CO_RETRN_EXPR, use promise proxy.
 	(struct __proxy_replace, replace_proxy): Move earlier in the source.
 	(struct __coro_ret_data): Add promise proxy member.
 	(co_return_expander): Revise to handle CO_RETRN_EXPR.
 	(expand_co_returns): Revise to handle replacement of promise proxy.
 	* cp-tree.h (co_return_context_valid_p): Remove.
-	* parser.c (cp_parser_jump_statement): Revise to use finish_co_return_stmt
-	only.
+	* parser.c (cp_parser_jump_statement): Revise to use
+	finish_co_return_stmt only.
 	* semantics.c (finish_co_return_stmt): Remove.
 
 2019-02-14  Iain Sandoe  <iain@sandoe.co.uk>

@@ -454,7 +454,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       CONSTRUCTOR_C99_COMPOUND_LITERAL (in CONSTRUCTOR)
       OVL_NESTED_P (in OVERLOAD)
       LAMBDA_EXPR_INSTANTIATED (in LAMBDA_EXPR)
-      COROUTINE_RETURN_P (in RETURN_EXPR)
    4: IDENTIFIER_MARKED (IDENTIFIER_NODEs)
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
 	  CALL_EXPR, or FIELD_DECL).
@@ -4913,10 +4912,6 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* [coroutines]
 
 */
-
-/* True if RETURN_EXPR is a co-routine return.  */
-#define COROUTINE_RETURN_P(NODE) \
-  TREE_LANG_FLAG_3 (RETURN_EXPR_CHECK (NODE))
 
 /* True if NODE is a co-routine FUNCTION_DECL.  */
 #define DECL_COROUTINE_P(NODE) \
