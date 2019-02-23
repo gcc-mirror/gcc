@@ -48,16 +48,16 @@ const wchar_t ws3[] = L"12\xff";
 
 void elim_wide_char_call (void)
 {
-  ELIM (snprintf (0, 0, "%lc", L'\0'));
-  ELIM (snprintf (0, 0, "%lc", L'1'));
-  ELIM (snprintf (0, 0, "%lc", L'a'));
+  ELIM (snprintf (0, 0, "%lc", (wint_t)L'\0'));
+  ELIM (snprintf (0, 0, "%lc", (wint_t)L'1'));
+  ELIM (snprintf (0, 0, "%lc", (wint_t)L'a'));
   ELIM (snprintf (0, 0, "%lc", (wint_t)ws3[0]));
   ELIM (snprintf (0, 0, "%lc", (wint_t)ws3[1]));
   ELIM (snprintf (0, 0, "%lc", (wint_t)ws3[3]));
 
-  ELIM (snprintf (0, 0, "%C", L'\0'));
-  ELIM (snprintf (0, 0, "%C", L'9'));
-  ELIM (snprintf (0, 0, "%C", L'z'));
+  ELIM (snprintf (0, 0, "%C", (wint_t)L'\0'));
+  ELIM (snprintf (0, 0, "%C", (wint_t)L'9'));
+  ELIM (snprintf (0, 0, "%C", (wint_t)L'z'));
   ELIM (snprintf (0, 0, "%C", (wint_t)ws3[0]));
   ELIM (snprintf (0, 0, "%C", (wint_t)ws3[1]));
   ELIM (snprintf (0, 0, "%C", (wint_t)ws3[3]));
@@ -82,13 +82,13 @@ void elim_wide_string_call (void)
 
 void keep_wide_char_call (void)
 {
-  KEEP (snprintf (0, 0, "%lc", L'\xff'));
-  KEEP (snprintf (0, 0, "%lc", L'\xffff'));
+  KEEP (snprintf (0, 0, "%lc", (wint_t)L'\xff'));
+  KEEP (snprintf (0, 0, "%lc", (wint_t)L'\xffff'));
   KEEP (snprintf (0, 0, "%lc", (wint_t)wc));
   KEEP (snprintf (0, 0, "%lc", (wint_t)ws3[2]));
 
-  KEEP (snprintf (0, 0, "%C", L'\xff'));
-  KEEP (snprintf (0, 0, "%C", L'\xffff'));
+  KEEP (snprintf (0, 0, "%C", (wint_t)L'\xff'));
+  KEEP (snprintf (0, 0, "%C", (wint_t)L'\xffff'));
   KEEP (snprintf (0, 0, "%C", (wint_t)wc));
   KEEP (snprintf (0, 0, "%C", (wint_t)ws3[2]));
 

@@ -1,3 +1,9 @@
+2019-02-23  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/tree-ssa/builtin-sprintf-10.c: Cast remaining
+	wchar_t to wint_t to avoid a bogus -Wformat warning in
+	ILP32 (bug 77970).
+
 2019-02-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/89476
