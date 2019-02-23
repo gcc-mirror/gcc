@@ -1,3 +1,10 @@
+2019-02-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/88117
+	* resolve.c (deferred_op_assign): Return if the lhs expression
+	has the pointer attribute.
+
 2019-02-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/71066
