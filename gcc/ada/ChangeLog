@@ -1,3 +1,13 @@
+2019-02-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/89349
+	Backport from mainline
+	2018-05-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* osint.ads (Unknown_Attributes): No longer pretend this is a constant.
+	(No_File_Info_Cache): Initialize separately.
+	* osint.adb (No_File_Info_Cache): Update initializer.
+
 2019-02-22  Release Manager
 
 	* GCC 8.3.0 released.
