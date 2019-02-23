@@ -411,12 +411,12 @@ target_to_host (char *hostr, size_t hostsz, const char *targstr)
 }
 
 /* Convert the sequence of decimal digits in the execution character
-   starting at S to a long, just like strtol does.  Return the result
-   and set *END to one past the last converted character.  On range
-   error set ERANGE to the digit that caused it.  */
+   starting at *PS to a HOST_WIDE_INT, analogously to strtol.  Return
+   the result and set *PS to one past the last converted character.
+   On range error set ERANGE to the digit that caused it.  */
 
-static inline long
-target_strtol10 (const char **ps, const char **erange)
+static inline HOST_WIDE_INT
+target_strtowi (const char **ps, const char **erange)
 {
   unsigned HOST_WIDE_INT val = 0;
   for ( ; ; ++*ps)
@@ -427,9 +427,9 @@ target_strtol10 (const char **ps, const char **erange)
 	  c -= '0';
 
 	  /* Check for overflow.  */
-	  if (val > (LONG_MAX - c) / 10LU)
+	  if (val > ((unsigned HOST_WIDE_INT) HOST_WIDE_INT_MAX - c) / 10LU)
 	    {
-	      val = LONG_MAX;
+	      val = HOST_WIDE_INT_MAX;
 	      *erange = *ps;
 
 	      /* Skip the remaining digits.  */
@@ -3149,7 +3149,7 @@ parse_directive (sprintf_dom_walker::call_info &info,
 	 width and sort it out later after the next character has
 	 been seen.  */
       pwidth = pf;
-      width = target_strtol10 (&pf, &werange);
+      width = target_strtowi (&pf, &werange);
     }
   else if (target_to_host (*pf) == '*')
     {
@@ -3231,7 +3231,7 @@ parse_directive (sprintf_dom_walker::call_info &info,
 	{
 	  werange = 0;
 	  pwidth = pf;
-	  width = target_strtol10 (&pf, &werange);
+	  width = target_strtowi (&pf, &werange);
 	}
       else if (target_to_host (*pf) == '*')
 	{
@@ -3264,7 +3264,7 @@ parse_directive (sprintf_dom_walker::call_info &info,
       if (ISDIGIT (target_to_host (*pf)))
 	{
 	  pprec = pf;
-	  precision = target_strtol10 (&pf, &perange);
+	  precision = target_strtowi (&pf, &perange);
 	}
       else if (target_to_host (*pf) == '*')
 	{
@@ -3418,7 +3418,7 @@ parse_directive (sprintf_dom_walker::call_info &info,
     }
   else
     {
-      if (width == LONG_MAX && werange)
+      if (width == HOST_WIDE_INT_MAX && werange)
 	{
 	  size_t begin = dir.beg - info.fmtstr + (pwidth - pcnt);
 	  size_t caret = begin + (werange - pcnt);
@@ -3451,7 +3451,7 @@ parse_directive (sprintf_dom_walker::call_info &info,
     }
   else
     {
-      if (precision == LONG_MAX && perange)
+      if (precision == HOST_WIDE_INT_MAX && perange)
 	{
 	  size_t begin = dir.beg - info.fmtstr + (pprec - pcnt) - 1;
 	  size_t caret = dir.beg - info.fmtstr + (perange - pcnt) - 1;
