@@ -1,3 +1,14 @@
+2019-02-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/86119
+	Backport from trunk
+	* class.c (gfc_get_len_component): Add argument k for kind.
+	If the kind of the resulting expression is not equal to k,
+	convert it.
+	* gfortran.h (gfc_len_component): Adjust prototype.
+	* simplify.c (gfc_simplify_len): Pass kind to
+	gfc_get_len_component.
+
 2019-02-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
