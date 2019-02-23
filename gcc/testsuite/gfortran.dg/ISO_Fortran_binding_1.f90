@@ -192,7 +192,9 @@ end subroutine test_CFI_address
     a = [(real(i), i = 1, 100)]
     lower(1) = 10
     strides(1) = 5
-    if (int (sum(a(lower(1)::strides(1))) &
+! Remember, 'a' being non pointer, non-allocatable, the C descriptor
+! lbounds are set to zero.
+    if (int (sum(a(lower(1)+1::strides(1))) &
              - c_section(1, a, lower, strides)) .ne. 0) stop 28
 ! Case (ii) from F2018:18.5.5.7.
     arg(:,1:10) = reshape ([(real(i), i = 1, 100)], [10,10])
@@ -222,7 +224,7 @@ end subroutine test_CFI_address
       end do
     end do
 ! Now do the test.
-    if (int (c_select_part (type_t) - sum_z_5) .ne. 0) stop 28
+    if (int (c_select_part (type_t) - sum_z_5) .ne. 0) stop 30
   end subroutine test_CFI_select_part
 
   subroutine test_CFI_setpointer
@@ -232,13 +234,13 @@ end subroutine test_CFI_address
     integer, dimension(2) :: lbounds = [-1, -2]
 ! The C-function resets the lbounds
     ptr(1:, 1:) => tgt
-    if (c_setpointer (ptr, lbounds) .ne. 0) stop 30
-    if (any (lbound(ptr) .ne. lbounds)) stop 31
+    if (c_setpointer (ptr, lbounds) .ne. 0) stop 31
+    if (any (lbound(ptr) .ne. lbounds)) stop 32
   end subroutine test_CFI_setpointer
 
   subroutine test_assumed_size (arg)
     integer, dimension(2,*) :: arg
 ! The C-function checks contiguousness and that extent[1] == -1.
-    if (c_assumed_size (arg) .ne. 0) stop 32
+    if (c_assumed_size (arg) .ne. 0) stop 33
   end subroutine
 end
