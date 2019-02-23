@@ -1,5 +1,8 @@
 2019-02-22  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* doc/invoke.texi: Update modules documentation.
+
 	libcpp/
 	* mkdeps.h (deps_write): Add phony arg.
 	(deps_phony_targets): Delete.

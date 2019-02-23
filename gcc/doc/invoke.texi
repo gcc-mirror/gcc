@@ -2642,14 +2642,14 @@ Disable lazy module importing and module mapper creation.
 @item -fmodule-header
 @itemx -fmodule-header=@r{[}@var{name}@r{][}?@var{macro}@r{[}=@var{value}@r{]]}
 @opindex fmodule-header
-Compile as a header unit module.  The @var{name} may use
-@samp{"..."} or @samp{<...>} to indicate a user or system header, and
-defaults to user.  If a name is omitted, the source filename is used.
-The source filename may be partitioned by a @samp{/./} component, in
-which case the fragment following is used as the name.  A @samp{?}
-character separates the header name from a controlling macro.  If this
-is not specified, the first macro defined in the header unit is used
-to determine uniqueness.  The format of the macro is the same as the
+Compile as a header unit.  The @var{name} may use @samp{"..."} or
+@samp{<...>} to indicate a user or system header, and defaults to
+user.  If a name is omitted, the source filename is used.  The source
+filename may be partitioned by a @samp{/./} component, in which case
+the fragment following is used as the name.  A @samp{?}  character
+separates the header name from a controlling macro.  If this is not
+specified, the first macro defined in the header unit is used to
+determine uniqueness.  The format of the macro is the same as the
 @option{-D} option, except that an existing definition will be chosen
 if one is available.
 
@@ -2659,7 +2659,7 @@ Only emit the module BMI, inhibiting any object file.
 
 @item -fforce-module-macros
 @opindex fforce-module-macros
-Load legacy module macros at end of compilation.  This is not standard
+Load header unit macros at end of compilation.  This is not standard
 conforming, but can be helpful to confirm all imported macros are
 consistent.
 
@@ -29945,6 +29945,14 @@ encoding the exported declarations of the module.  Importing a module
 reads in the BMI.  The dependency graph of imports is a Directed
 Acyclic Graph (DAG).
 
+A BMI may be a pathname containing subdirectories.  When creating an
+output BMI any missing directory components are created in a manner
+that is safe for concurrent builds creating multiple, different, BMIs
+within a common subdirectory graph.
+
+As this is not a standard part of C++, you need to use the
+@option{-fmodules-ts} option to enable it.
+
 The @option{-fmodule-header} family of options enable compilation of a
 header as a header unit module.  Using this option implies
 @option{-fmodules-ts}.
@@ -29954,9 +29962,10 @@ Usually importing a module will load minimal information, deferring
 the bulk of the loading to the point at which name lookup inspects a
 particular namespace-scope name.
 
-The @option{-fmodule-only} disables generation of the associated
+The @option{-fmodule-only} option disables generation of the associated
 object file for compiling a module interface.  Only the binary module
-interface is generated.
+interface is generated.  This option is implied when using one of the
+@option{-fmodule-header} options.
 
 The @option{--param lazy-modules=@var{n}} parameter controls the limit
 on the number of concurrently open module files during lazy loading.
@@ -29965,10 +29974,16 @@ which files to close -- until that file is needed again.  This limit
 may be exceeded with deep module dependency hierarchies.  With large
 code bases there may be more imports than the process limit of file
 descriptors.  By default, the limit is 20 less than the per-process
-limit, if that is determinable.
+file descriptor hard limit, if that is determinable.
+
+The @option{-fforce-module-macros} option loads all of a header unit's
+macros.  Normally they are lazily loaded on use.
+
+The @option{-fmodule-mapper} family of options are described below.
 
 @menu
 * C++ Module Mapper::       Module Mapper
+* C++ Module Preprocessing::  Module Preprocessing
 @end menu
 
 @node C++ Module Mapper
@@ -30131,11 +30146,38 @@ directory structure within the repository across a parellelized build
 system.
 
 The default mapper generates BMI files in the current directory,
-appending a @samp{.gcm} suffix to the module name.  Legacy module
-names can contain directory separators, these are mapped to @samp{!}
-and appending a further @samp{u} or @samp{s} after the @samp{.gcm}
-suffix.
+appending a @samp{.gcm} suffix to the module name.  Header unit names
+append a further @samp{u} or @samp{s} after the @samp{.gcm} suffix.
+They may also contain directory separators.
 
 The mapper protocol was published as ``A Module Mapper''
-@uref{http//wg21.link/p1184}.  It is expected that build systems will
+@uref{http//wg21.link/p1184}.  It is intended that build systems will
 provide their own mappers.
+
+@node C++ Module Preprocessing
+@subsection Module Preprocessing
+@cindex C++ Module Preprocessing
+
+Modules affect preprocessing because of header units and include
+translation.  Some uses of the preprocessor as a separate step will
+either not produce a correct output, or require BMIs to be available.
+
+Header units import macros.  These macros can affect later conditional
+inclusion, which therefore can cascade to differing import sets.  When
+preprocessing, it is necessary to load the BMI.  If a header unit is
+unavailable, the preprocessor will issue a warning and continue (when
+no just preprocessing, an error is emitted).  Detecting such imports
+requires preprocessor tokenization of the input stream to phase 4
+(macro expansion).
+
+Include translation converts @code{#include} directives to
+@code{import} declarations.  Whether a particular directive is
+translated is controlled by the module mapper.
+
+Dependency information can be emitted for macro import, extending the
+functionality of @option{-MD} and @option{-MMD} options.  Detection of
+import declarations also requires phase 4 preprocessing, and thus
+requires full preprocessing (or compilation).
+
+The @option{-M}, @option{-MM} and @option{-fdirectives-only} options halt
+preprocessing before phase 4.
