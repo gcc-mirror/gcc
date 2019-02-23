@@ -7476,7 +7476,6 @@ extern tree composite_pointer_type		(tree, tree, tree, tree,
 extern tree merge_types				(tree, tree);
 extern tree strip_array_domain			(tree);
 extern tree check_return_expr			(tree, bool *);
-extern tree check_co_return_expr		(tree, bool *);
 extern tree cp_build_binary_op                  (const op_location_t &,
 						 enum tree_code, tree, tree,
 						 tsubst_flags_t);

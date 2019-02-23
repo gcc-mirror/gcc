@@ -545,6 +545,17 @@ finish_co_yield_expr (location_t kw, tree expr)
   return op;
 }
 
+/* placeholder; in case we really need something more than the contextual
+   checks.  */
+static tree
+check_co_return_expr (tree retval, bool *no_warning)
+{
+
+  *no_warning = false;
+
+  return retval;
+}
+
 /* Check that it's valid to have a co_return keyword here.
    If it is, then check and build the p.return_{void(),value(expr)}.
    These are built against the promise proxy, but saved for expand time.  */

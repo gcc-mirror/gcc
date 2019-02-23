@@ -1,6 +1,13 @@
 2019-02-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* typeck.c: Move check_co_return_expr from here to ...
+	* coroutines.cc: ... Here and make it static.
+	* cp-tree.h (check_co_return_expr): Remove.
+
+2019-02-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (expand_co_returns): Remove dead code.
 	(build_actor_fn): Likewise.
 
