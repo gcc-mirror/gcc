@@ -1,3 +1,18 @@
+2019-02-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89446
+	* include/bits/char_traits.h (__constant_char_array): Check index is
+	in range before dereferencing.
+	(char_traits<char>::compare, char_traits<char>::find)
+	(char_traits<char8_t>::compare, char_traits<char8_t>::find): Return
+	immediately if n is zero.
+	(char_traits<wchar_t>::compare, char_traits<wchar_t>::find): Likewise.
+	Remove workarounds for PR 67026.
+	* testsuite/21_strings/basic_string_view/operators/char/89446.cc:
+	New test.
+	* testsuite/21_strings/basic_string_view/operators/wchar_t/89446.cc:
+	New test.
+
 2019-02-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/abi/post/sparc64-linux-gnu/baseline_symbols.txt: Adjust.
