@@ -647,7 +647,6 @@ replace_proxy (tree *here, int *do_subtree, void *d)
 struct __coro_ret_data {
   tree promise_proxy;
   tree real_promise;
-  tree return_void;
   tree fs_label;
 
 };
@@ -691,10 +690,9 @@ co_return_expander (tree *stmt, int *, void *d)
 
 /* Walk the original function body, rewriting co_returns.  */
 static tree
-expand_co_returns (tree *fnbody, tree promise_proxy, tree promise,
-		   tree return_void, tree fs_label)
+expand_co_returns (tree *fnbody, tree promise_proxy, tree promise, tree fs_label)
 {
-  struct __coro_ret_data data = { promise_proxy, promise, return_void, fs_label};
+  struct __coro_ret_data data = { promise_proxy, promise, fs_label};
   cp_walk_tree (fnbody, co_return_expander, &data, NULL);
   return *fnbody;
 }
@@ -1299,7 +1297,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   DECL_CONTEXT (fs_label) = actor;
 
   /* Expand co_returns in the saved function body  */
-  fnbody = expand_co_returns (&fnbody, promise_proxy, ap, return_void, fs_label);
+  fnbody = expand_co_returns (&fnbody, promise_proxy, ap, fs_label);
 
   /* Transform the await expressions in the function body.  Only do each
      await tree once!  */

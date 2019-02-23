@@ -1,6 +1,12 @@
 2019-02-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (expand_co_returns): Remove dead code.
+	(build_actor_fn): Likewise.
+
+2019-02-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* cp-tree.h (COROUTINE_RETURN_P): Remove.
 
 2019-02-22  Iain Sandoe  <iain@sandoe.co.uk>
