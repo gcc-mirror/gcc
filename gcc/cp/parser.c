@@ -12882,14 +12882,7 @@ cp_parser_jump_statement (cp_parser* parser)
 	  expr = NULL_TREE;
 	/* Build the return-statement.  */
 	if (keyword == RID_CO_RETURN)
-	  {
-	    /* Check the context first, so that we point the diagnostics
-	       to the keyword, rather than the expr.  */
-	    if (co_return_context_valid_p (token->location, expr))
-	      statement = finish_co_return_stmt (expr);
-	    else
-	      statement = error_mark_node;
-	  }
+	  statement = finish_co_return_stmt (token->location, expr);
 	else if (current_function_auto_return_pattern && in_discarded_stmt)
 	  /* Don't deduce from a discarded return statement.  */;
 	else

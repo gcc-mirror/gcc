@@ -7031,7 +7031,6 @@ extern tree begin_do_stmt			(void);
 extern void finish_do_body			(tree);
 extern void finish_do_stmt		(tree, tree, bool, unsigned short);
 extern tree finish_return_stmt			(tree);
-extern tree finish_co_return_stmt		(tree);
 extern tree begin_for_scope			(tree *);
 extern tree begin_for_stmt			(tree, tree);
 extern void finish_init_stmt			(tree);
@@ -7768,7 +7767,7 @@ extern tree cp_ubsan_maybe_instrument_cast_to_vbase (location_t, tree, tree);
 extern void cp_ubsan_maybe_initialize_vtbl_ptrs (tree);
 
 /* In coroutines.cc */
-extern bool co_return_context_valid_p		(location_t, tree);
+extern tree finish_co_return_stmt		(location_t, tree);
 extern tree finish_co_await_expr		(location_t, tree);
 extern tree finish_co_yield_expr		(location_t, tree);
 extern bool morph_fn_to_coro			(tree, tree *, tree *);

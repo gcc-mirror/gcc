@@ -545,38 +545,66 @@ finish_co_yield_expr (location_t kw, tree expr)
   return op;
 }
 
-
 /* Check that it's valid to have a co_return keyword here.
-   True if this is a valid context (we don't check the content
-   of the expr - except to decide if the promise_type needs as
-   return_void() or a return_value().  */
+   If it is, then check and build the p.return_{void(),value(expr)}.
+   These are built against the promise proxy, but saved for expand time.  */
 
-bool
-co_return_context_valid_p (location_t kw, tree expr)
+tree
+finish_co_return_stmt (location_t kw, tree expr)
 {
   if (expr == error_mark_node)
-    return false;
+    return error_mark_node;
 
   if (! coro_common_keyword_context_valid_p (current_function_decl, kw,
 					   "co_return"))
-    return false;
+    return error_mark_node;
 
   if (! coro_promise_type_found_p (current_function_decl, kw))
-    return false;
+    return error_mark_node;
+
+  /* The current function has now become a coroutine, if it wasn't
+     already.  */
+  DECL_COROUTINE_P (current_function_decl) = 1;
+
+  bool no_warning;
+  expr = check_co_return_expr (expr, &no_warning);
+
+  if (error_operand_p (expr))
+    return error_mark_node;
+
+  /* Suppress -Wreturn-type for co_return, we need to check indirectly
+     whether the promise type has a suitable return_void/return_value.  */
+  if (warn_return_type)
+    TREE_NO_WARNING (current_function_decl) = true;
+
+  if (!processing_template_decl && warn_sequence_point)
+    verify_sequence_points (expr);    
 
   /* If the promise object doesn't have the correct return call then
      there's a mis-match between the co_return <expr> and this.  */
+  tree co_ret_call = NULL_TREE;
   if (expr == NULL_TREE || VOID_TYPE_P (TREE_TYPE (expr)))
     {
-      if (lookup_promise_member (current_function_decl, "return_void",
-				 kw, true /*musthave*/) == error_mark_node)
-	return false;
+      tree crv_meth = lookup_promise_member (current_function_decl, "return_void",
+					     kw, true /*musthave*/);
+      if (!crv_meth || crv_meth == error_mark_node)
+	return error_mark_node;
+
+      co_ret_call = build_new_method_call
+	(DECL_COROUTINE_PROMISE_PROXY (current_function_decl), crv_meth,  NULL,
+	 NULL_TREE, LOOKUP_NORMAL, NULL, tf_warning_or_error);
     }
   else
     {
-      if (lookup_promise_member (current_function_decl, "return_value",
-				 kw, true /*musthave*/) == error_mark_node)
-	return false;
+      tree crv_meth = lookup_promise_member (current_function_decl, "return_value",
+					     kw, true /*musthave*/);
+      if (!crv_meth || crv_meth == error_mark_node)
+	return error_mark_node;
+
+      vec<tree, va_gc>* args = make_tree_vector_single (expr);
+      co_ret_call = build_new_method_call
+	(DECL_COROUTINE_PROMISE_PROXY (current_function_decl), crv_meth,  &args,
+	 NULL_TREE, LOOKUP_NORMAL, NULL, tf_warning_or_error);
     }
 
   /* Makes no sense for a co-routine really. */
@@ -584,15 +612,41 @@ co_return_context_valid_p (location_t kw, tree expr)
     warning_at (kw, 0, "function declared %<noreturn%> has a"
 		" %<co_return%> statement");
 
-  return true;
+  if (!co_ret_call || co_ret_call == error_mark_node)
+    return error_mark_node;
+
+  expr = build2_loc (kw, CO_RETRN_EXPR, void_type_node, expr, co_ret_call);
+  TREE_NO_WARNING (expr) |= no_warning;
+  expr = maybe_cleanup_point_expr_void (expr);
+  expr = add_stmt (expr);
+  return expr;
 }
 
 /* ================= Morph and Expand. ================= */
 
+struct __proxy_replace {
+  tree from, to;
+};
+
+static tree
+replace_proxy (tree *here, int *do_subtree, void *d)
+{
+  struct __proxy_replace *data = (struct __proxy_replace *)d;
+
+  if (*here == data->from)
+    {
+      *here = data->to;
+      *do_subtree = 0;
+    }
+  else
+    *do_subtree = 1;
+  return NULL_TREE;
+}
 
 /* Support for expansion of co_return statements.  */
 struct __coro_ret_data {
-  tree promise;
+  tree promise_proxy;
+  tree real_promise;
   tree return_void;
   tree fs_label;
 
@@ -612,54 +666,35 @@ co_return_expander (tree *stmt, int *, void *d)
 {
   struct __coro_ret_data *data = (struct __coro_ret_data *) d;
 
-  if (TREE_CODE (*stmt) != RETURN_EXPR || ! COROUTINE_RETURN_P (*stmt))
+  if (TREE_CODE (*stmt) != CO_RETRN_EXPR)
     return NULL_TREE;
 
   location_t loc = EXPR_LOCATION (*stmt);
   tree expr = TREE_OPERAND (*stmt, 0);
+  tree call = TREE_OPERAND (*stmt, 1);
   tree stmt_list = NULL;
-  if (expr == NULL_TREE || VOID_TYPE_P (TREE_TYPE (expr)))
-    {
-      if (expr)
-        append_to_statement_list (expr, &stmt_list);
-      append_to_statement_list (data->return_void, &stmt_list);
-    }
-  else
-    {
-      tree pm_name = get_identifier ("return_value");
-      tree promise_type = TREE_TYPE (data->promise);
-      tree pm_memb = lookup_member (promise_type, pm_name,
-				    /*protect*/1,  /*want_type*/ 0,
-				    tf_warning_or_error);
-      if (pm_memb && pm_memb != error_mark_node)
-        {
-          vec<tree, va_gc>* args = make_tree_vector_single (expr);
-	  tree return_value = build_new_method_call (data->promise, pm_memb,
-						     &args, NULL_TREE,
-						     LOOKUP_NORMAL, NULL,
-						     tf_warning_or_error);
-          append_to_statement_list (return_value, &stmt_list);
-          release_tree_vector (args);
-	}
-      else
-	{
-	  error_at (loc, "no member named %qs in %qT",
-		    IDENTIFIER_POINTER (pm_name), promise_type);
-          append_to_statement_list (error_mark_node, &stmt_list);
-        }
-    }
+  if (expr)
+    append_to_statement_list (expr, &stmt_list);
+
+  /* Now replace the promise proxy with its real value.  */
+  struct __proxy_replace p_data;
+  p_data.from = data->promise_proxy;
+  p_data.to = data->real_promise;
+  cp_walk_tree (&call, replace_proxy, &p_data, NULL);
+  append_to_statement_list (call, &stmt_list);
   tree r = build1_loc (loc, GOTO_EXPR, void_type_node, data->fs_label);
   append_to_statement_list (r, &stmt_list);
   *stmt = stmt_list;
+
   return NULL_TREE;
 }
 
 /* Walk the original function body, rewriting co_returns.  */
 static tree
-expand_co_returns (tree *fnbody, tree promise,
+expand_co_returns (tree *fnbody, tree promise_proxy, tree promise,
 		   tree return_void, tree fs_label)
 {
-  struct __coro_ret_data data = { promise, return_void, fs_label};
+  struct __coro_ret_data data = { promise_proxy, promise, return_void, fs_label};
   cp_walk_tree (fnbody, co_return_expander, &data, NULL);
   return *fnbody;
 }
@@ -988,25 +1023,6 @@ struct suspend_point_info {
 
 static hash_map<tree, struct suspend_point_info> *suspend_points;
 
-struct __proxy_replace {
-  tree from, to;
-};
-
-static tree
-replace_proxy (tree *here, int *do_subtree, void *d)
-{
-  struct __proxy_replace *data = (struct __proxy_replace *)d;
-
-  if (*here == data->from)
-    {
-      *here = data->to;
-      *do_subtree = 0;
-    }
-  else
-    *do_subtree = 1;
-  return NULL_TREE;
-}
-
 struct __await_xform_data {
   tree actor_frame; 
   tree promise_proxy;
@@ -1283,7 +1299,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   DECL_CONTEXT (fs_label) = actor;
 
   /* Expand co_returns in the saved function body  */
-  fnbody = expand_co_returns (&fnbody, ap, return_void, fs_label);
+  fnbody = expand_co_returns (&fnbody, promise_proxy, ap, return_void, fs_label);
 
   /* Transform the await expressions in the function body.  Only do each
      await tree once!  */

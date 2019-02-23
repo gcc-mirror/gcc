@@ -928,41 +928,6 @@ finish_return_stmt (tree expr)
   return r;
 }
 
-/* Finish a co-return-statement.
-   Defer expansion so, apart from marking the function as a co-routine,
-   keep this as a RETURN_EXPR.  */
-
-tree
-finish_co_return_stmt (tree expr)
-{
-  tree r;
-  bool no_warning;
-
-  expr = check_co_return_expr (expr, &no_warning);
-
-  if (error_operand_p (expr))
-    return error_mark_node;
-
-  /* Suppress -Wreturn-type for co_return, we need to check indirectly
-     whether the promise type has a suitable return_void/return_value.  */
-  if (warn_return_type)
-    TREE_NO_WARNING (current_function_decl) = true;
-
-  if (!processing_template_decl && warn_sequence_point)
-    verify_sequence_points (expr);    
-
-  r = build_stmt (input_location, RETURN_EXPR, expr);
-  TREE_NO_WARNING (r) |= no_warning;
-  COROUTINE_RETURN_P (r) = 1;
-  r = add_stmt (r);
-
-  /* The current function has now become a coroutine, if it wasn't
-     already.  */
-  DECL_COROUTINE_P (current_function_decl) = 1;
-
-  return r;
-}
-
 /* Begin the scope of a for-statement or a range-for-statement.
    Both the returned trees are to be used in a call to
    begin_for_stmt or begin_range_for_stmt.  */
