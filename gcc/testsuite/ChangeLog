@@ -1,3 +1,17 @@
+2019-02-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89385
+	* gfortran.dg/ISO_Fortran_binding_1.f90 : Correct test for
+	previously incorrect lbound for allocatable expressions. Also
+	correct stop values to avoid repetition.
+	* gfortran.dg/ISO_Fortran_binding_5.f90 : New test
+	* gfortran.dg/ISO_Fortran_binding_5.c : Support previous test.
+
+	PR fortran/89366
+	* gfortran.dg/ISO_Fortran_binding_6.f90 : New test
+	* gfortran.dg/ISO_Fortran_binding_6.c : Support previous test.
+	* gfortran.dg/pr32599.f03 : Set standard to F2008.
+
 2019-02-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/89390

@@ -1,3 +1,18 @@
+2019-02-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89385
+	PR fortran/89366
+	* decl.c (gfc_verify_c_interop_param): Restriction on string
+	length being one is lifted for F2018.
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): For scalar
+	characters with intent in, make a temporary and copy the result
+	of the expression evaluation into it.
+	(gfc_conv_procedure_call): Set a flag for character formal args
+	having a character length that is not unity. If the procedure
+	is bind C, call gfc_conv_gfc_desc_to_cfi_desc in this case.
+	Also, extend bind C calls to unconditionally convert both
+	pointers and allocatable expressions.
+
 2019-02-23  David Malcolm  <dmalcolm@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
