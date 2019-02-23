@@ -5976,6 +5976,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	tree object_scope;
 	tree scope;
 	bool done;
+	location_t tilde_loc = token->location;
 
 	/* Consume the `~' token.  */
 	cp_lexer_consume_token (parser->lexer);
@@ -6038,9 +6039,18 @@ cp_parser_unqualified_id (cp_parser* parser,
 	  }
 	gcc_assert (!scope || TYPE_P (scope));
 
+	token = cp_lexer_peek_token (parser->lexer);
+
+	/* Create a location with caret == start at the tilde,
+	   finishing at the end of the peeked token, e.g:
+	   ~token
+	   ^~~~~~.  */
+	location_t loc
+	  = make_location (tilde_loc, tilde_loc, token->location);
+
 	/* If the name is of the form "X::~X" it's OK even if X is a
 	   typedef.  */
-	token = cp_lexer_peek_token (parser->lexer);
+
 	if (scope
 	    && token->type == CPP_NAME
 	    && (cp_lexer_peek_nth_token (parser->lexer, 2)->type
@@ -6050,18 +6060,18 @@ cp_parser_unqualified_id (cp_parser* parser,
 		    && constructor_name_p (token->u.value, scope))))
 	  {
 	    cp_lexer_consume_token (parser->lexer);
-	    return build_nt (BIT_NOT_EXPR, scope);
+	    return cp_expr (build_nt (BIT_NOT_EXPR, scope), loc);
 	  }
 
 	/* ~auto means the destructor of whatever the object is.  */
 	if (cp_parser_is_keyword (token, RID_AUTO))
 	  {
 	    if (cxx_dialect < cxx14)
-	      pedwarn (input_location, 0,
+	      pedwarn (loc, 0,
 		       "%<~auto%> only available with "
 		       "-std=c++14 or -std=gnu++14");
 	    cp_lexer_consume_token (parser->lexer);
-	    return build_nt (BIT_NOT_EXPR, make_auto ());
+	    return cp_expr (build_nt (BIT_NOT_EXPR, make_auto (), loc));
 	  }
 
 	/* If there was an explicit qualification (S::~T), first look
@@ -6152,7 +6162,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 		type_decl = cp_parser_identifier (parser);
 		if (type_decl != error_mark_node)
 		  type_decl = build_nt (BIT_NOT_EXPR, type_decl);
-		return type_decl;
+		return cp_expr (type_decl, loc);
 	      }
 	  }
 	/* If an error occurred, assume that the name of the
@@ -6168,7 +6178,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	if (declarator_p && scope && !check_dtor_name (scope, type_decl))
 	  {
 	    if (!cp_parser_uncommitted_to_tentative_parse_p (parser))
-	      error_at (token->location,
+	      error_at (loc,
 			"declaration of %<~%T%> as member of %qT",
 			type_decl, scope);
 	    cp_parser_simulate_error (parser);
@@ -6183,11 +6193,11 @@ cp_parser_unqualified_id (cp_parser* parser,
 	    && !DECL_IMPLICIT_TYPEDEF_P (type_decl)
 	    && !DECL_SELF_REFERENCE_P (type_decl)
 	    && !cp_parser_uncommitted_to_tentative_parse_p (parser))
-	  error_at (token->location,
+	  error_at (loc,
 		    "typedef-name %qD used as destructor declarator",
 		    type_decl);
 
-	return build_nt (BIT_NOT_EXPR, TREE_TYPE (type_decl));
+	return cp_expr (build_nt (BIT_NOT_EXPR, TREE_TYPE (type_decl), loc));
       }
 
     case CPP_KEYWORD:
