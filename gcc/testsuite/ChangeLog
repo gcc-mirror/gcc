@@ -1,5 +1,10 @@
 2019-02-23  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/88117
+	* gfortran.dg/deferred_character_32.f90 : New test
+
+2019-02-23  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/89385
 	* gfortran.dg/ISO_Fortran_binding_1.f90 : Correct test for
 	previously incorrect lbound for allocatable expressions. Also

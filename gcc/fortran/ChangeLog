@@ -1,5 +1,13 @@
 2019-02-23  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/88117
+	* resolve.c (deferred_op_assign): Return if the lhs expression
+	has the pointer attribute.
+	* trans-expr.c (gfc_trans_assignment_1): Do not fix the string
+	length if the lhs expression has the pointer attribute.
+
+2019-02-23  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/89385
 	PR fortran/89366
 	* decl.c (gfc_verify_c_interop_param): Restriction on string
