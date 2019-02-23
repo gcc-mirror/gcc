@@ -1,3 +1,10 @@
+2019-02-23  Martin Sebor  <msebor@redhat.com>
+
+	* gimple-ssa-sprintf.c (target_strtol): Rename...
+	(target_strtohwi): ...to this.  Handle values up to HOST_WIDE_INT_MAX.
+	(parse_directive): Adjust to name change.  Use HOST_WIDE_INT_MAX to
+	check for range error.
+
 2019-02-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR driver/69471
