@@ -1,5 +1,12 @@
 2019-02-23  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR testsuite/89476
+	* gfortran.dg/ISO_Fortran_binding_5.c: Include
+	"../../../libgfortran/ISO_Fortran_binding.h".
+	* gfortran.dg/ISO_Fortran_binding_6.c: Likewise.
+
+2019-02-23  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR driver/69471
 	* gcc.dg/pr69471-1.c: New test.
 	* gcc.dg/pr69471-2.c: Likewise.
