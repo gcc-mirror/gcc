@@ -250,8 +250,7 @@ package body Osint is
       Attr : aliased File_Attributes;
    end record;
 
-   No_File_Info_Cache : constant File_Info_Cache :=
-                          (No_File, Unknown_Attributes);
+   No_File_Info_Cache : constant File_Info_Cache := (No_File, (others => 0));
 
    package File_Name_Hash_Table is new GNAT.HTable.Simple_HTable (
      Header_Num => File_Hash_Num,
