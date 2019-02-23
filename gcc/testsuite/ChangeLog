@@ -1,3 +1,9 @@
+2019-02-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88294 - ICE with non-constant noexcept-specifier.
+	* g++.dg/cpp0x/noexcept34.C: New test.
+	* g++.dg/cpp0x/noexcept35.C: New test.
+
 2019-02-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/88117
