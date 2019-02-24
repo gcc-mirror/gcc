@@ -1,3 +1,14 @@
+2019-02-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/89174
+	* trans-expr.c (gfc_find_and_cut_at_last_class_ref): Add is_mold
+	to garguments. If we are dealing with a MOLD, call
+	gfc_expr_to_initialize().
+	* trans-stmt.c (gfc_trans_allocate): For MOLD, pass is_mold=true
+	to gfc_find_and_cut_at_last_class_ref.
+	* trans.h (gfc_find_and_cut_at_last_class_ref): Add optional
+	argument is_mold with default false.
+
 2019-02-24  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/89266
