@@ -5480,16 +5480,15 @@ gfc_calculate_transfer_sizes (gfc_expr *source, gfc_expr *mold, gfc_expr *size,
     return false;
 
   /* Calculate the size of the source.  */
-  *source_size = gfc_target_expr_size (source);
-  if (*source_size == 0)
+  if (!gfc_target_expr_size (source, source_size))
     return false;
 
   /* Determine the size of the element.  */
-  result_elt_size = gfc_element_size (mold);
-  if (result_elt_size == 0)
+  if (!gfc_element_size (mold, &result_elt_size))
     return false;
 
-  if (mold->expr_type == EXPR_ARRAY || mold->rank || size)
+  if ((result_elt_size > 0 && (mold->expr_type == EXPR_ARRAY || mold->rank))
+      || size)
     {
       int result_length;
 
