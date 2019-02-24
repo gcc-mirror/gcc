@@ -1,3 +1,14 @@
+2019-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/89445
+	* simplify-rtx.c (simplify_ternary_operation): Don't use
+	simplify_merge_mask on operands that may trap.
+	* rtlanal.c (may_trap_p_1): Use FLOAT_MODE_P instead of
+	SCALAR_FLOAT_MODE_P checks.  For integral division by zero, if
+	second operand is CONST_VECTOR, check if any element could be zero.
+	Don't expect traps for VEC_{MERGE,SELECT,CONCAT,DUPLICATE} unless
+	their operands can trap.
+
 2019-02-23  Martin Sebor  <msebor@redhat.com>
 
 	* gimple-ssa-sprintf.c (target_strtol): Rename...

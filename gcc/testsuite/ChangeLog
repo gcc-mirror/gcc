@@ -1,3 +1,8 @@
+2019-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/89445
+	* gcc.target/i386/avx512f-pr89445.c: New test.
+
 2019-02-23  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/tree-ssa/builtin-sprintf-10.c: Cast remaining
