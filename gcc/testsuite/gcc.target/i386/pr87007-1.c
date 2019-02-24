@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=skylake" } */
+/* { dg-options "-O2 -march=skylake -mfpmath=sse" } */
 
 extern float f;
 extern double d;
