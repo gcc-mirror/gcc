@@ -2846,10 +2846,28 @@ may_trap_p_1 (const_rtx x, unsigned flags)
     case UMOD:
       if (HONOR_SNANS (x))
 	return 1;
-      if (SCALAR_FLOAT_MODE_P (GET_MODE (x)))
+      if (FLOAT_MODE_P (GET_MODE (x)))
 	return flag_trapping_math;
       if (!CONSTANT_P (XEXP (x, 1)) || (XEXP (x, 1) == const0_rtx))
 	return 1;
+      if (GET_CODE (XEXP (x, 1)) == CONST_VECTOR)
+	{
+	  /* For CONST_VECTOR, return 1 if any element is or might be zero.  */
+	  unsigned int n_elts;
+	  rtx op = XEXP (x, 1);
+	  if (!GET_MODE_NUNITS (GET_MODE (op)).is_constant (&n_elts))
+	    {
+	      if (!CONST_VECTOR_DUPLICATE_P (op))
+		return 1;
+	      for (unsigned i = 0; i < (unsigned int) XVECLEN (op, 0); i++)
+		if (CONST_VECTOR_ENCODED_ELT (op, i) == const0_rtx)
+		  return 1;
+	    }
+	  else
+	    for (unsigned i = 0; i < n_elts; i++)
+	      if (CONST_VECTOR_ELT (op, i) == const0_rtx)
+		return 1;
+	}
       break;
 
     case EXPR_LIST:
@@ -2898,12 +2916,16 @@ may_trap_p_1 (const_rtx x, unsigned flags)
     case NEG:
     case ABS:
     case SUBREG:
+    case VEC_MERGE:
+    case VEC_SELECT:
+    case VEC_CONCAT:
+    case VEC_DUPLICATE:
       /* These operations don't trap even with floating point.  */
       break;
 
     default:
       /* Any floating arithmetic may trap.  */
-      if (SCALAR_FLOAT_MODE_P (GET_MODE (x)) && flag_trapping_math)
+      if (FLOAT_MODE_P (GET_MODE (x)) && flag_trapping_math)
 	return 1;
     }
 
