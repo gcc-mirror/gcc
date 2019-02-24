@@ -590,7 +590,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static false_type
       _M_select(...);
 
-  protected:
+  public:
     template<typename _Alloc, typename _Tp = typename _Alloc::value_type>
       using copy = decltype(_M_select<_Alloc, const _Tp&>(0));
 
