@@ -1,5 +1,27 @@
 2019-02-25  Tamar Christina  <tamar.christina@arm.com>
 
+	PR target/88530
+	* common/config/aarch64/aarch64-common.c
+	(struct aarch64_option_extension): Add is_synthetic.
+	(all_extensions): Use it.
+	(TARGET_OPTION_INIT_STRUCT): Define hook.
+	(struct gcc_targetm_common): Moved to end.
+	(all_extensions_by_on): New.
+	(opt_ext_cmp, typedef opt_ext): New.
+	(aarch64_option_init_struct): New.
+	(aarch64_contains_opt): New.
+	(aarch64_get_extension_string_for_isa_flags): Output smallest set.
+	* config/aarch64/aarch64-option-extensions.def
+	(AARCH64_OPT_EXTENSION): Explicitly include AES and SHA2 in crypto.
+	(fp, simd, crc, lse, fp16, rcpc, rdma, dotprod, aes, sha2, sha3,
+	sm4, fp16fml, sve, profile, rng, memtag, sb, ssbs, predres):
+	Set is_synthetic to false.
+	(crypto): Set is_synthetic to true.
+	* config/aarch64/driver-aarch64.c (AARCH64_OPT_EXTENSION): Add
+	SYNTHETIC.
+
+2019-02-25  Tamar Christina  <tamar.christina@arm.com>
+
 	* config/arm/arm_neon.h (vfmlal_low_u32, vfmlsl_low_u32,
 	vfmlal_high_u32, vfmlsl_high_u32, vfmlalq_low_u32, vfmlslq_low_u32,
 	vfmlalq_high_u32, vfmlslq_high_u32, vfmlal_lane_low_u32,
