@@ -1,3 +1,15 @@
+2019-02-25  Sandra Loosemore  <sandra@codesourcery.com>
+	    Martin Sebor  <msebor@gmail.com>
+
+	* c-family/c.opt (Wmissing-attributes): Clean up doc string.
+	* common.opt (Wattribute-alias): Likewise.
+	* doc/invoke.texi (Option Summary): List general form of
+	-Wattribute-alias=.  List positive form of -Wmissing-attributes.
+	(-Wmissing-attributes): Invert entry, rewrite and correct default.
+	Add cross-references.
+	(-Wattribute-alias): Rewrite and correct default.  Mention
+	considered attributes (same as for -Wmissing-attributes).
+
 2019-02-25  Paul A. Clarke  <pc@us.ibm.com>
 
 [gcc]
