@@ -1,3 +1,10 @@
+2019-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89438
+	* config/arm.vfp.md (*negdf2_vfp): Use
+	gen_int_mode (0x80000000, SImode) instead of GEN_INT (0x80000000).
+	* config/arm/neon.md (neon_copysignf<mode>): Likewise.
+
 2019-02-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/89445

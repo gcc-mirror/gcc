@@ -1,3 +1,8 @@
+2019-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89438
+	* gcc.dg/pr89438.c: New test.
+
 2019-02-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84585

@@ -3610,7 +3610,7 @@
   "{
      rtx v_bitmask_cast;
      rtx v_bitmask = gen_reg_rtx (<VCVTF:V_cmp_result>mode);
-     rtx c = GEN_INT (0x80000000);
+     rtx c = gen_int_mode (0x80000000, SImode);
 
      emit_move_insn (v_bitmask,
 		     gen_const_vec_duplicate (<VCVTF:V_cmp_result>mode, c));
