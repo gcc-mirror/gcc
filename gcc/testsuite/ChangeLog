@@ -1,5 +1,8 @@
 2019-02-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/89434
+	* gcc.c-torture/execute/pr89434.c: New test.
+
 	PR target/89438
 	* gcc.dg/pr89438.c: New test.
 

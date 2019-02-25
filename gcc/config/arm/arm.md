@@ -1145,10 +1145,20 @@
 (define_insn "*subsi3_carryin_const"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
         (minus:SI (plus:SI (match_operand:SI 1 "s_register_operand" "r")
-                           (match_operand:SI 2 "arm_not_immediate_operand" "K"))
+                           (match_operand:SI 2 "arm_neg_immediate_operand" "L"))
                   (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
   "TARGET_32BIT"
-  "sbc\\t%0, %1, #%B2"
+  "sbc\\t%0, %1, #%n2"
+  [(set_attr "conds" "use")
+   (set_attr "type" "adc_imm")]
+)
+
+(define_insn "*subsi3_carryin_const0"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+        (minus:SI (match_operand:SI 1 "s_register_operand" "r")
+                  (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+  "TARGET_32BIT"
+  "sbc\\t%0, %1, #0"
   [(set_attr "conds" "use")
    (set_attr "type" "adc_imm")]
 )
@@ -1170,13 +1180,26 @@
 (define_insn "*subsi3_carryin_compare_const"
   [(set (reg:CC CC_REGNUM)
         (compare:CC (match_operand:SI 1 "reg_or_int_operand" "r")
-                    (match_operand:SI 2 "arm_not_operand" "K")))
+                    (match_operand:SI 2 "const_int_I_operand" "I")))
    (set (match_operand:SI 0 "s_register_operand" "=r")
         (minus:SI (plus:SI (match_dup 1)
-                           (match_dup 2))
+                           (match_operand:SI 3 "arm_neg_immediate_operand" "L"))
+                  (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+  "TARGET_32BIT && UINTVAL (operands[2]) == -UINTVAL (operands[3])"
+  "sbcs\\t%0, %1, #%n3"
+  [(set_attr "conds" "set")
+   (set_attr "type" "adcs_imm")]
+)
+
+(define_insn "*subsi3_carryin_compare_const0"
+  [(set (reg:CC CC_REGNUM)
+        (compare:CC (match_operand:SI 1 "reg_or_int_operand" "r")
+		    (const_int 0)))
+   (set (match_operand:SI 0 "s_register_operand" "=r")
+        (minus:SI (match_dup 1)
                   (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
   "TARGET_32BIT"
-  "sbcs\\t%0, %1, #%B2"
+  "sbcs\\t%0, %1, #0"
   [(set_attr "conds" "set")
    (set_attr "type" "adcs_imm")]
 )
@@ -1301,14 +1324,13 @@
   [(parallel [(set (reg:CC CC_REGNUM)
 		   (compare:CC (match_dup 1) (match_dup 2)))
 	      (set (match_dup 0) (minus:SI (match_dup 1) (match_dup 2)))])
-   (set (match_dup 3) (minus:SI (plus:SI (match_dup 4) (match_dup 5))
+   (set (match_dup 3) (minus:SI (match_dup 4)
                                 (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
   {
     operands[3] = gen_highpart (SImode, operands[0]);
     operands[0] = gen_lowpart (SImode, operands[0]);
     operands[4] = gen_highpart (SImode, operands[1]);
     operands[1] = gen_lowpart (SImode, operands[1]);
-    operands[5] = GEN_INT (~0);
    }
   [(set_attr "conds" "clob")
    (set_attr "length" "8")
@@ -7423,16 +7445,19 @@
                    (compare:CC (match_dup 3) (match_dup 4)))
               (set (match_dup 2)
                    (minus:SI (match_dup 5)
-                            (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))])]
+			     (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))])]
   {
     operands[3] = gen_highpart (SImode, operands[0]);
     operands[0] = gen_lowpart (SImode, operands[0]);
     if (CONST_INT_P (operands[1]))
       {
-        operands[4] = GEN_INT (~INTVAL (gen_highpart_mode (SImode,
-                                                           DImode,
-                                                           operands[1])));
-        operands[5] = gen_rtx_PLUS (SImode, operands[3], operands[4]);
+	operands[4] = gen_highpart_mode (SImode, DImode, operands[1]);
+	if (operands[4] == const0_rtx)
+	  operands[5] = operands[3];
+	else
+	  operands[5] = gen_rtx_PLUS (SImode, operands[3],
+				      gen_int_mode (-UINTVAL (operands[4]),
+						    SImode));
       }
     else
       {
