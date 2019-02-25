@@ -1,3 +1,13 @@
+2019-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/77754
+	* gcc.c-torture/compile/pr77754-1.c: New test.
+	* gcc.c-torture/compile/pr77754-2.c: New test.
+	* gcc.c-torture/compile/pr77754-3.c: New test.
+	* gcc.c-torture/compile/pr77754-4.c: New test.
+	* gcc.c-torture/compile/pr77754-5.c: New test.
+	* gcc.c-torture/compile/pr77754-6.c: New test.
+
 2019-02-25  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/88530
