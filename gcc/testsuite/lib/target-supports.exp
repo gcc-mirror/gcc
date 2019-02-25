@@ -4567,7 +4567,7 @@ proc check_effective_target_arm_fp16fml_neon_ok_nocache { } {
 		float32x2_t
 		foo (float32x2_t r, float16x4_t a, float16x4_t b)
 		{
-		  return vfmlal_high_u32 (r, a, b);
+		  return vfmlal_high_f16 (r, a, b);
 		}
         } "$flags -march=armv8.2-a+fp16fml"] } {
             set et_arm_fp16fml_neon_flags "$flags -march=armv8.2-a+fp16fml"
