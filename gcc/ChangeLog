@@ -1,5 +1,26 @@
 2019-02-25  Tamar Christina  <tamar.christina@arm.com>
 
+	* config/arm/arm_neon.h (vfmlal_low_u32, vfmlsl_low_u32,
+	vfmlal_high_u32, vfmlsl_high_u32, vfmlalq_low_u32, vfmlslq_low_u32,
+	vfmlalq_high_u32, vfmlslq_high_u32, vfmlal_lane_low_u32,
+	vfmlal_lane_high_u32, vfmlalq_laneq_low_u32, vfmlalq_lane_low_u32,
+	vfmlal_laneq_low_u32, vfmlalq_laneq_high_u32, vfmlalq_lane_high_u32,
+	vfmlal_laneq_high_u32, vfmlsl_lane_low_u32, vfmlsl_lane_high_u32,
+	vfmlslq_laneq_low_u32, vfmlslq_lane_low_u32, vfmlsl_laneq_low_u32,
+	vfmlslq_laneq_high_u32, vfmlslq_lane_high_u32, vfmlsl_laneq_high_u32):
+	Rename ...
+	(vfmlal_low_f16, vfmlsl_low_f16, vfmlal_high_f16, vfmlsl_high_f16,
+	vfmlalq_low_f16, vfmlslq_low_f16, vfmlalq_high_f16, vfmlslq_high_f16,
+	vfmlal_lane_low_f16, vfmlal_lane_high_f16, vfmlalq_laneq_low_f16,
+	vfmlalq_lane_low_f16, vfmlal_laneq_low_f16, vfmlalq_laneq_high_f16,
+	vfmlalq_lane_high_f16, vfmlal_laneq_high_f16, vfmlsl_lane_low_f16,
+	vfmlsl_lane_high_f16, vfmlslq_laneq_low_f16, vfmlslq_lane_low_f16,
+	vfmlsl_laneq_low_f16, vfmlslq_laneq_high_f16, vfmlslq_lane_high_f16,
+	vfmlsl_laneq_high_f16): ... To this.
+	* config/arm/neon.md: Update comments.
+
+2019-02-25  Tamar Christina  <tamar.christina@arm.com>
+
 	* config/aarch64/arm_neon.h (vfmlal_low_u32, vfmlsl_low_u32,
 	vfmlalq_low_u32, vfmlslq_low_u32, vfmlal_high_u32, vfmlsl_high_u32,
 	vfmlalq_high_u32, vfmlslq_high_u32, vfmlal_lane_low_u32,

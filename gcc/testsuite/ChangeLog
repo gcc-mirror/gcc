@@ -1,5 +1,36 @@
 2019-02-25  Tamar Christina  <tamar.christina@arm.com>
 
+	* gcc.target/arm/simd/fp16fml_high.c (test_vfmlal_high_u32,
+	test_vfmlalq_high_u32, test_vfmlsl_high_u32, test_vfmlslq_high_u32):
+	Rename ....
+	(test_vfmlal_high_f16, test_vfmlalq_high_f16, test_vfmlsl_high_f16,
+	test_vfmlslq_high_f16): ... To this.
+	* gcc.target/arm/simd/fp16fml_lane_high.c (test_vfmlal_lane_high_u32,
+	tets_vfmlsl_lane_high_u32, test_vfmlal_laneq_high_u32,
+	test_vfmlsl_laneq_high_u32, test_vfmlalq_lane_high_u32,
+	test_vfmlslq_lane_high_u32, test_vfmlalq_laneq_high_u32,
+	test_vfmlslq_laneq_high_u32): Rename ...
+	(test_vfmlal_lane_high_f16, tets_vfmlsl_lane_high_f16,
+	test_vfmlal_laneq_high_f16, test_vfmlsl_laneq_high_f16,
+	test_vfmlalq_lane_high_f16, test_vfmlslq_lane_high_f16,
+	test_vfmlalq_laneq_high_f16, test_vfmlslq_laneq_high_f16): ... To this.
+	* gcc.target/arm/simd/fp16fml_lane_low.c (test_vfmlal_lane_low_u32,
+	test_vfmlsl_lane_low_u32, test_vfmlal_laneq_low_u32,
+	test_vfmlsl_laneq_low_u32, test_vfmlalq_lane_low_u32,
+	test_vfmlslq_lane_low_u32, test_vfmlalq_laneq_low_u32,
+	test_vfmlslq_laneq_low_u32): Rename ...
+	(test_vfmlal_lane_low_f16, test_vfmlsl_lane_low_f16,
+	test_vfmlal_laneq_low_f16, test_vfmlsl_laneq_low_f16,
+	test_vfmlalq_lane_low_f16, test_vfmlslq_lane_low_f16,
+	test_vfmlalq_laneq_low_f16, test_vfmlslq_laneq_low_f16): ... To this.
+	* gcc.target/arm/simd/fp16fml_low.c (test_vfmlal_low_u32,
+	test_vfmlalq_low_u32, test_vfmlsl_low_u32, test_vfmlslq_low_u32):
+	Rename ...
+	(test_vfmlal_low_f16, test_vfmlalq_low_f16, test_vfmlsl_low_f16,
+	test_vfmlslq_low_f16): ... To this.
+
+2019-02-25  Tamar Christina  <tamar.christina@arm.com>
+
 	* gcc.target/aarch64/fp16_fmul_high.h (test_vfmlal_high_u32,
 	test_vfmlalq_high_u32, test_vfmlsl_high_u32, test_vfmlslq_high_u32):
 	Rename ...
