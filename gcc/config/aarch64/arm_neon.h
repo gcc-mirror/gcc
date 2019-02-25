@@ -33810,63 +33810,63 @@ vbcaxq_s64 (int64x2_t __a, int64x2_t __b, int64x2_t __c)
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlal_low_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b)
+vfmlal_low_f16 (float32x2_t __r, float16x4_t __a, float16x4_t __b)
 {
   return __builtin_aarch64_fmlal_lowv2sf (__r, __a, __b);
 }
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlsl_low_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b)
+vfmlsl_low_f16 (float32x2_t __r, float16x4_t __a, float16x4_t __b)
 {
   return __builtin_aarch64_fmlsl_lowv2sf (__r, __a, __b);
 }
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlalq_low_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b)
+vfmlalq_low_f16 (float32x4_t __r, float16x8_t __a, float16x8_t __b)
 {
   return __builtin_aarch64_fmlalq_lowv4sf (__r, __a, __b);
 }
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlslq_low_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b)
+vfmlslq_low_f16 (float32x4_t __r, float16x8_t __a, float16x8_t __b)
 {
   return __builtin_aarch64_fmlslq_lowv4sf (__r, __a, __b);
 }
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlal_high_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b)
+vfmlal_high_f16 (float32x2_t __r, float16x4_t __a, float16x4_t __b)
 {
   return __builtin_aarch64_fmlal_highv2sf (__r, __a, __b);
 }
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlsl_high_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b)
+vfmlsl_high_f16 (float32x2_t __r, float16x4_t __a, float16x4_t __b)
 {
   return __builtin_aarch64_fmlsl_highv2sf (__r, __a, __b);
 }
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlalq_high_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b)
+vfmlalq_high_f16 (float32x4_t __r, float16x8_t __a, float16x8_t __b)
 {
   return __builtin_aarch64_fmlalq_highv4sf (__r, __a, __b);
 }
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlslq_high_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b)
+vfmlslq_high_f16 (float32x4_t __r, float16x8_t __a, float16x8_t __b)
 {
   return __builtin_aarch64_fmlslq_highv4sf (__r, __a, __b);
 }
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlal_lane_low_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
+vfmlal_lane_low_f16 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
 		     const int __lane)
 {
   return __builtin_aarch64_fmlal_lane_lowv2sf (__r, __a, __b, __lane);
@@ -33874,7 +33874,7 @@ vfmlal_lane_low_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlsl_lane_low_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
+vfmlsl_lane_low_f16 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
 		     const int __lane)
 {
   return __builtin_aarch64_fmlsl_lane_lowv2sf (__r, __a, __b, __lane);
@@ -33882,7 +33882,7 @@ vfmlsl_lane_low_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlal_laneq_low_u32 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
+vfmlal_laneq_low_f16 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
 		      const int __lane)
 {
   return __builtin_aarch64_fmlal_laneq_lowv2sf (__r, __a, __b, __lane);
@@ -33890,7 +33890,7 @@ vfmlal_laneq_low_u32 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlsl_laneq_low_u32 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
+vfmlsl_laneq_low_f16 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
 		      const int __lane)
 {
   return __builtin_aarch64_fmlsl_laneq_lowv2sf (__r, __a, __b, __lane);
@@ -33898,7 +33898,7 @@ vfmlsl_laneq_low_u32 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlalq_lane_low_u32 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
+vfmlalq_lane_low_f16 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
 		      const int __lane)
 {
   return __builtin_aarch64_fmlalq_lane_lowv4sf (__r, __a, __b, __lane);
@@ -33906,7 +33906,7 @@ vfmlalq_lane_low_u32 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlslq_lane_low_u32 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
+vfmlslq_lane_low_f16 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
 		      const int __lane)
 {
   return __builtin_aarch64_fmlslq_lane_lowv4sf (__r, __a, __b, __lane);
@@ -33914,7 +33914,7 @@ vfmlslq_lane_low_u32 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlalq_laneq_low_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
+vfmlalq_laneq_low_f16 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
 		       const int __lane)
 {
   return __builtin_aarch64_fmlalq_laneq_lowv4sf (__r, __a, __b, __lane);
@@ -33922,7 +33922,7 @@ vfmlalq_laneq_low_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlslq_laneq_low_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
+vfmlslq_laneq_low_f16 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
 		      const int __lane)
 {
   return __builtin_aarch64_fmlslq_laneq_lowv4sf (__r, __a, __b, __lane);
@@ -33930,7 +33930,7 @@ vfmlslq_laneq_low_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlal_lane_high_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
+vfmlal_lane_high_f16 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
 		     const int __lane)
 {
   return __builtin_aarch64_fmlal_lane_highv2sf (__r, __a, __b, __lane);
@@ -33938,7 +33938,7 @@ vfmlal_lane_high_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlsl_lane_high_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
+vfmlsl_lane_high_f16 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
 		     const int __lane)
 {
   return __builtin_aarch64_fmlsl_lane_highv2sf (__r, __a, __b, __lane);
@@ -33946,7 +33946,7 @@ vfmlsl_lane_high_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlal_laneq_high_u32 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
+vfmlal_laneq_high_f16 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
 		      const int __lane)
 {
   return __builtin_aarch64_fmlal_laneq_highv2sf (__r, __a, __b, __lane);
@@ -33954,7 +33954,7 @@ vfmlal_laneq_high_u32 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlsl_laneq_high_u32 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
+vfmlsl_laneq_high_f16 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
 		      const int __lane)
 {
   return __builtin_aarch64_fmlsl_laneq_highv2sf (__r, __a, __b, __lane);
@@ -33962,7 +33962,7 @@ vfmlsl_laneq_high_u32 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlalq_lane_high_u32 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
+vfmlalq_lane_high_f16 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
 		      const int __lane)
 {
   return __builtin_aarch64_fmlalq_lane_highv4sf (__r, __a, __b, __lane);
@@ -33970,7 +33970,7 @@ vfmlalq_lane_high_u32 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlslq_lane_high_u32 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
+vfmlslq_lane_high_f16 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
 		      const int __lane)
 {
   return __builtin_aarch64_fmlslq_lane_highv4sf (__r, __a, __b, __lane);
@@ -33978,7 +33978,7 @@ vfmlslq_lane_high_u32 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlalq_laneq_high_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
+vfmlalq_laneq_high_f16 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
 		       const int __lane)
 {
   return __builtin_aarch64_fmlalq_laneq_highv4sf (__r, __a, __b, __lane);
@@ -33986,7 +33986,7 @@ vfmlalq_laneq_high_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlslq_laneq_high_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
+vfmlslq_laneq_high_f16 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
 		      const int __lane)
 {
   return __builtin_aarch64_fmlslq_laneq_highv4sf (__r, __a, __b, __lane);
