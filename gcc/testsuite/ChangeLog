@@ -1,5 +1,18 @@
 2019-02-25  Tamar Christina  <tamar.christina@arm.com>
 
+	PR target/88530
+	* gcc.target/aarch64/options_set_1.c: New test.
+	* gcc.target/aarch64/options_set_2.c: New test.
+	* gcc.target/aarch64/options_set_3.c: New test.
+	* gcc.target/aarch64/options_set_4.c: New test.
+	* gcc.target/aarch64/options_set_5.c: New test.
+	* gcc.target/aarch64/options_set_6.c: New test.
+	* gcc.target/aarch64/options_set_7.c: New test.
+	* gcc.target/aarch64/options_set_8.c: New test.
+	* gcc.target/aarch64/options_set_9.c: New test.
+
+2019-02-25  Tamar Christina  <tamar.christina@arm.com>
+
 	* gcc.target/arm/simd/fp16fml_high.c (test_vfmlal_high_u32,
 	test_vfmlalq_high_u32, test_vfmlsl_high_u32, test_vfmlslq_high_u32):
 	Rename ....
