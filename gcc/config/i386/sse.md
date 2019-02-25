@@ -396,6 +396,13 @@
 (define_mode_iterator VF1_AVX512ER_128_256
   [(V16SF "TARGET_AVX512ER") (V8SF "TARGET_AVX") V4SF])
 
+(define_mode_iterator VFH_AVX512VL
+  [(V32HF "TARGET_AVX512FP16")
+   (V16HF "TARGET_AVX512FP16 && TARGET_AVX512VL")
+   (V8HF "TARGET_AVX512FP16 && TARGET_AVX512VL")
+   V16SF (V8SF "TARGET_AVX512VL") (V4SF "TARGET_AVX512VL")
+   V8DF (V4DF "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")])
+
 (define_mode_iterator VF2_AVX512VL
   [V8DF (V4DF "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")])
 
@@ -2340,6 +2347,30 @@
    (set_attr "btver2_sse_attr" "rcp")
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "SF")])
+
+(define_insn "avx512fp16_rcp<mode>2<mask_name>"
+  [(set (match_operand:VF_AVX512FP16VL 0 "register_operand" "=v")
+	(unspec:VF_AVX512FP16VL
+	  [(match_operand:VF_AVX512FP16VL 1 "nonimmediate_operand" "vm")]
+	  UNSPEC_RCP))]
+  "TARGET_AVX512FP16"
+  "vrcpph\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+  [(set_attr "type" "sse")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "avx512fp16_vmrcpv8hf2<mask_scalar_name>"
+  [(set (match_operand:V8HF 0 "register_operand" "=v")
+	(vec_merge:V8HF
+	  (unspec:V8HF [(match_operand:V8HF 1 "nonimmediate_operand" "vm")]
+		       UNSPEC_RCP)
+	  (match_operand:V8HF 2 "register_operand" "v")
+	  (const_int 1)))]
+  "TARGET_AVX512FP16"
+  "vrcpsh\t{%1, %2, %0<mask_scalar_operand3>|%0<mask_scalar_operand3>, %2, %w1}"
+  [(set_attr "type" "sse")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "HF")])
 
 (define_insn "<mask_codefor>rcp14<mode><mask_name>"
   [(set (match_operand:VF_AVX512VL 0 "register_operand" "=v")
@@ -10281,11 +10312,11 @@
 })
 
 (define_insn "avx512f_vmscalef<mode><mask_scalar_name><round_scalar_name>"
-  [(set (match_operand:VF_128 0 "register_operand" "=v")
-	(vec_merge:VF_128
-	  (unspec:VF_128
-	    [(match_operand:VF_128 1 "register_operand" "v")
-	     (match_operand:VF_128 2 "<round_scalar_nimm_predicate>" "<round_scalar_constraint>")]
+  [(set (match_operand:VFH_128 0 "register_operand" "=v")
+	(vec_merge:VFH_128
+	  (unspec:VFH_128
+	    [(match_operand:VFH_128 1 "register_operand" "v")
+	     (match_operand:VFH_128 2 "<round_scalar_nimm_predicate>" "<round_scalar_constraint>")]
 	    UNSPEC_SCALEF)
 	  (match_dup 1)
 	  (const_int 1)))]
@@ -10295,10 +10326,10 @@
    (set_attr "mode"  "<ssescalarmode>")])
 
 (define_insn "<avx512>_scalef<mode><mask_name><round_name>"
-  [(set (match_operand:VF_AVX512VL 0 "register_operand" "=v")
-	(unspec:VF_AVX512VL
-	  [(match_operand:VF_AVX512VL 1 "register_operand" "v")
-	   (match_operand:VF_AVX512VL 2 "nonimmediate_operand" "<round_constraint>")]
+  [(set (match_operand:VFH_AVX512VL 0 "register_operand" "=v")
+	(unspec:VFH_AVX512VL
+	  [(match_operand:VFH_AVX512VL 1 "register_operand" "v")
+	   (match_operand:VFH_AVX512VL 2 "nonimmediate_operand" "<round_constraint>")]
 	  UNSPEC_SCALEF))]
   "TARGET_AVX512F"
   "vscalef<ssemodesuffix>\t{<round_mask_op3>%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2<round_mask_op3>}"
