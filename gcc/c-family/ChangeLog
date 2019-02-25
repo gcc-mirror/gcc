@@ -1,3 +1,10 @@
+2019-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89495
+	* c-format.c (maybe_read_dollar_number): Compute nargnum in
+	HOST_WIDE_INT type to avoid overflows and change overflow_flag
+	checking.
+
 2019-02-22  Richard Biener  <rguenther@suse.de>
 
 	* c-pch.c (no_checksum): Remove.
