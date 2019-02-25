@@ -2208,10 +2208,7 @@ df_mw_compare (const df_mw_hardreg *mw1, const df_mw_hardreg *mw2)
   if (mw1->end_regno != mw2->end_regno)
     return mw1->end_regno - mw2->end_regno;
 
-  if (mw1->mw_reg != mw2->mw_reg)
-    return mw1->mw_order - mw2->mw_order;
-
-  return 0;
+  return mw1->mw_order - mw2->mw_order;
 }
 
 /* Like df_mw_compare, but compare two df_mw_hardreg** pointers R1 and R2.  */

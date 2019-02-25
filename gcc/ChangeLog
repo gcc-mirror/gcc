@@ -1,3 +1,9 @@
+2019-02-25  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/86096
+	* df-scan.c (df_mw_compare): Do not check mw_reg fields when
+	comparing mw_order values.
+
 2019-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/89434
