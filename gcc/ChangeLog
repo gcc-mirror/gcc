@@ -1,5 +1,22 @@
 2019-02-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/89434
+	* config/arm/arm.md (*subsi3_carryin_const): Use
+	arm_neg_immediate_operand predicate instead of
+	arm_not_immediate_operand, "L" constraint instead of "K" and
+	print it using %n2 instead of %B2.
+	(*subsi3_carryin_const0): New define_insn.
+	(*subsi3_carryin_compare_const): Use const_int_I_operand predicate
+	instead of arm_not_operand and "I" constraint instead of "K" and
+	print it using %n3 instead of %B2.  Instead of using match_dup 2 add
+	another match_operand and in the condition check that it is negation
+	of operands[2].
+	(*subsi3_carryin_compare_const0): New define_ins.
+	(*subdi_di_zesidi): Adjust to use *subsi3_carryin_const0 instead of
+	*subsi3_carryin_const.
+	(*arm_cmpdi_insn): Fix splitting into *subsi3_carryin_compare_const,
+	split into *subsi3_carryin_compare_const0 if the highpart is zero.
+
 	PR target/89438
 	* config/arm.vfp.md (*negdf2_vfp): Use
 	gen_int_mode (0x80000000, SImode) instead of GEN_INT (0x80000000).
