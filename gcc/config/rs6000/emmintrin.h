@@ -887,7 +887,11 @@ _mm_cvtpd_epi32 (__m128d __A)
       : );
 
 #ifdef _ARCH_PWR8
+#ifdef __LITTLE_ENDIAN__
   temp = vec_mergeo (temp, temp);
+#else
+  temp = vec_mergee (temp, temp);
+#endif
   result = (__v4si) vec_vpkudum ((__vector long long) temp,
 				 (__vector long long) vzero);
 #else
@@ -922,7 +926,11 @@ _mm_cvtpd_ps (__m128d __A)
       : );
 
 #ifdef _ARCH_PWR8
+#ifdef __LITTLE_ENDIAN__
   temp = vec_mergeo (temp, temp);
+#else
+  temp = vec_mergee (temp, temp);
+#endif
   result = (__v4sf) vec_vpkudum ((__vector long long) temp,
 				 (__vector long long) vzero);
 #else
@@ -951,7 +959,11 @@ _mm_cvttpd_epi32 (__m128d __A)
       : );
 
 #ifdef _ARCH_PWR8
+#ifdef __LITTLE_ENDIAN__
   temp = vec_mergeo (temp, temp);
+#else
+  temp = vec_mergee (temp, temp);
+#endif
   result = (__v4si) vec_vpkudum ((__vector long long) temp,
 				 (__vector long long) vzero);
 #else

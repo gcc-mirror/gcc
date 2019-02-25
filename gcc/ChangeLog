@@ -1,3 +1,19 @@
+2019-02-25  Paul A. Clarke  <pc@us.ibm.com>
+
+[gcc]
+
+	* config/rs6000/emmintrin.h (_mm_cvtpd_epi32): Fix big endian.
+	(_mm_cvtpd_ps): Likewise.
+	(_mm_cvttpd_epi32): Likewise.
+
+	PR target/89338
+	* config/rs6000/xmmintrin.h (_mm_cvtss_f32):  Fix type mismatch.
+	(_mm_cvt_ss2si): Fix type mismatch and 32-bit.
+
+	PR target/89339
+	* config/rs6000/xmmintrin.h (_mm_movemask_pi8): Fix 32-bit.
+
+
 2019-02-25  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/88530
