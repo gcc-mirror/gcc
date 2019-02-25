@@ -288,7 +288,7 @@ Objective-C and Objective-C++ Dialects}.
 -Walloc-zero  -Walloc-size-larger-than=@var{byte-size} @gol
 -Walloca  -Walloca-larger-than=@var{byte-size} @gol
 -Wno-aggressive-loop-optimizations  -Warray-bounds  -Warray-bounds=@var{n} @gol
--Wno-attributes  -Wno-attribute-alias @gol
+-Wno-attributes  -Wattribute-alias=@var{n}  @gol
 -Wbool-compare  -Wbool-operation @gol
 -Wno-builtin-declaration-mismatch @gol
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
@@ -322,7 +322,7 @@ Objective-C and Objective-C++ Dialects}.
 -Winvalid-pch  -Wlarger-than=@var{byte-size} @gol
 -Wlogical-op  -Wlogical-not-parentheses  -Wlong-long @gol
 -Wmain  -Wmaybe-uninitialized  -Wmemset-elt-size  -Wmemset-transposed-args @gol
--Wmisleading-indentation  -Wno-missing-attributes  -Wmissing-braces @gol
+-Wmisleading-indentation  -Wmissing-attributes  -Wmissing-braces @gol
 -Wmissing-field-initializers  -Wmissing-format-attribute @gol
 -Wmissing-include-dirs  -Wmissing-noreturn  -Wmissing-profile @gol
 -Wno-multichar  -Wmultistatement-macros  -Wnonnull  -Wnonnull-compare @gol
@@ -5056,7 +5056,7 @@ about the layout of the file that the directive references.
 
 This warning is enabled by @option{-Wall} in C and C++.
 
-@item -Wno-missing-attributes
+@item -Wmissing-attributes
 @opindex Wmissing-attributes
 @opindex Wno-missing-attributes
 Warn when a declaration of a function is missing one or more attributes
@@ -5064,10 +5064,10 @@ that a related function is declared with and whose absence may adversely
 affect the correctness or efficiency of generated code.  For example,
 the warning is issued for declarations of aliases that use attributes
 to specify less restrictive requirements than those of their targets.
-This typically represents a potential optimization oportunity rather
-than a hidden bug.  The @option{-Wattribute-alias} option controls warnings
-issued for mismatches between declarations of aliases and their targets
-that might be indicative of code generation bugs.
+This typically represents a potential optimization opportunity.
+By contrast, the @option{-Wattribute-alias=2} option controls warnings
+issued when the alias is more restrictive than the target, which could
+lead to incorrect code generation.
 Attributes considered include @code{alloc_align}, @code{alloc_size},
 @code{cold}, @code{const}, @code{hot}, @code{leaf}, @code{malloc},
 @code{nonnull}, @code{noreturn}, @code{nothrow}, @code{pure},
@@ -5079,6 +5079,13 @@ template declared with attribute @code{alloc_align}, @code{alloc_size},
 or @code{nonnull} is declared without it.  Attributes @code{deprecated},
 @code{error}, and @code{warning} suppress the warning.
 (@pxref{Function Attributes}).
+
+You can use the @code{copy} attribute to apply the same
+set of attributes to a declaration as that on another declaration without
+explicitly enumerating the attributes. This attribute can be applied
+to declarations of functions (@pxref{Common Function Attributes}),
+variables (@pxref{Common Variable Attributes}), or types
+(@pxref{Common Type Attributes}).
 
 @option{-Wmissing-attributes} is enabled by @option{-Wall}.
 
@@ -6107,7 +6114,6 @@ false positives and is deactivated by default.
 Warn about declarations using the @code{alias} and similar attributes whose
 target is incompatible with the type of the alias.
 @xref{Function Attributes,,Declaring Attributes of Functions}.
-The @option{-Wattribute-alias=1} is  enabled by @option{-Wall}.
 
 @table @gcctabopt
 @item -Wattribute-alias=1
@@ -6116,12 +6122,25 @@ incompatibilities between the type of the alias declaration and that of its
 target.  Such incompatibilities are typically indicative of bugs.
 
 @item -Wattribute-alias=2
-At this level @option{-Wattribute-alias} also diagnoses mismatches between
-the set of attributes of the alias declaration and the attributes applied
-to its target.  Although in some cases such mismatches may indicate bugs,
-in other cases they may be benign and could be resolved simply by adding
-the missing attribute to the target.
+
+At this level @option{-Wattribute-alias} also diagnoses cases where
+the attributes of the alias declaration are more restrictive than the
+attributes applied to its target.  These mismatches can potentially
+result in incorrect code generation.  In other cases they may be
+benign and could be resolved simply by adding the missing attribute to
+the target.  For comparison, see the @option{-Wmissing-attributes}
+option, which controls diagnostics when the alias declaration is less
+restrictive than the target, rather than more restrictive.
+
+Attributes considered include @code{alloc_align}, @code{alloc_size},
+@code{cold}, @code{const}, @code{hot}, @code{leaf}, @code{malloc},
+@code{nonnull}, @code{noreturn}, @code{nothrow}, @code{pure},
+@code{returns_nonnull}, and @code{returns_twice}.
 @end table
+
+@option{-Wattribute-alias} is equivalent to @option{-Wattribute-alias=1}.
+This is the default.  You can disable these warnings with either
+@option{-Wno-attribute-alias} or @option{-Wattribute-alias=0}.
 
 @item -Wbool-compare
 @opindex Wno-bool-compare
