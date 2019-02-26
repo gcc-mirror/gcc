@@ -7613,7 +7613,10 @@ compute_dependence_clique (void)
 					      maybe_set_dependence_info);
 	  if (used)
 	    {
-	      bitmap_set_bit (rvars, restrict_var->id);
+	      /* Add all subvars to the set of restrict pointed-to set. */
+	      for (unsigned sv = restrict_var->head; sv != 0;
+		   sv = get_varinfo (sv)->next)
+		bitmap_set_bit (rvars, sv);
 	      varinfo_t escaped = get_varinfo (find (escaped_id));
 	      if (bitmap_bit_p (escaped->solution, restrict_var->id))
 		escaped_p = true;
