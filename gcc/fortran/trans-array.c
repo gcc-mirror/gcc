@@ -5986,7 +5986,6 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
 {
   gfc_constructor *c;
   tree tmp;
-  offset_int wtmp;
   gfc_se se;
   tree index, range;
   vec<constructor_elt, va_gc> *v = NULL;
@@ -6009,13 +6008,10 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
       else
 	gfc_conv_structure (&se, expr, 1);
 
-      wtmp = wi::to_offset (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) + 1;
-      /* This will probably eat buckets of memory for large arrays.  */
-      while (wtmp != 0)
-        {
-	  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, se.expr);
-	  wtmp -= 1;
-        }
+      CONSTRUCTOR_APPEND_ELT (v, build2 (RANGE_EXPR, gfc_array_index_type,
+					 TYPE_MIN_VALUE (TYPE_DOMAIN (type)),
+					 TYPE_MAX_VALUE (TYPE_DOMAIN (type))),
+			      se.expr);
       break;
 
     case EXPR_ARRAY:
