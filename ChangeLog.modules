@@ -1,5 +1,14 @@
 2019-02-26  Nathan Sidwell  <nathan@acm.org>
 
+	Preprocess __import.
+	gcc/cp/
+	* cp-tree.h (import_module): Add extern C flag.
+	* lex.c (module_preprocess_token): Allow __import in extern-c
+	* module.c (import_module): Add extern C flag.
+	* parser.c (cp_parser_import_declaration): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/inc-xlate-1{.map,_[ab].H}: New.
+
 	Distinguished __import spelling.
 	gcc/c-family/
 	* c-common.c (c_common_reswords): Add __import spelling.

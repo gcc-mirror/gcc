@@ -13599,7 +13599,7 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
 
 void
 import_module (module_state *imp, location_t from_loc, bool exporting,
-	       tree, cpp_reader *reader)
+	       tree, cpp_reader *reader, bool /*in_extern_c*/)
 {
   if (module_exporting_p ())
     exporting = true;

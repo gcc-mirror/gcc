@@ -13205,7 +13205,8 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting,
     error_at (token->location,
 	      "module import declarations must be within preamble");
   else
-    import_module (mod, token->location, exporting, attrs, parse_in);
+    import_module (mod, token->location, exporting, attrs, parse_in,
+		   current_lang_name == lang_name_c);
 }
 
 /*  export-declaration.

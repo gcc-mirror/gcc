@@ -451,9 +451,11 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, void *data_)
 
 	    case RID_IMPORT:
 	    case RID_MODULE:
-	      if (data->extern_c)
+	      /* We allow __import inside extern C blocks, because
+		 that's how many C headers work.  Unfortunately.  */
+	      if (data->extern_c && IDENTIFIER_POINTER (ident)[0] != '_')
 		goto maybe_end;
-	      if (keyword != RID_MODULE)
+	      if (keyword == RID_IMPORT)
 		{
 		  cpp_enable_filename_token (pfile, true);
 		  data->is_import = true;
@@ -536,6 +538,9 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, void *data_)
 	      data->header_loc = tok->src_loc;
 	      goto header_unit;
 	    }
+	  if (data->extern_c)
+	    /* Inside an extern C it must be a header unit.  */
+	    goto square_one;
 	}
 
       if (!data->is_header && !data->deps)
@@ -594,7 +599,8 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, void *data_)
 	      if (data->is_header)
 		/* Load the legacy import.  */
 		import_module (data->module, data->header_loc,
-			       false, NULL, pfile);
+			       data->got_export, NULL, pfile,
+			       data->extern_c);
 	      if (data->deps)
 		module_preprocess (data->deps, data->module,
 				   data->is_import ? 0
