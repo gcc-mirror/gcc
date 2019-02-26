@@ -1,4 +1,10 @@
 2019-02-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c/80409
+
+	* doc/extend.texi (Variadic Pointer Args): New section.
+
+2019-02-25  Sandra Loosemore  <sandra@codesourcery.com>
 	    Martin Sebor  <msebor@gmail.com>
 
 	* c-family/c.opt (Wmissing-attributes): Clean up doc string.
