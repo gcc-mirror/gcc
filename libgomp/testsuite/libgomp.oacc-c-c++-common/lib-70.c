@@ -2,6 +2,7 @@
 /* { dg-additional-options "-lcuda" } */
 /* { dg-require-effective-target openacc_cuda } */
 
+#include <sys/time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -11,46 +12,16 @@
 int
 main (int argc, char **argv)
 {
-  CUdevice dev;
   CUfunction delay;
   CUmodule module;
   CUresult r;
-  const int N = 10;
+  const int N = 3;
   int i;
   CUstream streams[N];
-  unsigned long *a, *d_a, dticks;
-  int nbytes;
-  float dtime;
-  void *kargs[2];
-  int clkrate;
-  int devnum, nprocs;
+  struct timeval tv1, tv2;
+  time_t diff;
 
   acc_init (acc_device_nvidia);
-
-  devnum = acc_get_device_num (acc_device_nvidia);
-
-  r = cuDeviceGet (&dev, devnum);
-  if (r != CUDA_SUCCESS)
-    {
-      fprintf (stderr, "cuDeviceGet failed: %d\n", r);
-      abort ();
-    }
-
-  r =
-    cuDeviceGetAttribute (&nprocs, CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT,
-			  dev);
-  if (r != CUDA_SUCCESS)
-    {
-      fprintf (stderr, "cuDeviceGetAttribute failed: %d\n", r);
-      abort ();
-    }
-
-  r = cuDeviceGetAttribute (&clkrate, CU_DEVICE_ATTRIBUTE_CLOCK_RATE, dev);
-  if (r != CUDA_SUCCESS)
-    {
-      fprintf (stderr, "cuDeviceGetAttribute failed: %d\n", r);
-      abort ();
-    }
 
   r = cuModuleLoad (&module, "subr.ptx");
   if (r != CUDA_SUCCESS)
@@ -65,20 +36,6 @@ main (int argc, char **argv)
       fprintf (stderr, "cuModuleGetFunction failed: %d\n", r);
       abort ();
     }
-
-  nbytes = nprocs * sizeof (unsigned long);
-
-  dtime = 200.0;
-
-  dticks = (unsigned long) (dtime * clkrate);
-
-  a = (unsigned long *) malloc (nbytes);
-  d_a = (unsigned long *) acc_malloc (nbytes);
-
-  acc_map_data (a, d_a, nbytes);
-
-  kargs[0] = (void *) &d_a;
-  kargs[1] = (void *) &dticks;
 
   for (i = 0; i < N; i++)
     {
@@ -97,9 +54,29 @@ main (int argc, char **argv)
 	  abort ();
     }
 
+  gettimeofday (&tv1, NULL);
+
+  r = cuLaunchKernel (delay, 1, 1, 1, 1, 1, 1, 0, streams[0], NULL, 0);
+  if (r != CUDA_SUCCESS)
+    {
+      fprintf (stderr, "cuLaunchKernel failed: %d\n", r);
+      abort ();
+    }
+
+  r = cuCtxSynchronize ();
+  if (r != CUDA_SUCCESS)
+    {
+      fprintf (stderr, "cuCtxLaunch failed: %d\n", r);
+      abort ();
+    }
+
+  gettimeofday (&tv2, NULL);
+
+  diff = tv2.tv_sec - tv1.tv_sec;
+
   for (i = 0; i < N; i++)
     {
-      r = cuLaunchKernel (delay, 1, 1, 1, 1, 1, 1, 0, streams[i], kargs, 0);
+      r = cuLaunchKernel (delay, 1, 1, 1, 1, 1, 1, 0, streams[i], NULL, 0);
       if (r != CUDA_SUCCESS)
 	{
 	  fprintf (stderr, "cuLaunchKernel failed: %d\n", r);
@@ -113,7 +90,7 @@ main (int argc, char **argv)
 	}
     }
 
-  sleep ((int) (dtime / 1000.0f) + 1);
+  sleep ((diff + 1) * N);
 
   for (i = 0; i < N; i++)
     {
@@ -124,10 +101,6 @@ main (int argc, char **argv)
 	}
     }
 
-  acc_unmap_data (a);
-
-  free (a);
-  acc_free (d_a);
 
   acc_shutdown (acc_device_nvidia);
 

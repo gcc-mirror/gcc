@@ -1,3 +1,9 @@
+2018-10-22  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* g++.dg/goacc/loop-1.c: New test.
+	* g++.dg/goacc/loop-2.c: New test.
+	* g++.dg/goacc/loop-3.c: New test.
+
 2018-12-13  Cesar Philippidis  <cesar@codesourcery.com>
 	    Nathan Sidwell  <nathan@acm.org>
 	    Julian Brown  <julian@codesourcery.com>

@@ -11,45 +11,17 @@
 int
 main (int argc, char **argv)
 {
-  CUdevice dev;
   CUfunction delay2;
   CUmodule module;
   CUresult r;
-  int N;
+  const int N = 32;
   int i;
   CUstream *streams;
-  unsigned long **a, **d_a, *tid, ticks;
+  unsigned long **a, **d_a, *tid;
   int nbytes;
-  void *kargs[3];
-  int clkrate;
-  int devnum, nprocs;
+  void *kargs[2];
 
   acc_init (acc_device_nvidia);
-
-  devnum = acc_get_device_num (acc_device_nvidia);
-
-  r = cuDeviceGet (&dev, devnum);
-  if (r != CUDA_SUCCESS)
-    {
-      fprintf (stderr, "cuDeviceGet failed: %d\n", r);
-      abort ();
-    }
-
-  r =
-    cuDeviceGetAttribute (&nprocs, CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT,
-			  dev);
-  if (r != CUDA_SUCCESS)
-    {
-      fprintf (stderr, "cuDeviceGetAttribute failed: %d\n", r);
-      abort ();
-    }
-
-  r = cuDeviceGetAttribute (&clkrate, CU_DEVICE_ATTRIBUTE_CLOCK_RATE, dev);
-  if (r != CUDA_SUCCESS)
-    {
-      fprintf (stderr, "cuDeviceGetAttribute failed: %d\n", r);
-      abort ();
-    }
 
   r = cuModuleLoad (&module, "subr.ptx");
   if (r != CUDA_SUCCESS)
@@ -66,10 +38,6 @@ main (int argc, char **argv)
     }
 
   nbytes = sizeof (int);
-
-  ticks = (unsigned long) (200.0 * clkrate);
-
-  N = nprocs;
 
   streams = (CUstream *) malloc (N * sizeof (void *));
 
@@ -104,8 +72,7 @@ main (int argc, char **argv)
   for (i = 0; i < N; i++)
     {
       kargs[0] = (void *) &d_a[i];
-      kargs[1] = (void *) &ticks;
-      kargs[2] = (void *) &tid[i];
+      kargs[1] = (void *) &tid[i];
 
       r = cuLaunchKernel (delay2, 1, 1, 1, 1, 1, 1, 0, streams[i], kargs, 0);
       if (r != CUDA_SUCCESS)
@@ -113,8 +80,6 @@ main (int argc, char **argv)
 	  fprintf (stderr, "cuLaunchKernel failed: %d\n", r);
 	  abort ();
 	}
-
-      ticks = (unsigned long) (50.0 * clkrate);
     }
 
   acc_wait_all_async (0);
