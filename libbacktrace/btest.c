@@ -423,7 +423,8 @@ test5 (void)
 	  fprintf (stderr, "test5: NULL syminfo name\n");
 	  symdata.failed = 1;
 	}
-      else if (strcmp (symdata.name, "global") != 0)
+      else if (!(strncmp (symdata.name, "global", 6) == 0
+		 && (symdata.name[6] == '\0'|| symdata.name[6] == '.')))
 	{
 	  fprintf (stderr,
 		   "test5: unexpected syminfo name got %s expected %s\n",
