@@ -739,7 +739,7 @@ inline void
 vec_safe_grow_cleared (vec<T, va_heap, vl_ptr> *&v,
 		       unsigned len CXX_MEM_STAT_INFO)
 {
-  v->safe_grow_cleared (len);
+  v->safe_grow_cleared (len PASS_MEM_STAT);
 }
 
 

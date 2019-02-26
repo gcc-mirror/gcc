@@ -80,9 +80,9 @@ unsigned int phi_nodes_created;
 void
 phinodes_print_statistics (void)
 {
-  fprintf (stderr, "PHI nodes allocated: " PRsa (11) "\n",
+  fprintf (stderr, "%-32s" PRsa (11) "\n", "PHI nodes allocated:",
 	   SIZE_AMOUNT (phi_nodes_created));
-  fprintf (stderr, "PHI nodes reused: " PRsa (11) "\n",
+  fprintf (stderr, "%-32s" PRsa (11) "\n", "PHI nodes reused:",
 	   SIZE_AMOUNT (phi_nodes_reused));
 }
 

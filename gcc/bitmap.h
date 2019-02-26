@@ -258,7 +258,6 @@ struct bitmap_usage: public mem_usage
   {
     fprintf (stderr, "%-48s %11s%16s%17s%12s%12s%10s\n", name, "Leak", "Peak",
 	     "Times", "N searches", "Search iter", "Type");
-    print_dash_line ();
   }
 
   /* Number search operations.  */
