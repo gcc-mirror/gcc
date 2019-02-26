@@ -11775,7 +11775,7 @@ is a built-in construct that returns a constant number of bytes from
 @var{ptr} to the end of the object @var{ptr} pointer points to
 (if known at compile time).  To determine the sizes of dynamically allocated
 objects the function relies on the allocation functions called to obtain
-the storage to be declared with the @code{alloc_size} attribute (@xref{Common
+the storage to be declared with the @code{alloc_size} attribute (@pxref{Common
 Function Attributes}).  @code{__builtin_object_size} never evaluates
 its arguments for side effects.  If there are any side effects in them, it
 returns @code{(size_t) -1} for @var{type} 0 or 1 and @code{(size_t) 0}
@@ -12560,7 +12560,7 @@ restrictions as the argument to @code{typeof} (@pxref{Typeof}).  The
 @var{attribute} argument is an attribute name optionally followed by
 a comma-separated list of arguments enclosed in parentheses.  Both forms
 of attribute names---with and without double leading and trailing
-underscores---are recognized.  @xref{Attribute Syntax} for details.
+underscores---are recognized.  @xref{Attribute Syntax}, for details.
 When no attribute arguments are specified for an attribute that expects
 one or more arguments the function returns @code{true} if
 @var{type-or-expression} has been declared with the attribute regardless
@@ -13163,7 +13163,8 @@ and GCC does not issue a warning.
 @end deftypefn
 
 @deftypefn {Built-in Function}{size_t} __builtin_object_size (const void * @var{ptr}, int @var{type})
-Returns the size of an object pointed to by @var{ptr}.  @xref{Object Size Checking} for a detailed description of the function.
+Returns the size of an object pointed to by @var{ptr}.  @xref{Object Size
+Checking}, for a detailed description of the function.
 @end deftypefn
 
 @deftypefn {Built-in Function} double __builtin_huge_val (void)
