@@ -1,3 +1,8 @@
+2018-09-05  Cesar Philippidis  <cesar@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-c++-common/goacc/reduction-10.c: New test.
+
 2018-09-20  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* c-c++-common/goacc/loop-auto-1.c: Adjust test case to conform to
