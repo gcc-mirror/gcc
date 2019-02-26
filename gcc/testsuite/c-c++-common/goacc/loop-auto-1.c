@@ -10,7 +10,7 @@ void Foo ()
 #pragma acc loop seq
 	for (int jx = 0; jx < 10; jx++) {}
 
-#pragma acc loop auto /* { dg-warning "insufficient partitioning" } */
+#pragma acc loop auto independent /* { dg-warning "insufficient partitioning" } */
 	for (int jx = 0; jx < 10; jx++) {}
       }
 
@@ -20,7 +20,7 @@ void Foo ()
 #pragma acc loop auto
 	for (int jx = 0; jx < 10; jx++) {}
 
-#pragma acc loop auto /* { dg-warning "insufficient partitioning" } */
+#pragma acc loop auto independent /* { dg-warning "insufficient partitioning" } */
 	for (int jx = 0; jx < 10; jx++)
 	  {
 #pragma acc loop vector
@@ -51,7 +51,7 @@ void Foo ()
 #pragma acc loop vector
 	for (int jx = 0; jx < 10; jx++)
 	  {
-#pragma acc loop auto /* { dg-warning "insufficient partitioning" } */
+#pragma acc loop auto independent /* { dg-warning "insufficient partitioning" } */
 	    for (int kx = 0; kx < 10; kx++) {}
 	  }
 
@@ -64,27 +64,27 @@ void Foo ()
 
       }
     
-#pragma acc loop auto
+#pragma acc loop auto independent
     for (int ix = 0; ix < 10; ix++)
       {
-#pragma acc loop auto
+#pragma acc loop auto independent
 	for (int jx = 0; jx < 10; jx++)
 	  {
-#pragma acc loop auto
+#pragma acc loop auto independent
 	    for (int kx = 0; kx < 10; kx++) {}
 	  }
       }
 
-#pragma acc loop auto
+#pragma acc loop auto independent
     for (int ix = 0; ix < 10; ix++)
       {
-#pragma acc loop auto
+#pragma acc loop auto independent
 	for (int jx = 0; jx < 10; jx++)
 	  {
-#pragma acc loop auto /* { dg-warning "insufficient partitioning" } */
+#pragma acc loop auto independent /* { dg-warning "insufficient partitioning" } */
 	    for (int kx = 0; kx < 10; kx++)
 	      {
-#pragma acc loop auto
+#pragma acc loop auto independent
 		for (int lx = 0; lx < 10; lx++) {}
 	      }
 	  }
@@ -101,7 +101,7 @@ void Gang (void)
 #pragma acc loop seq
 	for (int jx = 0; jx < 10; jx++) {}
 
-#pragma acc loop auto /* { dg-warning "insufficient partitioning" } */
+#pragma acc loop auto independent /* { dg-warning "insufficient partitioning" } */
 	for (int jx = 0; jx < 10; jx++) {}
       }
 
@@ -111,7 +111,7 @@ void Gang (void)
 #pragma acc loop auto
 	for (int jx = 0; jx < 10; jx++) {}
 
-#pragma acc loop auto /* { dg-warning "insufficient partitioning" } */
+#pragma acc loop auto independent /* { dg-warning "insufficient partitioning" } */
 	for (int jx = 0; jx < 10; jx++)
 	  {
 #pragma acc loop vector
@@ -142,7 +142,7 @@ void Gang (void)
 #pragma acc loop vector
 	for (int jx = 0; jx < 10; jx++)
 	  {
-#pragma acc loop auto /* { dg-warning "insufficient partitioning" } */
+#pragma acc loop auto independent /* { dg-warning "insufficient partitioning" } */
 	    for (int kx = 0; kx < 10; kx++) {}
 	  }
 
@@ -176,7 +176,7 @@ void Worker (void)
 #pragma acc loop seq
 	for (int jx = 0; jx < 10; jx++) {}
 
-#pragma acc loop auto /* { dg-warning "insufficient partitioning" } */
+#pragma acc loop auto independent /* { dg-warning "insufficient partitioning" } */
 	for (int jx = 0; jx < 10; jx++) {}
       }
 
@@ -186,7 +186,7 @@ void Worker (void)
 #pragma acc loop auto
 	for (int jx = 0; jx < 10; jx++) {}
 
-#pragma acc loop auto /* { dg-warning "insufficient partitioning" } */
+#pragma acc loop auto independent /* { dg-warning "insufficient partitioning" } */
 	for (int jx = 0; jx < 10; jx++)
 	  {
 #pragma acc loop vector
@@ -194,20 +194,20 @@ void Worker (void)
 	  }
       }
 
-#pragma acc loop auto
+#pragma acc loop
     for (int ix = 0; ix < 10; ix++)
       {
-#pragma acc loop auto
+#pragma acc loop
 	for (int jx = 0; jx < 10; jx++) {}
       }
 
-#pragma acc loop auto
+#pragma acc loop
     for (int ix = 0; ix < 10; ix++)
       {
-#pragma acc loop auto /* { dg-warning "insufficient partitioning" } */
+#pragma acc loop /* { dg-warning "insufficient partitioning" } */
 	for (int jx = 0; jx < 10; jx++)
 	  {
-#pragma acc loop auto
+#pragma acc loop
 	    for (int kx = 0; kx < 10; kx++) {}
 	  }
       }
@@ -222,17 +222,17 @@ void Vector (void)
 #pragma acc loop seq
 	for (int jx = 0; jx < 10; jx++) {}
 
-#pragma acc loop auto /* { dg-warning "insufficient partitioning" } */
+#pragma acc loop auto independent /* { dg-warning "insufficient partitioning" } */
 	for (int jx = 0; jx < 10; jx++) {}
       }
 
-#pragma acc loop auto
+#pragma acc loop auto independent
     for (int ix = 0; ix < 10; ix++) {}
 
-#pragma acc loop auto /* { dg-warning "insufficient partitioning" } */
+#pragma acc loop auto independent /* { dg-warning "insufficient partitioning" } */
     for (int ix = 0; ix < 10; ix++)
       {
-#pragma acc loop auto
+#pragma acc loop auto independent
 	for (int jx = 0; jx < 10; jx++) {}
       }
 }
@@ -240,6 +240,6 @@ void Vector (void)
 #pragma acc routine seq
 void Seq (void)
 {
-#pragma acc loop auto /* { dg-warning "insufficient partitioning" } */
+#pragma acc loop auto independent /* { dg-warning "insufficient partitioning" } */
     for (int ix = 0; ix < 10; ix++) {}
 }

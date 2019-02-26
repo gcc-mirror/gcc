@@ -9,7 +9,7 @@ void vector_1 (int *ary, int size)
   {
 #pragma acc loop gang
     for (int jx = 0; jx < 1; jx++)
-#pragma acc loop auto
+#pragma acc loop auto independent
       for (int ix = 0; ix < size; ix++)
 	ary[ix] = place ();
   }
