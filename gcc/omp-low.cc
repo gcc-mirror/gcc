@@ -14425,8 +14425,14 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		x = fold_convert_loc (clause_loc, type, x);
 		if (!integer_zerop (OMP_CLAUSE_SIZE (c)))
 		  {
-		    tree bias = OMP_CLAUSE_SIZE (c);
-		    if (DECL_P (bias))
+		    tree bias = OMP_CLAUSE_SIZE (c), remapped_bias;
+		    if (is_gimple_omp_oacc (ctx->stmt))
+		      {
+			if (DECL_P (bias)
+			    && (remapped_bias = maybe_lookup_decl (bias, ctx)))
+			  bias = remapped_bias;
+		      }
+		    else if (DECL_P (bias))
 		      bias = lookup_decl (bias, ctx);
 		    bias = fold_convert_loc (clause_loc, sizetype, bias);
 		    bias = fold_build1_loc (clause_loc, NEGATE_EXPR, sizetype,

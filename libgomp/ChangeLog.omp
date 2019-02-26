@@ -1,3 +1,15 @@
+2018-08-28  Julian Brown  <julian@codesourcery.com>
+            Cesar Philippidis  <cesar@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/pr70828.c: New test.
+	* testsuite/libgomp.oacc-fortran/implicit_copy.f90: New test.
+	* testsuite/libgomp.oacc-fortran/pr70828.f90: New test.
+	* testsuite/libgomp.oacc-fortran/pr70828-2.f90: New test.
+	* testsuite/libgomp.oacc-fortran/pr70828-3.f90: New test.
+	* testsuite/libgomp.oacc-fortran/pr70828-4.f90: New test.
+	* testsuite/libgomp.oacc-fortran/pr70828-5.f90: New test.
+	* testsuite/libgomp.oacc-fortran/pr70828-6.f90: New test.
+
 2018-10-05  Nathan Sidwell  <nathan@acm.org>
 	    Tom de Vries  <tdevries@suse.de>
 	    Thomas Schwinge  <thomas@codesourcery.com>

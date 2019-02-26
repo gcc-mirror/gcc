@@ -1530,9 +1530,13 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
 
   tree decl = OMP_CLAUSE_DECL (c);
 
-  /* Assumed-size arrays can't be mapped implicitly, they have to be
-     mapped explicitly using array sections.  */
-  if (TREE_CODE (decl) == PARM_DECL
+  /* Assumed-size arrays can't be mapped implicitly, they have to be mapped
+     explicitly using array sections.  An exception is if the array is
+     mapped explicitly in an enclosing data construct for OpenACC, in which
+     case we see GOMP_MAP_FORCE_PRESENT here and do not need to raise an
+     error.  */
+  if (OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_FORCE_PRESENT
+      && TREE_CODE (decl) == PARM_DECL
       && GFC_ARRAY_TYPE_P (TREE_TYPE (decl))
       && GFC_TYPE_ARRAY_AKIND (TREE_TYPE (decl)) == GFC_ARRAY_UNKNOWN
       && GFC_TYPE_ARRAY_UBOUND (TREE_TYPE (decl),

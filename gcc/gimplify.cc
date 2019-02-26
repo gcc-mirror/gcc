@@ -218,6 +218,17 @@ enum gimplify_defaultmap_kind
   GDMK_POINTER
 };
 
+/* Used to record clauses representing array slices on data directives that
+   may affect implicit mapping semantics on enclosed OpenACC parallel/kernels
+   regions.  PSET is used for Fortran array slices with array descriptors,
+   or NULL otherwise.  */
+struct oacc_array_mapping_info
+{
+  tree mapping;
+  tree pset;
+  tree pointer;
+};
+
 struct gimplify_omp_ctx
 {
   struct gimplify_omp_ctx *outer_context;
@@ -238,6 +249,7 @@ struct gimplify_omp_ctx
   bool has_depend;
   bool in_for_exprs;
   int defaultmap[5];
+  hash_map<tree, oacc_array_mapping_info> *decl_data_clause;
 };
 
 static struct gimplify_ctx *gimplify_ctxp;
@@ -467,6 +479,7 @@ new_omp_context (enum omp_region_type region_type)
   c->defaultmap[GDMK_AGGREGATE] = GOVD_MAP;
   c->defaultmap[GDMK_ALLOCATABLE] = GOVD_MAP;
   c->defaultmap[GDMK_POINTER] = GOVD_MAP;
+  c->decl_data_clause = NULL;
 
   return c;
 }
@@ -479,6 +492,8 @@ delete_omp_context (struct gimplify_omp_ctx *c)
   splay_tree_delete (c->variables);
   delete c->privatized_types;
   c->loop_iter_var.release ();
+  if (c->decl_data_clause)
+    delete c->decl_data_clause;
   XDELETE (c);
 }
 
@@ -11134,8 +11149,41 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	    case OMP_TARGET:
 	      break;
 	    case OACC_DATA:
-	      if (TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE)
-		break;
+	      {
+		tree base_ptr = OMP_CLAUSE_CHAIN (c);
+		tree pset = NULL;
+		if (base_ptr
+		    && OMP_CLAUSE_CODE (base_ptr) == OMP_CLAUSE_MAP
+		    && OMP_CLAUSE_MAP_KIND (base_ptr) == GOMP_MAP_TO_PSET)
+		  {
+		    pset = base_ptr;
+		    base_ptr = OMP_CLAUSE_CHAIN (base_ptr);
+		  }
+		if (base_ptr
+		    && OMP_CLAUSE_CODE (base_ptr) == OMP_CLAUSE_MAP
+		    && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_TO_PSET
+		    && ((OMP_CLAUSE_MAP_KIND (base_ptr)
+			 == GOMP_MAP_FIRSTPRIVATE_POINTER)
+			|| OMP_CLAUSE_MAP_KIND (base_ptr) == GOMP_MAP_POINTER))
+		  {
+		    /* If we have an array descriptor, fish the right base
+		       address variable to use out of that (otherwise we'd have
+		       to deconstruct "arr.data" in the subsequent pointer
+		       mapping).  */
+	            tree base_addr = pset ? OMP_CLAUSE_DECL (pset)
+					  : OMP_CLAUSE_DECL (base_ptr);
+		    if (!ctx->decl_data_clause)
+		      ctx->decl_data_clause
+			= new hash_map<tree, oacc_array_mapping_info>;
+		    oacc_array_mapping_info ai;
+		    ai.mapping = unshare_expr (c);
+		    ai.pset = pset ? unshare_expr (pset) : NULL;
+		    ai.pointer = unshare_expr (base_ptr);
+		    ctx->decl_data_clause->put (base_addr, ai);
+		  }
+		if (TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE)
+		  break;
+	      }
 	      /* FALLTHRU */
 	    case OMP_TARGET_DATA:
 	    case OMP_TARGET_ENTER_DATA:
@@ -12259,6 +12307,46 @@ struct gimplify_adjust_omp_clauses_data
   gimple_seq *pre_p;
 };
 
+/* For OpenACC parallel and kernels regions, the implicit data mappings for
+   arrays must respect explicit data clauses set by a containing acc data
+   region.  Specifically, an array section on the data clause must be
+   transformed into an equivalent PRESENT mapping on the inner parallel or
+   kernels region.  This function returns a pointer to an
+   oacc_array_mapping_info if an array slice of DECL is specified in a
+   lexically-enclosing data construct, or returns NULL otherwise.  */
+
+static oacc_array_mapping_info *
+gomp_oacc_needs_data_present (tree decl)
+{
+  gimplify_omp_ctx *ctx = NULL;
+
+  if (gimplify_omp_ctxp->region_type != ORT_ACC_PARALLEL
+      && gimplify_omp_ctxp->region_type != ORT_ACC_KERNELS)
+    return NULL;
+
+  if (TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE
+      && TREE_CODE (TREE_TYPE (decl)) != POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (decl)) != RECORD_TYPE
+      && (TREE_CODE (TREE_TYPE (decl)) != POINTER_TYPE
+	  || TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) != ARRAY_TYPE))
+    return NULL;
+
+  decl = get_base_address (decl);
+
+  for (ctx = gimplify_omp_ctxp->outer_context; ctx; ctx = ctx->outer_context)
+    {
+      oacc_array_mapping_info *ret;
+
+      if (ctx->region_type != ORT_ACC_DATA)
+	break;
+
+      if (ctx->decl_data_clause && (ret = ctx->decl_data_clause->get (decl)))
+	return ret;
+    }
+
+  return NULL;
+}
+
 /* For all variables that were not actually used within the context,
    remove PRIVATE, SHARED, and FIRSTPRIVATE clauses.  */
 
@@ -12380,6 +12468,7 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
   clause = build_omp_clause (input_location, code);
   OMP_CLAUSE_DECL (clause) = decl;
   OMP_CLAUSE_CHAIN (clause) = chain;
+  oacc_array_mapping_info *array_info;
   if (private_debug)
     OMP_CLAUSE_PRIVATE_DEBUG (clause) = 1;
   else if (code == OMP_CLAUSE_PRIVATE && (flags & GOVD_PRIVATE_OUTER_REF))
@@ -12388,6 +12477,56 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 	   && (flags & GOVD_WRITTEN) == 0
 	   && omp_shared_to_firstprivate_optimizable_decl_p (decl))
     OMP_CLAUSE_SHARED_READONLY (clause) = 1;
+  else if ((code == OMP_CLAUSE_MAP || code == OMP_CLAUSE_FIRSTPRIVATE)
+	   && (array_info = gomp_oacc_needs_data_present (decl)))
+    {
+      tree mapping = array_info->mapping;
+      tree pointer = array_info->pointer;
+
+      if (code == OMP_CLAUSE_FIRSTPRIVATE)
+	/* Oops, we have the wrong type of clause.  Rebuild it.  */
+	clause = build_omp_clause (OMP_CLAUSE_LOCATION (clause),
+				   OMP_CLAUSE_MAP);
+
+      OMP_CLAUSE_DECL (clause) = unshare_expr (OMP_CLAUSE_DECL (mapping));
+      OMP_CLAUSE_SET_MAP_KIND (clause, GOMP_MAP_FORCE_PRESENT);
+      OMP_CLAUSE_SIZE (clause) = unshare_expr (OMP_CLAUSE_SIZE (mapping));
+
+      /* Create a new data clause for the firstprivate pointer.  */
+      tree nc = build_omp_clause (OMP_CLAUSE_LOCATION (clause),
+				  OMP_CLAUSE_MAP);
+      OMP_CLAUSE_DECL (nc) = unshare_expr (OMP_CLAUSE_DECL (pointer));
+      OMP_CLAUSE_SET_MAP_KIND (nc, GOMP_MAP_POINTER);
+
+      /* For GOMP_MAP_FIRSTPRIVATE_POINTER, this is a bias, not a size.  */
+      OMP_CLAUSE_SIZE (nc) = unshare_expr (OMP_CLAUSE_SIZE (pointer));
+
+      /* Create a new data clause for the PSET, if present.  */
+      tree psetc = NULL;
+      if (array_info->pset)
+	{
+	  tree pset = array_info->pset;
+	  psetc = build_omp_clause (OMP_CLAUSE_LOCATION (clause),
+				    OMP_CLAUSE_MAP);
+	  OMP_CLAUSE_DECL (psetc) = unshare_expr (OMP_CLAUSE_DECL (pset));
+	  OMP_CLAUSE_SIZE (psetc) = unshare_expr (OMP_CLAUSE_SIZE (pset));
+	  OMP_CLAUSE_SET_MAP_KIND (psetc, GOMP_MAP_TO_PSET);
+	  OMP_CLAUSE_CHAIN (psetc) = nc;
+	}
+
+      gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
+      gimplify_omp_ctxp = ctx->outer_context;
+      gimplify_expr (&OMP_CLAUSE_DECL (clause), pre_p, NULL,
+		     is_gimple_lvalue, fb_lvalue);
+      gimplify_expr (&OMP_CLAUSE_SIZE (clause), pre_p, NULL,
+		     is_gimple_val, fb_rvalue);
+      gimplify_expr (&OMP_CLAUSE_SIZE (nc), pre_p, NULL, is_gimple_val,
+		     fb_rvalue);
+      gimplify_omp_ctxp = ctx;
+
+      OMP_CLAUSE_CHAIN (nc) = OMP_CLAUSE_CHAIN (clause);
+      OMP_CLAUSE_CHAIN (clause) = psetc ? psetc : nc;
+    }
   else if (code == OMP_CLAUSE_FIRSTPRIVATE && (flags & GOVD_EXPLICIT) == 0)
     OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (clause) = 1;
   else if (code == OMP_CLAUSE_MAP && (flags & GOVD_MAP_0LEN_ARRAY) != 0)
