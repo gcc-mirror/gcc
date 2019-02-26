@@ -1,3 +1,29 @@
+2019-02-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc-opts.h (enum processor_type): Rename to...
+	(enum sparc_processor_type): ...this.
+	(enum sparc_code_model_type): New enumeration type.
+	(enum sparc_memory_model_type): Tweak comments.
+	* config/sparc/sparc.opt (mcpu): Adjust to above renaming.
+	(mtune): Likewise.
+	(mcmodel): Use sparc_code_model enumeration and variable.
+	(sparc_code_model): New enumeration.
+	(mdebug): Add Undocumented marker.
+	* config/sparc/sparc.h (enum cmodel): Delete.
+	(sparc_cmodel): Likewise.
+	(TARGET_CM_MEDLOW): Adjust to above renaming.
+	(TARGET_CM_MEDMID): Likewise.
+	(TARGET_CM_MEDANY): Likewise.
+	(TARGET_CM_EMBMEDANY): Likewise.
+	* config/sparc/sparc.c (sparc_cmodel): Delete.
+	(sparc_option_override): Remove string/value mapping support for the
+	code model.  Move code and memory model support to after the handling
+	of target flags.  Do private machine setup last.
+	(sparc_emit_set_symbolic_const64): Use sparc_code_model.
+	(sparc_legitimize_reload_address): Likewise.
+	(sparc_output_mi_thunk): Likewise.
+	* config/sparc/sparc.md (cpu): Adjust comment to above renaming.
+
 2019-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/89500
