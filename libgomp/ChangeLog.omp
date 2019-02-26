@@ -1,3 +1,16 @@
+2018-10-04  Cesar Philippidis  <cesar@codesourcery.com>
+            Julian Brown  <julian@codesourcery.com>
+
+	* oacc-mem.c (gomp_acc_declare_allocate): New function.
+	* oacc-parallel.c (GOACC_enter_exit_data): Handle
+	GOMP_MAP_DECLARE_{ALLOCATE,DEALLOCATE}.
+	* testsuite/libgomp.oacc-fortran/allocatable-array.f90: New test.
+	* testsuite/libgomp.oacc-fortran/allocatable-scalar.f90: New test.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-1.f90: New test.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-2.f90: New test.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-3.f90: New test.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-4.f90: New test.
+
 2018-12-22  Cesar Philippidis  <cesar@codesourcery.com>
             Julian Brown  <julian@codesourcery.com>
 

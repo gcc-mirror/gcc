@@ -69,6 +69,8 @@ find_pointer (int pos, size_t mapnum, unsigned short *kinds)
     case GOMP_MAP_FORCE_TOFROM:
     case GOMP_MAP_ALLOC:
     case GOMP_MAP_RELEASE:
+    case GOMP_MAP_DECLARE_ALLOCATE:
+    case GOMP_MAP_DECLARE_DEALLOCATE:
       {
 	unsigned char kind1 = kinds[pos + 1] & 0xff;
 	if (kind1 == GOMP_MAP_POINTER
@@ -433,7 +435,8 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
 	  || kind == GOMP_MAP_ATTACH
 	  || kind == GOMP_MAP_FORCE_TO
 	  || kind == GOMP_MAP_TO
-	  || kind == GOMP_MAP_ALLOC)
+	  || kind == GOMP_MAP_ALLOC
+	  || kind == GOMP_MAP_DECLARE_ALLOCATE)
 	{
 	  data_enter = true;
 	  break;
@@ -444,7 +447,8 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
 	  || kind == GOMP_MAP_DETACH
 	  || kind == GOMP_MAP_FORCE_DETACH
 	  || kind == GOMP_MAP_FROM
-	  || kind == GOMP_MAP_FORCE_FROM)
+	  || kind == GOMP_MAP_FORCE_FROM
+	  || kind == GOMP_MAP_DECLARE_DEALLOCATE)
 	break;
 
       gomp_fatal (">>>> GOACC_enter_exit_data UNHANDLED kind 0x%.2x",
@@ -473,6 +477,7 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
 	    {
 	      switch (kind)
 		{
+		case GOMP_MAP_DECLARE_ALLOCATE:
 		case GOMP_MAP_ALLOC:
 		case GOMP_MAP_FORCE_ALLOC:
 		  acc_create_async (hostaddrs[i], sizes[i], async);
@@ -502,13 +507,19 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
 	    }
 	  else
 	    {
-	      goacc_aq aq = get_goacc_asyncqueue (async);
-	      for (int j = 0; j < 2; j++)
-		gomp_map_vars_async (acc_dev, aq,
-				     (j == 0 || pointer == 2) ? 1 : 2,
-				     &hostaddrs[i + j], NULL,
-				     &sizes[i + j], &kinds[i + j], true,
-				     GOMP_MAP_VARS_OPENACC_ENTER_DATA);
+	      if (kind == GOMP_MAP_DECLARE_ALLOCATE)
+	        gomp_acc_declare_allocate (true, pointer, &hostaddrs[i],
+					   &sizes[i], &kinds[i]);
+	      else
+	        {
+		  goacc_aq aq = get_goacc_asyncqueue (async);
+		  for (int j = 0; j < 2; j++)
+		    gomp_map_vars_async (acc_dev, aq,
+					 (j == 0 || pointer == 2) ? 1 : 2,
+					 &hostaddrs[i + j], NULL,
+					 &sizes[i + j], &kinds[i + j], true,
+					 GOMP_MAP_VARS_OPENACC_ENTER_DATA);
+		}
 
 	      /* Increment 'i' by two because OpenACC requires fortran
 		 arrays to be contiguous, so each PSET is associated with
@@ -594,6 +605,7 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
 		case GOMP_MAP_FORCE_DETACH:
 		case GOMP_MAP_FORCE_PRESENT:
 		  break;
+		case GOMP_MAP_DECLARE_DEALLOCATE:
 		case GOMP_MAP_FROM:
 		case GOMP_MAP_FORCE_FROM:
 		  if (finalize)
@@ -645,8 +657,12 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
 	    }
 	  else
 	    {
-	      gomp_acc_remove_pointer (acc_dev, &hostaddrs[i], &sizes[i],
-				       &kinds[i], async, finalize, pointer);
+	      if (kind == GOMP_MAP_DECLARE_DEALLOCATE)
+	        gomp_acc_declare_allocate (false, pointer, &hostaddrs[i],
+					   &sizes[i], &kinds[i]);
+	      else
+		gomp_acc_remove_pointer (acc_dev, &hostaddrs[i], &sizes[i],
+					 &kinds[i], async, finalize, pointer);
 	      i += pointer - 1;
 	    }
 	}

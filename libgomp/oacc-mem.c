@@ -740,6 +740,34 @@ acc_update_self_async (void *h, size_t s, int async)
 }
 
 void
+gomp_acc_declare_allocate (bool allocate, size_t mapnum, void **hostaddrs,
+                          size_t *sizes, unsigned short *kinds)
+{
+  gomp_debug (0, "  %s: processing\n", __FUNCTION__);
+
+  if (allocate)
+    {
+      assert (mapnum == 3);
+
+      /* Allocate memory for the array data.  */
+      uintptr_t data = (uintptr_t) acc_create (hostaddrs[0], sizes[0]);
+
+      /* Update the PSET.  */
+      acc_update_device (hostaddrs[1], sizes[1]);
+      void *pset = acc_deviceptr (hostaddrs[1]);
+      acc_memcpy_to_device (pset, &data, sizeof (uintptr_t));
+    }
+  else
+    {
+      /* Deallocate memory for the array data.  */
+      void *data = acc_deviceptr (hostaddrs[0]);
+      acc_free (data);
+    }
+
+  gomp_debug (0, "  %s: end\n", __FUNCTION__);
+}
+
+void
 gomp_acc_remove_pointer (struct gomp_device_descr *acc_dev, void **hostaddrs,
 			 size_t *sizes, unsigned short *kinds, int async,
 			 bool finalize, int mapnum)
