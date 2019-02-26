@@ -108,6 +108,9 @@ struct omp_region
   /* The ordered stmt if type is GIMPLE_OMP_ORDERED and it has
      a depend clause.  */
   gomp_ordered *ord_stmt;
+
+  /* True if this is nested inside an OpenACC kernels construct.  */
+  bool inside_kernels_p;
 };
 
 static struct omp_region *root_omp_region;
@@ -3921,6 +3924,7 @@ expand_omp_for_generic (struct omp_region *region,
   gassign *assign_stmt;
   bool in_combined_parallel = is_combined_parallel (region);
   bool broken_loop = region->cont == NULL;
+  bool seq_loop = (start_fn == BUILT_IN_NONE || next_fn == BUILT_IN_NONE);
   edge e, ne;
   tree *counts = NULL;
   int i;
@@ -4067,8 +4071,12 @@ expand_omp_for_generic (struct omp_region *region,
   type = TREE_TYPE (fd->loop.v);
   istart0 = create_tmp_var (fd->iter_type, ".istart0");
   iend0 = create_tmp_var (fd->iter_type, ".iend0");
-  TREE_ADDRESSABLE (istart0) = 1;
-  TREE_ADDRESSABLE (iend0) = 1;
+
+  if (!seq_loop)
+    {
+      TREE_ADDRESSABLE (istart0) = 1;
+      TREE_ADDRESSABLE (iend0) = 1;
+    }
 
   /* See if we need to bias by LLONG_MIN.  */
   if (fd->iter_type == long_long_unsigned_type_node
@@ -4098,7 +4106,25 @@ expand_omp_for_generic (struct omp_region *region,
   gsi_prev (&gsif);
 
   tree arr = NULL_TREE;
-  if (in_combined_parallel)
+  if (seq_loop)
+    {
+      tree n1 = fold_convert (fd->iter_type, fd->loop.n1);
+      tree n2 = fold_convert (fd->iter_type, fd->loop.n2);
+
+      n1 = force_gimple_operand_gsi_1 (&gsi, n1, is_gimple_reg, NULL_TREE, true,
+				       GSI_SAME_STMT);
+      n2 = force_gimple_operand_gsi_1 (&gsi, n2, is_gimple_reg, NULL_TREE, true,
+				       GSI_SAME_STMT);
+
+      assign_stmt = gimple_build_assign (istart0, n1);
+      gsi_insert_before (&gsi, assign_stmt, GSI_SAME_STMT);
+
+      assign_stmt = gimple_build_assign (iend0, n2);
+      gsi_insert_before (&gsi, assign_stmt, GSI_SAME_STMT);
+
+      t = fold_build2 (NE_EXPR, boolean_type_node, istart0, iend0);
+    }
+  else if (in_combined_parallel)
     {
       gcc_assert (fd->ordered == 0);
       /* In a combined parallel loop, emit a call to
@@ -4614,46 +4640,54 @@ expand_omp_for_generic (struct omp_region *region,
 
       /* Emit code to get the next parallel iteration in L2_BB.  */
       gsi = gsi_start_bb (l2_bb);
+      if (!seq_loop)
+	{
+	  gsi = gsi_start_bb (l2_bb);
 
-      t = build_call_expr (builtin_decl_explicit (next_fn), 2,
-			   build_fold_addr_expr (istart0),
-			   build_fold_addr_expr (iend0));
-      t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
-				    false, GSI_CONTINUE_LINKING);
-      if (TREE_TYPE (t) != boolean_type_node)
-	t = fold_build2 (NE_EXPR, boolean_type_node,
-			 t, build_int_cst (TREE_TYPE (t), 0));
-      gcond *cond_stmt = gimple_build_cond_empty (t);
-      gsi_insert_after (&gsi, cond_stmt, GSI_CONTINUE_LINKING);
+	  t = build_call_expr (builtin_decl_explicit (next_fn), 2,
+			       build_fold_addr_expr (istart0),
+			       build_fold_addr_expr (iend0));
+	  t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
+					false, GSI_CONTINUE_LINKING);
+	  if (TREE_TYPE (t) != boolean_type_node)
+	    t = fold_build2 (NE_EXPR, boolean_type_node,
+			     t, build_int_cst (TREE_TYPE (t), 0));
+	  gcond *cond_stmt = gimple_build_cond_empty (t);
+	  gsi_insert_after (&gsi, cond_stmt, GSI_CONTINUE_LINKING);
+	}
     }
 
   /* Add the loop cleanup function.  */
   gsi = gsi_last_nondebug_bb (exit_bb);
-  if (gimple_omp_return_nowait_p (gsi_stmt (gsi)))
-    t = builtin_decl_explicit (BUILT_IN_GOMP_LOOP_END_NOWAIT);
-  else if (gimple_omp_return_lhs (gsi_stmt (gsi)))
-    t = builtin_decl_explicit (BUILT_IN_GOMP_LOOP_END_CANCEL);
-  else
-    t = builtin_decl_explicit (BUILT_IN_GOMP_LOOP_END);
-  gcall *call_stmt = gimple_build_call (t, 0);
-  if (fd->ordered)
+  if (!seq_loop)
     {
-      tree arr = counts[fd->ordered];
-      tree clobber = build_clobber (TREE_TYPE (arr));
-      gsi_insert_after (&gsi, gimple_build_assign (arr, clobber),
-			GSI_SAME_STMT);
-    }
-  if (gimple_omp_return_lhs (gsi_stmt (gsi)))
-    {
-      gimple_call_set_lhs (call_stmt, gimple_omp_return_lhs (gsi_stmt (gsi)));
-      if (fd->have_reductemp)
+      if (gimple_omp_return_nowait_p (gsi_stmt (gsi)))
+	t = builtin_decl_explicit (BUILT_IN_GOMP_LOOP_END_NOWAIT);
+      else if (gimple_omp_return_lhs (gsi_stmt (gsi)))
+	t = builtin_decl_explicit (BUILT_IN_GOMP_LOOP_END_CANCEL);
+      else
+	t = builtin_decl_explicit (BUILT_IN_GOMP_LOOP_END);
+      gcall *call_stmt = gimple_build_call (t, 0);
+      if (fd->ordered)
 	{
-	  gimple *g = gimple_build_assign (reductions, NOP_EXPR,
-					   gimple_call_lhs (call_stmt));
-	  gsi_insert_after (&gsi, g, GSI_SAME_STMT);
+	  tree arr = counts[fd->ordered];
+	  tree clobber = build_clobber (TREE_TYPE (arr));
+	  gsi_insert_after (&gsi, gimple_build_assign (arr, clobber),
+			    GSI_SAME_STMT);
 	}
+      if (gimple_omp_return_lhs (gsi_stmt (gsi)))
+	{
+	  gimple_call_set_lhs (call_stmt,
+			       gimple_omp_return_lhs (gsi_stmt (gsi)));
+	  if (fd->have_reductemp)
+	    {
+	      gimple *g = gimple_build_assign (reductions, NOP_EXPR,
+					       gimple_call_lhs (call_stmt));
+	      gsi_insert_after (&gsi, g, GSI_SAME_STMT);
+	    }
+	}
+      gsi_insert_after (&gsi, call_stmt, GSI_SAME_STMT);
     }
-  gsi_insert_after (&gsi, call_stmt, GSI_SAME_STMT);
   gsi_remove (&gsi, true);
 
   /* Connect the new blocks.  */
@@ -4665,7 +4699,8 @@ expand_omp_for_generic (struct omp_region *region,
       gimple_seq phis;
 
       e = find_edge (cont_bb, l3_bb);
-      ne = make_edge (l2_bb, l3_bb, EDGE_FALSE_VALUE);
+      ne = make_edge (l2_bb, l3_bb,
+		      seq_loop ? EDGE_FALLTHRU : EDGE_FALSE_VALUE);
 
       phis = phi_nodes (l3_bb);
       for (gsi = gsi_start (phis); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -4705,7 +4740,8 @@ expand_omp_for_generic (struct omp_region *region,
 	  e = find_edge (cont_bb, l2_bb);
 	  e->flags = EDGE_FALLTHRU;
 	}
-      make_edge (l2_bb, l0_bb, EDGE_TRUE_VALUE);
+      if (!seq_loop)
+	make_edge (l2_bb, l0_bb, EDGE_TRUE_VALUE);
 
       if (gimple_in_ssa_p (cfun))
 	{
@@ -4764,12 +4800,16 @@ expand_omp_for_generic (struct omp_region *region,
 
       add_bb_to_loop (l2_bb, outer_loop);
 
-      /* We've added a new loop around the original loop.  Allocate the
-	 corresponding loop struct.  */
-      class loop *new_loop = alloc_loop ();
-      new_loop->header = l0_bb;
-      new_loop->latch = l2_bb;
-      add_loop (new_loop, outer_loop);
+      struct loop *new_loop = NULL;
+      if (!seq_loop)
+	{
+	  /* We've added a new loop around the original loop.  Allocate the
+	     corresponding loop struct.  */
+	  new_loop = alloc_loop ();
+	  new_loop->header = l0_bb;
+	  new_loop->latch = l2_bb;
+	  add_loop (new_loop, outer_loop);
+	}
 
       /* Allocate a loop structure for the original loop unless we already
 	 had one.  */
@@ -4779,7 +4819,8 @@ expand_omp_for_generic (struct omp_region *region,
 	  class loop *orig_loop = alloc_loop ();
 	  orig_loop->header = l1_bb;
 	  /* The loop may have multiple latches.  */
-	  add_loop (orig_loop, new_loop);
+	  add_loop (orig_loop,
+		    new_loop != NULL ? new_loop : outer_loop);
 	}
     }
 }
@@ -8204,7 +8245,10 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
        original loops from being detected.  Fix that up.  */
     loops_state_set (LOOPS_NEED_FIXUP);
 
-  if (gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_SIMD)
+  if (region->inside_kernels_p)
+    expand_omp_for_generic (region, &fd, BUILT_IN_NONE, BUILT_IN_NONE,
+			    NULL_TREE, inner_stmt);
+  else if (gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_SIMD)
     expand_omp_simd (region, &fd);
   else if (gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_OACC_LOOP)
     {
@@ -10569,6 +10613,18 @@ expand_omp (struct omp_region *region)
 	 region.  */
       if (region->type == GIMPLE_OMP_PARALLEL)
 	determine_parallel_type (region);
+      else if (region->type == GIMPLE_OMP_TARGET)
+	{
+	  if (region->inner)
+	    {
+	      gomp_target *entry
+		= as_a <gomp_target *> (last_stmt (region->entry));
+	      if (region->inside_kernels_p
+		  || (gimple_omp_target_kind (entry)
+		      == GF_OMP_TARGET_KIND_OACC_KERNELS))
+		region->inner->inside_kernels_p = true;
+	    }
+	}
 
       if (region->type == GIMPLE_OMP_FOR
 	  && gimple_omp_for_combined_p (last_stmt (region->entry)))

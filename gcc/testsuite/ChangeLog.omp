@@ -1,3 +1,13 @@
+2019-09-20  Chung-Lin Tang <cltang@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-c++-common/goacc/kernels-loop-acc-loop.c: New test.
+	* c-c++-common/goacc/kernels-loop-2-acc-loop.c: New test.
+	* c-c++-common/goacc/kernels-loop-3-acc-loop.c: New test.
+	* c-c++-common/goacc/kernels-loop-n-acc-loop.c: New test.
+	* c-c++-common/goacc/kernels-acc-loop-reduction.c: New test.
+	* c-c++-common/goacc/kernels-acc-loop-smaller-equal.c: New test.
+
 2018-10-22  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* g++.dg/goacc/loop-1.c: New test.
