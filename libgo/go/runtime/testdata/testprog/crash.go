@@ -11,6 +11,7 @@ import (
 
 func init() {
 	register("Crash", Crash)
+	register("DoublePanic", DoublePanic)
 }
 
 var NilPointer *string
@@ -43,4 +44,24 @@ func Crash() {
 	testInNewThread("new-thread")
 	testInNewThread("second-new-thread")
 	test("main-again")
+}
+
+type P string
+
+func (p P) String() string {
+	// Try to free the "YYY" string header when the "XXX"
+	// panic is stringified.
+	runtime.GC()
+	runtime.GC()
+	runtime.GC()
+	return string(p)
+}
+
+// Test that panic message is not clobbered.
+// See issue 30150.
+func DoublePanic() {
+	defer func() {
+		panic(P("YYY"))
+	}()
+	panic(P("XXX"))
 }
