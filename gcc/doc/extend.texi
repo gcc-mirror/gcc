@@ -47,6 +47,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Escaped Newlines::    Slightly looser rules for escaped newlines.
 * Subscripting::        Any array can be subscripted, even if not an lvalue.
 * Pointer Arith::       Arithmetic on @code{void}-pointers and function pointers.
+* Variadic Pointer Args::  Pointer arguments to variadic functions.
 * Pointers to Arrays::  Pointers to arrays with qualifiers work as expected.
 * Initializers::        Non-constant initializers.
 * Compound Literals::   Compound literals give structures, unions
@@ -1943,6 +1944,22 @@ and on function types, and returns 1.
 @opindex Wpointer-arith
 The option @option{-Wpointer-arith} requests a warning if these extensions
 are used.
+
+@node Variadic Pointer Args
+@section Pointer Arguments in Variadic Functions
+@cindex pointer arguments in variadic functions
+@cindex variadic functions, pointer arguments
+
+Standard C requires that pointer types used with @code{va_arg} in
+functions with variable argument lists either must be compatible with
+that of the actual argument, or that one type must be a pointer to
+@code{void} and the other a pointer to a character type.  GNU C
+implements the POSIX XSI extension that additionally permits the use
+of @code{va_arg} with a pointer type to receive arguments of any other
+pointer type.
+
+In particular, in GNU C @samp{va_arg (ap, void *)} can safely be used
+to consume an argument of any pointer type.
 
 @node Pointers to Arrays
 @section Pointers to Arrays with Qualifiers Work as Expected
