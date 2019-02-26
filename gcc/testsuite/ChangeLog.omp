@@ -1,3 +1,8 @@
+2018-10-04  Cesar Philippidis  <cesar@codesourcery.com>
+            Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.dg/goacc/declare-allocatable-1.f90: New test.
+
 2019-09-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/goacc/classify-kernels-unparallelized.f95: Add
