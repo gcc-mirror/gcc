@@ -1,3 +1,9 @@
+2019-02-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/89492
+	* check.c (gfc_calculate_transfer_sizes): Handle cases where
+	storage size of elements of MOLD is 0.
+
 2019-02-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/89496
