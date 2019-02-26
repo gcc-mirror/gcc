@@ -588,8 +588,9 @@ oacc_get_min_dim (int dim)
 }
 
 /* Parse the default dimension parameter.  This is a set of
-   :-separated optional compute dimensions.  Each specified dimension
-   is a positive integer.  When device type support is added, it is
+   :-separated optional compute dimensions.  Each dimension is either
+   a positive integer, or '-' for a dynamic value computed at
+   runtime.  When device type support is added, it is
    planned to be a comma separated list of such compute dimensions,
    with all but the first prefixed by the colon-terminated device
    type.  */
@@ -624,14 +625,20 @@ oacc_parse_default_dims (const char *dims)
 
 	  if (*pos != ':')
 	    {
-	      long val;
-	      const char *eptr;
+	      long val = 0;
 
-	      errno = 0;
-	      val = strtol (pos, CONST_CAST (char **, &eptr), 10);
-	      if (errno || val <= 0 || (int) val != val)
-		goto malformed;
-	      pos = eptr;
+	      if (*pos == '-')
+		pos++;
+	      else
+		{
+		  const char *eptr;
+
+		  errno = 0;
+		  val = strtol (pos, CONST_CAST (char **, &eptr), 10);
+		  if (errno || val <= 0 || (int) val != val)
+		    goto malformed;
+		  pos = eptr;
+		}
 	      oacc_default_dims[ix] = (int) val;
 	    }
 	}
@@ -671,6 +678,34 @@ oacc_validate_dims (tree fn, tree attrs, int *dims, int level, unsigned used)
       tree val = TREE_VALUE (pos);
       dims[ix] = val ? TREE_INT_CST_LOW (val) : -1;
       pos = TREE_CHAIN (pos);
+    }
+
+  bool check = true;
+#ifdef ACCEL_COMPILER
+  check = false;
+#endif
+  if (check
+      && !lookup_attribute ("oacc kernels", DECL_ATTRIBUTES (fn)))
+    {
+      static char const *const axes[] =
+      /* Must be kept in sync with GOMP_DIM enumeration.  */
+	{ "gang", "worker", "vector" };
+      for (ix = level >= 0 ? level : 0; ix != GOMP_DIM_MAX; ix++)
+	if (dims[ix] < 0)
+	  ; /* Defaulting axis.  */
+	else if ((used & GOMP_DIM_MASK (ix)) && dims[ix] == 1)
+	  /* There is partitioned execution, but the user requested a
+	     dimension size of 1.  They're probably confused.  */
+	  warning_at (DECL_SOURCE_LOCATION (fn), 0,
+		      "region contains %s partitioned code but"
+		      " is not %s partitioned", axes[ix], axes[ix]);
+	else if (!(used & GOMP_DIM_MASK (ix)) && dims[ix] != 1)
+	  /* The dimension is explicitly partitioned to non-unity, but
+	     no use is made within the region.  */
+	  warning_at (DECL_SOURCE_LOCATION (fn), 0,
+		      "region is %s partitioned but"
+		      " does not contain %s partitioned code",
+		      axes[ix], axes[ix]);
     }
 
   bool changed = targetm.goacc.validate_dims (fn, dims, level, used);

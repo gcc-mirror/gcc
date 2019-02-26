@@ -1,3 +1,30 @@
+2018-10-05  Nathan Sidwell  <nathan@acm.org>
+	    Tom de Vries  <tdevries@suse.de>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-g-1.c: Add -w.
+	* testsuite/libgomp.oacc-c-c++-common/loop-g-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-g-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-warn-1.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/firstprivate-1.c: Update.
+	* testsuite/libgomp.oacc-c-c++-common/loop-auto-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-w-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/mode-transitions.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/private-variables.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-7.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-g-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-w-1.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/par-reduction-2-1.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/par-reduction-2-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/pr84028.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/private-variables.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/routine-7.f90: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-default-compile.c: New.
+
 2018-10-22  James Norris  <jnorris@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 	    Tom de Vries  <tom@codesourcery.com>

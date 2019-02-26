@@ -14,6 +14,7 @@ int main ()
     ary[ix] = -1;
   
 #pragma acc parallel num_workers(32) vector_length(32) copy(ary) copy(ondev)
+  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 16 } */
   {
 #pragma acc loop worker
     for (unsigned ix = 0; ix < N; ix++)

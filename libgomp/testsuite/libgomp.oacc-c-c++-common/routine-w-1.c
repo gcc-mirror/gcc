@@ -6,6 +6,7 @@
 
 #pragma acc routine worker
 void __attribute__ ((noinline)) worker (int ary[N])
+/* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 8 } */
 {
 #pragma acc loop worker
   for (unsigned ix = 0; ix < N; ix++)

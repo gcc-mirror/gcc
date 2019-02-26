@@ -147,7 +147,7 @@ int gang_1 (int *ary, int size)
 {
   clear (ary, size);
   
-#pragma acc parallel num_gangs (32) num_workers (32) vector_length(32) copy(ary[0:size]) firstprivate (size)
+#pragma acc parallel num_gangs (32) num_workers (32) vector_length(32) copy(ary[0:size]) firstprivate (size)/* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } } */
   {
 #pragma acc loop auto
     for (int jx = 0; jx <  size  / 64; jx++)

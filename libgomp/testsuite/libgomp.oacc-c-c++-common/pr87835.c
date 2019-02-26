@@ -42,7 +42,7 @@ main (void)
     ;
 
 #pragma acc parallel async (1) num_gangs (320)
-    #pragma loop gang
+    #pragma acc loop gang
     for (int ii = 0; ii < N; ii++)
       c[ii] = (a[ii] + a[N - ii - 1]);
 
