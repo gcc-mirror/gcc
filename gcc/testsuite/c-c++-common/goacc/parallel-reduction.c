@@ -6,7 +6,7 @@ main ()
 
 #pragma acc data copy (dummy)
   {
-#pragma acc parallel num_gangs (10) copy (sum) reduction (+:sum)
+#pragma acc parallel num_gangs (10) copy (sum) reduction (+:sum) /* { dg-warning "gang partitioned" } */
     {
       int v = 5;
       sum += 10 + v;

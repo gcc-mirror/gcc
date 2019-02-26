@@ -14,7 +14,7 @@
       RES2 = 0
 
 !$ACC PARALLEL NUM_GANGS(256) NUM_WORKERS(32) VECTOR_LENGTH(32)
-!$ACC& REDUCTION(+:RES1) COPY(RES1, RES2) ASYNC(1)
+!$ACC& REDUCTION(+:RES1) COPY(RES1, RES2) ASYNC(1) ! { dg-warning "region is (gang|worker|vector) partitioned" }
       res1 = res1 + 5
 
 !$ACC ATOMIC
@@ -36,7 +36,7 @@
       RES2 = 1
 
 !$ACC PARALLEL NUM_GANGS(8) NUM_WORKERS(32) VECTOR_LENGTH(32)
-!$ACC& REDUCTION(*:RES1) COPY(RES1, RES2) ASYNC(1)
+!$ACC& REDUCTION(*:RES1) COPY(RES1, RES2) ASYNC(1) ! { dg-warning "region is (gang|worker|vector) partitioned" }
       res1 = res1 * 5
 
 !$ACC ATOMIC

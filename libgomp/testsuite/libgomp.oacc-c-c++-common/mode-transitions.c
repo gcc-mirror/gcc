@@ -287,6 +287,7 @@ void t7()
   int n = 0;
   #pragma acc parallel copy(n) \
 		       num_gangs(1) num_workers(1) vector_length(32)
+  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 288 } */
   {
     n++;
   }
@@ -310,6 +311,7 @@ void t8()
 
       #pragma acc parallel copy(arr) \
 			   num_gangs(gangs) num_workers(1) vector_length(32)
+      /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 312 } */
       {
 	int j;
 	#pragma acc loop gang
@@ -339,6 +341,7 @@ void t9()
 
       #pragma acc parallel copy(arr) \
 			   num_gangs(gangs) num_workers(1) vector_length(32)
+      /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 342 } */
       {
 	int j;
 	#pragma acc loop gang
@@ -371,6 +374,7 @@ void t10()
 
       #pragma acc parallel copy(arr) \
 			   num_gangs(gangs) num_workers(1) vector_length(32)
+      /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 375 } */
       {
 	int j;
 	#pragma acc loop gang
@@ -404,6 +408,7 @@ void t11()
 
   #pragma acc parallel copy(arr) \
 		       num_gangs(1024) num_workers(1) vector_length(32)
+  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 409 } */
   {
     int j;
 
@@ -442,6 +447,7 @@ void t12()
 
   #pragma acc parallel copyout(fizz, buzz, fizzbuzz) \
 		       num_gangs(NUM_GANGS) num_workers(1) vector_length(32)
+  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 448 } */
   {
     int j;
     
@@ -488,6 +494,7 @@ void t13()
 
   #pragma acc parallel copy(arr) \
 		       num_gangs(8) num_workers(8) vector_length(32)
+  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 495 } */
   {
     int j;
     #pragma acc loop gang
@@ -613,6 +620,7 @@ void t16()
 
   #pragma acc parallel copy(n, arr) \
 		       num_gangs(8) num_workers(16) vector_length(32)
+  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 621 } */
   {
     int j;
     #pragma acc loop gang
@@ -665,6 +673,7 @@ void t17()
 
 	#pragma acc parallel copyin(arr_a) copyout(arr_b) \
 			     num_gangs(num_gangs) num_workers(num_workers) vector_length(32)
+	/* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 674 } */
 	{
 	  int j;
 	  #pragma acc loop gang
@@ -882,6 +891,8 @@ void t21()
 
   #pragma acc parallel copy(arr) \
 		       num_gangs(8) num_workers(8) vector_length(32)
+  /* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "worker" { target *-*-* } 892 } */
+  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 892 } */
   {
     int j;
     #pragma acc loop gang
@@ -905,6 +916,8 @@ void t22()
 
   #pragma acc parallel copy(arr) \
 		       num_gangs(8) num_workers(8) vector_length(32)
+  /* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "worker" { target *-*-* } 917 } */
+  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 917 } */
   {
     int j;
     #pragma acc loop gang
@@ -931,6 +944,8 @@ void t23()
 
   #pragma acc parallel copy(arr) \
 		       num_gangs(8) num_workers(8) vector_length(32)
+  /* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "worker" { target *-*-* } 945 } */
+  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 945 } */
   {
     int j;
     #pragma acc loop gang
@@ -957,6 +972,8 @@ void t24()
 
   #pragma acc parallel copy(arr) \
 		       num_gangs(8) num_workers(8) vector_length(32)
+  /* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "worker" { target *-*-* } 973 } */
+  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 973 } */
   {
     int j;
     #pragma acc loop gang
@@ -988,6 +1005,7 @@ void t25()
 
   #pragma acc parallel copy(arr) \
 		       num_gangs(8) num_workers(8) vector_length(32)
+  /* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "worker" { target *-*-* } 1006 } */
   {
     int j;
     #pragma acc loop gang
@@ -1020,6 +1038,7 @@ void t26()
 
   #pragma acc parallel copy(arr) \
 		       num_gangs(8) num_workers(8) vector_length(32)
+  /* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "worker" { target *-*-* } 1039 } */
   {
     int j;
     #pragma acc loop gang
@@ -1070,6 +1089,8 @@ void t27()
 
   #pragma acc parallel copy(n, arr) copyout(ondev) \
 	  num_gangs(ACTUAL_GANGS) num_workers(8) vector_length(32)
+  /* { dg-warning "region is gang partitioned but does not contain gang partitioned code" "gang" { target *-*-* } 1090 } */
+  /* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "worker" { target *-*-* } 1090 } */
   {
     int j;
 

@@ -12,14 +12,14 @@
 !$ACC ROUTINE(s_2)
       END SUBROUTINE s_2
 
-      SUBROUTINE v_1
+      SUBROUTINE v_1 ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" }
 !$ACC ROUTINE VECTOR
 !$ACC ROUTINE VECTOR
 !$ACC ROUTINE(v_1) VECTOR
 !$ACC ROUTINE VECTOR
       END SUBROUTINE v_1
 
-      SUBROUTINE v_2
+      SUBROUTINE v_2 ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" }
 !$ACC ROUTINE(v_2) VECTOR
 !$ACC ROUTINE VECTOR
 !$ACC ROUTINE(v_2) VECTOR

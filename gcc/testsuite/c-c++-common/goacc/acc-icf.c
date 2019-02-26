@@ -4,7 +4,7 @@
 
 #pragma acc routine gang
 int
-routine1 (int n)
+routine1 (int n) /* { dg-bogus "region is worker partitioned but does not contain worker partitioned code" "" { xfail *-*-* } } */
 {
   int i;
 
@@ -17,7 +17,7 @@ routine1 (int n)
 
 #pragma acc routine gang
 int
-routine2 (int n)
+routine2 (int n) /* { dg-bogus "region is worker partitioned but does not contain worker partitioned code" "" { xfail *-*-* } } */
 {
   int i;
 

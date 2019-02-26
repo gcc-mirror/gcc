@@ -1,17 +1,17 @@
 /* Test valid use of clauses with routine.  */
 
 #pragma acc routine gang
-void gang (void)
+void gang (void) /* { dg-warning "partitioned" 3 } */
 {
 }
 
 #pragma acc routine worker
-void worker (void)
+void worker (void) /* { dg-warning "partitioned" 2 } */
 {
 }
 
 #pragma acc routine vector
-void vector (void)
+void vector (void) /* { dg-warning "partitioned" 1 } */
 {
 }
 

@@ -6,6 +6,8 @@
 
 #pragma acc routine gang
 void __attribute__ ((noinline)) gang (int ary[N])
+/* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "worker" { target *-*-* } 8 } */
+/* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 8 } */
 {
 #pragma acc loop gang
     for (unsigned ix = 0; ix < N; ix++)
