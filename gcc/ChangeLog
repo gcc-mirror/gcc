@@ -1,5 +1,13 @@
 2019-02-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	Backport from mainline
+	2019-02-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* rtlanal.c (get_initial_register_offset): Fall back to the estimate
+	as long as the epilogue isn't completed.
+
+2019-02-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* tree-ssa-dom.c (edge_info::derive_equivalences) <BIT_IOR_EXPR>: Fix
 	and move around comment.
 	<BIT_AND_EXPR>: Likewise.
