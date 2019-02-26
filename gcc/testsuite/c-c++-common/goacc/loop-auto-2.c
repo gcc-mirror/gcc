@@ -72,12 +72,12 @@ void Bad ()
 #pragma acc loop tile(*) gang vector
     for (int ix = 0; ix < 10; ix++)
       {
-	#pragma acc loop auto /* { dg-warning "insufficient partitioning" } */
+	#pragma acc loop auto independent /* { dg-warning "insufficient partitioning" } */
 	for (int jx = 0; jx < 10; jx++)
 	  ;
       }
 
-#pragma acc loop tile(*) auto /* { dg-warning "insufficient partitioning" } */
+#pragma acc loop tile(*) auto independent /* { dg-warning "insufficient partitioning" } */
     for (int ix = 0; ix < 10; ix++)
       {
 	#pragma acc loop worker
