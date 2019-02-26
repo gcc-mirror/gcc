@@ -420,7 +420,7 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, void *data_)
 	  delete data;
 	  data = NULL;
 	}
-      else if (flag_modules)
+      else if (modules_p ())
 	data = new state (cpp_get_deps (pfile));
       return data;
     }

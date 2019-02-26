@@ -1,5 +1,18 @@
 2019-02-26  Nathan Sidwell  <nathan@acm.org>
 
+	Flag_modules is strictly boolean.
+	gcc/c-family/
+	* c.opt (fmodules-ts): Allow negation.
+	gcc/cp/
+	* decl.c (duplicate_decls): Use modules_p.
+	* lex.c (module_preprocess_token): Use modules_p.
+	* parser.c (cp_parser_diagnose_invalid_type)
+	(cp_parser_translation_unit, cp_parser_tokenize): Likewise.
+	* module.cc (module_begin_main_file): Likewise.
+	(handle_module_option): Adjust.
+	gcc/
+	* doc/invoke.texi (fmodules-ts): Adjust.
+
 	Preprocess __import.
 	gcc/cp/
 	* cp-tree.h (import_module): Add extern C flag.

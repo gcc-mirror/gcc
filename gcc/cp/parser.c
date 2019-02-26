@@ -3297,7 +3297,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	inform (location, "%<concept%> only available with -fconcepts");
       else if (C_RID_CODE (id) == RID_MODULE || C_RID_CODE (id) == RID_IMPORT)
 	{
-	  if (!flag_modules)
+	  if (!modules_p ())
 	    inform (location, "%qE only available with -fmodules-ts", id);
 	  else
 	    inform (location, "%E-declaration not permitted here", id);
@@ -4632,7 +4632,8 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
   bool implicit_extern_c = false;
   bool first = modules_p ();
   int preamble = 0; /* Not seen a preamble.  */
-  bool deferred_imports = flag_modules < 0;
+  bool deferred_imports = modules_p (); /* Header unit means there is
+					   one.  */
 
   /* Tell the tokenizer there are no tokens to copy.  */
   parser->lexer->last_token = NULL;
@@ -41300,7 +41301,7 @@ cp_parser_tokenize (cp_parser *parser, cp_token *tok)
 	}
       else if (tok->keyword == RID_EXPORT)
 	;
-      else if (!in_decl && !depth && tok->type == CPP_NAME && flag_modules
+      else if (!in_decl && !depth && tok->type == CPP_NAME && modules_p ()
 	       && C_RID_CODE (tok->u.value) == RID_IMPORT)
 	{
 	  cpp_enable_filename_token (parse_in, true);

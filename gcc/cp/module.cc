@@ -13802,9 +13802,9 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
       unsigned n = dump.push (NULL);
       spans.init (map);
       dump.pop (n);
-      if (flag_modules < 0)
+      if (module_header_name)
 	{
-	  if (!module_header_name)
+	  if (!module_header_name[0])
 	    {
 	      /* Set the module header name from the main_input_filename.  */
 	      const char *main = main_input_filename;
@@ -14263,12 +14263,6 @@ handle_module_option (unsigned code, const char *str, int)
 {
   switch (opt_code (code))
     {
-    case OPT_fmodules_ts:
-      /* Don't drop out of header mode.  */
-      if (!flag_modules)
-	flag_modules = +1;
-      return true;
-
     case OPT_fmodule_mapper_:
       module_mapper_name = str;
       return true;
@@ -14301,7 +14295,9 @@ handle_module_option (unsigned code, const char *str, int)
       /* FALLTHROUGH  */
 
     case OPT_fmodule_header:
-      flag_modules = -1;
+      if (!module_header_name)
+	module_header_name = "";
+      flag_modules = 1;
       return true;
 
     default:

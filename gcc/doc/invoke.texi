@@ -2627,12 +2627,14 @@ controlled by @code{#pragma implementation}.  This causes linker
 errors if these functions are not inlined everywhere they are called.
 
 @item -fmodules-ts
-@itemx -fno-modules
+@itemx -fno-modules-ts
 @opindex fmodules-ts
-@opindex fno-modules
+@opindex fno-modules-ts
 Enable experimental support for n4720:``Working Draft, Extensions to
-C++ for Modules'' via p1103r1 ``Merging Modules'' The @option{-fno-modules} is
-usually not needed, as that is the default.  For now.
+C++ for Modules'' via p1103r1 ``Merging Modules''. The
+@option{-fno-modules-ts} is usually not needed, as that is the
+default.  Even though this is adopted for C++2a, it is not currently
+implicitly enabled by selecting that standard version.
 
 @item -fno-module-lazy
 @opindex fno-module-lazy

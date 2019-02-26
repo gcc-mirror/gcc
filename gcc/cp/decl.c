@@ -1907,7 +1907,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
   if (!validate_constexpr_redeclaration (olddecl, newdecl))
     return error_mark_node;
 
-  if (flag_modules
+  if (modules_p ()
       && TREE_CODE (CP_DECL_CONTEXT (olddecl)) == NAMESPACE_DECL
       && TREE_CODE (olddecl) != NAMESPACE_DECL)
     {
