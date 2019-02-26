@@ -1,5 +1,32 @@
 2019-02-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/89477
+	* include/bits/alloc_traits.h (_RequireNotAllocator): New helper for
+	container deduction guides.
+	* include/bits/hashtable.h (_RequireNotAllocatorOrIntegral): Likewise.
+	* include/bits/stl_map.h (map): Use _RequireNotAllocator to constrain
+	parameters in deduction guides.
+	* include/bits/stl_multimap.h (multimap): Likewise.
+	* include/bits/stl_multiset.h (multiset): Likewise.
+	* include/bits/stl_queue.h (queue, priority_queue): Likewise.
+	* include/bits/stl_set.h (set): Likewise.
+	* include/bits/stl_stack.h (stack): Likewise.
+	* include/bits/unordered_map.h (unordered_map, unordered_multimap):
+	use _RequireNotAllocator and _RequireNotAllocatorOrIntegral to
+	constrain parameters in deduction guides.
+	* include/bits/unordered_set.h (unordered_set, unordered_multiset):
+	Likewise.
+	* testsuite/23_containers/map/cons/deduction.cc: Test additional
+	deduction cases.
+	* testsuite/23_containers/multiset/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/set/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/unordered_map/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/cons/deduction.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/cons/deduction.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/cons/deduction.cc: Likewise.
+
 	PR libstdc++/89416
 	* include/bits/alloc_traits.h (__is_alloc_insertable_impl): Change
 	to class template and partial specialization using void_t.

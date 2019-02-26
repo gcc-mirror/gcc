@@ -286,12 +286,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cpp_deduction_guides >= 201606
   template<typename _Container,
-	   typename = enable_if_t<!__is_allocator<_Container>::value>>
+	   typename = _RequireNotAllocator<_Container>>
     stack(_Container) -> stack<typename _Container::value_type, _Container>;
 
   template<typename _Container, typename _Allocator,
-	   typename = enable_if_t<!__is_allocator<_Container>::value>,
-	   typename = enable_if_t<__is_allocator<_Allocator>::value>>
+	   typename = _RequireNotAllocator<_Container>,
+	   typename = _RequireAllocator<_Allocator>>
     stack(_Container, _Allocator)
     -> stack<typename _Container::value_type, _Container>;
 #endif
