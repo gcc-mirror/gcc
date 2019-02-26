@@ -1,3 +1,13 @@
+2019-02-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* doc/extend.texi (__builtin_object_size):
+	Use @pxref instead of @xref inside parenthesis.
+	(__builtin_has_attribute): Add missing comma after @xref.
+	(__builtin_object_size): Ditto.
+	* doc/md.texi (cond_*{mode}): Use @samp instead of @var around op1[i].
+	* fortran/invoke.texi (-ffpe-trap): Use @var for every item
+	in the list.
+
 2019-02-26  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/87761
