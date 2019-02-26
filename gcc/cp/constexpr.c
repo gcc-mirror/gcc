@@ -3860,6 +3860,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 		}
 	      /* Changing active member.  */
 	      vec_safe_truncate (CONSTRUCTOR_ELTS (*valp), 0);
+	      no_zero_init = true;
 	    }
 
 	  for (idx = 0;
