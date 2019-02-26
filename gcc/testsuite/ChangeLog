@@ -1,3 +1,8 @@
+2019-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89481
+	* g++.dg/cpp1y/constexpr-89481.C: New test.
+
 2019-02-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89505
