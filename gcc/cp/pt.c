@@ -18797,6 +18797,12 @@ tsubst_copy_and_build (tree t,
 	   looked up by digest_init.  */
 	process_index_p = !(type && MAYBE_CLASS_TYPE_P (type));
 
+	if (null_member_pointer_value_p (t))
+	  {
+	    gcc_assert (same_type_p (type, TREE_TYPE (t)));
+	    RETURN (t);
+	  }
+
 	n = vec_safe_copy (CONSTRUCTOR_ELTS (t));
         newlen = vec_safe_length (n);
 	FOR_EACH_VEC_SAFE_ELT (n, idx, ce)
