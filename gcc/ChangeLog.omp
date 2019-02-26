@@ -1,3 +1,11 @@
+2018-12-22  Cesar Philippidis  <cesar@codesourcery.com>
+            Julian Brown  <julian@codesourcery.com>
+
+	* omp-low.c (maybe_lookup_field_in_outer_ctx): New function.
+	(convert_to_firstprivate_int): New function.
+	(convert_from_firstprivate_int): New function.
+	(lower_omp_target): Enable GOMP_MAP_FIRSTPRIVATE_INT in OpenACC.
+
 2018-08-28  Julian Brown  <julian@codesourcery.com>
             Cesar Philippidis  <cesar@codesourcery.com>
 
