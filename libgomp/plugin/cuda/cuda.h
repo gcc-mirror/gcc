@@ -54,7 +54,11 @@ typedef enum {
   CUDA_ERROR_INVALID_CONTEXT = 201,
   CUDA_ERROR_NOT_FOUND = 500,
   CUDA_ERROR_NOT_READY = 600,
-  CUDA_ERROR_LAUNCH_FAILED = 719
+  CUDA_ERROR_LAUNCH_FAILED = 719,
+  CUDA_ERROR_COOPERATIVE_LAUNCH_TOO_LARGE = 720,
+  CUDA_ERROR_NOT_PERMITTED = 800,
+  CUDA_ERROR_NOT_SUPPORTED = 801,
+  CUDA_ERROR_UNKNOWN = 999
 } CUresult;
 
 typedef enum {
@@ -173,6 +177,8 @@ CUresult cuModuleLoadData (CUmodule *, const void *);
 CUresult cuModuleUnload (CUmodule);
 CUresult cuOccupancyMaxPotentialBlockSize(int *, int *, CUfunction,
 					  CUoccupancyB2DSize, size_t, int);
+typedef void (*CUstreamCallback)(CUstream, CUresult, void *);
+CUresult cuStreamAddCallback(CUstream, CUstreamCallback, void *, unsigned int);
 CUresult cuStreamCreate (CUstream *, unsigned);
 #define cuStreamDestroy cuStreamDestroy_v2
 CUresult cuStreamDestroy (CUstream);

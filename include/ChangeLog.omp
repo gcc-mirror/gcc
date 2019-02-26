@@ -1,0 +1,5 @@
+2019-02-26  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gomp-constants.h (GOMP_ASYNC_DEFAULT): Define.
+	(GOMP_PLUGIN_IF_VERSION): New version symbol for plugin interface.
+	Update surrounding comments.

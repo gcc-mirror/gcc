@@ -1,0 +1,4 @@
+2019-02-26  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_version):
+	Update to return GOMP_PLUGIN_IF_VERSION.

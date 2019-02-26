@@ -1,3 +1,233 @@
+2019-02-26  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* target.c (goacc_device_copy_async): New function.
+	(gomp_copy_host2dev): Remove 'static', add goacc_asyncqueue parameter,
+	add goacc_device_copy_async case.
+	(gomp_copy_dev2host): Likewise.
+	(gomp_map_vars_existing): Add goacc_asyncqueue parameter, adjust code.
+	(gomp_map_pointer): Likewise.
+	(gomp_map_fields_existing): Likewise.
+	(gomp_map_vars_internal): New always_inline function, renamed from
+	gomp_map_vars.
+	(gomp_map_vars): Implement by calling gomp_map_vars_internal.
+	(gomp_map_vars_async): Implement by calling gomp_map_vars_internal,
+	passing goacc_asyncqueue argument.
+	(gomp_unmap_tgt): Remove statis, add attribute_hidden.
+	(gomp_unmap_vars_internal): New always_inline function, renamed from
+	gomp_unmap_vars.
+	(gomp_unmap_vars): Implement by calling gomp_unmap_vars_internal.
+	(gomp_unmap_vars_async): Implement by calling gomp_unmap_vars_internal,
+	passing goacc_asyncqueue argument.
+	(gomp_fini_device): New function.
+	(gomp_exit_data): Adjust gomp_copy_dev2host call.
+	(gomp_load_plugin_for_device): Remove old interface, adjust to load
+	new async interface.
+	(gomp_target_fini): Adjust code to call gomp_fini_device.
+
+	* oacc-async.c (get_goacc_thread): New function.
+	(get_goacc_thread_device): New function.
+	(lookup_goacc_asyncqueue): New function.
+	(validate_async_val): New function.
+	(lookup_goacc_asyncqueue): New function.
+	(get_goacc_asyncqueue): New function.
+	(acc_async_test): Adjust code to use new async design.
+	(acc_async_test_all): Likewise.
+	(acc_wait): Likewise.
+	(acc_wait_async): Likewise.
+	(acc_wait_all): Likewise.
+	(acc_wait_all_async): Likewise.
+	(acc_get_default_async): New API function.
+	(acc_set_default_async): Likewise.
+	(goacc_async_unmap_tgt): New function.
+	(goacc_async_copyout_unmap_vars): Likewise.
+	(goacc_async_free): Likewise.
+	(goacc_init_asyncqueues): Likewise.
+	(goacc_fini_asyncqueues): Likewise.
+
+	* oacc-cuda.c (acc_get_cuda_stream): Adjust code to use new async
+	design.
+	(acc_set_cuda_stream): Likewise.
+
+	* oacc-host.c (host_version): Update to return GOMP_PLUGIN_IF_VERSION.
+	(host_openacc_exec): Adjust parameters, remove 'async'.
+	(host_openacc_register_async_cleanup): Remove.
+	(host_openacc_async_exec): New function.
+	(host_openacc_async_test): Adjust parameters.
+	(host_openacc_async_test_all): Remove.
+	(host_openacc_async_wait): Remove.
+	(host_openacc_async_wait_async): Remove.
+	(host_openacc_async_wait_all): Remove.
+	(host_openacc_async_wait_all_async): Remove.
+	(host_openacc_async_set_async): Remove.
+	(host_openacc_async_synchronize): New function.
+	(host_openacc_async_serialize): New function.
+	(host_openacc_async_host2dev): New function.
+	(host_openacc_async_dev2host): New function.
+	(host_openacc_async_queue_callback): New function.
+	(host_openacc_async_construct): New function.
+	(host_openacc_async_destruct): New function.
+	(struct gomp_device_descr host_dispatch): Remove initialization of old
+	interface, add intialization of new async sub-struct.
+
+	* oacc-init.c (acc_shutdown_1): Adjust to use gomp_fini_device.
+	(goacc_attach_host_thread_to_device): Remove old async code usage, add
+	initialization of per-thread default_async.
+
+	* oacc-int.h (goacc_init_asyncqueues): New declaration.
+	(goacc_fini_asyncqueues): Likewise.
+	(goacc_async_free): Likewise.
+	(get_goacc_asyncqueue): Likewise.
+	(lookup_goacc_asyncqueue): Likewise.
+
+	* oacc-mem.c (memcpy_tofrom_device): Adjust code to use new async
+	design.
+	(present_create_copy): Likewise.
+	(delete_copyout): Likewise.
+	(update_dev_host): Likewise.
+	(gomp_acc_insert_pointer): Add async parameter, adjust code to use new
+	async design.
+	(gomp_acc_remove_pointer): Adjust code to use new async design.
+
+	* oacc-parallel.c (GOACC_parallel_keyed): Likewise.
+	(GOACC_enter_exit_data): Likewise.
+	(goacc_wait): Likewise.
+	(GOACC_update): Likewise.
+
+	* oacc-plugin.c (GOMP_PLUGIN_async_unmap_vars): Change to assert fail
+	when called, warn as obsolete in comment.
+
+	* libgomp-plugin.h (struct goacc_asyncqueue): Declare.
+	(struct goacc_asyncqueue_list): Likewise.
+	(goacc_aq): Likewise.
+	(goacc_aq_list): Likewise.
+	(GOMP_OFFLOAD_openacc_register_async_cleanup): Remove.
+	(GOMP_OFFLOAD_openacc_async_test): Remove.
+	(GOMP_OFFLOAD_openacc_async_test_all): Remove.
+	(GOMP_OFFLOAD_openacc_async_wait): Remove.
+	(GOMP_OFFLOAD_openacc_async_wait_async): Remove.
+	(GOMP_OFFLOAD_openacc_async_wait_all): Remove.
+	(GOMP_OFFLOAD_openacc_async_wait_all_async): Remove.
+	(GOMP_OFFLOAD_openacc_async_set_async): Remove.
+	(GOMP_OFFLOAD_openacc_exec): Adjust declaration.
+	(GOMP_OFFLOAD_openacc_cuda_get_stream): Likewise.
+	(GOMP_OFFLOAD_openacc_cuda_set_stream): Likewise.
+	(GOMP_OFFLOAD_openacc_async_exec): Declare.
+	(GOMP_OFFLOAD_openacc_async_construct): Declare.
+	(GOMP_OFFLOAD_openacc_async_destruct): Declare.
+	(GOMP_OFFLOAD_openacc_async_test): Declare.
+	(GOMP_OFFLOAD_openacc_async_synchronize): Declare.
+	(GOMP_OFFLOAD_openacc_async_serialize): Declare.
+	(GOMP_OFFLOAD_openacc_async_queue_callback): Declare.
+	(GOMP_OFFLOAD_openacc_async_host2dev): Declare.
+	(GOMP_OFFLOAD_openacc_async_dev2host): Declare.
+
+	* openacc.h (acc_async_t): Add acc_async_default enum.
+	(acc_set_default_async): Declare API function.
+	(acc_get_default_async): Likewise.
+
+	* libgomp.h (struct acc_dispatch_t): Define 'async' sub-struct.
+	Delete register_async_cleanup_func, async_test_func,
+	async_test_all_func, async_wait_func, async_wait_async_func,
+	async_wait_all_func, async_wait_all_async_func, async_set_async_func
+	hook fields.
+	(gomp_acc_insert_pointer): Adjust declaration.
+	(gomp_copy_host2dev): New declaration.
+	(gomp_copy_dev2host): Likewise.
+	(gomp_map_vars_async): Likewise.
+	(gomp_unmap_tgt): Likewise.
+	(gomp_unmap_vars_async): Likewise.
+	(gomp_fini_device): Likewise.
+
+	* libgomp.map (OACC_2.5): Add acc_get_default_async,
+	acc_get_default_async_h_, acc_set_default_async, and
+	acc_set_default_async_h_.
+
+	* openacc.f90 (acc_async_default): Declare.
+	(acc_set_default_async): Likewise.
+	(acc_get_default_async): Likewise.
+
+	* openacc_lib.h (acc_async_default): Declare.
+	 (acc_set_default_async): Likewise.
+	(acc_get_default_async): Likewise.
+
+	* plugin/plugin-hsa.c (GOMP_OFFLOAD_version): Update to return
+	GOMP_PLUGIN_IF_VERSION.
+
+	* plugin/plugin-nvptx.c (struct cuda_map): Remove.
+	(struct ptx_stream): Remove.
+	(struct nvptx_thread): Remove current_stream field.
+	(cuda_map_create): Remove.
+	(cuda_map_destroy): Remove.
+	(map_init): Remove.
+	(map_fini): Remove.
+	(map_pop): Remove.
+	(map_push): Remove.
+	(struct goacc_asyncqueue): Define.
+	(struct nvptx_callback): Define.
+	(struct ptx_free_block): Define.
+	(struct ptx_device): Remove null_stream, active_streams, async_streams,
+	stream_lock, and next fields.
+	(enum ptx_event_type): Remove.
+	(struct ptx_event): Remove.
+	(ptx_event_lock): Remove.
+	(ptx_events): Remove.
+	(init_streams_for_device): Remove.
+	(fini_streams_for_device): Remove.
+	(select_stream_for_async): Remove.
+	(nvptx_init): Remove ptx_events and ptx_event_lock references.
+	(nvptx_attach_host_thread_to_device): Remove CUDA_ERROR_NOT_PERMITTED
+	case.
+	(nvptx_open_device): Add free_blocks initialization, remove
+	init_streams_for_device call.
+	(nvptx_close_device): Remove fini_streams_for_device call, add
+	free_blocks destruct code.
+	(event_gc): Remove.
+	(event_add): Remove.
+	(nvptx_exec): Adjust parameters and code.
+	(nvptx_free): Likewise.
+	(nvptx_host2dev): Remove.
+	(nvptx_dev2host): Remove.
+	(nvptx_set_async): Remove.
+	(nvptx_async_test): Remove.
+	(nvptx_async_test_all): Remove.
+	(nvptx_wait): Remove.
+	(nvptx_wait_async): Remove.
+	(nvptx_wait_all): Remove.
+	(nvptx_wait_all_async): Remove.
+	(nvptx_get_cuda_stream): Remove.
+	(nvptx_set_cuda_stream): Remove.
+	(GOMP_OFFLOAD_alloc): Adjust code.
+	(GOMP_OFFLOAD_free): Likewise.
+	(GOMP_OFFLOAD_openacc_register_async_cleanup): Remove.
+	(GOMP_OFFLOAD_openacc_exec): Adjust parameters and code.
+	(GOMP_OFFLOAD_openacc_async_test_all): Remove.
+	(GOMP_OFFLOAD_openacc_async_wait): Remove.
+	(GOMP_OFFLOAD_openacc_async_wait_async): Remove.
+	(GOMP_OFFLOAD_openacc_async_wait_all): Remove.
+	(GOMP_OFFLOAD_openacc_async_wait_all_async): Remove.
+	(GOMP_OFFLOAD_openacc_async_set_async): Remove.
+	(cuda_free_argmem): New function.
+	(GOMP_OFFLOAD_openacc_async_exec): New plugin hook function.
+	(GOMP_OFFLOAD_openacc_create_thread_data): Adjust code.
+	(GOMP_OFFLOAD_openacc_cuda_get_stream): Adjust code.
+	(GOMP_OFFLOAD_openacc_cuda_set_stream): Adjust code.
+	(GOMP_OFFLOAD_openacc_async_construct): New plugin hook function.
+	(GOMP_OFFLOAD_openacc_async_destruct): New plugin hook function.
+	(GOMP_OFFLOAD_openacc_async_test): Remove and re-implement.
+	(GOMP_OFFLOAD_openacc_async_synchronize): New plugin hook function.
+	(GOMP_OFFLOAD_openacc_async_serialize): New plugin hook function.
+	(GOMP_OFFLOAD_openacc_async_queue_callback): New plugin hook function.
+	(cuda_callback_wrapper): New function.
+	(cuda_memcpy_sanity_check): New function.
+	(GOMP_OFFLOAD_host2dev): Remove and re-implement.
+	(GOMP_OFFLOAD_dev2host): Remove and re-implement.
+	(GOMP_OFFLOAD_openacc_async_host2dev): New plugin hook function.
+	(GOMP_OFFLOAD_openacc_async_dev2host): New plugin hook function.
+
+	* testsuite/libgomp.oacc-c-c++-common/asyncwait-2.c: New testcase.
+	* testsuite/libgomp.oacc-c-c++-common/lib-81.c: Adjust testcase.
+	* testsuite/libgomp.oacc-fortran/lib-12.f90: Likewise.
+
 2018-05-20  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR libgomp/81886
