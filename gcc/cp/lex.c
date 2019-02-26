@@ -374,7 +374,8 @@ interface_strcmp (const char* s)
   return 1;
 }
 
-/* We've just read a cpp-token, figure out our next state.  */
+/* We've just read a cpp-token, figure out our next state.  Hey, this
+   is a hand-coded co-routine!  */
 
 void *
 module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, void *data_)
@@ -382,27 +383,34 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, void *data_)
   enum mode_sm
   {
    msm_start_decl,
-   msm_in_decl,
-   msm_after_import,
-   msm_after_module,
+   msm_other_decl,
+   msm_module_decl,
+   msm_extern_decl,
   };
   struct state
   {
     unsigned depth;
+    unsigned short extern_c;
     mode_sm mode : 8;
+    bool is_import : 1;
+    bool is_header : 1;
     bool got_colon : 1;
     bool want_dot : 1;
+    bool want_semi : 1;
     bool got_export : 1;
+    location_t header_loc;
     mrules *deps;
-    module_state *parent;
+    module_state *module;
 
     state (mrules *deps)
-      : depth(0), mode (msm_start_decl),
-      got_colon (false), want_dot (false), got_export (false), deps (deps),
-      parent (NULL)
+      : depth (0), extern_c (0), mode (msm_start_decl),
+      is_import (false), is_header (false),
+      got_colon (false), want_dot (false), want_semi (false),
+      got_export (false), header_loc (UNKNOWN_LOCATION),
+      deps (deps), module (NULL)
     {
     }
-  };  
+  };
   state *data = (state *)data_;
 
   if (!tok)
@@ -417,62 +425,70 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, void *data_)
       return data;
     }
 
+  if (tok->type == CPP_PADDING || tok->type == CPP_COMMENT)
+    /* Unchanged state.  */
+    return data;
+
   switch (data->mode)
     {
     case msm_start_decl:
-      if (tok->type == CPP_NAME)
+      if (!data->depth && tok->type == CPP_NAME)
 	{
 	  tree ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node.node));
 	  int keyword = C_RID_CODE (ident);
-	  if (keyword == RID_EXPORT)
+	  switch (keyword)
 	    {
+	    default:
+	      goto maybe_end;
+
+	    case RID_EXPORT:
 	      data->got_export = true;
 	      break; /* Remain at start.  */
-	    }
-	  else if (!data->depth && keyword == RID_IMPORT)
-	    {
-	      cpp_enable_filename_token (pfile, true);
-	      data->mode = msm_after_import;
+
+	    case RID_EXTERN:
+	      data->mode = msm_extern_decl;
+	      break;
+
+	    case RID_IMPORT:
+	    case RID_MODULE:
+	      if (data->extern_c)
+		goto maybe_end;
+	      if (keyword != RID_MODULE)
+		{
+		  cpp_enable_filename_token (pfile, true);
+		  data->is_import = true;
+		}
+	      data->mode = msm_module_decl;
 	      break;
 	    }
-	  else if (!data->depth && keyword == RID_MODULE)
-	    {
-	      data->mode = msm_after_module;
-	      break;
-	    }
-	  // FIXME:translated include inside extern C
+	  break;
 	}
       /* FALLTHROUGH */
 
     maybe_end:
-      data->mode = msm_in_decl;
+      data->mode = msm_other_decl;
       /* FALLTHROUGH */
 
-    case msm_in_decl:
+    case msm_other_decl:
       switch (tok->type)
 	{
-	case CPP_PADDING:
-	case CPP_COMMENT:
-	  break; /* Unchanged state.  */
-
 	case CPP_OPEN_BRACE:
-	  data->depth += 1;
-	  break;
-
 	case CPP_OPEN_PAREN:
 	case CPP_OPEN_SQUARE:
-	  data->depth += 2;
+	  data->depth++;
 	  break;
 
 	case CPP_CLOSE_PAREN:
 	case CPP_CLOSE_SQUARE:
-	  if (data->depth > 1)
-	    data->depth -= 2;
+	  if (data->depth)
+	    data->depth--;
 	  break;
 
 	case CPP_CLOSE_BRACE:
 	  if (data->depth)
-	    data->depth -= 1;
+	    data->depth--;
+	  else if (data->extern_c)
+	    data->extern_c--;
 	  /* FALLTHROUGH */
 
 	case CPP_SEMICOLON:
@@ -487,61 +503,136 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, void *data_)
 	}
       break;
 
-    case msm_after_import:
-    case msm_after_module:
-      if (tok->type == CPP_PADDING || tok->type == CPP_COMMENT)
-	break; /* Unchanged state.  */
+    case msm_extern_decl:
+      if (!data->want_semi)
+	{
+	  /* Not handling string concatenation or whatever here.  Bad
+	     user, no biscuit!  */
+	  if (tok->type != CPP_STRING)
+	    goto maybe_end;
+	  /* We only care about extern "C" {.  */
+	  if (tok->val.str.len != 3
+	      || tok->val.str.text[1] != 'C')
+	    goto maybe_end;
+	  data->want_semi = true;
+	}
+      else
+	{
+	  data->want_semi = false;
+	  if (tok->type != CPP_OPEN_BRACE)
+	    goto maybe_end;
+	  data->extern_c++;
+	  data->mode = msm_start_decl;
+	}
+      break;
 
-      if (data->mode == msm_after_import
-	  && !data->parent && !data->got_colon)
+    case msm_module_decl:
+      if (data->is_import && !data->want_dot && !data->got_colon)
 	{
 	  cpp_enable_filename_token (pfile, false);
 	  if (tok->type == CPP_HEADER_NAME || tok->type == CPP_STRING)
 	    {
-	      /* Load the legacy import.  */
-	      tree name = get_identifier_with_length
-		((const char *) tok->val.str.text, tok->val.str.len);
-	      if (module_state *mod = get_module (name))
-		import_module (mod, tok->src_loc, false, NULL, pfile);
-	      goto maybe_end;
+	      data->is_header = true;
+	      data->header_loc = tok->src_loc;
+	      goto header_unit;
 	    }
 	}
 
-      if (!data->deps)
+      if (!data->is_header && !data->deps)
 	goto maybe_end;
 
-      if (!data->parent && tok->type == CPP_COLON
-	  && data->mode == msm_after_import)
-	data->got_colon = true;
-      else if (data->want_dot && tok->type == CPP_DOT)
-	data->want_dot = false;
-      else if (data->want_dot && !data->got_colon
-	       && tok->type == CPP_COLON)
+      switch (tok->type)
 	{
+	case CPP_COLON:
+	  if (data->depth)
+	    break;
+	  if (data->got_colon ||
+	      (data->is_import ? bool (data->module)
+	       : !(data->module && data->want_dot)))
+	    goto square_one;
 	  data->got_colon = true;
 	  data->want_dot = false;
-	}
-      else if (!data->want_dot && tok->type == CPP_NAME)
-	{
-	  tree ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node.node));
-	  data->parent = get_module (ident, data->parent, data->got_colon);
-	  data->want_dot = true;
-	}
-      else
-	{
-	  if (data->want_dot && data->parent)
-	    module_preprocess (data->deps, data->parent,
-			       data->mode != msm_after_module ? 0
-			       : data->got_export ? +1 : -1);
+	  break;
+
+	case CPP_DOT:
+	  if (data->depth)
+	    break;
+	  if (!data->want_dot || data->is_header)
+	    goto square_one;
 	  data->want_dot = false;
-	  data->got_colon = false;
-	  data->parent = NULL;
-	  goto maybe_end;
+	  break;
+
+	case CPP_OPEN_PAREN:
+	case CPP_OPEN_SQUARE:
+	  if (!data->want_dot)
+	    goto square_one;
+	  data->depth++;
+	  data->want_semi = true;
+	  break;
+
+	case CPP_CLOSE_PAREN:
+	case CPP_CLOSE_SQUARE:
+	  if (!data->want_semi)
+	    goto square_one;
+	  if (!data->depth)
+	    {
+	      if (tok->type == CPP_CLOSE_BRACE && data->extern_c)
+		data->extern_c--;
+	      goto square_one;
+	    }
+	  data->depth--;
+	  break;
+
+	case CPP_SEMICOLON:
+	  if (data->depth)
+	    break;
+	  if (!data->want_dot)
+	    goto square_one;
+
+	  if (data->module)
+	    {
+	      if (data->is_header)
+		/* Load the legacy import.  */
+		import_module (data->module, data->header_loc,
+			       false, NULL, pfile);
+	      if (data->deps)
+		module_preprocess (data->deps, data->module,
+				   data->is_import ? 0
+				   : data->got_export ? +1 : -1);
+	    }
+
+	  /* FALLTHROUGH.  */
+	square_one:
+	default:
+	  {
+	    data->module = NULL;
+	    data->header_loc = UNKNOWN_LOCATION;
+	    data->got_colon = data->is_import = data->is_header = false;
+	    data->want_dot = data->want_semi = false;
+	    data->got_export = false;
+	    /* Reprocess the char.  */
+	    goto maybe_end;
+	  }
+	  break;
+
+	case CPP_NAME:
+	  if (data->depth)
+	    break;
+	  if (data->want_dot)
+	    goto square_one;
+
+	header_unit:
+	  data->want_dot = true;
+	  tree ident;
+	  if (data->is_header)
+	    ident = get_identifier_with_length
+	      ((const char *) tok->val.str.text, tok->val.str.len);
+	  else
+	    ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node.node));
+	  data->module = get_module (ident, data->module, data->got_colon);
+	  break;
 	}
       break;
-
-    default:
-      gcc_unreachable ();
     }
 
   return data;

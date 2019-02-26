@@ -3,4 +3,3 @@
 
 #define STRING_H
 #define NOPE
-

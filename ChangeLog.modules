@@ -1,5 +1,12 @@
 2019-02-26  Nathan Sidwell  <nathan@acm.org>
 
+	Fix preprocessor tokenizing rules.
+	gcc/cp/
+	* lex.c (module_preprocess_token): Detect extern "C" {, tokenize
+	trailing attributes before importing header unit.
+	gcc/testsuite/
+	* g++.dg/modules/cpp-2_[abc].[CH]: Extend testing.
+
 	Fix interface partition export rules.
 	gcc/cp/
 	* module.cc (module_state::read_imports): Don't check partition

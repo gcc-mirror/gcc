@@ -3,5 +3,4 @@
 
 #define STDIO_H
 #define think THIS IS STDIO
-
-
+#define CLOSE ]]
