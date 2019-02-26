@@ -1,3 +1,14 @@
+2019-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89500
+	* tree-ssa-strlen.c (stridx_strlenloc): Adjust comment.
+	(handle_builtin_strlen): Remove noncst_bound variable.  Always
+	optimize strnlen (x, 0) to 0.  Optimize strnlen (x, cst) to
+	cst if the first cst bytes starting at x are known to be non-zero,
+	even if the string is not zero terminated.  Don't try to modify
+	*si for strnlen.  Update strlen_to_stridx only for strlen or if
+	we can prove strnlen returns the same value as strlen would.
+
 2019-02-26  Martin Liska  <mliska@suse.cz>
 
 	* alloc-pool.h (struct pool_usage): Remove extra
