@@ -576,32 +576,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __do_alloc_on_swap(__one, __two, __pocs());
     }
 
-  class __is_alloc_insertable_impl
-  {
-    template<typename _Alloc, typename _Up,
-	     typename _Tp = __remove_cvref_t<_Up>,
-	     typename = decltype(allocator_traits<_Alloc>::construct(
-		   std::declval<_Alloc&>(), std::declval<_Tp*>(),
-		   std::declval<_Up>()))>
-      static true_type
-      _M_select(int);
+  template<typename _Alloc, typename _Tp,
+	   typename _ValueT = __remove_cvref_t<typename _Alloc::value_type>,
+	   typename = void>
+    struct __is_alloc_insertable_impl
+    : false_type
+    { };
 
-    template<typename, typename>
-      static false_type
-      _M_select(...);
-
-  public:
-    template<typename _Alloc, typename _Tp = typename _Alloc::value_type>
-      using copy = decltype(_M_select<_Alloc, const _Tp&>(0));
-
-    template<typename _Alloc, typename _Tp = typename _Alloc::value_type>
-      using move = decltype(_M_select<_Alloc, _Tp>(0));
-  };
+  template<typename _Alloc, typename _Tp, typename _ValueT>
+    struct __is_alloc_insertable_impl<_Alloc, _Tp, _ValueT,
+      __void_t<decltype(allocator_traits<_Alloc>::construct(
+		   std::declval<_Alloc&>(), std::declval<_ValueT*>(),
+		   std::declval<_Tp>()))>>
+    : true_type
+    { };
 
   // true if _Alloc::value_type is CopyInsertable into containers using _Alloc
+  // (might be wrong if _Alloc::construct exists but is not constrained,
+  // i.e. actually trying to use it would still be invalid. Use with caution.)
   template<typename _Alloc>
     struct __is_copy_insertable
-    : __is_alloc_insertable_impl::template copy<_Alloc>
+    : __is_alloc_insertable_impl<_Alloc,
+				 typename _Alloc::value_type const&>::type
     { };
 
   // std::allocator<_Tp> just requires CopyConstructible
@@ -611,9 +607,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   // true if _Alloc::value_type is MoveInsertable into containers using _Alloc
+  // (might be wrong if _Alloc::construct exists but is not constrained,
+  // i.e. actually trying to use it would still be invalid. Use with caution.)
   template<typename _Alloc>
     struct __is_move_insertable
-    : __is_alloc_insertable_impl::template move<_Alloc>
+    : __is_alloc_insertable_impl<_Alloc, typename _Alloc::value_type>::type
     { };
 
   // std::allocator<_Tp> just requires MoveConstructible

@@ -1,3 +1,10 @@
+2019-02-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89416
+	* include/bits/alloc_traits.h (__is_alloc_insertable_impl): Change
+	to class template and partial specialization using void_t.
+	(__is_copy_insertable, __is_move_insertable): Adjust base class.
+
 2019-02-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/89416
