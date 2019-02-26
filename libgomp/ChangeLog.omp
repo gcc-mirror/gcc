@@ -1,3 +1,11 @@
+2018-09-05  Cesar Philippidis  <cesar@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/privatize-reduction-1.c: New
+	test.
+	* testsuite/libgomp.oacc-c-c++-common/privatize-reduction-2.c: New
+	test.
+
 2018-09-20  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/loop-auto-1.c: Adjust test case
