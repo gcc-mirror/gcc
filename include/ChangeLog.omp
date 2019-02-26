@@ -1,3 +1,9 @@
+2018-10-04  Cesar Philippidis  <cesar@codesourcery.com>
+            Julian Brown  <julian@codesourcery.com>
+
+	* gomp-constants.h (enum gomp_map_kind): Define
+	GOMP_MAP_DECLARE_{ALLOCATE,DEALLOCATE} and GOMP_MAP_FLAG_SPECIAL_4.
+
 2020-04-19  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR other/76739

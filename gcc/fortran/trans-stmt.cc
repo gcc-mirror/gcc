@@ -7063,6 +7063,10 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
 	  else
 	    gfc_allocate_using_malloc (&se.pre, se.expr, memsz, stat,
 				      omp_cond, omp_alt_alloc, succ_add_expr);
+
+	  /* Allocate memory for OpenACC declared variables.  */
+	  if (expr->symtree->n.sym->attr.oacc_declare_create)
+	    gfc_trans_oacc_declare_allocate (&se.pre, expr, true);
 	}
       else
 	{
@@ -7569,6 +7573,10 @@ gfc_trans_deallocate (gfc_code *code)
 
 	  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se.expr)))
 	    {
+	      if (!is_coarray
+		  && expr->symtree->n.sym->attr.oacc_declare_create)
+		gfc_trans_oacc_declare_allocate (&se.pre, expr, false);
+
 	      gfc_coarray_deregtype caf_dtype;
 
 	      if (is_coarray)
@@ -7622,6 +7630,10 @@ gfc_trans_deallocate (gfc_code *code)
 	}
       else
 	{
+	  /* Deallocate memory for OpenACC declared variables.  */
+	  if (expr->symtree->n.sym->attr.oacc_declare_create)
+	    gfc_trans_oacc_declare_allocate (&se.pre, expr, false);
+
 	  tmp = gfc_deallocate_scalar_with_status (se.expr, pstat, label_finish,
 						   false, al->expr,
 						   al->expr->ts, NULL_TREE,
