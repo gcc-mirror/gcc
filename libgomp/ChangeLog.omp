@@ -1,3 +1,15 @@
+2018-12-22  Cesar Philippidis  <cesar@codesourcery.com>
+            Julian Brown  <julian@codesourcery.com>
+
+	* oacc-parallel.c (GOACC_parallel_keyed): Handle
+	GOMP_MAP_FIRSTPRIVATE_INT host addresses.
+	* plugin/plugin-nvptx.c (nvptx_exec): Handle
+	GOMP_MAP_FIRSTPRIVATE_INT host addresses.
+	* testsuite/libgomp.oacc-c++/firstprivate-int.C: New test.
+	* testsuite/libgomp.oacc-c-c++-common/firstprivate-int.c: New
+	test.
+	* testsuite/libgomp.oacc-fortran/firstprivate-int.f90: New test.
+
 2018-08-28  Julian Brown  <julian@codesourcery.com>
             Cesar Philippidis  <cesar@codesourcery.com>
 
