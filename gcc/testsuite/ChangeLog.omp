@@ -1,3 +1,8 @@
+2018-10-04  Cesar Philippidis  <cesar@codesourcery.com>
+            Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.dg/goacc/declare-allocatable-1.f90: New test.
+
 2019-09-17  Julian Brown  <julian@codesourcery.com>
 
 	* c-c++-common/goacc/note-parallelism-1-kernels-loop-auto.c: Update

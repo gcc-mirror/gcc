@@ -1,3 +1,33 @@
+2020-02-19  Julian Brown  <julian@codesourcery.com>
+
+	* trans-openmp.ccc (gfc_omp_check_optional_argument): Handle non-decl
+	case.
+
+2018-10-04  Cesar Philippidis  <cesar@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.h (enum gfc_omp_map_op): Add OMP_MAP_DECLARE_ALLOCATE,
+	OMP_MAP_DECLARE_DEALLOCATE.
+	(gfc_omp_clauses): Add update_allocatable.
+	* trans-array.c (gfc_array_allocate): Call
+	gfc_trans_oacc_declare_allocate for decls that have oacc_declare_create
+	attribute set.
+	* trans-decl.c (find_module_oacc_declare_clauses): Relax oacc_declare_create to
+	OMP_MAP_ALLOC, and oacc_declare_copyin to OMP_MAP_TO, in order to
+	match OpenACC 2.5 semantics.
+	* trans-openmp.c (gfc_trans_omp_clauses): Use GOMP_MAP_ALWAYS_POINTER
+	(for update directive) or GOMP_MAP_FIRSTPRIVATE_POINTER (otherwise) for
+	allocatable scalar decls.  Handle OMP_MAP_DECLARE_{ALLOCATE,DEALLOCATE}
+	clauses.
+	(gfc_trans_oacc_executable_directive): Use GOMP_MAP_ALWAYS_POINTER
+	for allocatable scalar data clauses inside acc update directives.
+	(gfc_trans_oacc_declare_allocate): New function.
+	* trans-stmt.c (gfc_trans_allocate): Call
+	gfc_trans_oacc_declare_allocate for decls with oacc_declare_create
+	attribute set.
+	(gfc_trans_deallocate): Likewise.
+	* trans.h (gfc_trans_oacc_declare_allocate): Declare.
+
 2019-07-10  Julian Brown  <julian@codesourcery.com>
 
 	* trans-openmp.cc (gfc_omp_finish_clause): Change clauses mapping

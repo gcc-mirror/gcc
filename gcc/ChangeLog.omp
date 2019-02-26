@@ -1,3 +1,23 @@
+2020-02-19  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (gimplify_scan_omp_clauses): Handle
+	GOMP_MAP_DECLARE_ALLOCATE and GOMP_MAP_DECLARE_DEALLOCATE.
+
+2018-10-04  Cesar Philippidis  <cesar@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* omp-low.c (scan_sharing_clauses): Update handling of OpenACC declare
+	create, declare copyin and declare deviceptr to have local lifetimes.
+	(convert_to_firstprivate_int): Handle pointer types.
+	(convert_from_firstprivate_int): Likewise.  Create local storage for
+	the values being pointed to.  Add new orig_type argument.
+	(lower_omp_target): Handle GOMP_MAP_DECLARE_{ALLOCATE,DEALLOCATE}.
+	Add orig_type argument to convert_from_firstprivate_int call.
+	Allow pointer types with GOMP_MAP_FIRSTPRIVATE_INT.  Don't privatize
+	firstprivate VLAs.
+	* tree-pretty-print.c (dump_omp_clause): Handle
+	GOMP_MAP_DECLARE_{ALLOCATE,DEALLOCATE}.
+
 2019-09-20  Julian Brown  <julian@codesourcery.com>
 
 	* gimplify.cc (localize_reductions): Rewrite references for
