@@ -6600,10 +6600,10 @@ find_module_oacc_declare_clauses (gfc_symbol *sym)
       gfc_omp_map_op map_op;
 
       if (sym->attr.oacc_declare_create)
-	map_op = OMP_MAP_FORCE_ALLOC;
+	map_op = OMP_MAP_ALLOC;
 
       if (sym->attr.oacc_declare_copyin)
-	map_op = OMP_MAP_FORCE_TO;
+	map_op = OMP_MAP_TO;
 
       if (sym->attr.oacc_declare_deviceptr)
 	map_op = OMP_MAP_FORCE_DEVICEPTR;

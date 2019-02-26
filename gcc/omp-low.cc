@@ -1704,7 +1704,8 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	      && is_global_var (maybe_lookup_decl_in_outer_ctx (decl, ctx))
 	      && varpool_node::get_create (decl)->offloadable
 	      && !lookup_attribute ("omp declare target link",
-				    DECL_ATTRIBUTES (decl)))
+				    DECL_ATTRIBUTES (decl))
+	      && !is_gimple_omp_oacc (ctx->stmt))
 	    break;
 	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 	      && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER)
@@ -12981,7 +12982,7 @@ convert_to_firstprivate_int (tree var, gimple_seq *gs)
 {
   tree type = TREE_TYPE (var), new_type = NULL_TREE;
 
-  if (omp_privatize_by_reference (var))
+  if (omp_privatize_by_reference (var) || POINTER_TYPE_P (type))
     {
       type = TREE_TYPE (type);
       tree tmp = create_tmp_var (type);
@@ -13006,7 +13007,8 @@ convert_to_firstprivate_int (tree var, gimple_seq *gs)
 /* Like convert_to_firstprivate_int, but restore the original type.  */
 
 static tree
-convert_from_firstprivate_int (tree var, bool is_ref, gimple_seq *gs)
+convert_from_firstprivate_int (tree var, tree orig_type, bool is_ref,
+			       gimple_seq *gs)
 {
   tree type = TREE_TYPE (var);
   tree new_type = NULL_TREE;
@@ -13015,7 +13017,31 @@ convert_from_firstprivate_int (tree var, bool is_ref, gimple_seq *gs)
   gcc_assert (TREE_CODE (var) == MEM_REF);
   var = TREE_OPERAND (var, 0);
 
-  if (INTEGRAL_TYPE_P (var) || POINTER_TYPE_P (type))
+  if (is_ref || POINTER_TYPE_P (orig_type))
+    {
+      tree_code code = NOP_EXPR;
+
+      if (TREE_CODE (type) == REAL_TYPE || TREE_CODE (type) == COMPLEX_TYPE)
+	code = VIEW_CONVERT_EXPR;
+
+      if (code == VIEW_CONVERT_EXPR
+         && TYPE_SIZE (type) != TYPE_SIZE (orig_type))
+	{
+	  tree ptype = build_pointer_type (type);
+	  var = fold_build1 (code, ptype, build_fold_addr_expr (var));
+	  var = build_simple_mem_ref (var);
+	}
+      else
+	var = fold_build1 (code, type, var);
+
+      tree inst = create_tmp_var (type);
+      gimplify_assign (inst, var, gs);
+      var = build_fold_addr_expr (inst);
+
+      return var;
+    }
+
+  if (INTEGRAL_TYPE_P (var))
     return fold_convert (type, var);
 
   gcc_assert (tree_to_uhwi (TYPE_SIZE (type)) <= POINTER_SIZE);
@@ -13026,16 +13052,8 @@ convert_from_firstprivate_int (tree var, bool is_ref, gimple_seq *gs)
   tmp = create_tmp_var (new_type);
   var = fold_convert (new_type, var);
   gimplify_assign (tmp, var, gs);
-  var = fold_build1 (VIEW_CONVERT_EXPR, type, tmp);
 
-  if (is_ref)
-    {
-      tmp = create_tmp_var (build_pointer_type (type));
-      gimplify_assign (tmp, build_fold_addr_expr (var), gs);
-      var = tmp;
-    }
-
-  return var;
+  return fold_build1 (VIEW_CONVERT_EXPR, type, tmp);
 }
 
 /* Lower the GIMPLE_OMP_TARGET in the current statement
@@ -13181,6 +13199,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case GOMP_MAP_NONCONTIG_ARRAY_ALLOC:
 	  case GOMP_MAP_NONCONTIG_ARRAY_FORCE_ALLOC:
 	  case GOMP_MAP_NONCONTIG_ARRAY_FORCE_PRESENT:
+	  case GOMP_MAP_DECLARE_ALLOCATE:
+	  case GOMP_MAP_DECLARE_DEALLOCATE:
 	  case GOMP_MAP_LINK:
 	  case GOMP_MAP_FORCE_DETACH:
 	    gcc_assert (is_gimple_omp_oacc (stmt));
@@ -13275,7 +13295,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		&& !maybe_lookup_field_in_outer_ctx (var, ctx))
 	      {
 		gcc_assert (is_gimple_omp_oacc (ctx->stmt));
-		x = convert_from_firstprivate_int (x,
+		x = convert_from_firstprivate_int (x, TREE_TYPE (new_var),
 						   omp_privatize_by_reference (var),
 						   &fplist);
 		gimplify_assign (new_var, x, &fplist);
@@ -13293,13 +13313,20 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		gcc_assert (is_gimple_omp_oacc (ctx->stmt));
 		if (omp_privatize_by_reference (new_var)
 		    && (TREE_CODE (var_type) != POINTER_TYPE
-		        || DECL_BY_REFERENCE (var)))
+		        || DECL_BY_REFERENCE (var))
+		    /* Accelerators may not have alloca, so it's not
+		       possible to privatize local storage for those
+		       objects.  */
+		    && TREE_CONSTANT (TYPE_SIZE (TREE_TYPE (var_type))))
 		  {
 		    /* Create a local object to hold the instance
 		       value.  */
 		    const char *id = IDENTIFIER_POINTER (DECL_NAME (new_var));
 		    tree inst = create_tmp_var (TREE_TYPE (var_type), id);
-		    gimplify_assign (inst, fold_indirect_ref (x), &fplist);
+		    if (TREE_CODE (var_type) == POINTER_TYPE)
+		      gimplify_assign (inst, x, &fplist);
+		    else
+		      gimplify_assign (inst, fold_indirect_ref (x), &fplist);
 		    x = build_fold_addr_expr (inst);
 		  }
 		gimplify_assign (new_var, x, &fplist);
@@ -13660,9 +13687,10 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE)
 		  {
 		    gcc_checking_assert (is_gimple_omp_oacc (ctx->stmt));
+		    tree new_var = lookup_decl (var, ctx);
 		    tree type = TREE_TYPE (var);
 		    tree inner_type
-		      = omp_privatize_by_reference (var)
+		      = omp_privatize_by_reference (new_var)
 			? TREE_TYPE (type) : type;
 		    if ((FLOAT_TYPE_P (inner_type)
 			 || ANY_INTEGRAL_TYPE_P (inner_type))

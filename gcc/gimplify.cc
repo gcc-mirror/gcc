@@ -11218,9 +11218,15 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	    case OACC_ENTER_DATA:
 	    case OACC_EXIT_DATA:
 	    case OACC_HOST_DATA:
-	      if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER
-		  || (OMP_CLAUSE_MAP_KIND (c)
-		      == GOMP_MAP_FIRSTPRIVATE_REFERENCE))
+	      if ((OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER
+		   || (OMP_CLAUSE_MAP_KIND (c)
+		       == GOMP_MAP_FIRSTPRIVATE_REFERENCE))
+		  && !(prev_list_p
+		       && OMP_CLAUSE_CODE (*prev_list_p) == OMP_CLAUSE_MAP
+		       && ((OMP_CLAUSE_MAP_KIND (*prev_list_p)
+			    == GOMP_MAP_DECLARE_ALLOCATE)
+			   || (OMP_CLAUSE_MAP_KIND (*prev_list_p)
+			       == GOMP_MAP_DECLARE_DEALLOCATE))))
 		/* For target {,enter ,exit }data only the array slice is
 		   mapped, but not the pointer to it.  */
 		remove = true;

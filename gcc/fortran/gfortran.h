@@ -1306,7 +1306,9 @@ enum gfc_omp_map_op
   OMP_MAP_RELEASE,
   OMP_MAP_ALWAYS_TO,
   OMP_MAP_ALWAYS_FROM,
-  OMP_MAP_ALWAYS_TOFROM
+  OMP_MAP_ALWAYS_TOFROM,
+  OMP_MAP_DECLARE_ALLOCATE,
+  OMP_MAP_DECLARE_DEALLOCATE
 };
 
 enum gfc_omp_defaultmap
@@ -1587,7 +1589,7 @@ typedef struct gfc_omp_clauses
   unsigned async:1, gang:1, worker:1, vector:1, seq:1, independent:1;
   unsigned par_auto:1, gang_static:1;
   unsigned if_present:1, finalize:1;
-  unsigned nohost:1;
+  unsigned nohost:1, update_allocatable:1;
   locus loc;
 }
 gfc_omp_clauses;

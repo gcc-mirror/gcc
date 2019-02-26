@@ -911,6 +911,35 @@ acc_update_self_async (void *h, size_t s, int async)
   update_dev_host (0, h, s, async);
 }
 
+/* Implement "declare allocate" and "declare deallocate" operations.  The
+   device lock must not be held before calling this function.  */
+
+static void
+gomp_acc_declare_allocate (bool allocate, bool pointer, void **hostaddrs,
+			   size_t *sizes, unsigned short *kinds)
+{
+  gomp_debug (0, "  %s: processing\n", __FUNCTION__);
+
+  if (allocate)
+    {
+      /* Allocate memory for the array data.  */
+      uintptr_t data = (uintptr_t) acc_create (hostaddrs[0], sizes[0]);
+
+      if (pointer)
+	{
+	  /* Update the PSET.  */
+	  acc_update_device (hostaddrs[1], sizes[1]);
+	  void *pset = acc_deviceptr (hostaddrs[1]);
+	  acc_memcpy_to_device (pset, &data, sizeof (uintptr_t));
+	}
+    }
+  else
+    /* Deallocate memory for the array data.  */
+    acc_delete (hostaddrs[0], sizes[0]);
+
+  gomp_debug (0, "  %s: end\n", __FUNCTION__);
+}
+
 void
 acc_attach_async (void **hostaddr, int async)
 {
@@ -1041,6 +1070,28 @@ find_group_last (int pos, size_t mapnum, size_t *sizes, unsigned short *kinds)
     case GOMP_MAP_ATTACH:
       break;
 
+    case GOMP_MAP_DECLARE_ALLOCATE:
+    case GOMP_MAP_DECLARE_DEALLOCATE:
+      {
+	/* The "declare allocate" and "declare deallocate" mappings can be
+	   used to specify either a scalar allocatable (which just appears as
+	   GOMP_MAP_DECLARE_{ALLOCATE,DEALLOCATE} by itself), or an array
+	   allocatable (which appears as that directive followed by a
+	   GOMP_MAP_TO_PSET and one (or more?) GOMP_MAP_POINTER mappings.  */
+	if (pos + 1 >= mapnum)
+	  break;
+
+	unsigned char kind1 = kinds[pos + 1] & 0xff;
+	if (kind1 != GOMP_MAP_TO_PSET)
+	  break;
+
+	pos++;
+
+	while (pos + 1 < mapnum && (kinds[pos + 1] & 0xff) == GOMP_MAP_POINTER)
+	  pos++;
+      }
+      break;
+
     default:
       /* GOMP_MAP_ALWAYS_POINTER can only appear directly after some other
 	 mapping.  */
@@ -1105,7 +1156,14 @@ goacc_enter_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 
       n = lookup_host (acc_dev, hostaddrs[i], size);
 
-      if (n && struct_p)
+      if ((kinds[i] & 0xff) == GOMP_MAP_DECLARE_ALLOCATE)
+	{
+	  gomp_mutex_unlock (&acc_dev->lock);
+	  gomp_acc_declare_allocate (true, group_last > i, &hostaddrs[i],
+				     &sizes[i], &kinds[i]);
+	  gomp_mutex_lock (&acc_dev->lock);
+	}
+      else if (n && struct_p)
 	{
 	  for (size_t j = i + 1; j <= group_last; j++)
 	    {
@@ -1344,6 +1402,24 @@ goacc_exit_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 	case GOMP_MAP_FORCE_DETACH:
 	  /* OpenACC 'attach'/'detach' doesn't affect structured/dynamic
 	     reference counts ('n->refcount', 'n->dynamic_refcount').  */
+	  break;
+
+	case GOMP_MAP_DECLARE_DEALLOCATE:
+	  {
+	    bool deallocate_pointer
+	      = i + 1 < mapnum && (kinds[i + 1] & 0xff) == GOMP_MAP_TO_PSET;
+	    gomp_mutex_unlock (&acc_dev->lock);
+	    gomp_acc_declare_allocate (false, deallocate_pointer,
+				       &hostaddrs[i], &sizes[i], &kinds[i]);
+	    gomp_mutex_lock (&acc_dev->lock);
+	    if (deallocate_pointer)
+	      {
+		i++;
+		while (i + 1 < mapnum
+		       && (kinds[i + 1] & 0xff) == GOMP_MAP_POINTER)
+		  i++;
+	      }
+	  }
 	  break;
 
 	default:

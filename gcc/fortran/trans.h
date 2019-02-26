@@ -832,6 +832,7 @@ bool gfc_omp_private_debug_clause (tree, bool);
 bool gfc_omp_private_outer_ref (tree);
 struct gimplify_omp_ctx;
 void gfc_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *, tree);
+tree gfc_trans_oacc_declare_allocate (stmtblock_t *, gfc_expr *, bool);
 
 /* In trans-intrinsic.cc.  */
 void gfc_conv_intrinsic_mvbits (gfc_se *, gfc_actual_arglist *,

@@ -1,3 +1,21 @@
+2018-10-04  Cesar Philippidis  <cesar@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* libgomp.h (gomp_acc_declare_allocate): Remove prototype.
+	* oacc-mem.c (gomp_acc_declare_allocate): New function.
+	* oacc-parallel.c (goacc_enter_data_internal): Handle
+	GOMP_MAP_DECLARE_ALLOCATE.  Pass new pointer argument to
+	gomp_acc_declare_allocate.
+	(goacc_exit_data_internal): Handle GOMP_MAP_DECLARE_DEALLOCATE.
+	Unlock device mutex around gomp_acc_declare_allocate call.  Pass
+	new pointer argument.  Handle group pointer mapping for deallocate.
+	(find_group_last): Handle GOMP_MAP_DECLARE_ALLOCATE and
+	GOMP_MAP_DECLARE_DEALLOCATE groupings.
+	* testsuite/libgomp.oacc-fortran/allocatable-scalar.f90: New test.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-2.f90: New test.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-3.f90: New test.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-4.f90: New test.
+
 2019-09-05  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/lib-13.f90: End data region after

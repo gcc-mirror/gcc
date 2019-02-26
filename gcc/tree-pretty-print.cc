@@ -976,6 +976,12 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	case GOMP_MAP_LINK:
 	  pp_string (pp, "link");
 	  break;
+	case GOMP_MAP_DECLARE_ALLOCATE:
+	  pp_string (pp, "declare_allocate");
+	  break;
+	case GOMP_MAP_DECLARE_DEALLOCATE:
+	  pp_string (pp, "declare_deallocate");
+	  break;
 	case GOMP_MAP_ATTACH:
 	  pp_string (pp, "attach");
 	  break;

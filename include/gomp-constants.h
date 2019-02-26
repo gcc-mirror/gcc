@@ -155,6 +155,11 @@ enum gomp_map_kind
     /* Decrement usage count and deallocate if zero.  */
     GOMP_MAP_RELEASE =			(GOMP_MAP_FLAG_SPECIAL_2
 					 | GOMP_MAP_DELETE),
+    /* Mapping kinds for allocatable arrays.  */
+    GOMP_MAP_DECLARE_ALLOCATE =		(GOMP_MAP_FLAG_SPECIAL_4
+					 | GOMP_MAP_FORCE_TO),
+    GOMP_MAP_DECLARE_DEALLOCATE =	(GOMP_MAP_FLAG_SPECIAL_4
+					 | GOMP_MAP_FORCE_FROM),
     /* The attach/detach mappings below use the OMP_CLAUSE_SIZE field as a
        bias.  This will typically be zero, except when mapping an array slice
        with a non-zero base.  In that case the bias will indicate the
