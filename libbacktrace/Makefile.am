@@ -205,6 +205,8 @@ b2test_LDADD = libbacktrace_elf_for_test.la
 check_PROGRAMS += b2test
 TESTS += b2test_buildid
 
+if HAVE_DWZ
+
 b3test_SOURCES = $(btest_SOURCES)
 b3test_CFLAGS = $(btest_CFLAGS)
 b3test_LDFLAGS = -Wl,--build-id
@@ -212,6 +214,8 @@ b3test_LDADD = libbacktrace_elf_for_test.la
 
 check_PROGRAMS += b3test
 TESTS += b3test_dwz_buildid
+
+endif HAVE_DWZ
 
 endif HAVE_OBJCOPY_DEBUGLINK
 endif HAVE_ELF
