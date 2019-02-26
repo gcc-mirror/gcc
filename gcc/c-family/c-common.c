@@ -541,6 +541,9 @@ const struct c_common_resword c_common_reswords[] =
   /* Modules-related keywords */
   { "module",		RID_MODULE,	D_CXX_MODULES_FLAGS },
   { "import", 		RID_IMPORT,	D_CXX_MODULES_FLAGS },
+  /* A distinguished spelling for include xlation, recognized inside
+     extern "C" {} blocks, because stupid C header idiom.   */
+  { "__import",		RID_IMPORT,	D_CXX_MODULES_FLAGS },
 
   /* Coroutines-related keywords */
   { "co_await",		RID_CO_AWAIT,	D_CXX_COROUTINES_FLAGS | D_CXXWARN },

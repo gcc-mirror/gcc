@@ -1,5 +1,14 @@
 2019-02-26  Nathan Sidwell  <nathan@acm.org>
 
+	Distinguished __import spelling.
+	gcc/c-family/
+	* c-common.c (c_common_reswords): Add __import spelling.
+	gcc/cp/
+	* module.cc (module_mapper::translate_include): Use __import.
+	gcc/testsuite/
+	* g++.dg/modules/legacy-[3456]*: Adjust.
+	* g++.dg/modules/map-2.C: Likewise.
+
 	Fix preprocessor tokenizing rules.
 	gcc/cp/
 	* lex.c (module_preprocess_token): Detect extern "C" {, tokenize

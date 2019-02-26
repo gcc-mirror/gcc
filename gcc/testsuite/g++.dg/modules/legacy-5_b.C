@@ -5,4 +5,4 @@
 #include "header.h"
 #include <header.h>
 
-// { dg-final { scan-file legacy-5_b.i {import <header.h>;\n *import <header.h>;\n} } }
+// { dg-final { scan-file legacy-5_b.i {__import <header.h>;\n__import <header.h>;\n} } }

@@ -9096,9 +9096,9 @@ int module_mapper::translate_include (cpp_reader *reader, line_maps *lmaps,
       size_t len = strlen (file);
       char *res = XNEWVEC (char, len + 60 + col);
 
-      /* Indent so the filename falls at the same column as the original
-	 source.  */
-      strcpy (res, " import ");
+      /* Internal keyword to permit use inside extern "C" {...}.
+	 Bad glibc! No biscuit!  */
+      strcpy (res, "__import");
       size_t actual = 8;
       if (col > actual)
 	{
