@@ -2988,9 +2988,9 @@ get_formal_from_actual_arglist (gfc_symbol *sym, gfc_actual_arglist *actual_args
   f = &sym->formal;
   for (a = actual_args; a != NULL; a = a->next)
     {
+      (*f) = gfc_get_formal_arglist ();
       if (a->expr)
 	{
-	  (*f) = gfc_get_formal_arglist ();
 	  snprintf (name, GFC_MAX_SYMBOL_LEN, "_formal_%d", var_num ++);
 	  gfc_get_symbol (name, NULL, &s);
 	  if (a->expr->ts.type == BT_PROCEDURE)
@@ -3012,6 +3012,9 @@ get_formal_from_actual_arglist (gfc_symbol *sym, gfc_actual_arglist *actual_args
 	  s->attr.intent = INTENT_UNKNOWN;
 	  (*f)->sym = s;
 	}
+      else  /* If a->expr is NULL, this is an alternate rerturn.  */
+	(*f)->sym = NULL;
+
       f = &((*f)->next);
     }
 }
