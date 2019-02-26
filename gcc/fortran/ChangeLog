@@ -1,3 +1,9 @@
+2019-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/43210
+	* trans-array.c (gfc_conv_array_initializer): Use RANGE_EXPR instead
+	of duplicating the initializer possibly many times.
+
 2019-02-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/89174
