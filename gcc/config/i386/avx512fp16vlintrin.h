@@ -548,6 +548,159 @@ _mm256_maskz_scalef_ph (__mmask16 __A, __m256h __B, __m256h __C)
 					      __A);
 }
 
+/* Intrinsics vreduceph.  */
+#ifdef __OPTIMIZE__
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_reduce_ph (__m128h __A, int __B)
+{
+  return __builtin_ia32_vreduceph_v8hf_mask (__A, __B,
+					     _mm_setzero_ph (),
+					     (__mmask8) -1);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_reduce_ph (__m128h __A, __mmask8 __B, __m128h __C, int __D)
+{
+  return __builtin_ia32_vreduceph_v8hf_mask (__C, __D, __A, __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_reduce_ph (__mmask8 __A, __m128h __B, int __C)
+{
+  return __builtin_ia32_vreduceph_v8hf_mask (__B, __C,
+					     _mm_setzero_ph (), __A);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_reduce_ph (__m256h __A, int __B)
+{
+  return __builtin_ia32_vreduceph_v16hf_mask (__A, __B,
+					      _mm256_setzero_ph (),
+					      (__mmask16) -1);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_reduce_ph (__m256h __A, __mmask16 __B, __m256h __C, int __D)
+{
+  return __builtin_ia32_vreduceph_v16hf_mask (__C, __D, __A, __B);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_reduce_ph (__mmask16 __A, __m256h __B, int __C)
+{
+  return __builtin_ia32_vreduceph_v16hf_mask (__B, __C,
+					      _mm256_setzero_ph (),
+					      __A);
+}
+
+#else
+#define _mm_reduce_ph(A, B)					\
+  (__builtin_ia32_vreduceph_v8hf_mask ((A), (B),\
+				       _mm_setzero_ph (),	\
+				       ((__mmask8)-1)))
+
+#define _mm_mask_reduce_ph(A,  B,  C, D)		\
+  (__builtin_ia32_vreduceph_v8hf_mask ((C), (D), (A), (B)))
+
+#define _mm_maskz_reduce_ph(A,  B, C)				\
+  (__builtin_ia32_vreduceph_v8hf_mask ((B), (C), _mm_setzero_ph (), (A)))
+
+#define _mm256_reduce_ph(A, B)					\
+  (__builtin_ia32_vreduceph_v16hf_mask ((A), (B),\
+					_mm256_setzero_ph (),	\
+					((__mmask16)-1)))
+
+#define _mm256_mask_reduce_ph(A, B, C, D)		\
+  (__builtin_ia32_vreduceph_v16hf_mask ((C), (D), (A), (B)))
+
+#define _mm256_maskz_reduce_ph(A, B, C)				\
+  (__builtin_ia32_vreduceph_v16hf_mask ((B), (C), _mm256_setzero_ph (), (A)))
+
+#endif /* __OPTIMIZE__ */
+
+/* Intrinsics vrndscaleph.  */
+#ifdef __OPTIMIZE__
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_roundscale_ph (__m128h __A, int __B)
+{
+  return __builtin_ia32_vrndscaleph_v8hf_mask (__A, __B,
+					       _mm_setzero_ph (),
+					       (__mmask8) -1);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_roundscale_ph (__m128h __A, __mmask8 __B, __m128h __C, int __D)
+{
+  return __builtin_ia32_vrndscaleph_v8hf_mask (__C, __D, __A, __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_roundscale_ph (__mmask8 __A, __m128h __B, int __C)
+{
+  return __builtin_ia32_vrndscaleph_v8hf_mask (__B, __C,
+					       _mm_setzero_ph (), __A);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_roundscale_ph (__m256h __A, int __B)
+{
+  return __builtin_ia32_vrndscaleph_v16hf_mask (__A, __B,
+						_mm256_setzero_ph (),
+						(__mmask16) -1);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_roundscale_ph (__m256h __A, __mmask16 __B, __m256h __C,
+			   int __D)
+{
+  return __builtin_ia32_vrndscaleph_v16hf_mask (__C, __D, __A, __B);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_roundscale_ph (__mmask16 __A, __m256h __B, int __C)
+{
+  return __builtin_ia32_vrndscaleph_v16hf_mask (__B, __C,
+						_mm256_setzero_ph (),
+						__A);
+}
+
+#else
+#define _mm_roundscale_ph(A, B) \
+  (__builtin_ia32_vrndscaleph_v8hf_mask ((A), (B), _mm_setzero_ph (),	\
+					 ((__mmask8)-1)))
+
+#define _mm_mask_roundscale_ph(A, B, C, D) \
+  (__builtin_ia32_vrndscaleph_v8hf_mask ((C), (D), (A), (B)))
+
+#define _mm_maskz_roundscale_ph(A, B, C) \
+  (__builtin_ia32_vrndscaleph_v8hf_mask ((B), (C), _mm_setzero_ph (), (A)))
+
+#define _mm256_roundscale_ph(A, B) \
+  (__builtin_ia32_vrndscaleph_v16hf_mask ((A), (B),	      \
+					 _mm256_setzero_ph(), \
+					  ((__mmask16)-1)))
+
+#define _mm256_mask_roundscale_ph(A, B, C, D) \
+  (__builtin_ia32_vrndscaleph_v16hf_mask ((C), (D), (A), (B)))
+
+#define _mm256_maskz_roundscale_ph(A, B, C) \
+  (__builtin_ia32_vrndscaleph_v16hf_mask ((B), (C),			\
+					  _mm256_setzero_ph (), (A)))
+
+#endif /* __OPTIMIZE__ */
+
 #ifdef __DISABLE_AVX512FP16VL__
 #undef __DISABLE_AVX512FP16VL__
 #pragma GCC pop_options

@@ -3257,28 +3257,28 @@
 })
 
 (define_insn "<mask_codefor>reducep<mode><mask_name><round_saeonly_name>"
-  [(set (match_operand:VF_AVX512VL 0 "register_operand" "=v")
-	(unspec:VF_AVX512VL
-	  [(match_operand:VF_AVX512VL 1 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")
+  [(set (match_operand:VFH_AVX512VL 0 "register_operand" "=v")
+	(unspec:VFH_AVX512VL
+	  [(match_operand:VFH_AVX512VL 1 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")
 	   (match_operand:SI 2 "const_0_to_255_operand")]
 	  UNSPEC_REDUCE))]
-  "TARGET_AVX512DQ"
+  "TARGET_AVX512DQ || (VALID_AVX512FP16_REG_MODE (<MODE>mode))"
   "vreduce<ssemodesuffix>\t{%2, <round_saeonly_mask_op3>%1, %0<mask_operand3>|%0<mask_operand3>, %1<round_saeonly_mask_op3>, %2}"
   [(set_attr "type" "sse")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "reduces<mode><mask_scalar_name><round_saeonly_scalar_name>"
-  [(set (match_operand:VF_128 0 "register_operand" "=v")
-	(vec_merge:VF_128
-	  (unspec:VF_128
-	    [(match_operand:VF_128 1 "register_operand" "v")
-	     (match_operand:VF_128 2 "<round_saeonly_scalar_nimm_predicate>" "<round_saeonly_scalar_constraint>")
+  [(set (match_operand:VFH_128 0 "register_operand" "=v")
+	(vec_merge:VFH_128
+	  (unspec:VFH_128
+	    [(match_operand:VFH_128 1 "register_operand" "v")
+	     (match_operand:VFH_128 2 "<round_saeonly_scalar_nimm_predicate>" "<round_saeonly_scalar_constraint>")
 	     (match_operand:SI 3 "const_0_to_255_operand")]
 	    UNSPEC_REDUCE)
 	  (match_dup 1)
 	  (const_int 1)))]
-  "TARGET_AVX512DQ"
+  "TARGET_AVX512DQ || (VALID_AVX512FP16_REG_MODE (<MODE>mode))"
   "vreduce<ssescalarmodesuffix>\t{%3, <round_saeonly_scalar_mask_op4>%2, %1, %0<mask_scalar_operand4>|%0<mask_scalar_operand4>, %1, %<iptr>2<round_saeonly_scalar_mask_op4>, %3}"
   [(set_attr "type" "sse")
    (set_attr "prefix" "evex")
@@ -10794,9 +10794,9 @@
    (set_attr "mode" "<ssescalarmode>")])
 
 (define_insn "<avx512>_rndscale<mode><mask_name><round_saeonly_name>"
-  [(set (match_operand:VF_AVX512VL 0 "register_operand" "=v")
-	(unspec:VF_AVX512VL
-	  [(match_operand:VF_AVX512VL 1 "nonimmediate_operand" "<round_saeonly_constraint>")
+  [(set (match_operand:VFH_AVX512VL 0 "register_operand" "=v")
+	(unspec:VFH_AVX512VL
+	  [(match_operand:VFH_AVX512VL 1 "nonimmediate_operand" "<round_saeonly_constraint>")
 	   (match_operand:SI 2 "const_0_to_255_operand")]
 	  UNSPEC_ROUND))]
   "TARGET_AVX512F"
@@ -10806,13 +10806,13 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "avx512f_rndscale<mode><mask_scalar_name><round_saeonly_scalar_name>"
-  [(set (match_operand:VF_128 0 "register_operand" "=v")
-	(vec_merge:VF_128
-	  (unspec:VF_128
-	    [(match_operand:VF_128 2 "<round_saeonly_scalar_nimm_predicate>" "<round_saeonly_scalar_constraint>")
+  [(set (match_operand:VFH_128 0 "register_operand" "=v")
+	(vec_merge:VFH_128
+	  (unspec:VFH_128
+	    [(match_operand:VFH_128 2 "<round_saeonly_scalar_nimm_predicate>" "<round_saeonly_scalar_constraint>")
 	     (match_operand:SI 3 "const_0_to_255_operand")]
 	    UNSPEC_ROUND)
-	  (match_operand:VF_128 1 "register_operand" "v")
+	  (match_operand:VFH_128 1 "register_operand" "v")
 	  (const_int 1)))]
   "TARGET_AVX512F"
   "vrndscale<ssescalarmodesuffix>\t{%3, <round_saeonly_scalar_mask_op4>%2, %1, %0<mask_scalar_operand4>|%0<mask_scalar_operand4>, %1, %<iptr>2<round_saeonly_scalar_mask_op4>, %3}"
@@ -10821,14 +10821,14 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*avx512f_rndscale<mode><round_saeonly_name>"
-  [(set (match_operand:VF_128 0 "register_operand" "=v")
-	(vec_merge:VF_128
-	  (vec_duplicate:VF_128
+  [(set (match_operand:VFH_128 0 "register_operand" "=v")
+	(vec_merge:VFH_128
+	  (vec_duplicate:VFH_128
 	    (unspec:<ssescalarmode>
 	      [(match_operand:<ssescalarmode> 2 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")
 	       (match_operand:SI 3 "const_0_to_255_operand")]
 	      UNSPEC_ROUND))
-          (match_operand:VF_128 1 "register_operand" "v")
+          (match_operand:VFH_128 1 "register_operand" "v")
 	  (const_int 1)))]
   "TARGET_AVX512F"
   "vrndscale<ssescalarmodesuffix>\t{%3, <round_saeonly_op4>%2, %1, %0|%0, %1, %2<round_saeonly_op4>, %3}"

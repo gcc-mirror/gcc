@@ -722,6 +722,14 @@
 #define __builtin_ia32_vsqrtsh_v8hf_mask_round(D, C, A, B, E) __builtin_ia32_vsqrtsh_v8hf_mask_round(D, C, A, B, 8)
 #define __builtin_ia32_vscalefph_v32hf_mask_round(A, B, C, D, E) __builtin_ia32_vscalefph_v32hf_mask_round(A, B, C, D, 8)
 #define __builtin_ia32_vscalefsh_v8hf_mask_round(A, B, C, D, E) __builtin_ia32_vscalefsh_v8hf_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_vreduceph_v32hf_mask_round(A, B, C, D, E) __builtin_ia32_vreduceph_v32hf_mask_round(A, 123, C, D, 8)
+#define __builtin_ia32_vreduceph_v8hf_mask(A, B, C, D) __builtin_ia32_vreduceph_v8hf_mask(A, 123, C, D)
+#define __builtin_ia32_vreduceph_v16hf_mask(A, B, C, D) __builtin_ia32_vreduceph_v16hf_mask(A, 123, C, D)
+#define __builtin_ia32_vreducesh_v8hf_mask_round(A, B, C, D, E, F) __builtin_ia32_vreducesh_v8hf_mask_round(A, B, 123, D, E, 8)
+#define __builtin_ia32_vrndscaleph_v32hf_mask_round(A, B, C, D, E) __builtin_ia32_vrndscaleph_v32hf_mask_round(A, 123, C, D, 8)
+#define __builtin_ia32_vrndscaleph_v8hf_mask(A, B, C, D) __builtin_ia32_vrndscaleph_v8hf_mask(A, 123, C, D)
+#define __builtin_ia32_vrndscaleph_v16hf_mask(A, B, C, D) __builtin_ia32_vrndscaleph_v16hf_mask(A, 123, C, D)
+#define __builtin_ia32_vrndscalesh_v8hf_mask_round(A, B, C, D, E, F) __builtin_ia32_vrndscalesh_v8hf_mask_round(A, B, 123, D, E, 8)
 
 /* avx512fp16vlintrin.h */
 #define __builtin_ia32_vcmpph_v8hf_mask(A, B, C, D) __builtin_ia32_vcmpph_v8hf_mask(A, B, 1, D)
