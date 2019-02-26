@@ -846,8 +846,9 @@ oacc_get_min_dim (int dim)
 }
 
 /* Parse the default dimension parameter.  This is a set of
-   :-separated optional compute dimensions.  Each specified dimension
-   is a positive integer.  When device type support is added, it is
+   :-separated optional compute dimensions.  Each dimension is either
+   a positive integer, or '-' for a dynamic value computed at
+   runtime.  When device type support is added, it is
    planned to be a comma separated list of such compute dimensions,
    with all but the first prefixed by the colon-terminated device
    type.  */
@@ -882,14 +883,20 @@ oacc_parse_default_dims (const char *dims)
 
 	  if (*pos != ':')
 	    {
-	      long val;
-	      const char *eptr;
+	      long val = 0;
 
-	      errno = 0;
-	      val = strtol (pos, CONST_CAST (char **, &eptr), 10);
-	      if (errno || val <= 0 || (int) val != val)
-		goto malformed;
-	      pos = eptr;
+	      if (*pos == '-')
+		pos++;
+	      else
+		{
+		  const char *eptr;
+
+		  errno = 0;
+		  val = strtol (pos, CONST_CAST (char **, &eptr), 10);
+		  if (errno || val <= 0 || (int) val != val)
+		    goto malformed;
+		  pos = eptr;
+		}
 	      oacc_default_dims[ix] = (int) val;
 	    }
 	}

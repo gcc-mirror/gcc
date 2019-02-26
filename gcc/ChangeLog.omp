@@ -1,3 +1,11 @@
+2018-10-05  Nathan Sidwell  <nathan@acm.org>
+	    Tom de Vries  <tdevries@suse.de>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* doc/invoke.texi (fopenacc-dim): Update.
+	* omp-offload.cc (oacc_parse_default_dims): Update.
+
 2019-09-20  Chung-Lin Tang <cltang@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 

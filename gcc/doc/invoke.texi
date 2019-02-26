@@ -2733,8 +2733,12 @@ have support for @option{-pthread}.
 @item -fopenacc-dim=@var{geom}
 Specify default compute dimensions for parallel offload regions that do
 not explicitly specify.  The @var{geom} value is a triple of
-':'-separated sizes, in order 'gang', 'worker' and, 'vector'.  A size
-can be omitted, to use a target-specific default value.
+':'-separated sizes, in order 'gang', 'worker' and, 'vector'.  If a size
+is to be deferred until execution '-' can be used, alternatively a size
+can be omitted to use a target-specific default value.  When deferring
+to runtime, the environment variable @var{GOMP_OPENACC_DIM} can be set.
+It has the same format as the option value, except that '-' is not
+permitted.
 
 @opindex fopenmp
 @cindex OpenMP parallel

@@ -9,7 +9,7 @@
 /* { dg-bogus "warning: region is worker partitioned but does not contain worker partitioned code" "TODO default 'gang' 'vector'" { xfail *-*-* } .+3 }
    TODO It's the compiler's own decision to not use 'worker' parallelism here, so it doesn't make sense to bother the user about it.  */
 int
-routine1 (int n)
+routine1 (int n) /* { dg-bogus "region is worker partitioned but does not contain worker partitioned code" "" { xfail *-*-* } } */
 {
   int i;
 
@@ -24,7 +24,7 @@ routine1 (int n)
 /* { dg-bogus "warning: region is worker partitioned but does not contain worker partitioned code" "TODO default 'gang' 'vector'" { xfail *-*-* } .+3 }
    TODO It's the compiler's own decision to not use 'worker' parallelism here, so it doesn't make sense to bother the user about it.  */
 int
-routine2 (int n)
+routine2 (int n) /* { dg-bogus "region is worker partitioned but does not contain worker partitioned code" "" { xfail *-*-* } } */
 {
   int i;
 
