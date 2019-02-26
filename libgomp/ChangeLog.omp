@@ -1,3 +1,12 @@
+2018-10-05  Nathan Sidwell  <nathan@acm.org>
+	    Tom de Vries  <tdevries@suse.de>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-default-compile.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/loop-warn-1.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Likewise.
+
 2018-10-22  James Norris  <jnorris@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 	    Tom de Vries  <tom@codesourcery.com>
