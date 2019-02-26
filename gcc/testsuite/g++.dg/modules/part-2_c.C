@@ -1,9 +1,8 @@
 // { dg-additional-options -fmodules-ts }
 
-export module foo:inter2; // { dg-warning "not writing" }
-// { dg-module-bmi !foo:inter2 }
+export module foo:inter2;
+// { dg-module-bmi foo:inter2 }
 
 import :imp; // ok
 
-import :inter; // error
-// { dg-regexp "In module imported at \[^\n]*part-2_c.C:8:.:\n:inter: error: interface partition must be exported\n" }
+import :inter; // ok at this point

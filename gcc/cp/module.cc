@@ -9288,18 +9288,10 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	      dump.pop (n);
 	      if (!imp)
 		continue;
-	      if (module_interface_p () && !module_partition_p ()
-		  && is_partition () && !is_interface ()
-		  && imp->is_partition () && imp->is_interface ())
-		error_at (loc, "interface partition %qs has not been exported",
-			  imp->get_flatname ());
 	    }
 
 	  if (is_partition () && !imp->is_partition ())
 	    imp->from_partition_p = true;
-	  if (is_partition () && imp->is_partition ()
-	      && imp->is_interface () && exported)
-	    imp->exported_p = true;
 	}
       else
 	{
@@ -12746,6 +12738,12 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	  dump () && dump ("Partition %M %u", imp, ix);
 	  bitmap_set_bit (partitions, ix);
 	  imp->remap = MODULE_PURVIEW;
+	  /* All interface partitions must be exported.  */
+	  if (imp->is_interface () && !bitmap_bit_p (exports, imp->mod))
+	    {
+	      error_at (imp->loc, "interface partition is not exported");
+	      bitmap_set_bit (exports, imp->mod);
+	    }
 	}
     }
 
@@ -13486,16 +13484,6 @@ module_state::direct_import (cpp_reader *reader, bool lazy)
       imp->direct_p = true;
       if (exported_p)
 	imp->exported_p = true;
-
-      /* If the current TU is an interface, any directly-imported
-	 interface partition must be exported.  */
-      // FIXME: check this at BMI writing point
-      if (imp->is_partition () && imp->is_interface ()
-	  && !imp->exported_p && module_interface_p ())
-	{
-	  imp->exported_p = true;
-	  error_at (imp->loc, "interface partition must be exported");
-	}
 
       (*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
       if (imp->is_header ())

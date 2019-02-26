@@ -1,3 +1,15 @@
+2019-02-26  Nathan Sidwell  <nathan@acm.org>
+
+	Fix interface partition export rules.
+	gcc/cp/
+	* module.cc (module_state::read_imports): Don't check partition
+	import/export here ...
+	(module_state::direct_import): ... or here ...
+	(module_state::write): ... but do it here.
+	gcc/testsuite/
+	* g++.dg/modules/part-2_[cd].C: Adjust.
+	* g++.dg/modules/part-2_e.C: New.
+
 2019-02-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/
