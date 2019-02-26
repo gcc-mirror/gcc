@@ -2835,7 +2835,14 @@ remove_partial_avx_dependency (void)
 	    continue;
 
 	  if (!v4sf_const0)
-	    v4sf_const0 = gen_reg_rtx (V4SFmode);
+	    {
+	      calculate_dominance_info (CDI_DOMINATORS);
+	      df_set_flags (DF_DEFER_INSN_RESCAN);
+	      df_chain_add_problem (DF_DU_CHAIN | DF_UD_CHAIN);
+	      df_md_add_problem ();
+	      df_analyze ();
+	      v4sf_const0 = gen_reg_rtx (V4SFmode);
+	    }
 
 	  /* Convert PARTIAL_XMM_UPDATE_TRUE insns, DF -> SF, SF -> DF,
 	     SI -> SF, SI -> DF, DI -> SF, DI -> DF, to vec_dup and
@@ -2883,12 +2890,6 @@ remove_partial_avx_dependency (void)
 
   if (v4sf_const0)
     {
-      calculate_dominance_info (CDI_DOMINATORS);
-      df_set_flags (DF_DEFER_INSN_RESCAN);
-      df_chain_add_problem (DF_DU_CHAIN | DF_UD_CHAIN);
-      df_md_add_problem ();
-      df_analyze ();
-
       /* (Re-)discover loops so that bb->loop_father can be used in the
 	 analysis below.  */
       loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
@@ -2904,11 +2905,23 @@ remove_partial_avx_dependency (void)
 	bb = get_immediate_dominator (CDI_DOMINATORS,
 				      bb->loop_father->header);
 
-      insn = BB_HEAD (bb);
-      if (!NONDEBUG_INSN_P (insn))
-	insn = next_nonnote_nondebug_insn (insn);
       set = gen_rtx_SET (v4sf_const0, CONST0_RTX (V4SFmode));
-      set_insn = emit_insn_before (set, insn);
+
+      insn = BB_HEAD (bb);
+      while (insn && !NONDEBUG_INSN_P (insn))
+	{
+	  if (insn == BB_END (bb))
+	    {
+	      insn = NULL;
+	      break;
+	    }
+	  insn = NEXT_INSN (insn);
+	}
+      if (insn == BB_HEAD (bb))
+        set_insn = emit_insn_before (set, insn);
+      else
+	set_insn = emit_insn_after (set,
+				    insn ? PREV_INSN (insn) : BB_END (bb));
       df_insn_rescan (set_insn);
       df_process_deferred_rescans ();
       loop_optimizer_finalize ();

@@ -1,3 +1,8 @@
+2019-02-25  Sandra Loosemore  <sandra@codesourcery.com>
+	    Martin Sebor  <msebor@gmail.com>
+
+	* c.opt (Wmissing-attributes): Clean up doc string.
+
 2019-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/89495

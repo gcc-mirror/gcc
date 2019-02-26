@@ -1,13 +1,19 @@
+2019-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89474
+	* config/i386/i386.c (remove_partial_avx_dependency): Call
+	df_analyze etc. before creation of the v4sf_const0 pseudo, rather than
+	after changing possibly many instructions to use that pseudo.  Fix up
+	insertion of v4sf_const0 setter at the start of bb.
+
 2019-02-25  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR c/80409
-
 	* doc/extend.texi (Variadic Pointer Args): New section.
 
 2019-02-25  Sandra Loosemore  <sandra@codesourcery.com>
 	    Martin Sebor  <msebor@gmail.com>
 
-	* c-family/c.opt (Wmissing-attributes): Clean up doc string.
 	* common.opt (Wattribute-alias): Likewise.
 	* doc/invoke.texi (Option Summary): List general form of
 	-Wattribute-alias=.  List positive form of -Wmissing-attributes.
@@ -17,8 +23,6 @@
 	considered attributes (same as for -Wmissing-attributes).
 
 2019-02-25  Paul A. Clarke  <pc@us.ibm.com>
-
-[gcc]
 
 	* config/rs6000/emmintrin.h (_mm_cvtpd_epi32): Fix big endian.
 	(_mm_cvtpd_ps): Likewise.
@@ -30,7 +34,6 @@
 
 	PR target/89339
 	* config/rs6000/xmmintrin.h (_mm_movemask_pi8): Fix 32-bit.
-
 
 2019-02-25  Tamar Christina  <tamar.christina@arm.com>
 
@@ -94,7 +97,6 @@
 	vfmlsl_lane_high_f16, vfmlal_laneq_high_f16, vfmlsl_laneq_high_f16,
 	vfmlalq_lane_high_f16, vfmlslq_lane_high_f16, vfmlalq_laneq_high_f16,
 	vfmlslq_laneq_high_f16): ... To this.
-
 
 2019-02-25  Alexander Monakov  <amonakov@ispras.ru>
 
