@@ -1,3 +1,13 @@
+2018-10-05  Nathan Sidwell  <nathan@acm.org>
+	    Tom de Vries  <tdevries@suse.de>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* c-c++-common/goacc/acc-icf.c: Update.
+	* c-c++-common/goacc/parallel-dims-1.c: Likewise.
+	* gfortran.dg/goacc/routine-4.f90: Likewise.
+	* gfortran.dg/goacc/routine-multiple-directives-1.f90: Likewise.
+
 2019-09-20  Chung-Lin Tang <cltang@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 

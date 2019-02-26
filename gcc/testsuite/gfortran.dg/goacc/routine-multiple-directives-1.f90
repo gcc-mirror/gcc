@@ -38,7 +38,7 @@
       ! { dg-final { scan-tree-dump-times "(?n)OpenACC routine 's_2_nh' has 'nohost' clause" 1 "oaccloops" { target { ! offloading_enabled } } } }
       ! { dg-final { scan-tree-dump-times "(?n)OpenACC routine 's_2_nh_' has 'nohost' clause" 1 "oaccloops" { target offloading_enabled } } }
 
-      SUBROUTINE v_1
+      SUBROUTINE v_1 ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" }
 !$ACC ROUTINE VECTOR
 !$ACC ROUTINE VECTOR
 !$ACC ROUTINE(v_1) VECTOR
@@ -58,7 +58,7 @@
       ! { dg-final { scan-tree-dump-times "(?n)OpenACC routine 'v_1_nh' has 'nohost' clause" 1 "oaccloops" { target { ! offloading_enabled } } } }
       ! { dg-final { scan-tree-dump-times "(?n)OpenACC routine 'v_1_nh_' has 'nohost' clause" 1 "oaccloops" { target offloading_enabled } } }
 
-      SUBROUTINE v_2
+      SUBROUTINE v_2 ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" }
 !$ACC ROUTINE(v_2) VECTOR
 !$ACC ROUTINE VECTOR
 !$ACC ROUTINE(v_2) VECTOR
