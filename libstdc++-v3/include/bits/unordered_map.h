@@ -1145,6 +1145,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   typename _Pred = equal_to<__iter_key_t<_InputIterator>>,
 	   typename _Allocator = allocator<__iter_to_alloc_t<_InputIterator>>,
 	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireNotAllocatorOrIntegral<_Hash>,
+	   typename = _RequireNotAllocator<_Pred>,
 	   typename = _RequireAllocator<_Allocator>>
     unordered_map(_InputIterator, _InputIterator,
 		  typename unordered_map<int, int>::size_type = {},
@@ -1156,6 +1158,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Key, typename _Tp, typename _Hash = hash<_Key>,
 	   typename _Pred = equal_to<_Key>,
 	   typename _Allocator = allocator<pair<const _Key, _Tp>>,
+	   typename = _RequireNotAllocatorOrIntegral<_Hash>,
+	   typename = _RequireNotAllocator<_Pred>,
 	   typename = _RequireAllocator<_Allocator>>
     unordered_map(initializer_list<pair<_Key, _Tp>>,
 		  typename unordered_map<int, int>::size_type = {},
@@ -1185,6 +1189,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _InputIterator, typename _Hash, typename _Allocator,
 	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireNotAllocatorOrIntegral<_Hash>,
 	   typename = _RequireAllocator<_Allocator>>
     unordered_map(_InputIterator, _InputIterator,
 		  typename unordered_map<int, int>::size_type,
@@ -1206,6 +1211,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     -> unordered_map<_Key, _Tp, hash<_Key>, equal_to<_Key>, _Allocator>;
 
   template<typename _Key, typename _Tp, typename _Hash, typename _Allocator,
+	   typename = _RequireNotAllocatorOrIntegral<_Hash>,
 	   typename = _RequireAllocator<_Allocator>>
     unordered_map(initializer_list<pair<_Key, _Tp>>,
 		  typename unordered_map<int, int>::size_type,
@@ -1991,6 +1997,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   typename _Pred = equal_to<__iter_key_t<_InputIterator>>,
 	   typename _Allocator = allocator<__iter_to_alloc_t<_InputIterator>>,
 	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireNotAllocatorOrIntegral<_Hash>,
+	   typename = _RequireNotAllocator<_Pred>,
 	   typename = _RequireAllocator<_Allocator>>
     unordered_multimap(_InputIterator, _InputIterator,
 		       unordered_multimap<int, int>::size_type = {},
@@ -2003,6 +2011,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Key, typename _Tp, typename _Hash = hash<_Key>,
 	   typename _Pred = equal_to<_Key>,
 	   typename _Allocator = allocator<pair<const _Key, _Tp>>,
+	   typename = _RequireNotAllocatorOrIntegral<_Hash>,
+	   typename = _RequireNotAllocator<_Pred>,
 	   typename = _RequireAllocator<_Allocator>>
     unordered_multimap(initializer_list<pair<_Key, _Tp>>,
 		       unordered_multimap<int, int>::size_type = {},
@@ -2031,6 +2041,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _InputIterator, typename _Hash, typename _Allocator,
 	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireNotAllocatorOrIntegral<_Hash>,
 	   typename = _RequireAllocator<_Allocator>>
     unordered_multimap(_InputIterator, _InputIterator,
 		       unordered_multimap<int, int>::size_type, _Hash,
@@ -2052,6 +2063,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     -> unordered_multimap<_Key, _Tp, hash<_Key>, equal_to<_Key>, _Allocator>;
 
   template<typename _Key, typename _Tp, typename _Hash, typename _Allocator,
+	   typename = _RequireNotAllocatorOrIntegral<_Hash>,
 	   typename = _RequireAllocator<_Allocator>>
     unordered_multimap(initializer_list<pair<_Key, _Tp>>,
 		       unordered_multimap<int, int>::size_type,

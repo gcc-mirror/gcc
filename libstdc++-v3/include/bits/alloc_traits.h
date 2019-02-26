@@ -634,6 +634,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using _RequireAllocator
       = typename enable_if<__is_allocator<_Alloc>::value, _Alloc>::type;
 
+  template<typename _Alloc>
+    using _RequireNotAllocator
+      = typename enable_if<!__is_allocator<_Alloc>::value, _Alloc>::type;
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++11
