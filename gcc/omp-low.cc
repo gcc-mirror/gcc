@@ -8715,8 +8715,10 @@ lower_oacc_head_mark (location_t loc, tree ddvar, tree clauses,
   else
     gcc_unreachable ();
 
-  /* In a parallel region, loops are implicitly INDEPENDENT.  */
-  if (!tgt || is_oacc_parallel_or_serial (tgt))
+  /* In a parallel region, loops without auto and seq clauses are
+     implicitly INDEPENDENT.  */
+  if ((!tgt || is_oacc_parallel_or_serial (tgt))
+      && !(tag & (OLF_SEQ | OLF_AUTO)))
     tag |= OLF_INDEPENDENT;
 
   /* Loops inside OpenACC 'kernels' decomposed parts' regions are expected to

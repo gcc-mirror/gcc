@@ -107,7 +107,7 @@ int vector_1 (int *ary, int size)
   {
 #pragma acc loop gang
     for (int jx = 0; jx < 1; jx++)
-#pragma acc loop auto
+#pragma acc loop auto independent
       for (int ix = 0; ix < size; ix++)
 	ary[ix] = place ();
   }
@@ -123,7 +123,7 @@ int vector_2 (int *ary, int size)
   {
 #pragma acc loop worker
     for (int jx = 0; jx < size  / 64; jx++)
-#pragma acc loop auto
+#pragma acc loop auto independent
       for (int ix = 0; ix < 64; ix++)
 	ary[ix + jx * 64] = place ();
   }
@@ -139,7 +139,7 @@ int worker_1 (int *ary, int size)
   {
 #pragma acc loop gang
     for (int kx = 0; kx < 1; kx++)
-#pragma acc loop auto
+#pragma acc loop auto independent
       for (int jx = 0; jx <  size  / 64; jx++)
 #pragma acc loop vector
 	for (int ix = 0; ix < 64; ix++)
@@ -156,7 +156,7 @@ int gang_1 (int *ary, int size)
 #pragma acc parallel num_gangs (32) num_workers (32) vector_length(32) copy(ary[0:size]) firstprivate (size)
   /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-1 } */
   {
-#pragma acc loop auto
+#pragma acc loop auto independent
     for (int jx = 0; jx <  size  / 64; jx++)
 #pragma acc loop worker
       for (int ix = 0; ix < 64; ix++)
@@ -172,11 +172,11 @@ int gang_2 (int *ary, int size)
   
 #pragma acc parallel num_gangs (32) num_workers (32) vector_length(32) copy(ary[0:size]) firstprivate (size)
   {
-#pragma acc loop auto
+#pragma acc loop auto independent
     for (int kx = 0; kx < size / (32 * 32); kx++)
-#pragma acc loop auto
+#pragma acc loop auto independent
       for (int jx = 0; jx <  32; jx++)
-#pragma acc loop auto
+#pragma acc loop auto independent
 	for (int ix = 0; ix < 32; ix++)
 	  ary[ix + jx * 32 + kx * 32 * 32] = place ();
   }
@@ -190,9 +190,9 @@ int gang_3 (int *ary, int size)
   
 #pragma acc parallel num_workers (32) vector_length(32) copy(ary[0:size]) firstprivate (size)
   {
-#pragma acc loop auto
+#pragma acc loop auto independent
     for (int jx = 0; jx <  size  / 64; jx++)
-#pragma acc loop auto
+#pragma acc loop auto independent
       for (int ix = 0; ix < 64; ix++)
 	ary[ix + jx * 64] = place ();
   }
@@ -206,7 +206,7 @@ int gang_4 (int *ary, int size)
   
 #pragma acc parallel vector_length(32) copy(ary[0:size]) firstprivate (size)
   {
-#pragma acc loop auto
+#pragma acc loop auto independent
     for (int jx = 0; jx <  size; jx++)
       ary[jx] = place ();
   }
