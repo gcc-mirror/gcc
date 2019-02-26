@@ -1,3 +1,9 @@
+2018-09-05  Cesar Philippidis  <cesar@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gimplify.cc (omp_add_variable): Enable firstprivate reduction
+	variables.
+
 2018-09-20  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* omp-low.cc (lower_oacc_head_mark): Don't mark OpenACC auto
