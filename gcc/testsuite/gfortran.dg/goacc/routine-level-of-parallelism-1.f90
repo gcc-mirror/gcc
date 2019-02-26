@@ -2,8 +2,10 @@
 ! with the OpenACC routine directive.  The C/C++ counterpart is
 ! '../../c-c++-common/goacc/routine-level-of-parallelism-2.c'.
 
-subroutine g_1
+subroutine g_1 ! { dg-warning "region is gang partitioned but does not contain gang partitioned code" }
   !$acc routine gang
+! { dg-bogus "region is worker partitioned but does not contain worker partitioned code" "worker partitioned" { xfail *-*-* } .-2 }
+! { dg-bogus "region is vector partitioned but does not contain vector partitioned code" "worker partitioned" { xfail *-*-* } .-3 }
 end subroutine g_1
 
 subroutine s_1_2a

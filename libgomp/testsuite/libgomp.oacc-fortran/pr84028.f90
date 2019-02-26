@@ -5,7 +5,7 @@ program foo
 
   a = 1
 
-  !$acc parallel num_gangs(1) num_workers(2)
+  !$acc parallel num_gangs(1) num_workers(2) ! { dg-warning "region is worker partitioned" }
 
   if (any(a(1:3,1:3,1:3).ne.1)) STOP 1
 

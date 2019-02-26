@@ -21,7 +21,7 @@ parallel_reduction ()
 
 #pragma acc data copy (dummy)
   {
-#pragma acc parallel num_gangs (10) copy (sum) reduction (+:sum)
+#pragma acc parallel num_gangs (10) copy (sum) reduction (+:sum) /* { dg-warning "region is gang partitioned" } */
     {
       int v = 5;
       sum += 10 + v;
@@ -36,11 +36,11 @@ main ()
 {
   int i, s = 0;
 
-#pragma acc parallel num_gangs (10) copy (s) reduction (+:s)
+#pragma acc parallel num_gangs (10) copy (s) reduction (+:s) /* { dg-warning "region is gang partitioned" } */
   for (i = 0; i < n; i++)
     s += i+1;
 
-#pragma acc parallel num_gangs (10) reduction (+:s) copy (s)
+#pragma acc parallel num_gangs (10) reduction (+:s) copy (s) /* { dg-warning "region is gang partitioned" } */
   for (i = 0; i < n; i++)
     s += i+1;
 

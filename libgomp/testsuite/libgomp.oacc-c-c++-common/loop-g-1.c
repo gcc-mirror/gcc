@@ -1,3 +1,4 @@
+/* { dg-additional-options "-w" } */
 #include <stdio.h>
 #include <openacc.h>
 #include <gomp-constants.h>

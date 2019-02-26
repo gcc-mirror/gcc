@@ -123,6 +123,7 @@ contains
     integer, intent (inout) :: a(N)
     integer :: i
 
+    !$acc loop gang worker vector
     do i = 1, N
        a(i) = a(i) - a(i)
     end do
@@ -133,6 +134,7 @@ contains
     integer, intent (inout) :: a(N)
     integer :: i
 
+    !$acc loop worker vector
     do i = 1, N
        a(i) = a(i) - a(i)
     end do
@@ -143,6 +145,7 @@ contains
     integer, intent (inout) :: a(N)
     integer :: i
 
+    !$acc loop vector
     do i = 1, N
        a(i) = a(i) - a(i)
     end do
@@ -153,6 +156,7 @@ contains
     integer, intent (inout) :: a(N)
     integer :: i
 
+    !$acc loop seq
     do i = 1, N
        a(i) = a(i) - a(i)
     end do
