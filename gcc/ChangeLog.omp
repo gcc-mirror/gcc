@@ -1,3 +1,8 @@
+2018-09-20  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* omp-low.cc (lower_oacc_head_mark): Don't mark OpenACC auto
+	loops as independent inside acc parallel regions.
+
 2018-12-22  Cesar Philippidis  <cesar@codesourcery.com>
             Julian Brown  <julian@codesourcery.com>
             Tobias Burnus  <tobias@codesourcery.com>
