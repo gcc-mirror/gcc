@@ -1,3 +1,28 @@
+2018-10-22  James Norris  <jnorris@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/data-3.f90: Update parallel
+	regions to denote variables copyied in via acc enter data as
+	present.
+	* testsuite/libgomp.oacc-c-c++-common/subr.h: Reimplement.
+	* testsuite/libgomp.oacc-c-c++-common/subr.ptx: Regenerated PTX.
+	* testsuite/libgomp.oacc-c-c++-common/timer.h: Removed.
+	* testsuite/libgomp.oacc-c-c++-common/lib-69.c: Change async checks.
+	* testsuite/libgomp.oacc-c-c++-common/lib-70.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-72.c: Rework kernel i/f and
+	change async checks.
+	* testsuite/libgomp.oacc-c-c++-common/lib-73.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-74.c: Rework kernel i/f and
+	timing checks.
+	* testsuite/libgomp.oacc-c-c++-common/lib-75.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-76.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-78.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-79.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-81.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-82.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-93.c: New test.
+
 2018-12-13  Cesar Philippidis  <cesar@codesourcery.com>
 	    Nathan Sidwell  <nathan@acm.org>
 	    Julian Brown  <julian@codesourcery.com>
