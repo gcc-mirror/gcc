@@ -1,3 +1,10 @@
+2019-02-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-dom.c (edge_info::derive_equivalences) <BIT_IOR_EXPR>: Fix
+	and move around comment.
+	<BIT_AND_EXPR>: Likewise.
+	<BIT_NOT_EXPR>: Add specific handling for boolean types.
+
 2019-02-24  Alan Modra  <amodra@gmail.com>
 
 	PR target/89271

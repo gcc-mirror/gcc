@@ -1,3 +1,8 @@
+2019-02-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt77.adb: New test.
+	* gnat.dg/opt77_pkg.ad[sb]: New helper.
+
 2019-02-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/86119
