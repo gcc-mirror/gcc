@@ -1,3 +1,10 @@
+2019-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89500
+	* gcc.dg/pr89500.c: New test.
+	* gcc.dg/Wstringop-overflow-10.c: New test.
+	* gcc.dg/strlenopt-60.c: New test.
+
 2019-02-26  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/89492
