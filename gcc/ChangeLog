@@ -1,3 +1,8 @@
+2019-02-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89489
+	* tree-parloops.c (create_loop_fn): Copy over last_clique.
+
 2019-02-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-dom.c (edge_info::derive_equivalences) <BIT_IOR_EXPR>: Fix
