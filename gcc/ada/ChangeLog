@@ -1,3 +1,19 @@
+2019-02-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/81956
+	Backport from mainline
+	2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Call_Helper): Do not optimize calls to
+	null procedures when GNAT coverage is used, so that their (empty)
+	bodies are properly covered.
+
+	2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Call_Helper): Replace call to null
+	procedure by a single null statement, after evaluating the
+	actuals that require it.
+
 2019-02-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/89349
