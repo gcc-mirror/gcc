@@ -7856,9 +7856,11 @@ lower_oacc_head_mark (location_t loc, tree ddvar, tree clauses,
       tag |= OLF_GANG_STATIC;
     }
 
-  /* In a parallel region, loops are implicitly INDEPENDENT.  */
+  /* In a parallel region, loops without auto and seq clauses are
+     implicitly INDEPENDENT.  */
   omp_context *tgt = enclosing_target_ctx (ctx);
-  if (!tgt || is_oacc_parallel_or_serial (tgt))
+  if ((!tgt || is_oacc_parallel_or_serial (tgt))
+      && !(tag & (OLF_SEQ | OLF_AUTO)))
     tag |= OLF_INDEPENDENT;
 
   if (tag & OLF_TILE)
