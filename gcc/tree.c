@@ -7533,19 +7533,16 @@ valid_constant_size_p (const_tree size, cst_size_error *perr /* = NULL */)
       return false;
     }
 
-  tree type = TREE_TYPE (size);
-  if (TYPE_UNSIGNED (type))
-    {
-      if (!tree_fits_uhwi_p (size)
-	  || tree_int_cst_sign_bit (size))
-	{
-	  *perr = cst_size_too_big;
-	  return false;
-	}
-    }
-  else if (tree_int_cst_sign_bit (size))
+  if (tree_int_cst_sgn (size) < 0)
     {
       *perr = cst_size_negative;
+      return false;
+    }
+  if (!tree_fits_uhwi_p (size)
+      || (wi::to_widest (TYPE_MAX_VALUE (sizetype))
+	  < wi::to_widest (size) * 2))
+    {
+      *perr = cst_size_too_big;
       return false;
     }
 

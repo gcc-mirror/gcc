@@ -1,5 +1,8 @@
 2019-02-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/89507
+	* g++.dg/other/new2.C: New test.
+
 	PR tree-optimization/89500
 	* gcc.dg/pr89500.c: New test.
 	* gcc.dg/Wstringop-overflow-10.c: New test.
