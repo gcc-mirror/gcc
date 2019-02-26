@@ -1,3 +1,8 @@
+2019-02-26  Martin Liska  <mliska@suse.cz>
+
+	* symtab.c (ht_dump_statistics): Make
+	horizontal alignment for statistics.
+
 2019-02-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/89410

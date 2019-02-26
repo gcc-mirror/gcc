@@ -219,10 +219,8 @@ struct mem_usage
   inline void
   dump_footer () const
   {
-    print_dash_line ();
     fprintf (stderr, "%s" PRsa (53) PRsa (26) "\n", "Total",
 	     SIZE_AMOUNT (m_allocated), SIZE_AMOUNT (m_times));
-    print_dash_line ();
   }
 
   /* Return fraction of NOMINATOR and DENOMINATOR in percent.  */
@@ -247,7 +245,6 @@ struct mem_usage
   {
     fprintf (stderr, "%-48s %11s%16s%10s%17s\n", name, "Leak", "Peak",
 	     "Times", "Type");
-    print_dash_line ();
   }
 
   /* Current number of allocated bytes.  */
@@ -631,11 +628,17 @@ mem_alloc_description<T>::dump (mem_alloc_origin origin,
   mem_list_t *list = get_list (origin, &length, cmp);
   T total = get_sum (origin);
 
+  T::print_dash_line ();
   T::dump_header (mem_location::get_origin_name (origin));
+  T::print_dash_line ();
   for (int i = length - 1; i >= 0; i--)
     list[i].second->dump (list[i].first, total);
+  T::print_dash_line ();
 
+  T::dump_header (mem_location::get_origin_name (origin));
+  T::print_dash_line ();
   total.dump_footer ();
+  T::print_dash_line ();
 
   XDELETEVEC (list);
 

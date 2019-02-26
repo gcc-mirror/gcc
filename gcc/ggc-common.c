@@ -910,9 +910,7 @@ struct ggc_usage: public mem_usage
   inline void
   dump_footer ()
   {
-    print_dash_line ();
     dump ("Total", *this);
-    print_dash_line ();
   }
 
   /* Get balance which is GGC allocation leak.  */
@@ -955,7 +953,6 @@ struct ggc_usage: public mem_usage
   {
     fprintf (stderr, "%-48s %11s%17s%17s%16s%17s\n", name, "Garbage", "Freed",
 	     "Leak", "Overhead", "Times");
-    print_dash_line ();
   }
 
   /* Freed memory in bytes.  */

@@ -1,3 +1,19 @@
+2019-02-26  Martin Liska  <mliska@suse.cz>
+
+	* alloc-pool.h (struct pool_usage): Remove extra
+	print_dash_line.
+	* bitmap.h (struct bitmap_usage): Likewise.
+	* ggc-common.c (struct ggc_usage): Likewise.
+	* mem-stats.h (struct mem_usage): Likewise.
+	(mem_alloc_description::dump): Print dash lines
+	here and repeat header at the end of a table report.
+	It's then more readable.
+	* tree-phinodes.c (phinodes_print_statistics): Make
+	horizontal alignment.
+	* tree-ssanames.c (ssanames_print_statistics): Likewise.
+	* vec.c (struct vec_usage): Remove extra print_dash_line.
+	* vec.h (vec_safe_grow_cleared): Pass PASS_MEM_STAT.
+
 2019-02-26  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* doc/extend.texi (__builtin_object_size):
