@@ -661,6 +661,7 @@ GO_SYSCALL_OS_ARCH_FILE
 GO_SYSCALL_OS_FILE
 GO_LIBCALL_OS_ARCH_FILE
 GO_LIBCALL_OS_FILE
+FUNCTION_DESCRIPTORS
 ALLGOARCHFAMILY
 ALLGOARCH
 GOARCH
@@ -11343,7 +11344,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11346 "configure"
+#line 11347 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11449,7 +11450,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11452 "configure"
+#line 11453 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14086,6 +14087,27 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 esac
 
 
+
+
+FUNCTION_DESCRIPTORS=false
+case ${host} in
+  rs6000*-*-* | powerpc*-*-*)
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#if _CALL_ELF == 1
+#error descriptors
+#endif
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  FUNCTION_DESCRIPTORS=false
+else
+  FUNCTION_DESCRIPTORS=true
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    ;;
+esac
 
 
 GO_LIBCALL_OS_FILE=
