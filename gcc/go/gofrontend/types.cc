@@ -10329,6 +10329,23 @@ Find_alias::type(Type* type)
 	return TRAVERSE_SKIP_COMPONENTS;
     }
 
+  // Check if there are recursive inherited interface aliases.
+  Interface_type* ift = type->interface_type();
+  if (ift != NULL)
+    {
+      const Typed_identifier_list* methods = ift->local_methods();
+      if (methods == NULL)
+	return TRAVERSE_CONTINUE;
+      for (Typed_identifier_list::const_iterator p = methods->begin();
+	   p != methods->end();
+	   ++p)
+	if (p->name().empty() && p->type()->named_type() == this->find_type_)
+	  {
+	    this->found_ = true;
+	    return TRAVERSE_EXIT;
+	  }
+    }
+
   return TRAVERSE_CONTINUE;
 }
 
