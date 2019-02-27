@@ -10,7 +10,7 @@ extern int _setjmp (struct __jmp_buf_tag __env[1]);
 
 jmp_buf g_return_jmp_buf;
 
-void SetNaClSwitchExpectations (void)
+static void SetNaClSwitchExpectations (void)
 {
   __builtin_longjmp (g_return_jmp_buf, 1);
 }
