@@ -1,5 +1,13 @@
 2019-02-27  Richard Biener  <rguenther@suse.de>
 
+	PR debug/88878
+	* dwarf2out.c (output_comdat_type_unit): Add early_lto_debug
+	parameter, prefix section name with .gnu.debuglto_ if true.
+	(dwarf2out_finish): Pass false to output_comdat_type_unit.
+	(dwarf2out_early_finish): Pass true to output_comdat_type_unit.
+
+2019-02-27  Richard Biener  <rguenther@suse.de>
+
 	PR debug/89514
 	* dwarf2out.c (size_of_die): Key on AT_ref (a)->comdat_type_p
 	rather than on use_debug_types, doing what output_die does.

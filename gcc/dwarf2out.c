@@ -3746,7 +3746,7 @@ static void output_die_abbrevs (unsigned long, dw_die_ref);
 static void output_die (dw_die_ref);
 static void output_compilation_unit_header (enum dwarf_unit_type);
 static void output_comp_unit (dw_die_ref, int, const unsigned char *);
-static void output_comdat_type_unit (comdat_type_node *);
+static void output_comdat_type_unit (comdat_type_node *, bool);
 static const char *dwarf2_name (tree, int);
 static void add_pubname (tree, dw_die_ref);
 static void add_enumerator_pubname (const char *, dw_die_ref);
@@ -11230,7 +11230,7 @@ output_skeleton_debug_sections (dw_die_ref comp_unit,
 /* Output a comdat type unit DIE and its children.  */
 
 static void
-output_comdat_type_unit (comdat_type_node *node)
+output_comdat_type_unit (comdat_type_node *node, bool early_lto_debug)
 {
   const char *secname;
   char *tmp;
@@ -11257,14 +11257,16 @@ output_comdat_type_unit (comdat_type_node *node)
   if (dwarf_version >= 5)
     {
       if (!dwarf_split_debug_info)
-	secname = ".debug_info";
+	secname = early_lto_debug ? DEBUG_LTO_INFO_SECTION : DEBUG_INFO_SECTION;
       else
-	secname = ".debug_info.dwo";
+	secname = (early_lto_debug
+		   ? DEBUG_LTO_DWO_INFO_SECTION : DEBUG_DWO_INFO_SECTION);
     }
   else if (!dwarf_split_debug_info)
-    secname = ".debug_types";
+    secname = early_lto_debug ? ".gnu.debuglto_.debug_types" : ".debug_types";
   else
-    secname = ".debug_types.dwo";
+    secname = (early_lto_debug
+	       ? ".gnu.debuglto_.debug_types.dwo" : ".debug_types.dwo");
 
   tmp = XALLOCAVEC (char, 4 + DWARF_TYPE_SIGNATURE_SIZE * 2);
   sprintf (tmp, dwarf_version >= 5 ? "wi." : "wt.");
@@ -31503,7 +31505,7 @@ dwarf2out_finish (const char *filename)
                          ? dl_section_ref
                          : debug_skeleton_line_section_label));
 
-      output_comdat_type_unit (ctnode);
+      output_comdat_type_unit (ctnode, false);
       *slot = ctnode;
     }
 
@@ -32194,7 +32196,7 @@ dwarf2out_early_finish (const char *filename)
                          ? debug_line_section_label
                          : debug_skeleton_line_section_label));
 
-      output_comdat_type_unit (ctnode);
+      output_comdat_type_unit (ctnode, true);
       *slot = ctnode;
     }
 
