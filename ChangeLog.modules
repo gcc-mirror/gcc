@@ -1,5 +1,15 @@
 2019-02-27  Nathan Sidwell  <nathan@acm.org>
 
+	__import in extern "C"
+	gcc/cp/
+	* parser.c (cp_lexer_tokenize): Add extern_c_depth arg, tokenize
+	through extern "C".
+	(cp_parser_translation_unit): Handle top-level extern "C".
+	(cp_parser_module_name): Force header unit.
+	(cp_parser_{module,import}_declaration): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/inc-xlate-1_[cd].C: New.
+
 	gcc/cp/
 	* cp-tree.h (import_module): Return bool.
 	* module.cc (import_module): Return is_header flag.

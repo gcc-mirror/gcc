@@ -822,11 +822,16 @@ cp_lexer_get_preprocessor_token (unsigned flags, cp_token *token)
 // buffer directly!
 
 static bool
-cp_lexer_tokenize (cp_lexer *lexer)
+cp_lexer_tokenize (cp_lexer *lexer, int extern_c_depth)
 {
+  enum 
+  {
+    decl_start,
+    decl_other,
+    decl_header,
+    decl_extern_c,
+  } mode = decl_start;
   unsigned depth = 0;
-  bool in_decl = false;
-  bool stop_at_semi = false;
 
   unsigned next_in = lexer->buffer->length ();
   if (--next_in)
@@ -850,51 +855,100 @@ cp_lexer_tokenize (cp_lexer *lexer)
       cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
 
     first:
-      if (tok->type == CPP_EOF)
+      switch (tok->type)
 	{
+	case CPP_EOF:
 	  done_lexing = true;
-	  break;
-	}
-      else if (tok->type == CPP_OPEN_BRACE)
-	{
+	  goto done;
+
+	case CPP_OPEN_BRACE:
+	  if (mode == decl_extern_c)
+	    {
+	      extern_c_depth++;
+	      mode = decl_start;
+	      break;
+	    }
+
+	  /* FALLTHROUGH.  */
+	case CPP_OPEN_PAREN:
+	case CPP_OPEN_SQUARE:
 	  depth++;
-	  in_decl = false;
-	}
-      else if (tok->type == CPP_CLOSE_BRACE)
-	{
+	  if (mode != decl_header)
+	    mode = decl_start;
+	  break;
+
+	case CPP_CLOSE_BRACE:
+	  if (!depth)
+	    {
+	      if (mode == decl_header)
+		goto done;
+	      if (extern_c_depth)
+		extern_c_depth--;
+	    }
+	  /* FALLTHROUGH.  */
+	case CPP_CLOSE_PAREN:
+	case CPP_CLOSE_SQUARE:
 	  if (depth)
 	    depth--;
-	  else if (stop_at_semi)
-	    break;
+	  else if (mode != decl_header)
+	    mode = decl_start;
+	  break;
 
-	  in_decl = false;
+	case CPP_SEMICOLON:
+	  if (!depth && mode == decl_header)
+	    goto done;
+	  mode = decl_start;
+	  break;
+
+	case CPP_STRING:
+	  /* Any string keeps us in decl_extern_c mode.  */
+	  if (mode != decl_extern_c
+	      && mode != decl_header)
+	    mode = decl_other;
+	  break;
+
+	default:
+	  switch (mode)
+	    {
+	    case decl_header:
+	      break;
+
+	    case decl_start:
+	      if (tok->keyword == RID_EXPORT)
+		;
+	      else if (tok->keyword == RID_EXTERN)
+		mode = decl_extern_c;
+	      else if (tok->type == CPP_NAME && !depth && modules_p ()
+		       && C_RID_CODE (tok->u.value) == RID_IMPORT
+		       /* 'import' at top level, or __import inside extern C.  */
+		       && (!extern_c_depth
+			   || IDENTIFIER_POINTER (tok->u.value)[0] == '_'))
+		{
+		  cpp_enable_filename_token (parse_in, true);
+		  tok = vec_safe_push (lexer->buffer, cp_token ());
+		  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN
+						   | C_LEX_STRING_IS_HEADER,
+						   tok);
+		  cpp_enable_filename_token (parse_in, false);
+		  if (tok->type == CPP_HEADER_NAME)
+		    /* A stoppable decl.  */
+		    mode = decl_header;
+		  else
+		    /* Process the token as usual.  */
+		    goto first;
+		}
+	      else
+		mode = decl_other;
+	      break;
+
+	    default:
+	      mode = decl_other;
+	      break;
+	    }
+	  break;
 	}
-      else if (tok->type == CPP_SEMICOLON)
-	{
-	  if (!depth && stop_at_semi)
-	    break;
-	  in_decl = false;
-	}
-      else if (tok->keyword == RID_EXPORT)
-	;
-      else if (!in_decl && !depth && tok->type == CPP_NAME && modules_p ()
-	       && C_RID_CODE (tok->u.value) == RID_IMPORT)
-	{
-	  cpp_enable_filename_token (parse_in, true);
-	  tok = vec_safe_push (lexer->buffer, cp_token ());
-	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN
-					   | C_LEX_STRING_IS_HEADER, tok);
-	  cpp_enable_filename_token (parse_in, false);
-	  if (!depth && tok->type == CPP_HEADER_NAME)
-	    /* A stoppable decl.  */
-	    stop_at_semi = true;
-	  in_decl = true;
-	  goto first;
-	}
-      else
-	in_decl = true;
     }
-
+ done:
   vec_safe_reserve (lexer->buffer, 1);
   lexer->next_token = &(*lexer->buffer)[next_in];
   lexer->last_token = &lexer->buffer->last ();
@@ -4728,13 +4782,15 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
   bool implicit_extern_c = false;
   bool first = modules_p ();
   int preamble = 0; /* Not seen a preamble.  */
-  bool deferred_imports = first; /* Header unit means there is one.  */
+  bool deferred_imports = first; /* Header unit means there is one. */
+  int extern_c_depth = 0;
 
+  /* Push the already tokenized first token.  */
   parser->lexer->next_token = vec_safe_push (parser->lexer->buffer, *tok);
 
  more_tokens:
   /* Tokenize until EOF or end-of-{module,import}-decl.  */
-  bool more_tokens = cp_lexer_tokenize (parser->lexer);
+  bool more_tokens = cp_lexer_tokenize (parser->lexer, extern_c_depth);
 
   /* Parse until EOF.  */
   for (;;)
@@ -4742,7 +4798,8 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
       cp_token *token = cp_lexer_peek_token (parser->lexer);
 
       /* If we're entering or exiting a region that's implicitly
-	 extern "C", modify the lang context appropriately.  */
+	 extern "C", modify the lang context appropriately.  This is
+	 so horrible.  Please die.   */
       if (implicit_extern_c
 	  != cp_lexer_peek_token (parser->lexer)->implicit_extern_c)
 	{
@@ -4766,6 +4823,7 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	}
       else if (token->type == CPP_PRAGMA)
 	{
+	  // FIXME: I think 1103r3 changes this?
 	  /* A pragma does not count as a declaration from a module
 	     POV.  */
 	  cp_parser_pragma (parser, pragma_external, NULL);
@@ -4777,13 +4835,15 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	  bool exporting = token->keyword == RID_EXPORT;
 	  cp_token *next
 	    = exporting ? cp_lexer_peek_nth_token (parser->lexer, 2) : token;
-	  cp_token *after = next->type == CPP_NAME
-	    ? cp_lexer_peek_nth_token (parser->lexer, exporting + 2) : NULL;
-	  if (!after || after->type == CPP_SCOPE)
+	  if (next->type != CPP_NAME
+	      || (cp_lexer_peek_nth_token (parser->lexer, exporting + 2)->type
+		  == CPP_SCOPE))
 	    ;
-	  else if (C_RID_CODE (next->u.value) == RID_MODULE)
+	  else if (C_RID_CODE (next->u.value) == RID_MODULE
+		   && !extern_c_depth)
 	    {
 	      if (deferred_imports)
+		// FIXME: I think p1103 makes this unnecessary
 		/* The GMF may have deferred imports.  Do them before
 		   we become a module.  */
 		process_deferred_imports (parse_in);
@@ -4798,7 +4858,9 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	      first = false;
 	      continue;
 	    }
-	  else if (C_RID_CODE (next->u.value) == RID_IMPORT)
+	  else if (C_RID_CODE (next->u.value) == RID_IMPORT
+		   && (!extern_c_depth
+		       || IDENTIFIER_POINTER (next->u.value)[0] == '_'))
 	    {
 	      first = false;
 	      if (exporting)
@@ -4809,11 +4871,41 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	      deferred_imports = true;
 	      continue;
 	    }
+
+	  if (!exporting)
+	    {
+	      /* Outer level extern "C" { ... }  */
+	      if (next->keyword == RID_EXTERN)
+		{
+		  cp_token *str = cp_lexer_peek_nth_token (parser->lexer, 2);
+		  if (str->type == CPP_STRING
+		      && TREE_STRING_LENGTH (str->u.value) == 3
+		      && TREE_STRING_POINTER (str->u.value)[1] == 'C'
+		      && (cp_lexer_peek_nth_token (parser->lexer, 3)->type
+			  == CPP_OPEN_BRACE))
+		    {
+		      cp_lexer_consume_token (parser->lexer);
+		      cp_lexer_consume_token (parser->lexer);
+		      cp_lexer_consume_token (parser->lexer);
+		      push_lang_context (lang_name_c);
+		      extern_c_depth++;
+		      continue;
+		    }
+		}
+	      else if (next->type == CPP_CLOSE_BRACE && extern_c_depth)
+		{
+		  cp_lexer_consume_token (parser->lexer);
+		  pop_lang_context ();
+		  extern_c_depth--;
+		  continue;
+		}
+	    }
 	}
 
       first = false;
       if (preamble > 0)
 	preamble = -1;
+
       if (token->type == CPP_CLOSE_BRACE)
 	{
 	  cp_parser_error (parser, "expected declaration");
@@ -13176,24 +13268,29 @@ cp_parser_already_scoped_statement (cp_parser* parser, bool *if_p,
    Returns a pointer to module object, NULL.   */
 
 static module_state *
-cp_parser_module_name (cp_parser *parser, bool for_module)
+cp_parser_module_name (cp_parser *parser, int kind)
 {
   cp_token *token = cp_lexer_peek_token (parser->lexer);
   if (token->type == CPP_HEADER_NAME)
     {
       cp_lexer_consume_token (parser->lexer);
 
-      if (!for_module)
+      if (kind <= 0)
 	return get_module (token->u.value);
 
       error_at (token->location,
-		"header module cannot be explicitly declared");
+		"header unit cannot be explicitly declared");
+      return NULL;
+    }
+  else if (kind < 0)
+    {
+      error_at (token->location, "header unit name expected");
       return NULL;
     }
 
   module_state *parent = NULL;
   bool partitioned = false;
-  if (!for_module && token->type == CPP_COLON && module_not_header_p ())
+  if (!kind && token->type == CPP_COLON && module_not_header_p ())
     {
       partitioned = true;
       cp_lexer_consume_token (parser->lexer);
@@ -13209,7 +13306,7 @@ cp_parser_module_name (cp_parser *parser, bool for_module)
 
       tree name = cp_lexer_consume_token (parser->lexer)->u.value;
       parent = get_module (name, parent, partitioned);
-      if (for_module && !partitioned
+      if (kind > 0 && !partitioned
 	  && cp_lexer_peek_token (parser->lexer)->type == CPP_COLON)
 	partitioned = true;
       else if (cp_lexer_peek_token (parser->lexer)->type != CPP_DOT)
@@ -13273,7 +13370,8 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting,
 			      bool past_preamble)
 {
   cp_token *token = cp_lexer_consume_token (parser->lexer);
-  module_state *mod = cp_parser_module_name (parser, false);
+  int need_hdr = IDENTIFIER_POINTER (token->u.value)[0] == '_' ? -1 : 0;
+  module_state *mod = cp_parser_module_name (parser, need_hdr);
   tree attrs = cp_parser_attributes_opt (parser);
 
   if (!mod || !cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
