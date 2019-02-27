@@ -1908,7 +1908,7 @@
   [(set (match_operand:VF1_128_256 0 "register_operand")
 	(unspec:VF1_128_256
 	  [(match_operand:VF1_128_256 1 "vector_operand")] UNSPEC_RSQRT))]
-  "TARGET_SSE_MATH"
+  "TARGET_SSE && TARGET_SSE_MATH"
 {
   ix86_emit_swsqrtsf (operands[0], operands[1], <MODE>mode, true);
   DONE;
