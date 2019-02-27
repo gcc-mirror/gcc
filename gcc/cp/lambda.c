@@ -479,9 +479,31 @@ static GTY(()) tree max_id;
    an array of runtime length.  */
 
 static tree
-vla_capture_type (tree array_type)
+vla_capture_type (tree array_type, tree lambda)
 {
-  tree type = xref_tag (record_type, make_anon_name (), ts_current, false);
+  tree closure = LAMBDA_EXPR_CLOSURE (lambda);
+  tree type = make_class_type (RECORD_TYPE);
+  cp_binding_level *slev = current_binding_level;
+  if (closure)
+    {
+      /* If we're already inside the lambda body, force the capture type out
+	 into the enclosing context, so we don't crash trying to instantiate
+	 the capture field in tsubst_lambda_expr.  We won't have a TAG_DEFN
+	 from finish_struct in the enclosing context, which we work around in
+	 tsubst_lambda_expr.  */
+      TYPE_CONTEXT (type) = TYPE_CONTEXT (closure);
+      cp_binding_level *b = current_binding_level;
+      for (;; b = b->level_chain)
+	if (b->this_entity == closure)
+	  {
+	    while (b->this_entity == closure)
+	      b = b->level_chain;
+	    break;
+	  }
+      current_binding_level = b;
+    }
+  type = pushtag (make_anon_name (), type, ts_current);
+  current_binding_level = slev;
   xref_basetypes (type, NULL_TREE);
   type = begin_class_definition (type);
   if (!ptr_id)
@@ -541,7 +563,7 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
       initializer = build_constructor_va (init_list_type_node, 2,
 					  NULL_TREE, build_address (elt),
 					  NULL_TREE, array_type_nelts (type));
-      type = vla_capture_type (type);
+      type = vla_capture_type (type, lambda);
     }
   else if (!dependent_type_p (type)
 	   && variably_modified_type_p (type, NULL_TREE))
