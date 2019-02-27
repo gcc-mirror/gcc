@@ -1,3 +1,13 @@
+2019-02-27  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (import_module): Return bool.
+	* module.cc (import_module): Return is_header flag.
+	* parser.c (cp_parser_tokenize): Rename to ...
+	(cp_lexer_tokenize): ... this.  Reimplement.
+	(cp_parser_import_declaration): Return is_header flag.
+	(cp_parser_translation_unit): Adjust lexer tokenization interaction.
+
 2019-02-26  Nathan Sidwell  <nathan@acm.org>
 
 	Flag_modules is strictly boolean.

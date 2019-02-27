@@ -13595,9 +13595,10 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
   gcc_assert (!mslot->is_lazy ());
 }
 
-/* Import the module NAME into the current TU and maybe re-export it.  */
+/* Import the module NAME into the current TU and maybe re-export it.
+   Return true if the import affects macro state.  */
 
-void
+bool
 import_module (module_state *imp, location_t from_loc, bool exporting,
 	       tree, cpp_reader *reader, bool /*in_extern_c*/)
 {
@@ -13608,7 +13609,7 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
   from_loc = ordinary_loc_of (line_table, from_loc);
 
   if (!imp->check_not_purview (from_loc))
-    return;
+    return false;
 
   if (imp->is_detached ())
     imp->attach (from_loc);
@@ -13621,7 +13622,7 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
   else
     vec_safe_push (pending_imports, imp);
 
-  gcc_assert (global_namespace == current_scope ());
+  return imp->is_header ();
 }
 
 /* Declare the name of the current module to be NAME.  EXPORTING_p is

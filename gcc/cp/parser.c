@@ -248,8 +248,6 @@ static cp_token_cache *cp_token_cache_new
 
 static void cp_parser_initial_pragma
   (cp_token *);
-static cp_token *cp_parser_tokenize
-  (cp_parser *, cp_token *next);
 static bool cp_parser_omp_declare_reduction_exprs
   (tree, cp_parser *);
 static void cp_finalize_oacc_routine
@@ -811,6 +809,104 @@ cp_lexer_get_preprocessor_token (unsigned flags, cp_token *token)
 	default:            token->keyword = C_RID_CODE (token->u.value);
 	}
     }
+}
+
+/* Tokenize until we've got to EOF (return false), or we've just gone
+   past import declaration that affects the tokenizer (return true).
+   Entry is a little tricky, because we want to scan the current last
+   token in the buffer, if it's not already been parsed.  (a) The
+   first token comes from peeking for PCH, and (b) error recovery
+   followig a bad header import decl.  Bah!  */
+
+// FIXME: stop pointing next_token at eof_token.  Smash it into the
+// buffer directly!
+
+static bool
+cp_lexer_tokenize (cp_lexer *lexer)
+{
+  unsigned depth = 0;
+  bool in_decl = false;
+  bool stop_at_semi = false;
+
+  unsigned next_in = lexer->buffer->length ();
+  if (--next_in)
+    /* Drop the fake CPP_EOF token.  */
+    lexer->buffer->pop ();
+
+  cp_token *tok = NULL;
+
+  if (lexer->next_token != &eof_token)
+    {
+      /* We need to examine the token.  */
+      next_in = lexer->next_token - lexer->buffer->address ();
+      tok = &lexer->buffer->last ();
+      goto first;
+    }
+
+  for (;;)
+    {
+      tok = vec_safe_push (lexer->buffer, cp_token ());
+      /* Get the next token.  */
+      cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
+
+    first:
+      if (tok->type == CPP_EOF)
+	{
+	  done_lexing = true;
+	  break;
+	}
+      else if (tok->type == CPP_OPEN_BRACE)
+	{
+	  depth++;
+	  in_decl = false;
+	}
+      else if (tok->type == CPP_CLOSE_BRACE)
+	{
+	  if (depth)
+	    depth--;
+	  else if (stop_at_semi)
+	    break;
+
+	  in_decl = false;
+	}
+      else if (tok->type == CPP_SEMICOLON)
+	{
+	  if (!depth && stop_at_semi)
+	    break;
+	  in_decl = false;
+	}
+      else if (tok->keyword == RID_EXPORT)
+	;
+      else if (!in_decl && !depth && tok->type == CPP_NAME && modules_p ()
+	       && C_RID_CODE (tok->u.value) == RID_IMPORT)
+	{
+	  cpp_enable_filename_token (parse_in, true);
+	  tok = vec_safe_push (lexer->buffer, cp_token ());
+	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN
+					   | C_LEX_STRING_IS_HEADER, tok);
+	  cpp_enable_filename_token (parse_in, false);
+	  if (!depth && tok->type == CPP_HEADER_NAME)
+	    /* A stoppable decl.  */
+	    stop_at_semi = true;
+	  in_decl = true;
+	  goto first;
+	}
+      else
+	in_decl = true;
+    }
+
+  vec_safe_reserve (lexer->buffer, 1);
+  lexer->next_token = &(*lexer->buffer)[next_in];
+  lexer->last_token = &lexer->buffer->last ();
+
+  if (done_lexing)
+    /* End of Buffer.  */
+    return false;
+
+  /* Push an EOF.  */
+  lexer->buffer->quick_push (cp_token ())->type = CPP_EOF;
+  lexer->last_token++;
+  return true;
 }
 
 /* Update the globals input_location and the input file stack from TOKEN.  */
@@ -2097,7 +2193,7 @@ static void cp_parser_already_scoped_statement
 
 static bool cp_parser_module_declaration
   (cp_parser *parser, bool first, bool exporting);
-static void cp_parser_import_declaration
+static bool cp_parser_import_declaration
   (cp_parser *parser, bool exporting, bool past_preamble);
 
 /* Declarations [gram.dcl.dcl] */
@@ -4632,21 +4728,19 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
   bool implicit_extern_c = false;
   bool first = modules_p ();
   int preamble = 0; /* Not seen a preamble.  */
-  bool deferred_imports = modules_p (); /* Header unit means there is
-					   one.  */
+  bool deferred_imports = first; /* Header unit means there is one.  */
 
-  /* Tell the tokenizer there are no tokens to copy.  */
-  parser->lexer->last_token = NULL;
+  parser->lexer->next_token = vec_safe_push (parser->lexer->buffer, *tok);
 
  more_tokens:
   /* Tokenize until EOF or end-of-{module,import}-decl.  */
-  cp_token *imp_tok = cp_parser_tokenize (parser, tok);
+  bool more_tokens = cp_lexer_tokenize (parser->lexer);
 
   /* Parse until EOF.  */
   for (;;)
     {
       cp_token *token = cp_lexer_peek_token (parser->lexer);
-      
+
       /* If we're entering or exiting a region that's implicitly
 	 extern "C", modify the lang context appropriately.  */
       if (implicit_extern_c
@@ -4660,7 +4754,16 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	}
 
       if (token->type == CPP_EOF)
-	break;
+	{
+	  if (more_tokens)
+	    /* We must retokenize some more, as the import affected
+	       the macro table.  Usually we only get here after parsing an
+	       import declaration, but bogus source may have caused the
+	       parser to have scanned past where the tokenizer thought
+	       there was one.  */
+	    goto more_tokens;
+	  break;
+	}
       else if (token->type == CPP_PRAGMA)
 	{
 	  /* A pragma does not count as a declaration from a module
@@ -4700,11 +4803,9 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	      first = false;
 	      if (exporting)
 		cp_lexer_consume_token (parser->lexer);
-	      cp_parser_import_declaration (parser, exporting, preamble < 0);
-	      
-	      if (next == imp_tok)
-		/* This was a macro-affecting import.  */
-		break;
+	      if (cp_parser_import_declaration (parser, exporting, preamble < 0)
+		  && more_tokens)
+		goto more_tokens;
 	      deferred_imports = true;
 	      continue;
 	    }
@@ -4730,27 +4831,6 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	    }
 	  cp_parser_toplevel_declaration (parser);
 	}
-    }
-
-  if (imp_tok)
-    {
-      /* We must retokenize some more, as the import affected
-	 the macro table.  Usually we only get here after parsing an
-	 import declaration, but bogus source may have caused the
-	 parser to have scanned past where the tokenizer thought
-	 there was one.  */
-      if (parser->lexer->next_token->type == CPP_EOF)
-	{
-	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
-	  /* There are no tokens to copy.  */
-	  parser->lexer->last_token = NULL;
-	}
-      else
-	/* We didn't eat all the tokens, reuse the last token.
-	   cp_parser_tokenize will deal with copying any
-	   earlier ones.  */
-	*tok = *--parser->lexer->last_token;
-      goto more_tokens;
     }
 
   /* We may have ended on a deferred import.  */
@@ -13188,7 +13268,7 @@ cp_parser_module_declaration (cp_parser *parser, bool first, bool exporting)
 /* Import-declaration
    import module-name attr-spec-seq-opt ; */
 
-static void
+static bool
 cp_parser_import_declaration (cp_parser *parser, bool exporting,
 			      bool past_preamble)
 {
@@ -13201,13 +13281,17 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting,
       cp_parser_skip_to_end_of_statement (parser);
       if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
 	cp_lexer_consume_token (parser->lexer);
+      return false;
     }
   else if (past_preamble)
-    error_at (token->location,
-	      "module import declarations must be within preamble");
+    {
+      error_at (token->location,
+		"module import declarations must be within preamble");
+      return false;
+    }
   else
-    import_module (mod, token->location, exporting, attrs, parse_in,
-		   current_lang_name == lang_name_c);
+    return import_module (mod, token->location, exporting, attrs, parse_in,
+			  current_lang_name == lang_name_c);
 }
 
 /*  export-declaration.
@@ -41251,89 +41335,6 @@ pragma_lex (tree *value, location_t *loc)
     }
 
   return ret;
-}
-
-/* Tokenize until we've got to EOF (return NULL), or we've just gone
-   past import declaration that affects the tokenizer.  */
-
-static cp_token *
-cp_parser_tokenize (cp_parser *parser, cp_token *tok)
-{
-  unsigned depth = 0;
-  unsigned imp_off = 0;
-  bool in_decl = false;
-
-  unsigned ix = 0;
-  if (cp_token *last = parser->lexer->last_token)
-    for (cp_token *src = parser->lexer->next_token;
-	 src != last; src++)
-      (*parser->lexer->buffer)[ix++] = *src;
-  parser->lexer->buffer->truncate (ix);
-
-  for (;;)
-    {
-      vec_safe_push (parser->lexer->buffer, *tok);
-      if (tok->type == CPP_EOF)
-	{
-	  imp_off = 0;
-	  done_lexing = true;
-	  break;
-	}
-      else if (tok->type == CPP_OPEN_BRACE)
-	{
-	  depth++;
-	  in_decl = false;
-	}
-      else if (tok->type == CPP_CLOSE_BRACE)
-	{
-	  if (depth)
-	    depth--;
-	  else if (imp_off)
-	    break;
-
-	  in_decl = false;
-	}
-      else if (tok->type == CPP_SEMICOLON)
-	{
-	  if (!depth && imp_off)
-	    break;
-	  in_decl = false;
-	}
-      else if (tok->keyword == RID_EXPORT)
-	;
-      else if (!in_decl && !depth && tok->type == CPP_NAME && modules_p ()
-	       && C_RID_CODE (tok->u.value) == RID_IMPORT)
-	{
-	  cpp_enable_filename_token (parse_in, true);
-	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN
-					   | C_LEX_STRING_IS_HEADER, tok);
-	  cpp_enable_filename_token (parse_in, false);
-	  if (!depth && tok->type == CPP_HEADER_NAME && !imp_off)
-	    /* A stoppable decl.  */
-	    imp_off = parser->lexer->buffer->length ();
-	  in_decl = true;
-	  continue;
-	}
-      else
-	in_decl = true;
-
-      /* Get the next token.  */
-      cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
-    }
-
-  vec_safe_reserve (parser->lexer->buffer, 1);
-  parser->lexer->next_token = &(*parser->lexer->buffer)[0];
-  parser->lexer->last_token = &parser->lexer->buffer->last ();
-
-  if (!imp_off)
-    /* End of Buffer.  */
-    return NULL;
-
-  tok->type = CPP_EOF;
-  /* Push an EOF.  */
-  parser->lexer->buffer->quick_push (eof_token);
-  parser->lexer->last_token++;
-  return &(*parser->lexer->buffer)[imp_off - 1];
 }
 
 /* External interface.  */
