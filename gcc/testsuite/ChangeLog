@@ -1,3 +1,8 @@
+2019-02-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89511 - ICE with using-declaration and unscoped enumerator.
+	* g++.dg/cpp0x/using-enum-3.C: New test.
+
 2019-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/89280
