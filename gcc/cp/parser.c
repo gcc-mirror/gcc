@@ -25143,7 +25143,17 @@ cp_parser_noexcept_specification_opt (cp_parser* parser,
 	      parser->type_definition_forbidden_message
 	      = G_("types may not be defined in an exception-specification");
 
-	      expr = cp_parser_constant_expression (parser);
+	      bool non_constant_p;
+	      expr
+		= cp_parser_constant_expression (parser,
+						 /*allow_non_constant=*/true,
+						 &non_constant_p);
+	      if (non_constant_p
+		  && !require_potential_rvalue_constant_expression (expr))
+		{
+		  expr = NULL_TREE;
+		  return_cond = true;
+		}
 
 	      /* Restore the saved message.  */
 	      parser->type_definition_forbidden_message = saved_message;
