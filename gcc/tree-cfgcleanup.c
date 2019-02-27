@@ -723,6 +723,97 @@ cleanup_tree_cfg_bb (basic_block bb)
   return false;
 }
 
+/* Return true if E is an EDGE_ABNORMAL edge for returns_twice calls,
+   i.e. one going from .ABNORMAL_DISPATCHER to basic block which doesn't
+   start with a forced or nonlocal label.  Calls which return twice can return
+   the second time only if they are called normally the first time, so basic
+   blocks which can be only entered through these abnormal edges but not
+   normally are effectively unreachable as well.  Additionally ignore
+   __builtin_setjmp_receiver starting blocks, which have one FORCED_LABEL
+   and which are always only reachable through EDGE_ABNORMAL edge.  They are
+   handled in cleanup_control_flow_pre.  */
+
+static bool
+maybe_dead_abnormal_edge_p (edge e)
+{
+  if ((e->flags & (EDGE_ABNORMAL | EDGE_EH)) != EDGE_ABNORMAL)
+    return false;
+
+  gimple_stmt_iterator gsi = gsi_start_nondebug_after_labels_bb (e->src);
+  gimple *g = gsi_stmt (gsi);
+  if (!g || !gimple_call_internal_p (g, IFN_ABNORMAL_DISPATCHER))
+    return false;
+
+  tree target = NULL_TREE;
+  for (gsi = gsi_start_bb (e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
+    if (glabel *label_stmt = dyn_cast <glabel *> (gsi_stmt (gsi)))
+      {
+	tree this_target = gimple_label_label (label_stmt);
+	if (DECL_NONLOCAL (this_target))
+	  return false;
+	if (FORCED_LABEL (this_target))
+	  {
+	    if (target)
+	      return false;
+	    target = this_target;
+	  }
+      }
+    else
+      break;
+
+  if (target)
+    {
+      /* If there was a single FORCED_LABEL, check for
+	 __builtin_setjmp_receiver with address of that label.  */
+      if (!gsi_end_p (gsi) && is_gimple_debug (gsi_stmt (gsi)))
+	gsi_next_nondebug (&gsi);
+      if (gsi_end_p (gsi))
+	return false;
+      if (!gimple_call_builtin_p (gsi_stmt (gsi), BUILT_IN_SETJMP_RECEIVER))
+	return false;
+
+      tree arg = gimple_call_arg (gsi_stmt (gsi), 0);
+      if (TREE_CODE (arg) != ADDR_EXPR || TREE_OPERAND (arg, 0) != target)
+	return false;
+    }
+  return true;
+}
+
+/* If BB is a basic block ending with __builtin_setjmp_setup, return edge
+   from .ABNORMAL_DISPATCHER basic block to corresponding
+   __builtin_setjmp_receiver basic block, otherwise return NULL.  */
+static edge
+builtin_setjmp_setup_bb (basic_block bb)
+{
+  if (EDGE_COUNT (bb->succs) != 2
+      || ((EDGE_SUCC (bb, 0)->flags
+	   & (EDGE_ABNORMAL | EDGE_EH)) != EDGE_ABNORMAL
+	  && (EDGE_SUCC (bb, 1)->flags
+	      & (EDGE_ABNORMAL | EDGE_EH)) != EDGE_ABNORMAL))
+    return NULL;
+
+  gimple_stmt_iterator gsi = gsi_last_nondebug_bb (bb);
+  if (gsi_end_p (gsi)
+      || !gimple_call_builtin_p (gsi_stmt (gsi), BUILT_IN_SETJMP_SETUP))
+    return NULL;
+
+  tree arg = gimple_call_arg (gsi_stmt (gsi), 1);
+  if (TREE_CODE (arg) != ADDR_EXPR
+      || TREE_CODE (TREE_OPERAND (arg, 0)) != LABEL_DECL)
+    return NULL;
+
+  basic_block recv_bb = label_to_block (cfun, TREE_OPERAND (arg, 0));
+  if (EDGE_COUNT (recv_bb->preds) != 1
+      || (EDGE_PRED (recv_bb, 0)->flags
+	  & (EDGE_ABNORMAL | EDGE_EH)) != EDGE_ABNORMAL
+      || (EDGE_SUCC (bb, 0)->dest != EDGE_PRED (recv_bb, 0)->src
+	  && EDGE_SUCC (bb, 1)->dest != EDGE_PRED (recv_bb, 0)->src))
+    return NULL;
+
+  /* EDGE_PRED (recv_bb, 0)->src should be the .ABNORMAL_DISPATCHER bb.  */
+  return EDGE_PRED (recv_bb, 0);
+}
+
 /* Do cleanup_control_flow_bb in PRE order.  */
 
 static bool
@@ -736,9 +827,12 @@ cleanup_control_flow_pre ()
   dom_state saved_state = dom_info_state (CDI_DOMINATORS);
   set_dom_info_availability (CDI_DOMINATORS, DOM_NONE);
 
-  auto_vec<edge_iterator, 20> stack (n_basic_blocks_for_fn (cfun) + 1);
+  auto_vec<edge_iterator, 20> stack (n_basic_blocks_for_fn (cfun) + 2);
   auto_sbitmap visited (last_basic_block_for_fn (cfun));
   bitmap_clear (visited);
+
+  vec<edge, va_gc> *setjmp_vec = NULL;
+  auto_vec<basic_block, 4> abnormal_dispatchers;
 
   stack.quick_push (ei_start (ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs));
 
@@ -749,12 +843,37 @@ cleanup_control_flow_pre ()
       basic_block dest = ei_edge (ei)->dest;
 
       if (dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
-	  && ! bitmap_bit_p (visited, dest->index))
+	  && !bitmap_bit_p (visited, dest->index)
+	  && (ei_container (ei) == setjmp_vec
+	      || !maybe_dead_abnormal_edge_p (ei_edge (ei))))
 	{
 	  bitmap_set_bit (visited, dest->index);
 	  /* We only possibly remove edges from DEST here, leaving
 	     possibly unreachable code in the IL.  */
 	  retval |= cleanup_control_flow_bb (dest);
+
+	  /* Check for __builtin_setjmp_setup.  Edges from .ABNORMAL_DISPATCH
+	     to __builtin_setjmp_receiver will be normally ignored by
+	     maybe_dead_abnormal_edge_p.  If DEST is a visited
+	     __builtin_setjmp_setup, queue edge from .ABNORMAL_DISPATCH
+	     to __builtin_setjmp_receiver, so that it will be visited too.  */
+	  if (edge e = builtin_setjmp_setup_bb (dest))
+	    {
+	      vec_safe_push (setjmp_vec, e);
+	      if (vec_safe_length (setjmp_vec) == 1)
+		stack.quick_push (ei_start (setjmp_vec));
+	    }
+
+	  if ((ei_edge (ei)->flags
+	       & (EDGE_ABNORMAL | EDGE_EH)) == EDGE_ABNORMAL)
+	    {
+	      gimple_stmt_iterator gsi
+		= gsi_start_nondebug_after_labels_bb (dest);
+	      gimple *g = gsi_stmt (gsi);
+	      if (g && gimple_call_internal_p (g, IFN_ABNORMAL_DISPATCHER))
+		abnormal_dispatchers.safe_push (dest);
+	    }
+
 	  if (EDGE_COUNT (dest->succs) > 0)
 	    stack.quick_push (ei_start (dest->succs));
 	}
@@ -763,8 +882,30 @@ cleanup_control_flow_pre ()
 	  if (!ei_one_before_end_p (ei))
 	    ei_next (&stack.last ());
 	  else
-	    stack.pop ();
+	    {
+	      if (ei_container (ei) == setjmp_vec)
+		vec_safe_truncate (setjmp_vec, 0);
+	      stack.pop ();
+	    }
 	}
+    }
+
+  vec_free (setjmp_vec);
+
+  /* If we've marked .ABNORMAL_DISPATCHER basic block(s) as visited
+     above, but haven't marked any of their successors as visited,
+     unmark them now, so that they can be removed as useless.  */
+  basic_block dispatcher_bb;
+  unsigned int k;
+  FOR_EACH_VEC_ELT (abnormal_dispatchers, k, dispatcher_bb)
+    {
+      edge e;
+      edge_iterator ei;
+      FOR_EACH_EDGE (e, ei, dispatcher_bb->succs)
+	if (bitmap_bit_p (visited, e->dest->index))
+	  break;
+      if (e == NULL)
+	bitmap_clear_bit (visited, dispatcher_bb->index);
     }
 
   set_dom_info_availability (CDI_DOMINATORS, saved_state);

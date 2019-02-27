@@ -1,3 +1,10 @@
+2019-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89280
+	* gcc.c-torture/compile/pr89280.c: New test.
+	* gcc.dg/torture/pr57147-2.c: Don't expect a setjmp after noreturn
+	function.  Skip the test for -O0.
+
 2018-02-26  Steve Ellcey  <sellcey@marvell.com>
 
 	* gfortran.dg/simd-builtins-1.f90: Update for aarch64*-*-*.
