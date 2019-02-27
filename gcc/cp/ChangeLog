@@ -1,3 +1,15 @@
+2019-02-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/89488
+	* method.c (process_subob_fn): When maybe_instantiate_noexcept
+	returns false don't call merge_exception_specifiers.
+
+2019-02-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/88987
+	* parser.c (cp_parser_noexcept_specification_opt): Return NULL_TREE
+	for a non-constant parsed expression.
+
 2019-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89481
