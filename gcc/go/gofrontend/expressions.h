@@ -4163,6 +4163,10 @@ class Numeric_constant
 
   Numeric_constant& operator=(const Numeric_constant&);
 
+  // Check equality with another numeric constant.
+  bool
+  equals(const Numeric_constant&) const;
+
   // Set to an unsigned long value.
   void
   set_unsigned_long(Type*, unsigned long);
@@ -4281,6 +4285,10 @@ class Numeric_constant
   // Return an Expression for this value.
   Expression*
   expression(Location) const;
+
+  // Calculate a hash code with a given seed.
+  unsigned int
+  hash(unsigned int seed) const;
 
  private:
   void
