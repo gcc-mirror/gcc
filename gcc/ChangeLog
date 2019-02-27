@@ -1,3 +1,16 @@
+2019-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70341
+	* config/arm/arm.md (arm_casesi_internal): New define_expand.  Rename
+	old define_insn to ...
+	(*arm_casesi_internal): ... this.  Add mode to LABEL_REFs.
+	* config/arm/thumb2.md (thumb2_casesi_internal): New define_expand.
+	Rename old define_insn to ...
+	(*thumb2_casesi_internal): ... this.  Add mode to LABEL_REFs.
+	(thumb2_casesi_internal_pic): New define_expand.  Rename old
+	define_insn to ...
+	(*thumb2_casesi_internal_pic): ... this.  Add mode to LABEL_REFs.
+
 2019-02-27  Richard Biener  <rguenther@suse.de>
 
 	PR debug/88878
