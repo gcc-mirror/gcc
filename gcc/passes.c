@@ -2363,6 +2363,10 @@ should_skip_pass_p (opt_pass *pass)
       && pass->properties_provided != 0)
     return false;
 
+  /* We need to (re-)build cgraph edges as needed.  */
+  if (strstr (pass->name, "build_cgraph_edges") != NULL)
+    return false;
+
   /* Don't skip df init; later RTL passes need it.  */
   if (strstr (pass->name, "dfinit") != NULL)
     return false;
