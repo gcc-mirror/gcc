@@ -40,6 +40,11 @@
 
 static gomp_mutex_t acc_device_lock;
 
+static gomp_mutex_t acc_init_state_lock;
+static enum { uninitialized, initializing, initialized } acc_init_state
+  = uninitialized;
+static pthread_t acc_init_thread;
+
 /* A cached version of the dispatcher for the global "current" accelerator type,
    e.g. used as the default when creating new host threads.  This is the
    device-type equivalent of goacc_device_num (which specifies which device to
@@ -228,6 +233,11 @@ acc_init_1 (acc_device_t d)
   struct gomp_device_descr *base_dev, *acc_dev;
   int ndevs;
 
+  gomp_mutex_lock (&acc_init_state_lock);
+  acc_init_state = initializing;
+  acc_init_thread = pthread_self ();
+  gomp_mutex_unlock (&acc_init_state_lock);
+
   base_dev = resolve_device (d, true);
 
   ndevs = base_dev->get_num_devices_func ();
@@ -246,6 +256,10 @@ acc_init_1 (acc_device_t d)
 
   gomp_init_device (acc_dev);
   gomp_mutex_unlock (&acc_dev->lock);
+
+  gomp_mutex_lock (&acc_init_state_lock);
+  acc_init_state = initialized;
+  gomp_mutex_unlock (&acc_init_state_lock);
 
   return base_dev;
 }
@@ -543,6 +557,17 @@ acc_set_device_type (acc_device_t d)
 
 ialias (acc_set_device_type)
 
+static bool
+self_initializing_p (void)
+{
+  bool res;
+  gomp_mutex_lock (&acc_init_state_lock);
+  res = (acc_init_state == initializing
+	 && pthread_equal (acc_init_thread, pthread_self ()));
+  gomp_mutex_unlock (&acc_init_state_lock);
+  return res;
+}
+
 acc_device_t
 acc_get_device_type (void)
 {
@@ -552,6 +577,15 @@ acc_get_device_type (void)
 
   if (thr && thr->base_dev)
     res = acc_device_type (thr->base_dev->type);
+  else if (self_initializing_p ())
+    /* The Cuda libaccinj64.so version 9.0+ calls acc_get_device_type during the
+       acc_ev_device_init_start event callback, which is dispatched during
+       acc_init_1.  Trying to lock acc_device_lock during such a call (as we do
+       in the else clause below), will result in deadlock, since the lock has
+       already been taken by the acc_init_1 caller.  We work around this problem
+       by using the acc_get_device_type property "If the device type has not yet
+       been selected, the value acc_device_none may be returned".  */
+    ;
   else
     {
       gomp_init_targets_once ();
