@@ -10,6 +10,8 @@
 	(thumb2_casesi_internal_pic): New define_expand.  Rename old
 	define_insn to ...
 	(*thumb2_casesi_internal_pic): ... this.  Add mode to LABEL_REFs.
+	* config/aarch64/aarch64.md (casesi): Create the casesi_dispatch
+	MEM manually here, set MEM_READONLY_P and MEM_NOTRAP_P on it.
 
 2019-02-27  Richard Biener  <rguenther@suse.de>
 

@@ -622,13 +622,27 @@
 				    operands[0], operands[2], operands[4]));
 
     operands[2] = force_reg (DImode, gen_rtx_LABEL_REF (DImode, operands[3]));
-    emit_jump_insn (gen_casesi_dispatch (operands[2], operands[0],
-					 operands[3]));
+    operands[2]
+      = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, operands[2], operands[0]),
+			UNSPEC_CASESI);
+    operands[2] = gen_rtx_MEM (DImode, operands[2]);
+    MEM_READONLY_P (operands[2]) = 1;
+    MEM_NOTRAP_P (operands[2]) = 1;
+    emit_jump_insn (gen_casesi_dispatch (operands[2], operands[3]));
     DONE;
   }
 )
 
-(define_insn "casesi_dispatch"
+(define_expand "casesi_dispatch"
+  [(parallel
+    [(set (pc) (match_operand:DI 0 ""))
+     (clobber (reg:CC CC_REGNUM))
+     (clobber (match_scratch:DI 2))
+     (clobber (match_scratch:DI 3))
+     (use (label_ref:DI (match_operand 1 "")))])]
+  "")
+
+(define_insn "*casesi_dispatch"
   [(parallel
     [(set (pc)
 	  (mem:DI (unspec [(match_operand:DI 0 "register_operand" "r")
@@ -637,7 +651,7 @@
      (clobber (reg:CC CC_REGNUM))
      (clobber (match_scratch:DI 3 "=r"))
      (clobber (match_scratch:DI 4 "=r"))
-     (use (label_ref (match_operand 2 "" "")))])]
+     (use (label_ref:DI (match_operand 2 "" "")))])]
   ""
   "*
   return aarch64_output_casesi (operands);
