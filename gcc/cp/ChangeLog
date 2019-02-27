@@ -1,3 +1,14 @@
+2019-02-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86969 - ICE with constexpr if and recursive generic lambdas.
+	* semantics.c (process_outer_var_ref): Do capture dependent vars.
+	* class.c (finish_struct): Only add TAG_DEFN if T is in
+	current_function_decl.
+	* lambda.c (vla_capture_type): Force the capture type out into the
+	lambda's enclosing function.
+	(add_capture): Pass in the lambda.
+	* pt.c (tsubst_lambda_expr): complete_type a VLA capture type.
+
 2019-02-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89511 - ICE with using-declaration and unscoped enumerator.
