@@ -1,3 +1,27 @@
+2019-02-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89466
+	* acinclude.m4 (GLIBCXX_CONFIGURE_DOCBOOK): Reorder check for local
+	stylesheet directories before check for xsltproc. Try to use
+	xmlcatalog to find local stylesheet directory before trying hardcoded
+	paths. Add path used by suse to hardcoded paths. Adjust xsltproc
+	check to look for the same stylesheet as doc/Makefile.am uses. Don't
+	use xsltproc if xmlcatalog fails to find a local stylesheet.
+	* configure.ac: Check for xmlcatalog.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* doc/Makefile.in: Likewise.
+	* include/Makefile.in: Likewise.
+	* libsupc++/Makefile.in: Likewise.
+	* po/Makefile.in: Likewise.
+	* python/Makefile.in: Likewise.
+	* src/Makefile.in: Likewise.
+	* src/c++11/Makefile.in: Likewise.
+	* src/c++17/Makefile.in: Likewise.
+	* src/c++98/Makefile.in: Likewise.
+	* src/filesystem/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
 2019-02-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/89477
