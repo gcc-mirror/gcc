@@ -2914,9 +2914,13 @@ const struct gcc_debug_hooks dwarf2_lineno_debug_hooks =
    separate comdat sections since the linker will then be able to
    remove duplicates.  But not all tools support .debug_types sections
    yet.  For Dwarf V5 or higher .debug_types doesn't exist any more,
-   it is DW_UT_type unit type in .debug_info section.  */
+   it is DW_UT_type unit type in .debug_info section.  For late LTO
+   debug there should be almost no types emitted so avoid enabling
+   -fdebug-types-section there.  */
 
-#define use_debug_types (dwarf_version >= 4 && flag_debug_types_section)
+#define use_debug_types (dwarf_version >= 4 \
+			 && flag_debug_types_section \
+			 && !in_lto_p)
 
 /* Various DIE's use offsets relative to the beginning of the
    .debug_info section to refer to each other.  */
