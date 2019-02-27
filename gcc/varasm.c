@@ -363,7 +363,11 @@ use_object_blocks_p (void)
 
 /* Return the object_block structure for section SECT.  Create a new
    structure if we haven't created one already.  Return null if SECT
-   itself is null.  */
+   itself is null.  Return also null for mergeable sections since
+   section anchors can't be used in mergeable sections anyway,
+   because the linker might move objects around, and using the
+   object blocks infrastructure in that case is both a waste and a
+   maintenance burden.  */
 
 static struct object_block *
 get_block_for_section (section *sect)
@@ -371,6 +375,9 @@ get_block_for_section (section *sect)
   struct object_block *block;
 
   if (sect == NULL)
+    return NULL;
+
+  if (sect->common.flags & SECTION_MERGE)
     return NULL;
 
   object_block **slot
@@ -7014,14 +7021,13 @@ default_asm_output_anchor (rtx symbol)
 bool
 default_use_anchors_for_symbol_p (const_rtx symbol)
 {
-  section *sect;
   tree decl;
+  section *sect = SYMBOL_REF_BLOCK (symbol)->sect;
 
-  /* Don't use anchors for mergeable sections.  The linker might move
-     the objects around.  */
-  sect = SYMBOL_REF_BLOCK (symbol)->sect;
-  if (sect->common.flags & SECTION_MERGE)
-    return false;
+  /* This function should only be called with non-zero SYMBOL_REF_BLOCK,
+     furthermore get_block_for_section should not create object blocks
+     for mergeable sections.  */
+  gcc_checking_assert (sect && !(sect->common.flags & SECTION_MERGE));
 
   /* Don't use anchors for small data sections.  The small data register
      acts as an anchor for such sections.  */
@@ -7630,6 +7636,7 @@ output_object_block (struct object_block *block)
   else
     switch_to_section (block->sect);
 
+  gcc_checking_assert (!(block->sect->common.flags & SECTION_MERGE));
   assemble_align (block->alignment);
 
   /* Define the values of all anchors relative to the current section

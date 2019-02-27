@@ -1,3 +1,10 @@
+2019-02-27  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR rtl-optimization/89490
+	* varasm.c (get_block_for_section): Bail out for mergeable sections.
+	(default_use_anchors_for_symbol_p, output_object_block): Assert the
+	block section is not mergeable.
+
 2019-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70341
