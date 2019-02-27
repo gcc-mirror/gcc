@@ -669,6 +669,7 @@ BUILD_EPUB_TRUE
 XSL_STYLE_DIR
 XMLLINT
 XSLTPROC
+XMLCATALOG
 DOT
 DOXYGEN
 BUILD_INFO_FALSE
@@ -11844,7 +11845,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11847 "configure"
+#line 11848 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11950,7 +11951,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11953 "configure"
+#line 11954 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15636,7 +15637,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15639 "configure"
+#line 15640 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15671,7 +15672,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15674 "configure"
+#line 15675 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15706,7 +15707,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15709 "configure"
+#line 15710 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15742,7 +15743,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15745 "configure"
+#line 15746 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15895,7 +15896,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15898 "configure"
+#line 15899 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15937,7 +15938,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15940 "configure"
+#line 15941 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15971,7 +15972,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15974 "configure"
+#line 15975 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -81481,6 +81482,44 @@ fi
 
 
 # Check for docbook
+# Extract the first word of "xmlcatalog", so it can be a program name with args.
+set dummy xmlcatalog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_XMLCATALOG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$XMLCATALOG"; then
+  ac_cv_prog_XMLCATALOG="$XMLCATALOG" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_XMLCATALOG="yes"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_prog_XMLCATALOG" && ac_cv_prog_XMLCATALOG="no"
+fi
+fi
+XMLCATALOG=$ac_cv_prog_XMLCATALOG
+if test -n "$XMLCATALOG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $XMLCATALOG" >&5
+$as_echo "$XMLCATALOG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
 # Extract the first word of "xsltproc", so it can be a program name with args.
 set dummy xsltproc; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
@@ -81559,31 +81598,28 @@ fi
 
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for docbook stylesheets for documentation creation" >&5
-$as_echo_n "checking for docbook stylesheets for documentation creation... " >&6; }
-glibcxx_stylesheets=no
-if test x${XSLTPROC} = xyes && echo '<title/>' | xsltproc --noout --nonet --xinclude http://docbook.sourceforge.net/release/xsl-ns/current/xhtml-1_1/docbook.xsl - 2>/dev/null; then
-  glibcxx_stylesheets=yes
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_stylesheets" >&5
-$as_echo "$glibcxx_stylesheets" >&6; }
+glibcxx_docbook_url=http://docbook.sourceforge.net/release/xsl-ns/current/
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for local stylesheet directory" >&5
 $as_echo_n "checking for local stylesheet directory... " >&6; }
 glibcxx_local_stylesheets=no
-if test x"$glibcxx_stylesheets" = x"yes"; then
-  if test -d /usr/share/sgml/docbook/xsl-ns-stylesheets; then
-    glibcxx_local_stylesheets=yes
-    XSL_STYLE_DIR=/usr/share/sgml/docbook/xsl-ns-stylesheets
-  fi
-  if test -d /usr/share/xml/docbook/stylesheet/docbook-xsl-ns; then
-    glibcxx_local_stylesheets=yes
-    XSL_STYLE_DIR=/usr/share/xml/docbook/stylesheet/docbook-xsl-ns
-  fi
-  if test -d /usr/share/xml/docbook/stylesheet/nwalsh5/current; then
-    glibcxx_local_stylesheets=yes
-    XSL_STYLE_DIR=/usr/share/xml/docbook/stylesheet/nwalsh5/current
-  fi
+if test x${XMLCATALOG} = xyes && xsl_style_dir=`xmlcatalog "" $glibcxx_docbook_url 2>/dev/null`
+then
+  XSL_STYLE_DIR=`echo $xsl_style_dir | sed -n 's;^file://;;p'`
+  glibcxx_local_stylesheets=yes
+else
+  for dir in \
+    /usr/share/sgml/docbook/xsl-ns-stylesheets \
+    /usr/share/xml/docbook/stylesheet/docbook-xsl-ns \
+    /usr/share/xml/docbook/stylesheet/nwalsh5/current \
+    /usr/share/xml/docbook/stylesheet/nwalsh/current
+  do
+    if test -d $dir; then
+      glibcxx_local_stylesheets=yes
+      XSL_STYLE_DIR=$dir
+      break
+    fi
+  done
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_local_stylesheets" >&5
 $as_echo "$glibcxx_local_stylesheets" >&6; }
@@ -81592,6 +81628,18 @@ if test x"$glibcxx_local_stylesheets" = x"yes"; then
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: $XSL_STYLE_DIR" >&5
 $as_echo "$as_me: $XSL_STYLE_DIR" >&6;}
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for docbook stylesheets for documentation creation" >&5
+$as_echo_n "checking for docbook stylesheets for documentation creation... " >&6; }
+  glibcxx_stylesheets=no
+  if test x${XMLCATALOG} = xno || xmlcatalog "" $glibcxx_docbook_url/xhtml/docbook.xsl >/dev/null 2>&1; then
+    if test x${XSLTPROC} = xyes && echo '<title/>' | xsltproc --noout --nonet --xinclude $glibcxx_docbook_url/xhtml/docbook.xsl - 2>/dev/null; then
+      glibcxx_stylesheets=yes
+    fi
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_stylesheets" >&5
+$as_echo "$glibcxx_stylesheets" >&6; }
+
 else
   glibcxx_stylesheets=no
 fi
