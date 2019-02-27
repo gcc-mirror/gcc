@@ -6656,9 +6656,13 @@ example, warn if an unsigned variable is compared against zero with
 @item -Wabsolute-value @r{(C and Objective-C only)}
 @opindex Wabsolute-value
 @opindex Wno-absolute-value
-Warn when a wrong absolute value function seems to be used or when it
-does not have any effect because its argument is an unsigned type.
-This warning be suppressed with an explicit type cast and it is also
+Warn for calls to standard functions that compute the absolute value
+of an argument when a more appropriate standard function is available.
+For example, calling @code{abs(3.14)} triggers the warning because the
+appropriate function to call to compute the absolute value of a double
+argument is @code{fabs}.  The option also triggers warnings when the
+argument in a call to such a function has an unsigned type.  This
+warning can be suppressed with an explicit type cast and it is also
 enabled by @option{-Wextra}.
 
 @include cppwarnopts.texi
