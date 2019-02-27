@@ -1,3 +1,9 @@
+2018-02-26  Steve Ellcey  <sellcey@marvell.com>
+
+	* config/aarch64/aarch64.c (aarch64_get_multilib_abi_name):
+	New function.
+	(TARGET_GET_MULTILIB_ABI_NAME): New macro.
+
 2019-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89507
