@@ -539,6 +539,7 @@ s-cpu: Makefile
 	rm -f cpugen.go.tmp
 	echo "package cpu" > cpugen.go.tmp
 	echo "const CacheLinePadSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) cachelinesize`" >> cpugen.go.tmp
+	echo "const FunctionDescriptors = $(FUNCTION_DESCRIPTORS)" >> cpugen.go.tmp
 	$(SHELL) $(srcdir)/mvifdiff.sh cpugen.go.tmp cpugen.go
 	$(STAMP) $@
 
