@@ -1,3 +1,15 @@
+2019-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89280
+	* tree-cfgcleanup.c (maybe_dead_abnormal_edge_p,
+	builtin_setjmp_setup_bb): New functions.
+	(cleanup_control_flow_pre): Ignore maybe_dead_abnormal_edge_p edges.
+	When visiting __builtin_setjmp_setup block, queue in special
+	setjmp_vec vector edges from .ABNORMAL_DISPATCHER to corresponding
+	__builtin_setjmp_receiver.  Remove .ABNORMAL_DISPATCHER basic blocks
+	from visited after the loop if they don't have any visited successor
+	blocks.
+
 2018-02-26  Steve Ellcey  <sellcey@marvell.com>
 
 	* config/aarch64/aarch64.c (aarch64_get_multilib_abi_name):

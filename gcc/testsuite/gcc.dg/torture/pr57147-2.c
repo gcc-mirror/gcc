@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-fdump-tree-optimized" } */
 /* { dg-skip-if "" { *-*-* } { "-fno-fat-lto-objects" } { "" } } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
 /* { dg-require-effective-target indirect_jumps } */
 
 struct __jmp_buf_tag {};
@@ -19,4 +20,4 @@ void TestSyscall(void)
   _setjmp (g_return_jmp_buf);
 }
 
-/* { dg-final { scan-tree-dump "setjmp" "optimized" } } */
+/* { dg-final { scan-tree-dump-not "setjmp" "optimized" } } */
