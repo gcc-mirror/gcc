@@ -1,3 +1,14 @@
+2019-02-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89397
+	* config/i386/i386.c (ix86_atomic_assign_expand_fenv): Check
+	TARGET_SSE in addition to TARGET_SSE_MATH.
+
+	(ix86_excess_precision): Ditto.
+	(ix86_float_exceptions_rounding_supported_p): Ditto.
+	(use_rsqrt_p): Ditto.
+	* config/i386/sse.md (rsqrt<mode>2): Ditto.
+
 2019-02-15  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
