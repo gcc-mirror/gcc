@@ -18722,6 +18722,16 @@ aarch64_comp_type_attributes (const_tree type1, const_tree type2)
   return 1;
 }
 
+/* Implement TARGET_GET_MULTILIB_ABI_NAME */
+
+static const char *
+aarch64_get_multilib_abi_name (void)
+{
+  if (TARGET_BIG_END)
+    return TARGET_ILP32 ? "aarch64_be_ilp32" : "aarch64_be";
+  return TARGET_ILP32 ? "aarch64_ilp32" : "aarch64";
+}
+
 /* Implement TARGET_STACK_PROTECT_GUARD. In case of a
    global variable based guard use the default else
    return a null tree.  */
@@ -19243,6 +19253,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_COMP_TYPE_ATTRIBUTES
 #define TARGET_COMP_TYPE_ATTRIBUTES aarch64_comp_type_attributes
+
+#undef TARGET_GET_MULTILIB_ABI_NAME
+#define TARGET_GET_MULTILIB_ABI_NAME aarch64_get_multilib_abi_name
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS
