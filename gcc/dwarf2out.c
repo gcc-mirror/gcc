@@ -9433,7 +9433,7 @@ size_of_die (dw_die_ref die)
 		 we use DW_FORM_ref_addr.  In DWARF2, DW_FORM_ref_addr
 		 is sized by target address length, whereas in DWARF3
 		 it's always sized as an offset.  */
-	      if (use_debug_types)
+	      if (AT_ref (a)->comdat_type_p)
 		size += DWARF_TYPE_SIGNATURE_SIZE;
 	      else if (dwarf_version == 2)
 		size += DWARF2_ADDR_SIZE;
@@ -9877,7 +9877,12 @@ value_format (dw_attr_node *a)
       return DW_FORM_flag;
     case dw_val_class_die_ref:
       if (AT_ref_external (a))
-	return use_debug_types ? DW_FORM_ref_sig8 : DW_FORM_ref_addr;
+	{
+	  if (AT_ref (a)->comdat_type_p)
+	    return DW_FORM_ref_sig8;
+	  else
+	    return DW_FORM_ref_addr;
+	}
       else
 	return DW_FORM_ref;
     case dw_val_class_fde_ref:
