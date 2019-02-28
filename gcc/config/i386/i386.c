@@ -31992,10 +31992,10 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      priority = P_PROC_SSSE3;
 	      break;
 	    case PROCESSOR_NEHALEM:
-	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_AES)
+	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_PCLMUL)
 		{
 		  arg_str = "westmere";
-		  priority = P_AES;
+		  priority = P_PCLMUL;
 		}
 	      else
 		{

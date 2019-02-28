@@ -1,3 +1,9 @@
+2019-02-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89455
+	* config/i386/i386.c (get_builtin_code_for_version): Identify
+	Westmere from PCLMUL, instead of AES.
+
 2019-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/89434
