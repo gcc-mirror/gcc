@@ -1,3 +1,10 @@
+2019-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89434
+	* config/arm/arm.md (*subsi3_carryin_compare_const): Use
+	trunc_int_for_mode (-INTVAL (...), SImode), just instead of
+	-UINTVAL (...).
+
 2019-02-28  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/88530
