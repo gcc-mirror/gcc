@@ -1,3 +1,8 @@
+2019-02-28  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR testsuite/89441
+	* g++.dg/ipa/pr89009.C: Update symbol visibility.
+
 2019-02-28  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/88530
