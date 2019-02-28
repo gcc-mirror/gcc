@@ -779,6 +779,7 @@
   (V32HF "TARGET_AVX512BW")])
 
 ;; Int-float size matches
+(define_mode_iterator VI2F [V8HI V16HI V32HI V8HF V16HF V32HF])
 (define_mode_iterator VI4F_128 [V4SI V4SF])
 (define_mode_iterator VI8F_128 [V2DI V2DF])
 (define_mode_iterator VI4F_256 [V8SI V8SF])
@@ -1361,13 +1362,13 @@
   [(set (match_dup 0) (match_dup 1))])
 
 (define_insn "avx512f_mov<ssescalarmodelower>_mask"
-  [(set (match_operand:VF_128 0 "register_operand" "=v")
-	(vec_merge:VF_128
-	  (vec_merge:VF_128
-	    (match_operand:VF_128 2 "register_operand" "v")
-	    (match_operand:VF_128 3 "nonimm_or_0_operand" "0C")
+  [(set (match_operand:VFH_128 0 "register_operand" "=v")
+	(vec_merge:VFH_128
+	  (vec_merge:VFH_128
+	    (match_operand:VFH_128 2 "register_operand" "v")
+	    (match_operand:VFH_128 3 "nonimm_or_0_operand" "0C")
 	    (match_operand:QI 4 "register_operand" "Yk"))
-	  (match_operand:VF_128 1 "register_operand" "v")
+	  (match_operand:VFH_128 1 "register_operand" "v")
 	  (const_int 1)))]
   "TARGET_AVX512F"
   "vmov<ssescalarmodesuffix>\t{%2, %1, %0%{%4%}%N3|%0%{%4%}%N3, %1, %2}"
@@ -1380,7 +1381,7 @@
 	(vec_merge:<ssevecmode>
 	  (vec_merge:<ssevecmode>
 	    (vec_duplicate:<ssevecmode>
-	      (match_operand:MODEF 1 "memory_operand"))
+	      (match_operand:MODEFH 1 "memory_operand"))
 	    (match_operand:<ssevecmode> 2 "nonimm_or_0_operand")
 	    (match_operand:QI 3 "register_operand"))
 	  (match_dup 4)
@@ -1393,7 +1394,7 @@
 	(vec_merge:<ssevecmode>
 	  (vec_merge:<ssevecmode>
 	    (vec_duplicate:<ssevecmode>
-	      (match_operand:MODEF 1 "memory_operand" "m"))
+	      (match_operand:MODEFH 1 "memory_operand" "m"))
 	    (match_operand:<ssevecmode> 2 "nonimm_or_0_operand" "0C")
 	    (match_operand:QI 3 "register_operand" "Yk"))
 	  (match_operand:<ssevecmode> 4 "const0_operand" "C")
@@ -1406,11 +1407,11 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "avx512f_store<mode>_mask"
-  [(set (match_operand:MODEF 0 "memory_operand" "=m")
-	(if_then_else:MODEF
+  [(set (match_operand:MODEFH 0 "memory_operand" "=m")
+	(if_then_else:MODEFH
 	  (and:QI (match_operand:QI 2 "register_operand" "Yk")
 		 (const_int 1))
-	  (vec_select:MODEF
+	  (vec_select:MODEFH
 	    (match_operand:<ssevecmode> 1 "register_operand" "v")
 	    (parallel [(const_int 0)]))
 	  (match_dup 0)))]
@@ -8818,11 +8819,11 @@
 
 ;; vmovw clears also the higer bits
 (define_insn "vec_set<mode>_0"
-  [(set (match_operand:VF_AVX512FP16 0 "register_operand" "=v,v")
-	(vec_merge:VF_AVX512FP16
-	  (vec_duplicate:VF_AVX512FP16
-	    (match_operand:HF 2 "nonimmediate_operand" "r,m"))
-	  (match_operand:VF_AVX512FP16 1 "const0_operand" "C,C")
+  [(set (match_operand:VI2F 0 "register_operand" "=v,v")
+	(vec_merge:VI2F
+	  (vec_duplicate:VI2F
+	    (match_operand:<ssescalarmode> 2 "nonimmediate_operand" "r,m"))
+	  (match_operand:VI2F 1 "const0_operand" "C,C")
 	  (const_int 1)))]
   "TARGET_AVX512FP16"
   "@

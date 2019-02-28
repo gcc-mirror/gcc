@@ -2453,6 +2453,65 @@ _mm512_maskz_getmant_round_ph (__mmask32 __U, __m512h __A,
 
 #endif /* __OPTIMIZE__ */
 
+/* Intrinsics vmovw.  */
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtsi16_si128 (short __A)
+{
+  return _mm_set_epi16 (0, 0, 0, 0, 0, 0, 0, __A);
+}
+
+extern __inline short
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtsi128_si16 (__m128i __A)
+{
+  return __builtin_ia32_vec_ext_v8hi ((__v8hi)__A, 0);
+}
+
+/* Intrinsics vmovsh.  */
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_load_sh (__m128h __A, __mmask8 __B, _Float16 const* __C)
+{
+  return __builtin_ia32_loadsh_mask (__C, __A, __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_load_sh (__mmask8 __A, _Float16 const* __B)
+{
+  return __builtin_ia32_loadsh_mask (__B, _mm_setzero_ph (), __A);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_store_sh (_Float16 const* __A, __mmask8 __B, __m128h __C)
+{
+  __builtin_ia32_storesh_mask (__A,  __C, __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_move_sh (__m128h __A, __m128h  __B)
+{
+  __A[0] = __B[0];
+  return __A;
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_move_sh (__m128h __A, __mmask8 __B, __m128h  __C, __m128h __D)
+{
+  return __builtin_ia32_vmovsh_mask (__C, __D, __A, __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_move_sh (__mmask8 __A, __m128h  __B, __m128h __C)
+{
+  return __builtin_ia32_vmovsh_mask (__B, __C, _mm_setzero_ph (), __A);
+}
+
 #ifdef __DISABLE_AVX512FP16__
 #undef __DISABLE_AVX512FP16__
 #pragma GCC pop_options

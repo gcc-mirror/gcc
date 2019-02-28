@@ -11085,6 +11085,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case VOID_FTYPE_PFLOAT_V16SF_UHI:
     case VOID_FTYPE_PFLOAT_V8SF_UQI:
     case VOID_FTYPE_PFLOAT_V4SF_UQI:
+    case VOID_FTYPE_PCFLOAT16_V8HF_UQI:
     case VOID_FTYPE_PV32QI_V32HI_USI:
     case VOID_FTYPE_PV16QI_V16HI_UHI:
     case VOID_FTYPE_PUDI_V8HI_UQI:
@@ -11157,6 +11158,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case V16SF_FTYPE_PCFLOAT_V16SF_UHI:
     case V8SF_FTYPE_PCFLOAT_V8SF_UQI:
     case V4SF_FTYPE_PCFLOAT_V4SF_UQI:
+    case V8HF_FTYPE_PCFLOAT16_V8HF_UQI:
       nargs = 3;
       klass = load;
       memory = 0;
@@ -14194,6 +14196,8 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
       break;
     case E_V8HImode:
       use_vector_set = TARGET_SSE2;
+      gen_vec_set_0 = TARGET_AVX512FP16 && one_var == 0
+	? gen_vec_setv8hi_0 : NULL;
       break;
     case E_V8QImode:
       use_vector_set = TARGET_MMX_WITH_SSE && TARGET_SSE4_1;
@@ -14205,8 +14209,12 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
       use_vector_set = TARGET_SSE4_1;
       break;
     case E_V32QImode:
+      use_vector_set = TARGET_AVX;
+      break;
     case E_V16HImode:
       use_vector_set = TARGET_AVX;
+      gen_vec_set_0 = TARGET_AVX512FP16 && one_var == 0
+	? gen_vec_setv16hi_0 : NULL;
       break;
     case E_V8SImode:
       use_vector_set = TARGET_AVX;
@@ -14254,6 +14262,9 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
       use_vector_set = TARGET_AVX512FP16 && one_var == 0;
       gen_vec_set_0 = gen_vec_setv32hf_0;
       break;
+    case E_V32HImode:
+      use_vector_set = TARGET_AVX512FP16 && one_var == 0;
+      gen_vec_set_0 = gen_vec_setv32hi_0;
     default:
       break;
     }
