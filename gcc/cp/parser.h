@@ -57,18 +57,17 @@ struct GTY (()) cp_token {
      it is no longer a valid token and it should be considered
      deleted.  */
   BOOL_BITFIELD purged_p : 1;
-  /* 5 unused bits.  */
+  bool tree_check_p : 1;
+  /* 4 unused bits.  */
   /* The location at which this token was found.  */
   location_t location;
   /* The value associated with this token, if any.  */
   union cp_token_value {
     /* Used for compound tokens such as CPP_NESTED_NAME_SPECIFIER.  */
-    struct tree_check* GTY((tag ("1"))) tree_check_value;
+    struct tree_check* GTY((tag ("true"))) tree_check_value;
     /* Use for all other tokens.  */
-    tree GTY((tag ("0"))) value;
-  } GTY((desc ("(%1.type == CPP_TEMPLATE_ID)"
-	       "|| (%1.type == CPP_NESTED_NAME_SPECIFIER)"
-	       "|| (%1.type == CPP_DECLTYPE)"))) u;
+    tree GTY((tag ("false"))) value;
+  } GTY((desc ("%1.tree_check_p"))) u;
 };
 
 
@@ -98,6 +97,10 @@ struct GTY (()) cp_lexer {
      began saving tokens.  If the stack is non-empty, we are saving
      tokens.  */
   vec<cp_token_position> GTY ((skip)) saved_tokens;
+
+  /* Saved pieces of end token we replaced with the eof token.  */
+  enum cpp_ttype saved_type : 8;
+  enum rid saved_keyword : 8;
 
   /* The next lexer in a linked list of lexers.  */
   struct cp_lexer *next;

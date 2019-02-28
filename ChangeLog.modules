@@ -1,3 +1,19 @@
+2019-02-28  Nathan Sidwell  <nathan@acm.org>
+
+	Remove eof_token
+	gcc/cp/
+	* parser.h (cp_token): Add tree_check_p, adjust GTY tagging.
+	(cp_lexer): Add saved_type, saved_keyword fields.
+	* parser.c (eof_token): Delete.
+	(cp_lexer_new_from_tokens): Overwrite EOF here.
+	(cp_lexer_destroy): Restore overwritten token here.
+	(cp_lexer_token_position, cp_lexer_previous_token_position): Simplify.
+	(cp_lexer_tokenize): Likewise.
+	(cp_lexer_peek_nth_token, cp_lexer_consume_token): Likewise.
+	(cp_lexer_purge_token, cp_lexer_purge_tokens_after): Likewise.
+	(cp_parser_nested_name_specifier, cp_parser_decltype)
+	(cp_parser_template_id): Set tree_check_p.
+
 2019-02-27  Nathan Sidwell  <nathan@acm.org>
 
 	__import in extern "C"
