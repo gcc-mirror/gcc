@@ -1,3 +1,9 @@
+2019-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/89536
+	* tree-ssa-dom.c (edge_info::derive_equivalences) <BIT_NOT_EXPR>: Test
+	only whether bit #0 of the value is 0 instead of the entire value.
+
 2019-02-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87068 - missing diagnostic with fallthrough statement.
