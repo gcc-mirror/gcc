@@ -2,6 +2,11 @@
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR fortran/72741
+	* gfortran.h (enum oacc_routine_lop): Add OACC_ROUTINE_LOP_ERROR.
+	* openmp.c (gfc_oacc_routine_lop, gfc_match_oacc_routine): Use it.
+	* trans-decl.c (add_attributes_to_decl): Likewise.
+
+	PR fortran/72741
 	PR fortran/89433
 	* openmp.c (gfc_match_oacc_routine): Accept intrinsic symbols.
 

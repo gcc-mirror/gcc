@@ -323,7 +323,8 @@ enum oacc_routine_lop
   OACC_ROUTINE_LOP_GANG,
   OACC_ROUTINE_LOP_WORKER,
   OACC_ROUTINE_LOP_VECTOR,
-  OACC_ROUTINE_LOP_SEQ
+  OACC_ROUTINE_LOP_SEQ,
+  OACC_ROUTINE_LOP_ERROR
 };
 
 /* Strings for all symbol attributes.  We use these for dumping the

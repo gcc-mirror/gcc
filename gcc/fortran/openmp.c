@@ -2265,7 +2265,7 @@ gfc_oacc_routine_lop (gfc_omp_clauses *clauses)
 	}
 
       if (n_lop_clauses > 1)
-	gfc_error ("Multiple loop axes specified for routine");
+	ret = OACC_ROUTINE_LOP_ERROR;
     }
 
   return ret;
@@ -2280,6 +2280,7 @@ gfc_match_oacc_routine (void)
   gfc_symbol *sym = NULL;
   gfc_omp_clauses *c = NULL;
   gfc_oacc_routine_name *n = NULL;
+  oacc_routine_lop lop = OACC_ROUTINE_LOP_NONE;
 
   old_loc = gfc_current_locus;
 
@@ -2352,6 +2353,13 @@ gfc_match_oacc_routine (void)
 	  != MATCH_YES))
     return MATCH_ERROR;
 
+  lop = gfc_oacc_routine_lop (c);
+  if (lop == OACC_ROUTINE_LOP_ERROR)
+    {
+      gfc_error ("Multiple loop axes specified for routine at %C");
+      goto cleanup;
+    }
+
   if (isym != NULL)
     {
       /* Diagnose any OpenACC 'routine' directive that doesn't match the
@@ -2381,8 +2389,7 @@ gfc_match_oacc_routine (void)
 				       gfc_current_ns->proc_name->name,
 				       &old_loc))
 	goto cleanup;
-      gfc_current_ns->proc_name->attr.oacc_routine_lop
-	= gfc_oacc_routine_lop (c);
+      gfc_current_ns->proc_name->attr.oacc_routine_lop = lop;
     }
   else
     /* Something has gone wrong, possibly a syntax error.  */

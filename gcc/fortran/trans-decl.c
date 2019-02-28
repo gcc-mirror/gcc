@@ -1425,6 +1425,7 @@ add_attributes_to_decl (symbol_attribute sym_attr, tree list)
 	  code = OMP_CLAUSE_SEQ;
 	  break;
 	case OACC_ROUTINE_LOP_NONE:
+	case OACC_ROUTINE_LOP_ERROR:
 	default:
 	  gcc_unreachable ();
 	}
