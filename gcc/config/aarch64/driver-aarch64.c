@@ -249,27 +249,35 @@ host_detect_local_cpu (int argc, const char **argv)
 	{
 	  for (i = 0; i < num_exts; i++)
 	    {
-	      char *p = NULL;
-	      char *feat_string
-		= concat (aarch64_extensions[i].feat_string, NULL);
+	      const char *p = aarch64_extensions[i].feat_string;
+
+	      /* If the feature contains no HWCAPS string then ignore it for the
+		 auto detection.  */
+	      if (*p == '\0')
+		continue;
+
 	      bool enabled = true;
 
 	      /* This may be a multi-token feature string.  We need
-		 to match all parts, which could be in any order.
-		 If this isn't a multi-token feature string, strtok is
-		 just going to return a pointer to feat_string.  */
-	      p = strtok (feat_string, " ");
-	      while (p != NULL)
+		 to match all parts, which could be in any order.  */
+	      size_t len = strlen (buf);
+	      do
 		{
-		  if (strstr (buf, p) == NULL)
+		  const char *end = strchr (p, ' ');
+		  if (end == NULL)
+		    end = strchr (p, '\0');
+		  if (memmem (buf, len, p, end - p) == NULL)
 		    {
 		      /* Failed to match this token.  Turn off the
 			 features we'd otherwise enable.  */
 		      enabled = false;
 		      break;
 		    }
-		  p = strtok (NULL, " ");
+		  if (*end == '\0')
+		    break;
+		  p = end + 1;
 		}
+	      while (1);
 
 	      if (enabled)
 		extension_flags |= aarch64_extensions[i].flag;
@@ -360,12 +368,12 @@ host_detect_local_cpu (int argc, const char **argv)
 not_found:
   {
    /* If detection fails we ignore the option.
-      Clean up and return empty string.  */
+      Clean up and return NULL.  */
 
     if (f)
       fclose (f);
 
-    return "";
+    return NULL;
   }
 }
 

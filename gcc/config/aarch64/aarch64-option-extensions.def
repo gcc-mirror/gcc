@@ -44,7 +44,8 @@
      the extension (for example, the 'crypto' extension depends on four
      entries: aes, pmull, sha1, sha2 being present).  In that case this field
      should contain a space (" ") separated list of the strings in 'Features'
-     that are required.  Their order is not important.  */
+     that are required.  Their order is not important.  An empty string means
+     do not detect this feature during auto detection.  */
 
 /* Enabling "fp" just enables "fp".
    Disabling "fp" also disables "simd", "crypto", "fp16", "aes", "sha2",
