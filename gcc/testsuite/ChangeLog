@@ -1,3 +1,9 @@
+2019-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89521
+	* gcc.dg/pr89521-1.c: New test.
+	* gcc.dg/pr89521-2.c: New test.
+
 2019-02-28  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR testsuite/89441
