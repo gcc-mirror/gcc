@@ -1,3 +1,9 @@
+2019-02-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/88585
+	* tree.c (find_atomic_core_type): Move ahead in file.
+	(check_base_type): Correctly compare alignments of atomic types.
+
 2019-02-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89455

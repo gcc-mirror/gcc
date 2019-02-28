@@ -6329,51 +6329,11 @@ check_lang_type (const_tree cand, const_tree base)
   return lang_hooks.types.type_hash_eq (cand, base);
 }
 
-/* Returns true iff unqualified CAND and BASE are equivalent.  */
-
-bool
-check_base_type (const_tree cand, const_tree base)
-{
-  return (TYPE_NAME (cand) == TYPE_NAME (base)
-	  /* Apparently this is needed for Objective-C.  */
-	  && TYPE_CONTEXT (cand) == TYPE_CONTEXT (base)
-	  /* Check alignment.  */
-	  && TYPE_ALIGN (cand) == TYPE_ALIGN (base)
-	  && attribute_list_equal (TYPE_ATTRIBUTES (cand),
-				   TYPE_ATTRIBUTES (base)));
-}
-
-/* Returns true iff CAND is equivalent to BASE with TYPE_QUALS.  */
-
-bool
-check_qualified_type (const_tree cand, const_tree base, int type_quals)
-{
-  return (TYPE_QUALS (cand) == type_quals
-	  && check_base_type (cand, base)
-	  && check_lang_type (cand, base));
-}
-
-/* Returns true iff CAND is equivalent to BASE with ALIGN.  */
-
-static bool
-check_aligned_type (const_tree cand, const_tree base, unsigned int align)
-{
-  return (TYPE_QUALS (cand) == TYPE_QUALS (base)
-	  && TYPE_NAME (cand) == TYPE_NAME (base)
-	  /* Apparently this is needed for Objective-C.  */
-	  && TYPE_CONTEXT (cand) == TYPE_CONTEXT (base)
-	  /* Check alignment.  */
-	  && TYPE_ALIGN (cand) == align
-	  && attribute_list_equal (TYPE_ATTRIBUTES (cand),
-				   TYPE_ATTRIBUTES (base))
-	  && check_lang_type (cand, base));
-}
-
 /* This function checks to see if TYPE matches the size one of the built-in 
    atomic types, and returns that core atomic type.  */
 
 static tree
-find_atomic_core_type (tree type)
+find_atomic_core_type (const_tree type)
 {
   tree base_atomic_type;
 
@@ -6408,6 +6368,58 @@ find_atomic_core_type (tree type)
     }
 
   return base_atomic_type;
+}
+
+/* Returns true iff unqualified CAND and BASE are equivalent.  */
+
+bool
+check_base_type (const_tree cand, const_tree base)
+{
+  if (TYPE_NAME (cand) != TYPE_NAME (base)
+      /* Apparently this is needed for Objective-C.  */
+      || TYPE_CONTEXT (cand) != TYPE_CONTEXT (base)
+      || !attribute_list_equal (TYPE_ATTRIBUTES (cand),
+			        TYPE_ATTRIBUTES (base)))
+    return false;
+  /* Check alignment.  */
+  if (TYPE_ALIGN (cand) == TYPE_ALIGN (base))
+    return true;
+  /* Atomic types increase minimal alignment.  We must to do so as well
+     or we get duplicated canonical types. See PR88686.  */
+  if ((TYPE_QUALS (cand) & TYPE_QUAL_ATOMIC))
+    {
+      /* See if this object can map to a basic atomic type.  */
+      tree atomic_type = find_atomic_core_type (cand);
+      if (atomic_type && TYPE_ALIGN (atomic_type) == TYPE_ALIGN (cand))
+       return true;
+    }
+  return false;
+}
+
+/* Returns true iff CAND is equivalent to BASE with TYPE_QUALS.  */
+
+bool
+check_qualified_type (const_tree cand, const_tree base, int type_quals)
+{
+  return (TYPE_QUALS (cand) == type_quals
+	  && check_base_type (cand, base)
+	  && check_lang_type (cand, base));
+}
+
+/* Returns true iff CAND is equivalent to BASE with ALIGN.  */
+
+static bool
+check_aligned_type (const_tree cand, const_tree base, unsigned int align)
+{
+  return (TYPE_QUALS (cand) == TYPE_QUALS (base)
+	  && TYPE_NAME (cand) == TYPE_NAME (base)
+	  /* Apparently this is needed for Objective-C.  */
+	  && TYPE_CONTEXT (cand) == TYPE_CONTEXT (base)
+	  /* Check alignment.  */
+	  && TYPE_ALIGN (cand) == align
+	  && attribute_list_equal (TYPE_ATTRIBUTES (cand),
+				   TYPE_ATTRIBUTES (base))
+	  && check_lang_type (cand, base));
 }
 
 /* Return a version of the TYPE, qualified as indicated by the
