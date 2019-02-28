@@ -1185,7 +1185,9 @@
         (minus:SI (plus:SI (match_dup 1)
                            (match_operand:SI 3 "arm_neg_immediate_operand" "L"))
                   (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
-  "TARGET_32BIT && UINTVAL (operands[2]) == -UINTVAL (operands[3])"
+  "TARGET_32BIT
+   && (INTVAL (operands[2])
+       == trunc_int_for_mode (-INTVAL (operands[3]), SImode))"
   "sbcs\\t%0, %1, #%n3"
   [(set_attr "conds" "set")
    (set_attr "type" "adcs_imm")]
