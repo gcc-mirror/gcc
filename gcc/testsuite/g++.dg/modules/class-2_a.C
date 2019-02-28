@@ -1,5 +1,16 @@
 // { dg-additional-options "-fmodules-ts" }
 // This sequence is for errors
 
-#include "class-1_a.C"
+export module One;
 // { dg-module-bmi "One" }
+
+namespace Bob 
+{
+  struct X;
+  export struct Y {
+    unsigned a;
+    unsigned b;
+  };
+}
+
+export void copy (Bob::Y *, const Bob::Y *);

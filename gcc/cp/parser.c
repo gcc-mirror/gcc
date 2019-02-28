@@ -950,6 +950,7 @@ cp_lexer_tokenize (cp_lexer *lexer, int extern_c_depth)
 	  break;
 	}
     }
+
  done:
   vec_safe_reserve (lexer->buffer, 1);
   lexer->next_token = &(*lexer->buffer)[next_in];
@@ -960,19 +961,45 @@ cp_lexer_tokenize (cp_lexer *lexer, int extern_c_depth)
     return false;
 
   /* Push an EOF.  */
-  lexer->buffer->quick_push (cp_token ())->type = CPP_EOF;
+  static cp_token eof = {CPP_EOF, RID_MAX, 0, false, false, false, false,
+			 UNKNOWN_LOCATION, NULL};
+  tok = lexer->buffer->quick_push (eof);
+  tok[0].location = tok[-1].location;
+
   lexer->last_token++;
   return true;
+}
+
+/* TOK must be lexed before phase 4.  If MAIN_P is true, it must also
+   be from the main file.  Warn if not.  */
+
+static void
+cp_lexer_before_phase_4 (cp_token *tok, bool main_p)
+{
+  location_t loc = tok->location;
+
+  if (IS_ADHOC_LOC (loc))
+    loc = get_location_from_adhoc_loc (line_table, loc);
+
+  char const *err = NULL;
+
+  if (IS_MACRO_LOC (loc))
+    err = G_ ("%qs must not be from macro expansion");
+  else if (main_p
+	   && !MAIN_FILE_P (linemap_check_ordinary
+			    (linemap_lookup (line_table, loc))))
+    err = G_ ("%qs must not be from source inclusion");
+
+  if (err)
+    warning_at (tok->location, 0, err,
+		tok->type == CPP_NAME ? IDENTIFIER_POINTER (tok->u.value) : ";");
 }
 
 /* Update the globals input_location and the input file stack from TOKEN.  */
 static inline void
 cp_lexer_set_source_position_from_token (cp_token *token)
 {
-  if (token->type != CPP_EOF)
-    {
-      input_location = token->location;
-    }
+  input_location = token->location;
 }
 
 /* Update the globals input_location and the input file stack from LEXER.  */
@@ -13310,11 +13337,18 @@ cp_parser_module_declaration (cp_parser *parser, bool first, bool exporting)
   if (first && !exporting && !module_purview_p ()
       && cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
     {
-      /* start global module fragment. */
+      /* Start global module fragment.  The 'module' keyword must be
+	 in the main file before phase-4 begins.  */
+      cp_lexer_before_phase_4 (token, true);
       cp_lexer_consume_token (parser->lexer);
       module_kind |= MK_GLOBAL;
       return false;
     }
+
+  if (!first)
+    /* If there was a GMF, the 'module' keyword must be in the main
+       file before phase-4 begins.  */
+    cp_lexer_before_phase_4 (token, true);
 
   module_state *mod = cp_parser_module_name (parser, true);
   tree attrs = cp_parser_attributes_opt (parser);
@@ -13353,6 +13387,10 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting,
   int need_hdr = IDENTIFIER_POINTER (token->u.value)[0] == '_' ? -1 : 0;
   module_state *mod = cp_parser_module_name (parser, need_hdr);
   tree attrs = cp_parser_attributes_opt (parser);
+  cp_token *semi = cp_lexer_peek_token (parser->lexer);
+
+  if (semi->type == CPP_SEMICOLON)
+    cp_lexer_before_phase_4 (semi, false);
 
   if (!mod || !cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
     {
@@ -13361,15 +13399,18 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting,
 	cp_lexer_consume_token (parser->lexer);
       return false;
     }
-  else if (past_preamble)
-    {
-      error_at (token->location,
-		"module import declarations must be within preamble");
-      return false;
-    }
   else
-    return import_module (mod, token->location, exporting, attrs, parse_in,
-			  current_lang_name == lang_name_c);
+    {
+      if (past_preamble)
+	{
+	  error_at (token->location,
+		    "module import declarations must be within preamble");
+	  return false;
+	}
+      else
+	return import_module (mod, token->location, exporting, attrs, parse_in,
+			      current_lang_name == lang_name_c);
+    }
 }
 
 /*  export-declaration.

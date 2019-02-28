@@ -1,5 +1,15 @@
 2019-02-28  Nathan Sidwell  <nathan@acm.org>
 
+	module & import-semi lexing rules
+	gcc/cp/
+	* parser.c (cp_lexer_tokenize): Fix EOF push.
+	(cp_lexer_before_phase_4): New.
+	(cp_lexer_set_source_position_from_token): Simplify.
+	(cp_parser_{module,import}_declaration): Check phase-4 requirements.
+	gcc/testsuite/
+	* g++.dg/modules/class-2_a.C: Do not #include
+	* g++.dg/modules/token-[123]*.C: New.
+
 	Remove eof_token
 	gcc/cp/
 	* parser.h (cp_token): Add tree_check_p, adjust GTY tagging.
