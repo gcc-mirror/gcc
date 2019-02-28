@@ -1,3 +1,8 @@
+2019-02-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87068 - missing diagnostic with fallthrough statement.
+	* c-c++-common/Wimplicit-fallthrough-37.c: New test.
+
 2019-02-28  Thomas Schwinge  <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 

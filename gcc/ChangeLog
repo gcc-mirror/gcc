@@ -1,3 +1,11 @@
+2019-02-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87068 - missing diagnostic with fallthrough statement.
+	* gimplify.c (expand_FALLTHROUGH_r): If IFN_FALLTHROUGH was found
+	at the end of a seq, save its location to walk_stmt_info.
+	(expand_FALLTHROUGH): Warn if IFN_FALLTHROUGH is at the end of
+	a switch.
+
 2019-02-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/88585
