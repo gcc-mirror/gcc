@@ -2374,17 +2374,44 @@ gfc_match_oacc_routine (void)
     }
   else if (sym != NULL)
     {
-      n = gfc_get_oacc_routine_name ();
-      n->sym = sym;
-      n->clauses = NULL;
-      n->next = NULL;
-      if (gfc_current_ns->oacc_routine_names != NULL)
-	n->next = gfc_current_ns->oacc_routine_names;
+      bool add = true;
 
-      gfc_current_ns->oacc_routine_names = n;
+      /* For a repeated OpenACC 'routine' directive, diagnose if it doesn't
+	 match the first one.  */
+      for (gfc_oacc_routine_name *n_p = gfc_current_ns->oacc_routine_names;
+	   n_p;
+	   n_p = n_p->next)
+	if (n_p->sym == sym)
+	  {
+	    add = false;
+	    if (lop != gfc_oacc_routine_lop (n_p->clauses))
+	      {
+		gfc_error ("!$ACC ROUTINE already applied at %C");
+		goto cleanup;
+	      }
+	  }
+
+      if (add)
+	{
+	  n = gfc_get_oacc_routine_name ();
+	  n->sym = sym;
+	  n->clauses = c;
+	  n->next = gfc_current_ns->oacc_routine_names;
+	  gfc_current_ns->oacc_routine_names = n;
+	}
     }
   else if (gfc_current_ns->proc_name)
     {
+      /* For a repeated OpenACC 'routine' directive, diagnose if it doesn't
+	 match the first one.  */
+      oacc_routine_lop lop_p = gfc_current_ns->proc_name->attr.oacc_routine_lop;
+      if (lop_p != OACC_ROUTINE_LOP_NONE
+	  && lop != lop_p)
+	{
+	  gfc_error ("!$ACC ROUTINE already applied at %C");
+	  goto cleanup;
+	}
+
       if (!gfc_add_omp_declare_target (&gfc_current_ns->proc_name->attr,
 				       gfc_current_ns->proc_name->name,
 				       &old_loc))
