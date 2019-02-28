@@ -1,3 +1,7 @@
+2019-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20190228-1.c: New test.
+
 2019-02-28  Li Jia He  <helijia@linux.ibm.com>
 
 	Backport from trunk

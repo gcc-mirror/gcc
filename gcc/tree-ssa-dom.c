@@ -348,7 +348,7 @@ edge_info::derive_equivalences (tree name, tree value, int recursion_limit)
 		&& TREE_CODE (rhs) == SSA_NAME
 		&& ssa_name_has_boolean_range (rhs))
 	      {
-		if (integer_zerop (value))
+		if ((TREE_INT_CST_LOW (value) & 1) == 0)
 		  res = build_one_cst (TREE_TYPE (rhs));
 		else
 		  res = build_zero_cst (TREE_TYPE (rhs));
