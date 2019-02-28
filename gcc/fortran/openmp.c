@@ -2275,8 +2275,9 @@ match
 gfc_match_oacc_routine (void)
 {
   locus old_loc;
-  gfc_symbol *sym = NULL;
   match m;
+  gfc_intrinsic_sym *isym = NULL;
+  gfc_symbol *sym = NULL;
   gfc_omp_clauses *c = NULL;
   gfc_oacc_routine_name *n = NULL;
 
@@ -2296,12 +2297,19 @@ gfc_match_oacc_routine (void)
   if (m == MATCH_YES)
     {
       char buffer[GFC_MAX_SYMBOL_LEN + 1];
-      gfc_symtree *st;
 
       m = gfc_match_name (buffer);
       if (m == MATCH_YES)
 	{
-	  st = gfc_find_symtree (gfc_current_ns->sym_root, buffer);
+	  gfc_symtree *st = NULL;
+
+	  /* First look for an intrinsic symbol.  */
+	  isym = gfc_find_function (buffer);
+	  if (!isym)
+	    isym = gfc_find_subroutine (buffer);
+	  /* If no intrinsic symbol found, search the current namespace.  */
+	  if (!isym)
+	    st = gfc_find_symtree (gfc_current_ns->sym_root, buffer);
 	  if (st)
 	    {
 	      sym = st->n.sym;
@@ -2310,7 +2318,7 @@ gfc_match_oacc_routine (void)
 	        sym = NULL;
 	    }
 
-	  if (st == NULL
+	  if ((isym == NULL && st == NULL)
 	      || (sym
 		  && !sym->attr.external
 		  && !sym->attr.function
@@ -2344,7 +2352,19 @@ gfc_match_oacc_routine (void)
 	  != MATCH_YES))
     return MATCH_ERROR;
 
-  if (sym != NULL)
+  if (isym != NULL)
+    {
+      /* Diagnose any OpenACC 'routine' directive that doesn't match the
+	 (implicit) one with a 'seq' clause.  */
+      if (c && (c->gang || c->worker || c->vector))
+	{
+	  gfc_error ("Intrinsic symbol specified in !$ACC ROUTINE ( NAME )"
+		     " at %C marked with incompatible GANG, WORKER, or VECTOR"
+		     " clause");
+	  goto cleanup;
+	}
+    }
+  else if (sym != NULL)
     {
       n = gfc_get_oacc_routine_name ();
       n->sym = sym;
@@ -2364,6 +2384,9 @@ gfc_match_oacc_routine (void)
       gfc_current_ns->proc_name->attr.oacc_routine_lop
 	= gfc_oacc_routine_lop (c);
     }
+  else
+    /* Something has gone wrong, possibly a syntax error.  */
+    goto cleanup;
 
   if (n)
     n->clauses = c;

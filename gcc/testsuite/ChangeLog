@@ -1,3 +1,12 @@
+2019-02-28  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR fortran/72741
+	PR fortran/89433
+	* gfortran.dg/goacc/routine-6.f90: Update
+	* gfortran.dg/goacc/routine-intrinsic-1.f: New file.
+	* gfortran.dg/goacc/routine-intrinsic-2.f: Likewise.
+
 2019-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/89521
