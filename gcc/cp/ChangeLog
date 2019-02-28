@@ -1,3 +1,8 @@
+2019-02-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88857 - ICE with value-initialization of argument in template.
+	* call.c (convert_like_real): Don't call build_value_init in template.
+
 2019-02-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86969 - ICE with constexpr if and recursive generic lambdas.
