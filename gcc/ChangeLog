@@ -1,3 +1,14 @@
+2019-02-28  Li Jia He  <helijia@linux.ibm.com>
+
+	Backport from trunk
+	2019-02-20  Li Jia He  <helijia@linux.ibm.com>
+
+	PR target/88100
+	* gcc/config/rs6000/rs6000.c (rs6000_gimple_fold_builtin)
+	<case ALTIVEC_BUILTIN_VSPLTISB, ALTIVEC_BUILTIN_VSPLTISH,
+	ALTIVEC_BUILTIN_VSPLTISW>: Don't convert the operand before
+	range checking it.
+
 2019-02-27  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/89397

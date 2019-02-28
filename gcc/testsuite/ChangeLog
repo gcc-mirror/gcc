@@ -1,3 +1,11 @@
+2019-02-28  Li Jia He  <helijia@linux.ibm.com>
+
+	Backport from trunk
+	2019-02-20  Li Jia He  <helijia@linux.ibm.com>
+
+	PR target/88100
+	* gcc/testsuite/gcc.target/powerpc/pr88100.c: New testcase.
+
 2019-02-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt77.adb: New test.
