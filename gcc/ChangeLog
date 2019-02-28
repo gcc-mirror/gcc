@@ -1,3 +1,10 @@
+2019-02-28  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/88530
+	* config/aarch64/aarch64-option-extensions.def: Document it.
+	* config/aarch64/driver-aarch64.c (host_detect_local_cpu): Skip feature
+	if empty hwcaps.
+
 2019-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/89520
