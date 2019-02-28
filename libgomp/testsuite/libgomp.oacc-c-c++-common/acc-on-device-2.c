@@ -14,7 +14,7 @@ int main ()
 
   int expect = 1;
   
-#if  ACC_DEVICE_TYPE_host
+#ifdef ACC_DEVICE_TYPE_host
   expect = 0;
 #endif
   

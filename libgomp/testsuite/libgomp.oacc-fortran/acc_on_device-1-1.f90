@@ -25,7 +25,7 @@ if (acc_on_device (acc_device_nvidia)) STOP 8
 !$acc end parallel
 
 
-#if !ACC_DEVICE_TYPE_host
+#ifndef ACC_DEVICE_TYPE_host
 
 ! Offloaded.
 
@@ -33,7 +33,7 @@ if (acc_on_device (acc_device_nvidia)) STOP 8
 if (acc_on_device (acc_device_none)) STOP 9
 if (acc_on_device (acc_device_host)) STOP 10
 if (.not. acc_on_device (acc_device_not_host)) STOP 11
-#if ACC_DEVICE_TYPE_nvidia
+#ifdef ACC_DEVICE_TYPE_nvidia
 if (.not. acc_on_device (acc_device_nvidia)) STOP 12
 #else
 if (acc_on_device (acc_device_nvidia)) STOP 13

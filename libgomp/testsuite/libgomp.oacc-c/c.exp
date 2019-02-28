@@ -40,12 +40,12 @@ set_ld_library_path_env_vars
 
 # Test with all available offload targets, and with offloading disabled.
 set SAVE_ALWAYS_CFLAGS "$ALWAYS_CFLAGS"
-foreach offload_target [concat [split $offload_targets ","] "disable"] {
+global offload_target
+foreach offload_target [concat [split $offload_targets ":"] "disable"] {
     set ALWAYS_CFLAGS "$SAVE_ALWAYS_CFLAGS"
-    global openacc_device_type
-    set openacc_device_type [offload_target_to_openacc_device_type $offload_target]
-    set tagopt "-DACC_DEVICE_TYPE_$openacc_device_type=1"
 
+    set openacc_device_type [offload_target_to_openacc_device_type $offload_target]
+    set tagopt "-DACC_DEVICE_TYPE_$openacc_device_type=\"$offload_target\""
     switch $openacc_device_type {
 	"" {
 	    unsupported "$subdir $offload_target offloading"
@@ -53,6 +53,9 @@ foreach offload_target [concat [split $offload_targets ","] "disable"] {
 	}
 	host {
 	    set acc_mem_shared 1
+
+	    # Special case: pass the empty string instead of "disable".
+	    set tagopt "-DACC_DEVICE_TYPE_$openacc_device_type=\"\""
 	}
 	nvidia {
 	    if { ![check_effective_target_openacc_nvidia_accel_present] } {
@@ -79,8 +82,6 @@ foreach offload_target [concat [split $offload_targets ","] "disable"] {
     # handling in test cases, by default only build for the offload target
     # that we're actually going to test.
     set tagopt "$tagopt -foffload=$offload_target"
-    # Force usage of the corresponding OpenACC device type.
-    setenv ACC_DEVICE_TYPE $openacc_device_type
 
     # To get better test coverage for device-specific code that is only
     # ever used in offloading configurations, we'd like more thorough

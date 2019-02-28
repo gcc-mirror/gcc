@@ -37,7 +37,7 @@ main (int argc, char *argv[])
   }
 
 
-#if !ACC_DEVICE_TYPE_host
+#ifndef ACC_DEVICE_TYPE_host
 
   /* Offloaded.  */
 
@@ -49,7 +49,7 @@ main (int argc, char *argv[])
       abort ();
     if (!acc_on_device (acc_device_not_host))
       abort ();
-#if ACC_DEVICE_TYPE_nvidia
+#ifdef ACC_DEVICE_TYPE_nvidia
     if (!acc_on_device (acc_device_nvidia))
       abort ();
 #else

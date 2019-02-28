@@ -249,8 +249,8 @@ if test x"$enable_offload_targets" != x; then
       offload_plugins=$tgt_plugin
       offload_targets=$tgt
     else
-      offload_plugins=$offload_plugins,$tgt_plugin
-      offload_targets=$offload_targets,$tgt
+      offload_plugins=$offload_plugins:$tgt_plugin
+      offload_targets=$offload_targets:$tgt
     fi
     # Configure additional search paths.
     if test "$tgt_plugin" = hsa; then
@@ -265,8 +265,8 @@ if test x"$enable_offload_targets" != x; then
     fi
   done
 fi
-AC_DEFINE_UNQUOTED(OFFLOAD_PLUGINS, "$offload_plugins",
-  [Define to offload plugins, separated by commas.])
+AC_DEFINE_UNQUOTED(OFFLOAD_TARGETS, "$offload_targets",
+  [Define to offload targets, separated by colons.])
 AM_CONDITIONAL([PLUGIN_NVPTX], [test $PLUGIN_NVPTX = 1])
 AC_DEFINE_UNQUOTED([PLUGIN_NVPTX], [$PLUGIN_NVPTX],
   [Define to 1 if the NVIDIA plugin is built, 0 if not.])

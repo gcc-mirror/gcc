@@ -15743,8 +15743,8 @@ rm -f core conftest.err conftest.$ac_objext \
       offload_plugins=$tgt_plugin
       offload_targets=$tgt
     else
-      offload_plugins=$offload_plugins,$tgt_plugin
-      offload_targets=$offload_targets,$tgt
+      offload_plugins=$offload_plugins:$tgt_plugin
+      offload_targets=$offload_targets:$tgt
     fi
     # Configure additional search paths.
     if test "$tgt_plugin" = hsa; then
@@ -15761,7 +15761,7 @@ rm -f core conftest.err conftest.$ac_objext \
 fi
 
 cat >>confdefs.h <<_ACEOF
-#define OFFLOAD_PLUGINS "$offload_plugins"
+#define OFFLOAD_TARGETS "$offload_targets"
 _ACEOF
 
  if test $PLUGIN_NVPTX = 1; then

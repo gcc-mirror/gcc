@@ -441,7 +441,7 @@ int
 lang_specific_pre_link (void)
 {
   if (library)
-    do_spec ("%:include(libgfortran.spec)");
+    do_spec ("%:include(libgfortran.spec)", 0);
 
   return 0;
 }

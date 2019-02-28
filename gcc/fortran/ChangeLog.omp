@@ -1,0 +1,5 @@
+2015-08-20  Joseph Myers  <joseph@codesourcery.com>
+
+	PR libgomp/81886
+	* gfortranspec.c (lang_specific_pre_link): Update call to do_spec.
+

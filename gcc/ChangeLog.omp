@@ -1,0 +1,22 @@
+2015-08-20  Thomas Schwinge  <thomas@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	PR libgomp/81886
+	* doc/invoke.texi (-ffixed-@var{reg}): Document conflict with
+	Fortran options.
+	* gcc.c (add_omp_infile_spec_func, spec_lang_mask_accept): New.
+	(driver_self_specs): Add spec to use %:add-omp-infile().
+	(static_spec_functions): Add add-omp-infile.
+	(struct switchstr): Add lang_mask field.  Expand comment.
+	(struct infile): Add lang_mask field.
+	(add_infile, save_switch, do_spec): Add lang_mask argument.
+	(driver_unknown_option_callback, driver_wrong_lang_callback)
+	(driver_handle_option, process_command, do_self_spec)
+	(driver::do_spec_on_infiles, driver::maybe_run_linker): All
+	callers changed.
+	(give_switch): Check languages of switch against
+	spec_lang_mask_accept.
+	(driver::maybe_putenv_OFFLOAD_TARGETS): Don't free
+	offload_targets.
+	* gcc.h (do_spec): Update prototype.
+

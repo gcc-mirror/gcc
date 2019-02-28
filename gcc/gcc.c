@@ -409,6 +409,7 @@ static const char *replace_extension_spec_func (int, const char **);
 static const char *greater_than_spec_func (int, const char **);
 static const char *debug_level_greater_than_spec_func (int, const char **);
 static const char *find_fortran_preinclude_file (int, const char **);
+static const char *add_omp_infile_spec_func (int, const char **);
 static char *convert_white_space (char *);
 
 /* The Specs Language
@@ -1222,6 +1223,9 @@ static const char *const multilib_defaults_raw[] = MULTILIB_DEFAULTS;
 
 static const char *const driver_self_specs[] = {
   "%{fdump-final-insns:-fdump-final-insns=.} %<fdump-final-insns",
+  /* If linking against libgomp, add a setup file.  */
+  "%{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1):" \
+  "%:add-omp-infile()}",
   DRIVER_SELF_SPECS, CONFIGURE_SPECS, GOMP_SELF_SPECS, GTM_SELF_SPECS
 };
 
@@ -1649,6 +1653,7 @@ static const struct spec_function static_spec_functions[] =
   { "gt",			greater_than_spec_func },
   { "debug-level-gt",		debug_level_greater_than_spec_func },
   { "fortran-preinclude-file",	find_fortran_preinclude_file},
+  { "add-omp-infile",		add_omp_infile_spec_func },
 #ifdef EXTRA_SPEC_FUNCTIONS
   EXTRA_SPEC_FUNCTIONS
 #endif
@@ -3389,7 +3394,8 @@ execute (void)
    The `validated' field describes whether any spec has looked at this switch;
    if it remains false at the end of the run, the switch must be meaningless.
    The `ordering' field is used to temporarily mark switches that have to be
-   kept in a specific order.  */
+   kept in a specific order.
+   The `lang_mask' field stores the flags associated with this option.  */
 
 #define SWITCH_LIVE    			(1 << 0)
 #define SWITCH_FALSE   			(1 << 1)
@@ -3405,6 +3411,7 @@ struct switchstr
   bool known;
   bool validated;
   bool ordering;
+  unsigned int lang_mask;
 };
 
 static struct switchstr *switches;
@@ -3412,6 +3419,10 @@ static struct switchstr *switches;
 static int n_switches;
 
 static int n_switches_alloc;
+
+/* If nonzero, do not pass through switches for languages not matching
+   this mask.  */
+static unsigned int spec_lang_mask_accept;
 
 /* Set to zero if -fcompare-debug is disabled, positive if it's
    enabled and we're running the first compilation, negative if it's
@@ -3450,6 +3461,7 @@ struct infile
   const char *name;
   const char *language;
   struct compiler *incompiler;
+  unsigned int lang_mask;
   bool compiled;
   bool preprocessed;
 };
@@ -3649,15 +3661,16 @@ alloc_infile (void)
     }
 }
 
-/* Store an input file with the given NAME and LANGUAGE in
+/* Store an input file with the given NAME and LANGUAGE and LANG_MASK in
    infiles.  */
 
 static void
-add_infile (const char *name, const char *language)
+add_infile (const char *name, const char *language, unsigned int lang_mask)
 {
   alloc_infile ();
   infiles[n_infiles].name = name;
-  infiles[n_infiles++].language = language;
+  infiles[n_infiles].language = language;
+  infiles[n_infiles++].lang_mask = lang_mask;
 }
 
 /* Allocate space for a switch in switches.  */
@@ -3678,11 +3691,12 @@ alloc_switch (void)
 }
 
 /* Save an option OPT with N_ARGS arguments in array ARGS, marking it
-   as validated if VALIDATED and KNOWN if it is an internal switch.  */
+   as validated if VALIDATED and KNOWN if it is an internal switch.
+   LANG_MASK is the flags associated with this option.  */
 
 static void
 save_switch (const char *opt, size_t n_args, const char *const *args,
-	     bool validated, bool known)
+	     bool validated, bool known, unsigned int lang_mask)
 {
   alloc_switch ();
   switches[n_switches].part1 = opt + 1;
@@ -3699,6 +3713,7 @@ save_switch (const char *opt, size_t n_args, const char *const *args,
   switches[n_switches].validated = validated;
   switches[n_switches].known = known;
   switches[n_switches].ordering = 0;
+  switches[n_switches].lang_mask = lang_mask;
   n_switches++;
 }
 
@@ -3739,7 +3754,8 @@ driver_unknown_option_callback (const struct cl_decoded_option *decoded)
 	 diagnosed only if there are warnings.  */
       save_switch (decoded->canonical_option[0],
 		   decoded->canonical_option_num_elements - 1,
-		   &decoded->canonical_option[1], false, true);
+		   &decoded->canonical_option[1], false, true,
+		   cl_options[decoded->opt_index].flags);
       return false;
     }
   if (decoded->opt_index == OPT_SPECIAL_unknown)
@@ -3747,7 +3763,8 @@ driver_unknown_option_callback (const struct cl_decoded_option *decoded)
       /* Give it a chance to define it a spec file.  */
       save_switch (decoded->canonical_option[0],
 		   decoded->canonical_option_num_elements - 1,
-		   &decoded->canonical_option[1], false, false);
+		   &decoded->canonical_option[1], false, false,
+		   cl_options[decoded->opt_index].flags);
       return false;
     }
   else
@@ -3774,7 +3791,8 @@ driver_wrong_lang_callback (const struct cl_decoded_option *decoded,
   else
     save_switch (decoded->canonical_option[0],
 		 decoded->canonical_option_num_elements - 1,
-		 &decoded->canonical_option[1], false, true);
+		 &decoded->canonical_option[1], false, true,
+		 option->flags);
 }
 
 static const char *spec_lang = 0;
@@ -4033,7 +4051,8 @@ driver_handle_option (struct gcc_options *opts,
 	compare_debug_opt = NULL;
       else
 	compare_debug_opt = arg;
-      save_switch (compare_debug_replacement_opt, 0, NULL, validated, true);
+      save_switch (compare_debug_replacement_opt, 0, NULL, validated, true,
+		   cl_options[opt_index].flags);
       set_source_date_epoch_envvar ();
       return true;
 
@@ -4094,17 +4113,17 @@ driver_handle_option (struct gcc_options *opts,
 	for (j = 0; arg[j]; j++)
 	  if (arg[j] == ',')
 	    {
-	      add_infile (save_string (arg + prev, j - prev), "*");
+	      add_infile (save_string (arg + prev, j - prev), "*", 0);
 	      prev = j + 1;
 	    }
 	/* Record the part after the last comma.  */
-	add_infile (arg + prev, "*");
+	add_infile (arg + prev, "*", 0);
       }
       do_save = false;
       break;
 
     case OPT_Xlinker:
-      add_infile (arg, "*");
+      add_infile (arg, "*", 0);
       do_save = false;
       break;
 
@@ -4121,19 +4140,21 @@ driver_handle_option (struct gcc_options *opts,
     case OPT_l:
       /* POSIX allows separation of -l and the lib arg; canonicalize
 	 by concatenating -l with its arg */
-      add_infile (concat ("-l", arg, NULL), "*");
+      add_infile (concat ("-l", arg, NULL), "*", 0);
       do_save = false;
       break;
 
     case OPT_L:
       /* Similarly, canonicalize -L for linkers that may not accept
 	 separate arguments.  */
-      save_switch (concat ("-L", arg, NULL), 0, NULL, validated, true);
+      save_switch (concat ("-L", arg, NULL), 0, NULL, validated, true,
+		   cl_options[opt_index].flags);
       return true;
 
     case OPT_F:
       /* Likewise -F.  */
-      save_switch (concat ("-F", arg, NULL), 0, NULL, validated, true);
+      save_switch (concat ("-F", arg, NULL), 0, NULL, validated, true,
+		   cl_options[opt_index].flags);
       return true;
 
     case OPT_save_temps:
@@ -4260,7 +4281,8 @@ driver_handle_option (struct gcc_options *opts,
       save_temps_prefix = xstrdup (arg);
       /* On some systems, ld cannot handle "-o" without a space.  So
 	 split the option from its argument.  */
-      save_switch ("-o", 1, &arg, validated, true);
+      save_switch ("-o", 1, &arg, validated, true,
+		   cl_options[opt_index].flags);
       return true;
 
 #ifdef ENABLE_DEFAULT_PIE
@@ -4294,9 +4316,12 @@ driver_handle_option (struct gcc_options *opts,
     }
 
   if (do_save)
+    {
     save_switch (decoded->canonical_option[0],
 		 decoded->canonical_option_num_elements - 1,
-		 &decoded->canonical_option[1], validated, true);
+		 &decoded->canonical_option[1], validated, true,
+		 cl_options[opt_index].flags);
+    }
   return true;
 }
 
@@ -4596,7 +4621,7 @@ process_command (unsigned int decoded_options_count,
 	      error ("%s: %m", fname + resp);
 	    }
           else
-	    add_infile (arg, spec_lang);
+	    add_infile (arg, spec_lang, 0);
 
           free (fname);
 	  continue;
@@ -4746,7 +4771,8 @@ process_command (unsigned int decoded_options_count,
   if (compare_debug == 2 || compare_debug == 3)
     {
       const char *opt = concat ("-fcompare-debug=", compare_debug_opt, NULL);
-      save_switch (opt, 0, NULL, false, true);
+      save_switch (opt, 0, NULL, false, true,
+		   cl_options[OPT_fcompare_debug_].flags);
       compare_debug = 1;
     }
 
@@ -4757,7 +4783,7 @@ process_command (unsigned int decoded_options_count,
 
       /* Create a dummy input file, so that we can pass
 	 the help option on to the various sub-processes.  */
-      add_infile ("help-dummy", "c");
+      add_infile ("help-dummy", "c", 0);
     }
 
   /* Decide if undefined variable references are allowed in specs.  */
@@ -4978,13 +5004,15 @@ insert_wrapper (const char *wrapper)
 }
 
 /* Process the spec SPEC and run the commands specified therein.
+   If LANG_MASK is nonzero, switches for other languages are discarded.
    Returns 0 if the spec is successfully processed; -1 if failed.  */
 
 int
-do_spec (const char *spec)
+do_spec (const char *spec, unsigned int lang_mask)
 {
   int value;
 
+  spec_lang_mask_accept = lang_mask;
   value = do_spec_2 (spec, NULL);
 
   /* Force out any unfinished command.
@@ -5144,7 +5172,8 @@ do_self_spec (const char *spec)
 	      save_switch (decoded_options[j].canonical_option[0],
 			   (decoded_options[j].canonical_option_num_elements
 			    - 1),
-			   &decoded_options[j].canonical_option[1], false, true);
+			   &decoded_options[j].canonical_option[1], false, true,
+			   cl_options[decoded_options[j].opt_index].flags);
 	      break;
 
 	    default:
@@ -6723,6 +6752,14 @@ check_live_switch (int switchnum, int prefix_length)
 static void
 give_switch (int switchnum, int omit_first_word)
 {
+  int lang_mask = switches[switchnum].lang_mask & ((1U << cl_lang_count) - 1);
+  unsigned int lang_mask_accept = (1U << cl_lang_count) - 1;
+  if (spec_lang_mask_accept != 0)
+    lang_mask_accept = spec_lang_mask_accept;
+  /* Drop switches specific to a language not in the given mask.  */
+  if (lang_mask != 0 && !(lang_mask & lang_mask_accept))
+    return;
+
   if ((switches[switchnum].live_cond & SWITCH_IGNORE) != 0)
     return;
 
@@ -7829,9 +7866,6 @@ driver::maybe_putenv_OFFLOAD_TARGETS () const
 		    strlen (offload_targets) + 1);
       xputenv (XOBFINISH (&collect_obstack, char *));
     }
-
-  free (offload_targets);
-  offload_targets = NULL;
 }
 
 /* Reject switches that no pass was interested in.  */
@@ -8145,7 +8179,8 @@ driver::do_spec_on_infiles () const
 		  debug_check_temp_file[1] = NULL;
 		}
 
-	      value = do_spec (input_file_compiler->spec);
+	      value = do_spec (input_file_compiler->spec,
+			       infiles[i].lang_mask);
 	      infiles[i].compiled = true;
 	      if (value < 0)
 		this_file_error = 1;
@@ -8160,7 +8195,8 @@ driver::do_spec_on_infiles () const
 		  n_switches_alloc = n_switches_alloc_debug_check[1];
 		  switches = switches_debug_check[1];
 
-		  value = do_spec (input_file_compiler->spec);
+		  value = do_spec (input_file_compiler->spec,
+				   infiles[i].lang_mask);
 
 		  compare_debug = -compare_debug;
 		  n_switches = n_switches_debug_check[0];
@@ -8315,7 +8351,7 @@ driver::maybe_run_linker (const char *argv0) const
 		    " to the linker.\n\n"));
 	  fflush (stdout);
 	}
-      int value = do_spec (link_command_spec);
+      int value = do_spec (link_command_spec, 0);
       if (value < 0)
 	errorcount = 1;
       linker_was_run = (tmp != execution_count);
@@ -9992,6 +10028,53 @@ find_fortran_preinclude_file (int argc, const char **argv)
   return result;
 }
 
+/* If applicable, generate a C source file containing a constructor call to
+   GOMP_set_offload_targets, to inform libgomp which offload targets have
+   actually been requested (-foffload=[...]), and adds that as an infile.  */
+
+static const char *
+add_omp_infile_spec_func (int argc, const char **)
+{
+  gcc_assert (argc == 0);
+
+  /* Nothing to do if we're not actually offloading.  */
+  if (!ENABLE_OFFLOADING)
+    return NULL;
+  gcc_assert (offload_targets != NULL);
+
+  /* Nothing to do if we're not actually linking.  */
+  if (have_c)
+    return NULL;
+
+  int err;
+  const char *tmp_filename;
+  tmp_filename = make_temp_file (".c");
+  record_temp_file (tmp_filename, !save_temps_flag, 0);
+  FILE *f = fopen (tmp_filename, "w");
+  if (f == NULL)
+    fatal_error (input_location,
+		 "could not open temporary file %s", tmp_filename);
+  /* As libgomp uses constructors internally, and this code is only added when
+     linking against libgomp, it is fine to use a constructor here.  */
+  err = fprintf (f,
+		 "extern void GOMP_set_offload_targets (const char *);\n"
+		 "static __attribute__ ((constructor)) void\n"
+		 "init (void)\n"
+		 "{\n"
+		 "  GOMP_set_offload_targets (\"%s\");\n"
+		 "}\n",
+		 offload_targets);
+  if (err < 0)
+    fatal_error (input_location,
+		 "could not write to temporary file %s", tmp_filename);
+  err = fclose (f);
+  if (err == EOF)
+    fatal_error (input_location,
+		 "could not close temporary file %s", tmp_filename);
+
+  add_infile (tmp_filename, "cpp-output", CL_C);
+  return NULL;
+}
 
 /* Insert backslash before spaces in ORIG (usually a file path), to 
    avoid being broken by spec parser.

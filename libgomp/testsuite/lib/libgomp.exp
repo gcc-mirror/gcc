@@ -120,7 +120,7 @@ proc libgomp_init { args } {
     # Add liboffloadmic build directory in LD_LIBRARY_PATH to support
     # Intel MIC offloading testing.
     global offload_plugins
-    if { [string match "*,intelmic,*" ",$offload_plugins,"] } {
+    if { [string match "*:intelmic:*" ":$offload_plugins:"] } {
 	append always_ld_library_path ":${blddir}/../liboffloadmic/.libs"
 	append always_ld_library_path ":${blddir}/../liboffloadmic/plugin/.libs"
 	# libstdc++ is required by liboffloadmic
@@ -373,22 +373,23 @@ proc check_effective_target_openacc_nvidia_accel_present { } {
     } "" ]
 }
 
-# Return 1 if at least one Nvidia GPU is accessible, and the OpenACC 'nvidia'
-# device type is selected.
+# Return 1 if at least one Nvidia GPU is accessible, and 'nvptx' offloading is
+# selected by 'global offload_target'.
 
 proc check_effective_target_openacc_nvidia_accel_selected { } {
     if { ![check_effective_target_openacc_nvidia_accel_present] } {
 	return 0;
     }
-    global openacc_device_type
-    return [string match "nvidia" $openacc_device_type]
+    global offload_target
+    return [string match "nvptx*" $offload_target]
 }
 
-# Return 1 if the OpenACC 'host' device type is selected.
+# Return 1 if explicit host-fallback execution is selected by 'global
+# offload_target'.
 
 proc check_effective_target_openacc_host_selected { } {
-    global openacc_device_type
-    return [string match "host" $openacc_device_type]
+    global offload_target
+    return [string match "disable" $offload_target]
 }
 
 # Return 1 if the selected OMP device is actually a HSA device

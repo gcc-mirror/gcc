@@ -146,8 +146,8 @@
    */
 #undef LT_OBJDIR
 
-/* Define to offload plugins, separated by commas. */
-#undef OFFLOAD_PLUGINS
+/* Define to offload targets, separated by colons. */
+#undef OFFLOAD_TARGETS
 
 /* Name of package */
 #undef PACKAGE

@@ -69,7 +69,7 @@ struct spec_function
 };
 
 /* These are exported by gcc.c.  */
-extern int do_spec (const char *);
+extern int do_spec (const char *, unsigned int);
 extern void record_temp_file (const char *, int, int);
 extern void set_input (const char *);
 

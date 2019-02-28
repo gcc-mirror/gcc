@@ -505,7 +505,7 @@ int
 lang_specific_pre_link (void)
 {
   if ((phobos_library != PHOBOS_NOLINK && need_phobos) || need_spec)
-    do_spec ("%:include(libgphobos.spec)");
+    do_spec ("%:include(libgphobos.spec)", 0);
 
   return 0;
 }

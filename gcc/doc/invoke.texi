@@ -14089,6 +14089,10 @@ macro in the machine description macro file.
 This flag does not have a negative form, because it specifies a
 three-way choice.
 
+Note that this flag may conflict with the @option{-ffixed-form} as
+well as @option{-ffixed-line-length-none} and
+@option{-ffixed-line-length-<n>} options of the Fortran front end.
+
 @item -fcall-used-@var{reg}
 @opindex fcall-used
 Treat the register named @var{reg} as an allocable register that is

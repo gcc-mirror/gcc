@@ -87,6 +87,8 @@ goacc_register (struct gomp_device_descr *disp)
 static const char *
 get_openacc_name (const char *name)
 {
+  /* not supported: _acc_device_intel_mic */
+  /* not supported: _acc_device_hsa */
   if (strcmp (name, "nvptx") == 0)
     return "nvidia";
   else
@@ -103,6 +105,8 @@ name_of_acc_device_t (enum acc_device_t type)
     case acc_device_host: return "host";
     case acc_device_not_host: return "not_host";
     case acc_device_nvidia: return "nvidia";
+    case /* not supported */ _acc_device_intel_mic:
+    case /* not supported */ _acc_device_hsa:
     default: gomp_fatal ("unknown device type %u", (unsigned) type);
     }
 }
@@ -114,6 +118,8 @@ name_of_acc_device_t (enum acc_device_t type)
 static struct gomp_device_descr *
 resolve_device (acc_device_t d, bool fail_is_error)
 {
+  gomp_debug (0, "%s (%d)\n", __FUNCTION__, (int) d);
+
   acc_device_t d_arg = d;
 
   switch (d)
@@ -122,7 +128,9 @@ resolve_device (acc_device_t d, bool fail_is_error)
       {
 	if (goacc_device_type)
 	  {
-	    /* Lookup the named device.  */
+	    /* Lookup the device that has been explicitly named, so do not pay
+	       attention to gomp_offload_target_available_p.  (That is, hard
+	       error if not actually available.)  */
 	    while (++d != _ACC_device_hwm)
 	      if (dispatchers[d]
 		  && !strcasecmp (goacc_device_type,
@@ -148,8 +156,14 @@ resolve_device (acc_device_t d, bool fail_is_error)
     case acc_device_not_host:
       /* Find the first available device after acc_device_not_host.  */
       while (++d != _ACC_device_hwm)
-	if (dispatchers[d] && dispatchers[d]->get_num_devices_func () > 0)
+	if (dispatchers[d]
+	    && dispatchers[d]->get_num_devices_func () > 0
+	    /* No device has been explicitly named, so pay attention to
+	       gomp_offload_target_available_p, to not decide on an offload
+	       target that we don't have offload data available for.  */
+	    && gomp_offload_target_available_p (dispatchers[d]->type))
 	  goto found;
+      /* No non-host device found.  */
       if (d_arg == acc_device_default)
 	{
 	  d = acc_device_host;
@@ -162,9 +176,6 @@ resolve_device (acc_device_t d, bool fail_is_error)
 	}
       else
         return NULL;
-      break;
-
-    case acc_device_host:
       break;
 
     default:
@@ -181,7 +192,8 @@ resolve_device (acc_device_t d, bool fail_is_error)
 
   assert (d != acc_device_none
 	  && d != acc_device_default
-	  && d != acc_device_not_host);
+	  && d != acc_device_not_host
+	  && d < _ACC_device_hwm);
 
   if (dispatchers[d] == NULL && fail_is_error)
     {
@@ -190,6 +202,7 @@ resolve_device (acc_device_t d, bool fail_is_error)
       gomp_fatal ("device type %s not supported", name_of_acc_device_t (d));
     }
 
+  gomp_debug (0, "  %s: %d: %p\n", __FUNCTION__, (int) d, dispatchers[d]);
   return dispatchers[d];
 }
 

@@ -1,5 +1,5 @@
 
-#if ACC_DEVICE_TYPE_nvidia
+#ifdef ACC_DEVICE_TYPE_nvidia
 
 #pragma acc routine nohost
 static int clock (void)

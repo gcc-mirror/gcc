@@ -1,0 +1,63 @@
+2018-05-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/81886
+	* openacc.h (enum acc_device_t): Add _acc_device_intel_mic,
+	_acc_device_hsa.
+	* oacc-init.c (get_openacc_name): Handle these.
+	(resolve_device): Debugging output.
+	* target.c (resolve_device, gomp_init_device)
+	(gomp_offload_target_available_p): Likewise.
+	(GOMP_set_offload_targets): Rewrite.
+	* testsuite/libgomp.oacc-c++/c++.exp: Provide offload target in
+	"-DACC_DEVICE_TYPE_host", and "-DACC_DEVICE_TYPE_nvidia".
+	* testsuite/libgomp.oacc-c/c.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+	* testsuite/libgomp.oacc-c/offload-targets-1.c: New file.
+	* testsuite/libgomp.oacc-c/offload-targets-2.c: Likewise.
+	* testsuite/libgomp.oacc-c/offload-targets-3.c: Likewise.
+	* testsuite/libgomp.oacc-c/offload-targets-4.c: Likewise.
+	* testsuite/libgomp.oacc-c/offload-targets-5.c: Likewise.
+	* testsuite/libgomp.oacc-c/offload-targets-6.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc-on-device-2.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/acc_on_device-1.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-3.f: Likewise.
+
+2017-05-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/81886
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Adapt.
+
+2015-08-20  Thomas Schwinge  <thomas@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	PR libgomp/81886
+	* plugin/configfrag.ac (tgt_name): Do not set.
+	(offload_targets): Separate with colons not commas.
+	* config.h.in, configure: Regenerate.
+	* libgomp.h (gomp_offload_target_available_p): New prototype.
+	* libgomp.map (GOACC_2.0.GOMP_4_BRANCH): Add
+	GOMP_set_offload_targets.
+	* libgomp_g.h (GOMP_set_offload_targets): New prototype.
+	* oacc-init.c (resolve_device): Use
+	gomp_offload_target_available_p.
+	* target.c (resolve_device): Use host fallback when offload data
+	not available.
+	(gomp_offload_target_available_p, offload_target_to_plugin_name)
+	(gomp_offload_targets, gomp_offload_targets_init)
+	(GOMP_set_offload_targets, gomp_plugin_prefix)
+	(gomp_plugin_suffix): New.
+	(gomp_load_plugin_for_device): Add gomp_debug call.
+	(gomp_target_init): Use gomp_offload_targets instead of
+	OFFLOAD_TARGETS.  Handle and rewrie colon-separated string.
+	* testsuite/lib/libgomp.exp: Expect offload targets to be
+	colon-separated.  Adjust matching of offload targets.
+	(libgomp_init)
+	(check_effective_target_openacc_nvidia_accel_configured)
+	(check_effective_target_openacc_host_selected): Adjust checks of
+	offload target names.
+	* testsuite/libgomp.oacc-c++/c++.exp: Adjust set of offload
+	targets.  Use -foffload instead of setenv ACC_DEVICE_TYPE.
+	* testsuite/libgomp.oacc-c/c.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.

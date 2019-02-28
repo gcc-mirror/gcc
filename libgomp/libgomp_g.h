@@ -334,6 +334,7 @@ extern void GOMP_single_copy_end (void *);
 
 /* target.c */
 
+extern void GOMP_set_offload_targets (const char *);
 extern void GOMP_target (int, void (*) (void *), const void *,
 			 size_t, void **, size_t *, unsigned char *);
 extern void GOMP_target_ext (int, void (*) (void *), size_t, void **, size_t *,
