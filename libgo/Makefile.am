@@ -13,6 +13,12 @@ if LIBGO_IS_RTEMS
 subdirs = testsuite
 endif
 
+if LIBGO_IS_DARWIN
+GO_EXPORT_SECTION_NAME = __GNU_GO.__go_export
+else
+GO_EXPORT_SECTION_NAME = .go_export
+endif
+
 SUBDIRS = ${subdirs}
 
 gcc_version := $(shell $(GOC) -dumpversion)
@@ -818,7 +824,7 @@ BUILDGOX = \
 	if test ! -f $$f; then \
 	  f="$(basename $(<D)/.libs/$(<F)).o"; \
 	fi; \
-	$(OBJCOPY) -j .go_export $$f $@.tmp; \
+	$(OBJCOPY) -j $(GO_EXPORT_SECTION_NAME) $$f $@.tmp; \
 	$(SHELL) $(srcdir)/mvifdiff.sh $@.tmp `echo $@ | sed -e 's/s-gox/gox/'`
 
 GOTESTFLAGS =
