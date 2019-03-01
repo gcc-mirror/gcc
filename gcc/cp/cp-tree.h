@@ -7865,11 +7865,18 @@ extern void vtv_recover_class_info              (void);
 extern void vtv_build_vtable_verify_fndecl      (void);
 
 /* In constexpr.c */
+/* Representation of entries in the constexpr function definition table.  */
+
+struct GTY((for_user)) constexpr_fundef {
+  tree decl;
+  tree body;
+};
+
 extern void fini_constexpr			(void);
 extern bool literal_type_p                      (tree);
 extern tree check_constexpr_fundef           	(tree, tree);
-extern tree register_constexpr_fundef           (tree, tree);
-extern tree find_constexpr_fundef		(tree);
+extern tree register_constexpr_fundef           (const constexpr_fundef &);
+extern constexpr_fundef *retrieve_constexpr_fundef		(tree);
 extern bool is_valid_constexpr_fn		(tree, bool);
 extern bool check_constexpr_ctor_body           (tree, tree, bool);
 extern tree constexpr_fn_retval		(tree);

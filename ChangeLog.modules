@@ -1,5 +1,18 @@
 2019-03-01  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (struct constexpr_fundef): Moved from constexpr.c.
+	(register_constexpr_fundef): Adjust.
+	(find_constexpr_fundef): Replace with ...
+	(retrieve_constexpr_fundef): ... this.
+	* constexpr.c (struct constexpr_fundef): Moved to cp-tree.h
+	(constexpr_fundef_hasher): Constify.
+	(retrieve_constexpr_fundef): Make extern.
+	(find_constexpr_fundef): Delete.
+	(check_constexpr_fundef): Adjust.
+	(register_constexpr_fundef): Adjust API.
+	* module.cc (module_state::{read,write}_function_def): Adjust.
+
 	Merge trunk r269077.
 
 	gcc/cp/

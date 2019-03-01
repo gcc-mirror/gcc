@@ -9539,8 +9539,13 @@ module_state::write_function_def (trees_out &out, tree decl)
   out.tree_node (DECL_RESULT (decl));
   out.tree_node (DECL_INITIAL (decl));
   out.tree_node (DECL_SAVED_TREE (decl));
-  out.tree_node (DECL_DECLARED_CONSTEXPR_P (decl)
-		 ? find_constexpr_fundef (decl) : NULL_TREE);
+  if (constexpr_fundef *cexpr = retrieve_constexpr_fundef (decl))
+    {
+      out.tree_node (cexpr->decl);
+      out.tree_node (cexpr->body);
+    }
+  else
+    out.tree_node (NULL_TREE);
 }
 
 void
@@ -9555,7 +9560,11 @@ module_state::read_function_def (trees_in &in, tree decl)
   tree result = in.tree_node ();
   tree initial = in.tree_node ();
   tree saved = in.tree_node ();
-  tree constexpr_body = in.tree_node ();
+  constexpr_fundef cexpr;
+
+  cexpr.decl = in.tree_node ();
+  if (cexpr.decl)
+    cexpr.body = in.tree_node ();
 
   if (in.get_overrun ())
     return NULL_TREE;
@@ -9567,8 +9576,8 @@ module_state::read_function_def (trees_in &in, tree decl)
       DECL_RESULT (decl) = result;
       DECL_INITIAL (decl) = initial;
       DECL_SAVED_TREE (decl) = saved;
-      if (constexpr_body)
-	register_constexpr_fundef (decl, constexpr_body);
+      if (cexpr.decl)
+	register_constexpr_fundef (cexpr);
       in.post_process (decl);
     }
   else if (odr < 0)
