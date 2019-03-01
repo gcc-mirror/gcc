@@ -1,3 +1,8 @@
+2019-03-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89532 - ICE with incomplete type in decltype.
+	* g++.dg/cpp2a/nontype-class14.C: New test.
+
 2019-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Implement P1002R1, Try-catch blocks in constexpr functions

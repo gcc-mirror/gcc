@@ -2859,6 +2859,9 @@ finish_compound_literal (tree type, tree compound_literal,
   compound_literal = digest_init_flags (type, compound_literal,
 					LOOKUP_NORMAL | LOOKUP_NO_NARROWING,
 					complain);
+  if (compound_literal == error_mark_node)
+    return error_mark_node;
+
   /* If we're in a template, return the original compound literal.  */
   if (orig_cl)
     {
