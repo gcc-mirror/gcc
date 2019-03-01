@@ -30,6 +30,7 @@
 #include "attrib.h"
 #include "enum.h"
 #include "lexer.h"
+#include "nspace.h"
 
 bool symbolIsVisible(Dsymbol *origin, Dsymbol *s);
 typedef int (*ForeachDg)(void *ctx, size_t idx, Dsymbol *s);
@@ -310,6 +311,14 @@ Dsymbol *Dsymbol::toAlias2()
     return toAlias();
 }
 
+/**
+ * `pastMixin` returns the enclosing symbol if this is a template mixin.
+ *
+ * `pastMixinAndNspace` does likewise, additionally skipping over Nspaces that
+ * are mangleOnly.
+ *
+ * See also `parent`, `toParent`, `toParent2` and `toParent3`.
+ */
 Dsymbol *Dsymbol::pastMixin()
 {
     Dsymbol *s = this;
@@ -320,15 +329,30 @@ Dsymbol *Dsymbol::pastMixin()
     return s;
 }
 
+/// ditto
+Dsymbol *Dsymbol::pastMixinAndNspace()
+{
+    //printf("Dsymbol::pastMixinAndNspace() %s\n", toChars());
+    Nspace *ns = isNspace();
+    if (!(ns && ns->mangleOnly) && !isTemplateMixin() && !isForwardingAttribDeclaration())
+        return this;
+    if (!parent)
+        return NULL;
+    return parent->pastMixinAndNspace();
+}
+
 /**********************************
  * `parent` field returns a lexically enclosing scope symbol this is a member of.
  *
  * `toParent()` returns a logically enclosing scope symbol this is a member of.
- * It skips over TemplateMixin's.
+ * It skips over TemplateMixin's and Nspaces that are mangleOnly.
  *
  * `toParent2()` returns an enclosing scope symbol this is living at runtime.
  * It skips over both TemplateInstance's and TemplateMixin's.
  * It's used when looking for the 'this' pointer of the enclosing function/class.
+ *
+ * `toParent3()` returns a logically enclosing scope symbol this is a member of.
+ * It skips over TemplateMixin's.
  *
  * Examples:
  *  module mod;
@@ -352,7 +376,7 @@ Dsymbol *Dsymbol::pastMixin()
  */
 Dsymbol *Dsymbol::toParent()
 {
-    return parent ? parent->pastMixin() : NULL;
+    return parent ? parent->pastMixinAndNspace() : NULL;
 }
 
 /// ditto
@@ -362,6 +386,12 @@ Dsymbol *Dsymbol::toParent2()
     while (s && s->isTemplateInstance())
         s = s->parent;
     return s;
+}
+
+/// ditto
+Dsymbol *Dsymbol::toParent3()
+{
+    return parent ? parent->pastMixin() : NULL;
 }
 
 TemplateInstance *Dsymbol::isInstantiated()
