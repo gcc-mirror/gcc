@@ -1,9 +1,8 @@
 /* Test to verify that the vec_extract from a vector of
    signed shorts remains signed.  */
 /* { dg-do run } */
-/* { dg-options "-ansi -mcpu=power8 " } */
+/* { dg-options "-ansi -mdejagnu-cpu=power8 " } */
 /* { dg-require-effective-target p8vector_hw } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
 
 #include <altivec.h>
 #include <stdio.h>

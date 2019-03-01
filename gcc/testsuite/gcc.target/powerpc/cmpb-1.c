@@ -1,8 +1,7 @@
 /* { dg-do run { target { powerpc*-*-* } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power6" } } */
 /* { dg-require-effective-target lp64 } */
 /* { dg-require-effective-target dfp_hw } */
-/* { dg-options "-mcpu=power6" } */
+/* { dg-options "-mdejagnu-cpu=power6" } */
 
 void abort ();
 

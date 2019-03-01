@@ -1,6 +1,5 @@
 /* { dg-do compile { target powerpc64le-*-* } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-O2 -mcpu=power8" } */
+/* { dg-options "-O2 -mdejagnu-cpu=power8" } */
 
 typedef struct
 {

@@ -5,8 +5,7 @@
 
 /* { dg-do run } */
 /* { dg-require-effective-target vsx_hw } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
-/* { dg-options "-mcpu=power7 -O2" } */
+/* { dg-options "-mdejagnu-cpu=power7 -O2" } */
 
 #include <altivec.h>
 

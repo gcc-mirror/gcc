@@ -1,8 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power5" } } */
 /* { dg-require-effective-target lp64 } */
 /* { dg-require-effective-target powerpc_popcntb_ok } */
-/* { dg-options "-mcpu=power5" } */
+/* { dg-options "-mdejagnu-cpu=power5" } */
 
 void abort ();
 

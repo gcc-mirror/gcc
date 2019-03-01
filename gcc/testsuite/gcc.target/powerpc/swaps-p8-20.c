@@ -1,7 +1,6 @@
 /* { dg-do run { target { powerpc64le-*-* } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } }
 /* { dg-require-effective-target powerpc_altivec_ok } */
-/* { dg-options "-O2 -mcpu=power8 -maltivec" } */
+/* { dg-options "-O2 -mdejagnu-cpu=power8 -maltivec" } */
 
 /* The expansion for vector character multiply introduces a vperm operation.
    This tests that the swap optimization to remove swaps by changing the

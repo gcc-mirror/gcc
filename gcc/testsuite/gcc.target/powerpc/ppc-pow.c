@@ -4,8 +4,7 @@
    and other ppc floating point varients.  However, we need to also eliminate
    Darwin, since it doesn't like -mcpu=power6.  */
 /* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power6" } } */
-/* { dg-options "-O2 -ffast-math -mcpu=power6 -mno-vsx -mno-altivec" } */
+/* { dg-options "-O2 -ffast-math -mdejagnu-cpu=power6 -mno-vsx -mno-altivec" } */
 /* { dg-final { scan-assembler-times "fsqrt" 3 } } */
 /* { dg-final { scan-assembler-times "fmul" 1 } } */
 /* { dg-final { scan-assembler-times "bl?\[\\. \]+pow" 1 } } */

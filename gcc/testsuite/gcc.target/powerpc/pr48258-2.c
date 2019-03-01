@@ -1,8 +1,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
-/* { dg-options "-O3 -mcpu=power7 -mabi=altivec -ffast-math" } */
+/* { dg-options "-O3 -mdejagnu-cpu=power7 -mabi=altivec -ffast-math" } */
 /* { dg-final { scan-assembler "xvadddp" } } */
 /* { dg-final { scan-assembler "xvmindp" } } */
 /* { dg-final { scan-assembler "xvmaxdp" } } */

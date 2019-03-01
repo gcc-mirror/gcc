@@ -3,7 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-mpower8-vector -O2 -mcpu=power8" } */
+/* { dg-options "-mpower8-vector -O2 -mdejagnu-cpu=power8" } */
 
 #include <altivec.h>
 
