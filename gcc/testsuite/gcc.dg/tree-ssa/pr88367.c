@@ -1,6 +1,6 @@
 /* PR c/88367 */
 /* { dg-do compile } */
-/* { dg-options "-fno-delete-null-pointer-checks -O2 -fdump-tree-optimized -fno-wrapv-pointer" } */
+/* { dg-options "-fno-delete-null-pointer-checks -O2 -fdump-tree-optimized -fno-wrapv-pointer -fdisable-tree-rvrp" } */
 /* { dg-final { scan-tree-dump-not "link_error \\(\\);" "optimized" } } */
 /* { dg-final { scan-tree-dump-times "bar \\(\\);" 2 "optimized" } } */
 

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-forwprop -fdump-tree-evrp-details" } */
+/* { dg-options "-O2 -fno-tree-forwprop -fdump-tree-evrp-details -fdisable-tree-rvrp" } */
 
 void aa (void);
 void aos (void);

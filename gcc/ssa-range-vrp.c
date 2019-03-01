@@ -1,6 +1,7 @@
 /* VRP implemented with SSA Ranger.
-   Copyright (C) 2018 Free Software Foundation, Inc.
-   Contributed by Andrew MacLeod <amacleod@redhat.com>.
+   Copyright (C) 2018-2019 Free Software Foundation, Inc.
+   Contributed by Andrew MacLeod <amacleod@redhat.com>
+   and Aldy Hernandez <aldyh@redhat.com>.
 
 This file is part of GCC.
 
@@ -51,6 +52,29 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop.h"
 #include "alloc-pool.h"
 #include "vr-values.h"
+#include "tree-ssa-propagate.h"
+
+class simplify_with_iranges : public simplify_with_ranges
+{
+public:
+  simplify_with_iranges (gimple_stmt_iterator *gsi, global_ranger *ranger)
+    : simplify_with_ranges (gsi), m_ranger (ranger) { }
+  value_range *get_value_range (tree);
+private:
+  global_ranger *m_ranger;
+};
+
+value_range *
+simplify_with_iranges::get_value_range (tree op)
+{
+  static value_range vr; // ?? Safe to pass back?
+  irange r;
+  if (!m_ranger->range_of_expr (r, op, stmt))
+    vr.set_undefined ();
+  else
+    irange_to_value_range (vr, r);
+  return &vr;
+}
 
 // Return TRUE if NAME can be propagated.,
 
@@ -76,72 +100,131 @@ argument_ok_to_propagate (tree name)
   return true;
 }
 
-static void
-rvrp_process_bb_end (ssa_ranger& ranger, basic_block bb, bitmap touched)
-{
-  gcond *cond;
-  gimple *stmt = gimple_outgoing_range_stmt_p (bb);
-  irange r;
+// Fold a constant GIMPLE_ASSIGN if possible.  Return TRUE if successful.
 
-  // Look only at conditionals.
-  if (stmt && (cond = dyn_cast <gcond *> (stmt)))
+static bool
+rvrp_fold_const_assign (gassign *assign, const irange &r)
+{
+  irange trange;
+  wide_int wi;
+  gcc_assert (r.singleton_p (wi));
+  tree lhs = gimple_assign_lhs (assign);
+  tree rhs = wide_int_to_tree (TREE_TYPE (lhs), wi);
+  delink_stmt_imm_use (assign);
+  gimple_assign_set_rhs_code (assign, SSA_NAME);
+  gimple_assign_set_rhs1 (assign, rhs);
+  gimple_set_num_ops (assign, 2);
+  return true;
+}
+
+// Fold a constant GIMPLE_COND if possible.  Return TRUE if successful.
+
+static bool
+rvrp_fold_const_cond (gcond *cond, const irange &r)
+{
+  /* Rewrite the condition to either true or false.  */
+  if (r.zero_p ())
+    gimple_cond_make_false (cond);
+  else
+    gimple_cond_make_true (cond);
+  return true;
+}
+
+// Fold STMT in place if possible.  Return TRUE if folding was successful.
+
+static bool
+rvrp_fold (ssa_ranger &ranger, gimple *stmt, bitmap touched)
+{
+  irange r;
+  if (ranger.range_of_stmt (r, stmt) && !r.varying_p ())
     {
-      if (dump_file && (dump_flags & TDF_DETAILS))
+      // If it folds to a constant and it's OK to propagate the args.
+      if (r.singleton_p ())
 	{
-	  fprintf (dump_file, "RVRP: Considering BB %d:  ", bb->index);
-	  print_gimple_stmt (dump_file, cond, 0, TDF_NONE);
-	}
-      // CHeck to see if the expression folds.
-      if (ranger.range_of_stmt (r, stmt) && !r.varying_p ())
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
+	  if (dump_file)
 	    {
-	      fprintf (dump_file, "      Expression evaluates to range: ");
+	      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+	      fprintf (dump_file, "      Expression evaluates to singleton: ");
 	      r.dump (dump_file);
 	    }
-	  // If it folds to a constant and its OK to propagate the args.
-	  if (r.singleton_p ())
+
+	  // Verify we can propagate all SSA names in statement.
+	  for (unsigned i = 1; i < gimple_num_ops (stmt); ++i)
 	    {
-	      if (!argument_ok_to_propagate (gimple_cond_lhs (cond)) ||
-		  !argument_ok_to_propagate (gimple_cond_rhs (cond)))
-		{
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    fprintf (dump_file, "RVRP: Cannot propagate.\n");
-		  return;
-		}
-
-	      // If either operand is an ssa_name, set the touched bit for
-	      // potential removal later if no uses are left.
-	      tree t = ranger.valid_ssa_p (gimple_cond_lhs (cond));
-	      if (t)
+	      tree t = gimple_op (stmt, i);
+	      if (t && !argument_ok_to_propagate (t))
+		return false;
+	    }
+	  // Potentially mark folded SSA_NAMEs for future deletion.
+	  for (unsigned i = 0; i < gimple_num_ops (stmt); ++i)
+	    {
+	      tree t = gimple_op (stmt, i);
+	      if (t && TREE_CODE (t) == SSA_NAME)
 		bitmap_set_bit (touched, SSA_NAME_VERSION (t));
+	    }
 
-	      t = ranger.valid_ssa_p (gimple_cond_rhs (cond));
-	      if (t)
-		bitmap_set_bit (touched, SSA_NAME_VERSION (t));
-
-	      /* Rewrite the condition to either true or false.  */
-	      if (r.zero_p ())
-		gimple_cond_make_false (cond);
-	      else
-		gimple_cond_make_true (cond);
-	      update_stmt (cond);
-
+	  bool changed = false;
+	  switch (gimple_code (stmt))
+	    {
+	    case GIMPLE_COND:
+	      changed = rvrp_fold_const_cond (dyn_cast <gcond *> (stmt), r);
+	      break;
+	    case GIMPLE_ASSIGN:
+	      changed = rvrp_fold_const_assign (dyn_cast <gassign *> (stmt),
+						r);
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	  if (changed)
+	    {
 	      if (dump_file)
 		{
-		  fprintf (dump_file, "RVRP: Branch rewritten to: ");
-		  print_gimple_stmt (dump_file, cond, 0, TDF_NONE);
+		  fprintf (dump_file, "RVRP: %s rewritten to: ",
+			   gimple_code (stmt) == GIMPLE_COND
+			   ? "Branch" : "Statement");
+		  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 		  fprintf (dump_file, "\n");
 		}
+	      update_stmt (stmt);
 	    }
+	  else if (dump_file)
+	    fprintf (dump_file, "RVRP: Cannot propagate.\n");
+	  return changed;
 	}
-      else
-	{
-	  // The expression doesn't fold, but see if any operand
-	  // evaluates to an empty range on one side, indicating the
-	  // edge is not executable.
+    }
+  else
+    {
+      // The expression doesn't fold, but see if any operand evaluates
+      // to an empty range on one side, indicating the edge is not
+      // executable.
+    }
+  return false;
+}
 
+// Given a STMT for which we can't totally fold, attempt to simplify
+// it in place using known range information.
+
+static void
+rvrp_simplify (global_ranger &ranger, gimple_stmt_iterator *gsi)
+{
+  gimple *orig;
+  bool details = dump_file && (dump_flags & TDF_DETAILS);
+  if (details)
+    orig = gimple_copy (gsi_stmt (*gsi));
+
+  simplify_with_iranges simpl (gsi, &ranger);
+  if (simpl.simplify ())
+    {
+      gimple *stmt = gsi_stmt (*gsi);
+      if (details)
+	{
+	  fprintf (dump_file, "RVRP: Simplifying:\t");
+	  print_gimple_stmt (dump_file, orig, 0, TDF_SLIM);
+	  fprintf (dump_file, "\t\t\t");
+	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 	}
+      update_stmt (stmt);
     }
 }
 
@@ -197,6 +280,31 @@ phi_loop_range::adjust_range_with_loop_info (global_ranger &ranger,
   return false;
 }
 
+// Given a bitmap of TOUCHED ssa names throughout the pass, attempt to
+// propagate any uses and possibly remove dead code.
+
+static void
+rvrp_final_propagate (global_ranger &ranger, bitmap touched)
+{
+  if (dump_file && (dump_flags & TDF_DETAILS) && !bitmap_empty_p (touched))
+    {
+      unsigned i;
+      bitmap_iterator bi;
+
+      fprintf (dump_file, "RVRP: Propagating SSAs: ");
+      EXECUTE_IF_SET_IN_BITMAP (touched, 0, i, bi)
+	{
+	  print_generic_expr (dump_file, ssa_name (i));
+	  fprintf (dump_file, ", ");
+	}
+      fprintf (dump_file, "\n");
+    }
+
+  propagate_from_worklist (touched);
+  simple_dce_from_worklist (touched);
+  ranger.export_global_ranges ();
+}
+
 static unsigned int
 execute_ranger_vrp ()
 {
@@ -216,7 +324,9 @@ execute_ranger_vrp ()
   trace_ranger ranger;
   basic_block bb;
   irange r;
-  bitmap touched = BITMAP_ALLOC (NULL);
+  auto_bitmap touched;
+  auto_bitmap bbs_needing_eh_cleanup;
+  auto_vec<gimple *> stmts_that_became_noreturn;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -229,29 +339,35 @@ execute_ranger_vrp ()
 	    {
 	      // Adjust range with loop info and store into the cache.
 	      loop_range.adjust_range_with_loop_info (ranger, phi, r);
-
-	      // bitmap_set_bit (touched, SSA_NAME_VERSION (phi_def));
 	    }
 	}
+
+      if (dump_file)
+	fprintf (dump_file, "RVRP: Considering BB %d.\n", bb->index);
 
       for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
+	  gimple *old_stmt = stmt;
 	  tree lhs = gimple_get_lhs (stmt);
-	  if (ranger.valid_ssa_p (lhs) && ranger.range_of_stmt (r, stmt))
+	  if (gimple_code (stmt) == GIMPLE_COND || ranger.valid_ssa_p (lhs))
 	    {
-	      // bitmap_set_bit (touched, SSA_NAME_VERSION (lhs));
+	      bool folded = false;
+	      if (ranger.range_of_stmt (r, stmt))
+		folded = rvrp_fold (ranger, stmt, touched);
+	      if (!folded)
+		rvrp_simplify (ranger, &gsi);
+
+	      propagate_mark_stmt_for_cleanup (old_stmt, stmt,
+					       bbs_needing_eh_cleanup,
+					       stmts_that_became_noreturn);
 	    }
 	}
-
-      rvrp_process_bb_end (ranger, bb, touched);
     }
 
-  // Now delete any statements with 0 uses.
-  simple_dce_from_worklist (touched);
-  ranger.export_global_ranges ();
-
+  rvrp_final_propagate (ranger, touched);
+  propagate_cleanup (bbs_needing_eh_cleanup, stmts_that_became_noreturn);
   return 0;
 }
 
@@ -277,15 +393,25 @@ execute_ranger_vrp_conditional ()
   global_ranger ranger;
   basic_block bb;
   irange r;
-  bitmap touched = BITMAP_ALLOC (NULL);
+  auto_bitmap touched;
 
+  // Fold conditionals at the end of each BB.
   FOR_EACH_BB_FN (bb, cfun)
-    rvrp_process_bb_end (ranger, bb, touched);
+    {
+      gimple *stmt = last_stmt (bb);
+      gcond *cond;
+      if (stmt && (cond = dyn_cast <gcond *> (stmt)))
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "RVRP: Considering BB %d:  ", bb->index);
+	      print_gimple_stmt (dump_file, cond, 0, TDF_NONE);
+	    }
+	  rvrp_fold (ranger, stmt, touched);
+	}
+    }
 
-  // Now delete any statements with 0 uses.
-  simple_dce_from_worklist (touched);
-  ranger.export_global_ranges ();
-
+  rvrp_final_propagate (ranger, touched);
   return 0;
 }
 
@@ -328,5 +454,3 @@ make_pass_ranger_vrp (gcc::context *ctxt)
 {
   return new pass_ranger_vrp (ctxt);
 }
-
-

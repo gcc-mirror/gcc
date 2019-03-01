@@ -1710,6 +1710,10 @@ simple_dce_from_worklist (bitmap worklist)
       if (gimple_has_side_effects (t))
 	continue;
 
+      /* Ignore attempts to DCE undefined things.  */
+      if (gimple_code (t) == GIMPLE_NOP)
+	continue;
+
       /* Add uses to the worklist.  */
       ssa_op_iter iter;
       use_operand_p use_p;

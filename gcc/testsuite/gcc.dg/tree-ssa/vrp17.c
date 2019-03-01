@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-evrp" } */
+/* { dg-options "-O2 -fdump-tree-evrp -fdisable-tree-rvrp" } */
 
 extern void abort (void) __attribute__ ((__noreturn__));
 union tree_node;

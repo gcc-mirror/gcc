@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-evrp-details -fdump-tree-vrp1-details" } */
+/* { dg-options "-O2 -fdump-tree-evrp-details -fdump-tree-vrp1-details -fdisable-tree-rvrp" } */
 
 static int blocksize = 4096;
 
