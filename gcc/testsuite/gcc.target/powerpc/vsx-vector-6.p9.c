@@ -1,8 +1,7 @@
 /* { dg-do compile { target lp64 } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
-/* { dg-options "-mvsx -O2 -mcpu=power9" } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
+/* { dg-options "-mvsx -O2 -mdejagnu-cpu=power9" } */
 
 /* Expected instruction counts for Power9. */
 

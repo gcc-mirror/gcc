@@ -3,8 +3,7 @@
 
 /* { dg-do compile { target { p9vector_hw } } } */
 /* { dg-require-effective-target p9vector_hw } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
-/* { dg-options "-mcpu=power9 -O2 " } */
+/* { dg-options "-mdejagnu-cpu=power9 -O2 " } */
 
 /* { dg-final { scan-assembler-times {\mxxlor\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mrldic\M} 1 } } */

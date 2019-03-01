@@ -1,7 +1,6 @@
 /* { dg-do compile { target { powerpc64*-*-* } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-mcpu=power8 -O2" } */
+/* { dg-options "-mdejagnu-cpu=power8 -O2" } */
 
 /* Verify that we optimize vector1 = (vector2 != vector3) by not loading up
    0/-1.  */

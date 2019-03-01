@@ -1,8 +1,7 @@
 /* { dg-do compile { target { lp64 && be } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-options "-mvsx -O2 -mcpu=power7 -dp" } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
+/* { dg-options "-mvsx -O2 -mdejagnu-cpu=power7 -dp" } */
 
 /* Expected instruction counts for Power 7 */
 

@@ -1,8 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-mcpu=power8 -O2 -mfloat128" } */
+/* { dg-options "-mdejagnu-cpu=power8 -O2 -mfloat128" } */
 
 int do_signbit_kf (__float128 a) { return __builtin_signbit (a); }
 int do_signbit_if (__ibm128 a) { return __builtin_signbit (a); }

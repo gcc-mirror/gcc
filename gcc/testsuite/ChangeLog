@@ -1,3 +1,8 @@
+2019-03-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/ throughout: Delete dg-skip-if "do not override
+	-mcpu".  Use -mdejagnu-cpu= in dg-options instead of -mcpu=.
+
 2019-03-01  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/85899

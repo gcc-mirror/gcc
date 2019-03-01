@@ -1,6 +1,5 @@
 /* { dg-do compile { target { powerpc64le-*-* } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-mcpu=power8 -O3" } */
+/* { dg-options "-mdejagnu-cpu=power8 -O3" } */
 /* { dg-final { scan-assembler-not "xxpermdi" } } */
 
 /* This is a test for a specific convert-splat permute removal.  */

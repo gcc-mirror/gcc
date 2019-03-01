@@ -1,9 +1,8 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power5" } } */
 /* powerpc_vsx_ok represents power7 */
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-skip-if "" { powerpc*-*-aix* } } */
-/* { dg-options "-mcpu=power5" } */
+/* { dg-options "-mdejagnu-cpu=power5" } */
 
 /* Though the command line specifies power5 target, this function is
    to support power7.  */

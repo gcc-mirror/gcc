@@ -1,6 +1,5 @@
 /* { dg-do assemble { target { lp64 } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power5" } } */
-/* { dg-options "-O2 -fno-align-functions -fno-asynchronous-unwind-tables -mtraceback=no -save-temps -mcpu=power5" } */
+/* { dg-options "-O2 -fno-align-functions -fno-asynchronous-unwind-tables -mtraceback=no -save-temps -mdejagnu-cpu=power5" } */
 
 typedef int TImode __attribute__ ((mode (TI)));
 
