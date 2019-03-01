@@ -1,5 +1,8 @@
 2019-03-01  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/89537 - missing location for error with non-static member fn.
+	* g++.dg/diagnostic/member-fn-1.C: New test.
+
 	PR c++/89532 - ICE with incomplete type in decltype.
 	* g++.dg/cpp2a/nontype-class14.C: New test.
 
