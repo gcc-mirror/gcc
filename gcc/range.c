@@ -930,6 +930,11 @@ irange_to_value_range (value_range_base &vr, const irange &r)
       vr.set_varying ();
       return;
     }
+  if (r.undefined_p ())
+    {
+      vr.set_undefined ();
+      return;
+    }
   tree type = r.type ();
   unsigned int precision = TYPE_PRECISION (type);
   // Represent non-zero correctly.
