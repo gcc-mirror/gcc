@@ -12130,6 +12130,7 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
       memcpy ((char *) &buf, expr, tree_size (expr));
       SET_DECL_ASSEMBLER_NAME ((tree)&buf, NULL);
       buf.decl_with_vis.symtab_node = NULL;
+      buf.base.nowarning_flag = 0;
       expr = (tree) &buf;
     }
   else if (TREE_CODE_CLASS (code) == tcc_type
@@ -12154,6 +12155,14 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
 	  TYPE_CACHED_VALUES_P (tmp) = 0;
 	  TYPE_CACHED_VALUES (tmp) = NULL;
 	}
+    }
+  else if (TREE_NO_WARNING (expr) && (DECL_P (expr) || EXPR_P (expr)))
+    {
+      /* Allow TREE_NO_WARNING to be set.  Perhaps we shouldn't allow that
+	 and change builtins.c etc. instead - see PR89543.  */
+      memcpy ((char *) &buf, expr, tree_size (expr));
+      buf.base.nowarning_flag = 0;
+      expr = (tree) &buf;
     }
   md5_process_bytes (expr, tree_size (expr), ctx);
   if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
