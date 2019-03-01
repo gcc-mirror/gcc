@@ -5494,13 +5494,6 @@ vect_finalize_reduction:
 		= loop_vinfo->lookup_stmt (exit_phi);
               gphi *vect_phi;
 
-              /* FORNOW. Currently not supporting the case that an inner-loop
-                 reduction is not used in the outer-loop (but only outside the
-                 outer-loop), unless it is double reduction.  */
-              gcc_assert ((STMT_VINFO_RELEVANT_P (exit_phi_vinfo)
-                           && !STMT_VINFO_LIVE_P (exit_phi_vinfo))
-                          || double_reduc);
-
 	      if (double_reduc)
 		STMT_VINFO_VEC_STMT (exit_phi_vinfo) = inner_phi;
 	      else

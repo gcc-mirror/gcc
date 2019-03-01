@@ -1,3 +1,27 @@
+2019-02-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* io/transfer.c (transfer_array_inner): Do not
+	cast charlen to index_type.
+
+2019-02-25  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR libfortran/89274
+	* io/write.c (write_integer): Add width for INTEGER(16).
+
+2019-02-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89385
+	PR fortran/89366
+	* runtime/ISO_Fortran_binding.c (cfi_desc_to_gfc_desc) : In the
+	interchange between character and derived, the character type
+	was being set incorrectly.
+	(gfc_desc_to_cfi_desc) : Eliminate the interchange of types in
+	this function. Do not add the kind and length information to
+	the type field of structures. Lbounds were incorrectly being
+	set to zero for allocatable and pointer descriptors. Should
+	have been non-pointer, non-allocatables that received this
+	treatment.
+
 2019-01-30  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR libfortran/88678
@@ -47,7 +71,7 @@
 
 	PR libfortran/88776
 	* io/open.c (newunit): Free format buffer if the unit specified is for
-	stdin, stdout, or stderr. 
+	stdin, stdout, or stderr.
 
 2019-01-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
@@ -101,7 +125,6 @@
 2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/16615
-
 	* caf/single.c: Mechanically replace "can not" with "cannot".
 	* io/unit.c: Likewise.
 

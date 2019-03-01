@@ -593,6 +593,12 @@ build_constexpr_constructor_member_initializers (tree type, tree body)
 	gcc_unreachable ();
     }
  found:
+  if (TREE_CODE (body) == TRY_BLOCK)
+    {
+      body = TREE_OPERAND (body, 0);
+      if (TREE_CODE (body) == BIND_EXPR)
+	body = BIND_EXPR_BODY (body);
+    }
   if (TREE_CODE (body) == CLEANUP_POINT_EXPR)
     {
       body = TREE_OPERAND (body, 0);
@@ -617,12 +623,6 @@ build_constexpr_constructor_member_initializers (tree type, tree body)
 	  if (!ok)
 	    break;
 	}
-    }
-  else if (TREE_CODE (body) == TRY_BLOCK)
-    {
-      error ("body of %<constexpr%> constructor cannot be "
-	     "a function-try-block");
-      return error_mark_node;
     }
   else if (EXPR_P (body))
     ok = build_data_member_initialization (body, &vec);
@@ -3859,6 +3859,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 		}
 	      /* Changing active member.  */
 	      vec_safe_truncate (CONSTRUCTOR_ELTS (*valp), 0);
+	      no_zero_init = true;
 	    }
 
 	  for (idx = 0;

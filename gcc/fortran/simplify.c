@@ -6061,8 +6061,8 @@ norm2_add_squared (gfc_expr *result, gfc_expr *e)
 
   gfc_set_model_kind (result->ts.kind);
   int index = gfc_validate_kind (BT_REAL, result->ts.kind, false);
-  mpfr_exp_t exp;
-  if (mpfr_regular_p (result->value.real))
+  mp_exp_t exp;
+  if (mpfr_number_p (result->value.real) && !mpfr_zero_p (result->value.real))
     {
       exp = mpfr_get_exp (result->value.real);
       /* If result is getting close to overflowing, scale down.  */
@@ -6076,7 +6076,7 @@ norm2_add_squared (gfc_expr *result, gfc_expr *e)
     }
 
   mpfr_init (tmp);
-  if (mpfr_regular_p (e->value.real))
+  if (mpfr_number_p (e->value.real) && !mpfr_zero_p (e->value.real))
     {
       exp = mpfr_get_exp (e->value.real);
       /* If e**2 would overflow or close to overflowing, scale down.  */
@@ -6117,7 +6117,9 @@ norm2_do_sqrt (gfc_expr *result, gfc_expr *e)
   if (result != e)
     mpfr_set (result->value.real, e->value.real, GFC_RND_MODE);
   mpfr_sqrt (result->value.real, result->value.real, GFC_RND_MODE);
-  if (norm2_scale && mpfr_regular_p (result->value.real))
+  if (norm2_scale
+      && mpfr_number_p (result->value.real)
+      && !mpfr_zero_p (result->value.real))
     {
       mpfr_t tmp;
       mpfr_init (tmp);
@@ -6156,7 +6158,9 @@ gfc_simplify_norm2 (gfc_expr *e, gfc_expr *dim)
       result = simplify_transformation_to_scalar (result, e, NULL,
 						  norm2_add_squared);
       mpfr_sqrt (result->value.real, result->value.real, GFC_RND_MODE);
-      if (norm2_scale && mpfr_regular_p (result->value.real))
+      if (norm2_scale
+	  && mpfr_number_p (result->value.real)
+	  && !mpfr_zero_p (result->value.real))
 	{
 	  mpfr_t tmp;
 	  mpfr_init (tmp);
@@ -7379,6 +7383,7 @@ gfc_simplify_sizeof (gfc_expr *x)
 {
   gfc_expr *result = NULL;
   mpz_t array_size;
+  size_t res_size;
 
   if (x->ts.type == BT_CLASS || x->ts.deferred)
     return NULL;
@@ -7394,7 +7399,8 @@ gfc_simplify_sizeof (gfc_expr *x)
 
   result = gfc_get_constant_expr (BT_INTEGER, gfc_index_integer_kind,
 				  &x->where);
-  mpz_set_si (result->value.integer, gfc_target_expr_size (x));
+  gfc_target_expr_size (x, &res_size);
+  mpz_set_si (result->value.integer, res_size);
 
   return result;
 }
@@ -7408,6 +7414,7 @@ gfc_simplify_storage_size (gfc_expr *x,
 {
   gfc_expr *result = NULL;
   int k;
+  size_t siz;
 
   if (x->ts.type == BT_CLASS || x->ts.deferred)
     return NULL;
@@ -7423,7 +7430,8 @@ gfc_simplify_storage_size (gfc_expr *x,
 
   result = gfc_get_constant_expr (BT_INTEGER, k, &x->where);
 
-  mpz_set_si (result->value.integer, gfc_element_size (x));
+  gfc_element_size (x, &siz);
+  mpz_set_si (result->value.integer, siz);
   mpz_mul_ui (result->value.integer, result->value.integer, BITS_PER_UNIT);
 
   return range_check (result, "STORAGE_SIZE");

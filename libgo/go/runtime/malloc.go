@@ -1029,7 +1029,7 @@ func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer {
 	}
 
 	if rate := MemProfileRate; rate > 0 {
-		if size < uintptr(rate) && int32(size) < c.next_sample {
+		if rate != 1 && int32(size) < c.next_sample {
 			c.next_sample -= int32(size)
 		} else {
 			mp := acquirem()
@@ -1269,7 +1269,7 @@ func persistentalloc1(size, align uintptr, sysStat *uint64) *notInHeap {
 				break
 			}
 		}
-		persistent.off = sys.PtrSize
+		persistent.off = round(sys.PtrSize, align)
 	}
 	p := persistent.base.add(persistent.off)
 	persistent.off += size

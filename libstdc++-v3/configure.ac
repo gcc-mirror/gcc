@@ -449,6 +449,7 @@ AC_CHECK_PROG([DOXYGEN], doxygen, yes, no)
 AC_CHECK_PROG([DOT], dot, yes, no)
 
 # Check for docbook
+AC_CHECK_PROG([XMLCATALOG], xmlcatalog, yes, no)
 AC_CHECK_PROG([XSLTPROC], xsltproc, yes, no)
 AC_CHECK_PROG([XMLLINT], xmllint, yes, no)
 GLIBCXX_CONFIGURE_DOCBOOK

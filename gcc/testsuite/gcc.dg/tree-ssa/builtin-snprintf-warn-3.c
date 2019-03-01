@@ -1,6 +1,6 @@
 /* PR middle-end/79448 - unhelpful -Wformat-truncation=2 warning
    { dg-do compile }
-   { dg-options "-O2 -Wformat -Wformat-truncation=2 -ftrack-macro-expansion=0" } 
+   { dg-options "-O2 -Wformat -Wformat-truncation=2 -ftrack-macro-expansion=0" }
    { dg-require-effective-target ptr32plus } */
 
 typedef __SIZE_TYPE__  size_t;
@@ -166,11 +166,17 @@ void test_string_checked (const char *s, const struct Arrays *ar)
   T (-1, "%s%s", ar->a4k, ar->ax);
 
   /* Verify that an array that fits a string longer than 4095 bytes
-     does trigger a warning.  */
-  T (-1, "%-s", ar->a4kp1);   /* { dg-warning "directive output between 0 and 4096 bytes may exceed minimum required size of 4095" } */
+     does not trigger a warning.  (No known implementation has trouble
+     with this).  */
+  T (-1, "%s", ar->a4kp1);
 
-  /* Also verify that a %s directive with width greater than 4095
-     triggers a warning even if the argument is not longer than 4k.  */
+  /* Verify that a %s directive with width greater than 4095 does
+     trigger a warning even if the string argument is not longer
+     than 4k.  Glibc only has trouble with directives whose width
+     or precision exceeds 64K or so:
+     https://bugzilla.redhat.com/show_bug.cgi?id=441945 *
+     but hardcoding that as the limit and assuming no other
+     implementation has a lower one seems unwise.  */
   T (-1, "%*s", 4096, ar->a4k);   /* { dg-warning "directive output of 4096 bytes exceeds minimum required size of 4095" } */
 
   /* Verify that precision constrains the putput and suppresses the 4k
@@ -190,5 +196,7 @@ void test_string_checked (const char *s, const struct Arrays *ar)
   T (-1, "%s %s %s", ar->a4k, ar->a4k, ar->a4k);
   T (-1, "%s %s %s", ar->ax, ar->ax, ar->ax);
 
-  T (-1, "%-s", ar->amax);   /* { dg-warning "directive output between 0 and \[0-9\]+ bytes may exceed minimum required size of 4095" } */
+  /* Similar to the above, verify there's no warning for an array
+     just because its size is INT_MAX bytes.  */
+  T (-1, "%s", ar->amax);
 }

@@ -1499,12 +1499,13 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 	      if (!cl || !cl->length || cl->length->expr_type != EXPR_CONSTANT
                   || mpz_cmp_si (cl->length->value.integer, 1) != 0)
 		{
-		  gfc_error ("Character argument %qs at %L "
-			     "must be length 1 because "
-                             "procedure %qs is BIND(C)",
-			     sym->name, &sym->declared_at,
-                             sym->ns->proc_name->name);
-		  retval = false;
+		  if (!gfc_notify_std (GFC_STD_F2018,
+				       "Character argument %qs at %L "
+				       "must be length 1 because "
+				       "procedure %qs is BIND(C)",
+				       sym->name, &sym->declared_at,
+				       sym->ns->proc_name->name))
+		    retval = false;
 		}
 	    }
 

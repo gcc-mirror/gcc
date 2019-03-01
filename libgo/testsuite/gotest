@@ -619,21 +619,25 @@ symtogo() {
 		    # Turn pairs of spaces into " \x20", because $() will
 		    # drop duplicate spaces.
 		    # Drop trailing spaces, and turn newlines into \n.
-		    output="$(sed '1 s/\([Uu]nordered \)\?[Oo]utput:[ 	]*//' < example.txt |
+		    # Remove leading and trailing \n.
+		    sed '1 s/\([Uu]nordered \)\?[Oo]utput:[ 	]*//' < example.txt |
 				 sed -e 's/\\/\\\\/g' \
 				     -e 's/"/\\"/g' \
 				     -e 's/	/\\t/g' \
 				     -e 's/  / \\x20/g' \
 				     -e 's/[ 	]*$/\\n/g' |
-				 tr -d '\n')"
-		    # Remove leading and trailing \n.
-		    output="$(echo "$output" | sed -e 's/^\(\\n\)*//' -e 's/\(\\n\)*$//')"
+				 tr -d '\n' |
+				 sed -e 's/^\(\\n\)*//' \
+				     -e 's/\(\\n\)*$//' > example2.txt
 		    hasoutput=true
 		    rm -f example.txt
 		    break
 		done
 		if test x$hasoutput = xtrue; then
-		    echo '	{"'$n'", '$j', "'"$output"'", '$unordered'},'
+		    echo '	{"'$n'", '$j','
+		    sed -e 's/^/		"/' -e 's/$/", /' < example2.txt
+		    echo $unordered'},'
+		    rm -f example2.txt
 		fi
 	done
 	echo '}'

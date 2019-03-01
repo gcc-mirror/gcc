@@ -1,3 +1,130 @@
+2019-03-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89537 - missing location for error with non-static member fn.
+	* call.c (resolve_args): Use EXPR_LOCATION.
+	* typeck.c (build_class_member_access_expr): Use input_location.
+
+	PR c++/89532 - ICE with incomplete type in decltype.
+	* semantics.c (finish_compound_literal): Return error_mark_node
+	if digest_init_flags returns error_mark_node.
+
+2019-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Implement P1002R1, Try-catch blocks in constexpr functions
+	PR c++/89513
+	* parser.c (cp_parser_ctor_initializer_opt_and_function_body):
+	Diagnose constexpr ctor or function with function-try-block with
+	pedwarn for c++17 and earlier.  Formatting fix.
+	(cp_parser_try_block): Use pedwarn instead of error and only for
+	c++17 and earlier when try block appears in constexpr function.
+	* constexpr.c (build_constexpr_constructor_member_initializers):
+	Handle TRY_BLOCK here instead of erroring on it.
+
+2019-02-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88183 - ICE with .* fold-expression.
+	* pt.c (fold_expression) [DOTSTAR_EXPR]: Remove special handling.
+
+	PR c++/86969 - ICE with constexpr if and recursive generic lambdas.
+	* class.c, lambda.c, pt.c: Revert earlier change.
+	* lambda.c (add_capture): Don't special-case capture of dependent
+	VLA.
+
+	* name-lookup.c (print_binding_level): Print this_entity.
+
+2019-02-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88857 - ICE with value-initialization of argument in template.
+	* call.c (convert_like_real): Don't call build_value_init in template.
+
+2019-02-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86969 - ICE with constexpr if and recursive generic lambdas.
+	* semantics.c (process_outer_var_ref): Do capture dependent vars.
+	* class.c (finish_struct): Only add TAG_DEFN if T is in
+	current_function_decl.
+	* lambda.c (vla_capture_type): Force the capture type out into the
+	lambda's enclosing function.
+	(add_capture): Pass in the lambda.
+	* pt.c (tsubst_lambda_expr): complete_type a VLA capture type.
+
+2019-02-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89511 - ICE with using-declaration and unscoped enumerator.
+	* parser.c (cp_parser_using_declaration): For an unscoped enum
+	only use its context if it's not a function declaration.
+
+2019-02-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/89488
+	* method.c (process_subob_fn): When maybe_instantiate_noexcept
+	returns false don't call merge_exception_specifiers.
+
+2019-02-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/88987
+	* parser.c (cp_parser_noexcept_specification_opt): Return NULL_TREE
+	for a non-constant parsed expression.
+
+2019-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89481
+	* constexpr.c (cxx_eval_store_expression): When changing active union
+	member, set no_zero_init.
+
+2019-02-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88294 - ICE with non-constant noexcept-specifier.
+	* pt.c (maybe_instantiate_noexcept): Set up the list of local
+	specializations.  Set current_class_{ptr,ref}.
+
+2019-02-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/89390
+	* parser.c (cp_parser_unqualified_id): Capture and use locations
+	for destructors.
+
+2019-02-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89420 - ICE with CAST_EXPR in explicit-specifier.
+	* decl.c (build_explicit_specifier): Don't check
+	processing_template_decl.  Call instantiation_dependent_expression_p
+	instead of value_dependent_expression_p.  Call
+	instantiate_non_dependent_expr_sfinae before
+	build_converted_constant_expr instead of calling
+	instantiate_non_dependent_expr after it.  Add
+	processing_template_decl_sentinel.
+
+2019-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* parser.c (cp_parser_oacc_simple_clause): Remove parser formal
+	parameter, move loc formal parameter to the front.  Adjust all
+	users.
+	(cp_parser_oacc_shape_clause): Add loc formal parameter.  Adjust
+	all users.
+
+2019-02-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87685 - generic lambda 'this' capture error.
+	* lambda.c (lambda_expr_this_capture): Change add_capture_p to int.
+	(maybe_generic_this_capture): Pass -1.
+
+	PR c++/88394 - ICE with VLA init-capture.
+	* lambda.c (is_normal_capture_proxy): Check DECL_CAPTURED_VARIABLE.
+
+	PR c++/88869 - C++17 ICE with CTAD and explicit specialization.
+	* pt.c (do_class_deduction): Don't include explicit specialization
+	args in outer_args.
+
+	PR c++/89422 - ICE with -g and lambda in default arg in template.
+	* pt.c (tsubst_function_decl): SET_DECL_FRIEND_CONTEXT sooner.
+
+2019-02-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88419 - C++17 ICE with class template arg deduction.
+	* pt.c (make_template_placeholder): Set TYPE_CANONICAL after
+	CLASS_PLACEHOLDER_TEMPLATE.
+
 2019-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89285

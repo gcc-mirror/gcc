@@ -3123,6 +3123,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   enum vect_def_type dt[4]
     = { vect_unknown_def_type, vect_unknown_def_type, vect_unknown_def_type,
 	vect_unknown_def_type };
+  tree vectypes[ARRAY_SIZE (dt)] = {};
   int ndts = ARRAY_SIZE (dt);
   int ncopies, j;
   auto_vec<tree, 8> vargs;
@@ -3182,10 +3183,8 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
   for (i = 0; i < nargs; i++)
     {
-      tree opvectype;
-
       op = gimple_call_arg (stmt, i);
-      if (!vect_is_simple_use (op, vinfo, &dt[i], &opvectype))
+      if (!vect_is_simple_use (op, vinfo, &dt[i], &vectypes[i]))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -3211,9 +3210,9 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	rhs_type = TREE_TYPE (op);
 
       if (!vectype_in)
-	vectype_in = opvectype;
-      else if (opvectype
-	       && opvectype != vectype_in)
+	vectype_in = vectypes[i];
+      else if (vectypes[i]
+	       && vectypes[i] != vectype_in)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -3446,12 +3445,19 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      continue;
 	    }
 
+	  if (mask_opno >= 0 && !vectypes[mask_opno])
+	    {
+	      gcc_assert (modifier != WIDEN);
+	      vectypes[mask_opno]
+		= build_same_sized_truth_vector_type (vectype_in);
+	    }
+
 	  for (i = 0; i < nargs; i++)
 	    {
 	      op = gimple_call_arg (stmt, i);
 	      if (j == 0)
 		vec_oprnd0
-		  = vect_get_vec_def_for_operand (op, stmt_info);
+		  = vect_get_vec_def_for_operand (op, stmt_info, vectypes[i]);
 	      else
 		vec_oprnd0
 		  = vect_get_vec_def_for_stmt_copy (vinfo, orig_vargs[i]);
@@ -3584,7 +3590,8 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      if (j == 0)
 		{
 		  vec_oprnd0
-		    = vect_get_vec_def_for_operand (op, stmt_info);
+		    = vect_get_vec_def_for_operand (op, stmt_info,
+						    vectypes[i]);
 		  vec_oprnd1
 		    = vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnd0);
 		}

@@ -6628,7 +6628,7 @@ for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
 where, for example, @var{op} is @code{+} for @samp{cond_add@var{mode}}.
 
 When defined for floating-point modes, the contents of @samp{op3[i]}
-are not interpreted if @var{op1[i]} is false, just like they would not
+are not interpreted if @samp{op1[i]} is false, just like they would not
 be in a normal C @samp{?:} condition.
 
 Operands 0, 2, 3 and 4 all have mode @var{m}.  Operand 1 is a scalar

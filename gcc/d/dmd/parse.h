@@ -88,7 +88,7 @@ public:
     StaticAssert *parseStaticAssert();
     TypeQualified *parseTypeof();
     Type *parseVector();
-    LINK parseLinkage(Identifiers **, CPPMANGLE *);
+    LINK parseLinkage(Identifiers **, CPPMANGLE *, bool *);
     Identifiers *parseQualifiedIdentifier(const char *entity);
     Condition *parseDebugCondition();
     Condition *parseVersionCondition();

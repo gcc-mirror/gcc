@@ -1205,7 +1205,7 @@ these three exceptions is probably a good idea.
 
 If the option is used more than once in the command line, the lists will
 be joined: '@code{ffpe-trap=}@var{list1} @code{ffpe-trap=}@var{list2}'
-is equivalent to @code{ffpe-trap=}@var{list1,list2}.
+is equivalent to @code{ffpe-trap=}@var{list1},@var{list2}.
 
 Note that once enabled an exception cannot be disabled (no negative form).
 

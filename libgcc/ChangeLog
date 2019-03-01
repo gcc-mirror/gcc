@@ -1,3 +1,8 @@
+2019-02-21  Martin Sebor  <msebor@redhat.com>
+
+	* libgcc2.h (__clear_cache): Correct signature.
+	* libgcc2.c (__clear_cache): Same.
+
 2019-02-20  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/linux-unwind.h (alpha_fallback_frame_state):

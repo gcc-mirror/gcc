@@ -90,23 +90,12 @@ along with GCC; see the file COPYING3.  If not see
 
    Different code models are not supported in 32-bit environment.  */
 
-enum cmodel {
-  CM_32,
-  CM_MEDLOW,
-  CM_MEDMID,
-  CM_MEDANY,
-  CM_EMBMEDANY
-};
+#define TARGET_CM_MEDLOW    (sparc_code_model == CM_MEDLOW)
+#define TARGET_CM_MEDMID    (sparc_code_model == CM_MEDMID)
+#define TARGET_CM_MEDANY    (sparc_code_model == CM_MEDANY)
+#define TARGET_CM_EMBMEDANY (sparc_code_model == CM_EMBMEDANY)
 
-/* One of CM_FOO.  */
-extern enum cmodel sparc_cmodel;
-
-/* V9 code model selection.  */
-#define TARGET_CM_MEDLOW    (sparc_cmodel == CM_MEDLOW)
-#define TARGET_CM_MEDMID    (sparc_cmodel == CM_MEDMID)
-#define TARGET_CM_MEDANY    (sparc_cmodel == CM_MEDANY)
-#define TARGET_CM_EMBMEDANY (sparc_cmodel == CM_EMBMEDANY)
-
+/* Default code model to be overridden in 64-bit environment.  */
 #define SPARC_DEFAULT_CMODEL CM_32
 
 /* Do not use the .note.GNU-stack convention by default.  */

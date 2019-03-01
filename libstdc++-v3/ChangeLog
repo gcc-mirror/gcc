@@ -1,3 +1,200 @@
+2019-03-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_allocator.h (__gnu_test::memory_resource)
+	[!__cpp_sized_deallocation]: Do not pass size to operator delete.
+
+	* include/std/memory (uses_allocator_construction_args): New set of
+	overloaded functions.
+	(make_obj_using_allocator, uninitialized_construct_using_allocator):
+	New functions.
+	* include/std/memory_resource (polymorphic_allocator::construct)
+	[__cplusplus > 201703l]: Replace all overloads with a single function
+	using uses_allocator_construction_args.
+	* testsuite/20_util/polymorphic_allocator/construct_c++2a.cc: New
+	test.
+	* testsuite/20_util/uses_allocator/make_obj.cc: New test.
+
+2019-02-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89466
+	* acinclude.m4 (GLIBCXX_CONFIGURE_DOCBOOK): Reorder check for local
+	stylesheet directories before check for xsltproc. Try to use
+	xmlcatalog to find local stylesheet directory before trying hardcoded
+	paths. Add path used by suse to hardcoded paths. Adjust xsltproc
+	check to look for the same stylesheet as doc/Makefile.am uses. Don't
+	use xsltproc if xmlcatalog fails to find a local stylesheet.
+	* configure.ac: Check for xmlcatalog.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* doc/Makefile.in: Likewise.
+	* include/Makefile.in: Likewise.
+	* libsupc++/Makefile.in: Likewise.
+	* po/Makefile.in: Likewise.
+	* python/Makefile.in: Likewise.
+	* src/Makefile.in: Likewise.
+	* src/c++11/Makefile.in: Likewise.
+	* src/c++17/Makefile.in: Likewise.
+	* src/c++98/Makefile.in: Likewise.
+	* src/filesystem/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+2019-02-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89477
+	* include/bits/alloc_traits.h (_RequireNotAllocator): New helper for
+	container deduction guides.
+	* include/bits/hashtable.h (_RequireNotAllocatorOrIntegral): Likewise.
+	* include/bits/stl_map.h (map): Use _RequireNotAllocator to constrain
+	parameters in deduction guides.
+	* include/bits/stl_multimap.h (multimap): Likewise.
+	* include/bits/stl_multiset.h (multiset): Likewise.
+	* include/bits/stl_queue.h (queue, priority_queue): Likewise.
+	* include/bits/stl_set.h (set): Likewise.
+	* include/bits/stl_stack.h (stack): Likewise.
+	* include/bits/unordered_map.h (unordered_map, unordered_multimap):
+	use _RequireNotAllocator and _RequireNotAllocatorOrIntegral to
+	constrain parameters in deduction guides.
+	* include/bits/unordered_set.h (unordered_set, unordered_multiset):
+	Likewise.
+	* testsuite/23_containers/map/cons/deduction.cc: Test additional
+	deduction cases.
+	* testsuite/23_containers/multiset/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/set/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/unordered_map/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/cons/deduction.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/cons/deduction.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/cons/deduction.cc: Likewise.
+
+	PR libstdc++/89416
+	* include/bits/alloc_traits.h (__is_alloc_insertable_impl): Change
+	to class template and partial specialization using void_t.
+	(__is_copy_insertable, __is_move_insertable): Adjust base class.
+
+2019-02-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89416
+	* include/bits/alloc_traits.h (__is_alloc_insertable_impl): Make
+	copy and move members public.
+
+2019-02-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__underlying_type_impl): New helper to
+	make underlying_type SFINAE-friendly.
+	(underlying_type): Derive from __underlying_type_impl.
+	* testsuite/20_util/underlying_type/requirements/typedefs-3.cc: New
+	test.
+
+	PR libstdc++/89446
+	* include/bits/char_traits.h (__constant_char_array): Check index is
+	in range before dereferencing.
+	(char_traits<char>::compare, char_traits<char>::find)
+	(char_traits<char8_t>::compare, char_traits<char8_t>::find): Return
+	immediately if n is zero.
+	(char_traits<wchar_t>::compare, char_traits<wchar_t>::find): Likewise.
+	Remove workarounds for PR 67026.
+	* testsuite/21_strings/basic_string_view/operators/char/89446.cc:
+	New test.
+	* testsuite/21_strings/basic_string_view/operators/wchar_t/89446.cc:
+	New test.
+
+2019-02-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/abi/post/sparc64-linux-gnu/baseline_symbols.txt: Adjust.
+	* config/abi/post/sparc64-linux-gnu/32/baseline_symbols.txt: Likewise.
+
+2019-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/89402
+	* src/c++98/compatibility-ldbl.cc (_ZNKSt4hashIeEclEe): Change return
+	type to std::size_t and argument to type to long double.
+
+2019-02-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.host (abi_baseline_pair): Adjust for SPARC64/Linux.
+	* config/abi/post/sparc64-linux-gnu: New directory.
+	* config/abi/post/sparc64-linux-gnu/baseline_symbols.txt: New file.
+	* config/abi/post/sparc64-linux-gnu/32: New directory.
+	* config/abi/post/sparc64-linux-gnu/32/baseline_symbols.txt: New file.
+
+2019-02-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/29_atomics/headers/atomic/types_std_c++20.cc: New test.
+	* testsuite/29_atomics/headers/atomic/types_std_c++20_neg.cc: New
+	test.
+
+2019-02-22  Tom Honermann  <tom@honermann.net>
+
+	* python/libstdcxx/v6/printers.py (register_type_printers): Add type
+	printers for u8string and u8string_view.
+
+2019-02-22  Tom Honermann  <tom@honermann.net>
+
+	* testsuite/18_support/byte/ops.cc: Validate
+	std::to_integer<char8_t>, std::to_integer<char16_t>, and
+	std::to_integer<char32_t>.
+	* testsuite/18_support/numeric_limits/dr559.cc: Validate
+	std::numeric_limits<char8_t>.
+	* testsuite/18_support/numeric_limits/lowest.cc: Validate
+	std::numeric_limits<char8_t>::lowest().
+	* testsuite/18_support/numeric_limits/max_digits10.cc: Validate
+	std::numeric_limits<char8_t>::max_digits10.
+	* testsuite/18_support/type_info/fundamental.cc: Validate
+	typeinfo for char8_t.
+	* testsuite/20_util/from_chars/1_c++20_neg.cc: New test, validating
+	std::from_chars with char8_t.
+	* testsuite/20_util/hash/requirements/explicit_instantiation.cc:
+	Validate explicit instantiation of std::hash<char8_t>.
+	* testsuite/20_util/is_integral/value.cc: Validate
+	std::is_integral<char8_t>.
+	* testsuite/20_util/make_signed/requirements/typedefs-4.cc:
+	Validate std::make_signed<char8_t>.
+	* testsuite/21_strings/basic_string/cons/char/deduction.cc:
+	Validate u8string construction from char8_t sources.
+	* testsuite/21_strings/basic_string/types/pmr_typedefs.cc: Validate
+	std::pmr::u8string.
+	* testsuite/21_strings/basic_string_view/operations/compare/
+	char/70483.cc: Validate substr operations on u8string_view.
+	* testsuite/21_strings/basic_string_view/typedefs.cc: Validate that
+	the u8string_view typedef is defined.
+	* testsuite/21_strings/char_traits/requirements/
+	constexpr_functions.cc: Validate char_traits<char8_t> constexpr
+	member functions.
+	* testsuite/21_strings/char_traits/requirements/
+	constexpr_functions_c++17.cc: Validate char_traits<char8_t> C++17
+	constexpr member functions.
+	* testsuite/21_strings/headers/string/types_std_c++0x.cc: Validate
+	that the u8string typedef is defined.
+	* testsuite/22_locale/locale/cons/unicode.cc: Validate the presence
+	of the std::codecvt<char16_t, char8_t, std::mbstate_t> and
+	std::codecvt<char32_t, char8_t, std::mbstate_t> facets.
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Update line
+	numbers.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/cons/assign_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic_integral/cons/copy_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/is_always_lock_free.cc:
+	Validate std::atomic<char8_t>::is_always_lock_free
+	* testsuite/29_atomics/atomic_integral/operators/bitwise_neg.cc:
+	Update line numbers.
+	* testsuite/29_atomics/atomic_integral/operators/decrement_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/increment_neg.cc:
+	Likewise.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_string.cc:
+	Validate std::experimental::pmr::u8string.
+	* testsuite/experimental/string_view/typedefs.cc: Validate that the
+	u8string_view typedef is defined.
+	* testsuite/util/testsuite_common_types.h: Add char8_t, char16_t and
+	char32_t to the typelists.
+
+2019-02-22  Tom Honermann  <tom@honermann.net>
+
+	* include/ext/typelist.h: Constrain a partial specialization of
+	typelist::detail::append_ to only match chain<T1,T2>.
+
 2019-02-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/89416

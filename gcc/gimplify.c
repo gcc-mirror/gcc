@@ -2263,7 +2263,7 @@ maybe_warn_implicit_fallthrough (gimple_seq seq)
 
 static tree
 expand_FALLTHROUGH_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
-		      struct walk_stmt_info *)
+		      struct walk_stmt_info *wi)
 {
   gimple *stmt = gsi_stmt (*gsi_p);
 
@@ -2283,7 +2283,10 @@ expand_FALLTHROUGH_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 	{
 	  gsi_remove (gsi_p, true);
 	  if (gsi_end_p (*gsi_p))
-	    return integer_zero_node;
+	    {
+	      *static_cast<location_t *>(wi->info) = gimple_location (stmt);
+	      return integer_zero_node;
+	    }
 
 	  bool found = false;
 	  location_t loc = gimple_location (stmt);
@@ -2347,8 +2350,15 @@ static void
 expand_FALLTHROUGH (gimple_seq *seq_p)
 {
   struct walk_stmt_info wi;
+  location_t loc;
   memset (&wi, 0, sizeof (wi));
+  wi.info = (void *) &loc;
   walk_gimple_seq_mod (seq_p, expand_FALLTHROUGH_r, NULL, &wi);
+  if (wi.callback_result == integer_zero_node)
+    /* We've found [[fallthrough]]; at the end of a switch, which the C++
+       standard says is ill-formed; see [dcl.attr.fallthrough].  */
+    warning_at (loc, 0, "attribute %<fallthrough%> not preceding "
+		"a case label or default label");
 }
 
 

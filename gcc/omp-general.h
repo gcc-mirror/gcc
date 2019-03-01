@@ -81,6 +81,7 @@ extern gimple *omp_build_barrier (tree lhs);
 extern poly_uint64 omp_max_vf (void);
 extern int omp_max_simt_vf (void);
 extern tree oacc_launch_pack (unsigned code, tree device, unsigned op);
+extern tree oacc_replace_fn_attrib_attr (tree attribs, tree dims);
 extern void oacc_replace_fn_attrib (tree fn, tree dims);
 extern void oacc_set_fn_attrib (tree fn, tree clauses, vec<tree> *args);
 extern tree oacc_build_routine_dims (tree clauses);

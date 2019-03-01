@@ -6164,7 +6164,7 @@ gimple_can_duplicate_bb_p (const_basic_block bb ATTRIBUTE_UNUSED)
    preserve SSA form.  */
 
 static basic_block
-gimple_duplicate_bb (basic_block bb)
+gimple_duplicate_bb (basic_block bb, copy_bb_data *id)
 {
   basic_block new_bb;
   gimple_stmt_iterator gsi_tgt;
@@ -6228,6 +6228,38 @@ gimple_duplicate_bb (basic_block bb)
 	      && (!VAR_P (base) || !DECL_HAS_VALUE_EXPR_P (base)))
 	    DECL_NONSHAREABLE (base) = 1;
 	}
+ 
+      /* If requested remap dependence info of cliques brought in
+         via inlining.  */
+      if (id)
+	for (unsigned i = 0; i < gimple_num_ops (copy); ++i)
+	  {
+	    tree op = gimple_op (copy, i);
+	    if (!op)
+	      continue;
+	    if (TREE_CODE (op) == ADDR_EXPR
+		|| TREE_CODE (op) == WITH_SIZE_EXPR)
+	      op = TREE_OPERAND (op, 0);
+	    while (handled_component_p (op))
+	      op = TREE_OPERAND (op, 0);
+	    if ((TREE_CODE (op) == MEM_REF
+		 || TREE_CODE (op) == TARGET_MEM_REF)
+		&& MR_DEPENDENCE_CLIQUE (op) > 1)
+	      {
+		if (!id->dependence_map)
+		  id->dependence_map = new hash_map<dependence_hash,
+						    unsigned short>;
+		bool existed;
+		unsigned short &newc = id->dependence_map->get_or_insert
+		    (MR_DEPENDENCE_CLIQUE (op), &existed);
+		if (!existed)
+		  {
+		    gcc_assert (MR_DEPENDENCE_CLIQUE (op) <= cfun->last_clique);
+		    newc = ++cfun->last_clique;
+		  }
+		MR_DEPENDENCE_CLIQUE (op) = newc;
+	      }
+	  }
 
       /* Create new names for all the definitions created by COPY and
 	 add replacement mappings for each new name.  */

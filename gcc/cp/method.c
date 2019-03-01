@@ -1256,9 +1256,13 @@ process_subob_fn (tree fn, tree *spec_p, bool *trivial_p,
 
   if (spec_p)
     {
-      maybe_instantiate_noexcept (fn);
-      tree raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
-      *spec_p = merge_exception_specifiers (*spec_p, raises);
+      if (!maybe_instantiate_noexcept (fn))
+	*spec_p = error_mark_node;
+      else
+	{
+	  tree raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
+	  *spec_p = merge_exception_specifiers (*spec_p, raises);
+	}
     }
 
   if (!trivial_fn_p (fn) && !dtor_from_ctor)

@@ -2793,6 +2793,193 @@ make_pass_insert_endbranch (gcc::context *ctxt)
   return new pass_insert_endbranch (ctxt);
 }
 
+/* At entry of the nearest common dominator for basic blocks with
+   conversions, generate a single
+	vxorps %xmmN, %xmmN, %xmmN
+   for all
+	vcvtss2sd  op, %xmmN, %xmmX
+	vcvtsd2ss  op, %xmmN, %xmmX
+	vcvtsi2ss  op, %xmmN, %xmmX
+	vcvtsi2sd  op, %xmmN, %xmmX
+
+   NB: We want to generate only a single vxorps to cover the whole
+   function.  The LCM algorithm isn't appropriate here since it may
+   place a vxorps inside the loop.  */
+
+static unsigned int
+remove_partial_avx_dependency (void)
+{
+  timevar_push (TV_MACH_DEP);
+
+  bitmap_obstack_initialize (NULL);
+  bitmap convert_bbs = BITMAP_ALLOC (NULL);
+
+  basic_block bb;
+  rtx_insn *insn, *set_insn;
+  rtx set;
+  rtx v4sf_const0 = NULL_RTX;
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      FOR_BB_INSNS (bb, insn)
+	{
+	  if (!NONDEBUG_INSN_P (insn))
+	    continue;
+
+	  set = single_set (insn);
+	  if (!set)
+	    continue;
+
+	  if (get_attr_avx_partial_xmm_update (insn)
+	      != AVX_PARTIAL_XMM_UPDATE_TRUE)
+	    continue;
+
+	  if (!v4sf_const0)
+	    {
+	      calculate_dominance_info (CDI_DOMINATORS);
+	      df_set_flags (DF_DEFER_INSN_RESCAN);
+	      df_chain_add_problem (DF_DU_CHAIN | DF_UD_CHAIN);
+	      df_md_add_problem ();
+	      df_analyze ();
+	      v4sf_const0 = gen_reg_rtx (V4SFmode);
+	    }
+
+	  /* Convert PARTIAL_XMM_UPDATE_TRUE insns, DF -> SF, SF -> DF,
+	     SI -> SF, SI -> DF, DI -> SF, DI -> DF, to vec_dup and
+	     vec_merge with subreg.  */
+	  rtx src = SET_SRC (set);
+	  rtx dest = SET_DEST (set);
+	  machine_mode dest_mode = GET_MODE (dest);
+
+	  rtx zero;
+	  machine_mode dest_vecmode;
+	  if (dest_mode == E_SFmode)
+	    {
+	      dest_vecmode = V4SFmode;
+	      zero = v4sf_const0;
+	    }
+	  else
+	    {
+	      dest_vecmode = V2DFmode;
+	      zero = gen_rtx_SUBREG (V2DFmode, v4sf_const0, 0);
+	    }
+
+	  /* Change source to vector mode.  */
+	  src = gen_rtx_VEC_DUPLICATE (dest_vecmode, src);
+	  src = gen_rtx_VEC_MERGE (dest_vecmode, src, zero,
+				   GEN_INT (HOST_WIDE_INT_1U));
+	  /* Change destination to vector mode.  */
+	  rtx vec = gen_reg_rtx (dest_vecmode);
+	  /* Generate an XMM vector SET.  */
+	  set = gen_rtx_SET (vec, src);
+	  set_insn = emit_insn_before (set, insn);
+	  df_insn_rescan (set_insn);
+
+	  src = gen_rtx_SUBREG (dest_mode, vec, 0);
+	  set = gen_rtx_SET (dest, src);
+
+	  /* Drop possible dead definitions.  */
+	  PATTERN (insn) = set;
+
+	  INSN_CODE (insn) = -1;
+	  recog_memoized (insn);
+	  df_insn_rescan (insn);
+	  bitmap_set_bit (convert_bbs, bb->index);
+	}
+    }
+
+  if (v4sf_const0)
+    {
+      /* (Re-)discover loops so that bb->loop_father can be used in the
+	 analysis below.  */
+      loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+
+      /* Generate a vxorps at entry of the nearest dominator for basic
+	 blocks with conversions, which is in the the fake loop that
+	 contains the whole function, so that there is only a single
+	 vxorps in the whole function.   */
+      bb = nearest_common_dominator_for_set (CDI_DOMINATORS,
+					     convert_bbs);
+      while (bb->loop_father->latch
+	     != EXIT_BLOCK_PTR_FOR_FN (cfun))
+	bb = get_immediate_dominator (CDI_DOMINATORS,
+				      bb->loop_father->header);
+
+      set = gen_rtx_SET (v4sf_const0, CONST0_RTX (V4SFmode));
+
+      insn = BB_HEAD (bb);
+      while (insn && !NONDEBUG_INSN_P (insn))
+	{
+	  if (insn == BB_END (bb))
+	    {
+	      insn = NULL;
+	      break;
+	    }
+	  insn = NEXT_INSN (insn);
+	}
+      if (insn == BB_HEAD (bb))
+        set_insn = emit_insn_before (set, insn);
+      else
+	set_insn = emit_insn_after (set,
+				    insn ? PREV_INSN (insn) : BB_END (bb));
+      df_insn_rescan (set_insn);
+      df_process_deferred_rescans ();
+      loop_optimizer_finalize ();
+    }
+
+  bitmap_obstack_release (NULL);
+  BITMAP_FREE (convert_bbs);
+
+  timevar_pop (TV_MACH_DEP);
+  return 0;
+}
+
+namespace {
+
+const pass_data pass_data_remove_partial_avx_dependency =
+{
+  RTL_PASS, /* type */
+  "rpad", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_MACH_DEP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_df_finish, /* todo_flags_finish */
+};
+
+class pass_remove_partial_avx_dependency : public rtl_opt_pass
+{
+public:
+  pass_remove_partial_avx_dependency (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_remove_partial_avx_dependency, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *)
+    {
+      return (TARGET_AVX
+	      && TARGET_SSE_PARTIAL_REG_DEPENDENCY
+	      && TARGET_SSE_MATH
+	      && optimize
+	      && optimize_function_for_speed_p (cfun));
+    }
+
+  virtual unsigned int execute (function *)
+    {
+      return remove_partial_avx_dependency ();
+    }
+}; // class pass_rpad
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_remove_partial_avx_dependency (gcc::context *ctxt)
+{
+  return new pass_remove_partial_avx_dependency (ctxt);
+}
+
 /* Return true if a red-zone is in use.  We can't use red-zone when
    there are local indirect jumps, like "indirect_jump" or "tablejump",
    which jumps to another place in the function, since "call" in the
@@ -31805,10 +31992,10 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      priority = P_PROC_SSSE3;
 	      break;
 	    case PROCESSOR_NEHALEM:
-	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_AES)
+	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_PCLMUL)
 		{
 		  arg_str = "westmere";
-		  priority = P_AES;
+		  priority = P_PCLMUL;
 		}
 	      else
 		{

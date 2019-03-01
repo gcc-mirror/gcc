@@ -2214,6 +2214,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename, typename, typename> class _Hash_merge_helper { };
 #endif // C++17
 
+#if __cpp_deduction_guides >= 201606
+  // Used to constrain deduction guides
+  template<typename _Hash>
+    using _RequireNotAllocatorOrIntegral
+      = __enable_if_t<!__or_<is_integral<_Hash>, __is_allocator<_Hash>>::value>;
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 

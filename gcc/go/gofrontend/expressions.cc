@@ -14454,6 +14454,7 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
 {
   Location location = this->location();
   Unordered_map(unsigned int, std::vector<Expression*>) st;
+  Unordered_map(unsigned int, std::vector<Expression*>) nt;
   if (this->vals_ != NULL)
     {
       if (!this->has_keys_)
@@ -14488,8 +14489,8 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
 	  if (!(*p)->is_constant())
 	    continue;
 	  std::string sval;
-	  // Check if there are duplicate constant string keys.
-	  if ((*p)->string_constant_value(&sval))
+	  Numeric_constant nval;
+	  if ((*p)->string_constant_value(&sval)) // Check string keys.
 	    {
 	      unsigned int h = Gogo::hash_string(sval, 0);
 	      // Search the index h in the hash map.
@@ -14523,6 +14524,42 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
 			}
 		    }
 		  // Add this new string key to the vector indexed by h.
+		  mit->second.push_back(*p);
+		}
+	    }
+	  else if ((*p)->numeric_constant_value(&nval)) // Check numeric keys.
+	    {
+	      unsigned int h = nval.hash(0);
+	      Unordered_map(unsigned int, std::vector<Expression*>)::iterator mit;
+	      mit = nt.find(h);
+	      if (mit == nt.end())
+		{
+		  // No duplicate since h is a new code.
+		  // Create a new vector indexed by h and add it to the hash map.
+		  std::vector<Expression*> l;
+		  l.push_back(*p);
+		  std::pair<unsigned int, std::vector<Expression*> > val(h, l);
+		  nt.insert(val);
+		}
+	      else
+		{
+		  // Do further check since h already exists.
+		  for (std::vector<Expression*>::iterator lit =
+			   mit->second.begin();
+		       lit != mit->second.end();
+		       lit++)
+		    {
+		      Numeric_constant rval;
+		      bool ok = (*lit)->numeric_constant_value(&rval);
+		      go_assert(ok);
+		      if (nval.equals(rval))
+			{
+			  go_error_at((*p)->location(),
+				      "duplicate key in map literal");
+			  return Expression::make_error(location);
+			}
+		    }
+		  // Add this new numeric key to the vector indexed by h.
 		  mit->second.push_back(*p);
 		}
 	    }
@@ -16472,6 +16509,36 @@ Numeric_constant::operator=(const Numeric_constant& a)
   return *this;
 }
 
+// Check equality with another numeric constant.
+
+bool
+Numeric_constant::equals(const Numeric_constant& a) const
+{
+  if (this->classification_ != a.classification_)
+    return false;
+
+  if (this->type_ != NULL && a.type_ != NULL
+      && !Type::are_identical(this->type_, a.type_,
+			      Type::COMPARE_ALIASES, NULL))
+    return false;
+
+  switch (a.classification_)
+    {
+    case NC_INVALID:
+      break;
+    case NC_INT:
+    case NC_RUNE:
+      return mpz_cmp(this->u_.int_val, a.u_.int_val) == 0;
+    case NC_FLOAT:
+      return mpfr_cmp(this->u_.float_val, a.u_.float_val) == 0;
+    case NC_COMPLEX:
+      return mpc_cmp(this->u_.complex_val, a.u_.complex_val) == 0;
+    default:
+      go_unreachable();
+    }
+  return false;
+}
+
 // Clear the contents.
 
 void
@@ -17198,3 +17265,40 @@ Numeric_constant::expression(Location loc) const
       go_unreachable();
     }
 }
+
+// Calculate a hash code with a given seed.
+
+unsigned int
+Numeric_constant::hash(unsigned int seed) const
+{
+  unsigned long val;
+  const unsigned int PRIME = 97;
+  long e = 0;
+  double f = 1.0;
+  mpfr_t m;
+
+  switch (this->classification_)
+    {
+    case NC_INVALID:
+      return PRIME;
+    case NC_INT:
+    case NC_RUNE:
+      val = mpz_get_ui(this->u_.int_val);
+      break;
+    case NC_COMPLEX:
+      mpfr_init(m);
+      mpc_abs(m, this->u_.complex_val, MPFR_RNDN);
+      val = mpfr_get_ui(m, MPFR_RNDN);
+      mpfr_clear(m);
+      break;
+    case NC_FLOAT:
+      f = mpfr_get_d_2exp(&e, this->u_.float_val, MPFR_RNDN) * 4294967295.0;
+      val = static_cast<unsigned long>(e + static_cast<long>(f));
+      break;
+    default:
+      go_unreachable();
+    }
+
+  return (static_cast<unsigned int>(val) + seed) * PRIME;
+}
+

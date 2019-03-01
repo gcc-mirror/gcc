@@ -425,9 +425,9 @@ compiler.  See @ref{Top,,Overview,cpp,The C Preprocessor} for details.
 GNU Fortran supports a number of @code{INTEGER} and @code{REAL} kind types
 in additional to the kind types required by the Fortran standard.
 The availability of any given kind type is architecture dependent.  The
-following pre-defined preprocessor macros can be used to conditional
-include code for these additional kind types: @code{__GFC_INTEGER_1__},
-@code{__GFC_INTEGER_2__}, @code{__GFC_INTEGER_8__}, @code{__GFC_INTEGER_16__},
+following pre-defined preprocessor macros can be used to conditionally
+include code for these additional kind types: @code{__GFC_INT_1__},
+@code{__GFC_INT_2__}, @code{__GFC_INT_8__}, @code{__GFC_INT_16__},
 @code{__GFC_REAL_10__}, and @code{__GFC_REAL_16__}.
 
 While CPP is the de-facto standard for preprocessing Fortran code,

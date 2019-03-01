@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
+	internalcpu "internal/cpu"
 	"io"
 	"io/ioutil"
 	"runtime"
@@ -28,7 +29,14 @@ func funcPC(f interface{}) uintptr {
 		data unsafe.Pointer
 	}
 	i := (*iface)(unsafe.Pointer(&f))
-	return **(**uintptr)(i.data)
+	r := **(**uintptr)(i.data)
+	if internalcpu.FunctionDescriptors {
+		// With PPC64 ELF ABI v1 function descriptors the
+		// function address is a pointer to a struct whose
+		// first field is the actual PC.
+		r = *(*uintptr)(unsafe.Pointer(r))
+	}
+	return r
 }
 
 // A profileBuilder writes a profile incrementally from a

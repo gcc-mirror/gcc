@@ -59,7 +59,7 @@ cfi_desc_to_gfc_desc (gfc_array_void *d, CFI_cdesc_t **s_ptr)
   if (GFC_DESCRIPTOR_TYPE (d) == BT_CHARACTER)
     GFC_DESCRIPTOR_TYPE (d) = BT_DERIVED;
   else if (GFC_DESCRIPTOR_TYPE (d) == BT_DERIVED)
-    GFC_DESCRIPTOR_TYPE (d) = BT_DERIVED;
+    GFC_DESCRIPTOR_TYPE (d) = BT_CHARACTER;
 
   d->dtype.attribute = (signed short)s->attribute;
 
@@ -105,19 +105,20 @@ gfc_desc_to_cfi_desc (CFI_cdesc_t **d_ptr, const gfc_array_void *s)
   d->attribute = (CFI_attribute_t)s->dtype.attribute;
 
   if (GFC_DESCRIPTOR_TYPE (s) == BT_CHARACTER)
-    d->type = CFI_type_struct;
-  else if (GFC_DESCRIPTOR_TYPE (s) == BT_DERIVED)
     d->type = CFI_type_Character;
+  else if (GFC_DESCRIPTOR_TYPE (s) == BT_DERIVED)
+    d->type = CFI_type_struct;
   else
     d->type = (CFI_type_t)GFC_DESCRIPTOR_TYPE (s);
 
-  d->type = (CFI_type_t)(d->type
+  if (GFC_DESCRIPTOR_TYPE (s) != BT_DERIVED)
+    d->type = (CFI_type_t)(d->type
 		+ ((CFI_type_t)d->elem_len << CFI_type_kind_shift));
 
   /* Full pointer or allocatable arrays have zero lower_bound.  */
   for (n = 0; n < GFC_DESCRIPTOR_RANK (s); n++)
     {
-      if (d->attribute == CFI_attribute_other)
+      if (d->attribute != CFI_attribute_other)
 	d->dim[n].lower_bound = (CFI_index_t)GFC_DESCRIPTOR_LBOUND(s, n);
       else
 	d->dim[n].lower_bound = 0;

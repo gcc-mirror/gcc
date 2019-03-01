@@ -279,20 +279,8 @@ is_normal_capture_proxy (tree decl)
     /* It's not a capture proxy.  */
     return false;
 
-  if (variably_modified_type_p (TREE_TYPE (decl), NULL_TREE))
-    /* VLA capture.  */
-    return true;
-
-  /* It is a capture proxy, is it a normal capture?  */
-  tree val = DECL_VALUE_EXPR (decl);
-  if (val == error_mark_node)
-    return true;
-
-  if (TREE_CODE (val) == ADDR_EXPR)
-    val = TREE_OPERAND (val, 0);
-  gcc_assert (TREE_CODE (val) == COMPONENT_REF);
-  val = TREE_OPERAND (val, 1);
-  return DECL_NORMAL_CAPTURE_P (val);
+  return (DECL_LANG_SPECIFIC (decl)
+	  && DECL_CAPTURED_VARIABLE (decl));
 }
 
 /* Returns true iff DECL is a capture proxy for a normal capture
@@ -539,7 +527,7 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
   if (type == error_mark_node)
     return error_mark_node;
 
-  if (array_of_runtime_bound_p (type))
+  if (!dependent_type_p (type) && array_of_runtime_bound_p (type))
     {
       vla = true;
       if (!by_reference_p)
@@ -742,10 +730,11 @@ add_default_capture (tree lambda_stack, tree id, tree initializer)
 
 /* Return the capture pertaining to a use of 'this' in LAMBDA, in the
    form of an INDIRECT_REF, possibly adding it through default
-   capturing, if ADD_CAPTURE_P is true.  */
+   capturing, if ADD_CAPTURE_P is nonzero.  If ADD_CAPTURE_P is negative,
+   try to capture but don't complain if we can't.  */
 
 tree
-lambda_expr_this_capture (tree lambda, bool add_capture_p)
+lambda_expr_this_capture (tree lambda, int add_capture_p)
 {
   tree result;
 
@@ -841,7 +830,7 @@ lambda_expr_this_capture (tree lambda, bool add_capture_p)
     result = this_capture;
   else if (!this_capture)
     {
-      if (add_capture_p)
+      if (add_capture_p == 1)
 	{
 	  error ("%<this%> was not captured for this lambda function");
 	  result = error_mark_node;
@@ -946,7 +935,7 @@ maybe_generic_this_capture (tree object, tree fns)
 	      && DECL_NONSTATIC_MEMBER_FUNCTION_P (*iter))
 	    {
 	      /* Found a non-static member.  Capture this.  */
-	      lambda_expr_this_capture (lam, true);
+	      lambda_expr_this_capture (lam, /*maybe*/-1);
 	      break;
 	    }
       }

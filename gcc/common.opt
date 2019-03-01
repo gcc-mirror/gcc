@@ -552,11 +552,11 @@ Warn about inappropriate attribute usage.
 
 Wattribute-alias
 Common Alias(Wattribute_alias=, 1, 0) Warning
-Warn about type safety and similar errors and mismatches in attribute alias and related.
+Warn about type safety and similar errors and mismatches in declarations with alias attributes.
 
 Wattribute-alias=
 Common Joined RejectNegative UInteger Var(warn_attribute_alias) Init(1) Warning IntegerRange(0, 2)
-Warn about type safety and similar errors and mismatches in attribute alias and related.
+Warn about type safety and similar errors and mismatches in declarations with alias attributes.
 
 Wcannot-profile
 Common Var(warn_cannot_profile) Init(1) Warning

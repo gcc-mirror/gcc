@@ -657,7 +657,7 @@ func (b *Builder) build(a *Action) (err error) {
 	if len(out) > 0 {
 		output := b.processOutput(out)
 		if p.Module != nil && !allowedVersion(p.Module.GoVersion) {
-			output += "note: module requires Go " + p.Module.GoVersion
+			output += "note: module requires Go " + p.Module.GoVersion + "\n"
 		}
 		b.showOutput(a, a.Package.Dir, a.Package.Desc(), output)
 		if err != nil {
@@ -2334,7 +2334,7 @@ func (b *Builder) gccSupportsFlag(compiler []string, flag string) bool {
 	// version of GCC, so some systems have frozen on it.
 	// Now we pass an empty file on stdin, which should work at least for
 	// GCC and clang.
-	cmdArgs := str.StringList(compiler, flag, "-c", "-x", "c", "-")
+	cmdArgs := str.StringList(compiler, flag, "-c", "-x", "c", "-", "-o", os.DevNull)
 	if cfg.BuildN || cfg.BuildX {
 		b.Showcmd(b.WorkDir, "%s || true", joinUnambiguously(cmdArgs))
 		if cfg.BuildN {

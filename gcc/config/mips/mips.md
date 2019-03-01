@@ -3502,6 +3502,47 @@
   "exts\t%0,%1,%2,31"
   [(set_attr "type" "arith")
    (set_attr "mode" "<MODE>")])
+
+;; This could likely be generalized for any SUBDI mode, and any right
+;; shift, but AFAICT this is used so rarely it is not worth the additional
+;; complexity.
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=d")
+        (ashiftrt:SI
+	  (truncate:SI
+	    (ashift:DI (match_operand:DI 1 "register_operand" "d")
+		       (match_operand:DI 2 "const_arith_operand" "")))
+	  (match_operand:DI 3 "const_arith_operand" "")))]
+  "(ISA_HAS_EXTS && TARGET_64BIT
+    && UINTVAL (operands[2]) < 32 && UINTVAL (operands[3]) < 32
+    && UINTVAL (operands[3]) >= UINTVAL (operands[2]))"
+  {
+    rtx xoperands[4];
+    xoperands[0] = operands[0];
+    xoperands[1] = operands[1];
+
+    /* The length of the field is the size of the outer mode less the outer
+       shift constant.  We fix the outer mode as SImode for simplicity.  */
+    unsigned int right_shift = INTVAL (operands[3]);
+    xoperands[3] = GEN_INT (32 - right_shift);
+
+    /* The field starts at the outer shift constant less the inner shift
+       constant.  */
+    unsigned int left_shift = INTVAL (operands[2]);
+    xoperands[2] = GEN_INT (right_shift - left_shift);
+
+    /* Sanity checks.  These constraints are taken from the MIPS ISA
+       manual.  */
+    gcc_assert (INTVAL (xoperands[2]) >= 0 && INTVAL (xoperands[2]) < 32);
+    gcc_assert (INTVAL (xoperands[3]) > 0 && INTVAL (xoperands[3]) <= 32);
+    gcc_assert (INTVAL (xoperands[2]) + INTVAL (xoperands[3]) > 0
+		&& INTVAL (xoperands[2]) + INTVAL (xoperands[3]) <= 32);
+
+    output_asm_insn ("exts\t%0,%1,%2,%m3", xoperands);
+    return "";
+  }
+  [(set_attr "type" "arith")
+   (set_attr "mode" "SI")])
 
 ;;
 ;;  ....................

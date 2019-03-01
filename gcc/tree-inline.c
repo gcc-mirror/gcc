@@ -911,7 +911,12 @@ remap_dependence_clique (copy_body_data *id, unsigned short clique)
   bool existed;
   unsigned short &newc = id->dependence_map->get_or_insert (clique, &existed);
   if (!existed)
-    newc = ++cfun->last_clique;
+    {
+      /* Clique 1 is reserved for local ones set by PTA.  */
+      if (cfun->last_clique == 0)
+	cfun->last_clique = 1;
+      newc = ++cfun->last_clique;
+    }
   return newc;
 }
 

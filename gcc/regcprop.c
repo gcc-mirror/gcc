@@ -798,6 +798,22 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	    }
 	}
 
+      /* Detect obviously dead sets (via REG_UNUSED notes) and remove them.  */
+      if (set
+	  && INSN_P (insn)
+	  && !may_trap_p (insn)
+	  && find_reg_note (insn, REG_UNUSED, SET_DEST (set))
+	  && !side_effects_p (SET_SRC (set))
+	  && !side_effects_p (SET_DEST (set)))
+	{
+	  bool last = insn == BB_END (bb);
+	  delete_insn (insn);
+	  if (last)
+	    break;
+	  continue;
+	}
+	 
+
       extract_constrain_insn (insn);
       preprocess_constraints (insn);
       const operand_alternative *op_alt = which_op_alt ();

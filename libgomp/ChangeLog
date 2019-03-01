@@ -1,3 +1,50 @@
+2019-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c++/c++.exp: Specify
+	"-foffload=$offload_target".
+	* testsuite/libgomp.oacc-c/c.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_openacc_nvidia_accel_configured): Remove,
+	as (conceptually) merged into
+	check_effective_target_openacc_nvidia_accel_selected.  Adjust all
+	users.
+
+	* plugin/configfrag.ac: Populate and AC_SUBST offload_targets.
+	* testsuite/libgomp-test-support.exp.in: Adjust.
+	* testsuite/lib/libgomp.exp: Likewise.  Don't populate
+	openacc_device_types_s.
+	(offload_target_to_openacc_device_type): New proc.
+	* testsuite/libgomp.oacc-c++/c++.exp: Adjust.
+	* testsuite/libgomp.oacc-c/c.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+	* plugin/configfrag.ac: Populate and AC_SUBST offload_plugins
+	instead of offload_targets, and AC_DEFINE_UNQUOTED OFFLOAD_PLUGINS
+	instead of OFFLOAD_TARGETS.
+	* target.c (gomp_target_init): Adjust.
+	* testsuite/libgomp-test-support.exp.in: Likewise.
+	* testsuite/lib/libgomp.exp: Likewise.  Populate
+	openacc_device_types_s instead of offload_targets_s_openacc.
+	(check_effective_target_openacc_nvidia_accel_selected)
+	(check_effective_target_openacc_host_selected): Adjust.
+	* testsuite/libgomp.oacc-c++/c++.exp: Likewise.
+	* testsuite/libgomp.oacc-c/c.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+	* Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+	* testsuite/lib/libgomp.exp: Error out for unknown offload target.
+	* testsuite/libgomp.oacc-c++/c++.exp: Likewise.  Report if
+	"offloading: supported, but hardware not accessible".
+	* testsuite/libgomp.oacc-c/c.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+
 2019-02-19  Chung-Lin Tang <cltang@codesourcery.com>
 
 	PR c/87924

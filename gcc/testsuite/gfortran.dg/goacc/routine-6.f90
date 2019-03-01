@@ -1,3 +1,4 @@
+! Check for invalid syntax with !$ACC ROUTINE.
 
 module m
   integer m1int
@@ -44,6 +45,12 @@ program main
   end do
   !$acc end parallel
 end program main
+
+! Ensure that we recover from incomplete function definitions.
+
+integer function f1 ! { dg-error "Expected formal argument list in function definition" }
+  !$acc routine ! { dg-error "Unclassifiable OpenACC directive" }
+end function f1 ! { dg-error "Expecting END PROGRAM statement" }
 
 subroutine subr1 (x) 
   !$acc routine

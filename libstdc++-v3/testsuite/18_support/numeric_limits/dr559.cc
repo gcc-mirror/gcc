@@ -84,6 +84,9 @@ int main()
   do_test<signed char>();
   do_test<unsigned char>();
   do_test<wchar_t>();
+#ifdef _GLIBCXX_USE_CHAR8_T
+  do_test<char8_t>();
+#endif
   do_test<char16_t>();
   do_test<char32_t>();
   do_test<short>();

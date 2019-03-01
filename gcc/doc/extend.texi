@@ -47,6 +47,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Escaped Newlines::    Slightly looser rules for escaped newlines.
 * Subscripting::        Any array can be subscripted, even if not an lvalue.
 * Pointer Arith::       Arithmetic on @code{void}-pointers and function pointers.
+* Variadic Pointer Args::  Pointer arguments to variadic functions.
 * Pointers to Arrays::  Pointers to arrays with qualifiers work as expected.
 * Initializers::        Non-constant initializers.
 * Compound Literals::   Compound literals give structures, unions
@@ -1943,6 +1944,22 @@ and on function types, and returns 1.
 @opindex Wpointer-arith
 The option @option{-Wpointer-arith} requests a warning if these extensions
 are used.
+
+@node Variadic Pointer Args
+@section Pointer Arguments in Variadic Functions
+@cindex pointer arguments in variadic functions
+@cindex variadic functions, pointer arguments
+
+Standard C requires that pointer types used with @code{va_arg} in
+functions with variable argument lists either must be compatible with
+that of the actual argument, or that one type must be a pointer to
+@code{void} and the other a pointer to a character type.  GNU C
+implements the POSIX XSI extension that additionally permits the use
+of @code{va_arg} with a pointer type to receive arguments of any other
+pointer type.
+
+In particular, in GNU C @samp{va_arg (ap, void *)} can safely be used
+to consume an argument of any pointer type.
 
 @node Pointers to Arrays
 @section Pointers to Arrays with Qualifiers Work as Expected
@@ -11758,7 +11775,7 @@ is a built-in construct that returns a constant number of bytes from
 @var{ptr} to the end of the object @var{ptr} pointer points to
 (if known at compile time).  To determine the sizes of dynamically allocated
 objects the function relies on the allocation functions called to obtain
-the storage to be declared with the @code{alloc_size} attribute (@xref{Common
+the storage to be declared with the @code{alloc_size} attribute (@pxref{Common
 Function Attributes}).  @code{__builtin_object_size} never evaluates
 its arguments for side effects.  If there are any side effects in them, it
 returns @code{(size_t) -1} for @var{type} 0 or 1 and @code{(size_t) 0}
@@ -12543,7 +12560,7 @@ restrictions as the argument to @code{typeof} (@pxref{Typeof}).  The
 @var{attribute} argument is an attribute name optionally followed by
 a comma-separated list of arguments enclosed in parentheses.  Both forms
 of attribute names---with and without double leading and trailing
-underscores---are recognized.  @xref{Attribute Syntax} for details.
+underscores---are recognized.  @xref{Attribute Syntax}, for details.
 When no attribute arguments are specified for an attribute that expects
 one or more arguments the function returns @code{true} if
 @var{type-or-expression} has been declared with the attribute regardless
@@ -12890,6 +12907,23 @@ built-in in this case, because it has no opportunity to perform
 optimization.
 @end deftypefn
 
+@deftypefn {Built-in Function} bool __builtin_is_constant_evaluated (void)
+The @code{__builtin_is_constant_evaluated} function is available only
+in C++.  The built-in is intended to be used by implementations of
+the @code{std::is_constant_evaluated} C++ function.  Programs should make
+use of the latter function rather than invoking the built-in directly.
+
+The main use case of the built-in is to determine whether a @code{constexpr}
+function is being called in a @code{constexpr} context.  A call to
+the function evaluates to a core constant expression with the value
+@code{true} if and only if it occurs within the evaluation of an expression
+or conversion that is manifestly constant-evaluated as defined in the C++
+standard.  Manifestly constant-evaluated contexts include constant-expressions,
+the conditions of @code{constexpr if} statements, constraint-expressions, and
+initializers of variables usable in constant expressions.   For more details
+refer to the latest revision of the C++ standard.
+@end deftypefn
+
 @deftypefn {Built-in Function} long __builtin_expect (long @var{exp}, long @var{c})
 @opindex fprofile-arcs
 You may use @code{__builtin_expect} to provide the compiler with
@@ -13073,7 +13107,7 @@ void foo (void)
 
 @end deftypefn
 
-@deftypefn {Built-in Function} void __builtin___clear_cache (char *@var{begin}, char *@var{end})
+@deftypefn {Built-in Function} void __builtin___clear_cache (void *@var{begin}, void *@var{end})
 This function is used to flush the processor's instruction cache for
 the region of memory between @var{begin} inclusive and @var{end}
 exclusive.  Some targets require that the instruction cache be
@@ -13129,7 +13163,8 @@ and GCC does not issue a warning.
 @end deftypefn
 
 @deftypefn {Built-in Function}{size_t} __builtin_object_size (const void * @var{ptr}, int @var{type})
-Returns the size of an object pointed to by @var{ptr}.  @xref{Object Size Checking} for a detailed description of the function.
+Returns the size of an object pointed to by @var{ptr}.  @xref{Object Size
+Checking}, for a detailed description of the function.
 @end deftypefn
 
 @deftypefn {Built-in Function} double __builtin_huge_val (void)

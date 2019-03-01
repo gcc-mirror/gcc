@@ -83,13 +83,12 @@ type backgroundCmd struct {
 }
 
 var extraEnvKeys = []string{
-	"SYSTEMROOT",      // must be preserved on Windows to find DLLs; golang.org/issue/25210
-	"LD_LIBRARY_PATH", // must be preserved on Unix systems to find shared libraries
-
-	// For gccgo testing.
-	"GO_TESTING_GOTOOLS",
-	"GCCGO",
-	"GCCGOTOOLDIR",
+	"SYSTEMROOT",         // must be preserved on Windows to find DLLs; golang.org/issue/25210
+	"LD_LIBRARY_PATH",    // must be preserved on Unix systems to find shared libraries
+	"CC",                 // don't lose user settings when invoking cgo
+	"GO_TESTING_GOTOOLS", // for gccgo testing
+	"GCCGO",              // for gccgo testing
+	"GCCGOTOOLDIR",       // for gccgo testing
 }
 
 // setup sets up the test execution temporary directory and environment.
@@ -400,6 +399,7 @@ func (ts *testScript) cmdCc(neg bool, args []string) {
 	var b work.Builder
 	b.Init()
 	ts.cmdExec(neg, append(b.GccCmd(".", ""), args...))
+	os.RemoveAll(b.WorkDir)
 }
 
 // cd changes to a different directory.

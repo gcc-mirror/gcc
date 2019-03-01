@@ -5577,41 +5577,6 @@ nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level, unsigned used)
   else
     gcc_unreachable ();
 
-  if (routine_p)
-    {
-      /* OpenACC routines in C arrive here with the following attributes
-	 (omitting the 'omp declare target'):
-	 seq   : __attribute__((oacc function (0 1, 0 1, 0 1)))
-	 vector: __attribute__((oacc function (0 1, 0 1, 1 0)))
-	 worker: __attribute__((oacc function (0 1, 1 0, 1 0)))
-	 gang  : __attribute__((oacc function (1 0, 1 0, 1 0)))
-
-	 If we take f.i. the oacc function attribute of the worker routine
-	 (0 1, 1 0, 1 0), then:
-	 - the slice (0, 1, 1) is interpreted by oacc_fn_attrib_level as
-	   meaning: worker routine, that is:
-	   - can't contain gang loop (0),
-	   - can contain worker loop (1),
-	   - can contain vector loop (1).
-	 - the slice (1, 0, 0) is interpreted by oacc_validate_dims as the
-	 dimensions: gang: 1, worker: 0, vector: 0.
-
-	 OTOH, routines in Fortran arrive here with these attributes:
-	 seq   : __attribute__((oacc function (0 0, 0 0, 0 0)))
-	 vector: __attribute__((oacc function (0 0, 0 0, 1 0)))
-	 worker: __attribute__((oacc function (0 0, 1 0, 1 0)))
-	 gang  : __attribute__((oacc function (1 0, 1 0, 1 0)))
-	 that is, the same as for C but with the dimensions set to 0.
-
-	 This is due to a bug in the Fortran front-end: PR72741.  Work around
-	 this bug by forcing the dimensions to be the same in Fortran as for C,
-	 to be able to handle C and Fortran routines uniformly in this
-	 function.  */
-      dims[GOMP_DIM_VECTOR] = fn_level > GOMP_DIM_VECTOR ? 1 : 0;
-      dims[GOMP_DIM_WORKER] = fn_level > GOMP_DIM_WORKER ? 1 : 0;
-      dims[GOMP_DIM_GANG] = fn_level > GOMP_DIM_GANG ? 1 : 0;
-    }
-
   if (oacc_min_dims_p)
     {
       gcc_assert (dims[GOMP_DIM_VECTOR] == 1);

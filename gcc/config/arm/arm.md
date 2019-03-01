@@ -1145,10 +1145,20 @@
 (define_insn "*subsi3_carryin_const"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
         (minus:SI (plus:SI (match_operand:SI 1 "s_register_operand" "r")
-                           (match_operand:SI 2 "arm_not_immediate_operand" "K"))
+                           (match_operand:SI 2 "arm_neg_immediate_operand" "L"))
                   (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
   "TARGET_32BIT"
-  "sbc\\t%0, %1, #%B2"
+  "sbc\\t%0, %1, #%n2"
+  [(set_attr "conds" "use")
+   (set_attr "type" "adc_imm")]
+)
+
+(define_insn "*subsi3_carryin_const0"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+        (minus:SI (match_operand:SI 1 "s_register_operand" "r")
+                  (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+  "TARGET_32BIT"
+  "sbc\\t%0, %1, #0"
   [(set_attr "conds" "use")
    (set_attr "type" "adc_imm")]
 )
@@ -1170,13 +1180,28 @@
 (define_insn "*subsi3_carryin_compare_const"
   [(set (reg:CC CC_REGNUM)
         (compare:CC (match_operand:SI 1 "reg_or_int_operand" "r")
-                    (match_operand:SI 2 "arm_not_operand" "K")))
+                    (match_operand:SI 2 "const_int_I_operand" "I")))
    (set (match_operand:SI 0 "s_register_operand" "=r")
         (minus:SI (plus:SI (match_dup 1)
-                           (match_dup 2))
+                           (match_operand:SI 3 "arm_neg_immediate_operand" "L"))
+                  (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+  "TARGET_32BIT
+   && (INTVAL (operands[2])
+       == trunc_int_for_mode (-INTVAL (operands[3]), SImode))"
+  "sbcs\\t%0, %1, #%n3"
+  [(set_attr "conds" "set")
+   (set_attr "type" "adcs_imm")]
+)
+
+(define_insn "*subsi3_carryin_compare_const0"
+  [(set (reg:CC CC_REGNUM)
+        (compare:CC (match_operand:SI 1 "reg_or_int_operand" "r")
+		    (const_int 0)))
+   (set (match_operand:SI 0 "s_register_operand" "=r")
+        (minus:SI (match_dup 1)
                   (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
   "TARGET_32BIT"
-  "sbcs\\t%0, %1, #%B2"
+  "sbcs\\t%0, %1, #0"
   [(set_attr "conds" "set")
    (set_attr "type" "adcs_imm")]
 )
@@ -1301,14 +1326,13 @@
   [(parallel [(set (reg:CC CC_REGNUM)
 		   (compare:CC (match_dup 1) (match_dup 2)))
 	      (set (match_dup 0) (minus:SI (match_dup 1) (match_dup 2)))])
-   (set (match_dup 3) (minus:SI (plus:SI (match_dup 4) (match_dup 5))
+   (set (match_dup 3) (minus:SI (match_dup 4)
                                 (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
   {
     operands[3] = gen_highpart (SImode, operands[0]);
     operands[0] = gen_lowpart (SImode, operands[0]);
     operands[4] = gen_highpart (SImode, operands[1]);
     operands[1] = gen_lowpart (SImode, operands[1]);
-    operands[5] = GEN_INT (~0);
    }
   [(set_attr "conds" "clob")
    (set_attr "length" "8")
@@ -7423,16 +7447,19 @@
                    (compare:CC (match_dup 3) (match_dup 4)))
               (set (match_dup 2)
                    (minus:SI (match_dup 5)
-                            (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))])]
+			     (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))])]
   {
     operands[3] = gen_highpart (SImode, operands[0]);
     operands[0] = gen_lowpart (SImode, operands[0]);
     if (CONST_INT_P (operands[1]))
       {
-        operands[4] = GEN_INT (~INTVAL (gen_highpart_mode (SImode,
-                                                           DImode,
-                                                           operands[1])));
-        operands[5] = gen_rtx_PLUS (SImode, operands[3], operands[4]);
+	operands[4] = gen_highpart_mode (SImode, DImode, operands[1]);
+	if (operands[4] == const0_rtx)
+	  operands[5] = operands[3];
+	else
+	  operands[5] = gen_rtx_PLUS (SImode, operands[3],
+				      gen_int_mode (-UINTVAL (operands[4]),
+						    SImode));
       }
     else
       {
@@ -8914,16 +8941,35 @@
 
 ;; The USE in this pattern is needed to tell flow analysis that this is
 ;; a CASESI insn.  It has no other purpose.
-(define_insn "arm_casesi_internal"
+(define_expand "arm_casesi_internal"
+  [(parallel [(set (pc)
+	       (if_then_else
+		(leu (match_operand:SI 0 "s_register_operand")
+		     (match_operand:SI 1 "arm_rhs_operand"))
+		(match_dup 4)
+		(label_ref:SI (match_operand 3 ""))))
+	      (clobber (reg:CC CC_REGNUM))
+	      (use (label_ref:SI (match_operand 2 "")))])]
+  "TARGET_ARM"
+{
+  operands[4] = gen_rtx_MULT (SImode, operands[0], GEN_INT (4));
+  operands[4] = gen_rtx_PLUS (SImode, operands[4],
+			      gen_rtx_LABEL_REF (SImode, operands[2]));
+  operands[4] = gen_rtx_MEM (SImode, operands[4]);
+  MEM_READONLY_P (operands[4]) = 1;
+  MEM_NOTRAP_P (operands[4]) = 1;
+})
+
+(define_insn "*arm_casesi_internal"
   [(parallel [(set (pc)
 	       (if_then_else
 		(leu (match_operand:SI 0 "s_register_operand" "r")
 		     (match_operand:SI 1 "arm_rhs_operand" "rI"))
 		(mem:SI (plus:SI (mult:SI (match_dup 0) (const_int 4))
-				 (label_ref (match_operand 2 "" ""))))
-		(label_ref (match_operand 3 "" ""))))
+				 (label_ref:SI (match_operand 2 "" ""))))
+		(label_ref:SI (match_operand 3 "" ""))))
 	      (clobber (reg:CC CC_REGNUM))
-	      (use (label_ref (match_dup 2)))])]
+	      (use (label_ref:SI (match_dup 2)))])]
   "TARGET_ARM"
   "*
     if (flag_pic)

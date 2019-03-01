@@ -5480,16 +5480,35 @@ gfc_calculate_transfer_sizes (gfc_expr *source, gfc_expr *mold, gfc_expr *size,
     return false;
 
   /* Calculate the size of the source.  */
-  *source_size = gfc_target_expr_size (source);
-  if (*source_size == 0)
+  if (!gfc_target_expr_size (source, source_size))
     return false;
 
   /* Determine the size of the element.  */
-  result_elt_size = gfc_element_size (mold);
-  if (result_elt_size == 0)
+  if (!gfc_element_size (mold, &result_elt_size))
     return false;
 
-  if (mold->expr_type == EXPR_ARRAY || mold->rank || size)
+  if (result_elt_size == 0 && *source_size > 0)
+    {
+      gfc_error ("%<MOLD%> argument of %<TRANSFER%> intrinsic at %L "
+                 "shall not have storage size 0 when %<SOURCE%> "
+		 "argument has size greater than 0", &mold->where);
+      return false;
+    }
+
+  /* If MOLD is a scalar and SIZE is absent, the result is a scalar.
+   * If MOLD is an array and SIZE is absent, the result is an array and of
+   * rank one. Its size is as small as possible such that its physical
+   * representation is not shorter than that of SOURCE.
+   */
+  if (result_elt_size == 0 && *source_size == 0 && !size)
+    {
+      *result_size = 0;
+      *result_length_p = 0;
+      return true;
+    }
+
+  if ((result_elt_size > 0 && (mold->expr_type == EXPR_ARRAY || mold->rank))
+      || size)
     {
       int result_length;
 

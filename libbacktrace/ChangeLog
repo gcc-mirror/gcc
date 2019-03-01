@@ -1,3 +1,12 @@
+2019-02-26  Tom de Vries  <tdevries@suse.de>
+
+	* btest.c (test5): Allow global.* as minimal symbol name for global.
+
+2019-02-26  Tom de Vries  <tdevries@suse.de>
+
+	* Makefile.am (TESTS): Only add b3test_dwz_buildid if HAVE_DWZ.
+	* Makefile.in: Regenerate.
+
 2019-02-12  Tom de Vries  <tdevries@suse.de>
 
 	PR libbacktrace/81983

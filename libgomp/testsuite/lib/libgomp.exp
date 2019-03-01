@@ -41,28 +41,6 @@ load_gcc_lib fortran-modules.exp
 # Try to load a test support file, built during libgomp configuration.
 load_file libgomp-test-support.exp
 
-# Populate offload_targets_s (offloading targets separated by a space), and
-# offload_targets_s_openacc (the same, but with OpenACC names; OpenACC spells
-# some of them a little differently).
-set offload_targets_s [split $offload_targets ","]
-set offload_targets_s_openacc {}
-foreach offload_target_openacc $offload_targets_s {
-    # Translate to OpenACC names, or skip if not yet supported.
-    switch $offload_target_openacc {
-	intelmic {
-	    continue
-	}
-	nvptx {
-	    set offload_target_openacc "nvidia"
-	}
-	hsa {
-	    continue
-	}
-    }
-    lappend offload_targets_s_openacc "$offload_target_openacc"
-}
-lappend offload_targets_s_openacc "host"
-
 set dg-do-what-default run
 
 #
@@ -140,9 +118,9 @@ proc libgomp_init { args } {
     set always_ld_library_path ".:${blddir}/.libs"
 
     # Add liboffloadmic build directory in LD_LIBRARY_PATH to support
-    # non-fallback testing for Intel MIC targets
-    global offload_targets
-    if { [string match "*,intelmic,*" ",$offload_targets,"] } {
+    # Intel MIC offloading testing.
+    global offload_plugins
+    if { [string match "*,intelmic,*" ",$offload_plugins,"] } {
 	append always_ld_library_path ":${blddir}/../liboffloadmic/.libs"
 	append always_ld_library_path ":${blddir}/../liboffloadmic/plugin/.libs"
 	# libstdc++ is required by liboffloadmic
@@ -246,8 +224,7 @@ proc libgomp_init { args } {
     # Disable color diagnostics
     lappend ALWAYS_CFLAGS "additional_flags=-fdiagnostics-color=never"
 
-    # Used for support non-fallback offloading.
-    # Help GCC to find target mkoffload.
+    # Help GCC to find offload compilers' 'mkoffload'.
     global offload_additional_options
     if { $offload_additional_options != "" } {
 	lappend ALWAYS_CFLAGS "additional_flags=${offload_additional_options}"
@@ -323,6 +300,28 @@ proc libgomp_option_proc { option } {
     }
 }
 
+# Translate offload target to OpenACC device type.  Return the empty string if
+# not supported, and 'host' for offload target 'disable'.
+proc offload_target_to_openacc_device_type { offload_target } {
+    switch -glob $offload_target {
+	disable {
+	    return "host"
+	}
+	hsa* {
+	    return ""
+	}
+	*-intelmic* {
+	    return ""
+	}
+	nvptx* {
+	    return "nvidia"
+	}
+	default {
+	    error "Unknown offload target: $offload_target"
+	}
+    }
+}
+
 # Return 1 if offload device is available.
 proc check_effective_target_offload_device { } {
     return [check_runtime_nocache offload_device_available_ {
@@ -363,19 +362,7 @@ proc check_effective_target_offload_device_shared_as { } {
     } ]
 }
 
-# Return 1 if configured for nvptx offloading.
-
-proc check_effective_target_openacc_nvidia_accel_configured { } {
-    global offload_targets
-    if { ![string match "*,nvptx,*" ",$offload_targets,"] } {
-        return 0
-    }
-    # PR libgomp/65099: Currently, we only support offloading in 64-bit
-    # configurations.
-    return [is-effective-target lp64]
-}
-
-# Return 1 if at least one nvidia board is present.
+# Return 1 if at least one Nvidia GPU is accessible.
 
 proc check_effective_target_openacc_nvidia_accel_present { } {
     return [check_runtime openacc_nvidia_accel_present {
@@ -386,29 +373,22 @@ proc check_effective_target_openacc_nvidia_accel_present { } {
     } "" ]
 }
 
-# Return 1 if at least one nvidia board is present, and the nvidia device type
-# is selected by default by means of setting the environment variable
-# ACC_DEVICE_TYPE.
+# Return 1 if at least one Nvidia GPU is accessible, and the OpenACC 'nvidia'
+# device type is selected.
 
 proc check_effective_target_openacc_nvidia_accel_selected { } {
     if { ![check_effective_target_openacc_nvidia_accel_present] } {
 	return 0;
     }
-    global offload_target_openacc
-    if { $offload_target_openacc == "nvidia" } {
-        return 1;
-    }
-    return 0;
+    global openacc_device_type
+    return [string match "nvidia" $openacc_device_type]
 }
 
-# Return 1 if the host target is selected for offloaded
+# Return 1 if the OpenACC 'host' device type is selected.
 
 proc check_effective_target_openacc_host_selected { } {
-    global offload_target_openacc
-    if { $offload_target_openacc == "host" } {
-        return 1;
-    }
-    return 0;
+    global openacc_device_type
+    return [string match "host" $openacc_device_type]
 }
 
 # Return 1 if the selected OMP device is actually a HSA device

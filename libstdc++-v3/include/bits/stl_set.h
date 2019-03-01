@@ -934,6 +934,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   typename _Allocator =
 	     allocator<typename iterator_traits<_InputIterator>::value_type>,
 	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireNotAllocator<_Compare>,
 	   typename = _RequireAllocator<_Allocator>>
     set(_InputIterator, _InputIterator,
 	_Compare = _Compare(), _Allocator = _Allocator())
@@ -942,6 +943,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Key, typename _Compare = less<_Key>,
 	   typename _Allocator = allocator<_Key>,
+	   typename = _RequireNotAllocator<_Compare>,
 	   typename = _RequireAllocator<_Allocator>>
     set(initializer_list<_Key>,
 	_Compare = _Compare(), _Allocator = _Allocator())

@@ -2548,10 +2548,10 @@ gfc_character2character (gfc_expr *src, int kind)
 static void
 hollerith2representation (gfc_expr *result, gfc_expr *src)
 {
-  int src_len, result_len;
+  size_t src_len, result_len;
 
   src_len = src->representation.length - src->ts.u.pad;
-  result_len = gfc_target_expr_size (result);
+  gfc_target_expr_size (result, &result_len);
 
   if (src_len > result_len)
     {

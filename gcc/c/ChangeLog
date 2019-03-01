@@ -1,3 +1,16 @@
+2019-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89525
+	* c-typeck.c (convert_arguments): Call inform_declaration only if
+	the previous warning_at call returned true.
+
+2019-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.c (c_parser_oacc_shape_clause): Add loc formal
+	parameter.  Adjust all users.
+	(c_parser_oacc_simple_clause): Replace parser with loc formal
+	parameter.  Adjust all users.
+
 2019-02-19  Chung-Lin Tang <cltang@codesourcery.com>
 
 	PR c/87924

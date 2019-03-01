@@ -196,8 +196,8 @@ class CppMangleVisitor : public Visitor
                 Expression *e = isExpression(o);
                 if (d && d->isFuncDeclaration())
                 {
-                    bool is_nested = d->toParent() &&
-                        !d->toParent()->isModule() &&
+                    bool is_nested = d->toParent3() &&
+                        !d->toParent3()->isModule() &&
                         ((TypeFunction*)d->isFuncDeclaration()->type)->linkage == LINKcpp;
                     if (is_nested)
                         buf->writeByte('X');
@@ -271,7 +271,7 @@ class CppMangleVisitor : public Visitor
      */
     Dsymbol *getInstance(Dsymbol *s)
     {
-        Dsymbol *p = s->toParent();
+        Dsymbol *p = s->toParent3();
         if (p)
         {
             if (TemplateInstance *ti = p->isTemplateInstance())
@@ -292,7 +292,7 @@ class CppMangleVisitor : public Visitor
      */
     static Dsymbol *getQualifier(Dsymbol *s)
     {
-        Dsymbol *p = s->toParent();
+        Dsymbol *p = s->toParent3();
         return (p && !p->isModule()) ? p : NULL;
     }
 
@@ -324,7 +324,7 @@ class CppMangleVisitor : public Visitor
         Dsymbol *s = ((TypeStruct*)t)->toDsymbol(NULL);
         if (s->ident != ident)
             return false;
-        Dsymbol *p = s->toParent();
+        Dsymbol *p = s->toParent3();
         if (!p)
             return false;
         TemplateInstance *ti = p->isTemplateInstance();
@@ -427,7 +427,7 @@ class CppMangleVisitor : public Visitor
     void cpp_mangle_name(Dsymbol *s, bool qualified)
     {
         //printf("cpp_mangle_name(%s, %d)\n", s->toChars(), qualified);
-        Dsymbol *p = s->toParent();
+        Dsymbol *p = s->toParent3();
         Dsymbol *se = s;
         bool write_prefix = true;
         if (p && p->isTemplateInstance())
@@ -435,7 +435,7 @@ class CppMangleVisitor : public Visitor
             se = p;
             if (find(p->isTemplateInstance()->tempdecl) >= 0)
                 write_prefix = false;
-            p = p->toParent();
+            p = p->toParent3();
         }
 
         if (p && !p->isModule())
@@ -521,7 +521,7 @@ class CppMangleVisitor : public Visitor
             fatal();
         }
 
-        Dsymbol *p = d->toParent();
+        Dsymbol *p = d->toParent3();
         if (p && !p->isModule()) //for example: char Namespace1::beta[6] should be mangled as "_ZN10Namespace14betaE"
         {
             buf->writestring("_ZN");
@@ -561,7 +561,7 @@ class CppMangleVisitor : public Visitor
              */
             TemplateInstance *ti = d->parent->isTemplateInstance();
             assert(ti);
-            Dsymbol *p = ti->toParent();
+            Dsymbol *p = ti->toParent3();
             if (p && !p->isModule() && tf->linkage == LINKcpp)
             {
                 buf->writeByte('N');
@@ -581,7 +581,7 @@ class CppMangleVisitor : public Visitor
         }
         else
         {
-            Dsymbol *p = d->toParent();
+            Dsymbol *p = d->toParent3();
             if (p && !p->isModule() && tf->linkage == LINKcpp)
             {
                 /* <nested-name> ::= N [<CV-qualifiers>] <prefix> <unqualified-name> E
@@ -997,7 +997,7 @@ public:
         else
         {
             Dsymbol *s = t->toDsymbol(NULL);
-            Dsymbol *p = s->toParent();
+            Dsymbol *p = s->toParent3();
             if (p && p->isTemplateInstance())
             {
                 /* https://issues.dlang.org/show_bug.cgi?id=17947
@@ -1044,7 +1044,7 @@ public:
 
         {
             Dsymbol *s = t->toDsymbol(NULL);
-            Dsymbol *p = s->toParent();
+            Dsymbol *p = s->toParent3();
             if (p && p->isTemplateInstance())
             {
                  /* https://issues.dlang.org/show_bug.cgi?id=17947

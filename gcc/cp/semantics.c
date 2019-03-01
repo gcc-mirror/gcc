@@ -2859,6 +2859,9 @@ finish_compound_literal (tree type, tree compound_literal,
   compound_literal = digest_init_flags (type, compound_literal,
 					LOOKUP_NORMAL | LOOKUP_NO_NARROWING,
 					complain);
+  if (compound_literal == error_mark_node)
+    return error_mark_node;
+
   /* If we're in a template, return the original compound literal.  */
   if (orig_cl)
     {
@@ -3469,10 +3472,12 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
 	= decl_function_context (containing_function);
     }
 
-  /* In a lambda within a template, wait until instantiation
-     time to implicitly capture a dependent type.  */
+  /* In a lambda within a template, wait until instantiation time to implicitly
+     capture a parameter pack.  We want to wait because we don't know if we're
+     capturing the whole pack or a single element, and it's OK to wait because
+     find_parameter_packs_r walks into the lambda body.  */
   if (context == containing_function
-      && dependent_type_p (TREE_TYPE (decl)))
+      && DECL_PACK_P (decl))
     return decl;
 
   if (lambda_expr && VAR_P (decl)

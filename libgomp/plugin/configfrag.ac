@@ -26,8 +26,6 @@
 # see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-offload_targets=
-AC_SUBST(offload_targets)
 plugin_support=yes
 AC_CHECK_LIB(dl, dlsym, , [plugin_support=no])
 if test x"$plugin_support" = xyes; then
@@ -139,7 +137,13 @@ AC_SUBST(PLUGIN_HSA_CPPFLAGS)
 AC_SUBST(PLUGIN_HSA_LDFLAGS)
 AC_SUBST(PLUGIN_HSA_LIBS)
 
-# Get offload targets and path to install tree of offloading compiler.
+# Parse '--enable-offload-targets', figure out the corresponding libgomp
+# plugins, and configure to find the corresponding offload compilers.
+# 'offload_plugins' and 'offload_targets' will be populated in the same order.
+offload_plugins=
+offload_targets=
+AC_SUBST(offload_plugins)
+AC_SUBST(offload_targets)
 offload_additional_options=
 offload_additional_lib_paths=
 AC_SUBST(offload_additional_options)
@@ -148,13 +152,13 @@ if test x"$enable_offload_targets" != x; then
   for tgt in `echo $enable_offload_targets | sed -e 's#,# #g'`; do
     tgt_dir=`echo $tgt | grep '=' | sed 's/.*=//'`
     tgt=`echo $tgt | sed 's/=.*//'`
-    tgt_name=
+    tgt_plugin=
     case $tgt in
       *-intelmic-* | *-intelmicemul-*)
-	tgt_name=intelmic
+	tgt_plugin=intelmic
 	;;
       nvptx*)
-        tgt_name=nvptx
+	tgt_plugin=nvptx
 	PLUGIN_NVPTX=$tgt
 	if test "x$CUDA_DRIVER_LIB" != xno \
 	   && test "x$CUDA_DRIVER_LIB" != xno; then
@@ -202,7 +206,7 @@ if test x"$enable_offload_targets" != x; then
 	        PLUGIN_HSA=0
 		;;
 	      *)
-	        tgt_name=hsa
+		tgt_plugin=hsa
 	        PLUGIN_HSA=$tgt
 	        PLUGIN_HSA_CPPFLAGS=$HSA_RUNTIME_CPPFLAGS
 	        PLUGIN_HSA_LDFLAGS="$HSA_RUNTIME_LDFLAGS"
@@ -220,7 +224,7 @@ if test x"$enable_offload_targets" != x; then
 	        LDFLAGS=$PLUGIN_HSA_save_LDFLAGS
 	        LIBS=$PLUGIN_HSA_save_LIBS
 	        case $PLUGIN_HSA in
-	          hsa*)
+		  hsa*)
 	            HSA_PLUGIN=0
 	            AC_MSG_ERROR([HSA run-time package required for HSA support])
 	            ;;
@@ -237,16 +241,19 @@ if test x"$enable_offload_targets" != x; then
 	AC_MSG_ERROR([unknown offload target specified])
 	;;
     esac
-    if test x"$tgt_name" = x; then
-      # Don't configure libgomp for this offloading target if we don't build
-      # the corresponding plugin.
+    if test x"$tgt_plugin" = x; then
+      # Not configuring libgomp for this offload target if we're not building
+      # the corresponding offload plugin.
       continue
-    elif test x"$offload_targets" = x; then
-      offload_targets=$tgt_name
+    elif test x"$offload_plugins" = x; then
+      offload_plugins=$tgt_plugin
+      offload_targets=$tgt
     else
-      offload_targets=$offload_targets,$tgt_name
+      offload_plugins=$offload_plugins,$tgt_plugin
+      offload_targets=$offload_targets,$tgt
     fi
-    if test "$tgt_name" = hsa; then
+    # Configure additional search paths.
+    if test "$tgt_plugin" = hsa; then
       # Offloading compilation is all handled by the target compiler.
       :
     elif test x"$tgt_dir" != x; then
@@ -258,8 +265,8 @@ if test x"$enable_offload_targets" != x; then
     fi
   done
 fi
-AC_DEFINE_UNQUOTED(OFFLOAD_TARGETS, "$offload_targets",
-  [Define to offload targets, separated by commas.])
+AC_DEFINE_UNQUOTED(OFFLOAD_PLUGINS, "$offload_plugins",
+  [Define to offload plugins, separated by commas.])
 AM_CONDITIONAL([PLUGIN_NVPTX], [test $PLUGIN_NVPTX = 1])
 AC_DEFINE_UNQUOTED([PLUGIN_NVPTX], [$PLUGIN_NVPTX],
   [Define to 1 if the NVIDIA plugin is built, 0 if not.])

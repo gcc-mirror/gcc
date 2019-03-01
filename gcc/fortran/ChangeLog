@@ -1,3 +1,128 @@
+2019-02-28  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR fortran/72741
+	PR fortran/89433
+	* openmp.c (gfc_match_oacc_routine): Handle repeated use of the
+	Fortran OpenACC 'routine' directive.
+
+	PR fortran/72741
+	* gfortran.h (enum oacc_routine_lop): Add OACC_ROUTINE_LOP_ERROR.
+	* openmp.c (gfc_oacc_routine_lop, gfc_match_oacc_routine): Use it.
+	* trans-decl.c (add_attributes_to_decl): Likewise.
+
+	PR fortran/72741
+	PR fortran/89433
+	* openmp.c (gfc_match_oacc_routine): Accept intrinsic symbols.
+
+2019-02-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/89492
+	* check.c (gfc_calculate_transfer_sizes): Handle cases where
+	storage size of elements of MOLD is 0.
+
+2019-02-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/89496
+	* trans-types.c (get_formal_from_actual_arglist): If
+	the actual arglist has no expression, the corresponding
+	formal arglist is an alternate return.
+
+2019-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/43210
+	* trans-array.c (gfc_conv_array_initializer): Use RANGE_EXPR instead
+	of duplicating the initializer possibly many times.
+
+2019-02-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/89174
+	* trans-expr.c (gfc_find_and_cut_at_last_class_ref): Add is_mold
+	to arguments. If we are dealing with a MOLD, call
+	gfc_expr_to_initialize().
+	* trans-stmt.c (gfc_trans_allocate): For MOLD, pass is_mold=true
+	to gfc_find_and_cut_at_last_class_ref.
+	* trans.h (gfc_find_and_cut_at_last_class_ref): Add optional
+	argument is_mold with default false.
+
+2019-02-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/89266
+	PR fortran/88326
+	* target-memory.c (gfc_element_size): Return false if element size
+	cannot be determined; element size is returned separately.
+	(gfc_target_expr_size): Return false if expression size cannot be
+	determined; expression size is returned separately.
+	* target-memory.h: Adjust prototypes.
+	* check.c (gfc_calculate_transfer_sizes): Adjust references to
+	gfc_target_expr_size, gfc_element_size.
+	* arith.c (hollerith2representation): Likewise.
+	* class.c (find_intrinsic_vtab): Likewise.
+	* simplify.c (gfc_simplify_sizeof): Likewise.
+
+2019-02-23  Jerry DeLisle <jvdelisle@gcc.gnu.org>
+
+	PR fortran/84387
+	* trans-io.c (transfer_expr): Do not return if there are no
+	components to the derived type or class.
+
+2019-02-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/88117
+	* resolve.c (deferred_op_assign): Return if the lhs expression
+	has the pointer attribute.
+	* trans-expr.c (gfc_trans_assignment_1): Do not fix the string
+	length if the lhs expression has the pointer attribute.
+
+2019-02-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89385
+	PR fortran/89366
+	* decl.c (gfc_verify_c_interop_param): Restriction on string
+	length being one is lifted for F2018.
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): For scalar
+	characters with intent in, make a temporary and copy the result
+	of the expression evaluation into it.
+	(gfc_conv_procedure_call): Set a flag for character formal args
+	having a character length that is not unity. If the procedure
+	is bind C, call gfc_conv_gfc_desc_to_cfi_desc in this case.
+	Also, extend bind C calls to unconditionally convert both
+	pointers and allocatable expressions.
+
+2019-02-23  David Malcolm  <dmalcolm@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/88074
+	* simplify.c (norm2_do_sqrt, gfc_simplify_norm2): Use
+	mpfr_number_p && !mpfr_zero_p instead of mpfr_regular_p.
+	(norm2_add_squared): Likewise.  Use mp_exp_t rather than mpfr_exp_t.
+
+2019-02-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/83057
+	* io.c (gfc_match_open): Fix logic in checks of OPEN statement
+	when NEWUNIT= is specified.
+
+2019-02-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/89431
+	* gfortran.texi: Fix documentation to match the implementation.
+
+2019-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR fortran/72741
+	* gfortran.h (oacc_routine_lop): New enum.
+	(symbol_attribute): Use it.
+	* openmp.c (gfc_oacc_routine_dims): Replace with...
+	(gfc_oacc_routine_lop): ... this new function.
+	(gfc_match_oacc_routine): Adjust.
+	* trans-decl.c (add_attributes_to_decl): Likewise.
+
+2019-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* openmp.c (gfc_match_oacc_declare): Revert earlier changes.
+
 2019-02-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* dump-parse-tree.c (debug): Implement for gfc_expr *,

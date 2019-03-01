@@ -1411,6 +1411,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   typename _Compare = less<__iter_key_t<_InputIterator>>,
 	   typename _Allocator = allocator<__iter_to_alloc_t<_InputIterator>>,
 	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireNotAllocator<_Compare>,
 	   typename = _RequireAllocator<_Allocator>>
     map(_InputIterator, _InputIterator,
 	_Compare = _Compare(), _Allocator = _Allocator())
@@ -1419,6 +1420,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Key, typename _Tp, typename _Compare = less<_Key>,
 	   typename _Allocator = allocator<pair<const _Key, _Tp>>,
+	   typename = _RequireNotAllocator<_Compare>,
 	   typename = _RequireAllocator<_Allocator>>
     map(initializer_list<pair<_Key, _Tp>>,
 	_Compare = _Compare(), _Allocator = _Allocator())

@@ -4650,6 +4650,8 @@ print_binding_level (cp_binding_level* lvl)
 {
   tree t;
   int i = 0, len;
+  if (lvl->this_entity)
+    print_node_brief (stderr, "entity=", lvl->this_entity, 1);
   fprintf (stderr, " blocks=%p", (void *) lvl->blocks);
   if (lvl->more_cleanups_ok)
     fprintf (stderr, " more-cleanups-ok");

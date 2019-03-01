@@ -2407,8 +2407,6 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr,
 
     case_bt_struct:
     case BT_CLASS:
-      if (ts->u.derived->components == NULL)
-	return;
       if (gfc_bt_struct (ts->type) || ts->type == BT_CLASS)
 	{
 	  gfc_symbol *derived;

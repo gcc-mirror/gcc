@@ -352,7 +352,7 @@ gfc_vptr_size_get (tree vptr)
    of refs following.  */
 
 gfc_expr *
-gfc_find_and_cut_at_last_class_ref (gfc_expr *e)
+gfc_find_and_cut_at_last_class_ref (gfc_expr *e, bool is_mold)
 {
   gfc_expr *base_expr;
   gfc_ref *ref, *class_ref, *tail = NULL, *array_ref;
@@ -394,7 +394,10 @@ gfc_find_and_cut_at_last_class_ref (gfc_expr *e)
       e->ref = NULL;
     }
 
-  base_expr = gfc_copy_expr (e);
+  if (is_mold)
+    base_expr = gfc_expr_to_initialize (e);
+  else
+    base_expr = gfc_copy_expr (e);
 
   /* Restore the original tail expression.  */
   if (class_ref)
@@ -5012,6 +5015,8 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 				gfc_conv_descriptor_data_get (parmse->expr),
 				size);
 	  gfc_add_expr_to_block (&parmse->pre, tmp);
+
+	  /* The temporary 'ptr' is freed below.  */
 	  gfc_conv_descriptor_data_set (&parmse->pre, parmse->expr, ptr);
 	}
 
@@ -5026,7 +5031,26 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 
       /* Copy the scalar for INTENT(IN).  */
       if (e->expr_type == EXPR_VARIABLE && fsym->attr.intent == INTENT_IN)
-	parmse->expr = gfc_evaluate_now (parmse->expr, &parmse->pre);
+	{
+	  if (e->ts.type != BT_CHARACTER)
+	    parmse->expr = gfc_evaluate_now (parmse->expr, &parmse->pre);
+	  else
+	    {
+	      /* The temporary string 'ptr' is freed below.  */
+	      tmp = build_pointer_type (TREE_TYPE (parmse->expr));
+	      ptr = gfc_create_var (tmp, "str");
+	      tmp = build_call_expr_loc (input_location,
+				 builtin_decl_explicit (BUILT_IN_MALLOC),
+				 1, parmse->string_length);
+	      tmp = fold_convert (TREE_TYPE (ptr), tmp);
+	      gfc_add_modify (&parmse->pre, ptr, tmp);
+	      tmp = gfc_build_memcpy_call (ptr, parmse->expr,
+					   parmse->string_length);
+	      gfc_add_expr_to_block (&parmse->pre, tmp);
+	      parmse->expr = ptr;
+	    }
+	}
+
       parmse->expr = gfc_conv_scalar_to_descriptor (parmse,
 						    parmse->expr, attr);
     }
@@ -5188,10 +5212,17 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
        arg = arg->next, formal = formal ? formal->next : NULL, ++argc)
     {
       bool finalized = false;
+      bool non_unity_length_string = false;
 
       e = arg->expr;
       fsym = formal ? formal->sym : NULL;
       parm_kind = MISSING;
+
+      if (fsym && fsym->ts.type == BT_CHARACTER && fsym->ts.u.cl
+	  && (!fsym->ts.u.cl->length
+	      || fsym->ts.u.cl->length->expr_type != EXPR_CONSTANT
+	      || mpz_cmp_si (fsym->ts.u.cl->length->value.integer, 1) != 0))
+	non_unity_length_string = true;
 
       /* If the procedure requires an explicit interface, the actual
 	 argument is passed according to the corresponding formal
@@ -5418,9 +5449,12 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		}
 
 	      else if (sym->attr.is_bind_c && e
-		       && fsym && fsym->attr.dimension
-		       && (fsym->as->type == AS_ASSUMED_RANK
-			   || fsym->as->type == AS_ASSUMED_SHAPE))
+		       && ((fsym && fsym->attr.dimension
+			    && (fsym->attr.pointer
+				|| fsym->attr.allocatable
+				|| fsym->as->type == AS_ASSUMED_RANK
+				|| fsym->as->type == AS_ASSUMED_SHAPE))
+			   || non_unity_length_string))
 		/* Implement F2018, C.12.6.1: paragraph (2).  */
 		gfc_conv_gfc_desc_to_cfi_desc (&parmse, e, fsym);
 
@@ -5865,8 +5899,11 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 	      if (sym->attr.is_bind_c && e
 		  && fsym && fsym->attr.dimension
-		  && (fsym->as->type == AS_ASSUMED_RANK
-		      || fsym->as->type == AS_ASSUMED_SHAPE))
+		  && (fsym->attr.pointer
+		      || fsym->attr.allocatable
+		      || fsym->as->type == AS_ASSUMED_RANK
+		      || fsym->as->type == AS_ASSUMED_SHAPE
+		      || non_unity_length_string))
 		/* Implement F2018, C.12.6.1: paragraph (2).  */
 		gfc_conv_gfc_desc_to_cfi_desc (&parmse, e, fsym);
 
@@ -10545,7 +10582,9 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
     string_length = gfc_evaluate_now (rse.string_length, &rse.pre);
   else if (expr2->ts.type == BT_CHARACTER)
     {
-      if (expr1->ts.deferred && gfc_check_dependency (expr1, expr2, true))
+      if (expr1->ts.deferred
+	  && gfc_expr_attr (expr1).allocatable
+	  && gfc_check_dependency (expr1, expr2, true))
 	rse.string_length = gfc_evaluate_now (rse.string_length, &rse.pre);
       string_length = rse.string_length;
     }

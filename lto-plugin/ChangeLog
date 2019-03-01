@@ -1,3 +1,7 @@
+2019-02-26  Martin Liska  <mliska@suse.cz>
+
+	* lto-symtab.c: Remove.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

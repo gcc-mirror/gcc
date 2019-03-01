@@ -250,6 +250,16 @@ func findModule(target, path string) module.Version {
 }
 
 func ModInfoProg(info string) []byte {
+	// Inject a variable with the debug information as runtime/debug.modinfo,
+	// but compile it in package main so that it is specific to the binary.
+	//
+	// The variable must be a literal so that it will have the correct value
+	// before the initializer for package main runs.
+	//
+	// We also want the value to be present even if runtime/debug.modinfo is
+	// otherwise unused in the rest of the program. Reading it in an init function
+	// suffices for now.
+
 	return []byte(fmt.Sprintf(`package main
 import _ "unsafe"
 //go:linkname __set_debug_modinfo__ runtime..z2fdebug.setmodinfo
