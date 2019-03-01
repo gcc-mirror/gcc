@@ -1,3 +1,14 @@
+2019-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Implement P1002R1, Try-catch blocks in constexpr functions
+	PR c++/89513
+	* g++.dg/cpp2a/constexpr-try1.C: New test.
+	* g++.dg/cpp2a/constexpr-try2.C: New test.
+	* g++.dg/cpp2a/constexpr-try3.C: New test.
+	* g++.dg/cpp2a/constexpr-try4.C: New test.
+	* g++.dg/cpp2a/constexpr-try5.C: New test.
+	* g++.dg/cpp0x/constexpr-ctor10.C: Don't expect error for C++2a.
+
 2019-03-01  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/89535
