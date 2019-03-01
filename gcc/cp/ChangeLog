@@ -1,3 +1,7 @@
+2019-02-28  Jason Merrill  <jason@redhat.com>
+
+	* name-lookup.c (print_binding_level): Print this_entity.
+
 2019-02-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88857 - ICE with value-initialization of argument in template.
