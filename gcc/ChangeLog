@@ -1,3 +1,10 @@
+2019-03-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/89535
+	* tree-vect-stmts.c (vectorizable_call): Record the vector types
+	for each operand.  Calculate the fallback choice for mask operands
+	and pass it to vect_get_vec_def_for_operand.
+
 2019-03-01  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/89541
