@@ -999,7 +999,9 @@ cp_lexer_before_phase_4 (cp_token *tok, bool main_p)
 static inline void
 cp_lexer_set_source_position_from_token (cp_token *token)
 {
-  input_location = token->location;
+  // FIXME:EOF has a location too!
+  if (token->type != CPP_EOF)
+    input_location = token->location;
 }
 
 /* Update the globals input_location and the input file stack from LEXER.  */

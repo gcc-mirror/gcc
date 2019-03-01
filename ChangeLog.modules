@@ -1,3 +1,8 @@
+2019-03-01  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* parser.c (cp_lexer_set_source_position_from_token): Revert.
+
 2019-02-28  Nathan Sidwell  <nathan@acm.org>
 
 	module & import-semi lexing rules
