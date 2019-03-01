@@ -1927,7 +1927,7 @@ execute_function_todo (function *fn, void *data)
   /* Always cleanup the CFG before trying to update SSA.  */
   if (flags & TODO_cleanup_cfg)
     {
-      cleanup_tree_cfg ();
+      cleanup_tree_cfg (flags & TODO_update_ssa_any);
 
       /* When cleanup_tree_cfg merges consecutive blocks, it may
 	 perform some simplistic propagation when removing single
