@@ -2562,7 +2562,8 @@ build_class_member_access_expr (cp_expr object, tree member,
 	type = unknown_type_node;
       /* Note that we do not convert OBJECT to the BASELINK_BINFO
 	 base.  That will happen when the function is called.  */
-      result = build3 (COMPONENT_REF, type, object, member, NULL_TREE);
+      result = build3_loc (input_location, COMPONENT_REF, type, object, member,
+			   NULL_TREE);
     }
   else if (TREE_CODE (member) == CONST_DECL)
     {

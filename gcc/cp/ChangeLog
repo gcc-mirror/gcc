@@ -1,5 +1,9 @@
 2019-03-01  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/89537 - missing location for error with non-static member fn.
+	* call.c (resolve_args): Use EXPR_LOCATION.
+	* typeck.c (build_class_member_access_expr): Use input_location.
+
 	PR c++/89532 - ICE with incomplete type in decltype.
 	* semantics.c (finish_compound_literal): Return error_mark_node
 	if digest_init_flags returns error_mark_node.
