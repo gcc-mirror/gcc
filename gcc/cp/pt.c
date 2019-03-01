@@ -17989,10 +17989,6 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       if (PACK_EXPANSION_P (ofield))
 	ofield = PACK_EXPANSION_PATTERN (ofield);
       tree field = tsubst_decl (ofield, args, complain);
-      if (DECL_VLA_CAPTURE_P (ofield))
-	/* The type of a VLA capture might not have a TAG_DEFN in the enclosing
-	   context, so complete it here.  */
-	complete_type (TREE_TYPE (field));
 
       if (DECL_PACK_P (ofield) && !DECL_NORMAL_CAPTURE_P (ofield))
 	{

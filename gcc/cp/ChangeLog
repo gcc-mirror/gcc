@@ -1,5 +1,10 @@
 2019-02-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/86969 - ICE with constexpr if and recursive generic lambdas.
+	* class.c, lambda.c, pt.c: Revert earlier change.
+	* lambda.c (add_capture): Don't special-case capture of dependent
+	VLA.
+
 	* name-lookup.c (print_binding_level): Print this_entity.
 
 2019-02-27  Marek Polacek  <polacek@redhat.com>
