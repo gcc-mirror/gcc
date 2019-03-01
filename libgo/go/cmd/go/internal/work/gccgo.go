@@ -76,7 +76,7 @@ func (tools gccgoToolchain) gc(b *Builder, a *Action, archive string, importcfg 
 		gcargs = append(gcargs, "-fgo-relative-import-path="+p.Internal.LocalPrefix)
 	}
 
-	args := str.StringList(tools.compiler(), "-c", gcargs, "-o", ofile, forcedGccgoflags)
+	args := str.StringList(tools.compiler(), "-c", "-O2", gcargs, "-o", ofile, forcedGccgoflags)
 	if importcfg != nil {
 		if b.gccSupportsFlag(args[:1], "-fgo-importcfg=/dev/null") {
 			if err := b.writeFile(objdir+"importcfg", importcfg); err != nil {
