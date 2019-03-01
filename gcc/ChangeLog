@@ -1,3 +1,15 @@
+2019-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89497
+	* tree-cfgcleanup.h (cleanup_tree_cfg): Add SSA update flags
+	argument, defaulted to zero.
+	* passes.c (execute_function_todo): Pass down SSA update flags
+	to cleanup_tree_cfg.
+	* tree-cfgcleanup.c: Include tree-into-ssa.h and tree-cfgcleanup.h.
+	(cleanup_tree_cfg_noloop): After cleanup_control_flow_pre update SSA
+	form if requested.
+	(cleanup_tree_cfg): Get and pass down SSA update flags.
+
 2019-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/89539

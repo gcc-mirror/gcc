@@ -44,6 +44,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "tree-ssa-loop-niter.h"
 #include "cgraph.h"
+#include "tree-into-ssa.h"
+#include "tree-cfgcleanup.h"
+
 
 /* The set of blocks in that at least one of the following changes happened:
    -- the statement at the end of the block was changed
@@ -943,7 +946,7 @@ mfb_keep_latches (edge e)
    Return true if the flowgraph was modified, false otherwise.  */
 
 static bool
-cleanup_tree_cfg_noloop (void)
+cleanup_tree_cfg_noloop (unsigned ssa_update_flags)
 {
   timevar_push (TV_TREE_CLEANUP_CFG);
 
@@ -1023,6 +1026,8 @@ cleanup_tree_cfg_noloop (void)
 
   /* After doing the above SSA form should be valid (or an update SSA
      should be required).  */
+  if (ssa_update_flags)
+    update_ssa (ssa_update_flags);
 
   /* Compute dominator info which we need for the iterative process below.  */
   if (!dom_info_available_p (CDI_DOMINATORS))
@@ -1125,9 +1130,9 @@ repair_loop_structures (void)
 /* Cleanup cfg and repair loop structures.  */
 
 bool
-cleanup_tree_cfg (void)
+cleanup_tree_cfg (unsigned ssa_update_flags)
 {
-  bool changed = cleanup_tree_cfg_noloop ();
+  bool changed = cleanup_tree_cfg_noloop (ssa_update_flags);
 
   if (current_loops != NULL
       && loops_state_satisfies_p (LOOPS_NEED_FIXUP))
