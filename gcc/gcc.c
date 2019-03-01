@@ -9965,24 +9965,24 @@ find_fortran_preinclude_file (int argc, const char **argv)
 
   /* Search first for 'finclude' folder location for a header file
      installed by the compiler (similar to omp_lib.h).  */
-  add_prefix (&prefixes, argv[2], NULL, 0, 0, false);
+  add_prefix (&prefixes, argv[2], NULL, 0, 0, 0);
 #ifdef TOOL_INCLUDE_DIR
   /* Then search: <prefix>/<target>/<include>/finclude */
   add_prefix (&prefixes, TOOL_INCLUDE_DIR "/finclude/",
-	      NULL, 0, 0, false);
+	      NULL, 0, 0, 0);
 #endif
 #ifdef NATIVE_SYSTEM_HEADER_DIR
   /* Then search: <sysroot>/usr/include/finclude/<multilib> */
   add_sysrooted_hdrs_prefix (&prefixes, NATIVE_SYSTEM_HEADER_DIR "/finclude/",
-			     NULL, 0, 0, false);
+			     NULL, 0, 0, 0);
 #endif
 
-  const char *path = find_a_file (&include_prefixes, argv[1], R_OK, true);
+  const char *path = find_a_file (&include_prefixes, argv[1], R_OK, false);
   if (path != NULL)
     result = concat (argv[0], path, NULL);
   else
     {
-      path = find_a_file (&prefixes, argv[1], R_OK, true);
+      path = find_a_file (&prefixes, argv[1], R_OK, false);
       if (path != NULL)
 	result = concat (argv[0], path, NULL);
     }

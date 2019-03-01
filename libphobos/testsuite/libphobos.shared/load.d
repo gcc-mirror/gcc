@@ -3,10 +3,16 @@ import core.stdc.stdio;
 import core.stdc.string;
 import core.thread;
 
-version (linux) import core.sys.linux.dlfcn;
-else version (FreeBSD) import core.sys.freebsd.dlfcn;
-else version (NetBSD) import core.sys.netbsd.dlfcn;
-else static assert(0, "unimplemented");
+import core.sys.posix.dlfcn;
+
+version (DragonFlyBSD) import core.sys.dragonflybsd.dlfcn : RTLD_NOLOAD;
+version (FreeBSD) import core.sys.freebsd.dlfcn : RTLD_NOLOAD;
+version (linux) import core.sys.linux.dlfcn : RTLD_NOLOAD;
+version (NetBSD) import core.sys.netbsd.dlfcn : RTLD_NOLOAD;
+version (OSX) import core.sys.darwin.dlfcn : RTLD_NOLOAD;
+version (Solaris) import core.sys.solaris.dlfcn : RTLD_NOLOAD;
+
+static assert(__traits(compiles, RTLD_NOLOAD), "unimplemented");
 
 void loadSym(T)(void* handle, ref T val, const char* mangle)
 {

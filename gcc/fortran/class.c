@@ -565,7 +565,7 @@ gfc_intrinsic_hash_value (gfc_typespec *ts)
    ref to the _len component.  */
 
 gfc_expr *
-gfc_get_len_component (gfc_expr *e)
+gfc_get_len_component (gfc_expr *e, int k)
 {
   gfc_expr *ptr;
   gfc_ref *ref, **last;
@@ -590,6 +590,14 @@ gfc_get_len_component (gfc_expr *e)
     }
   /* And replace if with a ref to the _len component.  */
   gfc_add_len_component (ptr);
+  if (k != ptr->ts.kind)
+    {
+      gfc_typespec ts;
+      gfc_clear_ts (&ts);
+      ts.type = BT_INTEGER;
+      ts.kind = k;
+      gfc_convert_type_warn (ptr, &ts, 2, 0);
+    }
   return ptr;
 }
 

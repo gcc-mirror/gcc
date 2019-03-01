@@ -11300,7 +11300,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 {
   tree statement, std_attrs = NULL_TREE;
   cp_token *token;
-  location_t statement_location, attrs_location;
+  location_t statement_location, attrs_loc;
 
  restart:
   if (if_p != NULL)
@@ -11309,13 +11309,19 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
   statement = NULL_TREE;
 
   saved_token_sentinel saved_tokens (parser->lexer);
-  attrs_location = cp_lexer_peek_token (parser->lexer)->location;
+  attrs_loc = cp_lexer_peek_token (parser->lexer)->location;
   if (c_dialect_objc ())
     /* In obj-c++, seeing '[[' might be the either the beginning of
        c++11 attributes, or a nested objc-message-expression.  So
        let's parse the c++11 attributes tentatively.  */
     cp_parser_parse_tentatively (parser);
   std_attrs = cp_parser_std_attribute_spec_seq (parser);
+  if (std_attrs)
+    {
+      location_t end_loc
+	= cp_lexer_previous_token (parser->lexer)->location;
+      attrs_loc = make_location (attrs_loc, attrs_loc, end_loc);
+    }
   if (c_dialect_objc ())
     {
       if (!cp_parser_parse_definitely (parser))
@@ -11347,14 +11353,14 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 
 	case RID_IF:
 	case RID_SWITCH:
-	  std_attrs = process_stmt_hotness_attribute (std_attrs);
+	  std_attrs = process_stmt_hotness_attribute (std_attrs, attrs_loc);
 	  statement = cp_parser_selection_statement (parser, if_p, chain);
 	  break;
 
 	case RID_WHILE:
 	case RID_DO:
 	case RID_FOR:
-	  std_attrs = process_stmt_hotness_attribute (std_attrs);
+	  std_attrs = process_stmt_hotness_attribute (std_attrs, attrs_loc);
 	  statement = cp_parser_iteration_statement (parser, if_p, false, 0);
 	  break;
 
@@ -11362,7 +11368,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	case RID_CONTINUE:
 	case RID_RETURN:
 	case RID_GOTO:
-	  std_attrs = process_stmt_hotness_attribute (std_attrs);
+	  std_attrs = process_stmt_hotness_attribute (std_attrs, attrs_loc);
 	  statement = cp_parser_jump_statement (parser);
 	  break;
 
@@ -11372,12 +11378,12 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	case RID_AT_FINALLY:
 	case RID_AT_SYNCHRONIZED:
 	case RID_AT_THROW:
-	  std_attrs = process_stmt_hotness_attribute (std_attrs);
+	  std_attrs = process_stmt_hotness_attribute (std_attrs, attrs_loc);
 	  statement = cp_parser_objc_statement (parser);
 	  break;
 
 	case RID_TRY:
-	  std_attrs = process_stmt_hotness_attribute (std_attrs);
+	  std_attrs = process_stmt_hotness_attribute (std_attrs, attrs_loc);
 	  statement = cp_parser_try_block (parser);
 	  break;
 
@@ -11398,11 +11404,11 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	case RID_SYNCHRONIZED:
 	case RID_ATOMIC_NOEXCEPT:
 	case RID_ATOMIC_CANCEL:
-	  std_attrs = process_stmt_hotness_attribute (std_attrs);
+	  std_attrs = process_stmt_hotness_attribute (std_attrs, attrs_loc);
 	  statement = cp_parser_transaction (parser, token);
 	  break;
 	case RID_TRANSACTION_CANCEL:
-	  std_attrs = process_stmt_hotness_attribute (std_attrs);
+	  std_attrs = process_stmt_hotness_attribute (std_attrs, attrs_loc);
 	  statement = cp_parser_transaction_cancel (parser);
 	  break;
 
@@ -11479,7 +11485,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
       if (loc_after_labels != NULL)
 	*loc_after_labels = statement_location;
 
-      std_attrs = process_stmt_hotness_attribute (std_attrs);
+      std_attrs = process_stmt_hotness_attribute (std_attrs, attrs_loc);
 
       /* Look for an expression-statement instead.  */
       statement = cp_parser_expression_statement (parser, in_statement_expr);
@@ -11509,7 +11515,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 
   /* Allow "[[fallthrough]];", but warn otherwise.  */
   if (std_attrs != NULL_TREE)
-    warning_at (attrs_location,
+    warning_at (attrs_loc,
 		OPT_Wattributes,
 		"attributes at the beginning of statement are ignored");
 }
@@ -33301,17 +33307,23 @@ cp_parser_oacc_wait_list (cp_parser *parser, location_t clause_loc, tree list)
 }
 
 /* OpenACC:
-   wait ( int-expr-list ) */
+   wait [( int-expr-list )] */
 
 static tree
 cp_parser_oacc_clause_wait (cp_parser *parser, tree list)
 {
   location_t location = cp_lexer_peek_token (parser->lexer)->location;
 
-  if (cp_lexer_peek_token (parser->lexer)->type != CPP_OPEN_PAREN)
-    return list;
+  if (cp_lexer_peek_token (parser->lexer)->type == CPP_OPEN_PAREN)
+    list = cp_parser_oacc_wait_list (parser, location, list);
+  else
+    {
+      tree c = build_omp_clause (location, OMP_CLAUSE_WAIT);
 
-  list = cp_parser_oacc_wait_list (parser, location, list);
+      OMP_CLAUSE_DECL (c) = build_int_cst (integer_type_node, GOMP_ASYNC_NOVAL);
+      OMP_CLAUSE_CHAIN (c) = list;
+      list = c;
+    }
 
   return list;
 }

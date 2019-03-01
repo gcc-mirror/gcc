@@ -1,3 +1,262 @@
+2019-02-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89416
+	* include/bits/alloc_traits.h (__is_alloc_insertable_impl): Replace
+	class template with class. Replace move and copy member types with
+	member alias templates, so they are only instantiated when needed.
+	(__is_copy_insertable, __is_move_insertable): Adjust base class.
+	* testsuite/23_containers/vector/modifiers/push_back/89130.cc: Enable
+	test for C++11/14/17 as well.
+	* testsuite/23_containers/vector/modifiers/push_back/89416.cc: New
+	test.
+
+2019-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/89402
+	* src/c++98/compatibility-ldbl.cc (_ZNKSt4hashIeEclEe): Add
+	_GLIBCXX_PURE to the alias declaration.
+
+2019-02-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/literals/types.cc
+	[_GLIBCXX_USE_CHAR8_T]: Adjust expected string type for u8 literal.
+	* testsuite/21_strings/basic_string/literals/values.cc
+	[_GLIBCXX_USE_CHAR8_T]: Likewise.
+	* testsuite/22_locale/codecvt/char16_t.cc: Adjust for u8 literals
+	potentially having different type.
+	* testsuite/22_locale/codecvt/char32_t.cc: Likewise.
+	* testsuite/22_locale/codecvt/codecvt_utf8/79980.cc: Cast u8 literal
+	to char.
+	* testsuite/22_locale/codecvt/codecvt_utf8/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/utf8.cc: Likewise.
+	* testsuite/22_locale/conversions/string/2.cc: Remove u8 prefix from
+	string literals only using basic character set.
+	* testsuite/22_locale/conversions/string/3.cc: Likewise. Cast other
+	u8 literals to char.
+	* testsuite/29_atomics/headers/atomic/macros.cc [_GLIBCXX_USE_CHAR8_T]:
+	Test ATOMIC_CHAR8_T_LOCK_FREE.
+	Add missing #error to ATOMIC_CHAR16_T_LOCK_FREE test.
+	* testsuite/29_atomics/headers/atomic/types_std_c++0x.cc
+	[_GLIBCXX_USE_CHAR8_T]: Check for std::atomic_char8_t.
+	* testsuite/experimental/string_view/literals/types.cc
+	[_GLIBCXX_USE_CHAR8_T]: Adjust expected string_view type for u8
+	literal.
+	* testsuite/experimental/string_view/literals/values.cc
+	[_GLIBCXX_USE_CHAR8_T]: Likewise.
+
+2019-02-19  Tom Honermann  <tom@honermann.net>
+
+	* testsuite/18_support/numeric_limits/char8_t.cc: New test cloned
+	from char16_32_t.cc; validates numeric_limits<char8_t>.
+	* testsuite/21_strings/basic_string/literals/types-char8_t.cc: New
+	test cloned from types.cc; validates operator""s for char8_t
+	returns u8string.
+	* testsuite/21_strings/basic_string/literals/values-char8_t.cc: New
+	test cloned from values.cc; validates construction and comparison
+	of u8string values.
+	* testsuite/21_strings/basic_string/requirements/
+	/explicit_instantiation/char8_t/1.cc: New test cloned from
+	char16_t/1.cc; validates explicit instantiation of
+	basic_string<char8_t>.
+	* testsuite/21_strings/basic_string_view/literals/types-char8_t.cc:
+	New test cloned from types.cc; validates operator""sv for char8_t
+	returns u8string_view.
+	* testsuite/21_strings/basic_string_view/literals/
+	values-char8_t.cc: New test cloned from values.cc; validates
+	construction and comparison of u8string_view values.
+	* testsuite/21_strings/basic_string_view/requirements/
+	explicit_instantiation/char8_t/1.cc: New test cloned from
+	char16_t/1.cc; validates explicit instantiation of
+	basic_string_view<char8_t>.
+	* testsuite/21_strings/char_traits/requirements/char8_t/65049.cc:
+	New test cloned from char16_t/65049.cc; validates that
+	char_traits<char8_t> is not vulnerable to the concerns in PR65049.
+	* testsuite/21_strings/char_traits/requirements/char8_t/
+	typedefs.cc: New test cloned from char16_t/typedefs.cc; validates
+	that char_traits<char8_t> member typedefs are present and correct.
+	* testsuite/21_strings/char_traits/requirements/
+	explicit_instantiation/char8_t/1.cc: New test cloned from
+	char16_t/1.cc; validates explicit instantiation of
+	char_traits<char8_t>.
+	* testsuite/22_locale/codecvt/char16_t-char8_t.cc: New test cloned
+	from char16_t.cc: validates
+	codecvt<char16_t, char8_t, mbstate_t>.
+	* testsuite/22_locale/codecvt/char32_t-char8_t.cc: New test cloned
+	from char32_t.cc: validates
+	codecvt<char32_t, char8_t, mbstate_t>.
+	* testsuite/22_locale/codecvt/utf8-char8_t.cc: New test cloned from
+	utf8.cc; validates codecvt<char16_t, char8_t, std::mbstate_t> and
+	codecvt<char32_t, char8_t, std::mbstate_t>.
+	* testsuite/27_io/filesystem/path/native/string-char8_t.cc: New
+	test cloned from string.cc; validates filesystem::path construction
+	from char8_t input.
+	* testsuite/experimental/feat-char8_t.cc: New test; validates that
+	the __cpp_lib_char8_t feature test macro is defined with the
+	correct value.
+	* testsuite/experimental/filesystem/path/native/string-char8_t.cc:
+	New test cloned from string.cc; validates filesystem::path
+	construction from char8_t input.
+	* testsuite/experimental/string_view/literals/types-char8_t.cc: New
+	test cloned from types.cc; validates operator""sv for char8_t
+	returns u8string_view.
+	* testsuite/experimental/string_view/literals/values-char8_t.cc:
+	New test cloned from values.cc; validates construction and
+	comparison of u8string_view values.
+	* testsuite/experimental/string_view/requirements/
+	explicit_instantiation/char8_t/1.cc: New test cloned from
+	char16_t/1.cc; validates explicit instantiation of
+	basic_string_view<char8_t>.
+	* testsuite/ext/char8_t/atomic-1.cc: New test; validates that
+	ATOMIC_CHAR8_T_LOCK_FREE is not defined if char8_t support is not
+	enabled.
+
+2019-02-19  Tom Honermann  <tom@honermann.net>
+
+	P0482R5 char8_t: Standard library support
+	* config/abi/pre/gnu-versioned-namespace.ver (CXXABI_2.0): Add
+	typeinfo symbols for char8_t.
+	* config/abi/pre/gnu.ver: Add CXXABI_1.3.12.
+	(GLIBCXX_3.4.26): Add symbols for specializations of
+	numeric_limits and codecvt that involve char8_t.
+	(CXXABI_1.3.12): Add typeinfo symbols for char8_t.
+	* include/bits/atomic_base.h: Add atomic_char8_t.
+	* include/bits/basic_string.h: Add std::hash<u8string> and
+	operator""s(const char8_t*, size_t).
+	* include/bits/c++config: Define _GLIBCXX_USE_CHAR8_T and
+	__cpp_lib_char8_t.
+	* include/bits/char_traits.h: Add char_traits<char8_t>.
+	* include/bits/codecvt.h: Add
+	codecvt<char16_t, char8_t, mbstate_t>,
+	codecvt<char32_t, char8_t, mbstate_t>,
+	codecvt_byname<char16_t, char8_t, mbstate_t>, and
+	codecvt_byname<char32_t, char8_t, mbstate_t>.
+	* include/bits/cpp_type_traits.h: Add __is_integer<char8_t> to
+	recognize char8_t as an integral type.
+	* include/bits/fs_path.h: (path::__is_encoded_char): Recognize
+	char8_t.
+	(path::u8string): Return std::u8string when char8_t support is
+	enabled.
+	(path::generic_u8string): Likewise.
+	(path::_S_convert): Handle conversion from char8_t input.
+	(path::_S_str_convert): Likewise.
+	* include/bits/functional_hash.h: Add hash<char8_t>.
+	* include/bits/locale_conv.h (__str_codecvt_out): Add overloads for
+	char8_t.
+	* include/bits/locale_facets.h (_GLIBCXX_NUM_UNICODE_FACETS): Bump
+	for new char8_t specializations.
+	* include/bits/localefwd.h: Add missing declarations of
+	codecvt<char16_t, char, mbstate_t> and
+	codecvt<char32_t, char, mbstate_t>.  Add char8_t declarations
+	codecvt<char16_t, char8_t, mbstate_t> and
+	codecvt<char32_t, char8_t, mbstate_t>.
+	* include/bits/postypes.h: Add u8streampos
+	* include/bits/stringfwd.h: Add declarations of
+	char_traits<char8_t> and u8string.
+	* include/c_global/cstddef: Add __byte_operand<char8_t>.
+	* include/experimental/bits/fs_path.h (path::__is_encoded_char):
+	Recognize char8_t.
+	(path::u8string): Return std::u8string when char8_t support is
+	enabled.
+	(path::generic_u8string): Likewise.
+	(path::_S_convert): Handle conversion from char8_t input.
+	(path::_S_str_convert): Likewise.
+	* include/experimental/string: Add u8string.
+	* include/experimental/string_view: Add u8string_view,
+	hash<experimental::u8string_view>, and
+	operator""sv(const char8_t*, size_t).
+	* include/std/atomic: Add atomic<char8_t> and atomic_char8_t.
+	* include/std/charconv (__is_int_to_chars_type): Recognize char8_t
+	as a character type.
+	* include/std/limits: Add numeric_limits<char8_t>.
+	* include/std/string_view: Add u8string_view,
+	hash<experimental::u8string_view>, and
+	operator""sv(const char8_t*, size_t).
+	* include/std/type_traits: Add __is_integral_helper<char8_t>,
+	__make_unsigned<char8_t>, and __make_signed<char8_t>.
+	* libsupc++/atomic_lockfree_defines.h: Define
+	ATOMIC_CHAR8_T_LOCK_FREE.
+	* src/c++11/Makefile.am: Compile with -fchar8_t when compiling
+	codecvt.cc and limits.cc so that char8_t specializations of
+	numeric_limits and codecvt and emitted.
+	* src/c++11/Makefile.in: Likewise.
+	* src/c++11/codecvt.cc: Define members of
+	codecvt<char16_t, char8_t, mbstate_t>,
+	codecvt<char32_t, char8_t, mbstate_t>,
+	codecvt_byname<char16_t, char8_t, mbstate_t>, and
+	codecvt_byname<char32_t, char8_t, mbstate_t>.
+	* src/c++11/limits.cc: Define members of
+	numeric_limits<char8_t>.
+	* src/c++98/Makefile.am: Compile with -fchar8_t when compiling
+	locale_init.cc and localename.cc.
+	* src/c++98/Makefile.in: Likewise.
+	* src/c++98/locale_init.cc: Add initialization for the
+	codecvt<char16_t, char8_t, mbstate_t> and
+	codecvt<char32_t, char8_t, mbstate_t> facets.
+	* src/c++98/localename.cc: Likewise.
+	* testsuite/util/testsuite_abi.cc: Validate ABI bump.
+
+2019-02-18  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* 27_io/filesystem/operations/all.cc: Add dg-require-filesystem-ts.
+	* 27_io/filesystem/operations/resize_file.cc: Likewise.
+	* 27_io/filesystem/path/generation/normal2.cc: Likewise.
+
+2019-02-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml: Update P0887R1 status.
+	* doc/html/*: Regenerate.
+
+	* doc/xml/manual/status_cxx2017.xml: Add P0063R3 to status table.
+	* doc/html/*: Regenerate.
+
+	* doc/xml/manual/intro.xml: Document LWG 2586 status.
+	* include/bits/uses_allocator.h (__uses_alloc): Use const lvalue
+	allocator type in is_constructible checks.
+	* testsuite/20_util/scoped_allocator/69293_neg.cc: Adjust dg-error.
+	* testsuite/20_util/scoped_allocator/dr2586.cc: New test.
+	* testsuite/20_util/tuple/cons/allocators.cc: Add test using
+	problematic type from LWG 2586 discussion.
+	* testsuite/20_util/uses_allocator/69293_neg.cc: Adjust dg-error.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: Likewise.
+
+	* configure.ac: Check for C11 timespec_get function.
+	* crossconfig.m4 (freebsd, linux, gnu, cygwin, solaris, netbsd)
+	(openbsd): Likewise
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/c_global/ctime (timespec, timespec_get): Add to namespace
+	std for C++17 and up.
+
+	* doc/xml/manual/intro.xml: Document LWG 2537 status.
+	* include/bits/stl_queue.h
+	(priority_queue(const Compare&, const Container&, const Alloc&))
+	(priority_queue(const Compare&, Container&&, const Alloc&)): Call
+	make_heap.
+	* testsuite/23_containers/priority_queue/dr2537.cc: New test.
+
+	* doc/xml/manual/intro.xml: Document LWG 2566 status.
+	* include/bits/stl_queue.h (queue, priority_queue): Add static
+	assertions to enforce LWG 2566 requirement on value_type.
+	* include/bits/stl_stack.h (stack): Likewise.
+
+	PR middle-end/89303
+	* testsuite/20_util/enable_shared_from_this/89303.cc: New test.
+
+	* doc/xml/manual/intro.xml: Document LWG 2735 status.
+	* include/bits/std_abs.h: Add comment about LWG 2735.
+	* testsuite/26_numerics/headers/cstdlib/dr2735.cc: New test.
+
+2019-02-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89345
+	* include/std/version [__cpp_impl_destroying_delete]
+	(__cpp_lib_destroying_delete): Only define for C++2a and later.
+	* libsupc++/new [__cpp_impl_destroying_delete]
+	(__cpp_lib_destroying_delete): Likewise.
+	(destroying_delete_t, destroying_delete): Likewise, but define even
+	when __cpp_impl_destroying_delete is not defined.
+	* testsuite/18_support/destroying_delete.cc: New test.
+
 2019-02-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/89023

@@ -1,5 +1,7 @@
 // PR c++/47226
 // { dg-do compile { target c++11 } }
+// { dg-options "-fdump-tree-original" }
+// { dg-final { scan-tree-dump-times "::<lambda\\(\\)> \\(null\\)" 6 "original" } }
 
 template<class T>
 void print(const T&) {}

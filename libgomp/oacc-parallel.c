@@ -206,9 +206,7 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
 	case GOMP_LAUNCH_WAIT:
 	  {
 	    unsigned num_waits = GOMP_LAUNCH_OP (tag);
-
-	    if (num_waits)
-	      goacc_wait (async, num_waits, &ap);
+	    goacc_wait (async, num_waits, &ap);
 	    break;
 	  }
 
@@ -514,13 +512,20 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
 static void
 goacc_wait (int async, int num_waits, va_list *ap)
 {
-  struct goacc_thread *thr = goacc_thread ();
-  struct gomp_device_descr *acc_dev = thr->dev;
-
   while (num_waits--)
     {
       int qid = va_arg (*ap, int);
-      
+
+      /* Waiting on ACC_ASYNC_NOVAL maps to 'wait all'.  */
+      if (qid == acc_async_noval)
+	{
+	  if (async == acc_async_sync)
+	    acc_wait_all ();
+	  else
+	    acc_wait_all_async (async);
+	  break;
+	}
+
       if (acc_async_test (qid))
 	continue;
 
@@ -531,7 +536,7 @@ goacc_wait (int async, int num_waits, va_list *ap)
 	    launching on, the queue itself will order work as
 	    required, so there's no need to wait explicitly.  */
       else
-	acc_dev->openacc.async_wait_async_func (qid, async);
+	acc_wait_async (qid, async);
     }
 }
 

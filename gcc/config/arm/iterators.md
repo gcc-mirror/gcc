@@ -24,9 +24,9 @@
 ;;----------------------------------------------------------------------------
 
 ;; A list of modes that are exactly 64 bits in size. This is used to expand
-;; some splits that are the same for all modes when operating on ARM 
+;; some splits that are the same for all modes when operating on ARM
 ;; registers.
-(define_mode_iterator ANY64 [DI DF V8QI V4HI V2SI V2SF])
+(define_mode_iterator ANY64 [DI DF V8QI V4HI V4HF V2SI V2SF])
 
 (define_mode_iterator ANY128 [V2DI V2DF V16QI V8HI V4SI V4SF])
 

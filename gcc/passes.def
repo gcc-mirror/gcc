@@ -56,8 +56,8 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_fixup_cfg);
       NEXT_PASS (pass_build_ssa);
       NEXT_PASS (pass_warn_nonnull_compare);
-      NEXT_PASS (pass_ubsan);
       NEXT_PASS (pass_early_warn_uninitialized);
+      NEXT_PASS (pass_ubsan);
       NEXT_PASS (pass_nothrow);
       NEXT_PASS (pass_rebuild_cgraph_edges);
   POP_INSERT_PASSES ()

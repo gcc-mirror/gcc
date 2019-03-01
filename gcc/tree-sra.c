@@ -2195,12 +2195,19 @@ sort_and_splice_var_accesses (tree var)
 
 /* Create a variable for the given ACCESS which determines the type, name and a
    few other properties.  Return the variable declaration and store it also to
-   ACCESS->replacement.  */
+   ACCESS->replacement.  REG_TREE is used when creating a declaration to base a
+   default-definition SSA name on on in order to facilitate an uninitialized
+   warning.  It is used instead of the actual ACCESS type if that is not of a
+   gimple register type.  */
 
 static tree
-create_access_replacement (struct access *access)
+create_access_replacement (struct access *access, tree reg_type = NULL_TREE)
 {
   tree repl;
+
+  tree type = access->type;
+  if (reg_type && !is_gimple_reg_type (type))
+    type = reg_type;
 
   if (access->grp_to_be_debug_replaced)
     {
@@ -2210,17 +2217,16 @@ create_access_replacement (struct access *access)
   else
     /* Drop any special alignment on the type if it's not on the main
        variant.  This avoids issues with weirdo ABIs like AAPCS.  */
-    repl = create_tmp_var (build_qualified_type
-			     (TYPE_MAIN_VARIANT (access->type),
-			      TYPE_QUALS (access->type)), "SR");
-  if (TREE_CODE (access->type) == COMPLEX_TYPE
-      || TREE_CODE (access->type) == VECTOR_TYPE)
+    repl = create_tmp_var (build_qualified_type (TYPE_MAIN_VARIANT (type),
+						 TYPE_QUALS (type)), "SR");
+  if (TREE_CODE (type) == COMPLEX_TYPE
+      || TREE_CODE (type) == VECTOR_TYPE)
     {
       if (!access->grp_partial_lhs)
 	DECL_GIMPLE_REG_P (repl) = 1;
     }
   else if (access->grp_partial_lhs
-	   && is_gimple_reg_type (access->type))
+	   && is_gimple_reg_type (type))
     TREE_ADDRESSABLE (repl) = 1;
 
   DECL_SOURCE_LOCATION (repl) = DECL_SOURCE_LOCATION (access->base);
@@ -3450,15 +3456,16 @@ sra_modify_constructor_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 
 /* Create and return a new suitable default definition SSA_NAME for RACC which
    is an access describing an uninitialized part of an aggregate that is being
-   loaded.  */
+   loaded.  REG_TREE is used instead of the actual RACC type if that is not of
+   a gimple register type.  */
 
 static tree
-get_repl_default_def_ssa_name (struct access *racc)
+get_repl_default_def_ssa_name (struct access *racc, tree reg_type)
 {
   gcc_checking_assert (!racc->grp_to_be_replaced
 		       && !racc->grp_to_be_debug_replaced);
   if (!racc->replacement_decl)
-    racc->replacement_decl = create_access_replacement (racc);
+    racc->replacement_decl = create_access_replacement (racc, reg_type);
   return get_or_create_ssa_default_def (cfun, racc->replacement_decl);
 }
 
@@ -3530,7 +3537,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	   && TREE_CODE (lhs) == SSA_NAME
 	   && !access_has_replacements_p (racc))
     {
-      rhs = get_repl_default_def_ssa_name (racc);
+      rhs = get_repl_default_def_ssa_name (racc, TREE_TYPE (lhs));
       modify_this_stmt = true;
       sra_stats.exprs++;
     }
@@ -3548,7 +3555,8 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	      lhs = build_ref_for_model (loc, lhs, 0, racc, gsi, false);
 	      gimple_assign_set_lhs (stmt, lhs);
 	    }
-	  else if (AGGREGATE_TYPE_P (TREE_TYPE (rhs))
+	  else if (lacc
+		   && AGGREGATE_TYPE_P (TREE_TYPE (rhs))
 		   && !contains_vce_or_bfcref_p (rhs))
 	    rhs = build_ref_for_model (loc, rhs, 0, lacc, gsi, false);
 

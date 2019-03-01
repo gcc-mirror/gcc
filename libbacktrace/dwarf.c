@@ -2821,8 +2821,10 @@ dwarf_lookup_pc (struct backtrace_state *state, struct dwarf_data *ddata,
   *found = 1;
 
   /* Find an address range that includes PC.  */
-  entry = bsearch (&pc, ddata->addrs, ddata->addrs_count,
-		   sizeof (struct unit_addrs), unit_addrs_search);
+  entry = (ddata->addrs_count == 0
+	   ? NULL
+	   : bsearch (&pc, ddata->addrs, ddata->addrs_count,
+		      sizeof (struct unit_addrs), unit_addrs_search));
 
   if (entry == NULL)
     {

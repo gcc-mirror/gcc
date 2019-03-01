@@ -619,6 +619,22 @@ Throwable.TraceInfo defaultTraceHandler( void* ptr = null )
         }
         return new LibBacktrace(FIRSTFRAME);
     }
+    else static if ( __traits( compiles, new UnwindBacktrace(0) ) )
+    {
+        version (Posix)
+        {
+            static enum FIRSTFRAME = 5;
+        }
+        else version (Win64)
+        {
+            static enum FIRSTFRAME = 4;
+        }
+        else
+        {
+            static enum FIRSTFRAME = 0;
+        }
+        return new UnwindBacktrace(FIRSTFRAME);
+    }
     else static if ( __traits( compiles, backtrace ) )
     {
         import core.demangle;
@@ -884,22 +900,6 @@ Throwable.TraceInfo defaultTraceHandler( void* ptr = null )
         import core.sys.windows.windows : CONTEXT;
         auto s = new StackTrace(FIRSTFRAME, cast(CONTEXT*)ptr);
         return s;
-    }
-    else static if ( __traits( compiles, new UnwindBacktrace(0) ) )
-    {
-        version (Posix)
-        {
-            static enum FIRSTFRAME = 5;
-        }
-        else version (Win64)
-        {
-            static enum FIRSTFRAME = 4;
-        }
-        else
-        {
-            static enum FIRSTFRAME = 0;
-        }
-        return new UnwindBacktrace(FIRSTFRAME);
     }
     else
     {

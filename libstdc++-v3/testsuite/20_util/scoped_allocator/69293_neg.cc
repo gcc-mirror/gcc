@@ -46,5 +46,5 @@ test01()
   scoped_alloc sa;
   auto p = sa.allocate(1);
   sa.construct(p);  // this is required to be ill-formed
-  // { dg-error "static assertion failed" "" { target *-*-* } 96 }
+  // { dg-error "failed: .* uses_allocator is true" "" { target *-*-* } 0 }
 }

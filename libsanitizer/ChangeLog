@@ -1,3 +1,9 @@
+2019-02-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR sanitizer/89409
+	* sanitizer_common/sanitizer_linux.cc (internal_readlink):
+	Cherry-pick compiler-rt r354451.
+
 2019-01-23  Jonny Grant  <jg@jguk.org>
 
 	PR sanitizer/89010

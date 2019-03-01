@@ -224,6 +224,10 @@ class Gogo
   static std::string
   pkgpath_for_symbol(const std::string& pkgpath);
 
+  // Compute a hash code for a string, given a seed.
+  static unsigned int
+  hash_string(const std::string&, unsigned int);
+
   // Return the package path to use for reflect.Type.PkgPath.
   const std::string&
   pkgpath() const;
@@ -733,9 +737,9 @@ class Gogo
   build_recover_thunks();
 
   // Return a declaration for __builtin_return_address or
-  // __builtin_frame_address.
+  // __builtin_dwarf_cfa.
   static Named_object*
-  declare_builtin_rf_address(const char* name);
+  declare_builtin_rf_address(const char* name, bool hasarg);
 
   // Simplify statements which might use thunks: go and defer
   // statements.

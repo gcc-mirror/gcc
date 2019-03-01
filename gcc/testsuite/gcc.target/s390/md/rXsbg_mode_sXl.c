@@ -46,7 +46,7 @@ rosbg_si_srl (unsigned int a, unsigned int b)
 {
   return a | (b >> 2);
 }
-/* { dg-final { scan-assembler-times "rosbg\t%r.,%r.,34,63,62" 1 } } */
+/* { dg-final { scan-assembler-times "rosbg\t%r.,%r.,32,63,62" 1 } } */
 
 __attribute__ ((noinline)) unsigned int
 rxsbg_si_sll (unsigned int a, unsigned int b)
@@ -60,7 +60,7 @@ rxsbg_si_srl (unsigned int a, unsigned int b)
 {
   return a ^ (b >> 2);
 }
-/* { dg-final { scan-assembler-times "rxsbg\t%r.,%r.,34,63,62" 1 } } */
+/* { dg-final { scan-assembler-times "rxsbg\t%r.,%r.,32,63,62" 1 } } */
 
 __attribute__ ((noinline)) unsigned long long
 di_sll (unsigned long long x)

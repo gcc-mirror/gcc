@@ -721,7 +721,6 @@ function_and_variable_visibility (bool whole_program)
 	localize_node (whole_program, node);
 
       if (node->thunk.thunk_p
-	  && !node->thunk.add_pointer_bounds_args
 	  && TREE_PUBLIC (node->decl))
 	{
 	  struct cgraph_node *decl_node = node;

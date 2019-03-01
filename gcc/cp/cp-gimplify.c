@@ -206,7 +206,7 @@ genericize_if_stmt (tree *stmt_p)
 	  richloc.add_range (EXPR_LOC_OR_LOC (fe, locus));
 	  warning_at (&richloc, OPT_Wattributes,
 		      "both branches of %<if%> statement marked as %qs",
-		      predictor_name (pr));
+		      pr == PRED_HOT_LABEL ? "likely" : "unlikely");
 	}
     }
 
@@ -2765,7 +2765,7 @@ remove_hotness_attribute (tree list)
    PREDICT_EXPR.  */
 
 tree
-process_stmt_hotness_attribute (tree std_attrs)
+process_stmt_hotness_attribute (tree std_attrs, location_t attrs_loc)
 {
   if (std_attrs == error_mark_node)
     return std_attrs;
@@ -2776,7 +2776,7 @@ process_stmt_hotness_attribute (tree std_attrs)
 		  || is_attribute_p ("likely", name));
       tree pred = build_predict_expr (hot ? PRED_HOT_LABEL : PRED_COLD_LABEL,
 				      hot ? TAKEN : NOT_TAKEN);
-      SET_EXPR_LOCATION (pred, input_location);
+      SET_EXPR_LOCATION (pred, attrs_loc);
       add_stmt (pred);
       if (tree other = lookup_hotness_attribute (TREE_CHAIN (attr)))
 	warning (OPT_Wattributes, "ignoring attribute %qE after earlier %qE",

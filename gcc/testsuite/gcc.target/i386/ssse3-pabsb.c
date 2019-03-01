@@ -15,7 +15,6 @@
 #include "ssse3-vals.h"
 #include <tmmintrin.h>
 
-#ifndef __AVX__
 /* Test the 64-bit form */
 static void
 ssse3_test_pabsb (int *i1, int *r)
@@ -24,7 +23,6 @@ ssse3_test_pabsb (int *i1, int *r)
   *(__m64 *) r = _mm_abs_pi8 (t1);
   _mm_empty ();
 }
-#endif
 
 /* Test the 128-bit form */
 static void
@@ -63,12 +61,10 @@ TEST (void)
       /* Manually compute the result */
       compute_correct_result(&vals[i + 0], ck);
 
-#ifndef __AVX__
       /* Run the 64-bit tests */
       ssse3_test_pabsb (&vals[i + 0], &r[0]);
       ssse3_test_pabsb (&vals[i + 2], &r[2]);
       fail += chk_128 (ck, r);
-#endif
 
       /* Run the 128-bit tests */
       ssse3_test_pabsb128 (&vals[i + 0], r);

@@ -1,3 +1,14 @@
+2019-02-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/89294
+	* c-common.c (invalid_array_size_error): Handle cst_size_not_constant.
+
+2019-02-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/88680
+	* c-common.c (shorten_compare): Call fold_for_warn on op0 when
+	implementing -Wtype-limits.
+
 2019-02-11  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/87996

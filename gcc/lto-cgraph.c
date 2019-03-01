@@ -556,8 +556,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
       streamer_write_uhwi_stream
 	 (ob->main_stream,
 	  1 + (node->thunk.this_adjusting != 0) * 2
-	  + (node->thunk.virtual_offset_p != 0) * 4
-	  + (node->thunk.add_pointer_bounds_args != 0) * 8);
+	  + (node->thunk.virtual_offset_p != 0) * 4);
       streamer_write_uhwi_stream (ob->main_stream, node->thunk.fixed_offset);
       streamer_write_uhwi_stream (ob->main_stream, node->thunk.virtual_value);
       streamer_write_uhwi_stream (ob->main_stream, node->thunk.indirect_offset);
@@ -631,7 +630,6 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
   bp_pack_value (&bp, node->tls_model, 3);
   bp_pack_value (&bp, node->used_by_single_function, 1);
   bp_pack_value (&bp, node->dynamically_initialized, 1);
-  bp_pack_value (&bp, node->need_bounds_init, 1);
   streamer_write_bitpack (&bp);
 
   group = node->get_comdat_group ();
@@ -1311,7 +1309,6 @@ input_node (struct lto_file_decl_data *file_data,
       node->thunk.indirect_offset = indirect_offset;
       node->thunk.this_adjusting = (type & 2);
       node->thunk.virtual_offset_p = (type & 4);
-      node->thunk.add_pointer_bounds_args = (type & 8);
     }
   if (node->alias && !node->analyzed && node->weakref)
     node->alias_target = get_alias_symbol (node->decl);
@@ -1382,7 +1379,6 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   node->tls_model = (enum tls_model)bp_unpack_value (&bp, 3);
   node->used_by_single_function = (enum tls_model)bp_unpack_value (&bp, 1);
   node->dynamically_initialized = bp_unpack_value (&bp, 1);
-  node->need_bounds_init = bp_unpack_value (&bp, 1);
   group = read_identifier (ib);
   if (group)
     {

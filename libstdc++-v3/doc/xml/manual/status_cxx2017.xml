@@ -91,6 +91,17 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
+      <entry> C++17 should refer to C11 instead of C99 </entry>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0063r3.html">
+	P0063R3
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry/>
+    </row>
+
+    <row>
       <entry> Variant: a type-safe union for C++17 </entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0088r3.html">

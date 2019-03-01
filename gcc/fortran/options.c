@@ -708,7 +708,7 @@ gfc_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_finit_integer_:
       gfc_option.flag_init_integer = GFC_INIT_INTEGER_ON;
-      gfc_option.flag_init_integer_value = atoi (arg);
+      gfc_option.flag_init_integer_value = strtol (arg, NULL, 10);
       break;
 
     case OPT_finit_character_:

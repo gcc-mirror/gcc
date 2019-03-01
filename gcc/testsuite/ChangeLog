@@ -1,3 +1,443 @@
+2019-02-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87412
+	* gcc.target/i386/indirect-thunk-attr-14.c: Replace
+	-fcf-protection with -fcf-protection=branch.
+	* gcc.target/i386/indirect-thunk-attr-15.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-16.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-8.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-9.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-10.c: Likewise.
+
+2019-02-21  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/arm/pr88850-2.c: Block -mfloat-abi override.
+	* gcc.target/arm/pr88850.c: Use -mfloat-abi=softfp.
+
+2019-02-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/86119
+	* gfortran.dg/warn_conversion_11.f90: New test.
+
+2019-02-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87412
+	* gcc.target/i386/pr87412-1.c: New file.
+	* gcc.target/i386/pr87412-2.c: Likewise.
+	* gcc.target/i386/pr87412-3.c: Likewise.
+	* gcc.target/i386/pr87412-4.c: Likewise.
+
+2019-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89403
+	* g++.dg/cpp0x/pr89403.C: New test.
+
+	PR c++/89405
+	* g++.dg/cpp1z/inline-var5.C: New test.
+
+	PR middle-end/89412
+	* gcc.c-torture/compile/pr89412.c: New test.
+
+2019-02-20  Jakub Jelinek  <jakub@redhat.com>
+	    David Malcolm  <dmalcolm@redhat.com>
+
+	PR middle-end/89091
+	* gcc.dg/torture/pr89091.c: New test.
+
+2019-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/88074
+	PR middle-end/89415
+	* gcc.dg/pr88074-2.c: New test.
+
+	PR c++/89336
+	* g++.dg/cpp1y/constexpr-89336-3.C: New test.
+
+2019-02-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/89410
+	* gcc.dg/pr89410-1.c: New test.
+	* gcc.dg/pr89410-2.c: New test.
+
+2019-02-20  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_usad_char):
+	Add PowerPC support.
+	* gcc.dg/vect/slp-reduc-sad.c: Update scan string.
+	* gcc.dg/vect/vect-reduc-sad.c: Likewise.
+
+2019-02-20 Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/86487
+	* gcc.target/arm/pr86487.c: New.
+
+2019-02-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84536
+	* g++.dg/cpp1y/var-templ60.C: New.
+
+2019-02-20  Li Jia He  <helijia@linux.ibm.com>
+
+	PR target/88100
+	* gcc/testsuite/gcc.target/powerpc/pr88100.c: New testcase.
+
+2019-02-19  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/arm/pr88850.c: Block -mfloat-abi override.
+
+2019-02-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/89384
+	* gfortran.dg/ISO_Fortran_binding_4.f90
+
+2019-02-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR c/87924
+	* c-c++-common/goacc/asyncwait-5.c: Remove XFAILs.
+	* gfortran.dg/goacc/asyncwait-5.f: Likewise.
+
+2019-02-19  Richard Biener  <rguenther@suse.de>
+
+        PR middle-end/88074
+	* gcc.dg/pr88074.c: New testcase.
+
+2019-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89303
+	* g++.dg/torture/pr89303.C: Move everything from std namespace to my
+	namespace.
+
+	PR c++/89387
+	* g++.dg/cpp0x/lambda/lambda-89387.C: New test.
+
+	PR c++/89391
+	* g++.dg/cpp0x/reinterpret_cast2.C: New test.
+
+	PR c++/89390
+	* g++.dg/diagnostic/pr89390.C: New test.
+
+2019-02-18  Sharon Dvir  <unapologtic@gmail.com>
+
+	* README: Fix typos.
+
+2019-02-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/torture/pr89303.C (bad_weak_ptr): Rename to
+	bad_weak_ptr_.
+
+2019-02-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87689
+	* gfortran.dg/lto/20091028-1_0.f90: Add -Wno-lto-type-mismatch to
+	options.
+	* gfortran.dg/lto/20091028-2_0.f90: Likewise.
+	* gfortran.dg/lto/pr87689_0.f: New file.
+	* gfortran.dg/lto/pr87689_1.f: New file.
+
+2019-02-18  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* g++.dg/wrappers/pr88680.C: Add -fno-short-enums.
+
+2019-02-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gdc.dg/dg.exp: Tabify.
+	* gdc.dg/lto/lto.exp: Likewise.
+	* gdc.test/gdc-test.exp: Likewise.
+	* lib/gdc-dg.exp: Likewise.
+	* lib/gdc.exp: Likewise.
+
+2019-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89296
+	* gcc.dg/uninit-pr89296.c: New testcase.
+
+2019-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89369
+	* gcc.c-torture/execute/pr89369.c: New test.
+	* gcc.target/s390/md/rXsbg_mode_sXl.c (rosbg_si_srl,
+	rxsbg_si_srl): Expect last 3 operands 32,63,62 rather than
+	34,63,62.
+
+2019-02-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/89209
+	* gcc.dg/tree-ssa/pr89209.c: New test.
+
+2019-02-18  Martin Liska  <mliska@suse.cz>
+
+	* gfortran.dg/simd-builtins-7.f90: New test.
+	* gfortran.dg/simd-builtins-7.h: New test.
+
+2019-02-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/88299
+	* gfortran.dg/pr88299.f90: New test.
+
+2019-02-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/89077
+	* gfortran.dg/transfer_simplify_12.f90: New test.
+
+2019-02-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89217 - ICE with list-initialization in range-based for loop.
+	* g++.dg/cpp0x/range-for37.C: New test.
+
+	* g++.old-deja/g++.robertl/eb82.C: Tweak dg-error.
+
+	PR c++/89315
+	* g++.dg/cpp0x/initlist114.C: New test.
+
+	PR c++/89356
+	* g++.dg/abi/mangle68.C: New test.
+	* g++.dg/cpp0x/decltype69.C: New test.
+
+2019-02-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/88680
+	* g++.dg/wrappers/pr88680.C: New test.
+
+2019-02-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/71066
+	* gfortran.dg/coarray_data_1.f90: New test.
+
+2019-02-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-c++-common/patchable_function_entry-decl.c: Add -fno-pie on SPARC.
+	* c-c++-common/patchable_function_entry-default.c: Likewise.
+	* c-c++-common/patchable_function_entry-definition.c: Likewise.
+
+2019-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/66152
+	* gcc.target/i386/pr66152.c: New test.
+
+2019-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/asan/asan_oob_test.cc: Skip OOB_int on SPARC.
+	* g++.dg/asan/function-argument-3.C: Tweak for 32-bit SPARC.
+
+2019-02-15  Tamar Christina  <tamar.christina@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_neon_softfp_fp16_ok_nocache): Drop non-fpu
+	checking alternative.
+
+2019-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/struct-ret-check-1.c: Add -fno-pie option.
+
+2019-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-c++-common/patchable_function_entry-decl.c: Do not run on Visium.
+	* c-c++-common/patchable_function_entry-default.c: Likewise.
+	* c-c++-common/patchable_function_entry-definition.c: Likewise.
+	* gcc.dg/tree-ssa/pr84859.c: Add -ftree-cselim switch.
+
+2019-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/69006
+	PR testsuite/88920
+	* lib/gcc-dg.exp: If llvm_binutils effective target, set
+	allow_blank_lines to 2 during initialization.
+	(dg-allow-blank-lines-in-output): Set allow_blank_lines to 1 only if
+	it was previously zero.
+	(gcc-dg-prune): Don't check for llvm_binutils effective target here.
+	Clear allow_blank_lines afterwards whenever it was 1.
+	* gdc.test/gdc-test.exp (dmd2dg): Don't call
+	dg-allow-blank-lines-in-output here.
+	(gdc-do-test): Set allow_blank_lines to 3 if it is 0 before running
+	the tests and restore it back at the end.
+
+	* c-c++-common/ubsan/opts-1.c: New test.
+	* c-c++-common/ubsan/opts-2.c: New test.
+	* c-c++-common/ubsan/opts-3.c: New test.
+	* c-c++-common/ubsan/opts-4.c: New test.
+
+2019-02-15  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89278
+	* gcc.dg/pr89278.c: New test.
+
+2019-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89340
+	* gcc.dg/pr89340.c: New test.
+	* gcc.dg/torture/pr57036-2.c (jpgDecode_convert): Expect a warning
+	that leaf attribute on nested function is useless.
+
+	PR other/89342
+	* gcc.dg/pr89342.c: New test.
+
+2019-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/89354
+	* gcc.dg/pr89354.c: New test.
+
+2019-02-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/ssse3-pabsb.c: Re-enable 64-bit form on AVX targets.
+	* gcc.target/i386/ssse3-pabsd.c: Ditto.
+	* gcc.target/i386/ssse3-pabsw.c: Ditto.
+	* gcc.target/i386/ssse3-palignr.c: Ditto.
+	* gcc.target/i386/ssse3-phaddd.c: Ditto.
+	* gcc.target/i386/ssse3-phaddsw.c: Ditto.
+	* gcc.target/i386/ssse3-phaddw.c: Ditto.
+	* gcc.target/i386/ssse3-phsubd.c: Ditto.
+	* gcc.target/i386/ssse3-phsubsw.c: Ditto.
+	* gcc.target/i386/ssse3-phsubw.c: Ditto.
+	* gcc.target/i386/ssse3-pmaddubsw.c: Ditto.
+	* gcc.target/i386/ssse3-pmulhrsw.c: Ditto.
+	* gcc.target/i386/ssse3-pshufb.c: Ditto.
+	* gcc.target/i386/ssse3-psignb.c: Ditto.
+	* gcc.target/i386/ssse3-psignd.c: Ditto.
+	* gcc.target/i386/ssse3-psignw.c: Ditto.
+
+2018-02-14  Steve Ellcey  <sellcey@marvell.com>
+
+	* gcc.target/aarch64/pcs_attribute.c: New test.
+
+2019-02-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/88248
+	* gfortran.dg/pr88248.f90: New test.
+	* gfortran.dg/f2018_obs.f90: Updated test.
+
+2019-02-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/arm/pr88850.c: change options to additional option.
+
+2019-02-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR d/87864
+	* lib/gdc.exp (gdc_link_flags): Add path to drtbegin.o/drtend.o if
+	present.
+
+2019-02-14  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/88850
+	* gcc.target/arm/pr88850-2.c: New test.
+	* lib/target-supports.exp
+	(check_effective_target_arm_neon_softfp_fp16_ok_nocache,
+	check_effective_target_arm_neon_softfp_fp16_ok,
+	add_options_for_arm_neon_softfp_fp16): New.
+
+2019-02-14  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.dg/rtl/arm/ldrd-peepholes.c: Restrict testcase.
+	* lib/target-supports.exp: Add procedure to check for ldrd.
+
+2019-02-14  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR fortran/72715
+	* gfortran.dg/goacc/loop-3-2.f95: Error on do concurrent loops.
+	* gfortran.dg/goacc/loop-3.f95: Likewise.
+	* gfortran.dg/goacc/pr72715.f90: New test.
+
+2019-02-14  Martin Liska  <mliska@suse.cz>
+
+	PR rtl-optimization/89242
+	* g++.dg/pr89242.C: New test.
+
+2019-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89314
+	* gcc.dg/pr89314.c: New test.
+
+	PR middle-end/89284
+	* gcc.dg/ubsan/pr89284.c: New test.
+
+2019-02-13  Ian Lance Taylor  <iant@golang.org>
+
+	* gcc.dg/func-attr-1.c: New test.
+
+2019-02-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse2-init-v2di-2.c (dg-final): Update scan string.
+
+2019-02-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89297 - ICE with OVERLOAD in template.
+	* g++.dg/cpp0x/initlist113.C: New test.
+
+2019-02-13  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/86379
+	* g++.dg/cpp0x/pr86379.C: New.
+
+	PR c++/87322
+	* g++.dg/cpp1y/pr87322.C: New.
+	* g++.dg/cpp0x/lambda/lambda-variadic5.C: Test that we
+	instantiate the expected number of lambda functions.
+
+2019-02-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/77304
+	* g++.dg/cpp2a/nontype-class13.C: New test.
+
+2019-02-13  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/89190
+	* gcc.target/arm/pr89190.c: New test.
+
+2019-02-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/89036
+	* g++.dg/concepts/pr89036.C: New test.
+
+2019-02-13  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/88847
+	* gcc.target/aarch64/sve/pr88847.c: New test.
+
+2019-02-13  Jonathan Wakely  <jwakely@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89303
+	* g++.dg/torture/pr89303.C: New test.
+
+2019-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/88986
+	* g++.dg/cpp1z/using4.C: New.
+	* g++.dg/cpp1z/using5.C: Likewise.
+	* g++.dg/cpp1z/using6.C: Likewise.
+
+2019-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89290
+	* gcc.target/i386/pr89290.c: New test.
+
+2019-01-23  Xiong Hu Luo  <luoxhu@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/crypto-builtin-1.c
+	(crypto1_be, crypto2_be, crypto3_be, crypto4_be, crypto5_be):
+	New testcases.
+
+2019-02-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	* gcc.target/i386/pr89229-1.c: New test.
+
+2019-02-12  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/89233
+	* gcc.target/s390/pr89233.c: New test.
+
+2018-01-12  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/vec-sld-modulo.c: Require p8vector_hw.
+	* gcc.target/powerpc/vec-srad-modulo.c: Likewise.
+	* gcc.target/powerpc/vec-srd-modulo.c: Likewise.
+
+2019-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89253
+	* gfortran.dg/pr89253.f: New testcase.
+
 2019-02-11  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89212 - ICE converting nullptr to pointer-to-member-function.

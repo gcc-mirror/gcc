@@ -135,6 +135,7 @@ case "${host}" in
     fi
     AC_CHECK_FUNCS(__cxa_thread_atexit)
     AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
+    AC_CHECK_FUNCS(timespec_get)
     ;;
 
   *-fuchsia*)
@@ -194,6 +195,7 @@ case "${host}" in
     GCC_CHECK_TLS
     AC_CHECK_FUNCS(__cxa_thread_atexit_impl)
     AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
+    AC_CHECK_FUNCS(timespec_get)
     AM_ICONV
     ;;
   *-mingw32*)
@@ -221,6 +223,7 @@ case "${host}" in
       AC_DEFINE(HAVE_ISNANL)
     fi
     AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
+    AC_CHECK_FUNCS(timespec_get)
     ;;
   *-qnx6.1* | *-qnx6.2*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'

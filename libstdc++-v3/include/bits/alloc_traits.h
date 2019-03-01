@@ -576,33 +576,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __do_alloc_on_swap(__one, __two, __pocs());
     }
 
-  template<typename _Alloc>
-    class __is_alloc_insertable_impl
-    {
-      using _Traits = allocator_traits<_Alloc>;
-      using value_type = typename _Traits::value_type;
+  class __is_alloc_insertable_impl
+  {
+    template<typename _Alloc, typename _Up,
+	     typename _Tp = __remove_cvref_t<_Up>,
+	     typename = decltype(allocator_traits<_Alloc>::construct(
+		   std::declval<_Alloc&>(), std::declval<_Tp*>(),
+		   std::declval<_Up>()))>
+      static true_type
+      _M_select(int);
 
-      template<typename _Up, typename _Tp = __remove_cvref_t<_Up>,
-	       typename
-	       = decltype(_Traits::construct(std::declval<_Alloc&>(),
-					     std::declval<_Tp*>(),
-					     std::declval<_Up>()))>
-	static true_type
-	_M_select(int);
+    template<typename, typename>
+      static false_type
+      _M_select(...);
 
-      template<typename _Up>
-	static false_type
-	_M_select(...);
+  protected:
+    template<typename _Alloc, typename _Tp = typename _Alloc::value_type>
+      using copy = decltype(_M_select<_Alloc, const _Tp&>(0));
 
-    public:
-      using copy = decltype(_M_select<const value_type&>(0));
-      using move = decltype(_M_select<value_type>(0));
-    };
+    template<typename _Alloc, typename _Tp = typename _Alloc::value_type>
+      using move = decltype(_M_select<_Alloc, _Tp>(0));
+  };
 
   // true if _Alloc::value_type is CopyInsertable into containers using _Alloc
   template<typename _Alloc>
     struct __is_copy_insertable
-    : __is_alloc_insertable_impl<_Alloc>::copy
+    : __is_alloc_insertable_impl::template copy<_Alloc>
     { };
 
   // std::allocator<_Tp> just requires CopyConstructible
@@ -614,7 +613,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // true if _Alloc::value_type is MoveInsertable into containers using _Alloc
   template<typename _Alloc>
     struct __is_move_insertable
-    : __is_alloc_insertable_impl<_Alloc>::move
+    : __is_alloc_insertable_impl::template move<_Alloc>
     { };
 
   // std::allocator<_Tp> just requires MoveConstructible

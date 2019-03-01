@@ -46,6 +46,9 @@ void test01()
   using std::atomic_llong;
   using std::atomic_ullong;
   using std::atomic_wchar_t;
+#ifdef _GLIBCXX_USE_CHAR8_T
+  using std::atomic_char8_t;
+#endif
   using std::atomic_char16_t;
   using std::atomic_char32_t;
 

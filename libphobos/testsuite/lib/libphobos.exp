@@ -48,30 +48,30 @@ proc libphobos-dg-test { prog do_what extra_tool_flags } {
 
     # Set up the compiler flags, based on what we're going to do.
     switch $do_what {
-        "run" {
-            set compile_type "executable"
-            # FIXME: "./" is to cope with "." not being in $PATH.
-            # Should this be handled elsewhere?
-            # YES.
-            set output_file "./[file rootname [file tail $prog]].exe"
-            # This is the only place where we care if an executable was
-            # created or not.  If it was, dg.exp will try to run it.
-            catch { remote_file build delete $output_file }
-        }
-        "link" {
-            set compile_type "executable"
-            set output_file "./[file rootname [file tail $prog]].exe"
-        }
-        default {
-            perror "$do_what: not a valid dg-do keyword"
-            return ""
-        }
+	"run" {
+	    set compile_type "executable"
+	    # FIXME: "./" is to cope with "." not being in $PATH.
+	    # Should this be handled elsewhere?
+	    # YES.
+	    set output_file "./[file rootname [file tail $prog]].exe"
+	    # This is the only place where we care if an executable was
+	    # created or not.  If it was, dg.exp will try to run it.
+	    catch { remote_file build delete $output_file }
+	}
+	"link" {
+	    set compile_type "executable"
+	    set output_file "./[file rootname [file tail $prog]].exe"
+	}
+	default {
+	    perror "$do_what: not a valid dg-do keyword"
+	    return ""
+	}
     }
 
     set select_compile "libphobos_target_compile"
     set options ""
     if { $extra_tool_flags != "" } {
-        lappend options "additional_flags=$extra_tool_flags"
+	lappend options "additional_flags=$extra_tool_flags"
     }
 
     set comp_output [$select_compile "$prog" "$output_file" "$compile_type" $options]
@@ -95,15 +95,15 @@ proc libphobos_init { args } {
 
     # If a testcase doesn't have special options, use these.
     if ![info exists DEFAULT_DFLAGS] then {
-        set DEFAULT_DFLAGS ""
+	set DEFAULT_DFLAGS ""
     }
 
     # By default, we assume we want to run program images.
     global dg-do-what-default
     if [isnative] {
-        set dg-do-what-default "run"
+	set dg-do-what-default "run"
     } else {
-        set dg-do-what-default "link"
+	set dg-do-what-default "link"
     }
 
     # What arguments to pass to run program images.
@@ -121,15 +121,15 @@ proc libphobos_init { args } {
     set gdcldflags ""
 
     if { [file exists $flags_file] } {
-        set gdc [exec sh $flags_file --gdc]
-        set gdcflags [exec sh $flags_file --gdcflags]
-        set gdcpaths [exec sh $flags_file --gdcpaths]
-        set gdcldflags [exec sh $flags_file --gdcldflags]
+	set gdc [exec sh $flags_file --gdc]
+	set gdcflags [exec sh $flags_file --gdcflags]
+	set gdcpaths [exec sh $flags_file --gdcpaths]
+	set gdcldflags [exec sh $flags_file --gdcldflags]
     }
 
     set exeext ""
     if [info exists env(EXEEXT)] {
-        set exeext $env(EXEEXT)
+	set exeext $env(EXEEXT)
     }
 
     # Compute what needs to be added to the existing LD_LIBRARY_PATH.
@@ -137,16 +137,16 @@ proc libphobos_init { args } {
 
     set gccdir [lookfor_file $tool_root_dir gcc/libgcc.a]
     if {$gccdir != ""} {
-        set gccdir [file dirname $gccdir]
-        append ld_library_path ":${gccdir}"
+	set gccdir [file dirname $gccdir]
+	append ld_library_path ":${gccdir}"
     }
 
     if { [file exists "${blddir}/libdruntime/.libs/libgdruntime.${shlib_ext}"] } {
-        append ld_library_path ":${blddir}/libdruntime/.libs"
+	append ld_library_path ":${blddir}/libdruntime/.libs"
     }
 
     if { [file exists "${blddir}/src/.libs/libgphobos.${shlib_ext}"] } {
-        append ld_library_path ":${blddir}/src/.libs"
+	append ld_library_path ":${blddir}/src/.libs"
     }
 
     set_ld_library_path_env_vars
@@ -166,21 +166,21 @@ proc libphobos_target_compile { source dest type options } {
     lappend options "additional_flags=-fno-diagnostics-show-caret -fdiagnostics-color=never"
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
-        lappend options "libs=${gluefile}"
-        lappend options "ldflags=${wrap_flags}"
+	lappend options "libs=${gluefile}"
+	lappend options "ldflags=${wrap_flags}"
     }
 
     # Flag setting based on type argument.
     if { $type == "executable" } {
-        # Link the support objects into executables.
-        lappend options "additional_flags=$gdcldflags"
+	# Link the support objects into executables.
+	lappend options "additional_flags=$gdcldflags"
     }
 
     # Set the compiler, only add D flags and paths if building D sources.
     set gdc_final $gdc
     if [regexp ".*\.d\$" $source] {
-        set gdc_final [concat $gdc_final $gdcflags]
-        set gdc_final [concat $gdc_final $gdcpaths]
+	set gdc_final [concat $gdc_final $gdcflags]
+	set gdc_final [concat $gdc_final $gdcpaths]
     }
 
     lappend options "compiler=$gdc_final"

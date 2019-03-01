@@ -72,4 +72,13 @@ namespace std
   using ::strftime;
 } // namespace
 
+#if __cplusplus >= 201703L && defined(_GLIBCXX_HAVE_TIMESPEC_GET)
+#undef timespec_get
+namespace std
+{
+  using ::timespec;
+  using ::timespec_get;
+} // namespace std
+#endif
+
 #endif

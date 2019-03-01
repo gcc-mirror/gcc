@@ -3898,7 +3898,7 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
 
 	  /* Must make sure the size fits the insn's mode.  */
 	  if (CONST_INT_P (size)
-	      ? INTVAL (size) >= (1 << GET_MODE_BITSIZE (cmp_mode))
+	      ? UINTVAL (size) > GET_MODE_MASK (cmp_mode)
 	      : (GET_MODE_BITSIZE (as_a <scalar_int_mode> (GET_MODE (size)))
 		 > GET_MODE_BITSIZE (cmp_mode)))
 	    continue;

@@ -1779,6 +1779,11 @@ use @option{-finit-real=snan}; note, however, that compile-time
 optimizations may convert them into quiet NaN and that trapping
 needs to be enabled (e.g. via @option{-ffpe-trap}).
 
+The @option{-finit-integer} option will parse the value into an
+integer of type @code{INTEGER(kind=C_LONG)} on the host.  Said value
+is then assigned to the integer variables in the Fortran code, which
+might result in wraparound if the value is too large for the kind.
+
 Finally, note that enabling any of the @option{-finit-*} options will
 silence warnings that would have been emitted by @option{-Wuninitialized}
 for the affected local variables.

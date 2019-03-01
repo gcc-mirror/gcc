@@ -3082,8 +3082,8 @@ struct GTY(()) lang_decl {
 /* Nonzero for _DECL means that this decl appears in (or will appear
    in) as a member in a RECORD_TYPE or UNION_TYPE node.  It is also for
    detecting circularity in case members are multiply defined.  In the
-   case of a VAR_DECL, it is also used to determine how program storage
-   should be allocated.  */
+   case of a VAR_DECL, it means that no definition has been seen, even
+   if an initializer has been.  */
 #define DECL_IN_AGGR_P(NODE) (DECL_LANG_FLAG_3 (NODE))
 
 /* Nonzero for a VAR_DECL means that the variable's initialization (if
@@ -3414,7 +3414,7 @@ struct GTY(()) lang_decl {
 #define DECL_DEPENDENT_P(NODE) DECL_LANG_FLAG_0 (USING_DECL_CHECK (NODE))
 
 /* The scope named in a using decl.  */
-#define USING_DECL_SCOPE(NODE) TREE_TYPE (USING_DECL_CHECK (NODE))
+#define USING_DECL_SCOPE(NODE) DECL_RESULT_FLD (USING_DECL_CHECK (NODE))
 
 /* The decls named by a using decl.  */
 #define USING_DECL_DECLS(NODE) DECL_INITIAL (USING_DECL_CHECK (NODE))
@@ -7765,7 +7765,7 @@ extern tree cp_fully_fold			(tree);
 extern tree cp_fully_fold_init			(tree);
 extern void clear_fold_cache			(void);
 extern tree lookup_hotness_attribute		(tree);
-extern tree process_stmt_hotness_attribute	(tree);
+extern tree process_stmt_hotness_attribute	(tree, location_t);
 
 /* in name-lookup.c */
 extern tree strip_using_decl                    (tree);
@@ -7901,6 +7901,7 @@ extern void explain_invalid_constexpr_fn        (tree);
 extern vec<tree> cx_error_context               (void);
 extern tree fold_sizeof_expr			(tree);
 extern void clear_cv_and_fold_caches		(void);
+extern tree unshare_constructor			(tree);
 
 /* In cp-ubsan.c */
 extern void cp_ubsan_maybe_instrument_member_call (tree);

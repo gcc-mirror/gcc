@@ -1,3 +1,22 @@
+2019-02-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/89410
+	* include/line-map.h (linenum_arith_t): New typedef.
+	(compare): Use it.
+
+2019-02-18  Martin Liska  <mliska@suse.cz>
+
+	PR c++/89383
+	* line-map.c (linemap_line_start): Use 1UL in order
+	to not overflow.
+
+2019-02-11  Martin Liska  <mliska@suse.cz>
+
+	PR lto/88147
+	* line-map.c (linemap_line_start): Don't reuse the existing line
+	map if the line offset is sufficiently large to cause overflow
+	when computing location_t values.
+
 2019-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/88974

@@ -1,3 +1,516 @@
+2019-02-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87412
+	* config/i386/i386.c (ix86_set_indirect_branch_type): Issue an
+	error for -mindirect-branch/-mfunction-return with incompatible
+	-fcf-protection.
+
+2019-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/88714
+	* constraints.md (q): Remove.
+	* config/arm/ldrdstrd.md (*arm_ldrd, *arm_strd): Use rk constraint
+	instead of q.
+
+2019-02-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR hsa/89302
+	* omp-general.c (omp_extract_for_data): Removed a duplicate call
+	to omp_adjust_for_condition, moved NE_EXPR code_cond processing...
+	(omp_adjust_for_condition): ...here.  Added necessary parameters.
+	* omp-general.h (omp_adjust_for_condition): Updated declaration.
+	* omp-grid.c (grid_attempt_target_gridification): Adjust to pass
+	proper values to new parameters of omp_adjust_for_condition.
+
+2019-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89412
+	* expr.c (expand_assignment): If result is a MEM, use change_address
+	instead of simplify_gen_subreg.
+
+2019-02-20  Jakub Jelinek  <jakub@redhat.com>
+	    David Malcolm  <dmalcolm@redhat.com>
+
+	PR middle-end/89091
+	* fold-const.c (decode_field_reference): Return NULL_TREE if
+	lang_hooks.types.type_for_size returns NULL.  Check it before
+	overwriting *exp_.  Use return NULL_TREE instead of return 0.
+
+2019-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/88074
+	PR middle-end/89415
+	* toplev.c (do_compile): Double the emin/emax exponents to workaround
+	buggy mpc_norm.
+
+2019-02-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89397
+	* config/i386/i386.c (ix86_atomic_assign_expand_fenv): Check
+	TARGET_SSE in addition to TARGET_SSE_MATH.
+
+	(ix86_excess_precision): Ditto.
+	(ix86_float_exceptions_rounding_supported_p): Ditto.
+	(use_rsqrt_p): Ditto.
+	* config/i386/sse.md (rsqrt<mode>2): Ditto.
+
+2019-02-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/89410
+	* diagnostic-show-locus.c (layout::calculate_line_spans): Use
+	linenum_arith_t when determining if two adjacent line spans are
+	close enough to merge.
+	(diagnostic_show_locus): Use linenum_arith_t when iterating over
+	lines within each line_span.
+
+2019-02-20 Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/86487
+	* lra-constraints.c(uses_hard_regs_p): Fix handling of
+	paradoxical SUBREGS.
+
+2019-02-20  Li Jia He  <helijia@linux.ibm.com>
+
+	PR target/88100
+	* gcc/config/rs6000/rs6000.c (rs6000_gimple_fold_builtin)
+	<case ALTIVEC_BUILTIN_VSPLTISB, ALTIVEC_BUILTIN_VSPLTISH,
+	ALTIVEC_BUILTIN_VSPLTISW>: Don't convert the operand before
+	range checking it.
+
+2019-02-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/gcn/gcn.c (print_operand): Fix typo.
+
+2019-02-19  Richard Biener  <rguenther@suse.de>
+
+        PR middle-end/88074
+	* toplev.c (do_compile): Initialize mpfr's exponent range
+	based on available float modes.
+
+2019-02-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* rtlanal.c (get_initial_register_offset): Fall back to the estimate
+	as long as the epilogue isn't completed.
+
+2019-02-18  Martin Sebor  <msebor@redhat.com>
+
+	* doc/cpp.texi (Conditional syntax): Add __has_attribute,
+	__has_cpp_attribute, and __has_include.
+
+2019-02-18  Martin Sebor  <msebor@redhat.com>
+
+	* doc/invoke.texi (-Wreturn-type): Correct and expand.
+
+2019-02-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/89294
+	* tree.c (valid_constant_size_p): Avoid assuming size is a constant
+	expression.
+	* tree.h (cst_size_error): Add the cst_size_not_constant enumerator.
+
+2019-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89296
+	* tree-ssa-loop-ch.c (ch_base::copy_headers): Restrict setting
+	of no-warning flag to cases that might emit the bogus warning.
+
+2019-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/88714
+	* config/arm/arm.md (*arm_movdi, *movdf_soft_insn): Use "r" instead of
+	"q" constraint.
+	* config/arm/vfp.md (*movdi_vfp): Likewise.
+	* config/arm/ldrdstrd.md (*arm_ldrd, *arm_strd): Use "r" instead of
+	"q" constraint for operands[0].
+
+	PR target/89369
+	* config/s390/s390.md (*r<noxa>sbg_<mode>_srl_bitmask,
+	*r<noxa>sbg_<mode>_sll, *r<noxa>sbg_<mode>_srl): Don't construct
+	pattern in a temporary buffer.
+	(*r<noxa>sbg_sidi_srl): Likewise.  Always use 32 as I3 rather
+	than 64-operands[2].
+
+	PR target/89361
+	* config/s390/s390.c (s390_indirect_branch_attrvalue,
+	s390_indirect_branch_settings): Define unconditionally.
+	(s390_set_current_function): Likewise, but guard the whole body except
+	the s390_indirect_branch_settings call with
+	#if S390_USE_TARGET_ATTRIBUTE.
+	(TARGET_SET_CURRENT_FUNCTION): Redefine unconditionally.
+
+	* config/s390/s390.md (*<risbg_n>_ior_and_sr_ze,
+	*<risbg_n>_<mode>_ior_and_lshiftrt, *<risbg_n>_sidi_ior_and_lshiftrt):
+	Use HOST_WIDE_INT_M1U instead of ~(0ULL).
+	(*<risbg_n>_and_subregdi_rotr, *<risbg_n>_and_subregdi_rotl): Use
+	HOST_WIDE_INT_1U instead of 1ULL.
+	(*pre_z10_extzv<mode>, *pre_z10_extv<mode>): Change mask type from int
+	to unsigned HOST_WIDE_INT, use HOST_WIDE_INT_1U instead of 1ul.
+	(*insv<mode><clobbercc_or_nocc>_appendbitsleft,
+	z = (x << c) | (y >> d) splitters): Use HOST_WIDE_INT_1U
+	instead of 1UL.
+	(*insv<mode>_mem_reg, *insvdi_mem_reghigh): Use HOST_WIDE_INT_1U
+	instead of 1ul.
+
+2019-02-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/89209
+	* tree-sra.c (create_access_replacement): New optional parameter
+	reg_tree.  Use it as a type if non-NULL and access type is not of
+	a register type.
+	(get_repl_default_def_ssa_name): New parameter REG_TYPE, pass it
+	to create_access_replacement.
+	(sra_modify_assign): Pass LHS type to get_repl_default_def_ssa_name.
+	Check lacc is non-NULL before attempting to re-create it on the RHS.
+
+2019-02-18  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/89306
+	* cgraph.c (symbol_table::create_edge): Set m_summary_id to -1
+	by default.
+	(symbol_table::free_edge): Recycle m_summary_id.
+	* cgraph.h (get_summary_id): New.
+	(symbol_table::release_symbol): Set m_summary_id to -1
+	by default.
+	(symbol_table::allocate_cgraph_symbol): Recycle m_summary_id.
+	* ipa-fnsummary.c (ipa_fn_summary_t): Switch from
+	function_summary to fast_function_summary.
+	* ipa-fnsummary.h (ipa_fn_summary_t): Likewise.
+	* ipa-pure-const.c (class funct_state_summary_t):
+	Switch from function_summary to fast_function_summary.
+	* ipa-reference.c (class ipa_ref_var_info_summary_t): Likewise.
+	(class ipa_ref_opt_summary_t): Switch from function_summary
+	to fast_function_summary.
+	* symbol-summary.h (class function_summary_base): New class
+	that is created from base of former function_summary.
+	(function_summary_base::unregister_hooks): New.
+	(class function_summary): Inherit from function_summary_base.
+	(class call_summary_base): New class
+	that is created from base of former call_summary.
+	(class call_summary): Inherit from call_summary_base.
+	(struct is_same): New.
+	(class fast_function_summary): New summary class.
+	(class fast_call_summary): New summary class.
+	* vec.h (vec_safe_grow_cleared): New function.
+
+2019-02-18  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386.c (ix86_get_multilib_abi_name): New function.
+	(TARGET_GET_MULTILIB_ABI_NAME): New macro defined.
+	* doc/tm.texi: Document new target hook.
+	* doc/tm.texi.in: Likewise.
+	* target.def: Add new target macro.
+	* gcc.c (find_fortran_preinclude_file): Do not search multilib
+	suffixes.
+
+2019-02-17  Alan Modra  <amodra@gmail.com>
+
+	PR target/89271
+	* config/rs6000/rs6000.md (<bd>_<mode> split): Check for an int
+	output reg on add insn.
+	(<bd>tf_<mode> split): Likewise.  Match predicates with insn.
+
+2019-02-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89372
+	* config/i386/sse.md (ssedoublemode): Remove V4HI.
+	(PMULHRSW): Likewise.
+	(<ssse3_avx2>_pmulhrsw<mode>3): Require TARGET_SSSE3, not
+	TARGET_AVX2.
+	(ssse3_pmulhrswv4hi3): New expander.
+
+2019-02-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/mmx.md (*vec_extractv2si_zext_mem): Doesn't require
+	MMX.  Add isa attribute.
+
+2019-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/66152
+	* builtins.h (c_readstr): Declare.
+	* builtins.c (c_readstr): Remove forward declaration.  Add
+	null_terminated_p argument, if false, read all bytes from the
+	string instead of stopping after '\0'.
+	* expr.c (string_cst_read_str): New function.
+	(store_expr): Use string_cst_read_str instead of
+	builtin_strncpy_read_str.  Try to store by pieces the whole
+	exp_len first, and only if that fails, split it up into
+	store by pieces followed by clear_storage.  Formatting fix.
+
+	* config/i386/i386.md (*movqi_internal): Remove static from
+	buf variable.  Use output_asm_insn (buf, operands); return "";
+	instead of return buf;.
+	* config/i386/sse.md (<sse>_andnot<mode>3<mask_name>,
+	*<code><mode>3<mask_name>, *andnot<mode>3, *andnottf3, *<code><mode>3,
+	*<code>tf3, <mask_codefor><code><mode>3<mask_name>): Likewise.
+
+2019-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/linux.h (ASAN_CC1_SPEC): Define.
+	(CC1_SPEC): Use GNU_USER_TARGET_CC1_SPEC and ASAN_CC1_SPEC.
+	* config/sparc/linux64.h (ASAN_CC1_SPEC): Likewise.
+	(CC1_SPEC): Likewise.
+	* config/sparc/sparc.c (sparc_asan_shadow_offset): Adjust for 64-bit.
+
+2019-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* asan.c (asan_emit_stack_protection): Use full-sized mask to align
+	the base address on 64-bit strict-alignment platforms.
+
+2019-02-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.h (VALID_MMX_REG_MODE): Correct the misplaced ')'.
+
+2019-02-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/darwin.h (TARGET_FPMATH_DEFAULT_P): New define.
+
+2019-02-15  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	PR rtl-optimization/88308
+	* shrink-wrap.c (move_insn_for_shrink_wrap): Fix LABEL_NUSES counts
+	on copied instruction.
+
+2019-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* final.c (insn_current_reference_address): Replace test on JUMP_P
+	with test on jump_to_label_p.
+	* config/visium/visium-passes.def: New file.
+	* config/visium/t-visium (PASSES_EXTRA): Define.
+	* config/visium/visium-protos.h (make_pass_visium_reorg): Declare.
+	* config/visium/visium.h (TRAMPOLINE_SIZE): Adjust.
+	(TRAMPOLINE_ALIGNMENT): Define.
+	* config/visium/visium.c (visium_option_override): Do not register
+	the machine-specific reorg pass here.
+	(visium_trampoline_init): Align the BRA insn on a 64-bit boundary
+	for the GR6.
+	(output_branch): Adjust threshold for long branch instruction.
+	* config/visium/visium.md (cpu): Move around.
+	(length): Adjust for the GR6.
+
+2019-02-15  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89278
+	* tree-loop-distribution.c: Include tree-eh.h.
+	(generate_memset_builtin, generate_memcpy_builtin): Call
+	rewrite_to_non_trapping_overflow on builtin->size before passing it
+	to force_gimple_operand_gsi.
+
+2019-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/89342
+	* optc-save-gen.awk: Handle optimize_fast like optimize_size or
+	optimize_debug.
+	* opth-gen.awk: Likewise.
+
+2019-02-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (TARGET_SUBTARGET64_ISA_DEFAULT):
+	Enable MMX, SSE and SSE2 by default.
+	* config/i386/i386.c (ix86_option_override_internal): Do not
+	explicitly set MMX, SSE and SSE2 flags for TARGET_64BIT here.
+
+2019-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/89354
+	* combine.c (make_extraction): Punt if extraction_mode is narrower
+	than len bits.
+
+2019-02-14  Maya Rashish  <coypu@sdf.org>
+
+	* config.gcc (*-*-netbsd*): Add netbsd-d.o.
+	* config/netbsd-d.c: New file.
+	* config/t-netbsd: Add netbsd-d.o
+
+2018-02-14  Steve Ellcey  <sellcey@marvell.com>
+
+	* config/aarch64/aarch64.c (aarch64_attribute_table): Change
+	affects_type_identity to true for aarch64_vector_pcs.
+	(aarch64_comp_type_attributes): New function.
+	(TARGET_COMP_TYPE_ATTRIBUTES): New macro.
+
+2019-02-14  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/88850
+	* config/arm/iterators.md (ANY64): Add V4HF.
+
+2019-02-14  Martin Liska  <mliska@suse.cz>
+
+	PR rtl-optimization/89242
+	* dce.c (delete_unmarked_insns): Call free_dominance_info we
+	process a transformation.
+
+2019-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89314
+	* fold-const.c (fold_binary_loc): Cast strlen argument to
+	const char * before dereferencing it.  Formatting fixes.
+
+	PR middle-end/89284
+	* passes.def: Swap pass_ubsan and pass_early_warn_uninitialized.
+
+2019-02-13  Ian Lance Taylor  <iant@golang.org>
+
+	* optc-save-gen.awk: Set var_opt_hash for initial optimizations
+	and set current index for other optimizations.
+
+2019-02-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (vec_set<VI4F_256_512:mode>_0): Use
+	nonimmediate_operand as operand 2 predicate.
+	(vec_set<VF2_512_256:mode>_0): Ditto.
+	(vec_set<VI8_AVX_AVX512F:mode>_0): Ditto.
+	(*vec_concatv2si): Remove alternative 2.
+	(*vec_concatv4si_0): Use vm constraint for alternative 0.
+	(*vec_concatv4si_0): Remove preferred_for_speed attribute.
+	(vec_concatv2di): Split alternatives 4,5,6 to ...
+	(*vec_concatv2di_0) ... new pattern.
+
+2019-02-13  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/89190
+	* config/arm/arm.c (ldm_stm_operation_p) Set
+	addr_reg_in_reglist correctly for first register.
+	(load_multiple_sequence): Remove dead base check.
+	(gen_ldm_seq): Correctly set write_back for Thumb-1.
+
+2019-02-13  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/88847
+	* config/aarch64/aarch64-sve.md (*pred_mov<mode>, pred_mov<mode>):
+	Expose as @aarch64_pred_mov.
+	* config/aarch64/aarch64.c (aarch64_classify_address):
+	Use expand_insn which legitimizes operands.
+
+2019-02-13  Martin Liska  <mliska@suse.cz>
+
+	* builtins.h (expand_builtin_with_bounds): Remove declaration.
+	* calls.c (struct arg_data): Remove special_slot, pointer_arg
+	and pointer_offset fields.
+	(initialize_argument_information): Remove usage of dead
+	fields.
+	* cgraph.h (struct cgraph_thunk_info): Remove
+	add_pointer_bounds_args.
+	* cgraphunit.c (cgraph_node::expand_thunk): Remove usage of dead
+	fields.
+	(cgraph_node::assemble_thunks_and_aliases): Remove usage of dead
+	fields.
+	* config/i386/i386.c (ix86_function_arg_advance): Remove
+	unrelated comment.
+	(struct builtin_isa): Remove leaf_p and nothrow_p fields.
+	(def_builtin):  Remove usage of dead
+	fields.
+	(ix86_add_new_builtins): Likewise.
+	* ipa-fnsummary.c (compute_fn_summary): Likewise.
+	* ipa-icf.c (sem_function::equals_wpa): Likewise.
+	(sem_function::init): Likewise.
+	(sem_variable::merge): Likewise.
+	* ipa-visibility.c (function_and_variable_visibility): Likewise.
+	* ipa.c (symbol_table::remove_unreachable_nodes): Likewise.
+	* lto-cgraph.c (lto_output_node): Likewise.
+	(lto_output_varpool_node): Likewise.
+	(input_node): Likewise.
+	(input_varpool_node): Likewise.
+	* lto-streamer-out.c (lto_output): Likewise.
+	* tree-inline.c (expand_call_inline): Remove usage of
+	assign_stmts.
+	* tree-inline.h (struct copy_body_data): Likewise.
+	* varpool.c (varpool_node::dump): Likewise.
+
+2019-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89303
+	* tree-ssa-structalias.c (set_uids_in_ptset): Or in vi->is_heap_var
+	into pt->vars_contains_escaped_heap instead of setting
+	pt->vars_contains_escaped_heap to it.
+
+	PR middle-end/89281
+	* optabs.c (prepare_cmp_insn): Use UINTVAL (size) instead of
+	INTVAL (size), compare it to GET_MODE_MASK instead of
+	1 << GET_MODE_BITSIZE.
+
+	PR target/89290
+	* config/i386/predicates.md (x86_64_immediate_operand): Allow
+	TLS UNSPECs offsetted by signed 32-bit CONST_INT even with
+	-mcmodel=large.
+
+2019-02-13  Martin Liska  <mliska@suse.cz>
+
+	PR lto/88858
+	* cfgrtl.c (remove_barriers_from_footer): New function.
+	(try_redirect_by_replacing_jump): Use it.
+	(cfg_layout_redirect_edge_and_branch): Likewise.
+
+2019-02-13  Xiong Hu Luo  <luoxhu@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.h (vec_sbox_be, vec_cipher_be,
+	vec_cipherlast_be, vec_ncipher_be, vec_ncipherlast_be): New #defines.
+	* config/rs6000/crypto.md (CR_vqdi): New define_mode_iterator.
+	(crypto_vsbox_<mode>, crypto_<CR_insn>_<mode>): New define_insns.
+	* config/rs6000/rs6000-builtin.def (VSBOX_BE): New BU_CRYPTO_1.
+	(VCIPHER_BE, VCIPHERLAST_BE, VNCIPHER_BE, VNCIPHERLAST_BE):
+	New BU_CRYPTO_2.
+	* config/rs6000/rs6000.c (builtin_function_type)
+	<CRYPTO_BUILTIN_VSBOX_BE, CRYPTO_BUILTIN_VCIPHER_BE,
+	CRYPTO_BUILTIN_VCIPHERLAST_BE, CRYPTO_BUILTIN_VNCIPHER_BE,
+	CRYPTO_BUILTIN_VNCIPHERLAST_BE>: New switch options.
+	* doc/extend.texi (vec_sbox_be, vec_cipher_be, vec_cipherlast_be,
+	vec_ncipher_be, vec_ncipherlast_be): New builtin functions.
+
+2019-02-12  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Remove duplicate
+	-maltivec. Delete -maltivec=be and -maltivec=le documentation.
+
+2019-02-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	* config/i386/i386.md (*movoi_internal_avx): Revert revision
+	268678 and revision 268657.
+	(*movti_internal): Likewise.
+
+2019-02-12  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/89233
+	* config/s390/s390.c (s390_decompose_address): Update comment.
+	(s390_check_qrst_address): Reject invalid address forms after
+	LRA.
+
+2019-02-12  Martin Liska  <mliska@suse.cz>
+
+	PR lto/88876
+	* ipa-pure-const.c (propagate_pure_const): Revert hunk as
+	we need default values of funct_state for a function that
+	is not optimized.
+
+2019-02-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* asan.c (asan_expand_mark_ifn): Take into account the alignment of
+	the object to pick the size of stores on strict-alignment platforms.
+
+	* config/sparc/sparc.md (*movsi_insn): Minor tweak.
+	(*movdi_insn_sp32): Likewise.
+	(*movdi_insn_sp64): Likewise.
+
+2019-02-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/88677
+	* cgraphunit.c (analyze_functions): Clear READONLY flag for external
+	types that needs constructiong.
+	* tree.h (may_be_aliased): Do not check TYPE_NEEDS_CONSTRUCTING.
+
+2019-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89253
+	* tree-ssa-loop-split.c (tree_ssa_split_loops): Check we can
+	duplicate the loop.
+
+2019-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR lto/88147
+	* input.c (selftest::test_line_offset_overflow): New selftest.
+	(selftest::input_c_tests): Call it.
+
 2019-02-11  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/88771

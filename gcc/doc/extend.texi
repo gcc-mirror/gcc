@@ -20136,18 +20136,31 @@ If the cryptographic instructions are enabled (@option{-mcrypto} or
 @smallexample
 vector unsigned long long __builtin_crypto_vsbox (vector unsigned long long);
 
+vector unsigned char vec_sbox_be (vector unsigned char);
+
 vector unsigned long long __builtin_crypto_vcipher (vector unsigned long long,
                                                     vector unsigned long long);
+
+vector unsigned char vec_cipher_be (vector unsigned char, vector unsigned char);
 
 vector unsigned long long __builtin_crypto_vcipherlast
                                      (vector unsigned long long,
                                       vector unsigned long long);
 
+vector unsigned char vec_cipherlast_be (vector unsigned char,
+                                        vector unsigned char);
+
 vector unsigned long long __builtin_crypto_vncipher (vector unsigned long long,
                                                      vector unsigned long long);
 
+vector unsigned char vec_ncipher_be (vector unsigned char,
+                                     vector unsigned char);
+
 vector unsigned long long __builtin_crypto_vncipherlast (vector unsigned long long,
                                                          vector unsigned long long);
+
+vector unsigned char vec_ncipherlast_be (vector unsigned char,
+                                         vector unsigned char);
 
 vector unsigned char __builtin_crypto_vpermxor (vector unsigned char,
                                                 vector unsigned char,

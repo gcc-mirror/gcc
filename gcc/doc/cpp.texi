@@ -3158,6 +3158,9 @@ directive}: @samp{#if}, @samp{#ifdef} or @samp{#ifndef}.
 * Defined::
 * Else::
 * Elif::
+* @code{__has_attribute}::
+* @code{__has_cpp_attribute}::
+* @code{__has_include}::
 @end menu
 
 @node Ifdef
@@ -3421,6 +3424,99 @@ condition succeeds after the original @samp{#if} and all previous
 
 @samp{#else} is allowed after any number of @samp{#elif} directives, but
 @samp{#elif} may not follow @samp{#else}.
+
+@node @code{__has_attribute}
+@subsection @code{__has_attribute}
+@cindex @code{__has_attribute}
+
+The special operator @code{__has_attribute (@var{operand})} may be used
+in @samp{#if} and @samp{#elif} expressions to test whether the attribute
+referenced by its @var{operand} is recognized by GCC.  Using the operator
+in other contexts is not valid.  In C code, @var{operand} must be
+a valid identifier.  In C++ code, @var{operand} may be optionally
+introduced by the @code{@var{attribute-scope}::} prefix.
+The @var{attribute-scope} prefix identifies the ``namespace'' within
+which the attribute is recognized.  The scope of GCC attributes is
+@samp{gnu} or @samp{__gnu__}.  The @code{__has_attribute} operator by
+itself, without any @var{operand} or parentheses, acts as a predefined
+macro so that support for it can be tested in portable code.  Thus,
+the recommended use of the operator is as follows:
+
+@smallexample
+#if defined __has_attribute
+#  if __has_attribute (nonnull)
+#    define ATTR_NONNULL __attribute__ ((nonnull))
+#  endif
+#endif
+@end smallexample
+
+The first @samp{#if} test succeeds only when the operator is supported
+by the version of GCC (or another compiler) being used.  Only when that
+test succeeds is it valid to use @code{__has_attribute} as a preprocessor
+operator.  As a result, combining the two tests into a single expression as
+shown below would only be valid with a compiler that supports the operator
+but not with others that don't.
+
+@smallexample
+#if defined __has_attribute && __has_attribute (nonnull)   /* not portable */
+@dots{}
+#endif
+@end smallexample
+
+@node @code{__has_cpp_attribute}
+@subsection @code{__has_cpp_attribute}
+@cindex @code{__has_cpp_attribute}
+
+The special operator @code{__has_cpp_attribute (@var{operand})} may be used
+in @samp{#if} and @samp{#elif} expressions in C++ code to test whether
+the attribute referenced by its @var{operand} is recognized by GCC.
+@code{__has_cpp_attribute (@var{operand})} is equivalent to
+@code{__has_attribute (@var{operand})} except that when @var{operand}
+designates a supported standard attribute it evaluates to an integer
+constant of the form @code{YYYYMM} indicating the year and month when
+the attribute was first introduced into the C++ standard.  For additional
+information including the dates of the introduction of current standard
+attributes, see @w{@uref{https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations/,
+SD-6: SG10 Feature Test Recommendations}}.
+
+@node @code{__has_include}
+@subsection @code{__has_include}
+@cindex @code{__has_include}
+
+The special operator @code{__has_include (@var{operand})} may be used in
+@samp{#if} and @samp{#elif} expressions to test whether the header referenced
+by its @var{operand} can be included using the @samp{#include} directive.  Using
+the operator in other contexts is not valid.  The @var{operand} takes
+the same form as the file in the @samp{#include} directive (@pxref{Include
+Syntax}) and evaluates to a nonzero value if the header can be included and
+to zero otherwise.  Note that that the ability to include a header doesn't
+imply that the header doesn't contain invalid constructs or @samp{#error}
+directives that would cause the preprocessor to fail.
+
+The @code{__has_include} operator by itself, without any @var{operand} or
+parentheses, acts as a predefined macro so that support for it can be tested
+in portable code.  Thus, the recommended use of the operator is as follows:
+
+@smallexample
+#if defined __has_include
+#  if __has_include (<stdatomic.h>)
+#    include <stdatomic.h>
+#  endif
+#endif
+@end smallexample
+
+The first @samp{#if} test succeeds only when the operator is supported
+by the version of GCC (or another compiler) being used.  Only when that
+test succeeds is it valid to use @code{__has_include} as a preprocessor
+operator.  As a result, combining the two tests into a single expression
+as shown below would only be valid with a compiler that supports the operator
+but not with others that don't.
+
+@smallexample
+#if defined __has_include && __has_include ("header.h")   /* not portable */
+@dots{}
+#endif
+@end smallexample
 
 @node Deleted Code
 @section Deleted Code

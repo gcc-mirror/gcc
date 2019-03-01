@@ -6753,6 +6753,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif /* _GLIBCXX_COMPATIBILITY_CXX0X */
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+  /// std::hash specialization for u8string.
+  template<>
+    struct hash<u8string>
+    : public __hash_base<size_t, u8string>
+    {
+      size_t
+      operator()(const u8string& __s) const noexcept
+      { return std::_Hash_impl::hash(__s.data(),
+                                     __s.length() * sizeof(char8_t)); }
+    };
+
+  template<>
+    struct __is_fast_hash<hash<u8string>> : std::false_type
+    { };
+#endif
+
   /// std::hash specialization for u16string.
   template<>
     struct hash<u16string>
@@ -6803,6 +6820,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline basic_string<wchar_t>
     operator""s(const wchar_t* __str, size_t __len)
     { return basic_string<wchar_t>{__str, __len}; }
+#endif
+
+#ifdef _GLIBCXX_USE_CHAR8_T
+    _GLIBCXX_DEFAULT_ABI_TAG
+    inline basic_string<char8_t>
+    operator""s(const char8_t* __str, size_t __len)
+    { return basic_string<char8_t>{__str, __len}; }
 #endif
 
     _GLIBCXX_DEFAULT_ABI_TAG

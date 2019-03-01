@@ -1,5 +1,7 @@
 2019-03-01  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r269077.
+
 	gcc/cp/
 	* parser.c (cp_lexer_set_source_position_from_token): Revert.
 

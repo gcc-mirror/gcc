@@ -118,7 +118,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Alloc>
 	using _Uses = typename
 	  enable_if<uses_allocator<_Sequence, _Alloc>::value>::type;
-#endif
+
+#if __cplusplus >= 201703L
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2566. Requirements on the first template parameter of container
+      // adaptors
+      static_assert(is_same<_Tp, typename _Sequence::value_type>::value,
+	  "value_type must be the same as the underlying container");
+#endif // C++17
+#endif // C++11
 
     public:
       typedef typename	_Sequence::value_type		value_type;
@@ -451,17 +459,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Alloc>
 	using _Uses = typename
 	  enable_if<uses_allocator<_Sequence, _Alloc>::value>::type;
-#endif
+
+#if __cplusplus >= 201703L
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2566. Requirements on the first template parameter of container
+      // adaptors
+      static_assert(is_same<_Tp, typename _Sequence::value_type>::value,
+	  "value_type must be the same as the underlying container");
+#endif // C++17
+#endif // C++11
 
     public:
       typedef typename	_Sequence::value_type		value_type;
-      typedef typename	_Sequence::reference		 reference;
-      typedef typename	_Sequence::const_reference	   const_reference;
-      typedef typename	_Sequence::size_type		 size_type;
-      typedef		_Sequence			    container_type;
+      typedef typename	_Sequence::reference		reference;
+      typedef typename	_Sequence::const_reference	const_reference;
+      typedef typename	_Sequence::size_type		size_type;
+      typedef		_Sequence			container_type;
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 2684. priority_queue lacking comparator typedef
-      typedef	       _Compare				    value_compare;
+      typedef	       _Compare				value_compare;
 
     protected:
       //  See queue::c for notes on these names.
@@ -504,14 +520,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	priority_queue(const _Compare& __x, const _Alloc& __a)
 	: c(__a), comp(__x) { }
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2537. Constructors [...] taking allocators should call make_heap
       template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
 	priority_queue(const _Compare& __x, const _Sequence& __c,
 		       const _Alloc& __a)
-	: c(__c, __a), comp(__x) { }
+	: c(__c, __a), comp(__x)
+	{ std::make_heap(c.begin(), c.end(), comp); }
 
       template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
 	priority_queue(const _Compare& __x, _Sequence&& __c, const _Alloc& __a)
-	: c(std::move(__c), __a), comp(__x) { }
+	: c(std::move(__c), __a), comp(__x)
+	{ std::make_heap(c.begin(), c.end(), comp); }
 
       template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
 	priority_queue(const priority_queue& __q, const _Alloc& __a)

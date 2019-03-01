@@ -265,6 +265,21 @@ Gogo::pkgpath_for_symbol(const std::string& pkgpath)
   return go_encode_id(pkgpath);
 }
 
+// Return a hash code for a string, given a starting hash.
+
+unsigned int
+Gogo::hash_string(const std::string& s, unsigned int h)
+{
+  const char* p = s.data();
+  size_t len = s.length();
+  for (; len > 0; --len)
+    {
+      h ^= *p++;
+      h*= 16777619;
+    }
+  return h;
+}
+
 // Get the package path to use for type reflection data.  This should
 // ideally be unique across the entire link.
 
@@ -4496,15 +4511,15 @@ Build_recover_thunks::can_recover_arg(Location location)
   static Named_object* builtin_return_address;
   if (builtin_return_address == NULL)
     builtin_return_address =
-      Gogo::declare_builtin_rf_address("__builtin_return_address");
+      Gogo::declare_builtin_rf_address("__builtin_return_address", true);
 
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
   static Named_object* can_recover;
   if (can_recover == NULL)
     {
       const Location bloc = Linemap::predeclared_location();
       Typed_identifier_list* param_types = new Typed_identifier_list();
-      Type* voidptr_type = Type::make_pointer_type(Type::make_void_type());
-      param_types->push_back(Typed_identifier("a", voidptr_type, bloc));
+      param_types->push_back(Typed_identifier("a", uintptr_type, bloc));
       Type* boolean_type = Type::lookup_bool_type();
       Typed_identifier_list* results = new Typed_identifier_list();
       results->push_back(Typed_identifier("", boolean_type, bloc));
@@ -4524,6 +4539,7 @@ Build_recover_thunks::can_recover_arg(Location location)
   args->push_back(zexpr);
 
   Expression* call = Expression::make_call(fn, args, false, location);
+  call = Expression::make_unsafe_cast(uintptr_type, call, location);
 
   args = new Expression_list();
   args->push_back(call);
@@ -4549,16 +4565,19 @@ Gogo::build_recover_thunks()
 }
 
 // Return a declaration for __builtin_return_address or
-// __builtin_frame_address.
+// __builtin_dwarf_cfa.
 
 Named_object*
-Gogo::declare_builtin_rf_address(const char* name)
+Gogo::declare_builtin_rf_address(const char* name, bool hasarg)
 {
   const Location bloc = Linemap::predeclared_location();
 
   Typed_identifier_list* param_types = new Typed_identifier_list();
-  Type* uint32_type = Type::lookup_integer_type("uint32");
-  param_types->push_back(Typed_identifier("l", uint32_type, bloc));
+  if (hasarg)
+    {
+      Type* uint32_type = Type::lookup_integer_type("uint32");
+      param_types->push_back(Typed_identifier("l", uint32_type, bloc));
+    }
 
   Typed_identifier_list* return_types = new Typed_identifier_list();
   Type* voidptr_type = Type::make_pointer_type(Type::make_void_type());

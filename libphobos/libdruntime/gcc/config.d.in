@@ -35,9 +35,6 @@ enum ThreadModel
 
 enum ThreadModel GNU_Thread_Model = ThreadModel.@DCFG_THREAD_MODEL@;
 
-// Whether the linker provides __start_minfo and __stop_minfo symbols
-enum Minfo_Bracketing = @DCFG_MINFO_BRACKETING@;
-
 // Whether target has support for builtin atomics.
 enum GNU_Have_Atomics = @DCFG_HAVE_ATOMIC_BUILTINS@;
 
@@ -46,3 +43,6 @@ enum GNU_Have_64Bit_Atomics = @DCFG_HAVE_64BIT_ATOMICS@;
 
 // Do we have libatomic available
 enum GNU_Have_LibAtomic = @DCFG_HAVE_LIBATOMIC@;
+
+// Do we have qsort_r function
+enum Have_Qsort_R = @DCFG_HAVE_QSORT_R@;

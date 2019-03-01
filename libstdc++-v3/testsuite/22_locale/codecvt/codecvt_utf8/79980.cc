@@ -28,7 +28,7 @@ using std::codecvt_utf8;
 void
 test01()
 {
-  std::string src = u8"1234\U00001111\U0001ffff";
+  std::string src = (const char*)u8"1234\U00001111\U0001ffff";
   wstring_convert<codecvt_utf8<char16_t>, char16_t> c("bad", u"BAD");
 
   // utf-8 to ucs2 conversion should fail on character outside BMP
@@ -51,7 +51,7 @@ test01()
 void
 test02()
 {
-  std::string src = u8"1234\U00001111\U0001ffff";
+  std::string src = (const char*)u8"1234\U00001111\U0001ffff";
   wstring_convert<codecvt_utf8<char16_t, 0x1000>, char16_t> c("bad", u"BAD");
 
   // utf-8 to ucs2 conversion should fail on character above Maxcode=0x1000
@@ -63,7 +63,7 @@ test02()
 void
 test03()
 {
-  std::string src = u8"1234\U00001111\U0001ffff";
+  std::string src = (const char*)u8"1234\U00001111\U0001ffff";
   wstring_convert<codecvt_utf8<char32_t, 0x10000>, char32_t> c("bad", U"BAD");
 
   // utf-8 to ucs4 conversion should fail on character above Maxcode=0x10000
@@ -75,7 +75,7 @@ test03()
 void
 test04()
 {
-  std::string src = u8"1234\U00001111\U0001ffff";
+  std::string src = (const char*)u8"1234\U00001111\U0001ffff";
   wstring_convert<codecvt_utf8<char32_t, 0x1000>, char32_t> c("bad", U"BAD");
 
   // utf-8 to ucs4 conversion should fail on character above Maxcode=0x1000

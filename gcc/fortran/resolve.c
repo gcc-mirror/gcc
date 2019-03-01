@@ -940,7 +940,11 @@ resolve_common_vars (gfc_common_head *common_block, bool named_common)
 	 have been ignored to continue parsing.
 	 We do the checks again here.  */
       if (!csym->attr.use_assoc)
-	gfc_add_in_common (&csym->attr, csym->name, &common_block->where);
+	{
+	  gfc_add_in_common (&csym->attr, csym->name, &common_block->where);
+	  gfc_notify_std (GFC_STD_F2018_OBS, "COMMON block at %L",
+			  &common_block->where);
+	}
 
       if (csym->value || csym->attr.data)
 	{
@@ -997,10 +1001,6 @@ resolve_common_blocks (gfc_symtree *common_root)
     resolve_common_blocks (common_root->right);
 
   resolve_common_vars (common_root->n.common, true);
-
-  if (!gfc_notify_std (GFC_STD_F2018_OBS, "COMMON block at %L",
-		       &common_root->n.common->where))
-    return;
 
   /* The common name is a global name - in Fortran 2003 also if it has a
      C binding name, since Fortran 2008 only the C binding name is a global
@@ -3880,7 +3880,7 @@ resolve_operator (gfc_expr *e)
   gfc_expr *op1, *op2;
   char msg[200];
   bool dual_locus_error;
-  bool t;
+  bool t = true;
 
   /* Resolve all subnodes-- give them types.  */
 
@@ -4002,7 +4002,7 @@ resolve_operator (gfc_expr *e)
 	  if (op2->ts.type != e->ts.type || op2->ts.kind != e->ts.kind)
 	    gfc_convert_type (op2, &e->ts, 1);
 	  e = logical_to_bitwise (e);
-	  break;
+	  goto simplify_op;
 	}
 
       sprintf (msg, _("Operands of logical operator %%<%s%%> at %%L are %s/%s"),
@@ -4018,7 +4018,7 @@ resolve_operator (gfc_expr *e)
 	  e->ts.type = BT_INTEGER;
 	  e->ts.kind = op1->ts.kind;
 	  e = logical_to_bitwise (e);
-	  break;
+	  goto simplify_op;
 	}
 
       if (op1->ts.type == BT_LOGICAL)
@@ -4143,8 +4143,6 @@ resolve_operator (gfc_expr *e)
 
   /* Deal with arrayness of an operand through an operator.  */
 
-  t = true;
-
   switch (e->value.op.op)
     {
     case INTRINSIC_PLUS:
@@ -4233,6 +4231,8 @@ resolve_operator (gfc_expr *e)
     default:
       break;
     }
+
+simplify_op:
 
   /* Attempt to simplify the expression.  */
   if (t)

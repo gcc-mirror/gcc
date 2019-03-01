@@ -744,6 +744,11 @@ finish_static_data_member_decl (tree decl,
 				tree asmspec_tree,
 				int flags)
 {
+  if (DECL_TEMPLATE_INSTANTIATED (decl))
+    /* We already needed to instantiate this, so the processing in this
+       function is unnecessary/wrong.  */
+    return;
+
   DECL_CONTEXT (decl) = current_class_type;
 
   /* We cannot call pushdecl here, because that would fill in the
@@ -772,7 +777,12 @@ finish_static_data_member_decl (tree decl,
 	  break;
 	}
 
-  DECL_IN_AGGR_P (decl) = 1;
+  if (DECL_INLINE_VAR_P (decl) && !DECL_TEMPLATE_INSTANTIATION (decl))
+    /* An inline variable is immediately defined, so don't set DECL_IN_AGGR_P.
+       Except that if decl is a template instantiation, it isn't defined until
+       instantiate_decl.  */;
+  else
+    DECL_IN_AGGR_P (decl) = 1;
 
   if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
       && TYPE_DOMAIN (TREE_TYPE (decl)) == NULL_TREE)
@@ -4964,11 +4974,6 @@ c_parse_final_cleanups (void)
 	      /* Generate RTL for this function now that we know we
 		 need it.  */
 	      expand_or_defer_fn (decl);
-	      /* If we're compiling -fsyntax-only pretend that this
-		 function has been written out so that we don't try to
-		 expand it again.  */
-	      if (flag_syntax_only)
-		TREE_ASM_WRITTEN (decl) = 1;
 	      reconsider = true;
 	    }
 	}
@@ -4981,7 +4986,7 @@ c_parse_final_cleanups (void)
 	{
 	  if (var_finalized_p (decl) || DECL_REALLY_EXTERN (decl)
 	      /* Don't write it out if we haven't seen a definition.  */
-	      || (DECL_IN_AGGR_P (decl) && !DECL_INLINE_VAR_P (decl)))
+	      || DECL_IN_AGGR_P (decl))
 	    continue;
 	  import_export_decl (decl);
 	  /* If this static data member is needed, provide it to the

@@ -49,13 +49,16 @@ along with this program; see the file COPYING3.  If not see
 /* The type of line numbers.  */
 typedef unsigned int linenum_type;
 
+/* A type for doing arithmetic on line numbers.  */
+typedef long long linenum_arith_t;
+
 /* A function for for use by qsort for comparing line numbers.  */
 
 inline int compare (linenum_type lhs, linenum_type rhs)
 {
-  /* Avoid truncation issues by using long long for the comparison,
+  /* Avoid truncation issues by using linenum_arith_t for the comparison,
      and only consider the sign of the result.  */
-  long long diff = (long long)lhs - (long long)rhs;
+  linenum_arith_t diff = (linenum_arith_t)lhs - (linenum_arith_t)rhs;
   if (diff)
     return diff > 0 ? 1 : -1;
   return 0;

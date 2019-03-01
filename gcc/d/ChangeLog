@@ -1,3 +1,15 @@
+2019-02-14  Maya Rashish  <coypu@sdf.org>
+
+	* d-system.h: NetBSD is POSIX.
+
+2019-02-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR d/87864
+	* lang.opt (dstartfiles): New option.
+	* d-spec.cc (need_spec): New variable.
+	(lang_specific_driver) <OPT_dstartfiles>: Enable need_spec.
+	(lang_specific_pre_link): Also load libgphobos.spec if need_spec.
+
 2019-01-26  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/89042
