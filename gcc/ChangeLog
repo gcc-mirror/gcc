@@ -1,3 +1,10 @@
+2019-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89285
+	* builtins.c (fold_builtin_arith_overflow): If first two args are
+	INTEGER_CSTs, set intres and ovfres to constants rather than calls
+	to ifn.
+
 2019-02-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/87412

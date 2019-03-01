@@ -1,3 +1,16 @@
+2019-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89285
+	* g++.dg/ubsan/vptr-4.C: Expect reinterpret_cast errors.
+	* g++.dg/cpp1y/constexpr-84192.C (f2): Adjust expected diagnostics.
+	* g++.dg/cpp1y/constexpr-70265-2.C (foo): Adjust expected line of
+	diagnostics.
+	* g++.dg/cpp1y/constexpr-89285.C: New test.
+	* g++.dg/cpp0x/constexpr-arith-overflow.C (add, sub, mul): Ifdef out
+	for C++11.
+	(TEST_ADD, TEST_SUB, TEST_MUL): Define to Assert (true) for C++11.
+	* g++.dg/cpp0x/constexpr-arith-overflow2.C: New test.
+
 2019-02-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/87412

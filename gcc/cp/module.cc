@@ -9543,6 +9543,8 @@ module_state::write_function_def (trees_out &out, tree decl)
     {
       out.tree_node (cexpr->decl);
       out.tree_node (cexpr->body);
+      out.chained_decls (cexpr->parms);
+      out.tree_node (cexpr->result);
     }
   else
     out.tree_node (NULL_TREE);
@@ -9564,7 +9566,11 @@ module_state::read_function_def (trees_in &in, tree decl)
 
   cexpr.decl = in.tree_node ();
   if (cexpr.decl)
-    cexpr.body = in.tree_node ();
+    {
+      cexpr.body = in.tree_node ();
+      cexpr.parms = in.chained_decls ();
+      cexpr.result = in.tree_node ();
+    }
 
   if (in.get_overrun ())
     return NULL_TREE;

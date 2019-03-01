@@ -7870,6 +7870,8 @@ extern void vtv_build_vtable_verify_fndecl      (void);
 struct GTY((for_user)) constexpr_fundef {
   tree decl;
   tree body;
+  tree parms;
+  tree result;
 };
 
 extern void fini_constexpr			(void);

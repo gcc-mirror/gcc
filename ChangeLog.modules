@@ -1,5 +1,9 @@
 2019-03-01  Nathan Sidwell  <nathan@acm.org>
 
+	Apply trunk r269078.
+	gcc/cp/
+	* module.cc (module_state::{read,write}_function_def): Adjust.
+
 	gcc/cp/
 	* cp-tree.h (struct constexpr_fundef): Moved from constexpr.c.
 	(register_constexpr_fundef): Adjust.
