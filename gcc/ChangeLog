@@ -1,3 +1,9 @@
+2019-03-01  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/89517
+	* config/aarch64/aarch64-option-extensions.def (fp, simd, crypto, fp16,
+	rdma, dotprod, sha2, sha3, sm4, fp16fml, sve): Collapse line.
+
 2019-03-01  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/89535
