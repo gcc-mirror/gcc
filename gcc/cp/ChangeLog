@@ -1,3 +1,15 @@
+2019-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Implement P1002R1, Try-catch blocks in constexpr functions
+	PR c++/89513
+	* parser.c (cp_parser_ctor_initializer_opt_and_function_body):
+	Diagnose constexpr ctor or function with function-try-block with
+	pedwarn for c++17 and earlier.  Formatting fix.
+	(cp_parser_try_block): Use pedwarn instead of error and only for
+	c++17 and earlier when try block appears in constexpr function.
+	* constexpr.c (build_constexpr_constructor_member_initializers):
+	Handle TRY_BLOCK here instead of erroring on it.
+
 2019-02-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/88183 - ICE with .* fold-expression.

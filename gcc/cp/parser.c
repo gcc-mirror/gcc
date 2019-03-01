@@ -22590,10 +22590,24 @@ cp_parser_ctor_initializer_opt_and_function_body (cp_parser *parser,
 						  bool in_function_try_block)
 {
   tree body, list;
-  const bool check_body_p =
-     DECL_CONSTRUCTOR_P (current_function_decl)
-     && DECL_DECLARED_CONSTEXPR_P (current_function_decl);
+  const bool check_body_p
+     = (DECL_CONSTRUCTOR_P (current_function_decl)
+	&& DECL_DECLARED_CONSTEXPR_P (current_function_decl));
   tree last = NULL;
+
+  if (in_function_try_block
+      && DECL_DECLARED_CONSTEXPR_P (current_function_decl)
+      && cxx_dialect < cxx2a)
+    {
+      if (DECL_CONSTRUCTOR_P (current_function_decl))
+	pedwarn (input_location, 0,
+		 "function-try-block body of %<constexpr%> constructor only "
+		 "available with -std=c++2a or -std=gnu++2a");
+      else
+	pedwarn (input_location, 0,
+		 "function-try-block body of %<constexpr%> function only "
+		 "available with -std=c++2a or -std=gnu++2a");
+    }
 
   /* Begin the function body.  */
   body = begin_function_body ();
@@ -25329,8 +25343,11 @@ cp_parser_try_block (cp_parser* parser)
 
   cp_parser_require_keyword (parser, RID_TRY, RT_TRY);
   if (parser->in_function_body
-      && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
-    error ("%<try%> in %<constexpr%> function");
+      && DECL_DECLARED_CONSTEXPR_P (current_function_decl)
+      && cxx_dialect < cxx2a)
+    pedwarn (input_location, 0,
+	     "%<try%> in %<constexpr%> function only "
+	     "available with -std=c++2a or -std=gnu++2a");
 
   try_block = begin_try_block ();
   cp_parser_compound_statement (parser, NULL, BCS_TRY_BLOCK, false);
