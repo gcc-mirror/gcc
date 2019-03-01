@@ -20,6 +20,64 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_VR_VALUES_H
 #define GCC_VR_VALUES_H
 
+class vr_values;
+
+// Class to simplify a statement taking into account range info.
+class simplify_with_ranges
+{
+  friend vr_values;
+
+public:
+  // Default constructor has no statement context.
+  simplify_with_ranges () : gsi (NULL), stmt (NULL) { }
+  simplify_with_ranges (gimple_stmt_iterator *_gsi)
+    : gsi (_gsi), stmt (gsi_stmt (*_gsi)) { }
+  bool simplify ();
+
+private:
+  virtual value_range *get_value_range (tree) = 0;
+
+  // Default to nothing, as simplifying switches involves cleaning up
+  // edges and switches by the caller.  Perhaps come up with a generic
+  // solution if needed.
+  virtual bool simplify_switch_using_ranges () { return false; }
+
+  bool op_with_boolean_value_range_p (tree);
+  bool simplify_truth_ops_using_ranges ();
+  bool simplify_div_or_mod_using_ranges ();
+  bool simplify_min_or_max_using_ranges ();
+  bool simplify_abs_using_ranges ();
+  bool simplify_bit_ops_using_ranges ();
+  bool simplify_cond_using_ranges_1 ();
+  bool simplify_conversion_using_ranges ();
+  bool simplify_float_conversion_using_ranges ();
+  bool simplify_internal_call_using_ranges ();
+  bool two_valued_val_range_p (tree, tree *, tree *);
+
+protected:
+  // These are exported for vr_values use.
+  tree vrp_evaluate_conditional_warnv_with_ops_using_ranges
+  (enum tree_code, tree op0, tree op1, bool *ovf);
+  bool check_for_binary_op_overflow
+    (enum tree_code, tree type, tree op0, tree op1, bool *ovf);
+
+  // Do not use m_ prefix to avoid heavy changes throughout existing code.
+  gimple_stmt_iterator *gsi;
+  gimple *stmt;
+};
+
+class simplify_with_vranges : public simplify_with_ranges
+{
+public:
+  simplify_with_vranges (gimple_stmt_iterator *gsi, vr_values *vr_values)
+    : simplify_with_ranges (gsi), m_vr_values (vr_values) { }
+  simplify_with_vranges (vr_values *vr_values) : m_vr_values (vr_values) { }
+  value_range *get_value_range (tree);
+  bool simplify_switch_using_ranges ();
+private:
+    vr_values *m_vr_values;
+};
+
 /* The VR_VALUES class holds the current view of range information
    for all the SSA_NAMEs in the IL.
 
@@ -36,6 +94,8 @@ along with GCC; see the file COPYING3.  If not see
    range information fast or perform on-demand queries.  */
 class vr_values
 {
+  friend class simplify_with_vranges;
+
  public:
   vr_values (void);
   ~vr_values (void);
@@ -74,14 +134,9 @@ class vr_values
  private:
   bool vrp_stmt_computes_nonzero (gimple *);
   bool op_with_boolean_value_range_p (tree);
-  bool check_for_binary_op_overflow (enum tree_code, tree, tree, tree, bool *);
   value_range *get_vr_for_comparison (int, value_range *);
   tree compare_name_with_value (enum tree_code, tree, tree, bool *, bool);
   tree compare_names (enum tree_code, tree, tree, bool *);
-  bool two_valued_val_range_p (tree, tree *, tree *);
-  tree vrp_evaluate_conditional_warnv_with_ops_using_ranges (enum tree_code,
-							     tree, tree,
-							     bool *);
   tree vrp_evaluate_conditional_warnv_with_ops (enum tree_code,
 						tree, tree, bool,
 						bool *, bool *);
@@ -97,16 +152,6 @@ class vr_values
 				      tree, tree, tree);
   void vrp_visit_assignment_or_call (gimple*, tree *, value_range *);
   void vrp_visit_switch_stmt (gswitch *, edge *);
-  bool simplify_truth_ops_using_ranges (gimple_stmt_iterator *, gimple *);
-  bool simplify_div_or_mod_using_ranges (gimple_stmt_iterator *, gimple *);
-  bool simplify_abs_using_ranges (gimple_stmt_iterator *, gimple *);
-  bool simplify_bit_ops_using_ranges (gimple_stmt_iterator *, gimple *);
-  bool simplify_min_or_max_using_ranges (gimple_stmt_iterator *, gimple *);
-  bool simplify_cond_using_ranges_1 (gcond *);
-  bool simplify_switch_using_ranges (gswitch *);
-  bool simplify_float_conversion_using_ranges (gimple_stmt_iterator *,
-					       gimple *);
-  bool simplify_internal_call_using_ranges (gimple_stmt_iterator *, gimple *);
 
   /* Allocation pools for value_range objects.  */
   object_allocator<value_range> vrp_value_range_pool;
@@ -136,6 +181,8 @@ class vr_values
     gswitch *stmt;
     tree vec;
   };
+
+  simplify_with_vranges simplify;
 
   vec<edge> to_remove_edges;
   vec<switch_update> to_update_switch_stmts;

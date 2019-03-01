@@ -49,6 +49,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "vr-values.h"
 #include "cfghooks.h"
 
+value_range *
+simplify_with_vranges::get_value_range (tree op)
+{
+  return m_vr_values->get_value_range (op);
+}
+
 /* Set value range VR to a non-negative range of type TYPE.  */
 
 static inline void
@@ -382,7 +388,7 @@ vr_values::op_with_constant_singleton_value_range (tree op)
 /* Return true if op is in a boolean [0, 1] value-range.  */
 
 bool
-vr_values::op_with_boolean_value_range_p (tree op)
+simplify_with_ranges::op_with_boolean_value_range_p (tree op)
 {
   value_range *vr;
 
@@ -948,8 +954,9 @@ vr_values::extract_range_from_comparison (value_range *vr, enum tree_code code,
    overflow.  */
 
 bool
-vr_values::check_for_binary_op_overflow (enum tree_code subcode, tree type,
-					 tree op0, tree op1, bool *ovf)
+simplify_with_ranges::check_for_binary_op_overflow (enum tree_code subcode,
+						    tree type, tree op0,
+						    tree op1, bool *ovf)
 {
   value_range_base vr0, vr1;
   if (TREE_CODE (op0) == SSA_NAME)
@@ -1342,8 +1349,8 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
 		  if (code == IMAGPART_EXPR)
 		    {
 		      bool ovf = false;
-		      if (check_for_binary_op_overflow (subcode, type,
-							op0, op1, &ovf))
+		      if (simplify.check_for_binary_op_overflow
+			    (subcode, type, op0, op1, &ovf))
 			vr->set (build_int_cst (type, ovf));
 		      else if (TYPE_PRECISION (type) == 1
 			       && !TYPE_UNSIGNED (type))
@@ -1895,7 +1902,8 @@ vr_values::dump_all_value_ranges (FILE *file)
 
 /* Initialize VRP lattice.  */
 
-vr_values::vr_values () : vrp_value_range_pool ("Tree VRP value ranges")
+vr_values::vr_values () : vrp_value_range_pool ("Tree VRP value ranges"),
+			  simplify (this)
 {
   values_propagated = false;
   num_vr_values = num_ssa_names;
@@ -2268,7 +2276,7 @@ vr_values::compare_names (enum tree_code comp, tree n1, tree n2,
    optimizers.  */
 
 tree
-vr_values::vrp_evaluate_conditional_warnv_with_ops_using_ranges
+simplify_with_ranges::vrp_evaluate_conditional_warnv_with_ops_using_ranges
     (enum tree_code code, tree op0, tree op1, bool * strict_overflow_p)
 {
   value_range *vr0, *vr1;
@@ -2371,7 +2379,7 @@ vr_values::vrp_evaluate_conditional_warnv_with_ops (enum tree_code code,
 	}
     }
 
-  if ((ret = vrp_evaluate_conditional_warnv_with_ops_using_ranges
+  if ((ret = simplify.vrp_evaluate_conditional_warnv_with_ops_using_ranges
 	       (code, op0, op1, strict_overflow_p)))
     return ret;
   if (only_ranges)
@@ -2988,8 +2996,7 @@ update_range:
 /* Simplify boolean operations if the source is known
    to be already a boolean.  */
 bool
-vr_values::simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi,
-					    gimple *stmt)
+simplify_with_ranges::simplify_truth_ops_using_ranges ()
 {
   enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
   tree lhs, op0, op1;
@@ -3065,8 +3072,7 @@ vr_values::simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi,
    modulo.  */
 
 bool
-vr_values::simplify_div_or_mod_using_ranges (gimple_stmt_iterator *gsi,
-					     gimple *stmt)
+simplify_with_ranges::simplify_div_or_mod_using_ranges ()
 {
   enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
   tree val = NULL;
@@ -3190,8 +3196,7 @@ vr_values::simplify_div_or_mod_using_ranges (gimple_stmt_iterator *gsi,
    disjoint.   Return true if we do simplify.  */
 
 bool
-vr_values::simplify_min_or_max_using_ranges (gimple_stmt_iterator *gsi,
-					     gimple *stmt)
+simplify_with_ranges::simplify_min_or_max_using_ranges ()
 {
   tree op0 = gimple_assign_rhs1 (stmt);
   tree op1 = gimple_assign_rhs2 (stmt);
@@ -3238,7 +3243,7 @@ vr_values::simplify_min_or_max_using_ranges (gimple_stmt_iterator *gsi,
    ABS_EXPR into a NEGATE_EXPR.  */
 
 bool
-vr_values::simplify_abs_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
+simplify_with_ranges::simplify_abs_using_ranges ()
 {
   tree op = gimple_assign_rhs1 (stmt);
   value_range *vr = get_value_range (op);
@@ -3294,8 +3299,7 @@ vr_values::simplify_abs_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
    operation is redundant.  */
 
 bool
-vr_values::simplify_bit_ops_using_ranges (gimple_stmt_iterator *gsi,
-					  gimple *stmt)
+simplify_with_ranges::simplify_bit_ops_using_ranges ()
 {
   tree op0 = gimple_assign_rhs1 (stmt);
   tree op1 = gimple_assign_rhs2 (stmt);
@@ -3489,8 +3493,9 @@ range_fits_type_p (value_range *vr, unsigned dest_precision, signop dest_sgn)
    the original conditional.  */
 
 bool
-vr_values::simplify_cond_using_ranges_1 (gcond *stmt)
+simplify_with_ranges::simplify_cond_using_ranges_1 ()
 {
+  gcond *stmt = as_a <gcond *> (simplify_with_ranges::stmt);
   tree op0 = gimple_cond_lhs (stmt);
   tree op1 = gimple_cond_rhs (stmt);
   enum tree_code cond_code = gimple_cond_code (stmt);
@@ -3631,8 +3636,9 @@ vr_values::simplify_cond_using_ranges_2 (gcond *stmt)
    argument.  */
 
 bool
-vr_values::simplify_switch_using_ranges (gswitch *stmt)
+simplify_with_vranges::simplify_switch_using_ranges ()
 {
+  gswitch *stmt = as_a <gswitch *> (simplify_with_ranges::stmt);
   tree op = gimple_switch_index (stmt);
   value_range *vr = NULL;
   bool take_default;
@@ -3640,7 +3646,7 @@ vr_values::simplify_switch_using_ranges (gswitch *stmt)
   edge_iterator ei;
   size_t i = 0, j = 0, n, n2;
   tree vec2;
-  switch_update su;
+  vr_values::switch_update su;
   size_t k = 1, l = 0;
 
   if (TREE_CODE (op) == SSA_NAME)
@@ -3799,7 +3805,7 @@ vr_values::simplify_switch_using_ranges (gswitch *stmt)
 	{
 	  fprintf (dump_file, "removing unreachable case label\n");
 	}
-      to_remove_edges.safe_push (e);
+      m_vr_values->to_remove_edges.safe_push (e);
       e->flags &= ~EDGE_EXECUTABLE;
       e->flags |= EDGE_IGNORE;
     }
@@ -3807,7 +3813,7 @@ vr_values::simplify_switch_using_ranges (gswitch *stmt)
   /* And queue an update for the stmt.  */
   su.stmt = stmt;
   su.vec = vec2;
-  to_update_switch_stmts.safe_push (su);
+  m_vr_values->to_update_switch_stmts.safe_push (su);
   return false;
 }
 
@@ -3852,8 +3858,8 @@ vr_values::cleanup_edges_and_switches (void)
 
 /* Simplify an integral conversion from an SSA name in STMT.  */
 
-static bool
-simplify_conversion_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
+bool
+simplify_with_ranges::simplify_conversion_using_ranges ()
 {
   tree innerop, middleop, finaltype;
   gimple *def_stmt;
@@ -3930,8 +3936,7 @@ simplify_conversion_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
 /* Simplify a conversion from integral SSA name to float in STMT.  */
 
 bool
-vr_values::simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi,
-						   gimple *stmt)
+simplify_with_ranges::simplify_float_conversion_using_ranges ()
 {
   tree rhs1 = gimple_assign_rhs1 (stmt);
   value_range *vr = get_value_range (rhs1);
@@ -3992,8 +3997,7 @@ vr_values::simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi,
 /* Simplify an internal fn call using ranges if possible.  */
 
 bool
-vr_values::simplify_internal_call_using_ranges (gimple_stmt_iterator *gsi,
-						gimple *stmt)
+simplify_with_ranges::simplify_internal_call_using_ranges ()
 {
   enum tree_code subcode;
   bool is_ubsan = false;
@@ -4095,7 +4099,7 @@ vr_values::simplify_internal_call_using_ranges (gimple_stmt_iterator *gsi,
    two-values when it is true.  Return false otherwise.  */
 
 bool
-vr_values::two_valued_val_range_p (tree var, tree *a, tree *b)
+simplify_with_ranges::two_valued_val_range_p (tree var, tree *a, tree *b)
 {
   value_range *vr = get_value_range (var);
   if (vr->varying_p ()
@@ -4130,9 +4134,8 @@ vr_values::two_valued_val_range_p (tree var, tree *a, tree *b)
 /* Simplify STMT using ranges if possible.  */
 
 bool
-vr_values::simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
+simplify_with_ranges::simplify ()
 {
-  gimple *stmt = gsi_stmt (*gsi);
   if (is_gimple_assign (stmt))
     {
       enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
@@ -4209,7 +4212,7 @@ vr_values::simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 	     if the RHS is zero or one, and the LHS are known to be boolean
 	     values.  */
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
-	    return simplify_truth_ops_using_ranges (gsi, stmt);
+	    return simplify_truth_ops_using_ranges ();
 	  break;
 
       /* Transform TRUNC_DIV_EXPR and TRUNC_MOD_EXPR into RSHIFT_EXPR
@@ -4223,14 +4226,14 @@ vr_values::simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 	  if ((TREE_CODE (rhs1) == SSA_NAME
 	       || TREE_CODE (rhs1) == INTEGER_CST)
 	      && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
-	    return simplify_div_or_mod_using_ranges (gsi, stmt);
+	    return simplify_div_or_mod_using_ranges ();
 	  break;
 
       /* Transform ABS (X) into X or -X as appropriate.  */
 	case ABS_EXPR:
 	  if (TREE_CODE (rhs1) == SSA_NAME
 	      && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
-	    return simplify_abs_using_ranges (gsi, stmt);
+	    return simplify_abs_using_ranges ();
 	  break;
 
 	case BIT_AND_EXPR:
@@ -4239,38 +4242,45 @@ vr_values::simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 	     if all the bits being cleared are already cleared or
 	     all the bits being set are already set.  */
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
-	    return simplify_bit_ops_using_ranges (gsi, stmt);
+	    return simplify_bit_ops_using_ranges ();
 	  break;
 
 	CASE_CONVERT:
 	  if (TREE_CODE (rhs1) == SSA_NAME
 	      && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
-	    return simplify_conversion_using_ranges (gsi, stmt);
+	    return simplify_conversion_using_ranges ();
 	  break;
 
 	case FLOAT_EXPR:
 	  if (TREE_CODE (rhs1) == SSA_NAME
 	      && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
-	    return simplify_float_conversion_using_ranges (gsi, stmt);
+	    return simplify_float_conversion_using_ranges ();
 	  break;
 
 	case MIN_EXPR:
 	case MAX_EXPR:
-	  return simplify_min_or_max_using_ranges (gsi, stmt);
+	  return simplify_min_or_max_using_ranges ();
 
 	default:
 	  break;
 	}
     }
   else if (gimple_code (stmt) == GIMPLE_COND)
-    return simplify_cond_using_ranges_1 (as_a <gcond *> (stmt));
+    return simplify_cond_using_ranges_1 ();
   else if (gimple_code (stmt) == GIMPLE_SWITCH)
-    return simplify_switch_using_ranges (as_a <gswitch *> (stmt));
+    return simplify_switch_using_ranges ();
   else if (is_gimple_call (stmt)
 	   && gimple_call_internal_p (stmt))
-    return simplify_internal_call_using_ranges (gsi, stmt);
+    return simplify_internal_call_using_ranges ();
 
   return false;
+}
+
+bool
+vr_values::simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
+{
+  simplify_with_vranges simpl (gsi, this);
+  return simpl.simplify ();
 }
 
 void
