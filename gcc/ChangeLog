@@ -1,3 +1,9 @@
+2019-03-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): If
+	rs6000_dejagnu_cpu_index is set, use that to override rs6000_cpu_index.
+	* config/rs6000/rs6000.opt (mdejagnu-cpu=): New option.
+
 2019-03-01  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/85899

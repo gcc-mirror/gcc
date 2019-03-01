@@ -385,6 +385,13 @@ mtune=
 Target RejectNegative Joined Var(rs6000_tune_index) Init(-1) Enum(rs6000_cpu_opt_value) Save
 -mtune=	Schedule code for given CPU.
 
+; Only for use in the testsuite.  This simply overrides -mcpu=.  With older
+; versions of Dejagnu the command line arguments you set in RUNTESTFLAGS
+; override those set in the testcases; with this option, the testcase will
+; always win.
+mdejagnu-cpu=
+Target Undocumented RejectNegative Joined Var(rs6000_dejagnu_cpu_index) Init(-1) Enum(rs6000_cpu_opt_value) Save
+
 mtraceback=
 Target RejectNegative Joined Enum(rs6000_traceback_type) Var(rs6000_traceback)
 -mtraceback=[full,part,no]	Select type of traceback table.
