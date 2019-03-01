@@ -170,6 +170,7 @@ namespace pmr
       __attribute__((__nonnull__))
       { _M_resource->deallocate(__p, __n * sizeof(_Tp), alignof(_Tp)); }
 
+#if __cplusplus <= 201703L
       template<typename _Tp1, typename... _Args>
 	__attribute__((__nonnull__))
 	typename __not_pair<_Tp1>::type
@@ -242,6 +243,16 @@ namespace pmr
 			  forward_as_tuple(std::forward<_Up>(__pr.first)),
 			  forward_as_tuple(std::forward<_Vp>(__pr.second)));
 	}
+#else
+      template<typename _Tp1, typename... _Args>
+	__attribute__((__nonnull__))
+	void
+	construct(_Tp1* __p, _Args&&... __args)
+	{
+	  std::uninitialized_construct_using_allocator(__p, *this,
+	      std::forward<_Args>(__args)...);
+	}
+#endif
 
       template<typename _Up>
 	__attribute__((__nonnull__))

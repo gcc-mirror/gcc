@@ -1,3 +1,16 @@
+2019-03-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/memory (uses_allocator_construction_args): New set of
+	overloaded functions.
+	(make_obj_using_allocator, uninitialized_construct_using_allocator):
+	New functions.
+	* include/std/memory_resource (polymorphic_allocator::construct)
+	[__cplusplus > 201703l]: Replace all overloads with a single function
+	using uses_allocator_construction_args.
+	* testsuite/20_util/polymorphic_allocator/construct_c++2a.cc: New
+	test.
+	* testsuite/20_util/uses_allocator/make_obj.cc: New test.
+
 2019-02-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/89466
