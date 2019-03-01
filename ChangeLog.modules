@@ -1,5 +1,7 @@
 2019-03-01  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r269078 (metadata update).
+
 	Apply trunk r269078.
 	gcc/cp/
 	* module.cc (module_state::{read,write}_function_def): Adjust.

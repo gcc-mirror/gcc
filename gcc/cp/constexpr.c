@@ -1140,7 +1140,6 @@ get_fundef_copy (constexpr_fundef *fundef)
 	 that this function is now in use.  */
       copy = build_tree_list (fundef->body, fundef->parms);
       TREE_TYPE (copy) = fundef->result;
-
     }
   else if (*slot == NULL_TREE)
     {
