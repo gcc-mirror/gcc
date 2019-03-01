@@ -115,4 +115,42 @@ class substitute_and_fold_engine
   bool replace_phi_args_in (gphi *);
 };
 
+// Class to record statement propagation changes.  Upon destruction of
+// this class, any possible cleanups to EH are performed.
+
+class propagate_cleanups
+{
+public:
+  propagate_cleanups () { m_todo_flags = NULL; }
+  propagate_cleanups (unsigned int *flags) : m_todo_flags (flags) { }
+  ~propagate_cleanups ();
+  void record_change (gimple *old_stmt, gimple *new_stmt,
+		      bool recompute_invariants = true);
+  void record_eh_change (basic_block);
+
+  // Protected fields the dervied constructors may want access to.
+protected:
+  // Basic blocks needing EH fixups.
+  auto_bitmap m_bbs_fixups;
+private:
+  // Statements that became `noreturn' and need fixups.
+  auto_vec<gimple *> m_stmts_fixups;
+  // Set if any cleanups were performed.
+  bool m_changed;
+  // If non-NULL and cleanups were performed, TODO_cleanup_cfg bit toggled.
+  unsigned int *m_todo_flags;
+};
+
+/* Note: Use the above class intead of these functions.  The only
+   reason these are still here are to avoid ripping apart
+   tree-ssa-forwprop.c to use the class.  Once forwprop is converted,
+   these should be removed.  */
+extern void propagate_mark_stmt_for_cleanup
+	     (gimple *old_stmt, gimple *new_stmt,
+	      bitmap bbs_needing_eh_cleanup,
+	      vec<gimple *> *stmts_that_became_noreturn,
+	      bool recompute_invariants = true);
+bool propagate_cleanup (bitmap bbs_needing_eh_cleanup,
+			vec<gimple *> *stmts_that_became_noreturn);
+
 #endif /* _TREE_SSA_PROPAGATE_H  */

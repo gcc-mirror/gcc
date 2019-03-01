@@ -89,11 +89,6 @@ class edge_info
 /* Track whether or not we have changed the control flow graph.  */
 static bool cfg_altered;
 
-/* Bitmap of blocks that have had EH statements cleaned.  We should
-   remove their dead edges eventually.  */
-static bitmap need_eh_cleanup;
-static vec<gimple *> need_noreturn_fixup;
-
 /* Statistics for dominator optimizations.  */
 struct opt_stats_d
 {
@@ -567,6 +562,45 @@ record_edge_info (basic_block bb)
     }
 }
 
+class domfixups : public propagate_cleanups
+{
+public:
+  domfixups (function *fun) : m_fun (fun) { }
+  ~domfixups ();
+private:
+  function *m_fun;
+};
+
+// Mark EH forwarded blocks for cleanup after pass is done.
+
+domfixups::~domfixups ()
+{
+  if (!bitmap_empty_p (m_bbs_fixups))
+    {
+      unsigned i;
+      bitmap_iterator bi;
+
+      /* Jump threading may have created forwarder blocks from blocks
+	 needing EH cleanup; the new successor of these blocks, which
+	 has inherited from the original block, needs the cleanup.
+	 Don't clear bits in the bitmap, as that can break the bitmap
+	 iterator.  */
+      EXECUTE_IF_SET_IN_BITMAP (m_bbs_fixups, 0, i, bi)
+	{
+	  basic_block bb = BASIC_BLOCK_FOR_FN (m_fun, i);
+	  if (bb == NULL)
+	    continue;
+	  while (single_succ_p (bb)
+		 && (single_succ_edge (bb)->flags
+		     & (EDGE_EH|EDGE_DFS_BACK)) == 0)
+	    bb = single_succ (bb);
+	  if (bb == EXIT_BLOCK_PTR_FOR_FN (m_fun))
+	    continue;
+	  if ((unsigned) bb->index != i)
+	    record_eh_change (bb);
+	}
+    }
+}
 
 class dom_opt_dom_walker : public dom_walker
 {
@@ -574,11 +608,13 @@ public:
   dom_opt_dom_walker (cdi_direction direction,
 		      class const_and_copies *const_and_copies,
 		      class avail_exprs_stack *avail_exprs_stack,
-		      gcond *dummy_cond)
+		      gcond *dummy_cond,
+		      function *fun)
     : dom_walker (direction, REACHABLE_BLOCKS),
       m_const_and_copies (const_and_copies),
       m_avail_exprs_stack (avail_exprs_stack),
       evrp_range_analyzer (true),
+      m_fixups (fun),
       m_dummy_cond (dummy_cond) { }
 
   virtual edge before_dom_children (basic_block);
@@ -592,6 +628,8 @@ private:
 
   /* VRP data.  */
   class evrp_range_analyzer evrp_range_analyzer;
+
+  domfixups m_fixups;
 
   /* Dummy condition to avoid creating lots of throw away statements.  */
   gcond *m_dummy_cond;
@@ -661,8 +699,6 @@ pass_dominator::execute (function *fun)
   class avail_exprs_stack *avail_exprs_stack
     = new class avail_exprs_stack (avail_exprs);
   class const_and_copies *const_and_copies = new class const_and_copies ();
-  need_eh_cleanup = BITMAP_ALLOC (NULL);
-  need_noreturn_fixup.create (0);
 
   calculate_dominance_info (CDI_DOMINATORS);
   cfg_altered = false;
@@ -702,7 +738,7 @@ pass_dominator::execute (function *fun)
 
   /* Recursively walk the dominator tree optimizing statements.  */
   dom_opt_dom_walker walker (CDI_DOMINATORS, const_and_copies,
-			     avail_exprs_stack, dummy_cond);
+			     avail_exprs_stack, dummy_cond, fun);
   walker.walk (fun->cfg->x_entry_block_ptr);
 
   /* Look for blocks where we cleared EDGE_EXECUTABLE on an outgoing
@@ -760,39 +796,6 @@ pass_dominator::execute (function *fun)
   if (cfg_altered)
     free_dominance_info (CDI_DOMINATORS);
 
-  /* Removal of statements may make some EH edges dead.  Purge
-     such edges from the CFG as needed.  */
-  if (!bitmap_empty_p (need_eh_cleanup))
-    {
-      unsigned i;
-      bitmap_iterator bi;
-
-      /* Jump threading may have created forwarder blocks from blocks
-	 needing EH cleanup; the new successor of these blocks, which
-	 has inherited from the original block, needs the cleanup.
-	 Don't clear bits in the bitmap, as that can break the bitmap
-	 iterator.  */
-      EXECUTE_IF_SET_IN_BITMAP (need_eh_cleanup, 0, i, bi)
-	{
-	  basic_block bb = BASIC_BLOCK_FOR_FN (fun, i);
-	  if (bb == NULL)
-	    continue;
-	  while (single_succ_p (bb)
-		 && (single_succ_edge (bb)->flags
-		     & (EDGE_EH|EDGE_DFS_BACK)) == 0)
-	    bb = single_succ (bb);
-	  if (bb == EXIT_BLOCK_PTR_FOR_FN (fun))
-	    continue;
-	  if ((unsigned) bb->index != i)
-	    bitmap_set_bit (need_eh_cleanup, bb->index);
-	}
-
-      gimple_purge_all_dead_eh_edges (need_eh_cleanup);
-      bitmap_clear (need_eh_cleanup);
-    }
-
-  propagate_cleanup (NULL, need_noreturn_fixup);
-
   statistics_counter_event (fun, "Redundant expressions eliminated",
 			    opt_stats.num_re);
   statistics_counter_event (fun, "Constants propagated",
@@ -811,8 +814,6 @@ pass_dominator::execute (function *fun)
   avail_exprs = NULL;
 
   /* Free asserted bitmaps and stacks.  */
-  BITMAP_FREE (need_eh_cleanup);
-  need_noreturn_fixup.release ();
   delete avail_exprs_stack;
   delete const_and_copies;
 
@@ -1923,11 +1924,9 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator si)
   gimple *stmt, *old_stmt;
   bool may_optimize_p;
   bool modified_p = false;
-  bool was_noreturn;
   edge retval = NULL;
 
   old_stmt = stmt = gsi_stmt (si);
-  was_noreturn = is_gimple_call (stmt) && gimple_call_noreturn_p (stmt);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -2087,7 +2086,7 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator si)
 	      unlink_stmt_vdef (stmt);
 	      if (gsi_remove (&si, true))
 		{
-		  bitmap_set_bit (need_eh_cleanup, bb->index);
+		  m_fixups.record_eh_change (bb);
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file, "  Flagged to clear EH edges.\n");
 		}
@@ -2145,21 +2144,7 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator si)
 
       update_stmt_if_modified (stmt);
 
-      /* ?? We could probably replace these with
-	 propagate_mark_stmt_for_cleanup, but I'm not sure
-	 about the recompute_tree_invariant_for_addr_expr() call.  */
-      /* If we simplified a statement in such a way as to be shown that it
-	 cannot trap, update the eh information and the cfg to match.  */
-      if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))
-	{
-	  bitmap_set_bit (need_eh_cleanup, bb->index);
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "  Flagged to clear EH edges.\n");
-	}
-
-      if (!was_noreturn
-	  && is_gimple_call (stmt) && gimple_call_noreturn_p (stmt))
-	need_noreturn_fixup.safe_push (stmt);
+      m_fixups.record_change (old_stmt, stmt, /*recompute_invariants=*/false);
     }
   return retval;
 }

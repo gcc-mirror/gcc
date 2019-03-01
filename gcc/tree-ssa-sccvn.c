@@ -4659,7 +4659,7 @@ vn_nary_may_trap (vn_nary_op_t nary)
 class eliminate_dom_walker : public dom_walker
 {
 public:
-  eliminate_dom_walker (cdi_direction, bitmap);
+  eliminate_dom_walker (cdi_direction, bitmap, unsigned *flags);
   ~eliminate_dom_walker ();
 
   virtual edge before_dom_children (basic_block);
@@ -4678,35 +4678,34 @@ public:
   unsigned int eliminations;
   unsigned int insertions;
 
+  /* Post propagation cleanups.  */
+  propagate_cleanups fixups;
+
   /* SSA names that had their defs inserted by PRE if do_pre.  */
   bitmap inserted_exprs;
-
-  /* Blocks with statements that have had their EH properties changed.  */
-  bitmap need_eh_cleanup;
 
   /* Blocks with statements that have had their AB properties changed.  */
   bitmap need_ab_cleanup;
 
   /* Local state for the eliminate domwalk.  */
   auto_vec<gimple *> to_remove;
-  auto_vec<gimple *> to_fixup;
   auto_vec<tree> avail;
   auto_vec<tree> avail_stack;
 };
 
 eliminate_dom_walker::eliminate_dom_walker (cdi_direction direction,
-					    bitmap inserted_exprs_)
+					    bitmap inserted_exprs_,
+					    unsigned *flags)
   : dom_walker (direction), do_pre (inserted_exprs_ != NULL),
     el_todo (0), eliminations (0), insertions (0),
+    fixups (flags),
     inserted_exprs (inserted_exprs_)
 {
-  need_eh_cleanup = BITMAP_ALLOC (NULL);
   need_ab_cleanup = BITMAP_ALLOC (NULL);
 }
 
 eliminate_dom_walker::~eliminate_dom_walker ()
 {
-  BITMAP_FREE (need_eh_cleanup);
   BITMAP_FREE (need_ab_cleanup);
 }
 
@@ -5029,8 +5028,7 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	     its EH information.  */
 	  if (maybe_clean_or_replace_eh_stmt (orig_stmt, stmt))
 	    {
-	      bitmap_set_bit (need_eh_cleanup,
-			      gimple_bb (stmt)->index);
+	      fixups.record_eh_change (gimple_bb (stmt));
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "  Removed EH side-effects.\n");
 	    }
@@ -5266,8 +5264,7 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 
   if (modified)
     {
-      propagate_mark_stmt_for_cleanup (old_stmt, stmt,
-				       need_eh_cleanup, to_fixup);
+      fixups.record_change (old_stmt, stmt);
       /* When changing a condition or switch into one we know what
 	 edge will be executed, schedule a cfg cleanup.  */
       if ((gimple_code (stmt) == GIMPLE_COND
@@ -5473,7 +5470,7 @@ eliminate_dom_walker::eliminate_cleanup (bool region_p)
 		    stmt = gsi_stmt (gsi);
 		    update_stmt (stmt);
 		    if (maybe_clean_or_replace_eh_stmt (stmt, stmt))
-		      bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
+		      fixups.record_eh_change (gimple_bb (stmt));
 		    continue;
 		  }
 		else
@@ -5499,7 +5496,7 @@ eliminate_dom_walker::eliminate_cleanup (bool region_p)
 	  basic_block bb = gimple_bb (stmt);
 	  unlink_stmt_vdef (stmt);
 	  if (gsi_remove (&gsi, true))
-	    bitmap_set_bit (need_eh_cleanup, bb->index);
+	    fixups.record_eh_change (bb);
 	  if (is_gimple_call (stmt) && stmt_can_make_abnormal_goto (stmt))
 	    bitmap_set_bit (need_ab_cleanup, bb->index);
 	  if (do_release_defs)
@@ -5509,9 +5506,6 @@ eliminate_dom_walker::eliminate_cleanup (bool region_p)
       /* Removing a stmt may expose a forwarder block.  */
       el_todo |= TODO_cleanup_cfg;
     }
-
-  if (propagate_cleanup (need_eh_cleanup, to_fixup))
-    el_todo |= TODO_cleanup_cfg;
 
   if (!bitmap_empty_p (need_ab_cleanup))
     {
@@ -5527,10 +5521,13 @@ eliminate_dom_walker::eliminate_cleanup (bool region_p)
 unsigned
 eliminate_with_rpo_vn (bitmap inserted_exprs)
 {
-  eliminate_dom_walker walker (CDI_DOMINATORS, inserted_exprs);
-
-  walker.walk (cfun->cfg->x_entry_block_ptr);
-  return walker.eliminate_cleanup ();
+  unsigned flags = 0;
+  {
+    eliminate_dom_walker walker (CDI_DOMINATORS, inserted_exprs, &flags);
+    walker.walk (cfun->cfg->x_entry_block_ptr);
+    flags |= walker.eliminate_cleanup ();
+  }
+  return flags;
 }
 
 static unsigned
@@ -5621,7 +5618,7 @@ class rpo_elim : public eliminate_dom_walker
 {
 public:
   rpo_elim(basic_block entry_)
-    : eliminate_dom_walker (CDI_DOMINATORS, NULL), entry (entry_) {}
+    : eliminate_dom_walker (CDI_DOMINATORS, NULL, NULL), entry (entry_) {}
   ~rpo_elim();
 
   virtual tree eliminate_avail (basic_block, tree op);

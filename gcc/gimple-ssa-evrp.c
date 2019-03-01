@@ -73,11 +73,9 @@ public:
       evrp_range_analyzer (true),
       evrp_folder (evrp_range_analyzer.get_vr_values ())
     {
-      need_eh_cleanup = BITMAP_ALLOC (NULL);
     }
   ~evrp_dom_walker ()
     {
-      BITMAP_FREE (need_eh_cleanup);
     }
   virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
@@ -85,9 +83,8 @@ public:
 
  private:
   DISABLE_COPY_AND_ASSIGN (evrp_dom_walker);
-  bitmap need_eh_cleanup;
-  auto_vec<gimple *> stmts_to_fixup;
   auto_vec<gimple *> stmts_to_remove;
+  propagate_cleanups fixups;
 
   class evrp_range_analyzer evrp_range_analyzer;
   class evrp_folder evrp_folder;
@@ -188,8 +185,7 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	}
 
       if (did_replace)
-	propagate_mark_stmt_for_cleanup (old_stmt, stmt, need_eh_cleanup,
-					 stmts_to_fixup);
+	fixups.record_change (old_stmt, stmt);
     }
 
   /* Visit BB successor PHI nodes and replace PHI args.  */
@@ -254,8 +250,6 @@ evrp_dom_walker::cleanup (void)
 	  release_defs (stmt);
 	}
     }
-
-  propagate_cleanup (need_eh_cleanup, stmts_to_fixup);
 
   evrp_folder.vr_values->cleanup_edges_and_switches ();
 }

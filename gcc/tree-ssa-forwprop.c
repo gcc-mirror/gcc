@@ -629,20 +629,6 @@ forward_propagate_into_cond (gimple_stmt_iterator *gsi_p)
   return 0;
 }
 
-/* We've just substituted an ADDR_EXPR into stmt.  Update all the
-   relevant data structures to match.  */
-
-static void
-tidy_after_forward_propagate_addr (gimple *stmt)
-{
-  /* We may have turned a trapping insn into a non-trapping insn.  */
-  if (maybe_clean_or_replace_eh_stmt (stmt, stmt))
-    bitmap_set_bit (to_purge, gimple_bb (stmt)->index);
-
-  if (TREE_CODE (gimple_assign_rhs1 (stmt)) == ADDR_EXPR)
-     recompute_tree_invariant_for_addr_expr (gimple_assign_rhs1 (stmt));
-}
-
 /* NAME is a SSA_NAME representing DEF_RHS which is of the form
    ADDR_EXPR <whatever>.
 
@@ -778,7 +764,8 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	  TREE_OPERAND (lhs, 0) = new_ptr;
 	  TREE_OPERAND (lhs, 1)
 	    = wide_int_to_tree (TREE_TYPE (TREE_OPERAND (lhs, 1)), off);
-	  tidy_after_forward_propagate_addr (use_stmt);
+	  propagate_mark_stmt_for_cleanup (use_stmt, use_stmt,
+					   to_purge, NULL);
 	  /* Continue propagating into the RHS if this was not the only use.  */
 	  if (single_use_p)
 	    return true;
@@ -824,7 +811,8 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	  TREE_THIS_VOLATILE (new_lhs) = TREE_THIS_VOLATILE (lhs);
 	  TREE_SIDE_EFFECTS (new_lhs) = TREE_SIDE_EFFECTS (lhs);
 	  *def_rhs_basep = saved;
-	  tidy_after_forward_propagate_addr (use_stmt);
+	  propagate_mark_stmt_for_cleanup (use_stmt, use_stmt, to_purge,
+					   NULL);
 	  /* Continue propagating into the RHS if this was not the
 	     only use.  */
 	  if (single_use_p)
@@ -870,7 +858,8 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	  TREE_OPERAND (rhs, 1)
 	    = wide_int_to_tree (TREE_TYPE (TREE_OPERAND (rhs, 1)), off);
 	  fold_stmt_inplace (use_stmt_gsi);
-	  tidy_after_forward_propagate_addr (use_stmt);
+	  propagate_mark_stmt_for_cleanup (use_stmt, use_stmt, to_purge,
+					   NULL);
 	  return res;
 	}
       /* If the RHS is a plain dereference and the value type is the same as
@@ -911,7 +900,8 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	  TREE_SIDE_EFFECTS (new_rhs) = TREE_SIDE_EFFECTS (rhs);
 	  *def_rhs_basep = saved;
 	  fold_stmt_inplace (use_stmt_gsi);
-	  tidy_after_forward_propagate_addr (use_stmt);
+	  propagate_mark_stmt_for_cleanup (use_stmt, use_stmt, to_purge,
+					   NULL);
 	  return res;
 	}
     }
@@ -947,7 +937,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
       gimple_assign_set_rhs_from_tree (use_stmt_gsi, new_rhs);
       use_stmt = gsi_stmt (*use_stmt_gsi);
       update_stmt (use_stmt);
-      tidy_after_forward_propagate_addr (use_stmt);
+      propagate_mark_stmt_for_cleanup (use_stmt, use_stmt, to_purge, NULL);
       return true;
     }
 
@@ -2451,8 +2441,6 @@ pass_forwprop::execute (function *fun)
 	  gimple *stmt = gsi_stmt (gsi);
 	  gimple *orig_stmt = stmt;
 	  bool changed = false;
-	  bool was_noreturn = (is_gimple_call (stmt)
-			       && gimple_call_noreturn_p (stmt));
 
 	  /* Mark stmt as potentially needing revisiting.  */
 	  gimple_set_plf (stmt, GF_PLF_1, false);
@@ -2461,14 +2449,9 @@ pass_forwprop::execute (function *fun)
 	    {
 	      changed = true;
 	      stmt = gsi_stmt (gsi);
-	      /* ?? We could probably replace these with
-		 propagate_mark_stmt_for_cleanup, but I'm not sure
-		 about the recompute_tree_invariant_for_addr_expr() call.  */
-	      if (maybe_clean_or_replace_eh_stmt (orig_stmt, stmt))
-		bitmap_set_bit (to_purge, bb->index);
-	      if (!was_noreturn
-		  && is_gimple_call (stmt) && gimple_call_noreturn_p (stmt))
-		to_fixup.safe_push (stmt);
+	      propagate_mark_stmt_for_cleanup (orig_stmt, stmt,
+					       to_purge, &to_fixup,
+					       /*recompute_inv=*/false);
 	      /* Cleanup the CFG if we simplified a condition to
 	         true or false.  */
 	      if (gcond *cond = dyn_cast <gcond *> (stmt))
@@ -2589,7 +2572,7 @@ pass_forwprop::execute (function *fun)
   free (postorder);
   lattice.release ();
 
-  cfg_changed |= propagate_cleanup (to_purge, to_fixup);
+  cfg_changed |= propagate_cleanup (to_purge, &to_fixup);
 
   BITMAP_FREE (to_purge);
 

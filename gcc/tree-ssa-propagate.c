@@ -38,6 +38,7 @@
 #include "cfgloop.h"
 #include "tree-cfgcleanup.h"
 #include "cfganal.h"
+#include "tree-pass.h"
 
 /* This file implements a generic value propagation engine based on
    the same propagation used by the SSA-CCP algorithm [1].
@@ -975,14 +976,10 @@ public:
 	  substitute_and_fold_engine (engine)
     {
       stmts_to_remove.create (0);
-      stmts_to_fixup.create (0);
-      need_eh_cleanup = BITMAP_ALLOC (NULL);
     }
     ~substitute_and_fold_dom_walker ()
     {
       stmts_to_remove.release ();
-      stmts_to_fixup.release ();
-      BITMAP_FREE (need_eh_cleanup);
     }
 
     virtual edge before_dom_children (basic_block);
@@ -990,17 +987,45 @@ public:
 
     bool something_changed;
     vec<gimple *> stmts_to_remove;
-    vec<gimple *> stmts_to_fixup;
-    bitmap need_eh_cleanup;
+    propagate_cleanups fixups;
 
     class substitute_and_fold_engine *substitute_and_fold_engine;
 };
+
+propagate_cleanups::~propagate_cleanups ()
+{
+  if (propagate_cleanup (m_bbs_fixups, &m_stmts_fixups))
+    {
+      m_changed = true;
+      if (m_todo_flags)
+	*m_todo_flags |= TODO_cleanup_cfg;
+    }
+}
+
+void
+propagate_cleanups::record_eh_change (basic_block bb)
+{
+  bitmap_set_bit (m_bbs_fixups, bb->index);
+}
+
+// Record that OLD_STMT was changed to NEW_STMT and mark the statement
+// for possible cleanup.
+
+void
+propagate_cleanups::record_change (gimple *old_stmt, gimple *new_stmt,
+				   bool recompute_invariants)
+{
+  propagate_mark_stmt_for_cleanup (old_stmt, new_stmt,
+				   m_bbs_fixups, &m_stmts_fixups,
+				   recompute_invariants);
+}
 
 void
 propagate_mark_stmt_for_cleanup (gimple *old_stmt,
 				 gimple *new_stmt,
 				 bitmap bbs_needing_eh_cleanup,
-				 vec<gimple *> &stmts_that_became_noreturn)
+				 vec<gimple *> *stmts_that_became_noreturn,
+				 bool recompute_invariants)
 {
   /* If we cleaned up EH information from the statement, remove EH
      edges.  */
@@ -1012,16 +1037,19 @@ propagate_mark_stmt_for_cleanup (gimple *old_stmt,
 	fprintf (dump_file, "  Removed EH side-effects.\n");
     }
 
-  /* If we turned a not noreturn call into a noreturn one, schedule it
-     for fixup.  */
-  bool was_noreturn = (is_gimple_call (old_stmt)
-		       && gimple_call_noreturn_p (old_stmt));
-  if (!was_noreturn
-      && is_gimple_call (new_stmt)
-      && gimple_call_noreturn_p (new_stmt))
-    stmts_that_became_noreturn.safe_push (new_stmt);
+  if (stmts_that_became_noreturn)
+    {
+      bool was_noreturn = (is_gimple_call (old_stmt)
+			   && gimple_call_noreturn_p (old_stmt));
+      /* If we turned a not noreturn call into a noreturn one, schedule it
+	 for fixup.  */
+      if (!was_noreturn
+	  && is_gimple_call (new_stmt)
+	  && gimple_call_noreturn_p (new_stmt))
+	stmts_that_became_noreturn->safe_push (new_stmt);
+    }
 
-  if (gimple_assign_single_p (new_stmt))
+  if (recompute_invariants && gimple_assign_single_p (new_stmt))
     {
       tree rhs = gimple_assign_rhs1 (new_stmt);
       if (TREE_CODE (rhs) == ADDR_EXPR)
@@ -1031,7 +1059,7 @@ propagate_mark_stmt_for_cleanup (gimple *old_stmt,
 
 bool
 propagate_cleanup (bitmap bbs_needing_eh_cleanup,
-		   vec<gimple *> &stmts_that_became_noreturn)
+		   vec<gimple *> *stmts_that_became_noreturn)
 {
   bool changed = false;
   if (bbs_needing_eh_cleanup && !bitmap_empty_p (bbs_needing_eh_cleanup))
@@ -1044,9 +1072,9 @@ propagate_cleanup (bitmap bbs_needing_eh_cleanup,
      blocks and thus isn't possible during the dominator walk.  Do this
      in reverse order so we don't inadvertedly remove a stmt we want to
      fixup by visiting a dominating now noreturn call first.  */
-  while (!stmts_that_became_noreturn.is_empty ())
+  while (!stmts_that_became_noreturn->is_empty ())
     {
-      gimple *stmt = stmts_that_became_noreturn.pop ();
+      gimple *stmt = stmts_that_became_noreturn->pop ();
       if (dump_file && dump_flags & TDF_DETAILS)
 	{
 	  fprintf (dump_file, "Fixing up noreturn call ");
@@ -1171,8 +1199,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
       /* Now cleanup.  */
       if (did_replace)
 	{
-	  propagate_mark_stmt_for_cleanup (old_stmt, stmt,
-					   need_eh_cleanup, stmts_to_fixup);
+	  fixups.record_change (old_stmt, stmt);
 
 	  /* Determine what needs to be done to update the SSA form.  */
 	  update_stmt_if_modified (stmt);
@@ -1260,8 +1287,6 @@ substitute_and_fold_engine::substitute_and_fold (basic_block block)
 	  release_defs (stmt);
 	}
     }
-
-  propagate_cleanup (walker.need_eh_cleanup, walker.stmts_to_fixup);
 
   statistics_counter_event (cfun, "Constants propagated",
 			    prop_stats.num_const_prop);
