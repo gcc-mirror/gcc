@@ -73,6 +73,7 @@ extern void propagate_value (use_operand_p, tree);
 extern void replace_exp (use_operand_p, tree);
 extern void propagate_tree_value (tree *, tree);
 extern void propagate_tree_value_into_stmt (gimple_stmt_iterator *, tree);
+extern void propagate_from_worklist (bitmap worklist);
 extern void propagate_mark_stmt_for_cleanup
 	     (gimple *old_stmt, gimple *new_stmt,
 	      bitmap bbs_needing_eh_cleanup,

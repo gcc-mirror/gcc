@@ -1512,3 +1512,46 @@ propagate_tree_value_into_stmt (gimple_stmt_iterator *gsi, tree val)
   else
     gcc_unreachable ();
 }
+
+/* Do simple constant propagation on a bitmap of SSA names.
+   This function only propagates simple X=CONST definitions.  */
+
+void
+propagate_from_worklist (bitmap worklist)
+{
+  unsigned i;
+  bitmap_iterator bi;
+  propagate_cleanups fixups;
+
+  EXECUTE_IF_SET_IN_BITMAP (worklist, 0, i, bi)
+    {
+      tree ssa = ssa_name (i);
+      gimple *def = SSA_NAME_DEF_STMT (ssa);
+      if (gimple_has_side_effects (def))
+	continue;
+      if (gimple_assign_single_p (def)
+	  && TREE_CODE (gimple_assign_rhs1 (def)) == INTEGER_CST)
+	{
+	  tree val = gimple_assign_rhs1 (def);
+	  imm_use_iterator iter;
+	  gimple *stmt;
+	  FOR_EACH_IMM_USE_STMT (stmt, iter, ssa)
+	    {
+	      gimple *old_stmt = stmt;
+	      bool touched = false;
+	      use_operand_p use_p;
+	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+		{
+		  if (may_propagate_copy (ssa, val))
+		    {
+		      propagate_value (use_p, val);
+		      touched = true;
+		    }
+		}
+	      fixups.record_change (old_stmt, stmt);
+	      if (touched)
+		update_stmt (stmt);
+	    }
+	}
+    }
+}
