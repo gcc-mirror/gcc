@@ -1,5 +1,8 @@
 2019-03-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/util/testsuite_allocator.h (__gnu_test::memory_resource)
+	[!__cpp_sized_deallocation]: Do not pass size to operator delete.
+
 	* include/std/memory (uses_allocator_construction_args): New set of
 	overloaded functions.
 	(make_obj_using_allocator, uninitialized_construct_using_allocator):

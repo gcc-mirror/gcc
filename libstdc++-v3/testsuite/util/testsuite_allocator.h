@@ -780,7 +780,11 @@ namespace __gnu_test
 		  throw bad_size();
 		if (alignment != a->alignment)
 		  throw bad_alignment();
+#if __cpp_sized_deallocation
 		::operator delete(p, bytes, std::align_val_t(alignment));
+#else
+		::operator delete(p, std::align_val_t(alignment));
+#endif
 		*aptr = a->next;
 		a->next = lists->freed;
 		lists->freed = a;
