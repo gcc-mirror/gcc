@@ -11234,7 +11234,8 @@ output_skeleton_debug_sections (dw_die_ref comp_unit,
 /* Output a comdat type unit DIE and its children.  */
 
 static void
-output_comdat_type_unit (comdat_type_node *node, bool early_lto_debug)
+output_comdat_type_unit (comdat_type_node *node,
+			 bool early_lto_debug ATTRIBUTE_UNUSED)
 {
   const char *secname;
   char *tmp;
