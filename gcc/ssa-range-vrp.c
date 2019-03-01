@@ -204,8 +204,10 @@ rvrp_fold (ssa_ranger &ranger, gimple *stmt, bitmap touched)
 
 // Given a STMT for which we can't totally fold, attempt to simplify
 // it in place using known range information.
+//
+// Returns TRUE if any simplification was done.
 
-static void
+static bool
 rvrp_simplify (global_ranger &ranger, gimple_stmt_iterator *gsi)
 {
   gimple *orig;
@@ -225,7 +227,9 @@ rvrp_simplify (global_ranger &ranger, gimple_stmt_iterator *gsi)
 	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 	}
       update_stmt (stmt);
+      return true;
     }
+  return false;
 }
 
 // Class to adjust a PHI result with loop info.
@@ -325,8 +329,7 @@ execute_ranger_vrp ()
   basic_block bb;
   irange r;
   auto_bitmap touched;
-  auto_bitmap bbs_needing_eh_cleanup;
-  auto_vec<gimple *> stmts_that_became_noreturn;
+  propagate_cleanups cleanups;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -349,25 +352,22 @@ execute_ranger_vrp ()
 	   gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
-	  gimple *old_stmt = stmt;
+	  gimple *old_stmt = gimple_copy (stmt);
 	  tree lhs = gimple_get_lhs (stmt);
 	  if (gimple_code (stmt) == GIMPLE_COND || ranger.valid_ssa_p (lhs))
 	    {
-	      bool folded = false;
+	      bool changed = false;
 	      if (ranger.range_of_stmt (r, stmt))
-		folded = rvrp_fold (ranger, stmt, touched);
-	      if (!folded)
-		rvrp_simplify (ranger, &gsi);
-
-	      propagate_mark_stmt_for_cleanup (old_stmt, stmt,
-					       bbs_needing_eh_cleanup,
-					       stmts_that_became_noreturn);
+		changed = rvrp_fold (ranger, stmt, touched);
+	      if (!changed)
+		changed = rvrp_simplify (ranger, &gsi);
+	      if (changed)
+		cleanups.record_change (old_stmt, stmt);
 	    }
 	}
     }
 
   rvrp_final_propagate (ranger, touched);
-  propagate_cleanup (bbs_needing_eh_cleanup, stmts_that_became_noreturn);
   return 0;
 }
 
@@ -394,11 +394,13 @@ execute_ranger_vrp_conditional ()
   basic_block bb;
   irange r;
   auto_bitmap touched;
+  propagate_cleanups cleanups;
 
   // Fold conditionals at the end of each BB.
   FOR_EACH_BB_FN (bb, cfun)
     {
       gimple *stmt = last_stmt (bb);
+      gimple *old_stmt = gimple_copy (stmt);
       gcond *cond;
       if (stmt && (cond = dyn_cast <gcond *> (stmt)))
 	{
@@ -407,7 +409,8 @@ execute_ranger_vrp_conditional ()
 	      fprintf (dump_file, "RVRP: Considering BB %d:  ", bb->index);
 	      print_gimple_stmt (dump_file, cond, 0, TDF_NONE);
 	    }
-	  rvrp_fold (ranger, stmt, touched);
+	  if (rvrp_fold (ranger, stmt, touched))
+	    cleanups.record_change (old_stmt, stmt);
 	}
     }
 
