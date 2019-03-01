@@ -8082,7 +8082,7 @@ find_fallthru_edge_from (basic_block pred)
 
       if (e)
 	{
-	  gcc_assert (e->dest == succ);
+	  gcc_assert (e->dest == succ || e->dest->index == EXIT_BLOCK);
 	  return e;
 	}
     }
