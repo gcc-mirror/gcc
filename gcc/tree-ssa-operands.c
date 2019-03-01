@@ -515,7 +515,9 @@ add_stmt_operand (struct function *fn, tree *var_p, gimple *stmt, int flags)
 {
   tree var = *var_p;
 
-  gcc_assert (SSA_VAR_P (*var_p) || TREE_CODE (*var_p) == STRING_CST);
+  gcc_assert (SSA_VAR_P (*var_p)
+	      || TREE_CODE (*var_p) == STRING_CST
+	      || TREE_CODE (*var_p) == CONST_DECL);
 
   if (is_gimple_reg (var))
     {
@@ -741,6 +743,7 @@ get_expr_operands (struct function *fn, gimple *stmt, tree *expr_p, int flags)
     case PARM_DECL:
     case RESULT_DECL:
     case STRING_CST:
+    case CONST_DECL:
       if (!(flags & opf_address_taken))
 	add_stmt_operand (fn, expr_p, stmt, flags);
       return;
@@ -859,7 +862,6 @@ get_expr_operands (struct function *fn, gimple *stmt, tree *expr_p, int flags)
 
     case FUNCTION_DECL:
     case LABEL_DECL:
-    case CONST_DECL:
     case CASE_LABEL_EXPR:
       /* Expressions that make no memory references.  */
       return;
