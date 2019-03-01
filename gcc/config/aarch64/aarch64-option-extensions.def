@@ -38,26 +38,27 @@
    should contain a space (" ") separated list of the strings in 'Features'
    that are required.  Their order is not important.  */
 
+/* NOTE: This file is being parsed by config.gcc and so the
+   AARCH64_OPT_EXTENSION must adhere to a strict format:
+   1) No space between the AARCH64_OPT_EXTENSION and the opening (.
+   2) No space between the opening ( and the extension name.
+   3) No space after the extension name before the ,.
+   4) Spaces are only allowed after a , and around |.
+   5) Everything must be on one line.  */
+
 /* Enabling "fp" just enables "fp".
    Disabling "fp" also disables "simd", "crypto", "fp16", "aes", "sha2",
    "sha3", sm3/sm4 and "sve".  */
-AARCH64_OPT_EXTENSION("fp", AARCH64_FL_FP, 0, AARCH64_FL_SIMD | AARCH64_FL_CRYPTO |\
-		      AARCH64_FL_F16 | AARCH64_FL_AES | AARCH64_FL_SHA2 |\
-		      AARCH64_FL_SHA3 | AARCH64_FL_SM4 | AARCH64_FL_SVE, "fp")
+AARCH64_OPT_EXTENSION("fp", AARCH64_FL_FP, 0, AARCH64_FL_SIMD | AARCH64_FL_CRYPTO | AARCH64_FL_F16 | AARCH64_FL_AES | AARCH64_FL_SHA2 | AARCH64_FL_SHA3 | AARCH64_FL_SM4 | AARCH64_FL_SVE, "fp")
 
 /* Enabling "simd" also enables "fp".
    Disabling "simd" also disables "crypto", "dotprod", "aes", "sha2", "sha3",
    "sm3/sm4" and "sve".  */
-AARCH64_OPT_EXTENSION("simd", AARCH64_FL_SIMD, AARCH64_FL_FP, AARCH64_FL_CRYPTO |\
-		      AARCH64_FL_DOTPROD | AARCH64_FL_AES | AARCH64_FL_SHA2 |\
-		      AARCH64_FL_SHA3 | AARCH64_FL_SM4 | AARCH64_FL_SVE,
-		      "asimd")
+AARCH64_OPT_EXTENSION("simd", AARCH64_FL_SIMD, AARCH64_FL_FP, AARCH64_FL_CRYPTO | AARCH64_FL_DOTPROD | AARCH64_FL_AES | AARCH64_FL_SHA2 | AARCH64_FL_SHA3 | AARCH64_FL_SM4 | AARCH64_FL_SVE, "asimd")
 
 /* Enabling "crypto" also enables "fp" and "simd".
    Disabling "crypto" disables "crypto", "aes", "sha2", "sha3" and "sm3/sm4".  */
-AARCH64_OPT_EXTENSION("crypto", AARCH64_FL_CRYPTO, AARCH64_FL_FP | AARCH64_FL_SIMD,\
-		      AARCH64_FL_AES | AARCH64_FL_SHA2 |AARCH64_FL_SHA3 | AARCH64_FL_SM4,\
-		      "aes pmull sha1 sha2")
+AARCH64_OPT_EXTENSION("crypto", AARCH64_FL_CRYPTO, AARCH64_FL_FP | AARCH64_FL_SIMD, AARCH64_FL_AES | AARCH64_FL_SHA2 |AARCH64_FL_SHA3 | AARCH64_FL_SM4, "aes pmull sha1 sha2")
 
 /* Enabling or disabling "crc" only changes "crc".  */
 AARCH64_OPT_EXTENSION("crc", AARCH64_FL_CRC, 0, 0, "crc32")
@@ -67,8 +68,7 @@ AARCH64_OPT_EXTENSION("lse", AARCH64_FL_LSE, 0, 0, "atomics")
 
 /* Enabling "fp16" also enables "fp".
    Disabling "fp16" disables "fp16", "fp16fml" and "sve".  */
-AARCH64_OPT_EXTENSION("fp16", AARCH64_FL_F16, AARCH64_FL_FP,
-		      AARCH64_FL_F16FML | AARCH64_FL_SVE, "fphp asimdhp")
+AARCH64_OPT_EXTENSION("fp16", AARCH64_FL_F16, AARCH64_FL_FP, AARCH64_FL_F16FML | AARCH64_FL_SVE, "fphp asimdhp")
 
 /* Enabling or disabling "rcpc" only changes "rcpc".  */
 AARCH64_OPT_EXTENSION("rcpc", AARCH64_FL_RCPC, 0, 0, "lrcpc")
