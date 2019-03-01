@@ -1,5 +1,8 @@
 2019-02-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/88183 - ICE with .* fold-expression.
+	* pt.c (fold_expression) [DOTSTAR_EXPR]: Remove special handling.
+
 	PR c++/86969 - ICE with constexpr if and recursive generic lambdas.
 	* class.c, lambda.c, pt.c: Revert earlier change.
 	* lambda.c (add_capture): Don't special-case capture of dependent
