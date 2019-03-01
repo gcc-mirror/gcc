@@ -2461,6 +2461,9 @@ pass_forwprop::execute (function *fun)
 	    {
 	      changed = true;
 	      stmt = gsi_stmt (gsi);
+	      /* ?? We could probably replace these with
+		 propagate_mark_stmt_for_cleanup, but I'm not sure
+		 about the recompute_tree_invariant_for_addr_expr() call.  */
 	      if (maybe_clean_or_replace_eh_stmt (orig_stmt, stmt))
 		bitmap_set_bit (to_purge, bb->index);
 	      if (!was_noreturn
@@ -2586,23 +2589,8 @@ pass_forwprop::execute (function *fun)
   free (postorder);
   lattice.release ();
 
-  /* Fixup stmts that became noreturn calls.  This may require splitting
-     blocks and thus isn't possible during the walk.  Do this
-     in reverse order so we don't inadvertedly remove a stmt we want to
-     fixup by visiting a dominating now noreturn call first.  */
-  while (!to_fixup.is_empty ())
-    {
-      gimple *stmt = to_fixup.pop ();
-      if (dump_file && dump_flags & TDF_DETAILS)
-	{
-	  fprintf (dump_file, "Fixing up noreturn call ");
-	  print_gimple_stmt (dump_file, stmt, 0);
-	  fprintf (dump_file, "\n");
-	}
-      cfg_changed |= fixup_noreturn_call (stmt);
-    }
+  cfg_changed |= propagate_cleanup (to_purge, to_fixup);
 
-  cfg_changed |= gimple_purge_all_dead_eh_edges (to_purge);
   BITMAP_FREE (to_purge);
 
   if (cfg_changed)

@@ -996,6 +996,69 @@ public:
     class substitute_and_fold_engine *substitute_and_fold_engine;
 };
 
+void
+propagate_mark_stmt_for_cleanup (gimple *old_stmt,
+				 gimple *new_stmt,
+				 bitmap bbs_needing_eh_cleanup,
+				 vec<gimple *> &stmts_that_became_noreturn)
+{
+  /* If we cleaned up EH information from the statement, remove EH
+     edges.  */
+  if (maybe_clean_or_replace_eh_stmt (old_stmt, new_stmt))
+    {
+      basic_block bb = gimple_bb (new_stmt);
+      bitmap_set_bit (bbs_needing_eh_cleanup, bb->index);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "  Removed EH side-effects.\n");
+    }
+
+  /* If we turned a not noreturn call into a noreturn one, schedule it
+     for fixup.  */
+  bool was_noreturn = (is_gimple_call (old_stmt)
+		       && gimple_call_noreturn_p (old_stmt));
+  if (!was_noreturn
+      && is_gimple_call (new_stmt)
+      && gimple_call_noreturn_p (new_stmt))
+    stmts_that_became_noreturn.safe_push (new_stmt);
+
+  if (gimple_assign_single_p (new_stmt))
+    {
+      tree rhs = gimple_assign_rhs1 (new_stmt);
+      if (TREE_CODE (rhs) == ADDR_EXPR)
+	recompute_tree_invariant_for_addr_expr (rhs);
+    }
+}
+
+bool
+propagate_cleanup (bitmap bbs_needing_eh_cleanup,
+		   vec<gimple *> &stmts_that_became_noreturn)
+{
+  bool changed = false;
+  if (bbs_needing_eh_cleanup && !bitmap_empty_p (bbs_needing_eh_cleanup))
+    {
+      gimple_purge_all_dead_eh_edges (bbs_needing_eh_cleanup);
+      changed = true;
+    }
+
+  /* Fixup stmts that became noreturn calls.  This may require splitting
+     blocks and thus isn't possible during the dominator walk.  Do this
+     in reverse order so we don't inadvertedly remove a stmt we want to
+     fixup by visiting a dominating now noreturn call first.  */
+  while (!stmts_that_became_noreturn.is_empty ())
+    {
+      gimple *stmt = stmts_that_became_noreturn.pop ();
+      if (dump_file && dump_flags & TDF_DETAILS)
+	{
+	  fprintf (dump_file, "Fixing up noreturn call ");
+	  print_gimple_stmt (dump_file, stmt, 0);
+	  fprintf (dump_file, "\n");
+	}
+      if (fixup_noreturn_call (stmt))
+	changed = true;
+    }
+  return changed;
+}
+
 edge
 substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 {
@@ -1061,8 +1124,6 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 	}
 
       gimple *old_stmt = stmt;
-      bool was_noreturn = (is_gimple_call (stmt)
-			   && gimple_call_noreturn_p (stmt));
 
       /* Replace real uses in the statement.  */
       did_replace |= substitute_and_fold_engine->replace_uses_in (stmt);
@@ -1110,25 +1171,8 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
       /* Now cleanup.  */
       if (did_replace)
 	{
-	  /* If we cleaned up EH information from the statement,
-	     remove EH edges.  */
-	  if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))
-	    bitmap_set_bit (need_eh_cleanup, bb->index);
-
-	  /* If we turned a not noreturn call into a noreturn one
-	     schedule it for fixup.  */
-	  if (!was_noreturn
-	      && is_gimple_call (stmt)
-	      && gimple_call_noreturn_p (stmt))
-	    stmts_to_fixup.safe_push (stmt);
-
-	  if (gimple_assign_single_p (stmt))
-	    {
-	      tree rhs = gimple_assign_rhs1 (stmt);
-
-	      if (TREE_CODE (rhs) == ADDR_EXPR)
-		recompute_tree_invariant_for_addr_expr (rhs);
-	    }
+	  propagate_mark_stmt_for_cleanup (old_stmt, stmt,
+					   need_eh_cleanup, stmts_to_fixup);
 
 	  /* Determine what needs to be done to update the SSA form.  */
 	  update_stmt_if_modified (stmt);
@@ -1217,24 +1261,7 @@ substitute_and_fold_engine::substitute_and_fold (basic_block block)
 	}
     }
 
-  if (!bitmap_empty_p (walker.need_eh_cleanup))
-    gimple_purge_all_dead_eh_edges (walker.need_eh_cleanup);
-
-  /* Fixup stmts that became noreturn calls.  This may require splitting
-     blocks and thus isn't possible during the dominator walk.  Do this
-     in reverse order so we don't inadvertedly remove a stmt we want to
-     fixup by visiting a dominating now noreturn call first.  */
-  while (!walker.stmts_to_fixup.is_empty ())
-    {
-      gimple *stmt = walker.stmts_to_fixup.pop ();
-      if (dump_file && dump_flags & TDF_DETAILS)
-	{
-	  fprintf (dump_file, "Fixing up noreturn call ");
-	  print_gimple_stmt (dump_file, stmt, 0);
-	  fprintf (dump_file, "\n");
-	}
-      fixup_noreturn_call (stmt);
-    }
+  propagate_cleanup (walker.need_eh_cleanup, walker.stmts_to_fixup);
 
   statistics_counter_event (cfun, "Constants propagated",
 			    prop_stats.num_const_prop);

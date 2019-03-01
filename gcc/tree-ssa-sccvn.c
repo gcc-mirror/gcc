@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-ssa-loop-niter.h"
 #include "tree-ssa-sccvn.h"
+#include "tree-ssa-propagate.h"
 
 /* This algorithm is based on the SCC algorithm presented by Keith
    Cooper and L. Taylor Simpson in "SCC-Based Value numbering"
@@ -5113,8 +5114,6 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
     }
 
   bool can_make_abnormal_goto = stmt_can_make_abnormal_goto (stmt);
-  bool was_noreturn = (is_gimple_call (stmt)
-		       && gimple_call_noreturn_p (stmt));
   tree vdef = gimple_vdef (stmt);
   tree vuse = gimple_vuse (stmt);
 
@@ -5267,11 +5266,8 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 
   if (modified)
     {
-      /* When changing a call into a noreturn call, cfg cleanup
-	 is needed to fix up the noreturn call.  */
-      if (!was_noreturn
-	  && is_gimple_call (stmt) && gimple_call_noreturn_p (stmt))
-	to_fixup.safe_push  (stmt);
+      propagate_mark_stmt_for_cleanup (old_stmt, stmt,
+				       need_eh_cleanup, to_fixup);
       /* When changing a condition or switch into one we know what
 	 edge will be executed, schedule a cfg cleanup.  */
       if ((gimple_code (stmt) == GIMPLE_COND
@@ -5281,16 +5277,8 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	      && TREE_CODE (gimple_switch_index
 			    (as_a <gswitch *> (stmt))) == INTEGER_CST))
 	el_todo |= TODO_cleanup_cfg;
-      /* If we removed EH side-effects from the statement, clean
-	 its EH information.  */
-      if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))
-	{
-	  bitmap_set_bit (need_eh_cleanup,
-			  gimple_bb (stmt)->index);
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "  Removed EH side-effects.\n");
-	}
-      /* Likewise for AB side-effects.  */
+      /* If we removed AB side-effects from the statement, clean its
+	 AB call edges.  */
       if (can_make_abnormal_goto
 	  && !stmt_can_make_abnormal_goto (stmt))
 	{
@@ -5522,35 +5510,14 @@ eliminate_dom_walker::eliminate_cleanup (bool region_p)
       el_todo |= TODO_cleanup_cfg;
     }
 
-  /* Fixup stmts that became noreturn calls.  This may require splitting
-     blocks and thus isn't possible during the dominator walk.  Do this
-     in reverse order so we don't inadvertedly remove a stmt we want to
-     fixup by visiting a dominating now noreturn call first.  */
-  while (!to_fixup.is_empty ())
-    {
-      gimple *stmt = to_fixup.pop ();
-
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "Fixing up noreturn call ");
-	  print_gimple_stmt (dump_file, stmt, 0);
-	}
-
-      if (fixup_noreturn_call (stmt))
-	el_todo |= TODO_cleanup_cfg;
-    }
-
-  bool do_eh_cleanup = !bitmap_empty_p (need_eh_cleanup);
-  bool do_ab_cleanup = !bitmap_empty_p (need_ab_cleanup);
-
-  if (do_eh_cleanup)
-    gimple_purge_all_dead_eh_edges (need_eh_cleanup);
-
-  if (do_ab_cleanup)
-    gimple_purge_all_dead_abnormal_call_edges (need_ab_cleanup);
-
-  if (do_eh_cleanup || do_ab_cleanup)
+  if (propagate_cleanup (need_eh_cleanup, to_fixup))
     el_todo |= TODO_cleanup_cfg;
+
+  if (!bitmap_empty_p (need_ab_cleanup))
+    {
+      gimple_purge_all_dead_abnormal_call_edges (need_ab_cleanup);
+      el_todo |= TODO_cleanup_cfg;
+    }
 
   return el_todo;
 }

@@ -128,8 +128,6 @@ evrp_dom_walker::before_dom_children (basic_block bb)
       gimple *stmt = gsi_stmt (gsi);
       tree output = NULL_TREE;
       gimple *old_stmt = stmt;
-      bool was_noreturn = (is_gimple_call (stmt)
-			   && gimple_call_noreturn_p (stmt));
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -190,26 +188,8 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	}
 
       if (did_replace)
-	{
-	  /* If we cleaned up EH information from the statement,
-	     remove EH edges.  */
-	  if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))
-	    bitmap_set_bit (need_eh_cleanup, bb->index);
-
-	  /* If we turned a not noreturn call into a noreturn one
-	     schedule it for fixup.  */
-	  if (!was_noreturn
-	      && is_gimple_call (stmt)
-	      && gimple_call_noreturn_p (stmt))
-	    stmts_to_fixup.safe_push (stmt);
-
-	  if (gimple_assign_single_p (stmt))
-	    {
-	      tree rhs = gimple_assign_rhs1 (stmt);
-	      if (TREE_CODE (rhs) == ADDR_EXPR)
-		recompute_tree_invariant_for_addr_expr (rhs);
-	    }
-	}
+	propagate_mark_stmt_for_cleanup (old_stmt, stmt, need_eh_cleanup,
+					 stmts_to_fixup);
     }
 
   /* Visit BB successor PHI nodes and replace PHI args.  */
@@ -275,18 +255,7 @@ evrp_dom_walker::cleanup (void)
 	}
     }
 
-  if (!bitmap_empty_p (need_eh_cleanup))
-    gimple_purge_all_dead_eh_edges (need_eh_cleanup);
-
-  /* Fixup stmts that became noreturn calls.  This may require splitting
-     blocks and thus isn't possible during the dominator walk.  Do this
-     in reverse order so we don't inadvertedly remove a stmt we want to
-     fixup by visiting a dominating now noreturn call first.  */
-  while (!stmts_to_fixup.is_empty ())
-    {
-      gimple *stmt = stmts_to_fixup.pop ();
-      fixup_noreturn_call (stmt);
-    }
+  propagate_cleanup (need_eh_cleanup, stmts_to_fixup);
 
   evrp_folder.vr_values->cleanup_edges_and_switches ();
 }
