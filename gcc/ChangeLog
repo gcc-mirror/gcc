@@ -1,3 +1,13 @@
+2019-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89506
+	* config/arm/arm.md (cmpsi2_addneg): Use
+	trunc_int_for_mode (-INTVAL (...), SImode) instead of -INTVAL (...).
+	If operands[2] is 0 or INT_MIN, force use of subs.
+	(*compare_scc splitter): Use gen_int_mode.
+	(*negscc): Likewise.
+	* config/arm/thumb2.md (*thumb2_negscc): Likewise.
+
 2019-03-01  Kito Cheng  <kito.cheng@gmail.com>
 	    Monk Chiang  <sh.chiang04@gmail.com>
 

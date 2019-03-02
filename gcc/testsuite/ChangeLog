@@ -1,3 +1,8 @@
+2019-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89506
+	* gcc.dg/pr89506.c: New test.
+
 2019-03-01  Kito Cheng  <kito.cheng@gmail.com>
 	    Monk Chiang  <sh.chiang04@gmail.com>
 
