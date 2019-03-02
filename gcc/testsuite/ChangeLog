@@ -1,3 +1,9 @@
+2019-03-02  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/89516
+	* gfortran.dg/pr89492.f90: Adjust testcase.
+	* gfortran.dg/transfer_check_5.f90: New test.
+
 2019-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71446
