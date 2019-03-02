@@ -73,26 +73,30 @@ size_character (gfc_charlen_t length, int kind)
 
 
 /* Return the size of a single element of the given expression.
-   Identical to gfc_target_expr_size for scalars.  */
+   Equivalent to gfc_target_expr_size for scalars.  */
 
-size_t
-gfc_element_size (gfc_expr *e)
+bool
+gfc_element_size (gfc_expr *e, size_t *siz)
 {
   tree type;
 
   switch (e->ts.type)
     {
     case BT_INTEGER:
-      return size_integer (e->ts.kind);
+      *siz = size_integer (e->ts.kind);
+      return true;
     case BT_REAL:
-      return size_float (e->ts.kind);
+      *siz = size_float (e->ts.kind);
+      return true;
     case BT_COMPLEX:
-      return size_complex (e->ts.kind);
+      *siz = size_complex (e->ts.kind);
+      return true;
     case BT_LOGICAL:
-      return size_logical (e->ts.kind);
+      *siz = size_logical (e->ts.kind);
+      return true;
     case BT_CHARACTER:
       if (e->expr_type == EXPR_CONSTANT)
-	return size_character (e->value.character.length, e->ts.kind);
+	*siz = size_character (e->value.character.length, e->ts.kind);
       else if (e->ts.u.cl != NULL && e->ts.u.cl->length != NULL
 	       && e->ts.u.cl->length->expr_type == EXPR_CONSTANT
 	       && e->ts.u.cl->length->ts.type == BT_INTEGER)
@@ -100,13 +104,18 @@ gfc_element_size (gfc_expr *e)
 	  HOST_WIDE_INT length;
 
 	  gfc_extract_hwi (e->ts.u.cl->length, &length);
-	  return size_character (length, e->ts.kind);
+	  *siz = size_character (length, e->ts.kind);
 	}
       else
-	return 0;
+	{
+	  *siz = 0;
+	  return false;
+	}
+      return true;
 
     case BT_HOLLERITH:
-      return e->representation.length;
+      *siz = e->representation.length;
+      return true;
     case BT_DERIVED:
     case BT_CLASS:
     case BT_VOID:
@@ -120,36 +129,43 @@ gfc_element_size (gfc_expr *e)
 	type = gfc_typenode_for_spec (&ts);
 	size = int_size_in_bytes (type);
 	gcc_assert (size >= 0);
-	return size;
+	*siz = size;
       }
+      return true;
     default:
       gfc_internal_error ("Invalid expression in gfc_element_size.");
-      return 0;
+      *siz = 0;
+      return false;
     }
+  return true;
 }
 
 
 /* Return the size of an expression in its target representation.  */
 
-size_t
-gfc_target_expr_size (gfc_expr *e)
+bool
+gfc_target_expr_size (gfc_expr *e, size_t *size)
 {
   mpz_t tmp;
-  size_t asz;
+  size_t asz, el_size;
 
   gcc_assert (e != NULL);
 
+  *size = 0;
   if (e->rank)
     {
       if (gfc_array_size (e, &tmp))
 	asz = mpz_get_ui (tmp);
       else
-	asz = 0;
+	return false;
     }
   else
     asz = 1;
 
-  return asz * gfc_element_size (e);
+  if (!gfc_element_size (e, &el_size))
+    return false;
+  *size = asz * el_size;
+  return true;
 }
 
 
@@ -675,7 +691,7 @@ expr_to_char (gfc_expr *e, locus *loc,
 
   /* Otherwise, use the target-memory machinery to write a bitwise image, appropriate
      to the target, in a buffer and check off the initialized part of the buffer.  */
-  len = gfc_target_expr_size (e);
+  gfc_target_expr_size (e, &len);
   buffer = (unsigned char*)alloca (len);
   len = gfc_target_encode_expr (e, buffer, len);
 
@@ -722,7 +738,9 @@ gfc_merge_initializers (gfc_typespec ts, gfc_expr *e, locus *loc,
       for (c = gfc_constructor_first (e->value.constructor);
 	   c; c = gfc_constructor_next (c))
 	{
-	  size_t elt_size = gfc_target_expr_size (c->expr);
+	  size_t elt_size;
+
+	  gfc_target_expr_size (c->expr, &elt_size);
 
 	  if (mpz_cmp_si (c->offset, 0) != 0)
 	    len = elt_size * (size_t)mpz_get_si (c->offset);

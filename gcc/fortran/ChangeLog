@@ -1,3 +1,27 @@
+2019-03-02  Harald Anlauf  <anlauf@gmx.de>
+
+	Backport from trunk
+	PR fortran/89516
+	* check.c (gfc_calculate_transfer_sizes): Correct checks for cases
+	where storage size of elements of MOLD is 0.
+
+	PR fortran/89492
+	* check.c (gfc_calculate_transfer_sizes): Handle cases where
+	storage size of elements of MOLD is 0.
+
+	PR fortran/89266
+	PR fortran/88326
+	* target-memory.c (gfc_element_size): Return false if element size
+	cannot be determined; element size is returned separately.
+	(gfc_target_expr_size): Return false if expression size cannot be
+	determined; expression size is returned separately.
+	* target-memory.h: Adjust prototypes.
+	* check.c (gfc_calculate_transfer_sizes): Adjust references to
+	gfc_target_expr_size, gfc_element_size.
+	* arith.c (hollerith2representation): Likewise.
+	* class.c (find_intrinsic_vtab): Likewise.
+	* simplify.c (gfc_simplify_sizeof): Likewise.
+
 2019-02-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/86119
