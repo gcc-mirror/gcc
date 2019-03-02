@@ -2251,7 +2251,7 @@ static cp_expr cp_parser_initializer_clause
 static cp_expr cp_parser_braced_list
   (cp_parser*, bool*);
 static vec<constructor_elt, va_gc> *cp_parser_initializer_list
-  (cp_parser *, bool *);
+  (cp_parser *, bool *, bool *);
 
 static void cp_parser_ctor_initializer_opt_and_function_body
   (cp_parser *, bool);
@@ -22768,9 +22768,11 @@ cp_parser_braced_list (cp_parser* parser, bool* non_constant_p)
   /* If it's not a `}', then there is a non-trivial initializer.  */
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_BRACE))
     {
+      bool designated;
       /* Parse the initializer list.  */
       CONSTRUCTOR_ELTS (initializer)
-	= cp_parser_initializer_list (parser, non_constant_p);
+	= cp_parser_initializer_list (parser, non_constant_p, &designated);
+      CONSTRUCTOR_IS_DESIGNATED_INIT (initializer) = designated;
       /* A trailing `,' token is allowed.  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
 	cp_lexer_consume_token (parser->lexer);
@@ -22890,10 +22892,12 @@ cp_parser_array_designator_p (cp_parser *parser)
    Returns a vec of constructor_elt.  The VALUE of each elt is an expression
    for the initializer.  If the INDEX of the elt is non-NULL, it is the
    IDENTIFIER_NODE naming the field to initialize.  NON_CONSTANT_P is
-   as for cp_parser_initializer.  */
+   as for cp_parser_initializer.  Set *DESIGNATED to a boolean whether there
+   are any designators.  */
 
 static vec<constructor_elt, va_gc> *
-cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
+cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p,
+			    bool *designated)
 {
   vec<constructor_elt, va_gc> *v = NULL;
   bool first_p = true;
@@ -23070,6 +23074,7 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
 	  IDENTIFIER_MARKED (designator) = 0;
     }
 
+  *designated = first_designator != NULL_TREE;
   return v;
 }
 

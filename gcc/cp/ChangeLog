@@ -1,3 +1,18 @@
+2019-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71446
+	* cp-tree.h (CONSTRUCTOR_IS_DESIGNATED_INIT): Define.
+	* parser.c (cp_parser_braced_list): Adjust cp_parser_initializer_list
+	caller, set CONSTRUCTOR_IS_DESIGNATED_INIT.
+	(cp_parser_initializer_list): Add designated parameter, set *designated
+	to a bool whether any designators were parsed.
+	* decl.c (reshape_init): Copy over CONSTRUCTOR_IS_DESIGNATED_INIT if
+	needed.
+	* pt.c (tsubst_copy_and_build): Likewise.
+	* call.c (implicit_conversion): If CONSTRUCTOR_IS_DESIGNATED_INIT,
+	don't call build_list_conv, nor build_complex_conv, nor attempt to
+	convert a single element initializer to scalar.
+
 2019-03-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89537 - missing location for error with non-static member fn.

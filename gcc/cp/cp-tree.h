@@ -471,6 +471,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       TYPE_MARKED_P (in _TYPE)
       RANGE_FOR_IVDEP (in RANGE_FOR_STMT)
       CALL_EXPR_OPERATOR_SYNTAX (in CALL_EXPR, AGGR_INIT_EXPR)
+      CONSTRUCTOR_IS_DESIGNATED_INIT (in CONSTRUCTOR)
 
    Usage of TYPE_LANG_FLAG_?:
    0: TYPE_DEPENDENT_P
@@ -4234,6 +4235,12 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 
 #define DIRECT_LIST_INIT_P(NODE) \
    (BRACE_ENCLOSED_INITIALIZER_P (NODE) && CONSTRUCTOR_IS_DIRECT_INIT (NODE))
+
+/* True if this is a designated initializer (when we allow initializer-clauses
+   mixed with designated-initializer-clauses set whenever there is at least
+   one designated-initializer-clause), or a C99 designator.  */
+#define CONSTRUCTOR_IS_DESIGNATED_INIT(NODE) \
+  (TREE_LANG_FLAG_6 (CONSTRUCTOR_CHECK (NODE)))
 
 /* True if NODE represents a conversion for direct-initialization in a
    template.  Set by perform_implicit_conversion_flags.  */
