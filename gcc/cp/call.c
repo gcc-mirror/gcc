@@ -1876,11 +1876,12 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
 
   if (expr && BRACE_ENCLOSED_INITIALIZER_P (expr))
     {
-      if (is_std_init_list (to))
+      if (is_std_init_list (to) && !CONSTRUCTOR_IS_DESIGNATED_INIT (expr))
 	return build_list_conv (to, expr, flags, complain);
 
       /* As an extension, allow list-initialization of _Complex.  */
-      if (TREE_CODE (to) == COMPLEX_TYPE)
+      if (TREE_CODE (to) == COMPLEX_TYPE
+	  && !CONSTRUCTOR_IS_DESIGNATED_INIT (expr))
 	{
 	  conv = build_complex_conv (to, expr, flags, complain);
 	  if (conv)
@@ -1896,7 +1897,7 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
 
 	  if (nelts == 0)
 	    elt = build_value_init (to, tf_none);
-	  else if (nelts == 1)
+	  else if (nelts == 1 && !CONSTRUCTOR_IS_DESIGNATED_INIT (expr))
 	    elt = CONSTRUCTOR_ELT (expr, 0)->value;
 	  else
 	    elt = error_mark_node;

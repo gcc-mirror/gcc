@@ -1,5 +1,10 @@
 2019-03-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71446
+	* g++.dg/cpp2a/desig10.C: New test.
+	* g++.dg/cpp2a/desig11.C: New test.
+	* g++.dg/ext/desig4.C: Expect 4 new errors.
+
 	PR target/89506
 	* gcc.dg/pr89506.c: New test.
 
