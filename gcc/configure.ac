@@ -4881,6 +4881,13 @@ pointers into PC-relative form.])
 	[Requesting --with-nan= requires assembler support for -mnan=])
     fi
     ;;
+    riscv*-*-*)
+    gcc_GAS_CHECK_FEATURE([.attribute support],
+      gcc_cv_as_riscv_attribute, [2,32,0],,
+      [.attribute stack_align,4],,
+      [AC_DEFINE(HAVE_AS_RISCV_ATTRIBUTE, 1,
+	  [Define if your assembler supports .attribute.])])
+    ;;
     s390*-*-*)
     gcc_GAS_CHECK_FEATURE([.gnu_attribute support],
       gcc_cv_as_s390_gnu_attribute, [2,18,0],,

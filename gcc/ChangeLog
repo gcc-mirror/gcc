@@ -1,3 +1,43 @@
+2019-03-01  Kito Cheng  <kito.cheng@gmail.com>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+
+	* common/config/riscv/riscv-common.c: Include sstream.
+	(riscv_subset_list::to_string): New.
+	(riscv_arch_str): Likewise.
+	* config.gcc (riscv*-*-*): Handle --with-riscv-attribute=
+	* config.in: Regen.
+	* config/riscv/riscv-protos.h (riscv_arch_str): New.
+	* config/riscv/riscv.c (INCLUDE_STRING): Defined.
+	(riscv_emit_attribute): New.
+	(riscv_file_start): Emit attribute if needed.
+	(riscv_option_override): Init riscv_emit_attribute_p.
+	* config/riscv/riscv.opt (mriscv-attribute): New option.
+	* configure.ac (riscv*-*-*): Check binutils is supporting ELF
+	* configure: Regen.
+	* doc/install.texi: Document --with-riscv-attribute.
+	* doc/invoke.texi: Document -mriscv-attribute.
+
+	* common/config/riscv/riscv-common.c:
+	Include config/riscv/riscv-protos.h.
+	(INCLUDE_STRING): Defined.
+	(RISCV_DONT_CARE_VERSION): Defined.
+	(riscv_subset_t): Declare.
+	(riscv_subset_t::riscv_subset_t): New.
+	(riscv_subset_list): Declare.
+	(riscv_subset_list::riscv_subset_list): New.
+	(riscv_subset_list::~riscv_subset_list): Likewise.
+	(riscv_subset_list::parsing_subset_version): Likewise.
+	(riscv_subset_list::parse_std_ext): Likewise.
+	(riscv_subset_list::parse_sv_or_non_std_ext): Likewise.
+	(riscv_subset_list::add): Likewise.
+	(riscv_subset_list::lookup): Likewise.
+	(riscv_subset_list::xlen): Likewise.
+	(riscv_subset_list::parse): Likewise.
+	(riscv_supported_std_ext): Likewise.
+	(current_subset_list): Likewise.
+	(riscv_parse_arch_string): Using riscv_subset_list::parse to
+	parse.
+
 2019-03-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (rs6000_option_override_internal): If

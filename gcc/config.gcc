@@ -4211,13 +4211,37 @@ case "${target}" in
 		;;
 
 	riscv*-*-*)
-		supported_defaults="abi arch tune"
+		supported_defaults="abi arch tune riscv_attribute"
 
 		case "${target}" in
 		riscv-* | riscv32*) xlen=32 ;;
 		riscv64*) xlen=64 ;;
 		*) echo "Unsupported RISC-V target ${target}" 1>&2; exit 1 ;;
 		esac
+
+		case "${with_riscv_attribute}" in
+		yes)
+			tm_defines="${tm_defines} TARGET_RISCV_ATTRIBUTE=1"
+			;;
+		no)
+			tm_defines="${tm_defines} TARGET_RISCV_ATTRIBUTE=0"
+			;;
+		""|default)
+			case "${target}" in
+			riscv*-*-elf*)
+				tm_defines="${tm_defines} TARGET_RISCV_ATTRIBUTE=1"
+				;;
+			*)
+				tm_defines="${tm_defines} TARGET_RISCV_ATTRIBUTE=0"
+				;;
+			esac
+			;;
+		*)
+			echo "--with-riscv-attribute=${with_riscv_attribute} is not supported.  The argument must begin with yes, no or default." 1>&2
+			exit 1
+			;;
+		esac
+
 
 		# Infer arch from --with-arch, --target, and --with-abi.
 		case "${with_arch}" in

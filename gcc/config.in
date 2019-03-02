@@ -601,6 +601,12 @@
 #endif
 
 
+/* Define if your assembler supports .attribute. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_RISCV_ATTRIBUTE
+#endif
+
+
 /* Define if your assembler supports relocs needed by -fpic. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_SMALL_PIC_RELOCS

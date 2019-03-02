@@ -1,3 +1,21 @@
+2019-03-01  Kito Cheng  <kito.cheng@gmail.com>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+
+	* gcc.target/riscv/attribute-1.c: New.
+	* gcc.target/riscv/attribute-2.c: Likewise.
+	* gcc.target/riscv/attribute-3.c: Likewise.
+	* gcc.target/riscv/attribute-4.c: Likewise.
+	* gcc.target/riscv/attribute-5.c: Likewise.
+	* gcc.target/riscv/attribute-6.c: Likewise.
+	* gcc.target/riscv/attribute-7.c: Likewise.
+	* gcc.target/riscv/attribute-8.c: Likewise.
+	* gcc.target/riscv/attribute-9.c: Likewise.
+
+	* gcc.target/riscv/arch-1.c: New.
+	* gcc.target/riscv/arch-2.c: Likewise.
+	* gcc.target/riscv/arch-3.c: Likewise.
+	* gcc.target/riscv/arch-4.c: Likewise.
+
 2019-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/89497
