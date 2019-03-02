@@ -1,3 +1,9 @@
+2019-03-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/89020
+	* io/close.c (st_close): Generate error if calls to 'remove' return
+	an error.
+
 2019-02-22  Release Manager
 
 	* GCC 8.3.0 released.
