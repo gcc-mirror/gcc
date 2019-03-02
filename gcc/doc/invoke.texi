@@ -1057,7 +1057,8 @@ See RS/6000 and PowerPC Options.
 -mstrict-align  -mno-strict-align @gol
 -mcmodel=medlow  -mcmodel=medany @gol
 -mexplicit-relocs  -mno-explicit-relocs @gol
--mrelax  -mno-relax}
+-mrelax  -mno-relax @gol
+-mriscv-attribute  -mmo-riscv-attribute}
 
 @emph{RL78 Options}
 @gccoptlist{-msim  -mmul=none  -mmul=g13  -mmul=g14  -mallregs @gol
@@ -23825,6 +23826,10 @@ Take advantage of linker relaxations to reduce the number of instructions
 required to materialize symbol addresses. The default is to take advantage of
 linker relaxations.
 
+@item -memit-attribute
+@itemx -mno-emit-attribute
+Emit (do not emit) RISC-V attribute to record extra information into ELF
+objects.  This feature requires at least binutils 2.32.
 @end table
 
 @node RL78 Options
