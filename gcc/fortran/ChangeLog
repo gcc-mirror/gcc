@@ -1,3 +1,8 @@
+2019-03-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/72714
+	* resolve.c (resolve_allocate_expr): Add some tests for coarrays.
+
 2019-03-02  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/89516
