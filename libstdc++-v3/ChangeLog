@@ -1,3 +1,9 @@
+2019-03-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89562
+	* src/filesystem/ops-common.h (do_copy_file): Open files in binary
+	mode for mingw.
+
 2019-03-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/util/testsuite_allocator.h (__gnu_test::memory_resource)
