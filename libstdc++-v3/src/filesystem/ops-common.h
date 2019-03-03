@@ -402,7 +402,12 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
       int fd;
     };
 
-    CloseFD in = { posix::open(from, O_RDONLY) };
+    int iflag = O_RDONLY;
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+    iflag |= O_BINARY;
+#endif
+
+    CloseFD in = { posix::open(from, iflag) };
     if (in.fd == -1)
       {
 	ec.assign(errno, std::generic_category());
@@ -413,6 +418,9 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
       oflag |= O_TRUNC;
     else
       oflag |= O_EXCL;
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+    oflag |= O_BINARY;
+#endif
     CloseFD out = { posix::open(to, oflag, S_IWUSR) };
     if (out.fd == -1)
       {
