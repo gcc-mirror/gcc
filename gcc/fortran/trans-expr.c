@@ -352,7 +352,7 @@ gfc_vptr_size_get (tree vptr)
    of refs following.  */
 
 gfc_expr *
-gfc_find_and_cut_at_last_class_ref (gfc_expr *e)
+gfc_find_and_cut_at_last_class_ref (gfc_expr *e, bool is_mold)
 {
   gfc_expr *base_expr;
   gfc_ref *ref, *class_ref, *tail = NULL, *array_ref;
@@ -394,7 +394,10 @@ gfc_find_and_cut_at_last_class_ref (gfc_expr *e)
       e->ref = NULL;
     }
 
-  base_expr = gfc_copy_expr (e);
+  if (is_mold)
+    base_expr = gfc_expr_to_initialize (e);
+  else
+    base_expr = gfc_copy_expr (e);
 
   /* Restore the original tail expression.  */
   if (class_ref)
