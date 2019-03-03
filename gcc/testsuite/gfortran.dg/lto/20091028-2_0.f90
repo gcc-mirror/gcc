@@ -1,5 +1,5 @@
 ! { dg-lto-do link }
-! { dg-extra-ld-options "-r -nostdlib -finline-functions" }
+! { dg-extra-ld-options "-r -nostdlib -finline-functions -Wno-lto-type-mismatch" }
 
 SUBROUTINE int_gen_ti_header_char( hdrbuf, hdrbufsize, itypesize, &
                               DataHandle, Element, VarName, Data, code )
