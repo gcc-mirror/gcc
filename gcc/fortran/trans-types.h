@@ -88,7 +88,7 @@ tree gfc_sym_type (gfc_symbol *);
 tree gfc_typenode_for_spec (gfc_typespec *, int c = 0);
 int gfc_copy_dt_decls_ifequal (gfc_symbol *, gfc_symbol *, bool);
 
-tree gfc_get_function_type (gfc_symbol *);
+tree gfc_get_function_type (gfc_symbol *, gfc_actual_arglist *args = NULL);
 
 tree gfc_type_for_size (unsigned, int);
 tree gfc_type_for_mode (machine_mode, int);
