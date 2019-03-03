@@ -1,3 +1,10 @@
+2019-03-02  Jerry DeLisle <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/84387
+	* trans-io.c (transfer_expr): Do not return if there are no
+	components to the derived type or class.
+
 2019-03-02  Harald Anlauf  <anlauf@gmx.de>
 
 	Backport from trunk
