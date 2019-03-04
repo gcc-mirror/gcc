@@ -1,3 +1,13 @@
+2019-03-04  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/89487
+	* tree-loop-distribution.c (has_nonaddressable_dataref_p): New.
+	(create_rdg_vertices): Compute has_nonaddressable_dataref_p.
+	(distribute_loop): Don't do runtime alias check if there is non-
+	addressable data reference.
+	* tree-ssa-loop-ivopts.c (may_be_nonaddressable_p): Check if VAR_DECL
+	is a register variable.
+
 2019-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/89506
