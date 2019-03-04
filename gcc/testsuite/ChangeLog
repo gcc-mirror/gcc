@@ -1,3 +1,8 @@
+2019-03-04  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR tree-optimization/89437
+	* gcc.dg/sinatan-1.c: Fix testcase.
+
 2019-03-04  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/89572
