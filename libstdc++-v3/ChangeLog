@@ -1,3 +1,12 @@
+2019-03-04  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/88996 Implement P0439R0
+	Make std::memory_order a scoped enumeration.
+	* include/bits/atomic_base.h: For C++20 make memory_order a scoped enum,
+	add variables for the old enumerators.  Adjust calls.
+	* testsuite/29_atomics/headers/atomic/types_std_c++2a.cc: New test.
+	* testsuite/29_atomics/headers/atomic/types_std_c++2a_neg.cc: New test.
+
 2019-03-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/26_numerics/bit/bitops.rot/rotl.cc: Remove bogus dg-do
