@@ -1,4 +1,4 @@
-/* { dg-do compile { target "aarch64*-*-linux*" } } */
+/* { dg-do compile { target { { aarch64*-*-linux*} && native } } } */
 /* { dg-additional-options "-mcpu=native" } */
 
 int main ()

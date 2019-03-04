@@ -1,3 +1,8 @@
+2019-03-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/88530
+	* gcc.target/aarch64/options_set_10.c:
+
 2019-03-04  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR tree-optimization/89437
