@@ -1106,9 +1106,12 @@ do_linemarker (cpp_reader *pfile)
       map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
       const line_map_ordinary *from
 	= linemap_included_from_linemap (line_table, map);
-      if (MAIN_FILE_P (map)
-	  || (from
-	      && filename_cmp (ORDINARY_MAP_FILE_NAME (from), new_file) != 0))
+
+      /* Permit leaving destination "" to fill in the pop-to name.  */
+      if (from && !new_file[0])
+	new_file = ORDINARY_MAP_FILE_NAME (from);
+      else if (!from
+	       || filename_cmp (ORDINARY_MAP_FILE_NAME (from), new_file) != 0)
 	{
 	  cpp_warning (pfile, CPP_W_NONE,
 		       "file \"%s\" linemarker ignored due to "

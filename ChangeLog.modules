@@ -1,5 +1,12 @@
 2019-03-04  Nathan Sidwell  <nathan@acm.org>
 
+	New # semantics for popping to "" name.
+	libcpp/
+	* directives.c (do_linemarker): Popping to "" name means fill in
+	the name.
+	gcc/testsuite/
+	* c-c++-common/cpp/line-1.c: New.
+
 	Cleanups.
 	libcpp/
 	* include/cpplib.h (struct cpp_hashnode): Drop C compatibility
