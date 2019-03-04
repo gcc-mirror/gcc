@@ -1,5 +1,8 @@
 2019-03-04  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/26_numerics/bit/bitops.rot/rotl.cc: Remove bogus dg-do
+	directive.
+
 	* include/std/memory_resource (polymorphic_allocator): Add default
 	template argument for C++20.
 	(polymorphic_allocator::allocate_bytes)
