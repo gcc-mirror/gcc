@@ -1,6 +1,7 @@
 // PR c++/88049
 // { dg-lto-do link }
 // { dg-lto-options {{ -flto -O2 -w }} }
+// { dg-require-effective-target lto_incremental }
 // { dg-extra-ld-options -r }
 
 template <typename> class a;
