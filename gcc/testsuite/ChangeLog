@@ -1,3 +1,8 @@
+2018-03-04  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/89487
+	* gcc/testsuite/gcc.dg/tree-ssa/pr89487.c: New test.
+
 2019-03-03  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/77583

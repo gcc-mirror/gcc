@@ -160,6 +160,9 @@ static vec<loop_p> loop_nest;
 /* Vector of data references in the loop to be distributed.  */
 static vec<data_reference_p> datarefs_vec;
 
+/* If there is nonaddressable data reference in above vector.  */
+static bool has_nonaddressable_dataref_p;
+
 /* Store index of data reference in aux field.  */
 #define DR_INDEX(dr)      ((uintptr_t) (dr)->aux)
 
@@ -467,6 +470,7 @@ create_rdg_vertices (struct graph *rdg, vec<gimple *> stmts, loop_p loop)
 	  else
 	    RDGV_HAS_MEM_WRITE (v) = true;
 	  RDGV_DATAREFS (v).safe_push (dr);
+	  has_nonaddressable_dataref_p |= may_be_nonaddressable_p (dr->ref);
 	}
     }
   return true;
@@ -2757,6 +2761,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
     }
 
   datarefs_vec.create (20);
+  has_nonaddressable_dataref_p = false;
   rdg = build_rdg (loop, cd);
   if (!rdg)
     {
@@ -2885,8 +2890,10 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
   if (partitions.length () > 1)
     {
       /* Don't support loop nest distribution under runtime alias check
-	 since it's not likely to enable many vectorization opportunities.  */
-      if (loop->inner)
+	 since it's not likely to enable many vectorization opportunities.
+	 Also if loop has any data reference which may be not addressable
+	 since alias check needs to take, compare address of the object.  */
+      if (loop->inner || has_nonaddressable_dataref_p)
 	merge_dep_scc_partitions (rdg, &partitions, false);
       else
 	{
