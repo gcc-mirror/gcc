@@ -321,8 +321,7 @@ location_t
 get_pure_location (line_maps *set, location_t loc)
 {
   if (IS_ADHOC_LOC (loc))
-    loc
-      = set->location_adhoc_data_map.data[loc & MAX_LOCATION_T].locus;
+    loc = set->location_adhoc_data_map.data[loc & MAX_LOCATION_T].locus;
 
   if (loc >= LINEMAPS_MACRO_LOWEST_LOCATION (set))
     return loc;

@@ -884,11 +884,11 @@ struct GTY(()) cpp_hashnode {
   unsigned int directive_index : 7;	/* If is_directive,
 					   then index into directive table.
 					   Otherwise, a NODE_OPERATOR.  */
-  unsigned char rid_code;		/* Rid code - for front ends.  */
-  ENUM_BITFIELD(node_type) type : 2;	/* CPP node type.  */
+  unsigned int rid_code : 8;		/* Rid code - for front ends.  */
   unsigned int flags : 8;		/* CPP flags.  */
+  ENUM_BITFIELD(node_type) type : 2;	/* CPP node type.  */
 
-  /* 5 bits spare.  */
+  /* 6 bits spare.  */
 
   /* On a 64-bit system there would be 32-bits of padding to the value
      field.  So placing the deferred index here is not costly.   */

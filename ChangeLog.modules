@@ -1,5 +1,12 @@
 2019-03-04  Nathan Sidwell  <nathan@acm.org>
 
+	Cleanups.
+	libcpp/
+	* include/cpplib.h (struct cpp_hashnode): Drop C compatibility
+	macros.  Correct bit calculation.
+	* include/line-map.h: Formatting.
+	* line-map.c (get_pure_location): Formatting.
+
 	gcc/cp/
 	* module.cc (declare_module): Deal with de-GMFing here, get name
 	of implicit header module.
