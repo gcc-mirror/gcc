@@ -33,11 +33,13 @@
 
 #if __cplusplus >= 201703L
 
+#include <limits>			// numeric_limits
 #include <memory>			// align, allocator_arg_t, __uses_alloc
 #include <utility>			// pair, index_sequence
 #include <vector>			// vector
-#include <cstddef>			// size_t, max_align_t
+#include <cstddef>			// size_t, max_align_t, byte
 #include <shared_mutex>			// shared_mutex
+#include <bits/functexcept.h>
 #include <debug/assertions.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -55,8 +57,13 @@ namespace pmr
 
   class memory_resource;
 
+#if __cplusplus == 201703L
   template<typename _Tp>
     class polymorphic_allocator;
+#else // C++20
+  template<typename _Tp = std::byte>
+    class polymorphic_allocator;
+#endif
 
   // Global memory resources
   memory_resource* new_delete_resource() noexcept;
@@ -170,7 +177,59 @@ namespace pmr
       __attribute__((__nonnull__))
       { _M_resource->deallocate(__p, __n * sizeof(_Tp), alignof(_Tp)); }
 
-#if __cplusplus <= 201703L
+#if __cplusplus > 201703L
+      void*
+      allocate_bytes(size_t __nbytes,
+		     size_t __alignment = alignof(max_align_t))
+      { return _M_resource->allocate(__nbytes, __alignment); }
+
+      void
+      deallocate_bytes(void* __p, size_t __nbytes,
+		       size_t __alignment = alignof(max_align_t))
+      { _M_resource->deallocate(__p, __nbytes, __alignment); }
+
+      template<typename _Up>
+	_Up*
+	allocate_object(size_t __n = 1)
+	{
+	  if ((std::numeric_limits<size_t>::max() / sizeof(_Up)) < __n)
+	    __throw_length_error("polymorphic_allocator::allocate_object");
+	  return static_cast<_Up*>(allocate_bytes(__n * sizeof(_Up),
+						  alignof(_Up)));
+	}
+
+      template<typename _Up>
+	void
+	deallocate_object(_Up* __p, size_t __n = 1)
+	{ deallocate_bytes(__p, __n * sizeof(_Up), alignof(_Up)); }
+
+      template<typename _Up, typename... _CtorArgs>
+	_Up*
+	new_object(_CtorArgs&&... __ctor_args)
+	{
+	  _Up* __p = allocate_object<_Up>();
+	  __try
+	    {
+	      construct(__p, std::forward<_CtorArgs>(__ctor_args)...);
+	    }
+	  __catch (...)
+	    {
+	      deallocate_object(__p);
+	      __throw_exception_again;
+	    }
+	  return __p;
+	}
+
+      template<typename _Up>
+	void
+	delete_object(_Up* __p)
+	{
+	  destroy(__p);
+	  deallocate_object(__p);
+	}
+#endif // C++2a
+
+#if __cplusplus == 201703L
       template<typename _Tp1, typename... _Args>
 	__attribute__((__nonnull__))
 	typename __not_pair<_Tp1>::type
