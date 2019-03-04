@@ -902,6 +902,28 @@ can_convert_array (tree atype, tree ctor, int flags, tsubst_flags_t complain)
   return true;
 }
 
+/* Helper for build_aggr_conv.  Return true if FIELD is in PSET, or if
+   FIELD has ANON_AGGR_TYPE_P and any initializable field in there recursively
+   is in PSET.  */
+
+static bool
+field_in_pset (hash_set<tree> *pset, tree field)
+{
+  if (pset->contains (field))
+    return true;
+  if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))
+    for (field = TYPE_FIELDS (TREE_TYPE (field));
+	 field; field = DECL_CHAIN (field))
+      {
+	field = next_initializable_field (field);
+	if (field == NULL_TREE)
+	  break;
+	if (field_in_pset (pset, field))
+	  return true;
+      }
+  return false;
+}
+
 /* Represent a conversion from CTOR, a braced-init-list, to TYPE, an
    aggregate class, if such a conversion is possible.  */
 
@@ -912,6 +934,7 @@ build_aggr_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
   conversion *c;
   tree field = next_initializable_field (TYPE_FIELDS (type));
   tree empty_ctor = NULL_TREE;
+  hash_set<tree> *pset = NULL;
 
   /* We already called reshape_init in implicit_conversion.  */
 
@@ -919,26 +942,69 @@ build_aggr_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
      context; they're always simple copy-initialization.  */
   flags = LOOKUP_IMPLICIT|LOOKUP_NO_NARROWING;
 
+  /* For designated initializers, verify that each initializer is convertible
+     to corresponding TREE_TYPE (ce->index) and mark those FIELD_DECLs as
+     visited.  In the following loop then ignore already visited
+     FIELD_DECLs.  */
+  if (CONSTRUCTOR_IS_DESIGNATED_INIT (ctor))
+    {
+      tree idx, val;
+      FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), i, idx, val)
+	{
+	  if (idx && TREE_CODE (idx) == FIELD_DECL)
+	    {
+	      tree ftype = TREE_TYPE (idx);
+	      bool ok;
+
+	      if (TREE_CODE (ftype) == ARRAY_TYPE
+		  && TREE_CODE (val) == CONSTRUCTOR)
+		ok = can_convert_array (ftype, val, flags, complain);
+	      else
+		ok = can_convert_arg (ftype, TREE_TYPE (val), val, flags,
+				      complain);
+
+	      if (!ok)
+		goto fail;
+	      /* For unions, there should be just one initializer.  */
+	      if (TREE_CODE (type) == UNION_TYPE)
+		{
+		  field = NULL_TREE;
+		  i = 1;
+		  break;
+		}
+	      if (pset == NULL)
+		pset = new hash_set<tree>;
+	      pset->add (idx);
+	    }
+	  else
+	    goto fail;
+	}
+    }
+
   for (; field; field = next_initializable_field (DECL_CHAIN (field)))
     {
       tree ftype = TREE_TYPE (field);
       tree val;
       bool ok;
 
+      if (pset && field_in_pset (pset, field))
+	continue;
       if (i < CONSTRUCTOR_NELTS (ctor))
-	val = CONSTRUCTOR_ELT (ctor, i)->value;
+	{
+	  val = CONSTRUCTOR_ELT (ctor, i)->value;
+	  ++i;
+	}
       else if (DECL_INITIAL (field))
 	val = get_nsdmi (field, /*ctor*/false, complain);
       else if (TYPE_REF_P (ftype))
 	/* Value-initialization of reference is ill-formed.  */
-	return NULL;
+	goto fail;
       else
 	{
 	  if (empty_ctor == NULL_TREE)
 	    empty_ctor = build_constructor (init_list_type_node, NULL);
 	  val = empty_ctor;
 	}
-      ++i;
 
       if (TREE_CODE (ftype) == ARRAY_TYPE
 	  && TREE_CODE (val) == CONSTRUCTOR)
@@ -948,15 +1014,22 @@ build_aggr_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
 			      complain);
 
       if (!ok)
-	return NULL;
+	goto fail;
 
       if (TREE_CODE (type) == UNION_TYPE)
 	break;
     }
 
   if (i < CONSTRUCTOR_NELTS (ctor))
-    return NULL;
+    {
+    fail:
+      if (pset)
+	delete pset;
+      return NULL;
+    }
 
+  if (pset)
+    delete pset;
   c = alloc_conversion (ck_aggr);
   c->type = type;
   c->rank = cr_exact;
