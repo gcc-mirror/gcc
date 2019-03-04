@@ -1,7 +1,6 @@
 /* { dg-do compile } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
-/* { dg-options "-mcpu=power9 -mno-vsx -O1" } */
+/* { dg-options "-mdejagnu-cpu=power9 -mno-vsx -O1" } */
 /* { dg-final { scan-assembler-times "lvx %?v?2,%?r?3" 1 } } */
 /* { dg-final { scan-assembler-times "stvx %?v?2,%?r?3" 1 } } */
 

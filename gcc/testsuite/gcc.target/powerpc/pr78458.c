@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mcpu=8548 -mspe -mabi=spe" } */
+/* { dg-options "-mdejagnu-cpu=8548 -mspe -mabi=spe" } */
 /* { dg-skip-if "not an SPE target" { ! powerpc_spe_nocache } } */
 
 extern void bar (void);

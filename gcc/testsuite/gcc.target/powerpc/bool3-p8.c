@@ -1,8 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-O2 -mcpu=power8" } */
+/* { dg-options "-O2 -mdejagnu-cpu=power8" } */
 /* { dg-final { scan-assembler	   "\[ \t\]and "     } } */
 /* { dg-final { scan-assembler	   "\[ \t\]or "      } } */
 /* { dg-final { scan-assembler	   "\[ \t\]xor "     } } */

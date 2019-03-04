@@ -867,10 +867,21 @@
    (set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(plus:SI (match_dup 1)
 		 (match_operand:SI 3 "arm_addimm_operand" "I,L")))]
-  "TARGET_32BIT && INTVAL (operands[2]) == -INTVAL (operands[3])"
-  "@
-   adds%?\\t%0, %1, %3
-   subs%?\\t%0, %1, #%n3"
+  "TARGET_32BIT
+   && (INTVAL (operands[2])
+       == trunc_int_for_mode (-INTVAL (operands[3]), SImode))"
+{
+  /* For 0 and INT_MIN it is essential that we use subs, as adds
+     will result in different condition codes (like cmn rather than
+     like cmp).  For other immediates, we should choose whatever
+     will have smaller encoding.  */
+  if (operands[2] == const0_rtx
+      || INTVAL (operands[2]) == -HOST_WIDE_INT_C (0x80000000)
+      || which_alternative == 1)
+    return "subs%?\\t%0, %1, #%n3";
+  else
+    return "adds%?\\t%0, %1, %3";
+}
   [(set_attr "conds" "set")
    (set_attr "type" "alus_sreg")]
 )
@@ -9302,7 +9313,7 @@
    (cond_exec (ne:CC (reg:CC CC_REGNUM) (const_int 0))
 	      (set (match_dup 0) (const_int 1)))]
 {
-  operands[3] = GEN_INT (-INTVAL (operands[2]));
+  operands[3] = gen_int_mode (-INTVAL (operands[2]), SImode);
 })
 
 (define_split
@@ -10082,7 +10093,8 @@
         /* Emit subs\\t%0, %1, %2\;mvnne\\t%0, #0 */
         if (CONST_INT_P (operands[2]))
           emit_insn (gen_cmpsi2_addneg (operands[0], operands[1], operands[2],
-                                        GEN_INT (- INTVAL (operands[2]))));
+                                        gen_int_mode (-INTVAL (operands[2]),
+						      SImode)));
         else
           emit_insn (gen_subsi3_compare (operands[0], operands[1], operands[2]));
 

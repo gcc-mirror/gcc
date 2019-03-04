@@ -9,7 +9,7 @@ The older MurmurHash 1 and 2 are currently not supported.
 
 MurmurHash3 comes in three flavors, listed in increasing order of throughput:
 $(UL
-$(LI $(D MurmurHash3!32) produces a 32-bit value and is optimized for 32-bit architectures)
+$(LI `MurmurHash3!32` produces a 32-bit value and is optimized for 32-bit architectures)
 $(LI $(D MurmurHash3!(128, 32)) produces a 128-bit value and is optimized for 32-bit architectures)
 $(LI $(D MurmurHash3!(128, 64)) produces a 128-bit value and is optimized for 64-bit architectures)
 )
@@ -26,7 +26,7 @@ This module conforms to the APIs defined in $(MREF std, digest).
 
 This module publicly imports $(MREF std, digest) and can be used as a stand-alone module.
 
-Source: $(PHOBOSSRC std/digest/_murmurhash.d)
+Source: $(PHOBOSSRC std/digest/murmurhash.d)
 License: $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
 Authors: Guillaume Chatelet
 References: $(LINK2 https://github.com/aappleby/smhasher, Reference implementation)
@@ -37,6 +37,11 @@ $(BR) $(LINK2 https://en.wikipedia.org/wiki/MurmurHash, Wikipedia)
  * (See LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  */
 module std.digest.murmurhash;
+
+version (X86)
+    version = HaveUnalignedLoads;
+else version (X86_64)
+    version = HaveUnalignedLoads;
 
 ///
 @safe unittest
@@ -500,28 +505,75 @@ struct MurmurHash3(uint size /* 32 or 128 */ , uint opt = size_t.sizeof == 8 ? 6
         // Buffer should never be full while entering this function.
         assert(bufferSize < Element.sizeof);
 
-        // Check if we have some leftover data in the buffer. Then fill the first block buffer.
+        // Check if the incoming data doesn't fill up a whole block buffer.
         if (bufferSize + data.length < Element.sizeof)
         {
             buffer.data[bufferSize .. bufferSize + data.length] = data[];
             bufferSize += data.length;
             return;
         }
-        const bufferLeeway = Element.sizeof - bufferSize;
-        assert(bufferLeeway <= Element.sizeof);
-        buffer.data[bufferSize .. $] = data[0 .. bufferLeeway];
-        putElement(buffer.block);
-        data = data[bufferLeeway .. $];
+
+        // Check if there's some leftover data in the first block buffer, and
+        // fill the remaining space first.
+        if (bufferSize != 0)
+        {
+            const bufferLeeway = Element.sizeof - bufferSize;
+            buffer.data[bufferSize .. $] = data[0 .. bufferLeeway];
+            putElement(buffer.block);
+            element_count += Element.sizeof;
+            data = data[bufferLeeway .. $];
+        }
 
         // Do main work: process chunks of `Element.sizeof` bytes.
         const numElements = data.length / Element.sizeof;
         const remainderStart = numElements * Element.sizeof;
-        foreach (ref const Element block; cast(const(Element[]))(data[0 .. remainderStart]))
+        version (HaveUnalignedLoads)
         {
-            putElement(block);
+            foreach (ref const Element block; cast(const(Element[])) data[0 .. remainderStart])
+            {
+                putElement(block);
+            }
         }
-        // +1 for bufferLeeway Element.
-        element_count += (numElements + 1) * Element.sizeof;
+        else
+        {
+            void processChunks(T)() @trusted
+            {
+                alias TChunk = T[Element.sizeof / T.sizeof];
+                foreach (ref const chunk; cast(const(TChunk[])) data[0 .. remainderStart])
+                {
+                    static if (T.alignof >= Element.alignof)
+                    {
+                        putElement(*cast(const(Element)*) chunk.ptr);
+                    }
+                    else
+                    {
+                        Element[1] alignedCopy = void;
+                        (cast(T[]) alignedCopy)[] = chunk[];
+                        putElement(alignedCopy[0]);
+                    }
+                }
+            }
+
+            const startAddress = cast(size_t) data.ptr;
+            static if (size >= 64)
+            {
+                if ((startAddress & 7) == 0)
+                {
+                    processChunks!ulong();
+                    goto L_end;
+                }
+            }
+            static assert(size >= 32);
+            if ((startAddress & 3) == 0)
+                processChunks!uint();
+            else if ((startAddress & 1) == 0)
+                processChunks!ushort();
+            else
+                processChunks!ubyte();
+
+L_end:
+        }
+        element_count += numElements * Element.sizeof;
         data = data[remainderStart .. $];
 
         // Now add remaining data to buffer.
@@ -532,8 +584,8 @@ struct MurmurHash3(uint size /* 32 or 128 */ , uint opt = size_t.sizeof == 8 ? 6
 
     /++
     Finalizes the computation of the hash and returns the computed value.
-    Note that $(D finish) can be called only once and that no subsequent calls
-    to $(D put) is allowed.
+    Note that `finish` can be called only once and that no subsequent calls
+    to `put` is allowed.
     +/
     ubyte[Element.sizeof] finish() pure nothrow
     {
@@ -558,7 +610,7 @@ struct MurmurHash3(uint size /* 32 or 128 */ , uint opt = size_t.sizeof == 8 ? 6
         static assert(isUnsigned!T);
         debug assert(y >= 0 && y <= (T.sizeof * 8));
     }
-    body
+    do
     {
         return ((x << y) | (x >> ((T.sizeof * 8) - y)));
     }
@@ -606,10 +658,35 @@ struct MurmurHash3(uint size /* 32 or 128 */ , uint opt = size_t.sizeof == 8 ? 6
     }
 }
 
+
+/// The convenient digest template allows for quick hashing of any data.
+@safe unittest
+{
+    ubyte[4] hashed = digest!(MurmurHash3!32)([1, 2, 3, 4]);
+    assert(hashed == [0, 173, 69, 68]);
+}
+
+/**
+One can also hash ubyte data piecewise by instanciating a hasher and call
+the 'put' method.
+*/
+@safe unittest
+{
+    const(ubyte)[] data1 = [1, 2, 3];
+    const(ubyte)[] data2 = [4, 5, 6, 7];
+    // The incoming data will be buffered and hashed element by element.
+    MurmurHash3!32 hasher;
+    hasher.put(data1);
+    hasher.put(data2);
+    // The call to 'finish' ensures:
+    // - the remaining bits are processed
+    // - the hash gets finalized
+    auto hashed = hasher.finish();
+    assert(hashed == [181, 151, 88, 252]);
+}
+
 version (unittest)
 {
-    import std.string : representation;
-
     private auto hash(H, Element = H.Element)(string data)
     {
         H hasher;
@@ -743,10 +820,13 @@ version (unittest)
     // Pushing unaligned data and making sure the result is still coherent.
     void testUnalignedHash(H)()
     {
-        immutable ubyte[1025] data = 0xAC;
-        immutable alignedHash = digest!H(data[0 .. $ - 1]); // 0 .. 1023
-        immutable unalignedHash = digest!H(data[1 .. $]); // 1 .. 1024
-        assert(alignedHash == unalignedHash);
+        immutable ubyte[1028] data = 0xAC;
+        immutable alignedHash = digest!H(data[0 .. 1024]);
+        foreach (i; 1 .. 5)
+        {
+            immutable unalignedHash = digest!H(data[i .. 1024 + i]);
+            assert(alignedHash == unalignedHash);
+        }
     }
 
     testUnalignedHash!(MurmurHash3!32)();

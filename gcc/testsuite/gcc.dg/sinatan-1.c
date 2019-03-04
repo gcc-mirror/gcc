@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target c99_runtime } } */
 /* { dg-options "-Ofast" } */
 /* { dg-add-options ieee } */
 
@@ -62,7 +62,7 @@ main()
     /* Get first x such that 1 + x*x will overflow */
     float fc = nextafterf (sqrtf (__FLT_MAX__ - 1), __FLT_MAX__);
     double c = nextafter (sqrt (__DBL_MAX__ - 1), __DBL_MAX__);
-    long double lc = nextafter (sqrtl (__LDBL_MAX__ - 1), __LDBL_MAX__);
+    long double lc = nextafterl (sqrtl (__LDBL_MAX__ - 1), __LDBL_MAX__);
 
     /*  Force move from FPU to memory, otherwise comparison may
         fail due to possible more accurate registers (see 387)  */

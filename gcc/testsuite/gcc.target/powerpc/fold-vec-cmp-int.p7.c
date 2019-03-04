@@ -3,8 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-options "-mcpu=power7 -O2" } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
+/* { dg-options "-mdejagnu-cpu=power7 -O2" } */
 
 #include "fold-vec-cmp-int.h"
 

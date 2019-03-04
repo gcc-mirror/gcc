@@ -1,3 +1,35 @@
+2019-03-04  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/88996 Implement P0439R0
+	Make std::memory_order a scoped enumeration.
+	* include/bits/atomic_base.h: For C++20 make memory_order a scoped enum,
+	add variables for the old enumerators.  Adjust calls.
+	* testsuite/29_atomics/headers/atomic/types_std_c++2a.cc: New test.
+	* testsuite/29_atomics/headers/atomic/types_std_c++2a_neg.cc: New test.
+
+2019-03-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/bit/bitops.rot/rotl.cc: Remove bogus dg-do
+	directive.
+
+	* include/std/memory_resource (polymorphic_allocator): Add default
+	template argument for C++20.
+	(polymorphic_allocator::allocate_bytes)
+	(polymorphic_allocator::deallocate_bytes)
+	(polymorphic_allocator::allocate_object)
+	(polymorphic_allocator::deallocate_object)
+	(polymorphic_allocator::new_object)
+	(polymorphic_allocator::delete_object): New member functions for
+	C++20.
+	* testsuite/20_util/polymorphic_allocator/allocate_object.cc: New
+	test.
+
+2019-03-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89562
+	* src/filesystem/ops-common.h (do_copy_file): Open files in binary
+	mode for mingw.
+
 2019-03-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/util/testsuite_allocator.h (__gnu_test::memory_resource)

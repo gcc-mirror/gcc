@@ -1,5 +1,5 @@
 /* { dg-do run { target { powerpc*-*-* &&  p9vector_hw } } } */
-/* { dg-options "-O2 -mcpu=power9 " } */
+/* { dg-options "-O2 -mdejagnu-cpu=power9 " } */
 
 #define NAN_Q __builtin_nanq ("")
 #define SNAN_Q __builtin_nansq ("")

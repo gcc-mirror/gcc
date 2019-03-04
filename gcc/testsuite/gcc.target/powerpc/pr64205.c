@@ -1,7 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* && ilp32 } } } */
 /* { dg-skip-if "" { powerpc*-*-aix* } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=G5" } } */
-/* { dg-options "-O2 -mcpu=G5 -maltivec" } */
+/* { dg-options "-O2 -mdejagnu-cpu=G5 -maltivec" } */
 
 union ieee754r_Decimal32
 {

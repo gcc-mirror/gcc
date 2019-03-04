@@ -205,11 +205,14 @@ func (tools gccgoToolchain) pack(b *Builder, a *Action, afile string, ofiles []s
 	if cfg.Goos == "aix" && cfg.Goarch == "ppc64" {
 		// AIX puts both 32-bit and 64-bit objects in the same archive.
 		// Tell the AIX "ar" command to only care about 64-bit objects.
-		// AIX "ar" command does not know D option.
 		arArgs = []string{"-X64"}
 	}
-
-	return b.run(a, p.Dir, p.ImportPath, nil, tools.ar(), arArgs, "rc", mkAbs(objdir, afile), absOfiles)
+	absAfile := mkAbs(objdir, afile)
+	// Try with D modifier first, then without if that fails.
+	if b.run(a, p.Dir, p.ImportPath, nil, tools.ar(), arArgs, "rcD", absAfile, absOfiles) != nil {
+		return b.run(a, p.Dir, p.ImportPath, nil, tools.ar(), arArgs, "rc", absAfile, absOfiles)
+	}
+	return nil
 }
 
 func (tools gccgoToolchain) link(b *Builder, root *Action, out, importcfg string, allactions []*Action, buildmode, desc string) error {

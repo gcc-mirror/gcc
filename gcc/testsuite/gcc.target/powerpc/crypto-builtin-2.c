@@ -1,8 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-O2 -mcpu=power8 -mno-crypto" } */
+/* { dg-options "-O2 -mdejagnu-cpu=power8 -mno-crypto" } */
 
 void use_builtins_d (__vector unsigned long long *p, __vector unsigned long long *q, __vector unsigned long long *r, __vector unsigned long long *s)
 {

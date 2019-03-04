@@ -19,9 +19,9 @@ program bug4a
   integer, parameter :: n(l) = l
   print *, k,i,l,m,j,n
   print *,      transfer(1,[''])                ! { dg-error "shall not have storage size 0" }
-  print *,      transfer(1, '' )                ! { dg-error "shall not have storage size 0" }
+  print *,      transfer(1, '' )                ! No error
   print *, size(transfer(1,['']))               ! { dg-error "shall not have storage size 0" }
-  print *, len (transfer(1, '' ))               ! { dg-error "shall not have storage size 0" }
+  print *, len (transfer(1, '' ))               ! No error
   print *, size(transfer([1],[bug4()]))         ! { dg-error "shall not have storage size 0" }
   print *, transfer(transfer([1],[bug4()]),[1]) ! { dg-error "shall not have storage size 0" }
 end program bug4a

@@ -1,8 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
-/* { dg-options "-mcpu=power7 -O2" } */
+/* { dg-options "-mdejagnu-cpu=power7 -O2" } */
 
 /* This used to ICE.  During gimplification, "i" is widened to an unsigned
    int.  We used to fail at expand time as we tried to cram an SImode item
