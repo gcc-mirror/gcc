@@ -1,3 +1,17 @@
+2019-03-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/memory_resource (polymorphic_allocator): Add default
+	template argument for C++20.
+	(polymorphic_allocator::allocate_bytes)
+	(polymorphic_allocator::deallocate_bytes)
+	(polymorphic_allocator::allocate_object)
+	(polymorphic_allocator::deallocate_object)
+	(polymorphic_allocator::new_object)
+	(polymorphic_allocator::delete_object): New member functions for
+	C++20.
+	* testsuite/20_util/polymorphic_allocator/allocate_object.cc: New
+	test.
+
 2019-03-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/89562
