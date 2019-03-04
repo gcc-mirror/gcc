@@ -1,7 +1,7 @@
 2019-03-04  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/88530
-	* gcc.target/aarch64/options_set_10.c:
+	* gcc.target/aarch64/options_set_10.c: Add native.
 
 2019-03-04  Wilco Dijkstra  <wdijkstr@arm.com>
 
