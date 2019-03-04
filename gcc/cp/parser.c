@@ -24021,8 +24021,11 @@ cp_parser_class_head (cp_parser* parser,
   cp_parser_check_class_key (class_key, type);
 
   /* If this type was already complete, and we see another definition,
-     that's an error.  */
-  if (type != error_mark_node && COMPLETE_TYPE_P (type))
+     that's an error.  Likewise if the type is already being defined:
+     this can happen, eg, when it's defined from within an expression 
+     (c++/84605).  */
+  if (type != error_mark_node
+      && (COMPLETE_TYPE_P (type) || TYPE_BEING_DEFINED (type)))
     {
       error_at (type_start_token->location, "redefinition of %q#T",
 		type);
