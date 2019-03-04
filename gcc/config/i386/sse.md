@@ -738,6 +738,11 @@
   [(V8DI "V64QI") (V4DI "V32QI") (V2DI "V16QI")
    (V16SI "V64QI") (V8SI "V32QI") (V4SI "V16QI")])
 
+(define_mode_attr sseintconvert
+  [(V32HI "w") (V16HI "w") (V8HI "w")
+   (V16SI "dq") (V8SI "dq") (V4SI "dq")
+   (V8DI "qq") (V4DI "qq") (V2DI "qq")])
+
 ;; All 128bit vector integer modes
 (define_mode_iterator VI_128 [V16QI V8HI V4SI V2DI])
 
@@ -983,6 +988,12 @@
    (V8SF  "v4sf") (V4DF "v2df")
    (V4SF  "v2sf")
    (V32HF "v16hf") (V16HF "v8hf") (V8HF "v4hf")])
+
+;; Mapping of vector modes to vector hf modes of conversion.
+(define_mode_attr ssePHmode
+  [(V32HI "V32HF") (V16HI "V16HF") (V8HI "V8HF")
+   (V16SI "V16HF") (V8SI "V8HF") (V4SI "V8HF")
+   (V8DI "V8HF") (V4DI "V8HF") (V2DI "V8HF")])
 
 ;; Mapping of vector modes to packed single mode of the same size
 (define_mode_attr ssePSmode
@@ -5712,6 +5723,30 @@
   "vfnmsub<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %<iptr>2, %<iptr>3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Parallel half-precision floating point conversion operations
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define_int_iterator UNSPEC_US_FIX_NOTRUNC
+	[UNSPEC_UNSIGNED_FIX_NOTRUNC UNSPEC_FIX_NOTRUNC])
+
+(define_int_attr sseintconvertsignprefix
+	[(UNSPEC_UNSIGNED_FIX_NOTRUNC "u")
+	 (UNSPEC_FIX_NOTRUNC "")])
+
+(define_insn "avx512fp16_vcvtph2<sseintconvertsignprefix><sseintconvert>_<mode><mask_name><round_name>"
+  [(set (match_operand:VI248_AVX512VL 0 "register_operand" "=v")
+        (unspec:VI248_AVX512VL
+	   [(match_operand:<ssePHmode> 1 "<round_nimm_predicate>" "<round_constraint>")]
+	   UNSPEC_US_FIX_NOTRUNC))]
+  "TARGET_AVX512FP16"
+  "vcvtph2<sseintconvertsignprefix><sseintconvert>\t{<round_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_mask_op2>}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

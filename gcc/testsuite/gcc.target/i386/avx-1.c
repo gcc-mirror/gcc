@@ -719,6 +719,12 @@
 #define __builtin_ia32_getexpsh_mask_round(A, B, C, D, E) __builtin_ia32_getexpsh_mask_round(A, B, C, D, 4)
 #define __builtin_ia32_getmantph512_mask(A, F, C, D, E) __builtin_ia32_getmantph512_mask(A, 1, C, D, 8)
 #define __builtin_ia32_getmantsh_mask_round(A, B, C, W, U, D) __builtin_ia32_getmantsh_mask_round(A, B, 1, W, U, 4)
+#define __builtin_ia32_vcvtph2dq512_mask_round(A, B, C, D) __builtin_ia32_vcvtph2dq512_mask_round(A, B, C, 8)
+#define __builtin_ia32_vcvtph2udq512_mask_round(A, B, C, D) __builtin_ia32_vcvtph2udq512_mask_round(A, B, C, 8)
+#define __builtin_ia32_vcvtph2qq512_mask_round(A, B, C, D) __builtin_ia32_vcvtph2qq512_mask_round(A, B, C, 8)
+#define __builtin_ia32_vcvtph2uqq512_mask_round(A, B, C, D) __builtin_ia32_vcvtph2uqq512_mask_round(A, B, C, 8)
+#define __builtin_ia32_vcvtph2w512_mask_round(A, B, C, D) __builtin_ia32_vcvtph2w512_mask_round(A, B, C, 8)
+#define __builtin_ia32_vcvtph2uw512_mask_round(A, B, C, D) __builtin_ia32_vcvtph2uw512_mask_round(A, B, C, 8)
 
 /* avx512fp16vlintrin.h */
 #define __builtin_ia32_cmpph128_mask(A, B, C, D) __builtin_ia32_cmpph128_mask(A, B, 1, D)
