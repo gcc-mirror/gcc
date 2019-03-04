@@ -1,3 +1,14 @@
+2019-03-04  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (declare_module): Deal with de-GMFing here, get name
+	of implicit header module.
+	* parser.c (enum module_preamble): New enum.
+	(cp_parser_translation_unit):  Use it.
+	(cp_parser_{module,import}_declaration): Use it.
+	gcc/testsuite/
+	* g++.dg/modules/p0713-3.C: Adjust diags.
+
 2019-03-01  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r269321.

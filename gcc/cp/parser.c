@@ -2253,10 +2253,20 @@ static tree cp_parser_implicitly_scoped_statement
 static void cp_parser_already_scoped_statement
   (cp_parser *, bool *, const token_indent_info &);
 
-static bool cp_parser_module_declaration
-  (cp_parser *parser, bool first, bool exporting);
+enum module_preamble
+{
+  /* Order is important.  */
+  MP_FIRST,	/* First declaration of TU.  */
+  MP_PREAMBLE,  /* Preamble of a module.  */
+  MP_NOTHING,	/* Not special in any way.  */
+  MP_POST,	/* After preamble.  */
+  MP_GMF,	/* Global Module Fragment.  */
+};
+
+static module_preamble cp_parser_module_declaration
+  (cp_parser *parser, module_preamble, bool exporting);
 static bool cp_parser_import_declaration
-  (cp_parser *parser, bool exporting, bool past_preamble);
+  (cp_parser *parser, module_preamble, bool exporting);
 
 /* Declarations [gram.dcl.dcl] */
 
@@ -4788,9 +4798,9 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 				? dk_no_deferred : dk_no_check);
 
   bool implicit_extern_c = false;
-  bool first = modules_p ();
-  int preamble = 0; /* Not seen a preamble.  */
-  bool deferred_imports = first; /* Header unit means there is one. */
+  module_preamble preamble =
+    modules_p () && !module_purview_p () ? MP_FIRST : MP_NOTHING;
+  bool deferred_imports = false;
   int extern_c_depth = 0;
 
   /* Push the already tokenized first token.  */
@@ -4847,8 +4857,7 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	      || (cp_lexer_peek_nth_token (parser->lexer, exporting + 2)->type
 		  == CPP_SCOPE))
 	    ;
-	  else if (C_RID_CODE (next->u.value) == RID_MODULE
-		   && !extern_c_depth)
+	  else if (C_RID_CODE (next->u.value) == RID_MODULE && !extern_c_depth)
 	    {
 	      if (deferred_imports)
 		// FIXME: I think p1103 makes this unnecessary
@@ -4859,21 +4868,20 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	      if (exporting)
 		cp_lexer_consume_token (parser->lexer);
 
-	      if (cp_parser_module_declaration (parser, first, exporting))
-		preamble = +1; /* In preamble.  */
-
+	      preamble
+		= cp_parser_module_declaration (parser, preamble, exporting);
 	      deferred_imports = true;
-	      first = false;
 	      continue;
 	    }
 	  else if (C_RID_CODE (next->u.value) == RID_IMPORT
 		   && (!extern_c_depth
 		       || IDENTIFIER_POINTER (next->u.value)[0] == '_'))
 	    {
-	      first = false;
+	      if (preamble == MP_FIRST)
+		preamble = MP_NOTHING;
 	      if (exporting)
 		cp_lexer_consume_token (parser->lexer);
-	      if (cp_parser_import_declaration (parser, exporting, preamble < 0)
+	      if (cp_parser_import_declaration (parser, preamble, exporting)
 		  && more_tokens)
 		goto more_tokens;
 	      deferred_imports = true;
@@ -4882,7 +4890,9 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 
 	  if (!exporting)
 	    {
-	      /* Outer level extern "C" { ... }  */
+	      /* We have to detect outer level extern "C" { ... }
+		 here to deal with translated headers residing in
+		 such regions, which sadly are a thing.  */
 	      if (next->keyword == RID_EXTERN)
 		{
 		  cp_token *str = cp_lexer_peek_nth_token (parser->lexer, 2);
@@ -4910,9 +4920,9 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	    }
 	}
 
-      first = false;
-      if (preamble > 0)
-	preamble = -1;
+      /* This relies on the ordering of module_preamble values.  */
+      if (preamble <= MP_PREAMBLE)
+	preamble = module_preamble (preamble + MP_NOTHING);
 
       if (token->type == CPP_CLOSE_BRACE)
 	{
@@ -13347,12 +13357,13 @@ cp_parser_module_name (cp_parser *parser, int kind)
      [export] module module-name attr-spec-seq-opt ;
 */
 
-static bool
-cp_parser_module_declaration (cp_parser *parser, bool first, bool exporting)
+static module_preamble
+cp_parser_module_declaration (cp_parser *parser, module_preamble preamble,
+			      bool exporting)
 {
   cp_token *token = cp_lexer_consume_token (parser->lexer);
 
-  if (first && !exporting && !module_purview_p ()
+  if (preamble == MP_FIRST && !exporting
       && cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
     {
       /* Start global module fragment.  The 'module' keyword must be
@@ -13360,10 +13371,10 @@ cp_parser_module_declaration (cp_parser *parser, bool first, bool exporting)
       cp_lexer_before_phase_4 (token, true);
       cp_lexer_consume_token (parser->lexer);
       module_kind |= MK_GLOBAL;
-      return false;
+      return MP_GMF;
     }
 
-  if (!first)
+  if (preamble == MP_GMF)
     /* If there was a GMF, the 'module' keyword must be in the main
        file before phase-4 begins.  */
     cp_lexer_before_phase_4 (token, true);
@@ -13377,29 +13388,27 @@ cp_parser_module_declaration (cp_parser *parser, bool first, bool exporting)
       cp_parser_skip_to_end_of_statement (parser);
       if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
 	cp_lexer_consume_token (parser->lexer);
-      return false;
+
+      /* Remain in whatever state we were.  */
+      return preamble;
     }
 
-  if (!module_purview_p ())
-    {
-      if (!first&& !module_global_p ())
-	{
-	  error_at (token->location, "global module fragment not present");
-	  return false;
-	}
+  /* Other cases will emit an error in declare_module.  */
+  if (preamble == MP_NOTHING)
+    error_at (token->location, "global module fragment not present");
 
-      module_kind &= ~MK_GLOBAL;
-    }
+  if (declare_module (mod, token->location, exporting, attrs, parse_in))
+    preamble = MP_PREAMBLE;
 
-  return declare_module (mod, token->location, exporting, attrs, parse_in);
+  return preamble;
 }
 
 /* Import-declaration
    import module-name attr-spec-seq-opt ; */
 
 static bool
-cp_parser_import_declaration (cp_parser *parser, bool exporting,
-			      bool past_preamble)
+cp_parser_import_declaration (cp_parser *parser, module_preamble preamble,
+			      bool exporting)
 {
   cp_token *token = cp_lexer_consume_token (parser->lexer);
   int need_hdr = IDENTIFIER_POINTER (token->u.value)[0] == '_' ? -1 : 0;
@@ -13419,7 +13428,7 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting,
     }
   else
     {
-      if (past_preamble)
+      if (preamble == MP_POST)
 	{
 	  error_at (token->location,
 		    "module import declarations must be within preamble");

@@ -13665,11 +13665,12 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
       return false;
     }
 
-  gcc_assert (!module_global_p () && !(*modules)[MODULE_PURVIEW]);
+  gcc_assert (!(*modules)[MODULE_PURVIEW]);
 
   state->attach (from_loc);
 
-  /* We're a module, 'arry.  */
+  /* Yer a module, 'arry.  */
+  module_kind &= ~MK_GLOBAL;
   module_kind |= MK_MODULE;
 
   module_state *gmf = (*modules)[MODULE_NONE];
@@ -13842,7 +13843,10 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
 	  tree name = get_identifier (module_header_name);
 	  module_state *state = get_module (name);
 	  if (!flag_preprocess_only)
-	    declare_module (state, spans.main_start (), true, NULL, reader);
+	    {
+	      declare_module (state, spans.main_start (), true, NULL, reader);
+	      process_deferred_imports (reader);
+	    }
 	  else if (mrules *deps = cpp_get_deps (reader))
 	    module_preprocess (deps, state, 1);
 	}
