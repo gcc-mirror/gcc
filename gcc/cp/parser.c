@@ -751,6 +751,9 @@ cp_lexer_get_preprocessor_token (unsigned flags, cp_token *token)
   token->keyword = RID_MAX;
   token->purged_p = false;
   token->error_reported = false;
+  token->tree_check_p = false;
+  /* Usually never see a zero, but just in case ... */
+  token->main_source_p = line_table->depth <= 1;
 
   /* On some systems, some header files are surrounded by an
      implicit extern "C" block.  Set a flag in the token if it
@@ -961,7 +964,8 @@ cp_lexer_tokenize (cp_lexer *lexer, int extern_c_depth)
     return false;
 
   /* Push an EOF.  */
-  static cp_token eof = {CPP_EOF, RID_MAX, 0, false, false, false, false,
+  static cp_token eof = {CPP_EOF, RID_MAX, 0,
+			 false, false, false, false, false,
 			 UNKNOWN_LOCATION, NULL};
   tok = lexer->buffer->quick_push (eof);
   tok[0].location = tok[-1].location;
@@ -970,29 +974,20 @@ cp_lexer_tokenize (cp_lexer *lexer, int extern_c_depth)
   return true;
 }
 
-/* TOK must be lexed before phase 4.  If MAIN_P is true, it must also
-   be from the main file.  Warn if not.  */
+/* TOK must not be a macro expansion.  Warn if not.  */
 
 static void
-cp_lexer_before_phase_4 (cp_token *tok, bool main_p)
+cp_lexer_not_macro (cp_token *tok)
 {
   location_t loc = tok->location;
 
   if (IS_ADHOC_LOC (loc))
     loc = get_location_from_adhoc_loc (line_table, loc);
 
-  char const *err = NULL;
-
   if (IS_MACRO_LOC (loc))
-    err = G_ ("%qs must not be from macro expansion");
-  else if (main_p
-	   && !MAIN_FILE_P (linemap_check_ordinary
-			    (linemap_lookup (line_table, loc))))
-    err = G_ ("%qs must not be from source inclusion");
-
-  if (err)
-    warning_at (tok->location, 0, err,
-		tok->type == CPP_NAME ? IDENTIFIER_POINTER (tok->u.value) : ";");
+    error_at (tok->location,
+	     "%qs must not be from macro expansion",
+	     tok->type == CPP_NAME ? IDENTIFIER_POINTER (tok->u.value) : ";");
 }
 
 /* Update the globals input_location and the input file stack from TOKEN.  */
@@ -4868,6 +4863,10 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	      if (exporting)
 		cp_lexer_consume_token (parser->lexer);
 
+	      if (!next->main_source_p)
+		error_at (next->location,
+			  "%qE must be directly in the main source file",
+			  next->u.value);
 	      preamble
 		= cp_parser_module_declaration (parser, preamble, exporting);
 	      deferred_imports = true;
@@ -4888,35 +4887,44 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	      continue;
 	    }
 
-	  if (!exporting)
+	  if (preamble == MP_GMF && token->main_source_p)
 	    {
-	      /* We have to detect outer level extern "C" { ... }
-		 here to deal with translated headers residing in
-		 such regions, which sadly are a thing.  */
-	      if (next->keyword == RID_EXTERN)
+	      static bool warned = false;
+	      if (!warned)
 		{
-		  cp_token *str = cp_lexer_peek_nth_token (parser->lexer, 2);
-		  if (str->type == CPP_STRING
-		      && TREE_STRING_LENGTH (str->u.value) == 3
-		      && TREE_STRING_POINTER (str->u.value)[1] == 'C'
-		      && (cp_lexer_peek_nth_token (parser->lexer, 3)->type
-			  == CPP_OPEN_BRACE))
-		    {
-		      cp_lexer_consume_token (parser->lexer);
-		      cp_lexer_consume_token (parser->lexer);
-		      cp_lexer_consume_token (parser->lexer);
-		      push_lang_context (lang_name_c);
-		      extern_c_depth++;
-		      continue;
-		    }
+		  warned = true;
+		  error_at (token->location,
+			    "global module fragment contents must be"
+			    " from preprocessor inclusion");
 		}
-	      else if (next->type == CPP_CLOSE_BRACE && extern_c_depth)
+	    }
+
+	  /* We have to detect outer level extern "C" { ... } here to
+	     deal with translated headers residing in such regions,
+	     which sadly are a thing.  */
+	  if (token->keyword == RID_EXTERN)
+	    {
+	      cp_token *str = cp_lexer_peek_nth_token (parser->lexer, 2);
+	      if (str->type == CPP_STRING
+		  && TREE_STRING_LENGTH (str->u.value) == 3
+		  && TREE_STRING_POINTER (str->u.value)[1] == 'C'
+		  && (cp_lexer_peek_nth_token (parser->lexer, 3)->type
+		      == CPP_OPEN_BRACE))
 		{
 		  cp_lexer_consume_token (parser->lexer);
-		  pop_lang_context ();
-		  extern_c_depth--;
+		  cp_lexer_consume_token (parser->lexer);
+		  cp_lexer_consume_token (parser->lexer);
+		  push_lang_context (lang_name_c);
+		  extern_c_depth++;
 		  continue;
 		}
+	    }
+	  else if (next->type == CPP_CLOSE_BRACE && extern_c_depth)
+	    {
+	      cp_lexer_consume_token (parser->lexer);
+	      pop_lang_context ();
+	      extern_c_depth--;
+	      continue;
 	    }
 	}
 
@@ -13363,21 +13371,17 @@ cp_parser_module_declaration (cp_parser *parser, module_preamble preamble,
 {
   cp_token *token = cp_lexer_consume_token (parser->lexer);
 
+  /* The 'module' keyword must not be a macro.  */
+  cp_lexer_not_macro (token);
+
   if (preamble == MP_FIRST && !exporting
       && cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
     {
-      /* Start global module fragment.  The 'module' keyword must be
-	 in the main file before phase-4 begins.  */
-      cp_lexer_before_phase_4 (token, true);
+      /* Start global module fragment.  */
       cp_lexer_consume_token (parser->lexer);
       module_kind |= MK_GLOBAL;
       return MP_GMF;
     }
-
-  if (preamble == MP_GMF)
-    /* If there was a GMF, the 'module' keyword must be in the main
-       file before phase-4 begins.  */
-    cp_lexer_before_phase_4 (token, true);
 
   module_state *mod = cp_parser_module_name (parser, true);
   tree attrs = cp_parser_attributes_opt (parser);
@@ -13417,7 +13421,7 @@ cp_parser_import_declaration (cp_parser *parser, module_preamble preamble,
   cp_token *semi = cp_lexer_peek_token (parser->lexer);
 
   if (semi->type == CPP_SEMICOLON)
-    cp_lexer_before_phase_4 (semi, false);
+    cp_lexer_not_macro (semi);
 
   if (!mod || !cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
     {

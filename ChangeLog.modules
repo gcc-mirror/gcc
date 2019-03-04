@@ -1,5 +1,29 @@
 2019-03-04  Nathan Sidwell  <nathan@acm.org>
 
+	GMF content locations
+	gcc/cp/
+	* parser.h (cp_token): Remove C compatibility macros. Add
+	main_source_p field.
+	* parser.c (cp_lexer_get_preprocessor_token): Set main_source_p
+	field.
+	(cp_lexer_before_phase_4): Rename to ...
+	(cp_lexer_not_macro): ... here.  Drop main-file check.
+	(cp_parser_translation_unit): Emit main-file errors.
+	(cp_parser_{module,import}_declaration): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/global-1_a.C: Adjust.
+	* g++.dg/modules/mod-decl-3.C: Adjust.
+	* g++.dg/modules/mod-decl-5_b.C: Adjust.
+	* g++.dg/modules/mod-exp-1_b.C: Adjust.
+	* g++.dg/modules/mod-sym-2.C: Adjust.
+	* g++.dg/modules/namespace-2_a.C: Adjust.
+	* g++.dg/modules/static-1_a.C: Adjust.
+	* g++.dg/modules/token-1.C: Adjust.
+	* g++.dg/modules/token-2_b.C: Adjust.
+	* g++.dg/modules/token-3.C: Adjust.
+	* g++.dg/modules/token-4.C: Adjust.
+	* g++.dg/modules/token-5.C: New.
+
 	New # semantics for popping to "" name.
 	libcpp/
 	* directives.c (do_linemarker): Popping to "" name means fill in

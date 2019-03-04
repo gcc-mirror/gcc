@@ -1,7 +1,9 @@
-// { dg-additional-options "-fmodules-ts" }
+// { dg-additional-options "-fmodules-ts -Wno-pedantic" }
 module;
+# 4 "mod-decl-3.C" 1
 export void Foo (); // { dg-error "after a module interface" }
 
+# 7 "" 2
 export module bob;
 // { dg-module-bmi "!bob" }
 

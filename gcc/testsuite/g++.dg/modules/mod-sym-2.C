@@ -1,7 +1,8 @@
-// { dg-additional-options "-fmodules-ts" }
+// { dg-additional-options "-fmodules-ts -Wno-pedantic" }
 module;
+# 4 "header" 1
 inline void Foo () {}
-
+# 6 "" 2
 export module okely.dokely;
 // { dg-module-bmi "okely.dokely" }
 

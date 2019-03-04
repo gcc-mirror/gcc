@@ -41,24 +41,26 @@ struct GTY(()) tree_check {
 
 struct GTY (()) cp_token {
   /* The kind of token.  */
-  ENUM_BITFIELD (cpp_ttype) type : 8;
+  enum cpp_ttype type : 8;
   /* If this token is a keyword, this value indicates which keyword.
      Otherwise, this value is RID_MAX.  */
-  ENUM_BITFIELD (rid) keyword : 8;
+  enum rid keyword : 8;
   /* Token flags.  */
   unsigned char flags;
   /* True if this token is from a context where it is implicitly extern "C" */
-  BOOL_BITFIELD implicit_extern_c : 1;
+  bool implicit_extern_c : 1;
   /* True if an error has already been reported for this token, such as a
      CPP_NAME token that is not a keyword (i.e., for which KEYWORD is
      RID_MAX) iff this name was looked up and found to be ambiguous.  */
-  BOOL_BITFIELD error_reported : 1;
+  bool error_reported : 1;
   /* True for a token that has been purged.  If a token is purged,
      it is no longer a valid token and it should be considered
      deleted.  */
-  BOOL_BITFIELD purged_p : 1;
+  bool purged_p : 1;
   bool tree_check_p : 1;
-  /* 4 unused bits.  */
+  bool main_source_p : 1;
+  /* 3 unused bits.  */
+
   /* The location at which this token was found.  */
   location_t location;
   /* The value associated with this token, if any.  */

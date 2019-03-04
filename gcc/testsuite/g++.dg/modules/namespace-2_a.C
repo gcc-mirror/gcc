@@ -1,12 +1,12 @@
-// { dg-additional-options "-fmodules-ts -fdump-lang-module" }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module -Wno-pedantic" }
 
 module;
-
+# 5 "gmf" 1
 namespace not_exported
 {
   // not in purview
 }
-
+# 10 "" 2
 export module foo;
 // { dg-module-bmi foo }
 
