@@ -25,7 +25,7 @@ class vr_values;
 // Class to simplify a statement taking into account range info.
 class simplify_with_ranges
 {
-  friend vr_values;
+  friend class vr_values;
 
 public:
   // Default constructor has no statement context.
