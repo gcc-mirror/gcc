@@ -2810,14 +2810,16 @@ _gfortran_caf_sendget_by_ref (caf_token_t dst_token, int dst_image_index,
   GFC_DESCRIPTOR_RANK (&temp) = -1;
   GFC_DESCRIPTOR_TYPE (&temp) = dst_type;
 
-  _gfortran_caf_get_by_ref (src_token, src_image_index, &temp, src_refs,
+  _gfortran_caf_get_by_ref (src_token, src_image_index,
+			    (gfc_descriptor_t *) &temp, src_refs,
 			    dst_kind, src_kind, may_require_tmp, true,
 			    src_stat, src_type);
 
   if (src_stat && *src_stat != 0)
     return;
 
-  _gfortran_caf_send_by_ref (dst_token, dst_image_index, &temp, dst_refs,
+  _gfortran_caf_send_by_ref (dst_token, dst_image_index,
+			     (gfc_descriptor_t *) &temp, dst_refs,
 			     dst_kind, dst_kind, may_require_tmp, true,
 			     dst_stat, dst_type);
   if (GFC_DESCRIPTOR_DATA (&temp))
