@@ -1,5 +1,8 @@
 2019-03-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/89570
+	* gcc.dg/pr89570.c: New test.
+
 	PR tree-optimization/89566
 	* c-c++-common/pr89566.c: New test.
 
