@@ -3176,6 +3176,8 @@ pass_if_conversion::execute (function *fun)
   for (unsigned i = 0; i < preds.length (); ++i)
     {
       gimple *g = preds[i];
+      if (!gimple_bb (g))
+	continue;
       unsigned ifcvt_loop = tree_to_uhwi (gimple_call_arg (g, 0));
       if (!get_loop (fun, ifcvt_loop))
 	{

@@ -1,3 +1,9 @@
+2019-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89594
+	* tree-if-conv.c (pass_if_conversion::execute): Handle
+	case where .LOOP_VECTORIZED_FUNCTION was removed.
+
 2019-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/89560
